@@ -11,4 +11,3 @@ Getting Started
 - $venv/bin/populate_LMKP development.ini
 
 - $venv/bin/pserve development.ini
-
