@@ -6,7 +6,7 @@ from ..models.meta import (
 
 from ..models.database_objects import *
 
-@view_config(route_name='home', renderer='../templates/mytemplate.pt')
+#@view_config(route_name='home', renderer='../templates/mytemplate.pt')
 def my_view(request):
 # deleted from autocreated
 #    one = DBSession.query(MyModel).filter(MyModel.name=='one').first()
@@ -27,3 +27,8 @@ def geo_test(request):
             'properties': {'title': 'Dict 1'}
             }
 
+@view_config(route_name='index', renderer='lmkp:templates/index.pt')
+def index(request):
+    print request
+    lang='en'
+    return {'header': 'welcome'}
