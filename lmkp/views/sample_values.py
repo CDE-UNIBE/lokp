@@ -11,7 +11,7 @@ from ..models.database_objects import *
 from chameleon.nodes import Attribute
 
 
-@view_config(route_name='sample_values', renderer='myproject:templates/sample_values.pt')
+@view_config(route_name='sample_values', renderer='lmkp:templates/sample_values.pt')
 def sample_values(request):
     stack = []
 # BEGIN fix data ----------------------------------------------------------------------------------
@@ -113,7 +113,7 @@ def sample_values(request):
     stack.append(_add_to_db(inv1, 'involvement 1'))
     return {'messagestack': stack}
 
-@view_config(route_name='delete_sample_values', renderer='myproject:templates/sample_values.pt')
+@view_config(route_name='delete_sample_values', renderer='lmkp:templates/sample_values.pt')
 def delete_sample_values(request):
 # Trigger
     delete_fix_data = True
