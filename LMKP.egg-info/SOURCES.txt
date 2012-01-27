@@ -13,9 +13,10 @@ LMKP.egg-info/not-zip-safe
 LMKP.egg-info/requires.txt
 LMKP.egg-info/top_level.txt
 lmkp/__init__.py
-lmkp/models.py
-lmkp/tests.py
 lmkp/views.py
+lmkp/models/__init__.py
+lmkp/models/database_objects.py
+lmkp/models/meta.py
 lmkp/scripts/__init__.py
 lmkp/scripts/populate.py
 lmkp/static/favicon.ico
@@ -27,4 +28,9 @@ lmkp/static/pylons.css
 lmkp/static/pyramid-small.png
 lmkp/static/pyramid.png
 lmkp/static/transparent.gif
+lmkp/templates/db_test.pt
 lmkp/templates/mytemplate.pt
+lmkp/templates/sample_values.pt
+lmkp/views/__init__.py
+lmkp/views/sample_values.py
+lmkp/views/views.py
