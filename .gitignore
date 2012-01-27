@@ -8,3 +8,6 @@
 # Ignore packages
 *.egg
 *.egg-info
+
+# Ignore JavaScript libraries
+lmkp/static/lib/

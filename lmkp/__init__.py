@@ -15,7 +15,7 @@ def main(global_config, **settings):
     config.include(papyrus.includeme)
     config.add_renderer('geojson', GeoJSON())
     config.add_static_view('static', 'static', cache_max_age=3600)
-    config.add_route('home', '/')
+    config.add_route('index', '/')
     config.add_route('db_test', '/db_test')
     config.add_route('sample_values', '/sample_values/insert')
     config.add_route('delete_sample_values', '/sample_values/delete')
