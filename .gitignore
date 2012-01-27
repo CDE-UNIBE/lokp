@@ -1,0 +1,10 @@
+# Ignore compiled Python files
+*.py[co]
+
+# Ignore PyDev project files
+.project
+.pydevproject
+
+# Ignore packages
+*.egg
+*.egg-info
