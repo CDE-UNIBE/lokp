@@ -16,21 +16,29 @@
     <body>
         <div id="header-div">
             <h1>${header}</h1>
-            Content taken from <a href="https://en.wikipedia.org/wiki/HTML">html</a> header division.
             <div tal:switch="login" id="login-div">
                 <div tal:case="True">
-                    Unbelievable, you are logged in!
+                    <div>
+                        Hi ${username}, <b>warmly</b> welcome to the Land Matriz Knowledge Platformz!<br/>
+                        Unbelievable, you are logged in!
+                    </div>
                     <form action="/logout" method="POST">
                         <input type="hidden" name="came_from" value="/"/>
                         <input type="submit" name="form.logout" value="Logout" />
                     </form>
                 </div>
-                <form tal:case="False" action="/login" method="POST">
-                    <input type="hidden" name="came_from" value="/"/>
-                    Username: <input type="text" name="login" />
-                    Password: <input type="password" name="password" />
-                    <input type="submit" name="form.submitted" value="Login"/>
-                </form>
+                <div tal:case="False">
+                    <div>
+                        <b>Warmly</b> welcome to the Land Matriz Knowledge Platformz!<br/>
+                        Please log in!
+                    </div>
+                    <form action="/login" method="POST">
+                        <input type="hidden" name="came_from" value="/"/>
+                        Username: <input type="text" name="login" />
+                        Password: <input type="password" name="password" />
+                        <input type="submit" name="form.submitted" value="Login"/>
+                    </form>
+                </div>
             </div>
         </div>
         <div id="main-div"></div>

@@ -1,5 +1,6 @@
 # Ignore compiled Python files
-*.py[co]
+*.pyc
+*.pyo
 
 # Ignore PyDev project files
 .project

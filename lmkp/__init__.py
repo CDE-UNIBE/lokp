@@ -1,11 +1,11 @@
-from lmkp.security import groupfinder
+from lmkp.models.meta import DBSession
+from lmkp.security import group_finder
 import papyrus
 from papyrus.renderers import GeoJSON
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
-from lmkp.models.meta import DBSession
 
 def main(global_config, ** settings):
     """ This function returns a Pyramid WSGI application.
@@ -14,8 +14,7 @@ def main(global_config, ** settings):
     DBSession.configure(bind=engine)
 
     # Authentiaction policy
-    authnPolicy = AuthTktAuthenticationPolicy(
-                                              'walhalla', callback=groupfinder)
+    authnPolicy = AuthTktAuthenticationPolicy('walhalla', callback=group_finder)
     # Authorization policy
     authzPolicy = ACLAuthorizationPolicy()
 
