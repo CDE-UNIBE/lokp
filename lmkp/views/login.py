@@ -1,21 +1,22 @@
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
+__author__ = "Adrian Weber, Centre for Development and Environment, University of Bern"
+__date__ = "$Jan 20, 2012 10:39:24 AM$"
 
-from lmkp.security import USERS
+import logging
+from lmkp.security import check_user
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import forget
 from pyramid.security import remember
 from pyramid.view import view_config
 
-__author__ = "Adrian Weber, Centre for Development and Environment, University of Bern"
-__date__ = "$Jan 20, 2012 10:39:24 AM$"
+log = logging.getLogger(__name__)
 
 @view_config(route_name='login')
 def login(request):
-
-    print "login route request ************************************************"
-    print request
-
+    """
+    Login controller
+    """
     login_url = request.route_url('login')
     referrer = request.url
     if referrer == login_url:
@@ -30,14 +31,13 @@ def login(request):
     if 'form.submitted' in request.params:
         login = request.params['login']
         password = request.params['password']
-        if USERS.get(login) == password:
-            print 'login succeed **********************************************'
+        if check_user(login, password):
+            log.debug('Login succeed')
             headers = remember(request, login)
         else:
-            print 'login failed ***********************************************'
+            log.debug('Login failed')
             headers = forget(request)
 
-    print request
     return HTTPFound(location=came_from, headers=headers)
 
 @view_config(route_name='logout', renderer='lmkp:templates/index.pt')
