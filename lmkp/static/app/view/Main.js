@@ -7,7 +7,7 @@ Ext.define('LMKP.view.Main' ,{
         this.items = [{
             region: 'west',
             width: 200,
-            xtype: 'layerslist'
+            xtype: 'sidepanel'
         },{
             html: 'main panel center',
             region: 'center',

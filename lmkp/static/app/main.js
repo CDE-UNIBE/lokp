@@ -11,7 +11,7 @@ Ext.application({
         Ext.create('Ext.container.Viewport', {
             layout: 'border',
             items: [{
-                height: 120,
+                height: 100,
                 region: 'north',
                 xtype: 'header'
             },{
