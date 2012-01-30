@@ -1,3 +1,4 @@
+from pyramid.security import authenticated_userid
 from pyramid.view import view_config
 
 from ..models.meta import (
@@ -29,6 +30,12 @@ def geo_test(request):
 
 @view_config(route_name='index', renderer='lmkp:templates/index.pt')
 def index(request):
+    print "index route request ************************************************"
     print request
+    print request.url
     lang='en'
-    return {'header': 'welcome'}
+    username = authenticated_userid(request)
+    login = False
+    if username is not None:
+        login = True
+    return {'header': 'welcome', 'login': login}

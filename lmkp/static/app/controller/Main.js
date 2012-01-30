@@ -3,7 +3,8 @@ Ext.define('LMKP.controller.Main', {
 
     views: [
         'Header',
-        'Main'
+        'Main',
+        'SidePanel'
     ],
 
     init: function() {
