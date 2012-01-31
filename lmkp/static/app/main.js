@@ -4,7 +4,8 @@ Ext.application({
 
     controllers: [
     'Main',
-    'Layers'
+    'Layers',
+    'Map'
     ],
 
     launch: function() {

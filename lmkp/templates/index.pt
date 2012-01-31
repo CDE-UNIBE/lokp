@@ -6,11 +6,16 @@
         <title>Land Matrix Knowledge Platform</title>
         <link rel="stylesheet" type="text/css" href="/static/lib/ext-4.0.7-gpl/resources/css/ext-all.css"></link>
         <script type="text/javascript" src="/static/lib/ext-4.0.7-gpl/ext-debug.js"></script>
-        <!--script type="text/javascript" src="/static/lib/OpenLayers-2.11/OpenLayers.js"></script>
-        <script type="text/javascript" src="/static/lib/GeoExt4/src/data/LayerStore.js"></script>
-        <script type="text/javascript" src="/static/lib/GeoExt4/src/data/reader/Layer.js"></script>
-        <script type="text/javascript" src="/static/lib/GeoExt4/src/data/LayerModel.js"></script>
-        <script type="text/javascript" src="/static/lib/GeoExt4/src/panel/Map.js"></script-->
+        <script type="text/javascript">
+            Ext.Loader.setConfig({
+                enabled: true,
+                paths: {
+                    'GeoExt': '/static/lib/GeoExt4/src'
+                }
+            });
+        </script>
+        <script type="text/javascript" src="/static/lib/OpenLayers-2.11/OpenLayers.js"></script>
+        <script type="text/javascript" src="/static/lib/GeoExt4/GeoExt.js"></script>
         <script type="text/javascript" src="/static/app/main.js"></script>
     </head>
     <body>
