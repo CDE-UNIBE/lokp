@@ -9,10 +9,9 @@ Ext.define('LMKP.view.Main' ,{
             width: 200,
             xtype: 'sidepanel'
         },{
-            html: 'main panel center',
             region: 'center',
             title: 'Map Panel',
-            xtype: 'panel'
+            xtype: 'mappanel'
         }]
         this.callParent(arguments);
     }
