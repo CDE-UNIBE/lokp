@@ -305,7 +305,7 @@ class Permission(Base):
         return "<Permission> id [ %s ] | name [ %s ] | description [ %s ]" % (self.id, self.name, self.description)
 
 class A_Event_Review(Base):
-    __tablename__ = 'a_event_reviews'
+    __tablename__ = 'a_event_reviewStatusTests'
     __table_args__ = {'schema': 'data'}
     id = Column(Integer, primary_key = True)
     uuid = Column(UUID, nullable = False, unique = True)
