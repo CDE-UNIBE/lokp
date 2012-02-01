@@ -14,7 +14,8 @@ requires = [
     'pyramid_debugtoolbar',
     'zope.sqlalchemy',
     'waitress',
-    'papyrus'
+    'papyrus',
+    'WebTest'
     ]
 
 setup(name='LMKP',

@@ -8,8 +8,6 @@ from sqlalchemy import delete
 
 from ..models.meta import DBSession as Session
 from ..models.database_objects import *
-from chameleon.nodes import Attribute
-
 
 @view_config(route_name='sample_values', renderer='lmkp:templates/sample_values.pt')
 def sample_values(request):
