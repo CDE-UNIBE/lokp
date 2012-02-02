@@ -3,21 +3,19 @@ Ext.application({
     appFolder: 'static/app',
 
     controllers: [
-    'Main',
-    'Layers',
-    'Map'
+    'manage.Main'
     ],
 
     launch: function() {
         Ext.create('Ext.container.Viewport', {
             layout: 'border',
             items: [{
-                height: 100,
+                height: 40,
                 region: 'north',
                 xtype: 'header'
             },{
                 region: 'center',
-                xtype: 'main'
+                xtype: 'managemainpanel'
             }]
         });
     }
