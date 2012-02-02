@@ -39,3 +39,7 @@ def index(request):
     else:
         username = 'unknown user'
     return {'header': 'welcome', 'login': login, 'username': username}
+
+@view_config(route_name='ext_tests', renderer='lmkp:templates/tests.pt')
+def ext_tests(request):
+    return {}

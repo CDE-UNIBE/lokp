@@ -34,6 +34,7 @@ def main(global_config, ** settings):
     config.add_route('sample_values', '/sample_values/insert')
     config.add_route('delete_sample_values', '/sample_values/delete')
     config.add_route('geo_test', '/geo_test')
+    config.add_route('ext_tests', '/tests')
     config.scan()
     return config.make_wsgi_app()
 
