@@ -38,7 +38,7 @@ def index(request):
         login = True
     else:
         username = 'unknown user'
-    return {'header': 'welcome', 'login': login, 'username': username}
+    return {'header': 'welcome', 'login': login, 'username': username, 'script': 'main'}
 
 @view_config(route_name='ext_tests', renderer='lmkp:templates/tests.pt')
 def ext_tests(request):

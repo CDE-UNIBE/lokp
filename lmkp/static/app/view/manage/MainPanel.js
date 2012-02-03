@@ -16,6 +16,7 @@ Ext.define('Lmkp.view.manage.MainPanel',{
         width: 200,
         xtype: 'tabpanel'
     },{
+        id: 'activity-details-panel',
         region: 'center',
         xtype: 'manageactivitiesdetails'
     },{

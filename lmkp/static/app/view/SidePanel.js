@@ -1,4 +1,4 @@
-Ext.define('LMKP.view.SidePanel' ,{
+Ext.define('LmkpP.view.SidePanel' ,{
     extend: 'Ext.tab.Panel',
     alias : 'widget.sidepanel',
 
