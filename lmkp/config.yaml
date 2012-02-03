@@ -1,0 +1,28 @@
+# Global configuration file for the installation.
+# Within this file mandatory and optional fields are defined.
+application:
+  name: "Land Matrix Knowledge Platform global edition"
+  fields:
+    mandatory:
+      name:
+        type: String
+      area:
+        type: Number
+        condition: x > 0
+      project_use:
+        type: String
+        predefined:
+        - food production
+        - tourism
+        - forestry for wood and fiber
+        - agrofuels
+      status:
+        type: String
+        predefined:
+        - pending
+        - signed
+        - abandoned
+    optional:
+      year_of_investment:
+        type: Date
+        condition: 1900 < x < 2100

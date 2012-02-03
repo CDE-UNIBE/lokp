@@ -1,4 +1,4 @@
-Ext.define('LMKP.view.layers.List' ,{
+Ext.define('Lmkp.view.layers.List' ,{
     extend: 'Ext.panel.Panel',
     alias : 'widget.layerslist',
 
