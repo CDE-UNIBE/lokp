@@ -2,22 +2,24 @@ Ext.define('Lmkp.controller.manage.Main',{
     extend: 'Ext.app.Controller',
 
     views: [
-    'manage.MainPanel',
-    'manage.activities.Details',
-    'manage.activities.TreePanel'
+        'manage.MainPanel',
+        'manage.activities.Details',
+        'manage.activities.TreePanel'
     ],
 
     init: function(){
-        console.log(window);
         this.control({
-            '#activity-details-panel': {
+            'manageactivitiesdetails': {
                 render: this.onPanelRendered
+            },
+            // Select the submit button in the details view
+            'manageactivitiesdetails button[text=Submit]': {
+                click: this.onButtonClick
             }
         });
     },
 
     onPanelRendered: function(comp){
-        console.log(comp);
         Ext.Ajax.request({
             url: '/config',
             params: {
@@ -30,6 +32,10 @@ Ext.define('Lmkp.controller.manage.Main',{
             }
         });
         
+    },
+
+    onButtonClick: function(button, evt, eOpts){
+        console.log(button, evt, eOpts);
     }
     
 });

@@ -13,31 +13,12 @@ Ext.define('Lmkp.view.manage.activities.Details',{
 
     defaultType: 'textfield',
 
-    /*items: [{
-        fieldLabel: 'init',
-        name: 'kdkd'
-    }],
-
-    items: [{
-        fieldLabel: 'Details',
-        name: 'details'
-
-    },{
-        allowBlank: false,
-        fieldLabel: 'Details2',
-        name: 'details2',
-        //regex: /[0-9]/,
-        xtype: 'numberfield'
-    }],*/
-
     layout: 'anchor',
 
+    /**
+     * Items of this panel are loaded dynamically during application startup.
+     */
     initComponent: function(){
-        console.log('details');
-       /* this.add({
-            fieldLabel: 'Details',
-            name: 'details'
-        });*/
         this.callParent(arguments);
     }
 });
