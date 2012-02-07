@@ -31,35 +31,73 @@ from geoalchemy.geometry import (
     Geometry
 )
 
-class Fixed_A_Tag(Base):
-    __tablename__ = 'fixed_a_tags'
+class A_Key(Base):
+    __tablename__ = 'a_keys'
     __table_args__ = {'schema': 'data'}
-    code = Column(String(255), primary_key = True)
-    category = Column(String(255), nullable = False)
-    description = Column(Text)
-
-    def __init__(self, code, category, description=None):
-        self.code = code
-        self.category = category
-        self.description = description
-
+    id = Column(Integer, primary_key = True)
+    fk_a_key = Column(Integer, ForeignKey('data.a_keys.id'))
+    fk_language = Column(Integer, ForeignKey('data.languages.id'))
+    key = Column(String(255), nullable = False)
+    
+    translations = relationship('A_Key', backref = backref('original', remote_side = [id]))
+    tags = relationship('A_Tag', backref = 'key')
+    
+    def __init__(self, key):
+        self.key = key
+    
     def __repr__(self):
-        return "<Fixed_A_Tag> code [ %s ] | category [ %s ] | description [ %s ]" % (self.code, self.category, self.description) 
+        return "<A_Key> id [ %s ] | fk_a_key [ %s ] | fk_language [ %s ] | key [ %s ]" % (self.id, self.fk_a_key, self.fk_language, self.key)
 
-class Fixed_SH_Tag(Base):
-    __tablename__ = 'fixed_sh_tags'
+class SH_Key(Base):
+    __tablename__ = 'sh_keys'
     __table_args__ = {'schema': 'data'}
-    code = Column(String(255), primary_key = True)
-    category = Column(String(255), nullable = False)
-    description = Column(Text)
-
-    def __init__(self, code, category, description=None):
-        self.code = code
-        self.category = category
-        self.description = description
-
+    id = Column(Integer, primary_key = True)
+    fk_sh_key = Column(Integer, ForeignKey('data.sh_keys.id'))
+    fk_language = Column(Integer, ForeignKey('data.languages.id'))
+    key = Column(String(255), nullable = False)
+    
+    translations = relationship('SH_Key', backref = backref('original', remote_side = [id]))
+    tags = relationship('SH_Tag', backref = 'key')
+    
+    def __init__(self, key):
+        self.key = key
+    
     def __repr__(self):
-        return "<Fixed_SH_Tag> code [ %s ] | category [ %s ] | description [ %s ]" % (self.code, self.category, self.description) 
+        return "<SH_Key> id [ %s ] | fk_sh_key [ %s ] | fk_language [ %s ] | key [ %s ]" % (self.id, self.fk_sh_key, self.fk_language, self.key)
+
+class A_Value(Base):
+    __tablename__ = 'a_values'
+    __table_args__ = {'schema': 'data'}
+    id = Column(Integer, primary_key = True)
+    fk_a_value = Column(Integer, ForeignKey('data.a_values.id'))
+    fk_language = Column(Integer, ForeignKey('data.languages.id'))
+    value = Column(Text, nullable = False)
+    
+    translations = relationship('A_Value', backref = backref('original', remote_side = [id]))
+    tags = relationship('A_Tag', backref = 'value')
+    
+    def __init__(self, value):
+        self.value = value
+    
+    def __repr__(self):
+        return "<A_Value> id [ %s ] | fk_a_value [ %s ] | fk_language [ %s ] | value [ %s ]" % (self.id, self.fk_a_value, self.fk_language, self.value)
+
+class SH_Value(Base):
+    __tablename__ = 'sh_values'
+    __table_args__ = {'schema': 'data'}
+    id = Column(Integer, primary_key = True)
+    fk_sh_value = Column(Integer, ForeignKey('data.sh_values.id'))
+    fk_language = Column(Integer, ForeignKey('data.languages.id'))
+    value = Column(Text, nullable = False)
+    
+    translations = relationship('SH_Value', backref = backref('original', remote_side = [id]))
+    tags = relationship('SH_Tag', backref = 'value')
+    
+    def __init__(self, value):
+        self.value = value
+    
+    def __repr__(self):
+        return "<SH_Value> id [ %s ] | fk_sh_value [ %s ] | fk_language [ %s ] | value [ %s ]" % (self.id, self.fk_sh_value, self.fk_language, self.value)
 
 class A_Tag(Base):
     __tablename__ = 'a_tags'
@@ -67,16 +105,14 @@ class A_Tag(Base):
     id = Column(Integer, primary_key = True)
     uuid = Column(UUID, nullable = False, unique = True)
     fk_a_event = Column(Integer, ForeignKey('data.a_events.id'), nullable=False)
-    key = Column(String(255), nullable = False)
-    value = Column(Text, nullable = False)
+    fk_key = Column(Integer, ForeignKey('data.a_keys.id'), nullable = False)
+    fk_value = Column(Integer, ForeignKey('data.a_values.id'), nullable = False)
 
-    def __init__(self, key, value):
+    def __init__(self):
         self.uuid = uuid.uuid4()
-        self.key = key
-        self.value = value
 
     def __repr__(self):
-        return "<A_Tag> id [ %s ] | uuid [ %s ] | fk_a_event [ %s ] | key [ %s ] | value [ %s ]" % (self.id, self.uuid, self.fk_a_event, self.key, self.value)
+        return "<A_Tag> id [ %s ] | uuid [ %s ] | fk_a_event [ %s ] | fk_key [ %s ] | fk_value [ %s ]" % (self.id, self.uuid, self.fk_a_event, self.fk_key, self.fk_value)
 
 class SH_Tag(Base):
     __tablename__ = 'sh_tags'
@@ -84,16 +120,14 @@ class SH_Tag(Base):
     id = Column(Integer, primary_key = True)
     uuid = Column(UUID, nullable = False, unique = True)
     fk_sh_event = Column(Integer, ForeignKey('data.sh_events.id'), nullable=False)
-    key = Column(String(255), nullable = False)
-    value = Column(String(255), nullable = False)
+    fk_key = Column(Integer, ForeignKey('data.sh_keys.id'), nullable = False)
+    fk_value = Column(Integer, ForeignKey('data.sh_values.id'), nullable = False)
 
-    def __init__(self, key, value):
+    def __init__(self):
         self.uuid = uuid.uuid4()
-        self.key = key
-        self.value = value
 
     def __repr__(self):
-        return "<SH_Tag> id [ %s ] | uuid [ %s ] | fk_sh_event [ %s ] | key [ %s ] | value [ %s ]" % (self.id, self.uuid, self.fk_sh_event, self.key, self.value)
+        return "<SH_Tag> id [ %s ] | uuid [ %s ] | fk_sh_event [ %s ] | fk_key [ %s ] | fk_value [ %s ]" % (self.id, self.uuid, self.fk_sh_event, self.fk_key, self.fk_value)
 
 class A_Event(Base):
     __tablename__ = 'a_events'
@@ -196,6 +230,26 @@ class Status(Base):
 
     def __repr__(self):
         return "<Status> id [ %s ] | name [ %s ] | description [ %s ]" % (self.id, self.name, self.description)
+
+class Language(Base):
+    __tablename__ = 'languages'
+    __table_args__ = {'schema': 'data'}
+    id = Column(Integer, primary_key = True)
+    english_name = Column(String(255), nullable = False)
+    local_name = Column(String(255), nullable = False)
+    
+    a_keys = relationship('A_Key', backref='language')
+    a_values = relationship('A_Value', backref='language')
+    sh_keys = relationship('SH_Key', backref='language')
+    sh_values = relationship('SH_Value', backref='language')
+    
+    def __init__(self, id, english_name, local_name):
+        self.id = id
+        self.english_name = english_name
+        self.local_name = local_name
+    
+    def __repr__(self):
+        return "<Language> id [ %s ] | english_name [ %s ] | local_name [ %s ]" % (self.id, self.english_name, self.local_name)
 
 class Involvement(Base):
     __tablename__ = 'involvements'
@@ -305,7 +359,7 @@ class Permission(Base):
         return "<Permission> id [ %s ] | name [ %s ] | description [ %s ]" % (self.id, self.name, self.description)
 
 class A_Event_Review(Base):
-    __tablename__ = 'a_event_reviewStatusTests'
+    __tablename__ = 'a_event_review'
     __table_args__ = {'schema': 'data'}
     id = Column(Integer, primary_key = True)
     uuid = Column(UUID, nullable = False, unique = True)
@@ -379,6 +433,7 @@ class Review_Decision(Base):
 
     def __repr__(self):
         return "<Review_Decision> id [ %s ] | name [ %s ] | description [ %s ]" % (self.id, self.name, self.description)
+
 
 #===============================================================================
 # class Test_Point(Base):

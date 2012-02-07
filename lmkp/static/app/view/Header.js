@@ -1,4 +1,4 @@
-Ext.define('LMKP.view.Header' ,{
+Ext.define('Lkmp.view.Header' ,{
     extend: 'Ext.panel.Panel',
     alias : 'widget.header',
     layout: 'fit',

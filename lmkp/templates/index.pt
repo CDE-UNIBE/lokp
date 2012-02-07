@@ -16,7 +16,7 @@
         </script>
         <script type="text/javascript" src="/static/lib/OpenLayers-2.11/OpenLayers.js"></script>
         <script type="text/javascript" src="/static/lib/GeoExt4/GeoExt.js"></script>
-        <script type="text/javascript" src="/static/app/main.js"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/app/%s.js' % script)}"></script>
     </head>
     <body>
         <div id="header-div">
