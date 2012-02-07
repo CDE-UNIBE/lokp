@@ -35,12 +35,27 @@ def sample_values(request):
     stack.append(_add_to_db(sh_role5, 'stakeholder role 5 (informant)'))
     sh_role6 = Stakeholder_Role(id=6, name='Investor')
     stack.append(_add_to_db(sh_role6, 'stakeholder role 6 (investor)'))
-    # fixed_events
-    fixed_a_tag1 = Fixed_A_Tag(code='spatial_uncertainty', category='geometry')
-    stack.append(_add_to_db(fixed_a_tag1, 'fixed event 1 (spatial uncertainty)'))
-    # fixed_attributes
-    fixed_sh_tag1 = Fixed_SH_Tag(code='firstname', category='individual')
-    stack.append(_add_to_db(fixed_sh_tag1, 'fixed attribute 1 (firstname)'))
+    # languages
+    lang1 = Language(id=1, english_name='English', local_name='English')
+    stack.append(_add_to_db(lang1, 'language 1 (english)'))
+    lang2 = Language(id=2, english_name='Spanish', local_name='Espanol')
+    stack.append(_add_to_db(lang2, 'language 2 (spanish)'))
+    # predefined a_keys (@todo: predefined keys should be managed in config file)
+    predefined_a_key1 = A_Key(key='Spatial uncertainty')
+    predefined_a_key1.language = lang1
+    stack.append(_add_to_db(predefined_a_key1, 'predefined a_key 1 (spatial uncertainty)'))
+    # predefined a_values (@todo: predefined values should be managed in config file)
+    predefined_a_value1 = A_Value(value='spatially very inaccurate')
+    predefined_a_value1.language = lang1
+    stack.append(_add_to_db(predefined_a_value1, 'predefined a_value 1 (spatially very inaccurate'))
+    # predefined sh_keys (@todo: predefined keys should be managed in config file)
+    predefined_sh_key1 = SH_Key(key='First name')
+    predefined_sh_key1.language = lang1
+    stack.append(_add_to_db(predefined_sh_key1, 'predefined a_key 1 (first name)'))
+    # predefined sh_values (@todo: predefined values should be managed in config file)
+    predefined_sh_value1 = SH_Value(value='some sample sh_value')
+    predefined_sh_value1.language = lang1
+    stack.append(_add_to_db(predefined_sh_value1, 'predefined a_value 1 (sample value'))
     # permissions
     permission1 = Permission(id=1, name='read')
     stack.append(_add_to_db(permission1, 'permission 1 (read)'))
@@ -78,11 +93,14 @@ def sample_values(request):
     stack.append(_add_to_db(activity1, 'activity 1'))
 # -- a_events (activity events)
     # a_event 1, belongs to activity 1, inserted by user 2, reviewed (and accepted) by user 1
+    a_tag1 = A_Tag()
+    a_tag1.key = predefined_a_key1
+    a_tag1.value = predefined_a_value1
     a_event1 = A_Event(geometry="POINT(10 20)", source='source1')
     a_event1.activity = activity1
     a_event1.user = user2
     a_event1.status = status2 # active
-    a_event1.tags.append(A_Tag(key='spatial_uncertainty', value='very inaccurate'))
+    a_event1.tags.append(a_tag1)
     stack.append(_add_to_db(a_event1, 'a_event 1'))
     review1 = A_Event_Review(comment='comment1')
     review1.review_decision = reviewdecision1 # approved
@@ -95,12 +113,15 @@ def sample_values(request):
     stack.append(_add_to_db(stakeholder1, 'stakeholder 1'))
 # -- sh_events (stakeholder events)
     # sh_event 1, belongs to stakeholder 1, inserted by user 2, unreviewed
+    sh_tag1 = SH_Tag()
+    sh_tag1.key = predefined_sh_key1
+    sh_tag1.value = SH_Value('Hans')
     sh_event1 = SH_Event(source='source1')
     sh_event1.stakeholder = stakeholder1
     sh_event1.user = user2
     sh_event1.status = status1 # pending
-    sh_event1.tags.append(SH_Tag(key='firstname', value='Hans'))
-    sh_event1.tags.append(SH_Tag(key='lastname', value='Muster'))
+    sh_event1.tags.append(sh_tag1)
+    #sh_event1.tags.append(SH_Tag(key='lastname', value='Muster'))
     stack.append(_add_to_db(sh_event1, 'sh_event 1'))
 # -- involvements
     # involvement 1, connects activity 1 with stakeholder 1
@@ -154,21 +175,31 @@ def delete_sample_values(request):
 # END delete sample values ------------------------------------------------------------------------
 # -- BEGIN delete fix data ------------------------------------------------------------------------
     if (delete_fix_data):
-        # fixed_a_tags
-        all_fixed_a_tags = Session.query(Fixed_A_Tag).all()
-        for fixed_event in all_fixed_a_tags:
-            stack.append("deleted: fixed event " + fixed_event.code)
-            Session.delete(fixed_event)
+        # a_tags
+        all_a_keys = Session.query(A_Key).all()
+        for ak in all_a_keys:
+            stack.append("deleted: a_key " + ak.key)
+            Session.delete(ak)
+        # a_values
+        all_a_values = Session.query(A_Value).all()
+        for av in all_a_values:
+            stack.append("deleted: a_value " + av.value)
+            Session.delete(av)
+        # sh_tags
+        all_sh_keys = Session.query(SH_Key).all()
+        for shk in all_sh_keys:
+            stack.append("deleted: sh_key " + shk.key)
+            Session.delete(shk)
+        # sh_values
+        all_sh_values = Session.query(SH_Value).all()
+        for shv in all_sh_values:
+            stack.append("deleted: sh_value " + shv.value)
+            Session.delete(shv)
         # status
         all_status = Session.query(Status).all()
         for status in all_status:
             stack.append("deleted: status " + status.name)
             Session.delete(status)
-        # fixed_sh_tags
-        all_fixed_sh_tags = Session.query(Fixed_SH_Tag).all()
-        for fixed_attr in all_fixed_sh_tags:
-            stack.append("deleted: fixed attribute " + fixed_attr.code)
-            Session.delete(fixed_attr)
         # stakeholder_roles
         all_stakeholder_roles = Session.query(Stakeholder_Role).all()
         for sh_role in all_stakeholder_roles:
@@ -189,6 +220,11 @@ def delete_sample_values(request):
         for revdec in all_review_decisions:
             stack.append("deleted: review decision " + revdec.name)
             Session.delete(revdec)
+        # languages
+        all_languages = Session.query(Language).all()
+        for lang in all_languages:
+            stack.append("deleted: language " + lang.english_name)
+            Session.delete(lang)
 # END delete fix data -----------------------------------------------------------------------------
     if len(stack) == 0:
         stack.append('Nothing was deleted.')
