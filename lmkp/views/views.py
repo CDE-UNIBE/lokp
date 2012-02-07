@@ -12,8 +12,8 @@ def my_view(request):
 
 @view_config(route_name='db_test', renderer='lmkp:templates/db_test.pt')
 def db_test(request):
-    object = DBSession.query(A_Event).first()
-    return {'object':object}
+    object = DBSession.query(A_Event).get(1)
+    return {'object':object.tags[0].key.language}
 
 @view_config(route_name='geo_test', renderer='geojson')
 def geo_test(request):
