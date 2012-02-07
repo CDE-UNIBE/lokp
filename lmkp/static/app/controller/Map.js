@@ -1,5 +1,5 @@
 Ext.define('Lmkp.controller.Map',{
-    extend: Ext.app.Controller,
+    extend: 'Ext.app.Controller',
 
     views: [
     'MapPanel'

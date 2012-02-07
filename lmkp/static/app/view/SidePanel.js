@@ -1,6 +1,6 @@
-Ext.define('LmkpP.view.SidePanel' ,{
+Ext.define('Lmkp.view.SidePanel' ,{
     extend: 'Ext.tab.Panel',
-    alias : 'widget.sidepanel',
+    alias : ['widget.sidepanel'],
 
     initComponent: function() {
         this.items = [{
