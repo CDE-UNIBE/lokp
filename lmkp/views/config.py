@@ -21,36 +21,47 @@ def get_config(request):
     try:
         # If format=ext is set
         if request.GET['format'] == 'ext':
-            originConfig = yaml.load(stream)
+            # Get the configuration file from the YAML file
+            yamlConfig = yaml.load(stream)
             extObject = []
             # Do the translation work from custom configuration format to an
             # ExtJS configuration object.
+            fields = yamlConfig['application']['fields']
+
             # First process the mandatory fields
-            #
-            # Code clean-up required!
-            for i in originConfig['application']['fields']['mandatory']:
-                field = originConfig['application']['fields']['mandatory'][i]
-                xtype = 'textfield'
-                if field['type'] == 'Number':
-                    xtype = 'numberfield'
-                if field['type'] == 'Date':
-                    xtype = 'datefield'
-                try:
-                    # If it's a combobox
-                    extObject.append({'allowBlank': False, 'name': i, 'fieldLabel': i, 'xtype': 'combo', 'store': field['predefined']})
-                except:
-                    extObject.append({'allowBlank': False, 'name': i, 'fieldLabel': i, 'xtype': xtype})
+            for (name, config) in fields['mandatory'].iteritems():
+                extObject.append(_get_field_config(name, config, True))
             # Then process also the optional fields
-            for j in originConfig['application']['fields']['optional']:
-                field = originConfig['application']['fields']['optional'][j]
-                xtype = 'textfield'
-                if field['type'] == 'Number':
-                    xtype = 'numberfield'
-                if field['type'] == 'Date':
-                    xtype = 'datefield'
-                # allowBlank is per default true
-                extObject.append({'name': j, 'fieldLabel': j, 'xtype': xtype, 'format': 'Y'})
+            for (name, config) in fields['optional'].iteritems():
+                extObject.append(_get_field_config(name, config))
+
             return extObject
-    except:
+    except KeyError:
         return yaml.load(stream)
-        
+
+
+def _get_field_config(name, config, mandatory=False):
+
+    fieldConfig = {}
+    fieldConfig['allowBlank'] = not mandatory
+    fieldConfig['name'] = name
+    fieldConfig['fieldLabel'] = name
+
+    print fieldConfig
+
+    xtype = 'textfield'
+    if config['type'] == 'Number':
+        xtype = 'numberfield'
+    if config['type'] == 'Date':
+        xtype = 'datefield'
+
+    try:
+        # If it's a combobox
+        fieldConfig['store'] = config['predefined']
+        fieldConfig['xtype'] = 'combo'
+    except KeyError:
+        pass
+
+    fieldConfig['xtype'] = xtype
+
+    return fieldConfig
