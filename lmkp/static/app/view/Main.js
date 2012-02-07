@@ -1,6 +1,6 @@
 Ext.define('Lmkp.view.Main' ,{
     extend: 'Ext.panel.Panel',
-    alias : 'widget.main',
+    alias : ['widget.main'],
     layout: 'border',
 
     initComponent: function() {

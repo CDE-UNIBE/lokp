@@ -8,6 +8,7 @@ Ext.define('Lmkp.controller.Main', {
     ],
 
     init: function() {
+        console.log("main controller");
         this.control({
             'viewport > panel': {
                 render: this.onPanelRendered
