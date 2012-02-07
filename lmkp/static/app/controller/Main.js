@@ -1,4 +1,4 @@
-Ext.define('LMKP.controller.Main', {
+Ext.define('Lmkp.controller.Main', {
     extend: 'Ext.app.Controller',
 
     views: [

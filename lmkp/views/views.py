@@ -12,8 +12,8 @@ def my_view(request):
 
 @view_config(route_name='db_test', renderer='lmkp:templates/db_test.pt')
 def db_test(request):
-    object = DBSession.query(A_Event).first()
-    return {'object':object}
+    object = DBSession.query(A_Event).get(1)
+    return {'object':object.tags[0].key.language}
 
 @view_config(route_name='geo_test', renderer='geojson')
 def geo_test(request):
@@ -38,7 +38,7 @@ def index(request):
         login = True
     else:
         username = 'unknown user'
-    return {'header': 'welcome', 'login': login, 'username': username}
+    return {'header': 'welcome', 'login': login, 'username': username, 'script': 'main'}
 
 @view_config(route_name='ext_tests', renderer='lmkp:templates/tests.pt')
 def ext_tests(request):
