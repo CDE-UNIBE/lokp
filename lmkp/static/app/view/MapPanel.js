@@ -7,7 +7,10 @@ Ext.define('Lmkp.view.MapPanel',{
     },
 
     map: {
-        layers: [new OpenLayers.Layer.OSM('Mapnik')]
+        layers: [
+            new OpenLayers.Layer.OSM('Mapnik'),
+            new OpenLayers.Layer.OSM('Mapnik2')
+        ]
     },
 
     tbar: [{

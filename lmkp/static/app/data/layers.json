@@ -1,0 +1,7 @@
+{
+	'success': true,
+	'results': [
+		{'id': 1, 'name': 'Layer 1'},
+		{'id': 2, 'name': 'Layer 2'}
+	]
+}
