@@ -58,7 +58,7 @@ Ext.define('Lmkp.view.manage.MainPanel',{
     }],
 
     initComponent: function(){
-        console.log('test');
+        console.log('Lmkp.view.manage.MainPanel: initComponent');
         this.callParent(arguments);
     }
 });

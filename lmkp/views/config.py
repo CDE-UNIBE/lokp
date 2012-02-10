@@ -47,8 +47,6 @@ def _get_field_config(name, config, mandatory=False):
     fieldConfig['name'] = name
     fieldConfig['fieldLabel'] = name
 
-    print fieldConfig
-
     xtype = 'textfield'
     if config['type'] == 'Number':
         xtype = 'numberfield'

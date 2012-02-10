@@ -9,7 +9,6 @@ Ext.application({
     ],
 
     launch: function() {
-        console.log('launch');
         Ext.create('Ext.container.Viewport', {
             layout: 'border',
             items: [{

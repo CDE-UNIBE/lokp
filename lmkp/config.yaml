@@ -26,3 +26,5 @@ application:
       year_of_investment:
         type: Date
         condition: 1900 < x < 2100
+      Spatial uncertainty:
+        type: String
