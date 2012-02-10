@@ -35,26 +35,38 @@ def get_activities(request):
     log.info(fields)
 
     # Result object
-    activitiesResult = {}
+    activitiesResult = []
 
     # It is necessary to create first all activities with empty attribute
     # values. Without doing this empty attributes are skipped in the later
     # database query.
-    for identifier in Session.query(Activity.id):
+
+    index = 0
+
+    for identifier in Session.query(Activity.id).order_by(Activity.id):
         id = identifier[0]
-        activitiesResult[id] = {}
+        activitiesResult.append({})
+        activitiesResult[index]['id'] = id
         for field in fields:
-            activitiesResult[id][field] = None
+            activitiesResult[index][field] = None
+
+        index += 1
 
     # Join table of activities
     activities = Session.query(Activity).join(A_Event).join(A_Tag).join(A_Key)
 
     # Loop all fields and append
-    for field in fields:
-        for i in activities.filter(A_Key.key == field).order_by(Activity.id):
-            activitiesResult[i.id][field] = i.events[0].tags[0].value.value
 
-    return activitiesResult
+    
+
+    for field in fields:
+        index = 0
+        for i in activities.filter(A_Key.key == field).order_by(Activity.id):
+            #activitiesResult[i.id][field] = i.events[0].tags[0].value.value
+            activitiesResult[index][field] = i.events[0].tags[0].value.value
+            index += 1
+
+    return {'activities': activitiesResult}
 
 @view_config(route_name='add_activity', renderer='json')
 def add_activitiy(request):

@@ -6,7 +6,7 @@ Ext.define('Lmkp.controller.manage.Main',{
     ],
 
     stores: [
-    'ActivityTree'
+    'Activities'
     ],
 
     views: [
@@ -25,7 +25,8 @@ Ext.define('Lmkp.controller.manage.Main',{
                 click: this.onButtonClick
             },
             'manageactivitiestreepanel': {
-                render: this.onTreePanelRendered
+                render: this.onTreePanelRendered,
+                checkchange: this.onCheckchange
             }
         });
     },
@@ -48,11 +49,23 @@ Ext.define('Lmkp.controller.manage.Main',{
             
         /*this.getActivityTreeStore().load();*/
 
-        console.log(comp.getStore());
-    },
+        console.log("ActivitiesStore: ", this.getActivitiesStore());
+        this.getActivitiesStore().load({
+            scope: this,
+            callback: function(){
+                console.log("ActivitiesStore^2: ", this.getActivitiesStore());
+            }
+        });
+},
 
-    onButtonClick: function(button, evt, eOpts){
-        console.log(button, evt, eOpts);
-    }
+onButtonClick: function(button, evt, eOpts){
+    console.log(button, evt, eOpts);
+},
+
+onCheckchange: function(node, checked, eOpts){
+    console.log(node);
+    var view = this.getManageMainPanelView();
+    console.log(view);
+}
     
 });
