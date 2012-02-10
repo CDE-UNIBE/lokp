@@ -7,13 +7,18 @@ Ext.define('Lmkp.view.manage.activities.Details',{
         text: 'Submit'
     }],
 
-    defaults: {
+    /*defaults: {
         anchor: '100%'
-    },
+    },*/
+
+    items: [{
+        name: 'test',
+        fieldLabel: 'test'
+    }],
 
     defaultType: 'textfield',
 
-    layout: 'anchor',
+    //layout: 'anchor',
 
     /**
      * Items of this panel are loaded dynamically during application startup.

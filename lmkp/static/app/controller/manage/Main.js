@@ -1,10 +1,18 @@
 Ext.define('Lmkp.controller.manage.Main',{
     extend: 'Ext.app.Controller',
 
+    models: [
+    'Activity'
+    ],
+
+    stores: [
+    'ActivityTree'
+    ],
+
     views: [
-        'manage.MainPanel',
-        'manage.activities.Details',
-        'manage.activities.TreePanel'
+    'manage.MainPanel',
+    'manage.activities.Details',
+    'manage.activities.TreePanel'
     ],
 
     init: function(){
@@ -15,6 +23,9 @@ Ext.define('Lmkp.controller.manage.Main',{
             // Select the submit button in the details view
             'manageactivitiesdetails button[text=Submit]': {
                 click: this.onButtonClick
+            },
+            'manageactivitiestreepanel': {
+                render: this.onTreePanelRendered
             }
         });
     },
@@ -31,7 +42,13 @@ Ext.define('Lmkp.controller.manage.Main',{
                 comp.add(Ext.decode(text));
             }
         });
-        
+    },
+
+    onTreePanelRendered: function(comp){
+            
+        /*this.getActivityTreeStore().load();*/
+
+        console.log(comp.getStore());
     },
 
     onButtonClick: function(button, evt, eOpts){
