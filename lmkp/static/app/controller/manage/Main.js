@@ -1,12 +1,14 @@
 Ext.define('Lmkp.controller.manage.Main',{
     extend: 'Ext.app.Controller',
 
+    /**
+     * Activities form panel
+     * @type Ext.form.Panel
+     */
+    activitiesDetailsPanel: null,
+
     models: [
     'Activity'
-    ],
-
-    stores: [
-    'Activities'
     ],
 
     views: [
@@ -25,13 +27,13 @@ Ext.define('Lmkp.controller.manage.Main',{
                 click: this.onButtonClick
             },
             'manageactivitiestreepanel': {
-                render: this.onTreePanelRendered,
-                checkchange: this.onCheckchange
+                itemclick: this.onItemclick
             }
         });
     },
 
     onPanelRendered: function(comp){
+        this.activitiesDetailsPanel = comp;
         Ext.Ajax.request({
             url: '/config',
             params: {
@@ -45,27 +47,14 @@ Ext.define('Lmkp.controller.manage.Main',{
         });
     },
 
-    onTreePanelRendered: function(comp){
-            
-        /*this.getActivityTreeStore().load();*/
+    onButtonClick: function(button, evt, eOpts){
+        console.log(button, evt, eOpts);
+    },
 
-        console.log("ActivitiesStore: ", this.getActivitiesStore());
-        this.getActivitiesStore().load({
-            scope: this,
-            callback: function(){
-                console.log("ActivitiesStore^2: ", this.getActivitiesStore());
-            }
-        });
-},
-
-onButtonClick: function(button, evt, eOpts){
-    console.log(button, evt, eOpts);
-},
-
-onCheckchange: function(node, checked, eOpts){
-    console.log(node);
-    var view = this.getManageMainPanelView();
-    console.log(view);
-}
+    onItemclick: function(view, record, item, index, event, eOpts){
+        if(this.activitiesDetailsPanel){
+            this.activitiesDetailsPanel.loadRecord(record);
+        }
+    }
     
 });

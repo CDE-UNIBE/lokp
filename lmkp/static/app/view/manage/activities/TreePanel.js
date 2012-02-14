@@ -4,14 +4,18 @@ Ext.define('Lmkp.view.manage.activities.TreePanel',{
     alias: [ 'widget.manageactivitiestreepanel' ],
 
     rootVisible: false,
+
     store: {
-        proxy: {
-            type: 'ajax',
-            url: '/activities/tree',
-            reader: {
-                type: 'json'
-            }
-        }
-    }
+        autoLoad: true,
+        model: 'Lmkp.model.Activity'
+    },
+
+    columns: [{
+        id: 'id-column',
+        xtype: 'treecolumn',
+        dataIndex: 'name',
+        text: 'id',
+        flex: 1
+    }]
     
 });

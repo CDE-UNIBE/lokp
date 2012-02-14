@@ -134,7 +134,7 @@ class A_Event(Base):
     __table_args__ = {'schema': 'data'}
     id = Column(Integer, primary_key = True)
     uuid = Column(UUID, nullable = False, unique = True)
-    fk_activity = Column(Integer, ForeignKey('data.activities.id'), nullable=False)
+    fk_activity = Column(Integer, ForeignKey('data.activities.id'))
     fk_user = Column(Integer, ForeignKey('data.users.id'), nullable=False)
     timestamp = Column(DateTime, nullable = False)
     fk_status = Column(Integer, ForeignKey('data.status.id'), nullable=False)
@@ -168,7 +168,7 @@ class SH_Event(Base):
     __table_args__ = {'schema': 'data'}
     id = Column(Integer, primary_key = True)
     uuid = Column(UUID, nullable = False, unique = True)
-    fk_stakeholder = Column(Integer, ForeignKey('data.stakeholders.id'), nullable=False)
+    fk_stakeholder = Column(Integer, ForeignKey('data.stakeholders.id'))
     fk_user = Column(Integer, ForeignKey('data.users.id'), nullable=False)
     timestamp = Column(DateTime, nullable = False)
     fk_status = Column(Integer, ForeignKey('data.status.id'), nullable=False)
