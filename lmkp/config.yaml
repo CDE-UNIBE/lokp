@@ -8,7 +8,7 @@ application:
         type: String
       area:
         type: Number
-        condition: x > 0
+        validator: if(value >= 0){return true;} else {return "Must be greater than 0";}
       project_use:
         type: String
         predefined:
@@ -25,6 +25,6 @@ application:
     optional:
       year_of_investment:
         type: Date
-        condition: 1900 < x < 2100
+        validator: if(value == 0 || (value > 1900 && value < 2100)){return true;} else {return "1900 < year of investment < 2100";}
       Spatial uncertainty:
         type: String

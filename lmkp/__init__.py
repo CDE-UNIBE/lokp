@@ -41,6 +41,10 @@ def main(global_config, ** settings):
     # Activities controllers
     config.add_route('get_activities', '/activities/read')
     config.add_route('add_activity', '/activities/create')
+
+    # Return a JavaScript model
+    config.add_route('activity_model', '/app/model/Activity.js')
+    
     config.scan()
     return config.make_wsgi_app()
 

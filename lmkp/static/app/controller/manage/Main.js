@@ -1,15 +1,14 @@
 Ext.define('Lmkp.controller.manage.Main',{
     extend: 'Ext.app.Controller',
 
-    /**
-     * Activities form panel
-     * @type Ext.form.Panel
-     */
-    activitiesDetailsPanel: null,
-
     models: [
-    'Activity'
+    'DyLmkp.model.Activity'
     ],
+
+    refs: [{
+        ref: 'detailsForm',
+        selector: 'manageactivitiesdetails'
+    }],
 
     views: [
     'manage.MainPanel',
@@ -33,7 +32,9 @@ Ext.define('Lmkp.controller.manage.Main',{
     },
 
     onPanelRendered: function(comp){
-        this.activitiesDetailsPanel = comp;
+
+        // Request a configuration object from the /config controller to append
+        // more form textfields to the activity detail form
         Ext.Ajax.request({
             url: '/config',
             params: {
@@ -42,7 +43,20 @@ Ext.define('Lmkp.controller.manage.Main',{
             method: 'GET',
             success: function(response){
                 var text = response.responseText;
-                comp.add(Ext.decode(text));
+
+                var configs = Ext.decode(text);
+
+                for(var i = 0; i < configs.length; i++){
+                    if(configs[i]['validator']){
+                        // Create a validator functions from a string transmitted
+                        // with JSON.
+                        // The other fields are taken directly from /config
+                        // controller's output
+                        configs[i]['validator'] = new Function('value', configs[i]['validator']);
+                    }
+                }
+                comp.add(configs);
+                comp.doLayout();
             }
         });
     },
@@ -52,9 +66,8 @@ Ext.define('Lmkp.controller.manage.Main',{
     },
 
     onItemclick: function(view, record, item, index, event, eOpts){
-        if(this.activitiesDetailsPanel){
-            this.activitiesDetailsPanel.loadRecord(record);
-        }
+        console.log(record);
+        this.getDetailsForm().loadRecord(record);
     }
     
 });
