@@ -5,9 +5,11 @@ Ext.define('Lmkp.view.manage.activities.TreePanel',{
 
     rootVisible: false,
 
+    layout: 'fit',
+
     store: {
         autoLoad: true,
-        model: 'Lmkp.model.Activity'
+        model: 'DyLmkp.model.Activity'
     },
 
     columns: [{

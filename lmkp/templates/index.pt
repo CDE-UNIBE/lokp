@@ -10,7 +10,8 @@
             Ext.Loader.setConfig({
                 enabled: true,
                 paths: {
-                    'GeoExt': '/static/lib/GeoExt4/src'
+                    'GeoExt': '/static/lib/GeoExt4/src',
+                    'DyLmkp': '/app'
                 }
             });
         </script>

@@ -7,6 +7,10 @@ Ext.define('Lmkp.view.manage.activities.Details',{
         text: 'Submit'
     }],
 
-    defaultType: 'textfield'
+    defaultType: 'textfield',
+
+    defaults: {
+        anchor: "100%"
+    }
 
 });
