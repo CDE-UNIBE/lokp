@@ -51,7 +51,8 @@ def _get_field_config(name, config, mandatory=False):
     if config['type'] == 'Number':
         xtype = 'numberfield'
     if config['type'] == 'Date':
-        xtype = 'datefield'
+        #xtype = 'datefield'
+        xtype = 'numberfield'
 
     try:
         # If it's a combobox

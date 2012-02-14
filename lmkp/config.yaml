@@ -16,7 +16,7 @@ application:
         - tourism
         - forestry for wood and fiber
         - agrofuels
-      status:
+      project_status:
         type: String
         predefined:
         - pending

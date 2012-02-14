@@ -37,34 +37,28 @@ def get_activities(request):
     # Result object
     activitiesResult = []
 
+    # Join table of activities
+    activities = Session.query(Activity.id,A_Value.value).join(A_Event).join(A_Tag).join(A_Key).join(A_Value)
+
     # It is necessary to create first all activities with empty attribute
     # values. Without doing this empty attributes are skipped in the later
     # database query.
-
-    index = 0
-
-    for identifier in Session.query(Activity.id).order_by(Activity.id):
-        id = identifier[0]
-        activitiesResult.append({})
-        activitiesResult[index]['id'] = id
+    for (id,value) in activities:
+        activity = {}
+        activity['id'] = id
+        # Append the leaf=True property since we want to use the output *also*
+        # in a tree store
+        activity['leaf'] = True
         for field in fields:
-            activitiesResult[index][field] = None
+            activity[field] = None
+        activitiesResult.append(activity)
 
-        index += 1
-
-    # Join table of activities
-    activities = Session.query(Activity).join(A_Event).join(A_Tag).join(A_Key)
-
-    # Loop all fields and append
-
-    
-
+    # Loop all fields and query the corresponding activities
     for field in fields:
-        index = 0
-        for i in activities.filter(A_Key.key == field).order_by(Activity.id):
-            #activitiesResult[i.id][field] = i.events[0].tags[0].value.value
-            activitiesResult[index][field] = i.events[0].tags[0].value.value
-            index += 1
+        for (id,value) in activities.filter(A_Key.key == field):
+            for a in activitiesResult:
+                if a['id'] == id:
+                    a[field] = value
 
     return {'activities': activitiesResult}
 
@@ -75,23 +69,3 @@ def add_activitiy(request):
     Implements the create functionality (HTTP POST) in the CRUD model
     """
     return {}
-
-@view_config(route_name='activities_tree', renderer='json')
-def get_activities_tree(request):
-    """
-    Returns a ExtJS tree store configuration object
-    """
-
-    nameField = 'Spatial uncertainty'
-
-    result = {}
-    result['children'] = []
-
-    # Join table of activities
-    activities = Session.query(Activity).join(A_Event).join(A_Tag).join(A_Key)
-
-    # Loop all fields and append
-    for i in activities.filter(A_Key.key == nameField).order_by(Activity.id):
-        result['children'].append({'id': i.id, 'text': i.events[0].tags[0].value.value, 'leaf': True, 'checked': False})
-
-    return result

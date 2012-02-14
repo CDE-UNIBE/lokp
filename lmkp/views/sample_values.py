@@ -6,22 +6,37 @@ import transaction
 
 from sqlalchemy import delete
 
+import random
+
 from ..models.meta import DBSession as Session
 from ..models.database_objects import *
 
 @view_config(route_name='sample_values', renderer='lmkp:templates/sample_values.pt')
 def sample_values(request):
     stack = []
+    list_activities = []
+    list_stakeholders = []
+    list_predefined_a_keys = []
+    list_predefined_sh_keys = []
+    list_users = []
+    list_status = []
+    list_predefined_a_values_projectUse = []
+    list_predefined_a_values_projectStatus = []
 # BEGIN fix data ----------------------------------------------------------------------------------
+    stack.append('--- fix data ---')
     # status
     status1 = Status(id=1, name='pending', description='Review pending. Not published yet.')
     stack.append(_add_to_db(status1, 'status 1 (pending)'))
+    list_status.append(status1)
     status2 = Status(id=2, name='active', description='Reviewed and accepted. Currently published.')
     stack.append(_add_to_db(status2, 'status 2 (active)'))
+    list_status.append(status2)
     status3 = Status(id=3, name='overwritten', description='Overwritten. Not published anymore.')
     stack.append(_add_to_db(status3, 'status 3 (overwritten'))
+    list_status.append(status3)
     status4 = Status(id=4, name='rejected', description='Reviewed and rejected. Never published.')
     stack.append(_add_to_db(status4, 'status 4 (rejected)'))
+    list_status.append(status4)
     # stakeholder_roles
     sh_role1 = Stakeholder_Role(id=1, name='Donor')
     stack.append(_add_to_db(sh_role1, 'stakeholder role 1 (donor)'))
@@ -41,21 +56,68 @@ def sample_values(request):
     lang2 = Language(id=2, english_name='Spanish', local_name='Espanol')
     stack.append(_add_to_db(lang2, 'language 2 (spanish)'))
     # predefined a_keys (@todo: predefined keys should be managed in config file)
-    predefined_a_key1 = A_Key(key='Spatial uncertainty')
+    predefined_a_key1 = A_Key(key='name')
     predefined_a_key1.language = lang1
-    stack.append(_add_to_db(predefined_a_key1, 'predefined a_key 1 (spatial uncertainty)'))
+    stack.append(_add_to_db(predefined_a_key1, 'predefined a_key 1 (name)'))
+    list_predefined_a_keys.append(predefined_a_key1)
+    predefined_a_key2 = A_Key(key='area')
+    predefined_a_key2.language = lang1
+    stack.append(_add_to_db(predefined_a_key2, 'predefined a_key 2 (area)'))
+    list_predefined_a_keys.append(predefined_a_key2)
+    predefined_a_key3 = A_Key(key='project_use')
+    predefined_a_key3.language = lang1
+    stack.append(_add_to_db(predefined_a_key3, 'predefined a_key 3 (project_use)'))
+    list_predefined_a_keys.append(predefined_a_key3)
+    predefined_a_key4 = A_Key(key='project_status')
+    predefined_a_key4.language = lang1
+    stack.append(_add_to_db(predefined_a_key4, 'predefined a_key 4 (project_status)'))
+    list_predefined_a_keys.append(predefined_a_key4)
+    predefined_a_key5 = A_Key(key='year_of_investment')
+    predefined_a_key5.language = lang1
+    stack.append(_add_to_db(predefined_a_key5, 'predefined a_key 5 (year_of_investment)'))
+    list_predefined_a_keys.append(predefined_a_key5)
     # predefined a_values (@todo: predefined values should be managed in config file)
-    predefined_a_value1 = A_Value(value='spatially very inaccurate')
+    predefined_a_value1 = A_Value(value='food production')
     predefined_a_value1.language = lang1
-    stack.append(_add_to_db(predefined_a_value1, 'predefined a_value 1 (spatially very inaccurate'))
+    stack.append(_add_to_db(predefined_a_value1, 'predefined a_value 1 (food production'))
+    list_predefined_a_values_projectUse.append(predefined_a_value1)
+    predefined_a_value2 = A_Value(value='tourism')
+    predefined_a_value2.language = lang1
+    stack.append(_add_to_db(predefined_a_value2, 'predefined a_value 2 (tourism'))
+    list_predefined_a_values_projectUse.append(predefined_a_value2)
+    predefined_a_value3 = A_Value(value='forestry for wood and fiber')
+    predefined_a_value3.language = lang1
+    stack.append(_add_to_db(predefined_a_value3, 'predefined a_value 3 (forestry for wood and fiber'))
+    list_predefined_a_values_projectUse.append(predefined_a_value3)
+    predefined_a_value4 = A_Value(value='agrofuels')
+    predefined_a_value4.language = lang1
+    stack.append(_add_to_db(predefined_a_value4, 'predefined a_value 4 (agrofuels'))
+    list_predefined_a_values_projectUse.append(predefined_a_value4)
+    predefined_a_value5 = A_Value(value='pending')
+    predefined_a_value5.language = lang1
+    stack.append(_add_to_db(predefined_a_value5, 'predefined a_value 5 (pending'))
+    list_predefined_a_values_projectStatus.append(predefined_a_value5)
+    predefined_a_value6 = A_Value(value='signed')
+    predefined_a_value6.language = lang1
+    stack.append(_add_to_db(predefined_a_value6, 'predefined a_value 6 (signed'))
+    list_predefined_a_values_projectStatus.append(predefined_a_value6)
+    predefined_a_value7 = A_Value(value='abandoned')
+    predefined_a_value7.language = lang1
+    stack.append(_add_to_db(predefined_a_value7, 'predefined a_value 7 (abandoned'))
+    list_predefined_a_values_projectStatus.append(predefined_a_value7)
     # predefined sh_keys (@todo: predefined keys should be managed in config file)
     predefined_sh_key1 = SH_Key(key='First name')
     predefined_sh_key1.language = lang1
     stack.append(_add_to_db(predefined_sh_key1, 'predefined a_key 1 (first name)'))
+    list_predefined_sh_keys.append(predefined_sh_key1)
+    predefined_sh_key2 = SH_Key(key='Last name')
+    predefined_sh_key2.language = lang1
+    stack.append(_add_to_db(predefined_sh_key2, 'predefined a_key 2 (last name)'))
+    list_predefined_sh_keys.append(predefined_sh_key2)
     # predefined sh_values (@todo: predefined values should be managed in config file)
     predefined_sh_value1 = SH_Value(value='some sample sh_value')
     predefined_sh_value1.language = lang1
-    stack.append(_add_to_db(predefined_sh_value1, 'predefined a_value 1 (sample value'))
+    stack.append(_add_to_db(predefined_sh_value1, 'predefined sh_value 1 (sample value'))
     # permissions
     permission1 = Permission(id=1, name='read')
     stack.append(_add_to_db(permission1, 'permission 1 (read)'))
@@ -78,58 +140,99 @@ def sample_values(request):
     stack.append(_add_to_db(reviewdecision3, 'review decision 3 (deleted)'))
 # END fix data ------------------------------------------------------------------------------------
 # BEGIN sample data -------------------------------------------------------------------------------
+    stack.append('--- sample data (users) ---')
   # -- users
     # user 1, belongs to admin group
     user1 = User(username='user1', password='pw', email='me@you.com')
     user1.groups.append(group1)
     stack.append(_add_to_db(user1, 'user 1'))
+    list_users.append(user1)
     # user 2, belongs to user group
     user2 = User(username='user2', password='pw', email='you@me.com')
     user2.groups.append(group2)
     stack.append(_add_to_db(user2, 'user 2'))
-# -- activities
-    # activity 1
-    activity1 = Activity()
-    stack.append(_add_to_db(activity1, 'activity 1'))
-# -- a_events (activity events)
-    # a_event 1, belongs to activity 1, inserted by user 2, reviewed (and accepted) by user 1
-    a_tag1 = A_Tag()
-    a_tag1.key = predefined_a_key1
-    a_tag1.value = predefined_a_value1
-    a_event1 = A_Event(geometry="POINT(10 20)", source='source1')
-    a_event1.activity = activity1
-    a_event1.user = user2
-    a_event1.status = status2 # active
-    a_event1.tags.append(a_tag1)
-    stack.append(_add_to_db(a_event1, 'a_event 1'))
-    review1 = A_Event_Review(comment='comment1')
-    review1.review_decision = reviewdecision1 # approved
-    review1.user = user1
-    review1.event = a_event1
-    stack.append(_add_to_db(review1, 'review 1')) 
-# -- stakeholders
-    # stakeholder 1
-    stakeholder1 = Stakeholder()
-    stack.append(_add_to_db(stakeholder1, 'stakeholder 1'))
-# -- sh_events (stakeholder events)
-    # sh_event 1, belongs to stakeholder 1, inserted by user 2, unreviewed
-    sh_tag1 = SH_Tag()
-    sh_tag1.key = predefined_sh_key1
-    sh_tag1.value = SH_Value('Hans')
-    sh_event1 = SH_Event(source='source1')
-    sh_event1.stakeholder = stakeholder1
-    sh_event1.user = user2
-    sh_event1.status = status1 # pending
-    sh_event1.tags.append(sh_tag1)
-    #sh_event1.tags.append(SH_Tag(key='lastname', value='Muster'))
-    stack.append(_add_to_db(sh_event1, 'sh_event 1'))
-# -- involvements
-    # involvement 1, connects activity 1 with stakeholder 1
-    inv1 = Involvement()
-    inv1.activity = activity1
-    inv1.stakeholder = stakeholder1
-    inv1.stakeholder_role = sh_role4 # Beneficiary
-    stack.append(_add_to_db(inv1, 'involvement 1'))
+    list_users.append(user2)
+# activities (create 25 random)
+    stack.append('--- sample data (activities) ---')
+    for i in range(1,26):
+        activity = Activity()
+        stack.append(_add_to_db(activity, 'activity ' + str(i)))
+        list_activities.append(activity)
+# a_events (create 100 random), with sample values (of config file), reported by random user, associated with one of activities, all reviewed and approved by user1 (admin)
+# the first 5 are unattached
+    stack.append('--- sample data (a_events) ---')
+    for i in range(1,101):
+        switch = (i % 5)
+        theKey = list_predefined_a_keys[switch]
+        if (switch == 0): # name
+            theValue = A_Value(value='Project ' + str(i))
+            theValue.language = lang1
+        if (switch == 1): # area
+            theValue = A_Value(value=random.randint(1,100))
+            theValue.language = lang1
+        if (switch == 2): # project_use
+            theValue = random.choice(list_predefined_a_values_projectUse)
+        if (switch == 3): # project_status
+            theValue = random.choice(list_predefined_a_values_projectStatus)
+        if (switch == 4): # year_of_investment
+            theValue = A_Value(value=random.randint(1990, 2015))
+            theValue.language = lang1
+        a_tag = A_Tag()
+        a_tag.key = theKey
+        a_tag.value = theValue
+        a_event = A_Event(geometry="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")", source="source " + str(i))
+        if (i > 6): # do not attach the first 5 events
+            a_event.activity = random.choice(list_activities)
+        a_event.user = random.choice(list_users)
+        a_event.status = status2 # always approved
+        a_event.tags.append(a_tag)
+        stack.append(_add_to_db(a_event, 'a_event ' + str(i)))
+        review = A_Event_Review(comment='comment ' + str(i))
+        review.review_decision = reviewdecision1 # always approved
+        review.user = user1 # always admin
+        review.event = a_event
+        stack.append(_add_to_db(review, 'review ' + str(i)))
+# -- stakeholders (create 5 random)
+    stack.append('--- sample data (stakeholders) ---')
+    for i in range(1,6):
+        stakeholder = Stakeholder()
+        stack.append(_add_to_db(stakeholder, 'stakeholder ' + str(i)))
+        list_stakeholders.append(stakeholder)
+# -- sh_events (create 20 random), so far only first- and lastname, reported by random user, associated with one of stakeholders, all reviewed and approved by user1 (admin)
+# the first 5 are unattached
+    stack.append('--- sample data (sh_events) ---')
+    for i in range(1,21):
+        switch = (i % 2)
+        theKey = list_predefined_sh_keys[switch]
+        if (switch == 0): # first name
+            theValue = SH_Value(value='First name ' + str(i))
+            theValue.language = lang1
+        if (switch == 1): # last name
+            theValue = SH_Value(value='Last name ' + str(i))
+            theValue.language = lang1
+        sh_tag = SH_Tag()
+        sh_tag.key = theKey
+        sh_tag.value = theValue
+        sh_event = SH_Event(source='source 1' + str(i))
+        if (i > 6): # do not attach the first 5 events
+            sh_event.stakeholder = random.choice(list_stakeholders)
+        sh_event.user = random.choice(list_users)
+        sh_event.status = status2 # always approved
+        sh_event.tags.append(sh_tag)
+        stack.append(_add_to_db(sh_event, 'sh_event ' + str(i)))
+        review = SH_Event_Review(comment='comment ' + str(i))
+        review.review_decision = reviewdecision1 # always approved
+        review.user = user1 # always admin
+        review.event = sh_event
+        stack.append(_add_to_db(review, 'review ' + str(i)))
+# -- involvements (add each stakeholder to a random activity)
+    stack.append('--- sample data (involvements) ---')
+    for sh in list_stakeholders:
+        inv = Involvement()
+        inv.activity = random.choice(list_activities)
+        inv.stakeholder = sh
+        inv.stakeholder_role = sh_role4 # always Beneficiary
+        stack.append(_add_to_db(inv, 'involvement'))
     return {'messagestack': stack}
 
 @view_config(route_name='delete_sample_values', renderer='lmkp:templates/sample_values.pt')
@@ -138,22 +241,31 @@ def delete_sample_values(request):
     delete_fix_data = True
     stack = []
 # BEGIN delete sample values ----------------------------------------------------------------------
-    all_a_reviews = Session.query(A_Event_Review).filter(A_Event_Review.comment == 'comment1').all()
+    stack.append('--- sample data (reviews) ---')
+    all_a_reviews = Session.query(A_Event_Review).filter(A_Event_Review.comment.like('comment %')).all()
     for aar in all_a_reviews:
         stack.append("deleted: a_event_review")
         Session.delete(aar)
+    all_sh_reviews = Session.query(SH_Event_Review).filter(SH_Event_Review.comment.like('comment %')).all()
+    for asr in all_sh_reviews:
+        stack.append("deleted: sh_event_review")
+        Session.delete(asr)
+    stack.append('--- sample data (involvements) ---')
     all_involvements_beneficiary = Session.query(Involvement).filter(Involvement.fk_stakeholder_role == 4).all()
     for aib in all_involvements_beneficiary:
         stack.append("deleted: involvement with stakeholder_role 4 (Beneficiary)")
         Session.delete(aib)
-    all_a_events_source1 = Session.query(A_Event).filter(A_Event.source == 'source1').all()
+    stack.append('--- sample data (a_events) ---')
+    all_a_events_source1 = Session.query(A_Event).filter(A_Event.source.like('source %')).all()
     for aaes1 in all_a_events_source1:
-        stack.append("deleted: a_event with source 1")
+        stack.append("deleted: a_event")
         Session.delete(aaes1)
-    all_sh_events_source1 = Session.query(SH_Event).filter(SH_Event.source == 'source1').all()
+    stack.append('--- sample data (sh_events) ---')
+    all_sh_events_source1 = Session.query(SH_Event).filter(SH_Event.source.like('source %')).all()
     for ases1 in all_sh_events_source1:
-        stack.append("deleted: sh_event with source 1")
+        stack.append("deleted: sh_event")
         Session.delete(ases1)
+    stack.append('--- sample data (users) ---')
     del_user1 = Session.query(User).filter(User.username == 'user1').all()
     for du1 in del_user1:
         stack.append("deleted: user 1")
@@ -163,11 +275,13 @@ def delete_sample_values(request):
         stack.append("deleted: user 2")
         Session.delete(du2)
     # delete orphan activities (should possibly be done by trigger on database level)
+    stack.append('--- sample data (activities) ---')
     all_orphan_activities = Session.query(Activity).filter(~Activity.id.in_(Session.query(A_Event.fk_activity))).all()
     for aoa in all_orphan_activities:
-        stack.append("deleted: orphan activity")
+        stack.append("deleted: activity")
         Session.delete(aoa)
     # delete orphan stakeholders (should possibly be done by trigger on database level)
+    stack.append('--- sample data (stakeholders) ---')
     all_orphan_stakeholders = Session.query(Stakeholder).filter(~Stakeholder.id.in_(Session.query(SH_Event.fk_stakeholder))).all()
     for aos in all_orphan_stakeholders:
         stack.append("deleted: orphan stakeholder")
@@ -175,6 +289,7 @@ def delete_sample_values(request):
 # END delete sample values ------------------------------------------------------------------------
 # -- BEGIN delete fix data ------------------------------------------------------------------------
     if (delete_fix_data):
+        stack.append('--- fix data (reviews) ---')
         # a_tags
         all_a_keys = Session.query(A_Key).all()
         for ak in all_a_keys:
