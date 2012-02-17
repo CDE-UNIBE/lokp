@@ -2,7 +2,8 @@ Ext.define('Lmkp.controller.manage.Main',{
     extend: 'Ext.app.Controller',
 
     models: [
-    'DyLmkp.model.Activity'
+    'DyLmkp.model.Activity',
+    'Lmkp.model.ActivityTree'
     ],
 
     refs: [{
@@ -66,8 +67,15 @@ Ext.define('Lmkp.controller.manage.Main',{
     },
 
     onItemclick: function(view, record, item, index, event, eOpts){
-        console.log(record);
-        this.getDetailsForm().loadRecord(record);
+        if(!record.hasChildNodes()){
+            var id = record.data.id;
+            this.getDetailsForm().load({
+                url: '/activities/' + id,
+                method: 'GET',
+                failure: function(form, action){
+                    Ext.Msg.alert('HTTP Status', action.response.statusText);
+                }
+            });
+        }
     }
-    
 });
