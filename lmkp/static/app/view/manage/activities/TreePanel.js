@@ -3,21 +3,33 @@ Ext.define('Lmkp.view.manage.activities.TreePanel',{
 
     alias: [ 'widget.manageactivitiestreepanel' ],
 
-    rootVisible: false,
+    rootVisible: true,
 
     layout: 'fit',
 
     store: {
         autoLoad: true,
-        model: 'DyLmkp.model.Activity'
+        model: 'Lmkp.model.ActivityTree'
     },
 
+    root: {
+        id: 'root',
+        text: 'Root',
+        expanded: true
+    },
+
+    /*store: {
+        model: 'Lmkp.model.ActivityList',
+        autoLoad: true
+    },*/
+
     columns: [{
-        id: 'id-column',
+        //id: 'id-column',
         xtype: 'treecolumn',
         dataIndex: 'name',
-        text: 'id',
-        flex: 1
+        //text: 'Activity',
+        flex: 2,
+        text: 'Name'
     }]
     
 });

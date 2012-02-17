@@ -38,12 +38,15 @@ def main(global_config, ** settings):
     config.add_route('geo_test', '/geo_test')
     config.add_route('ext_tests', '/tests')
 
-    # Activities controllers
-    config.add_route('get_activities', '/activities/read')
-    config.add_route('add_activity', '/activities/create')
+    # Activities controllers with an api similar to Papyrus
+    # Order matters!
+    config.add_route('activities_tree', '/activities/tree', request_method='GET')
+    config.add_route('activities_read_many', '/activities', request_method='GET')
+    config.add_route('activities_read_one', '/activities/{id}', request_method='GET')
+    config.add_route('activities_create', '/activities', request_method='POST')
 
     # Return a JavaScript model
-    config.add_route('activity_model', '/app/model/Activity.js')
+    config.add_route('activities_model', '/app/model/Activity.js')
     
     config.scan()
     return config.make_wsgi_app()
