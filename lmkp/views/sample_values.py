@@ -4,7 +4,7 @@ from pyramid.view import view_config
 from sqlalchemy.exc import IntegrityError
 import transaction
 
-from sqlalchemy import delete
+from sqlalchemy import delete, or_
 
 import random
 
@@ -25,144 +25,241 @@ def sample_values(request):
 # BEGIN fix data ----------------------------------------------------------------------------------
     stack.append('--- fix data ---')
     # status
+    count = []
     status1 = Status(id=1, name='pending', description='Review pending. Not published yet.')
-    stack.append(_add_to_db(status1, 'status 1 (pending)'))
+    count.append(_add_to_db(status1, 'status 1 (pending)'))
     list_status.append(status1)
     status2 = Status(id=2, name='active', description='Reviewed and accepted. Currently published.')
-    stack.append(_add_to_db(status2, 'status 2 (active)'))
+    count.append(_add_to_db(status2, 'status 2 (active)'))
     list_status.append(status2)
     status3 = Status(id=3, name='overwritten', description='Overwritten. Not published anymore.')
-    stack.append(_add_to_db(status3, 'status 3 (overwritten'))
+    count.append(_add_to_db(status3, 'status 3 (overwritten'))
     list_status.append(status3)
-    status4 = Status(id=4, name='rejected', description='Reviewed and rejected. Never published.')
-    stack.append(_add_to_db(status4, 'status 4 (rejected)'))
+    status4 = Status(id=4, name='deleted', description='Deleted. Not published anymore.')
+    count.append(_add_to_db(status4, 'status 4 (deleted)'))
     list_status.append(status4)
+    status5 = Status(id=5, name='rejected', description='Reviewed and rejected. Never published.')
+    count.append(_add_to_db(status5, 'status 5 (rejected)'))
+    list_status.append(status5)
+    stack.append(str(count.count(1)) + ' status added.')
     # stakeholder_roles
+    count = []
     sh_role1 = Stakeholder_Role(id=1, name='Donor')
-    stack.append(_add_to_db(sh_role1, 'stakeholder role 1 (donor)'))
+    count.append(_add_to_db(sh_role1, 'stakeholder role 1 (donor)'))
     sh_role2 = Stakeholder_Role(id=2, name='Implementing agency')
-    stack.append(_add_to_db(sh_role2, 'stakeholder role 2 (implementing agency)'))
+    count.append(_add_to_db(sh_role2, 'stakeholder role 2 (implementing agency)'))
     sh_role3 = Stakeholder_Role(id=3, name='Partner')
-    stack.append(_add_to_db(sh_role3, 'stakeholder role 3 (partner)'))
+    count.append(_add_to_db(sh_role3, 'stakeholder role 3 (partner)'))
     sh_role4 = Stakeholder_Role(id=4, name='Beneficiary')
-    stack.append(_add_to_db(sh_role4, 'stakeholder role 4 (beneficiary)'))
+    count.append(_add_to_db(sh_role4, 'stakeholder role 4 (beneficiary)'))
     sh_role5 = Stakeholder_Role(id=5, name='Informant')
-    stack.append(_add_to_db(sh_role5, 'stakeholder role 5 (informant)'))
+    count.append(_add_to_db(sh_role5, 'stakeholder role 5 (informant)'))
     sh_role6 = Stakeholder_Role(id=6, name='Investor')
-    stack.append(_add_to_db(sh_role6, 'stakeholder role 6 (investor)'))
+    count.append(_add_to_db(sh_role6, 'stakeholder role 6 (investor)'))
+    stack.append(str(count.count(1)) + ' stakeholder_roles added.')
     # languages
+    count = []
     lang1 = Language(id=1, english_name='English', local_name='English')
-    stack.append(_add_to_db(lang1, 'language 1 (english)'))
+    count.append(_add_to_db(lang1, 'language 1 (english)'))
     lang2 = Language(id=2, english_name='Spanish', local_name='Espanol')
-    stack.append(_add_to_db(lang2, 'language 2 (spanish)'))
+    count.append(_add_to_db(lang2, 'language 2 (spanish)'))
+    stack.append(str(count.count(1)) + ' languages added.')
     # predefined a_keys (@todo: predefined keys should be managed in config file)
+    count = []
     predefined_a_key1 = A_Key(key='name')
     predefined_a_key1.language = lang1
-    stack.append(_add_to_db(predefined_a_key1, 'predefined a_key 1 (name)'))
+    count.append(_add_to_db(predefined_a_key1, 'predefined a_key 1 (name)'))
     list_predefined_a_keys.append(predefined_a_key1)
     predefined_a_key2 = A_Key(key='area')
     predefined_a_key2.language = lang1
-    stack.append(_add_to_db(predefined_a_key2, 'predefined a_key 2 (area)'))
+    count.append(_add_to_db(predefined_a_key2, 'predefined a_key 2 (area)'))
     list_predefined_a_keys.append(predefined_a_key2)
     predefined_a_key3 = A_Key(key='project_use')
     predefined_a_key3.language = lang1
-    stack.append(_add_to_db(predefined_a_key3, 'predefined a_key 3 (project_use)'))
+    count.append(_add_to_db(predefined_a_key3, 'predefined a_key 3 (project_use)'))
     list_predefined_a_keys.append(predefined_a_key3)
     predefined_a_key4 = A_Key(key='project_status')
     predefined_a_key4.language = lang1
-    stack.append(_add_to_db(predefined_a_key4, 'predefined a_key 4 (project_status)'))
+    count.append(_add_to_db(predefined_a_key4, 'predefined a_key 4 (project_status)'))
     list_predefined_a_keys.append(predefined_a_key4)
     predefined_a_key5 = A_Key(key='year_of_investment')
     predefined_a_key5.language = lang1
-    stack.append(_add_to_db(predefined_a_key5, 'predefined a_key 5 (year_of_investment)'))
+    count.append(_add_to_db(predefined_a_key5, 'predefined a_key 5 (year_of_investment)'))
     list_predefined_a_keys.append(predefined_a_key5)
+    stack.append(str(count.count(1)) + ' predefined a_keys added.')
     # predefined a_values (@todo: predefined values should be managed in config file)
+    count = []
     predefined_a_value1 = A_Value(value='food production')
     predefined_a_value1.language = lang1
-    stack.append(_add_to_db(predefined_a_value1, 'predefined a_value 1 (food production'))
+    count.append(_add_to_db(predefined_a_value1, 'predefined a_value 1 (food production'))
     list_predefined_a_values_projectUse.append(predefined_a_value1)
     predefined_a_value2 = A_Value(value='tourism')
     predefined_a_value2.language = lang1
-    stack.append(_add_to_db(predefined_a_value2, 'predefined a_value 2 (tourism'))
+    count.append(_add_to_db(predefined_a_value2, 'predefined a_value 2 (tourism'))
     list_predefined_a_values_projectUse.append(predefined_a_value2)
     predefined_a_value3 = A_Value(value='forestry for wood and fiber')
     predefined_a_value3.language = lang1
-    stack.append(_add_to_db(predefined_a_value3, 'predefined a_value 3 (forestry for wood and fiber'))
+    count.append(_add_to_db(predefined_a_value3, 'predefined a_value 3 (forestry for wood and fiber'))
     list_predefined_a_values_projectUse.append(predefined_a_value3)
     predefined_a_value4 = A_Value(value='agrofuels')
     predefined_a_value4.language = lang1
-    stack.append(_add_to_db(predefined_a_value4, 'predefined a_value 4 (agrofuels'))
+    count.append(_add_to_db(predefined_a_value4, 'predefined a_value 4 (agrofuels'))
     list_predefined_a_values_projectUse.append(predefined_a_value4)
     predefined_a_value5 = A_Value(value='pending')
     predefined_a_value5.language = lang1
-    stack.append(_add_to_db(predefined_a_value5, 'predefined a_value 5 (pending'))
+    count.append(_add_to_db(predefined_a_value5, 'predefined a_value 5 (pending'))
     list_predefined_a_values_projectStatus.append(predefined_a_value5)
     predefined_a_value6 = A_Value(value='signed')
     predefined_a_value6.language = lang1
-    stack.append(_add_to_db(predefined_a_value6, 'predefined a_value 6 (signed'))
+    count.append(_add_to_db(predefined_a_value6, 'predefined a_value 6 (signed'))
     list_predefined_a_values_projectStatus.append(predefined_a_value6)
     predefined_a_value7 = A_Value(value='abandoned')
     predefined_a_value7.language = lang1
-    stack.append(_add_to_db(predefined_a_value7, 'predefined a_value 7 (abandoned'))
+    count.append(_add_to_db(predefined_a_value7, 'predefined a_value 7 (abandoned'))
     list_predefined_a_values_projectStatus.append(predefined_a_value7)
+    stack.append(str(count.count(1)) + ' predefined a_values added.')
     # predefined sh_keys (@todo: predefined keys should be managed in config file)
+    count = []
     predefined_sh_key1 = SH_Key(key='First name')
     predefined_sh_key1.language = lang1
-    stack.append(_add_to_db(predefined_sh_key1, 'predefined a_key 1 (first name)'))
+    count.append(_add_to_db(predefined_sh_key1, 'predefined sh_key 1 (first name)'))
     list_predefined_sh_keys.append(predefined_sh_key1)
     predefined_sh_key2 = SH_Key(key='Last name')
     predefined_sh_key2.language = lang1
-    stack.append(_add_to_db(predefined_sh_key2, 'predefined a_key 2 (last name)'))
+    count.append(_add_to_db(predefined_sh_key2, 'predefined sh_key 2 (last name)'))
     list_predefined_sh_keys.append(predefined_sh_key2)
+    stack.append(str(count.count(1)) + ' predefined sh_keys added.')
     # predefined sh_values (@todo: predefined values should be managed in config file)
+    count = []
     predefined_sh_value1 = SH_Value(value='some sample sh_value')
     predefined_sh_value1.language = lang1
-    stack.append(_add_to_db(predefined_sh_value1, 'predefined sh_value 1 (sample value'))
+    count.append(_add_to_db(predefined_sh_value1, 'predefined sh_value 1 (sample value'))
+    stack.append(str(count.count(1)) + ' predefined sh_values added.')
     # permissions
+    count = []
     permission1 = Permission(id=1, name='read')
-    stack.append(_add_to_db(permission1, 'permission 1 (read)'))
+    count.append(_add_to_db(permission1, 'permission 1 (read)'))
     permission2 = Permission(id=2, name='write')
-    stack.append(_add_to_db(permission2, 'permission 2 (write)'))
+    count.append(_add_to_db(permission2, 'permission 2 (write)'))
+    stack.append(str(count.count(1)) + ' permissions added.')
     # groups (with permissions)
+    count = []
     group1 = Group(id=1, name='Admin')
     group1.permissions.append(permission1)
     group1.permissions.append(permission2)
-    stack.append(_add_to_db(group1, 'group 1 (admin)'))
+    count.append(_add_to_db(group1, 'group 1 (admin)'))
     group2 = Group(id=2, name='User')
     group2.permissions.append(permission1)
-    stack.append(_add_to_db(group2, 'group 2 (user)'))
+    count.append(_add_to_db(group2, 'group 2 (user)'))
+    stack.append(str(count.count(1)) + ' groups added.')
     # review_decisions
+    count = []
     reviewdecision1 = Review_Decision(id=1, name='approved', description='Event or Involvement was approved.')
-    stack.append(_add_to_db(reviewdecision1, 'review decision 1 (approved)'))
+    count.append(_add_to_db(reviewdecision1, 'review decision 1 (approved)'))
     reviewdecision2 = Review_Decision(id=2, name='rejected', description='Event or Involvement was rejected.')
-    stack.append(_add_to_db(reviewdecision2, 'review decision 2 (rejected)'))
+    count.append(_add_to_db(reviewdecision2, 'review decision 2 (rejected)'))
     reviewdecision3 = Review_Decision(id=3, name='deleted', description='Event or Involvement was deleted.')
-    stack.append(_add_to_db(reviewdecision3, 'review decision 3 (deleted)'))
+    count.append(_add_to_db(reviewdecision3, 'review decision 3 (deleted)'))
+    stack.append(str(count.count(1)) + ' review_decisions added.')
 # END fix data ------------------------------------------------------------------------------------
 # BEGIN sample data -------------------------------------------------------------------------------
     stack.append('--- sample data (users) ---')
   # -- users
+    count = []
     # user 1, belongs to admin group
     user1 = User(username='user1', password='pw', email='me@you.com')
     user1.groups.append(group1)
-    stack.append(_add_to_db(user1, 'user 1'))
+    count.append(_add_to_db(user1, 'user 1'))
     list_users.append(user1)
     # user 2, belongs to user group
     user2 = User(username='user2', password='pw', email='you@me.com')
     user2.groups.append(group2)
-    stack.append(_add_to_db(user2, 'user 2'))
+    count.append(_add_to_db(user2, 'user 2'))
     list_users.append(user2)
-# activities (create 25 random)
-    stack.append('--- sample data (activities) ---')
-    for i in range(1,26):
-        activity = Activity()
-        stack.append(_add_to_db(activity, 'activity ' + str(i)))
-        list_activities.append(activity)
-# a_events (create 100 random), with sample values (of config file), reported by random user, associated with one of activities, all reviewed and approved by user1 (admin)
-# the first 5 are unattached
-    stack.append('--- sample data (a_events) ---')
-    for i in range(1,101):
+    stack.append(str(count.count(1)) + ' users added.')
+# activities
+    # random activities with status=active.
+    count1 = []
+    count2 = []
+    stack.append('--- sample data (active activities) ---')
+    for i in range(1,11):
+        # switch
         switch = (i % 5)
+        # prepare key
+        theKey = list_predefined_a_keys[switch]
+        # prepare value
+        if (switch == 0): # name
+            theValue = A_Value(value='Project ' + str(i))
+            theValue.language = lang1
+        if (switch == 1): # area
+            theValue = A_Value(value=random.randint(1,100))
+            theValue.language = lang1
+        if (switch == 2): # project_use
+            theValue = random.choice(list_predefined_a_values_projectUse)
+        if (switch == 3): # project_status
+            theValue = random.choice(list_predefined_a_values_projectStatus)
+        if (switch == 4): # year_of_investment
+            theValue = A_Value(value=random.randint(1990, 2015))
+            theValue.language = lang1
+        # prepare tag
+        tag = A_Tag()
+        tag.key = theKey
+        tag.value = theValue
+        # tag_group
+        tag_group = A_Tag_Group()
+        tag_group.tags.append(tag)
+        # prepare changeset
+        changeset = A_Changeset(source='[active] Source ' + str(i))
+        changeset.user = random.choice(list_users)
+        # prepare activity
+        identifier = uuid.uuid4()
+        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+        activity.status = status2 # active
+        activity.tag_groups.append(tag_group)
+        activity.changesets.append(changeset)
+        # insert activity
+        count1.append(_add_to_db(activity, 'activity ' + str(i)))
+        list_activities.append(activity)
+        # prepare review
+        review = A_Changeset_Review(comment='[active] Review_Comment ' + str(i))
+        review.changeset = changeset
+        review.user = user1     # always admin
+        review.review_decision = reviewdecision1    # always approved
+        count2.append(_add_to_db(review, 'review decision ' + str(i)))
+    stack.append(str(len(count1)) + ' activities added.')
+    stack.append(str(len(count2)) + ' review decisions added.')
+    # random activities with 2 tags status=active.
+    count1 = []
+    count2 = []
+    stack.append('--- sample data (active activities, 2 tags) ---')
+    for i in range(1,11):
+        # switch
+        switch = (i % 5)
+        # prepare key
+        theKey = list_predefined_a_keys[switch]
+        # prepare value
+        if (switch == 0): # name
+            theValue = A_Value(value='Project ' + str(i))
+            theValue.language = lang1
+        if (switch == 1): # area
+            theValue = A_Value(value=random.randint(1,100))
+            theValue.language = lang1
+        if (switch == 2): # project_use
+            theValue = random.choice(list_predefined_a_values_projectUse)
+        if (switch == 3): # project_status
+            theValue = random.choice(list_predefined_a_values_projectStatus)
+        if (switch == 4): # year_of_investment
+            theValue = A_Value(value=random.randint(1990, 2015))
+            theValue.language = lang1
+        # prepare tag
+        tag = A_Tag()
+        tag.key = theKey
+        tag.value = theValue
+        # tag_group
+        tag_group = A_Tag_Group()
+        tag_group.tags.append(tag)
+        # add another tag_group
+        switch = random.randint(0,4)
         theKey = list_predefined_a_keys[switch]
         if (switch == 0): # name
             theValue = A_Value(value='Project ' + str(i))
@@ -177,31 +274,226 @@ def sample_values(request):
         if (switch == 4): # year_of_investment
             theValue = A_Value(value=random.randint(1990, 2015))
             theValue.language = lang1
-        a_tag = A_Tag()
-        a_tag.key = theKey
-        a_tag.value = theValue
-        a_event = A_Event(geometry="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")", source="source " + str(i))
-        if (i > 6): # do not attach the first 5 events
-            a_event.activity = random.choice(list_activities)
-        a_event.user = random.choice(list_users)
-        a_event.status = status2 # always approved
-        a_event.tags.append(a_tag)
-        stack.append(_add_to_db(a_event, 'a_event ' + str(i)))
-        review = A_Event_Review(comment='comment ' + str(i))
-        review.review_decision = reviewdecision1 # always approved
-        review.user = user1 # always admin
-        review.event = a_event
-        stack.append(_add_to_db(review, 'review ' + str(i)))
-# -- stakeholders (create 5 random)
-    stack.append('--- sample data (stakeholders) ---')
-    for i in range(1,6):
-        stakeholder = Stakeholder()
-        stack.append(_add_to_db(stakeholder, 'stakeholder ' + str(i)))
-        list_stakeholders.append(stakeholder)
-# -- sh_events (create 20 random), so far only first- and lastname, reported by random user, associated with one of stakeholders, all reviewed and approved by user1 (admin)
-# the first 5 are unattached
-    stack.append('--- sample data (sh_events) ---')
+        tag = A_Tag()
+        tag.key = theKey
+        tag.value = theValue
+        tag_group.tags.append(tag)
+        # prepare changeset
+        changeset = A_Changeset(source='[active] Source ' + str(i))
+        changeset.user = random.choice(list_users)
+        # prepare activity
+        identifier = uuid.uuid4()
+        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+        activity.status = status2 # active
+        activity.tag_groups.append(tag_group)
+        activity.changesets.append(changeset)
+        # insert activity
+        count1.append(_add_to_db(activity, 'activity ' + str(i)))
+        list_activities.append(activity)
+        # prepare review
+        review = A_Changeset_Review(comment='[active] Review_Comment ' + str(i))
+        review.changeset = changeset
+        review.user = user1     # always admin
+        review.review_decision = reviewdecision1    # always approved
+        count2.append(_add_to_db(review, 'review decision ' + str(i)))
+    stack.append(str(len(count1)) + ' activities added.')
+    stack.append(str(len(count2)) + ' review decisions added.')    
+    # random activities with status=pending, no reviews
+    count1 = []
+    stack.append('--- sample data (pending activities) ---')
+    for i in range(1,11):
+       # switch
+       switch = (i % 5)
+       # prepare key
+       theKey = list_predefined_a_keys[switch]
+       # prepare value
+       if (switch == 0): # name
+           theValue = A_Value(value='Project ' + str(i))
+           theValue.language = lang1
+       if (switch == 1): # area
+           theValue = A_Value(value=random.randint(1,100))
+           theValue.language = lang1
+       if (switch == 2): # project_use
+           theValue = random.choice(list_predefined_a_values_projectUse)
+       if (switch == 3): # project_status
+           theValue = random.choice(list_predefined_a_values_projectStatus)
+       if (switch == 4): # year_of_investment
+           theValue = A_Value(value=random.randint(1990, 2015))
+           theValue.language = lang1
+       # prepare tag
+       tag = A_Tag()
+       tag.key = theKey
+       tag.value = theValue
+       # tag_group
+       tag_group = A_Tag_Group()
+       tag_group.tags.append(tag)
+       # prepare changeset
+       changeset = A_Changeset(source='[pending] Source ' + str(i))
+       changeset.user = random.choice(list_users)
+       # prepare activity
+       identifier = uuid.uuid4()
+       activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+       activity.status = status1 # pending
+       activity.tag_groups.append(tag_group)
+       activity.changesets.append(changeset)
+       # insert activity
+       count1.append(_add_to_db(activity, 'activity ' + str(i)))
+    stack.append(str(len(count1)) + ' activities added.')
+    # random activities with status=deleted.
+    count1 = []
+    count2 = []
+    stack.append('--- sample data (deleted activities) ---')
+    for i in range(1,11):
+        # switch
+        switch = (i % 5)
+        # prepare key
+        theKey = list_predefined_a_keys[switch]
+        # prepare value
+        if (switch == 0): # name
+            theValue = A_Value(value='Project ' + str(i))
+            theValue.language = lang1
+        if (switch == 1): # area
+            theValue = A_Value(value=random.randint(1,100))
+            theValue.language = lang1
+        if (switch == 2): # project_use
+            theValue = random.choice(list_predefined_a_values_projectUse)
+        if (switch == 3): # project_status
+            theValue = random.choice(list_predefined_a_values_projectStatus)
+        if (switch == 4): # year_of_investment
+            theValue = A_Value(value=random.randint(1990, 2015))
+            theValue.language = lang1
+        # prepare tag
+        tag = A_Tag()
+        tag.key = theKey
+        tag.value = theValue
+        # tag_group
+        tag_group = A_Tag_Group()
+        tag_group.tags.append(tag)
+        # prepare changeset
+        changeset = A_Changeset(source='[deleted] Source ' + str(i))
+        changeset.user = random.choice(list_users)
+        # prepare activity
+        identifier = uuid.uuid4()
+        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+        activity.status = status4 # deleted
+        activity.tag_groups.append(tag_group)
+        activity.changesets.append(changeset)
+        # insert activity
+        count1.append(_add_to_db(activity, 'activity ' + str(i)))
+        # prepare review
+        review = A_Changeset_Review(comment='[deleted] Review_Comment ' + str(i))
+        review.changeset = changeset
+        review.user = user1     # always admin
+        review.review_decision = reviewdecision3    # deleted
+        count2.append(_add_to_db(review, 'review decision ' + str(i)))
+    stack.append(str(len(count1)) + ' activities added.')
+    stack.append(str(len(count2)) + ' review decisions added.')
+    # random activities with status=overwritten.
+    count1 = []
+    count2 = []
+    count3 = []
+    stack.append('--- sample data (overwritten activities) ---')
+    for i in range(1,11):
+        # switch
+        switch = (i % 5)
+        # prepare key
+        theKey = list_predefined_a_keys[switch]
+        # prepare value
+        if (switch == 0): # name
+            theValue = A_Value(value='Project ' + str(i))
+            theValue.language = lang1
+        if (switch == 1): # area
+            theValue = A_Value(value=random.randint(1,100))
+            theValue.language = lang1
+        if (switch == 2): # project_use
+            theValue = random.choice(list_predefined_a_values_projectUse)
+        if (switch == 3): # project_status
+            theValue = random.choice(list_predefined_a_values_projectStatus)
+        if (switch == 4): # year_of_investment
+            theValue = A_Value(value=random.randint(1990, 2015))
+            theValue.language = lang1
+        # prepare tag
+        tag = A_Tag()
+        tag.key = theKey
+        tag.value = theValue
+        # tag_group
+        tag_group = A_Tag_Group()
+        tag_group.tags.append(tag)
+        # prepare changeset
+        changeset = A_Changeset(source='[overwritten] Source ' + str(i))
+        changeset.user = random.choice(list_users)
+        # prepare activity
+        identifier = uuid.uuid4()
+        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+        activity.status = status3 # deleted
+        activity.tag_groups.append(tag_group)
+        activity.changesets.append(changeset)
+        #old_activity = activity
+        # insert activity
+        count1.append(_add_to_db(activity, 'activity ' + str(i)))
+        # prepare review
+        review = A_Changeset_Review(comment='[overwritten] Review_Comment ' + str(i))
+        review.changeset = changeset
+        review.user = user1     # always admin
+        review.review_decision = reviewdecision1    # approved
+        count3.append(_add_to_db(review, 'review decision ' + str(i)))
+        # -- version 2
+        new_activity = Activity(activity_identifier=identifier, version=2, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+        new_activity.status = status2   # active
+        new_tag_group = A_Tag_Group()
+        switch = random.randint(0,4)
+        newKey = list_predefined_a_keys[switch]
+        if (switch == 0): # name
+            newValue = A_Value(value='Project ' + str(i))
+            newValue.language = lang1
+        if (switch == 1): # area
+            newValue = A_Value(value=random.randint(1,100))
+            newValue.language = lang1
+        if (switch == 2): # project_use
+            newValue = random.choice(list_predefined_a_values_projectUse)
+        if (switch == 3): # project_status
+            newValue = random.choice(list_predefined_a_values_projectStatus)
+        if (switch == 4): # year_of_investment
+            newValue = A_Value(value=random.randint(1990, 2015))
+            newValue.language = lang1
+        new_tag = A_Tag()
+        new_tag.key = newKey
+        new_tag.value = newValue
+        new_tag_group.activity = new_activity
+        new_tag_group.tags.append(new_tag)
+        # copy old key/value pairs
+        session = Session()
+        old_activity = session.query(Activity).filter(Activity.activity_identifier == identifier).first()
+        for old_tag_group in old_activity.tag_groups:
+           copy_tag_group = A_Tag_Group()
+           for old_tag in old_tag_group.tags:
+               copy_tag = A_Tag()
+               copy_tag.fk_a_key = old_tag.fk_a_key
+               copy_tag.fk_a_value = old_tag.fk_a_value
+               copy_tag_group.tags.append(copy_tag)
+           new_activity.tag_groups.append(copy_tag_group)
+        # prepare changeset
+        changeset = A_Changeset(source='[overwritten] Source ' + str(i))
+        changeset.user = random.choice(list_users)
+        new_activity.changesets.append(changeset)
+        count2.append(_add_to_db(new_activity, 'activity ' + str(i)))
+        list_activities.append(new_activity)
+        # prepare review
+        review = A_Changeset_Review(comment='[overwritten] Review_Comment ' + str(i))
+        review.changeset = changeset
+        review.user = user1     # always admin
+        review.review_decision = reviewdecision1    # approved
+        count3.append(_add_to_db(review, 'review decision ' + str(i)))
+    stack.append(str(len(count1)) + ' activities added.')
+    stack.append(str(len(count2)) + ' overwritten activities added.')
+    stack.append(str(len(count3)) + ' review decisions added.')
+# -- stakeholders
+    # random stakeholders with status=active.
+    count1 = []
+    count2 = []
+    stack.append('--- sample data (active stakeholders) ---')
     for i in range(1,21):
+        # switch
         switch = (i % 2)
         theKey = list_predefined_sh_keys[switch]
         if (switch == 0): # first name
@@ -210,29 +502,43 @@ def sample_values(request):
         if (switch == 1): # last name
             theValue = SH_Value(value='Last name ' + str(i))
             theValue.language = lang1
-        sh_tag = SH_Tag()
-        sh_tag.key = theKey
-        sh_tag.value = theValue
-        sh_event = SH_Event(source='source 1' + str(i))
-        if (i > 6): # do not attach the first 5 events
-            sh_event.stakeholder = random.choice(list_stakeholders)
-        sh_event.user = random.choice(list_users)
-        sh_event.status = status2 # always approved
-        sh_event.tags.append(sh_tag)
-        stack.append(_add_to_db(sh_event, 'sh_event ' + str(i)))
-        review = SH_Event_Review(comment='comment ' + str(i))
-        review.review_decision = reviewdecision1 # always approved
-        review.user = user1 # always admin
-        review.event = sh_event
-        stack.append(_add_to_db(review, 'review ' + str(i)))
-# -- involvements (add each stakeholder to a random activity)
+        # prepare tag
+        tag = SH_Tag()
+        tag.key = theKey
+        tag.value = theValue
+        # tag_group
+        tag_group = SH_Tag_Group()
+        tag_group.tags.append(tag)
+        # prepare changeset
+        changeset = SH_Changeset(source='[active] Source ' + str(i))
+        changeset.user = random.choice(list_users)
+        # prepare stakeholder
+        identifier = uuid.uuid4()
+        stakeholder = Stakeholder(stakeholder_identifier=identifier, version=1)
+        stakeholder.status = status2 # active
+        stakeholder.tag_groups.append(tag_group)
+        stakeholder.changesets.append(changeset)
+        # insert stakeholder
+        count1.append(_add_to_db(stakeholder, 'stakeholder ' + str(i)))
+        list_stakeholders.append(stakeholder)
+        # prepare review
+        review = SH_Changeset_Review(comment='[active] Review_Comment ' + str(i))
+        review.changeset = changeset
+        review.user = user1     # always admin
+        review.review_decision = reviewdecision1    # always approved
+        count2.append(_add_to_db(review, 'review decision ' + str(i)))
+    stack.append(str(len(count1)) + ' stakeholders added.')
+    stack.append(str(len(count2)) + ' review decisions added.')
+# -- involvements (add each stakeholder to a random activity [active/overwritten])
     stack.append('--- sample data (involvements) ---')
+    count1 = []
     for sh in list_stakeholders:
         inv = Involvement()
         inv.activity = random.choice(list_activities)
         inv.stakeholder = sh
         inv.stakeholder_role = sh_role4 # always Beneficiary
-        stack.append(_add_to_db(inv, 'involvement'))
+        count1.append(_add_to_db(inv, 'involvement'))
+    stack.append(str(len(count1)) + ' involvements added.')
     return {'messagestack': stack}
 
 @view_config(route_name='delete_sample_values', renderer='lmkp:templates/sample_values.pt')
@@ -241,117 +547,175 @@ def delete_sample_values(request):
     delete_fix_data = True
     stack = []
 # BEGIN delete sample values ----------------------------------------------------------------------
-    stack.append('--- sample data (reviews) ---')
-    all_a_reviews = Session.query(A_Event_Review).filter(A_Event_Review.comment.like('comment %')).all()
-    for aar in all_a_reviews:
-        stack.append("deleted: a_event_review")
-        Session.delete(aar)
-    all_sh_reviews = Session.query(SH_Event_Review).filter(SH_Event_Review.comment.like('comment %')).all()
-    for asr in all_sh_reviews:
-        stack.append("deleted: sh_event_review")
-        Session.delete(asr)
-    stack.append('--- sample data (involvements) ---')
+    stack.append('--- sample data ---')
+    inv_counter = 0
     all_involvements_beneficiary = Session.query(Involvement).filter(Involvement.fk_stakeholder_role == 4).all()
     for aib in all_involvements_beneficiary:
-        stack.append("deleted: involvement with stakeholder_role 4 (Beneficiary)")
+        inv_counter += 1
         Session.delete(aib)
-    stack.append('--- sample data (a_events) ---')
-    all_a_events_source1 = Session.query(A_Event).filter(A_Event.source.like('source %')).all()
-    for aaes1 in all_a_events_source1:
-        stack.append("deleted: a_event")
-        Session.delete(aaes1)
-    stack.append('--- sample data (sh_events) ---')
-    all_sh_events_source1 = Session.query(SH_Event).filter(SH_Event.source.like('source %')).all()
-    for ases1 in all_sh_events_source1:
-        stack.append("deleted: sh_event")
-        Session.delete(ases1)
-    stack.append('--- sample data (users) ---')
-    del_user1 = Session.query(User).filter(User.username == 'user1').all()
-    for du1 in del_user1:
-        stack.append("deleted: user 1")
-        Session.delete(du1)
-    del_user2 = Session.query(User).filter(User.username == 'user2').all()
-    for du2 in del_user2:
-        stack.append("deleted: user 2")
-        Session.delete(du2)
-    # delete orphan activities (should possibly be done by trigger on database level)
-    stack.append('--- sample data (activities) ---')
-    all_orphan_activities = Session.query(Activity).filter(~Activity.id.in_(Session.query(A_Event.fk_activity))).all()
-    for aoa in all_orphan_activities:
-        stack.append("deleted: activity")
-        Session.delete(aoa)
-    # delete orphan stakeholders (should possibly be done by trigger on database level)
-    stack.append('--- sample data (stakeholders) ---')
-    all_orphan_stakeholders = Session.query(Stakeholder).filter(~Stakeholder.id.in_(Session.query(SH_Event.fk_stakeholder))).all()
-    for aos in all_orphan_stakeholders:
-        stack.append("deleted: orphan stakeholder")
-        Session.delete(aos)
+    if (inv_counter > 0):
+        stack.append(str(inv_counter) + ' involvements deleted.')
+    all_a_reviews = Session.query(A_Changeset_Review).filter(or_(A_Changeset_Review.comment.like('[active] Review_Comment %'), A_Changeset_Review.comment.like('[overwritten] Review_Comment %'), A_Changeset_Review.comment.like('[deleted] Review_Comment %'), A_Changeset_Review.comment.like('[overwritten] Review_Comment %'))).all()
+    rev_counter = 0
+    for aar in all_a_reviews:
+        rev_counter += 1
+        Session.delete(aar)
+    if (rev_counter > 0):
+        stack.append(str(rev_counter) + " a_changeset_reviews deleted.")
+    all_sh_reviews = Session.query(SH_Changeset_Review).filter(or_(SH_Changeset_Review.comment.like('[active] Review_Comment %'), SH_Changeset_Review.comment.like('[overwritten] Review_Comment %'), SH_Changeset_Review.comment.like('[deleted] Review_Comment %'), SH_Changeset_Review.comment.like('[overwritten] Review_Comment %'))).all()
+    rev_counter = 0
+    for asr in all_sh_reviews:
+        rev_counter += 1
+        Session.delete(asr)
+    if (rev_counter > 0):
+        stack.append(str(rev_counter) + " sh_changeset_reviews deleted.")
+    all_activities = Session.query(Activity).join(A_Changeset).filter(or_(A_Changeset.source.like('[active] Source %'), A_Changeset.source.like('[pending] Source %'), A_Changeset.source.like('[overwritten] Source %'), A_Changeset.source.like('[deleted] Source %'), A_Changeset.source.like('[overwritten] Source %'))).all()
+    act_counter = 0
+    tag_counter = 0
+    ch_counter = 0
+    for aa in all_activities:
+        # delete tag groups
+        tag_groups = aa.tag_groups
+        for tg in tag_groups:
+            tags = tg.tags
+            for t in tags:
+                tag_counter += 1
+                Session.delete(t)
+            Session.delete(tg)
+        # delete changesets
+        changesets = aa.changesets
+        for ch in changesets:
+            ch_counter += 1
+            Session.delete(ch)
+        # delete activities
+        act_counter += 1
+        Session.delete(aa)
+    if (tag_counter > 0 or act_counter > 0 or ch_counter > 0):
+        stack.append(str(tag_counter) + " a_tags deleted.")
+        stack.append(str(ch_counter) + " a_changesets deleted.")
+        stack.append(str(act_counter) + " activities deleted.")
+    all_stakeholders = Session.query(Stakeholder).join(SH_Changeset).filter(or_(SH_Changeset.source.like('[active] Source %'), SH_Changeset.source.like('[pending] Source %'), SH_Changeset.source.like('[overwritten] Source %'), SH_Changeset.source.like('[deleted] Source %'), SH_Changeset.source.like('[overwritten] Source %'))).all()
+    sh_counter = 0
+    tag_counter = 0
+    ch_counter = 0
+    for alls in all_stakeholders:
+        # delete tag groups
+        tag_groups = alls.tag_groups
+        for tg in tag_groups:
+            tags = tg.tags
+            for t in tags:
+                tag_counter += 1
+                Session.delete(t)
+            Session.delete(tg)
+        # delete changesets
+        changesets = alls.changesets
+        for ch in changesets:
+            ch_counter += 1
+            Session.delete(ch)
+        # delete activities
+        sh_counter += 1
+        Session.delete(alls)
+    if (tag_counter > 0 or sh_counter > 0 or ch_counter > 0):
+        stack.append(str(tag_counter) + " sh_tags deleted.")
+        stack.append(str(ch_counter) + " sh_changesets deleted.")
+        stack.append(str(act_counter) + " stakeholders deleted.")
 # END delete sample values ------------------------------------------------------------------------
 # -- BEGIN delete fix data ------------------------------------------------------------------------
     if (delete_fix_data):
-        stack.append('--- fix data (reviews) ---')
+        stack.append('--- fix data ---')
         # a_tags
+        counter = 0
         all_a_keys = Session.query(A_Key).all()
         for ak in all_a_keys:
-            stack.append("deleted: a_key " + ak.key)
             Session.delete(ak)
+            counter += 1
+        if (counter > 0):
+            stack.append(str(counter) + " a_keys deleted.")
         # a_values
+        counter = 0
         all_a_values = Session.query(A_Value).all()
         for av in all_a_values:
-            stack.append("deleted: a_value " + av.value)
             Session.delete(av)
+            counter += 1
+        if (counter > 0):
+            stack.append(str(counter) + " a_values deleted.")
         # sh_tags
+        counter = 0
         all_sh_keys = Session.query(SH_Key).all()
         for shk in all_sh_keys:
-            stack.append("deleted: sh_key " + shk.key)
             Session.delete(shk)
+            counter += 1
+        if (counter > 0):
+            stack.append(str(counter) + " sh_keys deleted.")
         # sh_values
+        counter = 0
         all_sh_values = Session.query(SH_Value).all()
         for shv in all_sh_values:
-            stack.append("deleted: sh_value " + shv.value)
             Session.delete(shv)
+            counter += 1
+        if (counter > 0):
+            stack.append(str(counter) + " sh_values deleted.")
         # status
+        counter = 0
         all_status = Session.query(Status).all()
         for status in all_status:
-            stack.append("deleted: status " + status.name)
             Session.delete(status)
+            counter += 1
+        if (counter > 0):
+            stack.append(str(counter) + " status deleted.")
         # stakeholder_roles
+        counter = 0
         all_stakeholder_roles = Session.query(Stakeholder_Role).all()
         for sh_role in all_stakeholder_roles:
-            stack.append("deleted: stakeholder role " + sh_role.name)
             Session.delete(sh_role)
+            counter += 1
+        if (counter > 0):
+            stack.append(str(counter) + " stakeholder_roles deleted.")
         # groups
+        counter = 0
         all_groups = Session.query(Group).all()
         for group in all_groups:
-            stack.append("deleted: group " + group.name)
             Session.delete(group)
+            counter += 1
+        if (counter > 0):
+            stack.append(str(counter) + " groups deleted.")
         # permissions
+        counter = 0
         all_permissions = Session.query(Permission).all()
         for perm in all_permissions:
-            stack.append("deleted: permission " + perm.name)
             Session.delete(perm)
+            counter += 1
+        if (counter > 0):
+            stack.append(str(counter) + " permissions deleted.")
         # review_decisions
+        counter = 0
         all_review_decisions = Session.query(Review_Decision).all()
         for revdec in all_review_decisions:
-            stack.append("deleted: review decision " + revdec.name)
             Session.delete(revdec)
+            counter += 1
+        if (counter > 0):
+            stack.append(str(counter) + " review_decisions deleted.")
         # languages
+        counter = 0
         all_languages = Session.query(Language).all()
         for lang in all_languages:
-            stack.append("deleted: language " + lang.english_name)
             Session.delete(lang)
+            counter += 1
+        if (counter > 0):
+            stack.append(str(counter) + " languages deleted.")
 # END delete fix data -----------------------------------------------------------------------------
     if len(stack) == 0:
         stack.append('Nothing was deleted.')
     return {'messagestack':stack}
 
 def _add_to_db(db_object, name):
-    Session.add(db_object)
+    s = Session()
+    s.add(db_object)
     try:
         transaction.commit()
-        result = 'added: ' + name
+        result = 1
     except IntegrityError:
         transaction.abort()
-        result = 'not added: ' + name
+        result = 0
     return result
 

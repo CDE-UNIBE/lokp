@@ -3,13 +3,18 @@ Ext.define('Lmkp.controller.manage.Main',{
 
     models: [
     'DyLmkp.model.Activity',
-    'Lmkp.model.ActivityTree'
+    'Lmkp.model.ActivityTree',
+    'Lmkp.model.ActivityTest'
     ],
 
     refs: [{
         ref: 'detailsForm',
         selector: 'manageactivitiesdetails'
     }],
+
+    requires: [
+    'Lmkp.reader.GeoJson'
+    ],
 
     views: [
     'manage.MainPanel',
@@ -64,6 +69,37 @@ Ext.define('Lmkp.controller.manage.Main',{
 
     onButtonClick: function(button, evt, eOpts){
         console.log(button, evt, eOpts);
+
+        //var test = Ext.create('Lmkp.model.ActivityTest');
+
+        //console.log(test);
+
+        var store = new Ext.create('Ext.data.JsonStore', {
+            // store configs
+            autoDestroy: true,
+            storeId: 'myStore',
+
+            proxy: {
+                type: 'ajax',
+                url: '/geojson',
+                reader: 'geojson'
+            },
+
+            fields:[{
+                name: 'id',
+                type: 'int'
+            },{
+                name: 'name',
+                type: 'string'
+            }]
+        });
+
+        store.load(function(records, operation, success){
+            console.log(records);
+        });
+
+        
+
     },
 
     onItemclick: function(view, record, item, index, event, eOpts){

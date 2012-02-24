@@ -19,13 +19,17 @@ Ext.define('Lmkp.view.manage.MainPanel',{
         id: 'activity-details-panel',
         region: 'center',
         xtype: 'manageactivitiesdetails'
-    },{
+    },/*{
         collapsible: true,
         html: 'wannabe map panel',
         region: 'east',
         width: 100,
         xtype: 'panel'
-    }],
+    }*/Ext.create('Lmkp.view.MapPanel',{
+        region: 'east',
+        resizable: true,
+        width: 100
+    })],
 
     layout: 'border',
 

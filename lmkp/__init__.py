@@ -47,6 +47,9 @@ def main(global_config, ** settings):
 
     # Return a JavaScript model
     config.add_route('activities_model', '/app/model/Activity.js')
+
+    # Test
+    config.add_route('geojson_test', '/geojson')
     
     config.scan()
     return config.make_wsgi_app()
