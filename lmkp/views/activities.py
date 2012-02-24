@@ -3,15 +3,29 @@ from lmkp.models.meta import DBSession as Session
 import logging
 from pyramid.view import view_config
 import yaml
+from lmkp.views.activity_protocol import ActivityProtocol
 
 log = logging.getLogger(__name__)
 
-@view_config(route_name='activities_read_one', renderer='json')
+activity_protocol = ActivityProtocol(Session)
+
+#@view_config(route_name='activities_read_one', renderer='geojson')
+@view_config(route_name='activities_read_one', renderer='lmkp:templates/db_test.pt')
+def read_one_test(request):
+
+    id = request.matchdict.get('id', None)
+    return activity_protocol.read(request, id=id)
+
+
+
 def read_one(request):
     """
-    Returns an activity
+    Returns an activity.
     """
-    id = request.matchdict['id']
+    try:
+        id = int(request.matchdict.get('id', None))
+    except ValueError:
+        return {}
     
     # Result object
     activityResult = {}
@@ -19,7 +33,7 @@ def read_one(request):
     fields = _get_config_fields()
 
     # Join table of activities
-    activities = Session.query(Activity.id,A_Value.value).join(A_Event).join(A_Tag).join(A_Key).join(A_Value).filter(Activity.id == id)
+    activities = Session.query(Activity.id, A_Value.value).join(A_Tag_Group).join(A_Tag).join(A_Key).join(A_Value).filter(Activity.id == id)
 
     activityResult['id'] = id
     for field in fields:
@@ -28,12 +42,20 @@ def read_one(request):
     # Loop all fields and query the corresponding activities
     for field in fields:
         for id, value in activities.filter(A_Key.key == field):
+            try:
+                value = int(value)
+            except ValueError:
+                try:
+                    value = float(value)
+                except ValueError:
+                    pass
             activityResult[field] = value
 
     # This JSON object is formatted that it can be used from a Ext.form.Panel
     # load method.
     # Reference ExtJS kurz & gut, page 166
-    return {'success': True, 'data': activityResult }
+    return {'success': True, 'data': activityResult}
+
 
 def get_activities(request):
     """
@@ -106,7 +128,8 @@ def create(request):
     """
     return {}
 
-@view_config(route_name='activities_tree', renderer='json')
+@view_config(route_name='activities_tree', renderer='lmkp:templates/db_test.pt')
+#@view_config(route_name='activities_tree', renderer='json')
 def tree(request):
 
     tree = {}
@@ -114,16 +137,14 @@ def tree(request):
     tree['activities'] = []
 
     pendingActivities = []
-    pendingActivities.append({'id': 99, 'name': 'None', 'leaf': True})
+    for i in Session.query(Activity.id, A_Value.value).join(A_Tag_Group).join(A_Tag).join(A_Key).join(A_Value).filter(A_Key.key == 'name').join(Status).filter(Status.name == 'pending').group_by(Activity.id,A_Value.value).order_by(Activity.id):
+        pendingActivities.append({'id': i[0], 'name': i[1], 'leaf': True})
 
     tree['activities'].append({'id': 'pending', 'name': 'Pending activities', 'activities': pendingActivities})
 
     activeActivities = []
-    index = 1
-    for i in Session.query(Activity.id, A_Value.value).join(A_Event).join(A_Tag).join(A_Key).join(A_Value).filter(A_Key.key == 'name').order_by(Activity.id):
-        # id in test db is not unique!
-        activeActivities.append({'id': index, 'name': i[1], 'leaf': True})
-        index += 1
+    for i in Session.query(Activity.id, A_Value.value).join(A_Tag_Group).join(A_Tag).join(A_Key).join(A_Value).filter(A_Key.key == 'name').join(Status).filter(Status.name == 'active').group_by(Activity.id,A_Value.value).order_by(Activity.id):
+        activeActivities.append({'id': i[0], 'name': i[1], 'leaf': True})
     
     tree['activities'].append({'id': 'active', 'name': 'Active activities', 'activities': activeActivities})
 
