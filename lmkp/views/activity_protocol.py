@@ -1,6 +1,9 @@
-from geojson import *
+import geojson
+from operator import attrgetter
 from lmkp.models.database_objects import *
 import logging
+from pyramid.httpexceptions import HTTPError
+from collections import namedtuple
 
 log = logging.getLogger(__name__)
 
@@ -67,31 +70,46 @@ class ActivityProtocol(object):
         Remove some attributes from the feature and set the geometry to None
         in the feature based ``attrs`` and the ``no_geom`` parameters.
         """
-
-        # Get the feature id and the geometry
-        id = feature[0].id
-        geometry = wkb.loads(str(feature[0].geometry.geom_wkb))
-
-        # Get the requested attributes from the query
         if 'attrs' in request.params:
             attrs = request.params['attrs'].split(',')
-
-        # Loop all key and value pairs and add the requested attributes. If
-        # attrs is not present in the request, add all attributes.
-        properties = {}
-        for f in feature:
-            try:
-                if f.key in attrs:
-                    properties[f.key] = f.value;
-            except:
-                properties[f.key] = f.value;
-
-        # Check if the geometry is requested or not
+            props = feature.properties
+            new_props = {}
+            for name in attrs:
+                if name in props:
+                    new_props[name] = props[name]
+            feature.properties = new_props
         if asbool(request.params.get('no_geom', False)):
-            geometry = None
+            feature.geometry = None
+        return feature
 
-        # Return a new feature
-        return geojson.Feature(id=id, geometry=geometry, properties=properties)
+    def _get_order_by(self, request):
+        """
+        Return an SA order_by
+        """
+        return request.params.get('sort', request.params.get('order_by'))
+
+    def geofy(self, resultSet, request):
+        """
+        Takes a query result set and transform it to geo objects
+        """
+
+        features = {}
+
+        for result in resultSet:
+            if result.id not in features:
+                features[result.id] = {'id': result.id, 'properties': {}, 'geometry': None}
+
+            features[result.id]['id'] = result.id
+            features[result.id]['properties'][result.key] = result.value
+            features[result.id]['geometry'] = wkb.loads(str(result.geometry.geom_wkb))
+
+
+        geoobjects = []
+        for index in features:
+            f = features[index]
+            geoobjects.append(geojson.Feature(id=f['id'], geometry=f['geometry'], properties=f['properties']))
+
+        return geoobjects
 
     def _query(self, request, filter=None):
         """
@@ -106,15 +124,79 @@ class ActivityProtocol(object):
             limit = int(request.params['limit'])
         if 'offset' in request.params:
             offset = int(request.params['offset'])
-        if filter is None:
-            filter = create_filter(request, self.mapped_class, self.geom_attr)
-        query = self.Session.query(Activity.point.label("geometry"), Activity.id.label("id"), Activity.activity_identifier, A_Key.key.label("key"), A_Value.value.label("value"))
-        #query = self.Session().query(self.mapped_class).filter(filter)
-        order_by = self._get_order_by(request)
-        if order_by is not None:
-            query = query.order_by(order_by)
-        query = query.limit(limit).offset(offset)
+        #if filter is None:
+            #   filter = create_filter(request, self.mapped_class, self.geom_attr)
+        query = self.Session.query(Activity.point.label("geometry"),
+                                   Activity.id.label("id"),
+                                   Activity.activity_identifier.label("activity_identifier"),
+                                   A_Key.key.label("key"),
+                                   A_Value.value.label("value")
+                                   ).join(A_Tag_Group).join(A_Tag).join(A_Key).join(A_Value).join(Status).filter(Status.name == 'active').group_by(Activity.id, A_Key.key, A_Value.value).order_by(Activity.id)
+        #order_by = self._get_order_by(request)
+        #if order_by is not None:
+         #   query = query.order_by(order_by)
+        #query = query.limit(limit).offset(offset)
         return query.all()
+
+    def _order(self, features, request):
+        """
+        Namedtuple to sort
+        """
+
+        orderByAttribute = self._get_order_by(request)
+        if orderByAttribute is None:
+            return features
+        
+        attributes = ['id', 'geometry']
+        emptyAttributes = [None, None]
+        
+        for feature in features:
+            for attr in feature.properties:
+                if attr not in attributes:
+                    attributes.append(attr)
+                    emptyAttributes.append(None)
+
+        if orderByAttribute not in attributes:
+            return features
+
+        ActivityRow = namedtuple('ActivityRow', attributes, rename=True)
+
+        # An empty activity that serves as template for all features
+        templateActivity = ActivityRow(*emptyAttributes)
+
+        unsortedActivities = []
+        for feature in features:
+
+            actDict = {'id': feature.id, 'geometry': feature.geometry}
+
+            for property in feature.properties:
+
+                try:
+                    value = int(feature.properties[property])
+                except ValueError:
+                    try:
+                        value = float(feature.properties[property])
+                    except ValueError:
+                        value = str(feature.properties[property])
+
+                actDict[property] = value
+                currentActivity = templateActivity._replace(**actDict)
+
+            unsortedActivities.append(currentActivity)
+
+        sortedActivities = sorted(unsortedActivities, key = attrgetter(orderByAttribute))
+
+        sortedFeatures = []
+        for a in sortedActivities:
+            properties = {}
+            for index in a._asdict():
+                # Ignore the reserved keywords id and geometry
+                if index not in ['id', 'geometry']:
+                    properties[index] = (getattr(a,index))
+            sortedFeatures.append(geojson.Feature(id=a.id, geometry=a.geometry, properties=properties))
+
+        return sortedFeatures
+        
 
     def read(self, request, filter=None, id=None):
         """
@@ -123,7 +205,6 @@ class ActivityProtocol(object):
         """
         ret = None
         if id is not None:
-            #o = self.Session().query(self.mapped_class).get(id)
 
             table = self.Session.query(Activity.point.label("geometry"), Activity.id.label("id"), Activity.activity_identifier, A_Key.key.label("key"), A_Value.value.label("value"))
 
@@ -131,14 +212,21 @@ class ActivityProtocol(object):
 
             if o is None:
                 return HTTPNotFound()
+
+            resultActivities = self.geofy(o, request)
+
+            # Only one feature can be returned!
+            if len(resultActivities) != 1:
+                return HTTPError()
+
             # FIXME: we return a Feature here, not a mapped object, do
             # we really want that?
-            ret = self._filter_attrs(o, request)
+            ret = self._filter_attrs(resultActivities[0], request)
         else:
-            objs = self._query(request, filter)
+            objs = self.geofy(self._query(request, filter), request)
 
-            for o in objs:
-                log.info(o)
+            # Sort the table
+            objs = self._order(objs, request)
 
-            #ret = FeatureCollection([self._filter_attrs(o.__geo_interface__, request) for o in objs if o is not None])
+            ret = geojson.FeatureCollection([self._filter_attrs(o.__geo_interface__, request) for o in objs if o is not None])
         return ret

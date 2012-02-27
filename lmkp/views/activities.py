@@ -9,52 +9,14 @@ log = logging.getLogger(__name__)
 
 activity_protocol = ActivityProtocol(Session)
 
-#@view_config(route_name='activities_read_one', renderer='geojson')
-@view_config(route_name='activities_read_one', renderer='lmkp:templates/db_test.pt')
-def read_one_test(request):
-
-    id = request.matchdict.get('id', None)
-    return activity_protocol.read(request, id=id)
-
-
-
+@view_config(route_name='activities_read_one', renderer='geojson')
+#@view_config(route_name='activities_read_one', renderer='lmkp:templates/db_test.pt')
 def read_one(request):
     """
-    Returns an activity.
-    """
-    try:
-        id = int(request.matchdict.get('id', None))
-    except ValueError:
-        return {}
     
-    # Result object
-    activityResult = {}
-
-    fields = _get_config_fields()
-
-    # Join table of activities
-    activities = Session.query(Activity.id, A_Value.value).join(A_Tag_Group).join(A_Tag).join(A_Key).join(A_Value).filter(Activity.id == id)
-
-    activityResult['id'] = id
-    for field in fields:
-        activityResult[field] = None
-
-    # Loop all fields and query the corresponding activities
-    for field in fields:
-        for id, value in activities.filter(A_Key.key == field):
-            try:
-                value = int(value)
-            except ValueError:
-                try:
-                    value = float(value)
-                except ValueError:
-                    pass
-            activityResult[field] = value
-
-    # This JSON object is formatted that it can be used from a Ext.form.Panel
-    # load method.
-    # Reference ExtJS kurz & gut, page 166
-    return {'success': True, 'data': activityResult}
+    """
+    id = request.matchdict.get('id', None)
+    return activity_protocol.read(request, id=id)
 
 
 def get_activities(request):
@@ -93,31 +55,13 @@ def get_activities(request):
     #return {'activities': activitiesResult}
     return activitiesResult
 
-@view_config(route_name='activities_read_many', renderer='json')
+@view_config(route_name='activities_read_many', renderer='geojson')
+#@view_config(route_name='activities_read_many', renderer='lmkp:templates/db_test.pt')
 def read_many(request):
     """
-    Alternative implementation
+    Read many activities
     """
-    
-    node = request.params.get('node')
-
-    #if node is None or node == 'root':
-    #    return {'activities': [{'id': 'pending', 'name': 'Pending activities'}, {'id': 'active', 'name': 'Active activities'}]}
-    
-    #if node == 'pending' or node == 'active':
-    #    return get_activities(request)
-    
-    result = {}
-    result['activitylists'] = []
-
-    pendingActivities = [{'id': 'None', 'name': 'None', 'leaf': True}]
-    result['activitylists'].append({'id': 'pending', 'name': 'Pending activities', 'activities': pendingActivities})
-
-    activeActivities = get_activities(request)
-    
-    result['activitylists'].append({'id': 'active', 'name': 'Active activities', 'activities': activeActivities})
-
-    return result
+    return activity_protocol.read(request)
 
 
 @view_config(route_name='activities_create', renderer='json')
