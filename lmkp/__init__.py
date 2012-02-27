@@ -41,6 +41,7 @@ def main(global_config, ** settings):
     # Activities controllers with an api similar to Papyrus
     # Order matters!
     config.add_route('activities_tree', '/activities/tree', request_method='GET')
+    config.add_route('activities_count', '/activities/count', request_method='GET')
     config.add_route('activities_read_many', '/activities', request_method='GET')
     config.add_route('activities_read_one', '/activities/{id}', request_method='GET')
     config.add_route('activities_create', '/activities', request_method='POST')

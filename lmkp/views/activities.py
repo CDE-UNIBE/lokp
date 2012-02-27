@@ -63,6 +63,13 @@ def read_many(request):
     """
     return activity_protocol.read(request)
 
+@view_config(route_name='activities_count', renderer='string')
+def count(request):
+    """
+    Count activities
+    """
+    return activity_protocol.count(request)
+
 
 @view_config(route_name='activities_create', renderer='json')
 def create(request):
