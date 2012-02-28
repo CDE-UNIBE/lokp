@@ -5,7 +5,8 @@ Ext.application({
     controllers: [
     'Main',
     'Layers',
-    'Map'
+    'Map',
+    'Filter'
     ],
 
     launch: function() {

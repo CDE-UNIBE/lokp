@@ -3,7 +3,6 @@ Ext.define('Lmkp.view.layers.List' ,{
     alias : 'widget.layerslist',
     store: 'Layers',
 
-    html: 'Will be replace by a tab panel',
     title: 'Layers',
 
     /**
