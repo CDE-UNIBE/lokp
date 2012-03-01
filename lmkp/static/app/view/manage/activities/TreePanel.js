@@ -3,24 +3,38 @@ Ext.define('Lmkp.view.manage.activities.TreePanel',{
 
     alias: [ 'widget.manageactivitiestreepanel' ],
 
-    html: 'Zis is ze zreepanel',
-
-    store: Ext.create('Ext.data.TreeStore', {
-        root: {
-            expanded: true,
-            children: [
-                { text: "detention", leaf: true },
-                { text: "homework", expanded: true, children: [
-                        { text: "book report", leaf: true },
-                        { text: "alegrbra", leaf: true}
-                    ] },
-                { text: "buy lottery tickets", leaf: true }
-            ]
-        }
-    }),
     rootVisible: false,
 
-    initComponent: function(){
-        this.callParent(arguments);
-    }
+    layout: 'fit',
+
+    store: {
+        autoLoad: true,
+        model: 'Lmkp.model.ActivityTree',
+        proxy: {
+            type: 'ajax',
+            url: '/activities/tree',
+            /*extraParams: {
+                status: 'pending,active'
+            },*/
+            reader: {
+                root: 'children',
+                type: 'json'
+            }
+        }
+    },
+
+    /*store: {
+        model: 'Lmkp.model.ActivityList',
+        autoLoad: true
+    },*/
+
+    columns: [{
+        //id: 'id-column',
+        xtype: 'treecolumn',
+        dataIndex: 'name',
+        //text: 'Activity',
+        flex: 2,
+        text: 'Name'
+    }]
+    
 });
