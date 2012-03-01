@@ -3,19 +3,24 @@ Ext.define('Lmkp.view.manage.activities.TreePanel',{
 
     alias: [ 'widget.manageactivitiestreepanel' ],
 
-    rootVisible: true,
+    rootVisible: false,
 
     layout: 'fit',
 
     store: {
         autoLoad: true,
-        model: 'Lmkp.model.ActivityTree'
-    },
-
-    root: {
-        id: 'root',
-        text: 'Root',
-        expanded: true
+        model: 'Lmkp.model.ActivityTree',
+        proxy: {
+            type: 'ajax',
+            url: '/activities/tree',
+            /*extraParams: {
+                status: 'pending,active'
+            },*/
+            reader: {
+                root: 'children',
+                type: 'json'
+            }
+        }
     },
 
     /*store: {

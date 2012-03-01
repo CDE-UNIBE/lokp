@@ -9,6 +9,36 @@ log = logging.getLogger(__name__)
 
 activity_protocol = ActivityProtocol(Session)
 
+# Not yet very nice.
+# This hashmap has to be translatable using an external
+# translation file or database.
+statusMap = {
+'active': 'Active Activities',
+'overwritten': 'Overwritten Activities',
+'pending': 'Pending Activities'
+}
+
+def get_status(request):
+    """
+    Returns a list of requested and valid status
+    """
+
+    # Get the status parameter if set, else active per default
+    requestedStatus = request.params.get('status', ['active'])
+    try:
+        status = requestedStatus.split(',')
+    except AttributeError:
+        status = requestedStatus
+
+    # Make sure that all status elements are in the statusMap. If not, remote it
+    for s in status:
+        if s not in statusMap:
+            status.remove(s)
+
+    # Return a list of valid status
+    return status
+    
+
 @view_config(route_name='activities_read_one', renderer='geojson')
 def read_one(request):
     """
@@ -65,15 +95,22 @@ def tree(request):
             'name': self.__dict__['name'],
             'children': self.__dict__['children']
             }
-            
 
-    return [
-    ActivityFolder(id='pending', name='Pending Activities', children=activity_protocol.read(request, filter=(Status.name == 'pending'))),
-    ActivityFolder(id='active', name='Active Activities', children=activity_protocol.read(request, filter=(Status.name == 'active')))
-    ]
-
-    # Show only a list of activities:
-    #return activity_protocol.read(request, filter=(Status.name == 'active'))
+    status = get_status(request)
+    if len(status) == 0:
+        return []
+    elif len(status) == 1:
+        return activity_protocol.read(request, filter=(Status.name == status[0]))
+    else:
+        result = []
+        for s in status:
+            a = ActivityFolder(
+                               id=s,
+                               name=statusMap[s],
+                               children=activity_protocol.read(request, filter=(Status.name == s))
+                               )
+            result.append(a)
+        return result
 
 
 @view_config(route_name='activities_model', renderer='string')

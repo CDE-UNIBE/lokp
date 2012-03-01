@@ -13,7 +13,7 @@ Ext.define('Lmkp.model.ActivityTree', {
         type: 'ajax',
         url: '/activities/tree',
         reader: {
-            root: 'activities',
+            root: 'children',
             type: 'json'
         }
     }
