@@ -12,8 +12,16 @@ def my_view(request):
 
 @view_config(route_name='db_test', renderer='lmkp:templates/db_test.pt')
 def db_test(request):
-    object = DBSession.query(A_Event).get(1)
-    return {'object':object.tags[0].key.language}
+
+    activities = []
+    for i in DBSession.query(Activity).join(A_Event).join(A_Tag).join(A_Key).filter(A_Key.key == 'Spatial uncertainty'):
+        activities.append({'uuid': i.uuid, 'value': i.events[0].tags[0].value.value})
+
+
+    return {'object': activities}
+
+    #object = DBSession.query(A_Event).get(1)
+    #return {'object':object.tags[0].key.language}
 
 @view_config(route_name='geo_test', renderer='geojson')
 def geo_test(request):

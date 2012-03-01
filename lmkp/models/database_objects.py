@@ -21,6 +21,12 @@ from sqlalchemy.orm import (
     backref
 )
 
+from sqlalchemy.schema import (
+    ForeignKeyConstraint,
+    PrimaryKeyConstraint,
+    UniqueConstraint
+)
+
 # ...
 from shapely import wkb
 import geojson
@@ -33,10 +39,14 @@ from geoalchemy.geometry import (
 
 class A_Key(Base):
     __tablename__ = 'a_keys'
-    __table_args__ = {'schema': 'data'}
+    __table_args__ = (
+            ForeignKeyConstraint(['fk_a_key'], ['data.a_keys.id']),
+            ForeignKeyConstraint(['fk_language'], ['data.languages.id']),
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
-    fk_a_key = Column(Integer, ForeignKey('data.a_keys.id'))
-    fk_language = Column(Integer, ForeignKey('data.languages.id'))
+    fk_a_key = Column(Integer)
+    fk_language = Column(Integer)
     key = Column(String(255), nullable = False)
     
     translations = relationship('A_Key', backref = backref('original', remote_side = [id]))
@@ -50,10 +60,14 @@ class A_Key(Base):
 
 class SH_Key(Base):
     __tablename__ = 'sh_keys'
-    __table_args__ = {'schema': 'data'}
+    __table_args__ = (
+            ForeignKeyConstraint(['fk_sh_key'], ['data.sh_keys.id']),
+            ForeignKeyConstraint(['fk_language'], ['data.languages.id']),
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
-    fk_sh_key = Column(Integer, ForeignKey('data.sh_keys.id'))
-    fk_language = Column(Integer, ForeignKey('data.languages.id'))
+    fk_sh_key = Column(Integer)
+    fk_language = Column(Integer)
     key = Column(String(255), nullable = False)
     
     translations = relationship('SH_Key', backref = backref('original', remote_side = [id]))
@@ -67,27 +81,51 @@ class SH_Key(Base):
 
 class A_Value(Base):
     __tablename__ = 'a_values'
-    __table_args__ = {'schema': 'data'}
+    __table_args__ = (
+            ForeignKeyConstraint(['fk_a_value'], ['data.a_values.id']),
+            ForeignKeyConstraint(['fk_language'], ['data.languages.id']),
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
-    fk_a_value = Column(Integer, ForeignKey('data.a_values.id'))
-    fk_language = Column(Integer, ForeignKey('data.languages.id'))
-    value = Column(Text, nullable = False)
+    fk_a_value = Column(Integer)
+    fk_language = Column(Integer, nullable = False)
+    value = Column(Text)
+    geometry = GeometryColumn('geometry', Geometry(dimension = 2, srid = 4326, spatial_index = True))
     
     translations = relationship('A_Value', backref = backref('original', remote_side = [id]))
     tags = relationship('A_Tag', backref = 'value')
     
-    def __init__(self, value):
+    def __init__(self, value, geometry=None):
         self.value = value
+        self.geometry = geometry
     
     def __repr__(self):
-        return "<A_Value> id [ %s ] | fk_a_value [ %s ] | fk_language [ %s ] | value [ %s ]" % (self.id, self.fk_a_value, self.fk_language, self.value)
+        if self.geometry == None:
+            geom = '-'
+        else:
+            geom = wkb.loads(str(self.geometry.geom_wkb)).wkt
+        return "<A_Value> id [ %s ] | fk_a_value [ %s ] | fk_language [ %s ] | value [ %s ] | geometry [ %s ]" % (self.id, self.fk_a_value, self.fk_language, self.value, geom)
+
+    @property
+    def __geo_interface__(self):
+       id = self.id
+       if hasattr(self, '_shape') and self._shape is not None:
+           geometry = self._shape
+       else:
+           geometry = wkb.loads(str(self.geometry.geom_wkb))
+       properties = dict(source=self.source)
+       return geojson.Feature(id=id, geometry=geometry, properties=properties)
 
 class SH_Value(Base):
     __tablename__ = 'sh_values'
-    __table_args__ = {'schema': 'data'}
+    __table_args__ = (
+            ForeignKeyConstraint(['fk_sh_value'], ['data.sh_values.id']),
+            ForeignKeyConstraint(['fk_language'], ['data.languages.id']),
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
-    fk_sh_value = Column(Integer, ForeignKey('data.sh_values.id'))
-    fk_language = Column(Integer, ForeignKey('data.languages.id'))
+    fk_sh_value = Column(Integer)
+    fk_language = Column(Integer)
     value = Column(Text, nullable = False)
     
     translations = relationship('SH_Value', backref = backref('original', remote_side = [id]))
@@ -101,127 +139,187 @@ class SH_Value(Base):
 
 class A_Tag(Base):
     __tablename__ = 'a_tags'
-    __table_args__ = {'schema': 'data'}
+    __table_args__ = (
+            ForeignKeyConstraint(['fk_a_tag_group'], ['data.a_tag_groups.id']),
+            ForeignKeyConstraint(['fk_a_key'], ['data.a_keys.id']),
+            ForeignKeyConstraint(['fk_a_value'], ['data.a_values.id']),
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
-    uuid = Column(UUID, nullable = False, unique = True)
-    fk_a_event = Column(Integer, ForeignKey('data.a_events.id'), nullable=False)
-    fk_key = Column(Integer, ForeignKey('data.a_keys.id'), nullable = False)
-    fk_value = Column(Integer, ForeignKey('data.a_values.id'), nullable = False)
+    fk_a_tag_group = Column(Integer, nullable = False)
+    fk_a_key = Column(Integer, nullable = False)
+    fk_a_value = Column(Integer, nullable = False)
 
     def __init__(self):
-        self.uuid = uuid.uuid4()
+        pass
 
     def __repr__(self):
-        return "<A_Tag> id [ %s ] | uuid [ %s ] | fk_a_event [ %s ] | fk_key [ %s ] | fk_value [ %s ]" % (self.id, self.uuid, self.fk_a_event, self.fk_key, self.fk_value)
+        return "<A_Tag> id [ %s ] | fk_a_tag_group [ %s ] | fk_a_key [ %s ] | fk_a_value [ %s ]" % (self.id, self.fk_a_tag_group, self.fk_a_key, self.fk_a_value)
 
 class SH_Tag(Base):
     __tablename__ = 'sh_tags'
-    __table_args__ = {'schema': 'data'}
+    __table_args__ = (
+            ForeignKeyConstraint(['fk_sh_tag_group'], ['data.sh_tag_groups.id']),
+            ForeignKeyConstraint(['fk_sh_key'], ['data.sh_keys.id']),
+            ForeignKeyConstraint(['fk_sh_value'], ['data.sh_values.id']),
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
-    uuid = Column(UUID, nullable = False, unique = True)
-    fk_sh_event = Column(Integer, ForeignKey('data.sh_events.id'), nullable=False)
-    fk_key = Column(Integer, ForeignKey('data.sh_keys.id'), nullable = False)
-    fk_value = Column(Integer, ForeignKey('data.sh_values.id'), nullable = False)
+    fk_sh_tag_group = Column(Integer, nullable = False)
+    fk_sh_key = Column(Integer, nullable = False)
+    fk_sh_value = Column(Integer, nullable = False)
 
     def __init__(self):
-        self.uuid = uuid.uuid4()
+        pass
 
     def __repr__(self):
-        return "<SH_Tag> id [ %s ] | uuid [ %s ] | fk_sh_event [ %s ] | fk_key [ %s ] | fk_value [ %s ]" % (self.id, self.uuid, self.fk_sh_event, self.fk_key, self.fk_value)
+        return "<SH_Tag> id [ %s ] | fk_sh_tag_group [ %s ] | fk_sh_key [ %s ] | fk_sh_value [ %s ]" % (self.id, self.fk_sh_tag_group, self.fk_sh_key, self.fk_sh_value)
 
-class A_Event(Base):
-    __tablename__ = 'a_events'
-    __table_args__ = {'schema': 'data'}
+class A_Tag_Group(Base):
+    __tablename__ = 'a_tag_groups'
+    __table_args__ = (
+            ForeignKeyConstraint(['fk_activity'], ['data.activities.id']),
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
-    uuid = Column(UUID, nullable = False, unique = True)
-    fk_activity = Column(Integer, ForeignKey('data.activities.id'), nullable=False)
-    fk_user = Column(Integer, ForeignKey('data.users.id'), nullable=False)
+    fk_activity = Column(Integer, nullable = False)
+
+    tags = relationship("A_Tag", backref = backref('tag_group', order_by = id))
+
+    def __init__(self):
+        pass
+    
+    def __repr__(self):
+        return '<A_Tag_Group> id [ %s ] | fk_activity [ %s ]' % (self.id, self.fk_activity)
+
+class SH_Tag_Group(Base):
+    __tablename__ = 'sh_tag_groups'
+    __table_args__ = (
+            ForeignKeyConstraint(['fk_stakeholder'], ['data.stakeholders.id']),
+            {'schema': 'data'}
+            )
+    id = Column(Integer, primary_key = True)
+    fk_stakeholder = Column(Integer, nullable = False)
+    
+    tags = relationship("SH_Tag", backref = backref('tag_group', order_by = id))
+
+    def __init__(self):
+        pass
+    
+    def __repr__(self):
+        return '<SH_Tag_Group> id [ %s ] | fk_stakeholder [ %s ]' % (self.id, self.fk_stakeholder)
+
+class Activity(Base):
+    __tablename__ = 'activities'
+    __table_args__ = (
+            ForeignKeyConstraint(['fk_status'], ['data.status.id']),
+            {'schema': 'data'}
+            )
+    id = Column(Integer, primary_key = True)
+    activity_identifier = Column(UUID, nullable = False)
     timestamp = Column(DateTime, nullable = False)
-    fk_status = Column(Integer, ForeignKey('data.status.id'), nullable=False)
-    geometry = GeometryColumn('geometry', Geometry(dimension = 2, srid = 4326, spatial_index = True))
-    source = Column(Text)
+    point = GeometryColumn('point', Geometry(dimension = 2, srid = 4326, spatial_index = True))
+    fk_status = Column(Integer, nullable = False)
+    version = Column(Integer, nullable = False)
 
-    tags = relationship("A_Tag", backref = backref('event', order_by = id), cascade='all') # cascade to delete tags when event is deleted.
-    reviews = relationship("A_Event_Review", backref='event')
+    tag_groups = relationship("A_Tag_Group", backref = backref('activity', order_by = id))
+    changesets = relationship("A_Changeset", backref = backref('activity', order_by = id))
+    involvements = relationship("Involvement", backref = backref('activity', order_by = id))
 
-    def __init__(self, geometry=None, source=None):
-        self.uuid = uuid.uuid4()
+    def __init__(self, activity_identifier, version, point=None):
         self.timestamp = datetime.datetime.now()
-        self.geometry = geometry
-        self.source = source
+        self.activity_identifier = activity_identifier
+        self.version = version
+        self.point = point
 
     def __repr__(self):
-        return "<A_Event> id [ %s ] | uuid [ %s ] | activity [ %s ] | fk_user [ %s ] | timestamp [ %s ] | fk_status [ %s ] | geometry [ %s ] | source [ %s ]" % (self.id, self.uuid, self.fk_activity, self.fk_user, self.timestamp, self.fk_status, wkb.loads(str(self.geometry.geom_wkb)).wkt, self.source)
-
+        return "<Activity> id [ %s ] | activity_identifier [ %s ] | timestamp [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.activity_identifier, self.timestamp, wkb.loads(str(self.point.geom_wkb)).wkt, self.fk_status, self.version)
+    
     @property
     def __geo_interface__(self):
        id = self.id
        if hasattr(self, '_shape') and self._shape is not None:
            geometry = self._shape
        else:
-           geometry = wkb.loads(str(self.geometry.geom_wkb))
+           geometry = wkb.loads(str(self.point.geom_wkb))
        properties = dict(source=self.source)
        return geojson.Feature(id=id, geometry=geometry, properties=properties)
 
-class SH_Event(Base):
-    __tablename__ = 'sh_events'
-    __table_args__ = {'schema': 'data'}
+class Stakeholder(Base):
+    __tablename__ = 'stakeholders'
+    __table_args__ = (
+            ForeignKeyConstraint(['fk_status'], ['data.status.id']),
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
-    uuid = Column(UUID, nullable = False, unique = True)
-    fk_stakeholder = Column(Integer, ForeignKey('data.stakeholders.id'), nullable=False)
-    fk_user = Column(Integer, ForeignKey('data.users.id'), nullable=False)
+    stakeholder_identifier = Column(UUID, nullable = False)
     timestamp = Column(DateTime, nullable = False)
-    fk_status = Column(Integer, ForeignKey('data.status.id'), nullable=False)
-    source = Column(Text)
+    fk_status = Column(Integer, nullable = False)
+    version = Column(Integer, nullable = False)
 
-    tags = relationship("SH_Tag", backref = backref('event', order_by = id), cascade='all') # cascade to delete tags when attribute is deleted.
-    reviews = relationship("SH_Event_Review", backref='event')
+    tag_groups = relationship("SH_Tag_Group", backref = backref('stakeholder', order_by = id))
+    changesets = relationship("SH_Changeset", backref = backref('stakeholder', order_by = id))
+    involvements = relationship("Involvement", backref = backref('stakeholder', order_by = id))
+
+    def __init__(self, stakeholder_identifier, version):
+        self.timestamp = datetime.datetime.now()
+        self.stakeholder_identifier = stakeholder_identifier
+        self.version = version
+
+    def __repr__(self):
+        return "<Stakeholder> id [ %s ] | stakeholder_identifier [ %s ] | timestamp [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.stakeholder_identifier, self.timestamp, self.fk_status, self.version)
+
+class A_Changeset(Base):
+    __tablename__ = 'a_changesets'
+    __table_args__ = (
+            ForeignKeyConstraint(['fk_user'], ['data.users.id']),
+            ForeignKeyConstraint(['fk_activity'], ['data.activities.id']),
+            {'schema': 'data'}
+            )
+    id = Column(Integer, primary_key = True)
+    fk_user = Column(Integer, nullable = False)
+    source = Column(Text)
+    fk_activity = Column(Integer, nullable = False)
+
+    reviews = relationship("A_Changeset_Review", backref='changeset')
 
     def __init__(self, source=None):
-        self.uuid = uuid.uuid4()
-        self.timestamp = datetime.datetime.now()
         self.source = source
 
     def __repr__(self):
-        return "<SH_Event> id [ %s ] | uuid [ %s ] | fk_stakeholder [ %s ] | fk_user [ %s ] | timestamp [ %s ] | fk_status [ %s ] | source [ %s ]" % (self.id, self.uuid, self.fk_stakeholder, self.fk_user, self.timestamp, self.fk_status, self.source)
+        return "<A_Changeset> id [ %s ] | fk_user [ %s ] | source [ %s ] | fk_activity [ %s ]" % (self.id, self.fk_user, self.source, self.fk_activity)
 
-class Activity(Base):
-    __tablename__ = 'activities'
-    __table_args__ = {'schema': 'data'}
+class SH_Changeset(Base):
+    __tablename__ = 'sh_changesets'
+    __table_args__ = (
+            ForeignKeyConstraint(['fk_user'], ['data.users.id']),
+            ForeignKeyConstraint(['fk_stakeholder'], ['data.stakeholders.id']),
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
-    uuid = Column(UUID, nullable = False, unique = True)
+    fk_user = Column(Integer, nullable = False)
+    source = Column(Text)
+    fk_stakeholder = Column(Integer, nullable = False)
 
-    events = relationship("A_Event", backref="activity")
+    reviews = relationship("SH_Changeset_Review", backref='changeset')
 
-    def __init__(self):
-        self.uuid = uuid.uuid4()
+    def __init__(self, source=None):
+        self.source = source
 
     def __repr__(self):
-        return "<Activity> id [ %s ] | uuid [ %s ]" % (self.id, self.uuid)
-
-class Stakeholder(Base):
-    __tablename__ = 'stakeholders'
-    __table_args__ = {'schema': 'data'}
-    id = Column(Integer, primary_key = True)
-    uuid = Column(UUID, nullable = False, unique = True)
-
-    events = relationship("SH_Event", backref="stakeholder")
-
-    def __init__(self):
-        self.uuid = uuid.uuid4()
-
-    def __repr__(self):
-        return "<Stakeholder> id [ %s ] | uuid [ %s ]" % (self.id, self.uuid)
+        return "<SH_Changeset> id [ %s ] | fk_user [ %s ] | source [ %s ] | fk_stakeholder [ %s ]" % (self.id, self.fk_user, self.source, self.fk_stakeholder)
 
 class Status(Base):
     __tablename__ = 'status'
-    __table_args__ = {'schema': 'data'}
+    __table_args__ = (
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
     name = Column(String(255), nullable = False, unique = True)
     description = Column(Text)
 
-    a_events = relationship('A_Event', backref='status')
-    sh_events = relationship('SH_Event', backref='status')
+    activities = relationship('Activity', backref='status')
+    stakeholders = relationship('Stakeholder', backref='status')
 
     def __init__(self, id, name, description=None):
         self.id = id
@@ -233,7 +331,9 @@ class Status(Base):
 
 class Language(Base):
     __tablename__ = 'languages'
-    __table_args__ = {'schema': 'data'}
+    __table_args__ = (
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
     english_name = Column(String(255), nullable = False)
     local_name = Column(String(255), nullable = False)
@@ -253,26 +353,30 @@ class Language(Base):
 
 class Involvement(Base):
     __tablename__ = 'involvements'
-    __table_args__ = {'schema': 'data'}
+    __table_args__ = (
+            ForeignKeyConstraint(['fk_activity'], ['data.activities.id']),
+            ForeignKeyConstraint(['fk_stakeholder'], ['data.stakeholders.id']),
+            ForeignKeyConstraint(['fk_stakeholder_role'], ['data.stakeholder_roles.id']),
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
-    uuid = Column(UUID, nullable = False, unique = True)
-    fk_activity = Column(Integer, ForeignKey('data.activities.id'), nullable = False)
-    fk_stakeholder = Column(Integer, ForeignKey('data.stakeholders.id'), nullable = False)
-    fk_stakeholder_role = Column(Integer, ForeignKey('data.stakeholder_roles.id'), nullable = False)
-    
-    activity = relationship("Activity", backref=backref("involvements", order_by = id))
-    stakeholder = relationship("Stakeholder", backref=backref("involvements", order_by = id))
+    fk_activity = Column(Integer, nullable = False)
+    fk_stakeholder = Column(Integer, nullable = False)
+    fk_stakeholder_role = Column(Integer, nullable = False)
+      
     reviews = relationship("Involvement_Review", backref='involvement')
 
     def __init__(self):
-        self.uuid = uuid.uuid4()
+        pass
 
     def __repr__(self):
-        return "<Involvement> id [ %s ] | uuid [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ] | fk_stakeholder_role [ %s ]" % (self.id, self.uuid, self.fk_activity, self.fk_stakeholder, self.fk_stakeholder_role)
+        return "<Involvement> id [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ] | fk_stakeholder_role [ %s ]" % (self.id, self.fk_activity, self.fk_stakeholder, self.fk_stakeholder_role)
 
 class Stakeholder_Role(Base):
     __tablename__ = 'stakeholder_roles'
-    __table_args__ = {'schema': 'data'}
+    __table_args__ = (
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
     name = Column(String(255), nullable = False, unique = True)
     description = Column(Text)
@@ -296,19 +400,21 @@ users_groups = Table('users_groups', Base.metadata,
 
 class User(Base):
     __tablename__ = 'users'
-    __table_args__ = {'schema': 'data'}
+    __table_args__ = (
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
     uuid = Column(UUID, nullable = False, unique = True)
-    username = Column(String(255), nullable = False, unique = True)
+    username = Column(String(255), nullable = False)
     password = Column(String(255), nullable = False)
-    email = Column(String(255), nullable = False, unique = True)
+    email = Column(String(255), nullable = False)
 
-    a_events = relationship('A_Event', backref='user')
-    sh_events = relationship('SH_Event', backref='user')
+    a_changesets = relationship('A_Changeset', backref='user')
+    sh_changesets = relationship('SH_Changeset', backref='user')
     groups = relationship('Group', secondary=users_groups, backref=backref('users', order_by = id))
-    a_event_reviews = relationship('A_Event_Review', backref='user')
-    sh_event_reviews = relationship('SH_Event_Review', backref='user')
-    involvement_review = relationship('Involvement_Review', backref='user')
+    a_changeset_reviews = relationship('A_Changeset_Review', backref='user')
+    sh_changeset_reviews = relationship('SH_Changeset_Review', backref='user')
+    involvement_reviews = relationship('Involvement_Review', backref='user')
 
     def __init__(self, username, password, email):
         self.uuid = uuid.uuid4()
@@ -328,7 +434,9 @@ groups_permissions = Table('groups_permissions', Base.metadata,
 
 class Group(Base):
     __tablename__ = 'groups'
-    __table_args__ = {'schema': 'data'}
+    __table_args__ = (
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
     name = Column(String(255), nullable = False, unique = True)
     description = Column(Text)
@@ -345,7 +453,9 @@ class Group(Base):
 
 class Permission(Base):
     __tablename__ = 'permissions'
-    __table_args__ = {'schema': 'data'}
+    __table_args__ = (
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
     name = Column(String(255), nullable = False, unique = True)
     description = Column(Text)
@@ -358,73 +468,84 @@ class Permission(Base):
     def __repr__(self):
         return "<Permission> id [ %s ] | name [ %s ] | description [ %s ]" % (self.id, self.name, self.description)
 
-class A_Event_Review(Base):
-    __tablename__ = 'a_event_review'
-    __table_args__ = {'schema': 'data'}
+class A_Changeset_Review(Base):
+    __tablename__ = 'a_changeset_review'
+    __table_args__ = (
+            ForeignKeyConstraint(['fk_a_changeset'], ['data.a_changesets.id']),
+            ForeignKeyConstraint(['fk_user'], ['data.users.id']),
+            ForeignKeyConstraint(['fk_review_decision'], ['data.review_decisions.id']),
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
-    uuid = Column(UUID, nullable = False, unique = True)
-    fk_a_event = Column(Integer, ForeignKey('data.a_events.id'), nullable = False)
-    fk_user = Column(Integer, ForeignKey('data.users.id'), nullable = False)
+    fk_a_changeset = Column(Integer, nullable = False)
+    fk_user = Column(Integer, nullable = False)
     timestamp = Column(DateTime, nullable = False)
-    fk_review_decision = Column(Integer, ForeignKey('data.review_decisions.id'), nullable = False)
+    fk_review_decision = Column(Integer, nullable = False)
     comment = Column(Text)
     
     def __init__(self, comment=None):
-        self.uuid = uuid.uuid4()
         self.timestamp = datetime.datetime.now()
         self.comment = comment
     
     def __repr__(self):
-        return "<A_Event_Review> id [ %s ] | uuid [ %s ] | fk_a_event [ %s ] | fk_user [ %s ] | timestamp [ %s ] | fk_review_decision [ %s ] | comment [ %s ]" % (self.id, self.uuid, self.fk_a_event, self.fk_user, self.timestamp, self.fk_review_decision, self.comment)
+        return "<A_Changeset_Review> id [ %s ] | fk_a_changeset [ %s ] | fk_user [ %s ] | timestamp [ %s ] | fk_review_decision [ %s ] | comment [ %s ]" % (self.id, self.fk_a_changeset, self.fk_user, self.timestamp, self.fk_review_decision, self.comment)
 
-class SH_Event_Review(Base):
-    __tablename__ = 'sh_event_reviews'
-    __table_args__ = {'schema': 'data'}
+class SH_Changeset_Review(Base):
+    __tablename__ = 'sh_changeset_reviews'
+    __table_args__ = (
+            ForeignKeyConstraint(['fk_sh_changeset'], ['data.sh_changesets.id']),
+            ForeignKeyConstraint(['fk_user'], ['data.users.id']),
+            ForeignKeyConstraint(['fk_review_decision'], ['data.review_decisions.id']),
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
-    uuid = Column(UUID, nullable = False, unique = True)
-    fk_sh_event = Column(Integer, ForeignKey('data.sh_events.id'), nullable = False)
-    fk_user = Column(Integer, ForeignKey('data.users.id'), nullable = False)
+    fk_sh_changeset = Column(Integer, nullable = False)
+    fk_user = Column(Integer, nullable = False)
     timestamp = Column(DateTime, nullable = False)
-    fk_review_decision = Column(Integer, ForeignKey('data.review_decisions.id'), nullable = False)
+    fk_review_decision = Column(Integer, nullable = False)
     comment = Column(Text)
     
     def __init__(self, comment=None):
-        self.uuid = uuid.uuid4()
         self.timestamp = datetime.datetime.now()
         self.comment = comment
     
     def __repr__(self):
-        return "<SH_Event_Review> id [ %s ] | uuid [ %s ] | fk_sh_event [ %s ] | fk_user [ %s ] | timestamp [ %s ] | fk_review_decision [ %s ] | comment [ %s ]" % (self.id, self.uuid, self.fk_sh_event, self.fk_user, self.timestamp, self.fk_review_decision, self.comment)
+        return "<SH_Changeset_Review> id [ %s ] | fk_sh_changeset [ %s ] | fk_user [ %s ] | timestamp [ %s ] | fk_review_decision [ %s ] | comment [ %s ]" % (self.id, self.fk_sh_changeset, self.fk_user, self.timestamp, self.fk_review_decision, self.comment)
 
 class Involvement_Review(Base):
     __tablename__ = 'involvement_reviews'
-    __table_args__ = {'schema': 'data'}
+    __table_args__ = (
+            ForeignKeyConstraint(['fk_involvement'], ['data.involvements.id']),
+            ForeignKeyConstraint(['fk_user'], ['data.users.id']),
+            ForeignKeyConstraint(['fk_review_decision'], ['data.review_decisions.id']),
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
-    uuid = Column(UUID, nullable = False, unique = True)
-    fk_involvement = Column(Integer, ForeignKey('data.involvements.id'), nullable = False)
-    fk_user = Column(Integer, ForeignKey('data.users.id'), nullable = False)
+    fk_involvement = Column(Integer, nullable = False)
+    fk_user = Column(Integer, nullable = False)
     timestamp = Column(DateTime, nullable = False)
-    fk_review_decision = Column(Integer, ForeignKey('data.review_decisions.id'), nullable = False)
+    fk_review_decision = Column(Integer, nullable = False)
     comment = Column(Text)
     
     def __init__(self, comment=None):
-        self.uuid = uuid.uuid4()
         self.timestamp = datetime.datetime.now()
         self.comment = comment
     
     def __repr__(self):
-        return "<Involvement_Review> id [ %s ] | uuid [ %s ] | fk_involvement [ %s ] | fk_user [ %s ] | timestamp [ %s ] | fk_review_decision [ %s ] | comment [ %s ]" % (self.id, self.uuid, self.fk_involvement, self.fk_user, self.timestamp, self.fk_review_decision, self.comment)
+        return "<Involvement_Review> id [ %s ] | fk_involvement [ %s ] | fk_user [ %s ] | timestamp [ %s ] | fk_review_decision [ %s ] | comment [ %s ]" % (self.id, self.fk_involvement, self.fk_user, self.timestamp, self.fk_review_decision, self.comment)
 
 class Review_Decision(Base):
     __tablename__ = 'review_decisions'
-    __table_args__ = {'schema': 'data'}
+    __table_args__ = (
+            {'schema': 'data'}
+            )
     id = Column(Integer, primary_key = True)
     name = Column(String(255), nullable = False, unique = True)
     description = Column(Text)
 
-    a_event_review = relationship('A_Event_Review', backref='review_decision')
-    sh_event_review = relationship('SH_Event_Review', backref='review_decision')
-    involvement_review = relationship('Involvement_Review', backref='review_decision')
+    a_changeset_reviews = relationship('A_Changeset_Review', backref='review_decision')
+    sh_changeset_reviews = relationship('SH_Changeset_Review', backref='review_decision')
+    involvement_reviews = relationship('Involvement_Review', backref='review_decision')
 
     def __init__(self, id, name, description=None):
         self.id = id
@@ -434,6 +555,33 @@ class Review_Decision(Base):
     def __repr__(self):
         return "<Review_Decision> id [ %s ] | name [ %s ] | description [ %s ]" % (self.id, self.name, self.description)
 
+"""
+from sqlalchemy.orm.attributes import manager_of_class
+from sqlalchemy.orm import mapper, column_property
+from sqlalchemy import join
+activity_table = manager_of_class(Activity).mapper.mapped_table
+event_table = manager_of_class(A_Event).mapper.mapped_table
+tag_table = manager_of_class(A_Tag).mapper.mapped_table
+key_table = manager_of_class(A_Key).mapper.mapped_table
+value_table = manager_of_class(A_Value).mapper.mapped_table
+activities_all = join(join(join(join(activity_table, event_table), tag_table), key_table), value_table)
+class View_Test(Base):
+    __table__ = activities_all
+
+    activity_id = column_property(activity_table.c.id, event_table.c.fk_activity)
+    activity_uuid = activity_table.c.uuid
+    event_id = event_table.c.id
+    event_uuid = event_table.c.uuid
+    tag_id = tag_table.c.id
+    tag_uuid = tag_table.c.uuid
+    key_id = key_table.c.id
+    key_language = key_table.c.fk_language
+    value_id = value_table.c.id
+    value_language = value_table.c.fk_language
+    
+    def __repr__(self):
+        return "<View_Test> id [ %s ] | event_id [ %s ] | activity_uuid [ %s ] | event_uuid [ %s ] | fk_user [ %s ] | tag_id [ %s ]" % (self.activity_id, self.event_id, self.activity_uuid, self.event_uuid, self.fk_user, self.tag_id)
+"""    
 
 #===============================================================================
 # class Test_Point(Base):
