@@ -1,4 +1,5 @@
 from lmkp.models.meta import DBSession
+from lmkp.renderers.renderers import ExtJSTree
 from lmkp.security import group_finder
 import papyrus
 from papyrus.renderers import GeoJSON
@@ -37,6 +38,9 @@ def main(global_config, ** settings):
     config.add_route('delete_sample_values', '/sample_values/delete')
     config.add_route('geo_test', '/geo_test')
     config.add_route('ext_tests', '/tests')
+
+    # Add a renderer to return ExtJS tree configuration objects
+    config.add_renderer('extjstree', ExtJSTree())
 
     # Activities controllers with an api similar to Papyrus
     # Order matters!

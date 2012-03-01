@@ -1,74 +1,35 @@
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
+from lmkp.views.activity_protocol import ActivityProtocol
 import logging
 from pyramid.view import view_config
 import yaml
-from lmkp.views.activity_protocol import ActivityProtocol
 
 log = logging.getLogger(__name__)
 
 activity_protocol = ActivityProtocol(Session)
 
 @view_config(route_name='activities_read_one', renderer='geojson')
-#@view_config(route_name='activities_read_one', renderer='lmkp:templates/db_test.pt')
 def read_one(request):
     """
-    
+    Returns the feature with the requested id
     """
     id = request.matchdict.get('id', None)
-    return activity_protocol.read(request, id=id)
-
-
-def get_activities(request):
-    """
-    Returns all activities according to the conditions.
-    Implements the read functionality (HTTP GET) in the CRUD model
-    """
-    # Result object
-    activitiesResult = []
-
-    fields = _get_config_fields()
-
-    # Join table of activities
-    activities = Session.query(Activity.id, A_Value.value).join(A_Event).join(A_Tag).join(A_Key).join(A_Value)
-
-    # It is necessary to create first all activities with empty attribute
-    # values. Without doing this empty attributes are skipped in the later
-    # database query.
-    for (id, value) in activities:
-        activity = {}
-        activity['id'] = id
-        # Append the leaf=True property since we want to use the output *also*
-        # in a tree store
-        activity['leaf'] = True
-        for field in fields:
-            activity[field] = None
-        activitiesResult.append(activity)
-
-    # Loop all fields and query the corresponding activities
-    for field in fields:
-        for (id, value) in activities.filter(A_Key.key == field):
-            for a in activitiesResult:
-                if a['id'] == id:
-                    a[field] = value
-
-    #return {'activities': activitiesResult}
-    return activitiesResult
+    return activity_protocol.read(request, filter=(Status.name == 'active'), id=id)
 
 @view_config(route_name='activities_read_many', renderer='geojson')
-#@view_config(route_name='activities_read_many', renderer='lmkp:templates/db_test.pt')
 def read_many(request):
     """
-    Read many activities
+    Reads many active activities
     """
-    return activity_protocol.read(request)
+    return activity_protocol.read(request, filter=(Status.name == 'active'))
 
 @view_config(route_name='activities_count', renderer='string')
 def count(request):
     """
     Count activities
     """
-    return activity_protocol.count(request)
+    return activity_protocol.count(request, filter=(Status.name == 'active'))
 
 
 @view_config(route_name='activities_create', renderer='json')
@@ -79,27 +40,41 @@ def create(request):
     """
     return {}
 
-@view_config(route_name='activities_tree', renderer='lmkp:templates/db_test.pt')
-#@view_config(route_name='activities_tree', renderer='json')
+@view_config(route_name='activities_tree', renderer='extjstree')
 def tree(request):
+    """
+    Returns a ExtJS tree configuration of requested activities. Geographical
+    and attribute filter are applied!
+    """
 
-    tree = {}
+    class ActivityFolder(object):
+        """
+        Define a new class instead of a named tuple, see also comments of
+        this post:
+        http://pysnippet.blogspot.com/2010/01/named-tuple.html
+        The attribute columns id and geometry are reserved and mandatory.
+        """
 
-    tree['activities'] = []
+        def __init__(self, ** kwargs):
+            self.__dict__.update(kwargs)
 
-    pendingActivities = []
-    for i in Session.query(Activity.id, A_Value.value).join(A_Tag_Group).join(A_Tag).join(A_Key).join(A_Value).filter(A_Key.key == 'name').join(Status).filter(Status.name == 'pending').group_by(Activity.id,A_Value.value).order_by(Activity.id):
-        pendingActivities.append({'id': i[0], 'name': i[1], 'leaf': True})
+        @property
+        def __tree_interface__(self):
+            return {
+            'id': self.__dict__['id'],
+            'name': self.__dict__['name'],
+            'children': self.__dict__['children']
+            }
+            
 
-    tree['activities'].append({'id': 'pending', 'name': 'Pending activities', 'activities': pendingActivities})
+    return [
+    ActivityFolder(id='pending', name='Pending Activities', children=activity_protocol.read(request, filter=(Status.name == 'pending'))),
+    ActivityFolder(id='active', name='Active Activities', children=activity_protocol.read(request, filter=(Status.name == 'active')))
+    ]
 
-    activeActivities = []
-    for i in Session.query(Activity.id, A_Value.value).join(A_Tag_Group).join(A_Tag).join(A_Key).join(A_Value).filter(A_Key.key == 'name').join(Status).filter(Status.name == 'active').group_by(Activity.id,A_Value.value).order_by(Activity.id):
-        activeActivities.append({'id': i[0], 'name': i[1], 'leaf': True})
-    
-    tree['activities'].append({'id': 'active', 'name': 'Active activities', 'activities': activeActivities})
+    # Show only a list of activities:
+    #return activity_protocol.read(request, filter=(Status.name == 'active'))
 
-    return tree
 
 @view_config(route_name='activities_model', renderer='string')
 def model(request):
