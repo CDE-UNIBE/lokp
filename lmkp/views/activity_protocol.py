@@ -22,11 +22,11 @@ def _get_col_epsg(mapped_class, geom_attr):
     Arguments:
 
     geom_attr
-    the key of the geometry property as defined in the SQLAlchemy
-    mapper. If you use ``declarative_base`` this is the name of
-    the geometry attribute as defined in the mapped class.
+        the key of the geometry property as defined in the SQLAlchemy
+        mapper. If you use ``declarative_base`` this is the name of
+        the geometry attribute as defined in the mapped class.
     """
-    col = class_mapper(Activity).get_property("point").columns[0]
+    col = class_mapper(mapped_class).get_property(geom_attr).columns[0]
     return col.type.srid
 
 def create_geom_filter(request, within_distance_additional_params={}):
@@ -70,7 +70,7 @@ def create_geom_filter(request, within_distance_additional_params={}):
         geometry = asShape(geometry)
     if geometry is None:
         return None
-    column_epsg = _get_col_epsg(Activity, Activity.point)
+    column_epsg = _get_col_epsg(Activity, "point")
     epsg = column_epsg if epsg is None else epsg
     if epsg != column_epsg:
         geom_attr = functions.transform(geom_attr, epsg)
@@ -165,6 +165,16 @@ class ActivityFeature(object):
 
     def __init__(self, ** kwargs):
         self.__dict__.update(kwargs)
+
+    @property
+    def __tree_interface__(self):
+        name  = ""
+        if self.__dict__['name'] is not None:
+            name = self.__dict__['name']
+        else:
+            name = "Activity id %s" % self.__dict__['id']
+
+        return {'id': self.__dict__['id'], 'name': name, 'leaf': True}
 
     @property
     def __geo_interface__(self):
@@ -340,16 +350,13 @@ class ActivityProtocol(object):
 
         """
 
-        if filter is None:
-            filter = create_filter(request)
-
         # Create the query
         query = self.Session.query(Activity.id.label("id"),
                                    Activity.point.label("geometry"),
                                    Activity.activity_identifier.label("activity_identifier"),
                                    A_Key.key.label("key"),
                                    A_Value.value.label("value")
-                                   ).join(A_Tag_Group).join(A_Tag).join(A_Key).join(A_Value).join(Status).filter(Status.name == 'active').group_by(Activity.id, A_Key.key, A_Value.value).order_by(Activity.id).filter(filter)
+                                   ).join(A_Tag_Group).join(A_Tag).join(A_Key).join(A_Value).join(Status).group_by(Activity.id, A_Key.key, A_Value.value).order_by(Activity.id).filter(filter)
         return query.all()
 
     def _order(self, features, request):
@@ -474,7 +481,10 @@ class ActivityProtocol(object):
         # Simple case: a certain activity is requested by id
         if id is not None:
 
-            features = self._create_layer(self._query(request, Activity.id == id), request)
+            # Create the logical AND filter that is passed to the query
+            filter = and_(filter, Activity.id == id)
+
+            features = self._create_layer(self._query(request, filter), request)
 
             # Return a HTTP not found exception if no feature is found
             if len(features)  == 0:
@@ -487,6 +497,9 @@ class ActivityProtocol(object):
         # In the other case it is necessary to request all activities and
         # do further processing in the controller.
         else:
+
+            # Create the logical AND filter that is passed to the query
+            filter = and_(filter, create_filter(request))
 
             # Create the query and create a GIS compatible flat table layer
             rows = self._create_layer(self._query(request, filter), request)
@@ -506,12 +519,4 @@ class ActivityProtocol(object):
         """
         Return the number of records matching the given filter.
         """
-        rows = self._create_layer(self._query(request, filter), request)
-
-        # Filter the attributes according to the request
-        rows = self._filter_features(rows, request)
-
-        # Set the offset and the limit
-        rows = self._limit_features(rows, request)
-
-        return len(rows)
+        return len(self.read(request, filter))
