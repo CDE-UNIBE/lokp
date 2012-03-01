@@ -19,20 +19,18 @@ class ExtJSTree(object):
             for i in value:
                 try:
                     if i.__tree_interface__['children'] is not None:
-                        print "Has children %s" % i.__tree_interface__['children']
                         children = []
 
                         _render(i.__tree_interface__['children'], system, children)
                         parent.append({
-                        'id': i.__tree_interface__['id'],
-                        'name': i.__tree_interface__['name'],
-                        'children': children
-                        })
+                                      'id': i.__tree_interface__['id'],
+                                      'name': i.__tree_interface__['name'],
+                                      'children': children
+                                      })
                 except KeyError:
                     pass
                 try:
                     if i.__tree_interface__['leaf'] is True:
-                        print "Leaf name %s" % i.__tree_interface__['name']
                         parent.append(i.__tree_interface__)
                 except KeyError:
                     pass
