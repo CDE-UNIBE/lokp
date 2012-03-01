@@ -28,6 +28,12 @@ from sqlalchemy.schema import (
     UniqueConstraint
 )
 
+from sqlalchemy.schema import (
+    ForeignKeyConstraint,
+    PrimaryKeyConstraint,
+    UniqueConstraint
+)
+
 # ...
 from shapely import wkb
 import geojson
@@ -236,6 +242,7 @@ class Activity(Base):
     def __repr__(self):
         return "<Activity> id [ %s ] | activity_identifier [ %s ] | timestamp [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.activity_identifier, self.timestamp, wkb.loads(str(self.point.geom_wkb)).wkt, self.fk_status, self.version)
     
+<<<<<<< HEAD
     @validates('fk_status')
     def validate_status(self, key, status):
         if status == 2: # validate only when status is updated to 'active' (2)
@@ -247,6 +254,8 @@ class Activity(Base):
             assert count_active == 0, "There can only be one Activity with status 'active'."
         return status
     
+=======
+>>>>>>> refs/remotes/cdetux2/master
     @property
     def __geo_interface__(self):
        id = self.id
@@ -281,6 +290,7 @@ class Stakeholder(Base):
     def __repr__(self):
         return "<Stakeholder> id [ %s ] | stakeholder_identifier [ %s ] | timestamp [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.stakeholder_identifier, self.timestamp, self.fk_status, self.version)
 
+<<<<<<< HEAD
     @validates('fk_status')
     def validate_status(self, key, status):
         if status == 2: # validate only when status is updated to 'active' (2)
@@ -292,6 +302,8 @@ class Stakeholder(Base):
             assert count_active == 0, "There can only be one Stakeholder with status 'active'."
         return status
 
+=======
+>>>>>>> refs/remotes/cdetux2/master
 class A_Changeset(Base):
     __tablename__ = 'a_changesets'
     __table_args__ = (
@@ -578,6 +590,33 @@ class Review_Decision(Base):
     def __repr__(self):
         return "<Review_Decision> id [ %s ] | name [ %s ] | description [ %s ]" % (self.id, self.name, self.description)
 
+"""
+from sqlalchemy.orm.attributes import manager_of_class
+from sqlalchemy.orm import mapper, column_property
+from sqlalchemy import join
+activity_table = manager_of_class(Activity).mapper.mapped_table
+event_table = manager_of_class(A_Event).mapper.mapped_table
+tag_table = manager_of_class(A_Tag).mapper.mapped_table
+key_table = manager_of_class(A_Key).mapper.mapped_table
+value_table = manager_of_class(A_Value).mapper.mapped_table
+activities_all = join(join(join(join(activity_table, event_table), tag_table), key_table), value_table)
+class View_Test(Base):
+    __table__ = activities_all
+
+    activity_id = column_property(activity_table.c.id, event_table.c.fk_activity)
+    activity_uuid = activity_table.c.uuid
+    event_id = event_table.c.id
+    event_uuid = event_table.c.uuid
+    tag_id = tag_table.c.id
+    tag_uuid = tag_table.c.uuid
+    key_id = key_table.c.id
+    key_language = key_table.c.fk_language
+    value_id = value_table.c.id
+    value_language = value_table.c.fk_language
+    
+    def __repr__(self):
+        return "<View_Test> id [ %s ] | event_id [ %s ] | activity_uuid [ %s ] | event_uuid [ %s ] | fk_user [ %s ] | tag_id [ %s ]" % (self.activity_id, self.event_id, self.activity_uuid, self.event_uuid, self.fk_user, self.tag_id)
+"""    
 
 
 
