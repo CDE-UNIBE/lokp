@@ -10,6 +10,7 @@ Ext.define('Lmkp.controller.Filter', {
     
     init: function() {
         this.getConfigStore().load();
+        this.getActivityTreeStore().load();
         this.control({
             'filterPanel button[id=filterSubmit]': {
                 click: this.onFilterSubmit
@@ -27,44 +28,37 @@ Ext.define('Lmkp.controller.Filter', {
                 click: this.onFilterAdd
             }
         });
-        var actStore = this.getActivityTreeStore()
-        actStore.load();
-        console.log(actStore);
     },
     
     onLaunch: function() {
     },
     
     onFilterSubmit: function(button) {
-        var formValues = '';
+        var queryable = 'queryable=';
+        var queries = '';
         var filterForm = button.up('form').getForm();
         var filterAttributeCheckbox = filterForm.findField('filterAttributeCheckbox').getValue();
         var filterAttributeAttribute = filterForm.findField('filterAttribute').getValue(); 
         if (filterAttributeCheckbox && filterAttributeAttribute != null && filterForm.findField('filterValue').getValue() != null && filterForm.findField('filterValue').getValue() != '') {
+            // add attribute filter to queryable
+            queryable += filterAttributeAttribute + ",";
             // add attribute filter to return values
-            formValues += filterAttributeAttribute + "=" + filterForm.findField('filterValue').getValue() + '&';
+            // TODO: add additional filter possibilites (so far only exact filter "__eq")
+            queries += filterAttributeAttribute + "__eq=" + filterForm.findField('filterValue').getValue() + '&';
         }
         var filterTimeCheckbox = filterForm.findField('filterTimeCheckbox').getValue();
         if (filterTimeCheckbox) {
             // add time filter to return values
             var sliderValues = filterForm.findField('theslider').getValues();
-            formValues += 'startTime=' + sliderValues[0] + '&';
-            formValues += 'endTime=' + sliderValues[1] + '&';
+            queries += 'startTime=' + sliderValues[0] + '&';
+            queries += 'endTime=' + sliderValues[1] + '&';
         }
-        var resultPanel = Ext.ComponentQuery.query('filterPanel panel[id=filterResults]')[0];
-        var filterResult;
-        Ext.Ajax.request({
-            url: 'db_test',
-            params: formValues,
-            method: "GET",
-            callback: function(options, success, response) {
-                console.log(response);
-                filterResult = response.responseText;
-            }
-        });
-        console.log(filterResult);
-        resultPanel.update(filterResult);
-        resultPanel.setVisible(true);
+        var actStore = this.getActivityTreeStore();
+        // overwrite proxy url to load filtered activities
+        actStore.getProxy().url = 'activities/tree?' + queryable + "&" + queries;
+        // previous elements need to be removed before new ones are loaded
+        actStore.getRootNode().removeAll();
+        actStore.load();
     },
         
     onAttributeSelect: function(combo, records) {
