@@ -24,6 +24,9 @@ def main(global_config, ** settings):
     config.set_authentication_policy(authnPolicy)
     config.set_authorization_policy(authzPolicy)
 
+    # Add the directory that includes the translations
+    config.add_translation_dirs('lmkp:locale/')
+
     # Add papyrus includes
     config.include(papyrus.includeme)
     config.add_renderer('geojson', GeoJSON())

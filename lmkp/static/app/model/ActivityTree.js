@@ -3,7 +3,7 @@ Ext.define('Lmkp.model.ActivityTree', {
 
     fields:[{
         name: 'id',
-        type: 'int'
+        type: 'string'
     },{
         name: 'name',
         type: 'string'
