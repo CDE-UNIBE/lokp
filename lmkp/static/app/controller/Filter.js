@@ -1,8 +1,8 @@
 Ext.define('Lmkp.controller.Filter', {
     extend: 'Ext.app.Controller',
     
-    models: ['Config'],
-    stores: ['Config'],
+    models: ['Config', 'ActivityTree'],
+    stores: ['Config', 'ActivityTree'],
    
     views: [
         'Filter'
@@ -27,6 +27,9 @@ Ext.define('Lmkp.controller.Filter', {
                 click: this.onFilterAdd
             }
         });
+        var actStore = this.getActivityTreeStore()
+        actStore.load();
+        console.log(actStore);
     },
     
     onLaunch: function() {

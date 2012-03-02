@@ -64,12 +64,19 @@ Ext.define('Lmkp.view.Filter', {
        }]
    }, {
        // filter results
-       xtype: 'panel',
+       xtype: 'treepanel',
        id: 'filterResults',
-       hidden: true,
+       store: 'ActivityTree',
+       hidden: false,
        bodyStyle: 'padding: 5px',
        margin: '10 0 0 0',
-       html: 'Nothing found.'
+       rootVisible: false,
+       columns: [{
+       		xtype: 'treecolumn',
+       		dataIndex: 'name',
+       		flex: 2,
+       		text: 'Activity'
+       }]
    }],
       
    initComponent: function() {
