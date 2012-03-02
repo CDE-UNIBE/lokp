@@ -12,7 +12,7 @@ def my_view(request):
 
 @view_config(route_name='db_test', renderer='lmkp:templates/db_test.pt')
 def db_test(request):
-<<<<<<< HEAD
+
     from sqlalchemy import func, select
     #object = DBSession.query(View_Test).filter(View_Test.key == "name").all()
     #count = select([func.count(View_Test.value)]).group_by(View_Test.activity_id).alias()
@@ -127,7 +127,6 @@ def db_test(request):
     #===========================================================================
     
     return {'object':object}
-=======
 
     activities = []
     for i in DBSession.query(Activity).join(A_Event).join(A_Tag).join(A_Key).filter(A_Key.key == 'Spatial uncertainty'):
@@ -138,7 +137,6 @@ def db_test(request):
 
     #object = DBSession.query(A_Event).get(1)
     #return {'object':object.tags[0].key.language}
->>>>>>> refs/remotes/cdetux2/master
 
 @view_config(route_name='geo_test', renderer='geojson')
 def geo_test(request):
