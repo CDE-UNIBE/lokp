@@ -11,10 +11,8 @@ Ext.define('Lmkp.view.SidePanel' ,{
             title: 'Add new',
             xtype: 'panel'
         },{
-            html: 'Filters',
-            title: 'Filters',
-            xtype: 'panel'
-        }]
+            xtype: 'filterPanel'
+        }];
         this.callParent(arguments);
     }
 });

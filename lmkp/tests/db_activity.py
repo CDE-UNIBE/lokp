@@ -6,7 +6,11 @@ from sqlalchemy.orm.exc import FlushError
 from sqlalchemy.exc import IntegrityError
 
 from ..tests import database_setup
+<<<<<<< HEAD
+#from ..models.database_objects import Activity, A_Event, A_Tag, User, Status
+=======
 from lmkp.models.database_objects import Activity, A_Tag, User, Status
+>>>>>>> refs/remotes/cdetux2/master
 
 class ActivityTest(unittest.TestCase):
     

@@ -15,7 +15,7 @@ Ext.define('Lmkp.controller.Main', {
         });
     },
 
-    onPanelRendered: function() {
-        // Do something
+    onPanelRendered: function(comp) {
+        // do something
     }
 });
