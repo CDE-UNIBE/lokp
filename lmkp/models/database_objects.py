@@ -241,8 +241,7 @@ class Activity(Base):
 
     def __repr__(self):
         return "<Activity> id [ %s ] | activity_identifier [ %s ] | timestamp [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.activity_identifier, self.timestamp, wkb.loads(str(self.point.geom_wkb)).wkt, self.fk_status, self.version)
-    
-<<<<<<< HEAD
+
     @validates('fk_status')
     def validate_status(self, key, status):
         if status == 2: # validate only when status is updated to 'active' (2)
@@ -254,8 +253,6 @@ class Activity(Base):
             assert count_active == 0, "There can only be one Activity with status 'active'."
         return status
     
-=======
->>>>>>> refs/remotes/cdetux2/master
     @property
     def __geo_interface__(self):
        id = self.id
@@ -290,7 +287,6 @@ class Stakeholder(Base):
     def __repr__(self):
         return "<Stakeholder> id [ %s ] | stakeholder_identifier [ %s ] | timestamp [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.stakeholder_identifier, self.timestamp, self.fk_status, self.version)
 
-<<<<<<< HEAD
     @validates('fk_status')
     def validate_status(self, key, status):
         if status == 2: # validate only when status is updated to 'active' (2)
@@ -302,8 +298,6 @@ class Stakeholder(Base):
             assert count_active == 0, "There can only be one Stakeholder with status 'active'."
         return status
 
-=======
->>>>>>> refs/remotes/cdetux2/master
 class A_Changeset(Base):
     __tablename__ = 'a_changesets'
     __table_args__ = (
