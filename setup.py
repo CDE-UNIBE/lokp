@@ -1,27 +1,46 @@
-__author__="adrian"
-__date__ ="$Feb 2, 2012 3:31:43 PM$"
+import os
 
 from setuptools import setup,find_packages
 
-setup (
-  name = 'LandMatrixKnowledgePlatform',
-  version = '0.1',
-  packages = find_packages(),
+here = os.path.abspath(os.path.dirname(__file__))
+README = open(os.path.join(here, 'README.txt')).read()
+CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
-  # Declare your packages' dependencies here, for eg:
-  install_requires=['foo>=3'],
+requires = [
+    'pyramid',
+    'SQLAlchemy',
+    'transaction',
+    'pyramid_tm',
+    'pyramid_debugtoolbar',
+    'zope.sqlalchemy',
+    'waitress',
+    'papyrus',
+    'WebTest'
+    ]
 
-  # Fill in these to make your Egg ready for upload to
-  # PyPI
-  author = 'adrian',
-  author_email = '',
-
-  summary = 'Just another Python package for the cheese shop',
-  url = '',
-  license = '',
-  long_description= 'Long description of the package',
-
-  # could also include long_description, download_url, classifiers, etc.
-
-  
-)
+setup(name='LMKP',
+      version='0.0',
+      description='LMKP',
+      long_description=README + '\n\n' +  CHANGES,
+      classifiers=[
+        "Programming Language :: Python",
+        "Framework :: Pylons",
+        "Topic :: Internet :: WWW/HTTP",
+        "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+        ],
+      author='',
+      author_email='',
+      url='',
+      keywords='web wsgi bfg pylons pyramid',
+      packages=find_packages(),
+      include_package_data=True,
+      zip_safe=False,
+      test_suite='lmkp',
+      install_requires = requires,
+      entry_points = """\
+      [paste.app_factory]
+      main = lmkp:main
+      [console_scripts]
+      populate_LMKP = lmkp.scripts.populate:main
+      """,
+      )
