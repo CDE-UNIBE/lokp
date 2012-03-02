@@ -106,11 +106,17 @@ Ext.define('Lmkp.controller.manage.Main',{
         if(!record.hasChildNodes()){
             var id = record.data.id;
             this.getDetailsForm().load({
-                url: '/activities/' + id,
-                method: 'GET',
                 failure: function(form, action){
                     Ext.Msg.alert('HTTP Status', action.response.statusText);
-                }
+                },
+                method: 'GET',
+                params: {
+                    status: record.data.parentId
+                },
+                success: function(form, action){
+                    Ext.Msg.alert('HTTP Success Status', action.response.statusText);
+                },
+                url: '/activities/' + id
             });
         }
     }
