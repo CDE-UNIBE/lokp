@@ -1,6 +1,6 @@
 Ext.define('Lmkp.view.MapPanel',{
     extend: 'GeoExt.panel.Map',
-    alias: ['widget.mappanel1'],
+    alias: ['widget.mappanel'],
 
     config: {
         map: {}

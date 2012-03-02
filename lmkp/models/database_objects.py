@@ -241,7 +241,7 @@ class Activity(Base):
 
     def __repr__(self):
         return "<Activity> id [ %s ] | activity_identifier [ %s ] | timestamp [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.activity_identifier, self.timestamp, wkb.loads(str(self.point.geom_wkb)).wkt, self.fk_status, self.version)
-    
+
     @validates('fk_status')
     def validate_status(self, key, status):
         if status == 2: # validate only when status is updated to 'active' (2)
