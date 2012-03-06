@@ -52,14 +52,10 @@ Ext.define('Lmkp.controller.Filter', {
             queries += 'startTime=' + sliderValues[0] + '&';
             queries += 'endTime=' + sliderValues[1] + '&';
         }
-        /**
-        var actStore = this.getActivityTreeStore();
+        var actStore = this.getActivityGridStore();
         // overwrite proxy url to load filtered activities
-        actStore.getProxy().url = 'activities/tree?' + queryable + "&" + queries;
-        // previous elements need to be removed before new ones are loaded
-        actStore.getRootNode().removeAll();
+        actStore.getProxy().url = 'activities/json?' + queryable + '&' + queries;
         actStore.load();
-        */
     },
         
     onAttributeSelect: function(combo, records) {

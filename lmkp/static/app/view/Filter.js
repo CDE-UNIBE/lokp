@@ -80,7 +80,7 @@ Ext.define('Lmkp.view.Filter', {
        		xtype: 'pagingtoolbar',
        		store: 'ActivityGrid',
        		dock: 'bottom',
-       		displayInfo: true
+       		enableOverflow: true
        }]
    }],
       
