@@ -2,13 +2,13 @@ from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol import ActivityProtocol
 import logging
-from pyramid.events import subscriber
 from pyramid.events import NewRequest
-from pyramid.i18n import get_localizer
+from pyramid.events import subscriber
 from pyramid.i18n import TranslationStringFactory
+from pyramid.i18n import get_localizer
 from pyramid.view import view_config
-from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.expression import and_
+from sqlalchemy.sql.expression import or_
 import yaml
 
 
@@ -62,24 +62,13 @@ def get_status_filter(request):
         filters = []
         for s in status:
             filters.append((Status.name == s))
-        return or_(filters)
+        return or_(* filters)
 
 def get_timestamp(request):
     """
     Gets the timestamp from the request url and returns it
     """
     pass
-
-#@subscriber(NewRequest)
-def set_renderer(event):
-    request = event.request
-    format = request.params.get('format', 'geojson')
-    request.override_renderer = format
-
-    if format == 'tree':
-        request.route_url('activities_tree')
-
-    return True
 
 @view_config(route_name='activities_read_one', renderer='geojson')
 def read_one(request):
@@ -105,20 +94,23 @@ def read_one_json(request):
     Returns the feature with the requested id
     """
     id = request.matchdict.get('id', None)
-    return activity_protocol.read(request, filter=get_status_filter(request), id=id)
+    return {
+        'success': True,
+        'data': activity_protocol.read(request, filter=get_status_filter(request), id=id)
+    }
 
 @view_config(route_name='activities_read_many_json', renderer='json')
-#@view_config(route_name='activities_read_many_json', renderer='lmkp:templates/db_test.pt')
 def read_many_json(request):
     """
-    Reads many active activities
+    Reads many activities
     """
 
     log.debug(get_status_filter(request))
 
     return {
-        'total': activity_protocol.count(request, filter=get_status_filter(request)),
-        'data': activity_protocol.read(request, filter=get_status_filter(request))
+        'data': activity_protocol.read(request, filter=get_status_filter(request)),
+        'success': True,
+        'total': activity_protocol.count(request, filter=get_status_filter(request))
     }
 
 
@@ -144,8 +136,6 @@ def tree(request):
     Returns a ExtJS tree configuration of requested activities. Geographical
     and attribute filter are applied!
     """
-
-    print "************** TREE *************************"
 
     class ActivityFolder(object):
         """
