@@ -13,9 +13,9 @@ Ext.define('Lmkp.view.manage.activities.TreePanel',{
         proxy: {
             type: 'ajax',
             url: '/activities/tree',
-            /*extraParams: {
+            extraParams: {
                 status: 'pending,active'
-            },*/
+            },
             reader: {
                 root: 'children',
                 type: 'json'

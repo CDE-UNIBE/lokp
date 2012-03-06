@@ -703,6 +703,14 @@ def delete_sample_values(request):
             counter += 1
         if (counter > 0):
             stack.append(str(counter) + " languages deleted.")
+        # users
+        counter = 0
+        all_users = Session.query(User).all()
+        for user in all_users:
+            Session.delete(user)
+            counter += 1
+        if (counter > 0):
+            stack.append(str(counter) + " users deleted.")
 # END delete fix data -----------------------------------------------------------------------------
     if len(stack) == 0:
         stack.append('Nothing was deleted.')

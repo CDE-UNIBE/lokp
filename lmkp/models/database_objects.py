@@ -1,4 +1,7 @@
-from lmkp.models.meta import Base
+from lmkp.models.meta import (
+    Base,
+    DBSession
+)
 
 from sqlalchemy.dialects.postgresql import UUID
 import datetime
@@ -13,13 +16,15 @@ from sqlalchemy import (
     Text,
     String,
     DateTime,
+    Unicode,
     ForeignKey
 )
 
 from sqlalchemy.orm import (
     relationship,
     backref,
-    validates
+    validates,
+    synonym
 )
 
 from sqlalchemy.schema import (
@@ -43,6 +48,15 @@ from geoalchemy.geometry import (
     GeometryColumn,
     Geometry
 )
+
+# Password encyption (drawn from the Pylons project 'Shootout': https://github.com/Pylons/shootout/blob/master/shootout/)
+# Contrary to the example above, cryptacular.bcrypt could not be used (problem with Windows?). Instead, cryptacular.pbkdf2 is used.
+# As a consequence, the length of the password field had to be extended (60 to 64) compared to example.
+# Package description: http://pypi.python.org/pypi/cryptacular/0.5.1
+import cryptacular.pbkdf2
+crypt = cryptacular.pbkdf2.PBKDF2PasswordManager()
+def hash_password(password):
+    return unicode(crypt.encode(password))
 
 class A_Key(Base):
     __tablename__ = 'a_keys'
@@ -435,7 +449,6 @@ class User(Base):
     id = Column(Integer, primary_key = True)
     uuid = Column(UUID, nullable = False, unique = True)
     username = Column(String(255), nullable = False)
-    password = Column(String(255), nullable = False)
     email = Column(String(255), nullable = False)
 
     a_changesets = relationship('A_Changeset', backref='user')
@@ -444,6 +457,33 @@ class User(Base):
     a_changeset_reviews = relationship('A_Changeset_Review', backref='user')
     sh_changeset_reviews = relationship('SH_Changeset_Review', backref='user')
     involvement_reviews = relationship('Involvement_Review', backref='user')
+
+    # password encryption
+    _password = Column('password', Unicode(64))
+    
+    def _get_password(self):
+        return self._password
+    
+    def _set_password(self, password):
+        self._password = hash_password(password)
+
+    password = property(_get_password, _set_password)
+    password = synonym('_password', descriptor=password)
+
+    @classmethod
+    def get_by_username(cls, username):
+        return DBSession.query(cls).filter(cls.username == username).first()
+
+    """
+    Call this method to check if login credentials are correct.
+    Returns TRUE if correct.
+    """
+    @classmethod
+    def check_password(cls, username, password):
+        user = cls.get_by_username(username)
+        if not user:
+            return False
+        return crypt.check(user.password, password)
 
     def __init__(self, username, password, email):
         self.uuid = uuid.uuid4()

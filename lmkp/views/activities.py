@@ -2,20 +2,27 @@ from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol import ActivityProtocol
 import logging
+from pyramid.events import NewRequest
+from pyramid.events import subscriber
+from pyramid.i18n import TranslationStringFactory
+from pyramid.i18n import get_localizer
 from pyramid.view import view_config
+from sqlalchemy.sql.expression import and_
+from sqlalchemy.sql.expression import or_
 import yaml
+
 
 log = logging.getLogger(__name__)
 
+_ = TranslationStringFactory('lmkp')
+
 activity_protocol = ActivityProtocol(Session)
 
-# Not yet very nice.
-# This hashmap has to be translatable using an external
-# translation file or database.
+# Translatable hashmap with all possible activity status
 statusMap = {
-'active': 'Active Activities',
-'overwritten': 'Overwritten Activities',
-'pending': 'Pending Activities'
+'active': _('active-activities', default='Active Activities'),
+'overwritten': _('overwritten-activities', default='Overwritten Activities'),
+'pending': _('pending-activities', default='Pending Activities')
 }
 
 def get_status(request):
@@ -23,8 +30,11 @@ def get_status(request):
     Returns a list of requested and valid status
     """
 
+    # Set the default status
+    defaultStatus = ['active']
+
     # Get the status parameter if set, else active per default
-    requestedStatus = request.params.get('status', ['active'])
+    requestedStatus = request.params.get('status', defaultStatus)
     try:
         status = requestedStatus.split(',')
     except AttributeError:
@@ -35,9 +45,30 @@ def get_status(request):
         if s not in statusMap:
             status.remove(s)
 
+    # Make sure that not an empty status is returned
+    if len(status) == 0:
+        status = defaultStatus
+
     # Return a list of valid status
     return status
-    
+
+def get_status_filter(request):
+    status = get_status(request)
+    if len(status) == 0:
+        return None
+    elif len(status) == 1:
+        return (Status.name == status[0])
+    else:
+        filters = []
+        for s in status:
+            filters.append((Status.name == s))
+        return or_(* filters)
+
+def get_timestamp(request):
+    """
+    Gets the timestamp from the request url and returns it
+    """
+    pass
 
 @view_config(route_name='activities_read_one', renderer='geojson')
 def read_one(request):
@@ -45,21 +76,50 @@ def read_one(request):
     Returns the feature with the requested id
     """
     id = request.matchdict.get('id', None)
-    return activity_protocol.read(request, filter=(Status.name == 'active'), id=id)
+    return activity_protocol.read(request, filter=get_status_filter(request), id=id)
 
 @view_config(route_name='activities_read_many', renderer='geojson')
 def read_many(request):
     """
     Reads many active activities
     """
-    return activity_protocol.read(request, filter=(Status.name == 'active'))
+
+    log.debug(get_status_filter(request))
+
+    return activity_protocol.read(request, filter=get_status_filter(request))
+
+@view_config(route_name='activities_read_one_json', renderer='json')
+def read_one_json(request):
+    """
+    Returns the feature with the requested id
+    """
+    id = request.matchdict.get('id', None)
+    return {
+        'success': True,
+        'data': activity_protocol.read(request, filter=get_status_filter(request), id=id)
+    }
+
+@view_config(route_name='activities_read_many_json', renderer='json')
+def read_many_json(request):
+    """
+    Reads many activities
+    """
+
+    log.debug(get_status_filter(request))
+
+    return {
+        'data': activity_protocol.read(request, filter=get_status_filter(request)),
+        'success': True,
+        'total': activity_protocol.count(request, filter=get_status_filter(request))
+    }
+
 
 @view_config(route_name='activities_count', renderer='string')
 def count(request):
     """
     Count activities
     """
-    return activity_protocol.count(request, filter=(Status.name == 'active'))
+    return activity_protocol.count(request, filter=get_status_filter(request))
 
 
 @view_config(route_name='activities_create', renderer='json')
@@ -70,7 +130,7 @@ def create(request):
     """
     return {}
 
-@view_config(route_name='activities_tree', renderer='extjstree')
+@view_config(route_name='activities_tree', renderer='tree')
 def tree(request):
     """
     Returns a ExtJS tree configuration of requested activities. Geographical
@@ -96,17 +156,17 @@ def tree(request):
             'children': self.__dict__['children']
             }
 
+    localizer = get_localizer(request)
+
     status = get_status(request)
-    if len(status) == 0:
-        return []
-    elif len(status) == 1:
-        return activity_protocol.read(request, filter=(Status.name == status[0]))
+    if len(status) <= 1:
+        return activity_protocol.read(request, filter=get_status_filter(request))
     else:
         result = []
         for s in status:
             a = ActivityFolder(
                                id=s,
-                               name=statusMap[s],
+                               name=localizer.translate(statusMap[s]),
                                children=activity_protocol.read(request, filter=(Status.name == s))
                                )
             result.append(a)
@@ -123,7 +183,7 @@ def model(request):
     object = {}
 
     object['extend'] = 'Ext.data.Model'
-    object['proxy'] = {'type': 'ajax', 'url': '/activities', 'reader': {'type': 'json', 'root': 'activities'}}
+    object['proxy'] = {'type': 'ajax', 'url': '/activities', 'reader': {'type': 'json', 'root': 'children'}}
 
     # Get a stream of the config yaml file to extract the fields
     stream = open('lmkp/config.yaml', 'r')

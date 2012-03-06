@@ -381,13 +381,16 @@ class ActivityProtocol(object):
         """
 
         limit = None
-        offset = None
+        offset = 0
         if 'maxfeatures' in request.params:
             limit = int(request.params['maxfeatures'])
         if 'limit' in request.params:
             limit = int(request.params['limit'])
         if 'offset' in request.params:
             offset = int(request.params['offset'])
+
+        if limit is not None:
+            limit = limit + offset
 
         return features[offset:limit]
 
@@ -518,5 +521,15 @@ class ActivityProtocol(object):
     def count(self, request, filter=None):
         """
         Return the number of records matching the given filter.
+        Offset and limit parameters are ignored.
         """
-        return len(self.read(request, filter))
+            # Create the logical AND filter that is passed to the query
+        filter = and_(filter, create_filter(request))
+
+        # Create the query and create a GIS compatible flat table layer
+        rows = self._create_layer(self._query(request, filter), request)
+
+        # Filter the attributes according to the request
+        rows = self._filter_features(rows, request)
+
+        return len(rows)
