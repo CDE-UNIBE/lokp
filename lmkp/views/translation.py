@@ -7,7 +7,7 @@ log = logging.getLogger(__name__)
 
 _ = TranslationStringFactory('lmkp')
 
-@view_config(route_name='ui_translation', renderer='json')
+@view_config(route_name='ui_translation', renderer='string')
 def get_language_store_config(request):
 
     lang = request.matchdict.get('lang', 'en')
@@ -16,11 +16,13 @@ def get_language_store_config(request):
 
     uiMap = {
     'zoom-button': _('zoom-button', default='Zoom'),
-    'pan-button': _('pan-button', default='Pan')
+    'pan-button': _('pan-button', default='Pan'),
+    'file-menu': _('file-menu', default='File'),
+    'view-menu': _('view-menu', default='View'),
     }
 
-    records = []
+    str = "Ext.namespace('Lmkp');Lmkp.ts = Ext.create('Ext.util.HashMap',{alias:['ts']});"
     for i in uiMap:
-        records.append({'msgid': i, 'msgstr': localizer.translate(uiMap[i])})
+        str = "%sLmkp.ts.add('%s','%s');" % (str, i, localizer.translate(uiMap[i]))
 
-    return records
+    return str
