@@ -132,11 +132,19 @@ Ext.define('Lmkp.controller.manage.Main',{
 
         var translationsStore = Ext.data.StoreManager.lookup('translations');
         if(!translationsStore)
-            translationsStore = Ext.create('Lmkp.store.Translations');
+            translationsStore = Ext.create('Lmkp.store.Translations', {
+                listeners: {
+                    load: {
+                        fn: function(store, records, successful, operation, eOpts){
+                            console.log(store.getById('pan-button'));
+                        }
+                    }
+                }
+            });
 
 
-        console.log(translationsStore);
-        console.log(translationsStore.getById2('pan-button'));
+//        console.log(translationsStore);
+//        console.log(translationsStore.getById2('pan-button'));
 
     }
 });
