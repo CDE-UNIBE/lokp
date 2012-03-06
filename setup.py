@@ -1,6 +1,6 @@
 import os
-from setuptools import find_packages
-from setuptools import setup
+
+from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.txt')).read()
@@ -16,14 +16,15 @@ requires = [
     'waitress',
     'papyrus',
     'WebTest',
+    'cryptacular',
     'Babel',
     'lingua'
     ]
 
-setup(name='LMKP',
-      version='0.0',
-      description='LMKP',
-      long_description=README + '\n\n' + CHANGES,
+setup(name='LandMatrixKnowledgePlatform',
+      version='0.1',
+      description='The Land Matrix Knowledge Platform',
+      long_description=README + '\n\n' +  CHANGES,
       classifiers=[
       "Programming Language :: Python",
       "Framework :: Pylons",
