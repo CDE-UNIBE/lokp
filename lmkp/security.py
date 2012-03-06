@@ -11,13 +11,6 @@ import logging
 from sqlalchemy.sql import and_
 log = logging.getLogger(__name__)
 
-def check_user(username, password):
-    """
-    Query the database to check the user credentials
-    """
-    valid = Session.query(User).filter(and_(User.username == username, User.password == password)).count() == 1
-    return valid
-
 def group_finder(username, request):
     """
     Finds and returns a user group for a certain user name.
