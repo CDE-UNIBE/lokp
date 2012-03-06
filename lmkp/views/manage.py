@@ -10,4 +10,12 @@ log = logging.getLogger(__name__)
 
 @view_config(route_name='manage_events', renderer='lmkp:templates/index.pt')
 def manage_events(request):
+
+    lang = request.params.get('lang','en')
+
+    if request is not None:
+        response = request.response
+        response.set_cookie('_LOCALE_', lang)
+
+    log.debug("Language set %s" % lang)
     return {'header': 'welcome', 'login': True, 'username': 'username', 'script': 'manage'}

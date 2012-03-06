@@ -1,3 +1,4 @@
+from lmkp.views.activity_protocol import ActivityFeature
 from logging import getLogger
 import simplejson as json
 
@@ -42,5 +43,41 @@ class ExtJSTree(object):
                 response.content_type = 'application/json'
 
             return json.dumps({'children': parent})
+
+        return _render
+
+class ExtJSGrid(object):
+
+    def __call__(self, info):
+
+        def _render(value, system):
+
+            class ActivityFeatureEncoder(json.JSONEncoder):
+
+                def default(self, obj):
+                    
+                    feature = {}
+                    for d in obj.__dict__:
+                        if obj.__dict__[d] is None:
+                            continue
+                        try:
+                            feature[d] = int(obj.__dict__[d])
+                        except:
+                            try:
+                                feature[d] = float(obj.__dict__[d])
+                            except:
+                                try:
+                                    feature[d] = unicode(obj.__dict__[d])
+                                except:
+                                    pass
+                    return feature
+
+            # Get the request and set the response content type to JSON
+            request = system.get('request')
+            if request is not None:
+                response = request.response
+                response.content_type = 'application/json'
+
+            return json.dumps(value, cls=ActivityFeatureEncoder)
 
         return _render
