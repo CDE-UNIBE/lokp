@@ -1,13 +1,14 @@
 Ext.define('Lmkp.model.ActivityGrid', {
     extend: 'Ext.data.Model',
 
-    fields:[{
+    fields: [{
         name: 'id',
         type: 'int'
-    },{
+    }, {
         name: 'name',
         type: 'string'
     }],
+    idProperty: 'id',
 
     proxy: {
         type: 'ajax',
@@ -16,7 +17,10 @@ Ext.define('Lmkp.model.ActivityGrid', {
             root: 'data',
             type: 'json',
             totalProperty: 'total'
-        }
+        },
+        startParam: 'offset',
+        simpleSortMode: true,
+        sortParam: 'order_by'
     }
 
 });

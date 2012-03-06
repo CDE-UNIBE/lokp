@@ -70,9 +70,18 @@ Ext.define('Lmkp.view.Filter', {
        hidden: false,
        bodyStyle: 'padding: 5px',
        margin: '10 0 0 0',
-       columns: [
-       		{ header: 'Name', dataIndex: 'name' , flex: 1 }
-       ]
+       columns: [{
+       		header: 'Name',
+       		dataIndex: 'name' ,
+       		flex: 1,
+       		sortable: true
+       }],
+       dockedItems: [{
+       		xtype: 'pagingtoolbar',
+       		store: 'ActivityGrid',
+       		dock: 'bottom',
+       		displayInfo: true
+       }]
    }],
       
    initComponent: function() {

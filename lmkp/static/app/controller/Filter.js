@@ -10,7 +10,6 @@ Ext.define('Lmkp.controller.Filter', {
     
     init: function() {
         this.getConfigStore().load();
-        this.getActivityGridStore().load();
         this.control({
             'filterPanel button[id=filterSubmit]': {
                 click: this.onFilterSubmit
