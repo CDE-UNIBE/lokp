@@ -1,8 +1,8 @@
 Ext.define('Lmkp.controller.Filter', {
     extend: 'Ext.app.Controller',
     
-    models: ['Config', 'ActivityTree'],
-    stores: ['Config', 'ActivityTree'],
+    models: ['Config', 'ActivityGrid'],
+    stores: ['Config', 'ActivityGrid'],
    
     views: [
         'Filter'
@@ -10,7 +10,7 @@ Ext.define('Lmkp.controller.Filter', {
     
     init: function() {
         this.getConfigStore().load();
-        this.getActivityTreeStore().load();
+        this.getActivityGridStore().load();
         this.control({
             'filterPanel button[id=filterSubmit]': {
                 click: this.onFilterSubmit
@@ -53,12 +53,14 @@ Ext.define('Lmkp.controller.Filter', {
             queries += 'startTime=' + sliderValues[0] + '&';
             queries += 'endTime=' + sliderValues[1] + '&';
         }
+        /**
         var actStore = this.getActivityTreeStore();
         // overwrite proxy url to load filtered activities
         actStore.getProxy().url = 'activities/tree?' + queryable + "&" + queries;
         // previous elements need to be removed before new ones are loaded
         actStore.getRootNode().removeAll();
         actStore.load();
+        */
     },
         
     onAttributeSelect: function(combo, records) {
