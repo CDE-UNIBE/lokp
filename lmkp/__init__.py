@@ -52,14 +52,24 @@ def main(global_config, ** settings):
     # Activities controllers with an api similar to Papyrus
     # Order matters!
 
+    # Reads one or many activities and returns the result as JSON that can be used
+    # in ExtJS stores and forms
     config.add_route('activities_read_many_json', '/activities/json', request_method='GET')
     config.add_route('activities_read_one_json', '/activities/json/{id}', request_method='GET')
 
+    # Reads many activities and returns a tree configuration JSON that can be
+    # used in ExtJS tree stores
     config.add_route('activities_tree', '/activities/tree', request_method='GET')
 
+    # Returns the number of activities matching the filter
     config.add_route('activities_count', '/activities/count', request_method='GET')
+
+    # Reads one or many activities and returns GeoJSON Feature or
+    # FeatureCollection
     config.add_route('activities_read_many', '/activities', request_method='GET')
     config.add_route('activities_read_one', '/activities/{id}', request_method='GET')
+
+    # Creates a new activity (not yet implemented)
     config.add_route('activities_create', '/activities', request_method='POST')
 
    
