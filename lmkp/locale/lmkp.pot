@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LMKP 0.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2012-03-02 10:00+0100\n"
+"POT-Creation-Date: 2012-03-02 11:52+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,17 +18,27 @@ msgstr ""
 "Generated-By: Babel 0.9.6\n"
 
 #. Default: Active Activities
-#: lmkp/views/activities.py:19
+#: lmkp/views/activities.py:18
 msgid "active-activities"
 msgstr ""
 
 #. Default: Overwritten Activities
-#: lmkp/views/activities.py:20
+#: lmkp/views/activities.py:19
 msgid "overwritten-activities"
 msgstr ""
 
 #. Default: Pending Activities
-#: lmkp/views/activities.py:21
+#: lmkp/views/activities.py:20
 msgid "pending-activities"
+msgstr ""
+
+#. Default: Zoom
+#: lmkp/views/translation.py:18
+msgid "zoom-button"
+msgstr ""
+
+#. Default: Pan
+#: lmkp/views/translation.py:19
+msgid "pan-button"
 msgstr ""
 

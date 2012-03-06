@@ -4,7 +4,8 @@ Ext.define('Lmkp.controller.manage.Main',{
     models: [
     'DyLmkp.model.Activity',
     'Lmkp.model.ActivityTree',
-    'Lmkp.model.ActivityTest'
+    'Lmkp.model.ActivityTest',
+    'Lmkp.model.MessageString'
     ],
 
     refs: [{
@@ -13,7 +14,9 @@ Ext.define('Lmkp.controller.manage.Main',{
     }],
 
     requires: [
-    'Lmkp.reader.GeoJson'
+    'Lmkp.reader.GeoJson',
+    'Lmkp.store.Translations',
+    'Lmkp.model.MessageString'
     ],
 
     views: [
@@ -33,6 +36,9 @@ Ext.define('Lmkp.controller.manage.Main',{
             },
             'manageactivitiestreepanel': {
                 itemclick: this.onItemclick
+            },
+            'managemainpanel': {
+                render: this.onMainPanelRendered
             }
         });
     },
@@ -119,5 +125,18 @@ Ext.define('Lmkp.controller.manage.Main',{
                 url: '/activities/' + id
             });
         }
+    },
+
+    onMainPanelRendered: function(comp){
+        console.log("kdkd");
+
+        var translationsStore = Ext.data.StoreManager.lookup('translations');
+        if(!translationsStore)
+            translationsStore = Ext.create('Lmkp.store.Translations');
+
+
+        console.log(translationsStore);
+        console.log(translationsStore.getById2('pan-button'));
+
     }
 });
