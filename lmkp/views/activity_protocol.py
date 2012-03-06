@@ -388,9 +388,11 @@ class ActivityProtocol(object):
             limit = int(request.params['limit'])
         if 'offset' in request.params:
             offset = int(request.params['offset'])
-        log.debug(offset)
-        log.debug(limit)
-        return features[offset:(offset+limit)]
+
+        if limit is not None:
+            limit = limit + offset
+
+        return features[offset:limit]
 
     def _filter_features(self, features, request):
         """
@@ -519,8 +521,9 @@ class ActivityProtocol(object):
     def count(self, request, filter=None):
         """
         Return the number of records matching the given filter.
+        Offset and limit parameters are ignored.
         """
-         # Create the logical AND filter that is passed to the query
+            # Create the logical AND filter that is passed to the query
         filter = and_(filter, create_filter(request))
 
         # Create the query and create a GIS compatible flat table layer
@@ -529,10 +532,4 @@ class ActivityProtocol(object):
         # Filter the attributes according to the request
         rows = self._filter_features(rows, request)
 
-        # Order the features
-        #rows = self._order(rows, request)
-
-        # Set the offset and the limit
-        #rows = self._limit_features(rows, request)
-
-        return len(rows) #[self._filter_attrs(r, request) for r in rows if r is not None]
+        return len(rows)
