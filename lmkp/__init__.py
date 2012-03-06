@@ -1,4 +1,5 @@
 from lmkp.models.meta import DBSession
+from lmkp.renderers.renderers import ExtJSGrid
 from lmkp.renderers.renderers import ExtJSTree
 from lmkp.security import group_finder
 import papyrus
@@ -43,22 +44,34 @@ def main(global_config, ** settings):
     config.add_route('ext_tests', '/tests')
 
     # Add a renderer to return ExtJS tree configuration objects
-    config.add_renderer('extjstree', ExtJSTree())
+    config.add_renderer('tree', ExtJSTree())
+
+    # Add a renderer to return ExtJS store configuration objects
+    config.add_renderer('json', ExtJSGrid())
 
     # Activities controllers with an api similar to Papyrus
     # Order matters!
+
+    config.add_route('activities_read_many_json', '/activities/json', request_method='GET')
+    config.add_route('activities_read_one_json', '/activities/json/{id}', request_method='GET')
+
     config.add_route('activities_tree', '/activities/tree', request_method='GET')
+
     config.add_route('activities_count', '/activities/count', request_method='GET')
     config.add_route('activities_read_many', '/activities', request_method='GET')
     config.add_route('activities_read_one', '/activities/{id}', request_method='GET')
     config.add_route('activities_create', '/activities', request_method='POST')
 
+   
     # Return a JavaScript model
     config.add_route('activities_model', '/app/model/Activity.js')
 
+    # A controller that returns the translation needed in the ExtJS user interface
+    config.add_route('ui_translation', '/lang')
+
     # Test
     config.add_route('geojson_test', '/geojson')
-    
+
     config.scan()
     return config.make_wsgi_app()
 
