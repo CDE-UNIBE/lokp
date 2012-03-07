@@ -77,7 +77,9 @@ Ext.define('Lmkp.view.Filter', {
 				xtype: 'gridpanel',
 		       	id: 'filterResults',
 		       	store: 'ActivityGrid',
-		       	hidden: false,
+		       	viewConfig: {
+		       		stripeRows: false
+		       	},
 		       	columns: [{
 		       		header: 'Name',
 		       		name: 'namecolumn',
@@ -90,7 +92,9 @@ Ext.define('Lmkp.view.Filter', {
 		       		store: 'ActivityGrid',
 		       		dock: 'bottom',
 		       		enableOverflow: true,
-		       		displayInfo: true
+		       		displayInfo: true,
+		       		displayMsg: 'Displaying activities {0} - {1} of {2}',
+		       		emptyMsg: '<b>No activities found.</b>'
 		       	}],
 			}, {
 				xtype: 'panel',
@@ -99,10 +103,10 @@ Ext.define('Lmkp.view.Filter', {
 					'Name: {name}<br/>',
 					'Area: {area}<br/>',
 					'Project Use: {project_use}<br/>',
-					'Status: {status}<br/>',
+					'Status: {project_status}<br/>',
 					'Year of Investment: {year_of_investment}<br/>'
 				]),
-				html: 'Click on an activity above to show its details.',
+				html: 'Select an activity above to show its details.',
 				height: 100
 			}]
 	   	}];

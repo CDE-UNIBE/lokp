@@ -48,7 +48,7 @@ Ext.define('Lmkp.controller.Filter', {
             queryable += filterAttributeAttribute + ",";
             // add attribute filter to return values
             // TODO: add additional filter possibilites (so far only exact filter "__eq")
-            queries += filterAttributeAttribute + "__eq=" + filterForm.findField('filterValue').getValue() + '&';
+            queries += filterAttributeAttribute + "__eq=" + filterForm.findField('filterValue').getValue();
         }
         var filterTimeCheckbox = filterForm.findField('filterTimeCheckbox').getValue();
         if (filterTimeCheckbox) {
@@ -127,7 +127,7 @@ Ext.define('Lmkp.controller.Filter', {
     	col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=namecolumn]')[0];
     	col.renderer = function(value, p, record) {
     		return Ext.String.format(
-    			'{0}',
+    			'{0} [Province ABC, District XYZ]',
     			value
     		);
     	}

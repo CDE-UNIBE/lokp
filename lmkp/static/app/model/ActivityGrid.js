@@ -15,7 +15,7 @@ Ext.define('Lmkp.model.ActivityGrid', {
     	name: 'project_use',
     	type: 'string'
     }, {
-    	name: 'status',
+    	name: 'project_status',
     	type: 'string'
     }, {
     	name: 'year_of_investment',
