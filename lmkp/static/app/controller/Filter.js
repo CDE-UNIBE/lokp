@@ -8,6 +8,10 @@ Ext.define('Lmkp.controller.Filter', {
         'Filter'
     ],
     
+    refs: [
+    	{ ref: 'filterPanel', selector: 'filterPanel'}
+    ],
+    
     init: function() {
         this.getConfigStore().load();
         this.control({
@@ -25,11 +29,21 @@ Ext.define('Lmkp.controller.Filter', {
             },
             'filterPanel button[id=filterAdd]': {
                 click: this.onFilterAdd
+            },
+            'filterPanel gridpanel[id=filterResults]': {
+            	itemclick: this.onGridClick
+            },
+            'filterPanel gridcolumn[name=namecolumn]': {
+            	afterrender: this.renderNameColumn
+            },
+            'filterPanel gridcolumn[name=areacolumn]': {
+            	afterrender: this.renderAreaColumn
             }
         });
     },
     
     onLaunch: function() {
+    	
     },
     
     onFilterSubmit: function(button) {
@@ -48,9 +62,13 @@ Ext.define('Lmkp.controller.Filter', {
         var filterTimeCheckbox = filterForm.findField('filterTimeCheckbox').getValue();
         if (filterTimeCheckbox) {
             // add time filter to return values
+            // TODO: add time filter
+            /**
             var sliderValues = filterForm.findField('theslider').getValues();
             queries += 'startTime=' + sliderValues[0] + '&';
             queries += 'endTime=' + sliderValues[1] + '&';
+            */
+           	Ext.MessageBox.alert("Coming soon.", "Time filter function will be implemented soon.");
         }
         var actStore = this.getActivityGridStore();
         // overwrite proxy url to load filtered activities
@@ -112,5 +130,31 @@ Ext.define('Lmkp.controller.Filter', {
     
     onFilterAdd: function(button) {
         Ext.MessageBox.alert("Coming soon.", "This function will be implemented soon.");
+    },
+    
+    renderNameColumn: function() {
+    	col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=namecolumn]')[0];
+    	col.renderer = function(value, p, record) {
+    		return Ext.String.format(
+    			'{0} (id {1})',
+    			value,
+    			record.getId()
+    		);
+    	}
+    },
+    
+    renderAreaColumn: function() {
+    	col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=areacolumn]')[0];
+    	col.renderer = function(value, p, record) {
+    		if (value == '') {
+    			return '-';
+    		} else {
+	    		return value;
+	    	}
+    	}
+    },
+    
+    onGridClick: function(view, record, item, index, e, eOpts) {
+    	Ext.MessageBox.alert("Coming soon.", "Decisions will have to be made what to do here (show details panel, etc.) ID of element clicked: " + record.getId());
     }
 });
