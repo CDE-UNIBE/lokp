@@ -1,6 +1,7 @@
 Ext.define('Lmkp.model.ActivityGrid', {
     extend: 'Ext.data.Model',
 
+	// TODO: Extract fields from Config (YAML).
     fields: [{
         name: 'id',
         type: 'int'
@@ -9,7 +10,16 @@ Ext.define('Lmkp.model.ActivityGrid', {
         type: 'string'
     }, {
     	name: 'area',
-    	type: 'int'
+    	type: 'string'
+    }, {
+    	name: 'project_use',
+    	type: 'string'
+    }, {
+    	name: 'status',
+    	type: 'string'
+    }, {
+    	name: 'year_of_investment',
+    	type: 'string'
     }],
     idProperty: 'id',
 

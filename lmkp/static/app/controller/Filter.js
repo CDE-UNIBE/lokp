@@ -4,9 +4,7 @@ Ext.define('Lmkp.controller.Filter', {
     models: ['Config', 'ActivityGrid'],
     stores: ['Config', 'ActivityGrid'],
    
-    views: [
-        'Filter'
-    ],
+    views: ['Filter'],
 
     init: function() {
         this.getConfigStore().load();
@@ -31,9 +29,6 @@ Ext.define('Lmkp.controller.Filter', {
             },
             'filterPanel gridcolumn[name=namecolumn]': {
             	afterrender: this.renderNameColumn
-            },
-            'filterPanel gridcolumn[name=areacolumn]': {
-            	afterrender: this.renderAreaColumn
             }
         });
     },
@@ -132,21 +127,9 @@ Ext.define('Lmkp.controller.Filter', {
     	col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=namecolumn]')[0];
     	col.renderer = function(value, p, record) {
     		return Ext.String.format(
-    			'{0} (id {1})',
-    			value,
-    			record.getId()
+    			'{0}',
+    			value
     		);
-    	}
-    },
-    
-    renderAreaColumn: function() {
-    	col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=areacolumn]')[0];
-    	col.renderer = function(value, p, record) {
-    		if (value == '') {
-    			return '-';
-    		} else {
-	    		return value;
-	    	}
     	}
     },
     
