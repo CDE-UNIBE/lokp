@@ -7,6 +7,9 @@ Ext.define('Lmkp.model.ActivityGrid', {
     }, {
         name: 'name',
         type: 'string'
+    }, {
+    	name: 'area',
+    	type: 'int'
     }],
     idProperty: 'id',
 
