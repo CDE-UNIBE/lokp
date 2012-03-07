@@ -26,6 +26,10 @@ Ext.define('Lmkp.view.Filter', {
 	           	checkboxToggle: true,
 	           	checkboxName: 'filterAttributeCheckbox',
 	           	collapsed: true,
+	           	layout: 'column',
+	           	defaults: {
+	           		margin: '0 10px 0 0'
+	           	},
 	           	items: [{
 	               	xtype: 'combobox',
 	               	id: 'filterAttribute',
@@ -94,7 +98,14 @@ Ext.define('Lmkp.view.Filter', {
 		       		enableOverflow: true,
 		       		displayInfo: true,
 		       		displayMsg: 'Displaying activities {0} - {1} of {2}',
-		       		emptyMsg: '<b>No activities found.</b>'
+		       		emptyMsg: '<b>No activities found.</b>',
+		       		items: [
+		       			'-', {
+		       				id: 'deleteFilter',
+		       				text: 'Delete filter',
+		       				enableToggle: false
+		       			}
+		       		]
 		       	}],
 			}, {
 				xtype: 'panel',
