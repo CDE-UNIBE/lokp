@@ -68,26 +68,21 @@ Ext.define('Lmkp.view.Filter', {
 		}, {
 			// filter results
 			xtype: 'panel',
+			border: false,
+			bodyStyle: {
+				margin: '0 5px 0 0'
+			},
 			// layout: 'border',
 			items: [{
 				xtype: 'gridpanel',
 		       	id: 'filterResults',
 		       	store: 'ActivityGrid',
 		       	hidden: false,
-		       	bodyStyle: 'padding: 5px',
-		       	margin: '10 0 0 0',
 		       	columns: [{
 		       		header: 'Name',
 		       		name: 'namecolumn',
 		       		dataIndex: 'name',
 		       		flex: 1,
-		       		sortable: true
-		       	}, {
-		       		header: 'Area',
-		       		xtype: 'gridcolumn',
-		       		name: 'areacolumn',
-		       		dataIndex: 'area',
-		       		width: 40,
 		       		sortable: true
 		       	}],
 		       	dockedItems: [{
@@ -102,7 +97,10 @@ Ext.define('Lmkp.view.Filter', {
 				id: 'detailPanel',
 				tpl: Ext.create('Ext.Template', [
 					'Name: {name}<br/>',
-					'Area: {area}<br/>'
+					'Area: {area}<br/>',
+					'Project Use: {project_use}<br/>',
+					'Status: {status}<br/>',
+					'Year of Investment: {year_of_investment}<br/>'
 				]),
 				html: 'Click on an activity above to show its details.',
 				height: 100
