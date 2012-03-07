@@ -29,6 +29,9 @@ Ext.define('Lmkp.controller.Filter', {
             },
             'filterPanel gridcolumn[name=namecolumn]': {
             	afterrender: this.renderNameColumn
+            },
+            'filterPanel button[id=deleteFilter]': {
+            	click: this.deleteFilter
             }
         });
     },
@@ -48,7 +51,6 @@ Ext.define('Lmkp.controller.Filter', {
             queryable += filterAttributeAttribute + ",";
             // add attribute filter to return values
             queries += filterAttributeAttribute + filterForm.findField('filterOperator').getValue() + filterForm.findField('filterValue').getValue();
-            console.log(queries);
         }
         var filterTimeCheckbox = filterForm.findField('filterTimeCheckbox').getValue();
         if (filterTimeCheckbox) {
@@ -147,6 +149,18 @@ Ext.define('Lmkp.controller.Filter', {
 	    }
     },
     
+    deleteFilter: function() {
+    	// uncheck filter fieldsets
+    	var cbattr = Ext.ComponentQuery.query('checkbox[name=filterAttributeCheckbox]')[0];
+    	cbattr.setValue(false);
+    	var cbtime = Ext.ComponentQuery.query('checkbox[name=filterTimeCheckbox]')[0];
+    	cbtime.setValue(false);
+    	// reset proxy url and reload store
+    	var actStore = this.getActivityGridStore();
+        actStore.getProxy().url = 'activities/json';
+        actStore.load();
+    },
+    
     getOperator: function(xType) {
     	// prepare values of the store depending on selected xType
     	switch (xType) {
@@ -182,7 +196,8 @@ Ext.define('Lmkp.controller.Filter', {
     		displayField: 'displayOperator',
     		valueField: 'queryOperator',
     		queryMode: 'local',
-    		editable: false
+    		editable: false,
+    		width: 50
     	});
     	// default value: the first item of the store
     	cb.setValue(store.getAt('0').get('queryOperator'));
