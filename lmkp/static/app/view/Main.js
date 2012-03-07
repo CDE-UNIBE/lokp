@@ -1,15 +1,21 @@
 Ext.define('Lmkp.view.Main' ,{
     extend: 'Ext.panel.Panel',
     alias : ['widget.main'],
+    
     layout: 'border',
+    defaults: {
+    	collapsible: true,
+    	split: true
+    },
 
     initComponent: function() {
         this.items = [{
-            region: 'west',
-            width: 200,
-            xtype: 'sidepanel'
-        },{
             region: 'center',
+            xtype: 'sidepanel',
+            collapsible: false
+        },{
+            region: 'east',
+            width: 500,
             title: 'Map Panel',
             xtype: 'mappanel'
         }]
