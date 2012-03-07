@@ -7,11 +7,7 @@ Ext.define('Lmkp.controller.Filter', {
     views: [
         'Filter'
     ],
-    
-    refs: [
-    	{ ref: 'filterPanel', selector: 'filterPanel'}
-    ],
-    
+
     init: function() {
         this.getConfigStore().load();
         this.control({
@@ -31,7 +27,7 @@ Ext.define('Lmkp.controller.Filter', {
                 click: this.onFilterAdd
             },
             'filterPanel gridpanel[id=filterResults]': {
-            	itemclick: this.onGridClick
+            	selectionchange: this.displayActivityDetails
             },
             'filterPanel gridcolumn[name=namecolumn]': {
             	afterrender: this.renderNameColumn
@@ -154,7 +150,10 @@ Ext.define('Lmkp.controller.Filter', {
     	}
     },
     
-    onGridClick: function(view, record, item, index, e, eOpts) {
-    	Ext.MessageBox.alert("Coming soon.", "Decisions will have to be made what to do here (show details panel, etc.) ID of element clicked: " + record.getId());
+    displayActivityDetails: function(view, selected, eOpts) {
+    	if (selected.length) {
+	    	var detailPanel = Ext.ComponentQuery.query('filterPanel panel[id=detailPanel]')[0];
+	    	detailPanel.tpl.overwrite(detailPanel.body, selected[0].data);
+	    }
     }
 });
