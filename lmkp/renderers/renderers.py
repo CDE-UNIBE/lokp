@@ -70,6 +70,9 @@ class ExtJSGrid(object):
                                     feature[d] = unicode(obj.__dict__[d])
                                 except:
                                     pass
+                    # append constructed name if feature has no name
+                    if "name" not in feature:
+                        feature["name"] = "Activity " + str(feature["id"])
                     return feature
 
             # Get the request and set the response content type to JSON
