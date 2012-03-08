@@ -1,3 +1,4 @@
+from lmkp.config import config_file_path
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol import ActivityProtocol
@@ -186,7 +187,7 @@ def model(request):
     object['proxy'] = {'type': 'ajax', 'url': '/activities', 'reader': {'type': 'json', 'root': 'children'}}
 
     # Get a stream of the config yaml file to extract the fields
-    stream = open('lmkp/config.yaml', 'r')
+    stream = open(config_file_path(), 'r')
 
     # Read the config stream
     yamlConfig = yaml.load(stream)
@@ -228,7 +229,7 @@ def _get_config_fields():
     configuration file (yaml)
     """
     # Get a stream of the config yaml file to extract the fields
-    stream = open('lmkp/config.yaml', 'r')
+    stream = open(config_file_path(), 'r')
 
     # Read the config stream
     yamlConfig = yaml.load(stream)
