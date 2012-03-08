@@ -4,7 +4,7 @@ __author__ = "Adrian Weber, Centre for Development and Environment, University o
 __date__ = "$Jan 20, 2012 10:39:24 AM$"
 
 import logging
-from lmkp.security import check_user
+from lmkp.models.database_objects import User
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import forget
 from pyramid.security import remember
@@ -31,7 +31,8 @@ def login(request):
     if 'form.submitted' in request.params:
         login = request.params['login']
         password = request.params['password']
-        if check_user(login, password):
+        
+        if User.check_password(login, password):
             log.debug('Login succeed')
             headers = remember(request, login)
         else:

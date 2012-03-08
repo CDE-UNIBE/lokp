@@ -12,3 +12,5 @@
 
 # Ignore JavaScript libraries
 lmkp/static/lib/
+.pydevproject
+.project

@@ -1,13 +1,11 @@
 Ext.define('Lmkp.controller.Filter', {
     extend: 'Ext.app.Controller',
     
-    models: ['Config'],
-    stores: ['Config'],
+    models: ['Config', 'ActivityGrid'],
+    stores: ['Config', 'ActivityGrid'],
    
-    views: [
-        'Filter'
-    ],
-    
+    views: ['Filter'],
+
     init: function() {
         this.getConfigStore().load();
         this.control({
@@ -25,54 +23,68 @@ Ext.define('Lmkp.controller.Filter', {
             },
             'filterPanel button[id=filterAdd]': {
                 click: this.onFilterAdd
+            },
+            'filterPanel gridpanel[id=filterResults]': {
+            	selectionchange: this.displayActivityDetails
+            },
+            'filterPanel gridcolumn[name=namecolumn]': {
+            	afterrender: this.renderNameColumn
+            },
+            'filterPanel button[id=deleteFilter]': {
+            	click: this.deleteFilter
             }
         });
     },
     
     onLaunch: function() {
+    	
     },
     
     onFilterSubmit: function(button) {
-        var formValues = '';
+        var queryable = 'queryable=';
+        var queries = '';
         var filterForm = button.up('form').getForm();
         var filterAttributeCheckbox = filterForm.findField('filterAttributeCheckbox').getValue();
         var filterAttributeAttribute = filterForm.findField('filterAttribute').getValue(); 
         if (filterAttributeCheckbox && filterAttributeAttribute != null && filterForm.findField('filterValue').getValue() != null && filterForm.findField('filterValue').getValue() != '') {
+            // add attribute filter to queryable
+            queryable += filterAttributeAttribute + ",";
             // add attribute filter to return values
-            formValues += filterAttributeAttribute + "=" + filterForm.findField('filterValue').getValue() + '&';
+            queries += filterAttributeAttribute + filterForm.findField('filterOperator').getValue() + filterForm.findField('filterValue').getValue();
         }
         var filterTimeCheckbox = filterForm.findField('filterTimeCheckbox').getValue();
         if (filterTimeCheckbox) {
             // add time filter to return values
+            // TODO: add time filter
+            /**
             var sliderValues = filterForm.findField('theslider').getValues();
-            formValues += 'startTime=' + sliderValues[0] + '&';
-            formValues += 'endTime=' + sliderValues[1] + '&';
+            queries += 'startTime=' + sliderValues[0] + '&';
+            queries += 'endTime=' + sliderValues[1] + '&';
+            */
+           	Ext.MessageBox.alert("Coming soon.", "Time filter function will be implemented soon.");
         }
-        var resultPanel = Ext.ComponentQuery.query('filterPanel panel[id=filterResults]')[0];
-        var filterResult;
-        Ext.Ajax.request({
-            url: 'db_test',
-            params: formValues,
-            method: "GET",
-            callback: function(options, success, response) {
-                console.log(response);
-                filterResult = response.responseText;
-            }
-        });
-        console.log(filterResult);
-        resultPanel.update(filterResult);
-        resultPanel.setVisible(true);
+        var actStore = this.getActivityGridStore();
+        // overwrite proxy url to load filtered activities
+        actStore.getProxy().url = 'activities/json?' + queryable + '&' + queries;
+        actStore.load();
     },
         
     onAttributeSelect: function(combo, records) {
-        // remove field first if it is already there
-        var field = combo.up('form').getForm().findField('filterValue');
-        if (field) {
-            field.destroy();
+        // remove value field first if it is already there
+        var valueField = combo.up('form').getForm().findField('filterValue');
+        if (valueField) {
+            valueField.destroy();
         }
+        // remove operator field first if it is already there
+        var operatorField = combo.up('form').getForm().findField('filterOperator');
+        if (operatorField) {
+        	operatorField.destroy();
+        }
+        var cboperator = this.getOperator(records[0].get('xtype'));
+        combo.up('fieldset').insert(1, cboperator);
         var selectionValues = records[0].get('store');
         if (selectionValues) {      // categories of possible values available
-            combo.up('fieldset').insert(1, {
+            combo.up('fieldset').insert(2, {
                 xtype: 'combobox',
                 name: 'filterValue',
                 emptyText: 'Specify value',
@@ -83,7 +95,7 @@ Ext.define('Lmkp.controller.Filter', {
             });
         } else {                    // no categories available, define xtype
             var xtype = records[0].get('xtype');
-            combo.up('fieldset').insert(1, {
+            combo.up('fieldset').insert(2, {
                 xtype: xtype,
                 name: 'filterValue',
                 emptyText: 'Specify value',
@@ -118,5 +130,77 @@ Ext.define('Lmkp.controller.Filter', {
     
     onFilterAdd: function(button) {
         Ext.MessageBox.alert("Coming soon.", "This function will be implemented soon.");
+    },
+    
+    renderNameColumn: function() {
+    	col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=namecolumn]')[0];
+    	col.renderer = function(value, p, record) {
+    		return Ext.String.format(
+    			'{0} [Province ABC, District XYZ]',
+    			value
+    		);
+    	}
+    },
+    
+    displayActivityDetails: function(view, selected, eOpts) {
+    	if (selected.length) {
+	    	var detailPanel = Ext.ComponentQuery.query('filterPanel panel[id=detailPanel]')[0];
+	    	detailPanel.tpl.overwrite(detailPanel.body, selected[0].data);
+	    }
+    },
+    
+    deleteFilter: function() {
+    	// uncheck filter fieldsets
+    	var cbattr = Ext.ComponentQuery.query('checkbox[name=filterAttributeCheckbox]')[0];
+    	cbattr.setValue(false);
+    	var cbtime = Ext.ComponentQuery.query('checkbox[name=filterTimeCheckbox]')[0];
+    	cbtime.setValue(false);
+    	// reset proxy url and reload store
+    	var actStore = this.getActivityGridStore();
+        actStore.getProxy().url = 'activities/json';
+        actStore.load();
+    },
+    
+    getOperator: function(xType) {
+    	// prepare values of the store depending on selected xType
+    	switch (xType) {
+    		case "combo": // possibilities: == (eq) | != (ne)
+    			var data = [
+    				{'queryOperator': '__eq=', 'displayOperator': '=='},
+    				{'queryOperator': '__ne=', 'displayOperator': '!='}
+    			];
+    			break;
+    		case "textfield": // possibilities: == (like)
+    			var data = [{'queryOperator': '__like=', 'displayOperator': '=='}];
+    			break;
+    		default: // default is also used for numberfield
+    			var data = [
+    				{'queryOperator': '__eq=', 'displayOperator': '=='},
+    				{'queryOperator': '__lt=', 'displayOperator': '<'},
+    				{'queryOperator': '__lte=', 'displayOperator': '<='},
+    				{'queryOperator': '__gte=', 'displayOperator': '>='},
+    				{'queryOperator': '__gt=', 'displayOperator': '>'},
+    				{'queryOperator': '__ne=', 'displayOperator': '!='},
+    			];
+    			break;
+    	}
+    	// populate the store
+    	var store = Ext.create('Ext.data.Store', {
+    		fields: ['queryOperator', 'displayOperator'],
+    		data: data
+    	});
+    	// configure the checkbox
+    	var cb = Ext.create('Ext.form.ComboBox', {
+    		name: 'filterOperator',
+    		store: store,
+    		displayField: 'displayOperator',
+    		valueField: 'queryOperator',
+    		queryMode: 'local',
+    		editable: false,
+    		width: 50
+    	});
+    	// default value: the first item of the store
+    	cb.setValue(store.getAt('0').get('queryOperator'));
+    	return cb;
     }
 });
