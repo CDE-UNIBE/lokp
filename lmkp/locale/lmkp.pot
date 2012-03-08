@@ -1,14 +1,15 @@
-# Translations template for LMKP.
+# Translations template for LandMatrixKnowledgePlatform.
 # Copyright (C) 2012 ORGANIZATION
-# This file is distributed under the same license as the LMKP project.
+# This file is distributed under the same license as the
+# LandMatrixKnowledgePlatform project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2012.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: LMKP 0.0\n"
+"Project-Id-Version: LandMatrixKnowledgePlatform 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2012-03-02 11:52+0100\n"
+"POT-Creation-Date: 2012-03-06 16:35+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,17 +19,17 @@ msgstr ""
 "Generated-By: Babel 0.9.6\n"
 
 #. Default: Active Activities
-#: lmkp/views/activities.py:18
+#: lmkp/views/activities.py:23
 msgid "active-activities"
 msgstr ""
 
 #. Default: Overwritten Activities
-#: lmkp/views/activities.py:19
+#: lmkp/views/activities.py:24
 msgid "overwritten-activities"
 msgstr ""
 
 #. Default: Pending Activities
-#: lmkp/views/activities.py:20
+#: lmkp/views/activities.py:25
 msgid "pending-activities"
 msgstr ""
 
@@ -40,5 +41,15 @@ msgstr ""
 #. Default: Pan
 #: lmkp/views/translation.py:19
 msgid "pan-button"
+msgstr ""
+
+#. Default: File
+#: lmkp/views/translation.py:20
+msgid "file-menu"
+msgstr ""
+
+#. Default: View
+#: lmkp/views/translation.py:21
+msgid "view-menu"
 msgstr ""
 
