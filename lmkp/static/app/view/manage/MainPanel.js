@@ -44,7 +44,7 @@ Ext.define('Lmkp.view.manage.MainPanel',{
             }],
             xtype: 'menu'
         },
-        text: Lmkp.ts.get("file-menu"),
+        text: Lmkp.ts.msg("file-menu"),
         xtype: 'button'
     },{
         menu: {
@@ -57,7 +57,7 @@ Ext.define('Lmkp.view.manage.MainPanel',{
             }],
             xtype: 'menu'
         },
-        text: Lmkp.ts.get("view-menu"),
+        text: Lmkp.ts.msg("view-menu"),
         xtype: 'button'
     }],
 
