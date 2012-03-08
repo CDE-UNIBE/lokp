@@ -3,6 +3,7 @@
 __author__ = "Adrian Weber, Centre for Development and Environment, University of Bern"
 __date__ = "$Jan 20, 2012 10:39:24 AM$"
 
+from lmkp.config import config_file_path
 import logging
 from pyramid.view import view_config
 import yaml
@@ -16,7 +17,8 @@ def get_config(request):
     format=ext an ExtJS form fields configuration object is returned based on
     the configuration in config.yaml.
     """
-    stream = open('lmkp/config.yaml', 'r')
+    
+    stream = open(config_file_path(), 'r')
 
     try:
         # If format=ext is set
