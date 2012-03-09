@@ -14,7 +14,7 @@ Ext.define('Lmkp.view.Filter', {
    	initComponent: function() {
    		this.items = [{
 			// attribute selection
-	       	xtype: 'form',
+	       	xtype: 'panel',
 	       	id: 'filterForm',
 	       	layout: {
 	           	type: 'anchor'
@@ -74,7 +74,7 @@ Ext.define('Lmkp.view.Filter', {
 		       		items: [
 		       			'-', {
 		       				id: 'deleteAllFilters',
-		       				text: 'Delete filter',
+		       				text: 'Delete all filters',
 		       				enableToggle: false
 		       			}
 		       		]
