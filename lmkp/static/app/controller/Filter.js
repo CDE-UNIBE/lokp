@@ -9,15 +9,6 @@ Ext.define('Lmkp.controller.Filter', {
     init: function() {
         this.getConfigStore().load();
         this.control({
-            'filterPanel button[id=filterSubmit]': {
-                click: this.onFilterSubmit
-            },
-            'filterPanel checkbox[name=filterTimeCheckbox]': {
-                change: this.onTimeFilterCheck
-            },
-            'filterPanel checkbox[name=filterAttributeCheckbox]': {
-                change: this.onAttributeFilterCheck
-            },
             'filterPanel button[name=addAttributeFilter]': {
                 click: this.addAttributeFilter
             },
@@ -30,8 +21,8 @@ Ext.define('Lmkp.controller.Filter', {
             'filterPanel gridcolumn[name=namecolumn]': {
             	afterrender: this.renderNameColumn
             },
-            'filterPanel button[id=deleteFilter]': {
-            	click: this.deleteFilter
+            'filterPanel button[id=deleteAllFilters]': {
+            	click: this.deleteAllFilters
             },
             'filterPanel button[name=activateButton]': {
             	click: this.applyFilter
@@ -45,6 +36,9 @@ Ext.define('Lmkp.controller.Filter', {
             'filterPanel combobox[name=filterOperator]': {
             	select: this.resetActivateButton
             },
+            'filterPanel button[name=deleteButton]': {
+            	click: this.deleteFilter
+            }
         });
     },
     
@@ -105,13 +99,12 @@ Ext.define('Lmkp.controller.Filter', {
         fieldset.insert(1, operatorCombobox);
         // determine type and categories of possible values of value field
 		var valueField = this.getValueField(records[0], xtype);
-		console.log(valueField);
         fieldset.insert(2, valueField);
         // reset ActivateButton
         this.resetActivateButton(combobox, records);
     },
     
-    addAttributeFilter: function(button) {
+    addAttributeFilter: function(button, e, eOpts) {
         var form = Ext.ComponentQuery.query('form[id=filterForm]')[0];
         var insertIndex = form.items.length - 2; // always insert above the 2 buttons
         form.insert(insertIndex, {
@@ -133,45 +126,37 @@ Ext.define('Lmkp.controller.Filter', {
         		name: 'activateButton',
         		text: 'Activate',
         		enableToggle: true
+        	}, {
+        		xtype: 'button',
+        		name: 'deleteButton',
+        		text: 'Delete',
+        		enableToggle: false
         	}]
         });
     },
     
-    addTimeFilter: function(button) {
+    addTimeFilter: function(button, e, eOpts) {
     	Ext.Msg.alert('Not yet implemented', 'This function will be implemented soon.');
     },
     
-	deleteFilter: function() {
-		// TODO
-    	// // uncheck filter fieldsets
-    	// var cbattr = Ext.ComponentQuery.query('checkbox[name=filterAttributeCheckbox]')[0];
-    	// cbattr.setValue(false);
-    	// var cbtime = Ext.ComponentQuery.query('checkbox[name=filterTimeCheckbox]')[0];
-    	// cbtime.setValue(false);
-    	// // reset proxy url and reload store
-    	// var actStore = this.getActivityGridStore();
-        // actStore.getProxy().url = 'activities/json';
-        // actStore.load();
-//         
-//         
-        // var t = Ext.ComponentQuery.query('combobox[name=attributeCombo]')[0];
-        // t.up('fieldset').insert(1, {
-                // xtype: 'combobox',
-                // name: 'attributeCombo',
-                // emptyText: 'Specify value',
-                // store: this.getConfigStore(),
-                // queryMode: 'local',
-                // editable: false,
-                // width: 166
-            // });
-//             
-        // var x = Ext.ComponentQuery.query('combobox[name=attributeCombo]');
-      	// var form = t.up('form').getForm();
-        // var y = form.findField('attributeCombo');
-        // console.log(y);
-//         
-//         
-        // console.log(x);
+    deleteFilter: function(button, e, eOpts) {
+    	var fieldset = button.up('fieldset');
+    	if (fieldset) {
+    		// TODO: find out why warning is shown (also when deleting all filters)
+    		fieldset.destroy();
+    	}
+    	this.applyFilter();
+    },
+    
+	deleteAllFilters: function() {
+		var fieldsets = Ext.ComponentQuery.query('fieldset[name=attributeFieldset]');
+		if (fieldsets.length > 0) {
+			for (i=0; i<fieldsets.length; i++) {
+				// TODO: find out why warning is shown (also when deleting single filter)
+				fieldsets[i].destroy();
+			}
+		}
+		this.applyFilter();
     },
     
     renderNameColumn: function() {
