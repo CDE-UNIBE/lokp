@@ -12,6 +12,9 @@ from shapely.geometry.point import Point
 from shapely.geometry.polygon import Polygon
 from sqlalchemy.orm.util import class_mapper
 from sqlalchemy.sql import and_
+from sqlalchemy.sql.expression import desc
+from sqlalchemy.sql.expression import or_
+from sqlalchemy.sql.expression import select
 
 log = getLogger(__name__)
 
@@ -350,6 +353,10 @@ class ActivityProtocol(object):
 
         """
 
+        # Check if a timestamp is set
+        if request.params.get('timestamp', None) is not None:
+            return self._query_timestamp(request, filter).all()
+
         # Create the query
         query = self.Session.query(Activity.id.label("id"),
                                    Activity.point.label("geometry"),
@@ -533,3 +540,40 @@ class ActivityProtocol(object):
         rows = self._filter_features(rows, request)
 
         return len(rows)
+
+    def _query_timestamp(self, request, filter=None):
+
+        # Get the timestamp from the request
+        timestamp = request.params.get('timestamp', '2100-01-01 00:00:00')
+
+        # Name the new column
+        validid = "validid"
+
+        # Set a status filter. Consider only active and overwritten activities.
+        statusFilter = or_(Status.name == 'active', Status.name == 'overwritten')
+
+        # Create alias
+        a = self.Session.query(Activity).join(Status).filter(statusFilter).subquery()
+        b = Activity.__table__.alias("b")
+
+        # Create the select query
+        s = select([
+                   select([a.c.id],
+                   and_(a.c.activity_identifier == b.c.activity_identifier, a.c.timestamp < timestamp),
+                   order_by=desc(a.c.version),
+                   limit=1).label(validid),
+                   b.c.activity_identifier,
+                   b.c.point
+                   ], group_by="%s, b.activity_identifier, b.point" % validid, order_by=validid).alias("allactivities")
+
+        # Create the main query and joins
+        query = self.Session.query(s.c.validid.label("id"),
+                                   s.c.activity_identifier.label("activity_identifier"),
+                                   s.c.point.label("geometry"),
+                                   A_Key.key.label("key"),
+                                   A_Value.value.label("value")).filter(s.c.validid != None).\
+            join(A_Tag_Group).join(A_Tag).join(A_Key).\
+            join(A_Value).group_by(s.c.validid, s.c.activity_identifier, s.c.point, A_Key.key, A_Value.value).\
+                order_by(s.c.validid).filter(filter)
+
+        return query
