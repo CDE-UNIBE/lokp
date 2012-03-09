@@ -15,60 +15,32 @@ Ext.define('Lmkp.view.Filter', {
    		this.items = [{
 			// attribute selection
 	       	xtype: 'form',
-	       	id: 'attrForm',
+	       	id: 'filterForm',
 	       	layout: {
 	           	type: 'anchor'
 	       	},
 	       	border: false,
 	       	items: [{
-	           	xtype: 'fieldset',
-	           	title: 'Set attribute filter',
-	           	checkboxToggle: true,
-	           	checkboxName: 'filterAttributeCheckbox',
-	           	collapsed: true,
-	           	layout: 'column',
-	           	defaults: {
-	           		margin: '0 10px 0 0'
-	           	},
-	           	items: [{
-	               	xtype: 'combobox',
-	               	id: 'filterAttribute',
-	               	name: 'filterAttribute',
-	               	store: 'Config',
-	               	valueField: 'fieldLabel',
-	               	displayField: 'name',
-	               	queryMode: 'local',
-	               	typeAhead: true,
-	               	forceSelection: true,
-	               	emptyText: 'Select attribute',
-	               	width: 166
-	          	}, {
-	              	xtype: 'button',
-	              	id: 'filterAdd',
-	              	text: '+'
-	          	}]
+	           // items: [{
+	               // xtype: 'slider',
+	               // name: 'theslider',
+	               // width: 166,
+	               // minValue: 1990,
+	               // maxValue: 2020,
+	               // values: [1995, 2015],
+	               // constrainThumbs: true,
+	               // clickToChange: false
+	           // }]
+	           	xtype: 'button',
+	           	name: 'addAttributeFilter',
+	           	text: '[+] Add attribute filter',
+	           	tooltip: 'Add attribute filter'
 	       	}, {
-	           xtype: 'fieldset',
-	           title: 'Set time filter',
-	           checkboxToggle: true,
-	           checkboxName: 'filterTimeCheckbox',
-	           collapsed: true,
-	           items: [{
-	               xtype: 'slider',
-	               name: 'theslider',
-	               width: 166,
-	               minValue: 1990,
-	               maxValue: 2020,
-	               values: [1995, 2015],
-	               constrainThumbs: true,
-	               clickToChange: false
-	           }]
-	       }],
-	       buttons: [{
-	           text: 'Filter',
-	           id: 'filterSubmit',
-	           disabled: true
-	       }]
+	       		xtype: 'button',
+	       		name: 'addTimeFilter',
+	       		text: '[+] Add time filter',
+	       		tooltip: 'Add time filter'
+	       	}]
 		}, {
 			// filter results
 			xtype: 'panel',
