@@ -73,7 +73,7 @@ Ext.define('Lmkp.view.Filter', {
 		       		emptyMsg: '<b>No activities found.</b>',
 		       		items: [
 		       			'-', {
-		       				id: 'deleteFilter',
+		       				id: 'deleteAllFilters',
 		       				text: 'Delete filter',
 		       				enableToggle: false
 		       			}
