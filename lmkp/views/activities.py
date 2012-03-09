@@ -3,12 +3,9 @@ from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol import ActivityProtocol
 import logging
-from pyramid.events import NewRequest
-from pyramid.events import subscriber
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
 from pyramid.view import view_config
-from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import or_
 import yaml
 
@@ -250,3 +247,8 @@ def _get_config_fields():
     log.info(fields)
 
     return fields
+
+@view_config(route_name='timestamp_test', renderer="lmkp:templates/db_test.pt")
+def timestamp_test(request):
+    query = activity_protocol._query_timestamp(request)
+    return {'query': query.all()}
