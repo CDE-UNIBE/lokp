@@ -47,10 +47,10 @@ Ext.define('Lmkp.controller.Filter', {
     },
     
     resetActivateButton: function(element) {
-    	var fieldset = element.up('fieldset');
-    	var buttonIndex = fieldset.items.findIndex('name', 'activateButton');
+    	var attributePanel = element.up('panel');
+    	var buttonIndex = attributePanel.items.findIndex('name', 'activateButton');
     	if (buttonIndex != -1) {
-    		fieldset.items.getAt(buttonIndex).toggle(false);
+    		attributePanel.items.getAt(buttonIndex).toggle(false);
     	}
     },
     
@@ -81,36 +81,35 @@ Ext.define('Lmkp.controller.Filter', {
     },
         
     showValueFields: function(combobox, records, eOpts) {
-    	// everything specific for current fieldset
-    	var fieldset = combobox.up('fieldset');
+    	// everything specific for current attributePanel
+    	var attributePanel = combobox.up('panel');
     	// remove operator field if it is already there
-    	var operatorFieldIndex = fieldset.items.findIndex('name', 'filterOperator');
+    	var operatorFieldIndex = attributePanel.items.findIndex('name', 'filterOperator');
     	if (operatorFieldIndex != -1) {
-    		fieldset.items.getAt(operatorFieldIndex).destroy();
+    		attributePanel.items.getAt(operatorFieldIndex).destroy();
     	}
     	// remove value field if it is already there
-    	var valueFieldIndex = fieldset.items.findIndex('name', 'valueField');
+    	var valueFieldIndex = attributePanel.items.findIndex('name', 'valueField');
     	if (valueFieldIndex != -1) {
-    		fieldset.items.getAt(valueFieldIndex).destroy();
+    		attributePanel.items.getAt(valueFieldIndex).destroy();
     	}
     	var xtype = records[0].get('xtype');
         // determine operator field values and insert it
         var operatorCombobox = this.getOperator(xtype);
-        fieldset.insert(1, operatorCombobox);
+        attributePanel.insert(1, operatorCombobox);
         // determine type and categories of possible values of value field
 		var valueField = this.getValueField(records[0], xtype);
-        fieldset.insert(2, valueField);
+        attributePanel.insert(2, valueField);
         // reset ActivateButton
         this.resetActivateButton(combobox, records);
     },
     
     addAttributeFilter: function(button, e, eOpts) {
-        var form = Ext.ComponentQuery.query('form[id=filterForm]')[0];
+        var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
         var insertIndex = form.items.length - 2; // always insert above the 2 buttons
         form.insert(insertIndex, {
-        	xtype: 'fieldset',
-        	name: 'attributeFieldset',
-        	title: 'Attribute filter',
+        	xtype: 'panel',
+        	name: 'attributePanel',
         	items: [{
         		xtype: 'combobox',
 	        	name: 'attributeCombo',
@@ -124,12 +123,12 @@ Ext.define('Lmkp.controller.Filter', {
         	}, {
         		xtype: 'button',
         		name: 'activateButton',
-        		text: 'Activate',
+        		text: '[&#10003;] Activate',
         		enableToggle: true
         	}, {
         		xtype: 'button',
         		name: 'deleteButton',
-        		text: 'Delete',
+        		text: '[x] Delete',
         		enableToggle: false
         	}]
         });
@@ -140,20 +139,25 @@ Ext.define('Lmkp.controller.Filter', {
     },
     
     deleteFilter: function(button, e, eOpts) {
-    	var fieldset = button.up('fieldset');
-    	if (fieldset) {
-    		// TODO: find out why warning is shown (also when deleting all filters)
-    		fieldset.destroy();
+    	var attributePanel = button.up('panel');
+    	var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
+    	if (form.items.contains(attributePanel)) {
+    		form.remove(attributePanel, true);
+    		attributePanel.destroy();
     	}
     	this.applyFilter();
     },
     
 	deleteAllFilters: function() {
-		var fieldsets = Ext.ComponentQuery.query('fieldset[name=attributeFieldset]');
-		if (fieldsets.length > 0) {
-			for (i=0; i<fieldsets.length; i++) {
-				// TODO: find out why warning is shown (also when deleting single filter)
-				fieldsets[i].destroy();
+		var attributePanels = Ext.ComponentQuery.query('panel[name=attributePanel]');
+		if (attributePanels.length > 0) {
+			form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
+			for (i=0; i<attributePanels.length; i++) {
+				if (form.items.contains(attributePanels[i])) {
+					// TODO: find out why warning is shown (also when deleting single filter)
+					form.remove(attributePanels[i], true);
+					attributePanels[i].destroy();
+				}
 			}
 		}
 		this.applyFilter();
