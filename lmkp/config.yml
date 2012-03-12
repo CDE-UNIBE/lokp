@@ -1,7 +1,7 @@
 # Global configuration file for the installation.
 # Within this file mandatory and optional fields are defined.
 application:
-  bbox: -180,-90,180,180
+  bbox: -180,-84,180,84
   fields:
     mandatory:
       name:

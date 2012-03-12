@@ -26,7 +26,6 @@ def get_config(request):
                 value.items()
                 _merge_config(global_config[key], locale_config[key])
             except:
-                print "%s: %s" % (key, value)
                 global_config[key] = locale_config[key]
 
     global_stream = open(config_file_path(request), 'r')
@@ -42,24 +41,29 @@ def get_config(request):
         # File not found!
         pass
 
-    try:
-        # If format=ext is set
-        if request.GET['format'] == 'ext':
-            # Get the configuration file from the YAML file
-            extObject = []
-            # Do the translation work from custom configuration format to an
-            # ExtJS configuration object.
-            fields = global_config['application']['fields']
+    parameter = request.matchdict['parameter']
 
-            # First process the mandatory fields
-            for (name, config) in fields['mandatory'].iteritems():
-                extObject.append(_get_field_config(name, config, True))
-            # Then process also the optional fields
-            for (name, config) in fields['optional'].iteritems():
-                extObject.append(_get_field_config(name, config))
+    # if parameter=bbox is set
+    if parameter is not None and parameter.lower() == 'bbox':
+        return {'bbox': global_config['application']['bbox']}
 
-            return extObject
-    except KeyError:
+    # if format=ext is set
+    elif parameter is not None and parameter.lower() == 'form':
+        # Get the configuration file from the YAML file
+        extObject = []
+        # Do the translation work from custom configuration format to an
+        # ExtJS configuration object.
+        fields = global_config['application']['fields']
+
+        # First process the mandatory fields
+        for (name, config) in fields['mandatory'].iteritems():
+            extObject.append(_get_field_config(name, config, True))
+        # Then process also the optional fields
+        for (name, config) in fields['optional'].iteritems():
+            extObject.append(_get_field_config(name, config))
+
+        return extObject
+    else:
         return global_config
 
 
