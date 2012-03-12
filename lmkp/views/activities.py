@@ -3,12 +3,9 @@ from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol import ActivityProtocol
 import logging
-from pyramid.events import NewRequest
-from pyramid.events import subscriber
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
 from pyramid.view import view_config
-from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import or_
 import yaml
 
@@ -21,9 +18,11 @@ activity_protocol = ActivityProtocol(Session)
 
 # Translatable hashmap with all possible activity status
 statusMap = {
-'active': _('active-activities', default='Active Activities'),
-'overwritten': _('overwritten-activities', default='Overwritten Activities'),
-'pending': _('pending-activities', default='Pending Activities')
+'active': _('Active Activities', default='Active Activities'),
+'overwritten': _('Overwritten Activities', default='Overwritten Activities'),
+'pending': _('Pending Activities', default='Pending Activities'),
+'deleted': _('Deleted Activities', default='Deleted Activities'),
+'rejected': _('Rejected Activities', default='Rejected Activities')
 }
 
 def get_status(request):
@@ -41,7 +40,7 @@ def get_status(request):
     except AttributeError:
         status = requestedStatus
 
-    # Make sure that all status elements are in the statusMap. If not, remote it
+    # Make sure that all status elements are in the statusMap. If not, remove it
     for s in status:
         if s not in statusMap:
             status.remove(s)
@@ -250,3 +249,8 @@ def _get_config_fields():
     log.info(fields)
 
     return fields
+
+@view_config(route_name='timestamp_test', renderer="lmkp:templates/db_test.pt")
+def timestamp_test(request):
+    query = activity_protocol._query_timestamp(request)
+    return {'query': query.all()}

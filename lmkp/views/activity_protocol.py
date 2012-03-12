@@ -12,6 +12,9 @@ from shapely.geometry.point import Point
 from shapely.geometry.polygon import Polygon
 from sqlalchemy.orm.util import class_mapper
 from sqlalchemy.sql import and_
+from sqlalchemy.sql.expression import desc
+from sqlalchemy.sql.expression import or_
+from sqlalchemy.sql.expression import select
 
 log = getLogger(__name__)
 
@@ -350,6 +353,10 @@ class ActivityProtocol(object):
 
         """
 
+        # Check if a timestamp is set
+        if request.params.get('timestamp', None) is not None:
+            return self._query_timestamp(request, filter).all()
+
         # Create the query
         query = self.Session.query(Activity.id.label("id"),
                                    Activity.point.label("geometry"),
@@ -402,6 +409,8 @@ class ActivityProtocol(object):
         Important: Specifying several queryable layers, a logical AND operator
         is assumed, similar to the reference implementation.
         """
+
+        logicalOperator = request.params.get("logical_op", "and").lower()
         
         nbr_map = {
             'eq': '==',
@@ -417,60 +426,88 @@ class ActivityProtocol(object):
             'ilike': 'ilike'
         }
 
+        def __filter(f, k):
+
+            queryable = request.params['queryable'].split(',')
+            col, op = k.split("__")
+
+            # Unfortunately it is necessary to separate comparison of number
+            # types and string types.
+
+            # First handle number comparison
+            if col in queryable and op in nbr_map.keys():
+
+                def __attribute_test(item):
+
+                    # Exclude all features with null values in this attribute.
+                    # Is this correct?
+                    if getattr(item, col) is None:
+                        return False
+
+                    # Create the expression
+                    try:
+                        # Try to cast the values to a number
+                        attr = float((getattr(item, col)))
+                        val = float(request.params[k])
+                        expression = "%f %s %f" % (attr, nbr_map[op], val)
+                    except:
+                        # If the casting fails, Strings are assumed
+                        expression = "'%s' %s '%s'" % (getattr(item, col), nbr_map[op], request.params[k])
+
+                    log.debug("expression: %s, column: %s, value: %s" % (expression, col, request.params[k]))
+                    return eval(expression)
+
+                f = filter(__attribute_test, f)
+
+            # Handle the string specific like and ilike comparisons.
+            # String comparisons are always case-insensitiv
+            elif col in queryable and op in str_map.keys():
+                def __attribute_test(item):
+
+                    # Exclude all features with null values in this attribute.
+                    # Is this correct?
+                    if getattr(item, col) is None:
+                        return False
+
+                    # Create the expression
+                    expression = "'%s'.lower() in '%s'.lower()" % (request.params[k], getattr(item, col))
+                    log.debug("expression: %s, column: %s, value: %s" % (expression, col, request.params[k]))
+                    return eval(expression)
+
+                f = filter(__attribute_test, f)
+
+            else:
+                pass
+
+            return f
 
         if 'queryable' in request.params:
-            queryable = request.params['queryable'].split(',')
-            for k in request.params:
-                if len(request.params[k]) <= 0 or '__' not in k:
-                    continue
-                col, op = k.split("__")
 
-                # Unfortunately it is necessary to separate comparison of number
-                # types and string types.
+            # Implement the logical OR operator
+            if logicalOperator == 'or':
 
-                # First handle number comparison
-                if col in queryable and op in nbr_map.keys():
+                # A list of features that have fulfilled at least on condition
+                filteredFeatures = []
+                for k in request.params:
+                    if len(request.params[k]) <= 0 or '__' not in k:
+                        continue
+                    filteredFeatures.append(__filter(features, k))
 
-                    def __attribute_test(item):
+                # Merge all lists:
+                f = []
+                for ff in filteredFeatures:
+                    for feature in ff:
+                        if feature not in f:
+                            f.append(feature)
 
-                        # Exclude all features with null values in this attribute.
-                        # Is this the correct?
-                        if getattr(item, col) is None:
-                            return False
+                features = f
 
-                        # Create the expression
-                        try:
-                            # Try to cast the values to a number
-                            attr = float((getattr(item, col)))
-                            val = float(request.params[k])
-                            expression = "%f %s %f" % (attr, nbr_map[op], val)
-                        except:
-                            # If the casting fails, Strings are assumed
-                            expression = "'%s' %s '%s'" % (getattr(item, col), nbr_map[op], request.params[k])
-                        log.debug("expression: %s, column: %s, value: %s" % (expression, col, request.params[k]))
-                        return eval(expression)
-
-                    features = filter(__attribute_test, features)
-
-                # Handle the string specific like and ilike comparisons.
-                # String comparisons are always case-insensitiv
-                elif col in queryable and op in str_map.keys():
-                    def __attribute_test(item):
-
-                        # Exclude all features with null values in this attribute.
-                        # Is this the correct?
-                        if getattr(item, col) is None:
-                            return False
-
-                        # Create the expression
-                        expression = "'%s'.lower() in '%s'.lower()" % (request.params[k], getattr(item, col))
-                        log.debug("expression: %s, column: %s, value: %s" % (expression, col, request.params[k]))
-                        return eval(expression)
-
-                    features = filter(__attribute_test, features)
-
-                else:
-                    continue
+            # Implement the logical AND operator
+            elif logicalOperator == 'and':
+                for k in request.params:
+                    if len(request.params[k]) <= 0 or '__' not in k:
+                        continue
+                    features = __filter(features, k)
 
         return features
 
@@ -533,3 +570,40 @@ class ActivityProtocol(object):
         rows = self._filter_features(rows, request)
 
         return len(rows)
+
+    def _query_timestamp(self, request, filter=None):
+
+        # Get the timestamp from the request
+        timestamp = request.params.get('timestamp', '2100-01-01 00:00:00')
+
+        # Name the new column
+        validid = "validid"
+
+        # Set a status filter. Consider only active and overwritten activities.
+        statusFilter = or_(Status.name == 'active', Status.name == 'overwritten')
+
+        # Create alias
+        a = self.Session.query(Activity).join(Status).filter(statusFilter).subquery()
+        b = Activity.__table__.alias("b")
+
+        # Create the select query
+        s = select([
+                   select([a.c.id],
+                   and_(a.c.activity_identifier == b.c.activity_identifier, a.c.timestamp < timestamp),
+                   order_by=desc(a.c.version),
+                   limit=1).label(validid),
+                   b.c.activity_identifier,
+                   b.c.point
+                   ], group_by="%s, b.activity_identifier, b.point" % validid, order_by=validid).alias("allactivities")
+
+        # Create the main query and joins
+        query = self.Session.query(s.c.validid.label("id"),
+                                   s.c.activity_identifier.label("activity_identifier"),
+                                   s.c.point.label("geometry"),
+                                   A_Key.key.label("key"),
+                                   A_Value.value.label("value")).filter(s.c.validid != None).\
+            join(A_Tag_Group).join(A_Tag).join(A_Key).\
+            join(A_Value).group_by(s.c.validid, s.c.activity_identifier, s.c.point, A_Key.key, A_Value.value).\
+                order_by(s.c.validid).filter(filter)
+
+        return query

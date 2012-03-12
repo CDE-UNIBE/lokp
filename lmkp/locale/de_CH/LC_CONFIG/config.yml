@@ -1,0 +1,12 @@
+application:
+  bbox: 7,45,9,48
+  name: Observatory on Land Acquisitions in Switzerland
+  fields:
+    mandatory:
+      project_use:
+        predefined:
+        - food production
+        - tourism
+        - forestry for wood and fiber
+        - agrofuels
+        - forestry

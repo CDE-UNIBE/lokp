@@ -1,38 +1,46 @@
-# French translations for LandMatrixKnowledgePlatform.
+# French translations for PROJECT.
 # Copyright (C) 2012 ORGANIZATION
-# This file is distributed under the same license as the
-# LandMatrixKnowledgePlatform project.
+# This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2012.
 #
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: LandMatrixKnowledgePlatform 0.1\n"
+"Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2012-03-06 16:35+0100\n"
-"PO-Revision-Date: 2012-03-06 16:51+0100\n"
+"POT-Creation-Date: 2012-03-12 10:35+0100\n"
+"PO-Revision-Date: 2012-03-12 10:57+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: fr <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"X-Language: fr\n"
-"X-Source-Language: en\n"
 
 #. Default: Active Activities
-#: lmkp/views/activities.py:23
-msgid "active-activities"
+#: lmkp/views/activities.py:21
+msgid "Active Activities"
 msgstr ""
 
 #. Default: Overwritten Activities
-#: lmkp/views/activities.py:24
-msgid "overwritten-activities"
+#: lmkp/views/activities.py:22
+msgid "Overwritten Activities"
 msgstr ""
 
 #. Default: Pending Activities
+#: lmkp/views/activities.py:23
+msgid "Pending Activities"
+msgstr ""
+
+#. Default: Deleted Activities
+#: lmkp/views/activities.py:24
+msgid "Deleted Activities"
+msgstr ""
+
+#. Default: Rejected Activities
 #: lmkp/views/activities.py:25
-msgid "pending-activities"
+msgid "Rejected Activities"
 msgstr ""
 
 #. Default: Zoom
@@ -43,14 +51,15 @@ msgstr ""
 #. Default: Pan
 #: lmkp/views/translation.py:19
 msgid "pan-button"
-msgstr "Panoramiquer"
+msgstr ""
 
 #. Default: File
 #: lmkp/views/translation.py:20
 msgid "file-menu"
-msgstr "Fichier"
+msgstr ""
 
 #. Default: View
 #: lmkp/views/translation.py:21
 msgid "view-menu"
-msgstr "Affichage"
+msgstr ""
+
