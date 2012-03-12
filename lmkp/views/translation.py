@@ -36,7 +36,7 @@ def ui_messages(request):
     # if a key does not exist. Use this method in the ExtJS views.
     str += "Lmkp.ts.msg = function(key) {\n"
     str += "\treturn this.containsKey(key) ? this.get(key) : key;\n"
-    str += "}\n"
+    str += "};\n"
 
     # Add all translated keys and values to this MixedCollection
     str += "Lmkp.ts.addAll("

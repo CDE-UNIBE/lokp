@@ -4,6 +4,7 @@ __author__ = "Adrian Weber, Centre for Development and Environment, University o
 __date__ = "$Jan 20, 2012 10:39:24 AM$"
 
 from lmkp.config import config_file_path
+from lmkp.config import locale_config_file_path
 import logging
 from pyramid.view import view_config
 import yaml
@@ -17,18 +18,38 @@ def get_config(request):
     format=ext an ExtJS form fields configuration object is returned based on
     the configuration in config.yaml.
     """
-    
-    stream = open(config_file_path(), 'r')
+
+    def _merge_config(global_config, locale_config):
+
+        for key, value in locale_config.items():
+            try:
+                value.items()
+                _merge_config(global_config[key], locale_config[key])
+            except:
+                print "%s: %s" % (key, value)
+                global_config[key] = locale_config[key]
+
+    global_stream = open(config_file_path(request), 'r')
+    global_config = yaml.load(global_stream)
+
+    try:
+        locale_stream = open(locale_config_file_path(request), 'r')
+        locale_config = yaml.load(locale_stream)
+
+        _merge_config(global_config, locale_config)
+
+    except IOError:
+        # File not found!
+        pass
 
     try:
         # If format=ext is set
         if request.GET['format'] == 'ext':
             # Get the configuration file from the YAML file
-            yamlConfig = yaml.load(stream)
             extObject = []
             # Do the translation work from custom configuration format to an
             # ExtJS configuration object.
-            fields = yamlConfig['application']['fields']
+            fields = global_config['application']['fields']
 
             # First process the mandatory fields
             for (name, config) in fields['mandatory'].iteritems():
@@ -39,7 +60,7 @@ def get_config(request):
 
             return extObject
     except KeyError:
-        return yaml.load(stream)
+        return global_config
 
 
 def _get_field_config(name, config, mandatory=False):

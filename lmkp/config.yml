@@ -1,7 +1,7 @@
 # Global configuration file for the installation.
 # Within this file mandatory and optional fields are defined.
 application:
-  name: "Land Matrix Knowledge Platform global edition"
+  bbox: -180,-90,180,180
   fields:
     mandatory:
       name:
@@ -28,3 +28,4 @@ application:
         validator: if(value == 0 || (value > 1900 && value < 2100)){return true;} else {return "1900 < year of investment < 2100";}
       Spatial uncertainty:
         type: String
+  name: "Land Matrix Knowledge Platform global edition"
