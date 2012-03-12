@@ -59,6 +59,12 @@ Ext.define('Lmkp.view.manage.MainPanel',{
         },
         text: Lmkp.ts.msg("view-menu"),
         xtype: 'button'
+    },'->',{
+        fieldLabel: 'Choose country',
+        id: 'locale-combobox',
+        queryMode: 'local',
+        store: [['de', 'Germany'],['de_CH', 'Switzerland'],['lo_LA', 'Laos'],['fr','France']],
+        xtype: 'combo'
     }],
 
     initComponent: function(){

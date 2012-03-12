@@ -82,6 +82,9 @@ def main(global_config, ** settings):
     # Test
     config.add_route('geojson_test', '/geojson')
 
+    # Yet another test
+    config.add_route('timestamp_test', '/timestamp')
+
     config.scan()
     return config.make_wsgi_app()
 

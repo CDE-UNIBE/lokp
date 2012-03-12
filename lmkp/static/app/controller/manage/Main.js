@@ -11,6 +11,9 @@ Ext.define('Lmkp.controller.manage.Main',{
     refs: [{
         ref: 'detailsForm',
         selector: 'manageactivitiesdetails'
+    },{
+        ref: 'mapPanel',
+        selector: 'managemainpanel mappanel'
     }],
 
     requires: [
@@ -39,6 +42,9 @@ Ext.define('Lmkp.controller.manage.Main',{
             },
             'managemainpanel': {
                 render: this.onMainPanelRendered
+            },
+            'managemainpanel toolbar combobox[id*=locale-combobox]': {
+                change: this.onCountryChange
             }
         });
     },
@@ -69,7 +75,11 @@ Ext.define('Lmkp.controller.manage.Main',{
                 }
                 comp.add(configs);
                 comp.doLayout();
-            }
+
+                // Update the map panel
+                console.log(this.getMapPanel().map);
+            },
+            scope: this
         });
     },
 
@@ -143,8 +153,24 @@ Ext.define('Lmkp.controller.manage.Main',{
             });
 
 
-//        console.log(translationsStore);
-//        console.log(translationsStore.getById2('pan-button'));
+    //        console.log(translationsStore);
+    //        console.log(translationsStore.getById2('pan-button'));
 
+    },
+
+    /**
+     * Fires after an country
+     */
+    onCountryChange: function(field, newValue, oldValue, eOpts){
+        var form = Ext.create('Ext.form.Panel', {
+            standardSubmit: true,
+            url: '/manage'
+        });
+        form.submit({
+            params: {
+                locale: newValue
+            }
+        });
     }
+
 });
