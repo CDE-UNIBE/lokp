@@ -9,20 +9,11 @@ Ext.define('Lmkp.controller.Filter', {
     init: function() {
         this.getConfigStore().load();
         this.control({
-            'filterPanel button[id=filterSubmit]': {
-                click: this.onFilterSubmit
+            'filterPanel button[name=addAttributeFilter]': {
+                click: this.addAttributeFilter
             },
-            'filterPanel combobox[id=filterAttribute]': {
-                select: this.onAttributeSelect
-            },
-            'filterPanel checkbox[name=filterTimeCheckbox]': {
-                change: this.onTimeFilterCheck
-            },
-            'filterPanel checkbox[name=filterAttributeCheckbox]': {
-                change: this.onAttributeFilterCheck
-            },
-            'filterPanel button[id=filterAdd]': {
-                click: this.onFilterAdd
+            'filterPanel button[name=addTimeFilter]': {
+            	click: this.addTimeFilter
             },
             'filterPanel gridpanel[id=filterResults]': {
             	selectionchange: this.displayActivityDetails
@@ -30,7 +21,22 @@ Ext.define('Lmkp.controller.Filter', {
             'filterPanel gridcolumn[name=namecolumn]': {
             	afterrender: this.renderNameColumn
             },
-            'filterPanel button[id=deleteFilter]': {
+            'filterPanel button[id=deleteAllFilters]': {
+            	click: this.deleteAllFilters
+            },
+            'filterPanel button[name=activateButton]': {
+            	click: this.applyFilter
+            },
+            'filterPanel combobox[name=attributeCombo]': {
+                select: this.showValueFields
+            },
+            'filterPanel [name=valueField]': {
+            	change: this.resetActivateButton
+            },
+            'filterPanel combobox[name=filterOperator]': {
+            	select: this.resetActivateButton
+            },
+            'filterPanel button[name=deleteButton]': {
             	click: this.deleteFilter
             }
         });
@@ -40,96 +46,139 @@ Ext.define('Lmkp.controller.Filter', {
     	
     },
     
-    onFilterSubmit: function(button) {
-        var queryable = 'queryable=';
-        var queries = '';
-        var filterForm = button.up('form').getForm();
-        var filterAttributeCheckbox = filterForm.findField('filterAttributeCheckbox').getValue();
-        var filterAttributeAttribute = filterForm.findField('filterAttribute').getValue(); 
-        if (filterAttributeCheckbox && filterAttributeAttribute != null && filterForm.findField('filterValue').getValue() != null && filterForm.findField('filterValue').getValue() != '') {
-            // add attribute filter to queryable
-            queryable += filterAttributeAttribute + ",";
-            // add attribute filter to return values
-            queries += filterAttributeAttribute + filterForm.findField('filterOperator').getValue() + filterForm.findField('filterValue').getValue();
-        }
-        var filterTimeCheckbox = filterForm.findField('filterTimeCheckbox').getValue();
-        if (filterTimeCheckbox) {
-            // add time filter to return values
-            // TODO: add time filter
-            /**
-            var sliderValues = filterForm.findField('theslider').getValues();
-            queries += 'startTime=' + sliderValues[0] + '&';
-            queries += 'endTime=' + sliderValues[1] + '&';
-            */
-           	Ext.MessageBox.alert("Coming soon.", "Time filter function will be implemented soon.");
-        }
-        var actStore = this.getActivityGridStore();
-        // overwrite proxy url to load filtered activities
-        actStore.getProxy().url = 'activities/json?' + queryable + '&' + queries;
-        actStore.load();
+    resetActivateButton: function(element) {
+    	var attributePanel = element.up('panel');
+    	var buttonIndex = attributePanel.items.findIndex('name', 'activateButton');
+    	if (buttonIndex != -1) {
+    		attributePanel.items.getAt(buttonIndex).toggle(false);
+    	}
+    },
+    
+    applyFilter: function(button, e, eOpts) {
+    	var queryable = 'queryable=';
+    	var queries = '';
+    	var attrs = Ext.ComponentQuery.query('combobox[name=attributeCombo]');
+    	var values = Ext.ComponentQuery.query('[name=valueField]');
+    	var ops = Ext.ComponentQuery.query('combobox[name=filterOperator]');
+    	var buttons = Ext.ComponentQuery.query('button[name=activateButton]');
+    	if (attrs.length > 0 && values.length > 0) {
+    		for (i=0; i<attrs.length; i++) {
+    			if (buttons[i].pressed) { // only add value if filter is activated
+	    			var currAttr = attrs[i].getValue();
+	    			var currVal = values[i].getValue();
+	    			var currOp = ops[i].getValue();
+	    			if (currAttr && currVal) {
+	    				queryable += currAttr + ",";
+	    				queries += currAttr + currOp + currVal + "&";
+	    			}
+    			}
+    		}
+    	}
+    	// reload store by overwriting its proxy url
+    	var store = this.getActivityGridStore();
+    	store.getProxy().url = 'activities/json?' + queryable + "&" + queries;
+    	store.load();
     },
         
-    onAttributeSelect: function(combo, records) {
-        // remove value field first if it is already there
-        var valueField = combo.up('form').getForm().findField('filterValue');
-        if (valueField) {
-            valueField.destroy();
-        }
-        // remove operator field first if it is already there
-        var operatorField = combo.up('form').getForm().findField('filterOperator');
-        if (operatorField) {
-        	operatorField.destroy();
-        }
-        var cboperator = this.getOperator(records[0].get('xtype'));
-        combo.up('fieldset').insert(1, cboperator);
-        var selectionValues = records[0].get('store');
-        if (selectionValues) {      // categories of possible values available
-            combo.up('fieldset').insert(2, {
-                xtype: 'combobox',
-                name: 'filterValue',
-                emptyText: 'Specify value',
-                store: selectionValues,
-                queryMode: 'local',
-                editable: false,
-                width: 166
-            });
-        } else {                    // no categories available, define xtype
-            var xtype = records[0].get('xtype');
-            combo.up('fieldset').insert(2, {
-                xtype: xtype,
-                name: 'filterValue',
-                emptyText: 'Specify value',
-                width: 166
-            });
-        }
-        var filterSubmitButton = Ext.ComponentQuery.query('button[id=filterSubmit]')[0];
-        filterSubmitButton.enable();
-    }, 
-    
-    onTimeFilterCheck: function(field, newValue, oldValue) {
-        var filterAttributeCheckbox = Ext.ComponentQuery.query('checkbox[name=filterAttributeCheckbox]')[0];
-        var filterSubmitButton = Ext.ComponentQuery.query('button[id=filterSubmit]')[0];
-        if (newValue || filterAttributeCheckbox.checked) {
-            filterSubmitButton.enable();
-        } else {
-            filterSubmitButton.disable();
-        }
+    showValueFields: function(combobox, records, eOpts) {
+    	// everything specific for current attributePanel
+    	var attributePanel = combobox.up('panel');
+    	// remove operator field if it is already there
+    	var operatorFieldIndex = attributePanel.items.findIndex('name', 'filterOperator');
+    	if (operatorFieldIndex != -1) {
+    		attributePanel.items.getAt(operatorFieldIndex).destroy();
+    	}
+    	// remove value field if it is already there
+    	var valueFieldIndex = attributePanel.items.findIndex('name', 'valueField');
+    	if (valueFieldIndex != -1) {
+    		attributePanel.items.getAt(valueFieldIndex).destroy();
+    	}
+    	var xtype = records[0].get('xtype');
+        // determine operator field values and insert it
+        var operatorCombobox = this.getOperator(xtype);
+        attributePanel.insert(1, operatorCombobox);
+        // determine type and categories of possible values of value field
+		var valueField = this.getValueField(records[0], xtype);
+        attributePanel.insert(2, valueField);
+        // reset ActivateButton
+        this.resetActivateButton(combobox, records);
     },
     
-    onAttributeFilterCheck: function(field, newValue, oldValue) {
-        var filterTimeCheckbox = Ext.ComponentQuery.query('checkbox[name=filterTimeCheckbox]')[0];
-        var filterSubmitButton = Ext.ComponentQuery.query('button[id=filterSubmit]')[0];
-        var filterAttribute = field.up('form').getForm().findField('filterAttribute').getValue();
-        if (!newValue && !filterTimeCheckbox.checked) {
-            filterSubmitButton.disable();
-        }
-        if (newValue && filterAttribute) {
-            filterSubmitButton.enable();
-        }
+    addAttributeFilter: function(button, e, eOpts) {
+        var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
+        var insertIndex = form.items.length - 2; // always insert above the 2 buttons
+        var cbox = Ext.create('Ext.form.field.ComboBox', {
+        	name: 'attributeCombo',
+        	store: this.getConfigStore(),
+        	valueField: 'fieldLabel',
+        	displayField: 'name',
+        	queryMode: 'local',
+        	typeAhead: true,
+        	forceSelection: true,
+        	value: this.getConfigStore().getAt('0'),
+        	flex: 0,
+        	margin: '0 5 5 0'
+        });
+        form.insert(insertIndex, {
+        	xtype: 'panel',
+        	name: 'attributePanel',
+        	anchor: '100%',
+        	border: 0,
+        	layout: {
+        		type: 'hbox',
+        		flex: 'stretch'
+        	},
+        	items: [
+        		cbox, 
+        	{
+        		xtype: 'panel',
+        		flex: 1,
+        		border: 0
+        	}, {
+        		xtype: 'button',
+        		name: 'activateButton',
+        		text: '[&#10003;] Activate',
+        		enableToggle: true,
+        		flex: 0,
+        		margin: '0 5 0 0'
+        	}, {
+        		xtype: 'button',
+        		name: 'deleteButton',
+        		text: '[x] Delete',
+        		enableToggle: false,
+        		flex: 0
+        	}]
+        });
+        // show initial filter
+        this.showValueFields(cbox, [this.getConfigStore().getAt('0')]);
     },
     
-    onFilterAdd: function(button) {
-        Ext.MessageBox.alert("Coming soon.", "This function will be implemented soon.");
+    addTimeFilter: function(button, e, eOpts) {
+    	Ext.Msg.alert('Not yet implemented', 'This function will be implemented soon.');
+    },
+    
+    deleteFilter: function(button, e, eOpts) {
+    	var attributePanel = button.up('panel');
+    	var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
+    	if (form.items.contains(attributePanel)) {
+    		form.remove(attributePanel, true);
+    		attributePanel.destroy();
+    	}
+    	this.applyFilter();
+    },
+    
+	deleteAllFilters: function() {
+		var attributePanels = Ext.ComponentQuery.query('panel[name=attributePanel]');
+		if (attributePanels.length > 0) {
+			form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
+			for (i=0; i<attributePanels.length; i++) {
+				if (form.items.contains(attributePanels[i])) {
+					form.remove(attributePanels[i], true);
+					attributePanels[i].destroy();
+				}
+			}
+		}
+		this.applyFilter();
     },
     
     renderNameColumn: function() {
@@ -149,19 +198,7 @@ Ext.define('Lmkp.controller.Filter', {
 	    }
     },
     
-    deleteFilter: function() {
-    	// uncheck filter fieldsets
-    	var cbattr = Ext.ComponentQuery.query('checkbox[name=filterAttributeCheckbox]')[0];
-    	cbattr.setValue(false);
-    	var cbtime = Ext.ComponentQuery.query('checkbox[name=filterTimeCheckbox]')[0];
-    	cbtime.setValue(false);
-    	// reset proxy url and reload store
-    	var actStore = this.getActivityGridStore();
-        actStore.getProxy().url = 'activities/json';
-        actStore.load();
-    },
-    
-    getOperator: function(xType) {
+	getOperator: function(xType) {
     	// prepare values of the store depending on selected xType
     	switch (xType) {
     		case "combo": // possibilities: == (eq) | != (ne)
@@ -190,17 +227,52 @@ Ext.define('Lmkp.controller.Filter', {
     		data: data
     	});
     	// configure the checkbox
-    	var cb = Ext.create('Ext.form.ComboBox', {
+    	var cb = Ext.create('Ext.form.field.ComboBox', {
     		name: 'filterOperator',
     		store: store,
     		displayField: 'displayOperator',
     		valueField: 'queryOperator',
     		queryMode: 'local',
     		editable: false,
-    		width: 50
+    		width: 50,
+    		margin: '0 5 0 0'
     	});
     	// default value: the first item of the store
     	cb.setValue(store.getAt('0').get('queryOperator'));
     	return cb;
+    },
+    
+    getValueField: function(record, xtype) {
+    	var fieldName = 'valueField';
+    	// try to find categories
+    	var selectionValues = record.get('store');
+        if (selectionValues) {      // categories of possible values available, create ComboBox
+        	var valueField = Ext.create('Ext.form.field.ComboBox', {
+        		name: fieldName,
+                store: selectionValues,
+                queryMode: 'local',
+                editable: false,
+                value: selectionValues[0],
+                margin: '0 5 0 0'
+        	});
+        } else {                    // no categories available, create field based on xtype
+            switch (xtype) {
+            	case "numberfield":
+            		var valueField = Ext.create('Ext.form.field.Number', {
+            			name: fieldName,
+            			emptyText: 'Specify number value',
+            			margin: '0 5 0 0'
+            		});
+            		break;
+            	default:
+            		var valueField = Ext.create('Ext.form.field.Text', {
+            			name: fieldName,
+            			emptyText: 'Specify value',
+            			margin: '0 5 0 0'
+            		});
+            		break;
+            }
+        }
+        return valueField;
     }
 });

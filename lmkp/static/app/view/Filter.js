@@ -5,78 +5,53 @@ Ext.define('Lmkp.view.Filter', {
    	title: 'Filters',
    	layout: {
        	type: 'vbox',
+       	padding: 5,
        	align: 'stretch',
-       	pack: 'start'
    	},
-   	bodyPadding: 5,
-   	
    	
    	initComponent: function() {
    		this.items = [{
 			// attribute selection
-	       	xtype: 'form',
-	       	id: 'attrForm',
+	       	xtype: 'panel',
+	       	id: 'filterForm',
+	       	flex: 0,
+	       	collapsible: true,
+	       	collapsed: false, // TODO: For some reason, layout is not working (buttons disappear on Adding filter) when collapsed at start.
+	       	title: 'Filter',
 	       	layout: {
 	           	type: 'anchor'
 	       	},
-	       	border: false,
+	       	bodyPadding: 5,
 	       	items: [{
-	           	xtype: 'fieldset',
-	           	title: 'Set attribute filter',
-	           	checkboxToggle: true,
-	           	checkboxName: 'filterAttributeCheckbox',
-	           	collapsed: true,
-	           	layout: 'column',
-	           	defaults: {
-	           		margin: '0 10px 0 0'
-	           	},
-	           	items: [{
-	               	xtype: 'combobox',
-	               	id: 'filterAttribute',
-	               	name: 'filterAttribute',
-	               	store: 'Config',
-	               	valueField: 'fieldLabel',
-	               	displayField: 'name',
-	               	queryMode: 'local',
-	               	typeAhead: true,
-	               	forceSelection: true,
-	               	emptyText: 'Select attribute',
-	               	width: 166
-	          	}, {
-	              	xtype: 'button',
-	              	id: 'filterAdd',
-	              	text: '+'
-	          	}]
+	           // items: [{
+	               // xtype: 'slider',
+	               // name: 'theslider',
+	               // width: 166,
+	               // minValue: 1990,
+	               // maxValue: 2020,
+	               // values: [1995, 2015],
+	               // constrainThumbs: true,
+	               // clickToChange: false
+	           // }]
+	           	xtype: 'button',
+	           	name: 'addAttributeFilter',
+	           	text: '[+] Add attribute filter',
+	           	tooltip: 'Add attribute filter'
 	       	}, {
-	           xtype: 'fieldset',
-	           title: 'Set time filter',
-	           checkboxToggle: true,
-	           checkboxName: 'filterTimeCheckbox',
-	           collapsed: true,
-	           items: [{
-	               xtype: 'slider',
-	               name: 'theslider',
-	               width: 166,
-	               minValue: 1990,
-	               maxValue: 2020,
-	               values: [1995, 2015],
-	               constrainThumbs: true,
-	               clickToChange: false
-	           }]
-	       }],
-	       buttons: [{
-	           text: 'Filter',
-	           id: 'filterSubmit',
-	           disabled: true
-	       }]
+	       		xtype: 'button',
+	       		name: 'addTimeFilter',
+	       		text: '[+] Add time filter',
+	       		tooltip: 'Add time filter'
+	       	}]
 		}, {
 			// filter results
 			xtype: 'panel',
+			flex: 1,
 			border: false,
-			bodyStyle: {
-				margin: '0 5px 0 0'
+			layout: {
+				type: 'vbox',
+				align: 'stretch'
 			},
-			// layout: 'border',
 			items: [{
 				xtype: 'gridpanel',
 		       	id: 'filterResults',
@@ -101,8 +76,8 @@ Ext.define('Lmkp.view.Filter', {
 		       		emptyMsg: '<b>No activities found.</b>',
 		       		items: [
 		       			'-', {
-		       				id: 'deleteFilter',
-		       				text: 'Delete filter',
+		       				id: 'deleteAllFilters',
+		       				text: 'Delete all filters',
 		       				enableToggle: false
 		       			}
 		       		]
@@ -110,6 +85,8 @@ Ext.define('Lmkp.view.Filter', {
 			}, {
 				xtype: 'panel',
 				id: 'detailPanel',
+				flex: 1,
+				bodyPadding: 5,
 				tpl: Ext.create('Ext.Template', [
 					'Name: {name}<br/>',
 					'Area: {area}<br/>',
@@ -117,8 +94,7 @@ Ext.define('Lmkp.view.Filter', {
 					'Status: {project_status}<br/>',
 					'Year of Investment: {year_of_investment}<br/>'
 				]),
-				html: 'Select an activity above to show its details.',
-				height: 100
+				html: 'Select an activity above to show its details.'
 			}]
 	   	}];
 	   	this.callParent(arguments);
