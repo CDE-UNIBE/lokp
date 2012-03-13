@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 
 _ = TranslationStringFactory('lmkp')
 
-@view_config(route_name='ui_translation', renderer='string')
+@view_config(route_name='ui_translation', renderer='javascript')
 def ui_messages(request):
 
     # A dictionary that contains all messages that need to be tranlated in the
@@ -43,10 +43,5 @@ def ui_messages(request):
     json_ustr = json.dumps(uiMap, ensure_ascii=False, indent=8, sort_keys=True)
     str += json_ustr.encode('utf-8')
     str += ");\n"
-
-    # Make sure to set the correct mime type
-    if request is not None:
-        response = request.response
-        response.content_type = 'application/javascript'
 
     return str

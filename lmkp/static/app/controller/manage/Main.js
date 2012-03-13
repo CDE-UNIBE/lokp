@@ -43,6 +43,9 @@ Ext.define('Lmkp.controller.manage.Main',{
             'managemainpanel': {
                 render: this.onMainPanelRendered
             },
+            'managemainpanel mappanel': {
+                render: this.onMapPanelRender
+            },
             'managemainpanel toolbar combobox[id*=locale-combobox]': {
                 change: this.onCountryChange
             }
@@ -54,10 +57,7 @@ Ext.define('Lmkp.controller.manage.Main',{
         // Request a configuration object from the /config controller to append
         // more form textfields to the activity detail form
         Ext.Ajax.request({
-            url: '/config',
-            params: {
-                format: 'ext'
-            },
+            url: '/config/form',
             method: 'GET',
             success: function(response){
                 var text = response.responseText;
@@ -76,10 +76,7 @@ Ext.define('Lmkp.controller.manage.Main',{
                 comp.add(configs);
                 comp.doLayout();
 
-                // Update the map panel
-                console.log(this.getMapPanel().map);
-            },
-            scope: this
+            }
         });
     },
 
@@ -138,7 +135,6 @@ Ext.define('Lmkp.controller.manage.Main',{
     },
 
     onMainPanelRendered: function(comp){
-        console.log("kdkd");
 
         var translationsStore = Ext.data.StoreManager.lookup('translations');
         if(!translationsStore)
@@ -152,14 +148,10 @@ Ext.define('Lmkp.controller.manage.Main',{
                 }
             });
 
-
-    //        console.log(translationsStore);
-    //        console.log(translationsStore.getById2('pan-button'));
-
     },
 
     /**
-     * Fires after an country
+     * Fires after country selection
      */
     onCountryChange: function(field, newValue, oldValue, eOpts){
         var form = Ext.create('Ext.form.Panel', {
@@ -168,9 +160,30 @@ Ext.define('Lmkp.controller.manage.Main',{
         });
         form.submit({
             params: {
-                locale: newValue
+                _LOCALE_: newValue
             }
         });
+    },
+
+    /**
+     * Fires as soon as the map panel is rendered to update the map extent
+     */
+    onMapPanelRender: function(comp, eOpts){
+        Ext.Ajax.request({
+            url: '/config/bbox',
+            method: 'GET',
+            success: function(response){
+                var configs = Ext.decode(response.responseText);
+                var bounds = OpenLayers.Bounds.fromString(configs['bbox']);
+                // Transform the geographic coordinates to spherical mercator projection
+                bounds.transform(new OpenLayers.Projection('EPSG:4326'),
+                    new OpenLayers.Projection('EPSG:900913'));
+                // Zoom to this extent
+                this.getMapPanel().map.zoomToExtent(bounds);
+            },
+            scope: this
+        });
+
     }
 
 });

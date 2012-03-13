@@ -28,7 +28,7 @@ Ext.define('Lmkp.view.manage.MainPanel',{
     }*/Ext.create('Lmkp.view.MapPanel',{
         region: 'east',
         resizable: true,
-        width: 100
+        width: 600
     })],
 
     layout: 'border',

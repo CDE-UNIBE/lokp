@@ -1,6 +1,7 @@
 from lmkp.models.meta import DBSession
 from lmkp.renderers.renderers import ExtJSGrid
 from lmkp.renderers.renderers import ExtJSTree
+from lmkp.renderers.renderers import JavaScriptRenderer
 from lmkp.security import group_finder
 import papyrus
 from papyrus.renderers import GeoJSON
@@ -37,7 +38,11 @@ def main(global_config, ** settings):
     config.add_route('logout', '/logout')
     config.add_route('db_test', '/db_test')
     config.add_route('manage_events', '/manage')
-    config.add_route('config', '/config')
+
+    # Returns configuration parameters as JSON objects
+    config.add_route('config', '/config/{parameter}')
+
+    # Manage sample values and tests
     config.add_route('sample_values', '/sample_values/insert')
     config.add_route('delete_sample_values', '/sample_values/delete')
     config.add_route('geo_test', '/geo_test')
@@ -48,6 +53,9 @@ def main(global_config, ** settings):
 
     # Add a renderer to return ExtJS store configuration objects
     config.add_renderer('json', ExtJSGrid())
+
+    # Add a renderer to return JavaScript files
+    config.add_renderer('javascript', JavaScriptRenderer())
 
     # Activities controllers with an api similar to Papyrus
     # Order matters!
