@@ -9,10 +9,7 @@ Ext.define('Lmkp.model.Config', {
     ],
     proxy: {
         type: 'ajax',
-        url: '/config',
-        extraParams: {
-            format: 'ext'
-        },
+        url: '/config/form',
         reader: {
             type: 'json',
             root: undefined
