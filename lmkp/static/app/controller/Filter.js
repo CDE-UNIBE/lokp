@@ -107,31 +107,50 @@ Ext.define('Lmkp.controller.Filter', {
     addAttributeFilter: function(button, e, eOpts) {
         var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
         var insertIndex = form.items.length - 2; // always insert above the 2 buttons
+        var cbox = Ext.create('Ext.form.field.ComboBox', {
+        	name: 'attributeCombo',
+        	store: this.getConfigStore(),
+        	valueField: 'fieldLabel',
+        	displayField: 'name',
+        	queryMode: 'local',
+        	typeAhead: true,
+        	forceSelection: true,
+        	value: this.getConfigStore().getAt('0'),
+        	flex: 0,
+        	margin: '0 5 5 0'
+        });
         form.insert(insertIndex, {
         	xtype: 'panel',
         	name: 'attributePanel',
-        	items: [{
-        		xtype: 'combobox',
-	        	name: 'attributeCombo',
-	        	store: this.getConfigStore(),
-	        	valueField: 'fieldLabel',
-	        	displayField: 'name',
-	        	queryMode: 'local',
-	        	typeAhead: true,
-	        	forceSelection: true,
-	        	emptyText: 'Select attribute'
+        	anchor: '100%',
+        	border: 0,
+        	layout: {
+        		type: 'hbox',
+        		flex: 'stretch'
+        	},
+        	items: [
+        		cbox, 
+        	{
+        		xtype: 'panel',
+        		flex: 1,
+        		border: 0
         	}, {
         		xtype: 'button',
         		name: 'activateButton',
         		text: '[&#10003;] Activate',
-        		enableToggle: true
+        		enableToggle: true,
+        		flex: 0,
+        		margin: '0 5 0 0'
         	}, {
         		xtype: 'button',
         		name: 'deleteButton',
         		text: '[x] Delete',
-        		enableToggle: false
+        		enableToggle: false,
+        		flex: 0
         	}]
         });
+        // show initial filter
+        this.showValueFields(cbox, [this.getConfigStore().getAt('0')]);
     },
     
     addTimeFilter: function(button, e, eOpts) {
@@ -154,7 +173,6 @@ Ext.define('Lmkp.controller.Filter', {
 			form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
 			for (i=0; i<attributePanels.length; i++) {
 				if (form.items.contains(attributePanels[i])) {
-					// TODO: find out why warning is shown (also when deleting single filter)
 					form.remove(attributePanels[i], true);
 					attributePanels[i].destroy();
 				}
@@ -216,7 +234,8 @@ Ext.define('Lmkp.controller.Filter', {
     		valueField: 'queryOperator',
     		queryMode: 'local',
     		editable: false,
-    		width: 50
+    		width: 50,
+    		margin: '0 5 0 0'
     	});
     	// default value: the first item of the store
     	cb.setValue(store.getAt('0').get('queryOperator'));
@@ -233,20 +252,23 @@ Ext.define('Lmkp.controller.Filter', {
                 store: selectionValues,
                 queryMode: 'local',
                 editable: false,
-                value: selectionValues[0]
+                value: selectionValues[0],
+                margin: '0 5 0 0'
         	});
         } else {                    // no categories available, create field based on xtype
             switch (xtype) {
             	case "numberfield":
             		var valueField = Ext.create('Ext.form.field.Number', {
             			name: fieldName,
-            			emptyText: 'Specify number value'
+            			emptyText: 'Specify number value',
+            			margin: '0 5 0 0'
             		});
             		break;
             	default:
             		var valueField = Ext.create('Ext.form.field.Text', {
             			name: fieldName,
-            			emptyText: 'Specify value'
+            			emptyText: 'Specify value',
+            			margin: '0 5 0 0'
             		});
             		break;
             }

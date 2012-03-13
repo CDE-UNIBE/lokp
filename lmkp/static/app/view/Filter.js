@@ -5,21 +5,23 @@ Ext.define('Lmkp.view.Filter', {
    	title: 'Filters',
    	layout: {
        	type: 'vbox',
+       	padding: 5,
        	align: 'stretch',
-       	pack: 'start'
    	},
-   	bodyPadding: 5,
-   	
    	
    	initComponent: function() {
    		this.items = [{
 			// attribute selection
 	       	xtype: 'panel',
 	       	id: 'filterForm',
+	       	flex: 0,
+	       	collapsible: true,
+	       	collapsed: false, // TODO: For some reason, layout is not working (buttons disappear on Adding filter) when collapsed at start.
+	       	title: 'Filter',
 	       	layout: {
 	           	type: 'anchor'
 	       	},
-	       	border: false,
+	       	bodyPadding: 5,
 	       	items: [{
 	           // items: [{
 	               // xtype: 'slider',
@@ -44,11 +46,12 @@ Ext.define('Lmkp.view.Filter', {
 		}, {
 			// filter results
 			xtype: 'panel',
+			flex: 1,
 			border: false,
-			bodyStyle: {
-				margin: '0 5px 0 0'
+			layout: {
+				type: 'vbox',
+				align: 'stretch'
 			},
-			// layout: 'border',
 			items: [{
 				xtype: 'gridpanel',
 		       	id: 'filterResults',
@@ -82,6 +85,8 @@ Ext.define('Lmkp.view.Filter', {
 			}, {
 				xtype: 'panel',
 				id: 'detailPanel',
+				flex: 1,
+				bodyPadding: 5,
 				tpl: Ext.create('Ext.Template', [
 					'Name: {name}<br/>',
 					'Area: {area}<br/>',
@@ -89,8 +94,7 @@ Ext.define('Lmkp.view.Filter', {
 					'Status: {project_status}<br/>',
 					'Year of Investment: {year_of_investment}<br/>'
 				]),
-				html: 'Select an activity above to show its details.',
-				height: 100
+				html: 'Select an activity above to show its details.'
 			}]
 	   	}];
 	   	this.callParent(arguments);
