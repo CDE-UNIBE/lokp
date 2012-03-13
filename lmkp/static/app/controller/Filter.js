@@ -24,7 +24,10 @@ Ext.define('Lmkp.controller.Filter', {
             'filterPanel button[id=deleteAllFilters]': {
             	click: this.deleteAllFilters
             },
-            'filterPanel button[name=activateButton]': {
+            'filterPanel button[name=activateAttributeButton]': {
+            	click: this.applyFilter
+            },
+            'filterPanel button[name=activateTimeButton]': {
             	click: this.applyFilter
             },
             'filterPanel combobox[name=attributeCombo]': {
@@ -35,6 +38,9 @@ Ext.define('Lmkp.controller.Filter', {
             },
             'filterPanel combobox[name=filterOperator]': {
             	select: this.resetActivateButton
+            },
+            'filterPanel datefield[name=dateField]': {
+            	change: this.resetActivateButton
             },
             'filterPanel button[name=deleteButton]': {
             	click: this.deleteFilter
@@ -48,22 +54,31 @@ Ext.define('Lmkp.controller.Filter', {
     
     resetActivateButton: function(element) {
     	var attributePanel = element.up('panel');
-    	var buttonIndex = attributePanel.items.findIndex('name', 'activateButton');
-    	if (buttonIndex != -1) {
-    		attributePanel.items.getAt(buttonIndex).toggle(false);
+    	// try to find attribute button
+    	var attrButtonIndex = attributePanel.items.findIndex('name', 'activateAttributeButton');
+    	if (attrButtonIndex != -1) {
+    		attributePanel.items.getAt(attrButtonIndex).toggle(false);
     	}
+    	// try to find time button
+    	var timeButtonIndex = attributePanel.items.findIndex('name', 'activateTimeButton');
+    	if (timeButtonIndex != -1) {
+    		attributePanel.items.getAt(timeButtonIndex).toggle(false);
+    	}
+    	this.applyFilter();
     },
     
     applyFilter: function(button, e, eOpts) {
+    	
     	var queryable = 'queryable=';
     	var queries = '';
+    	// attribute filter
     	var attrs = Ext.ComponentQuery.query('combobox[name=attributeCombo]');
     	var values = Ext.ComponentQuery.query('[name=valueField]');
     	var ops = Ext.ComponentQuery.query('combobox[name=filterOperator]');
-    	var buttons = Ext.ComponentQuery.query('button[name=activateButton]');
+    	var attrButtons = Ext.ComponentQuery.query('button[name=activateAttributeButton]');
     	if (attrs.length > 0 && values.length > 0) {
     		for (i=0; i<attrs.length; i++) {
-    			if (buttons[i].pressed) { // only add value if filter is activated
+    			if (attrButtons[i].pressed) { // only add value if filter is activated
 	    			var currAttr = attrs[i].getValue();
 	    			var currVal = values[i].getValue();
 	    			var currOp = ops[i].getValue();
@@ -72,6 +87,14 @@ Ext.define('Lmkp.controller.Filter', {
 	    				queries += currAttr + currOp + currVal + "&";
 	    			}
     			}
+    		}
+    	}
+    	// time filter (only 1 possible)
+    	var date = Ext.ComponentQuery.query('datefield[name=dateField]')[0];
+    	var timeButton = Ext.ComponentQuery.query('button[name=activateTimeButton]')[0];
+    	if (date) {
+    		if (timeButton.pressed) { // only add value if filter is activated
+    			queries += 'timestamp=' + date.getValue().toUTCString();
     		}
     	}
     	// reload store by overwriting its proxy url
@@ -122,7 +145,7 @@ Ext.define('Lmkp.controller.Filter', {
         form.insert(insertIndex, {
         	xtype: 'panel',
         	name: 'attributePanel',
-        	anchor: '100%',
+        	// anchor: '100%',
         	border: 0,
         	layout: {
         		type: 'hbox',
@@ -131,13 +154,14 @@ Ext.define('Lmkp.controller.Filter', {
         	items: [
         		cbox, 
         	{
-        		xtype: 'panel',
+        		xtype: 'panel', // empty panel for spacing
         		flex: 1,
         		border: 0
         	}, {
         		xtype: 'button',
-        		name: 'activateButton',
+        		name: 'activateAttributeButton',
         		text: '[&#10003;] Activate',
+        		tooltip: 'Click to activate this filter',
         		enableToggle: true,
         		flex: 0,
         		margin: '0 5 0 0'
@@ -145,6 +169,7 @@ Ext.define('Lmkp.controller.Filter', {
         		xtype: 'button',
         		name: 'deleteButton',
         		text: '[x] Delete',
+        		tooltip: 'Click to delete this filter',
         		enableToggle: false,
         		flex: 0
         	}]
@@ -154,12 +179,61 @@ Ext.define('Lmkp.controller.Filter', {
     },
     
     addTimeFilter: function(button, e, eOpts) {
-    	Ext.Msg.alert('Not yet implemented', 'This function will be implemented soon.');
+    	var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
+        var insertIndex = form.items.length - 2; // always insert above the 2 buttons
+        var picker = Ext.create('Ext.form.field.Date', {
+        	name: 'dateField',
+        	fieldLabel: 'Date',
+        	value: new Date() // defaults to today
+        });
+        form.insert(insertIndex, {
+        	xtype: 'panel',
+        	name: 'timePanel',
+        	border: 0,
+        	layout: {
+        		type: 'hbox',
+        		flex: 'stretch'
+        	},
+        	items: [
+        		picker,
+        	{
+        		xtype: 'panel', // empty panel for spacing
+        		flex: 1,
+        		border: 0
+        	}, {
+        		xtype: 'button',
+        		name: 'activateTimeButton',
+        		text: '[&#10003;] Activate',
+        		tooltip: 'Click to activate this filter',
+        		enableToggle: true,
+        		flex: 0,
+        		margin: '0 5 0 0'
+        	}, {
+        		xtype: 'button',
+        		name: 'deleteButton',
+        		text: '[x] Delete',
+        		tooltip: 'Click to delete this filter',
+        		enableToggle: false,
+        		flex: 0
+        	}]
+        });
+        // disable 'add' button
+        var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
+        if (button) {
+        	button.disable();
+        }
     },
     
     deleteFilter: function(button, e, eOpts) {
     	var attributePanel = button.up('panel');
     	var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
+    	// if time was filtered, re-enable its 'add' button
+    	if (attributePanel.name == 'timePanel') {
+    		var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
+	        if (button) {
+	        	button.enable();
+	        }
+    	}
     	if (form.items.contains(attributePanel)) {
     		form.remove(attributePanel, true);
     		attributePanel.destroy();
@@ -168,13 +242,21 @@ Ext.define('Lmkp.controller.Filter', {
     },
     
 	deleteAllFilters: function() {
-		var attributePanels = Ext.ComponentQuery.query('panel[name=attributePanel]');
-		if (attributePanels.length > 0) {
+		var panels = Ext.ComponentQuery.query('panel[name=attributePanel]');
+		panels = panels.concat(Ext.ComponentQuery.query('panel[name=timePanel]'));
+		if (panels.length > 0) {
 			form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
-			for (i=0; i<attributePanels.length; i++) {
-				if (form.items.contains(attributePanels[i])) {
-					form.remove(attributePanels[i], true);
-					attributePanels[i].destroy();
+			for (i=0; i<panels.length; i++) {
+				// if time was filtered, re-enable its 'add' button
+				if (panels[i].name == 'timePanel') {
+		    		var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
+			        if (button) {
+			        	button.enable();
+			        }
+		    	}
+				if (form.items.contains(panels[i])) {
+					form.remove(panels[i], true);
+					panels[i].destroy();
 				}
 			}
 		}

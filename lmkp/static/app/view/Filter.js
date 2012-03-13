@@ -36,12 +36,13 @@ Ext.define('Lmkp.view.Filter', {
 	           	xtype: 'button',
 	           	name: 'addAttributeFilter',
 	           	text: '[+] Add attribute filter',
-	           	tooltip: 'Add attribute filter'
+	           	tooltip: 'Add a filter based on attribute',
+	           	margin: '0 5 0 0'
 	       	}, {
 	       		xtype: 'button',
 	       		name: 'addTimeFilter',
 	       		text: '[+] Add time filter',
-	       		tooltip: 'Add time filter'
+	       		tooltip: 'Add a filter based on time'
 	       	}]
 		}, {
 			// filter results
