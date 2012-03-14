@@ -5,5 +5,18 @@ Ext.define('Lmkp.store.ActivityGrid', {
     
     pageSize: 10,
     autoLoad: true,
-    remoteSort: true
+    remoteSort: true,
+    
+    proxy: {
+        type: 'ajax',
+        url: '/activities/json',
+        reader: {
+            root: 'data',
+            type: 'json',
+            totalProperty: 'total'
+        },
+        startParam: 'offset',
+        simpleSortMode: true,
+        sortParam: 'order_by'
+    }
 });
