@@ -125,12 +125,6 @@ Ext.define('Lmkp.controller.Filter', {
 	    		operatorCombo.setVisible(false);
 	    	}
     	}
-    	// console.log(queryCount);
-    	// console.log(Ext.ComponentQuery.query('combobox[name=logicalOperator]')[0].getValue());
-    	
-    	// var op = '&logical_op=or';
-    	var op = '';
-    	
     	var store = this.getActivityGridStore();
     	store.getProxy().url = 'activities/json?' + query_url;
     	store.load();
