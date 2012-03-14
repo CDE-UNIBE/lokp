@@ -44,6 +44,9 @@ Ext.define('Lmkp.controller.Filter', {
             },
             'filterPanel button[name=deleteButton]': {
             	click: this.deleteFilter
+            },
+            'filterPanel combobox[name=logicalOperator]': {
+            	select: this.applyFilter
             }
         });
     },
@@ -68,23 +71,28 @@ Ext.define('Lmkp.controller.Filter', {
     },
     
     applyFilter: function(button, e, eOpts) {
-    	
-    	var queryable = 'queryable=';
-    	var queries = '';
+    	var queryable = [];
+    	var queries = [];
+    	var queryCount = 0;
     	// attribute filter
     	var attrs = Ext.ComponentQuery.query('combobox[name=attributeCombo]');
     	var values = Ext.ComponentQuery.query('[name=valueField]');
     	var ops = Ext.ComponentQuery.query('combobox[name=filterOperator]');
     	var attrButtons = Ext.ComponentQuery.query('button[name=activateAttributeButton]');
     	if (attrs.length > 0 && values.length > 0) {
-    		for (i=0; i<attrs.length; i++) {
+    		for (var i=0; i<attrs.length; i++) {
     			if (attrButtons[i].pressed) { // only add value if filter is activated
 	    			var currAttr = attrs[i].getValue();
 	    			var currVal = values[i].getValue();
 	    			var currOp = ops[i].getValue();
 	    			if (currAttr && currVal) {
-	    				queryable += currAttr + ",";
-	    				queries += currAttr + currOp + currVal + "&";
+	    				// only add attribute to queryable if not already there
+	    				if (!this._isInArray(queryable, currAttr)) {
+	    					queryable.push(currAttr);
+	    				}
+	    				queries.push(currAttr + currOp + currVal);
+	    				// add query to count
+	    				queryCount++;
 	    			}
     			}
     		}
@@ -94,12 +102,37 @@ Ext.define('Lmkp.controller.Filter', {
     	var timeButton = Ext.ComponentQuery.query('button[name=activateTimeButton]')[0];
     	if (date) {
     		if (timeButton.pressed) { // only add value if filter is activated
-    			queries += 'timestamp=' + date.getValue().toUTCString();
+    			queries.push('timestamp=' + date.getValue().toUTCString());
+    			// add query to count
+    			queryCount++;
     		}
     	}
     	// reload store by overwriting its proxy url
+    	var query_url = '';
+    	if (queryable.length > 0) {
+    		query_url += 'queryable=' + queryable.join(',') + '&';
+    	}
+    	if (queries.length > 0) {
+    		query_url += queries.join('&');
+    	}
+    	// logical operator
+    	var operatorCombo = Ext.ComponentQuery.query('combobox[name=logicalOperator]')[0];
+    	if (operatorCombo) {
+	    	if (queryCount >= 2) {
+	    		operatorCombo.setVisible(true);
+	    		query_url += '&logical_op=' + operatorCombo.getValue();
+	    	} else {
+	    		operatorCombo.setVisible(false);
+	    	}
+    	}
+    	// console.log(queryCount);
+    	// console.log(Ext.ComponentQuery.query('combobox[name=logicalOperator]')[0].getValue());
+    	
+    	// var op = '&logical_op=or';
+    	var op = '';
+    	
     	var store = this.getActivityGridStore();
-    	store.getProxy().url = 'activities/json?' + queryable + "&" + queries;
+    	store.getProxy().url = 'activities/json?' + query_url;
     	store.load();
     },
         
@@ -129,7 +162,7 @@ Ext.define('Lmkp.controller.Filter', {
     
     addAttributeFilter: function(button, e, eOpts) {
         var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
-        var insertIndex = form.items.length - 2; // always insert above the 2 buttons
+        var insertIndex = form.items.length - 1; // always insert above the 2 buttons
         var cbox = Ext.create('Ext.form.field.ComboBox', {
         	name: 'attributeCombo',
         	store: this.getConfigStore(),
@@ -145,8 +178,8 @@ Ext.define('Lmkp.controller.Filter', {
         form.insert(insertIndex, {
         	xtype: 'panel',
         	name: 'attributePanel',
-        	// anchor: '100%',
         	border: 0,
+        	anchor: '100%',
         	layout: {
         		type: 'hbox',
         		flex: 'stretch'
@@ -176,11 +209,14 @@ Ext.define('Lmkp.controller.Filter', {
         });
         // show initial filter
         this.showValueFields(cbox, [this.getConfigStore().getAt('0')]);
+		// re-layout container
+        form.ownerCt.layout.layout(); 	// TODO: Figure out why both of ...
+        form.forceComponentLayout();	// ... these lines are needed (see also addTimeFilter)
     },
     
     addTimeFilter: function(button, e, eOpts) {
     	var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
-        var insertIndex = form.items.length - 2; // always insert above the 2 buttons
+        var insertIndex = form.items.length - 1; // always insert above the 2 buttons
         var picker = Ext.create('Ext.form.field.Date', {
         	name: 'dateField',
         	fieldLabel: 'Date',
@@ -207,7 +243,7 @@ Ext.define('Lmkp.controller.Filter', {
         		tooltip: 'Click to activate this filter',
         		enableToggle: true,
         		flex: 0,
-        		margin: '0 5 0 0'
+        		margin: '0 5 5 0'
         	}, {
         		xtype: 'button',
         		name: 'deleteButton',
@@ -222,6 +258,8 @@ Ext.define('Lmkp.controller.Filter', {
         if (button) {
         	button.disable();
         }
+        form.ownerCt.layout.layout(); 	// TODO: Figure out why both of ...
+        form.forceComponentLayout();	// ... these lines are needed (see also addAttributeFilter)
     },
     
     deleteFilter: function(button, e, eOpts) {
@@ -356,5 +394,11 @@ Ext.define('Lmkp.controller.Filter', {
             }
         }
         return valueField;
+    },
+    
+    _isInArray: function(arr, obj) { // http://stackoverflow.com/questions/143847/best-way-to-find-an-item-in-a-javascript-array
+    	for(var i=0; i<arr.length; i++) {
+        	if (arr[i] == obj) return true;
+    	}
     }
 });

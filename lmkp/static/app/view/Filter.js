@@ -16,34 +16,49 @@ Ext.define('Lmkp.view.Filter', {
 	       	id: 'filterForm',
 	       	flex: 0,
 	       	collapsible: true,
-	       	collapsed: false, // TODO: For some reason, layout is not working (buttons disappear on Adding filter) when collapsed at start.
+	       	collapsed: true, // TODO: For some reason, layout is not working (buttons disappear on Adding filter) when collapsed at start.
 	       	title: 'Filter',
 	       	layout: {
 	           	type: 'anchor'
 	       	},
+	       	// height: 500,
 	       	bodyPadding: 5,
 	       	items: [{
-	           // items: [{
-	               // xtype: 'slider',
-	               // name: 'theslider',
-	               // width: 166,
-	               // minValue: 1990,
-	               // maxValue: 2020,
-	               // values: [1995, 2015],
-	               // constrainThumbs: true,
-	               // clickToChange: false
-	           // }]
-	           	xtype: 'button',
-	           	name: 'addAttributeFilter',
-	           	text: '[+] Add attribute filter',
-	           	tooltip: 'Add a filter based on attribute',
-	           	margin: '0 5 0 0'
-	       	}, {
-	       		xtype: 'button',
-	       		name: 'addTimeFilter',
-	       		text: '[+] Add time filter',
-	       		tooltip: 'Add a filter based on time'
-	       	}]
+	       		xtype: 'panel',
+	       		layout: {
+	       			type: 'hbox',
+	       			flex: 'stretch'
+	       		},
+	       		anchor: '100%',
+	       		border: 0,
+		       	items: [{
+		       		xtype: 'combobox',
+		       		store: ['and', 'or'],
+		    		name: 'logicalOperator',
+		    		value: 'and',
+		    		editable: false,
+		    		hidden: true,
+		    		fieldLabel: 'Logical operator'
+		       		
+		       	}, {
+		       		xtype: 'panel', // empty panel for spacing
+		       		flex: 1,
+		       		border: 0
+		       	}, {
+		           	xtype: 'button',
+		           	name: 'addAttributeFilter',
+		           	text: '[+] Add attribute filter',
+		           	tooltip: 'Add a filter based on attribute',
+		           	margin: '0 5 0 0',
+		           	flex: 0
+		       	}, {
+		       		xtype: 'button',
+		       		name: 'addTimeFilter',
+		       		text: '[+] Add time filter',
+		       		tooltip: 'Add a filter based on time',
+		       		flex: 0
+		       	}]
+			}]
 		}, {
 			// filter results
 			xtype: 'panel',
