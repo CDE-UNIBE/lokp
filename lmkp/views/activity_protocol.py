@@ -289,7 +289,7 @@ class ActivityProtocol(object):
         activities = {}
         for row in rows:
             if row.id not in activities:
-                activities[row.id] = ActivityFeature(id=row.id, geometry=row.geometry)
+                activities[row.id] = ActivityFeature(id=row.id, geometry=row.geometry, timestamp=row.timestamp, version=row.version)
                 # Set all available attributes for this activity feature to None.
                 # This is necessary to be able to sort the features in method
                 # self._order
@@ -321,7 +321,7 @@ class ActivityProtocol(object):
         if 'attrs' in request.params:
             attrs = request.params['attrs'].split(',')
             for a in feature.__dict__:
-                if a not in ['id', 'geometry'] and a not in attrs:
+                if a not in ['id', 'geometry', 'timestamp', 'version'] and a not in attrs:
                     setattr(feature, a, None)
 
         return feature
@@ -349,7 +349,7 @@ class ActivityProtocol(object):
         and send the query to the database.
 
         Returns a set of tuples with the following attributes:
-        id | geometry | activity_identifier | key | value
+        id | activity_identifier | geometry | timestamp | version | key | value
 
         """
 
@@ -359,8 +359,10 @@ class ActivityProtocol(object):
 
         # Create the query
         query = self.Session.query(Activity.id.label("id"),
-                                   Activity.point.label("geometry"),
                                    Activity.activity_identifier.label("activity_identifier"),
+                                   Activity.point.label("geometry"),
+                                   Activity.timestamp.label("timestamp"),
+                                   Activity.version.label("version"),
                                    A_Key.key.label("key"),
                                    A_Value.value.label("value")
                                    ).join(A_Tag_Group).join(A_Tag).join(A_Key).join(A_Value).join(Status).group_by(Activity.id, A_Key.key, A_Value.value).order_by(Activity.id).filter(filter)
@@ -426,16 +428,20 @@ class ActivityProtocol(object):
             'ilike': 'ilike'
         }
 
-        def __filter(f, k):
+        def __filter(f, attribute, value):
 
             queryable = request.params['queryable'].split(',')
-            col, op = k.split("__")
+            col, op = attribute.split("__")
+
+            # If col is not in the queryable attribute list, return an empty list
+            if col not in queryable:
+                return []
 
             # Unfortunately it is necessary to separate comparison of number
             # types and string types.
 
             # First handle number comparison
-            if col in queryable and op in nbr_map.keys():
+            if op in nbr_map.keys():
 
                 def __attribute_test(item):
 
@@ -448,20 +454,21 @@ class ActivityProtocol(object):
                     try:
                         # Try to cast the values to a number
                         attr = float((getattr(item, col)))
-                        val = float(request.params[k])
-                        expression = "%f %s %f" % (attr, nbr_map[op], val)
+                        v = float(value)
+                        expression = "%f %s %f" % (attr, nbr_map[op], v)
                     except:
                         # If the casting fails, Strings are assumed
-                        expression = "'%s' %s '%s'" % (getattr(item, col), nbr_map[op], request.params[k])
+                        v = str(value)
+                        expression = "'%s' %s '%s'" % (getattr(item, col), nbr_map[op], v)
 
-                    log.debug("expression: %s, column: %s, value: %s" % (expression, col, request.params[k]))
+                    log.debug("expression: %s, column: %s, value: %s" % (expression, col, v))
                     return eval(expression)
 
                 f = filter(__attribute_test, f)
 
             # Handle the string specific like and ilike comparisons.
             # String comparisons are always case-insensitiv
-            elif col in queryable and op in str_map.keys():
+            elif op in str_map.keys():
                 def __attribute_test(item):
 
                     # Exclude all features with null values in this attribute.
@@ -470,8 +477,8 @@ class ActivityProtocol(object):
                         return False
 
                     # Create the expression
-                    expression = "'%s'.lower() in '%s'.lower()" % (request.params[k], getattr(item, col))
-                    log.debug("expression: %s, column: %s, value: %s" % (expression, col, request.params[k]))
+                    expression = "'%s'.lower() in '%s'.lower()" % (value, getattr(item, col))
+                    log.debug("expression: %s, column: %s, value: %s" % (expression, col, value))
                     return eval(expression)
 
                 f = filter(__attribute_test, f)
@@ -491,7 +498,12 @@ class ActivityProtocol(object):
                 for k in request.params:
                     if len(request.params[k]) <= 0 or '__' not in k:
                         continue
-                    filteredFeatures.append(__filter(features, k))
+                    # Several values can be queried for one attributes e.g.
+                    # project_use equals pending and signed. Build the URL
+                    # like: queryable=project_use&project_use__eq=pending,signed
+                    values = request.params[k].split(",")
+                    for v in values:
+                        filteredFeatures.append(__filter(features, k, v))
 
                 # Merge all lists:
                 f = []
@@ -507,7 +519,9 @@ class ActivityProtocol(object):
                 for k in request.params:
                     if len(request.params[k]) <= 0 or '__' not in k:
                         continue
-                    features = __filter(features, k)
+                    values = request.params[k].split(",")
+                    for v in values:
+                        features = __filter(features, k, v)
 
         return features
 
@@ -572,6 +586,14 @@ class ActivityProtocol(object):
         return len(rows)
 
     def _query_timestamp(self, request, filter=None):
+        """
+        Build a query based on the filter and the request params,
+        and send the query to the database.
+
+        Returns a set of tuples with the following attributes:
+        id | activity_identifier | geometry | timestamp | version | key | value
+
+        """
 
         # Get the timestamp from the request
         timestamp = request.params.get('timestamp', '2100-01-01 00:00:00')
@@ -582,28 +604,45 @@ class ActivityProtocol(object):
         # Set a status filter. Consider only active and overwritten activities.
         statusFilter = or_(Status.name == 'active', Status.name == 'overwritten')
 
-        # Create alias
-        a = self.Session.query(Activity).join(Status).filter(statusFilter).subquery()
+        # Create alias and join already table activity to status
+        a = self.Session.query(Activity).outerjoin(Status, Activity.fk_status == Status.id).filter(statusFilter).subquery("a")
         b = Activity.__table__.alias("b")
 
-        # Create the select query
-        s = select([
-                   select([a.c.id],
-                   and_(a.c.activity_identifier == b.c.activity_identifier, a.c.timestamp < timestamp),
-                   order_by=desc(a.c.version),
-                   limit=1).label(validid),
+        # The latest id (and thus version and timestamp) for an activity
+        valid_id_select = select([a.c.id],
+                                 and_(a.c.activity_identifier == b.c.activity_identifier, a.c.timestamp < timestamp),
+                                 order_by=desc(a.c.version),
+                                 limit=1).label(validid)
+
+        # Select a list of valid ids and the corresponding activity uuid
+        s = select([valid_id_select,
                    b.c.activity_identifier,
-                   b.c.point
-                   ], group_by="%s, b.activity_identifier, b.point" % validid, order_by=validid).alias("allactivities")
+                   ],
+                   group_by="%s, b.activity_identifier" % validid,
+                   order_by=validid).alias("latest_activities")
+
+        # Remove duplicate and null ids
+        t = select([s],
+                   s.c.validid != None,
+                   group_by=[s.c.validid, s.c.activity_identifier]
+                   ).alias("t")
 
         # Create the main query and joins
-        query = self.Session.query(s.c.validid.label("id"),
-                                   s.c.activity_identifier.label("activity_identifier"),
-                                   s.c.point.label("geometry"),
+        query = self.Session.query(t.c.validid.label("id"),
+                                   t.c.activity_identifier.label("activity_identifier"),
+                                   Activity.point.label("geometry"),
+                                   Activity.timestamp.label("timestamp"),
+                                   Activity.version.label("version"),
                                    A_Key.key.label("key"),
-                                   A_Value.value.label("value")).filter(s.c.validid != None).\
+                                   A_Value.value.label("value")).\
+            join(Activity, t.c.validid == Activity.id).\
             join(A_Tag_Group).join(A_Tag).join(A_Key).\
-            join(A_Value).group_by(s.c.validid, s.c.activity_identifier, s.c.point, A_Key.key, A_Value.value).\
-                order_by(s.c.validid).filter(filter)
+            join(A_Value).group_by(t.c.validid,
+                                   t.c.activity_identifier,
+                                   Activity.point,
+                                   Activity.timestamp,
+                                   Activity.version,
+                                   A_Key.key,
+                                   A_Value.value).order_by(t.c.validid).filter(filter)
 
         return query
