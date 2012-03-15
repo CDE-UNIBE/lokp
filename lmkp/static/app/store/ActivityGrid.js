@@ -4,7 +4,6 @@ Ext.define('Lmkp.store.ActivityGrid', {
     model: 'Lmkp.model.ActivityGrid',
     
     pageSize: 10,
-    autoLoad: true,
     remoteSort: true,
     
     proxy: {
