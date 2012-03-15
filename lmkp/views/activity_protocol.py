@@ -172,12 +172,12 @@ class ActivityFeature(object):
     @property
     def __tree_interface__(self):
         name  = ""
-        if self.__dict__['name'] is not None:
-            name = self.__dict__['name']
+        if self.__dict__['Name'] is not None:
+            name = self.__dict__['Name']
         else:
             name = "Activity id %s" % self.__dict__['id']
 
-        return {'id': self.__dict__['id'], 'name': name, 'leaf': True}
+        return {'id': self.__dict__['id'], 'Name': name, 'leaf': True}
 
     @property
     def __geo_interface__(self):

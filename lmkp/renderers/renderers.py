@@ -25,7 +25,7 @@ class ExtJSTree(object):
                         _render(i.__tree_interface__['children'], system, children)
                         parent.append({
                                       'id': i.__tree_interface__['id'],
-                                      'name': i.__tree_interface__['name'],
+                                      'name': i.__tree_interface__['Name'],
                                       'children': children
                                       })
                 except KeyError:
@@ -71,8 +71,8 @@ class ExtJSGrid(object):
                                 except:
                                     pass
                     # append constructed name if feature has no name
-                    if "name" not in feature:
-                        feature["name"] = "Activity " + str(feature["id"])
+                    if "Name" not in feature:
+                        feature["Name"] = "Activity " + str(feature["id"])
                     return feature
 
             # Get the request and set the response content type to JSON
