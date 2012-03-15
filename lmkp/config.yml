@@ -9,7 +9,7 @@ application:
       area:
         type: Number
         validator: if(value >= 0){return true;} else {return "Must be greater than 0";}
-      project_use:
+      project use:
         type: String
         predefined:
         - food production
