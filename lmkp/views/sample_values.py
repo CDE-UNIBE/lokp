@@ -74,7 +74,7 @@ def sample_values(request):
     predefined_a_key2.language = lang1
     count.append(_add_to_db(predefined_a_key2, 'predefined a_key 2 (area)'))
     list_predefined_a_keys.append(predefined_a_key2)
-    predefined_a_key3 = A_Key(key='project_use')
+    predefined_a_key3 = A_Key(key='project use')
     predefined_a_key3.language = lang1
     count.append(_add_to_db(predefined_a_key3, 'predefined a_key 3 (project_use)'))
     list_predefined_a_keys.append(predefined_a_key3)
