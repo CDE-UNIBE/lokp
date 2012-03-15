@@ -19,14 +19,20 @@ def get_config(request):
     the configuration in config.yaml.
     """
 
-    def _merge_config(global_config, locale_config):
+    def _merge_config(parent_key, global_config, locale_config):
 
-        for key, value in locale_config.items():
-            try:
-                value.items()
-                _merge_config(global_config[key], locale_config[key])
-            except:
-                global_config[key] = locale_config[key]
+        try:
+            for key, value in locale_config.items():
+                try:
+                    # If the value has items it's a dict
+                    value.items()
+                    if parent_key != 'fields' and key != 'mandatory' and key != 'optional':
+                        _merge_config(key, global_config[key], locale_config[key])
+                except:
+                    global_config[key] = locale_config[key]
+        # Handle the AttributeError if the locale config file is empty
+        except AttributeError:
+            pass
 
     global_stream = open(config_file_path(request), 'r')
     global_config = yaml.load(global_stream)
@@ -35,7 +41,7 @@ def get_config(request):
         locale_stream = open(locale_config_file_path(request), 'r')
         locale_config = yaml.load(locale_stream)
 
-        _merge_config(global_config, locale_config)
+        _merge_config(None, global_config, locale_config)
 
     except IOError:
         # File not found!
