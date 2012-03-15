@@ -4,28 +4,28 @@ application:
   bbox: -180,-84,180,84
   fields:
     mandatory:
-      name:
+      Name:
         type: String
-      area:
+      Area:
         type: Number
         validator: if(value >= 0){return true;} else {return "Must be greater than 0";}
-      project use:
+      Project Use:
         type: String
         predefined:
         - food production
         - tourism
         - forestry for wood and fiber
         - agrofuels
-      project_status:
+      Project Status:
         type: String
         predefined:
         - pending
         - signed
         - abandoned
     optional:
-      year_of_investment:
+      Year of Investment:
         type: Date
         validator: if(value == 0 || (value > 1900 && value < 2100)){return true;} else {return "1900 < year of investment < 2100";}
-      Spatial uncertainty:
+      Spatial Uncertainty:
         type: String
   name: "Land Matrix Knowledge Platform global edition"

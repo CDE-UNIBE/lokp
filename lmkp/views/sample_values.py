@@ -66,23 +66,23 @@ def sample_values(request):
     stack.append(str(count.count(1)) + ' languages added.')
     # predefined a_keys (@todo: predefined keys should be managed in config file)
     count = []
-    predefined_a_key1 = A_Key(key='name')
+    predefined_a_key1 = A_Key(key='Name')
     predefined_a_key1.language = lang1
     count.append(_add_to_db(predefined_a_key1, 'predefined a_key 1 (name)'))
     list_predefined_a_keys.append(predefined_a_key1)
-    predefined_a_key2 = A_Key(key='area')
+    predefined_a_key2 = A_Key(key='Area')
     predefined_a_key2.language = lang1
     count.append(_add_to_db(predefined_a_key2, 'predefined a_key 2 (area)'))
     list_predefined_a_keys.append(predefined_a_key2)
-    predefined_a_key3 = A_Key(key='project use')
+    predefined_a_key3 = A_Key(key='Project Use')
     predefined_a_key3.language = lang1
     count.append(_add_to_db(predefined_a_key3, 'predefined a_key 3 (project_use)'))
     list_predefined_a_keys.append(predefined_a_key3)
-    predefined_a_key4 = A_Key(key='project_status')
+    predefined_a_key4 = A_Key(key='Project Status')
     predefined_a_key4.language = lang1
     count.append(_add_to_db(predefined_a_key4, 'predefined a_key 4 (project_status)'))
     list_predefined_a_keys.append(predefined_a_key4)
-    predefined_a_key5 = A_Key(key='year_of_investment')
+    predefined_a_key5 = A_Key(key='Year of Investment')
     predefined_a_key5.language = lang1
     count.append(_add_to_db(predefined_a_key5, 'predefined a_key 5 (year_of_investment)'))
     list_predefined_a_keys.append(predefined_a_key5)
