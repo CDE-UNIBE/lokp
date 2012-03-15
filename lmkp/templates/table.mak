@@ -9,46 +9,60 @@
                 font-size: 13px;
             }
             table {
-                border-style: solid;
-                width: 85%;
+		border:1px solid #000;
+		border-collapse: collapse;
+		font-family:arial,sans-serif;
+                width: 80%;
+            }
+            th {
+                background: #aaa;
+            }
+            td,th{
+		border: 1px solid #000;
+		border-collapse: collapse;
+		padding: 5px;
+            }
+            td.even {
+                background: #eee;
             }
             -->
         </style>
 
     </head>
     <body>
-        <div>
-
-            Number of results: ${nbr}
-
-        </div>
-
-        <table border="1">
+        <table>
             <%
 
             from shapely import wkb
 
-            attributes = []
+            attributes = ['id', 'timestamp', 'version', 'geometry']
+
+            nbrFeatures = 0
 
             for obj in result:
                 for key in obj.__dict__:
                     if key not in attributes and key != '_labels':
-                        attributes.append(key)
+                        if obj.__dict__[key] is not None:
+                            attributes.append(key)
 
             %>
             <tr>
                 % for a in range(0,len(attributes)):
-                <td>
+                <th>
                     ${attributes[a]}
-                </td>
+                </th>
                 % endfor
             </tr>
 
             % for row in result:
             <tr>
                 % for key in attributes:
-                <td>
                 <%
+                if nbrFeatures % 2 == 0:
+                    c = "odd"
+                else:
+                    c = "even"
+
                 value = None
                 try:
                     value = str(row.__dict__[key])
@@ -58,11 +72,19 @@
                     except:
                         pass
                 %>
-                ${value}
-                </td>
+                <td class="${c}">${value}</td>
                 % endfor
             </tr>
+            <%
+            # Count the number of features
+            nbrFeatures += 1
+            %>
             % endfor
         </table>
+        <div>
+
+            Number of features found: ${nbrFeatures}
+
+        </div>
     </body>
 </html>
