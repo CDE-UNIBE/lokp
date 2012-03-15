@@ -10,3 +10,6 @@ application:
         - forestry for wood and fiber
         - agrofuels
         - forestry
+      alpwirtschaft:
+        type: String
+        
