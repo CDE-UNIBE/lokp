@@ -115,10 +115,7 @@ def read_many_json(request):
 @view_config(route_name='activities_read_many_html', renderer='lmkp:templates/table.mak')
 def read_many_html(request):
 
-    return {
-        'result': activity_protocol.read(request, filter=get_status_filter(request)),
-        'nbr': len(activity_protocol.read(request, filter=get_status_filter(request)))
-        }
+    return {'result': activity_protocol.read(request, filter=get_status_filter(request))}
 
 
 
