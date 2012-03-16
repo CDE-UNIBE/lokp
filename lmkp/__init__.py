@@ -61,6 +61,10 @@ def main(global_config, ** settings):
     # Activities controllers with an api similar to Papyrus
     # Order matters!
 
+    # Reads one or many activities and returns the result as HTML
+    # This is only for debugging purposes ...
+    config.add_route('activities_read_many_html', '/activities/html', request_method='GET')
+
     # Reads one or many activities and returns the result as JSON that can be used
     # in ExtJS stores and forms
     config.add_route('activities_read_many_json', '/activities/json', request_method='GET')
