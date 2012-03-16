@@ -6,16 +6,5 @@ Ext.define('Lmkp.model.Config', {
         'xtype',
         'allowBlank',
         'store'
-    ],
-    proxy: {
-        type: 'ajax',
-        url: '/config',
-        extraParams: {
-            format: 'ext'
-        },
-        reader: {
-            type: 'json',
-            root: undefined
-        }
-    }
+    ]
 });

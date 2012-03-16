@@ -11,7 +11,10 @@ Ext.application({
 
     launch: function() {
         Ext.create('Ext.container.Viewport', {
-            layout: 'border',
+            layout: {
+            	type: 'border',
+            	padding: 0
+            },
             items: [{
                 height: 100,
                 region: 'north',
