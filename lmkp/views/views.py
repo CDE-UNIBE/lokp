@@ -31,7 +31,7 @@ def db_test(request):
     
     #object = request.params
     
-    object = "foo"
+    object = DBSession.query(A_Key).filter(A_Key.fk_a_key == None).all()
     
     
     # get old_activity
