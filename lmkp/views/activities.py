@@ -105,13 +105,18 @@ def read_many_json(request):
     Reads many activities
     """
 
-    log.debug(get_status_filter(request))
-
     return {
         'data': activity_protocol.read(request, filter=get_status_filter(request)),
         'success': True,
         'total': activity_protocol.count(request, filter=get_status_filter(request))
     }
+
+
+@view_config(route_name='activities_read_many_html', renderer='lmkp:templates/table.mak')
+def read_many_html(request):
+
+    return {'result': activity_protocol.read(request, filter=get_status_filter(request))}
+
 
 
 @view_config(route_name='activities_count', renderer='string')
@@ -250,7 +255,10 @@ def _get_config_fields():
 
     return fields
 
-@view_config(route_name='timestamp_test', renderer="lmkp:templates/db_test.pt")
+@view_config(route_name='timestamp_test', renderer="lmkp:templates/table.mak")
 def timestamp_test(request):
     query = activity_protocol._query_timestamp(request)
-    return {'query': query.all()}
+
+    #return {'query': query.all()}
+    return {'result': query.all(), 'nbr': len(query.all())}
+    
