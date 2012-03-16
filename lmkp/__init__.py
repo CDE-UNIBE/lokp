@@ -40,6 +40,7 @@ def main(global_config, ** settings):
     config.add_route('manage_events', '/manage')
 
     # Returns configuration parameters as JSON objects
+    config.add_route('config_scan', '/config/scan')
     config.add_route('config', '/config/{parameter}')
 
     # Manage sample values and tests

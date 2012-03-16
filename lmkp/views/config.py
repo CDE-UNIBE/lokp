@@ -67,6 +67,15 @@ def get_config(request):
         return global_config
 
 
+# @todo: change template used for config_scan (possibly create own) 
+@view_config(route_name='config_scan', renderer='lmkp:templates/sample_values.pt')
+def config_scan(request):
+    stack = []
+    stack.append('blabla')
+    stack.append(config)
+    return {'messagestack': stack}
+
+
 def _get_field_config(name, config, mandatory=False):
 
     fieldConfig = {}
