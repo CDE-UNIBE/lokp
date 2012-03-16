@@ -127,9 +127,9 @@ Ext.define('Lmkp.controller.manage.Main',{
                     status: record.data.parentId
                 },
                 success: function(form, action){
-                    Ext.Msg.alert('HTTP Success Status', action.response.statusText);
+                    //Ext.Msg.alert('HTTP Success Status', action.response.statusText);
                 },
-                url: '/activities/' + id
+                url: '/activities/json/' + id
             });
         }
     },
