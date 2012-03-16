@@ -3,6 +3,8 @@ application:
   name: Observatory on Land Acquisitions in Switzerland
   fields:
     mandatory:
+      name:
+        validator: "if 1 > 0; return true"
       project_use:
         predefined:
         - food production
@@ -10,6 +12,14 @@ application:
         - forestry for wood and fiber
         - agrofuels
         - forestry
-      alpwirtschaft:
-        type: String
-        
+        - viehwirtschaft
+      Alpwirtschaft:
+        predefined:
+          - ganzjährig
+          - Sommerhalbjahr
+          - Winterhalbjahr
+          - nur Vieh
+          - nur Käse
+    optional:
+      Anzahl Kuhglocken:
+        type: Number
