@@ -25,7 +25,7 @@ class ExtJSTree(object):
                         _render(i.__tree_interface__['children'], system, children)
                         parent.append({
                                       'id': i.__tree_interface__['id'],
-                                      'name': i.__tree_interface__['Name'],
+                                      'Name': i.__tree_interface__['name'],
                                       'children': children
                                       })
                 except KeyError:
