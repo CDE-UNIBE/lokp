@@ -101,6 +101,9 @@ def get_config(request):
 # @todo: change template used for config_scan (possibly create own) 
 @view_config(route_name='config_scan', renderer='lmkp:templates/sample_values.pt')
 def config_scan(request):
+
+    stack = []
+    stack.append('Scan results:')
     
     def _merge_config(parent_key, global_config, locale_config):
         """
@@ -167,12 +170,13 @@ def config_scan(request):
         # check if key is already in database
         if key in db_keys:
             # key is already there, do nothing
-            pass
+            stack.append('Key already in database: %s' % key)
         else:
             # key is not yet in database, insert it
             new_key = A_Key(key=key)
             new_key.language = language
             Session.add(new_key)
+            stack.append('Key added to database: %s' % key)
 
         # do the same with values
         if value.items():
@@ -182,24 +186,14 @@ def config_scan(request):
                         # check if value is already in database
                         if v in db_values:
                             # value is already there, do nothing
-                            pass
+                            stack.append('Value already in database: %s' % v)
                         else:
                             # value is not yet in database, insert it
                             new_value = A_Value(v)
                             new_value.language = language
                             Session.add(new_value)
+                            stack.append('Value added to database: %s' % v)
                             
-        #print value.items()
-    
-    """
-    for key, value in global_config["application"]["fields"]["mandatory"]:
-        print key.items()
-        #print value
-    """
-    
-    stack = []
-    stack.append('blabla')
-    stack.append(db_keys)
     return {'messagestack': stack}
 
 
