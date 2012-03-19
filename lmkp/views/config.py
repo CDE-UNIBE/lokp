@@ -162,7 +162,8 @@ def config_scan(request):
     for db_value in Session.query(A_Value.value).filter(A_Value.fk_a_value == None).all():
         db_values.append(db_value.value)
     
-    for key, value in global_config["application"]["fields"]["mandatory"].items():
+    config_items = global_config["application"]["fields"]["mandatory"].items() + global_config["application"]["fields"]["optional"].items()
+    for key, value in config_items:
         # check if key is already in database
         if key in db_keys:
             # key is already there, do nothing
