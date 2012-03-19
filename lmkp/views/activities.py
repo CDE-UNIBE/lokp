@@ -157,7 +157,7 @@ def tree(request):
         def __tree_interface__(self):
             return {
             'id': self.__dict__['id'],
-            'name': self.__dict__['Name'],
+            'name': self.__dict__['name'],
             'children': self.__dict__['children']
             }
 
