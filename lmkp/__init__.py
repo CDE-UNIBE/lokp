@@ -38,6 +38,7 @@ def main(global_config, ** settings):
     config.add_route('logout', '/logout')
     config.add_route('db_test', '/db_test')
     config.add_route('manage_events', '/manage')
+    config.add_route('admin', '/admin')
 
     # Returns configuration parameters as JSON objects
     config.add_route('config_scan', '/config/scan')
