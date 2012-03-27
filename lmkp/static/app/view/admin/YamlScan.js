@@ -19,24 +19,50 @@ Ext.define('Lmkp.view.admin.YamlScan', {
 			dataIndex: 'value',
 			sortable: true
 		}, {
-			header: 'Name2',
+			xtype: 'templatecolumn',
+            text: 'Mandatory',
+            flex: 1,
+            sortable: true,
+            dataIndex: 'mandatory',
+            align: 'center',
+            tpl: Ext.create('Ext.XTemplate', '{[this.isInDB(values.mandatory)]}', {
+            	isInDB: function(m) {
+            		if (m) {
+            			return 'yes';
+            		} else {
+            			return '<i>no</i>';
+            		}
+            	}
+            })
+		}, {
+			xtype: 'templatecolumn',
+            text: 'In DB',
+            flex: 1,
+            sortable: true,
+            dataIndex: 'exists',
+            align: 'center',
+            tpl: Ext.create('Ext.XTemplate', '{[this.isInDB(values.exists)]}', {
+            	isInDB: function(e) {
+            		if (e) {
+            			return 'yes';
+            		} else {
+            			return '<b>no</b>';
+            		}
+            	}
+            })
+		}, {
+			header: 'Translation',
 			flex: 1,
 			dataIndex: 'translation',
-			sortable: true
-		// }, {
-			// xtype: 'templatecolumn',
-            // text: 'Duration',
-            // flex: 1,
-            // sortable: true,
-            // dataIndex: 'translation',
-            // align: 'center',
-            // //add in the custom tpl for the rows
-            // tpl: Ext.create('Ext.XTemplate', '{translation:this.testFunction}', {
-                // testFunction: function(v) {
-                	// var c = "bla" + v;
-                    // return c;
-                // }
-            // })
+			sortable: true,
+			align: 'center'
+		}],
+		dockedItems: [{
+			xtype: 'toolbar',
+			dock: 'bottom',
+			items: [{
+				text: 'Scan'
+			}]
 		}]
 	}],
 	

@@ -341,6 +341,8 @@ def _get_yaml_scan(kv, mandatory, value, db_values, language, leaf):
     fieldConfig['language'] = language.english_name
     if leaf:
         fieldConfig['leaf'] = True
+    else:
+        fieldConfig['expanded'] = True
 
     if language.id != 1:
         if kv == 'key':

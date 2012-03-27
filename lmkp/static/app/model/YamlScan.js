@@ -7,5 +7,11 @@ Ext.define('Lmkp.model.YamlScan', {
 	}, {
 		name: 'translation',
 		type: 'string'
+	}, {
+		name: 'exists',
+		type: 'boolean'
+	}, {
+		name: 'mandatory',
+		type: 'boolean'
 	}]
 });
