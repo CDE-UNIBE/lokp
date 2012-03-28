@@ -48,8 +48,29 @@ Ext.define('Lmkp.controller.manage.Main',{
             },
             'managemainpanel toolbar combobox[id*=locale-combobox]': {
                 change: this.onCountryChange
+            },
+            'managemainpanel [id=menubutton_config]': {
+            	click: this.showConfigWindow
             }
         });
+    },
+    
+    showConfigWindow: function() {
+    	var win;
+    	if (!win) {
+    		win = Ext.create('widget.window', {
+    			title: 'Configuration',
+    			closable: true,
+    			width: 400,
+    			loader: {
+    				url: '/config/scan',
+    				contentType: 'html',
+    				loadMask: true,
+    				autoLoad: true
+    			}
+    		});
+    	}
+    	win.show();
     },
 
     onPanelRendered: function(comp){

@@ -31,7 +31,7 @@ Ext.define('Lmkp.view.manage.activities.TreePanel',{
     columns: [{
         //id: 'id-column',
         xtype: 'treecolumn',
-        dataIndex: 'name',
+        dataIndex: 'Name',
         //text: 'Activity',
         flex: 2,
         text: 'Name'
