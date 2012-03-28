@@ -68,6 +68,17 @@ Ext.define('Lmkp.view.admin.YamlScan', {
 			}, {
 				text: 'Add all to DB',
 				id: 'addToDB'
+			}, '->', 
+			'Scan language:',
+			{
+				xtype: 'combobox',
+				id: 'scanLanguageCombo',
+				queryMode: 'local',
+				store: 'Languages',
+				displayField: 'english_name',
+				valueField: 'locale',
+				forceSelection: true,
+				emptyText: 'Select Language'
 			}]
 		}]
 	}],

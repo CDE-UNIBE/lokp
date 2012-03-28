@@ -158,7 +158,14 @@ def yaml_translation_json(request):
     # ExtJS configuration object.
     fields = global_config['application']['fields']
 
-    lang = Language(1, 'English', 'English')
+
+    from pyramid.i18n import get_localizer
+    localizer = get_localizer(request)
+    
+    lang = Session.query(Language).filter(Language.locale == localizer.locale_name).first()
+    
+    if lang is None:
+        lang = Language(1, 'English', 'English', 'en')
     #lang = Session.query(Language).get(2)
     
     # First process the mandatory fields
@@ -250,7 +257,7 @@ def yaml_add_db(request):
        language = english_language[0]
    else:
        # language not found, insert it.
-       language = Language(1, 'English', 'English')
+       language = Language(1, 'English', 'English', 'en')
        Session.add(language)
    
    # get keys already in database. their fk_a_key must be None (= original)

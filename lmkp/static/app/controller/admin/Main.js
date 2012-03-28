@@ -8,7 +8,10 @@ Ext.define('Lmkp.controller.admin.Main', {
 		'admin.YamlScan'
 	],
 	
-	stores: ['YamlScan'],
+	stores: [
+		'YamlScan',
+		'Languages'
+	],
 	
 	refs: [{
 		ref: 'mainPanel',
@@ -28,6 +31,22 @@ Ext.define('Lmkp.controller.admin.Main', {
 			},
 			'toolbar[id=scanToolbar] button[id=addToDB]': {
 				click: this.scanAddToDB
+			},
+			'toolbar[id=scanToolbar] combobox[id=scanLanguageCombo]': {
+				select: this.scanDoScan
+			}
+		});
+	},
+	
+	scanSwitchLanguage: function(combobox, records, eOpts) {
+		// console.log(records[0].get('locale'));
+		var store = this.getYamlScanStore();
+		var root = store.getRootNode();
+		root.removeAll(false);
+		store.load({
+			node: root,
+			params: {
+				'_LOCALE_': records[0].get('locale')
 			}
 		});
 	},
@@ -54,12 +73,22 @@ Ext.define('Lmkp.controller.admin.Main', {
 	},
 	
 	scanDoScan: function(item, e, eOpts) {
+		var cb = Ext.ComponentQuery.query('combobox[id=scanLanguageCombo]')[0];
 		var store = this.getYamlScanStore();
 		var root = store.getRootNode();
 		root.removeAll(false);
-		store.load({
-			node: root
-		});
+		if (cb.lastSelection[0]) {
+			store.load({
+				node: root,
+				params: {
+					'_LOCALE_': cb.lastSelection[0].get('locale')
+				}
+			});
+		} else {
+			store.load({
+				node: root
+			});
+		}
 	},
 	
 	mainShowHome: function(item, e, eOpts) {
@@ -68,7 +97,11 @@ Ext.define('Lmkp.controller.admin.Main', {
 	},
 	
 	mainShowYamlScan: function(item, e, eOpts) {
+		this.getLanguagesStore().load();
 		var newElement = Ext.create('Lmkp.view.admin.YamlScan');
+		console.log(Lmkp.ts.msg("locale"));
+		var cb = Ext.ComponentQuery.query('combobox[id=scanLanguageCombo]')[0];
+		cb.setValue(Lmkp.ts.msg("locale"));
 		this._replaceContent(newElement);
 	},
 	
