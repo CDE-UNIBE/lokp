@@ -20,6 +20,7 @@ Ext.define('Lmkp.view.admin.YamlScan', {
 			sortable: true
 		}, {
 			xtype: 'templatecolumn',
+			name: 'mandatory',
             text: 'Mandatory',
             flex: 1,
             sortable: true,
@@ -64,6 +65,9 @@ Ext.define('Lmkp.view.admin.YamlScan', {
 			items: [{
 				text: 'Scan',
 				id: 'scanButton'
+			}, {
+				text: 'Add all to DB',
+				id: 'addToDB'
 			}]
 		}]
 	}],
