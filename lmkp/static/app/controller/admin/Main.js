@@ -17,21 +17,33 @@ Ext.define('Lmkp.controller.admin.Main', {
 	
 	init: function() {
 		this.control({
-			'toolbar button[id=home]': {
-				click: this.showHome
+			'adminmainpanel toolbar button[id=home]': {
+				click: this.mainShowHome
 			},
-			'toolbar menuitem[id=yaml_scan]': {
-				click: this.showYamlScan
+			'adminmainpanel toolbar menuitem[id=yaml_scan]': {
+				click: this.mainShowYamlScan
+			},
+			'toolbar[id=scanToolbar] button[id=scanButton]': {
+				click: this.scanDoScan
 			}
 		});
 	},
 	
-	showHome: function(item, e, eOpts) {
+	scanDoScan: function(item, e, eOpts) {
+		var store = this.getYamlScanStore();
+		var root = store.getRootNode();
+		root.removeAll(false);
+		store.load({
+			node: root
+		});
+	},
+	
+	mainShowHome: function(item, e, eOpts) {
 		var newElement = Ext.create('Lmkp.view.admin.Home');
 		this._replaceContent(newElement);
 	},
 	
-	showYamlScan: function(item, e, eOpts) {
+	mainShowYamlScan: function(item, e, eOpts) {
 		var newElement = Ext.create('Lmkp.view.admin.YamlScan');
 		this._replaceContent(newElement);
 	},
