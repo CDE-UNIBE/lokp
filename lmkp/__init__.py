@@ -93,9 +93,12 @@ def main(global_config, ** settings):
 
     # A controller that returns the translation needed in the ExtJS user interface
     config.add_route('ui_translation', '/lang')
+    # Return a json with all available languages from DB
+    config.add_route('language_store', '/lang/all')
 
     # Test
     config.add_route('geojson_test', '/geojson')
+    
 
     # Yet another test
     config.add_route('timestamp_test', '/timestamp')
