@@ -25,8 +25,32 @@ Ext.define('Lmkp.controller.admin.Main', {
 			},
 			'toolbar[id=scanToolbar] button[id=scanButton]': {
 				click: this.scanDoScan
+			},
+			'toolbar[id=scanToolbar] button[id=addToDB]': {
+				click: this.scanAddToDB
 			}
 		});
+	},
+	
+	scanAddToDB: function(item, e, eOpts) {
+		var win = Ext.create('Ext.window.Window', {
+			title: 'Add to DB',
+			closable: false,
+			layout: 'fit',
+			loader: {
+				url: '/config/add',
+				loadMask: true,
+				autoLoad: true
+			},
+			buttons: [{
+				text: 'OK',
+				handler: function() {
+					this.up('window').hide();
+				}
+			}]
+		});
+		win.on('hide', this.scanDoScan, this);
+		win.show();
 	},
 	
 	scanDoScan: function(item, e, eOpts) {

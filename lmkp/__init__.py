@@ -42,6 +42,7 @@ def main(global_config, ** settings):
 
     # Returns configuration parameters as JSON objects
     config.add_route('yaml_translation_json', '/config/scan')
+    config.add_route('yaml_add_db', '/config/add')
     config.add_route('config', '/config/{parameter}')
 
     # Manage sample values and tests
