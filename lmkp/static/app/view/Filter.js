@@ -100,10 +100,7 @@ Ext.define('Lmkp.view.Filter', {
                 }]
             }, {
                 xtype: 'panel',
-                buttons: [{
-                    id: "edit-button",
-                    text: "Edit"
-                }],
+                buttons: Lmkp.toolbar,
                 id: 'detailPanel',
                 flex: 1,
                 bodyPadding: 5,

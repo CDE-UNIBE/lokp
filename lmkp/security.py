@@ -8,7 +8,6 @@ from lmkp.models.database_objects import User
 from lmkp.models.database_objects import users_groups
 from lmkp.models.meta import DBSession as Session
 import logging
-from sqlalchemy.sql import and_
 log = logging.getLogger(__name__)
 
 def group_finder(username, request):
@@ -19,5 +18,5 @@ def group_finder(username, request):
     """
     q = Session.query(Group.name).join(users_groups).join(User).filter(User.username == username).limit(1)
     group = q[0][0]
-    log.info("Found group: %s" % group )
-    return group
+    log.debug("Found group: %s" % group )
+    return ["group:%s" % group]

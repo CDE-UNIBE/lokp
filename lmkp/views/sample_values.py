@@ -144,13 +144,13 @@ def sample_values(request):
     stack.append(str(count.count(1)) + ' permissions added.')
     # groups (with permissions)
     count = []
-    group1 = Group(id=1, name='Admin')
+    group1 = Group(id=1, name='editors')
     group1.permissions.append(permission1)
     group1.permissions.append(permission2)
-    count.append(_add_to_db(group1, 'group 1 (admin)'))
-    group2 = Group(id=2, name='User')
+    count.append(_add_to_db(group1, 'group 1 (editors)'))
+    group2 = Group(id=2, name='moderators')
     group2.permissions.append(permission1)
-    count.append(_add_to_db(group2, 'group 2 (user)'))
+    count.append(_add_to_db(group2, 'group 2 (moderators)'))
     stack.append(str(count.count(1)) + ' groups added.')
     # review_decisions
     count = []
