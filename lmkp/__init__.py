@@ -98,6 +98,10 @@ def main(global_config, ** settings):
     # A controller that returns the translation needed in the ExtJS user interface
     config.add_route('ui_translation', '/lang')
 
+    # A view that returns an editing toolbar configuration object
+    config.add_route('edit_toolbar_config', '/app/view/EditToolbar.js')
+    config.add_route('view_toolbar_config', '/app/view/ViewToolbar.js')
+
     # Test
     config.add_route('geojson_test', '/geojson')
 
@@ -106,4 +110,3 @@ def main(global_config, ** settings):
 
     config.scan()
     return config.make_wsgi_app()
-

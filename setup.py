@@ -18,7 +18,8 @@ requires = [
     'WebTest',
     'cryptacular',
     'Babel',
-    'lingua'
+    'lingua',
+    'chameleon>=2.8'
     ]
 
 setup(name='LandMatrixKnowledgePlatform',
