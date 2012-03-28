@@ -13,5 +13,14 @@ Ext.define('Lmkp.model.YamlScan', {
 	}, {
 		name: 'mandatory',
 		type: 'boolean'
-	}]
+	}],
+	
+	proxy: {
+		type: 'ajax',
+		url: '/config/scan',
+		reader: {
+			type: 'json'
+		},
+		folderSort: true
+	}
 });

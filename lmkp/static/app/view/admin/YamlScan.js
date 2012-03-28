@@ -60,8 +60,10 @@ Ext.define('Lmkp.view.admin.YamlScan', {
 		dockedItems: [{
 			xtype: 'toolbar',
 			dock: 'bottom',
+			id: 'scanToolbar',
 			items: [{
-				text: 'Scan'
+				text: 'Scan',
+				id: 'scanButton'
 			}]
 		}]
 	}],
