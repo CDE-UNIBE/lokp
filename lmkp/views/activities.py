@@ -219,7 +219,7 @@ def model(request):
 def _get_extjs_config(name, config):
 
     fieldConfig = {}
-    fieldConfig['name'] = name
+    fieldConfig['Name'] = name
 
     type = 'string'
     if config['type'] == 'Number':
