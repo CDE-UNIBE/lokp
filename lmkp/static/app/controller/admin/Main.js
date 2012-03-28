@@ -99,7 +99,6 @@ Ext.define('Lmkp.controller.admin.Main', {
 	mainShowYamlScan: function(item, e, eOpts) {
 		this.getLanguagesStore().load();
 		var newElement = Ext.create('Lmkp.view.admin.YamlScan');
-		console.log(Lmkp.ts.msg("locale"));
 		var cb = Ext.ComponentQuery.query('combobox[id=scanLanguageCombo]')[0];
 		cb.setValue(Lmkp.ts.msg("locale"));
 		this._replaceContent(newElement);
