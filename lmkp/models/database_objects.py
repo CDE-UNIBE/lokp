@@ -380,19 +380,21 @@ class Language(Base):
     id = Column(Integer, primary_key = True)
     english_name = Column(String(255), nullable = False)
     local_name = Column(String(255), nullable = False)
+    locale = Column(String(31), nullable = False)
     
     a_keys = relationship('A_Key', backref='language')
     a_values = relationship('A_Value', backref='language')
     sh_keys = relationship('SH_Key', backref='language')
     sh_values = relationship('SH_Value', backref='language')
     
-    def __init__(self, id, english_name, local_name):
+    def __init__(self, id, english_name, local_name, locale):
         self.id = id
         self.english_name = english_name
         self.local_name = local_name
+        self.locale = locale
     
     def __repr__(self):
-        return "<Language> id [ %s ] | english_name [ %s ] | local_name [ %s ]" % (self.id, self.english_name, self.local_name)
+        return "<Language> id [ %s ] | english_name [ %s ] | local_name [ %s ] | locale [ %s ]" % (self.id, self.english_name, self.local_name, self.locale)
 
 class Involvement(Base):
     __tablename__ = 'involvements'

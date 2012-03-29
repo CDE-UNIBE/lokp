@@ -39,8 +39,11 @@ def main(global_config, ** settings):
     config.add_route('logout', '/logout')
     config.add_route('db_test', '/db_test')
     config.add_route('manage_events', '/manage')
+    config.add_route('admin', '/admin')
 
     # Returns configuration parameters as JSON objects
+    config.add_route('yaml_translation_json', '/config/scan')
+    config.add_route('yaml_add_db', '/config/add')
     config.add_route('config', '/config/{parameter}')
 
     # Manage sample values and tests
@@ -97,9 +100,14 @@ def main(global_config, ** settings):
 
     # A controller that returns the translation needed in the ExtJS user interface
     config.add_route('ui_translation', '/lang')
+    # Return a json with all available languages from DB
+    config.add_route('language_store', '/lang/all')
+    # Try to add or edit a translation
+    config.add_route('edit_translation', '/lang/edit')
 
     # Test
     config.add_route('geojson_test', '/geojson')
+    
 
     # Yet another test
     config.add_route('timestamp_test', '/timestamp')

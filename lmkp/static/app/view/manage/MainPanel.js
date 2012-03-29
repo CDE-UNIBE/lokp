@@ -41,6 +41,9 @@ Ext.define('Lmkp.view.manage.MainPanel',{
                 text: 'regular item 2'
             },{
                 text: 'regular item 3'
+            }, {
+            	text: 'configuration',
+            	id: 'menubutton_config'
             }],
             xtype: 'menu'
         },

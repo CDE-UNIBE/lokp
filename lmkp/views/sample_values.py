@@ -16,12 +16,12 @@ def sample_values(request):
     stack = []
     list_activities = []
     list_stakeholders = []
-    list_predefined_a_keys = []
+    #list_predefined_a_keys = []
     list_predefined_sh_keys = []
     list_users = []
     list_status = []
-    list_predefined_a_values_projectUse = []
-    list_predefined_a_values_projectStatus = []
+    #list_predefined_a_values_projectUse = []
+    #list_predefined_a_values_projectStatus = []
 # BEGIN fix data ----------------------------------------------------------------------------------
     stack.append('--- fix data ---')
     # status
@@ -59,30 +59,34 @@ def sample_values(request):
     stack.append(str(count.count(1)) + ' stakeholder_roles added.')
     # languages
     count = []
+    """
     lang1 = Language(id=1, english_name='English', local_name='English')
     count.append(_add_to_db(lang1, 'language 1 (english)'))
-    lang2 = Language(id=2, english_name='Spanish', local_name='Espanol')
+    """
+    lang1 = Session.query(Language).first()
+    lang2 = Language(id=2, english_name='Spanish', local_name='Espanol', locale='es')
     count.append(_add_to_db(lang2, 'language 2 (spanish)'))
     stack.append(str(count.count(1)) + ' languages added.')
+    """
     # predefined a_keys (@todo: predefined keys should be managed in config file)
     count = []
-    predefined_a_key1 = A_Key(key='name')
+    predefined_a_key1 = A_Key(key='Name')
     predefined_a_key1.language = lang1
     count.append(_add_to_db(predefined_a_key1, 'predefined a_key 1 (name)'))
     list_predefined_a_keys.append(predefined_a_key1)
-    predefined_a_key2 = A_Key(key='area')
+    predefined_a_key2 = A_Key(key='Area')
     predefined_a_key2.language = lang1
     count.append(_add_to_db(predefined_a_key2, 'predefined a_key 2 (area)'))
     list_predefined_a_keys.append(predefined_a_key2)
-    predefined_a_key3 = A_Key(key='project_use')
+    predefined_a_key3 = A_Key(key='Project Use')
     predefined_a_key3.language = lang1
     count.append(_add_to_db(predefined_a_key3, 'predefined a_key 3 (project_use)'))
     list_predefined_a_keys.append(predefined_a_key3)
-    predefined_a_key4 = A_Key(key='project_status')
+    predefined_a_key4 = A_Key(key='Project Status')
     predefined_a_key4.language = lang1
     count.append(_add_to_db(predefined_a_key4, 'predefined a_key 4 (project_status)'))
     list_predefined_a_keys.append(predefined_a_key4)
-    predefined_a_key5 = A_Key(key='year_of_investment')
+    predefined_a_key5 = A_Key(key='Year of Investment')
     predefined_a_key5.language = lang1
     count.append(_add_to_db(predefined_a_key5, 'predefined a_key 5 (year_of_investment)'))
     list_predefined_a_keys.append(predefined_a_key5)
@@ -118,6 +122,16 @@ def sample_values(request):
     count.append(_add_to_db(predefined_a_value7, 'predefined a_value 7 (abandoned'))
     list_predefined_a_values_projectStatus.append(predefined_a_value7)
     stack.append(str(count.count(1)) + ' predefined a_values added.')
+    """
+    list_predefined_a_keys = []
+    for el in Session.query(A_Key).filter(A_Key.fk_a_key == None).all():
+        list_predefined_a_keys.append(el)
+    list_predefined_a_values_projectUse = []
+    for el in Session.query(A_Value).filter(or_(A_Value.value.ilike('tourism%'), A_Value.value.ilike('forestry%'), A_Value.value.ilike('agrofuels%'), A_Value.value.ilike('food%'))).all():
+        list_predefined_a_values_projectUse.append(el)
+    list_predefined_a_values_projectStatus = []
+    for el in Session.query(A_Value).filter(or_(A_Value.value.ilike('pending%'), A_Value.value.ilike('signed%'), A_Value.value.ilike('abandoned%'))):
+        list_predefined_a_values_projectStatus.append(el)
     # predefined sh_keys (@todo: predefined keys should be managed in config file)
     count = []
     predefined_sh_key1 = SH_Key(key='First name')
@@ -184,10 +198,21 @@ def sample_values(request):
     stack.append('--- sample data (active activities) ---')
     for i in range(1,11):
         # switch
-        switch = (i % 5)
+        switch = (i % len(list_predefined_a_keys))
         # prepare key
         theKey = list_predefined_a_keys[switch]
         # prepare value
+        if (switch == 0): # project use
+            theValue = random.choice(list_predefined_a_values_projectUse)
+        if (switch == 1): # area
+            theValue = A_Value(value=random.randint(1,100))
+            theValue.language = lang1
+        if (switch == 2): # project status
+            theValue = random.choice(list_predefined_a_values_projectStatus)
+        if (switch == 3): # name
+            theValue = A_Value(value='Project ' + str(i))
+            theValue.language = lang1
+        """
         if (switch == 0): # name
             theValue = A_Value(value='Project ' + str(i))
             theValue.language = lang1
@@ -201,6 +226,7 @@ def sample_values(request):
         if (switch == 4): # year_of_investment
             theValue = A_Value(value=random.randint(1990, 2015))
             theValue.language = lang1
+        """
         # prepare tag
         tag = A_Tag()
         tag.key = theKey
@@ -234,22 +260,19 @@ def sample_values(request):
     stack.append('--- sample data (active activities, 2 tags) ---')
     for i in range(11,21):
         # switch
-        switch = (i % 5)
+        switch = (i % len(list_predefined_a_keys))
         # prepare key
         theKey = list_predefined_a_keys[switch]
         # prepare value
-        if (switch == 0): # name
-            theValue = A_Value(value='Project ' + str(i))
-            theValue.language = lang1
+        if (switch == 0): # project use
+            theValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
             theValue = A_Value(value=random.randint(1,100))
             theValue.language = lang1
-        if (switch == 2): # project_use
-            theValue = random.choice(list_predefined_a_values_projectUse)
-        if (switch == 3): # project_status
+        if (switch == 2): # project status
             theValue = random.choice(list_predefined_a_values_projectStatus)
-        if (switch == 4): # year_of_investment
-            theValue = A_Value(value=random.randint(1990, 2015))
+        if (switch == 3): # name
+            theValue = A_Value(value='Project ' + str(i))
             theValue.language = lang1
         # prepare tag
         tag = A_Tag()
@@ -259,20 +282,17 @@ def sample_values(request):
         tag_group = A_Tag_Group()
         tag_group.tags.append(tag)
         # add another tag_group
-        switch = random.randint(0,4)
+        switch = random.randint(0,len(list_predefined_a_keys)-1)
         theKey = list_predefined_a_keys[switch]
-        if (switch == 0): # name
-            theValue = A_Value(value='Project ' + str(i))
-            theValue.language = lang1
+        if (switch == 0): # project use
+            theValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
             theValue = A_Value(value=random.randint(1,100))
             theValue.language = lang1
-        if (switch == 2): # project_use
-            theValue = random.choice(list_predefined_a_values_projectUse)
-        if (switch == 3): # project_status
+        if (switch == 2): # project status
             theValue = random.choice(list_predefined_a_values_projectStatus)
-        if (switch == 4): # year_of_investment
-            theValue = A_Value(value=random.randint(1990, 2015))
+        if (switch == 3): # name
+            theValue = A_Value(value='Project ' + str(i))
             theValue.language = lang1
         tag = A_Tag()
         tag.key = theKey
@@ -302,42 +322,39 @@ def sample_values(request):
     count1 = []
     stack.append('--- sample data (pending activities) ---')
     for i in range(21,31):
-       # switch
-       switch = (i % 5)
-       # prepare key
-       theKey = list_predefined_a_keys[switch]
-       # prepare value
-       if (switch == 0): # name
-           theValue = A_Value(value='Project ' + str(i))
-           theValue.language = lang1
-       if (switch == 1): # area
-           theValue = A_Value(value=random.randint(1,100))
-           theValue.language = lang1
-       if (switch == 2): # project_use
-           theValue = random.choice(list_predefined_a_values_projectUse)
-       if (switch == 3): # project_status
-           theValue = random.choice(list_predefined_a_values_projectStatus)
-       if (switch == 4): # year_of_investment
-           theValue = A_Value(value=random.randint(1990, 2015))
-           theValue.language = lang1
-       # prepare tag
-       tag = A_Tag()
-       tag.key = theKey
-       tag.value = theValue
-       # tag_group
-       tag_group = A_Tag_Group()
-       tag_group.tags.append(tag)
-       # prepare changeset
-       changeset = A_Changeset(source='[pending] Source ' + str(i))
-       changeset.user = random.choice(list_users)
-       # prepare activity
-       identifier = uuid.uuid4()
-       activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
-       activity.status = status1 # pending
-       activity.tag_groups.append(tag_group)
-       activity.changesets.append(changeset)
-       # insert activity
-       count1.append(_add_to_db(activity, 'activity ' + str(i)))
+        # switch
+        switch = (i % len(list_predefined_a_keys))
+        # prepare key
+        theKey = list_predefined_a_keys[switch]
+        # prepare value
+        if (switch == 0): # project use
+            theValue = random.choice(list_predefined_a_values_projectUse)
+        if (switch == 1): # area
+            theValue = A_Value(value=random.randint(1,100))
+            theValue.language = lang1
+        if (switch == 2): # project status
+            theValue = random.choice(list_predefined_a_values_projectStatus)
+        if (switch == 3): # name
+            theValue = A_Value(value='Project ' + str(i))
+            theValue.language = lang1
+        # prepare tag
+        tag = A_Tag()
+        tag.key = theKey
+        tag.value = theValue
+        # tag_group
+        tag_group = A_Tag_Group()
+        tag_group.tags.append(tag)
+        # prepare changeset
+        changeset = A_Changeset(source='[pending] Source ' + str(i))
+        changeset.user = random.choice(list_users)
+        # prepare activity
+        identifier = uuid.uuid4()
+        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+        activity.status = status1 # pending
+        activity.tag_groups.append(tag_group)
+        activity.changesets.append(changeset)
+        # insert activity
+        count1.append(_add_to_db(activity, 'activity ' + str(i)))
     stack.append(str(len(count1)) + ' activities added.')
     # random activities with status=deleted.
     count1 = []
@@ -345,22 +362,19 @@ def sample_values(request):
     stack.append('--- sample data (deleted activities) ---')
     for i in range(31,41):
         # switch
-        switch = (i % 5)
+        switch = (i % len(list_predefined_a_keys))
         # prepare key
         theKey = list_predefined_a_keys[switch]
         # prepare value
-        if (switch == 0): # name
-            theValue = A_Value(value='Project ' + str(i))
-            theValue.language = lang1
+        if (switch == 0): # project use
+            theValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
             theValue = A_Value(value=random.randint(1,100))
             theValue.language = lang1
-        if (switch == 2): # project_use
-            theValue = random.choice(list_predefined_a_values_projectUse)
-        if (switch == 3): # project_status
+        if (switch == 2): # project status
             theValue = random.choice(list_predefined_a_values_projectStatus)
-        if (switch == 4): # year_of_investment
-            theValue = A_Value(value=random.randint(1990, 2015))
+        if (switch == 3): # name
+            theValue = A_Value(value='Project ' + str(i))
             theValue.language = lang1
         # prepare tag
         tag = A_Tag()
@@ -395,22 +409,19 @@ def sample_values(request):
     stack.append('--- sample data (overwritten activities) ---')
     for i in range(41,51):
         # switch
-        switch = (i % 5)
+        switch = (i % len(list_predefined_a_keys))
         # prepare key
         theKey = list_predefined_a_keys[switch]
         # prepare value
-        if (switch == 0): # name
-            theValue = A_Value(value='Project ' + str(i))
-            theValue.language = lang1
+        if (switch == 0): # project use
+            theValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
             theValue = A_Value(value=random.randint(1,100))
             theValue.language = lang1
-        if (switch == 2): # project_use
-            theValue = random.choice(list_predefined_a_values_projectUse)
-        if (switch == 3): # project_status
+        if (switch == 2): # project status
             theValue = random.choice(list_predefined_a_values_projectStatus)
-        if (switch == 4): # year_of_investment
-            theValue = A_Value(value=random.randint(1990, 2015))
+        if (switch == 3): # name
+            theValue = A_Value(value='Project ' + str(i))
             theValue.language = lang1
         # prepare tag
         tag = A_Tag()
@@ -441,20 +452,17 @@ def sample_values(request):
         new_activity = Activity(activity_identifier=identifier, version=2, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
         new_activity.status = status2   # active
         new_tag_group = A_Tag_Group()
-        switch = random.randint(0,4)
+        switch = random.randint(0,len(list_predefined_a_keys)-1)
         newKey = list_predefined_a_keys[switch]
-        if (switch == 0): # name
-            newValue = A_Value(value='Project ' + str(i))
-            newValue.language = lang1
+        if (switch == 0): # project use
+            newValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
             newValue = A_Value(value=random.randint(1,100))
             newValue.language = lang1
-        if (switch == 2): # project_use
-            newValue = random.choice(list_predefined_a_values_projectUse)
-        if (switch == 3): # project_status
+        if (switch == 2): # project status
             newValue = random.choice(list_predefined_a_values_projectStatus)
-        if (switch == 4): # year_of_investment
-            newValue = A_Value(value=random.randint(1990, 2015))
+        if (switch == 3): # name
+            newValue = A_Value(value='Project ' + str(i))
             newValue.language = lang1
         new_tag = A_Tag()
         new_tag.key = newKey

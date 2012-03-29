@@ -332,7 +332,14 @@ Ext.define('Lmkp.controller.Filter', {
     displayActivityDetails: function(view, selected, eOpts) {
     	if (selected.length) {
 	    	var detailPanel = Ext.ComponentQuery.query('filterPanel panel[id=detailPanel]')[0];
-	    	detailPanel.tpl.overwrite(detailPanel.body, selected[0].data);
+			var html = '';
+			for (var i in selected[0].data) {
+				// dont show id
+				if (i != 'id') {
+					html += '<b>' + i + '</b>: ' + selected[0].data[i] + '<br/>';
+				}
+			}
+	    	detailPanel.update(html);
 	    }
     },
     

@@ -78,7 +78,7 @@ Ext.define('Lmkp.view.Filter', {
 		       	columns: [{
 		       		header: 'Name',
 		       		name: 'namecolumn',
-		       		dataIndex: 'name',
+		       		dataIndex: 'Name',
 		       		flex: 1,
 		       		sortable: true
 		       	}],
@@ -103,13 +103,6 @@ Ext.define('Lmkp.view.Filter', {
 				id: 'detailPanel',
 				flex: 1,
 				bodyPadding: 5,
-				tpl: Ext.create('Ext.Template', [
-					'Name: {name}<br/>',
-					'Area: {area}<br/>',
-					'Project Use: {project_use}<br/>',
-					'Status: {project_status}<br/>',
-					'Year of Investment: {year_of_investment}<br/>'
-				]),
 				html: 'Select an activity above to show its details.'
 			}]
 	   	}];
