@@ -4,19 +4,20 @@ Ext.define('Lmkp.view.Main' ,{
     
     layout: 'border',
     defaults: {
-    	collapsible: true,
-    	split: true
+        collapsible: true,
+        split: true
     },
 
     initComponent: function() {
         this.items = [{
-            region: 'center',
-            xtype: 'sidepanel',
-            collapsible: false
+            collapsible: false,
+            region: 'west',
+            xtype: 'filterPanel',
+            width: 300
         },{
-            region: 'east',
-            width: 500,
-            title: 'Map Panel',
+            collapsible: false,
+            region: 'center',
+            frame: false,
             xtype: 'mappanel'
         }]
         this.callParent(arguments);

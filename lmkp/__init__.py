@@ -4,11 +4,15 @@ from lmkp.renderers.renderers import ExtJSTree
 from lmkp.renderers.renderers import JavaScriptRenderer
 from lmkp.renderers.renderers import KmlRenderer
 from lmkp.security import group_finder
+from lmkp.subscribers import add_localizer
+from lmkp.subscribers import add_renderer_globals
 import papyrus
 from papyrus.renderers import GeoJSON
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
+from pyramid.events import BeforeRender
+from pyramid.events import NewRequest
 from sqlalchemy import engine_from_config
 
 def main(global_config, ** settings):
@@ -29,6 +33,10 @@ def main(global_config, ** settings):
 
     # Add the directory that includes the translations
     config.add_translation_dirs('lmkp:locale/')
+
+    # Add event subscribers
+    config.add_subscriber(add_renderer_globals, BeforeRender)
+    config.add_subscriber(add_localizer, NewRequest)
 
     # Add papyrus includes
     config.include(papyrus.includeme)
@@ -105,6 +113,10 @@ def main(global_config, ** settings):
     # Try to add or edit a translation
     config.add_route('edit_translation', '/lang/edit')
 
+    # A view that returns an editing toolbar configuration object
+    config.add_route('edit_toolbar_config', '/app/view/EditToolbar.js')
+    config.add_route('view_toolbar_config', '/app/view/ViewToolbar.js')
+
     # Test
     config.add_route('geojson_test', '/geojson')
     
@@ -114,4 +126,3 @@ def main(global_config, ** settings):
 
     config.scan()
     return config.make_wsgi_app()
-
