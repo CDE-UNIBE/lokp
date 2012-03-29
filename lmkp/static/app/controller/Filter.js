@@ -71,9 +71,6 @@ Ext.define('Lmkp.controller.Filter', {
             },
             'filterPanel combobox[name=logicalOperator]': {
                 select: this.applyFilter
-            },
-            'filterPanel panel[id=detailPanel] button[id=edit-button]':{
-                click: this.onEditButtonClick
             }
         });
     },
@@ -337,47 +334,6 @@ Ext.define('Lmkp.controller.Filter', {
             var detailPanel = Ext.ComponentQuery.query('filterPanel panel[id=detailPanel]')[0];
             detailPanel.tpl.overwrite(detailPanel.body, selected[0].data);
         }
-    },
-
-    onEditButtonClick: function(button, event, eOpts){
-        Ext.Ajax.request({
-            url: '/config/form',
-            success: function(response){
-                var formConfig = Ext.decode(response.responseText);
-
-                // Get the selected item in the grid panel
-                var gridPanel = Ext.ComponentQuery.query('filterPanel gridpanel[id=filterResults]')[0];
-                var selection = gridPanel.getSelectionModel().getSelection()[0];
-
-                // Set up the window title
-                var title = "Edit " + selection.get("name");
-
-                // Create a new form panel that is put in the edit window
-                var formPanel = Ext.create('Ext.form.Panel',{
-                    border: false,
-                    buttons: [{
-                            text: "Save"
-                    }],
-                    items: formConfig
-                });
-
-                // Load the selected record
-                formPanel.loadRecord(selection);
-
-                // Create the new edit window and show it
-                Ext.create('Ext.window.Window', {
-                    title: title,
-                    height: 200,
-                    width: 400,
-                    layout: 'fit',
-                    items: [
-                        formPanel
-                    ]
-                }).show();
-
-            },
-            scope: this
-        })
     },
     
     getOperator: function(xType) {
