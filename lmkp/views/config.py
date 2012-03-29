@@ -355,14 +355,14 @@ def _get_yaml_scan(kv, mandatory, value, db_values, language, leaf):
             if translated:
                 fieldConfig['translation'] = translated.key
             else:
-                fieldConfig['translation'] = '[not yet translated]'
+                fieldConfig['translation'] = 1  # not yet translated
         if kv == 'value':
             translated = Session.query(A_Value).filter(A_Value.value == value).filter(A_Value.language == language).first()
             if translated:
                 fieldConfig['translation'] = translated.value
             else:
-                fieldConfig['translation'] = '[not yet translated]'
+                fieldConfig['translation'] = 1  # not yet translated
     else:
-        fieldConfig['translation'] = '[original value is already translated into requested language]'
+        fieldConfig['translation'] = 0          # key/value is already in english
     
     return fieldConfig

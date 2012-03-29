@@ -34,8 +34,69 @@ Ext.define('Lmkp.controller.admin.Main', {
 			},
 			'toolbar[id=scanToolbar] combobox[id=scanLanguageCombo]': {
 				select: this.scanDoScan
+			},
+			'adminyamlscan templatecolumn[name=editColumn]': {
+				click: this.showTranslationWindow
 			}
 		});
+	},
+	
+	showTranslationWindow: function(g, td) {
+		var record = g.getSelectionModel().getSelection()[0];
+		// only do some action if original is not in english (translation != 0)
+		if (record.get('translation') != 0) {
+			console.log(record);
+			var win = Ext.create('Ext.window.Window', {
+				title: 'Translation',
+				layout: 'fit',
+				modal: true,
+				items: [{
+					xtype: 'form',
+					url: '/lang/edit',
+					defaults: {
+						anchor: '100%'
+					},
+					items: [{
+						xtype: 'displayfield',
+						name: 'language',
+						fieldLabel: 'Language',
+						value: Ext.ComponentQuery.query('combobox[id=scanLanguageCombo]')[0].lastSelection[0].get('english_name')
+					}, {
+						xtype: 'displayfield',
+						name: 'keyvalue',
+						fieldLabel: 'Key/Value',
+						value: record.get('value')
+					}, {
+						xtype: 'textfield',
+						name: 'translation',
+						fieldLabel: 'Translation',
+						allowBlank: false
+					}],
+					buttons: [{
+						text: 'Save',
+						handler: function() {
+							if (this.up('form').getForm().isValid()) {
+								this.up('form').getForm().submit({
+									success: function(form, action) {
+										console.log("success");
+									},
+									failure: function(form, action) {
+										console.log("failure");
+									}
+								});
+							}
+						}
+					}, {
+						text: 'Cancel',
+						handler: function() {
+							this.up('form').getForm().reset();
+							this.up('window').hide();
+						}
+					}]
+				}]
+			});
+			win.show();
+		}
 	},
 	
 	scanSwitchLanguage: function(combobox, records, eOpts) {
@@ -49,6 +110,21 @@ Ext.define('Lmkp.controller.admin.Main', {
 				'_LOCALE_': records[0].get('locale')
 			}
 		});
+		console.log("don't delete me if you read this!!!");
+		/*
+		 * 
+		 * 
+		 * 
+		 * 
+		 * 
+		 * 
+		 * 
+		 * 
+		 * 
+		 * 
+		 * 
+		 * 
+		 */
 	},
 	
 	scanAddToDB: function(item, e, eOpts) {

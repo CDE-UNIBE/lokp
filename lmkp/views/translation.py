@@ -72,3 +72,11 @@ def language_store(request):
     ret['success'] = True
     ret['total'] = len(langs)
     return ret
+
+@view_config(route_name='edit_translation', renderer='json')
+def edit_translation(request):
+    if 'translation' in request.params:
+        val = request.params['translation']
+        print val
+        return {'success': True}
+    return {'success': False}
