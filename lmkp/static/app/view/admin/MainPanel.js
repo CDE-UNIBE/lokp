@@ -20,8 +20,8 @@ Ext.define('Lmkp.view.admin.MainPanel', {
 	}],
 	
 	items: [{
-		// xtype: 'adminhome'
-		xtype: 'adminyamlscan'
+		xtype: 'adminhome'
+		// xtype: 'adminyamlscan'
 	}],
 	
 	initComponent: function() {

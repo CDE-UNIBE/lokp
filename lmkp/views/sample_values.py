@@ -64,7 +64,7 @@ def sample_values(request):
     count.append(_add_to_db(lang1, 'language 1 (english)'))
     """
     lang1 = Session.query(Language).first()
-    lang2 = Language(id=2, english_name='Spanish', local_name='Espanol')
+    lang2 = Language(id=2, english_name='Spanish', local_name='Espanol', locale='es')
     count.append(_add_to_db(lang2, 'language 2 (spanish)'))
     stack.append(str(count.count(1)) + ' languages added.')
     """
