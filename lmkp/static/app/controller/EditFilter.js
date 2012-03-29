@@ -2,6 +2,7 @@ Ext.define('Lmkp.controller.EditFilter', {
     extend: 'Ext.app.Controller',
 
     models: ['Config', 'ActivityGrid'],
+    requires: ['Ext.window.MessageBox'],
     stores: ['Config', 'ActivityGrid'],
 
     views: ['Filter'],
@@ -18,14 +19,25 @@ Ext.define('Lmkp.controller.EditFilter', {
     },
 
     onEditButtonClick: function(button, event, eOpts){
+        // Get the selected item in the grid panel
+        var gridPanel = Ext.ComponentQuery.query('filterPanel gridpanel[id=filterResults]')[0];
+        var selection = gridPanel.getSelectionModel().getSelection()[0];
+
+        // If no activity is selected, show an info window and exit.
+        if(!selection){
+            Ext.Msg.show({
+                title: 'Edit Activity',
+                msg: 'Please select first an activity.',
+                buttons: Ext.Msg.OK,
+                icon: Ext.window.MessageBox.INFO
+            });
+            return;
+        }
+
         Ext.Ajax.request({
             url: '/config/form',
             success: function(response){
                 var formConfig = Ext.decode(response.responseText);
-
-                // Get the selected item in the grid panel
-                var gridPanel = Ext.ComponentQuery.query('filterPanel gridpanel[id=filterResults]')[0];
-                var selection = gridPanel.getSelectionModel().getSelection()[0];
 
                 // Set up the window title
                 var title = "Edit " + selection.get("name");

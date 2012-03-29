@@ -14,3 +14,6 @@
 lmkp/static/lib/
 .pydevproject
 .project
+
+# Ignore compiled translation files
+*.mo

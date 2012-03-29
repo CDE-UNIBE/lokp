@@ -1,13 +1,34 @@
 Ext.define('Lmkp.view.Filter', {
     extend: 'Ext.panel.Panel',
     alias: ['widget.filterPanel'],
-   
-    title: 'Filters',
+
+    title: 'Activities',
+    frame: false,
+
     layout: {
         type: 'vbox',
         padding: 5,
         align: 'stretch'
     },
+
+    tbar: [{
+        xtype: 'button',
+        name: 'addAttributeFilter',
+        text: '[+] Add attribute filter',
+        tooltip: 'Add a filter based on attribute',
+        margin: '0 5 0 0',
+        flex: 0
+    }, {
+        xtype: 'button',
+        name: 'addTimeFilter',
+        text: '[+] Add time filter',
+        tooltip: 'Add a filter based on time',
+        flex: 0
+    },{
+        id: 'deleteAllFilters',
+        text: 'Delete all filters',
+        enableToggle: false
+    }],
    	
     initComponent: function() {
         this.items = [{
@@ -89,14 +110,7 @@ Ext.define('Lmkp.view.Filter', {
                     enableOverflow: true,
                     displayInfo: true,
                     displayMsg: 'Displaying activities {0} - {1} of {2}',
-                    emptyMsg: '<b>No activities found.</b>',
-                    items: [
-                    '-', {
-                        id: 'deleteAllFilters',
-                        text: 'Delete all filters',
-                        enableToggle: false
-                    }
-                    ]
+                    emptyMsg: '<b>No activities found.</b>'
                 }]
             }, {
                 xtype: 'panel',
