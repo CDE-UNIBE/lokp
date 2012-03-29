@@ -95,6 +95,8 @@ def main(global_config, ** settings):
     config.add_route('ui_translation', '/lang')
     # Return a json with all available languages from DB
     config.add_route('language_store', '/lang/all')
+    # Try to add or edit a translation
+    config.add_route('edit_translation', '/lang/edit')
 
     # Test
     config.add_route('geojson_test', '/geojson')
