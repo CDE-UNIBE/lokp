@@ -1,0 +1,10 @@
+.zoom-in-button {
+    background-image:url("/static/img/zoom-in.png") !important;
+    height: 16px !important;
+    width: 16px !important;
+}
+.pan-button {
+    background-image:url("/static/img/pan.png") !important;
+    height: 16px !important;
+    width: 16px !important;
+}

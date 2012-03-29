@@ -15,6 +15,7 @@ requires = [
     'zope.sqlalchemy',
     'waitress',
     'papyrus',
+    'Mako>=0.6'
     'WebTest',
     'cryptacular',
     'Babel',
@@ -44,6 +45,7 @@ setup(name='LandMatrixKnowledgePlatform',
       message_extractors={'.': [
       ('**.py', 'lingua_python', None),
       ('**.pt', 'lingua_xml', None),
+      ('**.mak', 'mako', None),
       ]},
       entry_points="""\
       [paste.app_factory]
