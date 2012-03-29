@@ -3,20 +3,18 @@
 
 import os.path
 
-from pyramid.i18n import get_localizer
-
 def config_file_path(request=None):
     """
-    Returns the absolute path to the config.yaml file
+    Returns the absolute path to the global.yaml file
     """
-    return "%s/config.yml" % os.path.dirname(__file__)
+    return "%s/profiles/global.yml" % os.path.dirname(__file__)
 
 def locale_config_file_path(request):
     """
-    Returns the absolute path to the localized config.yaml file
+    Returns the absolute path to the profile .yaml file, based on cookie _PROFILE_
     """
 
-    # Get the localizer
-    localizer = get_localizer(request)
-
-    return "%s/locale/%s/LC_CONFIG/config.yml" % (os.path.dirname(__file__), localizer.locale_name)
+    if '_PROFILE_' in request.cookies:
+        return "%s/profiles/%s.yml" % (os.path.dirname(__file__), request.cookies['_PROFILE_'])
+    else:
+        return ''
