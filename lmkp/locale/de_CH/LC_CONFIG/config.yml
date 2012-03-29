@@ -3,9 +3,9 @@ application:
   name: Observatory on Land Acquisitions in Switzerland
   fields:
     mandatory:
-      name:
+      Name:
         validator: "if 1 > 0; return true"
-      project_use:
+      Project Use:
         predefined:
         - food production
         - tourism

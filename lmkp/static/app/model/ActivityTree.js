@@ -5,7 +5,7 @@ Ext.define('Lmkp.model.ActivityTree', {
         name: 'id',
         type: 'string'
     },{
-        name: 'name',
+        name: 'Name',
         type: 'string'
     }],
 
