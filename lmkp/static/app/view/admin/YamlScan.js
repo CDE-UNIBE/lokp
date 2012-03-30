@@ -2,16 +2,14 @@ Ext.define('Lmkp.view.admin.YamlScan', {
 	extend: 'Ext.panel.Panel',
 	
 	alias: ['widget.adminyamlscan'],
-	
-	html: 'This is where the YAML Scan magic will happen.',
+
 	border: 0,
 	
 	items: [{
 		xtype: 'treepanel',
 		store: 'YamlScan',
 		rootVisible: false,
-		height: 400,
-		width: '100%',
+		height: 500,
 		columns: [{
 			xtype: 'treecolumn',
 			header: 'Original',
@@ -57,7 +55,6 @@ Ext.define('Lmkp.view.admin.YamlScan', {
 			flex: 1,
 			dataIndex: 'translation',
 			sortable: true,
-			align: 'center',
 			tpl: Ext.create('Ext.XTemplate', '{[this.showTranslation(values.translation)]}', {
 				showTranslation: function(t) {
 					if (t == 1) {			// not yet translated

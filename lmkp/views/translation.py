@@ -90,14 +90,46 @@ def edit_translation(request):
                 # find original (fk_a_key empty)
                 original = Session.query(A_Key).filter(A_Key.key == request.params['original']).filter(A_Key.fk_a_key == None).all()
                 if original and len(original) == 1:
-                    translation = A_Key(request.params['translation'])
-                    translation.original = original[0]
-                    translation.language = language[0]
-                    Session.add(translation)
-                    success = True
-                    msg = 'Added translation (<b>%s</b>) for <b>%s</b>.' % (request.params['translation'], request.params['original'])
+                    # check if a translation of this key is already there
+                    oldTranslation = Session.query(A_Key).filter(A_Key.original == original[0]).filter(A_Key.language == language[0]).all()
+                    if oldTranslation and len(oldTranslation) == 1:
+                        # translation found, just update it.
+                        oldTranslation[0].key = request.params['translation']
+                        success = True
+                        msg = 'Updated translation (<b>%s</b> for key <b>%s</b>.' % (request.params['translation'], request.params['original'])
+                    else:
+                        # no translation available yet, add it to DB
+                        translation = A_Key(request.params['translation'])
+                        translation.original = original[0]
+                        translation.language = language[0]
+                        Session.add(translation)
+                        success = True
+                        msg = 'Added translation (<b>%s</b>) for key <b>%s</b>.' % (request.params['translation'], request.params['original'])
+                else:
+                    msg = 'Original key not found' # should never happen
+            if request.params['keyvalue'] == 'value':
+                # find original (fk_a_value empty)
+                original = Session.query(A_Value).filter(A_Value.value == request.params['original']).filter(A_Value.fk_a_value == None).all()
+                if original and len(original) == 1:
+                    # check if a translation of this value is already there
+                    oldTranslation = Session.query(A_Value).filter(A_Value.original == original[0]).filter(A_Value.language == language[0]).all()
+                    if oldTranslation and len(oldTranslation) == 1:
+                        # translation found, just update it.
+                        oldTranslation[0].value = request.params['translation']
+                        success = True
+                        msg = 'Updated translation (<b>%s</b> for value <b>%s</b>.' % (request.params['translation'], request.params['original'])
+                    else:
+                        # no translation available yet, add it to DB
+                        translation = A_Value(request.params['translation'])
+                        translation.original = original[0]
+                        translation.language = language[0]
+                        Session.add(translation)
+                        success = True
+                        msg = 'Added translation (<b>%s</b>) for value <b>%s</b>.' % (request.params['translation'], request.params['original'])
+                else:
+                    msg = 'Original value not found' # should never happen
         else:
-            msg = 'Language not unique or not found in DB'
+            msg = 'Language not unique or not found in DB' # should never happen
     
     return {
         'success': success,
