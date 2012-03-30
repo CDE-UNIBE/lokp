@@ -152,7 +152,17 @@ def index(request):
     """
     Returns the main HTML page
     """
-    lang = 'en'
+    
+    # Check if language (_LOCALE_) is set
+    if request is not None and '_LOCALE_' in request.params:
+        response = request.response
+        response.set_cookie('_LOCALE_', request.params.get('_LOCALE_'))
+
+    # Check if profile (_PROFILE_) is set
+    if request is not None and '_PROFILE_' in request.params:
+        response = request.response
+        response.set_cookie('_PROFILE_', request.params.get('_PROFILE_'))
+
     # Check if the user is logged in
     username = authenticated_userid(request)
     # Assume the user is not logged in per default
