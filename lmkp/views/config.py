@@ -50,7 +50,7 @@ def get_config(request):
         # Handle the AttributeError if the locale config file is empty
         except AttributeError:
             pass
-
+    
     # Read the global configuration file
     global_stream = open(config_file_path(request), 'r')
     global_config = yaml.load(global_stream)
@@ -128,7 +128,6 @@ def yaml_translation_json(request):
     # Read the global configuration file
     global_stream = open(config_file_path(request), 'r')
     global_config = yaml.load(global_stream)
-    print(global_config)
 
     # Read the localized configuration file
     try:
