@@ -18,3 +18,9 @@ def locale_config_file_path(request):
         return "%s/profiles/%s.yml" % (os.path.dirname(__file__), request.cookies['_PROFILE_'])
     else:
         return ''
+
+def profile_directory_path(request=None):
+    """
+    Returns the absolute path to the directory containing the profiles
+    """
+    return "%s/profiles/" % os.path.dirname(__file__)

@@ -98,6 +98,9 @@ def main(global_config, ** settings):
     # Try to add or edit a translation
     config.add_route('edit_translation', '/lang/edit')
 
+    # Return a json with all available profiles from disk
+    config.add_route('profile_store', '/profiles/all')
+
     # Test
     config.add_route('geojson_test', '/geojson')
     

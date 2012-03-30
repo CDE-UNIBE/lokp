@@ -25,7 +25,10 @@ Ext.define('Lmkp.view.Main' ,{
 		fieldLabel: 'Profile',
 		id: 'profile_combobox',
 		queryMode: 'local',
-		store: [['DE', 'Germany'],['CH', 'Switzerland'],['LA', 'Laos'],['FR','France']]
+		store: 'Profiles',
+		displayField: 'name',
+		valueField: 'profile',
+		forceSelection: true
 	}, {
 		xtype: 'combobox',
 		fieldLabel: 'Language',
@@ -36,7 +39,7 @@ Ext.define('Lmkp.view.Main' ,{
 		valueField: 'locale',
 		forceSelection: true
 	}],
-        
+
     initComponent: function() {
         this.callParent(arguments);
     }
