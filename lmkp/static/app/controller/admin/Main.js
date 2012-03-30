@@ -44,7 +44,8 @@ Ext.define('Lmkp.controller.admin.Main', {
 	showTranslationWindow: function(g, td) {
 		var record = g.getSelectionModel().getSelection()[0];
 		// only do some action if original is not in english (translation != 0)
-		if (record.get('translation') != 0) {
+		// and only if original is in database
+		if (record.get('translation') != 0 && record.get('exists')) {
 			console.log(record);
 			var win = Ext.create('Ext.window.Window', {
 				title: 'Translation',
@@ -54,22 +55,35 @@ Ext.define('Lmkp.controller.admin.Main', {
 					xtype: 'form',
 					url: '/lang/edit',
 					defaults: {
-						anchor: '100%'
+						anchor: '100%',
+						xtype: 'textfield'
 					},
 					items: [{
 						xtype: 'displayfield',
-						name: 'language',
 						fieldLabel: 'Language',
 						value: Ext.ComponentQuery.query('combobox[id=scanLanguageCombo]')[0].lastSelection[0].get('english_name')
 					}, {
 						xtype: 'displayfield',
-						name: 'keyvalue',
 						fieldLabel: 'Key/Value',
 						value: record.get('value')
 					}, {
-						xtype: 'textfield',
 						name: 'translation',
 						fieldLabel: 'Translation',
+						allowBlank: false
+					}, {
+						name: 'original',
+						hidden: true,
+						value: record.get('value'),
+						allowBlank: false
+					}, {
+						name: 'language',
+						hidden: true,
+						value: Ext.ComponentQuery.query('combobox[id=scanLanguageCombo]')[0].lastSelection[0].get('locale'),
+						allowBlank: false
+					}, {
+						name: 'keyvalue',
+						hidden: true,
+						value: record.get('keyvalue'),
 						allowBlank: false
 					}],
 					buttons: [{
@@ -77,11 +91,14 @@ Ext.define('Lmkp.controller.admin.Main', {
 						handler: function() {
 							if (this.up('form').getForm().isValid()) {
 								this.up('form').getForm().submit({
+									waitMsg: 'Sending ...',
 									success: function(form, action) {
-										console.log("success");
+										win.close();
+										Ext.Msg.alert('Success', action.result.msg);
+										
 									},
 									failure: function(form, action) {
-										console.log("failure");
+										Ext.Msg.alert('Failure', action.result.msg);
 									}
 								});
 							}
@@ -97,34 +114,6 @@ Ext.define('Lmkp.controller.admin.Main', {
 			});
 			win.show();
 		}
-	},
-	
-	scanSwitchLanguage: function(combobox, records, eOpts) {
-		// console.log(records[0].get('locale'));
-		var store = this.getYamlScanStore();
-		var root = store.getRootNode();
-		root.removeAll(false);
-		store.load({
-			node: root,
-			params: {
-				'_LOCALE_': records[0].get('locale')
-			}
-		});
-		console.log("don't delete me if you read this!!!");
-		/*
-		 * 
-		 * 
-		 * 
-		 * 
-		 * 
-		 * 
-		 * 
-		 * 
-		 * 
-		 * 
-		 * 
-		 * 
-		 */
 	},
 	
 	scanAddToDB: function(item, e, eOpts) {

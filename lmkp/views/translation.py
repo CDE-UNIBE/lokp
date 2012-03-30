@@ -5,7 +5,11 @@ from pyramid.view import view_config
 import simplejson as json
 
 from ..models.meta import DBSession as Session
-from ..models.database_objects import Language
+from ..models.database_objects import (
+    Language,
+    A_Key,
+    A_Value
+)
 
 log = logging.getLogger(__name__)
 
@@ -75,8 +79,27 @@ def language_store(request):
 
 @view_config(route_name='edit_translation', renderer='json')
 def edit_translation(request):
-    if 'translation' in request.params:
-        val = request.params['translation']
-        print val
-        return {'success': True}
-    return {'success': False}
+    success = False
+    msg = 'Translation not successful'
+    print request.params
+    if 'original' and 'translation' and 'language' and 'keyvalue' in request.params:
+        # find language
+        language = Session.query(Language).filter(Language.locale == request.params['language']).all()
+        if language and len(language) == 1:
+            if request.params['keyvalue'] == 'key':
+                # find original (fk_a_key empty)
+                original = Session.query(A_Key).filter(A_Key.key == request.params['original']).filter(A_Key.fk_a_key == None).all()
+                if original and len(original) == 1:
+                    translation = A_Key(request.params['translation'])
+                    translation.original = original[0]
+                    translation.language = language[0]
+                    Session.add(translation)
+                    success = True
+                    msg = 'Added translation (<b>%s</b>) for <b>%s</b>.' % (request.params['translation'], request.params['original'])
+        else:
+            msg = 'Language not unique or not found in DB'
+    
+    return {
+        'success': success,
+        'msg': msg
+    }
