@@ -360,7 +360,7 @@ def _get_yaml_scan(kv, mandatory, value, db_values, language, leaf):
                 fieldConfig['translation'] = 1  # not yet translated
         if kv == 'value':
             # try to find original
-            original = Session.query(A_Key).filter(A_Value.fk_a_value == None).filter(A_Value.value == value).first()
+            original = Session.query(A_Value).filter(A_Value.fk_a_value == None).filter(A_Value.value == value).first()
             translated = Session.query(A_Value).filter(A_Value.original == original).filter(A_Value.language == language).first()
             if translated:
                 fieldConfig['translation'] = translated.value

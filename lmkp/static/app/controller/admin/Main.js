@@ -46,7 +46,7 @@ Ext.define('Lmkp.controller.admin.Main', {
 		// only do some action if original is not in english (translation != 0)
 		// and only if original is in database
 		if (record.get('translation') != 0 && record.get('exists')) {
-			console.log(record);
+			var panel = this;
 			var win = Ext.create('Ext.window.Window', {
 				title: 'Translation',
 				layout: 'fit',
@@ -69,6 +69,14 @@ Ext.define('Lmkp.controller.admin.Main', {
 					}, {
 						name: 'translation',
 						fieldLabel: 'Translation',
+						listeners: {
+							render: function() {
+								// show current translation value if not 1 (= not yet set)
+								if (record.get('translation') != 1) {
+									this.setValue(record.get('translation'));
+								}
+							}
+						},
 						allowBlank: false
 					}, {
 						name: 'original',
@@ -95,6 +103,7 @@ Ext.define('Lmkp.controller.admin.Main', {
 									success: function(form, action) {
 										win.close();
 										Ext.Msg.alert('Success', action.result.msg);
+										panel.scanDoScan();
 										
 									},
 									failure: function(form, action) {
@@ -150,6 +159,7 @@ Ext.define('Lmkp.controller.admin.Main', {
 				}
 			});
 		} else {
+			console.log("if you ever read this it means that this is still needed, don't delete it'!!");
 			store.load({
 				node: root
 			});
@@ -173,7 +183,10 @@ Ext.define('Lmkp.controller.admin.Main', {
 		var mainPanel = this.getMainPanel();
 		if (mainPanel && mainPanel.items.first()) {
 			if (mainPanel.items.first() != newElement) {
-				mainPanel.remove(mainPanel.items.first());
+				// TODO: properly delete old element (cannot be recreated)
+				var item = mainPanel.items.first();
+				mainPanel.remove(item);
+				item.destroy();
 				mainPanel.add(newElement);
 			}
 		}
