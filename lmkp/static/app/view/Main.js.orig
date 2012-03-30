@@ -11,8 +11,7 @@ Ext.define('Lmkp.view.Main' ,{
     items : [{
         region: 'center',
         xtype: 'sidepanel',
-        collapsible: false,
-        width: 300
+        collapsible: false
     },{
         region: 'east',
         width: 500,
@@ -42,6 +41,20 @@ Ext.define('Lmkp.view.Main' ,{
 	}],
 
     initComponent: function() {
+<<<<<<< HEAD
+        this.items = [{
+            collapsible: false,
+            region: 'west',
+            xtype: 'filterPanel',
+            width: 300
+        },{
+            collapsible: false,
+            region: 'center',
+            frame: false,
+            xtype: 'mappanel'
+        }]
+=======
+>>>>>>> refs/heads/lukas/yamltranslation
         this.callParent(arguments);
     }
 });
