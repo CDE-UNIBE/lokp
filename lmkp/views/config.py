@@ -50,7 +50,7 @@ def get_config(request):
         # Handle the AttributeError if the locale config file is empty
         except AttributeError:
             pass
-
+    
     # Read the global configuration file
     global_stream = open(config_file_path(request), 'r')
     global_config = yaml.load(global_stream)
@@ -126,7 +126,6 @@ def yaml_translation_json(request):
     # Read the global configuration file
     global_stream = open(config_file_path(request), 'r')
     global_config = yaml.load(global_stream)
-    print(global_config)
 
     # Read the localized configuration file
     try:
@@ -338,6 +337,7 @@ def _get_yaml_scan(kv, mandatory, value, db_values, language, leaf):
     
     fieldConfig = {}
     
+    fieldConfig['keyvalue'] = kv
     fieldConfig['mandatory'] = mandatory
     fieldConfig['exists'] = value in db_values
     fieldConfig['value'] = value
@@ -349,13 +349,17 @@ def _get_yaml_scan(kv, mandatory, value, db_values, language, leaf):
 
     if language.id != 1:
         if kv == 'key':
-            translated = Session.query(A_Key).filter(A_Key.key == value).filter(A_Key.language == language).first()
-            if translated:
+            # try to find original
+            original = Session.query(A_Key).filter(A_Key.fk_a_key == None).filter(A_Key.key == value).first()
+            translated = Session.query(A_Key).filter(A_Key.original == original).filter(A_Key.language == language).first()
+            if original and translated:
                 fieldConfig['translation'] = translated.key
             else:
                 fieldConfig['translation'] = 1  # not yet translated
         if kv == 'value':
-            translated = Session.query(A_Value).filter(A_Value.value == value).filter(A_Value.language == language).first()
+            # try to find original
+            original = Session.query(A_Value).filter(A_Value.fk_a_value == None).filter(A_Value.value == value).first()
+            translated = Session.query(A_Value).filter(A_Value.original == original).filter(A_Value.language == language).first()
             if translated:
                 fieldConfig['translation'] = translated.value
             else:
