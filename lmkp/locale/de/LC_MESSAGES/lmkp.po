@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2012-03-29 16:48+0200\n"
-"PO-Revision-Date: 2012-03-29 16:48+0100\n"
+"POT-Creation-Date: 2012-04-02 10:16+0200\n"
+"PO-Revision-Date: 2012-04-02 14:56+0100\n"
 "Last-Translator: Adrian Weber <adrian.weber@cde.unibe.ch>\n"
 "Language-Team: de <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
@@ -16,20 +16,23 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
+"X-Poedit-Basepath: ../../../../\n"
 
-#: lmkp/templates/index.mak:44
-#: lmkp/templates/index.pt:46
+#: lmkp/templates/index.mak:40
+msgid "Welcome"
+msgstr "Willkommen"
+
+#: lmkp/templates/index.mak:45 lmkp/templates/index.pt:46
 msgid "Warmly welcome to the Land Matriz Knowledge Platformz!"
 msgstr "Herzlich Willkommen auf der Wissensplattform zu ländlichen Matrizen!"
 
-#: lmkp/templates/index.mak:47
-#: lmkp/templates/index.pt:49
+#: lmkp/templates/index.mak:48 lmkp/templates/index.pt:49
 msgid "Unbelievable, you are logged in!"
 msgstr "Nicht zu fassen, du bist eingeloggt!"
 
-#: lmkp/templates/index.mak:59
+#: lmkp/templates/index.mak:60
 msgid "Please log in!"
-msgstr ""
+msgstr "Bitte anmelden!"
 
 #. Default: Active Activities
 #: lmkp/views/activities.py:21
@@ -54,37 +57,35 @@ msgstr "Gelöschte Aktivitäten"
 #. Default: Rejected Activities
 #: lmkp/views/activities.py:25
 msgid "Rejected Activities"
-msgstr ""
+msgstr "Abgelehnte Aktivitäten"
 
 #. Default: Edit
 #: lmkp/views/editors.py:21
 msgid "Edit"
-msgstr ""
+msgstr "Bearbeiten"
 
 #. Default: Add
 #: lmkp/views/editors.py:22
 msgid "Add"
-msgstr ""
+msgstr "Hinzufügen"
 
 #. Default: Zoom
-#: lmkp/views/translation.py:18
+#: lmkp/views/translation.py:25
 msgid "zoom-button"
-msgstr ""
+msgstr "Vergrössern"
 
 #. Default: Pan
-#: lmkp/views/translation.py:19
+#: lmkp/views/translation.py:26
 msgid "pan-button"
-msgstr ""
+msgstr "Verschieben"
 
 #. Default: File
-#: lmkp/views/translation.py:20
+#: lmkp/views/translation.py:27
 msgid "file-menu"
-msgstr ""
+msgstr "Datei"
 
 #. Default: View
-#: lmkp/views/translation.py:21
+#: lmkp/views/translation.py:28
 msgid "view-menu"
-msgstr ""
+msgstr "Ansicht"
 
-#~ msgid "warmly welcome to the Land Matriz Knowledge Platformz!"
-#~ msgstr ""
