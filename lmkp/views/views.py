@@ -163,15 +163,7 @@ def index(request):
         response = request.response
         response.set_cookie('_PROFILE_', request.params.get('_PROFILE_'))
 
-    # Check if the user is logged in
-    username = authenticated_userid(request)
-    # Assume the user is not logged in per default
-    login = False
-    if username is not None:
-        login = True
-    else:
-        username = 'unknown user'
-    return {'header': 'welcome', 'login': login, 'username': username, 'script': 'main'}
+    return {'script': 'main'}
 
 @view_config(route_name='ext_tests', renderer='lmkp:templates/tests.pt')
 def ext_tests(request):

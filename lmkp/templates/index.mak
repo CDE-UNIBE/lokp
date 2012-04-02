@@ -1,6 +1,7 @@
 <%
 
 from pyramid.security import ACLAllowed
+from pyramid.security import authenticated_userid
 from pyramid.security import has_permission
 
 %>
@@ -36,10 +37,10 @@ from pyramid.security import has_permission
     </head>
     <body>
         <div id="header-div">
-            <h1>${header}</h1>
-            % if login == True:
+            <h1>${_("Welcome")}</h1>
+            % if authenticated_userid(request) is not None:
             <div>
-                ${username},
+                <a href="/users/${request.user.username}">${request.user.username}</a>,
                 <%block name="welcome_header">
                     ${_(u"Warmly welcome to the Land Matriz Knowledge Platformz!")}
                 </%block>
