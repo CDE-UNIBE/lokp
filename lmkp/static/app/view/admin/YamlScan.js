@@ -98,6 +98,16 @@ Ext.define('Lmkp.view.admin.YamlScan', {
 				text: 'Add all to DB',
 				id: 'addToDB'
 			}, '->', 
+			'Scan profile:',
+			{
+				xtype: 'combobox',
+				id: 'scanProfileCombo',
+				queryMode: 'local',
+				store: 'Profiles',
+				displayField: 'name',
+				valueField: 'profile',
+				forceSelection: true
+			},
 			'Scan language:',
 			{
 				xtype: 'combobox',
@@ -106,8 +116,7 @@ Ext.define('Lmkp.view.admin.YamlScan', {
 				store: 'Languages',
 				displayField: 'english_name',
 				valueField: 'locale',
-				forceSelection: true,
-				emptyText: 'Select Language'
+				forceSelection: true
 			}]
 		}]
 	}],

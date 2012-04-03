@@ -10,7 +10,8 @@ Ext.define('Lmkp.controller.admin.Main', {
 	
 	stores: [
 		'YamlScan',
-		'Languages'
+		'Languages',
+		'Profiles'
 	],
 	
 	refs: [{
@@ -35,8 +36,11 @@ Ext.define('Lmkp.controller.admin.Main', {
 			'toolbar[id=scanToolbar] combobox[id=scanLanguageCombo]': {
 				select: this.scanDoScan
 			},
+			'toolbar[id=scanToolbar] combobox[id=scanProfileCombo]': {
+				select: this.scanDoScan
+			},
 			'adminyamlscan': {
-				beforerender: this.asdf
+				beforerender: this.renderAdminYamlScan
 			},
 			'adminyamlscan templatecolumn[name=editColumn]': {
 				click: this.showTranslationWindow
@@ -150,43 +154,24 @@ Ext.define('Lmkp.controller.admin.Main', {
 	},
 	
 	scanDoScan: function(item, e, eOpts) {
-		var cb = Ext.ComponentQuery.query('combobox[id=scanLanguageCombo]')[0];
+		var cbLang = Ext.ComponentQuery.query('combobox[id=scanLanguageCombo]')[0];
+		var cbProfile = Ext.ComponentQuery.query('combobox[id=scanProfileCombo]')[0];
 		var store = this.getYamlScanStore();
 		var root = store.getRootNode();
 		root.removeAll(false);
-		if (cb.lastSelection[0]) {
-			store.load({
-				node: root,
-				params: {
-					'_LOCALE_': cb.lastSelection[0].get('locale')
-				}
-			});
-		} else {
-			console.log("if you ever read this it means that this is still needed, don't delete it'!!");
-			store.load({
-				node: root
-			});
-		}
-	},
-	
-	mainShowHome: function(item, e, eOpts) {
-		var newElement = Ext.create('Lmkp.view.admin.Home');
-		this._replaceContent(newElement);
-	},
-	
-	mainShowYamlScan: function(item, e, eOpts) {
-		this.getLanguagesStore().load();
-		var newElement = Ext.create('Lmkp.view.admin.YamlScan');
-		var cb = Ext.ComponentQuery.query('combobox[id=scanLanguageCombo]')[0];
-		cb.setValue(Lmkp.ts.msg("locale"));
-		this._replaceContent(newElement);
+		store.load({
+			node: root,
+			params: {
+				'_LOCALE_': cbLang.lastSelection[0].get('locale'),
+				'_PROFILE_': cbProfile.lastSelection[0].get('profile')
+			}
+		});
 	},
 	
 	_replaceContent: function(newElement) {
 		var mainPanel = this.getMainPanel();
 		if (mainPanel && mainPanel.items.first()) {
 			if (mainPanel.items.first() != newElement) {
-				// TODO: properly delete old element (cannot be recreated)
 				var item = mainPanel.items.first();
 				mainPanel.remove(item);
 				item.destroy();
@@ -195,12 +180,13 @@ Ext.define('Lmkp.controller.admin.Main', {
 		}
 	},
 	
-	asdf: function() {
-		console.log("asdf");
+	renderAdminYamlScan: function() {
 		this.getLanguagesStore().load();
-		// var newElement = Ext.create('Lmkp.view.admin.YamlScan');
-		var cb = Ext.ComponentQuery.query('combobox[id=scanLanguageCombo]')[0];
-		cb.setValue(Lmkp.ts.msg("locale"));
-		// this._replaceContent(newElement);
+		var cb1 = Ext.ComponentQuery.query('combobox[id=scanLanguageCombo]')[0];
+		cb1.setValue(Lmkp.ts.msg("locale"));
+		this.getProfilesStore().load();
+		var initialProfile = 'global';
+		var cb2 = Ext.ComponentQuery.query('combobox[id=scanProfileCombo]')[0];
+		cb2.setValue(initialProfile);
 	}
 });
