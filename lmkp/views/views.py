@@ -147,7 +147,7 @@ def geo_test(request):
         'properties': {'title': 'Dict 1'}
         }
 
-@view_config(route_name='index', renderer='lmkp:templates/index.pt')
+@view_config(route_name='index', renderer='lmkp:templates/index.mak')
 def index(request):
     """
     Returns the main HTML page

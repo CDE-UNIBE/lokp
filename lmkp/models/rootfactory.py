@@ -3,7 +3,9 @@ from pyramid.security import Everyone
 
 class RootFactory(object):
     __acl__ = [(Allow, Everyone, 'view'),
-        (Allow, 'group:editors', 'edit')]
+        (Allow, 'group:editors', ('view', 'edit')),
+        (Allow, 'group:moderators', ('view', 'edit', 'moderate')),
+        (Allow, 'group:administrators', ('view', 'edit', 'moderate', 'administer'))]
     
     #===========================================================================
     # """ 
