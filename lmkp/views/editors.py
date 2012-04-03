@@ -22,7 +22,7 @@ def edit_toolbar_config(request):
     str += "{id: 'add-button', text: '%s'}" % _('Add', default='Add')
     str += "];\n"
 
-    str += "Lmkp.mainControllers = ['Main', 'Layers', 'Map', 'Filter', 'EditFilter'];\n"
+    str += "Lmkp.mainControllers = ['Main', 'Map', 'Filter', 'EditFilter'];\n"
 
     return str
 
