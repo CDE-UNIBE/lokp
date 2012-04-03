@@ -3,8 +3,10 @@ from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol import ActivityProtocol
 import logging
+from pyramid.httpexceptions import HTTPFound
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
+from pyramid.url import route_url
 from pyramid.view import view_config
 from sqlalchemy.sql.expression import or_
 import yaml
@@ -215,6 +217,19 @@ def model(request):
     object['fields'] = fields
 
     return "Ext.define('DyLmkp.model.Activity', %s);" % object
+
+
+@view_config(route_name='rss_feed', renderer='lmkp:templates/rss.mak')
+def read_many_rss(request):
+    status = "active"
+
+    if 'status' in request.matchdict:
+        status = request.matchdict['status']
+        
+    if 'order_by' not in request.params or 'dir' not in request.params:
+        return HTTPFound(route_url('rss_feed', request, status=status, _query={'order_by': 'timestamp', 'dir': 'desc'}))
+
+    return {'data' : activity_protocol.read(request, filter=(Status.name == status))}
 
 def _get_extjs_config(name, config):
 
