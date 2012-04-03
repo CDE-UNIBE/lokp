@@ -125,6 +125,8 @@ def main(global_config, ** settings):
     # An user profile page
     config.add_route('user_profile', '/users/{userid}')
 
+    config.add_route('rss_feed', '/rss/{status}')
+
     # Test
     config.add_route('geojson_test', '/geojson')
     
