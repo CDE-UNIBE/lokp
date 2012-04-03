@@ -133,12 +133,16 @@ Ext.define('Lmkp.controller.admin.Main', {
 	},
 	
 	scanAddToDB: function(item, e, eOpts) {
+		var cbProfile = Ext.ComponentQuery.query('combobox[id=scanProfileCombo]')[0];
 		var win = Ext.create('Ext.window.Window', {
 			title: 'Add to DB',
 			closable: false,
 			layout: 'fit',
 			loader: {
 				url: '/config/add',
+				params: {
+					'_PROFILE_': cbProfile.lastSelection[0].get('profile')
+				},
 				loadMask: true,
 				autoLoad: true
 			},
