@@ -2,12 +2,17 @@ from lmkp.models.meta import DBSession
 from lmkp.renderers.renderers import ExtJSGrid
 from lmkp.renderers.renderers import ExtJSTree
 from lmkp.renderers.renderers import JavaScriptRenderer
+from lmkp.renderers.renderers import KmlRenderer
 from lmkp.security import group_finder
+from lmkp.subscribers import add_localizer
+from lmkp.subscribers import add_renderer_globals
 import papyrus
 from papyrus.renderers import GeoJSON
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
+from pyramid.events import BeforeRender
+from pyramid.events import NewRequest
 from sqlalchemy import engine_from_config
 
 def main(global_config, ** settings):
@@ -28,6 +33,10 @@ def main(global_config, ** settings):
 
     # Add the directory that includes the translations
     config.add_translation_dirs('lmkp:locale/')
+
+    # Add event subscribers
+    config.add_subscriber(add_renderer_globals, BeforeRender)
+    config.add_subscriber(add_localizer, NewRequest)
 
     # Add papyrus includes
     config.include(papyrus.includeme)
@@ -57,6 +66,9 @@ def main(global_config, ** settings):
     # Add a renderer to return ExtJS store configuration objects
     config.add_renderer('json', ExtJSGrid())
 
+    # Add a renderer to return KML
+    config.add_renderer('kml', KmlRenderer())
+
     # Add a renderer to return JavaScript files
     config.add_renderer('javascript', JavaScriptRenderer())
 
@@ -66,6 +78,9 @@ def main(global_config, ** settings):
     # Reads one or many activities and returns the result as HTML
     # This is only for debugging purposes ...
     config.add_route('activities_read_many_html', '/activities/html', request_method='GET')
+
+    # Reads many activites and returns a KML file
+    config.add_route('activities_read_many_kml', '/activities/kml', request_method='GET')
 
     # Reads one or many activities and returns the result as JSON that can be used
     # in ExtJS stores and forms
@@ -98,8 +113,12 @@ def main(global_config, ** settings):
     # Try to add or edit a translation
     config.add_route('edit_translation', '/lang/edit')
 
+    # A view that returns an editing toolbar configuration object
+    config.add_route('edit_toolbar_config', '/app/view/EditToolbar.js')
+    config.add_route('view_toolbar_config', '/app/view/ViewToolbar.js')
     # Return a json with all available profiles from disk
     config.add_route('profile_store', '/profiles/all')
+
 
     # Test
     config.add_route('geojson_test', '/geojson')
@@ -110,4 +129,3 @@ def main(global_config, ** settings):
 
     config.scan()
     return config.make_wsgi_app()
-

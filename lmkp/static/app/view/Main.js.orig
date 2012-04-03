@@ -11,8 +11,12 @@ Ext.define('Lmkp.view.Main' ,{
     items : [{
         region: 'center',
         xtype: 'sidepanel',
+<<<<<<< HEAD
+        collapsible: false
+=======
         collapsible: false,
         width: 300
+>>>>>>> refs/heads/master
     },{
         region: 'east',
         width: 500,

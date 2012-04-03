@@ -3,14 +3,13 @@
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2012.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2012-03-12 10:35+0100\n"
-"PO-Revision-Date: 2012-03-12 10:57+0100\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2012-03-29 16:48+0200\n"
+"PO-Revision-Date: 2012-03-29 16:48+0100\n"
+"Last-Translator: Adrian Weber <adrian.weber@cde.unibe.ch>\n"
 "Language-Team: de <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
@@ -18,29 +17,53 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
 
+#: lmkp/templates/index.mak:44
+#: lmkp/templates/index.pt:46
+msgid "Warmly welcome to the Land Matriz Knowledge Platformz!"
+msgstr "Herzlich Willkommen auf der Wissensplattform zu ländlichen Matrizen!"
+
+#: lmkp/templates/index.mak:47
+#: lmkp/templates/index.pt:49
+msgid "Unbelievable, you are logged in!"
+msgstr "Nicht zu fassen, du bist eingeloggt!"
+
+#: lmkp/templates/index.mak:59
+msgid "Please log in!"
+msgstr ""
+
 #. Default: Active Activities
 #: lmkp/views/activities.py:21
 msgid "Active Activities"
-msgstr ""
+msgstr "Gültige Aktivitäten"
 
 #. Default: Overwritten Activities
 #: lmkp/views/activities.py:22
 msgid "Overwritten Activities"
-msgstr ""
+msgstr "Überschriebene Aktivitiäten"
 
 #. Default: Pending Activities
 #: lmkp/views/activities.py:23
 msgid "Pending Activities"
-msgstr ""
+msgstr "Ausstehende Aktivitäten"
 
 #. Default: Deleted Activities
 #: lmkp/views/activities.py:24
 msgid "Deleted Activities"
-msgstr ""
+msgstr "Gelöschte Aktivitäten"
 
 #. Default: Rejected Activities
 #: lmkp/views/activities.py:25
 msgid "Rejected Activities"
+msgstr ""
+
+#. Default: Edit
+#: lmkp/views/editors.py:21
+msgid "Edit"
+msgstr ""
+
+#. Default: Add
+#: lmkp/views/editors.py:22
+msgid "Add"
 msgstr ""
 
 #. Default: Zoom
@@ -63,3 +86,5 @@ msgstr ""
 msgid "view-menu"
 msgstr ""
 
+#~ msgid "warmly welcome to the Land Matriz Knowledge Platformz!"
+#~ msgstr ""

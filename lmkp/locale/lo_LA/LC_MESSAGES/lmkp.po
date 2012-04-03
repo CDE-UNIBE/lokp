@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2012-03-12 10:35+0100\n"
+"POT-Creation-Date: 2012-03-29 16:48+0200\n"
 "PO-Revision-Date: 2012-03-12 10:57+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: lo_LA <LL@li.org>\n"
@@ -17,6 +17,18 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
+
+#: lmkp/templates/index.mak:44 lmkp/templates/index.pt:46
+msgid "Warmly welcome to the Land Matriz Knowledge Platformz!"
+msgstr ""
+
+#: lmkp/templates/index.mak:47 lmkp/templates/index.pt:49
+msgid "Unbelievable, you are logged in!"
+msgstr ""
+
+#: lmkp/templates/index.mak:59
+msgid "Please log in!"
+msgstr ""
 
 #. Default: Active Activities
 #: lmkp/views/activities.py:21
@@ -43,6 +55,16 @@ msgstr ""
 msgid "Rejected Activities"
 msgstr ""
 
+#. Default: Edit
+#: lmkp/views/editors.py:21
+msgid "Edit"
+msgstr ""
+
+#. Default: Add
+#: lmkp/views/editors.py:22
+msgid "Add"
+msgstr ""
+
 #. Default: Zoom
 #: lmkp/views/translation.py:18
 msgid "zoom-button"
@@ -62,4 +84,7 @@ msgstr ""
 #: lmkp/views/translation.py:21
 msgid "view-menu"
 msgstr ""
+
+#~ msgid "warmly welcome to the Land Matriz Knowledge Platformz!"
+#~ msgstr ""
 

@@ -2,18 +2,14 @@ Ext.application({
     name: 'Lmkp',
     appFolder: 'static/app',
 
-    controllers: [
-    'Main',
-    'Layers',
-    'Map',
-    'Filter'
-    ],
-
+    controllers: Lmkp.mainControllers,
+    //controllers: ['Main', 'Layers', 'Map', 'Filter', 'EditFilter'],
+    
     launch: function() {
         Ext.create('Ext.container.Viewport', {
             layout: {
-            	type: 'border',
-            	padding: 0
+                type: 'border',
+                padding: 0
             },
             items: [{
                 height: 100,

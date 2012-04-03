@@ -70,8 +70,6 @@ def get_config(request):
     # Get the requested output format
     parameter = request.matchdict['parameter']
 
-    print global_config
-
     # If parameter=bbox is set
     if parameter is not None and parameter.lower() == 'bbox':
         return {'bbox': global_config['application']['bbox']}
