@@ -122,6 +122,8 @@ def main(global_config, ** settings):
     # Return a json with all available profiles from disk
     config.add_route('profile_store', '/profiles/all')
 
+    # An user profile page
+    config.add_route('user_profile', '/users/{userid}')
 
     # Test
     config.add_route('geojson_test', '/geojson')
