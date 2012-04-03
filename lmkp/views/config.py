@@ -256,6 +256,7 @@ def yaml_add_db(request):
        # language not found, insert it.
        language = Language(1, 'English', 'English', 'en')
        Session.add(language)
+       stack.append('Language (English) added.')
    
    # get keys already in database. their fk_a_key must be None (= original)
    db_keys = []
