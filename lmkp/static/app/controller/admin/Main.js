@@ -35,6 +35,9 @@ Ext.define('Lmkp.controller.admin.Main', {
 			'toolbar[id=scanToolbar] combobox[id=scanLanguageCombo]': {
 				select: this.scanDoScan
 			},
+			'adminyamlscan': {
+				beforerender: this.asdf
+			},
 			'adminyamlscan templatecolumn[name=editColumn]': {
 				click: this.showTranslationWindow
 			}
@@ -190,5 +193,14 @@ Ext.define('Lmkp.controller.admin.Main', {
 				mainPanel.add(newElement);
 			}
 		}
+	},
+	
+	asdf: function() {
+		console.log("asdf");
+		this.getLanguagesStore().load();
+		// var newElement = Ext.create('Lmkp.view.admin.YamlScan');
+		var cb = Ext.ComponentQuery.query('combobox[id=scanLanguageCombo]')[0];
+		cb.setValue(Lmkp.ts.msg("locale"));
+		// this._replaceContent(newElement);
 	}
 });

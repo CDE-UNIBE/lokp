@@ -69,16 +69,17 @@ Ext.define('Lmkp.view.admin.YamlScan', {
 		}, {
 			xtype: 'templatecolumn',
 			name: 'editColumn',
-			flex: 1,
+			width: 25,
+			align: 'center',
 			tpl: Ext.create('Ext.XTemplate', '{[this.showTranslationButton(values.exists, values.translation)]}', {
 				showTranslationButton: function(e, t) {
 					if (e) {		// only show buttons when original in database
 						if (t == 1) {			// not yet translated
-							return '[add translation]';
+							return '<img src="static/img/application_form_add.png" title="add translation" alt="add translation"/>';
 						} else if (t == 0) {	// already in english
 							return '';
 						} else {				// show translation
-							return '[edit translation]';
+							return '<img src="static/img/application_form_edit.png" title="edit translation" alt="edit translation"/>';
 						}
 					} else {
 						return '';
