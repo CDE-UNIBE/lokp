@@ -6,6 +6,7 @@ from lmkp.renderers.renderers import KmlRenderer
 from lmkp.security import group_finder
 from lmkp.subscribers import add_localizer
 from lmkp.subscribers import add_renderer_globals
+from lmkp.subscribers import add_user
 import papyrus
 from papyrus.renderers import GeoJSON
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -37,6 +38,8 @@ def main(global_config, ** settings):
     # Add event subscribers
     config.add_subscriber(add_renderer_globals, BeforeRender)
     config.add_subscriber(add_localizer, NewRequest)
+
+    config.add_subscriber(add_user, NewRequest)
 
     # Add papyrus includes
     config.include(papyrus.includeme)
@@ -119,6 +122,10 @@ def main(global_config, ** settings):
     # Return a json with all available profiles from disk
     config.add_route('profile_store', '/profiles/all')
 
+    # An user profile page
+    config.add_route('user_profile', '/users/{userid}')
+
+    config.add_route('rss_feed', '/rss/{status}')
 
     # Test
     config.add_route('geojson_test', '/geojson')

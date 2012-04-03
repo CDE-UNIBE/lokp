@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LandMatrixKnowledgePlatform 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2012-03-29 16:48+0200\n"
+"POT-Creation-Date: 2012-04-02 10:16+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,15 +18,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
 
-#: lmkp/templates/index.mak:44 lmkp/templates/index.pt:46
+#: lmkp/templates/index.mak:40
+msgid "Welcome"
+msgstr ""
+
+#: lmkp/templates/index.mak:45 lmkp/templates/index.pt:46
 msgid "Warmly welcome to the Land Matriz Knowledge Platformz!"
 msgstr ""
 
-#: lmkp/templates/index.mak:47 lmkp/templates/index.pt:49
+#: lmkp/templates/index.mak:48 lmkp/templates/index.pt:49
 msgid "Unbelievable, you are logged in!"
 msgstr ""
 
-#: lmkp/templates/index.mak:59
+#: lmkp/templates/index.mak:60
 msgid "Please log in!"
 msgstr ""
 
@@ -66,22 +70,22 @@ msgid "Add"
 msgstr ""
 
 #. Default: Zoom
-#: lmkp/views/translation.py:18
+#: lmkp/views/translation.py:25
 msgid "zoom-button"
 msgstr ""
 
 #. Default: Pan
-#: lmkp/views/translation.py:19
+#: lmkp/views/translation.py:26
 msgid "pan-button"
 msgstr ""
 
 #. Default: File
-#: lmkp/views/translation.py:20
+#: lmkp/views/translation.py:27
 msgid "file-menu"
 msgstr ""
 
 #. Default: View
-#: lmkp/views/translation.py:21
+#: lmkp/views/translation.py:28
 msgid "view-menu"
 msgstr ""
 

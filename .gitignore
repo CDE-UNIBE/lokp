@@ -5,6 +5,7 @@
 # Ignore PyDev project files
 .project
 .pydevproject
+.settings
 
 # Ignore packages
 *.egg
