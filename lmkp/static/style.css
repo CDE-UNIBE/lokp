@@ -8,3 +8,15 @@
     height: 16px !important;
     width: 16px !important;
 }
+
+.ico-key { 
+	width:15px; 
+	height:15px; 
+	background-image:url("/static/img/symbol_key.png") !important
+}
+
+.ico-value { 
+	width:15px; 
+	height:15px; 
+	background-image:url("/static/img/symbol_value.png") !important
+}

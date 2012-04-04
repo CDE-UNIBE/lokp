@@ -347,6 +347,11 @@ def _get_yaml_scan(kv, mandatory, value, db_values, language, leaf):
         fieldConfig['leaf'] = True
     else:
         fieldConfig['expanded'] = True
+        
+    if kv == 'key':
+        fieldConfig['iconCls'] = 'ico-key'
+    else:
+        fieldConfig['iconCls'] = 'ico-value'
 
     if language.id != 1:
         if kv == 'key':
