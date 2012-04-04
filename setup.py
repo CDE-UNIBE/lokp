@@ -15,12 +15,16 @@ requires = [
     'zope.sqlalchemy',
     'waitress',
     'papyrus',
-    'Mako>=0.6'
+    'Mako>=0.6',
     'WebTest',
     'cryptacular',
     'Babel',
     'lingua',
-    'chameleon>=2.8'
+    'psycopg2',
+    'pyyaml',
+    'chameleon>=2.8',
+    'lxml==2.3',
+    'pykml'
     ]
 
 setup(name='LandMatrixKnowledgePlatform',
