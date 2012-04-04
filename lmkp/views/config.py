@@ -18,6 +18,9 @@ from ..models.database_objects import (
 
 log = logging.getLogger(__name__)
 
+from pyramid.i18n import get_localizer
+
+
 @view_config(route_name='config', renderer='json')
 def get_config(request):
     """
@@ -81,13 +84,19 @@ def get_config(request):
         # Do the translation work from custom configuration format to an
         # ExtJS configuration object.
         fields = global_config['application']['fields']
+        
+        # language is needed because fields are to be displayed translated
+        localizer = get_localizer(request)
+        lang = Session.query(Language).filter(Language.locale == localizer.locale_name).first()
+        if lang is None:
+            lang = Language(1, 'English', 'English', 'en')
 
         # First process the mandatory fields
         for (name, config) in fields['mandatory'].iteritems():
-            extObject.append(_get_field_config(name, config, True))
+            extObject.append(_get_field_config(name, config, lang, True))
         # Then process also the optional fields
         for (name, config) in fields['optional'].iteritems():
-            extObject.append(_get_field_config(name, config))
+            extObject.append(_get_field_config(name, config, lang))
 
         return extObject
 
@@ -156,7 +165,6 @@ def yaml_translation_json(request):
     fields = global_config['application']['fields']
 
 
-    from pyramid.i18n import get_localizer
     localizer = get_localizer(request)
     
     lang = Session.query(Language).filter(Language.locale == localizer.locale_name).first()
@@ -299,13 +307,24 @@ def yaml_add_db(request):
                            
    return {'messagestack': stack}
 
-
-def _get_field_config(name, config, mandatory=False):
+"""
+{name} is the original key as in the yaml (in english)
+"""
+def _get_field_config(name, config, language, mandatory=False):
 
     fieldConfig = {}
     fieldConfig['allowBlank'] = not mandatory
+    
+    # check if translated name is available
+    originalKey = Session.query(A_Key.id).filter(A_Key.key == name).filter(A_Key.fk_a_key == None).first()
+    translatedName = Session.query(A_Key).filter(A_Key.fk_a_key == originalKey).filter(A_Key.language == language).first()
+    
+    if translatedName:
+        fieldConfig['fieldLabel'] = translatedName.key
+    else:
+        fieldConfig['fieldLabel'] = name
+    
     fieldConfig['name'] = name
-    fieldConfig['fieldLabel'] = name
 
     xtype = 'textfield'
     try:
@@ -319,7 +338,22 @@ def _get_field_config(name, config, mandatory=False):
 
     try:
         # If it's a combobox
-        fieldConfig['store'] = config['predefined']
+        
+        # try to find translated values
+        store = []
+        for val in config['predefined']:
+            singleEntry = []
+            # first value is internal value
+            singleEntry.append(val)            
+            originalValue = Session.query(A_Value.id).filter(A_Value.value == val).filter(A_Value.fk_a_value == None).first()
+            translatedValue = Session.query(A_Value).filter(A_Value.fk_a_value == originalValue).filter(A_Value.language == language).first()
+            # second value is translated value (if available - else same as internal value)
+            if translatedValue:
+                singleEntry.append(translatedValue.value)
+            else:
+                singleEntry.append(val)
+            store.append(singleEntry)
+        fieldConfig['store'] = store
         xtype = 'combo'
     except KeyError:
         pass
