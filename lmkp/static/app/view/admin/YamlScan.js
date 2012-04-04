@@ -4,12 +4,14 @@ Ext.define('Lmkp.view.admin.YamlScan', {
 	alias: ['widget.adminyamlscan'],
 
 	border: 0,
+	layout: 'fit',
 	
 	items: [{
 		xtype: 'treepanel',
 		store: 'YamlScan',
 		rootVisible: false,
-		height: 500,
+		// TODO: autoScroll not yet working properly. Although scroll bar appears, it does so too late.
+		autoScroll: true,
 		columns: [{
 			xtype: 'treecolumn',
 			header: 'Original',
@@ -89,7 +91,6 @@ Ext.define('Lmkp.view.admin.YamlScan', {
 		}],
 		dockedItems: [{
 			xtype: 'toolbar',
-			dock: 'bottom',
 			id: 'scanToolbar',
 			items: [{
 				text: 'Scan',
