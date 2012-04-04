@@ -180,12 +180,16 @@ Ext.define('Lmkp.controller.Filter', {
     
     addAttributeFilter: function(button, e, eOpts) {
         var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
+        // expand form if collapsed
+        if (form.collapsed) {
+        	form.toggleCollapse();
+        }
         var insertIndex = form.items.length - 1; // always insert above the 2 buttons
         var cbox = Ext.create('Ext.form.field.ComboBox', {
             name: 'attributeCombo',
             store: this.getConfigStore(),
-            valueField: 'fieldLabel',
-            displayField: 'name',
+            valueField: 'name',
+            displayField: 'fieldLabel',
             queryMode: 'local',
             typeAhead: true,
             forceSelection: true,
@@ -234,6 +238,10 @@ Ext.define('Lmkp.controller.Filter', {
     
     addTimeFilter: function(button, e, eOpts) {
         var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
+        // expand form if collapsed
+        if (form.collapsed) {
+        	form.toggleCollapse();
+        }
         var insertIndex = form.items.length - 1; // always insert above the 2 buttons
         var picker = Ext.create('Ext.form.field.Date', {
             name: 'dateField',
@@ -315,6 +323,10 @@ Ext.define('Lmkp.controller.Filter', {
                     panels[i].destroy();
                 }
             }
+	        // collapse form if expanded
+	        if (!form.collapsed) {
+	        	form.toggleCollapse();
+	        }
         }
         this.applyFilter();
     },
