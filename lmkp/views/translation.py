@@ -26,6 +26,26 @@ def ui_messages(request):
     'pan-button': _('pan-button', default='Pan'),
     'file-menu': _('file-menu', default='File'),
     'view-menu': _('view-menu', default='View'),
+    'activities-title': _('activities-title', default='Activities'),
+    'addattributefilter-button': _('addattributefilter-button', default='Add attribute filter'),
+    'addattributefilter-tooltip': _('addattributefilter-tooltip', default='Add a filter based on attribute'),
+    'addtimefilter-button': _('addtimefilter-button', default='Add time filter'),
+    'addtimefilter-tooltip': _('addtimefilter-tooltip', default='Add a filter based on time'),
+    'deleteallfilter-button': _('deleteallfilter-button', default='Delete all filters'),
+    'deleteallfilter-tooltip': _('deleteallfilter-tooltip', default='Delete all attribute and temporal filters'),
+    'filter-title': _('filter-title', default='Filter'),
+    'name-column': _('name-column', default='Name'),
+    'activitypaging-before': _('activitypaging-before', default='Page'),
+    'activitypaging-after': _('activitypaging-after', default='of {0}'),
+    'activitypaging-message': _('paging-message', default='Displaying activities {0} - {1} of {2}'),
+    'activitypaging-empty': _('activitypaging-empty', default='No activities found'),
+    'activate-button': _('activate-button', default='Activate'),
+    'activate-tooltip': _('activate-tooltip', default='Click to activate this filter'),
+    'delete-button': _('delete-button', default='Delete'),
+    'deletefilter-tooltip': _('deletefilter-tooltip', default='Click to delete this filter'),
+    'date-label': _('date-label', default='Date'),
+    'profile-label': _('profile-label', default='Profile'),
+    'language-label': _('language-label', default='Language')
     }
 
     # Get the localizer

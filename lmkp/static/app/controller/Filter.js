@@ -76,7 +76,6 @@ Ext.define('Lmkp.controller.Filter', {
     },
     
     onLaunch: function() {
-    	
     },
     
     resetActivateButton: function(element) {
@@ -215,16 +214,18 @@ Ext.define('Lmkp.controller.Filter', {
             }, {
                 xtype: 'button',
                 name: 'activateAttributeButton',
-                text: '[&#10003;] Activate',
-                tooltip: 'Click to activate this filter',
+                text: Lmkp.ts.msg("activate-button"),
+                tooltip: Lmkp.ts.msg("activate-tooltip"),
+                iconCls: 'toolbar-button-accept',
                 enableToggle: true,
                 flex: 0,
                 margin: '0 5 0 0'
             }, {
                 xtype: 'button',
                 name: 'deleteButton',
-                text: '[x] Delete',
-                tooltip: 'Click to delete this filter',
+                text: Lmkp.ts.msg("delete-button"),
+                tooltip: Lmkp.ts.msg("deletefilter-tooltip"),
+                iconCls: 'toolbar-button-delete',
                 enableToggle: false,
                 flex: 0
             }]
@@ -245,7 +246,7 @@ Ext.define('Lmkp.controller.Filter', {
         var insertIndex = form.items.length - 1; // always insert above the 2 buttons
         var picker = Ext.create('Ext.form.field.Date', {
             name: 'dateField',
-            fieldLabel: 'Date',
+            fieldLabel: Lmkp.ts.msg("date-label"),
             value: new Date() // defaults to today
         });
         form.insert(insertIndex, {
@@ -265,16 +266,18 @@ Ext.define('Lmkp.controller.Filter', {
             }, {
                 xtype: 'button',
                 name: 'activateTimeButton',
-                text: '[&#10003;] Activate',
-                tooltip: 'Click to activate this filter',
+                text: Lmkp.ts.msg("activate-button"),
+                tooltip: Lmkp.ts.msg("activate-tooltip"),
+                iconCls: 'toolbar-button-accept',
                 enableToggle: true,
                 flex: 0,
                 margin: '0 5 5 0'
             }, {
                 xtype: 'button',
                 name: 'deleteButton',
-                text: '[x] Delete',
-                tooltip: 'Click to delete this filter',
+                text: Lmkp.ts.msg("delete-button"),
+                tooltip: Lmkp.ts.msg("deletefilter-tooltip"),
+                iconCls: 'toolbar-button-delete',
                 enableToggle: false,
                 flex: 0
             }]

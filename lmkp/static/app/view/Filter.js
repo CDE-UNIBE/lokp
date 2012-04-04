@@ -2,7 +2,7 @@ Ext.define('Lmkp.view.Filter', {
     extend: 'Ext.panel.Panel',
     alias: ['widget.filterPanel'],
 
-    title: 'Activities',
+    title: Lmkp.ts.msg("activities-title"),
     frame: false,
 
     layout: {
@@ -14,19 +14,23 @@ Ext.define('Lmkp.view.Filter', {
     tbar: [{
         xtype: 'button',
         name: 'addAttributeFilter',
-        text: '[+] Add attribute filter',
-        tooltip: 'Add a filter based on attribute',
+        text: Lmkp.ts.msg("addattributefilter-button"),
+        tooltip: Lmkp.ts.msg("addattributefilter-tooltip"),
+        iconCls: 'toolbar-button-add',
         margin: '0 5 0 0',
         flex: 0
     }, {
         xtype: 'button',
         name: 'addTimeFilter',
-        text: '[+] Add time filter',
-        tooltip: 'Add a filter based on time',
+        text: Lmkp.ts.msg("addtimefilter-button"),
+        tooltip: Lmkp.ts.msg("addtimefilter-tooltip"),
+        iconCls: 'toolbar-button-add',
         flex: 0
     },{
         id: 'deleteAllFilters',
-        text: 'Delete all filters',
+        text: Lmkp.ts.msg("deleteallfilter-button"),
+        tooltip: Lmkp.ts.msg("deleteallfilter-tooltip"),
+        iconCls: 'toolbar-button-delete',
         enableToggle: false
     }],
    	
@@ -38,7 +42,7 @@ Ext.define('Lmkp.view.Filter', {
             flex: 0,
             collapsible: true,
             collapsed: true, // TODO: For some reason, layout is not working (buttons disappear on Adding filter) when collapsed at start.
-            title: 'Filter',
+            title: Lmkp.ts.msg("filter-title"),
             layout: {
                 type: 'anchor'
             },
@@ -67,15 +71,17 @@ Ext.define('Lmkp.view.Filter', {
                 }, {
                     xtype: 'button',
                     name: 'addAttributeFilter',
-                    text: '[+] Add attribute filter',
-                    tooltip: 'Add a filter based on attribute',
+			        text: Lmkp.ts.msg("addattributefilter-button"),
+			        tooltip: Lmkp.ts.msg("addattributefilter-tooltip"),
+			        iconCls: 'toolbar-button-add',
                     margin: '0 5 0 0',
                     flex: 0
                 }, {
                     xtype: 'button',
                     name: 'addTimeFilter',
-                    text: '[+] Add time filter',
-                    tooltip: 'Add a filter based on time',
+			        text: Lmkp.ts.msg("addtimefilter-button"),
+			        tooltip: Lmkp.ts.msg("addtimefilter-tooltip"),
+			        iconCls: 'toolbar-button-add',
                     flex: 0
                 }]
             }]
@@ -96,9 +102,9 @@ Ext.define('Lmkp.view.Filter', {
                     stripeRows: false
                 },
                 columns: [{
-                    header: 'Name',
+                    header: Lmkp.ts.msg("name-column"),
                     name: 'namecolumn',
-                    dataIndex: 'name',
+                    dataIndex: 'Name',
                     flex: 1,
                     sortable: true
                 }],
@@ -108,8 +114,10 @@ Ext.define('Lmkp.view.Filter', {
                     dock: 'bottom',
                     enableOverflow: true,
                     displayInfo: true,
-                    displayMsg: 'Displaying activities {0} - {1} of {2}',
-                    emptyMsg: '<b>No activities found.</b>'
+                    beforePageText: Lmkp.ts.msg("activitypaging-before"),
+                    afterPageText: Lmkp.ts.msg("activitypaging-after"),
+                    displayMsg: Lmkp.ts.msg("activitypaging-message"),
+                    emptyMsg: '<b>' + Lmkp.ts.msg("activitypaging-empty") + '</b>'
                 }]
             }, {
                 xtype: 'panel',
