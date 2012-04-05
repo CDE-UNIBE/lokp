@@ -3,9 +3,13 @@ from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol import ActivityProtocol
 import logging
+from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPFound
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
+from pyramid.security import ACLAllowed
+from pyramid.security import authenticated_userid
+from pyramid.security import has_permission
 from pyramid.url import route_url
 from pyramid.view import view_config
 from sqlalchemy.sql.expression import or_
@@ -77,8 +81,16 @@ def read_one(request):
     """
     Returns the feature with the requested id
     """
-    id = request.matchdict.get('id', None)
-    return activity_protocol.read(request, filter=get_status_filter(request), id=id)
+    uid = request.matchdict.get('uid', None)
+    return activity_protocol.read(request, filter=get_status_filter(request), uid=uid)
+
+#@view_config(route_name='activities_read_one', renderer='lmkp:templates/table.mak')
+def read_one_html(request):
+    """
+    Returns the feature with the requested id
+    """
+    uid = request.matchdict.get('uid', None)
+    return { 'result': [activity_protocol.read(request, filter=get_status_filter(request), uid=uid)]}
 
 @view_config(route_name='activities_read_many', renderer='geojson')
 def read_many(request):
@@ -138,8 +150,20 @@ def create(request):
     """
     Add a new activity.
     Implements the create functionality (HTTP POST) in the CRUD model
+
+    Test the POST request e.g. with
+    curl --data @line.json http://localhost:6543/activities
+
     """
-    return {}
+
+    # Check if the user is logged in and he/she has sufficient user rights
+    userid = authenticated_userid(request)
+    if userid is None:
+        return HTTPForbidden()
+    if not isinstance(has_permission('edit', request.context, request), ACLAllowed):
+        return HTTPForbidden()
+
+    return activity_protocol.create(request)
 
 @view_config(route_name='activities_tree', renderer='tree')
 def tree(request):

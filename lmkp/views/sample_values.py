@@ -239,7 +239,7 @@ def sample_values(request):
         changeset.user = random.choice(list_users)
         # prepare activity
         identifier = uuid.uuid4()
-        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,90)) + ")")
         activity.status = status2 # active
         activity.tag_groups.append(tag_group)
         activity.changesets.append(changeset)
