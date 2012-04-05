@@ -4,7 +4,7 @@ Ext.define('Lmkp.controller.Filter', {
     models: ['Config', 'ActivityGrid'],
     stores: ['Config', 'ActivityGrid'],
    
-    views: ['Filter'],
+    views: ['Filter', 'DetailPanel'],
 
     init: function() {
         var fields = new Ext.util.MixedCollection();
