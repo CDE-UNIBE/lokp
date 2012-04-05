@@ -35,7 +35,7 @@
 
             from shapely import wkb
 
-            attributes = ['id', 'timestamp', 'version', 'geometry']
+            attributes = ['id', 'timestamp', 'activity_identifier', 'version', 'geometry']
 
             nbrFeatures = 0
 
