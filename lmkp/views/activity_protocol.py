@@ -18,7 +18,7 @@ from sqlalchemy.sql import and_
 from sqlalchemy.sql.expression import desc
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.expression import select
-import transaction
+from uuid import UUID
 
 log = getLogger(__name__)
 
@@ -194,27 +194,30 @@ class ActivityFeature(object):
         # Loop all attributes
         for index in self.__dict__:
             # Ignore the reserved keywords id and geometry
-            if index not in ['id', 'geometry']:
+            if index not in ['geometry']:
                 attribute_value = getattr(self, index)
                 # Append only not null attributes to the properties
                 if attribute_value is not None:
-                    # Try to cast the value to integer or float
-                    try:
-                        properties[index] = int(attribute_value)
-                    except:
+                    if isinstance(attribute_value, UUID):
+                        properties[index] = str(attribute_value)
+                    else:
+                        # Try to cast the value to integer or float
                         try:
-                            properties[index] = float(attribute_value)
+                            properties[index] = int(attribute_value)
                         except:
-                            # Finally write it as it is, GeoJson will handle
-                            # it as String
-                            properties[index] = attribute_value
+                            try:
+                                properties[index] = float(attribute_value)
+                            except:
+                                # Finally write it as it is, GeoJson will handle
+                                # it as String
+                                properties[index] = attribute_value
 
         if self.geometry is not None:
             geom = wkb.loads(str(self.geometry.geom_wkb))
         else:
             geom = None
         # Return a new Feature
-        return geojson.Feature(id=self.id, geometry=geom, properties=properties)
+        return geojson.Feature(id=str(self.activity_identifier), geometry=geom, properties=properties)
     
 
 class ActivityProtocol(object):
