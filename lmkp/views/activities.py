@@ -231,6 +231,14 @@ def read_many_rss(request):
 
     return {'data' : activity_protocol.read(request, filter=(Status.name == status))}
 
+@view_config(route_name='activities_history', renderer='lmkp:templates/activity_history.mak')
+def activities_history(request):
+    id = request.matchdict.get('id', None)
+    
+    print id
+    
+    return {}
+
 def _get_extjs_config(name, config):
 
     fieldConfig = {}
