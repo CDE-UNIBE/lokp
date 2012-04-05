@@ -9,7 +9,8 @@ Ext.define('Lmkp.controller.Main', {
     
     stores: [
     	'Languages',
-    	'Profiles'
+    	'Profiles',
+    	'ActivityGrid'
     ],
     
     // needed because ext-debug.js does not contain Ext.util.Cookies
@@ -20,7 +21,7 @@ Ext.define('Lmkp.controller.Main', {
 
     init: function() {
         this.control({
-            'viewport > panel': {
+            'viewport > main': {
                 render: this.onPanelRendered
             },
             'main toolbar combobox[id=language_combobox]': {
@@ -73,5 +74,8 @@ Ext.define('Lmkp.controller.Main', {
       	// set current profile as selected in combobox
         var profile_cb = Ext.ComponentQuery.query('combobox[id=profile_combobox]')[0];
         profile_cb.setValue(profile);
+        
+        // load activity grid store
+        this.getActivityGridStore().load();
     }
 });
