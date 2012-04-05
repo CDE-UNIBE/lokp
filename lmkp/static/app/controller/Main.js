@@ -33,7 +33,6 @@ Ext.define('Lmkp.controller.Main', {
     },
 
     changeProfile: function(combo, records, eOpts) {
-    	console.log(records);
     	var form = Ext.create('Ext.form.Panel', {
             standardSubmit: true,
             url: '/'

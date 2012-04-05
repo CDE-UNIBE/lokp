@@ -23,7 +23,8 @@ Ext.define('Lmkp.view.Main' ,{
     tbar: [
 	'->', {
 		xtype: 'combobox',
-		fieldLabel: 'Profile',
+		fieldLabel: Lmkp.ts.msg("profile-label"),
+		labelAlign: 'right',
 		id: 'profile_combobox',
 		queryMode: 'local',
 		store: 'Profiles',
@@ -32,7 +33,8 @@ Ext.define('Lmkp.view.Main' ,{
 		forceSelection: true
 	}, {
 		xtype: 'combobox',
-		fieldLabel: 'Language',
+		fieldLabel: Lmkp.ts.msg("language-label"),
+		labelAlign: 'right',
 		id: 'language_combobox',
 		queryMode: 'local',
 		store: 'Languages',

@@ -20,3 +20,21 @@
 	height:15px; 
 	background-image:url("/static/img/symbol_value.png") !important
 }
+
+.toolbar-button-add {
+	width: 16px !important;
+	height: 16px !important;
+    background-image: url("/static/img/add.png") !important;
+}
+
+.toolbar-button-delete {
+	width: 16px !important;
+	height: 16px !important;
+    background-image: url("/static/img/cancel.png") !important;
+}
+
+.toolbar-button-accept {
+	width: 16px !important;
+	height: 16px !important;
+    background-image: url("/static/img/accept.png") !important;
+}
