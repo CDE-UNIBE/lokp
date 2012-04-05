@@ -100,7 +100,7 @@ def main(global_config, ** settings):
     # Reads one or many activities and returns GeoJSON Feature or
     # FeatureCollection
     config.add_route('activities_read_many', '/activities', request_method='GET')
-    config.add_route('activities_read_one', '/activities/{id}', request_method='GET')
+    config.add_route('activities_read_one', '/activities/{uid}', request_method='GET')
 
     # Creates a new activity (not yet implemented)
     config.add_route('activities_create', '/activities', request_method='POST')
