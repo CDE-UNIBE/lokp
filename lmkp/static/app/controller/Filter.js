@@ -31,7 +31,7 @@ Ext.define('Lmkp.controller.Filter', {
         // get activityStore, add fields to its model and load it.
         activityStore = this.getActivityGridStore();
         activityStore.model.prototype.fields = fields;
-        activityStore.load();
+        
         this.control({
             'filterPanel button[name=addAttributeFilter]': {
                 click: this.addAttributeFilter
@@ -151,6 +151,8 @@ Ext.define('Lmkp.controller.Filter', {
         var store = this.getActivityGridStore();
         store.getProxy().url = 'activities/json?' + query_url;
         store.load();
+        
+        console.log(store);
     },
         
     showValueFields: function(combobox, records, eOpts) {
