@@ -212,6 +212,12 @@ def sample_values(request):
         if (switch == 3): # name
             theValue = A_Value(value='Project ' + str(i))
             theValue.language = lang1
+        if (switch == 4): # spatial uncertainty
+            theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
+            theValue.language = lang1
+        if (switch == 5): # year of investment
+            theValue = A_Value(value=random.randint(1990,2020))
+            theValue.language = lang1
         """
         if (switch == 0): # name
             theValue = A_Value(value='Project ' + str(i))
@@ -274,6 +280,12 @@ def sample_values(request):
         if (switch == 3): # name
             theValue = A_Value(value='Project ' + str(i))
             theValue.language = lang1
+        if (switch == 4): # spatial uncertainty
+            theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
+            theValue.language = lang1
+        if (switch == 5): # year of investment
+            theValue = A_Value(value=random.randint(1990,2020))
+            theValue.language = lang1
         # prepare tag
         tag = A_Tag()
         tag.key = theKey
@@ -293,6 +305,12 @@ def sample_values(request):
             theValue = random.choice(list_predefined_a_values_projectStatus)
         if (switch == 3): # name
             theValue = A_Value(value='Project ' + str(i))
+            theValue.language = lang1
+        if (switch == 4): # spatial uncertainty
+            theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
+            theValue.language = lang1
+        if (switch == 5): # year of investment
+            theValue = A_Value(value=random.randint(1990,2020))
             theValue.language = lang1
         tag = A_Tag()
         tag.key = theKey
@@ -337,6 +355,12 @@ def sample_values(request):
         if (switch == 3): # name
             theValue = A_Value(value='Project ' + str(i))
             theValue.language = lang1
+        if (switch == 4): # spatial uncertainty
+            theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
+            theValue.language = lang1
+        if (switch == 5): # year of investment
+            theValue = A_Value(value=random.randint(1990,2020))
+            theValue.language = lang1
         # prepare tag
         tag = A_Tag()
         tag.key = theKey
@@ -375,6 +399,12 @@ def sample_values(request):
             theValue = random.choice(list_predefined_a_values_projectStatus)
         if (switch == 3): # name
             theValue = A_Value(value='Project ' + str(i))
+            theValue.language = lang1
+        if (switch == 4): # spatial uncertainty
+            theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
+            theValue.language = lang1
+        if (switch == 5): # year of investment
+            theValue = A_Value(value=random.randint(1990,2020))
             theValue.language = lang1
         # prepare tag
         tag = A_Tag()
@@ -423,6 +453,12 @@ def sample_values(request):
         if (switch == 3): # name
             theValue = A_Value(value='Project ' + str(i))
             theValue.language = lang1
+        if (switch == 4): # spatial uncertainty
+            theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
+            theValue.language = lang1
+        if (switch == 5): # year of investment
+            theValue = A_Value(value=random.randint(1990,2020))
+            theValue.language = lang1
         # prepare tag
         tag = A_Tag()
         tag.key = theKey
@@ -463,6 +499,12 @@ def sample_values(request):
             newValue = random.choice(list_predefined_a_values_projectStatus)
         if (switch == 3): # name
             newValue = A_Value(value='Project ' + str(i))
+            newValue.language = lang1
+        if (switch == 4): # spatial uncertainty
+            newValue = A_Value(value=random.choice(['small', 'medium', 'big']))
+            newValue.language = lang1
+        if (switch == 5): # year of investment
+            newValue = A_Value(value=random.randint(1990,2020))
             newValue.language = lang1
         new_tag = A_Tag()
         new_tag.key = newKey
