@@ -5,6 +5,6 @@
         <title>Activity History</title>
     </head>
     <body>
-        blablbalba
+        ${result}
     </body>
 </html>
