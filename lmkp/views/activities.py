@@ -5,6 +5,7 @@ from lmkp.views.activity_protocol import ActivityProtocol
 import logging
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
 from pyramid.security import ACLAllowed
@@ -12,7 +13,7 @@ from pyramid.security import authenticated_userid
 from pyramid.security import has_permission
 from pyramid.url import route_url
 from pyramid.view import view_config
-from sqlalchemy.sql.expression import or_
+from sqlalchemy.sql.expression import or_, and_
 import yaml
 
 
@@ -255,13 +256,57 @@ def read_many_rss(request):
 
     return {'data' : activity_protocol.read(request, filter=(Status.name == status))}
 
-@view_config(route_name='activities_history', renderer='lmkp:templates/activity_history.mak')
+#@view_config(route_name='activities_history', renderer='lmkp:templates/activity_history.mak')
+@view_config(route_name='activities_history', renderer='json')
 def activities_history(request):
-    id = request.matchdict.get('id', None)
+    uid = request.matchdict.get('uid', None)
+
+    # The ActivityProtocol does not perform filter operations when UUID is passed as a parameter.
+    # As a workaround, UUID is passed as a filter.
+    overwrittenfilter = []
+    overwrittenfilter.append((Status.name == 'overwritten'))
+    overwrittenfilter.append((Activity.activity_identifier == uid))
     
-    print id
+    # Query the active and overwritten activities based on the given UUID.
+    active = activity_protocol.read(request, filter=(Status.name == 'active'), uid=uid)
+    activeCount = 1
+    overwritten = activity_protocol.read(request, filter=and_(* overwrittenfilter))
     
-    return {}
+    # If there is no active activity, the ActivityProtocol returns a HTTPNotFound object.
+    # This object cannot be processed by the json renderer because it has no ID (required to build name)
+    # Therefore, the object explicitly needs to be set to None.
+    if isinstance(active, HTTPNotFound):
+        active = None
+        activeCount = 0
+    else:
+        # append changeset details
+        active = _history_get_changeset_details(active)
+
+    for o in overwritten:
+        # append changeset details
+        o = _history_get_changeset_details(o)
+
+    return {
+        'data': {
+            'active': active,
+            'overwritten': overwritten
+        },
+        'success': True,
+        'total': len(overwritten) + activeCount
+    }
+
+def _history_get_changeset_details(object):
+    """
+    Appends details from Changeset of an ActivityProtocol object based on the ID of the activity
+    and returns this object. 
+    """
+    if object.id is not None:
+        changeset = Session.query(A_Changeset).filter(A_Changeset.fk_activity == object.id).first()
+        object.userid = changeset.user.id
+        object.username = changeset.user.username
+        object.source = changeset.source
+        return object
+
 
 def _get_extjs_config(name, config):
 
