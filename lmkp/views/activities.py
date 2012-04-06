@@ -285,6 +285,12 @@ def activities_history(request):
     for o in overwritten:
         # append changeset details
         o = _history_get_changeset_details(o)
+    
+    # Sort overwritten activities by their timestamp
+    try:
+        overwritten = sorted(overwritten, key=lambda overwritten:overwritten.timestamp, reverse=True)
+    except:
+        pass
 
     return {
         'data': {

@@ -1,12 +1,20 @@
 Ext.define('Lmkp.view.DetailPanel', {
-	extend: 'Ext.panel.Panel',
+	extend: 'Ext.tab.Panel',
 	alias: ['widget.detailPanel'],
 	
-	buttons: Lmkp.toolbar,
-	id: 'detailPanel', // ??
+	id: 'detailPanel',
 	
-	bodyPadding: 5,
-	html: 'Select an activity above to show its details.',
+	buttons: Lmkp.toolbar,
+	
+	activeTab: 1,
+	
+	items: [{
+		title: 'Details',
+		xtype: 'activityDetailTab'
+	}, {
+		title: 'History',
+		xtype: 'activityHistoryTab'
+	}],
 	
 	initComponent: function() {
 		this.callParent(arguments);
