@@ -241,7 +241,7 @@ def model(request):
 
     object['fields'] = fields
 
-    return "Ext.define('DyLmkp.model.Activity', %s);" % object
+    return "Ext.define('Lmkp.model.Activity', %s);" % object
 
 
 @view_config(route_name='rss_feed', renderer='lmkp:templates/rss.mak')
@@ -256,7 +256,6 @@ def read_many_rss(request):
 
     return {'data' : activity_protocol.read(request, filter=(Status.name == status))}
 
-#@view_config(route_name='activities_history', renderer='lmkp:templates/activity_history.mak')
 @view_config(route_name='activities_history', renderer='json')
 def activities_history(request):
     uid = request.matchdict.get('uid', None)
@@ -317,7 +316,7 @@ def _history_get_changeset_details(object):
 def _get_extjs_config(name, config):
 
     fieldConfig = {}
-    fieldConfig['Name'] = name
+    fieldConfig['name'] = name
 
     type = 'string'
     if config['type'] == 'Number':

@@ -1,7 +1,6 @@
 Ext.define('Lmkp.controller.Filter', {
     extend: 'Ext.app.Controller',
     
-    models: ['Config', 'ActivityGrid'],
     stores: [
     	'Config',
     	'ActivityGrid'
@@ -15,31 +14,8 @@ Ext.define('Lmkp.controller.Filter', {
     ],
 
     init: function() {
-        var fields = new Ext.util.MixedCollection();
-        // id needs to be added separately.
-        fields.add(Ext.create('Ext.data.Field', {
-            name: 'id',
-            type: 'int'
-        }));
-        var cfgStore = this.getConfigStore();
-        /**
-         * Extract data for fields model.ActivityGrid from configStore.
-         * Store is loaded asynchronously, which is why extraction has to take
-         * place 'onLoad'.
-         */
-        cfgStore.on('load', function(store, records, options) {
-            cfgStore.each(function(record) {
-                fields.add(Ext.create('Ext.data.Field', {
-                    name: record.data.fieldLabel,
-                    type: 'string' // TODO: So far, all fields are of type 'string' (except id above). Maybe it would be necessary to cast them according to their xtype.
-                }));
-            });
-        });
-        cfgStore.load();
-        // get activityStore, add fields to its model and load it.
-        activityStore = this.getActivityGridStore();
-        activityStore.model.prototype.fields = fields;
-        
+        // get configStore and load it
+        this.getConfigStore().load()
         this.control({
             'filterPanel button[name=addAttributeFilter]': {
                 click: this.addAttributeFilter
