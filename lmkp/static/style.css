@@ -38,3 +38,9 @@
 	height: 16px !important;
     background-image: url("/static/img/accept.png") !important;
 }
+
+p.version_info {
+	border: 1px solid silver;
+	background-color: #FFFFCC;
+	padding: 5px;
+}
