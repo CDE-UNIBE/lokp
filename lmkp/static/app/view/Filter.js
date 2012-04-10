@@ -112,7 +112,7 @@ Ext.define('Lmkp.view.Filter', {
                     xtype: 'pagingtoolbar',
                     store: 'ActivityGrid',
                     dock: 'bottom',
-                    enableOverflow: true,
+                    enableOverflow: false,
                     displayInfo: true,
                     beforePageText: Lmkp.ts.msg("activitypaging-before"),
                     afterPageText: Lmkp.ts.msg("activitypaging-after"),
