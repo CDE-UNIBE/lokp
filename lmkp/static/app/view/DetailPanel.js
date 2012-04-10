@@ -6,7 +6,7 @@ Ext.define('Lmkp.view.DetailPanel', {
 	
 	buttons: Lmkp.toolbar,
 	
-	activeTab: 1,
+	activeTab: 0,
 	
 	items: [{
 		title: 'Details',
