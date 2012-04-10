@@ -79,6 +79,7 @@ def get_timestamp(request):
     """
     pass
 
+
 @view_config(route_name='activities_read_one', renderer='geojson')
 def read_one(request):
     """
@@ -87,13 +88,6 @@ def read_one(request):
     uid = request.matchdict.get('uid', None)
     return activity_protocol.read(request, filter=get_status_filter(request), uid=uid)
 
-#@view_config(route_name='activities_read_one', renderer='lmkp:templates/table.mak')
-def read_one_html(request):
-    """
-    Returns the feature with the requested id
-    """
-    uid = request.matchdict.get('uid', None)
-    return { 'result': [activity_protocol.read(request, filter=get_status_filter(request), uid=uid)]}
 
 @view_config(route_name='activities_read_many', renderer='geojson')
 def read_many(request):
@@ -105,16 +99,18 @@ def read_many(request):
 
     return activity_protocol.read(request, filter=get_status_filter(request))
 
+
 @view_config(route_name='activities_read_one_json', renderer='json')
 def read_one_json(request):
     """
     Returns the feature with the requested id
     """
-    id = request.matchdict.get('id', None)
+    uid = request.matchdict.get('uid', None)
     return {
         'success': True,
-        'data': activity_protocol.read(request, filter=get_status_filter(request), id=id)
+        'data': activity_protocol.read(request, filter=get_status_filter(request), uid=uid)
     }
+
 
 @view_config(route_name='activities_read_many_json', renderer='json')
 def read_many_json(request):
@@ -129,10 +125,27 @@ def read_many_json(request):
     }
 
 
+@view_config(route_name='activities_read_one_html', renderer='lmkp:templates/table.mak')
+def read_one_html(request):
+    """
+    Returns the feature with the requested id
+    """
+    uid = request.matchdict.get('uid', None)
+    return {'result': [activity_protocol.read(request, filter=get_status_filter(request), uid=uid)]}
+
+
 @view_config(route_name='activities_read_many_html', renderer='lmkp:templates/table.mak')
 def read_many_html(request):
 
     return {'result': activity_protocol.read(request, filter=get_status_filter(request))}
+
+
+@view_config(route_name='activities_read_one_kml', renderer='kml')
+def read_one_kml(request):
+
+    uid = request.matchdict.get('uid', None)
+    return activity_protocol.read(request, filter=get_status_filter(request), uid=uid)
+
 
 @view_config(route_name='activities_read_many_kml', renderer='kml')
 def read_many_kml(request):
@@ -301,7 +314,7 @@ def read_many_rss(request):
     if 'order_by' not in request.params or 'dir' not in request.params:
         return HTTPFound(route_url('rss_feed', request, status=status, _query={'order_by': 'timestamp', 'dir': 'desc'}))
 
-    return {'data' : activity_protocol.read(request, filter=(Status.name == status))}
+    return {'data': activity_protocol.read(request, filter=(Status.name == status))}
 
 @view_config(route_name='activities_history', renderer='json')
 def activities_history(request):
