@@ -9,12 +9,13 @@ from logging import getLogger
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPCreated
 from pyramid.httpexceptions import HTTPNotFound
+from pyramid.i18n import get_localizer
 from shapely.geometry import asShape
 from shapely.geometry.point import Point
 from shapely.geometry.polygon import Polygon
 import simplejson as json
 from sqlalchemy.orm.util import class_mapper
-from sqlalchemy.sql import and_
+from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import desc
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.expression import select
@@ -310,7 +311,7 @@ class ActivityProtocol(object):
                     setattr(activities[row.id], attr, None)
 
             # Set the actual attribute value
-            setattr(activities[row.id], row.key, row.value)
+            setattr(activities[row.id], self._translate_key(row.key, request), self._translate_value(row.value, request))
 
         # Create an empty list
         features = []
@@ -320,7 +321,43 @@ class ActivityProtocol(object):
             features.append(activities[fid])
 
         return features
-        
+
+    def _translate_key(self, key, request):
+
+        # Get the localizer
+        locale = get_localizer(request)
+
+        # Get the language independent key id
+        key_id = self.Session.query(A_Key.id).filter(A_Key.key == key).first()[0]
+
+        # Create the filter
+        f = and_(A_Key.fk_a_key == key_id, Language.locale == locale.locale_name)
+        # And query the translated key
+        translated_key = self.Session.query(A_Key.key).join(Language).filter(f).first()
+
+        try:
+            return translated_key[0]
+        except TypeError:
+            return key
+
+    def _translate_value(self, value, request):
+
+        # Get the localizer
+        locale = get_localizer(request)
+
+        # Get the language independent value id
+        value_id = self.Session.query(A_Value.id).filter(A_Value.value == value).first()[0]
+
+        # Create the filter
+        f = and_(A_Value.fk_a_value == value_id, Language.locale == locale.locale_name)
+        # And query the translated value
+        translated_value = self.Session.query(A_Value.value).join(Language).filter(f).first()
+
+        try:
+            return translated_value[0]
+        except TypeError:
+            return value
+
 
     def _filter_attrs(self, feature, request):
         """
