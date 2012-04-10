@@ -5,11 +5,9 @@ Ext.define('Lmkp.view.activities.History', {
 	id: 'activityHistoryTab',
 	
 	bodyPadding: 5,
-	// html: 'Select an activity above to show its history',
 	
 	layout: {
         type:'vbox',
-        padding:'5',
         align:'stretch'
     },
     defaults: {
