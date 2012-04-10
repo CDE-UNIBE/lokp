@@ -559,16 +559,16 @@ Ext.define('Lmkp.controller.Filter', {
 				    			version: o.version,
 				    			id: o.id,
 				    			activity_identifier: o.activity_identifier
-				    		}
+				    		};
 				    		// add all remaining data: the key/value pairs
-				    		attrs = []
+				    		attrs = [];
 				    		for (attr in o) {
 				    			// do not add general data (again)
 				    			if (!data[attr]) {
 				    				attrs.push({
 				    					k: attr,
 				    					v: o[attr]
-				    				})
+				    				});
 				    			}
 				    		}
 				    		data["attrs"] = attrs;

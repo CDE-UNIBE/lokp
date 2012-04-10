@@ -12,7 +12,7 @@ Ext.define('Lmkp.view.activities.History', {
     },
     defaults: {
     	margins:'0 0 5 0',
-    	bodyPadding: 5,
+    	bodyPadding: 5
     },
     
     // initial item
