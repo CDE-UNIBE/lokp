@@ -1,8 +1,11 @@
+from geojson.codec import GeoJSONEncoder
+from geojson.mapping import to_mapping
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol import ActivityFeature
 from logging import getLogger
 from lxml import etree
+from papyrus.renderers import Encoder
 from pykml.factory import KML_ElementMaker as kml
 from pykml.parser import Schema
 from pyramid.i18n import get_localizer
@@ -17,7 +20,7 @@ def translate_key(request, localizer, key):
     # Get the language independent key id
     try:
         key_id = Session.query(A_Key.id).filter(A_Key.key == key).first()[0]
-    except TypeError:
+    except:
         return key
 
     # Create the filter
@@ -36,7 +39,7 @@ def translate_value(request, localizer, value):
     print value
     try:
         value_id = Session.query(A_Value.id).filter(A_Value.value == value).first()[0]
-    except TypeError:
+    except:
         return value
 
     # Create the filter
@@ -48,48 +51,6 @@ def translate_value(request, localizer, value):
         return translated_value[0]
     except TypeError:
         return value
-
-class ExtJSTree(object):
-    """
-    A renderer that returns a ExtJS tree configuration JSON from a GeoJSON
-    feature or featurecollection.
-    """
-
-    def __call__(self, info):
-
-        def _render(value, system, parent=None):
-
-            if parent is None:
-                parent = []
-
-            for i in value:
-                try:
-                    if i.__tree_interface__['children'] is not None:
-                        children = []
-
-                        _render(i.__tree_interface__['children'], system, children)
-                        parent.append({
-                                      'id': i.__tree_interface__['id'],
-                                      'Name': i.__tree_interface__['name'],
-                                      'children': children
-                                      })
-                except KeyError:
-                    pass
-                try:
-                    if i.__tree_interface__['leaf'] is True:
-                        parent.append(i.__tree_interface__)
-                except KeyError:
-                    pass
-
-            # Get the request and set the response content type to JSON
-            request = system.get('request')
-            if request is not None:
-                response = request.response
-                response.content_type = 'application/json'
-
-            return json.dumps({'children': parent})
-
-        return _render
 
 class JsonRenderer(object):
     """
@@ -146,16 +107,41 @@ class JsonRenderer(object):
                                     except:
                                         pass
                                     
-                    # append constructed name if feature has no name
-                    #if "Name" not in feature:
-                    #    feature["Name"] = "Activity " + str(feature["id"])
                     return feature
-
-
 
             return json.dumps(value, cls=ActivityFeatureEncoder)
 
         return _render
+
+class GeoJsonRenderer(object):
+
+    def __init__(self, jsonp_param_name='callback',
+                 collection_type=geojson.factory.FeatureCollection):
+        self.jsonp_param_name = jsonp_param_name
+        if isinstance(collection_type, basestring):
+            collection_type = getattr(geojson.factory, collection_type)
+        self.collection_type = collection_type
+
+    def __call__(self, info):
+        def _render(value, system):
+            if isinstance(value, (list, tuple)):
+                value = self.collection_type(value)
+            ret = geojson.dumps(value, cls=Encoder, use_decimal=True)
+            request = system.get('request')
+            if request is not None:
+                response = request.response
+                ct = response.content_type
+                if ct == response.default_content_type:
+                    callback = request.params.get(self.jsonp_param_name)
+                    if callback is None:
+                        response.content_type = 'application/json'
+                    else:
+                        response.content_type = 'text/javascript'
+                        ret = '%(callback)s(%(json)s);' % {'callback': callback,
+                            'json': ret}
+            return ret
+        return _render
+    
 
 class JavaScriptRenderer(object):
     def __call__(self, info):
@@ -176,7 +162,7 @@ class KmlRenderer(object):
 
     def __call__(self, info):
 
-        def _make_placemark(feature):
+        def _make_placemark(request, localizer, feature):
             """
             Make a new placemark and return it
             """
@@ -198,7 +184,11 @@ class KmlRenderer(object):
             for key in feature.__dict__:
                 if feature.__dict__[key] is not None:
                     try:
-                        extendedData.append(kml.Data(kml.value(feature.__dict__[key]), name=key))
+                        # Translate the key and values
+                        k = translate_key(request, localizer, unicode(key))
+                        v = translate_value(request, localizer, unicode(feature.__dict__[key]))
+                        # Append it to the extended data
+                        extendedData.append(kml.Data(kml.value(v), name=k))
                     except TypeError:
                         pass
                     
@@ -212,29 +202,31 @@ class KmlRenderer(object):
             
             """
 
-            schema_ogc = Schema("ogckml22.xsd")
-
-            schema_gx = Schema("kml22gx.xsd")
-
-            # Create a document element with a single icon style
-
-            style = kml.Style(kml.IconStyle(kml.scale(2), kml.Icon(kml.href("http://maps.google.com/mapfiles/kml/paddle/L.png"))))
-
-            kmlobj = kml.kml(kml.Document(style, id="activity"))
-
-            if isinstance(value, ActivityFeature):
-                kmlobj.Document.append(_make_placemark(value))
-            else:
-                # For each each ActivityFeature add a placemark to the Document element
-                for v in value:
-                    kmlobj.Document.append(_make_placemark(v))
-
             # Get the request and set the response content type to JSON
             request = system.get('request')
             if request is not None:
                 response = request.response
                 response.content_type = 'text/xml'
                 #response.content_type = 'application/vnd.google-earth.kml+xml'
+
+            # Get the localizer to translate the keys and values
+            localizer = get_localizer(request)
+
+            schema_ogc = Schema("ogckml22.xsd")
+
+            schema_gx = Schema("kml22gx.xsd")
+
+            # Create a document element with a single icon style
+            style = kml.Style(kml.IconStyle(kml.scale(2), kml.Icon(kml.href("http://maps.google.com/mapfiles/kml/paddle/L.png"))))
+
+            kmlobj = kml.kml(kml.Document(style, id="activity"))
+
+            if isinstance(value, ActivityFeature):
+                kmlobj.Document.append(_make_placemark(request, localizer, value))
+            else:
+                # For each each ActivityFeature add a placemark to the Document element
+                for v in value:
+                    kmlobj.Document.append(_make_placemark(request, localizer, v))
 
             # Make sure the KML is valid
             schema_ogc.assertValid(kmlobj)
