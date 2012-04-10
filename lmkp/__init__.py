@@ -106,6 +106,9 @@ def main(global_config, ** settings):
    
     # Return a JavaScript model
     config.add_route('activities_model', '/app/model/Activity.js')
+    
+    # Return the history of an activity
+    config.add_route('activities_history', '/activities/history/{uid}')
 
     # A controller that returns the translation needed in the ExtJS user interface
     config.add_route('ui_translation', '/lang')
