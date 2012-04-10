@@ -1,3 +1,4 @@
+from base64 import standard_b64decode
 from lmkp.config import config_file_path
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
@@ -8,7 +9,9 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
 from pyramid.security import ACLAllowed
+from pyramid.security import Authenticated
 from pyramid.security import authenticated_userid
+from pyramid.security import effective_principals
 from pyramid.security import has_permission
 from pyramid.url import route_url
 from pyramid.view import view_config
@@ -171,6 +174,8 @@ def create(request):
 
     # Check if the user is logged in and he/she has sufficient user rights
     userid = authenticated_userid(request)
+    print effective_principals(request)
+
     if userid is None:
         return HTTPForbidden()
     if not isinstance(has_permission('edit', request.context, request), ACLAllowed):
