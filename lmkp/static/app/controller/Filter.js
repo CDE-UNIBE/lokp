@@ -1,7 +1,6 @@
 Ext.define('Lmkp.controller.Filter', {
     extend: 'Ext.app.Controller',
     
-    models: ['Config', 'ActivityGrid'],
     stores: [
     	'Config',
     	'ActivityGrid'
@@ -15,31 +14,8 @@ Ext.define('Lmkp.controller.Filter', {
     ],
 
     init: function() {
-        var fields = new Ext.util.MixedCollection();
-        // id needs to be added separately.
-        fields.add(Ext.create('Ext.data.Field', {
-            name: 'id',
-            type: 'int'
-        }));
-        var cfgStore = this.getConfigStore();
-        /**
-         * Extract data for fields model.ActivityGrid from configStore.
-         * Store is loaded asynchronously, which is why extraction has to take
-         * place 'onLoad'.
-         */
-        cfgStore.on('load', function(store, records, options) {
-            cfgStore.each(function(record) {
-                fields.add(Ext.create('Ext.data.Field', {
-                    name: record.data.fieldLabel,
-                    type: 'string' // TODO: So far, all fields are of type 'string' (except id above). Maybe it would be necessary to cast them according to their xtype.
-                }));
-            });
-        });
-        cfgStore.load();
-        // get activityStore, add fields to its model and load it.
-        activityStore = this.getActivityGridStore();
-        activityStore.model.prototype.fields = fields;
-        
+        // get configStore and load it
+        this.getConfigStore().load()
         this.control({
             'filterPanel button[name=addAttributeFilter]': {
                 click: this.addAttributeFilter
@@ -488,93 +464,56 @@ Ext.define('Lmkp.controller.Filter', {
     },
     
     _populateDetailsTab: function(panel, data) {
-        var html = '';
-        for (var i in data[0].data) {
-            // dont show id
-            if (i != 'id') {
-                html += '<b>' + i + '</b>: ' + data[0].data[i] + '<br/>';
-            }
-        }
-        panel.update(html);
+    	if (data.length > 0) {
+	        var html = '';
+	        for (var i in data[0].data) {
+	            // dont show id
+	            if (i != 'id') {
+	                html += '<b>' + i + '</b>: ' + data[0].data[i] + '<br/>';
+	            }
+	        }
+	        panel.update(html);
+       	}
     },
     
     _populateHistoryTab: function(panel, uid) {
-    	Ext.Ajax.request({
-    		url: '/activities/history/' + uid,
-    		success: function(response, opts) {
-
-		    	// remove initial text if still there
-		    	if (panel.down('panel[name=history_initial]')) {
-		    		panel.remove(panel.down('panel[name=history_initial]'));
-		    	}
-		    	
-		    	// remove old panels
-		    	if (panel.down('panel[name=history_active]')) {
-		    		panel.remove(panel.down('panel[name=history_active]'));
-		    	}
-		    	while (panel.down('panel[name=history_overwritten]')) {
-		    		panel.remove(panel.down('panel[name=history_overwritten]'));
-		    	}
-
-				// get data		    	
-    			var json = Ext.JSON.decode(response.responseText);
-		    	// prepare template
-		    	var tpl = new Ext.XTemplate(
-		    		'<tpl for="attrs">',
-		    			'<b>{k}</b>: {v}<br/>',
-		    		'</tpl>',
-		    		'<p>&nbsp;</p>',
-		    		'<p class="version_info">Version {version} created on {timestamp}.<br/>',
-		    		'Data provided by {username} [userid: {userid}].<br/>',
-		    		'Additional source of information: {source}</p>'
-		    	);
-		    	
-		    	// add panel for current version if there is one
-		    	if (json.data.active) {
-		    		// prepare data
-		    		var o = json.data.active;
-		    		var ts = Ext.Date.format(Ext.Date.parse(o.timestamp, "Y-m-d H:i:s.u"), "Y/m/d H:i");
-		    		// first, add general data about activity and changeset
-		    		var data = {
-		    			username: o.username,
-		    			userid: o.userid,
-		    			source: o.source,
-		    			timestamp: ts,
-		    			version: o.version,
-		    			id: o.id,
-		    			activity_identifier: o.activity_identifier
-		    		}
-		    		// add all remaining data: the key/value pairs
-		    		attrs = []
-		    		for (attr in o) {
-		    			// do not add general data (again)
-		    			if (!data[attr]) {
-		    				attrs.push({
-		    					k: attr,
-		    					v: o[attr]
-		    				})
-		    			}
-		    		}
-		    		data["attrs"] = attrs;
-		    		// create panel
-			        var activePanel = Ext.create('Ext.panel.Panel', {
-			        	name: 'history_active',
-			        	title: '[Current] Version ' + o.version + ' (' + ts + ')',
-			        	collapsible: true,
-			        	collapsed: true
-			        });
-			        // add panel and apply template
-			        panel.add(activePanel);
-			        tpl.overwrite(activePanel.body, data);
-		       	}
-		        
-		        // add panels for old versions if there are any
-		        if (json.data.overwritten.length > 0) {
-		        	for (var i in json.data.overwritten) {
-		        		// prepare data
-		        		var o = json.data.overwritten[i];
-		        		var ts = Ext.Date.format(Ext.Date.parse(o.timestamp, "Y-m-d H:i:s.u"), "Y/m/d H:i");
-				        // first, add general data about activity and changeset
+    	if (uid) {
+	    	Ext.Ajax.request({
+	    		url: '/activities/history/' + uid,
+	    		success: function(response, opts) {
+	
+			    	// remove initial text if still there
+			    	if (panel.down('panel[name=history_initial]')) {
+			    		panel.remove(panel.down('panel[name=history_initial]'));
+			    	}
+			    	
+			    	// remove old panels
+			    	if (panel.down('panel[name=history_active]')) {
+			    		panel.remove(panel.down('panel[name=history_active]'));
+			    	}
+			    	while (panel.down('panel[name=history_overwritten]')) {
+			    		panel.remove(panel.down('panel[name=history_overwritten]'));
+			    	}
+	
+					// get data		    	
+	    			var json = Ext.JSON.decode(response.responseText);
+			    	// prepare template
+			    	var tpl = new Ext.XTemplate(
+			    		'<tpl for="attrs">',
+			    			'<b>{k}</b>: {v}<br/>',
+			    		'</tpl>',
+			    		'<p>&nbsp;</p>',
+			    		'<p class="version_info">Version {version} created on {timestamp}.<br/>',
+			    		'Data provided by {username} [userid: {userid}].<br/>',
+			    		'Additional source of information: {source}</p>'
+			    	);
+			    	
+			    	// add panel for current version if there is one
+			    	if (json.data.active) {
+			    		// prepare data
+			    		var o = json.data.active;
+			    		var ts = Ext.Date.format(Ext.Date.parse(o.timestamp, "Y-m-d H:i:s.u"), "Y/m/d H:i");
+			    		// first, add general data about activity and changeset
 			    		var data = {
 			    			username: o.username,
 			    			userid: o.userid,
@@ -597,39 +536,80 @@ Ext.define('Lmkp.controller.Filter', {
 			    		}
 			    		data["attrs"] = attrs;
 			    		// create panel
-			    		var p = Ext.create('Ext.panel.Panel', {
-				        	name: 'history_overwritten',
-				        	title: 'Version ' + o.version + ' (' + ts + ')',
+				        var activePanel = Ext.create('Ext.panel.Panel', {
+				        	name: 'history_active',
+				        	title: '[Current] Version ' + o.version + ' (' + ts + ')',
 				        	collapsible: true,
 				        	collapsed: true
-			    		});
-				        panel.add(p);
-				        tpl.overwrite(p.body, data);
-		        	}
-				}
-				
-				// in case no active and no overwritten activities were found (this should never happen),
-				// show at least something.
-				// using the initial panel because this will be removed when selected the next activity
-				if (!json.data.active && json.data.overwritten.length == 0) {
-					panel.add({
-						xtype: 'panel',
-				    	border: 0,
-				    	name: 'history_initial',
-				    	html: 'No history found for this activity',
-				    	collapsible: false,
-				    	collapsed: false
-					})
-				}
-				
-				// layout does not seem to work if panel is expanded on start, therefore this is done
-				// after everything was added.
-				// TODO: find out why ...
-				if (activePanel) {
-					activePanel.toggleCollapse();
-				}
-    		}
-    	});
+				        });
+				        // add panel and apply template
+				        panel.add(activePanel);
+				        tpl.overwrite(activePanel.body, data);
+			       	}
+			        
+			        // add panels for old versions if there are any
+			        if (json.data.overwritten.length > 0) {
+			        	for (var i in json.data.overwritten) {
+			        		// prepare data
+			        		var o = json.data.overwritten[i];
+			        		var ts = Ext.Date.format(Ext.Date.parse(o.timestamp, "Y-m-d H:i:s.u"), "Y/m/d H:i");
+					        // first, add general data about activity and changeset
+				    		var data = {
+				    			username: o.username,
+				    			userid: o.userid,
+				    			source: o.source,
+				    			timestamp: ts,
+				    			version: o.version,
+				    			id: o.id,
+				    			activity_identifier: o.activity_identifier
+				    		}
+				    		// add all remaining data: the key/value pairs
+				    		attrs = []
+				    		for (attr in o) {
+				    			// do not add general data (again)
+				    			if (!data[attr]) {
+				    				attrs.push({
+				    					k: attr,
+				    					v: o[attr]
+				    				})
+				    			}
+				    		}
+				    		data["attrs"] = attrs;
+				    		// create panel
+				    		var p = Ext.create('Ext.panel.Panel', {
+					        	name: 'history_overwritten',
+					        	title: 'Version ' + o.version + ' (' + ts + ')',
+					        	collapsible: true,
+					        	collapsed: true
+				    		});
+					        panel.add(p);
+					        tpl.overwrite(p.body, data);
+			        	}
+					}
+					
+					// in case no active and no overwritten activities were found (this should never happen),
+					// show at least something.
+					// using the initial panel because this will be removed when selected the next activity
+					if (!json.data.active && json.data.overwritten.length == 0) {
+						panel.add({
+							xtype: 'panel',
+					    	border: 0,
+					    	name: 'history_initial',
+					    	html: 'No history found for this activity',
+					    	collapsible: false,
+					    	collapsed: false
+						})
+					}
+					
+					// layout does not seem to work if panel is expanded on start, therefore this is done
+					// after everything was added.
+					// TODO: find out why ...
+					if (activePanel) {
+						activePanel.toggleCollapse();
+					}
+	    		}
+	    	});
+    	}
     },
 
     _isInArray: function(arr, obj) { // http://stackoverflow.com/questions/143847/best-way-to-find-an-item-in-a-javascript-array
