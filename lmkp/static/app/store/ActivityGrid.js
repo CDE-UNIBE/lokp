@@ -1,7 +1,7 @@
 Ext.define('Lmkp.store.ActivityGrid', {
     extend: 'Ext.data.Store',
-    requires: 'Lmkp.model.ActivityGrid',
-    model: 'Lmkp.model.ActivityGrid',
+    requires: 'Lmkp.model.Activity',
+    model: 'Lmkp.model.Activity',
     
     pageSize: 10,
     remoteSort: true,
