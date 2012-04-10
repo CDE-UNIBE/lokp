@@ -18,5 +18,5 @@ def group_finder(username, request):
     """
     q = Session.query(Group.name).join(users_groups).join(User).filter(User.username == username).limit(1)
     group = q[0][0]
-    log.debug("Found group: %s" % group )
+    log.debug("Found group: %s" % group)
     return ["group:%s" % group]

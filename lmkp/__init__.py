@@ -3,12 +3,12 @@ from lmkp.renderers.renderers import JsonRenderer
 from lmkp.renderers.renderers import JavaScriptRenderer
 from lmkp.renderers.renderers import KmlRenderer
 from lmkp.security import group_finder
+from lmkp.authentication import CustomAuthenticationPolicy
 from lmkp.subscribers import add_localizer
 from lmkp.subscribers import add_renderer_globals
 from lmkp.subscribers import add_user
 import papyrus
 from papyrus.renderers import GeoJSON
-from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.events import BeforeRender
@@ -22,7 +22,7 @@ def main(global_config, ** settings):
     DBSession.configure(bind=engine)
 
     # Authentiaction policy
-    authnPolicy = AuthTktAuthenticationPolicy('walhalla', callback=group_finder)
+    authnPolicy = CustomAuthenticationPolicy('walhalla', callback=group_finder)
     # Authorization policy
     authzPolicy = ACLAuthorizationPolicy()
 
