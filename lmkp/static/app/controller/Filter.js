@@ -340,10 +340,10 @@ Ext.define('Lmkp.controller.Filter', {
 		var selectedTab = detailPanel.getActiveTab();
 			switch (selectedTab.getXType()) {
 				case "activityHistoryTab":
-					// get me from selectedRecord once uid is working in JS
-					var uid = 'fe0c5b81-454a-4835-b042-6c473a50d984'; 	// 1 active, 2 overwritten
-					// var uid = 'e6826bf3-3a82-4572-87c2-4b26150edbc0';	// no active, no overwritten
-					// var uid = 'bb5c9ded-4ba6-4344-a991-7fd2368dbc30'; 	// 1 active, no overwritten
+					var uid = null;
+					if (selectedRecord.length > 0) {
+						uid = selectedRecord[0].raw['activity_identifier'];
+					}
 					this._populateHistoryTab(selectedTab, uid)
 					break;
 				default: 	// default is: activityDetailTab
