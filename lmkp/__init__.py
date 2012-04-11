@@ -1,4 +1,5 @@
 from lmkp.models.meta import DBSession
+from lmkp.renderers.renderers import GeoJsonRenderer
 from lmkp.renderers.renderers import JsonRenderer
 from lmkp.renderers.renderers import JavaScriptRenderer
 from lmkp.renderers.renderers import KmlRenderer
@@ -8,7 +9,7 @@ from lmkp.subscribers import add_localizer
 from lmkp.subscribers import add_renderer_globals
 from lmkp.subscribers import add_user
 import papyrus
-from papyrus.renderers import GeoJSON
+#from papyrus.renderers import GeoJSON
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.events import BeforeRender
@@ -44,7 +45,8 @@ def main(global_config, ** settings):
     config.include(papyrus.includeme)
     # Return a JavaScript model
     config.add_route('activities_model', 'static/app/model/Activity.js')
-    config.add_renderer('geojson', GeoJSON())
+    #config.add_renderer('geojson', GeoJSON())
+    config.add_renderer('geojson', GeoJsonRenderer())
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('index', '/')
     config.add_route('login', '/login')
