@@ -19,6 +19,8 @@ from pyramid.view import view_config
 from sqlalchemy.sql.expression import or_, and_
 import yaml
 
+from lmkp.config import config_file_path
+from lmkp.config import locale_config_file_path
 
 log = logging.getLogger(__name__)
 
@@ -234,6 +236,31 @@ def model(request):
     client-side Activity model. The model is set up based on the defined mandatory
     and optional field in the configuration yaml file.
     """
+    def _merge_config(parent_key, global_config, locale_config):
+        """
+        Merges two configuration dictionaries together
+        """
+
+        try:
+            for key, value in locale_config.items():
+                try:
+                    # If the value has items it's a dict, if not raise an error
+                    value.items()
+                    # Do not overwrite mandatory or optional keys in the global
+                    # config. If the key is not in the global config, append it
+                    # to the configuration
+                    if parent_key == 'mandatory' or parent_key == 'optional':
+                        if key not in global_config:
+                            _merge_config(key, global_config[key], locale_config[key])
+                        # else if the key is in global_config do nothing
+                    else:
+                        _merge_config(key, global_config[key], locale_config[key])
+                except:
+                    global_config[key] = locale_config[key]
+        # Handle the AttributeError if the locale config file is empty
+        except AttributeError:
+            pass
+    
     object = {}
 
     object['extend'] = 'Ext.data.Model'
@@ -242,18 +269,38 @@ def model(request):
     # Get a stream of the config yaml file to extract the fields
     stream = open(config_file_path(), 'r')
 
-    # Read the config stream
-    yamlConfig = yaml.load(stream)
+    # Read the global configuration file
+    global_stream = open(config_file_path(request), 'r')
+    global_config = yaml.load(global_stream)
+
+    # Read the localized configuration file
+    try:
+        locale_stream = open(locale_config_file_path(request), 'r')
+        locale_config = yaml.load(locale_stream)
+
+        # If there is a localized config file then merge it with the global one
+        _merge_config(None, global_config, locale_config)
+
+    except IOError:
+        # No localized configuration file found!
+        pass
+
 
     fields = []
-    fieldsConfig = yamlConfig['application']['fields']
+    fieldsConfig = global_config['application']['fields']
+
+    # language is needed because fields are to be displayed translated
+    localizer = get_localizer(request)
+    lang = Session.query(Language).filter(Language.locale == localizer.locale_name).first()
+    if lang is None:
+        lang = Language(1, 'English', 'English', 'en')
 
     # First process the mandatory fields
     for (name, config) in fieldsConfig['mandatory'].iteritems():
-        fields.append(_get_extjs_config(name, config))
+        fields.append(_get_extjs_config(name, config, lang))
     # Then process also the optional fields
     for (name, config) in fieldsConfig['optional'].iteritems():
-        fields.append(_get_extjs_config(name, config))
+        fields.append(_get_extjs_config(name, config, lang))
 
     fields.append({'name': 'id', 'type': 'string'})
 
@@ -283,11 +330,15 @@ def activities_history(request):
     overwrittenfilter = []
     overwrittenfilter.append((Status.name == 'overwritten'))
     overwrittenfilter.append((Activity.activity_identifier == uid))
+    deletedfilter = []
+    deletedfilter.append((Status.name == 'deleted'))
+    deletedfilter.append((Activity.activity_identifier == uid))
     
     # Query the active and overwritten activities based on the given UUID.
     active = activity_protocol.read(request, filter=(Status.name == 'active'), uid=uid)
     activeCount = 1
     overwritten = activity_protocol.read(request, filter=and_(* overwrittenfilter))
+    deleted = activity_protocol.read(request, filter=and_(* deletedfilter))
     
     # If there is no active activity, the ActivityProtocol returns a HTTPNotFound object.
     # This object cannot be processed by the json renderer because it has no ID (required to build name)
@@ -299,24 +350,112 @@ def activities_history(request):
         # append changeset details
         active = _history_get_changeset_details(active)
 
-    for o in overwritten:
-        # append changeset details
-        o = _history_get_changeset_details(o)
-    
+    # if there are no overwritten versions
+    if len(overwritten) == 0:
+        active = _check_difference(active, None)
+        
     # Sort overwritten activities by their timestamp
     try:
         overwritten = sorted(overwritten, key=lambda overwritten:overwritten.timestamp, reverse=True)
     except:
         pass
 
+    # process overwritten versions
+    for i, o in enumerate(overwritten):
+        
+        # the first item (latest overwritten version)
+        if i == 0:
+            # compare with active
+            active = _check_difference(active, o)
+            # if the first item is not the last as well, ...
+            if len(overwritten) > 1:
+                # ... compare it with its previous version
+                o = _check_difference(o, overwritten[i+1])
+            # if the first item is also the last, ...
+            else:
+                # ... there is no previous version to compare it with
+                o = _check_difference(o, None)
+        
+        # the last item (the first version)
+        elif i == len(overwritten)-1:
+            # there is no previous version to compare it with
+            o = _check_difference(o, None)
+
+        # all other cases
+        else:
+            # compare it with its previous version
+            o = _check_difference(o, overwritten[i+1])
+
+        # append changeset details
+        o = _history_get_changeset_details(o)
+
+    # process deleted if available
+    if len(deleted) > 0:
+        deleted = deleted[0] # there should only be one
+        # append changeset details
+        deleted = _history_get_changeset_details(deleted)
+        deletedCount = 1
+    else:
+        deleted = None
+        deletedCount = 0
+
     return {
         'data': {
             'active': active,
-            'overwritten': overwritten
+            'overwritten': overwritten,
+            'deleted': deleted
         },
         'success': True,
-        'total': len(overwritten) + activeCount
+        'total': len(overwritten) + activeCount + deletedCount
     }
+
+def _check_difference(new, old):
+
+    changes = {} # to collect the changes
+    
+    # not all attributes are of interest when looking at the difference between two versions
+    # @todo: geometry needs to be processed differently, not yet implemented
+    ignored = ['geometry', 'timestamp', 'id', 'version', 'username', 'userid', 'source', 
+                'activity_identifier', 'modified', 'new', 'deleted']
+    
+    # do comparison based on new version, loop through attributes
+    if new is not None:
+        for obj in new.__dict__:
+            # not all attributes are of interest
+            if obj not in ignored:
+                # there is no older version (all attributes are new)
+                if old is None:
+                    # for some reason (?), attribute (although it will be set in later versions)
+                    # can already be there (set to None) - we don't want it yet
+                    if new.__dict__[obj] is not None:
+                        changes[obj] = 'new' # attribute is new
+                # there exists an older version
+                else:
+                    # attribute is not in older version
+                    if obj not in old.__dict__:
+                        changes[obj] = 'new' # attribute is new
+                    # attribute is already in older version
+                    else:
+                        # for some reason (?), attribute can already be there in older versions 
+                        # (set to None). this should be treated as if attribute was not there yet
+                        if old.__dict__[obj] is None and new.__dict__[obj] is not None:
+                            changes[obj] = 'new' # attribute is 'new'
+                        # check if attribute is the same in both versions
+                        elif new.__dict__[obj] != old.__dict__[obj]:
+                            changes[obj] = 'modified' # attribute was modified
+    
+    # do comparison based on old version
+    if old is not None:
+        # loop through attributes
+        for obj in old.__dict__:
+            if obj not in ignored and new is not None:
+                # check if attribute is not there anymore in new version
+                if obj not in new.__dict__:
+                    changes[obj] = 'deleted' # attribute was deleted
+    
+    if new is not None: # when deleted
+        new.changes = changes
+    return new
 
 def _history_get_changeset_details(object):
     """
@@ -331,20 +470,33 @@ def _history_get_changeset_details(object):
         return object
 
 
-def _get_extjs_config(name, config):
+def _get_extjs_config(name, config, language):
 
     fieldConfig = {}
-    fieldConfig['name'] = name
+    
+    # check if translated name is available
+    originalKey = Session.query(A_Key.id).filter(A_Key.key == name).filter(A_Key.fk_a_key == None).first()
+    translatedName = Session.query(A_Key).filter(A_Key.fk_a_key == originalKey).filter(A_Key.language == language).first()
+    
+    if translatedName:
+        fieldConfig['name'] = str(translatedName.key)
+    else:
+        fieldConfig['name'] = name
 
     type = 'string'
-    if config['type'] == 'Number':
-        type = 'number'
-    if config['type'] == 'Date':
-        type = 'number'
+    try:
+        config['type']
+        if config['type'] == 'Number':
+            type = 'number'
+        if config['type'] == 'Date':
+            type = 'number'
+    except KeyError:
+        pass
 
     fieldConfig['type'] = type
 
     return fieldConfig
+
 
 def _get_config_fields():
     """

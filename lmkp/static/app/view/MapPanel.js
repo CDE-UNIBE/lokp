@@ -6,13 +6,12 @@ Ext.define('Lmkp.view.MapPanel',{
         map: {}
     },
 
-    title: 'Map',
+    layout: 'fit',
 
     map: {
         displayProjection: new OpenLayers.Projection("EPSG:4326"),
         layers: [
-        new OpenLayers.Layer.OSM('Mapnik'),
-        new OpenLayers.Layer.OSM('Mapnik2')
+        	new OpenLayers.Layer.OSM('Mapnik')
         ],
         projection: new OpenLayers.Projection("EPSG:900913")
     },
