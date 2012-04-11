@@ -325,11 +325,15 @@ def activities_history(request):
     overwrittenfilter = []
     overwrittenfilter.append((Status.name == 'overwritten'))
     overwrittenfilter.append((Activity.activity_identifier == uid))
+    deletedfilter = []
+    deletedfilter.append((Status.name == 'deleted'))
+    deletedfilter.append((Activity.activity_identifier == uid))
     
     # Query the active and overwritten activities based on the given UUID.
     active = activity_protocol.read(request, filter=(Status.name == 'active'), uid=uid)
     activeCount = 1
     overwritten = activity_protocol.read(request, filter=and_(* overwrittenfilter))
+    deleted = activity_protocol.read(request, filter=and_(* deletedfilter))
     
     # If there is no active activity, the ActivityProtocol returns a HTTPNotFound object.
     # This object cannot be processed by the json renderer because it has no ID (required to build name)
@@ -341,24 +345,112 @@ def activities_history(request):
         # append changeset details
         active = _history_get_changeset_details(active)
 
-    for o in overwritten:
-        # append changeset details
-        o = _history_get_changeset_details(o)
-    
+    # if there are no overwritten versions
+    if len(overwritten) == 0:
+        active = _check_difference(active, None)
+        
     # Sort overwritten activities by their timestamp
     try:
         overwritten = sorted(overwritten, key=lambda overwritten:overwritten.timestamp, reverse=True)
     except:
         pass
 
+    # process overwritten versions
+    for i, o in enumerate(overwritten):
+        
+        # the first item (latest overwritten version)
+        if i == 0:
+            # compare with active
+            active = _check_difference(active, o)
+            # if the first item is not the last as well, ...
+            if len(overwritten) > 1:
+                # ... compare it with its previous version
+                o = _check_difference(o, overwritten[i+1])
+            # if the first item is also the last, ...
+            else:
+                # ... there is no previous version to compare it with
+                o = _check_difference(o, None)
+        
+        # the last item (the first version)
+        elif i == len(overwritten)-1:
+            # there is no previous version to compare it with
+            o = _check_difference(o, None)
+
+        # all other cases
+        else:
+            # compare it with its previous version
+            o = _check_difference(o, overwritten[i+1])
+
+        # append changeset details
+        o = _history_get_changeset_details(o)
+
+    # process deleted if available
+    if len(deleted) > 0:
+        deleted = deleted[0] # there should only be one
+        # append changeset details
+        deleted = _history_get_changeset_details(deleted)
+        deletedCount = 1
+    else:
+        deleted = None
+        deletedCount = 0
+
     return {
         'data': {
             'active': active,
-            'overwritten': overwritten
+            'overwritten': overwritten,
+            'deleted': deleted
         },
         'success': True,
-        'total': len(overwritten) + activeCount
+        'total': len(overwritten) + activeCount + deletedCount
     }
+
+def _check_difference(new, old):
+
+    changes = {} # to collect the changes
+    
+    # not all attributes are of interest when looking at the difference between two versions
+    # @todo: geometry needs to be processed differently, not yet implemented
+    ignored = ['geometry', 'timestamp', 'id', 'version', 'username', 'userid', 'source', 
+                'activity_identifier', 'modified', 'new', 'deleted']
+    
+    # do comparison based on new version, loop through attributes
+    if new is not None:
+        for obj in new.__dict__:
+            # not all attributes are of interest
+            if obj not in ignored:
+                # there is no older version (all attributes are new)
+                if old is None:
+                    # for some reason (?), attribute (although it will be set in later versions)
+                    # can already be there (set to None) - we don't want it yet
+                    if new.__dict__[obj] is not None:
+                        changes[obj] = 'new' # attribute is new
+                # there exists an older version
+                else:
+                    # attribute is not in older version
+                    if obj not in old.__dict__:
+                        changes[obj] = 'new' # attribute is new
+                    # attribute is already in older version
+                    else:
+                        # for some reason (?), attribute can already be there in older versions 
+                        # (set to None). this should be treated as if attribute was not there yet
+                        if old.__dict__[obj] is None and new.__dict__[obj] is not None:
+                            changes[obj] = 'new' # attribute is 'new'
+                        # check if attribute is the same in both versions
+                        elif new.__dict__[obj] != old.__dict__[obj]:
+                            changes[obj] = 'modified' # attribute was modified
+    
+    # do comparison based on old version
+    if old is not None:
+        # loop through attributes
+        for obj in old.__dict__:
+            if obj not in ignored and new is not None:
+                # check if attribute is not there anymore in new version
+                if obj not in new.__dict__:
+                    changes[obj] = 'deleted' # attribute was deleted
+    
+    if new is not None: # when deleted
+        new.changes = changes
+    return new
 
 def _history_get_changeset_details(object):
     """
