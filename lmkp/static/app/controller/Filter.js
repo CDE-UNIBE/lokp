@@ -326,10 +326,11 @@ Ext.define('Lmkp.controller.Filter', {
     renderNameColumn: function() {
         col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=namecolumn]')[0];
         col.renderer = function(value, p, record) {
-            return Ext.String.format(
-                '{0} [Province ABC, District XYZ]',
-                value
-                );
+        	if (value) {
+            	return Ext.String.format('{0}', value);        		
+        	} else {
+        		return Lmkp.ts.msg("unnamed-activity");
+        	}
         }
     },
     
