@@ -94,7 +94,7 @@ def main(global_config, ** settings):
 
     # Reads many activities and returns a tree configuration JSON that can be
     # used in ExtJS tree stores
-    #config.add_route('activities_tree', '/activities/tree', request_method='GET')
+    config.add_route('activities_tree', '/activities/tree', request_method='GET')
 
     # Returns the number of activities matching the filter
     config.add_route('activities_count', '/activities/count', request_method='GET')
