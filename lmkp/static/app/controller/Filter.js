@@ -327,7 +327,7 @@ Ext.define('Lmkp.controller.Filter', {
         col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=namecolumn]')[0];
         col.renderer = function(value, p, record) {
         	if (value) {
-            	return Ext.String.format('{0}', value);        		
+            	return Ext.String.format('{0}', value);
         	} else {
         		return Lmkp.ts.msg("unnamed-activity");
         	}
@@ -467,7 +467,13 @@ Ext.define('Lmkp.controller.Filter', {
 	        for (var i in data[0].data) {
 	            // dont show id
 	            if (i != 'id') {
-	                html += '<b>' + i + '</b>: ' + data[0].data[i] + '<br/>';
+	            	/**
+	            	 * The default NULL-value for unspecified number values is 0.
+	            	 * Assumption: 0 as a number value (currently for Area and Year of Investment)
+	            	 * is not useful and should rather not be displayed.
+	            	 */
+	            	var val = (data[0].data[i] == 0) ? '' : data[0].data[i]; 
+	            	html += Ext.String.format('<b>{0}</b>: {1}<br/>', i, val);
 	            }
 	        }
 	        panel.update(html);

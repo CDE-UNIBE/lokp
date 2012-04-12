@@ -22,6 +22,8 @@ import yaml
 from lmkp.config import config_file_path
 from lmkp.config import locale_config_file_path
 
+from lmkp.renderers.renderers import translate_key
+
 log = logging.getLogger(__name__)
 
 _ = TranslationStringFactory('lmkp')
@@ -324,6 +326,9 @@ def read_many_rss(request):
 @view_config(route_name='activities_history', renderer='json')
 def activities_history(request):
     uid = request.matchdict.get('uid', None)
+    
+    # Get the localizer from the request
+    localizer = get_localizer(request)
 
     # The ActivityProtocol does not perform filter operations when UUID is passed as a parameter.
     # As a workaround, UUID is passed as a filter.
@@ -352,7 +357,7 @@ def activities_history(request):
 
     # if there are no overwritten versions
     if len(overwritten) == 0:
-        active = _check_difference(active, None)
+        active = _check_difference(active, None, localizer)
         
     # Sort overwritten activities by their timestamp
     try:
@@ -408,8 +413,10 @@ def activities_history(request):
         'success': True,
         'total': len(overwritten) + activeCount + deletedCount
     }
+    
 
-def _check_difference(new, old):
+
+def _check_difference(new, old, localizer=None):
 
     changes = {} # to collect the changes
     
@@ -417,6 +424,8 @@ def _check_difference(new, old):
     # @todo: geometry needs to be processed differently, not yet implemented
     ignored = ['geometry', 'timestamp', 'id', 'version', 'username', 'userid', 'source', 
                 'activity_identifier', 'modified', 'new', 'deleted']
+    
+    
     
     # do comparison based on new version, loop through attributes
     if new is not None:
@@ -428,21 +437,21 @@ def _check_difference(new, old):
                     # for some reason (?), attribute (although it will be set in later versions)
                     # can already be there (set to None) - we don't want it yet
                     if new.__dict__[obj] is not None:
-                        changes[obj] = 'new' # attribute is new
+                        changes[str(translate_key(None, localizer, obj))] = 'new' # attribute is new
                 # there exists an older version
                 else:
                     # attribute is not in older version
                     if obj not in old.__dict__:
-                        changes[obj] = 'new' # attribute is new
+                        changes[str(translate_key(None, localizer, obj))] = 'new' # attribute is new
                     # attribute is already in older version
                     else:
                         # for some reason (?), attribute can already be there in older versions 
                         # (set to None). this should be treated as if attribute was not there yet
                         if old.__dict__[obj] is None and new.__dict__[obj] is not None:
-                            changes[obj] = 'new' # attribute is 'new'
+                            changes[str(translate_key(None, localizer, obj))] = 'new' # attribute is 'new'
                         # check if attribute is the same in both versions
                         elif new.__dict__[obj] != old.__dict__[obj]:
-                            changes[obj] = 'modified' # attribute was modified
+                            changes[str(translate_key(None, localizer, obj))] = 'modified' # attribute was modified
     
     # do comparison based on old version
     if old is not None:
@@ -451,7 +460,7 @@ def _check_difference(new, old):
             if obj not in ignored and new is not None:
                 # check if attribute is not there anymore in new version
                 if obj not in new.__dict__:
-                    changes[obj] = 'deleted' # attribute was deleted
+                    changes[str(translate_key(None, localizer, obj))] = 'deleted' # attribute was deleted
     
     if new is not None: # when deleted
         new.changes = changes
