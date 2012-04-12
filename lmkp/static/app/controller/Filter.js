@@ -1,37 +1,21 @@
 Ext.define('Lmkp.controller.Filter', {
     extend: 'Ext.app.Controller',
     
-    models: ['Config', 'ActivityGrid'],
-    stores: ['Config', 'ActivityGrid'],
+    stores: [
+    	'Config',
+    	'ActivityGrid'
+    ],
    
-    views: ['Filter'],
+    views: [
+    	'Filter',
+    	'DetailPanel',
+    	'activities.Details',
+    	'activities.History'
+    ],
 
     init: function() {
-        var fields = new Ext.util.MixedCollection();
-        // id needs to be added separately.
-        fields.add(Ext.create('Ext.data.Field', {
-            name: 'id',
-            type: 'int'
-        }));
-        var cfgStore = this.getConfigStore();
-        /**
-         * Extract data for fields model.ActivityGrid from configStore.
-         * Store is loaded asynchronously, which is why extraction has to take
-         * place 'onLoad'.
-         */
-        cfgStore.on('load', function(store, records, options) {
-            cfgStore.each(function(record) {
-                fields.add(Ext.create('Ext.data.Field', {
-                    name: record.data.fieldLabel,
-                    type: 'string' // TODO: So far, all fields are of type 'string' (except id above). Maybe it would be necessary to cast them according to their xtype.
-                }));
-            });
-        });
-        cfgStore.load();
-        // get activityStore, add fields to its model and load it.
-        activityStore = this.getActivityGridStore();
-        activityStore.model.prototype.fields = fields;
-        activityStore.load();
+        // get configStore and load it
+        this.getConfigStore().load()
         this.control({
             'filterPanel button[name=addAttributeFilter]': {
                 click: this.addAttributeFilter
@@ -40,7 +24,10 @@ Ext.define('Lmkp.controller.Filter', {
                 click: this.addTimeFilter
             },
             'filterPanel gridpanel[id=filterResults]': {
-                selectionchange: this.displayActivityDetails
+                selectionchange: this.showActivity
+            },
+            'filterPanel tabpanel[id=detailPanel]': {
+            	tabchange: this.showActivity
             },
             'filterPanel gridcolumn[name=namecolumn]': {
                 afterrender: this.renderNameColumn
@@ -76,7 +63,6 @@ Ext.define('Lmkp.controller.Filter', {
     },
     
     onLaunch: function() {
-    	
     },
     
     resetActivateButton: function(element) {
@@ -126,7 +112,7 @@ Ext.define('Lmkp.controller.Filter', {
         var timeButton = Ext.ComponentQuery.query('button[name=activateTimeButton]')[0];
         if (date) {
             if (timeButton.pressed) { // only add value if filter is activated
-                queries.push('timestamp=' + date.getValue().toUTCString());
+                queries.push('timestamp=' + Ext.Date.format(date.getValue(), "Y-m-d H:i:s.u"));
                 // add query to count
                 queryCount++;
             }
@@ -152,6 +138,8 @@ Ext.define('Lmkp.controller.Filter', {
         var store = this.getActivityGridStore();
         store.getProxy().url = 'activities/json?' + query_url;
         store.load();
+        
+        console.log(store);
     },
         
     showValueFields: function(combobox, records, eOpts) {
@@ -180,12 +168,16 @@ Ext.define('Lmkp.controller.Filter', {
     
     addAttributeFilter: function(button, e, eOpts) {
         var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
+        // expand form if collapsed
+        if (form.collapsed) {
+        	form.toggleCollapse();
+        }
         var insertIndex = form.items.length - 1; // always insert above the 2 buttons
         var cbox = Ext.create('Ext.form.field.ComboBox', {
             name: 'attributeCombo',
             store: this.getConfigStore(),
-            valueField: 'fieldLabel',
-            displayField: 'name',
+            valueField: 'name',
+            displayField: 'fieldLabel',
             queryMode: 'local',
             typeAhead: true,
             forceSelection: true,
@@ -211,16 +203,18 @@ Ext.define('Lmkp.controller.Filter', {
             }, {
                 xtype: 'button',
                 name: 'activateAttributeButton',
-                text: '[&#10003;] Activate',
-                tooltip: 'Click to activate this filter',
+                text: Lmkp.ts.msg("activate-button"),
+                tooltip: Lmkp.ts.msg("activate-tooltip"),
+                iconCls: 'toolbar-button-accept',
                 enableToggle: true,
                 flex: 0,
                 margin: '0 5 0 0'
             }, {
                 xtype: 'button',
                 name: 'deleteButton',
-                text: '[x] Delete',
-                tooltip: 'Click to delete this filter',
+                text: Lmkp.ts.msg("delete-button"),
+                tooltip: Lmkp.ts.msg("deletefilter-tooltip"),
+                iconCls: 'toolbar-button-delete',
                 enableToggle: false,
                 flex: 0
             }]
@@ -234,10 +228,14 @@ Ext.define('Lmkp.controller.Filter', {
     
     addTimeFilter: function(button, e, eOpts) {
         var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
+        // expand form if collapsed
+        if (form.collapsed) {
+        	form.toggleCollapse();
+        }
         var insertIndex = form.items.length - 1; // always insert above the 2 buttons
         var picker = Ext.create('Ext.form.field.Date', {
             name: 'dateField',
-            fieldLabel: 'Date',
+            fieldLabel: Lmkp.ts.msg("date-label"),
             value: new Date() // defaults to today
         });
         form.insert(insertIndex, {
@@ -257,16 +255,18 @@ Ext.define('Lmkp.controller.Filter', {
             }, {
                 xtype: 'button',
                 name: 'activateTimeButton',
-                text: '[&#10003;] Activate',
-                tooltip: 'Click to activate this filter',
+                text: Lmkp.ts.msg("activate-button"),
+                tooltip: Lmkp.ts.msg("activate-tooltip"),
+                iconCls: 'toolbar-button-accept',
                 enableToggle: true,
                 flex: 0,
                 margin: '0 5 5 0'
             }, {
                 xtype: 'button',
                 name: 'deleteButton',
-                text: '[x] Delete',
-                tooltip: 'Click to delete this filter',
+                text: Lmkp.ts.msg("delete-button"),
+                tooltip: Lmkp.ts.msg("deletefilter-tooltip"),
+                iconCls: 'toolbar-button-delete',
                 enableToggle: false,
                 flex: 0
             }]
@@ -315,6 +315,10 @@ Ext.define('Lmkp.controller.Filter', {
                     panels[i].destroy();
                 }
             }
+	        // collapse form if expanded
+	        if (!form.collapsed) {
+	        	form.toggleCollapse();
+	        }
         }
         this.applyFilter();
     },
@@ -329,18 +333,20 @@ Ext.define('Lmkp.controller.Filter', {
         }
     },
     
-    displayActivityDetails: function(view, selected, eOpts) {
-        if (selected.length) {
-            var detailPanel = Ext.ComponentQuery.query('filterPanel panel[id=detailPanel]')[0];
-            var html = '';
-            for (var i in selected[0].data) {
-                // dont show id
-                if (i != 'id') {
-                    html += '<b>' + i + '</b>: ' + selected[0].data[i] + '<br/>';
-                }
-            }
-            detailPanel.update(html);
-        }
+    showActivity: function() {
+    	var grid = Ext.ComponentQuery.query('filterPanel gridpanel[id=filterResults]')[0];
+    	var selectedRecord = grid.getSelectionModel().getSelection();
+		var detailPanel = Ext.ComponentQuery.query('filterPanel tabpanel[id=detailPanel]')[0];
+		var selectedTab = detailPanel.getActiveTab();
+			switch (selectedTab.getXType()) {
+				case "activityHistoryTab":
+					var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
+					this._populateHistoryTab(selectedTab, uid)
+					break;
+				default: 	// default is: activityDetailTab
+					this._populateDetailsTab(selectedTab, selectedRecord);
+					break;
+			}
     },
     
     getOperator: function(xType) {
@@ -454,6 +460,237 @@ Ext.define('Lmkp.controller.Filter', {
         return valueField;
     },
     
+    _populateDetailsTab: function(panel, data) {
+    	if (data.length > 0) {
+	        var html = '';
+	        for (var i in data[0].data) {
+	            // dont show id
+	            if (i != 'id') {
+	                html += '<b>' + i + '</b>: ' + data[0].data[i] + '<br/>';
+	            }
+	        }
+	        panel.update(html);
+       	}
+    },
+    
+    _populateHistoryTab: function(panel, uid) {
+    	if (uid) {
+	    	Ext.Ajax.request({
+	    		url: '/activities/history/' + uid,
+	    		success: function(response, opts) {
+	
+			    	// remove initial text if still there
+			    	if (panel.down('panel[name=history_initial]')) {
+			    		panel.remove(panel.down('panel[name=history_initial]'));
+			    	}
+			    	
+			    	// remove old panels
+			    	if (panel.down('panel[name=history_active]')) {
+			    		panel.remove(panel.down('panel[name=history_active]'));
+			    	}
+			    	if (panel.down('panel[name=history_deleted]')) {
+			    		panel.remove(panel.down('panel[name=history_deleted]'));
+			    	}
+			    	while (panel.down('panel[name=history_overwritten]')) {
+			    		panel.remove(panel.down('panel[name=history_overwritten]'));
+			    	}
+	
+					// get data
+	    			var json = Ext.JSON.decode(response.responseText);
+			    	// prepare template
+			    	var tpl = new Ext.XTemplate(
+			    		'<tpl for="attrs">',
+			    			'<span class="{cls}"><b>{k}</b>: {v}<br/></span>',
+			    		'</tpl>',
+			    		'<p>&nbsp;</p>',
+			    		'<tpl if="deleted != null">',
+			    			'Deleted: <span class="deleted"><b>{deleted}</b></span>',
+			    			'<p>&nbsp;</p>',
+			    		'</tpl>',
+			    		'<p class="version_info">Version {version} created on {timestamp}.<br/>',
+			    		'Data provided by {username} [userid: {userid}].<br/>',
+			    		'Additional source of information: {source}</p>'
+			    	);
+			    	
+			    	// add panel for current version if there is one
+			    	if (json.data.active) {
+			    		// prepare data
+			    		var o = json.data.active;
+			    		var ts = Ext.Date.format(Ext.Date.parse(o.timestamp, "Y-m-d H:i:s.u"), "Y/m/d H:i");
+			    		var changes = Ext.JSON.decode(o.changes);
+			    		
+			    		// first, add general data about activity and changeset
+			    		var data = {
+			    			username: o.username,
+			    			userid: o.userid,
+			    			source: o.source,
+			    			timestamp: ts,
+			    			version: o.version,
+			    			id: o.id,
+			    			activity_identifier: o.activity_identifier
+			    		}
+			    		// add all remaining data: the key/value pairs
+			    		attrs = []
+			    		for (attr in o) {
+			    			// do not add general data (again) and do not add 'changes'
+			    			if (!data[attr] && attr != 'changes') {
+			    				// default class
+			    				var cls = 'unchanged';
+			    				// check for changes and update class accordingly
+			    				if (changes[attr]) {
+			    					cls = changes[attr];
+			    				}
+			    				attrs.push({
+			    					k: attr,
+			    					v: o[attr],
+			    					cls: cls
+			    				});
+			    			}
+			    		}
+			    		data["attrs"] = attrs;
+			    		// check for deleted attributes
+			    		var deleted = []
+			    		for (var i in changes) {
+			    			if (changes[i] == 'deleted') {
+			    				deleted.push(i);
+			    			}
+			    		}
+			    		data["deleted"] = (deleted.length > 0) ? deleted.join(", ") : null;
+			    		
+			    		// create panel
+				        var activePanel = Ext.create('Ext.panel.Panel', {
+				        	name: 'history_active',
+				        	title: '[Current] Version ' + o.version + ' (' + ts + ')',
+				        	collapsible: true,
+				        	collapsed: true
+				        });
+				        // add panel and apply template
+				        panel.add(activePanel);
+				        tpl.overwrite(activePanel.body, data);
+			       	}
+			       	
+			       	// add panel for deleted version if there is one
+			       	if (json.data.deleted) {
+			       		// prepare data
+			       		var o = json.data.deleted;
+			       		var ts = Ext.Date.format(Ext.Date.parse(o.timestamp, "Y-m-d H:i:s.u"), "Y/m/d H:i");
+			       		
+			       		// first, add general data about activity and changeset
+			    		var data = {
+			    			username: o.username,
+			    			userid: o.userid,
+			    			source: o.source,
+			    			timestamp: ts,
+			    			version: o.version,
+			    			id: o.id,
+			    			activity_identifier: o.activity_identifier
+			    		}
+			    		
+			    		// special template
+			    		var deletedTpl = new Ext.XTemplate(
+				    		'<span class="deleted"><b>Deleted</b></span>',
+				    		'<p>&nbsp;</p>',
+				    		'<p class="version_info">This activity was deleted on {timestamp} by {username} [userid: {userid}].<br/>',
+				    		'Additional source of information: {source}</p>'
+				    	);
+				    	
+				    	// create panel
+				    	var deletedPanel = Ext.create('Ext.panel.Panel', {
+				    		name: 'history_deleted',
+				    		title: '[Deleted] (' + ts + ')',
+				    		collapsible: true,
+				    		collapsed: true
+				    	});
+				    	
+				    	// add panel and apply template
+				    	panel.add(deletedPanel);
+				    	deletedTpl.overwrite(deletedPanel.body, data);
+			       	}
+			        
+			        // add panels for old versions if there are any
+			        if (json.data.overwritten.length > 0) {
+			        	for (var i in json.data.overwritten) {
+			        		// prepare data
+			        		var o = json.data.overwritten[i];
+			        		var ts = Ext.Date.format(Ext.Date.parse(o.timestamp, "Y-m-d H:i:s.u"), "Y/m/d H:i");
+					        var changes = Ext.JSON.decode(o.changes);
+					        // first, add general data about activity and changeset
+				    		var data = {
+				    			username: o.username,
+				    			userid: o.userid,
+				    			source: o.source,
+				    			timestamp: ts,
+				    			version: o.version,
+				    			id: o.id,
+				    			activity_identifier: o.activity_identifier
+				    		};
+				    		// add all remaining data: the key/value pairs
+				    		attrs = [];
+				    		for (attr in o) {
+				    			// do not add general data (again) and do not add 'changes'
+				    			if (!data[attr] && attr != 'changes') {
+				    				// default class
+				    				var cls = 'unchanged';
+				    				// check for changes and update class accordingly
+				    				if (changes[attr]) {
+				    					cls = changes[attr];
+				    				}
+				    				attrs.push({
+				    					k: attr,
+				    					v: o[attr],
+				    					cls: cls
+				    				});
+				    			}
+				    		}
+				    		data["attrs"] = attrs;
+				    		// check for deleted attributes
+				    		var deleted = []
+				    		for (var i in changes) {
+				    			if (changes[i] == 'deleted') {
+				    				deleted.push(i);
+				    			}
+				    		}
+				    		data["deleted"] = (deleted.length > 0) ? deleted.join(", ") : null;
+				    		// create panel
+				    		var p = Ext.create('Ext.panel.Panel', {
+					        	name: 'history_overwritten',
+					        	title: 'Version ' + o.version + ' (' + ts + ')',
+					        	collapsible: true,
+					        	collapsed: true
+				    		});
+					        panel.add(p);
+					        tpl.overwrite(p.body, data);
+			        	}
+					}
+					
+					// in case no active and no overwritten activities were found (this should never happen),
+					// show at least something.
+					// using the initial panel because this will be removed when selected the next activity
+					if (!json.data.active && !json.data.deleted && json.data.overwritten.length == 0) {
+						panel.add({
+							xtype: 'panel',
+					    	border: 0,
+					    	name: 'history_initial',
+					    	html: 'No history found for this activity',
+					    	collapsible: false,
+					    	collapsed: false
+						})
+					}
+					
+					// layout does not seem to work if panel is expanded on start, therefore this is done
+					// after everything was added.
+					// TODO: find out why ...
+					if (activePanel) {
+						activePanel.toggleCollapse();
+					}
+					if (deletedPanel) {
+						deletedPanel.toggleCollapse();
+					}
+	    		}
+	    	});
+    	}
+    },
+
     _isInArray: function(arr, obj) { // http://stackoverflow.com/questions/143847/best-way-to-find-an-item-in-a-javascript-array
         for(var i=0; i<arr.length; i++) {
             if (arr[i] == obj) return true;

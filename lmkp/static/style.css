@@ -8,3 +8,51 @@
     height: 16px !important;
     width: 16px !important;
 }
+
+.ico-key { 
+	width:15px; 
+	height:15px; 
+	background-image:url("/static/img/symbol_key.png") !important
+}
+
+.ico-value { 
+	width:15px; 
+	height:15px; 
+	background-image:url("/static/img/symbol_value.png") !important
+}
+
+.toolbar-button-add {
+	width: 16px !important;
+	height: 16px !important;
+    background-image: url("/static/img/add.png") !important;
+}
+
+.toolbar-button-delete {
+	width: 16px !important;
+	height: 16px !important;
+    background-image: url("/static/img/cancel.png") !important;
+}
+
+.toolbar-button-accept {
+	width: 16px !important;
+	height: 16px !important;
+    background-image: url("/static/img/accept.png") !important;
+}
+
+p.version_info {
+	border: 1px solid silver;
+	background-color: #FFFFCC;
+	padding: 5px;
+}
+
+span.new {
+	color: green;
+}
+
+span.modified {
+	color: blue;
+}
+
+span.deleted {
+	color: red;
+}

@@ -6,15 +6,19 @@ from geoalchemy.functions import functions
 import geojson
 from lmkp.models.database_objects import *
 from logging import getLogger
+from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.httpexceptions import HTTPCreated
 from pyramid.httpexceptions import HTTPNotFound
 from shapely.geometry import asShape
 from shapely.geometry.point import Point
 from shapely.geometry.polygon import Polygon
+import simplejson as json
 from sqlalchemy.orm.util import class_mapper
-from sqlalchemy.sql import and_
+from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import desc
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.expression import select
+from uuid import UUID
 
 log = getLogger(__name__)
 
@@ -190,27 +194,30 @@ class ActivityFeature(object):
         # Loop all attributes
         for index in self.__dict__:
             # Ignore the reserved keywords id and geometry
-            if index not in ['id', 'geometry']:
+            if index not in ['geometry']:
                 attribute_value = getattr(self, index)
                 # Append only not null attributes to the properties
                 if attribute_value is not None:
-                    # Try to cast the value to integer or float
-                    try:
-                        properties[index] = int(attribute_value)
-                    except:
+                    if isinstance(attribute_value, UUID):
+                        properties[index] = str(attribute_value)
+                    else:
+                        # Try to cast the value to integer or float
                         try:
-                            properties[index] = float(attribute_value)
+                            properties[index] = int(attribute_value)
                         except:
-                            # Finally write it as it is, GeoJson will handle
-                            # it as String
-                            properties[index] = attribute_value
+                            try:
+                                properties[index] = float(attribute_value)
+                            except:
+                                # Finally write it as it is, GeoJson will handle
+                                # it as String
+                                properties[index] = attribute_value
 
         if self.geometry is not None:
             geom = wkb.loads(str(self.geometry.geom_wkb))
         else:
             geom = None
         # Return a new Feature
-        return geojson.Feature(id=self.id, geometry=geom, properties=properties)
+        return geojson.Feature(id=str(self.activity_identifier), geometry=geom, properties=properties)
     
 
 class ActivityProtocol(object):
@@ -285,11 +292,17 @@ class ActivityProtocol(object):
             if row.key not in attributes:
                 attributes.append(row.key)
 
+        log.debug(attributes)
+
         # Create an empty dictionnary with an activity id as index
         activities = {}
         for row in rows:
             if row.id not in activities:
-                activities[row.id] = ActivityFeature(id=row.id, geometry=row.geometry, timestamp=row.timestamp, version=row.version)
+                activities[row.id] = ActivityFeature(id=row.id,
+                                                     activity_identifier=row.activity_identifier,
+                                                     geometry=row.geometry,
+                                                     timestamp=row.timestamp,
+                                                     version=row.version)
                 # Set all available attributes for this activity feature to None.
                 # This is necessary to be able to sort the features in method
                 # self._order
@@ -307,7 +320,6 @@ class ActivityProtocol(object):
             features.append(activities[fid])
 
         return features
-        
 
     def _filter_attrs(self, feature, request):
         """
@@ -526,17 +538,17 @@ class ActivityProtocol(object):
         return features
 
     
-    def read(self, request, filter=None, id=None):
+    def read(self, request, filter=None, uid=None):
         """
         Build a query based on the filter or the idenfier, send the query
         to the database, and return a Feature or a FeatureCollection.
         """
 
         # Simple case: a certain activity is requested by id
-        if id is not None:
+        if uid is not None:
 
             # Create the logical AND filter that is passed to the query
-            filter = and_(filter, Activity.id == id)
+            filter = and_(filter, Activity.activity_identifier == uid)
 
             features = self._create_layer(self._query(request, filter), request)
 
@@ -544,8 +556,8 @@ class ActivityProtocol(object):
             if len(features)  == 0:
                 return HTTPNotFound()
 
-            # It is assumed that there is only returned feature, since the
-            # activity ids *should* be unique!
+            # It is assumed that there is only returned feature, since there is
+            # exacly one active activity version (make sure in data model)
             return self._filter_attrs(features[0], request)
 
         # In the other case it is necessary to request all activities and
@@ -584,6 +596,91 @@ class ActivityProtocol(object):
         rows = self._filter_features(rows, request)
 
         return len(rows)
+
+    def create(self, request):
+        """
+        Create a new activity and store it to the database
+        """
+
+        raw = request.json_body
+
+        # Check if the json body is a valid GeoJSON
+        if 'type' not in raw:
+            return HTTPBadRequest(detail="Not a valid GeoJSON")
+
+        if raw['type'] == 'FeatureCollection':
+            # Dump the dictionary to string to reload it as GeoJSON
+            featureCollection = geojson.loads(json.dumps(raw), object_hook=geojson.GeoJSON.to_instance)
+
+            for feature in featureCollection.features:
+                self._add_feature(request, feature)
+
+        if raw['type'] == 'Feature':
+            # Dump the dictionary to string to reload it as GeoJSON
+            feature = geojson.loads(json.dumps(raw), object_hook=geojson.GeoJSON.to_instance)
+            self._add_feature(request, feature)
+
+        # Return the newly created object with 201 Created HTTP code status
+        return HTTPCreated(detail=geojson.dumps(feature))
+
+    def _add_feature(self, request, feature):
+        """
+        Add or update a new activity
+        """
+
+        # The unique identifier
+        try:
+            identifier = feature.id
+            if identifier is None:
+                identifier = uuid.uuid4()
+        except AttributeError:
+            identifier = uuid.uuid4()
+        # The geometry
+        shape = asShape(feature.geometry)
+        version = 1
+
+        # Get the latest version if the activity already exists
+        v = self.Session.query(Activity.version).filter(Activity.activity_identifier == identifier).order_by(desc(Activity.version)).first()
+        if v is not None:
+            # Increase the version
+            version = (v[0]+1)
+
+        # Add a representative point to the activity
+        activity = Activity(activity_identifier=identifier, version=version, point=shape.representative_point().wkt)
+        # Set the activity status to pending
+        activity.status = self.Session.query(Status).filter(Status.name == 'pending').first()
+        # Add it to the database
+        self.Session.add(activity)
+
+        # Loop all feature attributes
+        for property in feature.properties:
+            # If the key is not yet in the database, create a new key
+            k = self.Session.query(A_Key).filter(A_Key.key == property).first()
+            if k is None:
+                k = A_Key(key=property)
+                k.fk_language = 1
+
+            # If the value is not yet in the database, create a new value
+            v = self.Session.query(A_Value).filter(A_Value.value == unicode(feature.properties[property])).first()
+            if v is None:
+                v = A_Value(value = feature.properties[property])
+                v.fk_language = 1
+
+            # Create a new tag group and append it to the activity
+            tag_group = A_Tag_Group()
+            activity.tag_groups.append(tag_group)
+            # Create a new tag with key and value and append it to the tag group
+            a_tag = A_Tag()
+            a_tag.key = k
+            a_tag.value = v
+            tag_group.tags.append(a_tag)
+
+        # Create a new changeset
+        changeset = A_Changeset(source='[pending] %s' % activity)
+        # Get the user from the request
+        changeset.user = self.Session.query(User).filter(User.username == request.user.username).first()
+        changeset.activity = activity
+        self.Session.add(changeset)
 
     def _query_timestamp(self, request, filter=None):
         """

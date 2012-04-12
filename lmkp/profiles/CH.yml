@@ -13,15 +13,15 @@ application:
         - agrofuels
         - forestry
         - viehwirtschaft
-      Alpwirtschaft:
+      Alpine Farming:
         predefined:
-          - ganzjährig
-          - Sommerhalbjahr
-          - Winterhalbjahr
-          - nur Vieh
-          - nur Käse
+          - all-season
+          - summer
+          - winter
+          - only livestock
+          - only dairy farming
     optional:
-      Anzahl Kuhglocken:
+      Number of Cowbells:
         type: Number
       Shoe size:
         type: Number
