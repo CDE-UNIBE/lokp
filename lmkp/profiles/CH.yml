@@ -23,3 +23,12 @@ application:
     optional:
       Anzahl Kuhglocken:
         type: Number
+      Shoe size:
+        type: Number
+        predefined:
+          - 42
+          - 41
+          - 40
+          - 39
+
+
