@@ -1,15 +1,15 @@
 from lmkp.models.meta import DBSession
-from lmkp.renderers.renderers import ExtJSGrid
-from lmkp.renderers.renderers import ExtJSTree
+from lmkp.renderers.renderers import GeoJsonRenderer
+from lmkp.renderers.renderers import JsonRenderer
 from lmkp.renderers.renderers import JavaScriptRenderer
 from lmkp.renderers.renderers import KmlRenderer
 from lmkp.security import group_finder
+from lmkp.authentication import CustomAuthenticationPolicy
 from lmkp.subscribers import add_localizer
 from lmkp.subscribers import add_renderer_globals
 from lmkp.subscribers import add_user
 import papyrus
-from papyrus.renderers import GeoJSON
-from pyramid.authentication import AuthTktAuthenticationPolicy
+#from papyrus.renderers import GeoJSON
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.events import BeforeRender
@@ -23,7 +23,7 @@ def main(global_config, ** settings):
     DBSession.configure(bind=engine)
 
     # Authentiaction policy
-    authnPolicy = AuthTktAuthenticationPolicy('walhalla', callback=group_finder)
+    authnPolicy = CustomAuthenticationPolicy('walhalla', callback=group_finder)
     # Authorization policy
     authzPolicy = ACLAuthorizationPolicy()
 
@@ -43,7 +43,10 @@ def main(global_config, ** settings):
 
     # Add papyrus includes
     config.include(papyrus.includeme)
-    config.add_renderer('geojson', GeoJSON())
+    # Return a JavaScript model
+    config.add_route('activities_model', 'static/app/model/Activity.js')
+    #config.add_renderer('geojson', GeoJSON())
+    config.add_renderer('geojson', GeoJsonRenderer())
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('index', '/')
     config.add_route('login', '/login')
@@ -63,11 +66,8 @@ def main(global_config, ** settings):
     config.add_route('geo_test', '/geo_test')
     config.add_route('ext_tests', '/tests')
 
-    # Add a renderer to return ExtJS tree configuration objects
-    config.add_renderer('tree', ExtJSTree())
-
     # Add a renderer to return ExtJS store configuration objects
-    config.add_renderer('json', ExtJSGrid())
+    config.add_renderer('json', JsonRenderer())
 
     # Add a renderer to return KML
     config.add_renderer('kml', KmlRenderer())
@@ -81,14 +81,16 @@ def main(global_config, ** settings):
     # Reads one or many activities and returns the result as HTML
     # This is only for debugging purposes ...
     config.add_route('activities_read_many_html', '/activities/html', request_method='GET')
+    config.add_route('activities_read_one_html', '/activities/html/{uid}', request_method='GET')
 
     # Reads many activites and returns a KML file
     config.add_route('activities_read_many_kml', '/activities/kml', request_method='GET')
+    config.add_route('activities_read_one_kml', '/activities/kml/{uid}', request_method='GET')
 
     # Reads one or many activities and returns the result as JSON that can be used
     # in ExtJS stores and forms
     config.add_route('activities_read_many_json', '/activities/json', request_method='GET')
-    config.add_route('activities_read_one_json', '/activities/json/{id}', request_method='GET')
+    config.add_route('activities_read_one_json', '/activities/json/{uid}', request_method='GET')
 
     # Reads many activities and returns a tree configuration JSON that can be
     # used in ExtJS tree stores
@@ -100,14 +102,15 @@ def main(global_config, ** settings):
     # Reads one or many activities and returns GeoJSON Feature or
     # FeatureCollection
     config.add_route('activities_read_many', '/activities', request_method='GET')
-    config.add_route('activities_read_one', '/activities/{id}', request_method='GET')
+    config.add_route('activities_read_one', '/activities/{uid}', request_method='GET')
 
     # Creates a new activity (not yet implemented)
     config.add_route('activities_create', '/activities', request_method='POST')
 
    
-    # Return a JavaScript model
-    config.add_route('activities_model', '/app/model/Activity.js')
+    
+    # Return the history of an activity
+    config.add_route('activities_history', '/activities/history/{uid}')
 
     # A controller that returns the translation needed in the ExtJS user interface
     config.add_route('ui_translation', '/lang')

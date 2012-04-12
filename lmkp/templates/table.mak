@@ -33,12 +33,20 @@
         <table>
             <%
 
+            from lmkp.renderers.renderers import translate_key
+            from lmkp.renderers.renderers import translate_value
+            from pyramid.i18n import get_localizer
             from shapely import wkb
 
-            attributes = ['id', 'timestamp', 'version', 'geometry']
+            # Get the localizer
+            localizer = get_localizer(request)
+
+            # Default attributes
+            attributes = ['id', 'timestamp', 'activity_identifier', 'version', 'geometry']
 
             nbrFeatures = 0
 
+            # Append additional attributes
             for obj in result:
                 for key in obj.__dict__:
                     if key not in attributes and key != '_labels':
@@ -49,7 +57,7 @@
             <tr>
                 % for a in range(0,len(attributes)):
                 <th>
-                    ${attributes[a]}
+                    ${translate_key(request, localizer, attributes[a])}
                 </th>
                 % endfor
             </tr>
@@ -72,7 +80,7 @@
                     except:
                         pass
                 %>
-                <td class="${c}">${value}</td>
+                <td class="${c}">${translate_value(request, localizer, value)}</td>
                 % endfor
             </tr>
             <%

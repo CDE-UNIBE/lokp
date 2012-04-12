@@ -65,7 +65,13 @@ Ext.define('Lmkp.controller.Layers', {
         layerRoot.appendChild(baseLayerRoot);
         layerRoot.appendChild(otherLayerRoot);
         
+        /**
+         * 
+         * I (Lukas) removed the following code because it kept throwing error message.
+         * add it again once layer stuff works.
+         * 
+         */
         // set layerRoot as root node of the tree.
-        this.getLayerslist().setRootNode(layerRoot);
+        // this.getLayerslist().setRootNode(layerRoot);
     }
 });
