@@ -326,10 +326,11 @@ Ext.define('Lmkp.controller.Filter', {
     renderNameColumn: function() {
         col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=namecolumn]')[0];
         col.renderer = function(value, p, record) {
-            return Ext.String.format(
-                '{0} [Province ABC, District XYZ]',
-                value
-                );
+        	if (value) {
+            	return Ext.String.format('{0}', value);
+        	} else {
+        		return Lmkp.ts.msg("unnamed-activity");
+        	}
         }
     },
     
@@ -340,10 +341,7 @@ Ext.define('Lmkp.controller.Filter', {
 		var selectedTab = detailPanel.getActiveTab();
 			switch (selectedTab.getXType()) {
 				case "activityHistoryTab":
-					// get me from selectedRecord once uid is working in JS
-					var uid = 'fe0c5b81-454a-4835-b042-6c473a50d984'; 	// 1 active, 2 overwritten
-					// var uid = 'e6826bf3-3a82-4572-87c2-4b26150edbc0';	// no active, no overwritten
-					// var uid = 'bb5c9ded-4ba6-4344-a991-7fd2368dbc30'; 	// 1 active, no overwritten
+					var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
 					this._populateHistoryTab(selectedTab, uid)
 					break;
 				default: 	// default is: activityDetailTab
@@ -469,7 +467,13 @@ Ext.define('Lmkp.controller.Filter', {
 	        for (var i in data[0].data) {
 	            // dont show id
 	            if (i != 'id') {
-	                html += '<b>' + i + '</b>: ' + data[0].data[i] + '<br/>';
+	            	/**
+	            	 * The default NULL-value for unspecified number values is 0.
+	            	 * Assumption: 0 as a number value (currently for Area and Year of Investment)
+	            	 * is not useful and should rather not be displayed.
+	            	 */
+	            	var val = (data[0].data[i] == 0) ? '' : data[0].data[i]; 
+	            	html += Ext.String.format('<b>{0}</b>: {1}<br/>', i, val);
 	            }
 	        }
 	        panel.update(html);
@@ -491,18 +495,25 @@ Ext.define('Lmkp.controller.Filter', {
 			    	if (panel.down('panel[name=history_active]')) {
 			    		panel.remove(panel.down('panel[name=history_active]'));
 			    	}
+			    	if (panel.down('panel[name=history_deleted]')) {
+			    		panel.remove(panel.down('panel[name=history_deleted]'));
+			    	}
 			    	while (panel.down('panel[name=history_overwritten]')) {
 			    		panel.remove(panel.down('panel[name=history_overwritten]'));
 			    	}
 	
-					// get data		    	
+					// get data
 	    			var json = Ext.JSON.decode(response.responseText);
 			    	// prepare template
 			    	var tpl = new Ext.XTemplate(
 			    		'<tpl for="attrs">',
-			    			'<b>{k}</b>: {v}<br/>',
+			    			'<span class="{cls}"><b>{k}</b>: {v}<br/></span>',
 			    		'</tpl>',
 			    		'<p>&nbsp;</p>',
+			    		'<tpl if="deleted != null">',
+			    			'Deleted: <span class="deleted"><b>{deleted}</b></span>',
+			    			'<p>&nbsp;</p>',
+			    		'</tpl>',
 			    		'<p class="version_info">Version {version} created on {timestamp}.<br/>',
 			    		'Data provided by {username} [userid: {userid}].<br/>',
 			    		'Additional source of information: {source}</p>'
@@ -513,6 +524,8 @@ Ext.define('Lmkp.controller.Filter', {
 			    		// prepare data
 			    		var o = json.data.active;
 			    		var ts = Ext.Date.format(Ext.Date.parse(o.timestamp, "Y-m-d H:i:s.u"), "Y/m/d H:i");
+			    		var changes = Ext.JSON.decode(o.changes);
+			    		
 			    		// first, add general data about activity and changeset
 			    		var data = {
 			    			username: o.username,
@@ -526,15 +539,31 @@ Ext.define('Lmkp.controller.Filter', {
 			    		// add all remaining data: the key/value pairs
 			    		attrs = []
 			    		for (attr in o) {
-			    			// do not add general data (again)
-			    			if (!data[attr]) {
+			    			// do not add general data (again) and do not add 'changes'
+			    			if (!data[attr] && attr != 'changes') {
+			    				// default class
+			    				var cls = 'unchanged';
+			    				// check for changes and update class accordingly
+			    				if (changes[attr]) {
+			    					cls = changes[attr];
+			    				}
 			    				attrs.push({
 			    					k: attr,
-			    					v: o[attr]
-			    				})
+			    					v: o[attr],
+			    					cls: cls
+			    				});
 			    			}
 			    		}
 			    		data["attrs"] = attrs;
+			    		// check for deleted attributes
+			    		var deleted = []
+			    		for (var i in changes) {
+			    			if (changes[i] == 'deleted') {
+			    				deleted.push(i);
+			    			}
+			    		}
+			    		data["deleted"] = (deleted.length > 0) ? deleted.join(", ") : null;
+			    		
 			    		// create panel
 				        var activePanel = Ext.create('Ext.panel.Panel', {
 				        	name: 'history_active',
@@ -546,6 +575,44 @@ Ext.define('Lmkp.controller.Filter', {
 				        panel.add(activePanel);
 				        tpl.overwrite(activePanel.body, data);
 			       	}
+			       	
+			       	// add panel for deleted version if there is one
+			       	if (json.data.deleted) {
+			       		// prepare data
+			       		var o = json.data.deleted;
+			       		var ts = Ext.Date.format(Ext.Date.parse(o.timestamp, "Y-m-d H:i:s.u"), "Y/m/d H:i");
+			       		
+			       		// first, add general data about activity and changeset
+			    		var data = {
+			    			username: o.username,
+			    			userid: o.userid,
+			    			source: o.source,
+			    			timestamp: ts,
+			    			version: o.version,
+			    			id: o.id,
+			    			activity_identifier: o.activity_identifier
+			    		}
+			    		
+			    		// special template
+			    		var deletedTpl = new Ext.XTemplate(
+				    		'<span class="deleted"><b>Deleted</b></span>',
+				    		'<p>&nbsp;</p>',
+				    		'<p class="version_info">This activity was deleted on {timestamp} by {username} [userid: {userid}].<br/>',
+				    		'Additional source of information: {source}</p>'
+				    	);
+				    	
+				    	// create panel
+				    	var deletedPanel = Ext.create('Ext.panel.Panel', {
+				    		name: 'history_deleted',
+				    		title: '[Deleted] (' + ts + ')',
+				    		collapsible: true,
+				    		collapsed: true
+				    	});
+				    	
+				    	// add panel and apply template
+				    	panel.add(deletedPanel);
+				    	deletedTpl.overwrite(deletedPanel.body, data);
+			       	}
 			        
 			        // add panels for old versions if there are any
 			        if (json.data.overwritten.length > 0) {
@@ -553,6 +620,7 @@ Ext.define('Lmkp.controller.Filter', {
 			        		// prepare data
 			        		var o = json.data.overwritten[i];
 			        		var ts = Ext.Date.format(Ext.Date.parse(o.timestamp, "Y-m-d H:i:s.u"), "Y/m/d H:i");
+					        var changes = Ext.JSON.decode(o.changes);
 					        // first, add general data about activity and changeset
 				    		var data = {
 				    			username: o.username,
@@ -562,19 +630,34 @@ Ext.define('Lmkp.controller.Filter', {
 				    			version: o.version,
 				    			id: o.id,
 				    			activity_identifier: o.activity_identifier
-				    		}
+				    		};
 				    		// add all remaining data: the key/value pairs
-				    		attrs = []
+				    		attrs = [];
 				    		for (attr in o) {
-				    			// do not add general data (again)
-				    			if (!data[attr]) {
+				    			// do not add general data (again) and do not add 'changes'
+				    			if (!data[attr] && attr != 'changes') {
+				    				// default class
+				    				var cls = 'unchanged';
+				    				// check for changes and update class accordingly
+				    				if (changes[attr]) {
+				    					cls = changes[attr];
+				    				}
 				    				attrs.push({
 				    					k: attr,
-				    					v: o[attr]
-				    				})
+				    					v: o[attr],
+				    					cls: cls
+				    				});
 				    			}
 				    		}
 				    		data["attrs"] = attrs;
+				    		// check for deleted attributes
+				    		var deleted = []
+				    		for (var i in changes) {
+				    			if (changes[i] == 'deleted') {
+				    				deleted.push(i);
+				    			}
+				    		}
+				    		data["deleted"] = (deleted.length > 0) ? deleted.join(", ") : null;
 				    		// create panel
 				    		var p = Ext.create('Ext.panel.Panel', {
 					        	name: 'history_overwritten',
@@ -590,7 +673,7 @@ Ext.define('Lmkp.controller.Filter', {
 					// in case no active and no overwritten activities were found (this should never happen),
 					// show at least something.
 					// using the initial panel because this will be removed when selected the next activity
-					if (!json.data.active && json.data.overwritten.length == 0) {
+					if (!json.data.active && !json.data.deleted && json.data.overwritten.length == 0) {
 						panel.add({
 							xtype: 'panel',
 					    	border: 0,
@@ -606,6 +689,9 @@ Ext.define('Lmkp.controller.Filter', {
 					// TODO: find out why ...
 					if (activePanel) {
 						activePanel.toggleCollapse();
+					}
+					if (deletedPanel) {
+						deletedPanel.toggleCollapse();
 					}
 	    		}
 	    	});

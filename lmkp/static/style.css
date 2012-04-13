@@ -44,3 +44,15 @@ p.version_info {
 	background-color: #FFFFCC;
 	padding: 5px;
 }
+
+span.new {
+	color: green;
+}
+
+span.modified {
+	color: blue;
+}
+
+span.deleted {
+	color: red;
+}
