@@ -45,7 +45,8 @@ def ui_messages(request):
     'deletefilter-tooltip': _('deletefilter-tooltip', default='Click to delete this filter'),
     'date-label': _('date-label', default='Date'),
     'profile-label': _('profile-label', default='Profile'),
-    'language-label': _('language-label', default='Language')
+    'language-label': _('language-label', default='Language'),
+    'unnamed-activity': _('unnamed-activity', default='Unnamed Activity')
     }
 
     # Get the localizer
@@ -62,6 +63,14 @@ def ui_messages(request):
     uiMap['locale'] = db_lang.locale
     uiMap['locale_english-name'] = db_lang.english_name
     uiMap['locale_local-name'] = db_lang.local_name
+    
+    # Add translated name for key "Name" (needed by Ext as dataIndex when displaying the grid with activities).
+    nameKeyEnglish = Session.query(A_Key).filter(A_Key.key == 'Name').filter(A_Key.original == None).first()
+    nameKeyLocale = Session.query(A_Key).filter(A_Key.original == nameKeyEnglish).filter(A_Key.language == db_lang).first()
+    if nameKeyLocale:
+        uiMap['dataIndex-name'] = nameKeyLocale.key
+    else:
+        uiMap['dataIndex-name'] = 'Name'
 
     # Write the JavaScript and instantiate the global variable Lmkp.ts
     str = "Ext.namespace('Lmkp');\n"

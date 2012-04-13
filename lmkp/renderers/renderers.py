@@ -23,34 +23,38 @@ def translate_key(request, localizer, key):
     except:
         return key
 
-    # Create the filter
-    f = and_(A_Key.fk_a_key == key_id, Language.locale == localizer.locale_name)
-    # And query the translated key
-    translated_key = Session.query(A_Key.key).join(Language).filter(f).first()
+    if localizer is not None:
+        # Create the filter
+        f = and_(A_Key.fk_a_key == key_id, Language.locale == localizer.locale_name)
+        # And query the translated key
+        translated_key = Session.query(A_Key.key).join(Language).filter(f).first()
 
     try:
         return translated_key[0]
     except TypeError:
         return key
+    except UnboundLocalError:
+        return key
 
 def translate_value(request, localizer, value):
     # Get the language independent value id
-    print "**************************************"
-    print value
     try:
         value_id = Session.query(A_Value.id).filter(A_Value.value == value).first()[0]
     except:
         return value
 
-    # Create the filter
-    f = and_(A_Value.fk_a_value == value_id, Language.locale == localizer.locale_name)
-    # And query the translated value
-    translated_value = Session.query(A_Value.value).join(Language).filter(f).first()
+    if localizer is not None:
+        # Create the filter
+        f = and_(A_Value.fk_a_value == value_id, Language.locale == localizer.locale_name)
+        # And query the translated value
+        translated_value = Session.query(A_Value.value).join(Language).filter(f).first()
 
     try:
         return translated_value[0]
     except TypeError:
         return value
+    except UnboundLocalError:
+        return key
 
 class JsonRenderer(object):
     """
