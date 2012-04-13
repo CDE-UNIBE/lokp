@@ -256,16 +256,19 @@ class Activity(Base):
     def __repr__(self):
         return "<Activity> id [ %s ] | activity_identifier [ %s ] | timestamp [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.activity_identifier, self.timestamp, wkb.loads(str(self.point.geom_wkb)).wkt, self.fk_status, self.version)
 
-    @validates('fk_status')
+    # validation now done in trigger on database level.
+    """
+    @validates('status')
     def validate_status(self, key, status):
-        if status == 2: # validate only when status is updated to 'active' (2)
-            # count 'active' (2) activities with same activity_identifier
+        if status.id == 2: # validate only for status == 'active' (id = 2)
+            # count activities with same status and same activity_identifier
             from lmkp.models.meta import DBSession
             sess = DBSession()
-            count_active = sess.query(Activity).filter(Activity.fk_status == 2).filter(Activity.activity_identifier == self.activity_identifier).count()
-            # check that no other activity is 'active'
+            count_active = sess.query(Activity).filter(Activity.status == status).filter(Activity.activity_identifier == self.activity_identifier).count()
+            # check that currently no other activity is 'active'
             assert count_active == 0, "There can only be one Activity with status 'active'."
         return status
+    """
     
     @property
     def __geo_interface__(self):
@@ -301,6 +304,8 @@ class Stakeholder(Base):
     def __repr__(self):
         return "<Stakeholder> id [ %s ] | stakeholder_identifier [ %s ] | timestamp [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.stakeholder_identifier, self.timestamp, self.fk_status, self.version)
 
+    # validation now done in trigger on database level.
+    """
     @validates('fk_status')
     def validate_status(self, key, status):
         if status == 2: # validate only when status is updated to 'active' (2)
@@ -311,6 +316,7 @@ class Stakeholder(Base):
             # check that no other Stakeholder is 'active'
             assert count_active == 0, "There can only be one Stakeholder with status 'active'."
         return status
+    """
 
 class A_Changeset(Base):
     __tablename__ = 'a_changesets'
@@ -625,92 +631,4 @@ class Review_Decision(Base):
 
     def __repr__(self):
         return "<Review_Decision> id [ %s ] | name [ %s ] | description [ %s ]" % (self.id, self.name, self.description)
-
-"""
-from sqlalchemy.orm.attributes import manager_of_class
-from sqlalchemy.orm import mapper, column_property
-from sqlalchemy import join
-activity_table = manager_of_class(Activity).mapper.mapped_table
-event_table = manager_of_class(A_Event).mapper.mapped_table
-tag_table = manager_of_class(A_Tag).mapper.mapped_table
-key_table = manager_of_class(A_Key).mapper.mapped_table
-value_table = manager_of_class(A_Value).mapper.mapped_table
-activities_all = join(join(join(join(activity_table, event_table), tag_table), key_table), value_table)
-class View_Test(Base):
-    __table__ = activities_all
-
-    activity_id = column_property(activity_table.c.id, event_table.c.fk_activity)
-    activity_uuid = activity_table.c.uuid
-    event_id = event_table.c.id
-    event_uuid = event_table.c.uuid
-    tag_id = tag_table.c.id
-    tag_uuid = tag_table.c.uuid
-    key_id = key_table.c.id
-    key_language = key_table.c.fk_language
-    value_id = value_table.c.id
-    value_language = value_table.c.fk_language
     
-    def __repr__(self):
-        return "<View_Test> id [ %s ] | event_id [ %s ] | activity_uuid [ %s ] | event_uuid [ %s ] | fk_user [ %s ] | tag_id [ %s ]" % (self.activity_id, self.event_id, self.activity_uuid, self.event_uuid, self.fk_user, self.tag_id)
-"""    
-
-
-
-"""
-class View_Test(Base):
-    from sqlalchemy.orm.attributes import manager_of_class
-    from sqlalchemy.orm import mapper, column_property
-    from sqlalchemy import join
-
-    activity_table = manager_of_class(Activity).mapper.mapped_table
-    taggroup_table = manager_of_class(A_Tag_Group).mapper.mapped_table
-    
-    if 1 == 1:
-        activities_all = join(activity_table, taggroup_table)
-    
-    __table__ = activities_all
-    activity_id = activity_table.c.id
-    
-    @property
-    def test(self):
-        return "bla"
-    
-    def __repr__(self):
-        return "<View Test> activity_id [ %s ]" % (self.activity_id)
-"""
-"""
-from sqlalchemy.orm.attributes import manager_of_class
-from sqlalchemy.orm import mapper, column_property
-from sqlalchemy import join
-activity_table = manager_of_class(Activity).mapper.mapped_table
-taggroup_table = manager_of_class(A_Tag_Group).mapper.mapped_table
-tag_table = manager_of_class(A_Tag).mapper.mapped_table
-key_table = manager_of_class(A_Key).mapper.mapped_table
-value_table = manager_of_class(A_Value).mapper.mapped_table
-activities_all = join(join(join(join(activity_table, taggroup_table), tag_table), key_table), value_table)
-class View_Test(Base):
-    __table__ = activities_all
-
-    activity_id = column_property(activity_table.c.id, taggroup_table.c.fk_activity)
-    activity_identifier = activity_table.c.activity_identifier
-    tag_id = tag_table.c.id
-    key_id = key_table.c.id
-    key_language = key_table.c.fk_language
-    value_id = value_table.c.id
-    value_language = value_table.c.fk_language
-    
-    def __repr__(self):
-        return "<View_Test> id [ %s ] | activity_identifier [ %s ] | fk_user [ %s ] | tag_id [ %s ]" % (self.activity_id, self.activity_identifier, self.fk_user, self.tag_id)
-"""
-
-#===============================================================================
-# class Test_Point(Base):
-#    __tablename__ = 'a_events'
-#    __table_args__ = {'schema': 'data'}
-#    __mapper_args__ = {
-#        'include_properties': ['id', 'source']
-#    }
-#    
-#    def __repr__(self):
-#        return "<Test_Point> id [ %s ] | source [ %s ]" % (self.id, self.source)
-#===============================================================================
