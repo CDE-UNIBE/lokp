@@ -102,7 +102,7 @@ Ext.define('Lmkp.controller.manage.Main',{
     },
 
     onButtonClick: function(button, evt, eOpts){
-        console.log(button, evt, eOpts);
+        //console.log(button, evt, eOpts);
 
         //var test = Ext.create('Lmkp.model.ActivityTest');
 
@@ -129,7 +129,7 @@ Ext.define('Lmkp.controller.manage.Main',{
         });
 
         store.load(function(records, operation, success){
-            console.log(records);
+            //console.log(records);
         });
 
         
@@ -163,7 +163,7 @@ Ext.define('Lmkp.controller.manage.Main',{
                 listeners: {
                     load: {
                         fn: function(store, records, successful, operation, eOpts){
-                            console.log(store.getById('pan-button'));
+                            //console.log(store.getById('pan-button'));
                         }
                     }
                 }

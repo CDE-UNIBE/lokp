@@ -1,4 +1,5 @@
 from base64 import standard_b64decode
+from lmkp.models.database_objects import User
 from lmkp.security import group_finder
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import Everyone
