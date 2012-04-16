@@ -139,7 +139,6 @@ Ext.define('Lmkp.controller.Filter', {
         store.getProxy().url = 'activities/json?' + query_url;
         store.load();
         
-        console.log(store);
     },
         
     showValueFields: function(combobox, records, eOpts) {
