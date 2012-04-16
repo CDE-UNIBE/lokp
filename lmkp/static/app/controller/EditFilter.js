@@ -1,7 +1,10 @@
 Ext.define('Lmkp.controller.EditFilter', {
     extend: 'Ext.app.Controller',
 
-    models: ['Config', 'ActivityGrid'],
+    models: [
+    'Config'
+    //'ActivityGrid'
+    ],
     requires: ['Ext.window.MessageBox'],
     stores: ['Config', 'ActivityGrid'],
 
@@ -71,7 +74,7 @@ Ext.define('Lmkp.controller.EditFilter', {
     },
 
     onAddButtonClick: function(button, event, eOpts){
-        //console.log("Add new activity");
+    //console.log("Add new activity");
     }
 
 });
