@@ -6,7 +6,7 @@ Ext.define('Lmkp.reader.GeoJson',{
     read: function(response) {
 
         var data = response.responseText;
-        console.log('Lmkp.reader.GeoJson.read(): ', data);
+        //console.log('Lmkp.reader.GeoJson.read(): ', data);
 
         return this.readRecords(data)
     },

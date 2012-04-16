@@ -26,7 +26,6 @@ Ext.define('Lmkp.model.ActivityTest', {
     },
 
     constructor: function(config){
-        console.log("Lmkp.model.ActivityTest");
         return this.callParent(config)
     }
 

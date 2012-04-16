@@ -71,7 +71,7 @@ Ext.define('Lmkp.controller.EditFilter', {
     },
 
     onAddButtonClick: function(button, event, eOpts){
-        console.log("Add new activity");
+        //console.log("Add new activity");
     }
 
 });

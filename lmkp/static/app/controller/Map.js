@@ -6,7 +6,6 @@ Ext.define('Lmkp.controller.Map',{
     ],
 
     init: function(){
-        console.log('Map init');
         this.control({
             'mappanel': {
                 render: this.onPanelRendered
@@ -16,7 +15,6 @@ Ext.define('Lmkp.controller.Map',{
 
     onPanelRendered: function(comp){
         comp.getMap().setCenter(new OpenLayers.LonLat(0,0),2);
-        console.log(comp.getMap());
     }
 
     
