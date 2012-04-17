@@ -135,7 +135,6 @@ Ext.define('Lmkp.controller.Filter', {
                 operatorCombo.setVisible(false);
             }
         }
-        // only do something if query_url is not empty
         var store = this.getActivityGridStore();
         store.getProxy().url = 'activities/json?' + query_url;
         store.load();
@@ -465,9 +464,11 @@ Ext.define('Lmkp.controller.Filter', {
     },
     
     _populateDetailsTab: function(panel, data) {
+    		console.log(data);
     	if (data.length > 0) {
 	        var html = '';
 	        for (var i in data[0].data) {
+	        	// console.log(i + " " + data[0].data[i]);
 	            // dont show id
 	            if (i != 'id') {
 	            	/**

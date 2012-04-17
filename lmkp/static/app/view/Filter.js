@@ -91,8 +91,6 @@ Ext.define('Lmkp.view.Filter', {
             flex: 1,
             border: false,
             layout: {
-                // type: 'vbox',
-                // align: 'stretch'
                 type: 'border'
             },
             items: [{
@@ -125,7 +123,6 @@ Ext.define('Lmkp.view.Filter', {
                 }]
             }, {
                 xtype: 'detailPanel',
-                // flex: 1
                 region: 'center'
             }]
         }];
