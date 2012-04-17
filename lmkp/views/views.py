@@ -19,10 +19,6 @@ def db_test(request):
     from sqlalchemy import or_
     session1 = DBSession()
     
-    
-    
-    
-    
     #===========================================================================
     # # START OF TEST CASE to test database trigger preventing multiple 'active' activities
     # """
