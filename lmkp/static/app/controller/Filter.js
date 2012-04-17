@@ -464,11 +464,9 @@ Ext.define('Lmkp.controller.Filter', {
     },
     
     _populateDetailsTab: function(panel, data) {
-    		console.log(data);
     	if (data.length > 0) {
 	        var html = '';
 	        for (var i in data[0].data) {
-	        	// console.log(i + " " + data[0].data[i]);
 	            // dont show id
 	            if (i != 'id') {
 	            	/**
