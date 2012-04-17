@@ -4,7 +4,8 @@ Ext.define('Lmkp.controller.Main', {
     views: [
         'Header',
         'Main',
-        'SidePanel'
+        'Filter',
+        'MapPanel'
     ],
     
     stores: [
