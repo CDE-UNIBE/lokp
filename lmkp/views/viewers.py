@@ -11,13 +11,13 @@ _ = TranslationStringFactory('lmkp')
 @view_config(route_name='view_toolbar_config', renderer='javascript', permission='view')
 def view_toolbar_config(request):
     """
-    Returns an array of objects that configure an ExtJS toolbar for users with
+    Returns an array of objects that configure an ExtJS toolbar for users without
     editing permission.
     """
 
     # Write the JavaScript and instantiate the global variable Lmkp.ts
     str = "Ext.namespace('Lmkp');\n"
-    str += "Lmkp.toolbar = [];\n"
+    str += "Lmkp.toolbar = false;\n"
 
     str += "Lmkp.mainControllers = ['Main', 'Layers', 'Map', 'Filter'];\n"
 

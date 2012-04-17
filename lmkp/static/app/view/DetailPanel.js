@@ -4,7 +4,7 @@ Ext.define('Lmkp.view.DetailPanel', {
 	
 	id: 'detailPanel',
 	
-	buttons: Lmkp.toolbar,
+	dockedItems: Lmkp.toolbar,
 	
 	activeTab: 0,
 	
