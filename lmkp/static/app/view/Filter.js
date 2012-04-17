@@ -91,11 +91,14 @@ Ext.define('Lmkp.view.Filter', {
             flex: 1,
             border: false,
             layout: {
-                type: 'vbox',
-                align: 'stretch'
+                // type: 'vbox',
+                // align: 'stretch'
+                type: 'border'
             },
             items: [{
                 xtype: 'gridpanel',
+                region: 'north',
+                split: true,
                 id: 'filterResults',
                 store: 'ActivityGrid',
                 viewConfig: {
@@ -110,6 +113,7 @@ Ext.define('Lmkp.view.Filter', {
                 }],
                 dockedItems: [{
                     xtype: 'pagingtoolbar',
+                    id: 'activityGridPagingToolbar',
                     store: 'ActivityGrid',
                     dock: 'bottom',
                     enableOverflow: false,
@@ -121,7 +125,8 @@ Ext.define('Lmkp.view.Filter', {
                 }]
             }, {
                 xtype: 'detailPanel',
-                flex: 1
+                // flex: 1
+                region: 'center'
             }]
         }];
         this.callParent(arguments);

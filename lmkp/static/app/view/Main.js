@@ -6,7 +6,7 @@ Ext.define('Lmkp.view.Main' ,{
 
     items : [{
         region: 'center',
-        xtype: 'sidepanel',
+        xtype: 'filterPanel',
     },{
         region: 'east',
         width: 500,

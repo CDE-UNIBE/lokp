@@ -135,10 +135,14 @@ Ext.define('Lmkp.controller.Filter', {
                 operatorCombo.setVisible(false);
             }
         }
+        // only do something if query_url is not empty
         var store = this.getActivityGridStore();
         store.getProxy().url = 'activities/json?' + query_url;
         store.load();
-        
+        if (query_url) {
+        	// move paging to back to page 1 when filtering (otherwise may show empty page instead of results)
+	        Ext.ComponentQuery.query('pagingtoolbar[id=activityGridPagingToolbar]')[0].moveFirst();
+        }
     },
         
     showValueFields: function(combobox, records, eOpts) {
