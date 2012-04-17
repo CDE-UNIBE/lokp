@@ -4,7 +4,6 @@ Ext.define('Lmkp.controller.admin.Main', {
 	views: [
 		'admin.MainPanel',
 		'admin.Home',
-		
 		'admin.YamlScan'
 	],
 	
@@ -21,12 +20,6 @@ Ext.define('Lmkp.controller.admin.Main', {
 	
 	init: function() {
 		this.control({
-			'adminmainpanel toolbar button[id=home]': {
-				click: this.mainShowHome
-			},
-			'adminmainpanel toolbar menuitem[id=yaml_scan]': {
-				click: this.mainShowYamlScan
-			},
 			'toolbar[id=scanToolbar] button[id=scanButton]': {
 				click: this.scanDoScan
 			},
@@ -111,7 +104,6 @@ Ext.define('Lmkp.controller.admin.Main', {
 										win.close();
 										Ext.Msg.alert('Success', action.result.msg);
 										panel.scanDoScan();
-										
 									},
 									failure: function(form, action) {
 										Ext.Msg.alert('Failure', action.result.msg);
@@ -162,25 +154,28 @@ Ext.define('Lmkp.controller.admin.Main', {
 		var cbProfile = Ext.ComponentQuery.query('combobox[id=scanProfileCombo]')[0];
 		var store = this.getYamlScanStore();
 		var root = store.getRootNode();
+		// catch error when no language is in db yet
+		var lang = (cbLang.lastSelection[0]) ? cbLang.lastSelection[0].get('locale') : 'en';
 		root.removeAll(false);
 		store.load({
 			node: root,
 			params: {
-				'_LOCALE_': cbLang.lastSelection[0].get('locale'),
+				'_LOCALE_': lang,
 				'_PROFILE_': cbProfile.lastSelection[0].get('profile')
 			}
 		});
-	},
-	
-	_replaceContent: function(newElement) {
-		var mainPanel = this.getMainPanel();
-		if (mainPanel && mainPanel.items.first()) {
-			if (mainPanel.items.first() != newElement) {
-				var item = mainPanel.items.first();
-				mainPanel.remove(item);
-				item.destroy();
-				mainPanel.add(newElement);
-			}
+		// try to reload Language store to populate combobox
+		// this should only take place after first language (english) was inserted into DB,
+		// which usually takes place on first add of key/value pairs.
+		if (!cbLang.lastSelection[0]) {
+			cbLang.getStore().load({
+				scope: this,
+				callback: function(records, operation, success) {
+					if (records.length == 1) {
+						cbLang.setValue(records[0].get('locale'));
+					}
+				}
+			});
 		}
 	},
 	
