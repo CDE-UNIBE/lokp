@@ -18,6 +18,11 @@ def view_toolbar_config(request):
     # Write the JavaScript and instantiate the global variable Lmkp.ts
     str = "Ext.namespace('Lmkp');\n"
     str += "Lmkp.toolbar = false;\n"
+    
+    #str += "Lmkp.login_form = {xtype: 'form', frame: true, border: 0, bodyStyle: 'padding: 0', items: ["
+    str += "Lmkp.login_form = [{xtype: 'textfield', id: 'username', emptyText: 'Username'},"
+    str += "{xtype: 'textfield', id: 'password', emptyText: 'Password', inputType: 'password'},"
+    str += "{xtype: 'button', id:'login_submit', text: 'Login'}];\n"
 
     str += "Lmkp.mainControllers = ['Main', 'Layers', 'Map', 'Filter'];\n"
 

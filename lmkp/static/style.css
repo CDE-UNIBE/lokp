@@ -56,3 +56,8 @@ span.modified {
 span.deleted {
 	color: red;
 }
+
+div.toolbar_username {
+	background-color: transparent;
+	font-size: 11px;
+}
