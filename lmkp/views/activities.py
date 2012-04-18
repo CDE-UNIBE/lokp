@@ -297,10 +297,14 @@ def model(request):
 
     # First process the mandatory fields
     for (name, config) in fieldsConfig['mandatory'].iteritems():
-        fields.append(_get_extjs_config(name, config, lang))
+        o = _get_extjs_config(name, config, lang)
+        if o is not None:
+            fields.append(o)
     # Then process also the optional fields
     for (name, config) in fieldsConfig['optional'].iteritems():
-        fields.append(_get_extjs_config(name, config, lang))
+        o = _get_extjs_config(name, config, lang)
+        if o is not None:
+            fields.append(o)
 
     fields.append({'name': 'id', 'type': 'string'})
 
@@ -483,6 +487,11 @@ def _get_extjs_config(name, config, language):
     
     # check if translated name is available
     originalKey = Session.query(A_Key.id).filter(A_Key.key == name).filter(A_Key.fk_a_key == None).first()
+    
+    # if no original value is found in DB, return None (this cannot be selected)
+    if not originalKey:
+        return None
+    
     translatedName = Session.query(A_Key).filter(A_Key.fk_a_key == originalKey).filter(A_Key.language == language).first()
     
     if translatedName:

@@ -135,7 +135,6 @@ Ext.define('Lmkp.controller.Filter', {
                 operatorCombo.setVisible(false);
             }
         }
-        // only do something if query_url is not empty
         var store = this.getActivityGridStore();
         store.getProxy().url = 'activities/json?' + query_url;
         store.load();
@@ -518,7 +517,7 @@ Ext.define('Lmkp.controller.Filter', {
 			    			'<p>&nbsp;</p>',
 			    		'</tpl>',
 			    		'<p class="version_info">Version {version} created on {timestamp}.<br/>',
-			    		'Data provided by {username} [userid: {userid}].<br/>',
+			    		'Data provided by <a href="#" onclick="Ext.create(\'Lmkp.view.users.UserWindow\', { username: \'{username}\' }).show();">{username}</a> [userid: {userid}].<br/>',
 			    		'Additional source of information: {source}</p>'
 			    	);
 			    	
@@ -600,7 +599,7 @@ Ext.define('Lmkp.controller.Filter', {
 			    		var deletedTpl = new Ext.XTemplate(
 				    		'<span class="deleted"><b>Deleted</b></span>',
 				    		'<p>&nbsp;</p>',
-				    		'<p class="version_info">This activity was deleted on {timestamp} by {username} [userid: {userid}].<br/>',
+				    		'<p class="version_info">This activity was deleted on {timestamp} by <a href="#" onclick="Ext.create(\'Lmkp.view.users.UserWindow\', { username: \'{username}\' }).show();">{username}</a> [userid: {userid}].<br/>',
 				    		'Additional source of information: {source}</p>'
 				    	);
 				    	
@@ -684,7 +683,7 @@ Ext.define('Lmkp.controller.Filter', {
 					    	html: 'No history found for this activity',
 					    	collapsible: false,
 					    	collapsed: false
-						})
+						});
 					}
 					
 					// layout does not seem to work if panel is expanded on start, therefore this is done

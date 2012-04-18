@@ -93,11 +93,14 @@ def get_config(request):
 
         # First process the mandatory fields
         for (name, config) in fields['mandatory'].iteritems():
-            extObject.append(_get_field_config(name, config, lang, True))
+            o = _get_field_config(name, config, lang, True)
+            if o is not None:
+                extObject.append(o)
         # Then process also the optional fields
         for (name, config) in fields['optional'].iteritems():
-            extObject.append(_get_field_config(name, config, lang))
-
+            o = _get_field_config(name, config, lang)
+            if o is not None:
+                extObject.append(o)
         return extObject
 
     # In all other cases return the configuration as JSON
@@ -317,6 +320,11 @@ def _get_field_config(name, config, language, mandatory=False):
     
     # check if translated name is available
     originalKey = Session.query(A_Key.id).filter(A_Key.key == name).filter(A_Key.fk_a_key == None).first()
+    
+    # if no original value is found in DB, return None (this cannot be selected)
+    if not originalKey:
+        return None
+        
     translatedName = Session.query(A_Key).filter(A_Key.fk_a_key == originalKey).filter(A_Key.language == language).first()
     
     if translatedName:

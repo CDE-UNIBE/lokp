@@ -12,10 +12,10 @@ Ext.application({
                 padding: 0
             },
             items: [{
-                height: 100,
-                region: 'north',
-                xtype: 'header'
-            },{
+                // height: 100,
+                // region: 'north',
+                // xtype: 'header'
+            // },{
                 region: 'center',
                 xtype: 'main'
             }]
