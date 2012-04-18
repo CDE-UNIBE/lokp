@@ -36,8 +36,18 @@ Ext.define('Lmkp.controller.Main', {
             },
             'main toolbar button[id=logout_button]': {
             	click: this.logout
+            },
+            'main toolbar button[id=user_button]': {
+            	click: this.showUserWindow
             }
         });
+    },
+    
+    showUserWindow: function(button, e, eOpts) {
+    	var win = Ext.create('Lmkp.view.users.UserWindow', {
+    		username: button.getText()
+    	});
+    	win.show();
     },
     
     logout: function() {

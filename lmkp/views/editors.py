@@ -23,7 +23,8 @@ def edit_toolbar_config(request):
     str += "{id: 'add-button', text: '%s'}" % _('Add', default='Add')
     str += "]}];\n"
     
-    str += "Lmkp.login_form = [{xtype: 'panel', html: '%s <b>%s</b>', border: 0, bodyCls: 'toolbar_username'}," % (_('Logged in as:', default='Logged in as:'), request.user.username)
+    str += "Lmkp.login_form = [{xtype: 'panel', html: '%s', border: 0, bodyCls: 'toolbar_username'}," % _('Logged in as:', default='Logged in as:')
+    str += "{id: 'user_button', text: '%s', tooltip: '%s'},'-'," % (request.user.username, _('Show user profile', default='Show user profile'))
     str += "{id: 'logout_button', text: '%s'}];\n" % _('Logout', default='Logout')
 
     str += "Lmkp.mainControllers = ['Main', 'Map', 'Filter', 'EditFilter'];\n"
