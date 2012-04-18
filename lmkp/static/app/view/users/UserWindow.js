@@ -25,16 +25,87 @@ Ext.define('Lmkp.view.users.UserWindow', {
 				items: [{
 					title: 'Overview',
 					loader: {
-						url: '/users/' + me.username,
+						url: '/users/json/' + me.username,
 						autoLoad: true,
-						loadMask: true
+						loadMask: true,
+						renderer: function(loader, response, active) {
+							var json = Ext.JSON.decode(response.responseText);
+							if (json.success) {
+								// prepare form
+								var form = Ext.create('Ext.form.Panel', {
+									url: '',
+									border: 0,
+									bodyPadding: 5,
+									layout: 'anchor',
+									defaults: {
+										anchor: '100%'
+									}
+								});
+								// show only displayfield except when editing is allowed
+								var xt = 'displayfield';
+								if (json.editable) {
+									xt = 'textfield'
+								}
+								// add field for username
+								form.add({
+									xtype: xt,
+									name: 'username',
+									fieldLabel: 'Username',
+									value: json.data.username,
+									allowBlank: false
+								});
+								// if email is visible (= available), show it
+								if (json.data.email) {
+									form.add({
+										xtype: xt,
+										name: 'email',
+										fieldLabel: 'E-Mail',
+										value: json.data.email,
+										allowBlank: false
+									});
+								}
+								// TODO: allow to change passwords
+								// also add submit button if form is editable
+								if (json.editable) {
+									form.addDocked({
+									    xtype: 'toolbar',
+									    dock: 'bottom',
+									    ui: 'footer',
+									    items: [
+									        { xtype: 'component', flex: 1 },
+									        {
+									        	xtype: 'button',
+									        	text: 'Update',
+									        	formBind: true,
+									        	disabled: true,
+									        	handler: function() {
+									        		if (form.getForm().isValid()) {
+									        			Ext.Msg.alert('Soon ...', 'Functionality coming soon ...');
+									        			// TODO: implement this
+									        			// form.getForm.submit({
+									        				// success: function(form, action) {
+									        					// // ...
+									        				// },
+									        				// failure: function(form, action) {
+									        					// // ...
+									        				// }
+									        			// });
+									        		}
+									        	}
+									        }
+									    ]
+									});
+								}
+								// add all fields to form
+								loader.getTarget().add(form);
+							} else { // something went wrong (success == false), show error message
+								loader.getTarget().update(json.msg);
+							}
+						}
 					}
 				}, {
 					title: 'Reported Activities',
-					loader: {
-						url: '/users/user1',
-						autoLoad: true
-					}
+					html: 'Coming soon ...'
 				}]
 			}]
 		} else {

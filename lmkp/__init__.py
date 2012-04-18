@@ -127,6 +127,7 @@ def main(global_config, ** settings):
 
     # An user profile page
     config.add_route('user_profile', '/users/{userid}')
+    config.add_route('user_profile_json', '/users/json/{userid}')
 
     config.add_route('rss_feed', '/rss/{status}')
 
