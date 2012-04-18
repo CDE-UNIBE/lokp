@@ -517,7 +517,7 @@ Ext.define('Lmkp.controller.Filter', {
 			    			'<p>&nbsp;</p>',
 			    		'</tpl>',
 			    		'<p class="version_info">Version {version} created on {timestamp}.<br/>',
-			    		'Data provided by {username} [userid: {userid}].<br/>',
+			    		'Data provided by <a href="#" onclick="Ext.create(\'Lmkp.view.users.UserWindow\', { username: \'{username}\' }).show();">{username}</a> [userid: {userid}].<br/>',
 			    		'Additional source of information: {source}</p>'
 			    	);
 			    	
@@ -599,7 +599,7 @@ Ext.define('Lmkp.controller.Filter', {
 			    		var deletedTpl = new Ext.XTemplate(
 				    		'<span class="deleted"><b>Deleted</b></span>',
 				    		'<p>&nbsp;</p>',
-				    		'<p class="version_info">This activity was deleted on {timestamp} by {username} [userid: {userid}].<br/>',
+				    		'<p class="version_info">This activity was deleted on {timestamp} by <a href="#" onclick="Ext.create(\'Lmkp.view.users.UserWindow\', { username: \'{username}\' }).show();">{username}</a> [userid: {userid}].<br/>',
 				    		'Additional source of information: {source}</p>'
 				    	);
 				    	
