@@ -683,7 +683,7 @@ Ext.define('Lmkp.controller.Filter', {
 					    	html: 'No history found for this activity',
 					    	collapsible: false,
 					    	collapsed: false
-						})
+						});
 					}
 					
 					// layout does not seem to work if panel is expanded on start, therefore this is done

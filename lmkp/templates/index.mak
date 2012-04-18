@@ -36,7 +36,7 @@ from pyramid.security import has_permission
         <script type="text/javascript" src="${request.static_url('lmkp:static/app/%s.js' % script)}"></script>
     </head>
     <body>
-        <div id="header-div">
+        <!-- <div id="header-div">
             <h1>${_("Welcome")}</h1>
             % if authenticated_userid(request) is not None:
             <div>
@@ -69,7 +69,7 @@ from pyramid.security import has_permission
                 </form>
             </div>
             % endif
-        </div>
+        </div> -->
         <div id="main-div"></div>
     </body>
 </html>
