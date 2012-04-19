@@ -1,7 +1,5 @@
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession
-from pyramid.httpexceptions import HTTPForbidden
-from pyramid.security import authenticated_userid
 from pyramid.view import view_config
 import uuid
 
@@ -103,13 +101,6 @@ def index(request):
         response.set_cookie('_PROFILE_', request.params.get('_PROFILE_'))
 
     return {'script': 'main'}
-
-@view_config(route_name='user_profile', renderer='lmkp:templates/user.mak')
-def get_user_profile(request):
-    username = authenticated_userid(request)
-    if username != request.matchdict['userid']:
-        raise HTTPForbidden
-    return {}
 
 @view_config(route_name='ext_tests', renderer='lmkp:templates/tests.pt')
 def ext_tests(request):
