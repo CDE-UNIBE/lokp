@@ -125,8 +125,13 @@ def main(global_config, ** settings):
     # Return a json with all available profiles from disk
     config.add_route('profile_store', '/profiles/all')
 
-    # An user profile page
-    config.add_route('user_profile', '/users/{userid}')
+    # An user profile page (maybe not needed anymore?)
+    # [inserted ../profile/.. to link, otherwise could be conflicting with some usernames ('update', 'json')]
+    config.add_route('user_profile', '/users/profile/{userid}')
+    # A json representation of user information
+    config.add_route('user_profile_json', '/users/json/{userid}')
+    # Updates the information of a user
+    config.add_route('user_update', '/users/update', request_method='POST')
 
     config.add_route('rss_feed', '/rss/{status}')
 

@@ -4,7 +4,8 @@ Ext.define('Lmkp.controller.Main', {
     views: [
         'Header',
         'Main',
-        'SidePanel'
+        'Filter',
+        'MapPanel'
     ],
     
     stores: [
@@ -29,8 +30,54 @@ Ext.define('Lmkp.controller.Main', {
             },
             'main toolbar combobox[id=profile_combobox]': {
             	select: this.changeProfile
+            },
+            'main toolbar button[id=login_submit]': {
+            	click: this.loginSubmit
+            },
+            'main toolbar button[id=logout_button]': {
+            	click: this.logout
+            },
+            'main toolbar button[id=user_button]': {
+            	click: this.showUserWindow
             }
         });
+    },
+    
+    showUserWindow: function(button, e, eOpts) {
+    	var win = Ext.create('Lmkp.view.users.UserWindow', {
+    		username: button.getText()
+    	});
+    	win.show();
+    },
+    
+    logout: function() {
+    	var form = Ext.create('Ext.form.Panel', {
+    		standardSubmit: true,
+    		url: '/logout'
+    	});
+    	form.submit({
+    		params: {
+	    		'form.logout': true
+    		}
+    	});
+    },
+    
+    loginSubmit: function() {
+    	var username = Ext.ComponentQuery.query('main toolbar textfield[id=username]')[0];
+    	var pw = Ext.ComponentQuery.query('main toolbar textfield[id=password]')[0];
+    	if (username.getValue() != '' && pw.getValue() != '') {
+	    	var form = Ext.create('Ext.form.Panel', {
+	    		standardSubmit: true,
+	    		url: '/login'
+	    	});
+	    	form.submit({
+	    		params: {
+	    			'form.submitted': true,
+	    			login: username.getValue(),
+	    			password: pw.getValue()
+	    		}
+	    	});
+    	}
     },
 
     changeProfile: function(combo, records, eOpts) {
