@@ -33,7 +33,7 @@ Ext.define('Lmkp.view.users.UserWindow', {
 							if (json.success) {
 								// prepare form
 								var form = Ext.create('Ext.form.Panel', {
-									url: '',
+									url: '/users/update',
 									border: 0,
 									bodyPadding: 5,
 									layout: 'anchor',
@@ -48,11 +48,9 @@ Ext.define('Lmkp.view.users.UserWindow', {
 								}
 								// add field for username
 								form.add({
-									xtype: xt,
-									name: 'username',
+									xtype: 'displayfield', // username can never be changed
 									fieldLabel: 'Username',
-									value: json.data.username,
-									allowBlank: false
+									value: json.data.username
 								});
 								// if email is visible (= available), show it
 								if (json.data.email) {
@@ -61,12 +59,20 @@ Ext.define('Lmkp.view.users.UserWindow', {
 										name: 'email',
 										fieldLabel: 'E-Mail',
 										value: json.data.email,
+										vtype: 'email',
 										allowBlank: false
 									});
 								}
 								// TODO: allow to change passwords
 								// also add submit button if form is editable
 								if (json.editable) {
+									// add hidden field to submit username
+									form.add({
+										xtype: 'hiddenfield',
+										name: 'username',
+										value: json.data.username
+									});
+									// add submit button
 									form.addDocked({
 									    xtype: 'toolbar',
 									    dock: 'bottom',
@@ -80,16 +86,14 @@ Ext.define('Lmkp.view.users.UserWindow', {
 									        	disabled: true,
 									        	handler: function() {
 									        		if (form.getForm().isValid()) {
-									        			Ext.Msg.alert('Soon ...', 'Functionality coming soon ...');
-									        			// TODO: implement this
-									        			// form.getForm.submit({
-									        				// success: function(form, action) {
-									        					// // ...
-									        				// },
-									        				// failure: function(form, action) {
-									        					// // ...
-									        				// }
-									        			// });
+									        			form.getForm().submit({
+									        				success: function(form, action) {
+									        					Ext.Msg.alert('Success', action.result.msg);
+									        				},
+									        				failure: function(form, action) {
+									        					Ext.Msg.alert('Failure', action.result.msg);
+									        				}
+									        			});
 									        		}
 									        	}
 									        }
