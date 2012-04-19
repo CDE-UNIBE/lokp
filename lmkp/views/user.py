@@ -45,3 +45,11 @@ def user_profile_json(request):
         ret['editable'] = True
     
     return ret
+
+# TODO: Find out if this is still needed. If not, also delete template. 
+@view_config(route_name='user_profile', renderer='lmkp:templates/user.mak')
+def get_user_profile(request):
+    username = authenticated_userid(request)
+    if username != request.matchdict['userid']:
+        raise HTTPForbidden
+    return {}
