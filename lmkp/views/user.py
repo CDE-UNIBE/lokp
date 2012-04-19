@@ -55,21 +55,35 @@ def user_update(request):
     """
     ret = {'success': False}
     
-    username = request.POST['username'] or None
-    email = request.POST['email'] or None
+    username = request.POST['username'] if 'username' in request.POST else None
+    email = request.POST['email']  if 'email' in request.POST else None
+    new_password = request.POST['new_password1'] if 'new_password1' in request.POST else None
+    old_password = request.POST['old_password'] if 'old_password' in request.POST else None
     
-    if username and email:
+    if username and (email or (new_password and old_password)):
         # try to find requested user
         try:
             user = Session.query(User).filter(User.username == username).one()
             # check privileges (only current user can update his own information)
             if authenticated_userid(request) == user.username:
                 # do the update (so far only email)
-                user.email = email
-                import transaction
-                transaction.commit()
-                ret['success'] = True
-                ret['msg'] = 'Information successfully updated.'
+                if email:
+                    user.email = email
+                    import transaction
+                    transaction.commit()
+                    ret['success'] = True
+                    ret['msg'] = 'Information successfully updated.'
+                # do password update
+                elif new_password and old_password:
+                    # check old password first
+                    if User.check_password(username, old_password):
+                        user.password = new_password
+                        import transaction
+                        transaction.commit()
+                        ret['success'] = True
+                        ret['msg'] = 'Password successfully updated.'
+                    else:
+                        ret['msg'] = 'Wrong password.'
             else:
                 ret['msg'] = 'You do not have the right to update this information.'
                 return ret
