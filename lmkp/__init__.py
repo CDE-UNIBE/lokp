@@ -135,6 +135,9 @@ def main(global_config, ** settings):
 
     config.add_route('rss_feed', '/rss/{status}')
 
+    # Changeset protocol, query the changeset
+    config.add_route('changesets_read', '/changesets')
+
     # Test
     config.add_route('geojson_test', '/geojson')
     
