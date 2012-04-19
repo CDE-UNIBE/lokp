@@ -6,7 +6,7 @@ Ext.define('Lmkp.view.Main' ,{
 
     items : [{
         region: 'center',
-        xtype: 'sidepanel',
+        xtype: 'filterPanel',
     },{
         region: 'east',
         width: 500,
@@ -24,8 +24,8 @@ Ext.define('Lmkp.view.Main' ,{
         split: true
     }],
     
-    tbar: [
-	'->', {
+    tbar: [Lmkp.login_form
+    ,'->', {
 		xtype: 'combobox',
 		fieldLabel: Lmkp.ts.msg("profile-label"),
 		labelAlign: 'right',
