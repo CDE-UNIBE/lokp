@@ -3,10 +3,11 @@ Ext.define('Lmkp.view.admin.Home', {
 	
 	alias: ['widget.adminhome'],
 	
-	html: 'Here could be some help text, some instructions or something else.',
+	html: 'Welcome to the administration interface.<br/><br/>Here, you can scan the YAML profiles, add their key/value pairs to the database and perform translations.',
 	border: 0,
+	bodyPadding: 5,
 	
 	initComponent: function() {
 		this.callParent(arguments);
 	}
-})
+});
