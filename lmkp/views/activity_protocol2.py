@@ -1,9 +1,11 @@
+from geoalchemy import WKBSpatialElement
+from geoalchemy.functions import functions
 from lmkp.models.database_objects import *
 import logging
+from shapely.geometry.polygon import Polygon
 from sqlalchemy import select
-from sqlalchemy.orm import aliased
 from sqlalchemy.orm.util import AliasedClass
-from sqlalchemy.sql.expression import or_
+from sqlalchemy.sql.expression import and_
 
 log = logging.getLogger(__name__)
 
@@ -32,9 +34,10 @@ class TagGroup(object):
 
 class ActivityFeature2(object):
 
-    def __init__(self, guid):
+    def __init__(self, guid, geometry=None):
         self._taggroups = []
         self._guid = guid
+        self._geometry = geometry
 
     def add_taggroup(self, taggroup):
         self._taggroups.append(taggroup)
@@ -51,16 +54,15 @@ class ActivityFeature2(object):
         for t in self._taggroups:
             tg.append(t.to_table())
 
-        return {'id': self._guid, 'taggroups': tg}
+        geom = wkb.loads(str(self._geometry.geom_wkb))
+        geometry = {}
+        geometry['type'] = 'Point'
+        geometry['coordinates'] = [geom.x, geom.y]
+
+        return {'id': self._guid, 'taggroups': tg, 'geometry': geometry}
 
     def get_guid(self):
         return self._guid
-
-#    def filter_taggroup(self, expression):
-#
-#        groups = []
-#        for g in self._taggroups:
-
 
 
 class ActivityProtocol2(object):
@@ -252,7 +254,7 @@ class ActivityProtocol2(object):
                                 Activity.point,
                                 Activity.timestamp,
                                 Activity.version
-                                ]).where(Activity.fk_status == status_id).alias("limited_activites")
+                                ]).where(and_(Activity.fk_status == status_id, self._create_geom_filter(request))).alias("limited_activites")
 
         # An aliased helper class
         activityQuery = AliasedClass(Activity, alias=limited_select)
@@ -274,6 +276,9 @@ class ActivityProtocol2(object):
             # The activity identifier
             uid = str(i[1])
 
+            # The geometry
+            g = i[2]
+
             # The current tag group id (not global unique)
             taggroup_id = int(i[5])
 
@@ -286,7 +291,7 @@ class ActivityProtocol2(object):
                     activity = a
                     
             if activity == None:
-                activity = ActivityFeature2(uid)
+                activity = ActivityFeature2(uid, geometry=g)
                 activities.append(activity)
 
             # Check if there is already this tag group present in the current
@@ -301,6 +306,30 @@ class ActivityProtocol2(object):
             taggroup.append_tag(key, value)
 
         return activities
+
+    def _create_geom_filter(self, request):
+        """
+        """
+
+        try:
+            epsg = int(request.params.get('epsg', 4326))
+        except:
+            epsg = 4326
+
+        bbox = request.params.get('bbox', None)
+        if bbox is not None:
+            box = map(float, bbox.split(','))
+            geometry = Polygon((
+                               (box[0], box[1]),
+                               (box[0], box[3]),
+                               (box[2], box[3]),
+                               (box[2], box[1]),
+                               (box[0], box[1]))
+                               )
+
+        wkb_geometry = WKBSpatialElement(buffer(geometry.wkb), epsg)
+
+        return functions.intersects(Activity.point, wkb_geometry)
 
 
     def _get_limit(self, request):
