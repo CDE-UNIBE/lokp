@@ -29,6 +29,25 @@ Ext.define('Lmkp.view.activities.NewActivityWindow', {
 				defaults: {
 					anchor: '100%'
 				},
+				buttons: [{
+					formBind: true,
+					disabled: true,
+					text: 'Submit',
+					handler: function() {
+						// var form = this.up('form').getForm();
+						// if (form.isValid()) {
+							// form.submit({
+								// success: function(form, action) {
+									// console.log("success");
+								// },
+								// failure: function(form, action) {
+									// console.log("failure");
+								// }
+							// });
+						// }
+						Ext.Msg.alert("Coming soon ...", "This functionality will be implemented soon ...");
+					}
+				}]
 			});
 			// prepare to highlight required fields when adding them to the form
 			form.on('beforeadd', function(me, field) {
