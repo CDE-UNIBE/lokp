@@ -100,7 +100,7 @@ def read_many(request):
     Reads many active activities
     """
     activities = activity_protocol2.read(request)
-    return {'total': len(activities), 'data': activities}
+    return activities
 
 @view_config(route_name='activities_read_one_json', renderer='json')
 def read_one_json(request):
