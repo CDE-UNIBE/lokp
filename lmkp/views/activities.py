@@ -2,6 +2,7 @@ from lmkp.config import config_file_path
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol import ActivityProtocol
+from lmkp.views.activity_protocol2 import ActivityProtocol2
 import logging
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPFound
@@ -27,6 +28,7 @@ log = logging.getLogger(__name__)
 _ = TranslationStringFactory('lmkp')
 
 activity_protocol = ActivityProtocol(Session)
+activity_protocol2 = ActivityProtocol2(Session)
 
 # Translatable hashmap with all possible activity status
 statusMap = {
@@ -137,10 +139,11 @@ def read_one_html(request):
     return {'result': [activity_protocol.read(request, filter=get_status_filter(request), uid=uid)]}
 
 
-@view_config(route_name='activities_read_many_html', renderer='lmkp:templates/table.mak')
+#@view_config(route_name='activities_read_many_html', renderer='lmkp:templates/changeset_table.mak')
+@view_config(route_name='activities_read_many_html', renderer='json')
 def read_many_html(request):
 
-    return {'result': activity_protocol.read(request, filter=get_status_filter(request))}
+    return {'data': activity_protocol2.read(request, filter=get_status_filter(request))}
 
 
 @view_config(route_name='activities_read_one_kml', renderer='kml')
