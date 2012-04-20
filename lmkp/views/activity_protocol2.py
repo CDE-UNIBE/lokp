@@ -2,10 +2,17 @@ from geoalchemy import WKBSpatialElement
 from geoalchemy.functions import functions
 from lmkp.models.database_objects import *
 import logging
+from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.httpexceptions import HTTPCreated
+from pyramid.httpexceptions import HTTPNotFound
+from shapely.geometry import asShape
 from shapely.geometry.polygon import Polygon
+import simplejson as json
 from sqlalchemy import select
 from sqlalchemy.orm.util import AliasedClass
 from sqlalchemy.sql.expression import and_
+from sqlalchemy.sql.expression import desc
+from sqlalchemy.sql.expression import or_
 
 log = logging.getLogger(__name__)
 
@@ -27,14 +34,12 @@ class TagGroup(object):
     def append_tag(self, key, value):
         self.__dict__[key] = value
 
-    #def evaluate(self, expression):
-
     def to_table(self):
         return self.__dict__
 
 class ActivityFeature2(object):
 
-    def __init__(self, guid, geometry=None):
+    def __init__(self, guid, geometry=None, ** kwargs):
         self._taggroups = []
         self._guid = guid
         self._geometry = geometry
@@ -79,6 +84,9 @@ class ActivityProtocol2(object):
         # Filter the attributes
         activities = self._filter(request, activities)
 
+        # Get the total number of features before limiting the result set
+        count = len(activities)
+
         # Offset and limit
         offset = self._get_offset(request)
         try:
@@ -87,7 +95,93 @@ class ActivityProtocol2(object):
             limit = None
         activities = activities[offset:limit]
 
-        return [a.to_table() for a in activities]
+        return {'total': count, 'data': [a.to_table() for a in activities]}
+
+    def create(self, request):
+        """
+        Add or update activities
+        """
+        
+        raw = request.json_body
+
+        # Check if the json body is a valid GeoJSON
+        if 'data' not in raw:
+            return HTTPBadRequest(detail="Not a valid format")
+
+        for activity in raw['data']:
+            self._add_activity(request, activity)
+
+        # Return the newly created object with 201 Created HTTP code status
+        return HTTPCreated(detail="ok")
+
+    def _add_activity(self, request, activity):
+
+        # The unique identifier
+        try:
+            identifier = activity['id']
+            if identifier is None:
+                identifier = uuid.uuid4()
+        except KeyError:
+            identifier = uuid.uuid4()
+
+        geom = geojson.loads(json.dumps(activity['geometry']),
+                             object_hook=geojson.GeoJSON.to_instance)
+
+        # The geometry
+        shape = asShape(geom)
+        version = 1
+
+        # Get the latest version if the activity already exists
+        v = self.Session.query(Activity.version).filter(Activity.activity_identifier == identifier).order_by(desc(Activity.version)).first()
+        if v is not None:
+            # Increase the version
+            version = (v[0] + 1)
+
+        # Add a representative point to the activity
+        db_activity = Activity(activity_identifier=identifier, version=version, point=shape.representative_point().wkt)
+        db_activity.tag_groups = []
+        # Set the activity status to pending
+        db_activity.status = self.Session.query(Status).filter(Status.name == 'pending').first()
+        # Add it to the database
+        self.Session.add(db_activity)
+
+        # Loop all tag groups
+        for taggroup in activity['taggroups']:
+            
+            db_taggroup = A_Tag_Group()
+            db_activity.tag_groups.append(db_taggroup)
+
+            for key in taggroup:
+                if key not in ['id']:
+                    log.debug(key)
+                    value = taggroup[key]
+
+                    # If the key is not yet in the database, create a new key
+                    k = self.Session.query(A_Key).filter(A_Key.key == key).first()
+                    if k is None:
+                        k = A_Key(key=key)
+                        k.fk_language = 1
+
+                    # If the value is not yet in the database, create a new value
+                    v = self.Session.query(A_Value).filter(A_Value.value == unicode(value)).first()
+                    if v is None:
+                        v = A_Value(value=value)
+                        v.fk_language = 1
+
+
+                    # Create a new tag with key and value and append it to the tag group
+                    a_tag = A_Tag()
+                    db_taggroup.tags.append(a_tag)
+                    a_tag.key = k
+                    a_tag.value = v
+                    #db_taggroup.tags.append(a_tag)
+
+        # Create a new changeset
+        changeset = A_Changeset(source='[pending] %s' % activity)
+        # Get the user from the request
+        changeset.user = self.Session.query(User).filter(User.username == request.user.username).first()
+        changeset.activity = db_activity
+        self.Session.add(changeset)
     
 
     def _filter(self, request, activities):
@@ -246,7 +340,7 @@ class ActivityProtocol2(object):
 
         # Get the status
         status_id = self.Session.query(Status.id).filter(Status.name == self._get_status(request))
-
+        
         # Create the query
         limited_select = select([Activity.id,
                                 Activity.activity_identifier,
