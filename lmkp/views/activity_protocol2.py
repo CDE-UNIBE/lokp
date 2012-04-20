@@ -327,9 +327,11 @@ class ActivityProtocol2(object):
                                (box[0], box[1]))
                                )
 
-        wkb_geometry = WKBSpatialElement(buffer(geometry.wkb), epsg)
+            wkb_geometry = WKBSpatialElement(buffer(geometry.wkb), epsg)
 
-        return functions.intersects(Activity.point, wkb_geometry)
+            return functions.intersects(Activity.point, wkb_geometry)
+
+        return None
 
 
     def _get_limit(self, request):
