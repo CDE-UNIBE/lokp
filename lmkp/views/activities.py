@@ -94,16 +94,13 @@ def read_one(request):
     return activity_protocol.read(request, filter=get_status_filter(request), uid=uid)
 
 
-@view_config(route_name='activities_read_many', renderer='geojson')
+@view_config(route_name='activities_read_many', renderer='json')
 def read_many(request):
     """
     Reads many active activities
     """
-
-    log.debug(get_status_filter(request))
-
-    return activity_protocol.read(request, filter=get_status_filter(request))
-
+    activities = activity_protocol2.read(request)
+    return {'total': len(activities), 'data': activities}
 
 @view_config(route_name='activities_read_one_json', renderer='json')
 def read_one_json(request):
@@ -139,11 +136,10 @@ def read_one_html(request):
     return {'result': [activity_protocol.read(request, filter=get_status_filter(request), uid=uid)]}
 
 
-#@view_config(route_name='activities_read_many_html', renderer='lmkp:templates/changeset_table.mak')
-@view_config(route_name='activities_read_many_html', renderer='json')
+@view_config(route_name='activities_read_many_html', renderer='lmkp:templates/table.mak')
 def read_many_html(request):
 
-    return {'data': activity_protocol2.read(request, filter=get_status_filter(request))}
+    return {'result': activity_protocol.read(request, filter=get_status_filter(request))}
 
 
 @view_config(route_name='activities_read_one_kml', renderer='kml')
