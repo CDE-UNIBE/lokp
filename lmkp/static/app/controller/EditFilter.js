@@ -74,9 +74,19 @@ Ext.define('Lmkp.controller.EditFilter', {
     },
 
     onAddButtonClick: function(button, event, eOpts){
-    	// Open new window with form to add new activity
-    	var win = Ext.create('Lmkp.view.activities.NewActivityWindow');
-    	win.show();
+    	// Open new window with form to add new activity.
+    	// The form fields are requested before creating the window.
+    	// This allows to create a nicely centered form window.
+    	Ext.Ajax.request({
+    		url: '/config/form',
+    		success: function(response) {
+    			var formConfig = Ext.decode(response.responseText);
+    			var win = Ext.create('Lmkp.view.activities.NewActivityWindow', {
+    				config: formConfig
+    			});
+    			win.show();
+    		}
+    	});
     }
 
 });
