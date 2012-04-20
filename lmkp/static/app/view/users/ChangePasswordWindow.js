@@ -55,11 +55,11 @@ Ext.define('Lmkp.view.users.ChangePasswordWindow', {
 						var form = this.up('form').getForm();
 						if (form.isValid()) {
 							form.submit({
-								success: function(theform, action) {
+								success: function(form, action) {
 									Ext.Msg.alert('Success', action.result.msg);
 									win.close();
 								},
-								failure: function(theform, action) {
+								failure: function(form, action) {
 									Ext.Msg.alert('Failure', action.result.msg);
 								}
 							});
