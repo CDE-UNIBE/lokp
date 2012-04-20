@@ -183,7 +183,7 @@ def create(request):
     if not isinstance(has_permission('edit', request.context, request), ACLAllowed):
         return HTTPForbidden()
 
-    return activity_protocol.create(request)
+    return activity_protocol2.create(request)
 
 @view_config(route_name='activities_tree', renderer='tree')
 def tree(request):
