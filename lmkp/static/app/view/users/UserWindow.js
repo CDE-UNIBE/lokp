@@ -78,6 +78,16 @@ Ext.define('Lmkp.view.users.UserWindow', {
 									    dock: 'bottom',
 									    ui: 'footer',
 									    items: [
+									        {
+									        	xtype: 'button',
+									        	text: 'Change Password',
+									        	handler: function() {
+									        		var win = Ext.create('Lmkp.view.users.ChangePasswordWindow', {
+									        			username: json.data.username
+									        		});
+									        		win.show();
+									        	}
+									        },
 									        { xtype: 'component', flex: 1 },
 									        {
 									        	xtype: 'button',
