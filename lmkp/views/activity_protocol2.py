@@ -12,6 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm.util import AliasedClass
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import desc
+from sqlalchemy.sql.expression import or_
 
 log = logging.getLogger(__name__)
 
@@ -124,7 +125,7 @@ class ActivityProtocol2(object):
             identifier = uuid.uuid4()
 
         geom = geojson.loads(json.dumps(activity['geometry']),
-                                          object_hook=geojson.GeoJSON.to_instance)
+                             object_hook=geojson.GeoJSON.to_instance)
 
         # The geometry
         shape = asShape(geom)
@@ -134,10 +135,11 @@ class ActivityProtocol2(object):
         v = self.Session.query(Activity.version).filter(Activity.activity_identifier == identifier).order_by(desc(Activity.version)).first()
         if v is not None:
             # Increase the version
-            version = (v[0]+1)
+            version = (v[0] + 1)
 
         # Add a representative point to the activity
         db_activity = Activity(activity_identifier=identifier, version=version, point=shape.representative_point().wkt)
+        db_activity.tag_groups = []
         # Set the activity status to pending
         db_activity.status = self.Session.query(Status).filter(Status.name == 'pending').first()
         # Add it to the database
@@ -145,15 +147,9 @@ class ActivityProtocol2(object):
 
         # Loop all tag groups
         for taggroup in activity['taggroups']:
-            log.debug(taggroup)
             
-            if 'id' in taggroup:
-                db_taggroup = self.Session.query(A_Tag_Group).filter(A_Tag_Group.id == taggroup['id']).first()
-            else:
-                db_taggroup = A_Tag_Group()
-                #self.Session.add(db_taggroup)
-                db_activity.tag_groups.append(db_taggroup)
-            
+            db_taggroup = A_Tag_Group()
+            db_activity.tag_groups.append(db_taggroup)
 
             for key in taggroup:
                 if key not in ['id']:
@@ -169,7 +165,7 @@ class ActivityProtocol2(object):
                     # If the value is not yet in the database, create a new value
                     v = self.Session.query(A_Value).filter(A_Value.value == unicode(value)).first()
                     if v is None:
-                        v = A_Value(value = value)
+                        v = A_Value(value=value)
                         v.fk_language = 1
 
 
@@ -344,7 +340,7 @@ class ActivityProtocol2(object):
 
         # Get the status
         status_id = self.Session.query(Status.id).filter(Status.name == self._get_status(request))
-
+        
         # Create the query
         limited_select = select([Activity.id,
                                 Activity.activity_identifier,
