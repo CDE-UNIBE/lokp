@@ -79,6 +79,9 @@ class ActivityProtocol2(object):
         # Filter the attributes
         activities = self._filter(request, activities)
 
+        # Get the total number of features before limiting the result set
+        count = len(activities)
+
         # Offset and limit
         offset = self._get_offset(request)
         try:
@@ -87,7 +90,7 @@ class ActivityProtocol2(object):
             limit = None
         activities = activities[offset:limit]
 
-        return [a.to_table() for a in activities]
+        return {'total': count,'data': [a.to_table() for a in activities]}
     
 
     def _filter(self, request, activities):
