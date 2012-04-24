@@ -1,6 +1,6 @@
 Ext.define('Lmkp.store.ActivityGrid', {
     extend: 'Ext.data.Store',
-    requires: 'Lmkp.model.Activity',
+    requires: ['Lmkp.model.Activity','Lmkp.model.TagGroup'], // both are needed to build relation
     model: 'Lmkp.model.Activity',
     
     pageSize: 10,
@@ -8,7 +8,7 @@ Ext.define('Lmkp.store.ActivityGrid', {
     
     proxy: {
         type: 'ajax',
-        url: '/activities/json',
+        url: '/activities',
         reader: {
             root: 'data',
             type: 'json',

@@ -105,7 +105,7 @@ Ext.define('Lmkp.view.Filter', {
                 columns: [{
                     header: Lmkp.ts.msg("name-column"),
                     name: 'namecolumn',
-                    dataIndex: Lmkp.ts.msg("dataIndex-name"),
+                    dataIndex: 'id', // this could be anything because renderer will find 'name'
                     flex: 1,
                     sortable: true
                 }],
