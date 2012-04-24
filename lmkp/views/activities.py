@@ -298,6 +298,7 @@ def model(request):
     for (name, config) in fieldsConfig['mandatory'].iteritems():
         o = _get_extjs_config(name, config, lang)
         if o is not None:
+            o['mandatory'] = 1
             fields.append(o)
     # Then process also the optional fields
     for (name, config) in fieldsConfig['optional'].iteritems():
