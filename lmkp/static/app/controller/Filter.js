@@ -328,8 +328,10 @@ Ext.define('Lmkp.controller.Filter', {
     renderNameColumn: function() {
         col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=namecolumn]')[0];
         col.renderer = function(value, p, record) {
-        	if (value) {
-            	return Ext.String.format('{0}', value);
+        	// Assumption: the name (if available) always is in the first taggroup
+        	var name = record.taggroups().first().get(Lmkp.ts.msg("dataIndex-name"));
+        	if (name) {
+            	return Ext.String.format('{0}', name);
         	} else {
         		return Lmkp.ts.msg("unnamed-activity");
         	}
@@ -339,17 +341,20 @@ Ext.define('Lmkp.controller.Filter', {
     showActivity: function() {
     	var grid = Ext.ComponentQuery.query('filterPanel gridpanel[id=filterResults]')[0];
     	var selectedRecord = grid.getSelectionModel().getSelection();
-		var detailPanel = Ext.ComponentQuery.query('filterPanel tabpanel[id=detailPanel]')[0];
-		var selectedTab = detailPanel.getActiveTab();
-			switch (selectedTab.getXType()) {
-				case "activityHistoryTab":
-					var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
-					this._populateHistoryTab(selectedTab, uid)
-					break;
-				default: 	// default is: activityDetailTab
-					this._populateDetailsTab(selectedTab, selectedRecord);
-					break;
-			}
+		// var detailPanel = Ext.ComponentQuery.query('filterPanel tabpanel[id=detailPanel]')[0];
+		// var selectedTab = detailPanel.getActiveTab();
+			// switch (selectedTab.getXType()) {
+				// case "activityHistoryTab":
+					// var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
+					// this._populateHistoryTab(selectedTab, uid)
+					// break;
+				// default: 	// default is: activityDetailTab
+					// this._populateDetailsTab(selectedTab, selectedRecord);
+					// break;
+			// }
+		var t = selectedRecord[0];
+		console.log(t);
+		console.log(t.taggroups().first());
     },
     
     getOperator: function(xType) {

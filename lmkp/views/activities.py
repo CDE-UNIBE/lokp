@@ -228,11 +228,12 @@ def tree(request):
         return result
 
 
-@view_config(route_name='activities_model', renderer='string')
+@view_config(route_name='taggroups_model', renderer='string')
 def model(request):
     """
     Controller that returns a dynamically generated JavaScript that builds the
-    client-side Activity model. The model is set up based on the defined mandatory
+    client-side TagGroup model, which is related (belongsTo / hasMany) to the 
+    static Activity model. The model is set up based on the defined mandatory
     and optional field in the configuration yaml file.
     """
     def _merge_config(parent_key, global_config, locale_config):
@@ -263,7 +264,7 @@ def model(request):
     object = {}
 
     object['extend'] = 'Ext.data.Model'
-    object['proxy'] = {'type': 'ajax', 'url': '/activities', 'reader': {'type': 'json', 'root': 'children'}}
+    object['belongsTo'] = 'Lmkp.model.Activity'
 
     # Get a stream of the config yaml file to extract the fields
     stream = open(config_file_path(), 'r')
@@ -283,7 +284,6 @@ def model(request):
     except IOError:
         # No localized configuration file found!
         pass
-
 
     fields = []
     fieldsConfig = global_config['application']['fields']
@@ -309,8 +309,7 @@ def model(request):
 
     object['fields'] = fields
 
-    return "Ext.define('Lmkp.model.Activity', %s);" % object
-
+    return "Ext.define('Lmkp.model.TagGroup', %s);" % object
 
 @view_config(route_name='rss_feed', renderer='lmkp:templates/rss.mak')
 def read_many_rss(request):
