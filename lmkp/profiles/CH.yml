@@ -13,6 +13,7 @@ application:
         - agrofuels
         - forestry
         - viehwirtschaft
+    optional:
       Alpine Farming:
         predefined:
           - all-season
@@ -20,6 +21,5 @@ application:
           - winter
           - only livestock
           - only dairy farming
-    optional:
       Number of Cowbells:
         type: Number
