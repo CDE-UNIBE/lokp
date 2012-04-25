@@ -22,7 +22,6 @@ Ext.define('Lmkp.view.activities.NewActivityWindow', {
 			}
 			// prepare the form
 			var form = Ext.create('Ext.form.Panel', {
-				url: '',
 				border: 0,
 				bodyPadding: 5,
 				layout: 'anchor',
@@ -34,18 +33,33 @@ Ext.define('Lmkp.view.activities.NewActivityWindow', {
 					disabled: true,
 					text: 'Submit',
 					handler: function() {
-						// var form = this.up('form').getForm();
-						// if (form.isValid()) {
-							// form.submit({
-								// success: function(form, action) {
-									// console.log("success");
-								// },
-								// failure: function(form, action) {
-									// console.log("failure");
-								// }
-							// });
-						// }
-						Ext.Msg.alert("Coming soon ...", "This functionality will be implemented soon ...");
+						var form = this.up('form').getForm();
+						if (form.isValid()) {
+							// The form cannot be submitted 'normally' because ActivityProtocol expects a JSON object.
+							// As a solution, the form values are used to create a JSON object which is sent using an
+							// AJAX request.
+							// http://www.sencha.com/forum/showthread.php?132082-jsonData-in-submit-action-of-form
+							
+							// for the moment being, create dummy geometry
+							var geometry = {'type': 'POINT', 'coordinates': [46.951081, 7.438637]}
+							
+							// put JSON together (new Activities per definition only contain one TagGroup)
+							var jsonData = {'data': [{'geometry': geometry, 'taggroups': [form.getValues()]}]};
+
+							// send JSON through AJAX request
+							Ext.Ajax.request({
+								url: '/activities',
+								method: 'POST',
+								headers: {'Content-Type': 'application/json;charset=utf-8'},
+								jsonData: jsonData,
+								success: function() {
+									Ext.Msg.alert('Success', 'The activity was successfully created. It will be reviewed shortly.');
+								},
+								failure: function() {
+									Ext.Msg.alert('Failure', 'The activity could not be created.');
+								}
+							});
+						}
 					}
 				}]
 			});
