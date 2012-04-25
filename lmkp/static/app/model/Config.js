@@ -5,6 +5,7 @@ Ext.define('Lmkp.model.Config', {
         'fieldLabel',
         'xtype',
         'allowBlank',
-        'store'
+        'store',
+        'validator'
     ]
 });
