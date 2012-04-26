@@ -329,7 +329,7 @@ Ext.define('Lmkp.controller.Filter', {
         col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=namecolumn]')[0];
         col.renderer = function(value, p, record) {
         	// Assumption: the name (if available) always is in the last taggroup
-        	var name = record.taggroups().last().get(Lmkp.ts.msg("dataIndex-name"));
+        	var name = record.taggroups().first().get(Lmkp.ts.msg("dataIndex-name"));
         	if (name) {
             	return Ext.String.format('{0}', name);
         	} else {

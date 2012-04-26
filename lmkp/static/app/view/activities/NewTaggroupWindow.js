@@ -11,10 +11,16 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 		var me = this;
 		
 		// set window title
-		name = (me.activity_name) ? me.activity_name : Lmkp.ts.msg("unnamed-activity");
+		var activity_name = me.activity.taggroups().first().get(Lmkp.ts.msg("dataIndex-name"));
+		name = (activity_name) ? activity_name : Lmkp.ts.msg("unnamed-activity");
 		this.title = 'Add information to activity \'' + name + '\'';
 		
-		if (me.activity_identifier) {
+		// console.log(me);
+		// console.log(me.activity.taggroups());
+		// console.log(me.activity.taggroups())
+		
+		
+		if (me.activity) {
 			// prepare the form
 			var form = Ext.create('Ext.form.Panel', {
 				border: 0,
@@ -27,7 +33,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 					// submit activity_identifier as well
 					xtype: 'hiddenfield',
 					name: 'activity_identifier',
-					value: me.activity_identifier
+					value: me.activity.get('id')
 				}, {
 					// button to add new attribute selection to form
 					xtype: 'panel',
@@ -59,7 +65,58 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 					disabled: true,
 					text: 'Submit',
 					handler: function() {
-						console.log("submitted");
+						var theform = form.getForm();
+						if (theform.isValid()) {
+							// submit functionality. collect values first
+							var attrs = Ext.ComponentQuery.query('combobox[name=tg_combobox]');
+							var values = Ext.ComponentQuery.query('[name=tg_valuefield]');
+							var taggroup = {}
+							if (attrs.length > 0 && values.length > 0 && attrs.length == values.length) {
+								for (var i=0; i<attrs.length; i++) {
+									taggroup[attrs[i].getValue()] = values[i].getValue()
+								}
+								
+								var all_taggroups = [];
+								var tg = me.activity.taggroups();
+								tg.each(function () {
+									// console.log(this.data);
+									var to_add= {}
+									for (el in this.data) {
+										console.log(el);
+										if (el != 'lmkp.model.activity_id') {
+											
+										}
+									}
+									all_taggroups.push(this.data);
+								});
+								// add new taggroup
+								all_taggroups.push(taggroup);
+								console.log(all_taggroups);
+								
+								// for the moment being, create dummy geometry
+								var geometry = {'type': 'POINT', 'coordinates': [46.951081, 7.438637]}
+								
+								// put JSON together (all attributes form one TagGroup), also add previous TagGroups
+								var jsonData = {'data': [{'geometry': geometry, 'taggroups': all_taggroups, 'id': form.getValues().activity_identifier}]}
+								console.log(jsonData);
+								
+								// send JSON through AJAX request
+								Ext.Ajax.request({
+									url: '/activities',
+									method: 'POST',
+									heades: {'Content-Type': 'application/json;charset=utf-8'},
+									jsonData: jsonData,
+									success: function(response, options) {
+										console.log(response);
+										Ext.Msg.alert('Success', 'The information was successfully submitted. It will be reviewed shortly.');
+										form.up('window').close();
+									},
+									failure: function(response, options) {
+										Ext.Msg.alert('Failure', 'The information could not be submitted.');
+									}
+								});
+							}
+						}
 					}
 				}]
 			});

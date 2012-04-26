@@ -36,11 +36,14 @@ Ext.define('Lmkp.controller.EditFilter', {
             });
             return;
         }
+        
+        console.log(selection);
+        console.log(selection.taggroups());
 
-		// create window and pass identifier and name of the selected activity
+		// create window and pass entire activity (needed because ActivityProtocol needs all old TagGroups as well)
     	var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
-    		activity_identifier: selection.get('id'),
-    		activity_name: selection.taggroups().first().get(Lmkp.ts.msg("dataIndex-name"))
+    		activity: selection,
+    		selected_taggroup: null
     	});
     	win.show();
     },
