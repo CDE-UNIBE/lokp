@@ -514,9 +514,23 @@ Ext.define('Lmkp.controller.Filter', {
     				for (var x in mandatory) {
 		            	html += Ext.String.format('<b>{0}</b>: {1}<br/>', x, this._formatEmptyNumberValue(mandatory[x]));
     				}
-    				var mandatoryPanel = Ext.create('Ext.panel.Panel', {
+       				var mandatoryPanel = Ext.create('Ext.panel.Panel', {
 			        	name: 'details_mandatory',
-						html: html
+						items: [{
+							html: html,
+							border: 0
+						}, {
+							xtype: 'button',
+							text: 'edit',
+							taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
+	    					handler: function() {
+	    						var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
+	    							activity: data[0],
+	    							selected_taggroup: taggroupStore.getAt(this.taggroup_id)
+	    						});
+	    						win.show();
+	    					}
+						}]
 				    });
     				panel.add(mandatoryPanel);
     				
@@ -531,7 +545,21 @@ Ext.define('Lmkp.controller.Filter', {
     				if (html != '[optional]<br/>') {
     					var optionalPanel = Ext.create('Ext.panel.Panel', {
 				        	name: 'details_optional',
-							html: html
+				        	items: [{
+				        		html: html,
+				        		border: 0
+				        	}, {
+				        		xtype: 'button',
+								text: 'edit',
+								taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
+		    					handler: function() {
+		    						var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
+		    							activity: data[0],
+		    							selected_taggroup: taggroupStore.getAt(this.taggroup_id)
+		    						});
+		    						win.show();
+		    					}
+				        	}]
 					    });
 	    				panel.add(optionalPanel);
     				}
@@ -547,7 +575,21 @@ Ext.define('Lmkp.controller.Filter', {
     				if (html != '[additional taggroup]<br/>') {
     					var taggroupPanel = Ext.create('Ext.panel.Panel', {
 				        	name: 'details_taggroups',
-							html: html
+				        	items: [{
+				        		html: html,
+				        		border: 0
+				        	}, {
+				        		xtype: 'button',
+								text: 'edit',
+								taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
+		    					handler: function() {
+		    						var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
+		    							activity: data[0],
+		    							selected_taggroup: taggroupStore.getAt(this.taggroup_id)
+		    						});
+		    						win.show();
+		    					}
+				        	}]
 					    });
 	    				panel.add(taggroupPanel);
     				}
