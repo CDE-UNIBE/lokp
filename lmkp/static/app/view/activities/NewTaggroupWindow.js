@@ -12,13 +12,9 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 		
 		// set window title
 		var activity_name = me.activity.taggroups().first().get(Lmkp.ts.msg("dataIndex-name"));
-		name = (activity_name) ? activity_name : Lmkp.ts.msg("unnamed-activity");
-		this.title = 'Add information to activity \'' + name + '\'';
-		
-		// console.log(me);
-		// console.log(me.activity.taggroups());
-		// console.log(me.activity.taggroups())
-		
+		var name = (activity_name) ? activity_name : Lmkp.ts.msg("unnamed-activity");
+		var action = (me.selected_taggroup) ? 'Change' : 'Add';
+		this.title = action + ' information: activity \'' + name + '\'';
 		
 		if (me.activity) {
 			// prepare the form
@@ -54,7 +50,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 						flex: 0,
 						handler: function() {
 							// functionality to add new attribute selection to form
-							var fieldContainer = form.up('window')._getFieldContainer(store, completeStore, true);
+							var fieldContainer = form.up('window')._getFieldContainer(store, completeStore, true, null, null);
 							form.insert(form.items.length-1, fieldContainer);
 						}
 					}]
@@ -81,10 +77,10 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 								tg.each(function () {
 									// console.log(this.data);
 									var to_add= {}
-									for (el in this.data) {
+									for (var el in this.data) {
 										console.log(el);
 										if (el != 'lmkp.model.activity_id') {
-											
+											// do something
 										}
 									}
 									all_taggroups.push(this.data);
@@ -101,20 +97,20 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 								console.log(jsonData);
 								
 								// send JSON through AJAX request
-								Ext.Ajax.request({
-									url: '/activities',
-									method: 'POST',
-									heades: {'Content-Type': 'application/json;charset=utf-8'},
-									jsonData: jsonData,
-									success: function(response, options) {
-										console.log(response);
-										Ext.Msg.alert('Success', 'The information was successfully submitted. It will be reviewed shortly.');
-										form.up('window').close();
-									},
-									failure: function(response, options) {
-										Ext.Msg.alert('Failure', 'The information could not be submitted.');
-									}
-								});
+								// Ext.Ajax.request({
+									// url: '/activities',
+									// method: 'POST',
+									// heades: {'Content-Type': 'application/json;charset=utf-8'},
+									// jsonData: jsonData,
+									// success: function(response, options) {
+										// console.log(response);
+										// Ext.Msg.alert('Success', 'The information was successfully submitted. It will be reviewed shortly.');
+										// form.up('window').close();
+									// },
+									// failure: function(response, options) {
+										// Ext.Msg.alert('Failure', 'The information could not be submitted.');
+									// }
+								// });
 							}
 						}
 					}
@@ -128,9 +124,22 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 			var completeStore = Ext.create('Lmkp.store.Config');
 			completeStore.load();
 			
-			// add initial attribute selection to form
-			var fieldContainer = this._getFieldContainer(store, completeStore, false);
-			form.insert(1, fieldContainer);
+			// if a TagGroup was selected to edit, show its values
+			if (me.selected_taggroup) {
+				var thedata = me.selected_taggroup.data;
+				// loop through values that are of interest and not empty
+				for (var el in thedata) {
+					if (el != 'lmkp.model.activity_id' && el != 'id' && thedata[el] != '' & thedata[el] != 0) {
+						// create fieldcontainer with values
+						var fieldContainer = this._getFieldContainer(store, completeStore, true, el, thedata[el]);
+						form.insert(1, fieldContainer);
+					}
+				}
+			} else {
+			// if no TagGroup was selected to edit, show initial attribute selection
+				var fieldContainer = this._getFieldContainer(store, completeStore, false);
+				form.insert(1, fieldContainer);
+			}
 						
 			// add form to window
 			this.items = form;
@@ -144,40 +153,54 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 	 * 'completeStore' keeps track of all attributes available
 	 * 'removable' indicates whether delete-button is disabled or not
 	 */
-	_getFieldContainer: function(store, completeStore, removable) {
+	_getFieldContainer: function(store, completeStore, removable, initialAttribute, initialValue) {
+	
+		// ComboBox to select attribute
+		var cb = Ext.create('Ext.form.field.ComboBox', {
+			xtype: 'combobox',
+			name: 'tg_combobox',
+			store: store,
+			valueField: 'name',
+			displayField: 'fieldLabel',
+			queryMode: 'local',
+			typeAhead: true,
+			forceSelection: true,
+			flex: 1,
+			allowBlank: false,
+			margin: '0 5 5 0',
+			listeners: {
+				// functionality to replace value field based on selected attribute
+				change: function(combo, newValue, oldValue, eOpts) {
+					// remove newly selected value from store
+					var currentRecord = store.findRecord('name', newValue);
+					store.remove(currentRecord);
+					// add previously selected (now deselected) value to store again
+					var previousRecord = completeStore.findRecord('name', oldValue);
+					if (previousRecord) {
+						store.add(previousRecord);
+					}
+					// replace the value field
+					fieldContainer.items.getAt(fieldContainer.items.findIndex('name', 'tg_valuefield')).destroy();
+					var newField = this.up('window')._getValueField(currentRecord);
+					// if initialValue was provided (when editing selected TagGroup), then show its value
+					if (initialValue) {
+						newField.setValue(initialValue);
+					}
+					fieldContainer.insert(1, newField);
+				}
+			}
+		});
+		// if initialAttribute was provided (when editing selected TagGroup), then show its value
+		if (initialAttribute) {
+			cb.setValue(initialAttribute);
+		}
+		
+		// put together the FieldContainer
 		var fieldContainer = Ext.create('Ext.form.FieldContainer', {
 			layout: 'hbox',
-			items: [{
-				// ComboBox to select attribute
-				xtype: 'combobox',
-				name: 'tg_combobox',
-				store: store,
-				valueField: 'name',
-				displayField: 'fieldLabel',
-				queryMode: 'local',
-				typeAhead: true,
-				forceSelection: true,
-				flex: 1,
-				allowBlank: false,
-				margin: '0 5 5 0',
-				listeners: {
-					// functionality to replace value field based on selected attribute
-					change: function(combo, newValue, oldValue, eOpts) {
-						// remove newly selected value from store
-						var currentRecord = store.findRecord('name', newValue);
-						store.remove(currentRecord);
-						// add previously selected (now deselected) value to store again
-						var previousRecord = completeStore.findRecord('name', oldValue);
-						if (previousRecord) {
-							store.add(previousRecord);
-						}
-						// replace the value field
-						fieldContainer.items.getAt(fieldContainer.items.findIndex('name', 'tg_valuefield')).destroy();
-						newField = this.up('window')._getValueField(currentRecord);
-						fieldContainer.insert(1, newField);
-					}
-				}
-			}, {
+			items: [
+				cb
+			, {
 				// initial dummy TextField (disabled)
 				xtype: 'textfield',
 				name: 'tg_valuefield',
@@ -203,6 +226,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 				}
 			}]
 		});
+
 		return fieldContainer;
 	},
 	
