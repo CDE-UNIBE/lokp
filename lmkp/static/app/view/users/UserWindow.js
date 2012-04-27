@@ -9,12 +9,26 @@ Ext.define('Lmkp.view.users.UserWindow', {
 		border: 0
 	},
 	width: 400,
-	height: 200,
+	height: 500,
 	
 	initComponent: function() {
 		var me = this;
 		
 		if (me.username) {
+			
+			var activityChangesetStore = Ext.create('Lmkp.store.ActivityChangesets');
+			// load only changeset from current user, initial status: active
+			activityChangesetStore.getProxy().extraParams = {
+				'user': me.username,
+				'status': 'active' // when making changes here, also change initially selected value of ComboBox below
+			};
+			activityChangesetStore.load();
+			
+			// prepare status values
+			var statusStore = Ext.create('Lmkp.store.Status').load();
+			console.log(statusStore);
+			
+			
 			this.title = 'User profile of user ' + me.username;
 			this.items = [{
 				xtype: 'tabpanel',
@@ -119,7 +133,38 @@ Ext.define('Lmkp.view.users.UserWindow', {
 					}
 				}, {
 					title: 'Reported Activities',
-					html: 'Coming soon ...'
+					items: [{
+						xtype: 'combobox',
+						store: statusStore,
+						valueField: 'db_name',
+						displayField: 'display_name',
+						fieldLabel: 'Filter by status',
+						queryMode: 'local',
+						value: statusStore.findRecord('db_name', 'active'), // initial status: active
+						listeners: {
+							select: function(combo, records, eOpts) {
+								// update status parameter of changeset store and reload it
+								activityChangesetStore.getProxy().extraParams = {
+									'user': me.username,
+									'status': records[0].get('db_name')
+								};
+								activityChangesetStore.load();
+							}
+						}
+					}, {
+						xtype: 'gridpanel',
+						store: activityChangesetStore,
+						columns: [{
+							header: 'Activity',
+							dataIndex: 'activity'
+						}, {
+							header: 'User',
+							dataIndex: 'user'
+						}, {
+							header: 'Status',
+							dataIndex: 'status'
+						}]
+					}]
 				}]
 			}]
 		} else {
