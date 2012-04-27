@@ -46,7 +46,12 @@ def ui_messages(request):
     'date-label': _('date-label', default='Date'),
     'profile-label': _('profile-label', default='Profile'),
     'language-label': _('language-label', default='Language'),
-    'unnamed-activity': _('unnamed-activity', default='Unnamed Activity')
+    'unnamed-activity': _('unnamed-activity', default='Unnamed Activity'),
+    'status-pending': _('status-pending', default='pending'),
+    'status-active': _('status-active', default='active'),
+    'status-overwritten': _('status-overwritten', default='overwritten'),
+    'status-deleted': _('status-deleted', default='deleted'),
+    'status-rejected': _('status-rejected', default='rejected')
     }
 
     # Get the localizer
