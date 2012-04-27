@@ -328,7 +328,7 @@ Ext.define('Lmkp.controller.Filter', {
     renderNameColumn: function() {
         col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=namecolumn]')[0];
         col.renderer = function(value, p, record) {
-        	// Assumption: the name (if available) always is in the first taggroup
+        	// Assumption: the name (if available) always is in the last taggroup
         	var name = record.taggroups().first().get(Lmkp.ts.msg("dataIndex-name"));
         	if (name) {
             	return Ext.String.format('{0}', name);
@@ -343,19 +343,16 @@ Ext.define('Lmkp.controller.Filter', {
     	var selectedRecord = grid.getSelectionModel().getSelection();
 		var detailPanel = Ext.ComponentQuery.query('filterPanel tabpanel[id=detailPanel]')[0];
 		var selectedTab = detailPanel.getActiveTab();
-			switch (selectedTab.getXType()) {
-				case "activityHistoryTab":
-					// var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
-					// this._populateHistoryTab(selectedTab, uid)
-					console.log("coming soon");
-					break;
-				default: 	// default is: activityDetailTab
-					this._populateDetailsTab(selectedTab, selectedRecord);
-					break;
-			}
-		// var t = selectedRecord[0];
-		// console.log(t);
-		// console.log(t.taggroups().first());
+		switch (selectedTab.getXType()) {
+			case "activityHistoryTab":
+				// var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
+				// this._populateHistoryTab(selectedTab, uid)
+				console.log("coming soon");
+				break;
+			default: 	// default is: activityDetailTab
+				this._populateDetailsTab(selectedTab, selectedRecord);
+				break;
+		}
     },
     
     getOperator: function(xType) {
@@ -517,9 +514,23 @@ Ext.define('Lmkp.controller.Filter', {
     				for (var x in mandatory) {
 		            	html += Ext.String.format('<b>{0}</b>: {1}<br/>', x, this._formatEmptyNumberValue(mandatory[x]));
     				}
-    				var mandatoryPanel = Ext.create('Ext.panel.Panel', {
+       				var mandatoryPanel = Ext.create('Ext.panel.Panel', {
 			        	name: 'details_mandatory',
-						html: html
+						items: [{
+							html: html,
+							border: 0
+						}, {
+							xtype: 'button',
+							text: 'edit',
+							taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
+	    					handler: function() {
+	    						var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
+	    							activity: data[0],
+	    							selected_taggroup: taggroupStore.getAt(this.taggroup_id)
+	    						});
+	    						win.show();
+	    					}
+						}]
 				    });
     				panel.add(mandatoryPanel);
     				
@@ -534,7 +545,21 @@ Ext.define('Lmkp.controller.Filter', {
     				if (html != '[optional]<br/>') {
     					var optionalPanel = Ext.create('Ext.panel.Panel', {
 				        	name: 'details_optional',
-							html: html
+				        	items: [{
+				        		html: html,
+				        		border: 0
+				        	}, {
+				        		xtype: 'button',
+								text: 'edit',
+								taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
+		    					handler: function() {
+		    						var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
+		    							activity: data[0],
+		    							selected_taggroup: taggroupStore.getAt(this.taggroup_id)
+		    						});
+		    						win.show();
+		    					}
+				        	}]
 					    });
 	    				panel.add(optionalPanel);
     				}
@@ -550,7 +575,21 @@ Ext.define('Lmkp.controller.Filter', {
     				if (html != '[additional taggroup]<br/>') {
     					var taggroupPanel = Ext.create('Ext.panel.Panel', {
 				        	name: 'details_taggroups',
-							html: html
+				        	items: [{
+				        		html: html,
+				        		border: 0
+				        	}, {
+				        		xtype: 'button',
+								text: 'edit',
+								taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
+		    					handler: function() {
+		    						var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
+		    							activity: data[0],
+		    							selected_taggroup: taggroupStore.getAt(this.taggroup_id)
+		    						});
+		    						win.show();
+		    					}
+				        	}]
 					    });
 	    				panel.add(taggroupPanel);
     				}
