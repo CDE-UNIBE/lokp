@@ -212,7 +212,7 @@ def yaml_translation_json(request):
 
 
 # @todo: change template used for yaml_add_db (possibly create own) 
-@view_config(route_name='yaml_add_db', renderer='lmkp:templates/sample_values.pt')
+@view_config(route_name='yaml_add_db', renderer='lmkp:templates/sample_values.pt', permission='administer')
 def yaml_add_db(request):
 
    stack = []
