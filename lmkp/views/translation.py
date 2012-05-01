@@ -111,7 +111,7 @@ def language_store(request):
     ret['total'] = len(langs)
     return ret
 
-@view_config(route_name='edit_translation', renderer='json')
+@view_config(route_name='edit_translation', renderer='json', permission='administer')
 def edit_translation(request):
     success = False
     msg = 'Translation not successful'
