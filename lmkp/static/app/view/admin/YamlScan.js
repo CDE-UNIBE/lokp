@@ -37,6 +37,23 @@ Ext.define('Lmkp.view.admin.YamlScan', {
             })
 		}, {
 			xtype: 'templatecolumn',
+			name: 'local',
+			text: 'Local YAML',
+			flex: 1,
+			sortable: true,
+			dataIndex: 'local',
+			align: 'center',
+			tpl: Ext.create('Ext.XTemplate', '{[this.isLocal(values.local)]}', {
+				isLocal: function(l) {
+					if (l) {
+						return 'yes';
+					} else {
+						return 'no';
+					}
+				}
+			})
+		}, {
+			xtype: 'templatecolumn',
             text: 'In DB',
             flex: 1,
             sortable: true,
