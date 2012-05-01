@@ -108,13 +108,13 @@ def get_config(request):
         return global_config
 
 
-@view_config(route_name='yaml_translation_json', renderer='json')
+@view_config(route_name='yaml_translation_json', renderer='json', permission='administer')
 def yaml_translation_json(request):
     def _merge_config(parent_key, global_config, locale_config):
         """
-        Merges two configuration dictionaries together
+        Merges two configuration dictionaries together (slightly modified to also
+        contain indication about global or local values.
         """
-
         try:
             for key, value in locale_config.items():
                 try:
@@ -130,7 +130,8 @@ def yaml_translation_json(request):
                     else:
                         _merge_config(key, global_config[key], locale_config[key])
                 except:
-                    global_config[key] = locale_config[key]
+                    # add indicator that field is from local YAML
+                    global_config[key] = {'values': locale_config[key], 'local': True}
         # Handle the AttributeError if the locale config file is empty
         except AttributeError:
             pass
@@ -150,7 +151,6 @@ def yaml_translation_json(request):
     except IOError:
         # No localized configuration file found!
         pass
-    
 
     # get keys already in database. their fk_a_key must be None (= original)
     db_keys = []
@@ -192,17 +192,35 @@ def yaml_translation_json(request):
         extObject.append(currObject)
     # Then process the optional fields
     for (name, config) in fields['optional'].iteritems():
+        
+        # check if the field stems from global or local yaml
+        local = False
         try:
-            # predefined values available
+            config['local']
+            local = True
+        except KeyError:
+            pass
+        
+        try:
+            # global predefined values available
             config['predefined']
-            currObject = _get_yaml_scan('key', False, name, db_keys, lang, False)
+            currObject = _get_yaml_scan('key', False, name, db_keys, lang, False, local)
             currChildren = []
             for val in config['predefined']:
-                currChildren.append(_get_yaml_scan('value', False, val, db_values, lang, True))
+                currChildren.append(_get_yaml_scan('value', False, val, db_values, lang, True, local))
             currObject['children'] = currChildren
         except KeyError:
-            # no predefined values available
-            currObject = _get_yaml_scan('key', False, name, db_keys, lang, True)
+            try:
+                # local predefined values available
+                config['values']['predefined']
+                currObject = _get_yaml_scan('key', False, name, db_keys, lang, False, local)
+                currChildren = []
+                for val in config['values']['predefined']:
+                    currChildren.append(_get_yaml_scan('value', False, val, db_values, lang, True, local))
+                currObject['children'] = currChildren
+            except KeyError:
+                # no predefined values available
+                currObject = _get_yaml_scan('key', False, name, db_keys, lang, True, local)
         extObject.append(currObject)
         
     ret = {}
@@ -376,7 +394,7 @@ def _get_field_config(name, config, language, mandatory=False):
     return fieldConfig
 
 
-def _get_yaml_scan(kv, mandatory, value, db_values, language, leaf):
+def _get_yaml_scan(kv, mandatory, value, db_values, language, leaf, local=False):
     
     fieldConfig = {}
     
@@ -385,6 +403,7 @@ def _get_yaml_scan(kv, mandatory, value, db_values, language, leaf):
     fieldConfig['exists'] = value in db_values
     fieldConfig['value'] = value
     fieldConfig['language'] = language.english_name
+    fieldConfig['local'] = local
     if leaf:
         fieldConfig['leaf'] = True
     else:
