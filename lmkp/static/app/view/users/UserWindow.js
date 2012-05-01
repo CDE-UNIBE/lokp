@@ -9,7 +9,6 @@ Ext.define('Lmkp.view.users.UserWindow', {
 		border: 0
 	},
 	width: 400,
-	height: 500,
 	
 	initComponent: function() {
 		var me = this;
@@ -155,11 +154,15 @@ Ext.define('Lmkp.view.users.UserWindow', {
 						xtype: 'gridpanel',
 						store: activityChangesetStore,
 						columns: [{
+							// TODO: add name of activity to changeset
+							/**
+							 * It would be much nicer to show the name of an activity rather
+							 * than its UUID. But for the moment being, the changeset protocol
+							 * does not provide the name of an activity.
+							 */
 							header: 'Activity',
-							dataIndex: 'activity'
-						}, {
-							header: 'User',
-							dataIndex: 'user'
+							dataIndex: 'activity',
+							flex: 1
 						}, {
 							header: 'Status',
 							dataIndex: 'status'
