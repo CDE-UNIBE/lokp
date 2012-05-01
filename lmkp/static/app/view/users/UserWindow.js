@@ -163,6 +163,13 @@ Ext.define('Lmkp.view.users.UserWindow', {
 						}, {
 							header: 'Status',
 							dataIndex: 'status'
+						}],
+						dockedItems: [{
+							xtype: 'pagingtoolbar',
+							store: activityChangesetStore,
+							dock: 'bottom',
+							enableOverflow: false,
+							displayInfo: true
 						}]
 					}]
 				}]

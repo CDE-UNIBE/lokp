@@ -19,10 +19,14 @@ class ChangesetProtocol(object):
         # Join the activity changesets with the activities and the users
         a_changesetsJoins = self.Session.query(A_Changeset.source, Activity.activity_identifier.label("activity"), User.username, Status.name).join(A_Changeset.user).join(A_Changeset.activity).join(Status)
 
+        # filters first
+        a_changesetsJoins = a_changesetsJoins.filter(self._filter_user(request)).filter(self._filter_status(request))
+
         # Create a list of activity changesets
         activities = []
-        for i in a_changesetsJoins.filter(self._filter_user(request)).filter(self._filter_status(request)).limit(self._limit_changesets(request)):
+        for i in a_changesetsJoins.limit(self._limit_changesets(request)).offset(self._offset_changesets(request)):
             activities.append({'source': i[0], 'activity': str(i[1]), 'user': i[2], 'status': i[3]})
+        #activities.append({'total': a_changesetsJoins.count()})
 
         # Join the stakeholder changesets with the stakeholders and the users
         sh_changesetsJoins = self.Session.query(SH_Changeset.source, Stakeholder.stakeholder_identifier.label("stakeholder"), User.username, Status.name).join(SH_Changeset.user).join(SH_Changeset.stakeholder).join(Status)
@@ -32,7 +36,7 @@ class ChangesetProtocol(object):
         for i in sh_changesetsJoins.filter(self._filter_user(request)).filter(self._filter_status(request)).limit(self._limit_changesets(request)):
             stakeholders.append({'source': i[0], 'stakeholder': str(i[1]), 'user': i[2], 'status': i[3]})
 
-        return {'activities': activities, 'stakeholders': stakeholders}
+        return {'activities': activities, 'activities_count': a_changesetsJoins.count(), 'stakeholders': stakeholders}
 
     def _filter_user(self, request):
         """
@@ -64,4 +68,15 @@ class ChangesetProtocol(object):
             except ValueError:
                 pass
 
+        return None
+    
+    def _offset_changesets(self, request):
+        
+        offset = request.params.get('offset', None)
+        if offset is not None:
+            try: 
+                return int(offset)
+            except ValueError:
+                pass
+        
         return None
