@@ -24,6 +24,7 @@ def sample_values(request):
     #list_predefined_a_values_projectStatus = []
 # BEGIN fix data ----------------------------------------------------------------------------------
     stack.append('--- fix data ---')
+    """
     # status
     count = []
     status1 = Status(id=1, name='pending', description='Review pending. Not published yet.')
@@ -42,6 +43,13 @@ def sample_values(request):
     count.append(_add_to_db(status5, 'status 5 (rejected)'))
     list_status.append(status5)
     stack.append(str(count.count(1)) + ' status added.')
+    """
+    status1 = Session.query(Status).get(1)
+    status2 = Session.query(Status).get(2)
+    status3 = Session.query(Status).get(3)
+    status4 = Session.query(Status).get(4)
+    status5 = Session.query(Status).get(5)
+    """
     # stakeholder_roles
     count = []
     sh_role1 = Stakeholder_Role(id=1, name='Donor')
@@ -57,13 +65,20 @@ def sample_values(request):
     sh_role6 = Stakeholder_Role(id=6, name='Investor')
     count.append(_add_to_db(sh_role6, 'stakeholder role 6 (investor)'))
     stack.append(str(count.count(1)) + ' stakeholder_roles added.')
+    """
+    sh_role1 = Session.query(Stakeholder_Role).get(1)
+    sh_role2 = Session.query(Stakeholder_Role).get(2)
+    sh_role3 = Session.query(Stakeholder_Role).get(3)
+    sh_role4 = Session.query(Stakeholder_Role).get(4)
+    sh_role5 = Session.query(Stakeholder_Role).get(5)
+    sh_role6 = Session.query(Stakeholder_Role).get(6)
     # languages
     count = []
     """
     lang1 = Language(id=1, english_name='English', local_name='English')
     count.append(_add_to_db(lang1, 'language 1 (english)'))
     """
-    lang1 = Session.query(Language).first()
+    lang1 = Session.query(Language).get(1)
     lang2 = Language(id=2, english_name='Spanish', local_name='Espanol', locale='es')
     count.append(_add_to_db(lang2, 'language 2 (spanish)'))
     stack.append(str(count.count(1)) + ' languages added.')
@@ -149,6 +164,7 @@ def sample_values(request):
     predefined_sh_value1.language = lang1
     count.append(_add_to_db(predefined_sh_value1, 'predefined sh_value 1 (sample value'))
     stack.append(str(count.count(1)) + ' predefined sh_values added.')
+    """
     # permissions
     count = []
     permission1 = Permission(id=1, name='read')
@@ -156,6 +172,8 @@ def sample_values(request):
     permission2 = Permission(id=2, name='write')
     count.append(_add_to_db(permission2, 'permission 2 (write)'))
     stack.append(str(count.count(1)) + ' permissions added.')
+    """
+    """
     # groups (with permissions)
     count = []
     group1 = Group(id=1, name='editors')
@@ -166,6 +184,8 @@ def sample_values(request):
     group2.permissions.append(permission1)
     count.append(_add_to_db(group2, 'group 2 (moderators)'))
     stack.append(str(count.count(1)) + ' groups added.')
+    """
+    """
     # review_decisions
     count = []
     reviewdecision1 = Review_Decision(id=1, name='approved', description='Event or Involvement was approved.')
@@ -175,19 +195,28 @@ def sample_values(request):
     reviewdecision3 = Review_Decision(id=3, name='deleted', description='Event or Involvement was deleted.')
     count.append(_add_to_db(reviewdecision3, 'review decision 3 (deleted)'))
     stack.append(str(count.count(1)) + ' review_decisions added.')
+    """
+    reviewdecision1 = Session.query(Review_Decision).get(1)
+    reviewdecision2 = Session.query(Review_Decision).get(2)
+    reviewdecision3 = Session.query(Review_Decision).get(3)
 # END fix data ------------------------------------------------------------------------------------
 # BEGIN sample data -------------------------------------------------------------------------------
     stack.append('--- sample data (users) ---')
   # -- users
     count = []
+    """
     # user 1, belongs to admin group
     user1 = User(username='user1', password='pw', email='me@you.com')
     user1.groups.append(group1)
     count.append(_add_to_db(user1, 'user 1'))
     list_users.append(user1)
+    """
+    # add first user (by populate script) to list
+    user1 = Session.query(User).filter(User.username == 'user1').one()
+    list_users.append(user1)
     # user 2, belongs to user group
     user2 = User(username='user2', password='pw', email='you@me.com')
-    user2.groups.append(group2)
+    user2.groups.append(Session.query(Group).get(2))
     count.append(_add_to_db(user2, 'user 2'))
     list_users.append(user2)
     stack.append(str(count.count(1)) + ' users added.')
