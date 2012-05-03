@@ -72,6 +72,7 @@ class A_Key(Base):
     
     translations = relationship('A_Key', backref = backref('original', remote_side = [id]))
     tags = relationship('A_Tag', backref = 'key')
+    taggroup = relationship('A_Tag_Group', backref='main_key')
     
     def __init__(self, key):
         self.key = key
@@ -93,6 +94,7 @@ class SH_Key(Base):
     
     translations = relationship('SH_Key', backref = backref('original', remote_side = [id]))
     tags = relationship('SH_Tag', backref = 'key')
+    taggroup = relationship('SH_Tag_Group', backref='main_key')
     
     def __init__(self, key):
         self.key = key
@@ -200,10 +202,12 @@ class A_Tag_Group(Base):
     __tablename__ = 'a_tag_groups'
     __table_args__ = (
             ForeignKeyConstraint(['fk_activity'], ['data.activities.id']),
+            ForeignKeyConstraint(['fk_a_key'], ['data.a_keys.id']),
             {'schema': 'data'}
             )
     id = Column(Integer, primary_key = True)
     fk_activity = Column(Integer, nullable = False)
+    fk_a_key = Column(Integer, nullable = True)
 
     tags = relationship("A_Tag", backref = backref('tag_group', order_by = id))
 
@@ -217,10 +221,12 @@ class SH_Tag_Group(Base):
     __tablename__ = 'sh_tag_groups'
     __table_args__ = (
             ForeignKeyConstraint(['fk_stakeholder'], ['data.stakeholders.id']),
+            ForeignKeyConstraint(['fk_sh_key'], ['data.sh_keys.id']),
             {'schema': 'data'}
             )
     id = Column(Integer, primary_key = True)
     fk_stakeholder = Column(Integer, nullable = False)
+    fk_sh_key = Column(Integer, nullable = True)
     
     tags = relationship("SH_Tag", backref = backref('tag_group', order_by = id))
 
