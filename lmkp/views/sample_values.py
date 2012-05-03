@@ -269,6 +269,7 @@ def sample_values(request):
         # tag_group
         tag_group = A_Tag_Group()
         tag_group.tags.append(tag)
+        tag_group.main_key = theKey
         # prepare changeset
         changeset = A_Changeset(source='[active] Source ' + str(i))
         changeset.user = random.choice(list_users)
@@ -322,6 +323,7 @@ def sample_values(request):
         # tag_group
         tag_group = A_Tag_Group()
         tag_group.tags.append(tag)
+        tag_group.main_key = theKey
         # add another tag_group
         switch = random.randint(0,len(list_predefined_a_keys)-1)
         theKey = list_predefined_a_keys[switch]
@@ -397,6 +399,7 @@ def sample_values(request):
         # tag_group
         tag_group = A_Tag_Group()
         tag_group.tags.append(tag)
+        tag_group.main_key = theKey
         # prepare changeset
         changeset = A_Changeset(source='[pending] Source ' + str(i))
         changeset.user = random.choice(list_users)
@@ -442,6 +445,7 @@ def sample_values(request):
         # tag_group
         tag_group = A_Tag_Group()
         tag_group.tags.append(tag)
+        tag_group.main_key = theKey
         # prepare changeset
         changeset = A_Changeset(source='[deleted] Source ' + str(i))
         changeset.user = random.choice(list_users)
@@ -495,6 +499,7 @@ def sample_values(request):
         # tag_group
         tag_group = A_Tag_Group()
         tag_group.tags.append(tag)
+        tag_group.main_key = theKey
         # prepare changeset
         changeset = A_Changeset(source='[overwritten] Source ' + str(i))
         changeset.user = random.choice(list_users)
@@ -540,6 +545,7 @@ def sample_values(request):
         new_tag.value = newValue
         new_tag_group.activity = new_activity
         new_tag_group.tags.append(new_tag)
+        new_tag_group.main_key = newKey
         # copy old key/value pairs
         session = Session()
         old_activity = session.query(Activity).filter(Activity.activity_identifier == identifier).first()
@@ -588,6 +594,7 @@ def sample_values(request):
         # tag_group
         tag_group = SH_Tag_Group()
         tag_group.tags.append(tag)
+        tag_group.main_key = theKey
         # prepare changeset
         changeset = SH_Changeset(source='[active] Source ' + str(i))
         changeset.user = random.choice(list_users)
