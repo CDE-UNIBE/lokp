@@ -16,6 +16,9 @@ Ext.define('Lmkp.model.YamlScan', {
 	}, {
 		name: 'keyvalue',
 		type: 'string'
+	}, {
+		name: 'local',
+		type: 'boolean'
 	}],
 	
 	proxy: {

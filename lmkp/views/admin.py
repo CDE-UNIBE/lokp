@@ -1,6 +1,6 @@
 from pyramid.view import view_config
 
-@view_config(route_name='admin', renderer='lmkp:templates/index.pt')
+@view_config(route_name='admin', renderer='lmkp:templates/index.pt', permission='administer')
 def admin(request):
     
     if request is not None and '_LOCALE_' in request.params:

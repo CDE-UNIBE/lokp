@@ -111,7 +111,7 @@ def language_store(request):
     ret['total'] = len(langs)
     return ret
 
-@view_config(route_name='edit_translation', renderer='json')
+@view_config(route_name='edit_translation', renderer='json', permission='administer')
 def edit_translation(request):
     success = False
     msg = 'Translation not successful'
@@ -151,7 +151,7 @@ def edit_translation(request):
                         # translation found, just update it.
                         oldTranslation[0].value = request.params['translation']
                         success = True
-                        msg = 'Updated translation (<b>%s</b> for value <b>%s</b>.' % (request.params['translation'], request.params['original'])
+                        msg = 'Updated translation (<b>%s</b>) for value <b>%s</b>.' % (request.params['translation'], request.params['original'])
                     else:
                         # no translation available yet, add it to DB
                         translation = A_Value(request.params['translation'])
