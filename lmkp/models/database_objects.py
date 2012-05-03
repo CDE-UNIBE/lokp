@@ -72,7 +72,7 @@ class A_Key(Base):
     
     translations = relationship('A_Key', backref = backref('original', remote_side = [id]))
     tags = relationship('A_Tag', backref = 'key')
-    taggroup = relationship('A_Tag_Group', backref='main_key')
+    tag_group = relationship('A_Tag_Group', backref='main_key')
     
     def __init__(self, key):
         self.key = key
@@ -94,7 +94,7 @@ class SH_Key(Base):
     
     translations = relationship('SH_Key', backref = backref('original', remote_side = [id]))
     tags = relationship('SH_Tag', backref = 'key')
-    taggroup = relationship('SH_Tag_Group', backref='main_key')
+    tag_group = relationship('SH_Tag_Group', backref='main_key')
     
     def __init__(self, key):
         self.key = key
