@@ -72,7 +72,6 @@ class A_Key(Base):
     
     translations = relationship('A_Key', backref = backref('original', remote_side = [id]))
     tags = relationship('A_Tag', backref = 'key')
-    tag_group = relationship('A_Tag_Group', backref='main_key')
     
     def __init__(self, key):
         self.key = key
@@ -94,7 +93,6 @@ class SH_Key(Base):
     
     translations = relationship('SH_Key', backref = backref('original', remote_side = [id]))
     tags = relationship('SH_Tag', backref = 'key')
-    tag_group = relationship('SH_Tag_Group', backref='main_key')
     
     def __init__(self, key):
         self.key = key
@@ -202,39 +200,41 @@ class A_Tag_Group(Base):
     __tablename__ = 'a_tag_groups'
     __table_args__ = (
             ForeignKeyConstraint(['fk_activity'], ['data.activities.id']),
-            ForeignKeyConstraint(['fk_a_key'], ['data.a_keys.id']),
+            ForeignKeyConstraint(['fk_a_tag'], ['data.a_tags.id'], use_alter = True, name = 'fk_a_tag'),
             {'schema': 'data'}
             )
     id = Column(Integer, primary_key = True)
     fk_activity = Column(Integer, nullable = False)
-    fk_a_key = Column(Integer, nullable = True)
+    fk_a_tag = Column(Integer, nullable = True)
 
-    tags = relationship("A_Tag", backref = backref('tag_group', order_by = id))
+    tags = relationship("A_Tag", backref = backref('tag_group', order_by = id), primaryjoin = id==A_Tag.fk_a_tag_group)
+    main_tag = relationship("A_Tag", primaryjoin = fk_a_tag==A_Tag.id, post_update = True)
 
     def __init__(self):
         pass
     
     def __repr__(self):
-        return '<A_Tag_Group> id [ %s ] | fk_activity [ %s ]' % (self.id, self.fk_activity)
+        return '<A_Tag_Group> id [ %s ] | fk_activity [ %s ] | fk_a_tag [ %s ]' % (self.id, self.fk_activity, self.fk_a_tag)
 
 class SH_Tag_Group(Base):
     __tablename__ = 'sh_tag_groups'
     __table_args__ = (
             ForeignKeyConstraint(['fk_stakeholder'], ['data.stakeholders.id']),
-            ForeignKeyConstraint(['fk_sh_key'], ['data.sh_keys.id']),
+            ForeignKeyConstraint(['fk_sh_tag'], ['data.sh_tags.id'], use_alter = True, name = 'fk_sh_tag'),
             {'schema': 'data'}
             )
     id = Column(Integer, primary_key = True)
     fk_stakeholder = Column(Integer, nullable = False)
-    fk_sh_key = Column(Integer, nullable = True)
+    fk_sh_tag = Column(Integer, nullable = True)
     
-    tags = relationship("SH_Tag", backref = backref('tag_group', order_by = id))
+    tags = relationship("SH_Tag", backref = backref('tag_group', order_by = id), primaryjoin = id==SH_Tag.fk_sh_tag_group)
+    main_tag = relationship("SH_Tag", primaryjoin = fk_sh_tag==SH_Tag.id, post_update = True)
 
     def __init__(self):
         pass
     
     def __repr__(self):
-        return '<SH_Tag_Group> id [ %s ] | fk_stakeholder [ %s ]' % (self.id, self.fk_stakeholder)
+        return '<SH_Tag_Group> id [ %s ] | fk_stakeholder [ %s ] | fk_sh_tag [ %s ]' % (self.id, self.fk_stakeholder, self.fk_sh_tag)
 
 class Activity(Base):
     __tablename__ = 'activities'
