@@ -15,6 +15,9 @@ from pyramid.config import Configurator
 from pyramid.events import BeforeRender
 from pyramid.events import NewRequest
 from sqlalchemy import engine_from_config
+# import error_views
+from lmkp.views.errors import forbidden_view
+from lmkp.views.errors import notfound_view
 
 def main(global_config, ** settings):
     """ This function returns a Pyramid WSGI application.
@@ -44,7 +47,7 @@ def main(global_config, ** settings):
     # Add papyrus includes
     config.include(papyrus.includeme)
     # Return a JavaScript model
-    config.add_route('activities_model', 'static/app/model/Activity.js')
+    config.add_route('taggroups_model', 'static/app/model/TagGroup.js')
     #config.add_renderer('geojson', GeoJSON())
     config.add_renderer('geojson', GeoJsonRenderer())
     config.add_static_view('static', 'static', cache_max_age=3600)
@@ -135,12 +138,19 @@ def main(global_config, ** settings):
 
     config.add_route('rss_feed', '/rss/{status}')
 
+    # Changeset protocol, query the changeset
+    config.add_route('changesets_read', '/changesets')
+
     # Test
     config.add_route('geojson_test', '/geojson')
     
 
     # Yet another test
     config.add_route('timestamp_test', '/timestamp')
+
+    # Error views
+    config.add_forbidden_view(forbidden_view)
+    config.add_notfound_view(notfound_view)
 
     config.scan()
     return config.make_wsgi_app()

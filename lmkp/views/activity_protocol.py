@@ -620,6 +620,8 @@ class ActivityProtocol(object):
             feature = geojson.loads(json.dumps(raw), object_hook=geojson.GeoJSON.to_instance)
             self._add_feature(request, feature)
 
+        
+
         # Return the newly created object with 201 Created HTTP code status
         return HTTPCreated(detail=geojson.dumps(feature))
 
