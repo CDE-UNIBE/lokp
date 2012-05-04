@@ -9,12 +9,25 @@ Ext.define('Lmkp.view.users.UserWindow', {
 		border: 0
 	},
 	width: 400,
-	height: 200,
 	
 	initComponent: function() {
 		var me = this;
 		
 		if (me.username) {
+			
+			var activityChangesetStore = Ext.create('Lmkp.store.ActivityChangesets');
+			// load only changeset from current user, initial status: active
+			activityChangesetStore.getProxy().extraParams = {
+				'user': me.username,
+				'status': 'active' // when making changes here, also change initially selected value of ComboBox below
+			};
+			activityChangesetStore.load();
+			
+			// prepare status values
+			var statusStore = Ext.create('Lmkp.store.Status').load();
+			console.log(statusStore);
+			
+			
 			this.title = 'User profile of user ' + me.username;
 			this.items = [{
 				xtype: 'tabpanel',
@@ -78,6 +91,16 @@ Ext.define('Lmkp.view.users.UserWindow', {
 									    dock: 'bottom',
 									    ui: 'footer',
 									    items: [
+									        {
+									        	xtype: 'button',
+									        	text: 'Change Password',
+									        	handler: function() {
+									        		var win = Ext.create('Lmkp.view.users.ChangePasswordWindow', {
+									        			username: json.data.username
+									        		});
+									        		win.show();
+									        	}
+									        },
 									        { xtype: 'component', flex: 1 },
 									        {
 									        	xtype: 'button',
@@ -109,7 +132,49 @@ Ext.define('Lmkp.view.users.UserWindow', {
 					}
 				}, {
 					title: 'Reported Activities',
-					html: 'Coming soon ...'
+					items: [{
+						xtype: 'combobox',
+						store: statusStore,
+						valueField: 'db_name',
+						displayField: 'display_name',
+						fieldLabel: 'Filter by status',
+						queryMode: 'local',
+						value: statusStore.findRecord('db_name', 'active'), // initial status: active
+						listeners: {
+							select: function(combo, records, eOpts) {
+								// update status parameter of changeset store and reload it
+								activityChangesetStore.getProxy().extraParams = {
+									'user': me.username,
+									'status': records[0].get('db_name')
+								};
+								activityChangesetStore.load();
+							}
+						}
+					}, {
+						xtype: 'gridpanel',
+						store: activityChangesetStore,
+						columns: [{
+							// TODO: add name of activity to changeset
+							/**
+							 * It would be much nicer to show the name of an activity rather
+							 * than its UUID. But for the moment being, the changeset protocol
+							 * does not provide the name of an activity.
+							 */
+							header: 'Activity',
+							dataIndex: 'activity',
+							flex: 1
+						}, {
+							header: 'Status',
+							dataIndex: 'status'
+						}],
+						dockedItems: [{
+							xtype: 'pagingtoolbar',
+							store: activityChangesetStore,
+							dock: 'bottom',
+							enableOverflow: false,
+							displayInfo: true
+						}]
+					}]
 				}]
 			}]
 		} else {

@@ -136,7 +136,7 @@ Ext.define('Lmkp.controller.Filter', {
             }
         }
         var store = this.getActivityGridStore();
-        store.getProxy().url = 'activities/json?' + query_url;
+        store.getProxy().url = 'activities?' + query_url;
         store.load();
         if (query_url) {
         	// move paging to back to page 1 when filtering (otherwise may show empty page instead of results)
@@ -328,8 +328,10 @@ Ext.define('Lmkp.controller.Filter', {
     renderNameColumn: function() {
         col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=namecolumn]')[0];
         col.renderer = function(value, p, record) {
-        	if (value) {
-            	return Ext.String.format('{0}', value);
+        	// Assumption: the name (if available) always is in the last taggroup
+        	var name = record.taggroups().first().get(Lmkp.ts.msg("dataIndex-name"));
+        	if (name) {
+            	return Ext.String.format('{0}', name);
         	} else {
         		return Lmkp.ts.msg("unnamed-activity");
         	}
@@ -341,15 +343,16 @@ Ext.define('Lmkp.controller.Filter', {
     	var selectedRecord = grid.getSelectionModel().getSelection();
 		var detailPanel = Ext.ComponentQuery.query('filterPanel tabpanel[id=detailPanel]')[0];
 		var selectedTab = detailPanel.getActiveTab();
-			switch (selectedTab.getXType()) {
-				case "activityHistoryTab":
-					var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
-					this._populateHistoryTab(selectedTab, uid)
-					break;
-				default: 	// default is: activityDetailTab
-					this._populateDetailsTab(selectedTab, selectedRecord);
-					break;
-			}
+		switch (selectedTab.getXType()) {
+			case "activityHistoryTab":
+				// var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
+				// this._populateHistoryTab(selectedTab, uid)
+				console.log("coming soon");
+				break;
+			default: 	// default is: activityDetailTab
+				this._populateDetailsTab(selectedTab, selectedRecord);
+				break;
+		}
     },
     
     getOperator: function(xType) {
@@ -465,20 +468,133 @@ Ext.define('Lmkp.controller.Filter', {
     
     _populateDetailsTab: function(panel, data) {
     	if (data.length > 0) {
-	        var html = '';
-	        for (var i in data[0].data) {
-	            // dont show id
-	            if (i != 'id') {
-	            	/**
-	            	 * The default NULL-value for unspecified number values is 0.
-	            	 * Assumption: 0 as a number value (currently for Area and Year of Investment)
-	            	 * is not useful and should rather not be displayed.
-	            	 */
-	            	var val = (data[0].data[i] == 0) ? '' : data[0].data[i]; 
-	            	html += Ext.String.format('<b>{0}</b>: {1}<br/>', i, val);
-	            }
-	        }
-	        panel.update(html);
+    		
+    		// remove initial text if still there
+	    	if (panel.down('panel[name=details_initial]')) {
+	    		panel.remove(panel.down('panel[name=details_initial]'));
+	    	}
+	    	
+	    	// remove old panels
+	    	if (panel.down('panel[name=details_mandatory]')) {
+	    		panel.remove(panel.down('panel[name=details_mandatory]'));
+	    	}
+	    	if (panel.down('panel[name=details_optional]')) {
+	    		panel.remove(panel.down('panel[name=details_optional]'));
+	    	}
+	    	while (panel.down('panel[name=details_taggroups]')) {
+	    		panel.remove(panel.down('panel[name=details_taggroups]'));
+	    	}
+    		
+    		// get data
+    		var taggroupStore = data[0].taggroups();
+    		
+    		// Assumption: the order of IDs of TagGroups represents the order in which they were inserted
+    		// The first TagGroup therefore contains all the mandatory attributes.
+    		// TODO: maybe this sorting could/should be done on server side?
+    		taggroupStore.sort('id', 'ASC');
+    		for (var i=0; i<taggroupStore.count(); i++) {
+    			// first TagGroup contains mandatory attributes, treat differently
+    			// (show mandatory fields first, then optional)
+    			if (i == 0) {
+    				var mandatory = {};
+    				var optional = {};
+    				// loop through fields
+    				for (var j=0; j<taggroupStore.getAt(i).fields.getCount(); j++) {
+    					if (taggroupStore.getAt(i).fields.getAt(j).mandatory) {
+    						// collect mandatory fields
+	    					mandatory[taggroupStore.getAt(i).fields.getAt(j).name] = taggroupStore.getAt(i).get(taggroupStore.getAt(i).fields.getAt(j).name)
+    					} else {
+    						// collect optional fields
+    						optional[taggroupStore.getAt(i).fields.getAt(j).name] = taggroupStore.getAt(i).get(taggroupStore.getAt(i).fields.getAt(j).name)
+    					}
+    				}
+    				
+    				// display mandatory fields first
+    				var html = '[mandatory]<br/>';
+    				for (var x in mandatory) {
+		            	html += Ext.String.format('<b>{0}</b>: {1}<br/>', x, this._formatEmptyNumberValue(mandatory[x]));
+    				}
+       				var mandatoryPanel = Ext.create('Ext.panel.Panel', {
+			        	name: 'details_mandatory',
+						items: [{
+							html: html,
+							border: 0
+						}, {
+							xtype: 'button',
+							text: 'edit',
+							taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
+	    					handler: function() {
+	    						var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
+	    							activity: data[0],
+	    							selected_taggroup: taggroupStore.getAt(this.taggroup_id)
+	    						});
+	    						win.show();
+	    					}
+						}]
+				    });
+    				panel.add(mandatoryPanel);
+    				
+    				// display optional fields (only show not empty fields)
+    				html = '[optional]<br/>'
+    				for (var x in optional) {
+    					// don't show id
+    					if (x != 'id' && this._formatEmptyNumberValue(optional[x]) != '') {
+			            	html += Ext.String.format('<b>{0}</b>: {1}<br/>', x, this._formatEmptyNumberValue(optional[x]));
+    					}
+    				}
+    				if (html != '[optional]<br/>') {
+    					var optionalPanel = Ext.create('Ext.panel.Panel', {
+				        	name: 'details_optional',
+				        	items: [{
+				        		html: html,
+				        		border: 0
+				        	}, {
+				        		xtype: 'button',
+								text: 'edit',
+								taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
+		    					handler: function() {
+		    						var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
+		    							activity: data[0],
+		    							selected_taggroup: taggroupStore.getAt(this.taggroup_id)
+		    						});
+		    						win.show();
+		    					}
+				        	}]
+					    });
+	    				panel.add(optionalPanel);
+    				}
+    			} else {
+    				// display 'normal' taggroups
+    				html = '[additional taggroup]<br/>';
+    				// process 'normal' taggroups (only show not empty fields)
+    				for (var j in taggroupStore.getAt(i).data) {
+    					if (j != 'id' && j != 'lmkp.model.activity_id' && this._formatEmptyNumberValue(taggroupStore.getAt(i).data[j]) != '') {
+			            	html += Ext.String.format('<b>{0}</b>: {1}<br/>', j, this._formatEmptyNumberValue(taggroupStore.getAt(i).data[j]));
+    					}
+    				}
+    				if (html != '[additional taggroup]<br/>') {
+    					var taggroupPanel = Ext.create('Ext.panel.Panel', {
+				        	name: 'details_taggroups',
+				        	items: [{
+				        		html: html,
+				        		border: 0
+				        	}, {
+				        		xtype: 'button',
+								text: 'edit',
+								taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
+		    					handler: function() {
+		    						var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
+		    							activity: data[0],
+		    							selected_taggroup: taggroupStore.getAt(this.taggroup_id)
+		    						});
+		    						win.show();
+		    					}
+				        	}]
+					    });
+	    				panel.add(taggroupPanel);
+    				}
+    			}
+    		}
        	}
     },
     
@@ -704,5 +820,14 @@ Ext.define('Lmkp.controller.Filter', {
         for(var i=0; i<arr.length; i++) {
             if (arr[i] == obj) return true;
         }
+    },
+    
+    _formatEmptyNumberValue: function(emptyNumber) {
+    	/**
+		 * The default NULL-value for unspecified number values is 0.
+		 * Assumption: 0 as a number value (currently for Area and Year of Investment)
+		 * is not useful and should rather not be displayed.
+		 */
+		return (emptyNumber == 0) ? '' : emptyNumber; 
     }
 });

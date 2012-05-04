@@ -12,16 +12,16 @@ Ext.define('Lmkp.controller.EditFilter', {
 
     init: function() {
         this.control({
-            'filterPanel panel[id=detailPanel] button[id=edit-button]':{
-                click: this.onEditButtonClick
+            'filterPanel panel[id=detailPanel] button[id=add-taggroup-button]':{
+                click: this.onAddTaggroupButtonClick
             },
-            'filterPanel panel[id=detailPanel] button[id=add-button]':{
-                click: this.onAddButtonClick
+            'filterPanel panel[id=detailPanel] button[id=add-activity-button]':{
+                click: this.onAddActivityButtonClick
             }
         });
     },
 
-    onEditButtonClick: function(button, event, eOpts){
+    onAddTaggroupButtonClick: function(button, event, eOpts){
         // Get the selected item in the grid panel
         var gridPanel = Ext.ComponentQuery.query('filterPanel gridpanel[id=filterResults]')[0];
         var selection = gridPanel.getSelectionModel().getSelection()[0];
@@ -30,51 +30,38 @@ Ext.define('Lmkp.controller.EditFilter', {
         if(!selection){
             Ext.Msg.show({
                 title: 'Edit Activity',
-                msg: 'Please select first an activity.',
+                msg: 'Please select an activity first.',
                 buttons: Ext.Msg.OK,
                 icon: Ext.window.MessageBox.INFO
             });
             return;
         }
+        
+        console.log(selection);
+        console.log(selection.taggroups());
 
-        Ext.Ajax.request({
-            url: '/config/form',
-            success: function(response){
-                var formConfig = Ext.decode(response.responseText);
-
-                // Set up the window title
-                var title = "Edit " + selection.get("name");
-
-                // Create a new form panel that is put in the edit window
-                var formPanel = Ext.create('Ext.form.Panel',{
-                    border: false,
-                    buttons: [{
-                        text: "Save"
-                    }],
-                    items: formConfig
-                });
-
-                // Load the selected record
-                formPanel.loadRecord(selection);
-
-                // Create the new edit window and show it
-                Ext.create('Ext.window.Window', {
-                    title: title,
-                    height: 200,
-                    width: 400,
-                    layout: 'fit',
-                    items: [
-                    formPanel
-                    ]
-                }).show();
-
-            },
-            scope: this
-        })
+		// create window and pass entire activity (needed because ActivityProtocol needs all old TagGroups as well)
+    	var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
+    		activity: selection,
+    		selected_taggroup: null
+    	});
+    	win.show();
     },
 
-    onAddButtonClick: function(button, event, eOpts){
-    //console.log("Add new activity");
+    onAddActivityButtonClick: function(button, event, eOpts){
+    	// Open new window with form to add new activity.
+    	// The form fields are requested before creating the window.
+    	// This allows to create a nicely centered form window.
+    	Ext.Ajax.request({
+    		url: '/config/form',
+    		success: function(response) {
+    			var formConfig = Ext.decode(response.responseText);
+    			var win = Ext.create('Lmkp.view.activities.NewActivityWindow', {
+    				config: formConfig
+    			});
+    			win.show();
+    		}
+    	});
     }
 
 });

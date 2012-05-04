@@ -2,6 +2,7 @@ from lmkp.config import config_file_path
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol import ActivityProtocol
+from lmkp.views.activity_protocol2 import ActivityProtocol2
 import logging
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPFound
@@ -27,6 +28,7 @@ log = logging.getLogger(__name__)
 _ = TranslationStringFactory('lmkp')
 
 activity_protocol = ActivityProtocol(Session)
+activity_protocol2 = ActivityProtocol2(Session)
 
 # Translatable hashmap with all possible activity status
 statusMap = {
@@ -92,16 +94,13 @@ def read_one(request):
     return activity_protocol.read(request, filter=get_status_filter(request), uid=uid)
 
 
-@view_config(route_name='activities_read_many', renderer='geojson')
+@view_config(route_name='activities_read_many', renderer='json')
 def read_many(request):
     """
     Reads many active activities
     """
-
-    log.debug(get_status_filter(request))
-
-    return activity_protocol.read(request, filter=get_status_filter(request))
-
+    activities = activity_protocol2.read(request)
+    return activities
 
 @view_config(route_name='activities_read_one_json', renderer='json')
 def read_one_json(request):
@@ -184,7 +183,7 @@ def create(request):
     if not isinstance(has_permission('edit', request.context, request), ACLAllowed):
         return HTTPForbidden()
 
-    return activity_protocol.create(request)
+    return activity_protocol2.create(request)
 
 @view_config(route_name='activities_tree', renderer='tree')
 def tree(request):
@@ -229,11 +228,12 @@ def tree(request):
         return result
 
 
-@view_config(route_name='activities_model', renderer='string')
+@view_config(route_name='taggroups_model', renderer='string')
 def model(request):
     """
     Controller that returns a dynamically generated JavaScript that builds the
-    client-side Activity model. The model is set up based on the defined mandatory
+    client-side TagGroup model, which is related (belongsTo / hasMany) to the 
+    static Activity model. The model is set up based on the defined mandatory
     and optional field in the configuration yaml file.
     """
     def _merge_config(parent_key, global_config, locale_config):
@@ -264,7 +264,7 @@ def model(request):
     object = {}
 
     object['extend'] = 'Ext.data.Model'
-    object['proxy'] = {'type': 'ajax', 'url': '/activities', 'reader': {'type': 'json', 'root': 'children'}}
+    object['belongsTo'] = 'Lmkp.model.Activity'
 
     # Get a stream of the config yaml file to extract the fields
     stream = open(config_file_path(), 'r')
@@ -285,7 +285,6 @@ def model(request):
         # No localized configuration file found!
         pass
 
-
     fields = []
     fieldsConfig = global_config['application']['fields']
 
@@ -299,6 +298,7 @@ def model(request):
     for (name, config) in fieldsConfig['mandatory'].iteritems():
         o = _get_extjs_config(name, config, lang)
         if o is not None:
+            o['mandatory'] = 1
             fields.append(o)
     # Then process also the optional fields
     for (name, config) in fieldsConfig['optional'].iteritems():
@@ -310,8 +310,7 @@ def model(request):
 
     object['fields'] = fields
 
-    return "Ext.define('Lmkp.model.Activity', %s);" % object
-
+    return "Ext.define('Lmkp.model.TagGroup', %s);" % object
 
 @view_config(route_name='rss_feed', renderer='lmkp:templates/rss.mak')
 def read_many_rss(request):
