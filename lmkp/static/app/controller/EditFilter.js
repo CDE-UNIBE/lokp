@@ -49,6 +49,7 @@ Ext.define('Lmkp.controller.EditFilter', {
     },
 
     onAddActivityButtonClick: function(button, event, eOpts){
+    	/**
     	// Open new window with form to add new activity.
     	// The form fields are requested before creating the window.
     	// This allows to create a nicely centered form window.
@@ -62,6 +63,16 @@ Ext.define('Lmkp.controller.EditFilter', {
     			win.show();
     		}
     	});
+    	*/
+    	
+    	// var mandatoryStore = Ext.create('Lmkp.store.Config');
+    	// mandatoryStore.filter("allowBlank", false);
+    	// mandatoryStore.load();
+    	
+    	var win = Ext.create('Lmkp.view.activities.NewActivityWindow');
+    	win.show();
+    	
+    	
     }
 
 });
