@@ -362,7 +362,7 @@ class ActivityProtocol2(object):
                                    A_Tag.id.label("tag"),
                                    A_Key.key.label("key"),
                                    A_Value.value.label("value")
-                                   ).join(A_Tag_Group).join(A_Tag).join(A_Key).join(A_Value)
+                                   ).join(A_Tag_Group).join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).join(A_Key).join(A_Value)
                                  
         activities = []
         for i in query.all():
