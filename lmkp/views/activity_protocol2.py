@@ -10,6 +10,8 @@ from shapely.geometry import asShape
 from shapely.geometry.polygon import Polygon
 import simplejson as json
 from sqlalchemy import select
+from sqlalchemy import join
+from sqlalchemy import alias
 from sqlalchemy.orm.util import AliasedClass
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import desc
@@ -30,7 +32,7 @@ class Tag(object):
         return self.value
 
     def to_table(self):
-        return {self.key: self.value}
+        return {'key': self.key, 'value': self.value}
 
 class TagGroup(object):
     
@@ -52,9 +54,9 @@ class TagGroup(object):
         return None
 
     def to_table(self):
-        tags = {}
+        tags = []
         for t in self._tags:
-            tags[t.get_key()] = t.get_value()
+            tags.append(t.to_table())
         return {'id': self._id, 'main_key': self._main_key, 'tags': tags}
 
 class ActivityFeature2(object):
@@ -174,27 +176,40 @@ class ActivityProtocol2(object):
             db_taggroup = A_Tag_Group()
             db_activity.tag_groups.append(db_taggroup)
 
-            for key in taggroup:
-                if key not in ['id']:
-                    log.debug(key)
-                    value = taggroup[key]
+            # Reset the main_key string
+            main_key = None
+            # Try to get the main_key from the input JSON file. The main_key
+            # is not mandatory
+            try:
+                main_key = taggroup['main_key']
+            except KeyError:
+                pass
 
-                    # The key has to be already in the database
-                    k = self.Session.query(A_Key).filter(A_Key.key == key).first()
+            # Loop all tags within a tag group
+            for tag in taggroup['tags']:
+                # Get the key and the value of the current tag
+                key = tag['key']
+                value = tag['value']
 
-                    # If the value is not yet in the database, create a new value
-                    v = self.Session.query(A_Value).filter(A_Value.value == unicode(value)).first()
-                    if v is None:
-                        v = A_Value(value=value)
-                        v.fk_language = 1
+                # The key has to be already in the database
+                k = self.Session.query(A_Key).filter(A_Key.key == key).first()
 
+                # If the value is not yet in the database, create a new value
+                v = self.Session.query(A_Value).filter(A_Value.value == unicode(value)).first()
+                if v is None:
+                    v = A_Value(value=value)
+                    v.fk_language = 1
 
-                    # Create a new tag with key and value and append it to the tag group
-                    a_tag = A_Tag()
-                    db_taggroup.tags.append(a_tag)
-                    a_tag.key = k
-                    a_tag.value = v
-                    #db_taggroup.tags.append(a_tag)
+                # Create a new tag with key and value and append it to the tag group
+                a_tag = A_Tag()
+                db_taggroup.tags.append(a_tag)
+                a_tag.key = k
+                a_tag.value = v
+
+                # Check if the current tag is the main tag of this tag group. If
+                # yes, set the main_tag attribute to this tag
+                if a_tag.key.key == main_key:
+                    db_taggroup.main_tag = a_tag
 
         # Create a new changeset
         changeset = A_Changeset(source='[pending] %s' % activity)
@@ -371,6 +386,18 @@ class ActivityProtocol2(object):
 
         # An aliased helper class
         activityQuery = AliasedClass(Activity, alias=limited_select)
+
+        #joined_main_key = select([A_Tag_Group.id, A_Tag.key.key]).join(A_Tag_Group, A_Tag, A_Tag_Group.fk_a_tag == A_Tag.id).alias("joined_taggroups")
+        #joined_main_key = select([A_Tag_Group.id, A_Tag.key.key]).select_from(A_Tag_Group).alias("joined_taggroups")
+
+        t1 = select([A_Tag_Group.id, A_Tag_Group.fk_a_tag]).alias("t1")
+        t2 = select([A_Tag.id, A_Tag.key]).alias("t2")
+
+        #joined_main_key = select([A_Tag.key, A_Tag_Group.id]).join(t1,t2)
+        #main_key_query = AliasedClass(A_Tag_Group, alias=joined_main_key)
+
+        #for i in joined_main_key:
+        #    print i
 
         query = self.Session.query(activityQuery.id.label("id"),
                                    activityQuery.activity_identifier.label("activity_identifier"),
