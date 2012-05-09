@@ -328,6 +328,21 @@ Ext.define('Lmkp.controller.Filter', {
     renderNameColumn: function() {
         col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=namecolumn]')[0];
         col.renderer = function(value, p, record) {
+        	// loop through all tags is needed
+        	var taggroupStore = record.taggroups();
+        	for (var i=0; i<taggroupStore.count(); i++) {
+        		var tagStore = taggroupStore.getAt(i).tags();
+        		for (var j=0; j<tagStore.count(); j++) {
+        			console.log(tagStore.getAt(j));
+        			console.log(Lmkp.ts.msg("dataIndex-name"));
+        			if (tagStore.getAt(j).get('key') == Lmkp.ts.msg("dataIndex-name")) {
+        				return Ext.String.format('{0}', tagStore.getAt(j).get('value'))
+        			}
+        		}
+        	}
+        	// no name tag found, return 'unnamed'
+        	return Lmkp.ts.msg("unnamed-activity");
+        	/*
         	// Assumption: the name (if available) always is in the last taggroup
         	var name = record.taggroups().first().get(Lmkp.ts.msg("dataIndex-name"));
         	if (name) {
@@ -335,12 +350,30 @@ Ext.define('Lmkp.controller.Filter', {
         	} else {
         		return Lmkp.ts.msg("unnamed-activity");
         	}
+        	*/
         }
     },
     
     showActivity: function() {
     	var grid = Ext.ComponentQuery.query('filterPanel gridpanel[id=filterResults]')[0];
     	var selectedRecord = grid.getSelectionModel().getSelection();
+    	
+    	
+    	var activity = selectedRecord[0];
+    	var taggroups = activity.taggroups(); // store containing all TagGroups
+    	var single_taggroup = taggroups.first();
+    	var tags = single_taggroup.tags(); // store containing all Tags of first TagGroup
+    	var single_tag = tags.first();
+    	
+    	console.log(activity);
+    	console.log(taggroups);
+    	console.log(single_taggroup);
+    	console.log(tags);
+    	console.log(single_tag);
+    	
+    	
+    	
+    	
 		var detailPanel = Ext.ComponentQuery.query('filterPanel tabpanel[id=detailPanel]')[0];
 		var selectedTab = detailPanel.getActiveTab();
 		switch (selectedTab.getXType()) {
@@ -475,6 +508,10 @@ Ext.define('Lmkp.controller.Filter', {
 	    	}
 	    	
 	    	// remove old panels
+	    	while (panel.down('panel[name=taggroup_panel]')) {
+	    		panel.remove(panel.down('panel[name=taggroup_panel]'));
+	    	}
+	    	/*
 	    	if (panel.down('panel[name=details_mandatory]')) {
 	    		panel.remove(panel.down('panel[name=details_mandatory]'));
 	    	}
@@ -484,10 +521,31 @@ Ext.define('Lmkp.controller.Filter', {
 	    	while (panel.down('panel[name=details_taggroups]')) {
 	    		panel.remove(panel.down('panel[name=details_taggroups]'));
 	    	}
+	    	*/
     		
     		// get data
     		var taggroupStore = data[0].taggroups();
     		
+    		for (var i=0; i<taggroupStore.count(); i++) {
+    			var tagStore = taggroupStore.getAt(i).tags();
+    			var html = '';
+    			
+    			for (var j=0; j<tagStore.count(); j++) {
+    				html += Ext.String.format('<b>{0}</b>: {1}<br />', tagStore.getAt(j).get('key'), tagStore.getAt(j).get('value'));
+    			}
+    			
+    			// create panel
+    			var taggroupPanel = Ext.create('Ext.panel.Panel', {
+    				name: 'taggroup_panel',
+					xtype: 'panel',
+					html: html
+				});
+    			panel.add(taggroupPanel);
+    			
+    		}
+    		
+    		
+    		/*
     		// Assumption: the order of IDs of TagGroups represents the order in which they were inserted
     		// The first TagGroup therefore contains all the mandatory attributes.
     		// TODO: maybe this sorting could/should be done on server side?
@@ -595,6 +653,7 @@ Ext.define('Lmkp.controller.Filter', {
     				}
     			}
     		}
+    		*/
        	}
     },
     

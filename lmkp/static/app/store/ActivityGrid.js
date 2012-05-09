@@ -1,6 +1,6 @@
 Ext.define('Lmkp.store.ActivityGrid', {
     extend: 'Ext.data.Store',
-    requires: ['Lmkp.model.Activity','Lmkp.model.TagGroup'], // both are needed to build relation
+    requires: ['Lmkp.model.Activity','Lmkp.model.TagGroup','Lmkp.model.Tag'], // both are needed to build relation
     model: 'Lmkp.model.Activity',
     
     pageSize: 10,

@@ -228,7 +228,7 @@ def tree(request):
         return result
 
 
-@view_config(route_name='taggroups_model', renderer='string')
+#@view_config(route_name='taggroups_model', renderer='string')
 def model(request):
     """
     Controller that returns a dynamically generated JavaScript that builds the
