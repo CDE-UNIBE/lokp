@@ -6,7 +6,8 @@ Ext.define('Lmkp.model.TagGroup', {
 		name: 'id'
 	}, {
 		type: 'string',
-		name: 'main_key'
+		name: 'main_tag',
+		mapping: 'main_key'
 	}],
 	
 	belongsTo: 'Lmkp.model.Activity',

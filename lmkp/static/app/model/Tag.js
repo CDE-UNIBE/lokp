@@ -7,6 +7,9 @@ Ext.define('Lmkp.model.Tag', {
 	}, {
 		type: 'string',
 		name: 'value'
+	}, {
+		type: 'string',
+		name: 'id'
 	}],
 	
 	belongsTo: 'Lmkp.model.TagGroup'
