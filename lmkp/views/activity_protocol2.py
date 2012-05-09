@@ -21,18 +21,19 @@ log = logging.getLogger(__name__)
 
 class Tag(object):
 
-    def __init__(self, key, value):
-        self.key = key
-        self.value = value
+    def __init__(self, id, key, value):
+        self._id = id
+        self._key = key
+        self._value = value
 
     def get_key(self):
-        return self.key
+        return self._key
 
     def get_value(self):
-        return self.value
+        return self._value
 
     def to_table(self):
-        return {'key': self.key, 'value': self.value}
+        return {'id': self._id, 'key': self._key, 'value': self._value}
 
 class TagGroup(object):
     
@@ -139,7 +140,13 @@ class ActivityProtocol2(object):
         if 'create' in raw:
             if 'activities' in raw['create']:
                 for activity in raw['create']['activities']:
-                    self._create_activity(request, activity)
+                    #self._create_activity(request, activity)
+                    pass
+
+        if 'delete' in raw:
+            if 'activities' in raw['activities']:
+                for activity in raw['delete']['activities']:
+                    self._delete_tag(request, activity)
 
         # Return the newly created object with 201 Created HTTP code status
         return HTTPCreated(detail="ok")
@@ -217,6 +224,23 @@ class ActivityProtocol2(object):
         changeset.user = self.Session.query(User).filter(User.username == request.user.username).first()
         changeset.activity = db_activity
         self.Session.add(changeset)
+
+    def _delete_tag(self, request, activity):
+
+        try:
+            log.debug(activity['id'])
+
+            activity_id = activity['id']
+
+            filter
+
+            activity = self.Session.query(Activity).join(A_Tag_Group).join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).filter(A_Tag.id == tag['id']).first()
+            log.debug(activity.version)
+
+        except KeyError:
+            pass
+
+
     
     def _filter(self, request, activities):
         """
@@ -444,7 +468,7 @@ class ActivityProtocol2(object):
                 taggroup = TagGroup(taggroup_id, i[6])
                 activity.add_taggroup(taggroup)
 
-            taggroup.add_tag(Tag(key, value))
+            taggroup.add_tag(Tag(i[7], key, value))
 
         return activities
 
