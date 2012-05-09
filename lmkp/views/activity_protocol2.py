@@ -9,9 +9,9 @@ from pyramid.httpexceptions import HTTPNotFound
 from shapely.geometry import asShape
 from shapely.geometry.polygon import Polygon
 import simplejson as json
-from sqlalchemy import select
-from sqlalchemy import join
 from sqlalchemy import alias
+from sqlalchemy import join
+from sqlalchemy import select
 from sqlalchemy.orm.util import AliasedClass
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import desc
@@ -21,18 +21,19 @@ log = logging.getLogger(__name__)
 
 class Tag(object):
 
-    def __init__(self, key, value):
-        self.key = key
-        self.value = value
+    def __init__(self, id, key, value):
+        self._id = id
+        self._key = key
+        self._value = value
 
     def get_key(self):
-        return self.key
+        return self._key
 
     def get_value(self):
-        return self.value
+        return self._value
 
     def to_table(self):
-        return {'key': self.key, 'value': self.value}
+        return {'id': self._id, 'key': self._key, 'value': self._value}
 
 class TagGroup(object):
     
@@ -132,17 +133,114 @@ class ActivityProtocol2(object):
         raw = request.json_body
 
         # Check if the json body is a valid diff file
-        if 'create' not in raw and 'modify' not in raw and 'delete' not in raw:
+        #if 'create' not in raw and 'modify' not in raw and 'delete' not in raw:
+        if 'activities' not in raw:
             return HTTPBadRequest(detail="Not a valid format")
 
         # Handle first the request to create new activities
-        if 'create' in raw:
-            if 'activities' in raw['create']:
-                for activity in raw['create']['activities']:
-                    self._create_activity(request, activity)
+        #if 'create' in raw:
+        #    if 'activities' in raw['create']:
+        #        for activity in raw['create']['activities']:
+        #            #self._create_activity(request, activity)
+        #            pass
+
+        #if 'delete' in raw:
+        #    if 'activities' in raw['activities']:
+        #        for activity in raw['delete']['activities']:
+        #            self._delete_tag(request, activity)
+
+        for activity in raw['activities']:
+            self._handle_activity(request, activity)
 
         # Return the newly created object with 201 Created HTTP code status
         return HTTPCreated(detail="ok")
+
+    def _handle_activity(self, request, activity_dict):
+
+        # If this activity does not have an id then create a new activity
+        if 'id' not in activity_dict:
+            self._create_activity(request, activity_dict)
+            return
+
+        # Get the identifier
+        identifier = activity_dict['id']
+        # Create a list with ids from tags to delete
+        tags_to_delete = []
+        for taggroup_dict in activity_dict['taggroups']:
+            for tag_dict in taggroup_dict['tags']:
+                if 'op' not in tag_dict:
+                    continue
+                elif tag_dict['op'] != 'delete':
+                    continue
+                elif 'id' not in tag_dict:
+                    continue
+                tags_to_delete.append(tag_dict['id'])
+
+        log.debug("Delete the followings tags:")
+        log.debug(tags_to_delete)
+
+
+        # Get this activity
+        db_a = self.Session.query(Activity).filter(Activity.activity_identifier == identifier).order_by(desc(Activity.version)).first()
+
+        latest_version = db_a.version + 1
+
+        # Try to get the geometry
+        try:
+            geom = geojson.loads(json.dumps(activity_dict['geometry']),
+                                 object_hook=geojson.GeoJSON.to_instance)
+
+            # The geometry
+            shape = asShape(geom)
+            # Create a new activity and add a representative point to the activity
+            db_activity = Activity(activity_identifier=db_a.activity_identifier, version=latest_version, point=shape.representative_point().wkt)
+        except KeyError:
+            # If no geometry is submitted, create a new activity without a geometry
+            db_activity = Activity(activity_identifier=db_a.activity_identifier, version=latest_version, point=db_a.point)
+
+        # Set the activity status to pending
+        db_activity.status = self.Session.query(Status).filter(Status.name == 'pending').first()
+        # Add it to the database
+        self.Session.add(db_activity)
+
+        log.debug("++++++++++++++++++++++++++++++++++++++++++")
+        #log.debug(db_a.tag_groups)
+        for db_tg in db_a.tag_groups:
+            log.debug("***************************************************")
+            log.debug(db_tg.id)
+            db_taggroup = A_Tag_Group()
+            db_activity.tag_groups.append(db_taggroup)
+            # Copy all tags
+            for db_t in db_tg.tags:
+                
+                # If the value is not yet in the database, create a new value
+                v = self.Session.query(A_Value).filter(A_Value.value == db_t.value.value).first()
+                if v is None:
+                    continue
+                # Add only tags that are not to delete
+                if db_t.id in tags_to_delete:
+                    continue
+                db_tag = A_Tag()
+                db_tag.fk_a_tag_group = db_taggroup.id
+                db_tag.key = db_t.key
+                db_tag.value = v
+                db_taggroup.tags.append(db_tag)
+
+        # Remove the tags that are to delete
+        for taggroup_dict in activity_dict['taggroups']:
+            for tag_dict in taggroup_dict['tags']:
+
+                if 'op' not in tag_dict:
+                    continue
+                elif tag_dict['op'] != 'delete':
+                    continue
+
+                
+
+
+    def _update_activity(self, request, activity):
+        pass
+
 
     def _create_activity(self, request, activity):
 
@@ -187,6 +285,13 @@ class ActivityProtocol2(object):
 
             # Loop all tags within a tag group
             for tag in taggroup['tags']:
+
+                # Add the tag only if the op property is set to add
+                if 'op' not in tag:
+                    continue
+                elif tag['op'] != 'add':
+                    continue
+
                 # Get the key and the value of the current tag
                 key = tag['key']
                 value = tag['value']
@@ -217,7 +322,7 @@ class ActivityProtocol2(object):
         changeset.user = self.Session.query(User).filter(User.username == request.user.username).first()
         changeset.activity = db_activity
         self.Session.add(changeset)
-    
+
     def _filter(self, request, activities):
         """
         """
@@ -251,8 +356,8 @@ class ActivityProtocol2(object):
             if op in nbr_map.keys():
                 def __attribute_test(item):
                     """
-                        item is an ActivityFeature2 object
-                        """
+                    item is an ActivityFeature2 object
+                    """
 
                     is_valid = False
 
@@ -288,6 +393,7 @@ class ActivityProtocol2(object):
 
                     # Return true for the whole activity if one tag group passes
                     # the attribute filter
+                    log.debug(is_valid)
                     return is_valid
 
                 f = [i for i in f if __attribute_test(i)]
@@ -387,18 +493,6 @@ class ActivityProtocol2(object):
         # An aliased helper class
         activityQuery = AliasedClass(Activity, alias=limited_select)
 
-        #joined_main_key = select([A_Tag_Group.id, A_Tag.key.key]).join(A_Tag_Group, A_Tag, A_Tag_Group.fk_a_tag == A_Tag.id).alias("joined_taggroups")
-        #joined_main_key = select([A_Tag_Group.id, A_Tag.key.key]).select_from(A_Tag_Group).alias("joined_taggroups")
-
-        t1 = select([A_Tag_Group.id, A_Tag_Group.fk_a_tag]).alias("t1")
-        t2 = select([A_Tag.id, A_Tag.key]).alias("t2")
-
-        #joined_main_key = select([A_Tag.key, A_Tag_Group.id]).join(t1,t2)
-        #main_key_query = AliasedClass(A_Tag_Group, alias=joined_main_key)
-
-        #for i in joined_main_key:
-        #    print i
-
         query = self.Session.query(activityQuery.id.label("id"),
                                    activityQuery.activity_identifier.label("activity_identifier"),
                                    activityQuery.point.label("geometry"),
@@ -444,7 +538,7 @@ class ActivityProtocol2(object):
                 taggroup = TagGroup(taggroup_id, i[6])
                 activity.add_taggroup(taggroup)
 
-            taggroup.add_tag(Tag(key, value))
+            taggroup.add_tag(Tag(i[7], key, value))
 
         return activities
 
