@@ -333,8 +333,6 @@ Ext.define('Lmkp.controller.Filter', {
         	for (var i=0; i<taggroupStore.count(); i++) {
         		var tagStore = taggroupStore.getAt(i).tags();
         		for (var j=0; j<tagStore.count(); j++) {
-        			console.log(tagStore.getAt(j));
-        			console.log(Lmkp.ts.msg("dataIndex-name"));
         			if (tagStore.getAt(j).get('key') == Lmkp.ts.msg("dataIndex-name")) {
         				return Ext.String.format('{0}', tagStore.getAt(j).get('value'))
         			}
@@ -342,39 +340,13 @@ Ext.define('Lmkp.controller.Filter', {
         	}
         	// no name tag found, return 'unnamed'
         	return Lmkp.ts.msg("unnamed-activity");
-        	/*
-        	// Assumption: the name (if available) always is in the last taggroup
-        	var name = record.taggroups().first().get(Lmkp.ts.msg("dataIndex-name"));
-        	if (name) {
-            	return Ext.String.format('{0}', name);
-        	} else {
-        		return Lmkp.ts.msg("unnamed-activity");
-        	}
-        	*/
         }
     },
     
     showActivity: function() {
     	var grid = Ext.ComponentQuery.query('filterPanel gridpanel[id=filterResults]')[0];
     	var selectedRecord = grid.getSelectionModel().getSelection();
-    	
-    	
-    	var activity = selectedRecord[0];
-    	var taggroups = activity.taggroups(); // store containing all TagGroups
-    	var single_taggroup = taggroups.first();
-    	var tags = single_taggroup.tags(); // store containing all Tags of first TagGroup
-    	var single_tag = tags.first();
-    	
-    	console.log(activity);
-    	console.log(taggroups);
-    	console.log(single_taggroup);
-    	console.log(tags);
-    	console.log(single_tag);
-    	
-    	
-    	
-    	
-		var detailPanel = Ext.ComponentQuery.query('filterPanel tabpanel[id=detailPanel]')[0];
+   		var detailPanel = Ext.ComponentQuery.query('filterPanel tabpanel[id=detailPanel]')[0];
 		var selectedTab = detailPanel.getActiveTab();
 		switch (selectedTab.getXType()) {
 			case "activityHistoryTab":
@@ -508,8 +480,8 @@ Ext.define('Lmkp.controller.Filter', {
 	    	}
 	    	
 	    	// remove old panels
-	    	while (panel.down('panel[name=taggroup_panel]')) {
-	    		panel.remove(panel.down('panel[name=taggroup_panel]'));
+	    	while (panel.down('taggrouppanel')) {
+	    		panel.remove(panel.down('taggrouppanel'));
 	    	}
 	    	/*
 	    	if (panel.down('panel[name=details_mandatory]')) {
@@ -528,20 +500,26 @@ Ext.define('Lmkp.controller.Filter', {
     		
     		for (var i=0; i<taggroupStore.count(); i++) {
     			var tagStore = taggroupStore.getAt(i).tags();
-    			var html = '';
+    			var tags = [];
     			
     			for (var j=0; j<tagStore.count(); j++) {
-    				html += Ext.String.format('<b>{0}</b>: {1}<br />', tagStore.getAt(j).get('key'), tagStore.getAt(j).get('value'));
+    				// collect values
+    				var main_tag = null;
+    				
+    				// check if it is main_tag
+    				if (taggroupStore.getAt(i).get('main_tag') == tagStore.getAt(j).get('id')) {
+    					main_tag = tagStore.getAt(j);
+    				} else {
+    					tags.push(tagStore.getAt(j));
+    				}
     			}
     			
     			// create panel
-    			var taggroupPanel = Ext.create('Ext.panel.Panel', {
-    				name: 'taggroup_panel',
-					xtype: 'panel',
-					html: html
+				var taggroupPanel = Ext.create('Lmkp.view.activities.TagGroupPanel', {
+					'main_tag': main_tag,
+					'tags': tags
 				});
     			panel.add(taggroupPanel);
-    			
     		}
     		
     		
