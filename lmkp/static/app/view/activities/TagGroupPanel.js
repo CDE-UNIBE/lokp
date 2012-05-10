@@ -6,10 +6,11 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
 	defaults: {
 		anchor: '100%'
 	},
+	bodyPadding: 5,
     
     items: [{
     	border: 0,
-		name: 'maintagpanel',
+		name: 'maintagpanel'
     }, {
     	border: 0,
     	name: 'tagspanel',
@@ -32,6 +33,28 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
 			}
 		}
 		
+		// add button to show or hide 'normal' tags panel
+		if (this._getMainTagPanel().html != '' && me.tags.length > 0) {
+			this.addDocked({
+				dock: 'right',
+				xtype: 'toolbar',
+				items: [{
+					name: 'toggleDetails',
+					scale: 'small',
+					text: 'details',
+					enableToggle: true,
+					pressed: true,
+					toggleHandler: function(button, state) {
+						// show or hide 'normal' tags panel
+						me._getTagsPanel().setVisible(state);
+					}
+				}]
+			});
+		}
+		
+		// if user is logged in (Lmkp.toolbar != false), show edit button
+		// this is done in controller/Filter.js because it involves data not directly available to this panel.
+		
 		// all other tags
 		if (me.tags.length > 0) {
 			var tagspanelHtml = '';
@@ -39,6 +62,15 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
 				tagspanelHtml += Ext.String.format('<b>{0}</b>: {1}<br />', me.tags[i].get('key'), me.tags[i].get('value'));
 			}
 			this._getTagsPanel().html = tagspanelHtml;
+		}
+	},
+	
+	/**
+	 * Toggle (toggled = true) or unToggle (toggled = false) the button to show or hide 'normal' tags panel
+	 */
+	toggleDetailButton: function(toggled) {
+		if (this.down('button[name=toggleDetails]')) {
+			this.down('button[name=toggleDetails]').toggle(toggled);
 		}
 	},
 	
