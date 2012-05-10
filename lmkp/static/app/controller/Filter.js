@@ -522,9 +522,10 @@ Ext.define('Lmkp.controller.Filter', {
 							name: 'editTaggroup',
 							scale: 'small',
 							text: 'edit',
+							taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
 							handler: function() {
 								var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
-									activity: data[0],
+									activity_id: data[0].get('id'),
 									selected_taggroup: taggroupStore.getAt(this.taggroup_id)
 								});
 								win.show();
