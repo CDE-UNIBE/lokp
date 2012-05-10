@@ -483,17 +483,11 @@ Ext.define('Lmkp.controller.Filter', {
 	    	while (panel.down('taggrouppanel')) {
 	    		panel.remove(panel.down('taggrouppanel'));
 	    	}
-	    	/*
-	    	if (panel.down('panel[name=details_mandatory]')) {
-	    		panel.remove(panel.down('panel[name=details_mandatory]'));
+	    	
+	    	// remove toolbar
+	    	if (panel.getDockedComponent('top_toolbar')) {
+		    	panel.removeDocked(panel.getDockedComponent('top_toolbar'));
 	    	}
-	    	if (panel.down('panel[name=details_optional]')) {
-	    		panel.remove(panel.down('panel[name=details_optional]'));
-	    	}
-	    	while (panel.down('panel[name=details_taggroups]')) {
-	    		panel.remove(panel.down('panel[name=details_taggroups]'));
-	    	}
-	    	*/
     		
     		// get data
     		var taggroupStore = data[0].taggroups();
@@ -519,119 +513,50 @@ Ext.define('Lmkp.controller.Filter', {
 					'main_tag': main_tag,
 					'tags': tags
 				});
+				// if user is logged in (Lmkp.toolbar != false), show edit button
+				if (Lmkp.toolbar) {
+					taggroupPanel.addDocked({
+						dock: 'left',
+						xtype: 'toolbar',
+						items: [{
+							name: 'editTaggroup',
+							scale: 'small',
+							text: 'edit',
+							handler: function() {
+								var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
+									activity: data[0],
+									selected_taggroup: taggroupStore.getAt(this.taggroup_id)
+								});
+								win.show();
+							}
+						}]
+					});
+				}
     			panel.add(taggroupPanel);
     		}
     		
-    		
-    		/*
-    		// Assumption: the order of IDs of TagGroups represents the order in which they were inserted
-    		// The first TagGroup therefore contains all the mandatory attributes.
-    		// TODO: maybe this sorting could/should be done on server side?
-    		taggroupStore.sort('id', 'ASC');
-    		for (var i=0; i<taggroupStore.count(); i++) {
-    			// first TagGroup contains mandatory attributes, treat differently
-    			// (show mandatory fields first, then optional)
-    			if (i == 0) {
-    				var mandatory = {};
-    				var optional = {};
-    				// loop through fields
-    				for (var j=0; j<taggroupStore.getAt(i).fields.getCount(); j++) {
-    					if (taggroupStore.getAt(i).fields.getAt(j).mandatory) {
-    						// collect mandatory fields
-	    					mandatory[taggroupStore.getAt(i).fields.getAt(j).name] = taggroupStore.getAt(i).get(taggroupStore.getAt(i).fields.getAt(j).name)
-    					} else {
-    						// collect optional fields
-    						optional[taggroupStore.getAt(i).fields.getAt(j).name] = taggroupStore.getAt(i).get(taggroupStore.getAt(i).fields.getAt(j).name)
-    					}
-    				}
-    				
-    				// display mandatory fields first
-    				var html = '[mandatory]<br/>';
-    				for (var x in mandatory) {
-		            	html += Ext.String.format('<b>{0}</b>: {1}<br/>', x, this._formatEmptyNumberValue(mandatory[x]));
-    				}
-       				var mandatoryPanel = Ext.create('Ext.panel.Panel', {
-			        	name: 'details_mandatory',
-						items: [{
-							html: html,
-							border: 0
-						}, {
-							xtype: 'button',
-							text: 'edit',
-							taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
-	    					handler: function() {
-	    						var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
-	    							activity: data[0],
-	    							selected_taggroup: taggroupStore.getAt(this.taggroup_id)
-	    						});
-	    						win.show();
-	    					}
-						}]
-				    });
-    				panel.add(mandatoryPanel);
-    				
-    				// display optional fields (only show not empty fields)
-    				html = '[optional]<br/>'
-    				for (var x in optional) {
-    					// don't show id
-    					if (x != 'id' && this._formatEmptyNumberValue(optional[x]) != '') {
-			            	html += Ext.String.format('<b>{0}</b>: {1}<br/>', x, this._formatEmptyNumberValue(optional[x]));
-    					}
-    				}
-    				if (html != '[optional]<br/>') {
-    					var optionalPanel = Ext.create('Ext.panel.Panel', {
-				        	name: 'details_optional',
-				        	items: [{
-				        		html: html,
-				        		border: 0
-				        	}, {
-				        		xtype: 'button',
-								text: 'edit',
-								taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
-		    					handler: function() {
-		    						var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
-		    							activity: data[0],
-		    							selected_taggroup: taggroupStore.getAt(this.taggroup_id)
-		    						});
-		    						win.show();
-		    					}
-				        	}]
-					    });
-	    				panel.add(optionalPanel);
-    				}
-    			} else {
-    				// display 'normal' taggroups
-    				html = '[additional taggroup]<br/>';
-    				// process 'normal' taggroups (only show not empty fields)
-    				for (var j in taggroupStore.getAt(i).data) {
-    					if (j != 'id' && j != 'lmkp.model.activity_id' && this._formatEmptyNumberValue(taggroupStore.getAt(i).data[j]) != '') {
-			            	html += Ext.String.format('<b>{0}</b>: {1}<br/>', j, this._formatEmptyNumberValue(taggroupStore.getAt(i).data[j]));
-    					}
-    				}
-    				if (html != '[additional taggroup]<br/>') {
-    					var taggroupPanel = Ext.create('Ext.panel.Panel', {
-				        	name: 'details_taggroups',
-				        	items: [{
-				        		html: html,
-				        		border: 0
-				        	}, {
-				        		xtype: 'button',
-								text: 'edit',
-								taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
-		    					handler: function() {
-		    						var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
-		    							activity: data[0],
-		    							selected_taggroup: taggroupStore.getAt(this.taggroup_id)
-		    						});
-		    						win.show();
-		    					}
-				        	}]
-					    });
-	    				panel.add(taggroupPanel);
-    				}
-    			}
-    		}
-    		*/
+    		panel.addDocked({
+    			id: 'top_toolbar',
+    			dock: 'top',
+    			xtype: 'toolbar',
+    			items: [
+    				'->',
+    			{
+    				text: 'show all details',
+    				handler: function() {
+	    				for (var i in panel.query('taggrouppanel')) {
+	    					panel.query('taggrouppanel')[i].toggleDetailButton(true);
+	    				}
+	    			}
+    			}, {
+	    			text: 'hide all details',
+	    			handler: function() {
+	    				for (var i in panel.query('taggrouppanel')) {
+	    					panel.query('taggrouppanel')[i].toggleDetailButton(false);
+	    				}
+	    			}
+    			}]
+    		});
        	}
     },
     

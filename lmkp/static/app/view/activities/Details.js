@@ -11,8 +11,7 @@ Ext.define('Lmkp.view.activities.Details', {
         align:'stretch'
     },
     defaults: {
-    	margins:'0 0 5 0',
-    	bodyPadding: 5
+    	margins:'0 0 5 0'
     },
 	
 	// initial item
