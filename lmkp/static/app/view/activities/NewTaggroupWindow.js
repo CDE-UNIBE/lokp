@@ -197,7 +197,6 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 
 		// ComboBox to select attribute
 		var cb = Ext.create('Ext.form.field.ComboBox', {
-			xtype: 'combobox',
 			name: cb_name,
 			store: store,
 			valueField: 'name',
