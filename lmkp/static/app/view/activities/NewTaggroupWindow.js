@@ -11,12 +11,10 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 		var me = this;
 		
 		// set window title
-		var activity_name = me.activity.taggroups().first().get(Lmkp.ts.msg("dataIndex-name"));
-		var name = (activity_name) ? activity_name : Lmkp.ts.msg("unnamed-activity");
 		var action = (me.selected_taggroup) ? 'Change' : 'Add';
-		this.title = action + ' information: activity \'' + name + '\'';
+		this.title = action + ' information';
 		
-		if (me.activity) {
+		if (me.activity_id) {
 			// prepare the form
 			var form = Ext.create('Ext.form.Panel', {
 				border: 0,
@@ -29,7 +27,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 					// submit activity_identifier as well
 					xtype: 'hiddenfield',
 					name: 'activity_identifier',
-					value: me.activity.get('id')
+					value: me.activity_id
 				}, {
 					// button to add new attribute selection to form
 					xtype: 'panel',
@@ -50,7 +48,9 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 						flex: 0,
 						handler: function() {
 							// functionality to add new attribute selection to form
-							var fieldContainer = form.up('window')._getFieldContainer(store, completeStore, true, null, null);
+							// it is a main_tag if it is the first ComboBox of the form
+							var main_tag = Ext.ComponentQuery.query('combobox[name=tg_combobox_maintag]').length == 0 && Ext.ComponentQuery.query('combobox[name=tg_combobox]').length == 0;
+							var fieldContainer = form.up('window')._getFieldContainer(store, completeStore, true, main_tag, null, null);
 							form.insert(form.items.length-1, fieldContainer);
 						}
 					}]
@@ -64,6 +64,35 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 						var theform = form.getForm();
 						if (theform.isValid()) {
 							// submit functionality. collect values first
+							var main_tag = null;
+							var tags = []
+							
+							var attr_maintag = Ext.ComponentQuery.query('combobox[name=tg_combobox_maintag]');
+							var val_maintag = Ext.ComponentQuery.query('[name=tg_valuefield_maintag]');
+							if (attr_maintag.length > 0 && val_maintag.length > 0) {
+								main_tag = attr_maintag[0].getValue();
+								// add main_tag to tags as well
+								tags.push({
+									'key': attr_maintag[0].getValue(),
+									'value': val_maintag[0].getValue()
+								});
+							}
+							
+							var attrs = Ext.ComponentQuery.query('combobox[name=tg_combobox]');
+							var values = Ext.ComponentQuery.query('[name=tg_valuefield]');
+							if (attrs.length > 0 && values.length > 0 && attrs.length == values.length) {
+								for (var i=0; i<attrs.length; i++) {
+									tags.push({
+										'key': attrs[i].getValue(),
+										'value': values[i].getValue()
+									});
+								}
+							}
+							
+							console.log(main_tag)
+							console.log(tags);
+							
+							/*
 							var attrs = Ext.ComponentQuery.query('combobox[name=tg_combobox]');
 							var values = Ext.ComponentQuery.query('[name=tg_valuefield]');
 							var taggroup = {}
@@ -112,6 +141,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 									// }
 								// });
 							}
+							*/
 						}
 					}
 				}]
@@ -126,21 +156,28 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 			
 			// if a TagGroup was selected to edit, show its values
 			if (me.selected_taggroup) {
-				var thedata = me.selected_taggroup.data;
-				// loop through values that are of interest and not empty
-				for (var el in thedata) {
-					if (el != 'lmkp.model.activity_id' && el != 'id' && thedata[el] != '' & thedata[el] != 0) {
-						// create fieldcontainer with values
-						var fieldContainer = this._getFieldContainer(store, completeStore, true, el, thedata[el]);
-						form.insert(1, fieldContainer);
-					}
+				var tags = me.selected_taggroup.tags();
+				
+				// find main_tag, display it and remove it from store
+				var main_tag_index = tags.find('id', me.selected_taggroup.get('main_tag'));
+				if (main_tag_index != -1) {
+					var fieldContainer = this._getFieldContainer(store, completeStore, true, true, tags.getAt(main_tag_index).get('key'), tags.getAt(main_tag_index).get('value')); 
+					form.insert(1, fieldContainer);
+					tags.removeAt(main_tag_index);
 				}
+				
+				// display all other tags
+				tags.each(function(record) {
+					var fieldContainer = me._getFieldContainer(store, completeStore, true, false, record.get('key'), record.get('value'));
+					form.insert(1, fieldContainer);
+				});
+				
 			} else {
 			// if no TagGroup was selected to edit, show initial attribute selection
-				var fieldContainer = this._getFieldContainer(store, completeStore, false);
+				var fieldContainer = this._getFieldContainer(store, completeStore, false, true);
 				form.insert(1, fieldContainer);
 			}
-						
+
 			// add form to window
 			this.items = form;
 		}
@@ -152,13 +189,16 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 	 * 'store' is needed to display only attributes that are not yet selected
 	 * 'completeStore' keeps track of all attributes available
 	 * 'removable' indicates whether delete-button is disabled or not
+	 * 'main_tag' indicates whether it is main_tag or not
 	 */
-	_getFieldContainer: function(store, completeStore, removable, initialAttribute, initialValue) {
-	
+	_getFieldContainer: function(store, completeStore, removable, main_tag, initialAttribute, initialValue) {
+		
+		var cb_name = (main_tag) ? 'tg_combobox_maintag' : 'tg_combobox';
+
 		// ComboBox to select attribute
 		var cb = Ext.create('Ext.form.field.ComboBox', {
 			xtype: 'combobox',
-			name: 'tg_combobox',
+			name: cb_name,
 			store: store,
 			valueField: 'name',
 			displayField: 'fieldLabel',
@@ -181,7 +221,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 					}
 					// replace the value field
 					fieldContainer.items.getAt(fieldContainer.items.findIndex('name', 'tg_valuefield')).destroy();
-					var newField = this.up('window')._getValueField(currentRecord);
+					var newField = this.up('window')._getValueField(currentRecord, main_tag);
 					// if initialValue was provided (when editing selected TagGroup), then show its value
 					if (initialValue) {
 						newField.setValue(initialValue);
@@ -234,8 +274,10 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 	 * Returns a form field (ComboBox, NumberField or TextField)
 	 * Basically the same as in controller.Filter)
 	 */
-	_getValueField: function(record) {
-        var fieldName = 'tg_valuefield';
+	_getValueField: function(record, main_tag) {
+		
+		var fieldName = (main_tag) ? 'tg_valuefield_maintag' : 'tg_valuefield';
+		
         // try to find categories
         var selectionValues = record.get('store');
         if (selectionValues) {      // categories of possible values available, create ComboBox
