@@ -76,13 +76,14 @@ class TagGroup(object):
         """
         Returns a JSON compatible representation of this object
         """
+        main_tag = None
         tags = []
         for t in self._tags:
             tags.append(t.to_table())
             if t.get_id() == self._main_tag_id:
-                main_tag = t
+                main_tag = t.to_table()
 
-        return {'id': self._id, 'main_tag': main_tag.to_table(), 'tags': tags}
+        return {'id': self._id, 'main_tag': main_tag, 'tags': tags}
 
 class ActivityFeature2(object):
 
