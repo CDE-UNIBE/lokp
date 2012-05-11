@@ -37,9 +37,9 @@ class Tag(object):
 
 class TagGroup(object):
     
-    def __init__(self, id=None, main_key=None):
+    def __init__(self, id=None, main_tag=None):
         self._id = id
-        self._main_key = main_key
+        self._main_tag = main_tag
         self._tags = []
 
     def add_tag(self, tag):
@@ -47,6 +47,13 @@ class TagGroup(object):
 
     def get_id(self):
         return self._id
+
+    def get_tag_by_key(self, key):
+        for t in self._tags:
+            if t.get_key() == key:
+                return t
+
+        return None
 
     def get_value_by_key(self, key):
         if key in self.__dict__:
@@ -58,7 +65,7 @@ class TagGroup(object):
         tags = []
         for t in self._tags:
             tags.append(t.to_table())
-        return {'id': self._id, 'main_key': self._main_key, 'tags': tags}
+        return {'id': self._id, 'main_tag': self._main_tag, 'tags': tags}
 
 class ActivityFeature2(object):
 
@@ -274,12 +281,12 @@ class ActivityProtocol2(object):
             db_taggroup = A_Tag_Group()
             db_activity.tag_groups.append(db_taggroup)
 
-            # Reset the main_key string
-            main_key = None
-            # Try to get the main_key from the input JSON file. The main_key
+            # Reset the main_tag string
+            main_tag = None
+            # Try to get the main_tag from the input JSON file. The main_tag
             # is not mandatory
             try:
-                main_key = taggroup['main_key']
+                main_tag = taggroup['main_tag']
             except KeyError:
                 pass
 
@@ -313,7 +320,7 @@ class ActivityProtocol2(object):
 
                 # Check if the current tag is the main tag of this tag group. If
                 # yes, set the main_tag attribute to this tag
-                if a_tag.key.key == main_key:
+                if a_tag.key.key == main_tag:
                     db_taggroup.main_tag = a_tag
 
         # Create a new changeset
@@ -363,10 +370,11 @@ class ActivityProtocol2(object):
 
                     for taggroup in item._taggroups:
 
-                        try:
-                            attribute = getattr(taggroup, col)
-                        except AttributeError:
+                        tag = taggroup.get_tag_by_key(col)
+                        if tag is None:
                             continue
+
+                        attribute = tag.get_value()
 
                         # Create the expression
                         try:
@@ -409,10 +417,11 @@ class ActivityProtocol2(object):
 
                         # Check if the current taggroup has this feature, if not
                         # this taggroup is excluded
-                        try:
-                            attribute = getattr(taggroup, col)
-                        except AttributeError:
+                        tag = taggroup.get_tag_by_key(col)
+                        if tag is None:
                             continue
+
+                        attribute = tag.get_value()
 
                         # Create the expression
                         expression = "'%s'.lower() in '%s'.lower()" % (value, attribute)
@@ -499,7 +508,7 @@ class ActivityProtocol2(object):
                                    activityQuery.timestamp.label("timestamp"),
                                    activityQuery.version.label("version"),
                                    A_Tag_Group.id.label("taggroup"),
-                                   A_Tag_Group.fk_a_tag.label("main_key"),
+                                   A_Tag_Group.fk_a_tag.label("main_tag"),
                                    A_Tag.id.label("tag"),
                                    A_Key.key.label("key"),
                                    A_Value.value.label("value")
