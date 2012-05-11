@@ -495,10 +495,9 @@ Ext.define('Lmkp.controller.Filter', {
     		for (var i=0; i<taggroupStore.count(); i++) {
     			var tagStore = taggroupStore.getAt(i).tags();
     			var tags = [];
+				var main_tag = null;
     			
     			for (var j=0; j<tagStore.count(); j++) {
-    				// collect values
-    				var main_tag = null;
     				
     				// check if it is main_tag
     				if (taggroupStore.getAt(i).get('main_tag') == tagStore.getAt(j).get('id')) {
