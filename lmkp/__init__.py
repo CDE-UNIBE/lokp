@@ -47,7 +47,7 @@ def main(global_config, ** settings):
     # Add papyrus includes
     config.include(papyrus.includeme)
     # Return a JavaScript model
-    config.add_route('taggroups_model', 'static/app/model/TagGroup.js')
+    #config.add_route('taggroups_model', 'static/app/model/TagGroup.js')
     #config.add_renderer('geojson', GeoJSON())
     config.add_renderer('geojson', GeoJsonRenderer())
     config.add_static_view('static', 'static', cache_max_age=3600)

@@ -71,6 +71,43 @@ def db_test(request):
     # # END OF TEST CASE
     #===========================================================================
     
+    #===========================================================================
+    # # START OF TEST CASE to test main_tags
+    # # some test values
+    # id1 = "c32212f8-e704-48e3-94bc-5670cfd01884"
+    # s1 = DBSession.query(Status).get(1)
+    # k1 = DBSession.query(A_Key).get(1)
+    # k2 = DBSession.query(A_Key).get(2)
+    # v1 = DBSession.query(A_Value).get(1)
+    # v2 = DBSession.query(A_Value).get(2)
+    # 
+    # # add an activity with a tag group that contains a main tag
+    # """
+    # t1 = A_Tag()
+    # t1.key = k1
+    # t1.value = v1
+    # 
+    # t2 = A_Tag()
+    # t2.key = k2
+    # t2.value = v2
+    # 
+    # tg1 = A_Tag_Group()
+    # tg1.tags = [t1, t2]
+    # tg1.main_tag = t1
+    # 
+    # a1 = Activity(activity_identifier=id1, version=1, point="POINT (10 20)")
+    # a1.status = s1
+    # a1.tag_groups = [tg1]
+    # 
+    # DBSession.add(a1)
+    # """
+    # 
+    # # test it by querying it
+    # """
+    # q = DBSession.query(Activity).filter(Activity.activity_identifier == id1).first()
+    # object = q.tag_groups[0].main_tag
+    # """
+    #===========================================================================
     
     object = "done"
     return {'object': object}
