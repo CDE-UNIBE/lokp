@@ -156,21 +156,29 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 			
 			// if a TagGroup was selected to edit, show its values
 			if (me.selected_taggroup) {
-				var tags = me.selected_taggroup.tags();
+				// fill tags into separate arrays
+				var tags = [];
+				var main_tag = null;
 				
-				// find main_tag, display it and remove it from store
-				var main_tag_index = tags.find('id', me.selected_taggroup.get('main_tag'));
-				if (main_tag_index != -1) {
-					var fieldContainer = this._getFieldContainer(store, completeStore, true, true, tags.getAt(main_tag_index).get('key'), tags.getAt(main_tag_index).get('value')); 
-					form.insert(1, fieldContainer);
-					tags.removeAt(main_tag_index);
+				me.selected_taggroup.tags().each(function(record) {
+					if (record.get('id') == me.selected_taggroup.get('main_tag')) {
+						main_tag = record;
+					} else {
+						tags.push(record);
+					}
+				});
+				
+				// first display main tag (if available)
+				if (main_tag) {
+					var fieldContainer = this._getFieldContainer(store, completeStore, true, true, main_tag.get('key'), main_tag.get('value')); 
+					form.insert(0, fieldContainer);
 				}
 				
-				// display all other tags
-				tags.each(function(record) {
-					var fieldContainer = me._getFieldContainer(store, completeStore, true, false, record.get('key'), record.get('value'));
+				// then display all 'normal' tags
+				for (var t in tags) {
+					var fieldContainer = this._getFieldContainer(store, completeStore, true, false, tags[t].get('key'), tags[t].get('value')); 
 					form.insert(1, fieldContainer);
-				});
+				}
 				
 			} else {
 			// if no TagGroup was selected to edit, show initial attribute selection
