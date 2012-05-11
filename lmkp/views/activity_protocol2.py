@@ -32,40 +32,57 @@ class Tag(object):
     def get_value(self):
         return self._value
 
+    def get_id(self):
+        return self._id
+
     def to_table(self):
         return {'id': self._id, 'key': self._key, 'value': self._value}
 
 class TagGroup(object):
     
-    def __init__(self, id=None, main_tag=None):
+    def __init__(self, id=None, main_tag_id=None):
+        """
+        Create a new TagGroup object with id and the main_tag_id
+        """
+
+        # The TagGroup id
         self._id = id
-        self._main_tag = main_tag
+        # The id of the main tag (not the tag itself!)
+        self._main_tag_id = main_tag_id
+        # List to store the tags
         self._tags = []
 
     def add_tag(self, tag):
+        """
+        Add a new tag to the internal tag list
+        """
         self._tags.append(tag)
 
     def get_id(self):
         return self._id
 
     def get_tag_by_key(self, key):
+        """
+        Returns a tag from this group if there is one with the requested key,
+        else None is returned.
+        """
         for t in self._tags:
             if t.get_key() == key:
                 return t
 
         return None
 
-    def get_value_by_key(self, key):
-        if key in self.__dict__:
-            return self.__dict__[key]
-
-        return None
-
     def to_table(self):
+        """
+        Returns a JSON compatible representation of this object
+        """
         tags = []
         for t in self._tags:
             tags.append(t.to_table())
-        return {'id': self._id, 'main_tag': self._main_tag, 'tags': tags}
+            if t.get_id() == self._main_tag_id:
+                main_tag = t
+
+        return {'id': self._id, 'main_tag': main_tag.to_table(), 'tags': tags}
 
 class ActivityFeature2(object):
 
@@ -75,6 +92,9 @@ class ActivityFeature2(object):
         self._geometry = geometry
 
     def add_taggroup(self, taggroup):
+        """
+        Adds a new tag group to the internal tag group list
+        """
         self._taggroups.append(taggroup)
 
     def find_taggroup_by_id(self, id):
@@ -85,6 +105,9 @@ class ActivityFeature2(object):
         return None
 
     def to_table(self):
+        """
+        Returns a JSON compatible representation of this object
+        """
         tg = []
         for t in self._taggroups:
             tg.append(t.to_table())
@@ -401,7 +424,6 @@ class ActivityProtocol2(object):
 
                     # Return true for the whole activity if one tag group passes
                     # the attribute filter
-                    log.debug(is_valid)
                     return is_valid
 
                 f = [i for i in f if __attribute_test(i)]
@@ -440,7 +462,6 @@ class ActivityProtocol2(object):
             else:
                 pass
 
-            log.debug(len(f))
             return f
 
         if 'queryable' in request.params:
