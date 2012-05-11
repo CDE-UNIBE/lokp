@@ -36,12 +36,18 @@ Ext.define('Lmkp.view.activities.NewActivityWindow', {
 						// var geometry = {'type': 'POINT', 'coordinates': [46.951081, 7.438637]}
 
 						// collect values and fill them into TagGroups
+						// TODO: it seems that the main tag (first added to dict) always remains in first position, but
+						// maybe this should be ensured in a better way ...
 						var taggroups = [];
 						for (var i in form.getValues()) {
-							var kv = {}
+							var tag = {}
 							// first, look only at mandatory fields (no '__val' or '__attr' in name)
 							if (i.indexOf("__attr") == -1 && i.indexOf("__val") == -1) {
-								kv[i] = form.getValues()[i];
+								// kv[i] = form.getValues()[i];
+								tag['key'] = i
+								tag['value'] = form.getValues()[i]
+								tag['op'] = 'add'
+								/*
 								// look if further attributes to this field were entered
 								var attrs = Ext.ComponentQuery.query('[name=' + i + '__attr]');
 								var vals = Ext.ComponentQuery.query('[name=' + i + '__val]');
@@ -50,9 +56,16 @@ Ext.define('Lmkp.view.activities.NewActivityWindow', {
 										kv[attrs[j].getValue()] = vals[j].getValue();
 									}
 								}
-								taggroups.push(kv);
+								*/
+								taggroups.push(tag);
 							}
 						}
+						
+						
+						// for (var i in taggroups) {
+// 							
+						// }
+						// var jsonObject = {'activities': }
 
 						console.log(taggroups);
 
