@@ -168,18 +168,6 @@ class ActivityProtocol2(object):
         if 'activities' not in raw:
             return HTTPBadRequest(detail="Not a valid format")
 
-        # Handle first the request to create new activities
-        #if 'create' in raw:
-        #    if 'activities' in raw['create']:
-        #        for activity in raw['create']['activities']:
-        #            #self._create_activity(request, activity)
-        #            pass
-
-        #if 'delete' in raw:
-        #    if 'activities' in raw['activities']:
-        #        for activity in raw['delete']['activities']:
-        #            self._delete_tag(request, activity)
-
         for activity in raw['activities']:
             self._handle_activity(request, activity)
 
@@ -193,8 +181,17 @@ class ActivityProtocol2(object):
             self._create_activity(request, activity_dict)
             return
 
-        # Get the identifier
+        # Get the identifier from the request
         identifier = activity_dict['id']
+
+        # Try to get the activity from the database with this id
+        db_a = self.Session.query(Activity).filter(Activity.activity_identifier == identifier).order_by(desc(Activity.version)).first()
+
+        # If no activity is found, create a new activity
+        if db_a == None:
+            self._create_activity(request, activity_dict, identifier)
+            return
+
         # Create a list with ids from tags to delete
         tags_to_delete = []
         for taggroup_dict in activity_dict['taggroups']:
@@ -209,10 +206,6 @@ class ActivityProtocol2(object):
 
         log.debug("Delete the followings tags:")
         log.debug(tags_to_delete)
-
-
-        # Get this activity
-        db_a = self.Session.query(Activity).filter(Activity.activity_identifier == identifier).order_by(desc(Activity.version)).first()
 
         latest_version = db_a.version + 1
 
@@ -269,14 +262,11 @@ class ActivityProtocol2(object):
                 
 
 
-    def _update_activity(self, request, activity):
-        pass
+    def _create_activity(self, request, activity, identifier=None):
 
-
-    def _create_activity(self, request, activity):
-
-        # Create a new unique identifier
-        identifier = uuid.uuid4()
+        # Create a new unique identifier if not set
+        if identifier is None:
+            identifier = uuid.uuid4()
         # The initial version is 1 of course
         version = 1
 
