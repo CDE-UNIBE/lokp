@@ -32,33 +32,58 @@ class Tag(object):
     def get_value(self):
         return self._value
 
+    def get_id(self):
+        return self._id
+
     def to_table(self):
         return {'id': self._id, 'key': self._key, 'value': self._value}
 
 class TagGroup(object):
     
-    def __init__(self, id=None, main_key=None):
+    def __init__(self, id=None, main_tag_id=None):
+        """
+        Create a new TagGroup object with id and the main_tag_id
+        """
+
+        # The TagGroup id
         self._id = id
-        self._main_key = main_key
+        # The id of the main tag (not the tag itself!)
+        self._main_tag_id = main_tag_id
+        # List to store the tags
         self._tags = []
 
     def add_tag(self, tag):
+        """
+        Add a new tag to the internal tag list
+        """
         self._tags.append(tag)
 
     def get_id(self):
         return self._id
 
-    def get_value_by_key(self, key):
-        if key in self.__dict__:
-            return self.__dict__[key]
+    def get_tag_by_key(self, key):
+        """
+        Returns a tag from this group if there is one with the requested key,
+        else None is returned.
+        """
+        for t in self._tags:
+            if t.get_key() == key:
+                return t
 
         return None
 
     def to_table(self):
+        """
+        Returns a JSON compatible representation of this object
+        """
+        main_tag = None
         tags = []
         for t in self._tags:
             tags.append(t.to_table())
-        return {'id': self._id, 'main_key': self._main_key, 'tags': tags}
+            if t.get_id() == self._main_tag_id:
+                main_tag = t.to_table()
+
+        return {'id': self._id, 'main_tag': main_tag, 'tags': tags}
 
 class ActivityFeature2(object):
 
@@ -68,6 +93,9 @@ class ActivityFeature2(object):
         self._geometry = geometry
 
     def add_taggroup(self, taggroup):
+        """
+        Adds a new tag group to the internal tag group list
+        """
         self._taggroups.append(taggroup)
 
     def find_taggroup_by_id(self, id):
@@ -78,6 +106,9 @@ class ActivityFeature2(object):
         return None
 
     def to_table(self):
+        """
+        Returns a JSON compatible representation of this object
+        """
         tg = []
         for t in self._taggroups:
             tg.append(t.to_table())
@@ -137,18 +168,6 @@ class ActivityProtocol2(object):
         if 'activities' not in raw:
             return HTTPBadRequest(detail="Not a valid format")
 
-        # Handle first the request to create new activities
-        #if 'create' in raw:
-        #    if 'activities' in raw['create']:
-        #        for activity in raw['create']['activities']:
-        #            #self._create_activity(request, activity)
-        #            pass
-
-        #if 'delete' in raw:
-        #    if 'activities' in raw['activities']:
-        #        for activity in raw['delete']['activities']:
-        #            self._delete_tag(request, activity)
-
         for activity in raw['activities']:
             self._handle_activity(request, activity)
 
@@ -162,8 +181,17 @@ class ActivityProtocol2(object):
             self._create_activity(request, activity_dict)
             return
 
-        # Get the identifier
+        # Get the identifier from the request
         identifier = activity_dict['id']
+
+        # Try to get the activity from the database with this id
+        db_a = self.Session.query(Activity).filter(Activity.activity_identifier == identifier).order_by(desc(Activity.version)).first()
+
+        # If no activity is found, create a new activity
+        if db_a == None:
+            self._create_activity(request, activity_dict, identifier)
+            return
+
         # Create a list with ids from tags to delete
         tags_to_delete = []
         for taggroup_dict in activity_dict['taggroups']:
@@ -178,10 +206,6 @@ class ActivityProtocol2(object):
 
         log.debug("Delete the followings tags:")
         log.debug(tags_to_delete)
-
-
-        # Get this activity
-        db_a = self.Session.query(Activity).filter(Activity.activity_identifier == identifier).order_by(desc(Activity.version)).first()
 
         latest_version = db_a.version + 1
 
@@ -238,14 +262,11 @@ class ActivityProtocol2(object):
                 
 
 
-    def _update_activity(self, request, activity):
-        pass
+    def _create_activity(self, request, activity, identifier=None):
 
-
-    def _create_activity(self, request, activity):
-
-        # Create a new unique identifier
-        identifier = uuid.uuid4()
+        # Create a new unique identifier if not set
+        if identifier is None:
+            identifier = uuid.uuid4()
         # The initial version is 1 of course
         version = 1
 
@@ -274,12 +295,12 @@ class ActivityProtocol2(object):
             db_taggroup = A_Tag_Group()
             db_activity.tag_groups.append(db_taggroup)
 
-            # Reset the main_key string
-            main_key = None
-            # Try to get the main_key from the input JSON file. The main_key
+            # Reset the main_tag string
+            main_tag = None
+            # Try to get the main_tag from the input JSON file. The main_tag
             # is not mandatory
             try:
-                main_key = taggroup['main_key']
+                main_tag = taggroup['main_tag']
             except KeyError:
                 pass
 
@@ -313,7 +334,7 @@ class ActivityProtocol2(object):
 
                 # Check if the current tag is the main tag of this tag group. If
                 # yes, set the main_tag attribute to this tag
-                if a_tag.key.key == main_key:
+                if a_tag.key.key == main_tag:
                     db_taggroup.main_tag = a_tag
 
         # Create a new changeset
@@ -363,10 +384,11 @@ class ActivityProtocol2(object):
 
                     for taggroup in item._taggroups:
 
-                        try:
-                            attribute = getattr(taggroup, col)
-                        except AttributeError:
+                        tag = taggroup.get_tag_by_key(col)
+                        if tag is None:
                             continue
+
+                        attribute = tag.get_value()
 
                         # Create the expression
                         try:
@@ -393,7 +415,6 @@ class ActivityProtocol2(object):
 
                     # Return true for the whole activity if one tag group passes
                     # the attribute filter
-                    log.debug(is_valid)
                     return is_valid
 
                 f = [i for i in f if __attribute_test(i)]
@@ -409,10 +430,11 @@ class ActivityProtocol2(object):
 
                         # Check if the current taggroup has this feature, if not
                         # this taggroup is excluded
-                        try:
-                            attribute = getattr(taggroup, col)
-                        except AttributeError:
+                        tag = taggroup.get_tag_by_key(col)
+                        if tag is None:
                             continue
+
+                        attribute = tag.get_value()
 
                         # Create the expression
                         expression = "'%s'.lower() in '%s'.lower()" % (value, attribute)
@@ -431,7 +453,6 @@ class ActivityProtocol2(object):
             else:
                 pass
 
-            log.debug(len(f))
             return f
 
         if 'queryable' in request.params:
@@ -499,7 +520,7 @@ class ActivityProtocol2(object):
                                    activityQuery.timestamp.label("timestamp"),
                                    activityQuery.version.label("version"),
                                    A_Tag_Group.id.label("taggroup"),
-                                   A_Tag_Group.fk_a_tag.label("main_key"),
+                                   A_Tag_Group.fk_a_tag.label("main_tag"),
                                    A_Tag.id.label("tag"),
                                    A_Key.key.label("key"),
                                    A_Value.value.label("value")
