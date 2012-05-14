@@ -297,10 +297,14 @@ class ActivityProtocol2(object):
 
             # Reset the main_tag string
             main_tag = None
-            # Try to get the main_tag from the input JSON file. The main_tag
-            # is not mandatory
+            main_tag_key = None
+            main_tag_value = None
+            # Try to get the main_tag and its key and value from the input JSON
+            # file. The main_tag is not mandatory.
             try:
                 main_tag = taggroup['main_tag']
+                main_tag_key = main_tag['key']
+                main_tag_value = main_tag['value']
             except KeyError:
                 pass
 
@@ -334,7 +338,7 @@ class ActivityProtocol2(object):
 
                 # Check if the current tag is the main tag of this tag group. If
                 # yes, set the main_tag attribute to this tag
-                if a_tag.key.key == main_tag:
+                if a_tag.key.key == main_tag_key and a_tag.value.value == main_tag_value:
                     db_taggroup.main_tag = a_tag
 
         # Create a new changeset
