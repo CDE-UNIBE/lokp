@@ -1,17 +1,47 @@
+import logging
+from lmkp.config import sample_data_file_path
+from lmkp.models.database_objects import *
+from lmkp.models.meta import DBSession as Session
+from lmkp.views.activity_protocol2 import ActivityProtocol2
+from pyramid.httpexceptions import HTTPCreated
 from pyramid.view import view_config
-
-# import exceptions for sqlalchemy
+import random
+import simplejson as json
+from sqlalchemy import desc
+from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 import transaction
 
-from sqlalchemy import delete, or_
+log = logging.getLogger(__name__)
 
-import random
+@view_config(route_name='sample_values', renderer='json')
+def insert_landmatrix(request):
 
-from ..models.meta import DBSession as Session
-from ..models.database_objects import *
+    activity_protocol2 = ActivityProtocol2(Session)
 
-@view_config(route_name='sample_values', renderer='lmkp:templates/sample_values.pt')
+    # Read the data JSON file
+    data_stream = open(sample_data_file_path(request), 'r')
+    data = json.loads(data_stream.read())
+
+    # Check if the json body is a valid diff file
+    if 'activities' not in data:
+        return HTTPBadRequest(detail="Not a valid format")
+
+    for activity in data['activities']:
+        activity_protocol2._handle_activity(request, activity)
+
+    # Set the status of the newly imported activities to active
+    for activity in data['activities']:
+        if 'id' in activity:
+            identifier = activity['id']
+            db_a = Session.query(Activity).filter(Activity.activity_identifier == identifier).order_by(desc(Activity.version)).first()
+
+            active_id = Session.query(Status.id).filter(Status.name == "active").first()
+            db_a.fk_status = active_id
+
+    return {'success': True}
+
+#@view_config(route_name='sample_values', renderer='lmkp:templates/sample_values.pt')
 def sample_values(request):
     stack = []
     list_activities = []
@@ -202,7 +232,7 @@ def sample_values(request):
 # END fix data ------------------------------------------------------------------------------------
 # BEGIN sample data -------------------------------------------------------------------------------
     stack.append('--- sample data (users) ---')
-  # -- users
+# -- users
     count = []
     """
     # user 1, belongs to admin group
@@ -225,7 +255,7 @@ def sample_values(request):
     count1 = []
     count2 = []
     stack.append('--- sample data (active activities) ---')
-    for i in range(1,11):
+    for i in range(1, 11):
         # switch
         switch = (i % len(list_predefined_a_keys))
         # prepare key
@@ -234,7 +264,7 @@ def sample_values(request):
         if (switch == 0): # project use
             theValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
-            theValue = A_Value(value=random.randint(1,100))
+            theValue = A_Value(value=random.randint(1, 100))
             theValue.language = lang1
         if (switch == 2): # project status
             theValue = random.choice(list_predefined_a_values_projectStatus)
@@ -245,7 +275,7 @@ def sample_values(request):
             theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
             theValue.language = lang1
         if (switch == 5): # year of investment
-            theValue = A_Value(value=random.randint(1990,2020))
+            theValue = A_Value(value=random.randint(1990, 2020))
             theValue.language = lang1
         """
         if (switch == 0): # name
@@ -275,7 +305,7 @@ def sample_values(request):
         changeset.user = random.choice(list_users)
         # prepare activity
         identifier = uuid.uuid4()
-        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,90)) + ")")
+        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1, 180)) + " " + str(random.randint(1, 90)) + ")")
         activity.status = status2 # active
         activity.tag_groups.append(tag_group)
         activity.changesets.append(changeset)
@@ -294,7 +324,7 @@ def sample_values(request):
     count1 = []
     count2 = []
     stack.append('--- sample data (active activities, 2 tags) ---')
-    for i in range(11,21):
+    for i in range(11, 21):
         # switch
         switch = (i % len(list_predefined_a_keys))
         # prepare key
@@ -303,7 +333,7 @@ def sample_values(request):
         if (switch == 0): # project use
             theValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
-            theValue = A_Value(value=random.randint(1,100))
+            theValue = A_Value(value=random.randint(1, 100))
             theValue.language = lang1
         if (switch == 2): # project status
             theValue = random.choice(list_predefined_a_values_projectStatus)
@@ -314,7 +344,7 @@ def sample_values(request):
             theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
             theValue.language = lang1
         if (switch == 5): # year of investment
-            theValue = A_Value(value=random.randint(1990,2020))
+            theValue = A_Value(value=random.randint(1990, 2020))
             theValue.language = lang1
         # prepare tag
         tag = A_Tag()
@@ -325,12 +355,12 @@ def sample_values(request):
         tag_group.tags.append(tag)
         tag_group.main_tag = tag
         # add another tag_group
-        switch = random.randint(0,len(list_predefined_a_keys)-1)
+        switch = random.randint(0, len(list_predefined_a_keys)-1)
         theKey = list_predefined_a_keys[switch]
         if (switch == 0): # project use
             theValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
-            theValue = A_Value(value=random.randint(1,100))
+            theValue = A_Value(value=random.randint(1, 100))
             theValue.language = lang1
         if (switch == 2): # project status
             theValue = random.choice(list_predefined_a_values_projectStatus)
@@ -341,7 +371,7 @@ def sample_values(request):
             theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
             theValue.language = lang1
         if (switch == 5): # year of investment
-            theValue = A_Value(value=random.randint(1990,2020))
+            theValue = A_Value(value=random.randint(1990, 2020))
             theValue.language = lang1
         tag = A_Tag()
         tag.key = theKey
@@ -352,7 +382,7 @@ def sample_values(request):
         changeset.user = random.choice(list_users)
         # prepare activity
         identifier = uuid.uuid4()
-        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1, 180)) + " " + str(random.randint(1, 180)) + ")")
         activity.status = status2 # active
         activity.tag_groups.append(tag_group)
         activity.changesets.append(changeset)
@@ -370,7 +400,7 @@ def sample_values(request):
     # random activities with status=pending, no reviews
     count1 = []
     stack.append('--- sample data (pending activities) ---')
-    for i in range(21,31):
+    for i in range(21, 31):
         # switch
         switch = (i % len(list_predefined_a_keys))
         # prepare key
@@ -379,7 +409,7 @@ def sample_values(request):
         if (switch == 0): # project use
             theValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
-            theValue = A_Value(value=random.randint(1,100))
+            theValue = A_Value(value=random.randint(1, 100))
             theValue.language = lang1
         if (switch == 2): # project status
             theValue = random.choice(list_predefined_a_values_projectStatus)
@@ -390,7 +420,7 @@ def sample_values(request):
             theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
             theValue.language = lang1
         if (switch == 5): # year of investment
-            theValue = A_Value(value=random.randint(1990,2020))
+            theValue = A_Value(value=random.randint(1990, 2020))
             theValue.language = lang1
         # prepare tag
         tag = A_Tag()
@@ -405,7 +435,7 @@ def sample_values(request):
         changeset.user = random.choice(list_users)
         # prepare activity
         identifier = uuid.uuid4()
-        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1, 180)) + " " + str(random.randint(1, 180)) + ")")
         activity.status = status1 # pending
         activity.tag_groups.append(tag_group)
         activity.changesets.append(changeset)
@@ -416,7 +446,7 @@ def sample_values(request):
     count1 = []
     count2 = []
     stack.append('--- sample data (deleted activities) ---')
-    for i in range(31,41):
+    for i in range(31, 41):
         # switch
         switch = (i % len(list_predefined_a_keys))
         # prepare key
@@ -425,7 +455,7 @@ def sample_values(request):
         if (switch == 0): # project use
             theValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
-            theValue = A_Value(value=random.randint(1,100))
+            theValue = A_Value(value=random.randint(1, 100))
             theValue.language = lang1
         if (switch == 2): # project status
             theValue = random.choice(list_predefined_a_values_projectStatus)
@@ -436,7 +466,7 @@ def sample_values(request):
             theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
             theValue.language = lang1
         if (switch == 5): # year of investment
-            theValue = A_Value(value=random.randint(1990,2020))
+            theValue = A_Value(value=random.randint(1990, 2020))
             theValue.language = lang1
         # prepare tag
         tag = A_Tag()
@@ -451,7 +481,7 @@ def sample_values(request):
         changeset.user = random.choice(list_users)
         # prepare activity
         identifier = uuid.uuid4()
-        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1, 180)) + " " + str(random.randint(1, 180)) + ")")
         activity.status = status4 # deleted
         activity.tag_groups.append(tag_group)
         activity.changesets.append(changeset)
@@ -470,7 +500,7 @@ def sample_values(request):
     count2 = []
     count3 = []
     stack.append('--- sample data (overwritten activities) ---')
-    for i in range(41,51):
+    for i in range(41, 51):
         # switch
         switch = (i % len(list_predefined_a_keys))
         # prepare key
@@ -479,7 +509,7 @@ def sample_values(request):
         if (switch == 0): # project use
             theValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
-            theValue = A_Value(value=random.randint(1,100))
+            theValue = A_Value(value=random.randint(1, 100))
             theValue.language = lang1
         if (switch == 2): # project status
             theValue = random.choice(list_predefined_a_values_projectStatus)
@@ -490,7 +520,7 @@ def sample_values(request):
             theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
             theValue.language = lang1
         if (switch == 5): # year of investment
-            theValue = A_Value(value=random.randint(1990,2020))
+            theValue = A_Value(value=random.randint(1990, 2020))
             theValue.language = lang1
         # prepare tag
         tag = A_Tag()
@@ -505,7 +535,7 @@ def sample_values(request):
         changeset.user = random.choice(list_users)
         # prepare activity
         identifier = uuid.uuid4()
-        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1, 180)) + " " + str(random.randint(1, 180)) + ")")
         activity.status = status3 # deleted
         activity.tag_groups.append(tag_group)
         activity.changesets.append(changeset)
@@ -519,15 +549,15 @@ def sample_values(request):
         review.review_decision = reviewdecision1    # approved
         count3.append(_add_to_db(review, 'review decision ' + str(i)))
         # -- version 2
-        new_activity = Activity(activity_identifier=identifier, version=2, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+        new_activity = Activity(activity_identifier=identifier, version=2, point="POINT(" + str(random.randint(1, 180)) + " " + str(random.randint(1, 180)) + ")")
         new_activity.status = status2   # active
         new_tag_group = A_Tag_Group()
-        switch = random.randint(0,len(list_predefined_a_keys)-1)
+        switch = random.randint(0, len(list_predefined_a_keys)-1)
         newKey = list_predefined_a_keys[switch]
         if (switch == 0): # project use
             newValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
-            newValue = A_Value(value=random.randint(1,100))
+            newValue = A_Value(value=random.randint(1, 100))
             newValue.language = lang1
         if (switch == 2): # project status
             newValue = random.choice(list_predefined_a_values_projectStatus)
@@ -538,7 +568,7 @@ def sample_values(request):
             newValue = A_Value(value=random.choice(['small', 'medium', 'big']))
             newValue.language = lang1
         if (switch == 5): # year of investment
-            newValue = A_Value(value=random.randint(1990,2020))
+            newValue = A_Value(value=random.randint(1990, 2020))
             newValue.language = lang1
         new_tag = A_Tag()
         new_tag.key = newKey
@@ -550,13 +580,13 @@ def sample_values(request):
         session = Session()
         old_activity = session.query(Activity).filter(Activity.activity_identifier == identifier).first()
         for old_tag_group in old_activity.tag_groups:
-           copy_tag_group = A_Tag_Group()
-           for old_tag in old_tag_group.tags:
-               copy_tag = A_Tag()
-               copy_tag.fk_a_key = old_tag.fk_a_key
-               copy_tag.fk_a_value = old_tag.fk_a_value
-               copy_tag_group.tags.append(copy_tag)
-           new_activity.tag_groups.append(copy_tag_group)
+            copy_tag_group = A_Tag_Group()
+            for old_tag in old_tag_group.tags:
+                copy_tag = A_Tag()
+                copy_tag.fk_a_key = old_tag.fk_a_key
+                copy_tag.fk_a_value = old_tag.fk_a_value
+                copy_tag_group.tags.append(copy_tag)
+            new_activity.tag_groups.append(copy_tag_group)
         # prepare changeset
         changeset = A_Changeset(source='[overwritten] Source ' + str(i))
         changeset.user = random.choice(list_users)
@@ -577,7 +607,7 @@ def sample_values(request):
     count1 = []
     count2 = []
     stack.append('--- sample data (active stakeholders) ---')
-    for i in range(1,21):
+    for i in range(1, 21):
         # switch
         switch = (i % 2)
         theKey = list_predefined_sh_keys[switch]
