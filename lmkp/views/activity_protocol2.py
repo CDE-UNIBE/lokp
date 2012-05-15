@@ -175,6 +175,8 @@ class ActivityProtocol2(object):
         return HTTPCreated(detail="ok")
 
     def _handle_activity(self, request, activity_dict):
+        """
+        """
 
         # If this activity does not have an id then create a new activity
         if 'id' not in activity_dict:
@@ -191,78 +193,105 @@ class ActivityProtocol2(object):
         if db_a == None:
             self._create_activity(request, activity_dict, identifier)
             return
-
-        # Create a list with ids from tags to delete
-        tags_to_delete = []
-        for taggroup_dict in activity_dict['taggroups']:
-            for tag_dict in taggroup_dict['tags']:
-                if 'op' not in tag_dict:
-                    continue
-                elif tag_dict['op'] != 'delete':
-                    continue
-                elif 'id' not in tag_dict:
-                    continue
-                tags_to_delete.append(tag_dict['id'])
-
-        log.debug("Delete the followings tags:")
-        log.debug(tags_to_delete)
-
-        latest_version = db_a.version + 1
-
-        # Try to get the geometry
-        try:
-            geom = geojson.loads(json.dumps(activity_dict['geometry']),
-                                 object_hook=geojson.GeoJSON.to_instance)
-
-            # The geometry
-            shape = asShape(geom)
-            # Create a new activity and add a representative point to the activity
-            db_activity = Activity(activity_identifier=db_a.activity_identifier, version=latest_version, point=shape.representative_point().wkt)
-        except KeyError:
-            # If no geometry is submitted, create a new activity without a geometry
-            db_activity = Activity(activity_identifier=db_a.activity_identifier, version=latest_version, point=db_a.point)
-
+        
+        # Update the activity:
+        # The basic idea is to deep copy the previous version and control during
+        # the copying if a tag needs to be deleted or not. At the end new tags
+        # and new taggroups are added.
+        new_activity = Activity(activity_identifier=db_a.activity_identifier,
+                                version=(db_a.version + 1),
+                                point=db_a.point)
+        new_activity.tag_groups = []
         # Set the activity status to pending
-        db_activity.status = self.Session.query(Status).filter(Status.name == 'pending').first()
+        new_activity.status = self.Session.query(Status).filter(Status.name == 'pending').first()
         # Add it to the database
-        self.Session.add(db_activity)
+        self.Session.add(new_activity)
 
-        log.debug("++++++++++++++++++++++++++++++++++++++++++")
-        #log.debug(db_a.tag_groups)
-        for db_tg in db_a.tag_groups:
-            log.debug("***************************************************")
-            log.debug(db_tg.id)
-            db_taggroup = A_Tag_Group()
-            db_activity.tag_groups.append(db_taggroup)
-            # Copy all tags
-            for db_t in db_tg.tags:
-                
-                # If the value is not yet in the database, create a new value
-                v = self.Session.query(A_Value).filter(A_Value.value == db_t.value.value).first()
-                if v is None:
-                    continue
-                # Add only tags that are not to delete
-                if db_t.id in tags_to_delete:
-                    continue
-                db_tag = A_Tag()
-                db_tag.fk_a_tag_group = db_taggroup.id
-                db_tag.key = db_t.key
-                db_tag.value = v
-                db_taggroup.tags.append(db_tag)
+        # Loop the tag groups from the previous version and copy it to the new
+        # version with its tags
+        for db_taggroup in self.Session.query(A_Tag_Group).filter(A_Tag_Group.fk_activity == db_a.id):
 
-        # Remove the tags that are to delete
+            # Create a new tag group and add it to the new activity version
+            new_taggroup = A_Tag_Group()
+            new_activity.tag_groups.append(new_taggroup)
+
+            # And loop the tags
+            for db_tag in self.Session.query(A_Tag).filter(A_Tag.fk_a_tag_group == db_taggroup.id):
+
+                # Before copying the tag, make sure that it is not to delete
+                copy_tag = True
+                for taggroup_dict in activity_dict['taggroups']:
+                    if 'id' in taggroup_dict and taggroup_dict['id'] == db_taggroup.id:
+                        # Check which tags we have to edit
+                        for tag_dict in taggroup_dict['tags']:
+                            if 'id' in tag_dict and tag_dict['id'] == db_tag.id:
+                                # Yes, it is THIS tag
+                                if tag_dict['op'] == 'delete':
+                                    copy_tag = False
+
+                # Create and append the new tag only if requested
+                if copy_tag:
+                    # Get the key and value SQLAlchemy object
+                    k = self.Session.query(A_Key).get(db_tag.fk_a_key)
+                    v = self.Session.query(A_Value).get(db_tag.fk_a_value)
+                    new_tag = A_Tag()
+                    new_taggroup.tags.append(new_tag)
+                    new_tag.key = k
+                    new_tag.value = v
+
+                    # Set the main tag
+                    if db_taggroup.main_tag == db_tag:
+                        new_taggroup.main_tag = new_tag
+
+            # Next step is to add new tags to this tag group without existing ids
+            for taggroup_dict in activity_dict['taggroups']:
+                if 'id' in taggroup_dict and taggroup_dict['id'] == db_taggroup.id:
+                    for tag_dict in taggroup_dict['tags']:
+                        if 'id' not in tag_dict and tag_dict['op'] == 'add':
+                            new_tag = self._create_tag(request, new_taggroup.tags, tag_dict['key'], tag_dict['value'])
+                            # Set the main tag
+                            if 'main_tag' in taggroup_dict:
+                                if taggroup_dict['main_tag']['key'] == new_tag.key.key and taggroup_dict['main_tag']['value'] == new_tag.value.value:
+                                    new_taggroup.main_tag = new_tag
+
+        # Finally new tag groups (without id) needs to be added
+        # (and loop all again)
         for taggroup_dict in activity_dict['taggroups']:
-            for tag_dict in taggroup_dict['tags']:
+            if 'id' not in taggroup_dict and taggroup_dict['op'] == 'add':
+                new_taggroup = A_Tag_Group()
+                new_activity.tag_groups.append(new_taggroup)
+                for tag_dict in taggroup_dict['tags']:
+                    new_tag = self._create_tag(request, new_taggroup.tags, tag_dict['key'], tag_dict['value'])
+                    # Set the main tag
+                    if 'main_tag' in taggroup_dict:
+                        if taggroup_dict['main_tag']['key'] == new_tag.key.key and taggroup_dict['main_tag']['value'] == new_tag.value.value:
+                            new_taggroup.main_tag = new_tag
 
-                if 'op' not in tag_dict:
-                    continue
-                elif tag_dict['op'] != 'delete':
-                    continue
+    def _create_tag(self, request, parent, key, value):
+        """
+        Creates a new SQLAlchemy tag object and appends it to the parent list.
+        """
+        # The key has to be already in the database
+        k = self.Session.query(A_Key).filter(A_Key.key == key).first()
 
-                
+        # If the value is not yet in the database, create a new value
+        v = self.Session.query(A_Value).filter(A_Value.value == unicode(value)).first()
+        if v is None:
+            v = A_Value(value=value)
+            v.fk_language = 1
 
+        # Create a new tag with key and value and append it to the parent tag group
+        a_tag = A_Tag()
+        parent.append(a_tag)
+        a_tag.key = k
+        a_tag.value = v
+
+        # Return the newly created tag
+        return a_tag
 
     def _create_activity(self, request, activity, identifier=None):
+        """
+        """
 
         # Create a new unique identifier if not set
         if identifier is None:
