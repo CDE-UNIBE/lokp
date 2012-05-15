@@ -1,0 +1,17 @@
+{
+    "activities": [{
+            "id": "732f84d1-2fce-46be-bb29-00e49dfbd5c6",
+            "taggroups": [
+                {
+                    "id": 9,
+                    "tags": [
+                        {
+                            "key": "Size of Investement",
+                            "op": "add",
+                            "value": 5000
+                        }
+                    ]
+                }
+            ]
+        }]
+}
