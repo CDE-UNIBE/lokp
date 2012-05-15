@@ -31,52 +31,52 @@ Ext.define('Lmkp.view.activities.NewActivityWindow', {
 						// As a solution, the form values are used to create a JSON object which is sent using an
 						// AJAX request.
 						// http://www.sencha.com/forum/showthread.php?132082-jsonData-in-submit-action-of-form
-						
-						// for the moment being, create dummy geometry
-						// var geometry = {'type': 'POINT', 'coordinates': [46.951081, 7.438637]}
 
 						// collect values and fill them into TagGroups
 						// TODO: it seems that the main tag (first added to dict) always remains in first position, but
 						// maybe this should be ensured in a better way ...
 						var taggroups = [];
+						var activities = [];
+						
 						for (var i in form.getValues()) {
-							var tag = {}
+							var tags = [];
+							var main_tag = {};
 							// first, look only at mandatory fields (no '__val' or '__attr' in name)
 							if (i.indexOf("__attr") == -1 && i.indexOf("__val") == -1) {
-								// kv[i] = form.getValues()[i];
-								tag['key'] = i
-								tag['value'] = form.getValues()[i]
-								tag['op'] = 'add'
-								/*
+								var tag = {};
+								tag['key'] = i;
+								tag['value'] = form.getValues()[i];
+								tag['op'] = 'add';
+								tags.push(tag);
+								// also add to main_tag
+								main_tag['key'] = i;
+								main_tag['value'] = form.getValues()[i];
+								
 								// look if further attributes to this field were entered
 								var attrs = Ext.ComponentQuery.query('[name=' + i + '__attr]');
 								var vals = Ext.ComponentQuery.query('[name=' + i + '__val]');
 								if (attrs.length > 0 && vals.length > 0 && attrs.length == vals.length) {
 									for (var j=0; j<attrs.length; j++) {
-										kv[attrs[j].getValue()] = vals[j].getValue();
+										var tag = {};
+										tag['key'] = attrs[j].getValue();
+										tag['value'] = vals[j].getValue();
+										tag['op'] = 'add';
+										tags.push(tag);
 									}
 								}
-								*/
-								taggroups.push(tag);
+							}
+							if (tags.length > 0) {
+								taggroups.push({'tags': tags, 'main_tag': main_tag});
 							}
 						}
-						
-						
-						// for (var i in taggroups) {
-// 							
-						// }
-						// var jsonObject = {'activities': }
+						var diffObject = {'activities': [{'taggroups': taggroups}]};
 
-						console.log(taggroups);
-
-						// TODO: so far, no submit action yet.
-						/*
 						// send JSON through AJAX request
 						Ext.Ajax.request({
 							url: '/activities',
 							method: 'POST',
 							headers: {'Content-Type': 'application/json;charset=utf-8'},
-							jsonData: jsonData,
+							jsonData: diffObject,
 							success: function() {
 								Ext.Msg.alert('Success', 'The activity was successfully created. It will be reviewed shortly.');
 								form.up('window').close();
@@ -85,7 +85,6 @@ Ext.define('Lmkp.view.activities.NewActivityWindow', {
 								Ext.Msg.alert('Failure', 'The activity could not be created.');
 							}
 						});
-						*/
 					}
 				}
 			}]
