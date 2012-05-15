@@ -3,6 +3,7 @@ from lmkp.config import sample_data_file_path
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol2 import ActivityProtocol2
+import os
 from pyramid.httpexceptions import HTTPCreated
 from pyramid.view import view_config
 import random
@@ -40,6 +41,37 @@ def insert_landmatrix(request):
             db_a.fk_status = active_id
 
     return {'success': True}
+
+@view_config(route_name='test_sample_values', renderer='json')
+def test_sample_values(request):
+    """
+    Tries to load some sample data to the database using the Activity Protocol.
+    """
+
+    def _output_data(request, jsonfile):
+        # Create a new activity protocol object
+        activity_protocol2 = ActivityProtocol2(Session)
+        # Read the data JSON file
+        data_stream = open(jsonfile, 'r')
+        data = json.loads(data_stream.read())
+
+        # Check if the json body is a valid diff file
+        if 'activities' not in data:
+            return HTTPBadRequest(detail="Not a valid format")
+
+        for activity in data['activities']:
+            activity_protocol2._handle_activity(request, activity)
+
+    # Path to the parent directory
+    parent_dir = os.path.split(os.path.dirname(__file__))[0]
+    # Loop all JSON files, order matters!
+    for file in ['addNewActivity.json', 'modifyTag.json', 'addTagToTaggroup.json', 'addNewTaggroup.json']:
+        _output_data(request, "%s/documents/%s" % (parent_dir, file))
+
+    return {'success': True}
+
+
+
 
 #@view_config(route_name='sample_values', renderer='lmkp:templates/sample_values.pt')
 def sample_values(request):
