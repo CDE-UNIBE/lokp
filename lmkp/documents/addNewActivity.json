@@ -1,0 +1,27 @@
+{
+    "activities": [{
+            "geometry": {
+                "coordinates": [
+                    39.0735626220703,
+                    -6.909257872188
+                ],
+                "type": "Point"
+            },
+            "id": "732f84d1-2fce-46be-bb29-00e49dfbd5c6",
+            "taggroups": [
+                {
+                    "main_tag": {
+                            "key": "Name of Investor",
+                            "value": "Heng Huy Co"
+                    },
+                    "tags": [
+                        {
+                            "key": "Name of Investor",
+                            "op": "add",
+                            "value": "Heng Huy Co"
+                        }
+                    ]
+                }
+            ]
+        }]
+}
