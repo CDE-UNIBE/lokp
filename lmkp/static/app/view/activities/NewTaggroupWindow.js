@@ -7,16 +7,17 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 	},
 	width: 400,
 	
+	// needed to keep track of original tags
 	old_tags: [],
 	old_main_tag: null,
 	
 	initComponent: function() {
 		
 		var me = this;
+		// 'reset' original tracks
 		me.old_tags = [];
 		me.old_main_tag = null;
-		console.log(me);
-		
+
 		// set window title
 		var action = (me.selected_taggroup) ? 'Change' : 'Add';
 		this.title = action + ' information';
@@ -256,17 +257,16 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 			// if a TagGroup was selected to edit, show its values
 			if (me.selected_taggroup) {
 				// fill tags into separate arrays
-				// var old_tags = [];
-				// var old_main_tag = null;
 				
 				me.selected_taggroup.tags().each(function(record) {
-					if (record.get('id') == me.selected_taggroup.get('main_tag')) {
+					
+					if (me.selected_taggroup.main_tag().first() && record.get('id') == me.selected_taggroup.main_tag().first().get('id')) {
 						me.old_main_tag = record;
 					} else {
 						me.old_tags.push(record);
 					}
 				});
-				
+
 				// first display main tag (if available)
 				if (me.old_main_tag) {
 					var fieldContainer = this._getFieldContainer(store, completeStore, true, true, me.old_main_tag.get('key'), me.old_main_tag.get('value')); 
@@ -320,20 +320,11 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 					// remove newly selected value from store
 					var currentRecord = store.findRecord('name', newValue);
 					store.remove(currentRecord);
-					
-					// if old attribute was in original selection, remove it
-					// if (old_main_tag.get('key') == current)
-					// console.log(this.up('window').old_main_tag);
-					
+
 					// add previously selected (now deselected) value to store again
 					var previousRecord = completeStore.findRecord('name', oldValue);
 					if (previousRecord) {
 						store.add(previousRecord);
-						
-						// //
-						// if (this.up('window').old_main_tag.get('key') == oldValue) {
-							// this.up('window').old_main_tag
-						// }
 					}
 					// replace the value field
 					fieldContainer.items.getAt(fieldContainer.items.findIndex('name', 'tg_valuefield')).destroy();
