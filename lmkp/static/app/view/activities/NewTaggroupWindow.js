@@ -216,7 +216,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 										'id': me.activity_id, 
 										'taggroups': [
 											{
-												'id': me.selected_taggroup.get('id'),
+												'id': (me.selected_taggroup) ? me.selected_taggroup.get('id') : null,
 												'tags': newTags.concat(deleteTags)
 											}
 										]
