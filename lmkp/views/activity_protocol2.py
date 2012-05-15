@@ -191,6 +191,56 @@ class ActivityProtocol2(object):
         if db_a == None:
             self._create_activity(request, activity_dict, identifier)
             return
+        
+        # Update the activity:
+        # First create a new version of the activity, it is necessary to make
+        # a deep copy.
+        new_activity = Activity(activity_identifier=db_a.activity_identifier, version=(db_a.version+1))
+        new_activity.tag_groups = []
+        # Set the activity status to pending
+        new_activity.status = self.Session.query(Status).filter(Status.name == 'pending').first()
+        # Add it to the database
+        self.Session.add(new_activity)
+
+        # Loop the tag groups
+        for db_taggroup in self.Session.query(A_Tag_Group).filter(A_Tag_Group.fk_activity == db_a.id):
+
+            new_taggroup = A_Tag_Group()
+            new_activity.tag_groups.append(new_taggroup)
+
+            # And loop the tags
+            for db_tag in self.Session.query(A_Tag).filter(A_Tag.fk_a_tag_group == db_taggroup.id):
+
+                copy_tag = True
+                # Before copying, check what to do with this tag
+                for taggroup_dict in activity_dict['taggroups']:
+                    if 'id' in taggroup_dict and taggroup_dict['id'] == db_taggroup.id:
+                        # Check which tags we have to edit
+                        for tag_dict in taggroup_dict['tags']:
+                            if 'id' in tag_dict and tag_dict['id'] == db_tag.id:
+                                # Yes, it is THIS tag
+                                if tag_dict['op'] == 'delete':
+                                    copy_tag = False
+
+                if copy_tag:
+                    # Create a new tag
+                    k = self.Session.query(A_Key).get(db_tag.fk_a_key)
+                    v = self.Session.query(A_Value).get(db_tag.fk_a_value)
+                    new_tag = A_Tag()
+                    new_taggroup.tags.append(new_tag)
+                    new_tag.key = k
+                    new_tag.value = v
+
+                    # Set the main tag
+                    if db_taggroup.main_tag == db_tag:
+                        new_taggroup.main_tag = new_tag
+
+            # Finally we have to add new tags to this tag group without existing
+            # ids
+            #for taggroup_dict in activity_dict['taggroups']:
+
+
+        return None
 
         # Create a list with ids from tags to delete
         tags_to_delete = []
@@ -204,10 +254,11 @@ class ActivityProtocol2(object):
                     continue
                 tags_to_delete.append(tag_dict['id'])
 
-        log.debug("Delete the followings tags:")
-        log.debug(tags_to_delete)
+        log.debug("Delete the followings tags: %s" % tags_to_delete)
 
         latest_version = db_a.version + 1
+
+        
 
         # Try to get the geometry
         try:
@@ -259,7 +310,8 @@ class ActivityProtocol2(object):
                 elif tag_dict['op'] != 'delete':
                     continue
 
-                
+    def _update_tag_group(self, request, new_taggroup, taggroup_dict):
+        pass
 
 
     def _create_activity(self, request, activity, identifier=None):
