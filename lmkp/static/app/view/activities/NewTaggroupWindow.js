@@ -7,8 +7,15 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 	},
 	width: 400,
 	
+	old_tags: [],
+	old_main_tag: null,
+	
 	initComponent: function() {
+		
 		var me = this;
+		me.old_tags = [];
+		me.old_main_tag = null;
+		console.log(me);
 		
 		// set window title
 		var action = (me.selected_taggroup) ? 'Change' : 'Add';
@@ -64,84 +71,176 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 						var theform = form.getForm();
 						if (theform.isValid()) {
 							// submit functionality. collect values first
-							var main_tag = null;
-							var tags = []
+							var main_tag = {};
+							var newTags = [];
+							var deleteTags = [];
 							
+							// main tag
 							var attr_maintag = Ext.ComponentQuery.query('combobox[name=tg_combobox_maintag]');
 							var val_maintag = Ext.ComponentQuery.query('[name=tg_valuefield_maintag]');
 							if (attr_maintag.length > 0 && val_maintag.length > 0) {
-								main_tag = attr_maintag[0].getValue();
-								// add main_tag to tags as well
-								tags.push({
-									'key': attr_maintag[0].getValue(),
-									'value': val_maintag[0].getValue()
-								});
-							}
-							
-							var attrs = Ext.ComponentQuery.query('combobox[name=tg_combobox]');
-							var values = Ext.ComponentQuery.query('[name=tg_valuefield]');
-							if (attrs.length > 0 && values.length > 0 && attrs.length == values.length) {
-								for (var i=0; i<attrs.length; i++) {
-									tags.push({
-										'key': attrs[i].getValue(),
-										'value': values[i].getValue()
-									});
-								}
-							}
-							
-							console.log(main_tag)
-							console.log(tags);
-							
-							/*
-							var attrs = Ext.ComponentQuery.query('combobox[name=tg_combobox]');
-							var values = Ext.ComponentQuery.query('[name=tg_valuefield]');
-							var taggroup = {}
-							if (attrs.length > 0 && values.length > 0 && attrs.length == values.length) {
-								for (var i=0; i<attrs.length; i++) {
-									taggroup[attrs[i].getValue()] = values[i].getValue()
-								}
+								// always add latest version as new main tag
+								main_tag['key'] = attr_maintag[0].getValue();
+								main_tag['value'] = val_maintag[0].getValue();
 								
-								var all_taggroups = [];
-								var tg = me.activity.taggroups();
-								tg.each(function () {
-									// console.log(this.data);
-									var to_add= {}
-									for (var el in this.data) {
-										console.log(el);
-										if (el != 'lmkp.model.activity_id') {
-											// do something
+								// check for changes in main tag
+								if (!attr_maintag[0].oldAttribute) {
+									// brand new main tag (new key and new value)
+									// collect data to 'delete' old main tag (if available)
+									if (me.old_main_tag) {
+										deleteTags.push({
+											'key': me.old_main_tag.get('key'),
+											'value': me.old_main_tag.get('value'),
+											'id': me.old_main_tag.get('id'),
+											'op': 'delete'
+										});
+									}
+									// collect data to 'add' new main tag
+									newTags.push({
+										'key': attr_maintag[0].getValue(),
+										'value': val_maintag[0].getValue(),
+										'op': 'add'
+									});
+								} else {
+									// main tag existed already
+									if (attr_maintag[0].oldAttribute != attr_maintag[0].getValue()) {
+										// main tag has changed (new key and new value)
+										// collect data to 'delete' old main tag
+										deleteTags.push({
+											'key': attr_maintag[0].oldAttribute,
+											'value': me.old_main_tag.get('value'),
+											'id': me.old_main_tag.get('id'),
+											'op': 'delete'
+										});
+										// collect data to 'add' new main tag
+										newTags.push({
+											'key': attr_maintag[0].getValue(),
+											'value': val_maintag[0].getValue(),
+											'op': 'add'
+										});
+									} else {
+										if (val_maintag[0].oldValue != val_maintag[0].getValue()) {
+											// main tag has changed (only new value)
+											// collect data to 'delete' old main tag
+											deleteTags.push({
+												'key': attr_maintag[0].getValue(),
+												'value': val_maintag[0].oldValue,
+												'id': me.old_main_tag.get('id'),
+												'op': 'delete'
+											});
+											// collect data to 'add' new main tag
+											newTags.push({
+												'key': attr_maintag[0].getValue(),
+												'value': val_maintag[0].getValue(),
+												'op': 'add'
+											});
+										}
+										// else: main tag has not changed, do nothing
+									}
+								}
+							}
+							
+							// 'normal' tags
+							var attrs = Ext.ComponentQuery.query('combobox[name=tg_combobox]');
+							var values = Ext.ComponentQuery.query('[name=tg_valuefield]');
+							if (attrs.length > 0 && values.length > 0 && attrs.length == values.length) {
+								for (var i=0; i<attrs.length; i++) {
+									
+									// check for changes
+									if (!attrs[i].oldAttribute) {
+										// brand new tag (new key and new value)
+										// collect data to 'add' new tag
+										newTags.push({
+											'key': attrs[i].getValue(),
+											'value': values[i].getValue(),
+											'op': 'add'
+										});
+									} else {
+										// tag existed already
+										if (attrs[i].oldAttribute != attrs[i].getValue()) {
+											// tag has changed (new key and value)
+											// collect data to 'add' new tag
+											newTags.push({
+												'key': attrs[i].getValue(),
+												'value': values[i].getValue(),
+												'op': 'add'
+											});
+										} else {
+											if (values[i].oldValue != values[i].getValue()) {
+												// tag has changed (only new value)
+												// try to collect data to 'delete' old tag
+												for (var i in me.old_tags) {
+													if (me.old_tags[i].get('key') == attrs[i].getValue()) {
+														var t = me.old_tags.pop(me.old_tags[i]);
+														deleteTags.push({
+															'key': t.get('key'),
+															'value': t.get('value'),
+															'id': t.get('id'),
+															'op': 'delete'
+														});
+													}
+												}
+												
+												// collect data to 'add' new tag
+												newTags.push({
+													'key': attrs[i].getValue(),
+													'value': values[i].getValue(),
+													'op': 'add'
+												});
+											} else {
+												// tag has not changed
+												// remove tag from list
+												me.old_tags.pop(me.old_tags[i]);
+											}
 										}
 									}
-									all_taggroups.push(this.data);
-								});
-								// add new taggroup
-								all_taggroups.push(taggroup);
-								console.log(all_taggroups);
-								
-								// for the moment being, create dummy geometry
-								var geometry = {'type': 'POINT', 'coordinates': [46.951081, 7.438637]}
-								
-								// put JSON together (all attributes form one TagGroup), also add previous TagGroups
-								var jsonData = {'data': [{'geometry': geometry, 'taggroups': all_taggroups, 'id': form.getValues().activity_identifier}]}
-								console.log(jsonData);
-								
-								// send JSON through AJAX request
-								// Ext.Ajax.request({
-									// url: '/activities',
-									// method: 'POST',
-									// heades: {'Content-Type': 'application/json;charset=utf-8'},
-									// jsonData: jsonData,
-									// success: function(response, options) {
-										// console.log(response);
-										// Ext.Msg.alert('Success', 'The information was successfully submitted. It will be reviewed shortly.');
-										// form.up('window').close();
-									// },
-									// failure: function(response, options) {
-										// Ext.Msg.alert('Failure', 'The information could not be submitted.');
-									// }
-								// });
+								}
 							}
-							*/
+							
+							// check if there are deleted tags (still in list)
+							for (var i in me.old_tags) {
+								deleteTags.push({
+									'key': me.old_tags[i].get('key'),
+									'value': me.old_tags[i].get('value'),
+									'id': me.old_tags[i].get('id'),
+									'op': 'delete'
+								});
+							}
+							
+							// only do submit if something changed
+							if (newTags.length > 0 || deleteTags.length > 0) {
+								// put together diff object
+								var diffObject = {'activities': [
+									{
+										'id': me.activity_id, 
+										'taggroups': [
+											{
+												'id': me.selected_taggroup.get('id'),
+												'tags': newTags.concat(deleteTags)
+											}
+										]
+									}
+								]};
+									
+								// send JSON through AJAX request
+								Ext.Ajax.request({
+									url: '/activities',
+									method: 'POST',
+									heades: {'Content-Type': 'application/json;charset=utf-8'},
+									jsonData: diffObject,
+									success: function(response, options) {
+										Ext.Msg.alert('Success', 'The information was successfully submitted. It will be reviewed shortly.');
+										form.up('window').close();
+									},
+									failure: function(response, options) {
+										Ext.Msg.alert('Failure', 'The information could not be submitted.');
+										form.up('window').close();
+									}
+								});
+							} else {
+								Ext.Msg.alert('Notice', 'No changes were made.');
+								form.up('window').close();
+							}
 						}
 					}
 				}]
@@ -157,26 +256,26 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 			// if a TagGroup was selected to edit, show its values
 			if (me.selected_taggroup) {
 				// fill tags into separate arrays
-				var tags = [];
-				var main_tag = null;
+				// var old_tags = [];
+				// var old_main_tag = null;
 				
 				me.selected_taggroup.tags().each(function(record) {
 					if (record.get('id') == me.selected_taggroup.get('main_tag')) {
-						main_tag = record;
+						me.old_main_tag = record;
 					} else {
-						tags.push(record);
+						me.old_tags.push(record);
 					}
 				});
 				
 				// first display main tag (if available)
-				if (main_tag) {
-					var fieldContainer = this._getFieldContainer(store, completeStore, true, true, main_tag.get('key'), main_tag.get('value')); 
+				if (me.old_main_tag) {
+					var fieldContainer = this._getFieldContainer(store, completeStore, true, true, me.old_main_tag.get('key'), me.old_main_tag.get('value')); 
 					form.insert(0, fieldContainer);
 				}
 				
 				// then display all 'normal' tags
-				for (var t in tags) {
-					var fieldContainer = this._getFieldContainer(store, completeStore, true, false, tags[t].get('key'), tags[t].get('value')); 
+				for (var t in me.old_tags) {
+					var fieldContainer = this._getFieldContainer(store, completeStore, true, false, me.old_tags[t].get('key'), me.old_tags[t].get('value')); 
 					form.insert(1, fieldContainer);
 				}
 				
@@ -221,17 +320,31 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 					// remove newly selected value from store
 					var currentRecord = store.findRecord('name', newValue);
 					store.remove(currentRecord);
+					
+					// if old attribute was in original selection, remove it
+					// if (old_main_tag.get('key') == current)
+					// console.log(this.up('window').old_main_tag);
+					
 					// add previously selected (now deselected) value to store again
 					var previousRecord = completeStore.findRecord('name', oldValue);
 					if (previousRecord) {
 						store.add(previousRecord);
+						
+						// //
+						// if (this.up('window').old_main_tag.get('key') == oldValue) {
+							// this.up('window').old_main_tag
+						// }
 					}
 					// replace the value field
 					fieldContainer.items.getAt(fieldContainer.items.findIndex('name', 'tg_valuefield')).destroy();
 					var newField = this.up('window')._getValueField(currentRecord, main_tag);
 					// if initialValue was provided (when editing selected TagGroup), then show its value
 					if (initialValue) {
+						// store old value
+						newField['oldValue'] = initialValue;
 						newField.setValue(initialValue);
+						// 'reset' initialValue
+						initialValue = null;
 					}
 					fieldContainer.insert(1, newField);
 				}
@@ -239,6 +352,8 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 		});
 		// if initialAttribute was provided (when editing selected TagGroup), then show its value
 		if (initialAttribute) {
+			// store old value
+			cb['oldAttribute'] = initialAttribute;
 			cb.setValue(initialAttribute);
 		}
 		
