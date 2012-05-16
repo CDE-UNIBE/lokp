@@ -174,13 +174,13 @@ class ActivityProtocol2(object):
         # Return the newly created object with 201 Created HTTP code status
         return HTTPCreated(detail="ok")
 
-    def _handle_activity(self, request, activity_dict):
+    def _handle_activity(self, request, activity_dict, status='pending'):
         """
         """
 
         # If this activity does not have an id then create a new activity
         if 'id' not in activity_dict:
-            self._create_activity(request, activity_dict)
+            self._create_activity(request, activity_dict, status=status)
             return
 
         # Get the identifier from the request
@@ -191,7 +191,7 @@ class ActivityProtocol2(object):
 
         # If no activity is found, create a new activity
         if db_a == None:
-            self._create_activity(request, activity_dict, identifier)
+            self._create_activity(request, activity_dict, identifier=identifier, status=status)
             return
         
         # Update the activity:
@@ -203,7 +203,7 @@ class ActivityProtocol2(object):
                                 point=db_a.point)
         new_activity.tag_groups = []
         # Set the activity status to pending
-        new_activity.status = self.Session.query(Status).filter(Status.name == 'pending').first()
+        new_activity.status = self.Session.query(Status).filter(Status.name == status).first()
         # Add it to the database
         self.Session.add(new_activity)
 
@@ -291,9 +291,17 @@ class ActivityProtocol2(object):
         # Return the newly created tag
         return a_tag
 
-    def _create_activity(self, request, activity, identifier=None):
+    def _create_activity(self, request, activity, ** kwargs):
         """
+        Creates a new activity. As keyword arguments 'identifier' and 'status'
+        are allowed.
         """
+
+        if 'identifier' in kwargs:
+            identifier = kwargs['identifier']
+        status = 'pending'
+        if 'status' in kwargs:
+            status = kwargs['status']
 
         # Create a new unique identifier if not set
         if identifier is None:
@@ -316,7 +324,7 @@ class ActivityProtocol2(object):
 
         new_activity.tag_groups = []
         # Set the activity status to pending
-        new_activity.status = self.Session.query(Status).filter(Status.name == 'pending').first()
+        new_activity.status = self.Session.query(Status).filter(Status.name == status).first()
         # Add it to the database
         self.Session.add(new_activity)
 
