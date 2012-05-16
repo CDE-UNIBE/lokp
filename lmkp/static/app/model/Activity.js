@@ -7,7 +7,7 @@ Ext.define('Lmkp.model.Activity', {
 	}],
 	
 	hasMany: [{
-		model: 'Lmkp.model.TagGroup', // this model is created dynamically  (see views/activity.py)
+		model: 'Lmkp.model.TagGroup',
 		name: 'taggroups',
 	}]
 });
