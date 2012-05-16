@@ -38,6 +38,7 @@ from sqlalchemy.schema import (
     PrimaryKeyConstraint,
     UniqueConstraint
 )
+from sqlalchemy.orm.exc import NoResultFound
 
 # ...
 from shapely import wkb
@@ -252,7 +253,6 @@ class Activity(Base):
     tag_groups = relationship("A_Tag_Group", backref = backref('activity', order_by = id))
     changesets = relationship("A_Changeset", backref = backref('activity', order_by = id))
     involvements = relationship("Involvement", backref = backref('activity', order_by = id))
-    comments = relationship("Comment", backref = backref('activity'))
 
     def __init__(self, activity_identifier, version, point=None):
         self.timestamp = datetime.datetime.now()
@@ -262,20 +262,6 @@ class Activity(Base):
 
     def __repr__(self):
         return "<Activity> id [ %s ] | activity_identifier [ %s ] | timestamp [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.activity_identifier, self.timestamp, wkb.loads(str(self.point.geom_wkb)).wkt, self.fk_status, self.version)
-
-    # validation now done in trigger on database level.
-    """
-    @validates('status')
-    def validate_status(self, key, status):
-        if status.id == 2: # validate only for status == 'active' (id = 2)
-            # count activities with same status and same activity_identifier
-            from lmkp.models.meta import DBSession
-            sess = DBSession()
-            count_active = sess.query(Activity).filter(Activity.status == status).filter(Activity.activity_identifier == self.activity_identifier).count()
-            # check that currently no other activity is 'active'
-            assert count_active == 0, "There can only be one Activity with status 'active'."
-        return status
-    """
     
     @property
     def __geo_interface__(self):
@@ -286,6 +272,9 @@ class Activity(Base):
            geometry = wkb.loads(str(self.point.geom_wkb))
        properties = dict(source=self.source)
        return geojson.Feature(id=id, geometry=geometry, properties=properties)
+
+    def get_comments(self):
+        return DBSession.query(Comment).filter(Comment.fk_activity == self.activity_identifier).all()
 
 class Stakeholder(Base):
     __tablename__ = 'stakeholders'
@@ -302,7 +291,6 @@ class Stakeholder(Base):
     tag_groups = relationship("SH_Tag_Group", backref = backref('stakeholder', order_by = id))
     changesets = relationship("SH_Changeset", backref = backref('stakeholder', order_by = id))
     involvements = relationship("Involvement", backref = backref('stakeholder', order_by = id))
-    comments = relationship("Comment", backref = backref('stakeholder', order_by = id))
 
     def __init__(self, stakeholder_identifier, version):
         self.timestamp = datetime.datetime.now()
@@ -312,19 +300,8 @@ class Stakeholder(Base):
     def __repr__(self):
         return "<Stakeholder> id [ %s ] | stakeholder_identifier [ %s ] | timestamp [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.stakeholder_identifier, self.timestamp, self.fk_status, self.version)
 
-    # validation now done in trigger on database level.
-    """
-    @validates('fk_status')
-    def validate_status(self, key, status):
-        if status == 2: # validate only when status is updated to 'active' (2)
-            # count 'active' (2) Stakeholders with same stakeholder_identifier
-            from lmkp.models.meta import DBSession
-            sess = DBSession()
-            count_active = sess.query(Stakeholder).filter(Stakeholder.fk_status == 2).filter(Stakeholder.stakeholder_identifier == self.stakeholder_identifier).count()
-            # check that no other Stakeholder is 'active'
-            assert count_active == 0, "There can only be one Stakeholder with status 'active'."
-        return status
-    """
+    def get_comments(self):
+        return DBSession.query(Comment).filter(Comment.fk_stakeholder == self.stakeholder_identifier).all()
 
 class A_Changeset(Base):
     __tablename__ = 'a_changesets'
@@ -646,14 +623,30 @@ class Comment(Base):
     __tablename__ = 'comments'
     __table_args__ = (
         ForeignKeyConstraint(['fk_user'], ['data.users.id']),
-        ForeignKeyConstraint(['fk_activity'], ['data.activities.id']),
-        ForeignKeyConstraint(['fk_stakeholder'], ['data.stakeholders.id']),
         ForeignKeyConstraint(['fk_involvement'], ['data.involvements.id']),
         {'schema': 'data'}
         )
     id = Column(Integer, primary_key = True)
     comment = Column(Text, nullable = False)
     fk_user = Column(Integer)
-    fk_activity = Column(Integer)
-    fk_stakeholder = Column(Integer)
+    fk_activity = Column(UUID)
+    fk_stakeholder = Column(UUID)
     fk_involvement = Column(Integer)
+
+    def __init__(self, comment):
+        self.comment = comment
+    
+    def __repr__(self):
+        return "<Comment> id [ %s ] | comment [ %s ] | fk_user [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ] | fk_involvement [ %s ]" % (self.id, self.comment, self.fk_user, self.fk_activity, self.fk_stakeholder, self.fk_involvement)
+
+    def get_activity(self):
+        try:
+            return DBSession.query(Activity).filter(Activity.activity_identifier == self.fk_activity).filter(Activity.fk_status == 2).one()
+        except NoResultFound:
+            return None
+    
+    def get_stakeholder(self):
+        try:
+            return DBSession.query(Stakeholder).filter(Stakeholder.stakeholder_identifier == self.fk_stakeholder).filter(Stakeholder.fk_status == 2).one()
+        except NoResultFound:
+            return None
