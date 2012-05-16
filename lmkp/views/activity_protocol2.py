@@ -176,13 +176,13 @@ class ActivityProtocol2(object):
         # Return the newly created object with 201 Created HTTP code status
         return HTTPCreated(detail="ok")
 
-    def _handle_activity(self, request, activity_dict):
+    def _handle_activity(self, request, activity_dict, status='pending'):
         """
         """
 
         # If this activity does not have an id then create a new activity
         if 'id' not in activity_dict:
-            self._create_activity(request, activity_dict)
+            self._create_activity(request, activity_dict, status=status)
             return
 
         # Get the identifier from the request
@@ -193,7 +193,7 @@ class ActivityProtocol2(object):
 
         # If no activity is found, create a new activity
         if db_a == None:
-            self._create_activity(request, activity_dict, identifier)
+            self._create_activity(request, activity_dict, identifier=identifier, status=status)
             return
         
         # Update the activity:
@@ -205,7 +205,7 @@ class ActivityProtocol2(object):
                                 point=db_a.point)
         new_activity.tag_groups = []
         # Set the activity status to pending
-        new_activity.status = self.Session.query(Status).filter(Status.name == 'pending').first()
+        new_activity.status = self.Session.query(Status).filter(Status.name == status).first()
         # Add it to the database
         self.Session.add(new_activity)
 
@@ -269,6 +269,8 @@ class ActivityProtocol2(object):
                         if taggroup_dict['main_tag']['key'] == new_tag.key.key and taggroup_dict['main_tag']['value'] == new_tag.value.value:
                             new_taggroup.main_tag = new_tag
 
+        self._add_changeset(request, new_activity)
+
     def _create_tag(self, request, parent, key, value):
         """
         Creates a new SQLAlchemy tag object and appends it to the parent list.
@@ -291,9 +293,17 @@ class ActivityProtocol2(object):
         # Return the newly created tag
         return a_tag
 
-    def _create_activity(self, request, activity, identifier=None):
+    def _create_activity(self, request, activity, ** kwargs):
         """
+        Creates a new activity. As keyword arguments 'identifier' and 'status'
+        are allowed.
         """
+
+        if 'identifier' in kwargs:
+            identifier = kwargs['identifier']
+        status = 'pending'
+        if 'status' in kwargs:
+            status = kwargs['status']
 
         # Create a new unique identifier if not set
         if identifier is None:
@@ -309,22 +319,22 @@ class ActivityProtocol2(object):
             # The geometry
             shape = asShape(geom)
             # Create a new activity and add a representative point to the activity
-            db_activity = Activity(activity_identifier=identifier, version=version, point=shape.representative_point().wkt)
+            new_activity = Activity(activity_identifier=identifier, version=version, point=shape.representative_point().wkt)
         except KeyError:
             # If no geometry is submitted, create a new activity without a geometry
-            db_activity = Activity(activity_identifier=identifier, version=version)
+            new_activity = Activity(activity_identifier=identifier, version=version)
 
-        db_activity.tag_groups = []
+        new_activity.tag_groups = []
         # Set the activity status to pending
-        db_activity.status = self.Session.query(Status).filter(Status.name == 'pending').first()
+        new_activity.status = self.Session.query(Status).filter(Status.name == status).first()
         # Add it to the database
-        self.Session.add(db_activity)
+        self.Session.add(new_activity)
 
         # Loop all tag groups
         for taggroup in activity['taggroups']:
 
             db_taggroup = A_Tag_Group()
-            db_activity.tag_groups.append(db_taggroup)
+            new_activity.tag_groups.append(db_taggroup)
 
             # Reset the main_tag string
             main_tag = None
@@ -376,11 +386,17 @@ class ActivityProtocol2(object):
                 if a_tag.key.key == main_tag_key and a_tag.value.value == main_tag_value:
                     db_taggroup.main_tag = a_tag
 
+        self._add_changeset(request, new_activity)
+
+    def _add_changeset(self, request, activity):
+        """
+        Log the activity
+        """
         # Create a new changeset
-        changeset = A_Changeset(source='[pending] %s' % activity)
+        changeset = A_Changeset(source='[%s] %s' % (activity.status.name, activity))
         # Get the user from the request
         changeset.user = self.Session.query(User).filter(User.username == request.user.username).first()
-        changeset.activity = db_activity
+        changeset.activity = activity
         self.Session.add(changeset)
 
     def _filter(self, request, activities):
