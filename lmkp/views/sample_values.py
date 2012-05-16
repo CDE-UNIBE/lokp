@@ -685,13 +685,16 @@ def delete_sample_values(request):
         Session.delete(asr)
     if (rev_counter > 0):
         stack.append(str(rev_counter) + " sh_changeset_reviews deleted.")
-    all_activities = Session.query(Activity).join(A_Changeset).filter(or_(A_Changeset.source.like('[active] Source %'), A_Changeset.source.like('[pending] Source %'), A_Changeset.source.like('[overwritten] Source %'), A_Changeset.source.like('[deleted] Source %'), A_Changeset.source.like('[overwritten] Source %'))).all()
+    #all_activities = Session.query(Activity).join(A_Changeset).filter(or_(A_Changeset.source.like('[active] Source %'), A_Changeset.source.like('[pending] Source %'), A_Changeset.source.like('[overwritten] Source %'), A_Changeset.source.like('[deleted] Source %'), A_Changeset.source.like('[overwritten] Source %'))).all()
+    # Select all activities
+    all_activities = Session.query(Activity                                                                                                                                                                                                         )
     act_counter = 0
     tag_counter = 0
     ch_counter = 0
     for aa in all_activities:
         # delete tag groups
         tag_groups = aa.tag_groups
+        tag_groups.main_tag = None
         for tg in tag_groups:
             tags = tg.tags
             for t in tags:
