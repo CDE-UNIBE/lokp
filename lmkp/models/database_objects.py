@@ -252,6 +252,7 @@ class Activity(Base):
     tag_groups = relationship("A_Tag_Group", backref = backref('activity', order_by = id))
     changesets = relationship("A_Changeset", backref = backref('activity', order_by = id))
     involvements = relationship("Involvement", backref = backref('activity', order_by = id))
+    comments = relationship("Comment", backref = backref('activity'))
 
     def __init__(self, activity_identifier, version, point=None):
         self.timestamp = datetime.datetime.now()
@@ -301,6 +302,7 @@ class Stakeholder(Base):
     tag_groups = relationship("SH_Tag_Group", backref = backref('stakeholder', order_by = id))
     changesets = relationship("SH_Changeset", backref = backref('stakeholder', order_by = id))
     involvements = relationship("Involvement", backref = backref('stakeholder', order_by = id))
+    comments = relationship("Comment", backref = backref('stakeholder', order_by = id))
 
     def __init__(self, stakeholder_identifier, version):
         self.timestamp = datetime.datetime.now()
@@ -422,6 +424,7 @@ class Involvement(Base):
     fk_stakeholder_role = Column(Integer, nullable = False)
       
     reviews = relationship("Involvement_Review", backref='involvement')
+    comments = relationship("Comment", backref='involvement')
 
     def __init__(self):
         pass
@@ -471,6 +474,7 @@ class User(Base):
     a_changeset_reviews = relationship('A_Changeset_Review', backref='user')
     sh_changeset_reviews = relationship('SH_Changeset_Review', backref='user')
     involvement_reviews = relationship('Involvement_Review', backref='user')
+    comments = relationship('Comment', backref='user')
 
     # password encryption
     _password = Column('password', Unicode(64))
@@ -638,3 +642,18 @@ class Review_Decision(Base):
     def __repr__(self):
         return "<Review_Decision> id [ %s ] | name [ %s ] | description [ %s ]" % (self.id, self.name, self.description)
     
+class Comment(Base):
+    __tablename__ = 'comments'
+    __table_args__ = (
+        ForeignKeyConstraint(['fk_user'], ['data.users.id']),
+        ForeignKeyConstraint(['fk_activity'], ['data.activities.id']),
+        ForeignKeyConstraint(['fk_stakeholder'], ['data.stakeholders.id']),
+        ForeignKeyConstraint(['fk_involvement'], ['data.involvements.id']),
+        {'schema': 'data'}
+        )
+    id = Column(Integer, primary_key = True)
+    comment = Column(Text, nullable = False)
+    fk_user = Column(Integer)
+    fk_activity = Column(Integer)
+    fk_stakeholder = Column(Integer)
+    fk_involvement = Column(Integer)
