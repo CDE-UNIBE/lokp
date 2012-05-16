@@ -1,7 +1,39 @@
 #!/usr/bin/env python
 
+from PyQt4.QtCore import QFile
+from PyQt4.QtCore import QIODevice
+from PyQt4.QtCore import QRegExp
+from PyQt4.QtCore import QString
 from qgis.core import *
 import simplejson as json
+import string
+
+def createMap(filename):
+    """
+    Creates a Python dictionary from a CSV file. The CSV file must be semicolon
+    separated (";") and must not contain quotes.
+    """
+
+    # Open the CSV file
+    file = QFile( "%s/%s" % (basedir,filename))
+    file.open(QIODevice.OpenMode(QIODevice.ReadOnly))
+
+    map = {}
+
+    # Read all lines
+    while True:
+        qByteArray = file.readLine()
+        # Break the while loop when the end is reached
+        if qByteArray.size() == 0:
+            break
+        # Remove the trailing end line
+        line = QString(qByteArray).remove(QRegExp("\n"))
+        # Split the line
+        list = line.split(";")
+        # Set the key and value to the map
+        map[str(list[0].toUpper().toUtf8())] = str(list[1].toUtf8())
+
+    return map
 
 
 # Supply path to where is your qgis installed
@@ -9,6 +41,16 @@ QgsApplication.setPrefixPath("/usr", True)
 
 # Load providers
 QgsApplication.initQgis()
+
+# Base directory to the data. The scripts assumes that the Shapefile and all
+# CSV files are within the same directory
+basedir = "/home/adrian/Documents/ObservatoryLandAcquisitions/Data/"
+
+countriesMap = createMap('countries.csv')
+maincropsMap = createMap('maincrops.csv')
+mainanimalsMap = createMap('mainanimals.csv')
+mineralsMap = createMap('minerals.csv')
+otherlandusesMap = createMap('otherlanduses.csv')
 
 # This dict maps the attribute names from the landmatrix input Shapefile to the
 # fields defined in the global definition yaml
@@ -45,7 +87,7 @@ transformMap = {
     "Spatial Accuracy": "Spatial Accuracy"
 }
 
-vlayer = QgsVectorLayer("/home/adrian/Documents/ObservatoryLandAcquisitions/Data/deals_with_geom.shp", "landmatrix", "ogr")
+vlayer = QgsVectorLayer("%s/deals_with_geom.shp" % basedir, "landmatrix", "ogr")
 if not vlayer.isValid():
     print "Layer failed to load!"
 
@@ -106,7 +148,22 @@ while provider.nextFeature(feature):
 
             taggroupObject = {}
             taggroupObject['tags'] = []
-            taggroupObject['tags'].append({"key": fieldIndexMap[k], "value": unicode(attr.toString()), "op": "add"})
+
+            # Get the value
+            value = unicode(attr.toString())
+            # Check if the value has to be looked up
+            if fieldIndexMap[k] in ['Country','Country of Investor']:
+                value = countriesMap[string.upper(value)]
+            elif fieldIndexMap[k] in ['Main Crop']:
+                value = maincropsMap[string.upper(value)]
+            elif fieldIndexMap[k] in ['Main Animal']:
+                value = mainanimalsMap[string.upper(value)]
+            elif fieldIndexMap[k] in ['Mineral']:
+                value = mineralsMap[string.upper(value)]
+            elif fieldIndexMap[k] in ['Other Landuse']:
+                value = otherlandusesMap[string.upper(value)]
+            
+            taggroupObject['tags'].append({"key": fieldIndexMap[k], "value": value, "op": "add"})
             activityObject['taggroups'].append(taggroupObject)
 
     # Append the activity to the main object

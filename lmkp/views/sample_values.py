@@ -98,6 +98,41 @@ def delete_all_values(request):
     return {'messagestack': stack}
 
 
+@view_config(route_name='activities_delete', renderer='lmkp:templates/sample_values.pt', permission='administer')
+def delete_activities(request):
+    
+    stack = []
+
+    all_activities = Session.query(Activity)
+    act_counter = 0
+    tag_counter = 0
+    ch_counter = 0
+    for aa in all_activities:
+        # delete tag groups
+        tag_groups = aa.tag_groups
+        tag_groups.main_tag = None
+        for tg in tag_groups:
+            tags = tg.tags
+            for t in tags:
+                tag_counter += 1
+                Session.delete(t)
+            Session.delete(tg)
+        # delete changesets
+        changesets = aa.changesets
+        for ch in changesets:
+            ch_counter += 1
+            Session.delete(ch)
+        # delete activities
+        act_counter += 1
+        Session.delete(aa)
+    if (tag_counter > 0 or act_counter > 0 or ch_counter > 0):
+        stack.append(str(tag_counter) + " a_tags deleted.")
+        stack.append(str(ch_counter) + " a_changesets deleted.")
+        stack.append(str(act_counter) + " activities deleted.")
+
+    return {'messagestack': stack}
+
+
 #@view_config(route_name='sample_values', renderer='lmkp:templates/sample_values.pt')
 def sample_values(request):
     stack = []
@@ -742,13 +777,16 @@ def delete_sample_values(request):
         Session.delete(asr)
     if (rev_counter > 0):
         stack.append(str(rev_counter) + " sh_changeset_reviews deleted.")
-    all_activities = Session.query(Activity).join(A_Changeset).filter(or_(A_Changeset.source.like('[active] Source %'), A_Changeset.source.like('[pending] Source %'), A_Changeset.source.like('[overwritten] Source %'), A_Changeset.source.like('[deleted] Source %'), A_Changeset.source.like('[overwritten] Source %'))).all()
+    #all_activities = Session.query(Activity).join(A_Changeset).filter(or_(A_Changeset.source.like('[active] Source %'), A_Changeset.source.like('[pending] Source %'), A_Changeset.source.like('[overwritten] Source %'), A_Changeset.source.like('[deleted] Source %'), A_Changeset.source.like('[overwritten] Source %'))).all()
+    # Select all activities
+    all_activities = Session.query(Activity)
     act_counter = 0
     tag_counter = 0
     ch_counter = 0
     for aa in all_activities:
         # delete tag groups
         tag_groups = aa.tag_groups
+        tag_groups.main_tag = None
         for tg in tag_groups:
 
             tg.fk_a_tag = None

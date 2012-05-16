@@ -100,6 +100,8 @@ def main(global_config, ** settings):
     # used in ExtJS tree stores
     config.add_route('activities_tree', '/activities/tree', request_method='GET')
 
+    config.add_route('activities_delete', '/activities/delete', request_method='GET')
+
     # Returns the number of activities matching the filter
     config.add_route('activities_count', '/activities/count', request_method='GET')
 
@@ -111,8 +113,8 @@ def main(global_config, ** settings):
     # Creates a new activity (not yet implemented)
     config.add_route('activities_create', '/activities', request_method='POST')
 
-   
-    
+
+
     # Return the history of an activity
     config.add_route('activities_history', '/activities/history/{uid}')
 

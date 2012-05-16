@@ -1,5 +1,6 @@
 from geoalchemy import WKBSpatialElement
 from geoalchemy.functions import functions
+from lmkp.config import config_file_path
 from lmkp.models.database_objects import *
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
@@ -16,6 +17,7 @@ from sqlalchemy.orm.util import AliasedClass
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import desc
 from sqlalchemy.sql.expression import or_
+import yaml
 
 log = logging.getLogger(__name__)
 
@@ -360,6 +362,10 @@ class ActivityProtocol2(object):
                 key = tag['key']
                 value = tag['value']
 
+                # Check if the key and value are allowed by the global yaml
+                if not self._key_value_is_valid(request, key, value):
+                    continue
+
                 # The key has to be already in the database
                 k = self.Session.query(A_Key).filter(A_Key.key == key).first()
 
@@ -675,4 +681,12 @@ class ActivityProtocol2(object):
 
         return 0
 
-        
+    def _key_value_is_valid(self, request, key, value):
+        # Read the global configuration file
+        global_stream = open(config_file_path(request), 'r')
+        global_config = yaml.load(global_stream)
+
+        log.debug(global_config)
+
+        return True
+                
