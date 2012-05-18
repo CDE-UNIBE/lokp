@@ -110,7 +110,8 @@ def main(global_config, ** settings):
     # Creates a new activity (not yet implemented)
     config.add_route('activities_create', '/activities', request_method='POST')
 
-   
+    # Returns a JSON representation of comments to ...
+    config.add_route('comments_all', '/comments/{object}/{uid}')
     
     # Return the history of an activity
     config.add_route('activities_history', '/activities/history/{uid}')
