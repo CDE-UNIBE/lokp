@@ -628,16 +628,18 @@ class Comment(Base):
         )
     id = Column(Integer, primary_key = True)
     comment = Column(Text, nullable = False)
+    timestamp = Column(DateTime, nullable = False)
     fk_user = Column(Integer)
     fk_activity = Column(UUID)
     fk_stakeholder = Column(UUID)
     fk_involvement = Column(Integer)
 
     def __init__(self, comment):
+        self.timestamp = datetime.datetime.now()
         self.comment = comment
     
     def __repr__(self):
-        return "<Comment> id [ %s ] | comment [ %s ] | fk_user [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ] | fk_involvement [ %s ]" % (self.id, self.comment, self.fk_user, self.fk_activity, self.fk_stakeholder, self.fk_involvement)
+        return "<Comment> id [ %s ] | comment [ %s ] | timestamp [ %s ] | fk_user [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ] | fk_involvement [ %s ]" % (self.id, self.comment, self.timestamp, self.fk_user, self.fk_activity, self.fk_stakeholder, self.fk_involvement)
 
     def get_activity(self):
         try:
