@@ -170,3 +170,5 @@ while provider.nextFeature(feature):
     activityDiffObject['activities'].append(activityObject)
 
 print json.dumps(activityDiffObject, sort_keys=True, indent='    ')
+
+QgsApplication.exitQgis()
