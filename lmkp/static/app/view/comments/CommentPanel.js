@@ -11,7 +11,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 	},
 	
 	// temporary title
-	title: 'Loading ...',
+	title: Lmkp.ts.msg('loading'),
 	
 	bodyStyle: {
 		padding: '5px 5px 0 5px'
@@ -44,15 +44,14 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 					var json = Ext.JSON.decode(response.responseText);
 					
 					// set title
-					me.setTitle('Comments (' + json.total + ')');
-					
+					me.setTitle(Lmkp.ts.msg('comments') + ' (' + json.total + ')');
 					// if no comments, add empty message
 					if (json.total == 0) {
 						me.add({
 							border: 0,
 							margin: '0 0 5 0',
 							bodyPadding: 5,
-							html: 'No comments yet.'
+							html: Lmkp.ts.msg('comments-empty')
 						});
 						
 					} else {
@@ -62,8 +61,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 							var panel = Ext.create('Ext.panel.Panel', {
 								margin: '0 0 5 0',
 								bodyPadding: 5,
-								comment_id: cc.id, // store id of comment
-								html: '<span class="grey">Comment by ' + me._formatUsername(cc.username, cc.userid) + ' (' + me._formatTimestamp(cc.timestamp) + '):</span><br/><p>' + cc.comment + '</p>'
+								html: '<span class="grey">' + Lmkp.ts.msg('comments-by') + ' ' + me._formatUsername(cc.username, cc.userid) + ' (' + me._formatTimestamp(cc.timestamp) + '):</span><br/><p>' + cc.comment + '</p>'
 							});
 							// add button do delete if permissions available
 							if (json.can_delete) {
@@ -73,20 +71,21 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 									items: [{
 										scale: 'small',
 										text: 'delete',
+										comment_id: cc.id, // store id of comment
 										handler: function() {
 											// show confirmation dialogue
-											Ext.Msg.confirm('Please confirm', 'Do you really want to delete this comment?', function(btn) {
+											Ext.Msg.confirm(Lmkp.ts.msg('confirm-title'), Lmkp.ts.msg('confirm-delete-comment'), function(btn) {
 												if (btn == 'yes') {
 													Ext.Ajax.request({
 														url: '/comments/delete',
 														method: 'POST',
 														params: {
-															'id': panel.comment_id
+															'id': this.comment_id
 														},
 														success: function(response, options) {
 															var del_json = Ext.JSON.decode(response.responseText);
 															// give feedback
-															Ext.Msg.alert('Success', del_json.message);
+															Ext.Msg.alert(Lmkp.ts.msg('success'), del_json.message);
 															// reload comments
 															me.loadContent(me);
 															// re-layout container
@@ -95,11 +94,11 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 														failure: function(response, options) {
 															var del_json = Ext.JSON.decode(response.responseText);
 															// give feedback
-															Ext.Msg.alert('Failure', del_json.message);
+															Ext.Msg.alert(Lmkp.ts.msg('failure'), del_json.message);
 														}
 													});
 												}
-											});
+											}, this);
 										}
 									}]
 								});
@@ -119,7 +118,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 
 					// form to add new comment
 					var form = Ext.create('Ext.form.Panel', {
-						title: 'Leave a comment',
+						title: Lmkp.ts.msg('comments-leave'),
 						url: '/comments/add',
 						margin: '0 0 5 0',
 						bodyPadding: 5,
@@ -132,7 +131,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 						items: [{
 							// comment TextArea
 							xtype: 'textareafield',
-							fieldLabel: 'Comment',
+							fieldLabel: Lmkp.ts.msg('comment'),
 							name: 'comment',
 							allowBlank: false
 						}, {
@@ -161,7 +160,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 							value: me.activity_id
 						}],
 						buttons: [{
-							text: 'Submit',
+							text: Lmkp.ts.msg('submit'),
 							handler: function() {
 								var form = this.up('form').getForm();
 								if (form.isValid()) {
@@ -172,7 +171,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 										},
 										success: function(form, action) {
 											// give feedback
-											Ext.Msg.alert('Success', action.result.message);
+											Ext.Msg.alert(Lmkp.ts.msg('success'), action.result.message);
 											// reload comments
 											me.loadContent(me);
 											// re-layout container
@@ -180,7 +179,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 										},
 										failure: function(form, action) {
 											// give feedback
-											Ext.Msg.alert('Failure', action.result.message);
+											Ext.Msg.alert(Lmkp.ts.msg('failure'), action.result.message);
 											
 											// if captcha was wrong, reload it.
 											if (action.result.captcha_reload) {
@@ -203,7 +202,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 				failure: function(response, options) {
 					var json = Ext.JSON.decode(response.responseText);
 					// set title
-					me.setTitle('Comments');
+					me.setTitle(Lmkp.ts.msg('comments'));
 					// show error message
 					me.add({
 						border: 0,
@@ -228,7 +227,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 	 */
 	_formatUsername: function(username, userid) {
 		if (username == null) {
-			return 'Anonymous';
+			return Lmkp.ts.msg('anonyomus');
 		} else {
 			if (userid == null) {
 				return username; // although this hopefully should never happen
