@@ -24,6 +24,7 @@ from pyramid.security import has_permission
                 }
             });
         </script>
+        <script type="text/javascript" src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>
         <script type="text/javascript" src="/static/lib/OpenLayers-2.11/OpenLayers.js"></script>
         <script type="text/javascript" src="/static/lib/GeoExt4/GeoExt.js"></script>
         <script type="text/javascript" src="/lang"></script>

@@ -112,6 +112,8 @@ def main(global_config, ** settings):
 
     # Returns a JSON representation of comments to ...
     config.add_route('comments_all', '/comments/{object}/{uid}')
+    # Adds a comment
+    config.add_route('comment_add', '/comments/add')
     
     # Return the history of an activity
     config.add_route('activities_history', '/activities/history/{uid}')
