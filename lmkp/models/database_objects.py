@@ -274,7 +274,7 @@ class Activity(Base):
        return geojson.Feature(id=id, geometry=geometry, properties=properties)
 
     def get_comments(self):
-        return DBSession.query(Comment).filter(Comment.fk_activity == self.activity_identifier).all()
+        return DBSession.query(Comment).filter(Comment.activity_identifier == self.activity_identifier).all()
 
 class Stakeholder(Base):
     __tablename__ = 'stakeholders'
@@ -301,7 +301,7 @@ class Stakeholder(Base):
         return "<Stakeholder> id [ %s ] | stakeholder_identifier [ %s ] | timestamp [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.stakeholder_identifier, self.timestamp, self.fk_status, self.version)
 
     def get_comments(self):
-        return DBSession.query(Comment).filter(Comment.fk_stakeholder == self.stakeholder_identifier).all()
+        return DBSession.query(Comment).filter(Comment.stakeholder_identifier == self.stakeholder_identifier).all()
 
 class A_Changeset(Base):
     __tablename__ = 'a_changesets'
@@ -630,25 +630,27 @@ class Comment(Base):
     comment = Column(Text, nullable = False)
     timestamp = Column(DateTime, nullable = False)
     fk_user = Column(Integer)
-    fk_activity = Column(UUID)
-    fk_stakeholder = Column(UUID)
+    activity_identifier = Column(UUID)
+    stakeholder_identifier = Column(UUID)
     fk_involvement = Column(Integer)
 
-    def __init__(self, comment):
+    def __init__(self, comment, activity_identifier = None, stakeholder_identifier = None):
         self.timestamp = datetime.datetime.now()
         self.comment = comment
+        self.activity_identifier = activity_identifier
+        self.stakeholder_identifier = stakeholder_identifier
     
     def __repr__(self):
         return "<Comment> id [ %s ] | comment [ %s ] | timestamp [ %s ] | fk_user [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ] | fk_involvement [ %s ]" % (self.id, self.comment, self.timestamp, self.fk_user, self.fk_activity, self.fk_stakeholder, self.fk_involvement)
 
     def get_activity(self):
         try:
-            return DBSession.query(Activity).filter(Activity.activity_identifier == self.fk_activity).filter(Activity.fk_status == 2).one()
+            return DBSession.query(Activity).filter(Activity.activity_identifier == self.activity_identifier).filter(Activity.fk_status == 2).one()
         except NoResultFound:
             return None
     
     def get_stakeholder(self):
         try:
-            return DBSession.query(Stakeholder).filter(Stakeholder.stakeholder_identifier == self.fk_stakeholder).filter(Stakeholder.fk_status == 2).one()
+            return DBSession.query(Stakeholder).filter(Stakeholder.stakeholder_identifier == self.stakeholder_identifier).filter(Stakeholder.fk_status == 2).one()
         except NoResultFound:
             return None

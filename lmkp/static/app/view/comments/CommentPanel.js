@@ -5,12 +5,33 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 	collapsible: true,
 	collapsed: true,
 	
+	layout: 'anchor',
+	defaults: {
+		anchor: '100%'
+	},
+	
+	// temporary title
+	title: 'Loading ...',
+	
 	bodyStyle: {
 		padding: '5px 5px 0 5px'
 	},
 	
 	initComponent: function() {
 		var me = this;
+		
+		// show content
+		this.loadContent(me);
+		
+		this.callParent(arguments);
+	},
+	
+	loadContent: function(me) {
+		
+		// remove any existing items (if reloaded)
+		if (me.items) {
+	    	me.removeAll();
+		}
 		
 		if (me.activity_id) {
 			Ext.Ajax.request({
@@ -43,10 +64,90 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 							me.add({
 								margin: '0 0 5 0',
 								bodyPadding: 5,
-								html: '<span class="grey">Comment by ' + me._formatUsername(cc.username, cc.userid) + ' at ' + me._formatTimestamp(cc.timestamp) + ':</span><br/><p>' + cc.comment + '</p>'
+								html: '<span class="grey">Comment by ' + me._formatUsername(cc.username, cc.userid) + ' (' + me._formatTimestamp(cc.timestamp) + '):</span><br/><p>' + cc.comment + '</p>'
 							});
 						}
 					}
+					
+					// create the ReCaptcha
+					var recaptcha = Ext.create('Lmkp.view.comments.ReCaptcha', {
+						name: 'recaptcha',
+						recaptchaId: 'recaptcha',
+						publickey: '6LfqmNESAAAAAM1aYTR5LNizhBprFGF0TgyJ43Dw',
+						theme: 'clean',
+						lang: 'en'
+					});
+					
+					// form to add new comment
+					var form = Ext.create('Ext.form.Panel', {
+						title: 'Leave a comment',
+						url: '/comments/add',
+						margin: '0 0 5 0',
+						bodyPadding: 5,
+						collapsible: true,
+						collapsed: true,
+						layout: 'anchor',
+						defaults: {
+							anchor: '100%'
+						},
+						items: [{
+							// comment TextArea
+							xtype: 'textareafield',
+							fieldLabel: 'Comment',
+							name: 'comment',
+							allowBlank: false
+						},
+							// captcha
+							recaptcha,
+						{
+							// object (hidden)
+							xtype: 'hiddenfield',
+							name: 'object',
+							value: 'activity'
+						}, {
+							// identifier (hidden)
+							xtype: 'hiddenfield',
+							name: 'identifier',
+							value: me.activity_id
+						}],
+						buttons: [{
+							text: 'Submit',
+							handler: function() {
+								var form = this.up('form').getForm();
+								if (form.isValid()) {
+									form.submit({
+										params: {
+											recaptcha_challenge_field: recaptcha.getChallenge(),
+											recaptcha_response_field: recaptcha.getResponse()
+										},
+										success: function(form, action) {
+											// give feedback
+											Ext.Msg.alert('Success', action.result.message);
+											// reload comments
+											me.loadContent(me);
+										},
+										failure: function(form, action) {
+											// give feedback
+											Ext.Msg.alert('Failure', action.result.message);
+											
+											// if captcha was wrong, reload it.
+											if (action.result.captcha_reload) {
+												Recaptcha.reload();
+											}
+										}
+									});
+								}
+							}
+						}]
+					});
+					
+					form.on('expand', function(panel, eOpts) {
+						// re-layout container (see controller.Filter.js)
+						me.ownerCt.layout.layout();
+						me.forceComponentLayout();
+					});
+					
+					me.add(form);
 				},
 				failure: function(response, options) {
 					var json = Ext.JSON.decode(response.responseText);
@@ -60,8 +161,6 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 				}
 			});
 		}
-		
-		this.callParent(arguments);
 	},
 	
 	
