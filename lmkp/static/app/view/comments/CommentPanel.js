@@ -26,8 +26,10 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 		this.callParent(arguments);
 	},
 	
+	/**
+	 * Loads ands adds all the content.
+	 */
 	loadContent: function(me) {
-		
 		// remove any existing items (if reloaded)
 		if (me.items) {
 	    	me.removeAll();
@@ -57,11 +59,52 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 						// display comments
 						for (var i in json.comments) {
 							var cc = json.comments[i];
-							me.add({
+							var panel = Ext.create('Ext.panel.Panel', {
 								margin: '0 0 5 0',
 								bodyPadding: 5,
+								comment_id: cc.id, // store id of comment
 								html: '<span class="grey">Comment by ' + me._formatUsername(cc.username, cc.userid) + ' (' + me._formatTimestamp(cc.timestamp) + '):</span><br/><p>' + cc.comment + '</p>'
 							});
+							// add button do delete if permissions available
+							if (json.can_delete) {
+								panel.addDocked({
+									dock: 'left',
+									xtype: 'toolbar',
+									items: [{
+										scale: 'small',
+										text: 'delete',
+										handler: function() {
+											// show confirmation dialogue
+											Ext.Msg.confirm('Please confirm', 'Do you really want to delete this comment?', function(btn) {
+												if (btn == 'yes') {
+													Ext.Ajax.request({
+														url: '/comments/delete',
+														method: 'POST',
+														params: {
+															'id': panel.comment_id
+														},
+														success: function(response, options) {
+															var del_json = Ext.JSON.decode(response.responseText);
+															// give feedback
+															Ext.Msg.alert('Success', del_json.message);
+															// reload comments
+															me.loadContent(me);
+															// re-layout container
+															me._redoLayout();
+														},
+														failure: function(response, options) {
+															var del_json = Ext.JSON.decode(response.responseText);
+															// give feedback
+															Ext.Msg.alert('Failure', del_json.message);
+														}
+													});
+												}
+											});
+										}
+									}]
+								});
+							}
+							me.add(panel);
 						}
 					}
 					
@@ -70,10 +113,10 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 						name: 'recaptcha',
 						recaptchaId: 'recaptcha',
 						publickey: '6LfqmNESAAAAAM1aYTR5LNizhBprFGF0TgyJ43Dw',
-						theme: 'clean',
-						lang: 'en'
+						theme: 'white',
+						lang: Lmkp.ts.msg('locale')
 					});
-					
+
 					// form to add new comment
 					var form = Ext.create('Ext.form.Panel', {
 						title: 'Leave a comment',
@@ -92,10 +135,21 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 							fieldLabel: 'Comment',
 							name: 'comment',
 							allowBlank: false
-						},
-							// captcha
-							recaptcha,
-						{
+						}, {
+							// captcha (with empty panel for spacing)
+							xtype: 'panel',
+							border: 0,
+							anchor: '100%',
+							layout: {
+								type: 'hbox',
+								flex: 'stretch'
+							},
+							items: [{
+								xtype: 'panel',
+								flex: 1,
+								border: 0
+							},	recaptcha]
+						}, {
 							// object (hidden)
 							xtype: 'hiddenfield',
 							name: 'object',
@@ -121,6 +175,8 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 											Ext.Msg.alert('Success', action.result.message);
 											// reload comments
 											me.loadContent(me);
+											// re-layout container
+											me._redoLayout();
 										},
 										failure: function(form, action) {
 											// give feedback
@@ -138,9 +194,8 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 					});
 					
 					form.on('expand', function(panel, eOpts) {
-						// re-layout container (see controller.Filter.js)
-						me.ownerCt.layout.layout();
-						me.forceComponentLayout();
+						// re-layout container
+						me._redoLayout();
 					});
 					
 					me.add(form);
@@ -159,6 +214,14 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 		}
 	},
 	
+	/**
+	 * Does the layout after items have been removed.
+	 * (see controller/Filter.js)
+	 */
+	_redoLayout: function() {
+		this.ownerCt.layout.layout();
+		this.forceComponentLayout();
+	},
 	
 	/**
 	 * Returns a link with the user name or a predefined empty string for null values
