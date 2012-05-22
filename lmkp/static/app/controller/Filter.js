@@ -543,7 +543,8 @@ Ext.define('Lmkp.controller.Filter', {
     		
     		// add commenting panel
     		var commentPanel = Ext.create('Lmkp.view.comments.CommentPanel', {
-    			'activity_id': data[0].get('id')
+    			'activity_id': data[0].get('id'),
+    			'comment_object': 'activity'
     		});
     		panel.add(commentPanel);
     		
