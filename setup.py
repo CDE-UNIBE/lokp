@@ -20,6 +20,7 @@ requires = [
     'cryptacular==1.4.1',
     'Babel==0.9.6',
     'lingua==1.3',
+    'PasteScript==1.7.5',
     'psycopg2==2.4.5',
     'PyYAML==3.10',
     'Chameleon==2.8.5',

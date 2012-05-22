@@ -19,13 +19,13 @@ from pyramid.security import has_permission
             Ext.Loader.setConfig({
                 enabled: true,
                 paths: {
-                    'GeoExt': '/static/lib/GeoExt4/src',
+                    'GeoExt': '/static/lib/geoext2/src/GeoExt/',
                     'DyLmkp': '/app'
                 }
             });
         </script>
         <script type="text/javascript" src="/static/lib/OpenLayers-2.11/OpenLayers.js"></script>
-        <script type="text/javascript" src="/static/lib/GeoExt4/GeoExt.js"></script>
+        <!--script type="text/javascript" src="/static/lib/geoext2/src/GeoExt/GeoExt.js"></script-->
         <script type="text/javascript" src="/lang"></script>
         <%
         toolbarConfiguration = '/app/view/ViewToolbar.js'
