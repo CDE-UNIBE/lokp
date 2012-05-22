@@ -484,6 +484,11 @@ Ext.define('Lmkp.controller.Filter', {
 	    		panel.remove(panel.down('taggrouppanel'));
 	    	}
 	    	
+	    	// remove comment panel
+	    	if (panel.down('commentpanel')) {
+	    		panel.remove(panel.down('commentpanel'));
+	    	}
+	    	
 	    	// remove toolbar
 	    	if (panel.getDockedComponent('top_toolbar')) {
 		    	panel.removeDocked(panel.getDockedComponent('top_toolbar'));
@@ -492,6 +497,7 @@ Ext.define('Lmkp.controller.Filter', {
     		// get data
     		var taggroupStore = data[0].taggroups();
     		
+    		// add panel for each TagGroup
     		for (var i=0; i<taggroupStore.count(); i++) {
     			var tagStore = taggroupStore.getAt(i).tags();
     			var tags = [];
@@ -534,6 +540,13 @@ Ext.define('Lmkp.controller.Filter', {
 				}
     			panel.add(taggroupPanel);
     		}
+    		
+    		// add commenting panel
+    		var commentPanel = Ext.create('Lmkp.view.comments.CommentPanel', {
+    			'activity_id': data[0].get('id'),
+    			'comment_object': 'activity'
+    		});
+    		panel.add(commentPanel);
     		
     		panel.addDocked({
     			id: 'top_toolbar',

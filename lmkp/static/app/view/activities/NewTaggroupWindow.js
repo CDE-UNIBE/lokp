@@ -227,7 +227,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 								Ext.Ajax.request({
 									url: '/activities',
 									method: 'POST',
-									heades: {'Content-Type': 'application/json;charset=utf-8'},
+									headers: {'Content-Type': 'application/json;charset=utf-8'},
 									jsonData: diffObject,
 									success: function(response, options) {
 										Ext.Msg.alert('Success', 'The information was successfully submitted. It will be reviewed shortly.');
