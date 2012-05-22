@@ -1,26 +1,27 @@
-import logging
 from lmkp.config import sample_data_file_path
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol2 import ActivityProtocol2
-from pyramid.httpexceptions import HTTPCreated
+import logging
+import os
 from pyramid.view import view_config
 import random
 import simplejson as json
-from sqlalchemy import desc
+from sqlalchemy import and_
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 import transaction
 
 log = logging.getLogger(__name__)
 
-@view_config(route_name='sample_values', renderer='json')
-def insert_landmatrix(request):
-
+def create_wrapper(request, file, status='pending'):
+    """
+    A small wrapper around the create method in the Activity Protocol
+    """
+    # Create a new activity protocol object
     activity_protocol2 = ActivityProtocol2(Session)
-
     # Read the data JSON file
-    data_stream = open(sample_data_file_path(request), 'r')
+    data_stream = open(file, 'r')
     data = json.loads(data_stream.read())
 
     # Check if the json body is a valid diff file
@@ -28,18 +29,109 @@ def insert_landmatrix(request):
         return HTTPBadRequest(detail="Not a valid format")
 
     for activity in data['activities']:
-        activity_protocol2._handle_activity(request, activity)
+        activity_protocol2._handle_activity(request, activity, status)
 
-    # Set the status of the newly imported activities to active
-    for activity in data['activities']:
-        if 'id' in activity:
-            identifier = activity['id']
-            db_a = Session.query(Activity).filter(Activity.activity_identifier == identifier).order_by(desc(Activity.version)).first()
+@view_config(route_name='sample_values', renderer='json')
+def insert_landmatrix(request):
+    """
+    Inserts the landmatrix data into an empty, i.e. freshly populated database
+    and sets all activities immediately active.
+    """
 
-            active_id = Session.query(Status.id).filter(Status.name == "active").first()
-            db_a.fk_status = active_id
+    create_wrapper(request, sample_data_file_path(request), 'active')
 
     return {'success': True}
+
+@view_config(route_name='test_sample_values', renderer='json')
+def test_sample_values(request):
+    """
+    Tries to load some sample data to the database using the Activity Protocol.
+    """
+    # Path to the parent directory
+    parent_dir = os.path.split(os.path.dirname(__file__))[0]
+    # Loop all JSON files, order matters!
+    for file in ['addNewActivity.json', 'modifyTag.json', 'addTagToTaggroup.json', 'addNewTaggroup.json']:
+        create_wrapper(request, "%s/documents/%s" % (parent_dir, file))
+
+    return {'success': True}
+
+#@view_config(route_name='delete_sample_values', renderer='lmkp:templates/sample_values.pt')
+def delete_all_values(request):
+
+    stack = []
+
+    nbr_activities = 0
+    for activity in Session.query(Activity).all():
+
+        nbr_changesets = 0
+        for changeset in Session.query(A_Changeset).filter(A_Changeset.fk_activity == activity.id).all():
+            Session.delete(changeset)
+            nbr_changesets += 1
+
+        nbr_tag_groups = 0
+        for tag_group in Session.query(A_Tag_Group).filter(A_Tag_Group.fk_activity == activity.id).all():
+            tag_group.fk_a_tag = None
+            Session.flush()
+
+            nbr_tags = 0
+            for tag in Session.query(A_Tag).join(A_Tag_Group, A_Tag_Group.id == A_Tag.fk_a_tag_group).join(Activity).filter(and_(A_Tag.fk_a_tag_group == tag_group.id,
+                                                                                    A_Tag_Group.fk_activity == activity.id)).all():
+
+                Session.delete(tag)
+                nbr_tags += 1
+
+            Session.flush()
+            Session.delete(tag_group)
+            nbr_tag_groups += 1
+
+        Session.delete(activity)
+        nbr_activities += 1
+
+    try:
+        stack.append(str(nbr_changesets) + ' changesets deleted.')
+        stack.append(str(nbr_tags) + ' tags deleted.')
+        stack.append(str(nbr_tag_groups) + ' tag groups deleted.')
+        stack.append(str(nbr_activities) + ' activities deleted.')
+    except UnboundLocalError:
+        pass
+
+    return {'messagestack': stack}
+
+
+@view_config(route_name='activities_delete', renderer='lmkp:templates/sample_values.pt', permission='administer')
+def delete_activities(request):
+    
+    stack = []
+
+    all_activities = Session.query(Activity)
+    act_counter = 0
+    tag_counter = 0
+    ch_counter = 0
+    for aa in all_activities:
+        # delete tag groups
+        tag_groups = aa.tag_groups
+        tag_groups.main_tag = None
+        for tg in tag_groups:
+            tags = tg.tags
+            for t in tags:
+                tag_counter += 1
+                Session.delete(t)
+            Session.delete(tg)
+        # delete changesets
+        changesets = aa.changesets
+        for ch in changesets:
+            ch_counter += 1
+            Session.delete(ch)
+        # delete activities
+        act_counter += 1
+        Session.delete(aa)
+    if (tag_counter > 0 or act_counter > 0 or ch_counter > 0):
+        stack.append(str(tag_counter) + " a_tags deleted.")
+        stack.append(str(ch_counter) + " a_changesets deleted.")
+        stack.append(str(act_counter) + " activities deleted.")
+
+    return {'messagestack': stack}
+
 
 #@view_config(route_name='sample_values', renderer='lmkp:templates/sample_values.pt')
 def sample_values(request):
@@ -685,14 +777,20 @@ def delete_sample_values(request):
         Session.delete(asr)
     if (rev_counter > 0):
         stack.append(str(rev_counter) + " sh_changeset_reviews deleted.")
-    all_activities = Session.query(Activity).join(A_Changeset).filter(or_(A_Changeset.source.like('[active] Source %'), A_Changeset.source.like('[pending] Source %'), A_Changeset.source.like('[overwritten] Source %'), A_Changeset.source.like('[deleted] Source %'), A_Changeset.source.like('[overwritten] Source %'))).all()
+    #all_activities = Session.query(Activity).join(A_Changeset).filter(or_(A_Changeset.source.like('[active] Source %'), A_Changeset.source.like('[pending] Source %'), A_Changeset.source.like('[overwritten] Source %'), A_Changeset.source.like('[deleted] Source %'), A_Changeset.source.like('[overwritten] Source %'))).all()
+    # Select all activities
+    all_activities = Session.query(Activity)
     act_counter = 0
     tag_counter = 0
     ch_counter = 0
     for aa in all_activities:
         # delete tag groups
         tag_groups = aa.tag_groups
+        tag_groups.main_tag = None
         for tg in tag_groups:
+
+            tg.fk_a_tag = None
+
             tags = tg.tags
             for t in tags:
                 tag_counter += 1

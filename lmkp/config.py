@@ -34,4 +34,4 @@ def sample_data_file_path(request=None):
     """
 
     filename = "landmatrix.json"
-    return "%s/scripts/%s" % (os.path.dirname(__file__), filename)
+    return "%s/documents/%s" % (os.path.dirname(__file__), filename)
