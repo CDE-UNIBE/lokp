@@ -12,6 +12,9 @@ import uuid
 
 from recaptcha.client import captcha
 
+from pyramid.i18n import TranslationStringFactory
+_ = TranslationStringFactory('lmkp')
+
 @view_config(route_name='comments_all', renderer='json')
 def comments_all(request):
     """
@@ -108,7 +111,7 @@ def comment_add(request):
     
     if not response.is_valid:
         # captcha not correct
-        ret['message'] = 'Captcha not correct.'
+        ret['message'] = _('Captcha not correct.', default='Captcha not correct.')
         ret['captcha_reload'] = True
         return ret
     else:
@@ -128,7 +131,7 @@ def comment_add(request):
             
             # do the insert
             Session.add(comment)
-            ret['message'] = 'Comment successfully inserted.'
+            ret['message'] = _('Comment successfully inserted.', default='Comment successfully inserted.')
         
         elif request.POST['object'] == 'stakeholder':
             ret['message'] = 'Stakeholder comments are not yet implemented.'
@@ -171,7 +174,7 @@ def comment_delete(request):
         return ret
     
     Session.delete(comment)
-    ret['message'] = 'Comment successfully deleted.'
+    ret['message'] = _('Comment successfully deleted.', default='Comment successfully deleted.')
     
     # if we've come this far, set success to 'True'
     ret['success'] = True
