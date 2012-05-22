@@ -39,6 +39,7 @@ def ui_messages(request):
     'activitypaging-after': _('activitypaging-after', default='of {0}'),
     'activitypaging-message': _('paging-message', default='Displaying activities {0} - {1} of {2}'),
     'activitypaging-empty': _('activitypaging-empty', default='No activities found'),
+    'activity-select': _('activity-select', default='Select an activity above to show its details'),
     'activate-button': _('activate-button', default='Activate'),
     'activate-tooltip': _('activate-tooltip', default='Click to activate this filter'),
     'delete-button': _('delete-button', default='Delete'),
@@ -51,7 +52,19 @@ def ui_messages(request):
     'status-active': _('status-active', default='active'),
     'status-overwritten': _('status-overwritten', default='overwritten'),
     'status-deleted': _('status-deleted', default='deleted'),
-    'status-rejected': _('status-rejected', default='rejected')
+    'status-rejected': _('status-rejected', default='rejected'),
+    'loading': _('loading', default='Loading ...'),
+    'comment': _('comment', default='Comment'),
+    'comments': _('comments', default='Comments'),
+    'comments-empty': _('comments-empty', default='No comments yet.'),
+    'comments-by': _('comments-by', default='Comment by'),
+    'comments-leave': _('comments-leave', default='Leave a comment'),
+    'anonymous': _('anonymous', default='Anonymous'),
+    'confirm-title': _('confirm-title', default='Please confirm'),
+    'confirm-delete-comment': _('confirm-delete-comment', default='Do you really want to delete this comment?'),
+    'success': _('success', default='Success'),
+    'failure': _('failure', default='Failure'),
+    'submit': _('submit', default='Submit')
     }
 
     # Get the localizer
