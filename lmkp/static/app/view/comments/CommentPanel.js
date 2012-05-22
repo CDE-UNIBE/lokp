@@ -33,9 +33,10 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 	    	me.removeAll();
 		}
 		
-		if (me.activity_id) {
+		if (me.activity_id && me.comment_object) {
+			
 			Ext.Ajax.request({
-				url: '/comments/activity/' + me.activity_id,
+				url: '/comments/' + me.comment_object + '/' + me.activity_id,
 				method: 'GET',
 				success: function(response, options) {
 					var json = Ext.JSON.decode(response.responseText);
@@ -53,11 +54,6 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 						});
 						
 					} else {
-						// prepare template
-						var tpl = new Ext.XTemplate(
-							'<p>{comment}</p>'
-						);
-						
 						// display comments
 						for (var i in json.comments) {
 							var cc = json.comments[i];
@@ -172,9 +168,9 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 			return 'Anonymous';
 		} else {
 			if (userid == null) {
-				return username;
+				return username; // although this hopefully should never happen
 			} else {
-				return '<a href="#" onclick="javascript:console.log(\'userid: ' + userid + '\');">' + username + '</a>';
+				return '<a href="#" onclick="Ext.create(\'Lmkp.view.users.UserWindow\', { username: \'' + username + '\' }).show();">' + username + '</a>';
 			}
 		}
 	},

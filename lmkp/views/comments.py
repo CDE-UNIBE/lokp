@@ -1,4 +1,5 @@
 from pyramid.view import view_config
+from pyramid.security import authenticated_userid
 
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
@@ -115,6 +116,7 @@ def comment_add(request):
             # prepare the insert
             comment = Comment(request.POST['comment'])
             comment.activity_identifier = a_uuid
+            comment.user = Session.query(User).filter(User.username == authenticated_userid(request)).first() if authenticated_userid(request) else None
             
             # do the insert
             Session.add(comment)
