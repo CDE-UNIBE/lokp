@@ -1,5 +1,9 @@
 from pyramid.view import view_config
-from pyramid.security import authenticated_userid
+from pyramid.security import (
+    authenticated_userid,
+    has_permission,
+    ACLAllowed
+)
 
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
@@ -56,6 +60,10 @@ def comments_all(request):
     else:
         ret['message'] = 'Object not found.'
         return ret
+    
+    # check if user has permissions to delete comments
+    if isinstance(has_permission('moderate', request.context, request), ACLAllowed):
+        ret['can_delete'] = True
     
     # if we've come this far, set success to 'True'
     ret['success'] = True
@@ -134,6 +142,37 @@ def comment_add(request):
             ret['message'] = 'Object not found.'
             return ret
 
+    # if we've come this far, set success to 'True'
+    ret['success'] = True
+    
+    return ret
+
+@view_config(route_name='comment_delete', renderer='json')
+def comment_delete(request):
+    """
+    Delete an existing comment
+    """
+    ret = {'success': False}
+    
+    # check if id of comment is available
+    if request.POST['id'] is None:
+        ret['message'] = 'No comment id provided.'
+        return ret
+    
+    # check if user has permissions to delete comments
+    if not isinstance(has_permission('moderate', request.context, request), ACLAllowed):
+        ret['message'] = 'Permission denied.'
+        return ret
+    
+    # query comment
+    comment = Session.query(Comment).get(request.POST['id'])
+    if comment is None:
+        ret['message'] = 'Comment not found.'
+        return ret
+    
+    Session.delete(comment)
+    ret['message'] = 'Comment successfully deleted.'
+    
     # if we've come this far, set success to 'True'
     ret['success'] = True
     
