@@ -34,7 +34,6 @@ def ui_messages(request):
     'deleteallfilter-button': _('deleteallfilter-button', default='Delete all filters'),
     'deleteallfilter-tooltip': _('deleteallfilter-tooltip', default='Delete all attribute and temporal filters'),
     'filter-title': _('filter-title', default='Filter'),
-    'name-column': _('name-column', default='Name'),
     'activitypaging-before': _('activitypaging-before', default='Page'),
     'activitypaging-after': _('activitypaging-after', default='of {0}'),
     'activitypaging-message': _('paging-message', default='Displaying activities {0} - {1} of {2}'),
@@ -60,6 +59,7 @@ def ui_messages(request):
     'comments-by': _('comments-by', default='Comment by'),
     'comments-leave': _('comments-leave', default='Leave a comment'),
     'anonymous': _('anonymous', default='Anonymous'),
+    'unknown': _('unknown', default='Unknown'),
     'confirm-title': _('confirm-title', default='Please confirm'),
     'confirm-delete-comment': _('confirm-delete-comment', default='Do you really want to delete this comment?'),
     'success': _('success', default='Success'),
@@ -82,13 +82,21 @@ def ui_messages(request):
     uiMap['locale_english-name'] = db_lang.english_name
     uiMap['locale_local-name'] = db_lang.local_name
     
-    # Add translated name for key "Name" (needed by Ext as dataIndex when displaying the grid with activities).
-    nameKeyEnglish = Session.query(A_Key).filter(A_Key.key == 'Name').filter(A_Key.original == None).first()
-    nameKeyLocale = Session.query(A_Key).filter(A_Key.original == nameKeyEnglish).filter(A_Key.language == db_lang).first()
-    if nameKeyLocale:
-        uiMap['dataIndex-name'] = nameKeyLocale.key
+    # Add translated name for key "Name of Investor" (needed by Ext as dataIndex when displaying the grid with activities).
+    nameofinvestorKeyEnglish = Session.query(A_Key).filter(A_Key.key == 'Name of Investor').filter(A_Key.original == None).first()
+    nameofinvestorKeyLocale = Session.query(A_Key).filter(A_Key.original == nameofinvestorKeyEnglish).filter(A_Key.language == db_lang).first()
+    if nameofinvestorKeyLocale:
+        uiMap['activity-nameofinvestor'] = nameofinvestorKeyLocale.key
     else:
-        uiMap['dataIndex-name'] = 'Name'
+        uiMap['activity-nameofinvestor'] = 'Name of Investor'
+    
+    # Add translated name for key "Year of Investment" (needed by Ext as dataIndex when displaying the grid with activities).
+    yearofinvestmentKeyEnglish = Session.query(A_Key).filter(A_Key.key == 'Year of Investment (agreed)').filter(A_Key.original == None).first()
+    yearofinvestmentKeyLocale = Session.query(A_Key).filter(A_Key.original == yearofinvestmentKeyEnglish).filter(A_Key.language == db_lang).first()
+    if yearofinvestmentKeyLocale:
+        uiMap['activity-yearofinvestment'] = yearofinvestmentKeyLocale.key
+    else:
+        uiMap['activity-yearofinvestment'] = 'Year of Investment (agreed)'
 
     # Write the JavaScript and instantiate the global variable Lmkp.ts
     str = "Ext.namespace('Lmkp');\n"
