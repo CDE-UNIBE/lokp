@@ -29,8 +29,11 @@ Ext.define('Lmkp.controller.Filter', {
             'filterPanel tabpanel[id=detailPanel]': {
             	tabchange: this.showActivity
             },
-            'filterPanel gridcolumn[name=namecolumn]': {
-                afterrender: this.renderNameColumn
+            'filterPanel gridcolumn[name=nameofinvestorcolumn]': {
+                afterrender: this.renderNameofinvestorColumn
+            },
+            'filterPanel gridcolumn[name=yearofinvestmentcolumn]': {
+            	afterrender: this.renderYearofinvestmentColumn
             },
             'filterPanel button[id=deleteAllFilters]': {
                 click: this.deleteAllFilters
@@ -325,21 +328,42 @@ Ext.define('Lmkp.controller.Filter', {
         this.applyFilter();
     },
     
-    renderNameColumn: function() {
-        col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=namecolumn]')[0];
+    renderNameofinvestorColumn: function() {
+        col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=nameofinvestorcolumn]')[0];
+        col.renderer = function(value, p, record) {
+        	// loop through all tags is needed
+        	var taggroupStore = record.taggroups();
+        	var ret = [];
+        	for (var i=0; i<taggroupStore.count(); i++) {
+        		var tagStore = taggroupStore.getAt(i).tags();
+        		for (var j=0; j<tagStore.count(); j++) {
+        			if (tagStore.getAt(j).get('key') == Lmkp.ts.msg("activity-nameofinvestor")) {
+        				ret.push(Ext.String.format('{0}', tagStore.getAt(j).get('value')));
+        			}
+        		}
+        	}
+        	if (ret.length > 0) {
+        		return ret.join(', ');
+        	} else {
+	        	return Lmkp.ts.msg("unknown");
+        	}
+        }
+    },
+    
+    renderYearofinvestmentColumn: function() {
+    	col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=yearofinvestmentcolumn]')[0];
         col.renderer = function(value, p, record) {
         	// loop through all tags is needed
         	var taggroupStore = record.taggroups();
         	for (var i=0; i<taggroupStore.count(); i++) {
         		var tagStore = taggroupStore.getAt(i).tags();
         		for (var j=0; j<tagStore.count(); j++) {
-        			if (tagStore.getAt(j).get('key') == Lmkp.ts.msg("dataIndex-name")) {
-        				return Ext.String.format('{0}', tagStore.getAt(j).get('value'))
+        			if (tagStore.getAt(j).get('key') == Lmkp.ts.msg("activity-yearofinvestment")) {
+        				return Ext.String.format('{0}', tagStore.getAt(j).get('value'));
         			}
         		}
         	}
-        	// no name tag found, return 'unnamed'
-        	return Lmkp.ts.msg("unnamed-activity");
+        	return Lmkp.ts.msg("unknown");
         }
     },
     

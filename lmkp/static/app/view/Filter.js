@@ -93,12 +93,19 @@ Ext.define('Lmkp.view.Filter', {
             viewConfig: {
                 stripeRows: false
             },
+            // grid columns
             columns: [{
-                header: Lmkp.ts.msg("name-column"),
-                name: 'namecolumn',
-                dataIndex: 'id', // this could be anything because renderer will find 'name'
+                header: Lmkp.ts.msg("activity-nameofinvestor"),
+                name: 'nameofinvestorcolumn',
+                dataIndex: Lmkp.ts.msg("activity-nameofinvestor"),
                 flex: 1,
                 sortable: true
+            }, {
+            	header: Lmkp.ts.msg('activity-yearofinvestment'),
+            	name: 'yearofinvestmentcolumn',
+            	dataIndex: Lmkp.ts.msg('activity-yearofinvestment'),
+            	flex: 0,
+            	sortable: true
             }],
             dockedItems: [{
                 xtype: 'pagingtoolbar',
