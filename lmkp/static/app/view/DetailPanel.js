@@ -6,11 +6,15 @@ Ext.define('Lmkp.view.DetailPanel', {
 	
 	dockedItems: Lmkp.toolbar,
 	
+	plain: true,
 	activeTab: 0,
-	
+	defaults: {
+		autoScroll: true
+	},
+
 	items: [{
 		title: 'Details',
-		xtype: 'activityDetailTab'
+		xtype: 'activityDetailTab',
 	}, {
 		title: 'History',
 		xtype: 'activityHistoryTab'

@@ -29,8 +29,11 @@ Ext.define('Lmkp.controller.Filter', {
             'filterPanel tabpanel[id=detailPanel]': {
             	tabchange: this.showActivity
             },
-            'filterPanel gridcolumn[name=namecolumn]': {
-                afterrender: this.renderNameColumn
+            'filterPanel gridcolumn[name=nameofinvestorcolumn]': {
+                afterrender: this.renderNameofinvestorColumn
+            },
+            'filterPanel gridcolumn[name=yearofinvestmentcolumn]': {
+            	afterrender: this.renderYearofinvestmentColumn
             },
             'filterPanel button[id=deleteAllFilters]': {
                 click: this.deleteAllFilters
@@ -325,21 +328,42 @@ Ext.define('Lmkp.controller.Filter', {
         this.applyFilter();
     },
     
-    renderNameColumn: function() {
-        col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=namecolumn]')[0];
+    renderNameofinvestorColumn: function() {
+        col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=nameofinvestorcolumn]')[0];
+        col.renderer = function(value, p, record) {
+        	// loop through all tags is needed
+        	var taggroupStore = record.taggroups();
+        	var ret = [];
+        	for (var i=0; i<taggroupStore.count(); i++) {
+        		var tagStore = taggroupStore.getAt(i).tags();
+        		for (var j=0; j<tagStore.count(); j++) {
+        			if (tagStore.getAt(j).get('key') == Lmkp.ts.msg("activity-nameofinvestor")) {
+        				ret.push(Ext.String.format('{0}', tagStore.getAt(j).get('value')));
+        			}
+        		}
+        	}
+        	if (ret.length > 0) {
+        		return ret.join(', ');
+        	} else {
+	        	return Lmkp.ts.msg("unknown");
+        	}
+        }
+    },
+    
+    renderYearofinvestmentColumn: function() {
+    	col = Ext.ComponentQuery.query('filterPanel gridcolumn[name=yearofinvestmentcolumn]')[0];
         col.renderer = function(value, p, record) {
         	// loop through all tags is needed
         	var taggroupStore = record.taggroups();
         	for (var i=0; i<taggroupStore.count(); i++) {
         		var tagStore = taggroupStore.getAt(i).tags();
         		for (var j=0; j<tagStore.count(); j++) {
-        			if (tagStore.getAt(j).get('key') == Lmkp.ts.msg("dataIndex-name")) {
-        				return Ext.String.format('{0}', tagStore.getAt(j).get('value'))
+        			if (tagStore.getAt(j).get('key') == Lmkp.ts.msg("activity-yearofinvestment")) {
+        				return Ext.String.format('{0}', tagStore.getAt(j).get('value'));
         			}
         		}
         	}
-        	// no name tag found, return 'unnamed'
-        	return Lmkp.ts.msg("unnamed-activity");
+        	return Lmkp.ts.msg("unknown");
         }
     },
     
@@ -484,6 +508,11 @@ Ext.define('Lmkp.controller.Filter', {
 	    		panel.remove(panel.down('taggrouppanel'));
 	    	}
 	    	
+	    	// remove comment panel
+	    	if (panel.down('commentpanel')) {
+	    		panel.remove(panel.down('commentpanel'));
+	    	}
+	    	
 	    	// remove toolbar
 	    	if (panel.getDockedComponent('top_toolbar')) {
 		    	panel.removeDocked(panel.getDockedComponent('top_toolbar'));
@@ -492,6 +521,7 @@ Ext.define('Lmkp.controller.Filter', {
     		// get data
     		var taggroupStore = data[0].taggroups();
     		
+    		// add panel for each TagGroup
     		for (var i=0; i<taggroupStore.count(); i++) {
     			var tagStore = taggroupStore.getAt(i).tags();
     			var tags = [];
@@ -534,6 +564,13 @@ Ext.define('Lmkp.controller.Filter', {
 				}
     			panel.add(taggroupPanel);
     		}
+    		
+    		// add commenting panel
+    		var commentPanel = Ext.create('Lmkp.view.comments.CommentPanel', {
+    			'activity_id': data[0].get('id'),
+    			'comment_object': 'activity'
+    		});
+    		panel.add(commentPanel);
     		
     		panel.addDocked({
     			id: 'top_toolbar',

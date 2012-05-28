@@ -86,45 +86,43 @@ Ext.define('Lmkp.view.Filter', {
                 }]
             }]
         }, {
-            // filter results
-            xtype: 'panel',
-            flex: 1,
-            border: false,
-            layout: {
-                type: 'border'
+            xtype: 'gridpanel',
+            split: true,
+            id: 'filterResults',
+            store: 'ActivityGrid',
+            viewConfig: {
+                stripeRows: false
             },
-            items: [{
-                xtype: 'gridpanel',
-                region: 'north',
-                split: true,
-                id: 'filterResults',
-                store: 'ActivityGrid',
-                viewConfig: {
-                    stripeRows: false
-                },
-                columns: [{
-                    header: Lmkp.ts.msg("name-column"),
-                    name: 'namecolumn',
-                    dataIndex: 'id', // this could be anything because renderer will find 'name'
-                    flex: 1,
-                    sortable: true
-                }],
-                dockedItems: [{
-                    xtype: 'pagingtoolbar',
-                    id: 'activityGridPagingToolbar',
-                    store: 'ActivityGrid',
-                    dock: 'bottom',
-                    enableOverflow: false,
-                    displayInfo: true,
-                    beforePageText: Lmkp.ts.msg("activitypaging-before"),
-                    afterPageText: Lmkp.ts.msg("activitypaging-after"),
-                    displayMsg: Lmkp.ts.msg("activitypaging-message"),
-                    emptyMsg: '<b>' + Lmkp.ts.msg("activitypaging-empty") + '</b>'
-                }]
+            // grid columns
+            columns: [{
+                header: Lmkp.ts.msg("activity-nameofinvestor"),
+                name: 'nameofinvestorcolumn',
+                dataIndex: Lmkp.ts.msg("activity-nameofinvestor"),
+                flex: 1,
+                sortable: true
             }, {
-                xtype: 'detailPanel',
-                region: 'center'
+            	header: Lmkp.ts.msg('activity-yearofinvestment'),
+            	name: 'yearofinvestmentcolumn',
+            	dataIndex: Lmkp.ts.msg('activity-yearofinvestment'),
+            	flex: 0,
+            	sortable: true
+            }],
+            dockedItems: [{
+                xtype: 'pagingtoolbar',
+                id: 'activityGridPagingToolbar',
+                store: 'ActivityGrid',
+                dock: 'bottom',
+                enableOverflow: false,
+                displayInfo: true,
+                beforePageText: Lmkp.ts.msg("activitypaging-before"),
+                afterPageText: Lmkp.ts.msg("activitypaging-after"),
+                displayMsg: Lmkp.ts.msg("activitypaging-message"),
+                emptyMsg: '<b>' + Lmkp.ts.msg("activitypaging-empty") + '</b>'
             }]
+        } ,{
+        	xtype: 'detailPanel',
+        	flex: 1,
+        	margin: '2 0 0 0'
         }];
         this.callParent(arguments);
     }

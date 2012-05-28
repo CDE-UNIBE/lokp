@@ -7,11 +7,11 @@ Ext.define('Lmkp.view.activities.Details', {
 	bodyPadding: 5,
 	
 	layout: {
-        type:'vbox',
-        align:'stretch'
+        type: 'anchor'
     },
     defaults: {
-    	margins:'0 0 5 0'
+    	margin: '0 0 5 0',
+    	anchor: '100%'
     },
 	
 	// initial item
@@ -19,7 +19,7 @@ Ext.define('Lmkp.view.activities.Details', {
     	xtype: 'panel',
     	border: 0,
     	name: 'details_initial',
-    	html: 'Select an activity above to show its details',
+    	html: Lmkp.ts.msg('activity-select'),
     	collapsible: false,
     	collapsed: false
     }]
