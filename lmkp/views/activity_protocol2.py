@@ -20,6 +20,8 @@ from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import desc
 from sqlalchemy.sql.expression import asc
 from sqlalchemy.sql.expression import or_
+from sqlalchemy.sql.expression import cast
+from sqlalchemy.types import Float
 import yaml
 
 log = logging.getLogger(__name__)
@@ -392,19 +394,7 @@ class ActivityProtocol2(object):
         """
         """
 
-        nbr_map = {
-            'eq': '==',
-            'ne': '!=',
-            'lt': '<',
-            'lte': '<=',
-            'gt': '>',
-            'gte': '>='
-        }
-
-        str_map = {
-            'like': 'like',
-            'ilike': 'ilike'
-        }
+        
 
         def __filter(f, attribute, value):
 
@@ -497,6 +487,38 @@ class ActivityProtocol2(object):
 
             return f
 
+        def __get_filter_expression(value, op):
+            
+            # Use cast function provided by SQLAlchemy to convert
+            # database values to Float.
+            nbr_map = {
+                'eq': cast(A_Value.value, Float) == value,
+                'ne': cast(A_Value.value, Float) != value,
+                'lt': cast(A_Value.value, Float) < value,
+                'lte': cast(A_Value.value, Float) <= value,
+                'gt': cast(A_Value.value, Float) > value,
+                'gte': cast(A_Value.value, Float) >= value
+            }
+    
+            str_map = {
+                'like': A_Value.value.like(value),
+                'ilike': A_Value.value.ilike(value)
+            }
+            
+            # number comparison
+            if op in nbr_map.keys():
+                # make sure submitted value is a number
+                try:
+                    float(value)
+                    return nbr_map[op]
+                except:
+                    pass
+            
+            elif op in str_map.keys():
+                return str_map[op]
+            
+            return None
+
         if 'queryable' in request.params:
             key_expr = []
             val_expr = []
@@ -511,8 +533,7 @@ class ActivityProtocol2(object):
                 # like: queryable=project_use&project_use__eq=pending,signed
                 values = request.params[k].split(',')
                 for v in values:
-                    print v
-                    val_expr.append(A_Value.value == v)
+                    val_expr.append(__get_filter_expression(v, op))
 
             # At this point, the logical operator is not relevant.
             # All filter expressions are joined by 'or'.
