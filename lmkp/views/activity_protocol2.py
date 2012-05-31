@@ -13,9 +13,12 @@ import simplejson as json
 from sqlalchemy import alias
 from sqlalchemy import join
 from sqlalchemy import select
+from sqlalchemy import distinct
+from sqlalchemy import func
 from sqlalchemy.orm.util import AliasedClass
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import desc
+from sqlalchemy.sql.expression import asc
 from sqlalchemy.sql.expression import or_
 import yaml
 
@@ -140,21 +143,7 @@ class ActivityProtocol2(object):
     def read(self, request, filter=None, uid=None):
 
         # Query the database
-        activities = self._query(request, filter)
-
-        # Filter the attributes
-        activities = self._filter(request, activities)
-
-        # Get the total number of features before limiting the result set
-        count = len(activities)
-
-        # Offset and limit
-        offset = self._get_offset(request)
-        try:
-            limit = self._get_limit(request) + offset
-        except TypeError:
-            limit = None
-        activities = activities[offset:limit]
+        activities, count = self._query(request, limit=self._get_limit(request), offset=self._get_offset(request))
 
         return {'total': count, 'data': [a.to_table() for a in activities]}
 
@@ -399,11 +388,9 @@ class ActivityProtocol2(object):
         changeset.activity = activity
         self.Session.add(changeset)
 
-    def _filter(self, request, activities):
+    def _filter(self, request):
         """
         """
-
-        logicalOperator = request.params.get("logical_op", "and").lower()
 
         nbr_map = {
             'eq': '==',
@@ -511,76 +498,122 @@ class ActivityProtocol2(object):
             return f
 
         if 'queryable' in request.params:
+            key_expr = []
+            val_expr = []
+            for k in request.params:
+                # Collect filter expressions
+                if len(request.params[k]) <= 0 or '__' not in k:
+                    continue
+                col, op = k.split("__") # so far, op not respected.
+                key_expr.append(A_Key.key == col)
+                # Several values can be queried for one attributes e.g.
+                # project_use equals pending and signed. Build the URL
+                # like: queryable=project_use&project_use__eq=pending,signed
+                values = request.params[k].split(',')
+                for v in values:
+                    print v
+                    val_expr.append(A_Value.value == v)
 
-            # Implement the logical OR operator
-            if logicalOperator == 'or':
+            # At this point, the logical operator is not relevant.
+            # All filter expressions are joined by 'or'.
+            key_filter = self.Session.query(A_Key).\
+                filter(or_(*key_expr)).\
+                subquery()            
+            value_filter = self.Session.query(A_Value).\
+                filter(or_(*val_expr)).\
+                subquery()
+            
+            return key_filter, value_filter, len(val_expr)
 
-                # A list of features that have fulfilled at least on condition
-                filteredActivities = []
-                for k in request.params:
-                    if len(request.params[k]) <= 0 or '__' not in k:
-                        continue
-                    # Several values can be queried for one attributes e.g.
-                    # project_use equals pending and signed. Build the URL
-                    # like: queryable=project_use&project_use__eq=pending,signed
-                    values = request.params[k].split(",")
-                    for v in values:
-                        filteredActivities.append(__filter(activities, k, v))
+        # Default (no filtering)
+        return self.Session.query(A_Key).subquery(), self.Session.query(A_Value).subquery(), 0
 
-                # Merge all lists:
-                f = []
-                for ff in filteredActivities:
-                    for feature in ff:
-                        if feature not in f:
-                            f.append(feature)
-
-                activities = f
-
-            # Implement the logical AND operator
-            elif logicalOperator == 'and':
-
-                for k in request.params:
-                    if len(request.params[k]) <= 0 or '__' not in k:
-                        continue
-                    values = request.params[k].split(",")
-                    for v in values:
-                        activities = __filter(activities, k, v)
-
-        return activities
-
-
-    def _query(self, request, filter=None):
+    def _query(self, request, limit=None, offset=None):
         """
-
-            """
-
+        Based on filter, order and 
+        """
+        
         # Get the status
-        status_id = self.Session.query(Status.id).filter(Status.name == self._get_status(request))
+        status_filter = self.Session.query(Status.id).filter(Status.name == self._get_status(request))
 
-        # Create the query
-        limited_select = select([Activity.id,
-                                Activity.activity_identifier,
-                                Activity.point,
-                                Activity.point,
-                                Activity.timestamp,
-                                Activity.version
-                                ]).where(and_(Activity.fk_status == status_id, self._create_geom_filter(request))).alias("limited_activites")
+        # Get the attribute filter
+        key_filter, value_filter, filter_length = self._filter(request)
+        
+        # Get the order
+        order_query = self._get_order(request)
+        
+        # Find id's of relevant activities by joining with prepared filters.
+        # If result is ordered, do an Outer Join to attach ordered attributes.
+        # 'order_value' contains the values to order by.
+        if order_query is not None:
+            relevant_activities = self.Session.query(
+                Activity.id.label('order_id'),
+                order_query.c.value.label('order_value')
+            ).\
+            join(A_Tag_Group).\
+            join(A_Tag, A_Tag.fk_a_tag_group == A_Tag_Group.id).\
+            join(key_filter, A_Tag.key).\
+            join(value_filter, A_Tag.value).\
+            outerjoin(order_query).\
+            group_by(Activity.id, order_query.c.value)
+            # order the list (needed to correctly apply limit and offset below)
+            if self._get_order_direction(request) == 'DESC':
+                relevant_activities = relevant_activities.order_by(desc(order_query.c.value))
+            else:
+                relevant_activities = relevant_activities.order_by(asc(order_query.c.value))
+        # If result is not ordered, only join with prepared filters is necessary.
+        else:
+            relevant_activities = self.Session.query(
+                Activity.id.label('order_id')
+            ).\
+            join(A_Tag_Group).\
+            join(A_Tag, A_Tag.fk_a_tag_group == A_Tag_Group.id).\
+            join(key_filter, A_Tag.key).\
+            join(value_filter, A_Tag.value).\
+            group_by(Activity.id)
 
-        # An aliased helper class
-        activityQuery = AliasedClass(Activity, alias=limited_select)
+        # Apply status filter
+        relevant_activities = relevant_activities.filter(Activity.fk_status == status_filter)
+        
+        # Apply logical operator
+        if self._get_logical_operator(request) == 'or':
+            pass
+        else:
+            # 'AND': all filtered values must be available
+            relevant_activities = relevant_activities.having(func.count(distinct(A_Tag.fk_a_value)) >= filter_length)
 
-        query = self.Session.query(activityQuery.id.label("id"),
-                                   activityQuery.activity_identifier.label("activity_identifier"),
-                                   activityQuery.point.label("geometry"),
-                                   activityQuery.timestamp.label("timestamp"),
-                                   activityQuery.version.label("version"),
-                                   A_Tag_Group.id.label("taggroup"),
-                                   A_Tag_Group.fk_a_tag.label("main_tag"),
-                                   A_Tag.id.label("tag"),
-                                   A_Key.key.label("key"),
-                                   A_Value.value.label("value")
-                                   ).join(A_Tag_Group).join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).join(A_Key).join(A_Value)
+        # Count relevant activities (before applying limit and offset)
+        count = relevant_activities.count()
+        
+        # Apply limit and offset
+        relevant_activities = relevant_activities.limit(limit).offset(offset)
+        
+        # Collect all attributes (TagGroups) of relevant activities
+        relevant_activities = relevant_activities.subquery()
+        query = self.Session.query(Activity.id.label("id"),
+                         Activity.activity_identifier.label("activity_identifier"),
+                         Activity.point.label("geometry"),
+                         Activity.timestamp.label("timestamp"),
+                         Activity.version.label("version"),
+                         A_Tag_Group.id.label("taggroup"),
+                         A_Tag_Group.fk_a_tag.label("main_tag"),
+                         A_Tag.id.label("tag"),
+                         A_Key.key.label("key"),
+                         A_Value.value.label("value")).\
+            join(relevant_activities, relevant_activities.c.order_id == Activity.id).\
+            join(A_Tag_Group).\
+            join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
+            join(A_Key).\
+            join(A_Value)
+        
+        # Do the ordering again
+        if order_query is not None:
+            if self._get_order_direction(request) == 'DESC':
+                query = query.order_by(desc(relevant_activities.c.order_value))
+            else:
+                query = query.order_by(asc(relevant_activities.c.order_value))
 
+        # Put the activities together
         activities = []
         for i in query.all():
 
@@ -616,7 +649,7 @@ class ActivityProtocol2(object):
 
             taggroup.add_tag(Tag(i[7], key, value))
 
-        return activities
+        return activities, count
 
     def _create_geom_filter(self, request):
         """
@@ -658,8 +691,8 @@ class ActivityProtocol2(object):
 
     def _get_status(self, request):
         """
-            Returns the requested activity status, default value is active.
-            """
+        Returns the requested activity status, default value is active.
+        """
 
         status = request.params.get('status', None)
         # Hard coded list of possible activity statii. Not very nice ... But more
@@ -671,8 +704,8 @@ class ActivityProtocol2(object):
 
     def _get_offset(self, request):
         """
-            Returns the requested offset, default value is 0
-            """
+        Returns the requested offset, default value is 0
+        """
         offset = request.params.get('offset', 0)
         try:
             return int(offset)
@@ -680,6 +713,38 @@ class ActivityProtocol2(object):
             pass
 
         return 0
+
+    def _get_order(self, request):
+        """
+        Return a SubQuery with an ordered list of Activity IDs and
+        the values by which they were ordered.
+        """
+        order_key = request.params.get('order_by', None)
+        if order_key is not None:
+            return self.Session.query(
+                Activity.id, 
+                A_Value.value).\
+            join(A_Tag_Group).\
+            join(A_Tag, A_Tag.fk_a_tag_group == A_Tag_Group.id).\
+            join(A_Value).\
+            join(A_Key).\
+            filter(A_Key.key.like(order_key)).\
+            subquery()
+        
+        return None
+
+    def _get_order_direction(self, request):
+        """
+        Return the direction of ordering only if it is set to DESC
+        """
+        if request.params.get('dir', '').upper() == 'DESC':
+            return 'DESC'
+
+    def _get_logical_operator(self, request):
+        """
+        Return the logical operator if set, default is 'and'
+        """
+        return request.params.get("logical_op", "and").lower()
 
     def _key_value_is_valid(self, request, key, value):
         # Read the global configuration file
