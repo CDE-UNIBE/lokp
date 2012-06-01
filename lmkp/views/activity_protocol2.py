@@ -13,10 +13,15 @@ import simplejson as json
 from sqlalchemy import alias
 from sqlalchemy import join
 from sqlalchemy import select
+from sqlalchemy import distinct
+from sqlalchemy import func
 from sqlalchemy.orm.util import AliasedClass
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import desc
+from sqlalchemy.sql.expression import asc
 from sqlalchemy.sql.expression import or_
+from sqlalchemy.sql.expression import cast
+from sqlalchemy.types import Float
 import yaml
 
 log = logging.getLogger(__name__)
@@ -89,9 +94,10 @@ class TagGroup(object):
 
 class ActivityFeature2(object):
 
-    def __init__(self, guid, geometry=None, ** kwargs):
+    def __init__(self, guid, order_value, geometry=None, ** kwargs):
         self._taggroups = []
         self._guid = guid
+        self._order_value = order_value
         self._geometry = geometry
 
     def add_taggroup(self, taggroup):
@@ -129,6 +135,9 @@ class ActivityFeature2(object):
 
     def get_guid(self):
         return self._guid
+    
+    def get_order_value(self):
+        return self._order_value
 
 
 class ActivityProtocol2(object):
@@ -140,21 +149,7 @@ class ActivityProtocol2(object):
     def read(self, request, filter=None, uid=None):
 
         # Query the database
-        activities = self._query(request, filter)
-
-        # Filter the attributes
-        activities = self._filter(request, activities)
-
-        # Get the total number of features before limiting the result set
-        count = len(activities)
-
-        # Offset and limit
-        offset = self._get_offset(request)
-        try:
-            limit = self._get_limit(request) + offset
-        except TypeError:
-            limit = None
-        activities = activities[offset:limit]
+        activities, count = self._query(request, limit=self._get_limit(request), offset=self._get_offset(request), filter=filter, uid=uid)
 
         return {'total': count, 'data': [a.to_table() for a in activities]}
 
@@ -399,188 +394,177 @@ class ActivityProtocol2(object):
         changeset.activity = activity
         self.Session.add(changeset)
 
-    def _filter(self, request, activities):
+    def _filter(self, request):
         """
+        Returns
+        - a SubQuery of Tags containing a union of all Key/Value pairs which fulfill
+          the filter condition(s)
+        - a count of the filters
         """
 
-        logicalOperator = request.params.get("logical_op", "and").lower()
-
-        nbr_map = {
-            'eq': '==',
-            'ne': '!=',
-            'lt': '<',
-            'lte': '<=',
-            'gt': '>',
-            'gte': '>='
-        }
-
-        str_map = {
-            'like': 'like',
-            'ilike': 'ilike'
-        }
-
-        def __filter(f, attribute, value):
-
-            queryable = request.params['queryable'].split(',')
-            col, op = attribute.split("__")
-
-            # If col is not in the queryable attribute list, return an empty list
-            if col not in queryable:
-                return []
-
-            # First handle number comparison
+        def __get_filter_expression(value, op):
+            
+            # Use cast function provided by SQLAlchemy to convert
+            # database values to Float.
+            nbr_map = {
+                'eq': cast(A_Value.value, Float) == value,
+                'ne': cast(A_Value.value, Float) != value,
+                'lt': cast(A_Value.value, Float) < value,
+                'lte': cast(A_Value.value, Float) <= value,
+                'gt': cast(A_Value.value, Float) > value,
+                'gte': cast(A_Value.value, Float) >= value
+            }
+    
+            str_map = {
+                'like': A_Value.value.like(value),
+                'ilike': A_Value.value.ilike(value)
+            }
+            
+            # number comparison
             if op in nbr_map.keys():
-                def __attribute_test(item):
-                    """
-                    item is an ActivityFeature2 object
-                    """
-
-                    is_valid = False
-
-                    for taggroup in item._taggroups:
-
-                        tag = taggroup.get_tag_by_key(col)
-                        if tag is None:
-                            continue
-
-                        attribute = tag.get_value()
-
-                        # Create the expression
-                        try:
-                            # Exclude all features with null values in this attribute.
-                            # Is this correct?
-                            if attribute is None:
-                                #return False
-                                continue
-
-                            # Try to cast the values to a number
-                            attr = float((attribute))
-                            v = float(value)
-                            expression = "%f %s %f" % (attr, nbr_map[op], v)
-                        except:
-                            # If the casting fails, Strings are assumed
-                            v = str(value)
-                            expression = "'%s' %s '%s'" % (attribute, nbr_map[op], v)
-
-                        log.debug("expression: %s, column: %s, value: %s" % (expression, col, v))
-
-                        evalutated = eval(expression)
-                        if evalutated:
-                            is_valid = evalutated
-
-                    # Return true for the whole activity if one tag group passes
-                    # the attribute filter
-                    return is_valid
-
-                f = [i for i in f if __attribute_test(i)]
-
-            # Handle the string specific like and ilike comparisons.
-            # String comparisons are always case-insensitiv
+                # make sure submitted value is a number
+                try:
+                    float(value)
+                    return nbr_map[op]
+                except:
+                    pass
+            
             elif op in str_map.keys():
-                def __attribute_test(item):
-
-                    is_valid = False
-
-                    for taggroup in item._taggroups:
-
-                        # Check if the current taggroup has this feature, if not
-                        # this taggroup is excluded
-                        tag = taggroup.get_tag_by_key(col)
-                        if tag is None:
-                            continue
-
-                        attribute = tag.get_value()
-
-                        # Create the expression
-                        expression = "'%s'.lower() in '%s'.lower()" % (value, attribute)
-
-                        log.debug("expression: %s, column: %s, value: %s" % (expression, col, value))
-                        evalutated = eval(expression)
-                        if evalutated:
-                            is_valid = evalutated
-
-                    # Return true for the whole activity if one tag group passes
-                    # the attribute filter
-                    return is_valid
-
-                f = [i for i in f if __attribute_test(i)]
-
-            else:
-                pass
-
-            return f
+                return str_map[op]
+            
+            return None
 
         if 'queryable' in request.params:
+            filter_expr = []
+            for k in request.params:
+                # Collect filter expressions
+                if len(request.params[k]) <= 0 or '__' not in k:
+                    continue
+                col, op = k.split('__')
+                # Several values can be queried for one attributes e.g.
+                # project_use equals pending and signed. Build the URL
+                # like: queryable=project_use&project_use__eq=pending,signed
+                values = request.params[k].split(',')
+                for v in values:
+                    q = self.Session.query(A_Tag.id.label('filter_tag_id')).\
+                        join(A_Key).\
+                        join(A_Value).\
+                        filter(A_Key.key == col).\
+                        filter(__get_filter_expression(v, op))
+                    filter_expr.append(q)
 
-            # Implement the logical OR operator
-            if logicalOperator == 'or':
+            # Do a union of all filter expressions and return it
+            if len(filter_expr) > 0:
+                tag = filter_expr[0].union(*filter_expr[1:])
+                return tag.subquery(), len(filter_expr)
 
-                # A list of features that have fulfilled at least on condition
-                filteredActivities = []
-                for k in request.params:
-                    if len(request.params[k]) <= 0 or '__' not in k:
-                        continue
-                    # Several values can be queried for one attributes e.g.
-                    # project_use equals pending and signed. Build the URL
-                    # like: queryable=project_use&project_use__eq=pending,signed
-                    values = request.params[k].split(",")
-                    for v in values:
-                        filteredActivities.append(__filter(activities, k, v))
+        # Default (no filtering)
+        return self.Session.query(A_Tag.id.label("filter_tag_id")).subquery(), 0
 
-                # Merge all lists:
-                f = []
-                for ff in filteredActivities:
-                    for feature in ff:
-                        if feature not in f:
-                            f.append(feature)
-
-                activities = f
-
-            # Implement the logical AND operator
-            elif logicalOperator == 'and':
-
-                for k in request.params:
-                    if len(request.params[k]) <= 0 or '__' not in k:
-                        continue
-                    values = request.params[k].split(",")
-                    for v in values:
-                        activities = __filter(activities, k, v)
-
-        return activities
-
-
-    def _query(self, request, filter=None):
+    def _query(self, request, limit=None, offset=None, filter=None, uid=None):
         """
+        Do the query. Returns
+        - a list of (filtered) Activities
+        - an Integer with the count of Activities
+        """
+        
+        # If no custom filter was provided, get filters from request
+        if filter is None:
+            # Get the status status
+            status_filter = self.Session.query(Status.id).filter(Status.name == self._get_status(request))
+            # Get the attribute filter
+            tag_filter, filter_length = self._filter(request)
+        
+        # Get the order
+        order_query, order_numbers = self._get_order(request)
+        
+        # Find id's of relevant activities by joining with prepared filters.
+        # If result is ordered, do an Outer Join to attach ordered attributes.
+        # 'order_value' contains the values to order by.
+        if order_query is not None:
+            relevant_activities = self.Session.query(
+                Activity.id.label('order_id'),
+                order_query.c.value.label('order_value')
+            ).\
+            join(A_Tag_Group).\
+            join(tag_filter, tag_filter.c.filter_tag_id == A_Tag_Group.id).\
+            outerjoin(order_query).\
+            group_by(Activity.id, order_query.c.value)
+            # order the list (needed to correctly apply limit and offset below)
+            if self._get_order_direction(request) == 'DESC':
+                if order_numbers:
+                    relevant_activities = relevant_activities.order_by(desc(cast(order_query.c.value, Float)))
+                else:
+                    relevant_activities = relevant_activities.order_by(desc(order_query.c.value))
+            else:
+                if order_numbers:
+                    relevant_activities = relevant_activities.order_by(asc(cast(order_query.c.value, Float)))
+                else:
+                    relevant_activities = relevant_activities.order_by(asc(order_query.c.value))
+        # If result is not ordered, only join with prepared filters is necessary.
+        else:
+            relevant_activities = self.Session.query(
+                Activity.id.label('order_id'),
+                func.char_length('').label('order_value') # dummy value
+            ).\
+            join(A_Tag_Group).\
+            join(tag_filter, tag_filter.c.filter_tag_id == A_Tag_Group.id).\
+            group_by(Activity.id)
 
-            """
+        # Apply status filter
+        if status_filter:
+            relevant_activities = relevant_activities.filter(Activity.fk_status == status_filter)
+        
+        # Apply custom filter if one was provided
+        if filter:
+            relevant_activities = relevant_activities.filter(filter)
+        
+        # Apply logical operator
+        if self._get_logical_operator(request) == 'or' or filter_length == 0:
+            pass
+        else:
+            # 'AND': all filtered values must be available
+            relevant_activities = relevant_activities.having(func.count() >= filter_length)
 
-        # Get the status
-        status_id = self.Session.query(Status.id).filter(Status.name == self._get_status(request))
+        # Special case: UID was provided, create new 'relevant_activities'
+        if uid is not None:
+            relevant_activities = self.Session.query(Activity.id.label('order_id'),
+                                                     func.char_length('').label('order_value')).\
+                                                     filter(Activity.activity_identifier == uid)
 
-        # Create the query
-        limited_select = select([Activity.id,
-                                Activity.activity_identifier,
-                                Activity.point,
-                                Activity.point,
-                                Activity.timestamp,
-                                Activity.version
-                                ]).where(and_(Activity.fk_status == status_id, self._create_geom_filter(request))).alias("limited_activites")
+        # Count relevant activities (before applying limit and offset)
+        count = relevant_activities.count()
+        
+        # Apply limit and offset
+        relevant_activities = relevant_activities.limit(limit).offset(offset)
+        
+        # Collect all attributes (TagGroups) of relevant activities
+        relevant_activities = relevant_activities.subquery()
+        query = self.Session.query(Activity.id.label("id"),
+                         Activity.activity_identifier.label("activity_identifier"),
+                         Activity.point.label("geometry"),
+                         Activity.timestamp.label("timestamp"),
+                         Activity.version.label("version"),
+                         A_Tag_Group.id.label("taggroup"),
+                         A_Tag_Group.fk_a_tag.label("main_tag"),
+                         A_Tag.id.label("tag"),
+                         A_Key.key.label("key"),
+                         A_Value.value.label("value"),\
+                         relevant_activities.c.order_value.label("order_value")).\
+            join(relevant_activities, relevant_activities.c.order_id == Activity.id).\
+            join(A_Tag_Group).\
+            join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
+            join(A_Key).\
+            join(A_Value)
+        
+        # Do the ordering again
+        if order_query is not None:
+            if self._get_order_direction(request) == 'DESC':
+                query = query.order_by(desc(relevant_activities.c.order_value))
+            else:
+                query = query.order_by(asc(relevant_activities.c.order_value))
 
-        # An aliased helper class
-        activityQuery = AliasedClass(Activity, alias=limited_select)
-
-        query = self.Session.query(activityQuery.id.label("id"),
-                                   activityQuery.activity_identifier.label("activity_identifier"),
-                                   activityQuery.point.label("geometry"),
-                                   activityQuery.timestamp.label("timestamp"),
-                                   activityQuery.version.label("version"),
-                                   A_Tag_Group.id.label("taggroup"),
-                                   A_Tag_Group.fk_a_tag.label("main_tag"),
-                                   A_Tag.id.label("tag"),
-                                   A_Key.key.label("key"),
-                                   A_Value.value.label("value")
-                                   ).join(A_Tag_Group).join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).join(A_Key).join(A_Value)
-
+        # Put the activities together
         activities = []
         for i in query.all():
 
@@ -596,13 +580,23 @@ class ActivityProtocol2(object):
             key = i[8]
             value = i[9]
 
+            order_value = i[10]
+            
             activity = None
             for a in activities:
+                # Use UID to find existing ActivityFeature or create new one
                 if a.get_guid() == uid:
-                    activity = a
+                    # If list is ordered (order_value != int), use order_value as well
+                    # to find existing ActivityFeature or create new one
+                    if not isinstance(order_value, int):
+                        if a.get_order_value() == order_value:
+                            activity = a
+                    else:
+                        activity = a
 
+            # If no existing ActivityFeature found, create new one
             if activity == None:
-                activity = ActivityFeature2(uid, geometry=g)
+                activity = ActivityFeature2(uid, order_value, geometry=g)
                 activities.append(activity)
 
             # Check if there is already this tag group present in the current
@@ -616,7 +610,7 @@ class ActivityProtocol2(object):
 
             taggroup.add_tag(Tag(i[7], key, value))
 
-        return activities
+        return activities, count
 
     def _create_geom_filter(self, request):
         """
@@ -658,8 +652,8 @@ class ActivityProtocol2(object):
 
     def _get_status(self, request):
         """
-            Returns the requested activity status, default value is active.
-            """
+        Returns the requested activity status, default value is active.
+        """
 
         status = request.params.get('status', None)
         # Hard coded list of possible activity statii. Not very nice ... But more
@@ -671,8 +665,8 @@ class ActivityProtocol2(object):
 
     def _get_offset(self, request):
         """
-            Returns the requested offset, default value is 0
-            """
+        Returns the requested offset, default value is 0
+        """
         offset = request.params.get('offset', 0)
         try:
             return int(offset)
@@ -680,6 +674,58 @@ class ActivityProtocol2(object):
             pass
 
         return 0
+
+    def _get_order(self, request):
+        """
+        Returns 
+        - a SubQuery with an ordered list of Activity IDs and
+          the values by which they will be ordered.
+        - a Boolean indicating order values are numbers or not
+        """
+        order_key = request.params.get('order_by', None)
+        if order_key is not None:
+            # Query to order number values (cast to Float)
+            q_number = self.Session.query(
+                Activity.id, 
+                cast(A_Value.value, Float).label('value')).\
+            join(A_Tag_Group).\
+            join(A_Tag, A_Tag.fk_a_tag_group == A_Tag_Group.id).\
+            join(A_Value).\
+            join(A_Key).\
+            filter(A_Key.key.like(order_key))
+            # Query to order string values
+            q_text = self.Session.query(
+                Activity.id, 
+                A_Value.value.label('value')).\
+            join(A_Tag_Group).\
+            join(A_Tag, A_Tag.fk_a_tag_group == A_Tag_Group.id).\
+            join(A_Value).\
+            join(A_Key).\
+            filter(A_Key.key.like(order_key))
+            
+            # Try to query numbered values and cast them
+            try:
+                x = q_number.all()
+                return q_number.subquery(), True
+            except:
+                # Rolling back of Session is needed to completely erase error thrown above
+                self.Session.rollback()
+                return q_text.subquery(), False
+
+        return None, None
+
+    def _get_order_direction(self, request):
+        """
+        Return the direction of ordering only if it is set to DESC
+        """
+        if request.params.get('dir', '').upper() == 'DESC':
+            return 'DESC'
+
+    def _get_logical_operator(self, request):
+        """
+        Return the logical operator if set, default is 'and'
+        """
+        return request.params.get("logical_op", "and").lower()
 
     def _key_value_is_valid(self, request, key, value):
         # Read the global configuration file
