@@ -149,7 +149,7 @@ class ActivityProtocol2(object):
     def read(self, request, filter=None, uid=None):
 
         # Query the database
-        activities, count = self._query(request, limit=self._get_limit(request), offset=self._get_offset(request))
+        activities, count = self._query(request, limit=self._get_limit(request), offset=self._get_offset(request), filter=filter, uid=uid)
 
         return {'total': count, 'data': [a.to_table() for a in activities]}
 
@@ -461,17 +461,19 @@ class ActivityProtocol2(object):
         # Default (no filtering)
         return self.Session.query(A_Tag.id.label("filter_tag_id")).subquery(), 0
 
-    def _query(self, request, limit=None, offset=None):
+    def _query(self, request, limit=None, offset=None, filter=None, uid=None):
         """
-        Do the query.
+        Do the query. Returns
+        - a list of (filtered) Activities
+        - an Integer with the count of Activities
         """
         
-        # Get the status
-        status_filter = self.Session.query(Status.id).filter(Status.name == self._get_status(request))
-
-        # Get the attribute filter
-        #key_filter, value_filter, filter_length = self._filter(request)
-        tag_filter, filter_length = self._filter(request)
+        # If no custom filter was provided, get filters from request
+        if filter is None:
+            # Get the status status
+            status_filter = self.Session.query(Status.id).filter(Status.name == self._get_status(request))
+            # Get the attribute filter
+            tag_filter, filter_length = self._filter(request)
         
         # Get the order
         order_query, order_numbers = self._get_order(request)
@@ -510,7 +512,12 @@ class ActivityProtocol2(object):
             group_by(Activity.id)
 
         # Apply status filter
-        relevant_activities = relevant_activities.filter(Activity.fk_status == status_filter)
+        if status_filter:
+            relevant_activities = relevant_activities.filter(Activity.fk_status == status_filter)
+        
+        # Apply custom filter if one was provided
+        if filter:
+            relevant_activities = relevant_activities.filter(filter)
         
         # Apply logical operator
         if self._get_logical_operator(request) == 'or' or filter_length == 0:
@@ -518,6 +525,12 @@ class ActivityProtocol2(object):
         else:
             # 'AND': all filtered values must be available
             relevant_activities = relevant_activities.having(func.count() >= filter_length)
+
+        # Special case: UID was provided, create new 'relevant_activities'
+        if uid is not None:
+            relevant_activities = self.Session.query(Activity.id.label('order_id'),
+                                                     func.char_length('').label('order_value')).\
+                                                     filter(Activity.activity_identifier == uid)
 
         # Count relevant activities (before applying limit and offset)
         count = relevant_activities.count()
