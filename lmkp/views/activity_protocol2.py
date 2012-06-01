@@ -94,9 +94,10 @@ class TagGroup(object):
 
 class ActivityFeature2(object):
 
-    def __init__(self, guid, geometry=None, ** kwargs):
+    def __init__(self, guid, order_value, geometry=None, ** kwargs):
         self._taggroups = []
         self._guid = guid
+        self._order_value = order_value
         self._geometry = geometry
 
     def add_taggroup(self, taggroup):
@@ -134,6 +135,9 @@ class ActivityFeature2(object):
 
     def get_guid(self):
         return self._guid
+    
+    def get_order_value(self):
+        return self._order_value
 
 
 class ActivityProtocol2(object):
@@ -498,7 +502,8 @@ class ActivityProtocol2(object):
         # If result is not ordered, only join with prepared filters is necessary.
         else:
             relevant_activities = self.Session.query(
-                Activity.id.label('order_id')
+                Activity.id.label('order_id'),
+                func.char_length('').label('order_value') # dummy value
             ).\
             join(A_Tag_Group).\
             join(tag_filter, tag_filter.c.filter_tag_id == A_Tag_Group.id).\
@@ -531,7 +536,8 @@ class ActivityProtocol2(object):
                          A_Tag_Group.fk_a_tag.label("main_tag"),
                          A_Tag.id.label("tag"),
                          A_Key.key.label("key"),
-                         A_Value.value.label("value")).\
+                         A_Value.value.label("value"),\
+                         relevant_activities.c.order_value.label("order_value")).\
             join(relevant_activities, relevant_activities.c.order_id == Activity.id).\
             join(A_Tag_Group).\
             join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
@@ -545,20 +551,6 @@ class ActivityProtocol2(object):
             else:
                 query = query.order_by(asc(relevant_activities.c.order_value))
 
-        
-        """
-        TODO: The following code puts together all TagGroups to form the Activities.
-        However, when the resulting list is ordered by an attribute which exists more
-        than once for an Activity, this Activity also appears more than once in the
-        query above.
-        The following code ignores this and throws everything together, resulting in
-        Activities having double Key/Value pairs.
-        Example: 
-        [ordered]
-        http://localhost:6543/activities?queryable=Size%20of%20Investement,Year%20of%20Investment%20%28agreed%29,Country&Size%20of%20Investement__gt=10000&Year%20of%20Investment%20%28agreed%29__lt=2000&Country__like=ARG&logical_op=and&_dc=1338539537771&page=1&offset=0&limit=10&order_by=Main%20Animal
-        [no order_by]
-        http://localhost:6543/activities?queryable=Size%20of%20Investement,Year%20of%20Investment%20%28agreed%29,Country&Size%20of%20Investement__gt=10000&Year%20of%20Investment%20%28agreed%29__lt=2000&Country__like=ARG&logical_op=and&_dc=1338539537771&page=1&offset=0&limit=10
-        """
         # Put the activities together
         activities = []
         for i in query.all():
@@ -575,13 +567,23 @@ class ActivityProtocol2(object):
             key = i[8]
             value = i[9]
 
+            order_value = i[10]
+            
             activity = None
             for a in activities:
+                # Use UID to find existing ActivityFeature or create new one
                 if a.get_guid() == uid:
-                    activity = a
+                    # If list is ordered (order_value != int), use order_value as well
+                    # to find existing ActivityFeature or create new one
+                    if not isinstance(order_value, int):
+                        if a.get_order_value() == order_value:
+                            activity = a
+                    else:
+                        activity = a
 
+            # If no existing ActivityFeature found, create new one
             if activity == None:
-                activity = ActivityFeature2(uid, geometry=g)
+                activity = ActivityFeature2(uid, order_value, geometry=g)
                 activities.append(activity)
 
             # Check if there is already this tag group present in the current
