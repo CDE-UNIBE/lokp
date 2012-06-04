@@ -14,7 +14,7 @@ Ext.define('Lmkp.controller.Map',{
     },
 
     onPanelRendered: function(comp){
-        comp.getMap().setCenter(new OpenLayers.LonLat(0,0),2);
+        //comp.getMap().setCenter(new OpenLayers.LonLat(0,0),2);
     }
 
     
