@@ -1,13 +1,16 @@
 Ext.define('Lmkp.model.Activity', {
-	extend: 'Ext.data.Model',
+    extend: 'Ext.data.Model',
+
+    fields: [{
+        name: 'id',
+        type: 'string'
+    },{
+        name: 'geometry',
+        type: 'Lmkp.model.Point'
+    }],
 	
-	fields: [{
-		name: 'id',
-		type: 'string'
-	}],
-	
-	hasMany: [{
-		model: 'Lmkp.model.TagGroup',
-		name: 'taggroups',
-	}]
+    hasMany: [{
+        model: 'Lmkp.model.TagGroup',
+        name: 'taggroups'
+    }]
 });
