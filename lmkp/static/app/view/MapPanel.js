@@ -12,12 +12,10 @@ Ext.define('Lmkp.view.MapPanel',{
 
     geographicProjection: new OpenLayers.Projection("EPSG:4326"),
 
-    sphericalMercatorProjection: new OpenLayers.Projection("EPSG:900913"),
-
     map: {
         displayProjection: this.geographicProjection,
         layers: [
-        new OpenLayers.Layer.OSM('Mapnik'),
+        new OpenLayers.Layer.OSM('mapnik'),
         new OpenLayers.Layer.Vector('vector',{
             isBaseLayer: false,
             // Add an event listener to reproject all features from geographic
@@ -35,6 +33,8 @@ Ext.define('Lmkp.view.MapPanel',{
         ],
         projection: this.sphericalMercatorProjection
     },
+
+    sphericalMercatorProjection: new OpenLayers.Projection("EPSG:900913"),
 
     tbar: {
         items: [{
@@ -56,6 +56,10 @@ Ext.define('Lmkp.view.MapPanel',{
 
     getVectorLayer: function(){
         return this.getMap().getLayersByName('vector')[0];
+    },
+
+    getBaseLayer: function(){
+        return this.getMap().getLayersByName('mapnik')[0];
     }
 
 })

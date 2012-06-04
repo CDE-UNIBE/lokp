@@ -39,6 +39,7 @@ Ext.define('Lmkp.controller.Filter', {
                 var vector = new OpenLayers.Feature.Vector(geom, {
                     id: records[i].data.id
                 });
+                vector.fid = records[i].data.id;
 
                 // And add the new object to the features array
                 features.push(vector)
@@ -50,6 +51,9 @@ Ext.define('Lmkp.controller.Filter', {
 
 
         this.control({
+            'mappanel': {
+                render: this.onPanelRendered
+            },
             'filterPanel button[name=addAttributeFilter]': {
                 click: this.addAttributeFilter
             },
@@ -96,6 +100,69 @@ Ext.define('Lmkp.controller.Filter', {
                 select: this.applyFilter
             }
         });
+    },
+
+    onFeatureSelected: function(event){
+        // Get the GridPanel
+        var grid = Ext.ComponentQuery.query('filterPanel gridpanel[id=filterResults]')[0];
+        grid.getSelectionModel().deselectAll(true);
+        var store = grid.getStore();
+
+        // Get the record from the store with the same id as the selected vector
+        var index = store.findBy(function(record, id){
+            return event.feature.data.id == id;
+        });
+        var record = store.getAt(index);
+        grid.getSelectionModel().select([record], false, true);
+
+        var detailPanel = Ext.ComponentQuery.query('filterPanel tabpanel[id=detailPanel]')[0];
+        var selectedTab = detailPanel.getActiveTab();
+        switch (selectedTab.getXType()) {
+            case "activityHistoryTab":
+                // var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
+                // this._populateHistoryTab(selectedTab, uid)
+                console.log("coming soon");
+                break;
+            default:
+                // default is: activityDetailTab
+                this._populateDetailsTab(selectedTab, [record]);
+                break;
+        }
+    },
+
+    onPanelRendered: function(comp){
+        // Get the map and the vectorLayer
+        var map = comp.getMap();
+        var vectorLayer = comp.getVectorLayer();
+
+        // Register the featureselected event
+        comp.getVectorLayer().events.register('featureselected', this, this.onFeatureSelected);
+
+        // Create the highlight and select control
+        var highlightCtrl = new OpenLayers.Control.SelectFeature(vectorLayer, {
+            id: 'highlightControl',
+            hover: true,
+            highlightOnly: true,
+
+            renderIntent: "temporary",
+            eventListeners: {
+                featurehighlighted: function(feature){
+                //console.log(feature);
+                }
+            }
+        });
+
+        var selectCtrl = new OpenLayers.Control.SelectFeature(vectorLayer, {
+            id: 'selectControl',
+            clickout: true
+        });
+
+        // Add the controls to the map and activate them
+        map.addControl(highlightCtrl);
+        map.addControl(selectCtrl);
+
+        highlightCtrl.activate();
+        selectCtrl.activate();
     },
     
     onLaunch: function() {
@@ -401,8 +468,30 @@ Ext.define('Lmkp.controller.Filter', {
     },
     
     showActivity: function() {
+
+        // Get the selected record from the GridPanel
         var grid = Ext.ComponentQuery.query('filterPanel gridpanel[id=filterResults]')[0];
         var selectedRecord = grid.getSelectionModel().getSelection();
+
+        // Unselect all selected features on the map
+        var mapPanel = Ext.ComponentQuery.query('mappanel')[0];
+        var selectControl = mapPanel.getMap().getControlsBy('id', 'selectControl')[0];
+        selectControl.unselectAll()
+
+
+        var vectorLayer = mapPanel.getVectorLayer();
+
+        var id = selectedRecord[0].data.id;
+
+        var feature = vectorLayer.getFeatureByFid(id);
+
+        // Unregister and register again the featureselected event
+        vectorLayer.events.unregister('featureselected', this, this.onFeatureSelected);
+        // Select the feature
+        selectControl.select(feature);
+        vectorLayer.events.register('featureselected', this, this.onFeatureSelected);
+
+        
         var detailPanel = Ext.ComponentQuery.query('filterPanel tabpanel[id=detailPanel]')[0];
         var selectedTab = detailPanel.getActiveTab();
         switch (selectedTab.getXType()) {
@@ -856,10 +945,10 @@ Ext.define('Lmkp.controller.Filter', {
     
     _formatEmptyNumberValue: function(emptyNumber) {
         /**
-		 * The default NULL-value for unspecified number values is 0.
-		 * Assumption: 0 as a number value (currently for Area and Year of Investment)
-		 * is not useful and should rather not be displayed.
-		 */
+     * The default NULL-value for unspecified number values is 0.
+     * Assumption: 0 as a number value (currently for Area and Year of Investment)
+     * is not useful and should rather not be displayed.
+     */
         return (emptyNumber == 0) ? '' : emptyNumber;
     }
 });
