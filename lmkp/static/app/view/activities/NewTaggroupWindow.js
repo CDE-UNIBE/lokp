@@ -217,6 +217,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 										'taggroups': [
 											{
 												'id': (me.selected_taggroup) ? me.selected_taggroup.get('id') : null,
+												'op': (me.selected_taggroup) ? null : 'add',
 												'tags': newTags.concat(deleteTags)
 											}
 										]
@@ -238,6 +239,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 										form.up('window').close();
 									}
 								});
+								console.log(diffObject);
 							} else {
 								Ext.Msg.alert('Notice', 'No changes were made.');
 								form.up('window').close();
