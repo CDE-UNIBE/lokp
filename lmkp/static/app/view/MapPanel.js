@@ -2,6 +2,10 @@ Ext.define('Lmkp.view.MapPanel',{
     extend: 'GeoExt.panel.Map',
     alias: ['widget.mappanel'],
 
+    requires: [
+    'GeoExt.Action'
+    ],
+
     center: new OpenLayers.LonLat(0,0),
 
     config: {
@@ -11,6 +15,8 @@ Ext.define('Lmkp.view.MapPanel',{
     layout: 'fit',
 
     geographicProjection: new OpenLayers.Projection("EPSG:4326"),
+
+    zoomBoxControl: new OpenLayers.Control.ZoomBox(),
 
     map: {
         displayProjection: this.geographicProjection,
@@ -38,7 +44,10 @@ Ext.define('Lmkp.view.MapPanel',{
 
     tbar: {
         items: [{
-            iconCls: 'zoom-in-button'
+            control: this.zoomBoxControl,
+            iconCls: 'zoom-in-button',
+            map: this.map,
+            xtype: 'gx_action'
         },{
             iconCls: 'pan-button'
         },'->',{
