@@ -95,12 +95,13 @@ class TagGroup(object):
 
 class ActivityFeature2(object):
 
-    def __init__(self, guid, order_value, geometry=None, status=None, ** kwargs):
+    def __init__(self, guid, order_value, geometry=None, status=None, version=None, ** kwargs):
         self._taggroups = []
         self._guid = guid
         self._order_value = order_value
         self._geometry = geometry
         self._status = status
+        self._version = version
 
     def add_taggroup(self, taggroup):
         """
@@ -133,10 +134,14 @@ class ActivityFeature2(object):
         except AttributeError:
             pass
 
-        if self._status is None:
-            return {'id': self._guid, 'taggroups': tg, 'geometry': geometry}
-        else:
-            return {'id': self._guid, 'taggroups': tg, 'geometry': geometry, 'status': self._status}
+        ret = {'id': self._guid, 'taggroups': tg, 'geometry': geometry}
+
+        if self._status is not None:
+            ret['status'] = self._status
+        if self._version is not None:
+            ret['version'] = self._version
+        
+        return ret
 
     def get_guid(self):
         return self._guid
@@ -194,11 +199,12 @@ class ActivityProtocol2(object):
 
         # Get the identifier from the request
         identifier = activity_dict['id']
+        version = activity_dict['version']
 
         # Try to get the activity from the database with this id
         db_a = self.Session.query(Activity).\
             filter(Activity.activity_identifier == identifier).\
-            filter(Activity.fk_status == 2).\
+            filter(Activity.version == version).\
             first()
 
         # If no activity is found, create a new activity
@@ -210,8 +216,15 @@ class ActivityProtocol2(object):
         # The basic idea is to deep copy the previous version and control during
         # the copying if a tag needs to be deleted or not. At the end new tags
         # and new taggroups are added.
+        
+        # Query latest version of current activity (used to increase version by 1)
+        latest_version = self.Session.query(Activity).\
+            filter(Activity.activity_identifier == identifier).\
+            order_by(desc(Activity.version)).\
+            first()
+            
         new_activity = Activity(activity_identifier=db_a.activity_identifier,
-                                version=(db_a.version + 1),
+                                version=(latest_version.version + 1),
                                 point=db_a.point)
         new_activity.tag_groups = []
         # Set the activity status to pending
@@ -600,6 +613,9 @@ class ActivityProtocol2(object):
             # The geometry
             g = i[2]
 
+            # The version
+            version = i[4]
+
             # The current tag group id (not global unique)
             taggroup_id = int(i[5])
 
@@ -622,7 +638,7 @@ class ActivityProtocol2(object):
 
             # If no existing ActivityFeature found, create new one
             if activity == None:
-                activity = ActivityFeature2(uid, order_value, geometry=g)
+                activity = ActivityFeature2(uid, order_value, geometry=g, version=version)
                 activities.append(activity)
 
             # Check if there is already this tag group present in the current
