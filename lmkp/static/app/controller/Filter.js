@@ -39,6 +39,8 @@ Ext.define('Lmkp.controller.Filter', {
                 var vector = new OpenLayers.Feature.Vector(geom, {
                     id: records[i].data.id
                 });
+                // Set the activity identifier as feature id, thus it's easier
+                // to find this feature again using the method getFeatureByFid
                 vector.fid = records[i].data.id;
 
                 // And add the new object to the features array
@@ -102,10 +104,13 @@ Ext.define('Lmkp.controller.Filter', {
         });
     },
 
+    /**
+     * Method triggered by the onfeatureselected event by an OpenLayers.Layer.Vector
+     */
     onFeatureSelected: function(event){
         // Get the GridPanel
         var grid = Ext.ComponentQuery.query('filterPanel gridpanel[id=filterResults]')[0];
-        grid.getSelectionModel().deselectAll(true);
+        //grid.getSelectionModel().deselectAll(true);
         var store = grid.getStore();
 
         // Get the record from the store with the same id as the selected vector
@@ -130,26 +135,29 @@ Ext.define('Lmkp.controller.Filter', {
         }
     },
 
+    /**
+     * Method triggered by the onfeatureunselected event by an OpenLayers.Layer.Vector
+     */
+    onFeatureUnselected: function(event){
+        var grid = Ext.ComponentQuery.query('filterPanel gridpanel[id=filterResults]')[0];
+        grid.getSelectionModel().deselectAll(true);
+    },
+
     onPanelRendered: function(comp){
         // Get the map and the vectorLayer
         var map = comp.getMap();
         var vectorLayer = comp.getVectorLayer();
 
         // Register the featureselected event
-        comp.getVectorLayer().events.register('featureselected', this, this.onFeatureSelected);
+        vectorLayer.events.register('featureselected', this, this.onFeatureSelected);
+        vectorLayer.events.register('featureunselected', this, this.onFeatureUnselected);
 
         // Create the highlight and select control
         var highlightCtrl = new OpenLayers.Control.SelectFeature(vectorLayer, {
             id: 'highlightControl',
             hover: true,
             highlightOnly: true,
-
-            renderIntent: "temporary",
-            eventListeners: {
-                featurehighlighted: function(feature){
-                //console.log(feature);
-                }
-            }
+            renderIntent: "temporary"
         });
 
         var selectCtrl = new OpenLayers.Control.SelectFeature(vectorLayer, {
@@ -476,21 +484,30 @@ Ext.define('Lmkp.controller.Filter', {
         // Unselect all selected features on the map
         var mapPanel = Ext.ComponentQuery.query('mappanel')[0];
         var selectControl = mapPanel.getMap().getControlsBy('id', 'selectControl')[0];
-        selectControl.unselectAll()
 
-
+        // Get the vector layer from the map panel
         var vectorLayer = mapPanel.getVectorLayer();
 
-        var id = selectedRecord[0].data.id;
+        // Unregister the featureunselected event and unselect all features
+        vectorLayer.events.unregister('featureunselected', this, this.onFeatureUnselected);
+        selectControl.unselectAll();
+        // Register again the featureunselected event
+        vectorLayer.events.register('featureunselected', this, this.onFeatureUnselected);
 
-        var feature = vectorLayer.getFeatureByFid(id);
+        // If there are selected records, highlight it on the map
+        if(selectedRecord[0]){
+            // Get the acitvity identifier
+            var id = selectedRecord[0].data.id;
 
-        // Unregister and register again the featureselected event
-        vectorLayer.events.unregister('featureselected', this, this.onFeatureSelected);
-        // Select the feature
-        selectControl.select(feature);
-        vectorLayer.events.register('featureselected', this, this.onFeatureSelected);
+            // Get the feature by its fid
+            var feature = vectorLayer.getFeatureByFid(id);
 
+            // Unregister and register again the featureselected event
+            vectorLayer.events.unregister('featureselected', this, this.onFeatureSelected);
+            // Select the feature
+            selectControl.select(feature);
+            vectorLayer.events.register('featureselected', this, this.onFeatureSelected);
+        }
         
         var detailPanel = Ext.ComponentQuery.query('filterPanel tabpanel[id=detailPanel]')[0];
         var selectedTab = detailPanel.getActiveTab();
