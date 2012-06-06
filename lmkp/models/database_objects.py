@@ -314,6 +314,7 @@ class A_Changeset(Base):
     fk_user = Column(Integer, nullable = False)
     source = Column(Text)
     fk_activity = Column(Integer, nullable = False)
+    previous_version = Column(Integer)
 
     reviews = relationship("A_Changeset_Review", backref='changeset')
 
@@ -334,6 +335,7 @@ class SH_Changeset(Base):
     fk_user = Column(Integer, nullable = False)
     source = Column(Text)
     fk_stakeholder = Column(Integer, nullable = False)
+    previous_version = Column(Integer)
 
     reviews = relationship("SH_Changeset_Review", backref='changeset')
 
