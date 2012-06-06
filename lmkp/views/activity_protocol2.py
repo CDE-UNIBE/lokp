@@ -409,7 +409,7 @@ class ActivityProtocol2(object):
                 if a_tag.key.key == main_tag_key and a_tag.value.value == main_tag_value:
                     db_taggroup.main_tag = a_tag
 
-        self._add_changeset(request, new_activity)
+        self._add_changeset(request, new_activity, None)
 
     def _add_changeset(self, request, activity, old_version):
         """
