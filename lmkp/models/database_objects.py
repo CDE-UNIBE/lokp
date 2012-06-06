@@ -318,11 +318,12 @@ class A_Changeset(Base):
 
     reviews = relationship("A_Changeset_Review", backref='changeset')
 
-    def __init__(self, source=None):
+    def __init__(self, source=None, previous_version=None):
         self.source = source
+        self.previous_version = previous_version
 
     def __repr__(self):
-        return "<A_Changeset> id [ %s ] | fk_user [ %s ] | source [ %s ] | fk_activity [ %s ]" % (self.id, self.fk_user, self.source, self.fk_activity)
+        return "<A_Changeset> id [ %s ] | fk_user [ %s ] | source [ %s ] | fk_activity [ %s ] | previous_version [ %s ]" % (self.id, self.fk_user, self.source, self.fk_activity, self.previous_version)
 
 class SH_Changeset(Base):
     __tablename__ = 'sh_changesets'
@@ -339,11 +340,12 @@ class SH_Changeset(Base):
 
     reviews = relationship("SH_Changeset_Review", backref='changeset')
 
-    def __init__(self, source=None):
+    def __init__(self, source=None, previous_version=None):
         self.source = source
+        self.previous_version = previous_version
 
     def __repr__(self):
-        return "<SH_Changeset> id [ %s ] | fk_user [ %s ] | source [ %s ] | fk_stakeholder [ %s ]" % (self.id, self.fk_user, self.source, self.fk_stakeholder)
+        return "<SH_Changeset> id [ %s ] | fk_user [ %s ] | source [ %s ] | fk_stakeholder [ %s ] | previous_version [ %s ]" % (self.id, self.fk_user, self.source, self.fk_stakeholder, self.previous_version)
 
 class Status(Base):
     __tablename__ = 'status'
