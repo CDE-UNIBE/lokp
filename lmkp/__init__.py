@@ -149,6 +149,9 @@ def main(global_config, ** settings):
     # Changeset protocol, query the changeset
     config.add_route('changesets_read', '/changesets')
 
+    # Evaluation
+    config.add_route('evaluation_json', '/evaluation')
+
     # Test
     config.add_route('geojson_test', '/geojson')
     
