@@ -91,7 +91,7 @@ def read_one(request):
     Returns the feature with the requested id
     """
     uid = request.matchdict.get('uid', None)
-    return activity_protocol.read(request, filter=get_status_filter(request), uid=uid)
+    return activity_protocol2.read(request, uid=uid)
 
 
 @view_config(route_name='activities_read_many', renderer='json')
@@ -330,7 +330,13 @@ def activities_history(request):
     
     # Get the localizer from the request
     localizer = get_localizer(request)
+    
+    activity = activity_protocol2.history(request, uid=uid)
+    return activity
+    
+    # TODO: ...
 
+    """
     # The ActivityProtocol does not perform filter operations when UUID is passed as a parameter.
     # As a workaround, UUID is passed as a filter.
     overwrittenfilter = []
@@ -414,7 +420,7 @@ def activities_history(request):
         'success': True,
         'total': len(overwritten) + activeCount + deletedCount
     }
-    
+    """
 
 
 def _check_difference(new, old, localizer=None):

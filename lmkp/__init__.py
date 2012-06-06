@@ -66,7 +66,7 @@ def main(global_config, ** settings):
     # Manage sample values and tests
     config.add_route('sample_values', '/sample_values/insert')
     config.add_route('delete_sample_values', '/sample_values/delete')
-    config.add_route('test_sample_values', 'sample_values/test')
+    config.add_route('test_sample_values', '/sample_values/test')
     config.add_route('geo_test', '/geo_test')
     config.add_route('ext_tests', '/tests')
 
@@ -99,7 +99,7 @@ def main(global_config, ** settings):
     # Reads many activities and returns a tree configuration JSON that can be
     # used in ExtJS tree stores
     config.add_route('activities_tree', '/activities/tree', request_method='GET')
-
+    
     config.add_route('activities_delete', '/activities/delete', request_method='GET')
 
     # Returns the number of activities matching the filter
@@ -113,8 +113,13 @@ def main(global_config, ** settings):
     # Creates a new activity (not yet implemented)
     config.add_route('activities_create', '/activities', request_method='POST')
 
-
-
+    # Returns a JSON representation of comments to ...
+    config.add_route('comments_all', '/comments/{object}/{uid}')
+    # Adds a comment
+    config.add_route('comment_add', '/comments/add')
+    # Deletes a comment
+    config.add_route('comment_delete', '/comments/delete')
+    
     # Return the history of an activity
     config.add_route('activities_history', '/activities/history/{uid}')
 

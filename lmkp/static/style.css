@@ -84,3 +84,7 @@ div.error_div {
 	font-size: 12px;
 	text-align: center;
 }
+
+span.grey {
+	color: #808080;
+}

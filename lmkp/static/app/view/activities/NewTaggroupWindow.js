@@ -22,7 +22,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 		var action = (me.selected_taggroup) ? 'Change' : 'Add';
 		this.title = action + ' information';
 		
-		if (me.activity_id) {
+		if (me.activity_id && me.version) {
 			// prepare the form
 			var form = Ext.create('Ext.form.Panel', {
 				border: 0,
@@ -36,6 +36,11 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 					xtype: 'hiddenfield',
 					name: 'activity_identifier',
 					value: me.activity_id
+				}, {
+					// submit version as well
+					xtype: 'hiddenfield',
+					name: 'version',
+					value: me.version
 				}, {
 					// button to add new attribute selection to form
 					xtype: 'panel',
@@ -213,10 +218,12 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 								// put together diff object
 								var diffObject = {'activities': [
 									{
-										'id': me.activity_id, 
+										'id': me.activity_id,
+										'version': me.version,
 										'taggroups': [
 											{
 												'id': (me.selected_taggroup) ? me.selected_taggroup.get('id') : null,
+												'op': (me.selected_taggroup) ? null : 'add',
 												'tags': newTags.concat(deleteTags)
 											}
 										]
@@ -227,7 +234,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 								Ext.Ajax.request({
 									url: '/activities',
 									method: 'POST',
-									heades: {'Content-Type': 'application/json;charset=utf-8'},
+									headers: {'Content-Type': 'application/json;charset=utf-8'},
 									jsonData: diffObject,
 									success: function(response, options) {
 										Ext.Msg.alert('Success', 'The information was successfully submitted. It will be reviewed shortly.');
@@ -238,6 +245,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 										form.up('window').close();
 									}
 								});
+								console.log(diffObject);
 							} else {
 								Ext.Msg.alert('Notice', 'No changes were made.');
 								form.up('window').close();

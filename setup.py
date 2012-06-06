@@ -17,7 +17,7 @@ requires = [
     'papyrus==0.8.1',
     'Mako==0.6',
     'WebTest==1.3.4',
-    'cryptacular==1.4.1',
+    'cryptacular',
     'Babel==0.9.6',
     'lingua==1.3',
     'PasteScript==1.7.5',
@@ -25,7 +25,8 @@ requires = [
     'PyYAML==3.10',
     'Chameleon==2.8.5',
     'lxml==2.3',
-    'pykml==0.1.0'
+    'pykml==0.1.0',
+    'recaptcha-client==1.0.6'
     ]
 
 setup(name='LandMatrixKnowledgePlatform',
