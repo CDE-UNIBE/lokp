@@ -199,7 +199,7 @@ class ActivityProtocol2(object):
 
         # Get the identifier from the request
         identifier = activity_dict['id']
-        version = activity_dict['version']
+        version = activity_dict['version'] if 'version' in activity_dict else None
 
         # Try to get the activity from the database with this id
         db_a = self.Session.query(Activity).\
