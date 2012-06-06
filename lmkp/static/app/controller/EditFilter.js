@@ -40,6 +40,7 @@ Ext.define('Lmkp.controller.EditFilter', {
 		// create window and pass entire activity (needed because ActivityProtocol needs all old TagGroups as well)
     	var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
     		activity_id: selection.get('id'),
+    		version: selection.get('version'),
     		selected_taggroup: null
     	});
     	win.show();

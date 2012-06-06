@@ -38,6 +38,7 @@ from sqlalchemy.schema import (
     PrimaryKeyConstraint,
     UniqueConstraint
 )
+from sqlalchemy.orm.exc import NoResultFound
 
 # ...
 from shapely import wkb
@@ -261,20 +262,6 @@ class Activity(Base):
 
     def __repr__(self):
         return "<Activity> id [ %s ] | activity_identifier [ %s ] | timestamp [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.activity_identifier, self.timestamp, wkb.loads(str(self.point.geom_wkb)).wkt, self.fk_status, self.version)
-
-    # validation now done in trigger on database level.
-    """
-    @validates('status')
-    def validate_status(self, key, status):
-        if status.id == 2: # validate only for status == 'active' (id = 2)
-            # count activities with same status and same activity_identifier
-            from lmkp.models.meta import DBSession
-            sess = DBSession()
-            count_active = sess.query(Activity).filter(Activity.status == status).filter(Activity.activity_identifier == self.activity_identifier).count()
-            # check that currently no other activity is 'active'
-            assert count_active == 0, "There can only be one Activity with status 'active'."
-        return status
-    """
     
     @property
     def __geo_interface__(self):
@@ -285,6 +272,9 @@ class Activity(Base):
            geometry = wkb.loads(str(self.point.geom_wkb))
        properties = dict(source=self.source)
        return geojson.Feature(id=id, geometry=geometry, properties=properties)
+
+    def get_comments(self):
+        return DBSession.query(Comment).filter(Comment.activity_identifier == self.activity_identifier).all()
 
 class Stakeholder(Base):
     __tablename__ = 'stakeholders'
@@ -310,19 +300,8 @@ class Stakeholder(Base):
     def __repr__(self):
         return "<Stakeholder> id [ %s ] | stakeholder_identifier [ %s ] | timestamp [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.stakeholder_identifier, self.timestamp, self.fk_status, self.version)
 
-    # validation now done in trigger on database level.
-    """
-    @validates('fk_status')
-    def validate_status(self, key, status):
-        if status == 2: # validate only when status is updated to 'active' (2)
-            # count 'active' (2) Stakeholders with same stakeholder_identifier
-            from lmkp.models.meta import DBSession
-            sess = DBSession()
-            count_active = sess.query(Stakeholder).filter(Stakeholder.fk_status == 2).filter(Stakeholder.stakeholder_identifier == self.stakeholder_identifier).count()
-            # check that no other Stakeholder is 'active'
-            assert count_active == 0, "There can only be one Stakeholder with status 'active'."
-        return status
-    """
+    def get_comments(self):
+        return DBSession.query(Comment).filter(Comment.stakeholder_identifier == self.stakeholder_identifier).all()
 
 class A_Changeset(Base):
     __tablename__ = 'a_changesets'
@@ -335,14 +314,16 @@ class A_Changeset(Base):
     fk_user = Column(Integer, nullable = False)
     source = Column(Text)
     fk_activity = Column(Integer, nullable = False)
+    previous_version = Column(Integer)
 
     reviews = relationship("A_Changeset_Review", backref='changeset')
 
-    def __init__(self, source=None):
+    def __init__(self, source=None, previous_version=None):
         self.source = source
+        self.previous_version = previous_version
 
     def __repr__(self):
-        return "<A_Changeset> id [ %s ] | fk_user [ %s ] | source [ %s ] | fk_activity [ %s ]" % (self.id, self.fk_user, self.source, self.fk_activity)
+        return "<A_Changeset> id [ %s ] | fk_user [ %s ] | source [ %s ] | fk_activity [ %s ] | previous_version [ %s ]" % (self.id, self.fk_user, self.source, self.fk_activity, self.previous_version)
 
 class SH_Changeset(Base):
     __tablename__ = 'sh_changesets'
@@ -355,14 +336,16 @@ class SH_Changeset(Base):
     fk_user = Column(Integer, nullable = False)
     source = Column(Text)
     fk_stakeholder = Column(Integer, nullable = False)
+    previous_version = Column(Integer)
 
     reviews = relationship("SH_Changeset_Review", backref='changeset')
 
-    def __init__(self, source=None):
+    def __init__(self, source=None, previous_version=None):
         self.source = source
+        self.previous_version = previous_version
 
     def __repr__(self):
-        return "<SH_Changeset> id [ %s ] | fk_user [ %s ] | source [ %s ] | fk_stakeholder [ %s ]" % (self.id, self.fk_user, self.source, self.fk_stakeholder)
+        return "<SH_Changeset> id [ %s ] | fk_user [ %s ] | source [ %s ] | fk_stakeholder [ %s ] | previous_version [ %s ]" % (self.id, self.fk_user, self.source, self.fk_stakeholder, self.previous_version)
 
 class Status(Base):
     __tablename__ = 'status'
@@ -422,6 +405,7 @@ class Involvement(Base):
     fk_stakeholder_role = Column(Integer, nullable = False)
       
     reviews = relationship("Involvement_Review", backref='involvement')
+    comments = relationship("Comment", backref='involvement')
 
     def __init__(self):
         pass
@@ -471,6 +455,7 @@ class User(Base):
     a_changeset_reviews = relationship('A_Changeset_Review', backref='user')
     sh_changeset_reviews = relationship('SH_Changeset_Review', backref='user')
     involvement_reviews = relationship('Involvement_Review', backref='user')
+    comments = relationship('Comment', backref='user')
 
     # password encryption
     _password = Column('password', Unicode(64))
@@ -638,3 +623,38 @@ class Review_Decision(Base):
     def __repr__(self):
         return "<Review_Decision> id [ %s ] | name [ %s ] | description [ %s ]" % (self.id, self.name, self.description)
     
+class Comment(Base):
+    __tablename__ = 'comments'
+    __table_args__ = (
+        ForeignKeyConstraint(['fk_user'], ['data.users.id']),
+        ForeignKeyConstraint(['fk_involvement'], ['data.involvements.id']),
+        {'schema': 'data'}
+        )
+    id = Column(Integer, primary_key = True)
+    comment = Column(Text, nullable = False)
+    timestamp = Column(DateTime, nullable = False)
+    fk_user = Column(Integer)
+    activity_identifier = Column(UUID)
+    stakeholder_identifier = Column(UUID)
+    fk_involvement = Column(Integer)
+
+    def __init__(self, comment, activity_identifier = None, stakeholder_identifier = None):
+        self.timestamp = datetime.datetime.now()
+        self.comment = comment
+        self.activity_identifier = activity_identifier
+        self.stakeholder_identifier = stakeholder_identifier
+    
+    def __repr__(self):
+        return "<Comment> id [ %s ] | comment [ %s ] | timestamp [ %s ] | fk_user [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ] | fk_involvement [ %s ]" % (self.id, self.comment, self.timestamp, self.fk_user, self.fk_activity, self.fk_stakeholder, self.fk_involvement)
+
+    def get_activity(self):
+        try:
+            return DBSession.query(Activity).filter(Activity.activity_identifier == self.activity_identifier).filter(Activity.fk_status == 2).one()
+        except NoResultFound:
+            return None
+    
+    def get_stakeholder(self):
+        try:
+            return DBSession.query(Stakeholder).filter(Stakeholder.stakeholder_identifier == self.stakeholder_identifier).filter(Stakeholder.fk_status == 2).one()
+        except NoResultFound:
+            return None
