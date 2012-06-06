@@ -8,7 +8,7 @@ Ext.define('Lmkp.model.Tag', {
 		type: 'string',
 		name: 'value'
 	}, {
-		type: 'string',
+		type: 'int',
 		name: 'id'
 	}],
 	

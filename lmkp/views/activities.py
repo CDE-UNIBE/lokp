@@ -331,7 +331,7 @@ def activities_history(request):
     # Get the localizer from the request
     localizer = get_localizer(request)
     
-    activity = activity_protocol2.read(request, uid=uid)
+    activity = activity_protocol2.history(request, uid=uid)
     return activity
     
     # TODO: ...
