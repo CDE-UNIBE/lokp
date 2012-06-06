@@ -2,7 +2,7 @@ Ext.define('Lmkp.model.TagGroup', {
 	extend: 'Ext.data.Model',
 	
 	fields: [{
-		type: 'string',
+		type: 'int',
 		name: 'id'
 	}],
 	
