@@ -199,12 +199,12 @@ class ActivityProtocol2(object):
 
         # Get the identifier from the request
         identifier = activity_dict['id']
-        version = activity_dict['version'] if 'version' in activity_dict else None
+        old_version = activity_dict['version'] if 'version' in activity_dict else None
 
         # Try to get the activity from the database with this id
         db_a = self.Session.query(Activity).\
             filter(Activity.activity_identifier == identifier).\
-            filter(Activity.version == version).\
+            filter(Activity.version == old_version).\
             first()
 
         # If no activity is found, create a new activity
@@ -292,7 +292,7 @@ class ActivityProtocol2(object):
                         if taggroup_dict['main_tag']['key'] == new_tag.key.key and taggroup_dict['main_tag']['value'] == new_tag.value.value:
                             new_taggroup.main_tag = new_tag
 
-        self._add_changeset(request, new_activity)
+        self._add_changeset(request, new_activity, old_version)
 
     def _create_tag(self, request, parent, key, value):
         """
@@ -411,12 +411,12 @@ class ActivityProtocol2(object):
 
         self._add_changeset(request, new_activity)
 
-    def _add_changeset(self, request, activity):
+    def _add_changeset(self, request, activity, old_version):
         """
         Log the activity
         """
         # Create a new changeset
-        changeset = A_Changeset(source='[%s] %s' % (activity.status.name, activity))
+        changeset = A_Changeset(source='[%s] %s' % (activity.status.name, activity), previous_version=old_version)
         # Get the user from the request
         changeset.user = self.Session.query(User).filter(User.username == request.user.username).first()
         changeset.activity = activity
