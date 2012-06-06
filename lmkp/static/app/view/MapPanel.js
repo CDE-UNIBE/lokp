@@ -9,14 +9,18 @@ Ext.define('Lmkp.view.MapPanel',{
     center: new OpenLayers.LonLat(0,0),
 
     config: {
-        map: {}
+        map: {},
+        zoomBoxControl: {}
     },
 
     layout: 'fit',
 
     geographicProjection: new OpenLayers.Projection("EPSG:4326"),
 
-    zoomBoxControl: new OpenLayers.Control.ZoomBox(),
+    zoomBoxControl: new OpenLayers.Control.ZoomBox({
+        id: 'zoombox',
+        type: OpenLayers.Control.TYPE_TOGGLE
+    }),
 
     map: {
         displayProjection: this.geographicProjection,
@@ -41,25 +45,23 @@ Ext.define('Lmkp.view.MapPanel',{
     },
 
     sphericalMercatorProjection: new OpenLayers.Projection("EPSG:900913"),
-
-    tbar: {
-        items: [{
-            control: this.zoomBoxControl,
-            iconCls: 'zoom-in-button',
-            map: this.map,
-            xtype: 'gx_action'
-        },{
-            iconCls: 'pan-button'
-        },'->',{
-            fieldLabel: 'Change Map Layer',
-            store: [
-            'mapnik',
-            'osmarenderer'
-            ],
-            queryMode: 'local',
-            xtype: 'combobox'
-        }]
-    },
+    
+    tbar: [Ext.create('Ext.button.Button', Ext.create('GeoExt.Action',{
+        control: this.zoomBox,
+        iconCls: 'zoom-in-button',
+        toggleGroup: 'map-controls'
+    })),{
+        iconCls: 'pan-button',
+        toggleGroup: 'map-controls'
+    },'->',{
+        fieldLabel: 'Change Map Layer',
+        store: [
+        'mapnik',
+        'osmarenderer'
+        ],
+        queryMode: 'local',
+        xtype: 'combobox'
+    }],
 
     zoom: 2,
 
