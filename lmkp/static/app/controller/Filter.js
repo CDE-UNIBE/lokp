@@ -694,6 +694,7 @@ Ext.define('Lmkp.controller.Filter', {
                             handler: function() {
                                 var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
                                     activity_id: data[0].get('id'),
+									version: data[0].get('version'),
                                     selected_taggroup: taggroupStore.getAt(this.taggroup_id)
                                 });
                                 win.show();
