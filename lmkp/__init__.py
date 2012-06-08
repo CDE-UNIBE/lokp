@@ -150,7 +150,7 @@ def main(global_config, ** settings):
     config.add_route('changesets_read', '/changesets')
 
     # Evaluation
-    config.add_route('evaluation_json', '/evaluation')
+    config.add_route('evaluation_json', '/evaluation/{temp}')
 
     # Test
     config.add_route('geojson_test', '/geojson')
