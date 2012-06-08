@@ -351,7 +351,6 @@ def _get_field_config(name, config, language, mandatory=False):
         fieldConfig['fieldLabel'] = name
     
     fieldConfig['name'] = name
-
     xtype = 'textfield'
     try:
         if config['type'] == 'Number':
@@ -370,9 +369,9 @@ def _get_field_config(name, config, language, mandatory=False):
         for val in config['predefined']:
             singleEntry = []
             # first value is internal value
-            singleEntry.append(val)            
-            originalValue = Session.query(A_Value.id).filter(A_Value.value == val).filter(A_Value.fk_a_value == None).first()
-            translatedValue = Session.query(A_Value).filter(A_Value.fk_a_value == originalValue).filter(A_Value.language == language).first()
+            singleEntry.append(val)
+            originalValue = Session.query(A_Value.id).filter(A_Value.value == val).filter(A_Value.fk_a_value == None).subquery()
+            translatedValue = Session.query(A_Value).filter(A_Value.fk_a_value.in_(originalValue)).filter(A_Value.language == language).first()
             # second value is translated value (if available - else same as internal value)
             if translatedValue:
                 singleEntry.append(translatedValue.value)
