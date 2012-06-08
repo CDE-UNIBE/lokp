@@ -13,21 +13,10 @@ from sqlalchemy.sql.expression import cast
 def evaluation_json(request):
     ret = {'success': False}
     
-    """
-    input = {
-                'filter': {
-                    'geometry': '',
-                    'sql': ''
-                },
-                'attributes': {
-                    'Size of Investement': 'sum',
-                    'Activity': 'count'
-                },
-                'group_by': ['Country', 'Country of Investor']
-            }
-    """
-    """
-    input = {
+    # temp
+    tempSwitch = request.matchdict.get('temp', None)
+    if tempSwitch == '1':
+        input = {
                 'filter': {
                     'geometry': '',
                     'sql': ''
@@ -37,8 +26,8 @@ def evaluation_json(request):
                 },
                 'group_by': ['Main Crop']
             }
-    """
-    input = {
+    elif tempSwitch == '2':
+        input = {
                 'filter': {
                     'geometry': '',
                     'sql': ''
@@ -49,6 +38,21 @@ def evaluation_json(request):
                 },
                 'group_by': ['Country']
             }
+    elif tempSwitch == '3':
+        input = {
+                'filter': {
+                    'geometry': '',
+                    'sql': ''
+                },
+                'attributes': {
+                    'Size of Investement': 'sum',
+                    'Activity': 'count'
+                },
+                'group_by': ['Country', 'Country of Investor']
+            }
+    else:
+        ret['msg'] = 'Temporarily only /1, /2 and /3 available.'
+        return ret
     
     # Test input
     if 'group_by' not in input:
@@ -93,22 +97,19 @@ def evaluation_json(request):
     q = q.group_by(*groups_columns).\
         order_by(groups_columns[0])
 
-    print q.all()
-
-    """
     data = []
-    total_sum = 0
-    total_count = 0
-    for x in query:
-        data.append({'group': x.group, 'sum': x.sum, 'count': x.count})
-        if x.sum is not None:
-            total_sum += x.sum
-        if x.count is not None:
-            total_count += x.count
+    for res in q.all():
+        entry = {}
+        # first go through group_by
+        for i, group in enumerate(input['group_by']):
+            entry[group] = res[i]
+        # then go through functions
+        for i, attr in enumerate(input['attributes']):
+            entry["%s (%s)" % (attr, input['attributes'][attr])] = res[i+len(input['group_by'])]
+        data.append(entry)
     
-    return {'data': data, 'total_sum': total_sum, 'total_count': total_count}
-    """
     ret['success'] = True
+    ret['data'] = data
     
     return ret
 
