@@ -351,7 +351,6 @@ def _get_field_config(name, config, language, mandatory=False):
         fieldConfig['fieldLabel'] = name
     
     fieldConfig['name'] = name
-
     xtype = 'textfield'
     try:
         if config['type'] == 'Number':
@@ -363,22 +362,39 @@ def _get_field_config(name, config, language, mandatory=False):
         pass
 
     try:
-        # If it's a combobox
-        
-        # try to find translated values
-        store = []
+        # If it's a ComboBox, try to find translated values.
+        # Process all predefined values of one ComboBox at once.
+
+        # First, collect all values
+        all_vals = []
         for val in config['predefined']:
+            all_vals.append(val)
+        
+        # Prepare SubQuery for translated values
+        translated_subquery = Session.query(A_Value.fk_a_value.label("original_id"),
+                                            A_Value.value.label("translated_value")).subquery()
+        
+        # Query original and translated values
+        values = Session.query(A_Value.id.label("original_id"),
+                          A_Value.value.label("original_value"),
+                          translated_subquery.c.translated_value.label("translated_value")).\
+              filter(A_Value.value.in_(all_vals)).\
+              filter(A_Value.fk_a_value == None).\
+              outerjoin(translated_subquery, translated_subquery.c.original_id == A_Value.id)
+        
+        # Fill vales in array
+        store = []
+        for val in values.all():
             singleEntry = []
-            # first value is internal value
-            singleEntry.append(val)            
-            originalValue = Session.query(A_Value.id).filter(A_Value.value == val).filter(A_Value.fk_a_value == None).first()
-            translatedValue = Session.query(A_Value).filter(A_Value.fk_a_value == originalValue).filter(A_Value.language == language).first()
-            # second value is translated value (if available - else same as internal value)
-            if translatedValue:
-                singleEntry.append(translatedValue.value)
+            # first value is internal (original) value
+            singleEntry.append(val.original_value)
+            # second value is translated value if available, else same as original value
+            if val.translated_value is not None:
+                singleEntry.append(val.translated_value)
             else:
-                singleEntry.append(val)
+                singleEntry.append(val.original_value)
             store.append(singleEntry)
+        
         fieldConfig['store'] = store
         xtype = 'combo'
     except KeyError:
