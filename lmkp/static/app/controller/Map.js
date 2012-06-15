@@ -8,37 +8,26 @@ Ext.define('Lmkp.controller.Map',{
     init: function(){
         this.control({
             'mappanel': {
-                //render: this.onPanelRendered
+                render: this.onPanelRendered
             }
         });
     },
 
     onPanelRendered: function(comp){
-        //comp.getMap().setCenter(new OpenLayers.LonLat(0,0),2);
-        var map = comp.getMap();
-
-        var highlightCtrl = new OpenLayers.Control.SelectFeature(comp.getVectorLayer(), {
-            hover: true,
-            highlightOnly: true,
-            renderIntent: "temporary",
-            eventListeners: {
-                beforefeaturehighlighted: function(){},
-                featurehighlighted: function(){},
-                featureunhighlighted: function(){}
-            }
+        var zoomBoxAction = Ext.create('GeoExt.Action',{
+            control: comp.getZoomBoxControl(),
+            map: comp.getMap(),
+            iconCls: 'zoom-in-button',
+            toggleGroup: 'map-controls'
         });
-
-        var selectCtrl = new OpenLayers.Control.SelectFeature(comp.getVectorLayer(),
-        {
-            clickout: true
-        }
-        );
-
-        map.addControl(highlightCtrl);
-        map.addControl(selectCtrl);
-
-        highlightCtrl.activate();
-        selectCtrl.activate();
+        console.log(zoomBoxAction);
+        var tbar = comp.getDockedItems('toolbar')[0];
+        console.log(tbar);
+        tbar.add(Ext.create('Ext.button.Button',zoomBoxAction));
+        tbar.add({
+            text: "test",
+            xtype: 'button'
+        });
     }
 
     

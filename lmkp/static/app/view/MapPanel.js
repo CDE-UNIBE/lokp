@@ -46,11 +46,7 @@ Ext.define('Lmkp.view.MapPanel',{
 
     sphericalMercatorProjection: new OpenLayers.Projection("EPSG:900913"),
     
-    tbar: [Ext.create('Ext.button.Button', Ext.create('GeoExt.Action',{
-        control: this.zoomBox,
-        iconCls: 'zoom-in-button',
-        toggleGroup: 'map-controls'
-    })),{
+    tbar: [{
         iconCls: 'pan-button',
         toggleGroup: 'map-controls'
     },'->',{
