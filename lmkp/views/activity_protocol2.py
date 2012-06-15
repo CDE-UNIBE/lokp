@@ -23,6 +23,7 @@ from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.types import Float
 import yaml
+from pyramid.i18n import get_localizer
 
 log = logging.getLogger(__name__)
 
@@ -58,6 +59,7 @@ class TagGroup(object):
         self._main_tag_id = main_tag_id
         # List to store the tags
         self._tags = []
+        self._diffFlag = None
 
     def add_tag(self, tag):
         """
@@ -76,8 +78,16 @@ class TagGroup(object):
         for t in self._tags:
             if t.get_key() == key:
                 return t
-
         return None
+
+    def get_tags(self):
+        return self._tags
+
+    def setDiffFlag(self, bool):
+        self._diffFlag = bool
+
+    def getDiffFlag(self):
+        return self._diffFlag
 
     def to_table(self):
         """
@@ -94,11 +104,13 @@ class TagGroup(object):
 
 class ActivityFeature2(object):
 
-    def __init__(self, guid, order_value, geometry=None, ** kwargs):
+    def __init__(self, guid, order_value, geometry=None, version=None, diff_info=None, ** kwargs):
         self._taggroups = []
         self._guid = guid
         self._order_value = order_value
         self._geometry = geometry
+        self._version = version
+        self._diff_info = diff_info
 
     def add_taggroup(self, taggroup):
         """
@@ -112,6 +124,13 @@ class ActivityFeature2(object):
                 return t
         
         return None
+
+    def get_taggroups(self):
+        return self._taggroups
+
+    def remove_taggroup(self, taggroup):
+        if taggroup in self.get_taggroups():
+            self.get_taggroups().remove(taggroup)
 
     def to_table(self):
         """
@@ -131,7 +150,80 @@ class ActivityFeature2(object):
         except AttributeError:
             pass
 
-        return {'id': self._guid, 'taggroups': tg, 'geometry': geometry}
+        ret = {'id': self._guid, 'taggroups': tg, 'geometry': geometry}
+
+        if self._version is not None:
+            ret['version'] = self._version
+        if self._diff_info is not None:
+            for k in self._diff_info:
+                ret[k] = self._diff_info[k]
+        
+        return ret
+
+    def create_diff(self, previous=None):
+        """
+        Append a diff object. Try to find TagGroups and Tags of current version
+        in previous version.
+        """
+        if previous is not None:
+            # Collect new TagGroups
+            diff_new = []
+            # Loop through TagGroups of current version
+            for tg in self._taggroups:
+                # Indicator (None, False or TagGroup) to check if all Tags were found in the same TagGroup
+                foundinsametaggroup = None
+                # Loop through Tags of current version
+                for t in tg.get_tags():
+                    # Indicator (True or False) to flag if a Tag was found in the previous version
+                    newtag_found = False
+                    # Variable to store the old TagGroup where a Tag was found
+                    foundintaggroup = None
+                    # Try to find the same Tag in previous version by looping through TagGroups of previous version
+                    for tg_old in previous.get_taggroups():
+                        # Only look at old TagGroups that were not yet found
+                        if tg_old.getDiffFlag() is not True:
+                            # Loop through Tags of previous version
+                            for t_old in tg_old.get_tags():
+                                # Compare Key and Value of current and previous Tag
+                                if t.get_key() == t_old.get_key() \
+                                    and t.get_value() == t_old.get_value():
+                                    # Tag is found in previous version, set indicator and store TagGroup
+                                    newtag_found = True
+                                    foundintaggroup = tg_old
+                                    break
+
+                    # Tag was found in old Tags
+                    if newtag_found is True:
+                        # For the first tag of a TagGroup, store the old TagGroup
+                        if foundinsametaggroup is None:
+                            foundinsametaggroup = foundintaggroup
+                        # Check if the found Tag is not in the same TagGroup as the others
+                        elif foundintaggroup != foundinsametaggroup:
+                            foundinsametaggroup = False
+                    # Tag was not found after looping through all old Tags
+                    else:
+                        foundinsametaggroup = False
+                
+                # All Tags were in the same TagGroup
+                if foundinsametaggroup is not False:
+                    if foundinsametaggroup is not None:
+                        # Mark old TagGroup as found
+                        foundinsametaggroup.setDiffFlag(True)
+                # Else, TagGroup is new
+                else:
+                    diff_new.append(tg.to_table())
+            
+            # Collect old TagGroups that are not there anymore
+            diff_old = []
+            for tg_old in previous.get_taggroups():
+                if tg_old.getDiffFlag() is not True:
+                    diff_old.append(tg_old.to_table())
+
+            # Reset all TagGroups to compare with next version
+            for tg in self._taggroups:
+                tg.setDiffFlag(None)
+
+            self._diff_info['diff'] = {'new': diff_new, 'old': diff_old}
 
     def get_guid(self):
         return self._guid
@@ -139,6 +231,8 @@ class ActivityFeature2(object):
     def get_order_value(self):
         return self._order_value
 
+    def get_previous_version(self):
+        return self._diff_info['previous_version']
 
 class ActivityProtocol2(object):
 
@@ -151,6 +245,13 @@ class ActivityProtocol2(object):
         # Query the database
         activities, count = self._query(request, limit=self._get_limit(request), offset=self._get_offset(request), filter=filter, uid=uid)
 
+        return {'total': count, 'data': [a.to_table() for a in activities]}
+
+    def history(self, request, uid, status_list=None):
+        
+        # Query the database
+        activities, count = self._history(request, uid, status_list)
+        
         return {'total': count, 'data': [a.to_table() for a in activities]}
 
     def create(self, request):
@@ -182,9 +283,13 @@ class ActivityProtocol2(object):
 
         # Get the identifier from the request
         identifier = activity_dict['id']
+        old_version = activity_dict['version'] if 'version' in activity_dict else None
 
         # Try to get the activity from the database with this id
-        db_a = self.Session.query(Activity).filter(Activity.activity_identifier == identifier).order_by(desc(Activity.version)).first()
+        db_a = self.Session.query(Activity).\
+            filter(Activity.activity_identifier == identifier).\
+            filter(Activity.version == old_version).\
+            first()
 
         # If no activity is found, create a new activity
         if db_a == None:
@@ -195,8 +300,15 @@ class ActivityProtocol2(object):
         # The basic idea is to deep copy the previous version and control during
         # the copying if a tag needs to be deleted or not. At the end new tags
         # and new taggroups are added.
+        
+        # Query latest version of current activity (used to increase version by 1)
+        latest_version = self.Session.query(Activity).\
+            filter(Activity.activity_identifier == identifier).\
+            order_by(desc(Activity.version)).\
+            first()
+            
         new_activity = Activity(activity_identifier=db_a.activity_identifier,
-                                version=(db_a.version + 1),
+                                version=(latest_version.version + 1),
                                 point=db_a.point)
         new_activity.tag_groups = []
         # Set the activity status to pending
@@ -254,7 +366,7 @@ class ActivityProtocol2(object):
         # Finally new tag groups (without id) needs to be added
         # (and loop all again)
         for taggroup_dict in activity_dict['taggroups']:
-            if 'id' not in taggroup_dict and taggroup_dict['op'] == 'add':
+            if taggroup_dict['id'] is None and taggroup_dict['op'] == 'add':
                 new_taggroup = A_Tag_Group()
                 new_activity.tag_groups.append(new_taggroup)
                 for tag_dict in taggroup_dict['tags']:
@@ -264,7 +376,7 @@ class ActivityProtocol2(object):
                         if taggroup_dict['main_tag']['key'] == new_tag.key.key and taggroup_dict['main_tag']['value'] == new_tag.value.value:
                             new_taggroup.main_tag = new_tag
 
-        self._add_changeset(request, new_activity)
+        self._add_changeset(request, new_activity, old_version)
 
     def _create_tag(self, request, parent, key, value):
         """
@@ -381,14 +493,14 @@ class ActivityProtocol2(object):
                 if a_tag.key.key == main_tag_key and a_tag.value.value == main_tag_value:
                     db_taggroup.main_tag = a_tag
 
-        self._add_changeset(request, new_activity)
+        self._add_changeset(request, new_activity, None)
 
-    def _add_changeset(self, request, activity):
+    def _add_changeset(self, request, activity, old_version):
         """
         Log the activity
         """
         # Create a new changeset
-        changeset = A_Changeset(source='[%s] %s' % (activity.status.name, activity))
+        changeset = A_Changeset(source='[%s] %s' % (activity.status.name, activity), previous_version=old_version)
         # Get the user from the request
         changeset.user = self.Session.query(User).filter(User.username == request.user.username).first()
         changeset.activity = activity
@@ -537,7 +649,13 @@ class ActivityProtocol2(object):
         
         # Apply limit and offset
         relevant_activities = relevant_activities.limit(limit).offset(offset)
-        
+
+        # Prepare query to translate keys and values
+        localizer = get_localizer(request)
+        lang = None if localizer.locale_name == 'en' \
+                else self.Session.query(Language).filter(Language.locale == localizer.locale_name).first()
+        key_translation, value_translation = self._get_translatedKV(lang)
+
         # Collect all attributes (TagGroups) of relevant activities
         relevant_activities = relevant_activities.subquery()
         query = self.Session.query(Activity.id.label("id"),
@@ -549,13 +667,18 @@ class ActivityProtocol2(object):
                          A_Tag_Group.fk_a_tag.label("main_tag"),
                          A_Tag.id.label("tag"),
                          A_Key.key.label("key"),
-                         A_Value.value.label("value"),\
-                         relevant_activities.c.order_value.label("order_value")).\
+                         A_Value.value.label("value"), \
+                         relevant_activities.c.order_value.label("order_value"),
+                         key_translation.c.key_translated.label("key_translated"),
+                         value_translation.c.value_translated.label("value_translated")).\
             join(relevant_activities, relevant_activities.c.order_id == Activity.id).\
             join(A_Tag_Group).\
             join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
             join(A_Key).\
-            join(A_Value)
+            join(A_Value).\
+            outerjoin(key_translation, key_translation.c.key_original_id == A_Key.id).\
+            outerjoin(value_translation, value_translation.c.value_original_id == A_Value.id)
+        
         
         # Do the ordering again
         if order_query is not None:
@@ -574,11 +697,14 @@ class ActivityProtocol2(object):
             # The geometry
             g = i[2]
 
+            # The version
+            version = i[4]
+
             # The current tag group id (not global unique)
             taggroup_id = int(i[5])
 
-            key = i[8]
-            value = i[9]
+            key = i[11] if i[11] is not None else i[8]
+            value = i[12] if i[12] is not None else i[9]
 
             order_value = i[10]
             
@@ -596,7 +722,7 @@ class ActivityProtocol2(object):
 
             # If no existing ActivityFeature found, create new one
             if activity == None:
-                activity = ActivityFeature2(uid, order_value, geometry=g)
+                activity = ActivityFeature2(uid, order_value, geometry=g, version=version)
                 activities.append(activity)
 
             # Check if there is already this tag group present in the current
@@ -611,6 +737,103 @@ class ActivityProtocol2(object):
             taggroup.add_tag(Tag(i[7], key, value))
 
         return activities, count
+
+    def _history(self, request, uid, status_list=None):
+        
+        if status_list is None:
+            status_list = ['active', 'overwritten', 'deleted']
+        
+        status_filter = self.Session.query(Status).\
+                            filter(Status.name.in_(status_list)).\
+                            subquery()
+
+        query = self.Session.query(Activity.id.label("id"),
+                         Activity.activity_identifier.label("activity_identifier"),
+                         Activity.point.label("geometry"),
+                         Activity.timestamp.label("timestamp"),
+                         Activity.version.label("version"),
+                         A_Tag_Group.id.label("taggroup"),
+                         A_Tag_Group.fk_a_tag.label("main_tag"),
+                         A_Tag.id.label("tag"),
+                         A_Key.key.label("key"),
+                         A_Value.value.label("value"),
+                         A_Changeset.previous_version.label("previous_version"),
+                         A_Changeset.source.label("source"),
+                         User.id.label("userid"),
+                         User.username.label("username"),
+                         status_filter.c.name.label("status")).\
+                join(status_filter).\
+                join(A_Changeset).\
+                join(User).\
+                join(A_Tag_Group).\
+                join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
+                join(A_Key).\
+                join(A_Value).\
+                filter(Activity.activity_identifier == uid).\
+                order_by(Activity.version)
+        
+        # Collect the data from query
+        data = []
+        for i in query.all():
+            
+            # The activity identifier
+            uid = str(i.activity_identifier)
+
+            # The geometry
+            g = i.geometry
+
+            # The current tag group id (not global unique)
+            taggroup_id = int(i.taggroup)
+
+            key = i.key
+            value = i.value
+
+            # use version as order value
+            order_value = i.version
+            
+            diff_info = {
+                 'status': i.status,
+                 'previous_version': i.previous_version,
+                 'userid': i.userid,
+                 'username': i.username,
+                 'source': i.source
+             }
+            
+            activity = None
+            for a in data:
+                # Use order_value (version) to find existing ActivityFeature or create new one
+                if a.get_order_value() == order_value:
+                    activity = a
+            
+            # If no existing ActivityFeature found, create new one
+            if activity == None:
+                activity = ActivityFeature2(uid, order_value, geometry=g, diff_info=diff_info)
+                data.append(activity)
+            
+            # Check if there is already this tag group present in the current
+            # activity
+            taggroup = None
+            if activity.find_taggroup_by_id(taggroup_id) is not None:
+                taggroup = activity.find_taggroup_by_id(taggroup_id)
+            else:
+                taggroup = TagGroup(taggroup_id, i[6])
+                activity.add_taggroup(taggroup)
+
+            taggroup.add_tag(Tag(i[7], key, value))
+        
+        # Loop again through all versions to create diff
+        for a in data:
+            # If version has no previous version, create empty diff
+            if a.get_previous_version() is None:
+                a.create_diff()
+            # Else look for previous version
+            else:
+                for ov in data:
+                    if ov.get_order_value() == a.get_previous_version():
+                        a.create_diff(ov)
+                        break
+        
+        return data, len(data)
 
     def _create_geom_filter(self, request):
         """
@@ -686,7 +909,7 @@ class ActivityProtocol2(object):
         if order_key is not None:
             # Query to order number values (cast to Float)
             q_number = self.Session.query(
-                Activity.id, 
+                Activity.id,
                 cast(A_Value.value, Float).label('value')).\
             join(A_Tag_Group).\
             join(A_Tag, A_Tag.fk_a_tag_group == A_Tag_Group.id).\
@@ -695,7 +918,7 @@ class ActivityProtocol2(object):
             filter(A_Key.key.like(order_key))
             # Query to order string values
             q_text = self.Session.query(
-                Activity.id, 
+                Activity.id,
                 A_Value.value.label('value')).\
             join(A_Tag_Group).\
             join(A_Tag, A_Tag.fk_a_tag_group == A_Tag_Group.id).\
@@ -727,6 +950,22 @@ class ActivityProtocol2(object):
         """
         return request.params.get("logical_op", "and").lower()
 
+    def _get_translatedKV(self, lang):
+        """
+        Returns
+        - a SubQuery with a list of all translated keys
+        - a SubQuery with a list of all translated values
+        """
+        key_query = self.Session.query(A_Key.fk_a_key.label("key_original_id"),
+                                A_Key.key.label("key_translated")).\
+                    filter(A_Key.language == lang).\
+                    subquery()
+        value_query = self.Session.query(A_Value.fk_a_value.label("value_original_id"),
+                                 A_Value.value.label("value_translated")).\
+                     filter(A_Value.language == lang).\
+                     subquery()
+        return key_query, value_query
+
     def _key_value_is_valid(self, request, key, value):
         # Read the global configuration file
         global_stream = open(config_file_path(request), 'r')
@@ -735,4 +974,4 @@ class ActivityProtocol2(object):
         log.debug(global_config)
 
         return True
-                
+
