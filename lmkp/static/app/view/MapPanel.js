@@ -2,6 +2,10 @@ Ext.define('Lmkp.view.MapPanel',{
     extend: 'GeoExt.panel.Map',
     alias: ['widget.mappanel'],
 
+    requires: [
+    'GeoExt.Action'
+    ],
+
     center: new OpenLayers.LonLat(0,0),
 
     config: {
@@ -14,6 +18,9 @@ Ext.define('Lmkp.view.MapPanel',{
 
     map: {
         displayProjection: this.geographicProjection,
+        controls: [
+        new OpenLayers.Control.Navigation()
+        ],
         layers: [
         new OpenLayers.Layer.OSM('mapnik'),
         new OpenLayers.Layer.Vector('vector',{
@@ -36,21 +43,21 @@ Ext.define('Lmkp.view.MapPanel',{
 
     sphericalMercatorProjection: new OpenLayers.Projection("EPSG:900913"),
 
-    tbar: {
-        items: [{
-            iconCls: 'zoom-in-button'
-        },{
-            iconCls: 'pan-button'
-        },'->',{
-            fieldLabel: 'Change Map Layer',
-            store: [
-            'mapnik',
-            'osmarenderer'
-            ],
-            queryMode: 'local',
-            xtype: 'combobox'
-        }]
-    },
+    // Add an empty toolbar to add the GeoExt actions in the Map controller
+    tbar: [],
+
+    /*tbar: [{
+        iconCls: 'pan-button',
+        toggleGroup: 'map-controls'
+    },'->',{
+        fieldLabel: 'Change Map Layer',
+        store: [
+        'mapnik',
+        'osmarenderer'
+        ],
+        queryMode: 'local',
+        xtype: 'combobox'
+    }],*/
 
     zoom: 2,
 
