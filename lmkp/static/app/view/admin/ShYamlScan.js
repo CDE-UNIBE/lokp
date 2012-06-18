@@ -114,26 +114,6 @@ Ext.define('Lmkp.view.admin.ShYamlScan', {
             }, {
                 id: 'shAddAllButton',
                 text: 'Add all to DB'
-            }, '->',
-            'Scan profile:',
-            {
-                id: 'shScanProfileCombo',
-                xtype: 'combobox',
-                queryMode: 'local',
-                store: 'Profiles',
-                displayField: 'name',
-                valueField: 'profile',
-                forceSelection: true
-            },
-            'Scan language:',
-            {
-                id: 'shScanLanguageCombo',
-                xtype: 'combobox',
-                queryMode: 'local',
-                store: 'Languages',
-                displayField: 'english_name',
-                valueField: 'locale',
-                forceSelection: true
             }],
             xtype: 'toolbar'
         }]
