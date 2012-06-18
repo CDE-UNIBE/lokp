@@ -45,6 +45,21 @@ Ext.define('Lmkp.controller.admin.Main', {
             },
             'shadminyamlscan': {
                 beforerender: this.onShAdminYamlScanBeforeRender
+            },
+            'panel[id=outer-panel] toolbar button[id=logout_button]': {
+                click: this.logout
+            }
+        });
+    },
+
+    logout: function(){
+        var form = Ext.create('Ext.form.Panel', {
+            standardSubmit: true,
+            url: '/logout'
+        });
+        form.submit({
+            params: {
+                'form.logout': true
             }
         });
     },

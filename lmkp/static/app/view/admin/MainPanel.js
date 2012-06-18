@@ -15,7 +15,7 @@ Ext.define('Lmkp.view.admin.MainPanel', {
         title: 'Stakeholders',
         xtype: 'shadminyamlscan'
     }],
-	
+
     initComponent: function() {
         this.callParent(arguments);
     }
