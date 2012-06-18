@@ -8,37 +8,63 @@ Ext.define('Lmkp.controller.Map',{
     init: function(){
         this.control({
             'mappanel': {
-                //render: this.onPanelRendered
+                render: this.onPanelRendered
             }
         });
     },
 
     onPanelRendered: function(comp){
-        //comp.getMap().setCenter(new OpenLayers.LonLat(0,0),2);
+
+        // Get the toolbar
+        var tbar = comp.getDockedItems('toolbar')[0];
         var map = comp.getMap();
 
-        var highlightCtrl = new OpenLayers.Control.SelectFeature(comp.getVectorLayer(), {
-            hover: true,
-            highlightOnly: true,
-            renderIntent: "temporary",
-            eventListeners: {
-                beforefeaturehighlighted: function(){},
-                featurehighlighted: function(){},
-                featureunhighlighted: function(){}
-            }
+        var dragPanAction = Ext.create('GeoExt.Action',{
+            control: new OpenLayers.Control.DragPan({
+                id: 'pan'
+            }),
+            map: map,
+            iconCls: 'pan-button',
+            toggleGroup: 'map-controls'
         });
+        tbar.add(Ext.create('Ext.button.Button', dragPanAction));
 
-        var selectCtrl = new OpenLayers.Control.SelectFeature(comp.getVectorLayer(),
-        {
-            clickout: true
-        }
-        );
+        var zoomBoxAction = Ext.create('GeoExt.Action',{
+            control: new OpenLayers.Control.ZoomBox({
+                id: 'zoombox',
+                type: OpenLayers.Control.TYPE_TOGGLE
+            }),
+            map: map,
+            iconCls: 'zoom-in-button',
+            toggleGroup: 'map-controls'
+        });
+        tbar.add(Ext.create('Ext.button.Button', zoomBoxAction));
 
-        map.addControl(highlightCtrl);
-        map.addControl(selectCtrl);
+        tbar.add(Ext.create('Ext.button.Button', {
+            handler: function() {
+                var selectedFeatures = new Array();
+                var layers = map.getLayersByClass('OpenLayers.Layer.Vector');
+                for(var i = 0; i < layers.length; i++){
+                    for(var j = 0; j < layers[i].selectedFeatures.length; j++){
+                        selectedFeatures.push(layers[i].selectedFeatures[j]);
+                    }
+                    
+                }
 
-        highlightCtrl.activate();
-        selectCtrl.activate();
+                console.log(selectedFeatures[0]);
+                var bounds = selectedFeatures[0].geometry.getBounds().clone();
+
+                for(var i = 1; i < selectedFeatures.length; i++) {
+                    bounds.extend(selectedFeatures[i].geometry.getBounds());
+                }
+
+                map.zoomToExtent(bounds);
+
+            },
+            iconCls: 'zoom-to-selected'
+        }));
+
+
     }
 
     
