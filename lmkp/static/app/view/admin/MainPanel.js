@@ -1,19 +1,22 @@
 Ext.define('Lmkp.view.admin.MainPanel', {
-	extend: 'Ext.tab.Panel',
+    extend: 'Ext.tab.Panel',
 	
-	alias: ['widget.adminmainpanel'],
+    alias: ['widget.adminmainpanel'],
 	
-	activeTab: 0,
+    activeTab: 0,
 	
-	items: [{
-		title: 'Home',
-		xtype: 'adminhome'
-	}, {
-		title: 'YAML',
-		xtype: 'adminyamlscan'
-	}],
+    items: [{
+        title: 'Home',
+        xtype: 'adminhome'
+    }, {
+        title: 'Activities',
+        xtype: 'adminyamlscan'
+    }, {
+        title: 'Stakeholders',
+        xtype: 'shadminyamlscan'
+    }],
 	
-	initComponent: function() {
-		this.callParent(arguments);
-	}
+    initComponent: function() {
+        this.callParent(arguments);
+    }
 });
