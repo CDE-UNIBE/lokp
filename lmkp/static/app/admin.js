@@ -1,22 +1,27 @@
 Ext.application({
-	name: 'Lmkp',
-	appFolder: 'static/app',
+    name: 'Lmkp',
+    appFolder: 'static/app',
 	
-	controllers: [
-		'admin.Main'
-	],
+    controllers: [
+    'admin.Main'
+    ],
 	
-	launch: function() {
-		Ext.create('Ext.container.Viewport', {
-			layout: 'border',
-			items: [{
-				height: 40,
-				region: 'north',
-				xtype: 'header'
-			}, {
-				region: 'center',
-				xtype: 'adminmainpanel'
-			}]
-		});
-	}
+    launch: function() {
+        Ext.create('Ext.container.Viewport', {
+            layout: 'border',
+            items: [{
+                id: 'outer-panel',
+                items: [{
+                    region: 'center',
+                    xtype: 'adminmainpanel'
+                }],
+                layout: 'border',
+                region: 'center',
+                tbar: [Lmkp.login_form],
+                xtype: 'panel'
+            }],
+
+            tbar: [Lmkp.login_form]
+        });
+    }
 });
