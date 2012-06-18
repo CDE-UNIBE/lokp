@@ -9,21 +9,18 @@ Ext.define('Lmkp.view.MapPanel',{
     center: new OpenLayers.LonLat(0,0),
 
     config: {
-        map: {},
-        zoomBoxControl: {}
+        map: {}
     },
 
     layout: 'fit',
 
     geographicProjection: new OpenLayers.Projection("EPSG:4326"),
 
-    zoomBoxControl: new OpenLayers.Control.ZoomBox({
-        id: 'zoombox',
-        type: OpenLayers.Control.TYPE_TOGGLE
-    }),
-
     map: {
         displayProjection: this.geographicProjection,
+        controls: [
+        new OpenLayers.Control.Navigation()
+        ],
         layers: [
         new OpenLayers.Layer.OSM('mapnik'),
         new OpenLayers.Layer.Vector('vector',{
@@ -45,8 +42,11 @@ Ext.define('Lmkp.view.MapPanel',{
     },
 
     sphericalMercatorProjection: new OpenLayers.Projection("EPSG:900913"),
-    
-    tbar: [{
+
+    // Add an empty toolbar to add the GeoExt actions in the Map controller
+    tbar: [],
+
+    /*tbar: [{
         iconCls: 'pan-button',
         toggleGroup: 'map-controls'
     },'->',{
@@ -57,7 +57,7 @@ Ext.define('Lmkp.view.MapPanel',{
         ],
         queryMode: 'local',
         xtype: 'combobox'
-    }],
+    }],*/
 
     zoom: 2,
 
