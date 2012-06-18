@@ -22,7 +22,7 @@ Ext.define('Lmkp.controller.admin.Main', {
 	
     init: function() {
         this.control({
-            'toolbar[id=scanToolbar] button[id=scanButton]': {
+            'adminyamlscan toolbar[id=scanToolbar] button[id=scanButton]': {
                 click: this.scanDoScan
             },
             'toolbar[id=scanToolbar] button[id=addToDB]': {
@@ -34,17 +34,14 @@ Ext.define('Lmkp.controller.admin.Main', {
             'toolbar[id=scanToolbar] combobox[id=scanProfileCombo]': {
                 select: this.scanDoScan
             },
-            'adminyamlscan': {
-                beforerender: this.renderAdminYamlScan
-            },
             'adminyamlscan templatecolumn[name=editColumn]': {
                 click: this.showTranslationWindow
             },
             'toolbar[id=shScanToolbar] button[id=shScanButton]': {
                 click: this.onShScanButtonClick
             },
-            'shadminyamlscan': {
-                beforerender: this.onShAdminYamlScanBeforeRender
+            'panel[id=outer-panel]': {
+                afterrender: this.onOuterPanelAfterRender
             },
             'panel[id=outer-panel] toolbar button[id=logout_button]': {
                 click: this.logout
@@ -173,8 +170,8 @@ Ext.define('Lmkp.controller.admin.Main', {
     },
 	
     scanDoScan: function(item, e, eOpts) {
-        var cbLang = Ext.ComponentQuery.query('combobox[id=scanLanguageCombo]')[0];
-        var cbProfile = Ext.ComponentQuery.query('combobox[id=scanProfileCombo]')[0];
+        var cbLang = Ext.ComponentQuery.query('combobox[id=language_combobox]')[0];
+        var cbProfile = Ext.ComponentQuery.query('combobox[id=profile_combobox]')[0];
         var store = this.getYamlScanStore();
         var root = store.getRootNode();
         // catch error when no language is in db yet
@@ -202,19 +199,19 @@ Ext.define('Lmkp.controller.admin.Main', {
         }
     },
 	
-    renderAdminYamlScan: function() {
+    onOuterPanelAfterRender: function() {
         this.getLanguagesStore().load();
-        var cb1 = Ext.ComponentQuery.query('combobox[id=scanLanguageCombo]')[0];
+        var cb1 = Ext.ComponentQuery.query('combobox[id=language_combobox]')[0];
         cb1.setValue(Lmkp.ts.msg("locale"));
         this.getProfilesStore().load();
         var initialProfile = 'global';
-        var cb2 = Ext.ComponentQuery.query('combobox[id=scanProfileCombo]')[0];
+        var cb2 = Ext.ComponentQuery.query('combobox[id=profile_combobox]')[0];
         cb2.setValue(initialProfile);
     },
 
     onShScanButtonClick: function() {
-        var cbLang = Ext.ComponentQuery.query('combobox[id=shScanLanguageCombo]')[0];
-        var cbProfile = Ext.ComponentQuery.query('combobox[id=shScanProfileCombo]')[0];
+        var cbLang = Ext.ComponentQuery.query('combobox[id=language_combobox]')[0];
+        var cbProfile = Ext.ComponentQuery.query('combobox[id=profile_combobox]')[0];
         var store = this.getYamlScanStore();
         var root = store.getRootNode();
         // catch error when no language is in db yet
@@ -240,17 +237,6 @@ Ext.define('Lmkp.controller.admin.Main', {
                 }
             });
         }
-    },
-    
-    onShAdminYamlScanBeforeRender: function(){
-        this.getLanguagesStore().load();
-        var cb1 = Ext.ComponentQuery.query('combobox[id=shScanLanguageCombo]')[0];
-        cb1.setValue(Lmkp.ts.msg("locale"));
-        this.getProfilesStore().load();
-        var initialProfile = 'global';
-        var cb2 = Ext.ComponentQuery.query('combobox[id=shScanProfileCombo]')[0];
-        cb2.setValue(initialProfile);
     }
-
-
+    
 });
