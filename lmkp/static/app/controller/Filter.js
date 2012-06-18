@@ -169,8 +169,6 @@ Ext.define('Lmkp.controller.Filter', {
         map.addControl(highlightCtrl);
         map.addControl(selectCtrl);
 
-        map.addControl(comp.getZoomBoxControl());
-
         highlightCtrl.activate();
         selectCtrl.activate();
     },
