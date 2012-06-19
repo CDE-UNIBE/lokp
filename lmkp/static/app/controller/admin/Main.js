@@ -2,7 +2,7 @@ Ext.define('Lmkp.controller.admin.Main', {
     extend: 'Ext.app.Controller',
 
     views: [
-    'admin.MainPanel',
+    'admin.Main',
     'admin.Home',
     'admin.YamlScan'
     ],

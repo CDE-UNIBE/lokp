@@ -40,9 +40,7 @@ Ext.application({
                     forceSelection: true
                 }],
                 xtype: 'panel'
-            }],
-
-            tbar: [Lmkp.login_form]
+            }]
         });
     }
 });
