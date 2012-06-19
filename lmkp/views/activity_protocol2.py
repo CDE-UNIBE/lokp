@@ -488,6 +488,8 @@ class ActivityProtocol2(object):
                 a_tag.key = k
                 a_tag.value = v
 
+                log.debug(a_tag)
+
                 # Check if the current tag is the main tag of this tag group. If
                 # yes, set the main_tag attribute to this tag
                 if a_tag.key.key == main_tag_key and a_tag.value.value == main_tag_value:

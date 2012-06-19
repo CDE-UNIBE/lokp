@@ -116,7 +116,7 @@ def main(global_config, ** settings):
     config.add_route('activities_read_many', '/activities', request_method='GET')
     config.add_route('activities_read_one', '/activities/{uid}', request_method='GET')
 
-    # Creates a new activity (not yet implemented)
+    # Creates a new activity
     config.add_route('activities_create', '/activities', request_method='POST')
 
     # Returns a JSON representation of comments to ...
@@ -128,6 +128,8 @@ def main(global_config, ** settings):
     
     # Return the history of an activity
     config.add_route('activities_history', '/activities/history/{uid}')
+
+    config.add_route('stakeholders_create', '/stakeholders', request_method='POST')
 
     # A controller that returns the translation needed in the ExtJS user interface
     config.add_route('ui_translation', '/lang')
