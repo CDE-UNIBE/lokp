@@ -357,66 +357,21 @@ def yaml_add_db(request):
         # No localized configuration file found!
         pass
    
-    # check for english language (needs to have id=1)
-    english_language = Session.query(Language).filter(Language.id == 1).filter(Language.english_name == 'English').all()
-    if len(english_language) == 1:
-        language = english_language[0]
-    else:
-        # language not found, insert it.
-        language = Language(1, 'English', 'English', 'en')
-        Session.add(language)
-        stack.append('Language (English) added.')
-   
-    # get keys already in database. their fk_a_key must be None (= original)
-    db_keys = []
-    for db_key in Session.query(A_Key.key).filter(A_Key.fk_a_key == None).all():
-        db_keys.append(db_key.key)
-       
-    # get values already in database. their fk_a_value must be None (= original)
-    db_values = []
-    for db_value in Session.query(A_Value.value).filter(A_Value.fk_a_value == None).all():
-        db_values.append(db_value.value)
-   
-    config_items = global_config["application"]["fields"]["mandatory"].items() + global_config["application"]["fields"]["optional"].items()
-    for key, value in config_items:
-        # check if key is already in database
-        if key in db_keys:
-            # key is already there, do nothing
-            stack.append('Key already in database: %s' % key)
-        else:
-            # key is not yet in database, insert it
-            new_key = A_Key(key=key)
-            new_key.language = language
-            Session.add(new_key)
-            stack.append('Key added to database: %s' % key)
-
-        # do the same with values
-        if value.items():
-            for k, val in value.items():
-                if k == 'predefined':
-                    for v in val:
-                        # check if value is already in database
-                        if v in db_values:
-                            # value is already there, do nothing
-                            stack.append('Value already in database: %s' % v)
-                        else:
-                            # value is not yet in database, insert it
-                            new_value = A_Value(v)
-                            new_value.language = language
-                            Session.add(new_value)
-                            stack.append('Value added to database: %s' % v)
-                           
-    return {'messagestack': stack}
+    return _add_to_db(global_config, A_Key, A_Key.fk_a_key, A_Value, A_Value.fk_a_value)
 
 @view_config(route_name='yaml_add_stakeholders_db', renderer='lmkp:templates/sample_values.pt', permission='administer')
 def yaml_add_stakeholders_db(request):
 
-    stack = []
-    stack.append('Scan results:')
-
     # Read the global configuration file
     global_stream = open(stakeholder_config_file_path(request), 'r')
     global_config = yaml.load(global_stream)
+
+    return _add_to_db(global_config, SH_Key, SH_Key.fk_sh_key, SH_Value, SH_Value.fk_sh_value)
+
+def _add_to_db(config, Key, fk_key, Value, fk_value):
+
+    stack = []
+    stack.append('Scan results:')
 
     # check for english language (needs to have id=1)
     english_language = Session.query(Language).filter(Language.id == 1).filter(Language.english_name == 'English').all()
@@ -430,15 +385,15 @@ def yaml_add_stakeholders_db(request):
 
     # get keys already in database. their fk_sh_key must be None (= original)
     db_keys = []
-    for db_key in Session.query(SH_Key.key).filter(SH_Key.fk_sh_key == None).all():
+    for db_key in Session.query(Key.key).filter(fk_key == None).all():
         db_keys.append(db_key.key)
 
     # get values already in database. their fk_sh_value must be None (= original)
     db_values = []
-    for db_value in Session.query(SH_Value.value).filter(SH_Value.fk_sh_value == None).all():
+    for db_value in Session.query(Value.value).filter(fk_value == None).all():
         db_values.append(db_value.value)
 
-    config_items = global_config["application"]["fields"]["mandatory"].items() + global_config["application"]["fields"]["optional"].items()
+    config_items = config["application"]["fields"]["mandatory"].items() + config["application"]["fields"]["optional"].items()
     for key, value in config_items:
         # check if key is already in database
         if key in db_keys:
@@ -446,7 +401,7 @@ def yaml_add_stakeholders_db(request):
             stack.append('Key already in database: %s' % key)
         else:
             # key is not yet in database, insert it
-            new_key = SH_Key(key=key)
+            new_key = Key(key=key)
             new_key.language = language
             Session.add(new_key)
             stack.append('Key added to database: %s' % key)
@@ -462,12 +417,13 @@ def yaml_add_stakeholders_db(request):
                             stack.append('Value already in database: %s' % v)
                         else:
                             # value is not yet in database, insert it
-                            new_value = SH_Value(v)
+                            new_value = Value(v)
                             new_value.language = language
                             Session.add(new_value)
                             stack.append('Value added to database: %s' % v)
 
     return {'messagestack': stack}
+
 
 """
 {name} is the original key as in the yaml (in english)
