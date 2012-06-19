@@ -12,3 +12,5 @@ application:
         type: String
       Address:
         type: String
+      Phone:
+        type: String
