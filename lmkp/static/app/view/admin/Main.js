@@ -1,4 +1,4 @@
-Ext.define('Lmkp.view.admin.MainPanel', {
+Ext.define('Lmkp.view.admin.Main', {
     extend: 'Ext.tab.Panel',
 	
     alias: ['widget.adminmainpanel'],
@@ -7,7 +7,7 @@ Ext.define('Lmkp.view.admin.MainPanel', {
 	
     items: [{
         title: 'Home',
-        xtype: 'adminhome'
+        xtype: 'adminhomepanel'
     }, {
         postUrl: '/config/add',
         store: 'YamlScan',
