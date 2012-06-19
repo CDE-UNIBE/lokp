@@ -22,6 +22,7 @@ from sqlalchemy.sql.expression import asc
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.types import Float
+import uuid
 import yaml
 from pyramid.i18n import get_localizer
 
