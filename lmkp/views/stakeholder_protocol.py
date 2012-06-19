@@ -9,6 +9,7 @@ from lmkp.models.database_objects import User
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPCreated
+import uuid
 
 log = logging.getLogger(__name__)
 
@@ -163,6 +164,7 @@ class StakeholderProtocol(object):
         are allowed.
         """
 
+        identifier = None
         if 'identifier' in kwargs:
             identifier = kwargs['identifier']
         status = 'pending'

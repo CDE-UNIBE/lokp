@@ -30,11 +30,3 @@ def profile_directory_path(request=None):
     Returns the absolute path to the directory containing the profiles
     """
     return "%s/profiles/" % os.path.dirname(__file__)
-
-def sample_data_file_path(request=None):
-    """
-    Returns the absolute path to the sample data file
-    """
-
-    filename = "landmatrix.json"
-    return "%s/documents/%s" % (os.path.dirname(__file__), filename)

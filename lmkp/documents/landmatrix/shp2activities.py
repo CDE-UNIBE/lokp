@@ -76,13 +76,13 @@ transformMap = {
     "Mineral 1": "Mineral",
     "Other Land": "Other Landuse",
     "Other La_1": "Other Landuse",
-    "Name of In": "Name of Investor",
-    "Name of_1": "Name of Investor",
-    "Name of_2": "Name of Investor",
-    "Country of": "Country of Investor",
-    "Country_1": "Country of Investor",
-    "Country_2": "Country of Investor",
-    "Domestic P": "Domestic Partners",
+    #"Name of In": "Name of Investor",      moved to stakeholders
+    #"Name of_1": "Name of Investor",       dito
+    #"Name of_2": "Name of Investor",       dito
+    #"Country of": "Country of Investor",   dito
+    #"Country_1": "Country of Investor",    dito
+    #"Country_2": "Country of Investor",    dito
+    #"Domestic P": "Domestic Partners",     dito
     "Data Sourc": "Data Source (Research Paper)",
     "Spatial Accuracy": "Spatial Accuracy"
 }
