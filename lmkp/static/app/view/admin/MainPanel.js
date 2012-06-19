@@ -2,18 +2,22 @@ Ext.define('Lmkp.view.admin.MainPanel', {
     extend: 'Ext.tab.Panel',
 	
     alias: ['widget.adminmainpanel'],
-	
+
     activeTab: 0,
 	
     items: [{
         title: 'Home',
         xtype: 'adminhome'
     }, {
+        postUrl: '/config/add',
+        store: 'YamlScan',
         title: 'Activities',
-        xtype: 'adminyamlscan'
+        xtype: 'yamlscanpanel'
     }, {
+        postUrl: '/config/add/stakeholders',
+        store: 'ShYamlScan',
         title: 'Stakeholders',
-        xtype: 'shadminyamlscan'
+        xtype: 'yamlscanpanel'
     }],
 
     initComponent: function() {

@@ -63,6 +63,8 @@ def main(global_config, ** settings):
     config.add_route('yaml_add_db', '/config/add')
 
     config.add_route('yaml_translation_json_stakeholders', '/config/scan/stakeholders')
+    config.add_route('yaml_add_stakeholders_db', '/config/add/stakeholders')
+
     config.add_route('config', '/config/{parameter}')
 
     

@@ -4,8 +4,8 @@ Ext.define('Lmkp.controller.admin.Main', {
     views: [
     'admin.MainPanel',
     'admin.Home',
-    'admin.YamlScan',
-    'admin.ShYamlScan'
+    //'admin.YamlScan',
+    'admin.YamlScanPanel'
     ],
 	
     stores: [
@@ -22,9 +22,6 @@ Ext.define('Lmkp.controller.admin.Main', {
 	
     init: function() {
         this.control({
-            'adminyamlscan toolbar[id=scanToolbar] button[id=scanButton]': {
-                click: this.scanDoScan
-            },
             'toolbar[id=scanToolbar] button[id=addToDB]': {
                 click: this.scanAddToDB
             },
@@ -37,14 +34,17 @@ Ext.define('Lmkp.controller.admin.Main', {
             'adminyamlscan templatecolumn[name=editColumn]': {
                 click: this.showTranslationWindow
             },
-            'toolbar[id=shScanToolbar] button[id=shScanButton]': {
-                click: this.onShScanButtonClick
-            },
             'panel[id=outer-panel]': {
                 afterrender: this.onOuterPanelAfterRender
             },
             'panel[id=outer-panel] toolbar button[id=logout_button]': {
                 click: this.logout
+            },
+            'yamlscanpanel toolbar button[text=Scan]': {
+                click: this.onScanButtonClick
+            },
+            'yamlscanpanel toolbar button[text=Add all to DB]': {
+                click: this.onAddButtonClick
             }
         });
     },
@@ -144,14 +144,18 @@ Ext.define('Lmkp.controller.admin.Main', {
         }
     },
 	
-    scanAddToDB: function(item, e, eOpts) {
-        var cbProfile = Ext.ComponentQuery.query('combobox[id=scanProfileCombo]')[0];
+    onAddButtonClick: function(button, event, eOpts) {
+        // The profile combobox
+        var cbProfile = Ext.ComponentQuery.query('combobox[id=profile_combobox]')[0];
+        // The parent YamlScanPanel
+        var panel = button.ownerCt.ownerCt;
+        
         var win = Ext.create('Ext.window.Window', {
             title: 'Add to DB',
             closable: false,
             layout: 'fit',
             loader: {
-                url: '/config/add',
+                url: panel.getPostUrl(),
                 params: {
                     '_PROFILE_': cbProfile.lastSelection[0].get('profile')
                 },
@@ -165,14 +169,22 @@ Ext.define('Lmkp.controller.admin.Main', {
                 }
             }]
         });
-        win.on('hide', this.scanDoScan, this);
+        win.on('hide', function(component, eOpts){
+            this.onScanButtonClick(button);
+        }, this);
         win.show();
     },
 	
-    scanDoScan: function(item, e, eOpts) {
+    onScanButtonClick: function(button, event, eOpts){
+        // The comboboxes with language and profile
         var cbLang = Ext.ComponentQuery.query('combobox[id=language_combobox]')[0];
         var cbProfile = Ext.ComponentQuery.query('combobox[id=profile_combobox]')[0];
-        var store = this.getYamlScanStore();
+
+        // Get the parent panel
+        var panel = button.ownerCt.ownerCt;
+        // Then get the treepanel and its store
+        var treepanel = panel.query('treepanel')[0];
+        var store = treepanel.getStore();
         var root = store.getRootNode();
         // catch error when no language is in db yet
         var lang = (cbLang.lastSelection[0]) ? cbLang.lastSelection[0].get('locale') : 'en';
@@ -198,7 +210,7 @@ Ext.define('Lmkp.controller.admin.Main', {
             });
         }
     },
-	
+
     onOuterPanelAfterRender: function() {
         this.getLanguagesStore().load();
         var cb1 = Ext.ComponentQuery.query('combobox[id=language_combobox]')[0];
@@ -207,36 +219,6 @@ Ext.define('Lmkp.controller.admin.Main', {
         var initialProfile = 'global';
         var cb2 = Ext.ComponentQuery.query('combobox[id=profile_combobox]')[0];
         cb2.setValue(initialProfile);
-    },
-
-    onShScanButtonClick: function() {
-        var cbLang = Ext.ComponentQuery.query('combobox[id=language_combobox]')[0];
-        var cbProfile = Ext.ComponentQuery.query('combobox[id=profile_combobox]')[0];
-        var store = this.getYamlScanStore();
-        var root = store.getRootNode();
-        // catch error when no language is in db yet
-        var lang = (cbLang.lastSelection[0]) ? cbLang.lastSelection[0].get('locale') : 'en';
-        root.removeAll(false);
-        store.load({
-            node: root,
-            params: {
-                '_LOCALE_': lang,
-                '_PROFILE_': cbProfile.lastSelection[0].get('profile')
-            }
-        });
-        // try to reload Language store to populate combobox
-        // this should only take place after first language (english) was inserted into DB,
-        // which usually takes place on first add of key/value pairs.
-        if (!cbLang.lastSelection[0]) {
-            cbLang.getStore().load({
-                scope: this,
-                callback: function(records, operation, success) {
-                    if (records.length == 1) {
-                        cbLang.setValue(records[0].get('locale'));
-                    }
-                }
-            });
-        }
     }
     
 });
