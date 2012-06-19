@@ -4,8 +4,7 @@ Ext.define('Lmkp.controller.admin.Main', {
     views: [
     'admin.MainPanel',
     'admin.Home',
-    //'admin.YamlScan',
-    'admin.YamlScanPanel'
+    'admin.YamlScan'
     ],
 	
     stores: [
@@ -22,16 +21,7 @@ Ext.define('Lmkp.controller.admin.Main', {
 	
     init: function() {
         this.control({
-            'toolbar[id=scanToolbar] button[id=addToDB]': {
-                click: this.scanAddToDB
-            },
-            'toolbar[id=scanToolbar] combobox[id=scanLanguageCombo]': {
-                select: this.scanDoScan
-            },
-            'toolbar[id=scanToolbar] combobox[id=scanProfileCombo]': {
-                select: this.scanDoScan
-            },
-            'adminyamlscan templatecolumn[name=editColumn]': {
+            'yamlscanpanel templatecolumn[name=editColumn]': {
                 click: this.showTranslationWindow
             },
             'panel[id=outer-panel]': {
@@ -40,10 +30,10 @@ Ext.define('Lmkp.controller.admin.Main', {
             'panel[id=outer-panel] toolbar button[id=logout_button]': {
                 click: this.logout
             },
-            'yamlscanpanel toolbar button[text=Scan]': {
+            'yamlscanpanel toolbar button[itemId=yaml-scan-button]': {
                 click: this.onScanButtonClick
             },
-            'yamlscanpanel toolbar button[text=Add all to DB]': {
+            'yamlscanpanel toolbar button[itemId=yaml-add-button]': {
                 click: this.onAddButtonClick
             }
         });
