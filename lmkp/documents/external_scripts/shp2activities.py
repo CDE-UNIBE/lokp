@@ -44,7 +44,7 @@ QgsApplication.initQgis()
 
 # Base directory to the data. The scripts assumes that the Shapefile and all
 # CSV files are within the same directory
-basedir = "/home/adrian/Documents/ObservatoryLandAcquisitions/Data/"
+basedir = "/home/adrian/Documents/LandObservatory/Matrix/Data"
 
 countriesMap = createMap('countries.csv')
 maincropsMap = createMap('maincrops.csv')
@@ -57,7 +57,7 @@ otherlandusesMap = createMap('otherlanduses.csv')
 transformMap = {
     "uuid1": "identifier",
     "Country": "Country",
-    "Size of In": "Size of Investement",
+    "Size of In": "Size of Investment",
     "Year Inves": "Year of Investment (agreed)",
     "Main Crop": "Main Crop",
     "Main Cro_1": "Main Crop",
@@ -164,6 +164,8 @@ while provider.nextFeature(feature):
                 value = otherlandusesMap[string.upper(value)]
             
             taggroupObject['tags'].append({"key": fieldIndexMap[k], "value": value, "op": "add"})
+            taggroupObject['op'] = 'add'
+            taggroupObject['main_tag'] = {"key": fieldIndexMap[k], "value": value}
             activityObject['taggroups'].append(taggroupObject)
 
     # Append the activity to the main object
