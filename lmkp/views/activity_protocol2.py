@@ -22,6 +22,7 @@ from sqlalchemy.sql.expression import asc
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.types import Float
+import uuid
 import yaml
 from pyramid.i18n import get_localizer
 
@@ -487,8 +488,6 @@ class ActivityProtocol2(object):
                 db_taggroup.tags.append(a_tag)
                 a_tag.key = k
                 a_tag.value = v
-
-                log.debug(a_tag)
 
                 # Check if the current tag is the main tag of this tag group. If
                 # yes, set the main_tag attribute to this tag

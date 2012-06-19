@@ -1,9 +1,10 @@
-from lmkp.config import sample_data_file_path
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol2 import ActivityProtocol2
+from lmkp.views.stakeholder_protocol import StakeholderProtocol
 import logging
 import os
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.view import view_config
 import random
 import simplejson as json
@@ -14,7 +15,7 @@ import transaction
 
 log = logging.getLogger(__name__)
 
-def create_wrapper(request, file, status='pending'):
+def activity_wrapper(request, file, status='pending'):
     """
     A small wrapper around the create method in the Activity Protocol
     """
@@ -31,6 +32,24 @@ def create_wrapper(request, file, status='pending'):
     for activity in data['activities']:
         activity_protocol2._handle_activity(request, activity, status)
 
+def stakeholder_wrapper(request, file, status='pending'):
+    """
+    A small wrapper around the create method in the Activity Protocol
+    """
+    # Create a new activity protocol object
+    stakeholder_protocol = StakeholderProtocol(Session)
+    # Read the data JSON file
+    data_stream = open(file, 'r')
+    data = json.loads(data_stream.read())
+
+    # Check if the json body is a valid diff file
+    if 'stakeholders' not in data:
+        return HTTPBadRequest(detail="Not a valid format")
+
+    for stakeholder in data['stakeholders']:
+        stakeholder_protocol._handle_stakeholder(request, stakeholder, status)
+
+
 @view_config(route_name='sample_values', renderer='json')
 def insert_landmatrix(request):
     """
@@ -38,7 +57,10 @@ def insert_landmatrix(request):
     and sets all activities immediately active.
     """
 
-    create_wrapper(request, sample_data_file_path(request), 'active')
+    rootdir = os.path.dirname(os.path.dirname(__file__))
+
+    activity_wrapper(request, "%s/documents/%s" % (rootdir, 'landmatrix_activities.json'), 'active')
+    stakeholder_wrapper(request, "%s/documents/%s" % (rootdir, 'landmatrix_stakeholders.json'), 'active')
 
     return {'success': True}
 
@@ -75,7 +97,7 @@ def delete_all_values(request):
 
             nbr_tags = 0
             for tag in Session.query(A_Tag).join(A_Tag_Group, A_Tag_Group.id == A_Tag.fk_a_tag_group).join(Activity).filter(and_(A_Tag.fk_a_tag_group == tag_group.id,
-                                                                                    A_Tag_Group.fk_activity == activity.id)).all():
+                                                                                                                            A_Tag_Group.fk_activity == activity.id)).all():
 
                 Session.delete(tag)
                 nbr_tags += 1
