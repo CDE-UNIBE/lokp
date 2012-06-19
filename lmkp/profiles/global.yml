@@ -21,7 +21,7 @@ application:
         - abandoned
       Country:
         type: String
-      Size of Investement:
+      Size of Investment:
         type: Number
         validator: if(value >= 0){return true;} else {return "Must be greater than 0";}
       Year of Investment (agreed):
