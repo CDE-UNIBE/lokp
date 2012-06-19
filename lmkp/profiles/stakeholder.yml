@@ -1,0 +1,16 @@
+## YAML Template.
+---
+application:
+  fields:
+    mandatory:
+      Name:
+        type: String
+      Country:
+        type: String
+    optional:
+      Website:
+        type: String
+      Address:
+        type: String
+      Phone:
+        type: String
