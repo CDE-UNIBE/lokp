@@ -645,4 +645,3 @@ class ActivityProtocol2(Protocol):
         log.debug(global_config)
 
         return True
-

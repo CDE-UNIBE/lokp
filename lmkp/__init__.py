@@ -163,10 +163,6 @@ def main(global_config, ** settings):
     # Evaluation
     config.add_route('evaluation_json', '/evaluation/{temp}')
 
-    # Test
-    config.add_route('geojson_test', '/geojson')
-    
-
     # Yet another test
     config.add_route('timestamp_test', '/timestamp')
 
