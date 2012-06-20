@@ -71,8 +71,9 @@ class Protocol(object):
             }
 
             str_map = {
-                'like': Value.value.like(value),
-                'ilike': Value.value.ilike(value)
+                # See http://www.postgresql.org/docs/9.1/static/functions-matching.html#FUNCTIONS-POSIX-REGEXP
+                'like': Value.value.op("~")(value),
+                'ilike': Value.value.op("~*")(value)
             }
 
             # number comparison
@@ -121,6 +122,68 @@ class Protocol(object):
         Return the logical operator if set, default is 'and'
         """
         return request.params.get("logical_op", "and").lower()
+
+    def _get_order_direction(self, request):
+        """
+        Return the direction of ordering only if it is set to DESC
+        """
+        if request.params.get('dir', '').upper() == 'DESC':
+            return 'DESC'
+
+    def _get_translatedKV(self, lang, Key, Value):
+        """
+        Returns
+        - a SubQuery with a list of all translated keys
+        - a SubQuery with a list of all translated values
+        """
+        key_query = self.Session.query(Key.fk_key.label("key_original_id"),
+                                Key.key.label("key_translated")).\
+                    filter(Key.language == lang).\
+                    subquery()
+        value_query = self.Session.query(Value.fk_value.label("value_original_id"),
+                                 Value.value.label("value_translated")).\
+                     filter(Value.language == lang).\
+                     subquery()
+        return key_query, value_query
+
+    def _get_order(self, request, Mapped_Class, Tag_Group, Tag, Key, Value):
+        """
+        Returns
+        - a SubQuery with an ordered list of Activity IDs and
+          the values by which they will be ordered.
+        - a Boolean indicating order values are numbers or not
+        """
+        order_key = request.params.get('order_by', None)
+        if order_key is not None:
+            # Query to order number values (cast to Float)
+            q_number = self.Session.query(
+                Mapped_Class.id,
+                cast(Value.value, Float).label('value')).\
+            join(Tag_Group).\
+            join(Tag, Tag.fk_tag_group == Tag_Group.id).\
+            join(Value).\
+            join(Key).\
+            filter(Key.key.like(order_key))
+            # Query to order string values
+            q_text = self.Session.query(
+                Mapped_Class.id,
+                Value.value.label('value')).\
+            join(Tag_Group).\
+            join(Tag, Tag.fk_tag_group == Tag_Group.id).\
+            join(Value).\
+            join(Key).\
+            filter(Key.key.like(order_key))
+
+            # Try to query numbered values and cast them
+            try:
+                x = q_number.all()
+                return q_number.subquery(), True
+            except:
+                # Rolling back of Session is needed to completely erase error thrown above
+                self.Session.rollback()
+                return q_text.subquery(), False
+
+        return None, None
 
 class Tag(object):
 
@@ -199,11 +262,10 @@ class TagGroup(object):
 
 class Feature(object):
 
-    def __init__(self, guid, order_value, geometry=None, version=None, diff_info=None, ** kwargs):
+    def __init__(self, guid, order_value, version=None, diff_info=None, ** kwargs):
         self._taggroups = []
         self._guid = guid
         self._order_value = order_value
-        self._geometry = geometry
         self._version = version
         self._diff_info = diff_info
 

@@ -52,3 +52,9 @@ def read_many(request):
     Reads many active activities
     """
     return stakeholder_protocol.read(request)
+
+@view_config(route_name='stakeholders_history', renderer='json')
+def stakeholders_history(request):
+    uid = request.matchdict.get('uid', None)
+
+    return stakeholder_protocol.history(request, uid=uid)
