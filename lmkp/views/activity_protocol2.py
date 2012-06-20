@@ -2,6 +2,10 @@ from geoalchemy import WKBSpatialElement
 from geoalchemy.functions import functions
 from lmkp.config import config_file_path
 from lmkp.models.database_objects import *
+from lmkp.views.protocol import Feature
+from lmkp.views.protocol import Protocol
+from lmkp.views.protocol import Tag
+from lmkp.views.protocol import TagGroup
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPCreated
@@ -28,82 +32,10 @@ from pyramid.i18n import get_localizer
 
 log = logging.getLogger(__name__)
 
-class Tag(object):
-
-    def __init__(self, id, key, value):
-        self._id = id
-        self._key = key
-        self._value = value
-
-    def get_key(self):
-        return self._key
-
-    def get_value(self):
-        return self._value
-
-    def get_id(self):
-        return self._id
-
-    def to_table(self):
-        return {'id': self._id, 'key': self._key, 'value': self._value}
-
-class TagGroup(object):
-    
-    def __init__(self, id=None, main_tag_id=None):
-        """
-        Create a new TagGroup object with id and the main_tag_id
-        """
-
-        # The TagGroup id
-        self._id = id
-        # The id of the main tag (not the tag itself!)
-        self._main_tag_id = main_tag_id
-        # List to store the tags
-        self._tags = []
-        self._diffFlag = None
-
-    def add_tag(self, tag):
-        """
-        Add a new tag to the internal tag list
-        """
-        self._tags.append(tag)
-
-    def get_id(self):
-        return self._id
-
-    def get_tag_by_key(self, key):
-        """
-        Returns a tag from this group if there is one with the requested key,
-        else None is returned.
-        """
-        for t in self._tags:
-            if t.get_key() == key:
-                return t
-        return None
-
-    def get_tags(self):
-        return self._tags
-
-    def setDiffFlag(self, bool):
-        self._diffFlag = bool
-
-    def getDiffFlag(self):
-        return self._diffFlag
-
-    def to_table(self):
-        """
-        Returns a JSON compatible representation of this object
-        """
-        main_tag = None
-        tags = []
-        for t in self._tags:
-            tags.append(t.to_table())
-            if t.get_id() == self._main_tag_id:
-                main_tag = t.to_table()
-
-        return {'id': self._id, 'main_tag': main_tag, 'tags': tags}
-
-class ActivityFeature2(object):
+class ActivityFeature2(Feature):
+    """
+    Overwrites the super class Feature and adds the geometry property
+    """
 
     def __init__(self, guid, order_value, geometry=None, version=None, diff_info=None, ** kwargs):
         self._taggroups = []
@@ -112,26 +44,6 @@ class ActivityFeature2(object):
         self._geometry = geometry
         self._version = version
         self._diff_info = diff_info
-
-    def add_taggroup(self, taggroup):
-        """
-        Adds a new tag group to the internal tag group list
-        """
-        self._taggroups.append(taggroup)
-
-    def find_taggroup_by_id(self, id):
-        for t in self._taggroups:
-            if t.get_id() == id:
-                return t
-        
-        return None
-
-    def get_taggroups(self):
-        return self._taggroups
-
-    def remove_taggroup(self, taggroup):
-        if taggroup in self.get_taggroups():
-            self.get_taggroups().remove(taggroup)
 
     def to_table(self):
         """
@@ -151,91 +63,20 @@ class ActivityFeature2(object):
         except AttributeError:
             pass
 
-        ret = {'id': self._guid, 'taggroups': tg, 'geometry': geometry}
+        ret = {'id': self._guid, 'taggroups': tg}
+
+        if geometry is not None:
+            ret['geometry'] = geometry
 
         if self._version is not None:
             ret['version'] = self._version
         if self._diff_info is not None:
             for k in self._diff_info:
                 ret[k] = self._diff_info[k]
-        
+
         return ret
 
-    def create_diff(self, previous=None):
-        """
-        Append a diff object. Try to find TagGroups and Tags of current version
-        in previous version.
-        """
-        if previous is not None:
-            # Collect new TagGroups
-            diff_new = []
-            # Loop through TagGroups of current version
-            for tg in self._taggroups:
-                # Indicator (None, False or TagGroup) to check if all Tags were found in the same TagGroup
-                foundinsametaggroup = None
-                # Loop through Tags of current version
-                for t in tg.get_tags():
-                    # Indicator (True or False) to flag if a Tag was found in the previous version
-                    newtag_found = False
-                    # Variable to store the old TagGroup where a Tag was found
-                    foundintaggroup = None
-                    # Try to find the same Tag in previous version by looping through TagGroups of previous version
-                    for tg_old in previous.get_taggroups():
-                        # Only look at old TagGroups that were not yet found
-                        if tg_old.getDiffFlag() is not True:
-                            # Loop through Tags of previous version
-                            for t_old in tg_old.get_tags():
-                                # Compare Key and Value of current and previous Tag
-                                if t.get_key() == t_old.get_key() \
-                                    and t.get_value() == t_old.get_value():
-                                    # Tag is found in previous version, set indicator and store TagGroup
-                                    newtag_found = True
-                                    foundintaggroup = tg_old
-                                    break
-
-                    # Tag was found in old Tags
-                    if newtag_found is True:
-                        # For the first tag of a TagGroup, store the old TagGroup
-                        if foundinsametaggroup is None:
-                            foundinsametaggroup = foundintaggroup
-                        # Check if the found Tag is not in the same TagGroup as the others
-                        elif foundintaggroup != foundinsametaggroup:
-                            foundinsametaggroup = False
-                    # Tag was not found after looping through all old Tags
-                    else:
-                        foundinsametaggroup = False
-                
-                # All Tags were in the same TagGroup
-                if foundinsametaggroup is not False:
-                    if foundinsametaggroup is not None:
-                        # Mark old TagGroup as found
-                        foundinsametaggroup.setDiffFlag(True)
-                # Else, TagGroup is new
-                else:
-                    diff_new.append(tg.to_table())
-            
-            # Collect old TagGroups that are not there anymore
-            diff_old = []
-            for tg_old in previous.get_taggroups():
-                if tg_old.getDiffFlag() is not True:
-                    diff_old.append(tg_old.to_table())
-
-            # Reset all TagGroups to compare with next version
-            for tg in self._taggroups:
-                tg.setDiffFlag(None)
-
-            self._diff_info['diff'] = {'new': diff_new, 'old': diff_old}
-
-    def get_guid(self):
-        return self._guid
-    
-    def get_order_value(self):
-        return self._order_value
-
-    def get_previous_version(self):
-        return self._diff_info['previous_version']
-
-class ActivityProtocol2(object):
+class ActivityProtocol2(Protocol):
 
     def __init__(self, Session):
 
@@ -507,73 +348,6 @@ class ActivityProtocol2(object):
         changeset.activity = activity
         self.Session.add(changeset)
 
-    def _filter(self, request):
-        """
-        Returns
-        - a SubQuery of Tags containing a union of all Key/Value pairs which fulfill
-          the filter condition(s)
-        - a count of the filters
-        """
-
-        def __get_filter_expression(value, op):
-            
-            # Use cast function provided by SQLAlchemy to convert
-            # database values to Float.
-            nbr_map = {
-                'eq': cast(A_Value.value, Float) == value,
-                'ne': cast(A_Value.value, Float) != value,
-                'lt': cast(A_Value.value, Float) < value,
-                'lte': cast(A_Value.value, Float) <= value,
-                'gt': cast(A_Value.value, Float) > value,
-                'gte': cast(A_Value.value, Float) >= value
-            }
-    
-            str_map = {
-                'like': A_Value.value.like(value),
-                'ilike': A_Value.value.ilike(value)
-            }
-            
-            # number comparison
-            if op in nbr_map.keys():
-                # make sure submitted value is a number
-                try:
-                    float(value)
-                    return nbr_map[op]
-                except:
-                    pass
-            
-            elif op in str_map.keys():
-                return str_map[op]
-            
-            return None
-
-        if 'queryable' in request.params:
-            filter_expr = []
-            for k in request.params:
-                # Collect filter expressions
-                if len(request.params[k]) <= 0 or '__' not in k:
-                    continue
-                col, op = k.split('__')
-                # Several values can be queried for one attributes e.g.
-                # project_use equals pending and signed. Build the URL
-                # like: queryable=project_use&project_use__eq=pending,signed
-                values = request.params[k].split(',')
-                for v in values:
-                    q = self.Session.query(A_Tag.id.label('filter_tag_id')).\
-                        join(A_Key).\
-                        join(A_Value).\
-                        filter(A_Key.key == col).\
-                        filter(__get_filter_expression(v, op))
-                    filter_expr.append(q)
-
-            # Do a union of all filter expressions and return it
-            if len(filter_expr) > 0:
-                tag = filter_expr[0].union(*filter_expr[1:])
-                return tag.subquery(), len(filter_expr)
-
-        # Default (no filtering)
-        return self.Session.query(A_Tag.id.label("filter_tag_id")).subquery(), 0
-
     def _query(self, request, limit=None, offset=None, filter=None, uid=None):
         """
         Do the query. Returns
@@ -586,10 +360,10 @@ class ActivityProtocol2(object):
             # Get the status status
             status_filter = self.Session.query(Status.id).filter(Status.name == self._get_status(request))
             # Get the attribute filter
-            tag_filter, filter_length = self._filter(request)
+            tag_filter, filter_length = self._filter(request, A_Tag, A_Key, A_Value)
         
         # Get the order
-        order_query, order_numbers = self._get_order(request)
+        order_query, order_numbers = self._get_order(request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value)
         
         # Find id's of relevant activities by joining with prepared filters.
         # If result is ordered, do an Outer Join to attach ordered attributes.
@@ -655,7 +429,7 @@ class ActivityProtocol2(object):
         localizer = get_localizer(request)
         lang = None if localizer.locale_name == 'en' \
                 else self.Session.query(Language).filter(Language.locale == localizer.locale_name).first()
-        key_translation, value_translation = self._get_translatedKV(lang)
+        key_translation, value_translation = self._get_translatedKV(lang, A_Key, A_Value)
 
         # Collect all attributes (TagGroups) of relevant activities
         relevant_activities = relevant_activities.subquery()
@@ -838,7 +612,7 @@ class ActivityProtocol2(object):
 
     def _create_geom_filter(self, request):
         """
-            """
+        """
 
         try:
             epsg = int(request.params.get('epsg', 4326))
@@ -862,110 +636,6 @@ class ActivityProtocol2(object):
 
         return None
 
-
-    def _get_limit(self, request):
-
-        limit = request.params.get('limit', None)
-        if limit is not None:
-            try:
-                return int(limit)
-            except ValueError:
-                pass
-
-        return None
-
-    def _get_status(self, request):
-        """
-        Returns the requested activity status, default value is active.
-        """
-
-        status = request.params.get('status', None)
-        # Hard coded list of possible activity statii. Not very nice ... But more
-        # performant than requesting the database
-        if status in ["pending", "active", "overwritten", "deleted", "rejected"]:
-            return status
-
-        return "active"
-
-    def _get_offset(self, request):
-        """
-        Returns the requested offset, default value is 0
-        """
-        offset = request.params.get('offset', 0)
-        try:
-            return int(offset)
-        except ValueError:
-            pass
-
-        return 0
-
-    def _get_order(self, request):
-        """
-        Returns 
-        - a SubQuery with an ordered list of Activity IDs and
-          the values by which they will be ordered.
-        - a Boolean indicating order values are numbers or not
-        """
-        order_key = request.params.get('order_by', None)
-        if order_key is not None:
-            # Query to order number values (cast to Float)
-            q_number = self.Session.query(
-                Activity.id,
-                cast(A_Value.value, Float).label('value')).\
-            join(A_Tag_Group).\
-            join(A_Tag, A_Tag.fk_a_tag_group == A_Tag_Group.id).\
-            join(A_Value).\
-            join(A_Key).\
-            filter(A_Key.key.like(order_key))
-            # Query to order string values
-            q_text = self.Session.query(
-                Activity.id,
-                A_Value.value.label('value')).\
-            join(A_Tag_Group).\
-            join(A_Tag, A_Tag.fk_a_tag_group == A_Tag_Group.id).\
-            join(A_Value).\
-            join(A_Key).\
-            filter(A_Key.key.like(order_key))
-            
-            # Try to query numbered values and cast them
-            try:
-                x = q_number.all()
-                return q_number.subquery(), True
-            except:
-                # Rolling back of Session is needed to completely erase error thrown above
-                self.Session.rollback()
-                return q_text.subquery(), False
-
-        return None, None
-
-    def _get_order_direction(self, request):
-        """
-        Return the direction of ordering only if it is set to DESC
-        """
-        if request.params.get('dir', '').upper() == 'DESC':
-            return 'DESC'
-
-    def _get_logical_operator(self, request):
-        """
-        Return the logical operator if set, default is 'and'
-        """
-        return request.params.get("logical_op", "and").lower()
-
-    def _get_translatedKV(self, lang):
-        """
-        Returns
-        - a SubQuery with a list of all translated keys
-        - a SubQuery with a list of all translated values
-        """
-        key_query = self.Session.query(A_Key.fk_a_key.label("key_original_id"),
-                                A_Key.key.label("key_translated")).\
-                    filter(A_Key.language == lang).\
-                    subquery()
-        value_query = self.Session.query(A_Value.fk_a_value.label("value_original_id"),
-                                 A_Value.value.label("value_translated")).\
-                     filter(A_Value.language == lang).\
-                     subquery()
-        return key_query, value_query
 
     def _key_value_is_valid(self, request, key, value):
         # Read the global configuration file
