@@ -132,6 +132,7 @@ def main(global_config, ** settings):
     config.add_route('stakeholders_read_many', '/stakeholders', request_method='GET')
     config.add_route('stakeholders_read_one', '/stakeholders/{uid}', request_method='GET')
     config.add_route('stakeholders_create', '/stakeholders', request_method='POST')
+    config.add_route('stakeholders_history', '/stakeholders/history/{uid}')
 
     # A controller that returns the translation needed in the ExtJS user interface
     config.add_route('ui_translation', '/lang')

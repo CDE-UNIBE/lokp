@@ -15,6 +15,10 @@ from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPCreated
 from pyramid.i18n import get_localizer
 from sqlalchemy import func
+from sqlalchemy.sql.expression import cast
+from sqlalchemy.sql.expression import asc
+from sqlalchemy.sql.expression import desc
+from sqlalchemy.types import Float
 import uuid
 
 log = logging.getLogger(__name__)
@@ -287,7 +291,7 @@ class StakeholderProtocol(Protocol):
             tag_filter, filter_length = self._filter(request, SH_Tag, SH_Key, SH_Value)
         
         # Get the order
-        order_query, order_numbers = self._get_order(request)
+        order_query, order_numbers = self._get_order(request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value)
 
         # Find id's of relevant stakeholders by joining with prepared filters.
         # If result is ordered, do an Outer Join to attach ordered attributes.
@@ -353,7 +357,7 @@ class StakeholderProtocol(Protocol):
         localizer = get_localizer(request)
         lang = None if localizer.locale_name == 'en' \
             else self.Session.query(Language).filter(Language.locale == localizer.locale_name).first()
-        key_translation, value_translation = self._get_translatedKV(lang)
+        key_translation, value_translation = self._get_translatedKV(lang, SH_Key, SH_Value)
 
         # Collect all attributes (TagGroups) of relevant stakeholders
         relevant_stakeholders = relevant_stakeholders.subquery()
@@ -362,7 +366,7 @@ class StakeholderProtocol(Protocol):
                                    Stakeholder.timestamp.label("timestamp"),
                                    Stakeholder.version.label("version"),
                                    SH_Tag_Group.id.label("taggroup"),
-                                   SH_Tag_Group.fk_sh_tag.label("main_tag"),
+                                   SH_Tag_Group.fk_tag.label("main_tag"),
                                    SH_Tag.id.label("tag"),
                                    SH_Key.key.label("key"),
                                    SH_Value.value.label("value"), \
@@ -389,19 +393,19 @@ class StakeholderProtocol(Protocol):
         stakeholders = []
         for i in query.all():
 
-            # The activity identifier
-            uid = str(i[1])
+            # The stakeholder identifier
+            uid = str(i.stakeholder_identifier)
 
             # The version
-            version = i[3]
+            version = i.version
 
             # The current tag group id (not global unique)
-            taggroup_id = int(i[4])
+            taggroup_id = int(i.taggroup)
 
-            key = i[10] if i[10] is not None else i[7]
-            value = i[11] if i[11] is not None else i[8]
+            key = i.key_translated if i.key_translated is not None else i.key
+            value = i.value_translated if i.value_translated is not None else i.value
 
-            order_value = i[9]
+            order_value = i.order_value
 
             stakeholder = None
             for sh in stakeholders:
@@ -415,86 +419,121 @@ class StakeholderProtocol(Protocol):
                     else:
                         stakeholder = sh
 
-            # If no existing StakeholderFeature found, create new one
+            # If no existing feature found, create new one
             if stakeholder == None:
-                stakeholder = StakeholderFeature(uid, order_value, version=version)
+                stakeholder = Feature(uid, order_value, version=version)
                 stakeholders.append(stakeholder)
 
             # Check if there is already this tag group present in the current
-            # activity
+            # stakeholder
             taggroup = None
             if stakeholder.find_taggroup_by_id(taggroup_id) is not None:
                 taggroup = stakeholder.find_taggroup_by_id(taggroup_id)
             else:
-                taggroup = TagGroup(taggroup_id, i[5])
+                taggroup = TagGroup(taggroup_id, i.taggroup)
                 stakeholder.add_taggroup(taggroup)
 
-            taggroup.add_tag(Tag(i[6], key, value))
+            taggroup.add_tag(Tag(i.tag, key, value))
 
         return stakeholders, count
 
-    def _get_order(self, request):
-        """
-        Returns
-        - a SubQuery with an ordered list of Activity IDs and
-          the values by which they will be ordered.
-        - a Boolean indicating order values are numbers or not
-        """
-        order_key = request.params.get('order_by', None)
-        if order_key is not None:
-            # Query to order number values (cast to Float)
-            q_number = self.Session.query(
-                Stakeholder.id,
-                cast(SH_Value.value, Float).label('value')).\
-            join(SH_Tag_Group).\
-            join(SH_Tag, SH_Tag.fk_sh_tag_group == SH_Tag_Group.id).\
-            join(SH_Value).\
-            join(SH_Key).\
-            filter(SH_Key.key.like(order_key))
-            # Query to order string values
-            q_text = self.Session.query(
-                Stakeholder.id,
-                SH_Value.value.label('value')).\
-            join(SH_Tag_Group).\
-            join(SH_Tag, SH_Tag.fk_sh_tag_group == SH_Tag_Group.id).\
-            join(SH_Value).\
-            join(SH_Key).\
-            filter(SH_Key.key.like(order_key))
 
-            # Try to query numbered values and cast them
-            try:
-                x = q_number.all()
-                return q_number.subquery(), True
-            except:
-                # Rolling back of Session is needed to completely erase error thrown above
-                self.Session.rollback()
-                return q_text.subquery(), False
+    def history(self, request, uid, status_list=None):
 
-        return None, None
+        # Query the database
+        stakeholders, count = self._history(request, uid, status_list)
 
-    def _get_translatedKV(self, lang):
-        """
-        Returns
-        - a SubQuery with a list of all translated keys
-        - a SubQuery with a list of all translated values
-        """
-        key_query = self.Session.query(SH_Key.fk_sh_key.label("key_original_id"),
-                                SH_Key.key.label("key_translated")).\
-                    filter(SH_Key.language == lang).\
-                    subquery()
-        value_query = self.Session.query(SH_Value.fk_sh_value.label("value_original_id"),
-                                 SH_Value.value.label("value_translated")).\
-                     filter(SH_Value.language == lang).\
-                     subquery()
-        return key_query, value_query
+        return {'total': count, 'data': [sh.to_table() for sh in stakeholders]}
 
+    def _history(self, request, uid, status_list=None):
 
-class StakeholderFeature(Feature):
+        if status_list is None:
+            status_list = ['active', 'overwritten', 'deleted']
 
-    def __init__(self, guid, order_value, version=None, diff_info=None, ** kwargs):
-        self._taggroups = []
-        self._guid = guid
-        self._order_value = order_value
-        self._version = version
-        self._diff_info = diff_info
-        
+        status_filter = self.Session.query(Status).\
+                            filter(Status.name.in_(status_list)).\
+                            subquery()
+
+        query = self.Session.query(Stakeholder.id.label("id"),
+                         Stakeholder.stakeholder_identifier.label("stakeholder_identifier"),
+                         Stakeholder.timestamp.label("timestamp"),
+                         Stakeholder.version.label("version"),
+                         SH_Tag_Group.id.label("taggroup"),
+                         SH_Tag_Group.fk_tag.label("main_tag"),
+                         SH_Tag.id.label("tag"),
+                         SH_Key.key.label("key"),
+                         SH_Value.value.label("value"),
+                         SH_Changeset.previous_version.label("previous_version"),
+                         SH_Changeset.source.label("source"),
+                         User.id.label("userid"),
+                         User.username.label("username"),
+                         status_filter.c.name.label("status")).\
+                join(status_filter).\
+                join(SH_Changeset).\
+                join(User).\
+                join(SH_Tag_Group).\
+                join(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_tag_group).\
+                join(SH_Key).\
+                join(SH_Value).\
+                filter(Stakeholder.stakeholder_identifier == uid).\
+                order_by(Stakeholder.version)
+
+        # Collect the data from query
+        data = []
+        for i in query.all():
+
+            # The stakeholder identifier
+            uid = str(i.stakeholder_identifier)
+
+            # The current tag group id (not global unique)
+            taggroup_id = int(i.taggroup)
+
+            key = i.key
+            value = i.value
+
+            # use version as order value
+            order_value = i.version
+
+            diff_info = {
+                 'status': i.status,
+                 'previous_version': i.previous_version,
+                 'userid': i.userid,
+                 'username': i.username,
+                 'source': i.source
+             }
+
+            stakeholder = None
+            for a in data:
+                # Use order_value (version) to find existing Feature or create new one
+                if a.get_order_value() == order_value:
+                    stakeholder = a
+
+            # If no existing ActivityFeature found, create new one
+            if stakeholder == None:
+                stakeholder = Feature(uid, order_value, diff_info=diff_info)
+                data.append(stakeholder)
+
+            # Check if there is already this tag group present in the current
+            # stakeholder
+            taggroup = None
+            if stakeholder.find_taggroup_by_id(taggroup_id) is not None:
+                taggroup = stakeholder.find_taggroup_by_id(taggroup_id)
+            else:
+                taggroup = TagGroup(taggroup_id, i[6])
+                stakeholder.add_taggroup(taggroup)
+
+            taggroup.add_tag(Tag(i[7], key, value))
+
+        # Loop again through all versions to create diff
+        for a in data:
+            # If version has no previous version, create empty diff
+            if a.get_previous_version() is None:
+                a.create_diff()
+            # Else look for previous version
+            else:
+                for ov in data:
+                    if ov.get_order_value() == a.get_previous_version():
+                        a.create_diff(ov)
+                        break
+
+        return data, len(data)
