@@ -24,6 +24,6 @@ def view_toolbar_config(request):
     str += "{xtype: 'textfield', id: 'password', emptyText: '%s', inputType: 'password'}," % _('Password', default='Password')
     str += "{id:'login_submit', text: '%s'}];\n" % _('Login', default='Login')
 
-    str += "Lmkp.mainControllers = ['Main', 'Layers', 'Map', 'Filter'];\n"
+    str += "Lmkp.mainControllers = ['Main', 'Layers', 'Map', 'Filter', 'Stakeholder'];\n"
 
     return str
