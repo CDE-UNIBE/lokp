@@ -357,7 +357,7 @@ def yaml_add_db(request):
         # No localized configuration file found!
         pass
    
-    return _add_to_db(global_config, A_Key, A_Key.fk_a_key, A_Value, A_Value.fk_a_value)
+    return _add_to_db(global_config, A_Key, A_Value)
 
 @view_config(route_name='yaml_add_stakeholders_db', renderer='lmkp:templates/sample_values.pt', permission='administer')
 def yaml_add_stakeholders_db(request):
@@ -366,9 +366,9 @@ def yaml_add_stakeholders_db(request):
     global_stream = open(stakeholder_config_file_path(request), 'r')
     global_config = yaml.load(global_stream)
 
-    return _add_to_db(global_config, SH_Key, SH_Key.fk_sh_key, SH_Value, SH_Value.fk_sh_value)
+    return _add_to_db(global_config, SH_Key, SH_Value)
 
-def _add_to_db(config, Key, fk_key, Value, fk_value):
+def _add_to_db(config, Key, Value):
 
     stack = []
     stack.append('Scan results:')
@@ -385,12 +385,12 @@ def _add_to_db(config, Key, fk_key, Value, fk_value):
 
     # get keys already in database. their fk_sh_key must be None (= original)
     db_keys = []
-    for db_key in Session.query(Key.key).filter(fk_key == None).all():
+    for db_key in Session.query(Key.key).filter(Key.fk_key == None).all():
         db_keys.append(db_key.key)
 
     # get values already in database. their fk_sh_value must be None (= original)
     db_values = []
-    for db_value in Session.query(Value.value).filter(fk_value == None).all():
+    for db_value in Session.query(Value.value).filter(Value.fk_value == None).all():
         db_values.append(db_value.value)
 
     config_items = config["application"]["fields"]["mandatory"].items() + config["application"]["fields"]["optional"].items()

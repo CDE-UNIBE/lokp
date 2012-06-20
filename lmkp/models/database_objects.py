@@ -4,6 +4,7 @@ from lmkp.models.meta import (
 )
 
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import column_property
 import datetime
 
 # registering of uuid needed, done in meta.py
@@ -70,6 +71,8 @@ class A_Key(Base):
     fk_a_key = Column(Integer)
     fk_language = Column(Integer)
     key = Column(String(255), nullable = False)
+
+    fk_key = column_property(fk_a_key)
     
     translations = relationship('A_Key', backref = backref('original', remote_side = [id]))
     tags = relationship('A_Tag', backref = 'key')
@@ -91,6 +94,8 @@ class SH_Key(Base):
     fk_sh_key = Column(Integer)
     fk_language = Column(Integer)
     key = Column(String(255), nullable = False)
+
+    fk_key = column_property(fk_sh_key)
     
     translations = relationship('SH_Key', backref = backref('original', remote_side = [id]))
     tags = relationship('SH_Tag', backref = 'key')
@@ -113,6 +118,8 @@ class A_Value(Base):
     fk_language = Column(Integer, nullable = False)
     value = Column(Text)
     geometry = GeometryColumn('geometry', Geometry(dimension = 2, srid = 4326, spatial_index = True))
+
+    fk_value = column_property(fk_a_value)
     
     translations = relationship('A_Value', backref = backref('original', remote_side = [id]))
     tags = relationship('A_Tag', backref = 'value')
@@ -149,6 +156,8 @@ class SH_Value(Base):
     fk_sh_value = Column(Integer)
     fk_language = Column(Integer)
     value = Column(Text, nullable = False)
+
+    fk_value = column_property(fk_sh_value)
     
     translations = relationship('SH_Value', backref = backref('original', remote_side = [id]))
     tags = relationship('SH_Tag', backref = 'value')
@@ -172,6 +181,10 @@ class A_Tag(Base):
     fk_a_key = Column(Integer, nullable = False)
     fk_a_value = Column(Integer, nullable = False)
 
+    fk_tag_group = column_property(fk_a_tag_group)
+    fk_key = column_property(fk_a_key)
+    fk_value = column_property(fk_a_value)
+
     def __init__(self):
         pass
 
@@ -191,6 +204,10 @@ class SH_Tag(Base):
     fk_sh_key = Column(Integer, nullable = False)
     fk_sh_value = Column(Integer, nullable = False)
 
+    fk_tag_group = column_property(fk_sh_tag_group)
+    fk_key = column_property(fk_sh_key)
+    fk_value = column_property(fk_sh_value)
+
     def __init__(self):
         pass
 
@@ -207,6 +224,8 @@ class A_Tag_Group(Base):
     id = Column(Integer, primary_key = True)
     fk_activity = Column(Integer, nullable = False)
     fk_a_tag = Column(Integer, nullable = True)
+
+    fk_tag = column_property(fk_a_tag)
 
     tags = relationship("A_Tag", backref = backref('tag_group', order_by = id), primaryjoin = id==A_Tag.fk_a_tag_group)
     main_tag = relationship("A_Tag", primaryjoin = fk_a_tag==A_Tag.id, post_update = True)
@@ -231,9 +250,11 @@ class SH_Tag_Group(Base):
     tags = relationship("SH_Tag", backref = backref('tag_group', order_by = id), primaryjoin = id==SH_Tag.fk_sh_tag_group)
     main_tag = relationship("SH_Tag", primaryjoin = fk_sh_tag==SH_Tag.id, post_update = True)
 
+    fk_tag = column_property(fk_sh_tag)
+
     def __init__(self):
         pass
-    
+
     def __repr__(self):
         return '<SH_Tag_Group> id [ %s ] | fk_stakeholder [ %s ] | fk_sh_tag [ %s ]' % (self.id, self.fk_stakeholder, self.fk_sh_tag)
 

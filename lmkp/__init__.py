@@ -129,7 +129,10 @@ def main(global_config, ** settings):
     # Return the history of an activity
     config.add_route('activities_history', '/activities/history/{uid}')
 
+    config.add_route('stakeholders_read_many', '/stakeholders', request_method='GET')
+    config.add_route('stakeholders_read_one', '/stakeholders/{uid}', request_method='GET')
     config.add_route('stakeholders_create', '/stakeholders', request_method='POST')
+    config.add_route('stakeholders_history', '/stakeholders/history/{uid}')
 
     # A controller that returns the translation needed in the ExtJS user interface
     config.add_route('ui_translation', '/lang')
@@ -159,10 +162,6 @@ def main(global_config, ** settings):
 
     # Evaluation
     config.add_route('evaluation_json', '/evaluation/{temp}')
-
-    # Test
-    config.add_route('geojson_test', '/geojson')
-    
 
     # Yet another test
     config.add_route('timestamp_test', '/timestamp')
