@@ -5,13 +5,15 @@ Ext.define('Lmkp.controller.Main', {
         'Header',
         'Main',
         'Filter',
+        'Stakeholder',
         'MapPanel'
     ],
     
     stores: [
     	'Languages',
     	'Profiles',
-    	'ActivityGrid'
+    	'ActivityGrid',
+        'StakeholderGrid'
     ],
     
     // needed because ext-debug.js does not contain Ext.util.Cookies

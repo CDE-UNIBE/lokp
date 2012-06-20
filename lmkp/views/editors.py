@@ -27,7 +27,7 @@ def edit_toolbar_config(request):
     str += "{id: 'user_button', text: '%s', tooltip: '%s'},'-'," % (request.user.username, _('Show user profile', default='Show user profile'))
     str += "{id: 'logout_button', text: '%s'}];\n" % _('Logout', default='Logout')
 
-    str += "Lmkp.mainControllers = ['Main', 'Map', 'Filter', 'EditFilter'];\n"
+    str += "Lmkp.mainControllers = ['Main', 'Map', 'Filter', 'Stakeholder','EditFilter'];\n"
 
     return str
 
