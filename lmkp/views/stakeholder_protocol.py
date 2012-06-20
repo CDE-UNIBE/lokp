@@ -6,14 +6,20 @@ from lmkp.models.database_objects import SH_Value
 from lmkp.models.database_objects import Stakeholder
 from lmkp.models.database_objects import Status
 from lmkp.models.database_objects import User
+from lmkp.views.protocol import Feature
+from lmkp.views.protocol import Protocol
+from lmkp.views.protocol import Tag
+from lmkp.views.protocol import TagGroup
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPCreated
+from pyramid.i18n import get_localizer
+from sqlalchemy import func
 import uuid
 
 log = logging.getLogger(__name__)
 
-class StakeholderProtocol(object):
+class StakeholderProtocol(Protocol):
 
     def __init__(self, Session):
         self.Session = Session
@@ -67,7 +73,7 @@ class StakeholderProtocol(object):
             first()
 
         new_stakeholder = Stakeholder(stakeholder_identifier=db_sh.stakeholder_identifier,
-                                version=(latest_version.version + 1))
+                                      version=(latest_version.version + 1))
         new_stakeholder.tag_groups = []
         # Set the stakeholder status to pending
         new_stakeholder.status = self.Session.query(Status).filter(Status.name == status).first()
@@ -258,3 +264,237 @@ class StakeholderProtocol(object):
 
     def _key_value_is_valid(self, request, key, value):
         return True
+
+    def read(self, request, filter=None, uid=None):
+
+        # Query the database
+        stakeholders, count = self._query(request, limit=self._get_limit(request), offset=self._get_offset(request), filter=filter, uid=uid)
+
+        return {'total': count, 'data': [sh.to_table() for sh in stakeholders]}
+
+    def _query(self, request, limit=None, offset=None, filter=None, uid=None):
+        """
+        Do the query. Returns
+        - a list of (filtered) Activities
+        - an Integer with the count of Activities
+        """
+
+        # If no custom filter was provided, get filters from request
+        if filter is None:
+            # Get the status status
+            status_filter = self.Session.query(Status.id).filter(Status.name == self._get_status(request))
+            # Get the attribute filter
+            tag_filter, filter_length = self._filter(request, SH_Tag, SH_Key, SH_Value)
+        
+        # Get the order
+        order_query, order_numbers = self._get_order(request)
+
+        # Find id's of relevant stakeholders by joining with prepared filters.
+        # If result is ordered, do an Outer Join to attach ordered attributes.
+        # 'order_value' contains the values to order by.
+        if order_query is not None:
+            relevant_stakeholders = self.Session.query(
+                                                     Stakeholder.id.label('order_id'),
+                                                     order_query.c.value.label('order_value')
+                                                     ).\
+            join(SH_Tag_Group).\
+            join(tag_filter, tag_filter.c.filter_tag_id == SH_Tag_Group.id).\
+            outerjoin(order_query).\
+            group_by(Stakeholder.id, order_query.c.value)
+            # order the list (needed to correctly apply limit and offset below)
+            if self._get_order_direction(request) == 'DESC':
+                if order_numbers:
+                    relevant_stakeholders = relevant_stakeholders.order_by(desc(cast(order_query.c.value, Float)))
+                else:
+                    relevant_stakeholders = relevant_stakeholders.order_by(desc(order_query.c.value))
+            else:
+                if order_numbers:
+                    relevant_stakeholders = relevant_stakeholders.order_by(asc(cast(order_query.c.value, Float)))
+                else:
+                    relevant_stakeholders = relevant_stakeholders.order_by(asc(order_query.c.value))
+        # If result is not ordered, only join with prepared filters is necessary.
+        else:
+            relevant_stakeholders = self.Session.query(
+                                                     Stakeholder.id.label('order_id'),
+                                                     func.char_length('').label('order_value') # dummy value
+                                                     ).\
+            join(SH_Tag_Group).\
+            join(tag_filter, tag_filter.c.filter_tag_id == SH_Tag_Group.id).\
+            group_by(Stakeholder.id)
+
+        # Apply status filter
+        if status_filter:
+            relevant_stakeholders = relevant_stakeholders.filter(Stakeholder.fk_status == status_filter)
+
+        # Apply custom filter if one was provided
+        if filter:
+            relevant_stakeholders = relevant_stakeholders.filter(filter)
+
+        # Apply logical operator
+        if self._get_logical_operator(request) == 'or' or filter_length == 0:
+            pass
+        else:
+            # 'AND': all filtered values must be available
+            relevant_stakeholders = relevant_stakeholders.having(func.count() >= filter_length)
+
+        # Special case: UID was provided, create new 'relevant_stakeholders'
+        if uid is not None:
+            relevant_stakeholders = self.Session.query(Stakeholder.id.label('order_id'),
+                                                     func.char_length('').label('order_value')).\
+                filter(Stakeholder.stakeholder_identifier == uid)
+
+        # Count relevant stakeholders (before applying limit and offset)
+        count = relevant_stakeholders.count()
+
+        # Apply limit and offset
+        relevant_stakeholders = relevant_stakeholders.limit(limit).offset(offset)
+
+        # Prepare query to translate keys and values
+        localizer = get_localizer(request)
+        lang = None if localizer.locale_name == 'en' \
+            else self.Session.query(Language).filter(Language.locale == localizer.locale_name).first()
+        key_translation, value_translation = self._get_translatedKV(lang)
+
+        # Collect all attributes (TagGroups) of relevant stakeholders
+        relevant_stakeholders = relevant_stakeholders.subquery()
+        query = self.Session.query(Stakeholder.id.label("id"),
+                                   Stakeholder.stakeholder_identifier.label("stakeholder_identifier"),
+                                   Stakeholder.timestamp.label("timestamp"),
+                                   Stakeholder.version.label("version"),
+                                   SH_Tag_Group.id.label("taggroup"),
+                                   SH_Tag_Group.fk_sh_tag.label("main_tag"),
+                                   SH_Tag.id.label("tag"),
+                                   SH_Key.key.label("key"),
+                                   SH_Value.value.label("value"), \
+                                   relevant_stakeholders.c.order_value.label("order_value"),
+                                   key_translation.c.key_translated.label("key_translated"),
+                                   value_translation.c.value_translated.label("value_translated")).\
+            join(relevant_stakeholders, relevant_stakeholders.c.order_id == Stakeholder.id).\
+            join(SH_Tag_Group).\
+            join(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_sh_tag_group).\
+            join(SH_Key).\
+            join(SH_Value).\
+            outerjoin(key_translation, key_translation.c.key_original_id == SH_Key.id).\
+            outerjoin(value_translation, value_translation.c.value_original_id == SH_Value.id)
+
+
+        # Do the ordering again
+        if order_query is not None:
+            if self._get_order_direction(request) == 'DESC':
+                query = query.order_by(desc(relevant_stakeholders.c.order_value))
+            else:
+                query = query.order_by(asc(relevant_stakeholders.c.order_value))
+
+        # Put the stakeholders together
+        stakeholders = []
+        for i in query.all():
+
+            # The activity identifier
+            uid = str(i[1])
+
+            # The version
+            version = i[3]
+
+            # The current tag group id (not global unique)
+            taggroup_id = int(i[4])
+
+            key = i[10] if i[10] is not None else i[7]
+            value = i[11] if i[11] is not None else i[8]
+
+            order_value = i[9]
+
+            stakeholder = None
+            for sh in stakeholders:
+                # Use UID to find existing StakeholderFeature or create new one
+                if sh.get_guid() == uid:
+                    # If list is ordered (order_value != int), use order_value as well
+                    # to find existing StakeholderFeature or create new one
+                    if not isinstance(order_value, int):
+                        if sh.get_order_value() == order_value:
+                            stakeholder = sh
+                    else:
+                        stakeholder = sh
+
+            # If no existing StakeholderFeature found, create new one
+            if stakeholder == None:
+                stakeholder = StakeholderFeature(uid, order_value, version=version)
+                stakeholders.append(stakeholder)
+
+            # Check if there is already this tag group present in the current
+            # activity
+            taggroup = None
+            if stakeholder.find_taggroup_by_id(taggroup_id) is not None:
+                taggroup = stakeholder.find_taggroup_by_id(taggroup_id)
+            else:
+                taggroup = TagGroup(taggroup_id, i[5])
+                stakeholder.add_taggroup(taggroup)
+
+            taggroup.add_tag(Tag(i[6], key, value))
+
+        return stakeholders, count
+
+    def _get_order(self, request):
+        """
+        Returns
+        - a SubQuery with an ordered list of Activity IDs and
+          the values by which they will be ordered.
+        - a Boolean indicating order values are numbers or not
+        """
+        order_key = request.params.get('order_by', None)
+        if order_key is not None:
+            # Query to order number values (cast to Float)
+            q_number = self.Session.query(
+                Stakeholder.id,
+                cast(SH_Value.value, Float).label('value')).\
+            join(SH_Tag_Group).\
+            join(SH_Tag, SH_Tag.fk_sh_tag_group == SH_Tag_Group.id).\
+            join(SH_Value).\
+            join(SH_Key).\
+            filter(SH_Key.key.like(order_key))
+            # Query to order string values
+            q_text = self.Session.query(
+                Stakeholder.id,
+                SH_Value.value.label('value')).\
+            join(SH_Tag_Group).\
+            join(SH_Tag, SH_Tag.fk_sh_tag_group == SH_Tag_Group.id).\
+            join(SH_Value).\
+            join(SH_Key).\
+            filter(SH_Key.key.like(order_key))
+
+            # Try to query numbered values and cast them
+            try:
+                x = q_number.all()
+                return q_number.subquery(), True
+            except:
+                # Rolling back of Session is needed to completely erase error thrown above
+                self.Session.rollback()
+                return q_text.subquery(), False
+
+        return None, None
+
+    def _get_translatedKV(self, lang):
+        """
+        Returns
+        - a SubQuery with a list of all translated keys
+        - a SubQuery with a list of all translated values
+        """
+        key_query = self.Session.query(SH_Key.fk_sh_key.label("key_original_id"),
+                                SH_Key.key.label("key_translated")).\
+                    filter(SH_Key.language == lang).\
+                    subquery()
+        value_query = self.Session.query(SH_Value.fk_sh_value.label("value_original_id"),
+                                 SH_Value.value.label("value_translated")).\
+                     filter(SH_Value.language == lang).\
+                     subquery()
+        return key_query, value_query
+
+
+class StakeholderFeature(Feature):
+
+    def __init__(self, guid, order_value, version=None, diff_info=None, ** kwargs):
+        self._taggroups = []
+        self._guid = guid
+        self._order_value = order_value
+        self._version = version
+        self._diff_info = diff_info
+        

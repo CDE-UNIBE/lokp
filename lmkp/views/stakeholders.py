@@ -1,8 +1,8 @@
-from pyramid.i18n import TranslationStringFactory
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.stakeholder_protocol import StakeholderProtocol
 import logging
 from pyramid.httpexceptions import HTTPForbidden
+from pyramid.i18n import TranslationStringFactory
 from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
 from pyramid.security import effective_principals
@@ -36,3 +36,19 @@ def create(request):
         return HTTPForbidden()
 
     return stakeholder_protocol.create(request)
+
+@view_config(route_name='stakeholders_read_one', renderer='json')
+def read_one(request):
+    """
+    Returns the feature with the requested id
+    """
+    uid = request.matchdict.get('uid', None)
+    return stakeholder_protocol.read(request, uid=uid)
+
+
+@view_config(route_name='stakeholders_read_many', renderer='json')
+def read_many(request):
+    """
+    Reads many active activities
+    """
+    return stakeholder_protocol.read(request)
