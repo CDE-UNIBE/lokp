@@ -11,24 +11,25 @@ from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPCreated
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPNotFound
+from pyramid.i18n import get_localizer
 from shapely.geometry import asShape
 from shapely.geometry.polygon import Polygon
 import simplejson as json
 from sqlalchemy import alias
-from sqlalchemy import join
-from sqlalchemy import select
 from sqlalchemy import distinct
 from sqlalchemy import func
+from sqlalchemy import join
+from sqlalchemy import select
 from sqlalchemy.orm.util import AliasedClass
+from sqlalchemy.orm.util import class_mapper
 from sqlalchemy.sql.expression import and_
-from sqlalchemy.sql.expression import desc
 from sqlalchemy.sql.expression import asc
-from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.expression import cast
+from sqlalchemy.sql.expression import desc
+from sqlalchemy.sql.expression import or_
 from sqlalchemy.types import Float
 import uuid
 import yaml
-from pyramid.i18n import get_localizer
 
 log = logging.getLogger(__name__)
 
@@ -370,9 +371,9 @@ class ActivityProtocol2(Protocol):
         # 'order_value' contains the values to order by.
         if order_query is not None:
             relevant_activities = self.Session.query(
-                Activity.id.label('order_id'),
-                order_query.c.value.label('order_value')
-            ).\
+                                                     Activity.id.label('order_id'),
+                                                     order_query.c.value.label('order_value')
+                                                     ).\
             join(A_Tag_Group).\
             join(tag_filter, tag_filter.c.filter_tag_id == A_Tag_Group.id).\
             outerjoin(order_query).\
@@ -391,9 +392,9 @@ class ActivityProtocol2(Protocol):
         # If result is not ordered, only join with prepared filters is necessary.
         else:
             relevant_activities = self.Session.query(
-                Activity.id.label('order_id'),
-                func.char_length('').label('order_value') # dummy value
-            ).\
+                                                     Activity.id.label('order_id'),
+                                                     func.char_length('').label('order_value') # dummy value
+                                                     ).\
             join(A_Tag_Group).\
             join(tag_filter, tag_filter.c.filter_tag_id == A_Tag_Group.id).\
             group_by(Activity.id)
@@ -405,6 +406,10 @@ class ActivityProtocol2(Protocol):
         # Apply custom filter if one was provided
         if filter:
             relevant_activities = relevant_activities.filter(filter)
+
+        # Apply the geographical bounding box filter
+        if self._create_geom_filter(request) is not None:
+            relevant_activities = relevant_activities.filter(self._create_geom_filter(request))
         
         # Apply logical operator
         if self._get_logical_operator(request) == 'or' or filter_length == 0:
@@ -417,7 +422,7 @@ class ActivityProtocol2(Protocol):
         if uid is not None:
             relevant_activities = self.Session.query(Activity.id.label('order_id'),
                                                      func.char_length('').label('order_value')).\
-                                                     filter(Activity.activity_identifier == uid)
+                filter(Activity.activity_identifier == uid)
 
         # Count relevant activities (before applying limit and offset)
         count = relevant_activities.count()
@@ -428,24 +433,24 @@ class ActivityProtocol2(Protocol):
         # Prepare query to translate keys and values
         localizer = get_localizer(request)
         lang = None if localizer.locale_name == 'en' \
-                else self.Session.query(Language).filter(Language.locale == localizer.locale_name).first()
+            else self.Session.query(Language).filter(Language.locale == localizer.locale_name).first()
         key_translation, value_translation = self._get_translatedKV(lang, A_Key, A_Value)
 
         # Collect all attributes (TagGroups) of relevant activities
         relevant_activities = relevant_activities.subquery()
         query = self.Session.query(Activity.id.label("id"),
-                         Activity.activity_identifier.label("activity_identifier"),
-                         Activity.point.label("geometry"),
-                         Activity.timestamp.label("timestamp"),
-                         Activity.version.label("version"),
-                         A_Tag_Group.id.label("taggroup"),
-                         A_Tag_Group.fk_a_tag.label("main_tag"),
-                         A_Tag.id.label("tag"),
-                         A_Key.key.label("key"),
-                         A_Value.value.label("value"), \
-                         relevant_activities.c.order_value.label("order_value"),
-                         key_translation.c.key_translated.label("key_translated"),
-                         value_translation.c.value_translated.label("value_translated")).\
+                                   Activity.activity_identifier.label("activity_identifier"),
+                                   Activity.point.label("geometry"),
+                                   Activity.timestamp.label("timestamp"),
+                                   Activity.version.label("version"),
+                                   A_Tag_Group.id.label("taggroup"),
+                                   A_Tag_Group.fk_a_tag.label("main_tag"),
+                                   A_Tag.id.label("tag"),
+                                   A_Key.key.label("key"),
+                                   A_Value.value.label("value"), \
+                                   relevant_activities.c.order_value.label("order_value"),
+                                   key_translation.c.key_translated.label("key_translated"),
+                                   value_translation.c.value_translated.label("value_translated")).\
             join(relevant_activities, relevant_activities.c.order_id == Activity.id).\
             join(A_Tag_Group).\
             join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
@@ -519,33 +524,33 @@ class ActivityProtocol2(Protocol):
             status_list = ['active', 'overwritten', 'deleted']
         
         status_filter = self.Session.query(Status).\
-                            filter(Status.name.in_(status_list)).\
-                            subquery()
+            filter(Status.name.in_(status_list)).\
+            subquery()
 
         query = self.Session.query(Activity.id.label("id"),
-                         Activity.activity_identifier.label("activity_identifier"),
-                         Activity.point.label("geometry"),
-                         Activity.timestamp.label("timestamp"),
-                         Activity.version.label("version"),
-                         A_Tag_Group.id.label("taggroup"),
-                         A_Tag_Group.fk_a_tag.label("main_tag"),
-                         A_Tag.id.label("tag"),
-                         A_Key.key.label("key"),
-                         A_Value.value.label("value"),
-                         A_Changeset.previous_version.label("previous_version"),
-                         A_Changeset.source.label("source"),
-                         User.id.label("userid"),
-                         User.username.label("username"),
-                         status_filter.c.name.label("status")).\
-                join(status_filter).\
-                join(A_Changeset).\
-                join(User).\
-                join(A_Tag_Group).\
-                join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
-                join(A_Key).\
-                join(A_Value).\
-                filter(Activity.activity_identifier == uid).\
-                order_by(Activity.version)
+                                   Activity.activity_identifier.label("activity_identifier"),
+                                   Activity.point.label("geometry"),
+                                   Activity.timestamp.label("timestamp"),
+                                   Activity.version.label("version"),
+                                   A_Tag_Group.id.label("taggroup"),
+                                   A_Tag_Group.fk_a_tag.label("main_tag"),
+                                   A_Tag.id.label("tag"),
+                                   A_Key.key.label("key"),
+                                   A_Value.value.label("value"),
+                                   A_Changeset.previous_version.label("previous_version"),
+                                   A_Changeset.source.label("source"),
+                                   User.id.label("userid"),
+                                   User.username.label("username"),
+                                   status_filter.c.name.label("status")).\
+            join(status_filter).\
+            join(A_Changeset).\
+            join(User).\
+            join(A_Tag_Group).\
+            join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
+            join(A_Key).\
+            join(A_Value).\
+            filter(Activity.activity_identifier == uid).\
+            order_by(Activity.version)
         
         # Collect the data from query
         data = []
@@ -567,12 +572,12 @@ class ActivityProtocol2(Protocol):
             order_value = i.version
             
             diff_info = {
-                 'status': i.status,
-                 'previous_version': i.previous_version,
-                 'userid': i.userid,
-                 'username': i.username,
-                 'source': i.source
-             }
+                'status': i.status,
+                'previous_version': i.previous_version,
+                'userid': i.userid,
+                'username': i.username,
+                'source': i.source
+            }
             
             activity = None
             for a in data:
@@ -612,13 +617,18 @@ class ActivityProtocol2(Protocol):
 
     def _create_geom_filter(self, request):
         """
+        Create a geometry filter and return the subquery
         """
 
+        # Get the EPSG code from the input geometry
+        epsg = functions.srid(Activity.point)
         try:
             epsg = int(request.params.get('epsg', 4326))
-        except:
-            epsg = 4326
+        except ValueError:
+            pass
 
+        # Get the bbox parameter, this is currently the only supported geometry
+        # input
         bbox = request.params.get('bbox', None)
         if bbox is not None:
             box = map(float, bbox.split(','))
@@ -630,9 +640,14 @@ class ActivityProtocol2(Protocol):
                                (box[0], box[1]))
                                )
 
+            # Create the intersection geometry
             wkb_geometry = WKBSpatialElement(buffer(geometry.wkb), epsg)
 
-            return functions.intersects(Activity.point, wkb_geometry)
+            # Get the SRID used in the Activity class
+            activity_srid = functions.srid(Activity.point)
+
+            # Return a subquery
+            return functions.intersects(Activity.point, functions.transform(wkb_geometry, activity_srid))
 
         return None
 
