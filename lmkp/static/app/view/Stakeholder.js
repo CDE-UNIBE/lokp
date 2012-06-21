@@ -10,6 +10,12 @@ Ext.define('Lmkp.view.Stakeholder',{
             dataIndex: Lmkp.ts.msg("stakeholder-name"),
             flex: 1,
             sortable: true
+        },{
+            header: Lmkp.ts.msg("stakeholder-country"),
+            itemId: 'stakeholder-country-column',
+            dataIndex: Lmkp.ts.msg("stakeholder-country"),
+            flex: 1,
+            sortable: true
         }],
         dockedItems: [{
             dock: 'bottom',
@@ -24,12 +30,16 @@ Ext.define('Lmkp.view.Stakeholder',{
             xtype: 'pagingtoolbar'
         }],
         itemId: 'stakeholders-grid',
+        flex: 1,
         split: true,
         store: 'StakeholderGrid',
         viewConfig: {
             stripeRows: false
         },
         xtype: 'gridpanel'
+    },{
+        flex: 1,
+        xtype: 'stakeholderdetailpanel'
     }],
     title: Lmkp.ts.msg("Stakeholders")
 })
