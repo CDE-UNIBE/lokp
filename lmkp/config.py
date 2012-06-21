@@ -9,6 +9,9 @@ def config_file_path(request=None):
     """
     return "%s/profiles/global.yml" % os.path.dirname(__file__)
 
+def stakeholder_config_file_path(request=None):
+    return "%s/profiles/stakeholder.yml" % os.path.dirname(__file__)
+
 def locale_config_file_path(request):
     """
     Returns the absolute path to the profile .yaml file, based on params _PROFILE_ or
@@ -27,11 +30,3 @@ def profile_directory_path(request=None):
     Returns the absolute path to the directory containing the profiles
     """
     return "%s/profiles/" % os.path.dirname(__file__)
-
-def sample_data_file_path(request=None):
-    """
-    Returns the absolute path to the sample data file
-    """
-
-    filename = "landmatrix.json"
-    return "%s/documents/%s" % (os.path.dirname(__file__), filename)

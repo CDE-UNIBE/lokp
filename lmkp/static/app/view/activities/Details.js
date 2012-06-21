@@ -3,7 +3,7 @@ Ext.define('Lmkp.view.activities.Details', {
 	alias: ['widget.activityDetailTab'],
 	
 	id: 'activityDetailTab',
-	
+
 	bodyPadding: 5,
 	
 	layout: {
