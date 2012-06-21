@@ -6,7 +6,8 @@ Ext.define('Lmkp.controller.Stakeholder', {
     ],
 
     views: [
-    'Stakeholder'
+    'Stakeholder',
+    'stakeholders.Detail'
     ],
 
     init: function(){
@@ -16,6 +17,12 @@ Ext.define('Lmkp.controller.Stakeholder', {
             },
             'stakeholderpanel gridcolumn[itemId=stakeholder-name-column]': {
                 afterrender: this.onNameColumnAfterRender
+            },
+            'stakeholderpanel gridcolumn[itemId=stakeholder-country-column]': {
+                afterrender: this.onCountryColumnAfterRender
+            },
+            'stakeholderpanel gridview': {
+                itemclick: this.onGridViewItemClick
             }
         });
     },
@@ -33,13 +40,33 @@ Ext.define('Lmkp.controller.Stakeholder', {
             for (var i=0; i<taggroupStore.count(); i++) {
                 var tagStore = taggroupStore.getAt(i).tags();
                 for (var j=0; j<tagStore.count(); j++) {
-                    if (tagStore.getAt(j).get('key') == Lmkp.ts.msg("Name")) {
+                    if (tagStore.getAt(j).get('key') == Lmkp.ts.msg("stakeholder-name")) {
                         return Ext.String.format('{0}', tagStore.getAt(j).get('value'));
                     }
                 }
             }
             return Lmkp.ts.msg("unknown");
         }
+    },
+
+    onCountryColumnAfterRender: function(comp, eOpts){
+        comp.renderer = function(value, p, record) {
+            // loop through all tags is needed
+            var taggroupStore = record.taggroups();
+            for (var i=0; i<taggroupStore.count(); i++) {
+                var tagStore = taggroupStore.getAt(i).tags();
+                for (var j=0; j<tagStore.count(); j++) {
+                    if (tagStore.getAt(j).get('key') == Lmkp.ts.msg("stakeholder-country")) {
+                        return Ext.String.format('{0}', tagStore.getAt(j).get('value'));
+                    }
+                }
+            }
+            return Lmkp.ts.msg("unknown");
+        }
+    },
+
+    onGridViewItemClick: function(view, record, item, index, event, eOpts){
+        console.log("clickckckckckckc");
     }
 
 });
