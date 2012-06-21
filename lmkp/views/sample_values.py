@@ -59,8 +59,8 @@ def insert_landmatrix(request):
 
     rootdir = os.path.dirname(os.path.dirname(__file__))
 
-    activity_wrapper(request, "%s/documents/%s" % (rootdir, 'landmatrix_activities.json'), 'active')
-    stakeholder_wrapper(request, "%s/documents/%s" % (rootdir, 'landmatrix_stakeholders.json'), 'active')
+    activity_wrapper(request, "%s/documents/landmatrix/%s" % (rootdir, 'landmatrix_activities.json'), 'active')
+    stakeholder_wrapper(request, "%s/documents/landmatrix/%s" % (rootdir, 'landmatrix_stakeholders.json'), 'active')
 
     return {'success': True}
 
