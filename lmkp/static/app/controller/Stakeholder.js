@@ -66,7 +66,8 @@ Ext.define('Lmkp.controller.Stakeholder', {
     },
 
     onGridViewItemClick: function(view, record, item, index, event, eOpts){
-        console.log("clickckckckckckc");
+        // do something meaningful
+        //console.log("clickckckckckckc");
     }
 
 });
