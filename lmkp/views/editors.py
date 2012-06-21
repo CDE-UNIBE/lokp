@@ -19,15 +19,15 @@ def edit_toolbar_config(request):
     str = "Ext.namespace('Lmkp');\n"
     str += "Lmkp.toolbar = [{"
     str += "xtype: 'toolbar', dock: 'bottom', items: ['->',"
-    str += "{id: 'add-taggroup-button', text: '%s', tooltip: '%s'}," % (_('Add further information', default='Add further information'), _('Submit further information to an existing activity', default='Submit further information to an existing activity'))
-    str += "{id: 'add-activity-button', text: '%s', tooltip: '%s'}" % (_('Add new activity', default='Add new activity'), _('Submit information about a new activity', default='Submit information about a new activity'))
+    str += "{itemId: 'add-taggroup-button', text: '%s', tooltip: '%s'}," % (_('Add further information', default='Add further information'), _('Submit further information to an existing activity', default='Submit further information to an existing activity'))
+    str += "{itemId: 'add-activity-button', text: '%s', tooltip: '%s'}" % (_('Add new activity', default='Add new activity'), _('Submit information about a new activity', default='Submit information about a new activity'))
     str += "]}];\n"
     
     str += "Lmkp.login_form = [{xtype: 'panel', html: '%s', border: 0, bodyCls: 'toolbar_username'}," % _('Logged in as:', default='Logged in as:')
     str += "{id: 'user_button', text: '%s', tooltip: '%s'},'-'," % (request.user.username, _('Show user profile', default='Show user profile'))
     str += "{id: 'logout_button', text: '%s'}];\n" % _('Logout', default='Logout')
 
-    str += "Lmkp.mainControllers = ['Main', 'Map', 'Filter', 'EditFilter'];\n"
+    str += "Lmkp.mainControllers = ['Main', 'Map', 'Filter', 'Stakeholder','EditFilter'];\n"
 
     return str
 

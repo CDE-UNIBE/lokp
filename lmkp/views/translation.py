@@ -55,6 +55,9 @@ def ui_messages(request):
     'activate-tooltip': _('activate-tooltip', default='Click to activate this filter'),
     'delete-button': _('delete-button', default='Delete'),
     'deletefilter-tooltip': _('deletefilter-tooltip', default='Click to delete this filter'),
+    # stakeholders
+    'stakeholder-name': _('stakholder-name', default='Name'),
+    'stakeholder-country': _('stakholder-country', default='Country'),
     # status
     'status-pending': _('status-pending', default='pending'),
     'status-active': _('status-active', default='active'),
