@@ -3,15 +3,14 @@
 __author__ = "Adrian Weber, Centre for Development and Environment, University of Bern"
 __date__ = "$Jan 20, 2012 10:39:24 AM$"
 
-from ..models.database_objects import A_Key
-from ..models.database_objects import A_Value
-from ..models.database_objects import Language
-from ..models.meta import DBSession as Session
-from lmkp.config import config_file_path
-from lmkp.config import locale_config_file_path
-from lmkp.config import stakeholder_config_file_path
+from lmkp.config import locale_profile_directory_path
+from lmkp.config import profile_directory_path
+from lmkp.models.database_objects import A_Key
+from lmkp.models.database_objects import A_Value
+from lmkp.models.database_objects import Language
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Value
+from lmkp.models.meta import DBSession as Session
 import logging
 from pyramid.view import view_config
 import yaml
@@ -55,12 +54,12 @@ def get_config(request):
             pass
     
     # Read the global configuration file
-    global_stream = open(config_file_path(request), 'r')
+    global_stream = open("%s/activity.yml" % profile_directory_path(request), 'r')
     global_config = yaml.load(global_stream)
 
     # Read the localized configuration file
     try:
-        locale_stream = open(locale_config_file_path(request), 'r')
+        locale_stream = open("%s/activity.yml" % locale_profile_directory_path(request), 'r')
         locale_config = yaml.load(locale_stream)
 
         # If there is a localized config file then merge it with the global one
@@ -83,7 +82,7 @@ def get_config(request):
         extObject = []
         # Do the translation work from custom configuration format to an
         # ExtJS configuration object.
-        fields = global_config['application']['fields']
+        fields = global_config['fields']
         
         # language is needed because fields are to be displayed translated
         localizer = get_localizer(request)
@@ -110,6 +109,10 @@ def get_config(request):
 
 @view_config(route_name='yaml_translation_json', renderer='json', permission='administer')
 def yaml_translation_json(request):
+    """
+
+    """
+
     def _merge_config(parent_key, global_config, locale_config):
         """
         Merges two configuration dictionaries together (slightly modified to also
@@ -137,12 +140,12 @@ def yaml_translation_json(request):
             pass
 
     # Read the global configuration file
-    global_stream = open(config_file_path(request), 'r')
+    global_stream = open("%s/activity.yml" % profile_directory_path(request), 'r')
     global_config = yaml.load(global_stream)
 
     # Read the localized configuration file
     try:
-        locale_stream = open(locale_config_file_path(request), 'r')
+        locale_stream = open("%s/activity.yml" % locale_profile_directory_path(request), 'r')
         locale_config = yaml.load(locale_stream)
 
         # If there is a localized config file then merge it with the global one
@@ -165,8 +168,7 @@ def yaml_translation_json(request):
     extObject = []
     # Do the translation work from custom configuration format to an
     # ExtJS configuration object.
-    fields = global_config['application']['fields']
-
+    fields = global_config['fields']
 
     localizer = get_localizer(request)
     
@@ -231,7 +233,7 @@ def yaml_translation_json(request):
 @view_config(route_name='yaml_translation_json_stakeholders', renderer='json', permission='administer')
 def yaml_translation_json_stakeholders(request):
     # Read the global configuration file
-    global_stream = open(stakeholder_config_file_path(request), 'r')
+    global_stream = open("%s/stakeholder.yml" % profile_directory_path(request), 'r')
     global_config = yaml.load(global_stream)
 
         # get keys already in database. their fk_a_key must be None (= original)
@@ -247,7 +249,7 @@ def yaml_translation_json_stakeholders(request):
     extObject = []
     # Do the translation work from custom configuration format to an
     # ExtJS configuration object.
-    fields = global_config['application']['fields']
+    fields = global_config['fields']
 
     localizer = get_localizer(request)
 
@@ -342,12 +344,12 @@ def yaml_add_db(request):
             pass
 
     # Read the global configuration file
-    global_stream = open(config_file_path(request), 'r')
+    global_stream = open("%s/activity.yml" % profile_directory_path(request), 'r')
     global_config = yaml.load(global_stream)
 
     # Read the localized configuration file
     try:
-        locale_stream = open(locale_config_file_path(request), 'r')
+        locale_stream = open("%s/activity.yml" % locale_profile_directory_path(request), 'r')
         locale_config = yaml.load(locale_stream)
 
         # If there is a localized config file then merge it with the global one
@@ -363,7 +365,7 @@ def yaml_add_db(request):
 def yaml_add_stakeholders_db(request):
 
     # Read the global configuration file
-    global_stream = open(stakeholder_config_file_path(request), 'r')
+    global_stream = open("%s/stakeholder.yml" % profile_directory_path(request), 'r')
     global_config = yaml.load(global_stream)
 
     return _add_to_db(global_config, SH_Key, SH_Value)
@@ -393,7 +395,7 @@ def _add_to_db(config, Key, Value):
     for db_value in Session.query(Value.value).filter(Value.fk_value == None).all():
         db_values.append(db_value.value)
 
-    config_items = config["application"]["fields"]["mandatory"].items() + config["application"]["fields"]["optional"].items()
+    config_items = config["fields"]["mandatory"].items() + config["fields"]["optional"].items()
     for key, value in config_items:
         # check if key is already in database
         if key in db_keys:

@@ -1,4 +1,3 @@
-from lmkp.config import config_file_path
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol import ActivityProtocol
@@ -17,9 +16,6 @@ from pyramid.url import route_url
 from pyramid.view import view_config
 from sqlalchemy.sql.expression import or_, and_
 import yaml
-
-from lmkp.config import config_file_path
-from lmkp.config import locale_config_file_path
 
 from lmkp.renderers.renderers import translate_key
 
