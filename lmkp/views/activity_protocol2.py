@@ -1,6 +1,5 @@
 from geoalchemy import WKBSpatialElement
 from geoalchemy.functions import functions
-from lmkp.config import config_file_path
 from lmkp.models.database_objects import *
 from lmkp.views.protocol import Feature
 from lmkp.views.protocol import Protocol
