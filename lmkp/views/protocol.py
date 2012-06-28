@@ -358,6 +358,13 @@ class Feature(object):
             for k in self._diff_info:
                 ret[k] = self._diff_info[k]
 
+        # Involvements
+        if len(self._involvements) != 0:
+            sh = []
+            for i in self._involvements:
+                sh.append(i.to_table())
+            ret['involvements'] = sh
+
         return ret
 
     def create_diff(self, previous=None):
