@@ -29,9 +29,13 @@ def activity_wrapper(request, file, status='pending'):
     if 'activities' not in data:
         return HTTPBadRequest(detail="Not a valid format")
 
+    ids = []
     for activity in data['activities']:
-        activity_protocol2._handle_activity(request, activity, status)
-
+        a = activity_protocol2._handle_activity(request, activity, status)
+        ids.append(a.id)
+    
+    return ids
+        
 def stakeholder_wrapper(request, file, status='pending'):
     """
     A small wrapper around the create method in the Activity Protocol
@@ -46,8 +50,12 @@ def stakeholder_wrapper(request, file, status='pending'):
     if 'stakeholders' not in data:
         return HTTPBadRequest(detail="Not a valid format")
 
+    ids = []
     for stakeholder in data['stakeholders']:
-        stakeholder_protocol._handle_stakeholder(request, stakeholder, status)
+        s = stakeholder_protocol._handle_stakeholder(request, stakeholder, status)
+        ids.append(s.id)
+    
+    return ids
 
 
 @view_config(route_name='sample_values', renderer='json')
@@ -59,21 +67,47 @@ def insert_landmatrix(request):
 
     rootdir = os.path.dirname(os.path.dirname(__file__))
 
-    activity_wrapper(request, "%s/documents/landmatrix/%s" % (rootdir, 'landmatrix_activities.json'), 'active')
-    stakeholder_wrapper(request, "%s/documents/landmatrix/%s" % (rootdir, 'landmatrix_stakeholders.json'), 'active')
+    a = activity_wrapper(request, "%s/documents/landmatrix/%s" % (rootdir, 'landmatrix_activities.json'), 'active')
+    s = stakeholder_wrapper(request, "%s/documents/landmatrix/%s" % (rootdir, 'landmatrix_stakeholders.json'), 'active')
 
-    return {'success': True}
+    return {'success': True, 'activities': a, 'stakeholders': s}
 
 @view_config(route_name='test_sample_values', renderer='json')
 def test_sample_values(request):
     """
     Tries to load some sample data to the database using the Activity Protocol.
     """
+    """
     # Path to the parent directory
     parent_dir = os.path.split(os.path.dirname(__file__))[0]
     # Loop all JSON files, order matters!
     for file in ['addNewActivity.json', 'modifyTag.json', 'addTagToTaggroup.json', 'addNewTaggroup.json']:
         create_wrapper(request, "%s/documents/%s" % (parent_dir, file))
+    """
+    rootdir = os.path.dirname(os.path.dirname(__file__))
+
+    # Create new Stakeholder
+    #s1 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 's1.json'), 'pending')
+    # Create a new Activity and add a Stakeholder (existing) to it
+    #ai1 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'ai1.json'), 'pending')
+    # Create Activity
+    ##a1 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a1.json'), 'pending')
+    # Create a new Stakeholder and add an Activity (existing) to it
+    ##si1 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'si1.json'), 'pending')
+    # Add new Tag with a new Tag Group
+    #a2 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a2.json'), 'pending')
+    # Add new Tag to existing Tag Group
+    #a3 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a3.json'), 'pending')
+    # Modify an existing Tag
+    #a4 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a4.json'), 'pending')
+    # Delete an existing Tag Group
+    #a5 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a5.json'), 'pending')
+    # Add an Involvement (a Stakeholder) to an Activity
+    ##i1 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'i1.json'), 'pending')
+    # Modify an Involvement
+    #i2 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'i2.json'), 'pending')
+    # Delete an Involvement
+    #i3 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'i3.json'), 'pending')
 
     return {'success': True}
 
