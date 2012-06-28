@@ -425,7 +425,6 @@ class Involvement(Base):
     fk_stakeholder = Column(Integer, nullable = False)
     fk_stakeholder_role = Column(Integer, nullable = False)
       
-    reviews = relationship("Involvement_Review", backref='involvement')
     comments = relationship("Comment", backref='involvement')
 
     def __init__(self):
@@ -475,7 +474,6 @@ class User(Base):
     groups = relationship('Group', secondary=users_groups, backref=backref('users', order_by = id))
     a_changeset_reviews = relationship('A_Changeset_Review', backref='user')
     sh_changeset_reviews = relationship('SH_Changeset_Review', backref='user')
-    involvement_reviews = relationship('Involvement_Review', backref='user')
     comments = relationship('Comment', backref='user')
 
     # password encryption
@@ -601,28 +599,6 @@ class SH_Changeset_Review(Base):
     def __repr__(self):
         return "<SH_Changeset_Review> id [ %s ] | fk_sh_changeset [ %s ] | fk_user [ %s ] | timestamp [ %s ] | fk_review_decision [ %s ] | comment [ %s ]" % (self.id, self.fk_sh_changeset, self.fk_user, self.timestamp, self.fk_review_decision, self.comment)
 
-class Involvement_Review(Base):
-    __tablename__ = 'involvement_reviews'
-    __table_args__ = (
-            ForeignKeyConstraint(['fk_involvement'], ['data.involvements.id']),
-            ForeignKeyConstraint(['fk_user'], ['data.users.id']),
-            ForeignKeyConstraint(['fk_review_decision'], ['data.review_decisions.id']),
-            {'schema': 'data'}
-            )
-    id = Column(Integer, primary_key = True)
-    fk_involvement = Column(Integer, nullable = False)
-    fk_user = Column(Integer, nullable = False)
-    timestamp = Column(DateTime, nullable = False)
-    fk_review_decision = Column(Integer, nullable = False)
-    comment = Column(Text)
-    
-    def __init__(self, comment=None):
-        self.timestamp = datetime.datetime.now()
-        self.comment = comment
-    
-    def __repr__(self):
-        return "<Involvement_Review> id [ %s ] | fk_involvement [ %s ] | fk_user [ %s ] | timestamp [ %s ] | fk_review_decision [ %s ] | comment [ %s ]" % (self.id, self.fk_involvement, self.fk_user, self.timestamp, self.fk_review_decision, self.comment)
-
 class Review_Decision(Base):
     __tablename__ = 'review_decisions'
     __table_args__ = (
@@ -634,7 +610,6 @@ class Review_Decision(Base):
 
     a_changeset_reviews = relationship('A_Changeset_Review', backref='review_decision')
     sh_changeset_reviews = relationship('SH_Changeset_Review', backref='review_decision')
-    involvement_reviews = relationship('Involvement_Review', backref='review_decision')
 
     def __init__(self, id, name, description=None):
         self.id = id
