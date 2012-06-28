@@ -13,6 +13,7 @@ from lmkp.views.protocol import Feature
 from lmkp.views.protocol import Protocol
 from lmkp.views.protocol import Tag
 from lmkp.views.protocol import TagGroup
+from lmkp.views.protocol import Inv
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPCreated
@@ -300,12 +301,13 @@ class StakeholderProtocol(Protocol):
 
         return {'total': count, 'data': [sh.to_table() for sh in stakeholders]}
 
-    def _query(self, request, limit=None, offset=None, filter=None, uid=None):
+    def _query(self, request, limit=None, offset=None, filter=None, uid=None, involvements=None):
         """
         Do the query. Returns
         - a list of (filtered) Activities
         - an Integer with the count of Activities
         """
+        from lmkp.views.activity_protocol2 import ActivityProtocol2
 
         # If no custom filter was provided, get filters from request
         if filter is None:
@@ -384,6 +386,18 @@ class StakeholderProtocol(Protocol):
             else self.Session.query(Language).filter(Language.locale == localizer.locale_name).first()
         key_translation, value_translation = self._get_translatedKV(lang, SH_Key, SH_Value)
 
+        # Prepare query for involvements
+        involvement_status = self.Session.query(Activity.id.label("activity_id"),
+                                 Activity.activity_identifier.label("activity_identifier")).\
+                 filter(Activity.fk_status == status_filter).\
+                 subquery()
+        involvement_query = self.Session.query(Involvement.fk_stakeholder.label("stakeholder_id"),
+                                       Stakeholder_Role.name.label("role_name"),
+                                       involvement_status.c.activity_identifier.label("activity_identifier")).\
+                   join(involvement_status, involvement_status.c.activity_id == Involvement.fk_activity).\
+                   join(Stakeholder_Role).\
+                   subquery()
+
         # Collect all attributes (TagGroups) of relevant stakeholders
         relevant_stakeholders = relevant_stakeholders.subquery()
         query = self.Session.query(Stakeholder.id.label("id"),
@@ -397,14 +411,17 @@ class StakeholderProtocol(Protocol):
                                    SH_Value.value.label("value"), \
                                    relevant_stakeholders.c.order_value.label("order_value"),
                                    key_translation.c.key_translated.label("key_translated"),
-                                   value_translation.c.value_translated.label("value_translated")).\
+                                   value_translation.c.value_translated.label("value_translated"),
+                                   involvement_query.c.activity_identifier.label("activity_identifier"),
+                                   involvement_query.c.role_name.label("stakeholder_role")).\
             join(relevant_stakeholders, relevant_stakeholders.c.order_id == Stakeholder.id).\
             join(SH_Tag_Group).\
             join(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_sh_tag_group).\
             join(SH_Key).\
             join(SH_Value).\
             outerjoin(key_translation, key_translation.c.key_original_id == SH_Key.id).\
-            outerjoin(value_translation, value_translation.c.value_original_id == SH_Value.id)
+            outerjoin(value_translation, value_translation.c.value_original_id == SH_Value.id).\
+            outerjoin(involvement_query, involvement_query.c.stakeholder_id == Stakeholder.id)
 
 
         # Do the ordering again
@@ -455,10 +472,30 @@ class StakeholderProtocol(Protocol):
             if stakeholder.find_taggroup_by_id(taggroup_id) is not None:
                 taggroup = stakeholder.find_taggroup_by_id(taggroup_id)
             else:
-                taggroup = TagGroup(taggroup_id, i.taggroup)
+                taggroup = TagGroup(taggroup_id, i.main_tag)
                 stakeholder.add_taggroup(taggroup)
 
-            taggroup.add_tag(Tag(i.tag, key, value))
+            # Because of Involvements, the same Tags appears for each Involvement, so
+            # add it only once to TagGroup
+            if taggroup.get_tag_by_id(i.tag) is None:
+                taggroup.add_tag(Tag(i.tag, key, value))
+
+            # Determine if and how detailed Involvements are to be displayed
+            involvement_details = request.params.get('involvements', None)
+            if involvement_details != 'none' and involvements != False:
+                # Each Involvement (combination of guid and role) also needs to be added only once
+                if i.activity_identifier is not None:
+                    if involvement_details == 'full':
+                        # Full details, query Activity details
+                        if stakeholder.find_involvement_feature(i.activity_identifier, i.stakeholder_role) is None:
+                            ap = ActivityProtocol2(self.Session)
+                            # Important: involvements=False need to be set, otherwise endless loop occurs
+                            activity, count = ap._query(request, uid=i.activity_identifier, involvements=False)
+                            stakeholder.add_involvement(Inv(None, activity[0], i.stakeholder_role))
+                    else:
+                        # Default: only basic information about Involvement
+                        if stakeholder.find_involvement(i.activity_identifier, i.stakeholder_role) is None:
+                            stakeholder.add_involvement(Inv(i.activity_identifier, None, i.stakeholder_role))
 
         return stakeholders, count
 
