@@ -3,25 +3,18 @@
 
 import os.path
 
-def config_file_path(request=None):
-    """
-    Returns the absolute path to the global.yaml file
-    """
-    return "%s/profiles/global.yml" % os.path.dirname(__file__)
-
-def stakeholder_config_file_path(request=None):
-    return "%s/profiles/stakeholder.yml" % os.path.dirname(__file__)
-
-def locale_config_file_path(request):
+def locale_profile_directory_path(request):
     """
     Returns the absolute path to the profile .yaml file, based on params _PROFILE_ or
     cookie _PROFILE_
     """
-    
+
+    filepath = os.path.dirname(__file__)
+
     if '_PROFILE_' in request.params:
-        return "%s/profiles/%s.yml" % (os.path.dirname(__file__), request.params['_PROFILE_'])
+        return "%s/profiles/%s" % (filepath, request.params['_PROFILE_'])
     if '_PROFILE_' in request.cookies:
-        return "%s/profiles/%s.yml" % (os.path.dirname(__file__), request.cookies['_PROFILE_'])
+        return "%s/profiles/%s" % (filepath, request.cookies['_PROFILE_'])
     else:
         return ''
 
