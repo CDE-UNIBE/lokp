@@ -19,20 +19,19 @@ log = logging.getLogger(__name__)
 
 from pyramid.i18n import get_localizer
 
+# File names in the locale profile directory
+ACTIVITY_YAML = 'activity.yml'
+STAKEHOLDER_YAML = 'stakeholder.yml'
 
-@view_config(route_name='config', renderer='json')
-def get_config(request):
+def merge_profiles(global_config, locale_config):
     """
-    Return the configuration file in lmkp/config.yaml as JSON. Using parameter
-    format=ext an ExtJS form fields configuration object is returned based on
-    the configuration in config.yaml.
+    Wrapper to merge a global and local configuration dictionary
     """
 
     def _merge_config(parent_key, global_config, locale_config):
         """
         Merges two configuration dictionaries together
         """
-
         try:
             for key, value in locale_config.items():
                 try:
@@ -48,22 +47,35 @@ def get_config(request):
                     else:
                         _merge_config(key, global_config[key], locale_config[key])
                 except:
-                    global_config[key] = locale_config[key]
+                    # add indicator that field is from local YAML
+                    global_config[key] = {'values': locale_config[key], 'local': True}
         # Handle the AttributeError if the locale config file is empty
         except AttributeError:
             pass
-    
+
+    _merge_config(None, global_config, locale_config)
+
+    return global_config
+
+@view_config(route_name='config', renderer='json')
+def get_config(request):
+    """
+    Return the configuration file in lmkp/config.yaml as JSON. Using parameter
+    format=ext an ExtJS form fields configuration object is returned based on
+    the configuration in config.yaml.
+    """
+
     # Read the global configuration file
-    global_stream = open("%s/activity.yml" % profile_directory_path(request), 'r')
+    global_stream = open("%s/%s" % (profile_directory_path(request), ACTIVITY_YAML), 'r')
     global_config = yaml.load(global_stream)
 
     # Read the localized configuration file
     try:
-        locale_stream = open("%s/activity.yml" % locale_profile_directory_path(request), 'r')
+        locale_stream = open("%s/%s" % (locale_profile_directory_path(request), ACTIVITY_YAML), 'r')
         locale_config = yaml.load(locale_stream)
 
         # If there is a localized config file then merge it with the global one
-        _merge_config(None, global_config, locale_config)
+        global_config = merge_profiles(global_config, locale_config)
 
     except IOError:
         # No localized configuration file found!
@@ -107,62 +119,61 @@ def get_config(request):
         return global_config
 
 
-@view_config(route_name='yaml_translation_json', renderer='json', permission='administer')
-def yaml_translation_json(request):
+@view_config(route_name='yaml_translate_activities', renderer='json', permission='administer')
+def yaml_translate_activities(request):
     """
 
     """
-
-    def _merge_config(parent_key, global_config, locale_config):
-        """
-        Merges two configuration dictionaries together (slightly modified to also
-        contain indication about global or local values.
-        """
-        try:
-            for key, value in locale_config.items():
-                try:
-                    # If the value has items it's a dict, if not raise an error
-                    value.items()
-                    # Do not overwrite mandatory or optional keys in the global
-                    # config. If the key is not in the global config, append it
-                    # to the configuration
-                    if parent_key == 'mandatory' or parent_key == 'optional':
-                        if key not in global_config:
-                            _merge_config(key, global_config[key], locale_config[key])
-                        # else if the key is in global_config do nothing
-                    else:
-                        _merge_config(key, global_config[key], locale_config[key])
-                except:
-                    # add indicator that field is from local YAML
-                    global_config[key] = {'values': locale_config[key], 'local': True}
-        # Handle the AttributeError if the locale config file is empty
-        except AttributeError:
-            pass
 
     # Read the global configuration file
-    global_stream = open("%s/activity.yml" % profile_directory_path(request), 'r')
+    global_stream = open("%s/%s" % (profile_directory_path(request), ACTIVITY_YAML), 'r')
     global_config = yaml.load(global_stream)
 
     # Read the localized configuration file
     try:
-        locale_stream = open("%s/activity.yml" % locale_profile_directory_path(request), 'r')
+        locale_stream = open("%s/%s" % (locale_profile_directory_path(request), ACTIVITY_YAML), 'r')
         locale_config = yaml.load(locale_stream)
 
         # If there is a localized config file then merge it with the global one
-        _merge_config(None, global_config, locale_config)
+        global_config = merge_profiles(global_config, locale_config)
+
+    except IOError:
+        # No localized configuration file found!
+        pass
+    
+    return get_translated_keys(request, global_config, A_Key, A_Value)
+
+@view_config(route_name='yaml_translate_stakeholders', renderer='json', permission='administer')
+def yaml_translate_stakeholders(request):
+
+    # Read the global configuration file
+    global_stream = open("%s/%s" % (profile_directory_path(request), STAKEHOLDER_YAML), 'r')
+    global_config = yaml.load(global_stream)
+
+    # Read the localized configuration file
+    try:
+        locale_stream = open("%s/%s.yml" % (locale_profile_directory_path(request), STAKEHOLDER_YAML), 'r')
+        locale_config = yaml.load(locale_stream)
+
+        # If there is a localized config file then merge it with the global one
+        global_config = merge_profiles(global_config, locale_config)
 
     except IOError:
         # No localized configuration file found!
         pass
 
+    return get_translated_keys(request, global_config, SH_Key, SH_Value)
+
+def get_translated_keys(request, global_config, Key, Value):
+
     # get keys already in database. their fk_a_key must be None (= original)
     db_keys = []
-    for db_key in Session.query(A_Key.key).filter(A_Key.fk_a_key == None).all():
+    for db_key in Session.query(Key.key).filter(Key.fk_key == None).all():
         db_keys.append(db_key.key)
 
     # get values already in database. their fk_a_value must be None (= original)
     db_values = []
-    for db_value in Session.query(A_Value.value).filter(A_Value.fk_a_value == None).all():
+    for db_value in Session.query(Value.value).filter(Value.fk_value == None).all():
         db_values.append(db_value.value)
 
     extObject = []
@@ -225,135 +236,26 @@ def yaml_translation_json(request):
                 currObject = _get_yaml_scan('key', False, name, db_keys, lang, True, local)
         extObject.append(currObject)
         
-    ret = {}
-    ret['success'] = True
-    ret['children'] = extObject
-    return ret
-
-@view_config(route_name='yaml_translation_json_stakeholders', renderer='json', permission='administer')
-def yaml_translation_json_stakeholders(request):
-    # Read the global configuration file
-    global_stream = open("%s/stakeholder.yml" % profile_directory_path(request), 'r')
-    global_config = yaml.load(global_stream)
-
-        # get keys already in database. their fk_a_key must be None (= original)
-    db_keys = []
-    for db_key in Session.query(SH_Key.key).filter(SH_Key.fk_sh_key == None).all():
-        db_keys.append(db_key.key)
-
-    # get values already in database. their fk_a_value must be None (= original)
-    db_values = []
-    for db_value in Session.query(SH_Value.value).filter(SH_Value.fk_sh_value == None).all():
-        db_values.append(db_value.value)
-
-    extObject = []
-    # Do the translation work from custom configuration format to an
-    # ExtJS configuration object.
-    fields = global_config['fields']
-
-    localizer = get_localizer(request)
-
-    lang = Session.query(Language).filter(Language.locale == localizer.locale_name).first()
-
-    if lang is None:
-        lang = Language(1, 'English', 'English', 'en')
-    #lang = Session.query(Language).get(2)
-
-    # First process the mandatory fields
-    for (name, config) in fields['mandatory'].iteritems():
-        try:
-            # predefined values available
-            config['predefined']
-            currObject = _get_yaml_scan('key', True, name, db_keys, lang, False)
-            currChildren = []
-            for val in config['predefined']:
-                currChildren.append(_get_yaml_scan('value', True, val, db_values, lang, True))
-            currObject['children'] = currChildren
-        except KeyError:
-            # no predefined values available
-            currObject = _get_yaml_scan('key', True, name, db_keys, lang, True)
-        extObject.append(currObject)
-    # Then process the optional fields
-    for (name, config) in fields['optional'].iteritems():
-
-        # check if the field stems from global or local yaml
-        local = False
-        try:
-            config['local']
-            local = True
-        except KeyError:
-            pass
-
-        try:
-            # global predefined values available
-            config['predefined']
-            currObject = _get_yaml_scan('key', False, name, db_keys, lang, False, local)
-            currChildren = []
-            for val in config['predefined']:
-                currChildren.append(_get_yaml_scan('value', False, val, db_values, lang, True, local))
-            currObject['children'] = currChildren
-        except KeyError:
-            try:
-                # local predefined values available
-                config['values']['predefined']
-                currObject = _get_yaml_scan('key', False, name, db_keys, lang, False, local)
-                currChildren = []
-                for val in config['values']['predefined']:
-                    currChildren.append(_get_yaml_scan('value', False, val, db_values, lang, True, local))
-                currObject['children'] = currChildren
-            except KeyError:
-                # no predefined values available
-                currObject = _get_yaml_scan('key', False, name, db_keys, lang, True, local)
-        extObject.append(currObject)
-
     ret = {}
     ret['success'] = True
     ret['children'] = extObject
     return ret
 
 # @todo: change template used for yaml_add_db (possibly create own) 
-@view_config(route_name='yaml_add_db', renderer='lmkp:templates/sample_values.pt', permission='administer')
-def yaml_add_db(request):
-
-    stack = []
-    stack.append('Scan results:')
-   
-    def _merge_config(parent_key, global_config, locale_config):
-        """
-       Merges two configuration dictionaries together
-       """
-
-        try:
-            for key, value in locale_config.items():
-                try:
-                    # If the value has items it's a dict, if not raise an error
-                    value.items()
-                    # Do not overwrite mandatory or optional keys in the global
-                    # config. If the key is not in the global config, append it
-                    # to the configuration
-                    if parent_key == 'mandatory' or parent_key == 'optional':
-                        if key not in global_config:
-                            _merge_config(key, global_config[key], locale_config[key])
-                        # else if the key is in global_config do nothing
-                    else:
-                        _merge_config(key, global_config[key], locale_config[key])
-                except:
-                    global_config[key] = locale_config[key]
-        # Handle the AttributeError if the locale config file is empty
-        except AttributeError:
-            pass
+@view_config(route_name='yaml_add_activity_fields', renderer='lmkp:templates/sample_values.pt', permission='administer')
+def yaml_add_activity_fields(request):
 
     # Read the global configuration file
-    global_stream = open("%s/activity.yml" % profile_directory_path(request), 'r')
+    global_stream = open("%s/%s" % (profile_directory_path(request), ACTIVITY_YAML), 'r')
     global_config = yaml.load(global_stream)
 
     # Read the localized configuration file
     try:
-        locale_stream = open("%s/activity.yml" % locale_profile_directory_path(request), 'r')
+        locale_stream = open("%s/%s" % (locale_profile_directory_path(request), ACTIVITY_YAML), 'r')
         locale_config = yaml.load(locale_stream)
 
         # If there is a localized config file then merge it with the global one
-        _merge_config(None, global_config, locale_config)
+        global_config = merge_profiles(global_config, locale_config)
 
     except IOError:
         # No localized configuration file found!
@@ -361,12 +263,24 @@ def yaml_add_db(request):
    
     return _add_to_db(global_config, A_Key, A_Value)
 
-@view_config(route_name='yaml_add_stakeholders_db', renderer='lmkp:templates/sample_values.pt', permission='administer')
-def yaml_add_stakeholders_db(request):
+@view_config(route_name='yaml_add_stakeholder_fields', renderer='lmkp:templates/sample_values.pt', permission='administer')
+def yaml_add_stakeholder_fields(request):
 
     # Read the global configuration file
-    global_stream = open("%s/stakeholder.yml" % profile_directory_path(request), 'r')
+    global_stream = open("%s/%s" % (profile_directory_path(request), STAKEHOLDER_YAML), 'r')
     global_config = yaml.load(global_stream)
+
+    # Read the localized configuration file
+    try:
+        locale_stream = open("%s/%s" % (locale_profile_directory_path(request), STAKEHOLDER_YAML), 'r')
+        locale_config = yaml.load(locale_stream)
+
+        # If there is a localized config file then merge it with the global one
+        global_config = merge_profiles(global_config, locale_config)
+
+    except IOError:
+        # No localized configuration file found!
+        pass
 
     return _add_to_db(global_config, SH_Key, SH_Value)
 
