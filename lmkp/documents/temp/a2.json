@@ -1,0 +1,19 @@
+{
+	"_description": "Add new Tag with a new Tag Group",
+    "activities": [{
+        "id": "70eb2268-22f6-4fa7-8dcb-03161ac1d595",
+        "version": 1,
+        "taggroups": [{
+            "op": "add",
+            "main_tag": {
+                "key": "Year of Investment (agreed)",
+                "value": 2012
+            },
+            "tags": [{
+                "key": "Year of Investment (agreed)",
+                "op": "add",
+                "value": 2012
+            }]
+        }]
+    }]
+}

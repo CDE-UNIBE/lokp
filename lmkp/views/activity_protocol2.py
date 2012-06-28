@@ -29,6 +29,7 @@ from sqlalchemy.sql.expression import or_
 from sqlalchemy.types import Float
 import uuid
 import yaml
+from lmkp.views.stakeholder_protocol import StakeholderProtocol
 
 log = logging.getLogger(__name__)
 
@@ -100,7 +101,7 @@ class ActivityProtocol2(Protocol):
         """
         Add or update activities
         """
-        
+
         raw = request.json_body
 
         # Check if the json body is a valid diff file
@@ -108,20 +109,28 @@ class ActivityProtocol2(Protocol):
         if 'activities' not in raw:
             return HTTPBadRequest(detail="Not a valid format")
 
+        ids = []
         for activity in raw['activities']:
-            self._handle_activity(request, activity)
+            ids.append(self._handle_activity(request, activity))
 
         # Return the newly created object with 201 Created HTTP code status
-        return HTTPCreated(detail="ok")
+        #return HTTPCreated(detail="ok")
+        return ids
 
     def _handle_activity(self, request, activity_dict, status='pending'):
         """
         """
+        # Collect information about changing involvements
+        involvement_change = activity_dict['stakeholders'] if 'stakeholders' in activity_dict else None
 
         # If this activity does not have an id then create a new activity
         if 'id' not in activity_dict:
-            self._create_activity(request, activity_dict, status=status)
-            return
+            new_activity = self._create_activity(request, activity_dict, status=status)
+            
+            # Handle involvements
+            self._handle_involvements(request, None, new_activity, involvement_change)
+
+            return new_activity
 
         # Get the identifier from the request
         identifier = activity_dict['id']
@@ -135,8 +144,12 @@ class ActivityProtocol2(Protocol):
 
         # If no activity is found, create a new activity
         if db_a == None:
-            self._create_activity(request, activity_dict, identifier=identifier, status=status)
-            return
+            new_activity = self._create_activity(request, activity_dict, identifier=identifier, status=status)
+            
+            # Handle involvements
+            self._handle_involvements(request, None, new_activity, involvement_change)
+            
+            return new_activity
         
         # Update the activity:
         # The basic idea is to deep copy the previous version and control during
@@ -157,7 +170,7 @@ class ActivityProtocol2(Protocol):
         new_activity.status = self.Session.query(Status).filter(Status.name == status).first()
         # Add it to the database
         self.Session.add(new_activity)
-
+        
         # Loop the tag groups from the previous version and copy it to the new
         # version with its tags
         for db_taggroup in self.Session.query(A_Tag_Group).filter(A_Tag_Group.fk_activity == db_a.id):
@@ -171,20 +184,21 @@ class ActivityProtocol2(Protocol):
 
                 # Before copying the tag, make sure that it is not to delete
                 copy_tag = True
-                for taggroup_dict in activity_dict['taggroups']:
-                    if 'id' in taggroup_dict and taggroup_dict['id'] == db_taggroup.id:
-                        # Check which tags we have to edit
-                        for tag_dict in taggroup_dict['tags']:
-                            if 'id' in tag_dict and tag_dict['id'] == db_tag.id:
-                                # Yes, it is THIS tag
-                                if tag_dict['op'] == 'delete':
-                                    copy_tag = False
+                if 'taggroups' in activity_dict:
+                    for taggroup_dict in activity_dict['taggroups']:
+                        if 'id' in taggroup_dict and taggroup_dict['id'] == db_taggroup.id:
+                            # Check which tags we have to edit
+                            for tag_dict in taggroup_dict['tags']:
+                                if 'id' in tag_dict and tag_dict['id'] == db_tag.id:
+                                    # Yes, it is THIS tag
+                                    if tag_dict['op'] == 'delete':
+                                        copy_tag = False
 
                 # Create and append the new tag only if requested
                 if copy_tag:
                     # Get the key and value SQLAlchemy object
-                    k = self.Session.query(A_Key).get(db_tag.fk_a_key)
-                    v = self.Session.query(A_Value).get(db_tag.fk_a_value)
+                    k = self.Session.query(A_Key).get(db_tag.fk_key)
+                    v = self.Session.query(A_Value).get(db_tag.fk_value)
                     new_tag = A_Tag()
                     new_taggroup.tags.append(new_tag)
                     new_tag.key = k
@@ -195,30 +209,38 @@ class ActivityProtocol2(Protocol):
                         new_taggroup.main_tag = new_tag
 
             # Next step is to add new tags to this tag group without existing ids
-            for taggroup_dict in activity_dict['taggroups']:
-                if 'id' in taggroup_dict and taggroup_dict['id'] == db_taggroup.id:
-                    for tag_dict in taggroup_dict['tags']:
-                        if 'id' not in tag_dict and tag_dict['op'] == 'add':
-                            new_tag = self._create_tag(request, new_taggroup.tags, tag_dict['key'], tag_dict['value'])
-                            # Set the main tag
-                            if 'main_tag' in taggroup_dict:
-                                if taggroup_dict['main_tag']['key'] == new_tag.key.key and taggroup_dict['main_tag']['value'] == new_tag.value.value:
-                                    new_taggroup.main_tag = new_tag
+            if 'taggroups' in activity_dict:
+                for taggroup_dict in activity_dict['taggroups']:
+                    if 'id' in taggroup_dict and taggroup_dict['id'] == db_taggroup.id:
+                        for tag_dict in taggroup_dict['tags']:
+                            if 'id' not in tag_dict and tag_dict['op'] == 'add':
+                                new_tag = self._create_tag(request, new_taggroup.tags, tag_dict['key'], tag_dict['value'])
+                                # Set the main tag
+                                if 'main_tag' in taggroup_dict:
+                                    if taggroup_dict['main_tag']['key'] == new_tag.key.key and taggroup_dict['main_tag']['value'] == new_tag.value.value:
+                                        new_taggroup.main_tag = new_tag
 
         # Finally new tag groups (without id) needs to be added
         # (and loop all again)
-        for taggroup_dict in activity_dict['taggroups']:
-            if taggroup_dict['id'] is None and taggroup_dict['op'] == 'add':
-                new_taggroup = A_Tag_Group()
-                new_activity.tag_groups.append(new_taggroup)
-                for tag_dict in taggroup_dict['tags']:
-                    new_tag = self._create_tag(request, new_taggroup.tags, tag_dict['key'], tag_dict['value'])
-                    # Set the main tag
-                    if 'main_tag' in taggroup_dict:
-                        if taggroup_dict['main_tag']['key'] == new_tag.key.key and taggroup_dict['main_tag']['value'] == new_tag.value.value:
-                            new_taggroup.main_tag = new_tag
-
+        if 'taggroups' in activity_dict:
+            for taggroup_dict in activity_dict['taggroups']:
+                if 'id' not in taggroup_dict and taggroup_dict['op'] == 'add':
+                    new_taggroup = A_Tag_Group()
+                    new_activity.tag_groups.append(new_taggroup)
+                    for tag_dict in taggroup_dict['tags']:
+                        new_tag = self._create_tag(request, new_taggroup.tags, tag_dict['key'], tag_dict['value'])
+                        # Set the main tag
+                        if 'main_tag' in taggroup_dict:
+                            if taggroup_dict['main_tag']['key'] == new_tag.key.key and taggroup_dict['main_tag']['value'] == new_tag.value.value:
+                                new_taggroup.main_tag = new_tag
+        
+        # Changesets
         self._add_changeset(request, new_activity, old_version)
+        
+        # Handle involvements
+        self._handle_involvements(request, db_a, new_activity, involvement_change)
+        
+        return new_activity
 
     def _create_tag(self, request, parent, key, value):
         """
@@ -248,15 +270,12 @@ class ActivityProtocol2(Protocol):
         are allowed.
         """
 
-        if 'identifier' in kwargs:
-            identifier = kwargs['identifier']
+        identifier = kwargs['identifier'] if 'identifier' in kwargs else uuid.uuid4()
+        
         status = 'pending'
         if 'status' in kwargs:
             status = kwargs['status']
 
-        # Create a new unique identifier if not set
-        if identifier is None:
-            identifier = uuid.uuid4()
         # The initial version is 1 of course
         version = 1
 
@@ -336,13 +355,15 @@ class ActivityProtocol2(Protocol):
                     db_taggroup.main_tag = a_tag
 
         self._add_changeset(request, new_activity, None)
+        
+        return new_activity
 
     def _add_changeset(self, request, activity, old_version):
         """
         Log the activity
         """
         # Create a new changeset
-        changeset = A_Changeset(source='[%s] %s' % (activity.status.name, activity), previous_version=old_version)
+        changeset = A_Changeset(source='[%s] %s' % (activity.status.name, activity.activity_identifier), previous_version=old_version)
         # Get the user from the request
         changeset.user = self.Session.query(User).filter(User.username == request.user.username).first()
         changeset.activity = activity
@@ -421,7 +442,8 @@ class ActivityProtocol2(Protocol):
         if uid is not None:
             relevant_activities = self.Session.query(Activity.id.label('order_id'),
                                                      func.char_length('').label('order_value')).\
-                filter(Activity.activity_identifier == uid)
+                filter(Activity.activity_identifier == uid).\
+                filter(Activity.fk_status == status_filter)
 
         # Count relevant activities (before applying limit and offset)
         count = relevant_activities.count()
@@ -659,3 +681,89 @@ class ActivityProtocol2(Protocol):
         log.debug(global_config)
 
         return True
+    
+    def _handle_involvements(self, request, old_version, new_version, inv_change):
+        """
+        Handle the involvements of an Activity.
+        - Activity update: copy old involvements
+        - Involvement added: copy old involvements, push Stakeholder to new version,
+          add new involvement
+        - Involvement deleted: copy old involvements (except the one to be removed), 
+          push Stakeholder to new version
+        - Involvement modified (eg. its role): combination of deleting and adding
+          involvements
+        """
+        
+        # It is important to keep track of all the Stakeholders where involvements were
+        # deleted because they need to be pushed to a new version as well
+        swdi_id = [] # = Stakeholders with deleted involvements
+        swdi_version = []
+        # Copy old involvements if existing
+        if old_version is not None:
+            for oi in old_version.involvements:
+                # Check if involvement is to be removed (op == delete), in which case
+                # do not copy it
+                remove = False
+                if inv_change is not None:
+                    for i in inv_change:
+                        if ('id' in i and str(i['id']) == str(oi.stakeholder.stakeholder_identifier) and
+                            'op' in i and i['op'] == 'delete' and
+                            'role' in i and i['role'] == oi.stakeholder_role.id):
+                            # Set flag to NOT copy this involvement
+                            remove = True
+                            # Add identifier and version of Stakeholder to list with
+                            # deleted involvements, add them only once
+                            if i['id'] not in swdi_id:
+                                swdi_id.append(i['id'])
+                                swdi_version.append(i['version'])
+                if remove is not True:
+                    sh_role = oi.stakeholder_role
+                    # Copy involvement
+                    inv = Involvement()
+                    inv.stakeholder = oi.stakeholder
+                    inv.activity = new_version
+                    inv.stakeholder_role = sh_role
+                    self.Session.add(inv)
+        # Add new involvements
+        if inv_change is not None:
+            for i in inv_change:
+                if ('op' in i and i['op'] == 'add' and
+                    'id' in i and 'role' in i and 'version' in i):
+                    # Query database to find role and previous version of Stakeholder
+                    role_db = self.Session.query(Stakeholder_Role).get(i['role'])
+                    old_sh_db = self.Session.query(Stakeholder).\
+                        filter(Stakeholder.stakeholder_identifier == i['id']).\
+                        filter(Stakeholder.version == i['version']).\
+                        first()
+                    if old_sh_db is not None:
+                        # If the same Stakeholder also has some involvements deleted,
+                        # remove it from the list (do not push Stakeholder twice)
+                        try:
+                            x = swdi_id.index(str(old_sh_db.stakeholder_identifier))
+                            swdi_id.pop(x)
+                            swdi_version.pop(x)
+                        except ValueError:
+                            pass
+                        # Push Stakeholder to new version
+                        sp = StakeholderProtocol(self.Session)
+                        # Simulate a dict
+                        sh_dict = {'id': old_sh_db.stakeholder_identifier, 'version': old_sh_db.version}
+                        new_sh = sp._handle_stakeholder(request, sh_dict, 'pending')
+                        # Create new inolvement
+                        inv = Involvement()
+                        inv.stakeholder = new_sh
+                        inv.activity = new_version
+                        inv.stakeholder_role = role_db
+                        self.Session.add(inv)
+        # Also push Stakeholders where involvements were deleted to new version
+        for i, a in enumerate(swdi_id):
+            # Query database
+            old_sh_db = self.Session.query(Stakeholder).\
+                filter(Stakeholder.stakeholder_identifier == a).\
+                filter(Stakeholder.version == swdi_version[i]).\
+                first()
+            # Push Stakeholder to new version
+            sp = StakeholderProtocol(self.Session)
+            # Simulate a dict
+            sh_dict = {'id': old_sh_db.stakeholder_identifier, 'version': old_sh_db.version}
+            new_sh = sp._handle_stakeholder(request, sh_dict, 'pending')
