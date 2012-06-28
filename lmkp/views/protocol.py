@@ -266,10 +266,26 @@ class TagGroup(object):
 
         return {'id': self._id, 'main_tag': main_tag, 'tags': tags}
 
+class Inv(object):
+    
+    def __init__(self, guid, role):
+        self._guid = guid
+        self._role = role
+
+    def get_guid(self):
+        return self._guid
+    
+    def get_role(self):
+        return self._role
+    
+    def to_table(self):
+        return {'id': str(self._guid), 'role': self._role}
+
 class Feature(object):
 
     def __init__(self, guid, order_value, version=None, diff_info=None, ** kwargs):
         self._taggroups = []
+        self._involvements = []
         self._guid = guid
         self._order_value = order_value
         self._version = version
@@ -281,11 +297,19 @@ class Feature(object):
         """
         self._taggroups.append(taggroup)
 
+    def add_involvement(self, involvement):
+        self._involvements.append(involvement)
+
+    def find_involvement(self, guid, role):
+        for i in self._involvements:
+            if i.get_guid() == guid and i.get_role() == role:
+                return i
+        return None
+
     def find_taggroup_by_id(self, id):
         for t in self._taggroups:
             if t.get_id() == id:
                 return t
-
         return None
 
     def get_taggroups(self):
