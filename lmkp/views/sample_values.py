@@ -94,6 +94,8 @@ def test_sample_values(request):
     ##a1 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a1.json'), 'pending')
     # Create a new Stakeholder and add an Activity (existing) to it
     ##si1 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'si1.json'), 'pending')
+    # Create a new Stakeholder and add an Activity (existing) to it
+    si2 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'si2.json'), 'pending')
     # Add new Tag with a new Tag Group
     #a2 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a2.json'), 'pending')
     # Add new Tag to existing Tag Group

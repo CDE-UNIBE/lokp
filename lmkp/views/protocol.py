@@ -238,6 +238,12 @@ class TagGroup(object):
                 return t
         return None
 
+    def get_tag_by_id(self, id):
+        for t in self._tags:
+            if t.get_id() == id:
+                return t
+        return None
+
     def get_tags(self):
         return self._tags
 
