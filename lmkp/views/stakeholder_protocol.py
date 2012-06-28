@@ -1,9 +1,11 @@
+from lmkp.models.database_objects import Activity
 from lmkp.models.database_objects import SH_Changeset
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Tag
 from lmkp.models.database_objects import SH_Tag_Group
 from lmkp.models.database_objects import SH_Value
 from lmkp.models.database_objects import Stakeholder
+from lmkp.models.database_objects import Stakeholder_Role
 from lmkp.models.database_objects import Status
 from lmkp.models.database_objects import User
 from lmkp.views.protocol import Feature
@@ -20,6 +22,8 @@ from sqlalchemy.sql.expression import asc
 from sqlalchemy.sql.expression import desc
 from sqlalchemy.types import Float
 import uuid
+
+
 
 log = logging.getLogger(__name__)
 
@@ -47,9 +51,17 @@ class StakeholderProtocol(Protocol):
 
     def _handle_stakeholder(self, request, stakeholder_dict, status='pending'):
 
+        # Collect information about changing involvements
+        involvement_change = stakeholder_dict['activities'] if 'activities' in stakeholder_dict else None
+
         # If this stakeholder does not have an id then create a new stakeholder
         if 'id' not in stakeholder_dict:
-            return self._create_stakeholder(request, stakeholder_dict, status=status)
+            new_stakeholder = self._create_stakeholder(request, stakeholder_dict, status=status)
+            
+            # Handle involvements
+            self._handle_involvements(request, None, new_stakeholder, involvement_change)
+            
+            return new_stakeholder 
 
         # Get the identifier from the request
         identifier = stakeholder_dict['id']
@@ -63,7 +75,12 @@ class StakeholderProtocol(Protocol):
 
         # If no stakeholder is found, create a new stakeholder
         if db_sh == None:
-            return self._create_stakeholder(request, stakeholder_dict, identifier=identifier, status=status)
+            new_stakeholder = self._create_stakeholder(request, stakeholder_dict, identifier=identifier, status=status) 
+            
+            # Handle involvements
+            self._handle_involvements(request, None, new_stakeholder, involvement_change)
+            
+            return new_stakeholder
 
         # Update the stakeholder:
         # The basic idea is to deep copy the previous version and control during
@@ -147,7 +164,11 @@ class StakeholderProtocol(Protocol):
                             if taggroup_dict['main_tag']['key'] == new_tag.key.key and taggroup_dict['main_tag']['value'] == new_tag.value.value:
                                 new_taggroup.main_tag = new_tag
 
+        # Changesets
         self._add_changeset(request, new_stakeholder, old_version)
+        
+        # Handle involvements
+        self._handle_involvements(request, db_sh, new_stakeholder, involvement_change)
         
         return new_stakeholder
 
@@ -540,3 +561,89 @@ class StakeholderProtocol(Protocol):
                         break
 
         return data, len(data)
+    
+    def _handle_involvements(self, request, old_version, new_version, inv_change):
+        """
+        Handle the involvements of a Stakeholder.
+        - Stakeholder update: copy old involvements
+        - Involvement added: copy old involvements, push Activity to new version,
+          add new involvement
+        - Involvement deleted: copy old involvements (except the one to be removed), 
+          push Activity to new version
+        - Involvement modified (eg. its role): combination of deleting and adding
+          involvements
+        """
+        from lmkp.views.activity_protocol2 import ActivityProtocol2
+        # It is important to keep track of all the Activities where involvements were
+        # deleted because they need to be pushed to a new version as well
+        awdi_id = [] # = Activities with deleted involvements
+        awdi_version = []
+        # Copy old involvements if existing
+        if old_version is not None:
+            for oi in old_version.involvements:
+                # Check if involvement is to be removed (op == delete), in which case
+                # do not copy it
+                remove = False
+                if inv_change is not None:
+                    for i in inv_change:
+                        if ('id' in i and str(i['id']) == str(oi.activity.activity_identifier) and
+                            'op' in i and i['op'] == 'delete' and
+                            'role' in i and i['role'] == oi.stakeholder_role.id):
+                            # Set flag to NOT copy this involvement
+                            remove = True
+                            # Add identifier and version of Activity to list with
+                            # deleted involvements, add them only once
+                            if i['id'] not in awdi_id:
+                                awdi_id.append(i['id'])
+                                awdi_version.append(i['version'])
+                if remove is not True:
+                    sh_role = oi.stakeholder_role
+                    # Copy involvement
+                    inv = Involvement()
+                    inv.stakeholder = new_version
+                    inv.activity = oi.activity
+                    inv.stakeholder_role = sh_role
+                    self.Session.add(inv)
+        # Add new involvements
+        if inv_change is not None:
+            for i in inv_change:
+                if ('op' in i and i['op'] == 'add' and
+                    'id' in i and 'role' in i and 'version' in i):
+                    # Query database to find role and previous version of Activity
+                    role_db = self.Session.query(Stakeholder_Role).get(i['role'])
+                    old_a_db = self.Session.query(Activity).\
+                        filter(Activity.activity_identifier == i['id']).\
+                        filter(Activity.version == i['version']).\
+                        first()
+                    if old_a_db is not None:
+                        # If the same Activity also has some involvements deleted,
+                        # remove it from the list (do not push Activity twice)
+                        try:
+                            x = awdi_id.index(str(old_a_db.activity_identifier))
+                            awdi_id.pop(x)
+                            awdi_version.pop(x)
+                        except ValueError:
+                            pass
+                        # Push Activity to new version
+                        sp = ActivityProtocol2(self.Session)
+                        # Simulate a dict
+                        a_dict = {'id': old_a_db.activity_identifier, 'version': old_a_db.version}
+                        new_a = sp._handle_activity(request, a_dict, 'pending')
+                        # Create new inolvement
+                        inv = Involvement()
+                        inv.stakeholder = new_version
+                        inv.activity = new_a
+                        inv.stakeholder_role = role_db
+                        self.Session.add(inv)
+        # Also push Activity where involvements were deleted to new version
+        for i, a in enumerate(awdi_id):
+            # Query database
+            old_a_db = self.Session.query(Activity).\
+                filter(Activity.activity_identifier == a).\
+                filter(Activity.version == awdi_version[i]).\
+                first()
+            # Push Activity to new version
+            sp = ActivityProtocol2(self.Session)
+            # Simulate a dict
+            a_dict = {'id': old_a_db.activity_identifier, 'version': old_a_db.version}
+            new_a = sp._handle_activity(request, a_dict, 'pending')
