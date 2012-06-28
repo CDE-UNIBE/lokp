@@ -59,15 +59,15 @@ def main(global_config, ** settings):
     config.add_route('admin', '/admin')
 
     # Returns configuration parameters as JSON objects
-    config.add_route('yaml_translation_json', '/config/scan')
-    config.add_route('yaml_add_db', '/config/add')
+    config.add_route('yaml_translate_activities', '/config/scan')
+    config.add_route('yaml_add_activity_fields', '/config/add')
 
-    config.add_route('yaml_translation_json_stakeholders', '/config/scan/stakeholders')
-    config.add_route('yaml_add_stakeholders_db', '/config/add/stakeholders')
+    config.add_route('yaml_translate_stakeholders', '/config/scan/stakeholders')
+    config.add_route('yaml_add_stakeholder_fields', '/config/add/stakeholders')
 
     config.add_route('config', '/config/{parameter}')
 
-    
+
 
     # Manage sample values and tests
     config.add_route('sample_values', '/sample_values/insert')
