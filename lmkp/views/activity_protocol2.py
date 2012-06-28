@@ -6,6 +6,7 @@ from lmkp.views.protocol import Feature
 from lmkp.views.protocol import Protocol
 from lmkp.views.protocol import Tag
 from lmkp.views.protocol import TagGroup
+from lmkp.views.protocol import Inv
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPCreated
@@ -41,6 +42,7 @@ class ActivityFeature2(Feature):
 
     def __init__(self, guid, order_value, geometry=None, version=None, diff_info=None, ** kwargs):
         self._taggroups = []
+        self._involvements = []
         self._guid = guid
         self._order_value = order_value
         self._geometry = geometry
@@ -75,6 +77,12 @@ class ActivityFeature2(Feature):
         if self._diff_info is not None:
             for k in self._diff_info:
                 ret[k] = self._diff_info[k]
+        # Involvements
+        if len(self._involvements) != 0:
+            sh = []
+            for i in self._involvements:
+                sh.append(i.to_table())
+            ret['stakeholders'] = sh
 
         return ret
 
@@ -555,6 +563,11 @@ class ActivityProtocol2(Protocol):
             # add it only once to TagGroup
             if taggroup.get_tag_by_id(i[7]) is None:
                 taggroup.add_tag(Tag(i[7], key, value))
+            
+            # Each Involvement (combination of guid and role) also needs to be added only once
+            if i.stakeholder_identifier is not None:
+                if activity.find_involvement(i.stakeholder_identifier, i.stakeholder_role) is None:
+                    activity.add_involvement(Inv(i.stakeholder_identifier, i.stakeholder_role))
 
         return activities, count
 
