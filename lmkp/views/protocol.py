@@ -268,8 +268,9 @@ class TagGroup(object):
 
 class Inv(object):
     
-    def __init__(self, guid, role):
+    def __init__(self, guid, feature, role):
         self._guid = guid
+        self._feature = feature
         self._role = role
 
     def get_guid(self):
@@ -279,7 +280,10 @@ class Inv(object):
         return self._role
     
     def to_table(self):
-        return {'id': str(self._guid), 'role': self._role}
+        if self._feature is None:
+            return {'id': str(self._guid), 'role': self._role}
+        else:
+            return {'data': self._feature.to_table(), 'role': self._role}
 
 class Feature(object):
 
@@ -303,6 +307,12 @@ class Feature(object):
     def find_involvement(self, guid, role):
         for i in self._involvements:
             if i.get_guid() == guid and i.get_role() == role:
+                return i
+        return None
+    
+    def find_involvement_feature(self, guid, role):
+        for i in self._involvements:
+            if i._feature._guid == str(guid) and i.get_role() == role:
                 return i
         return None
 

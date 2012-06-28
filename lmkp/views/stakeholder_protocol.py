@@ -155,7 +155,7 @@ class StakeholderProtocol(Protocol):
         # (and loop all again)
         if 'taggroups' in stakeholder_dict:
             for taggroup_dict in stakeholder_dict['taggroups']:
-                if taggroup_dict['id'] is None and taggroup_dict['op'] == 'add':
+                if 'id' not in taggroup_dict and taggroup_dict['op'] == 'add':
                     new_taggroup = SH_Tag_Group()
                     new_stakeholder.tag_groups.append(new_taggroup)
                     for tag_dict in taggroup_dict['tags']:
@@ -599,10 +599,11 @@ class StakeholderProtocol(Protocol):
                                 awdi_version.append(i['version'])
                 if remove is not True:
                     sh_role = oi.stakeholder_role
+                    a = oi.activity
                     # Copy involvement
                     inv = Involvement()
                     inv.stakeholder = new_version
-                    inv.activity = oi.activity
+                    inv.activity = a
                     inv.stakeholder_role = sh_role
                     self.Session.add(inv)
         # Add new involvements

@@ -564,10 +564,21 @@ class ActivityProtocol2(Protocol):
             if taggroup.get_tag_by_id(i[7]) is None:
                 taggroup.add_tag(Tag(i[7], key, value))
             
-            # Each Involvement (combination of guid and role) also needs to be added only once
-            if i.stakeholder_identifier is not None:
-                if activity.find_involvement(i.stakeholder_identifier, i.stakeholder_role) is None:
-                    activity.add_involvement(Inv(i.stakeholder_identifier, i.stakeholder_role))
+            # Determine if and how detailed Involvements are to be displayed
+            involvement_details = request.params.get('involvements', None)
+            if involvement_details != 'none':
+                # Each Involvement (combination of guid and role) also needs to be added only once
+                if i.stakeholder_identifier is not None:
+                    if involvement_details == 'full':
+                        # Full details, query Stakeholder details
+                        if activity.find_involvement_feature(i.stakeholder_identifier, i.stakeholder_role) is None:
+                            sp = StakeholderProtocol(self.Session)
+                            stakeholder, count = sp._query(request, uid=i.stakeholder_identifier)
+                            activity.add_involvement(Inv(None, stakeholder[0], i.stakeholder_role))
+                    else:
+                        # Default: only basic information about Involvement
+                        if activity.find_involvement(i.stakeholder_identifier, i.stakeholder_role) is None:
+                            activity.add_involvement(Inv(i.stakeholder_identifier, None, i.stakeholder_role))
 
         return activities, count
 
@@ -750,9 +761,10 @@ class ActivityProtocol2(Protocol):
                                 swdi_version.append(i['version'])
                 if remove is not True:
                     sh_role = oi.stakeholder_role
+                    sh = oi.stakeholder
                     # Copy involvement
                     inv = Involvement()
-                    inv.stakeholder = oi.stakeholder
+                    inv.stakeholder = sh
                     inv.activity = new_version
                     inv.stakeholder_role = sh_role
                     self.Session.add(inv)
