@@ -1,4 +1,5 @@
 from lmkp.models.database_objects import Activity
+from lmkp.models.database_objects import Involvement
 from lmkp.models.database_objects import SH_Changeset
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Tag
