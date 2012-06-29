@@ -719,10 +719,10 @@ class ActivityProtocol2(Protocol):
 
     def _key_value_is_valid(self, request, key, value):
         # Read the global configuration file
-        global_stream = open(config_file_path(request), 'r')
-        global_config = yaml.load(global_stream)
+        #global_stream = open(config_file_path(request), 'r')
+        #global_config = yaml.load(global_stream)
 
-        log.debug(global_config)
+        #log.debug(global_config)
 
         return True
     
