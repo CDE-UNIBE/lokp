@@ -5,6 +5,7 @@ from lmkp.views.protocol import Feature
 from lmkp.views.protocol import Protocol
 from lmkp.views.protocol import Tag
 from lmkp.views.protocol import TagGroup
+from lmkp.views.protocol import Inv
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPCreated
@@ -40,6 +41,7 @@ class ActivityFeature2(Feature):
 
     def __init__(self, guid, order_value, geometry=None, version=None, diff_info=None, ** kwargs):
         self._taggroups = []
+        self._involvements = []
         self._guid = guid
         self._order_value = order_value
         self._geometry = geometry
@@ -74,6 +76,13 @@ class ActivityFeature2(Feature):
         if self._diff_info is not None:
             for k in self._diff_info:
                 ret[k] = self._diff_info[k]
+
+        # Involvements
+        if len(self._involvements) != 0:
+            sh = []
+            for i in self._involvements:
+                sh.append(i.to_table())
+            ret['involvements'] = sh
 
         return ret
 
@@ -369,7 +378,7 @@ class ActivityProtocol2(Protocol):
         changeset.activity = activity
         self.Session.add(changeset)
 
-    def _query(self, request, limit=None, offset=None, filter=None, uid=None):
+    def _query(self, request, limit=None, offset=None, filter=None, uid=None, involvements=None):
         """
         Do the query. Returns
         - a list of (filtered) Activities
@@ -457,6 +466,18 @@ class ActivityProtocol2(Protocol):
             else self.Session.query(Language).filter(Language.locale == localizer.locale_name).first()
         key_translation, value_translation = self._get_translatedKV(lang, A_Key, A_Value)
 
+        # Prepare query for involvements
+        involvement_status = self.Session.query(Stakeholder.id.label("stakeholder_id"),
+                                 Stakeholder.stakeholder_identifier.label("stakeholder_identifier")).\
+                 filter(Stakeholder.fk_status == status_filter).\
+                 subquery()
+        involvement_query = self.Session.query(Involvement.fk_activity.label("activity_id"),
+                                       Stakeholder_Role.name.label("role_name"),
+                                       involvement_status.c.stakeholder_identifier.label("stakeholder_identifier")).\
+                   join(involvement_status, involvement_status.c.stakeholder_id == Involvement.fk_stakeholder).\
+                   join(Stakeholder_Role).\
+                   subquery()
+
         # Collect all attributes (TagGroups) of relevant activities
         relevant_activities = relevant_activities.subquery()
         query = self.Session.query(Activity.id.label("id"),
@@ -471,14 +492,17 @@ class ActivityProtocol2(Protocol):
                                    A_Value.value.label("value"), \
                                    relevant_activities.c.order_value.label("order_value"),
                                    key_translation.c.key_translated.label("key_translated"),
-                                   value_translation.c.value_translated.label("value_translated")).\
+                                   value_translation.c.value_translated.label("value_translated"),
+                                   involvement_query.c.stakeholder_identifier.label("stakeholder_identifier"),
+                                   involvement_query.c.role_name.label("stakeholder_role")).\
             join(relevant_activities, relevant_activities.c.order_id == Activity.id).\
             join(A_Tag_Group).\
             join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
             join(A_Key).\
             join(A_Value).\
             outerjoin(key_translation, key_translation.c.key_original_id == A_Key.id).\
-            outerjoin(value_translation, value_translation.c.value_original_id == A_Value.id)
+            outerjoin(value_translation, value_translation.c.value_original_id == A_Value.id).\
+            outerjoin(involvement_query, involvement_query.c.activity_id == Activity.id)
         
         
         # Do the ordering again
@@ -493,21 +517,21 @@ class ActivityProtocol2(Protocol):
         for i in query.all():
 
             # The activity identifier
-            uid = str(i[1])
+            uid = str(i.activity_identifier)
 
             # The geometry
-            g = i[2]
+            g = i.geometry
 
             # The version
-            version = i[4]
+            version = i.version
 
             # The current tag group id (not global unique)
-            taggroup_id = int(i[5])
+            taggroup_id = int(i.taggroup)
 
-            key = i[11] if i[11] is not None else i[8]
-            value = i[12] if i[12] is not None else i[9]
+            key = i.key_translated if i.key_translated is not None else i.key
+            value = i.value_translated if i.value_translated is not None else i.value
 
-            order_value = i[10]
+            order_value = i.order_value
             
             activity = None
             for a in activities:
@@ -532,10 +556,30 @@ class ActivityProtocol2(Protocol):
             if activity.find_taggroup_by_id(taggroup_id) is not None:
                 taggroup = activity.find_taggroup_by_id(taggroup_id)
             else:
-                taggroup = TagGroup(taggroup_id, i[6])
+                taggroup = TagGroup(taggroup_id, i.main_tag)
                 activity.add_taggroup(taggroup)
 
-            taggroup.add_tag(Tag(i[7], key, value))
+            # Because of Involvements, the same Tags appears for each Involvement, so
+            # add it only once to TagGroup
+            if taggroup.get_tag_by_id(i.tag) is None:
+                taggroup.add_tag(Tag(i.tag, key, value))
+            
+            # Determine if and how detailed Involvements are to be displayed
+            involvement_details = request.params.get('involvements', None)
+            if involvement_details != 'none' and involvements != False:
+                # Each Involvement (combination of guid and role) also needs to be added only once
+                if i.stakeholder_identifier is not None:
+                    if involvement_details == 'full':
+                        # Full details, query Stakeholder details
+                        if activity.find_involvement_feature(i.stakeholder_identifier, i.stakeholder_role) is None:
+                            sp = StakeholderProtocol(self.Session)
+                            # Important: involvements=False need to be set, otherwise endless loop occurs
+                            stakeholder, count = sp._query(request, uid=i.stakeholder_identifier, involvements=False)
+                            activity.add_involvement(Inv(None, stakeholder[0], i.stakeholder_role))
+                    else:
+                        # Default: only basic information about Involvement
+                        if activity.find_involvement(i.stakeholder_identifier, i.stakeholder_role) is None:
+                            activity.add_involvement(Inv(i.stakeholder_identifier, None, i.stakeholder_role))
 
         return activities, count
 
@@ -718,9 +762,10 @@ class ActivityProtocol2(Protocol):
                                 swdi_version.append(i['version'])
                 if remove is not True:
                     sh_role = oi.stakeholder_role
+                    sh = oi.stakeholder
                     # Copy involvement
                     inv = Involvement()
-                    inv.stakeholder = oi.stakeholder
+                    inv.stakeholder = sh
                     inv.activity = new_version
                     inv.stakeholder_role = sh_role
                     self.Session.add(inv)
