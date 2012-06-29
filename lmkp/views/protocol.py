@@ -238,6 +238,12 @@ class TagGroup(object):
                 return t
         return None
 
+    def get_tag_by_id(self, id):
+        for t in self._tags:
+            if t.get_id() == id:
+                return t
+        return None
+
     def get_tags(self):
         return self._tags
 
@@ -260,10 +266,30 @@ class TagGroup(object):
 
         return {'id': self._id, 'main_tag': main_tag, 'tags': tags}
 
+class Inv(object):
+    
+    def __init__(self, guid, feature, role):
+        self._guid = guid
+        self._feature = feature
+        self._role = role
+
+    def get_guid(self):
+        return self._guid
+    
+    def get_role(self):
+        return self._role
+    
+    def to_table(self):
+        if self._feature is None:
+            return {'id': str(self._guid), 'role': self._role}
+        else:
+            return {'data': self._feature.to_table(), 'role': self._role}
+
 class Feature(object):
 
     def __init__(self, guid, order_value, version=None, diff_info=None, ** kwargs):
         self._taggroups = []
+        self._involvements = []
         self._guid = guid
         self._order_value = order_value
         self._version = version
@@ -275,11 +301,25 @@ class Feature(object):
         """
         self._taggroups.append(taggroup)
 
+    def add_involvement(self, involvement):
+        self._involvements.append(involvement)
+
+    def find_involvement(self, guid, role):
+        for i in self._involvements:
+            if i.get_guid() == guid and i.get_role() == role:
+                return i
+        return None
+    
+    def find_involvement_feature(self, guid, role):
+        for i in self._involvements:
+            if i._feature._guid == str(guid) and i.get_role() == role:
+                return i
+        return None
+
     def find_taggroup_by_id(self, id):
         for t in self._taggroups:
             if t.get_id() == id:
                 return t
-
         return None
 
     def get_taggroups(self):
@@ -317,6 +357,13 @@ class Feature(object):
         if self._diff_info is not None:
             for k in self._diff_info:
                 ret[k] = self._diff_info[k]
+
+        # Involvements
+        if len(self._involvements) != 0:
+            sh = []
+            for i in self._involvements:
+                sh.append(i.to_table())
+            ret['involvements'] = sh
 
         return ret
 
