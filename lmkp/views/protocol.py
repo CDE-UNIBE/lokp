@@ -267,7 +267,7 @@ class TagGroup(object):
         return {'id': self._id, 'main_tag': main_tag, 'tags': tags}
 
 class Inv(object):
-    
+
     def __init__(self, guid, feature, role):
         self._guid = guid
         self._feature = feature
@@ -275,10 +275,10 @@ class Inv(object):
 
     def get_guid(self):
         return self._guid
-    
+
     def get_role(self):
         return self._role
-    
+
     def to_table(self):
         if self._feature is None:
             return {'id': str(self._guid), 'role': self._role}
@@ -309,7 +309,7 @@ class Feature(object):
             if i.get_guid() == guid and i.get_role() == role:
                 return i
         return None
-    
+
     def find_involvement_feature(self, guid, role):
         for i in self._involvements:
             if i._feature._guid == str(guid) and i.get_role() == role:
