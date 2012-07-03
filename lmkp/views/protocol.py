@@ -1,5 +1,4 @@
-from geoalchemy import WKBSpatialElement
-from geoalchemy.functions import functions
+from lmkp.models.database_objects import Status
 from shapely import wkb
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.types import Float
@@ -38,16 +37,29 @@ class Protocol(object):
 
     def _get_status(self, request):
         """
-        Returns the requested activity status, default value is active.
+        Returns an ClauseElement array of requested activity status.
+        Default value is active.
+        It is possible to request activities with different status using
+        status=active,pending
         """
 
-        status = request.params.get('status', None)
-        # Hard coded list of possible activity statii. Not very nice ... But more
-        # performant than requesting the database
-        if status in ["pending", "active", "overwritten", "deleted", "rejected"]:
-            return status
+        statusParameter = request.params.get('status', None)
 
-        return "active"
+        try:
+            status = statusParameter.split(',')
+            # Hard coded list of possible activity statii. Not very nice ... But more
+            # performant than requesting the database
+            arr = []
+            for s in status:
+                if s in ["pending", "active", "overwritten", "deleted", "rejected"]:
+                    arr.append(Status.name == s)
+
+            if len(arr) > 0:
+                return arr
+        except AttributeError:
+            pass
+
+        return [Status.name == "active"]
 
     def _filter(self, request, Tag, Key, Value):
         """
