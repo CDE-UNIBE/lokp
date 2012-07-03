@@ -3,6 +3,8 @@ from lmkp.models.meta import (
     DBSession
 )
 
+from geoalchemy.utils import from_wkt
+
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import column_property
 import datetime
@@ -82,6 +84,9 @@ class A_Key(Base):
     
     def __repr__(self):
         return "<A_Key> id [ %s ] | fk_a_key [ %s ] | fk_language [ %s ] | key [ %s ]" % (self.id, self.fk_a_key, self.fk_language, self.key)
+
+    def to_json(self):
+        return self.key
 
 class SH_Key(Base):
     __tablename__ = 'sh_keys'
@@ -191,6 +196,9 @@ class A_Tag(Base):
     def __repr__(self):
         return "<A_Tag> id [ %s ] | fk_a_tag_group [ %s ] | fk_a_key [ %s ] | fk_a_value [ %s ]" % (self.id, self.fk_a_tag_group, self.fk_a_key, self.fk_a_value)
 
+    def to_json(self):
+        return {'id': self.id, 'key': self.key.key, 'value': self.value.value }
+
 class SH_Tag(Base):
     __tablename__ = 'sh_tags'
     __table_args__ = (
@@ -235,6 +243,9 @@ class A_Tag_Group(Base):
     
     def __repr__(self):
         return '<A_Tag_Group> id [ %s ] | fk_activity [ %s ] | fk_a_tag [ %s ]' % (self.id, self.fk_activity, self.fk_a_tag)
+
+    def to_json(self):
+        return {'id': self.id, 'tags': [t.to_json() for t in self.tags]}
 
 class SH_Tag_Group(Base):
     __tablename__ = 'sh_tag_groups'
@@ -296,6 +307,11 @@ class Activity(Base):
 
     def get_comments(self):
         return DBSession.query(Comment).filter(Comment.activity_identifier == self.activity_identifier).all()
+
+    def to_json(self):
+        # The geometry as Shapely object
+        shape = wkb.loads(str(self.point.geom_wkb))
+        return {'id': str(self.activity_identifier), 'version': self.version, 'geometry': from_wkt(shape.wkt), 'taggroups': [t.to_json() for t in self.tag_groups]}
 
 class Stakeholder(Base):
     __tablename__ = 'stakeholders'
