@@ -388,7 +388,7 @@ class ActivityProtocol2(Protocol):
         # If no custom filter was provided, get filters from request
         if filter is None:
             # Get the status status
-            status_filter = self.Session.query(Status.id).filter(Status.name == self._get_status(request))
+            status_filter = self.Session.query(Status.id).filter(or_(* self._get_status(request)))
             # Get the attribute filter
             tag_filter, filter_length = self._filter(request, A_Tag, A_Key, A_Value)
         
@@ -452,7 +452,7 @@ class ActivityProtocol2(Protocol):
             relevant_activities = self.Session.query(Activity.id.label('order_id'),
                                                      func.char_length('').label('order_value')).\
                 filter(Activity.activity_identifier == uid).\
-                filter(Activity.fk_status == status_filter)
+                filter(Activity.fk_status.in_(status_filter))
 
         # Count relevant activities (before applying limit and offset)
         count = relevant_activities.count()
