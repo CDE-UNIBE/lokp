@@ -583,7 +583,7 @@ class ActivityProtocol2(Protocol):
 
         return activities, count
 
-    def _history(self, request, uid, status_list=None):
+    def _history(self, request, uid, status_list=None, involvements=None):
         
         if status_list is None:
             status_list = ['active', 'overwritten', 'deleted']
@@ -591,6 +591,24 @@ class ActivityProtocol2(Protocol):
         status_filter = self.Session.query(Status).\
             filter(Status.name.in_(status_list)).\
             subquery()
+
+        # Prepare query to translate keys and values
+        localizer = get_localizer(request)
+        lang = None if localizer.locale_name == 'en' \
+            else self.Session.query(Language).filter(Language.locale == localizer.locale_name).first()
+        key_translation, value_translation = self._get_translatedKV(lang, A_Key, A_Value)        
+            
+        # Prepare query for involvements
+        involvement_status = self.Session.query(Stakeholder.id.label("stakeholder_id"),
+                                 Stakeholder.stakeholder_identifier.label("stakeholder_identifier")).\
+                 join(status_filter).\
+                 subquery()
+        involvement_query = self.Session.query(Involvement.fk_activity.label("activity_id"),
+                                       Stakeholder_Role.name.label("role_name"),
+                                       involvement_status.c.stakeholder_identifier.label("stakeholder_identifier")).\
+                   join(involvement_status, involvement_status.c.stakeholder_id == Involvement.fk_stakeholder).\
+                   join(Stakeholder_Role).\
+                   subquery()
 
         query = self.Session.query(Activity.id.label("id"),
                                    Activity.activity_identifier.label("activity_identifier"),
@@ -606,7 +624,11 @@ class ActivityProtocol2(Protocol):
                                    A_Changeset.source.label("source"),
                                    User.id.label("userid"),
                                    User.username.label("username"),
-                                   status_filter.c.name.label("status")).\
+                                   status_filter.c.name.label("status"),
+                                   key_translation.c.key_translated.label("key_translated"),
+                                   value_translation.c.value_translated.label("value_translated"),
+                                   involvement_query.c.stakeholder_identifier.label("stakeholder_identifier"),
+                                   involvement_query.c.role_name.label("stakeholder_role")).\
             join(status_filter).\
             join(A_Changeset).\
             join(User).\
@@ -614,6 +636,9 @@ class ActivityProtocol2(Protocol):
             join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
             join(A_Key).\
             join(A_Value).\
+            outerjoin(key_translation, key_translation.c.key_original_id == A_Key.id).\
+            outerjoin(value_translation, value_translation.c.value_original_id == A_Value.id).\
+            outerjoin(involvement_query, involvement_query.c.activity_id == Activity.id).\
             filter(Activity.activity_identifier == uid).\
             order_by(Activity.version)
         
@@ -630,9 +655,9 @@ class ActivityProtocol2(Protocol):
             # The current tag group id (not global unique)
             taggroup_id = int(i.taggroup)
 
-            key = i.key
-            value = i.value
-
+            key = i.key_translated if i.key_translated is not None else i.key
+            value = i.value_translated if i.value_translated is not None else i.value
+            
             # use version as order value
             order_value = i.version
             
@@ -661,10 +686,31 @@ class ActivityProtocol2(Protocol):
             if activity.find_taggroup_by_id(taggroup_id) is not None:
                 taggroup = activity.find_taggroup_by_id(taggroup_id)
             else:
-                taggroup = TagGroup(taggroup_id, i[6])
+                taggroup = TagGroup(taggroup_id, i.main_tag)
                 activity.add_taggroup(taggroup)
 
-            taggroup.add_tag(Tag(i[7], key, value))
+            # Because of Involvements, the same Tags appear for each Involvement, so
+            # add it only once to TagGroup
+            if taggroup.get_tag_by_id(i.tag) is None:
+                taggroup.add_tag(Tag(i.tag, key, value))
+        
+            # Determine if and how detailed Involvements are to be displayed
+            involvement_details = request.params.get('involvements', None)
+            if involvement_details != 'none' and involvements != False:
+                # Each Involvement (combination of guid and role) also needs to be added only once
+                if i.stakeholder_identifier is not None:
+                    if involvement_details == 'full':
+                        # Full details, query Stakeholder details
+                        if activity.find_involvement_feature(i.stakeholder_identifier, i.stakeholder_role) is None:
+                            sp = StakeholderProtocol(self.Session)
+                            # Important: involvements=False need to be set, otherwise endless loop occurs
+                            stakeholder, count = sp._query(request, uid=i.stakeholder_identifier, involvements=False)
+                            activity.add_involvement(Inv(None, stakeholder[0], i.stakeholder_role))
+                    else:
+                        # Default: only basic information about Involvement
+                        if activity.find_involvement(i.stakeholder_identifier, i.stakeholder_role) is None:
+                            activity.add_involvement(Inv(i.stakeholder_identifier, None, i.stakeholder_role))
+
         
         # Loop again through all versions to create diff
         for a in data:
@@ -718,12 +764,14 @@ class ActivityProtocol2(Protocol):
 
 
     def _key_value_is_valid(self, request, key, value):
+        #@todo:  FIX ME if needed at all.
+        """
         # Read the global configuration file
         global_stream = open(config_file_path(request), 'r')
         global_config = yaml.load(global_stream)
 
         log.debug(global_config)
-
+        """
         return True
     
     def _handle_involvements(self, request, old_version, new_version, inv_change):
