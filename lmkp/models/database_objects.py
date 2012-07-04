@@ -48,10 +48,10 @@ from shapely import wkb
 import geojson
 
 # imports needed for geometry table (A_Events)
-from geoalchemy.geometry import (
-    GeometryColumn,
-    Geometry
-)
+from geoalchemy.geometry import Geometry
+from geoalchemy.geometry import GeometryColumn
+from geoalchemy.geometry import GeometryDDL
+from geoalchemy.geometry import Point
 
 # Password encyption (drawn from the Pylons project 'Shootout': https://github.com/Pylons/shootout/blob/master/shootout/)
 # Contrary to the example above, cryptacular.bcrypt could not be used (problem with Windows?). Instead, cryptacular.pbkdf2 is used.
@@ -122,23 +122,18 @@ class A_Value(Base):
     fk_a_value = Column(Integer)
     fk_language = Column(Integer, nullable = False)
     value = Column(Text)
-    geometry = GeometryColumn('geometry', Geometry(dimension = 2, srid = 4326, spatial_index = True))
 
     fk_value = column_property(fk_a_value)
     
     translations = relationship('A_Value', backref = backref('original', remote_side = [id]))
     tags = relationship('A_Tag', backref = 'value')
     
-    def __init__(self, value, geometry=None):
+    def __init__(self, value):
         self.value = value
-        self.geometry = geometry
     
     def __repr__(self):
-        if self.geometry == None:
-            geom = '-'
-        else:
-            geom = wkb.loads(str(self.geometry.geom_wkb)).wkt
-        return "<A_Value> id [ %s ] | fk_a_value [ %s ] | fk_language [ %s ] | value [ %s ] | geometry [ %s ]" % (self.id, self.fk_a_value, self.fk_language, self.value, geom)
+
+        return "<A_Value> id [ %s ] | fk_a_value [ %s ] | fk_language [ %s ] | value [ %s ]" % (self.id, self.fk_a_value, self.fk_language, self.value)
 
     @property
     def __geo_interface__(self):
@@ -232,20 +227,31 @@ class A_Tag_Group(Base):
     id = Column(Integer, primary_key = True)
     fk_activity = Column(Integer, nullable = False)
     fk_a_tag = Column(Integer, nullable = True)
+    geometry = GeometryColumn('geometry', Geometry(dimension = 2, srid = 4326, spatial_index = True))
 
     fk_tag = column_property(fk_a_tag)
 
     tags = relationship("A_Tag", backref = backref('tag_group', order_by = id), primaryjoin = id==A_Tag.fk_a_tag_group)
     main_tag = relationship("A_Tag", primaryjoin = fk_a_tag==A_Tag.id, post_update = True)
 
-    def __init__(self):
-        pass
+    def __init__(self, geometry=None):
+        self.geometry = geometry
     
     def __repr__(self):
-        return '<A_Tag_Group> id [ %s ] | fk_activity [ %s ] | fk_a_tag [ %s ]' % (self.id, self.fk_activity, self.fk_a_tag)
+        if self.geometry == None:
+            geom = '-'
+        else:
+            geom = wkb.loads(str(self.geometry.geom_wkb)).wkt
+        return '<A_Tag_Group> id [ %s ] | fk_activity [ %s ] | fk_a_tag [ %s ] | geometry [ %s ]' % (self.id, self.fk_activity, self.fk_a_tag, geom)
 
     def to_json(self):
-        return {'id': self.id, 'tags': [t.to_json() for t in self.tags]}
+        geometry = None
+        if self.geometry is not None:
+            shape = wkb.loads(str(self.point.geom_wkb))
+            geometry = from_wkt(shape.wkt)
+        return {'id': self.id, 'geometry': geometry, 'tags': [t.to_json() for t in self.tags]}
+
+GeometryDDL(A_Tag_Group.__table__)
 
 class SH_Tag_Group(Base):
     __tablename__ = 'sh_tag_groups'
@@ -278,7 +284,7 @@ class Activity(Base):
     id = Column(Integer, primary_key = True)
     activity_identifier = Column(UUID, nullable = False)
     timestamp = Column(DateTime, nullable = False)
-    point = GeometryColumn('point', Geometry(dimension = 2, srid = 4326, spatial_index = True))
+    point = GeometryColumn('point', Point(dimension = 2, srid = 4326, spatial_index = True))
     fk_status = Column(Integer, nullable = False)
     version = Column(Integer, nullable = False)
 
@@ -312,6 +318,8 @@ class Activity(Base):
         # The geometry as Shapely object
         shape = wkb.loads(str(self.point.geom_wkb))
         return {'id': str(self.activity_identifier), 'version': self.version, 'geometry': from_wkt(shape.wkt), 'taggroups': [t.to_json() for t in self.tag_groups]}
+
+GeometryDDL(Activity.__table__)
 
 class Stakeholder(Base):
     __tablename__ = 'stakeholders'
