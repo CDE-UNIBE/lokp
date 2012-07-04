@@ -430,7 +430,7 @@ class ActivityProtocol2(Protocol):
 
         # Apply status filter
         if status_filter:
-            relevant_activities = relevant_activities.filter(Activity.fk_status == status_filter)
+            relevant_activities = relevant_activities.filter(Activity.fk_status.in_(status_filter))
         
         # Apply custom filter if one was provided
         if filter:
@@ -469,7 +469,7 @@ class ActivityProtocol2(Protocol):
         # Prepare query for involvements
         involvement_status = self.Session.query(Stakeholder.id.label("stakeholder_id"),
                                  Stakeholder.stakeholder_identifier.label("stakeholder_identifier")).\
-                 filter(Stakeholder.fk_status == status_filter).\
+                 filter(Stakeholder.fk_status.in_(status_filter)).\
                  subquery()
         involvement_query = self.Session.query(Involvement.fk_activity.label("activity_id"),
                                        Stakeholder_Role.name.label("role_name"),
