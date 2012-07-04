@@ -124,7 +124,7 @@ def test_sample_values(request):
     # Update Activity 1
     #a6 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a6.json'), 'pending')
     # Remove an Involvement
-    #s3 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 's3.json'), 'pending')
+    s3 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 's3.json'), 'pending')
 
     return {'success': True}
 
