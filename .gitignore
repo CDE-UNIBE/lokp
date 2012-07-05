@@ -7,6 +7,9 @@
 .pydevproject
 .settings
 
+# Ignore Netbeans project folder
+/nbproject/
+
 # Ignore packages
 *.egg
 *.egg-info

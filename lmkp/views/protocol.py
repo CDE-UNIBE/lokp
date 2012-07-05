@@ -13,6 +13,21 @@ class Protocol(object):
     def __init__(self):
         pass
 
+    def _get_versions(self, request):
+        """
+        Returns the requested versions if provided, else None
+        """
+        versions = request.params.get('versions', None)
+        if versions is None:
+            return None
+        
+        for v in versions.split(","):
+            try:
+                int(v)
+            except ValueError:
+                return None
+        return versions.split(",")
+
     def _get_limit(self, request):
 
         limit = request.params.get('limit', None)
@@ -371,8 +386,9 @@ class Feature(object):
         """
         Append a diff object. Try to find TagGroups and Tags of current version
         in previous version.
+        Also find new or removed Involvements.
         """
-        if previous is not None:
+        if previous is not None:           
             # Collect new TagGroups
             diff_new = []
             # Loop through TagGroups of current version
@@ -430,7 +446,46 @@ class Feature(object):
             for tg in self._taggroups:
                 tg.setDiffFlag(None)
 
-            self._diff_info['diff'] = {'new': diff_new, 'old': diff_old}
+            # Collect new Involvements
+            inv_new = []
+            # Loop through Involvements of current version
+            for invn in self._involvements:
+                newinv_found = False
+                for invo in previous._involvements:
+                    if (invn.get_guid() == invo.get_guid() and
+                        invn.get_role() == invo.get_role()):
+                        newinv_found = True
+                        break
+                if newinv_found is not True:
+                    inv_new.append(invn.to_table())
+
+            # Collect old Involvements (not there anymore)
+            inv_old = []
+            # Loop through Involvements of previous version
+            for invo in previous._involvements:
+                oldinv_found = False
+                for invn in self._involvements:
+                    if (invo.get_guid() == invn.get_guid() and
+                        invo.get_role() == invn.get_role()):
+                            oldinv_found = True
+                            break
+                if oldinv_found is not True:
+                    inv_old.append(invo.to_table())
+
+            # Put it all together
+            diff_object = {}
+            if len(diff_new) > 0:
+                diff_object['new'] = diff_new
+            if len(diff_old) > 0:
+                diff_object['old'] = diff_old
+            if len(inv_old) > 0:
+                diff_object['old_inv'] = inv_old
+            if len(inv_new) > 0:
+                diff_object['new_inv'] = inv_new
+
+            # Only add diff object if not empty
+            if diff_object != {}:
+                self._diff_info['diff'] = diff_object
 
     def get_guid(self):
         return self._guid
