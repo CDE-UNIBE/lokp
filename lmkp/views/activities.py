@@ -5,7 +5,7 @@ from lmkp.views.activity_protocol2 import ActivityProtocol2
 import logging
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPFound
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPCreated
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
 from pyramid.security import ACLAllowed
@@ -16,6 +16,7 @@ from pyramid.url import route_url
 from pyramid.view import view_config
 from sqlalchemy.sql.expression import or_, and_
 import yaml
+import simplejson as json
 
 from lmkp.renderers.renderers import translate_key
 
@@ -166,7 +167,7 @@ def create(request):
     Implements the create functionality (HTTP POST) in the CRUD model
 
     Test the POST request e.g. with
-    curl --data @line.json http://localhost:6543/activities
+    curl -u "user1:pw" -d @addNewActivity.json -H "Content-Type: application/json" http://localhost:6543/activities
 
     """
 
@@ -175,11 +176,18 @@ def create(request):
     print effective_principals(request)
 
     if userid is None:
-        return HTTPForbidden()
+        raise HTTPForbidden()
     if not isinstance(has_permission('edit', request.context, request), ACLAllowed):
-        return HTTPForbidden()
+        raise HTTPForbidden()
 
-    return activity_protocol2.create(request)
+    ids = activity_protocol2.create(request)
+
+    response = {}
+    response['data'] = [i.to_json() for i in ids]
+    response['total'] = len(response['data'])
+
+    request.response.status = 201
+    return response
 
 @view_config(route_name='activities_tree', renderer='tree')
 def tree(request):
