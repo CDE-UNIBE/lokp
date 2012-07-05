@@ -720,12 +720,24 @@ class ActivityProtocol2(Protocol):
                             activity.add_involvement(Inv(i.stakeholder_identifier, None, i.stakeholder_role))
 
         
-        # Loop again through all versions to create diff
-        for i, a in enumerate(data):
-            if i == 0:
-                a.create_diff()
-            else:
-                a.create_diff(data[i-1])
+        # Create diffs
+        # If no versions specified, use 'previous_version' of Changeset
+        if versions is None:
+            for a in data:
+                if a.get_previous_version() is None:
+                    a.create_diff()
+                else:
+                    for ov in data:
+                        if ov.get_order_value() == a.get_previous_version():
+                            a.create_diff(ov)
+                            break
+        # If versions specified, use version order to create diffs
+        else:
+            for i, a in enumerate(data):
+                if i == 0:
+                    a.create_diff()
+                else:
+                    a.create_diff(data[i-1])
         
         return data, len(data)
 
