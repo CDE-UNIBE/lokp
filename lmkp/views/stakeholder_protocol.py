@@ -505,11 +505,13 @@ class StakeholderProtocol(Protocol):
     def history(self, request, uid, status_list=None):
 
         # Query the database
-        stakeholders, count = self._history(request, uid, status_list)
-
+        stakeholders, count = self._history(request, uid, status_list, 
+            versions=self._get_versions(request))
+        
         return {'total': count, 'data': [sh.to_table() for sh in stakeholders]}
 
-    def _history(self, request, uid, status_list=None, involvements=None):
+    def _history(self, request, uid, status_list=None, versions=None, 
+        involvements=None):
 
         if status_list is None:
             status_list = ['active', 'overwritten', 'deleted']
@@ -567,6 +569,10 @@ class StakeholderProtocol(Protocol):
                 filter(Stakeholder.stakeholder_identifier == uid).\
                 order_by(Stakeholder.version)
 
+        # Append version limit if provided
+        if versions is not None:
+            query = query.filter(Stakeholder.version.in_(versions))
+
         # Collect the data from query
         data = []
         for i in query.all():
@@ -599,7 +605,8 @@ class StakeholderProtocol(Protocol):
 
             # If no existing ActivityFeature found, create new one
             if stakeholder == None:
-                stakeholder = Feature(uid, order_value, diff_info=diff_info)
+                stakeholder = Feature(uid, order_value, version=order_value, 
+                    diff_info=diff_info)
                 data.append(stakeholder)
 
             # Check if there is already this tag group present in the current
@@ -634,16 +641,11 @@ class StakeholderProtocol(Protocol):
                             stakeholder.add_involvement(Inv(i.activity_identifier, None, i.stakeholder_role))
 
         # Loop again through all versions to create diff
-        for a in data:
-            # If version has no previous version, create empty diff
-            if a.get_previous_version() is None:
+        for i, a in enumerate(data):
+            if i == 0:
                 a.create_diff()
-            # Else look for previous version
             else:
-                for ov in data:
-                    if ov.get_order_value() == a.get_previous_version():
-                        a.create_diff(ov)
-                        break
+                a.create_diff(data[i-1])
 
         return data, len(data)
     

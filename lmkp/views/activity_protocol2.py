@@ -102,7 +102,8 @@ class ActivityProtocol2(Protocol):
     def history(self, request, uid, status_list=None):
         
         # Query the database
-        activities, count = self._history(request, uid, status_list)
+        activities, count = self._history(request, uid, status_list, 
+            versions=self._get_versions(request))
         
         return {'total': count, 'data': [a.to_table() for a in activities]}
 
@@ -584,7 +585,8 @@ class ActivityProtocol2(Protocol):
 
         return activities, count
 
-    def _history(self, request, uid, status_list=None, involvements=None):
+    def _history(self, request, uid, status_list=None, versions=None,
+        involvements=None):
         
         if status_list is None:
             status_list = ['active', 'overwritten', 'deleted']
@@ -643,6 +645,10 @@ class ActivityProtocol2(Protocol):
             filter(Activity.activity_identifier == uid).\
             order_by(Activity.version)
         
+        # Append version limit if provided
+        if versions is not None:
+            query = query.filter(Activity.version.in_(versions))
+        
         # Collect the data from query
         data = []
         for i in query.all():
@@ -678,7 +684,8 @@ class ActivityProtocol2(Protocol):
             
             # If no existing ActivityFeature found, create new one
             if activity == None:
-                activity = ActivityFeature2(uid, order_value, geometry=g, diff_info=diff_info)
+                activity = ActivityFeature2(uid, order_value, geometry=g, 
+                    version=order_value, diff_info=diff_info)
                 data.append(activity)
             
             # Check if there is already this tag group present in the current
@@ -714,16 +721,11 @@ class ActivityProtocol2(Protocol):
 
         
         # Loop again through all versions to create diff
-        for a in data:
-            # If version has no previous version, create empty diff
-            if a.get_previous_version() is None:
+        for i, a in enumerate(data):
+            if i == 0:
                 a.create_diff()
-            # Else look for previous version
             else:
-                for ov in data:
-                    if ov.get_order_value() == a.get_previous_version():
-                        a.create_diff(ov)
-                        break
+                a.create_diff(data[i-1])
         
         return data, len(data)
 
