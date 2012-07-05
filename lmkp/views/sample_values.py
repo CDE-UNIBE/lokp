@@ -112,17 +112,22 @@ def test_sample_values(request):
     #i3 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'i3.json'), 'pending')
     # Update Stakeholder
     #s2 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 's2.json'), 'pending')
+    
     ###
     # Create many new Stakeholders
     #ms1 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'ms1.json'), 'active')
     # Create many new Activities with links to Stakholders
     #mai1 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'mai1.json'), 'active')
     """
-    UPDATE data.stakeholders
-    SET fk_status = 3
+    UPDATE data.stakeholders SET fk_status = 3;
+    UPDATE data.stakeholders SET fk_status = 2 WHERE id > 15;
     """
     # Update Activity 1
     #a6 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a6.json'), 'pending')
+    """
+    UPDATE data.activities SET fk_status = 3 WHERE id = 5;
+    UPDATE data.activities SET fk_status = 2 WHERE id = 6;
+    """
     # Remove an Involvement
     s3 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 's3.json'), 'pending')
 

@@ -131,13 +131,14 @@ class ActivityProtocol2(Protocol):
         """
         # Collect information about changing involvements
         involvement_change = activity_dict['stakeholders'] if 'stakeholders' in activity_dict else None
+        implicit_inv_change = True if involvement_change is not None and 'implicit_involvement_update' in activity_dict and activity_dict['implicit_involvement_update'] is True else False
 
         # If this activity does not have an id then create a new activity
         if 'id' not in activity_dict:
             new_activity = self._create_activity(request, activity_dict, status=status)
             
             # Handle involvements
-            self._handle_involvements(request, None, new_activity, involvement_change)
+            self._handle_involvements(request, None, new_activity, involvement_change, implicit_inv_change)
 
             return new_activity
 
@@ -156,7 +157,7 @@ class ActivityProtocol2(Protocol):
             new_activity = self._create_activity(request, activity_dict, identifier=identifier, status=status)
             
             # Handle involvements
-            self._handle_involvements(request, None, new_activity, involvement_change)
+            self._handle_involvements(request, None, new_activity, involvement_change, implicit_inv_change)
             
             return new_activity
         
@@ -247,7 +248,7 @@ class ActivityProtocol2(Protocol):
         self._add_changeset(request, new_activity, old_version)
         
         # Handle involvements
-        self._handle_involvements(request, db_a, new_activity, involvement_change)
+        self._handle_involvements(request, db_a, new_activity, involvement_change, implicit_inv_change)
         
         return new_activity
 
@@ -774,7 +775,7 @@ class ActivityProtocol2(Protocol):
         """
         return True
     
-    def _handle_involvements(self, request, old_version, new_version, inv_change):
+    def _handle_involvements(self, request, old_version, new_version, inv_change, implicit=False):
         """
         Handle the involvements of an Activity.
         - Activity update: copy old involvements
@@ -790,6 +791,7 @@ class ActivityProtocol2(Protocol):
         # deleted because they need to be pushed to a new version as well
         swdi_id = [] # = Stakeholders with deleted involvements
         swdi_version = []
+        swdi_role = []
         # Copy old involvements if existing
         if old_version is not None:
             for oi in old_version.involvements:
@@ -808,7 +810,9 @@ class ActivityProtocol2(Protocol):
                             if i['id'] not in swdi_id:
                                 swdi_id.append(i['id'])
                                 swdi_version.append(i['version'])
-                if remove is not True:
+                                swdi_role.append(i['role'])
+                # Also: only copy involvements if status of Stakeholder is 'pending' or 'active'
+                if remove is not True and oi.stakeholder.status.id < 3:
                     sh_role = oi.stakeholder_role
                     sh = oi.stakeholder
                     # Copy involvement
@@ -835,6 +839,7 @@ class ActivityProtocol2(Protocol):
                             x = swdi_id.index(str(old_sh_db.stakeholder_identifier))
                             swdi_id.pop(x)
                             swdi_version.pop(x)
+                            swdi_role.pop(x)
                         except ValueError:
                             pass
                         # Push Stakeholder to new version
@@ -849,14 +854,16 @@ class ActivityProtocol2(Protocol):
                         inv.stakeholder_role = role_db
                         self.Session.add(inv)
         # Also push Stakeholders where involvements were deleted to new version
-        for i, a in enumerate(swdi_id):
-            # Query database
-            old_sh_db = self.Session.query(Stakeholder).\
-                filter(Stakeholder.stakeholder_identifier == a).\
-                filter(Stakeholder.version == swdi_version[i]).\
-                first()
-            # Push Stakeholder to new version
-            sp = StakeholderProtocol(self.Session)
-            # Simulate a dict
-            sh_dict = {'id': old_sh_db.stakeholder_identifier, 'version': old_sh_db.version}
-            new_sh = sp._handle_stakeholder(request, sh_dict, 'pending')
+        if implicit is not True:
+            for i, a in enumerate(swdi_id):
+                # Query database
+                old_sh_db = self.Session.query(Stakeholder).\
+                    filter(Stakeholder.stakeholder_identifier == a).\
+                    filter(Stakeholder.version == swdi_version[i]).\
+                    first()
+                # Push Stakeholder to new version
+                sp = StakeholderProtocol(self.Session)
+                # Simulate a dict
+                #sh_dict = {'id': old_sh_db.stakeholder_identifier, 'version': old_sh_db.version}
+                sh_dict = {'id': old_sh_db.stakeholder_identifier, 'version': old_sh_db.version, 'activities': [{'op': 'delete', 'id': old_version.activity_identifier, 'version': swdi_version[i], 'role': swdi_role[i]}], 'implicit_involvement_update': True}
+                new_sh = sp._handle_stakeholder(request, sh_dict, 'pending')
