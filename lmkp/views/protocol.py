@@ -13,6 +13,21 @@ class Protocol(object):
     def __init__(self):
         pass
 
+    def _get_versions(self, request):
+        """
+        Returns the requested versions if provided, else None
+        """
+        versions = request.params.get('versions', None)
+        if versions is None:
+            return None
+        
+        for v in versions.split(","):
+            try:
+                int(v)
+            except ValueError:
+                return None
+        return versions.split(",")
+
     def _get_limit(self, request):
 
         limit = request.params.get('limit', None)
