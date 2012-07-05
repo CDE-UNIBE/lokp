@@ -864,6 +864,15 @@ class ActivityProtocol2(Protocol):
                 # Push Stakeholder to new version
                 sp = StakeholderProtocol(self.Session)
                 # Simulate a dict
-                #sh_dict = {'id': old_sh_db.stakeholder_identifier, 'version': old_sh_db.version}
-                sh_dict = {'id': old_sh_db.stakeholder_identifier, 'version': old_sh_db.version, 'activities': [{'op': 'delete', 'id': old_version.activity_identifier, 'version': swdi_version[i], 'role': swdi_role[i]}], 'implicit_involvement_update': True}
+                sh_dict = {
+                    'id': old_sh_db.stakeholder_identifier, 
+                    'version': old_sh_db.version, 
+                    'activities': [{
+                        'op': 'delete', 
+                        'id': old_version.activity_identifier, 
+                        'version': swdi_version[i], 
+                        'role': swdi_role[i]
+                    }], 
+                    'implicit_involvement_update': True
+                }
                 new_sh = sp._handle_stakeholder(request, sh_dict, 'pending')
