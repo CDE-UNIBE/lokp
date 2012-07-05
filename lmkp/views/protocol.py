@@ -1,5 +1,4 @@
-from geoalchemy import WKBSpatialElement
-from geoalchemy.functions import functions
+from lmkp.models.database_objects import Status
 from shapely import wkb
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.types import Float
@@ -53,16 +52,29 @@ class Protocol(object):
 
     def _get_status(self, request):
         """
-        Returns the requested activity status, default value is active.
+        Returns an ClauseElement array of requested activity status.
+        Default value is active.
+        It is possible to request activities with different status using
+        status=active,pending
         """
 
-        status = request.params.get('status', None)
-        # Hard coded list of possible activity statii. Not very nice ... But more
-        # performant than requesting the database
-        if status in ["pending", "active", "overwritten", "deleted", "rejected"]:
-            return status
+        statusParameter = request.params.get('status', None)
 
-        return "active"
+        try:
+            status = statusParameter.split(',')
+            # Hard coded list of possible activity statii. Not very nice ... But more
+            # performant than requesting the database
+            arr = []
+            for s in status:
+                if s in ["pending", "active", "overwritten", "deleted", "rejected"]:
+                    arr.append(Status.name == s)
+
+            if len(arr) > 0:
+                return arr
+        except AttributeError:
+            pass
+
+        return [Status.name == "active"]
 
     def _filter(self, request, Tag, Key, Value):
         """
@@ -282,7 +294,7 @@ class TagGroup(object):
         return {'id': self._id, 'main_tag': main_tag, 'tags': tags}
 
 class Inv(object):
-    
+
     def __init__(self, guid, feature, role):
         self._guid = guid
         self._feature = feature
@@ -290,10 +302,10 @@ class Inv(object):
 
     def get_guid(self):
         return self._guid
-    
+
     def get_role(self):
         return self._role
-    
+
     def to_table(self):
         if self._feature is None:
             return {'id': str(self._guid), 'role': self._role}
@@ -324,7 +336,7 @@ class Feature(object):
             if i.get_guid() == guid and i.get_role() == role:
                 return i
         return None
-    
+
     def find_involvement_feature(self, guid, role):
         for i in self._involvements:
             if i._feature._guid == str(guid) and i.get_role() == role:

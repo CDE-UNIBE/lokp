@@ -390,7 +390,7 @@ class ActivityProtocol2(Protocol):
         # If no custom filter was provided, get filters from request
         if filter is None:
             # Get the status status
-            status_filter = self.Session.query(Status.id).filter(Status.name == self._get_status(request))
+            status_filter = self.Session.query(Status.id).filter(or_(* self._get_status(request)))
             # Get the attribute filter
             tag_filter, filter_length = self._filter(request, A_Tag, A_Key, A_Value)
         
@@ -432,7 +432,7 @@ class ActivityProtocol2(Protocol):
 
         # Apply status filter
         if status_filter:
-            relevant_activities = relevant_activities.filter(Activity.fk_status == status_filter)
+            relevant_activities = relevant_activities.filter(Activity.fk_status.in_(status_filter))
         
         # Apply custom filter if one was provided
         if filter:
@@ -454,7 +454,7 @@ class ActivityProtocol2(Protocol):
             relevant_activities = self.Session.query(Activity.id.label('order_id'),
                                                      func.char_length('').label('order_value')).\
                 filter(Activity.activity_identifier == uid).\
-                filter(Activity.fk_status == status_filter)
+                filter(Activity.fk_status.in_(status_filter))
 
         # Count relevant activities (before applying limit and offset)
         count = relevant_activities.count()
@@ -471,7 +471,7 @@ class ActivityProtocol2(Protocol):
         # Prepare query for involvements
         involvement_status = self.Session.query(Stakeholder.id.label("stakeholder_id"),
                                  Stakeholder.stakeholder_identifier.label("stakeholder_identifier")).\
-                 filter(Stakeholder.fk_status == status_filter).\
+                 filter(Stakeholder.fk_status.in_(status_filter)).\
                  subquery()
         involvement_query = self.Session.query(Involvement.fk_activity.label("activity_id"),
                                        Stakeholder_Role.name.label("role_name"),
@@ -782,8 +782,8 @@ class ActivityProtocol2(Protocol):
         #@todo:  FIX ME if needed at all.
         """
         # Read the global configuration file
-        global_stream = open(config_file_path(request), 'r')
-        global_config = yaml.load(global_stream)
+        #global_stream = open(config_file_path(request), 'r')
+        #global_config = yaml.load(global_stream)
 
         log.debug(global_config)
         """
