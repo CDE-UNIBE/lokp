@@ -102,7 +102,8 @@ class ActivityProtocol2(Protocol):
     def history(self, request, uid, status_list=None):
         
         # Query the database
-        activities, count = self._history(request, uid, status_list)
+        activities, count = self._history(request, uid, status_list, 
+            versions=self._get_versions(request))
         
         return {'total': count, 'data': [a.to_table() for a in activities]}
 
@@ -131,13 +132,14 @@ class ActivityProtocol2(Protocol):
         """
         # Collect information about changing involvements
         involvement_change = activity_dict['stakeholders'] if 'stakeholders' in activity_dict else None
+        implicit_inv_change = True if involvement_change is not None and 'implicit_involvement_update' in activity_dict and activity_dict['implicit_involvement_update'] is True else False
 
         # If this activity does not have an id then create a new activity
         if 'id' not in activity_dict:
             new_activity = self._create_activity(request, activity_dict, status=status)
             
             # Handle involvements
-            self._handle_involvements(request, None, new_activity, involvement_change)
+            self._handle_involvements(request, None, new_activity, involvement_change, implicit_inv_change)
 
             return new_activity
 
@@ -156,7 +158,7 @@ class ActivityProtocol2(Protocol):
             new_activity = self._create_activity(request, activity_dict, identifier=identifier, status=status)
             
             # Handle involvements
-            self._handle_involvements(request, None, new_activity, involvement_change)
+            self._handle_involvements(request, None, new_activity, involvement_change, implicit_inv_change)
             
             return new_activity
         
@@ -247,7 +249,7 @@ class ActivityProtocol2(Protocol):
         self._add_changeset(request, new_activity, old_version)
         
         # Handle involvements
-        self._handle_involvements(request, db_a, new_activity, involvement_change)
+        self._handle_involvements(request, db_a, new_activity, involvement_change, implicit_inv_change)
         
         return new_activity
 
@@ -583,7 +585,8 @@ class ActivityProtocol2(Protocol):
 
         return activities, count
 
-    def _history(self, request, uid, status_list=None):
+    def _history(self, request, uid, status_list=None, versions=None,
+        involvements=None):
         
         if status_list is None:
             status_list = ['active', 'overwritten', 'deleted']
@@ -591,6 +594,24 @@ class ActivityProtocol2(Protocol):
         status_filter = self.Session.query(Status).\
             filter(Status.name.in_(status_list)).\
             subquery()
+
+        # Prepare query to translate keys and values
+        localizer = get_localizer(request)
+        lang = None if localizer.locale_name == 'en' \
+            else self.Session.query(Language).filter(Language.locale == localizer.locale_name).first()
+        key_translation, value_translation = self._get_translatedKV(lang, A_Key, A_Value)        
+            
+        # Prepare query for involvements
+        involvement_status = self.Session.query(Stakeholder.id.label("stakeholder_id"),
+                                 Stakeholder.stakeholder_identifier.label("stakeholder_identifier")).\
+                 join(status_filter).\
+                 subquery()
+        involvement_query = self.Session.query(Involvement.fk_activity.label("activity_id"),
+                                       Stakeholder_Role.name.label("role_name"),
+                                       involvement_status.c.stakeholder_identifier.label("stakeholder_identifier")).\
+                   join(involvement_status, involvement_status.c.stakeholder_id == Involvement.fk_stakeholder).\
+                   join(Stakeholder_Role).\
+                   subquery()
 
         query = self.Session.query(Activity.id.label("id"),
                                    Activity.activity_identifier.label("activity_identifier"),
@@ -606,7 +627,11 @@ class ActivityProtocol2(Protocol):
                                    A_Changeset.source.label("source"),
                                    User.id.label("userid"),
                                    User.username.label("username"),
-                                   status_filter.c.name.label("status")).\
+                                   status_filter.c.name.label("status"),
+                                   key_translation.c.key_translated.label("key_translated"),
+                                   value_translation.c.value_translated.label("value_translated"),
+                                   involvement_query.c.stakeholder_identifier.label("stakeholder_identifier"),
+                                   involvement_query.c.role_name.label("stakeholder_role")).\
             join(status_filter).\
             join(A_Changeset).\
             join(User).\
@@ -614,8 +639,15 @@ class ActivityProtocol2(Protocol):
             join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
             join(A_Key).\
             join(A_Value).\
+            outerjoin(key_translation, key_translation.c.key_original_id == A_Key.id).\
+            outerjoin(value_translation, value_translation.c.value_original_id == A_Value.id).\
+            outerjoin(involvement_query, involvement_query.c.activity_id == Activity.id).\
             filter(Activity.activity_identifier == uid).\
             order_by(Activity.version)
+        
+        # Append version limit if provided
+        if versions is not None:
+            query = query.filter(Activity.version.in_(versions))
         
         # Collect the data from query
         data = []
@@ -630,9 +662,9 @@ class ActivityProtocol2(Protocol):
             # The current tag group id (not global unique)
             taggroup_id = int(i.taggroup)
 
-            key = i.key
-            value = i.value
-
+            key = i.key_translated if i.key_translated is not None else i.key
+            value = i.value_translated if i.value_translated is not None else i.value
+            
             # use version as order value
             order_value = i.version
             
@@ -652,7 +684,8 @@ class ActivityProtocol2(Protocol):
             
             # If no existing ActivityFeature found, create new one
             if activity == None:
-                activity = ActivityFeature2(uid, order_value, geometry=g, diff_info=diff_info)
+                activity = ActivityFeature2(uid, order_value, geometry=g, 
+                    version=order_value, diff_info=diff_info)
                 data.append(activity)
             
             # Check if there is already this tag group present in the current
@@ -661,22 +694,50 @@ class ActivityProtocol2(Protocol):
             if activity.find_taggroup_by_id(taggroup_id) is not None:
                 taggroup = activity.find_taggroup_by_id(taggroup_id)
             else:
-                taggroup = TagGroup(taggroup_id, i[6])
+                taggroup = TagGroup(taggroup_id, i.main_tag)
                 activity.add_taggroup(taggroup)
 
-            taggroup.add_tag(Tag(i[7], key, value))
+            # Because of Involvements, the same Tags appear for each Involvement, so
+            # add it only once to TagGroup
+            if taggroup.get_tag_by_id(i.tag) is None:
+                taggroup.add_tag(Tag(i.tag, key, value))
         
-        # Loop again through all versions to create diff
-        for a in data:
-            # If version has no previous version, create empty diff
-            if a.get_previous_version() is None:
-                a.create_diff()
-            # Else look for previous version
-            else:
-                for ov in data:
-                    if ov.get_order_value() == a.get_previous_version():
-                        a.create_diff(ov)
-                        break
+            # Determine if and how detailed Involvements are to be displayed
+            involvement_details = request.params.get('involvements', None)
+            if involvement_details != 'none' and involvements != False:
+                # Each Involvement (combination of guid and role) also needs to be added only once
+                if i.stakeholder_identifier is not None:
+                    if involvement_details == 'full':
+                        # Full details, query Stakeholder details
+                        if activity.find_involvement_feature(i.stakeholder_identifier, i.stakeholder_role) is None:
+                            sp = StakeholderProtocol(self.Session)
+                            # Important: involvements=False need to be set, otherwise endless loop occurs
+                            stakeholder, count = sp._query(request, uid=i.stakeholder_identifier, involvements=False)
+                            activity.add_involvement(Inv(None, stakeholder[0], i.stakeholder_role))
+                    else:
+                        # Default: only basic information about Involvement
+                        if activity.find_involvement(i.stakeholder_identifier, i.stakeholder_role) is None:
+                            activity.add_involvement(Inv(i.stakeholder_identifier, None, i.stakeholder_role))
+
+        
+        # Create diffs
+        # If no versions specified, use 'previous_version' of Changeset
+        if versions is None:
+            for a in data:
+                if a.get_previous_version() is None:
+                    a.create_diff()
+                else:
+                    for ov in data:
+                        if ov.get_order_value() == a.get_previous_version():
+                            a.create_diff(ov)
+                            break
+        # If versions specified, use version order to create diffs
+        else:
+            for i, a in enumerate(data):
+                if i == 0:
+                    a.create_diff()
+                else:
+                    a.create_diff(data[i-1])
         
         return data, len(data)
 
@@ -718,15 +779,17 @@ class ActivityProtocol2(Protocol):
 
 
     def _key_value_is_valid(self, request, key, value):
+        #@todo:  FIX ME if needed at all.
+        """
         # Read the global configuration file
         global_stream = open(config_file_path(request), 'r')
         global_config = yaml.load(global_stream)
 
         log.debug(global_config)
-
+        """
         return True
     
-    def _handle_involvements(self, request, old_version, new_version, inv_change):
+    def _handle_involvements(self, request, old_version, new_version, inv_change, implicit=False):
         """
         Handle the involvements of an Activity.
         - Activity update: copy old involvements
@@ -742,6 +805,7 @@ class ActivityProtocol2(Protocol):
         # deleted because they need to be pushed to a new version as well
         swdi_id = [] # = Stakeholders with deleted involvements
         swdi_version = []
+        swdi_role = []
         # Copy old involvements if existing
         if old_version is not None:
             for oi in old_version.involvements:
@@ -760,7 +824,9 @@ class ActivityProtocol2(Protocol):
                             if i['id'] not in swdi_id:
                                 swdi_id.append(i['id'])
                                 swdi_version.append(i['version'])
-                if remove is not True:
+                                swdi_role.append(i['role'])
+                # Also: only copy involvements if status of Stakeholder is 'pending' or 'active'
+                if remove is not True and oi.stakeholder.status.id < 3:
                     sh_role = oi.stakeholder_role
                     sh = oi.stakeholder
                     # Copy involvement
@@ -787,6 +853,7 @@ class ActivityProtocol2(Protocol):
                             x = swdi_id.index(str(old_sh_db.stakeholder_identifier))
                             swdi_id.pop(x)
                             swdi_version.pop(x)
+                            swdi_role.pop(x)
                         except ValueError:
                             pass
                         # Push Stakeholder to new version
@@ -801,14 +868,25 @@ class ActivityProtocol2(Protocol):
                         inv.stakeholder_role = role_db
                         self.Session.add(inv)
         # Also push Stakeholders where involvements were deleted to new version
-        for i, a in enumerate(swdi_id):
-            # Query database
-            old_sh_db = self.Session.query(Stakeholder).\
-                filter(Stakeholder.stakeholder_identifier == a).\
-                filter(Stakeholder.version == swdi_version[i]).\
-                first()
-            # Push Stakeholder to new version
-            sp = StakeholderProtocol(self.Session)
-            # Simulate a dict
-            sh_dict = {'id': old_sh_db.stakeholder_identifier, 'version': old_sh_db.version}
-            new_sh = sp._handle_stakeholder(request, sh_dict, 'pending')
+        if implicit is not True:
+            for i, a in enumerate(swdi_id):
+                # Query database
+                old_sh_db = self.Session.query(Stakeholder).\
+                    filter(Stakeholder.stakeholder_identifier == a).\
+                    filter(Stakeholder.version == swdi_version[i]).\
+                    first()
+                # Push Stakeholder to new version
+                sp = StakeholderProtocol(self.Session)
+                # Simulate a dict
+                sh_dict = {
+                    'id': old_sh_db.stakeholder_identifier, 
+                    'version': old_sh_db.version, 
+                    'activities': [{
+                        'op': 'delete', 
+                        'id': old_version.activity_identifier, 
+                        'version': swdi_version[i], 
+                        'role': swdi_role[i]
+                    }], 
+                    'implicit_involvement_update': True
+                }
+                new_sh = sp._handle_stakeholder(request, sh_dict, 'pending')
