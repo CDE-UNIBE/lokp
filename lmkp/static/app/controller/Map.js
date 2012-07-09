@@ -17,7 +17,38 @@ Ext.define('Lmkp.controller.Map',{
 
         // Get the toolbar
         var tbar = comp.getDockedItems('toolbar')[0];
+        // Get the map
         var map = comp.getMap();
+
+        // Register the moveend event with the map
+        map.events.register('moveend', this, this.onMoveEnd);
+
+        // Get the vecotr layer
+        var vectorLayer = comp.getVectorLayer();
+
+        // Register the featureselected event
+        vectorLayer.events.register('featureselected', this, this.onFeatureSelected);
+        vectorLayer.events.register('featureunselected', this, this.onFeatureUnselected);
+
+        // Create the highlight and select control
+        var highlightCtrl = new OpenLayers.Control.SelectFeature(vectorLayer, {
+            id: 'highlightControl',
+            hover: true,
+            highlightOnly: true,
+            renderIntent: "temporary"
+        });
+
+        var selectCtrl = new OpenLayers.Control.SelectFeature(vectorLayer, {
+            id: 'selectControl',
+            clickout: true
+        });
+
+        // Add the controls to the map and activate them
+        map.addControl(highlightCtrl);
+        map.addControl(selectCtrl);
+
+        highlightCtrl.activate();
+        selectCtrl.activate();
 
         var dragPanAction = Ext.create('GeoExt.Action',{
             control: new OpenLayers.Control.DragPan({
@@ -65,6 +96,53 @@ Ext.define('Lmkp.controller.Map',{
         }));
 
 
+    },
+
+    /*
+     * Method on map move end.
+     */
+    onMoveEnd: function(event){
+        // Move paging to back to page 1 when filtering (otherwise may show empty page instead of results)
+        Ext.ComponentQuery.query('pagingtoolbar[id=activityGridPagingToolbar]')[0].moveFirst();
+    },
+
+    /**
+     * Method triggered by the onfeatureunselected event by an OpenLayers.Layer.Vector
+     */
+    onFeatureUnselected: function(event){
+        var grid = Ext.ComponentQuery.query('filterPanel gridpanel[id=filterResults]')[0];
+        grid.getSelectionModel().deselectAll(true);
+    },
+
+    /**
+     * Method triggered by the onfeatureselected event by an OpenLayers.Layer.Vector
+     */
+    onFeatureSelected: function(event){
+        // Get the GridPanel
+        var grid = Ext.ComponentQuery.query('filterPanel gridpanel[id=filterResults]')[0];
+        //grid.getSelectionModel().deselectAll(true);
+        var store = grid.getStore();
+
+        // Get the record from the store with the same id as the selected vector
+        var index = store.findBy(function(record, id){
+            return event.feature.data.id == id;
+        });
+        var record = store.getAt(index);
+        grid.getSelectionModel().select([record], false, true);
+
+        var detailPanel = Ext.ComponentQuery.query('filterPanel detailPanel')[0];
+        var selectedTab = detailPanel.getActiveTab();
+        switch (selectedTab.getXType()) {
+            case "activityHistoryTab":
+                // var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
+                // this._populateHistoryTab(selectedTab, uid)
+                console.log("coming soon");
+                break;
+            default:
+                // default is: activityDetailTab
+                detailPanel.populateDetailsTab(selectedTab, [record]);
+                break;
+        }
     }
 
     
