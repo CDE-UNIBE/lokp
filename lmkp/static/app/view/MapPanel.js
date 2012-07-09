@@ -61,6 +61,17 @@ Ext.define('Lmkp.view.MapPanel',{
 
     zoom: 2,
 
+    constructor: function(config){
+
+        this.callParent([config]);
+
+        // It is necessary to set the map center in the constructor to get a
+        // valid map extent from the beginning.
+        this.map.setCenter(new OpenLayers.LonLat(0,0), 2);
+
+        return this;
+    },
+
     getVectorLayer: function(){
         return this.getMap().getLayersByName('vector')[0];
     },
