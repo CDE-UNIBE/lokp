@@ -1,9 +1,9 @@
-from pyramid.view import view_config
+import fnmatch
 from lmkp.config import profile_directory_path
 import os
-import yaml
-import fnmatch
+from pyramid.view import view_config
 import re
+import yaml
 
 @view_config(route_name='profile_store', renderer='json')
 def profile_store(request):
@@ -18,6 +18,12 @@ def profile_store(request):
 
     profile_dir = profile_directory_path(request)
 
+    current_profile = None
+    if '_PROFILE_' in request.params:
+        current_profile = request.params['_PROFILE_']
+    if '_PROFILE_' in request.cookies:
+        current_profile = request.cookies['_PROFILE_']
+
     for root, dirs, files in os.walk(profile_dir):
         for filename in fnmatch.filter(files, 'application.yml'):
             file = "%s/%s" % (root, filename)
@@ -28,15 +34,18 @@ def profile_store(request):
 
                 try:
                     name = curr_yaml["application"]["name"]
-                    profile = re.split('\/',root)[-1]
+                    profile = re.split('\/', root)[-1]
+                    geometry = curr_yaml['application']['geometry']
 
                     if profile == '' or profile is None:
                         profile = 'global'
 
                     data.append({
-                        'name': name,
-                        'profile': profile
-                    })
+                                'name': name,
+                                'profile': profile,
+                                'geometry': geometry,
+                                'active': current_profile == profile
+                                })
 
                 except TypeError:
                     # Profile is empty.

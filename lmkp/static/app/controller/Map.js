@@ -1,16 +1,40 @@
 Ext.define('Lmkp.controller.Map',{
     extend: 'Ext.app.Controller',
 
+    stores: [
+        'Profiles'
+    ],
+
     views: [
-    'MapPanel'
+        'MapPanel'
     ],
 
     init: function(){
+
+        this.getProfilesStore().on('load', this.onLoad, this);
+
         this.control({
             'mappanel': {
                 render: this.onPanelRendered
             }
         });
+    },
+
+    onLoad: function(store, records, successful, operation, eOpts) {
+        var activeProfile = store.getAt(store.findExact('active', true));
+
+        var geoJson = new OpenLayers.Format.GeoJSON();
+
+        var feature = geoJson.read(Ext.encode(activeProfile.get('geometry')))[0];
+
+        var mappanel = Ext.ComponentQuery.query('mappanel')[0];
+        var map = mappanel.getMap();
+
+        var geom = feature.geometry.clone().transform(
+        new OpenLayers.Projection("EPSG:4326"),
+        new OpenLayers.Projection("EPSG:900913"));
+
+        map.zoomToExtent(geom.getBounds());
     },
 
     onPanelRendered: function(comp){
