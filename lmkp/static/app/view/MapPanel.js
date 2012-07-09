@@ -26,14 +26,14 @@ Ext.define('Lmkp.view.MapPanel',{
             sphericalMercator: true,
             projection: new OpenLayers.Projection("EPSG:900913")
         }),
-        new OpenLayers.Layer.WMS('Activities',
+        /*new OpenLayers.Layer.WMS('Activities',
             'http://localhost:8080/geoserver/lo/wms',{
                 layers: 'activities',
                 transparent: false
             },{
                 isBaseLayer: false,
                 sphericalMercator: true
-            }),
+            }),*/
         new OpenLayers.Layer.Vector('vector',{
             isBaseLayer: false,
             // Add an event listener to reproject all features from geographic

@@ -35,6 +35,7 @@ Ext.define('Lmkp.view.Main' ,{
         fieldLabel: Lmkp.ts.msg("profile-label"),
         labelAlign: 'right',
         id: 'profile_combobox',
+        itemId: 'profile_combobox',
         queryMode: 'local',
         store: 'Profiles',
         displayField: 'name',
