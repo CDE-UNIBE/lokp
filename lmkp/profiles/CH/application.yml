@@ -1,11 +1,5 @@
 application:
   geometry:
     type: Polygon
-    coordinates:
-    -
-      - [5.9559, 45.8180]
-      - [10.492, 45.8180]
-      - [10.492, 47.8084]
-      - [5.9559, 47.8084]
-      - [5.9559, 45.8180]
+    coordinates: [[[5.9559, 45.8180],[10.492, 45.8180],[10.492, 47.8084],[5.9559, 47.8084],[5.9559, 45.8180]]]
   name: Observatory on Land Acquisitions in Switzerland

@@ -1,12 +1,7 @@
 application:
   bbox: -180,-84,180,84
+  # Geometry is a GeoJSON object
   geometry:
     type: Polygon
-    coordinates:
-    -
-      - [-180, -84]
-      - [180, -84]
-      - [180, 84]
-      - [-180, 84]
-      - [-180, -84]
+    coordinates: [[[-180, -84],[180, -84],[180, 84],[-180, 84],[-180, -84]]]
   name: "Land Matrix Knowledge Platform global edition"
