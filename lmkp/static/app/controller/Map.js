@@ -6,7 +6,7 @@ Ext.define('Lmkp.controller.Map',{
     ],
 
     views: [
-        'MapPanel'
+        'Map'
     ],
 
     init: function(){
