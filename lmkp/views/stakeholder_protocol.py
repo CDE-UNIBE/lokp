@@ -23,6 +23,7 @@ from sqlalchemy import func
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.sql.expression import asc
 from sqlalchemy.sql.expression import desc
+from sqlalchemy.sql.expression import or_
 from sqlalchemy.types import Float
 import uuid
 
@@ -314,7 +315,7 @@ class StakeholderProtocol(Protocol):
         # If no custom filter was provided, get filters from request
         if filter is None:
             # Get the status status
-            status_filter = self.Session.query(Status.id).filter(Status.name == self._get_status(request))
+            status_filter = self.Session.query(Status.id).filter(or_(* self._get_status(request)))
             # Get the attribute filter
             tag_filter, filter_length = self._filter(request, SH_Tag, SH_Key, SH_Value)
         
