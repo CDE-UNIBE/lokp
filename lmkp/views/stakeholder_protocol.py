@@ -430,6 +430,16 @@ class StakeholderProtocol(Protocol):
                 filter(Stakeholder.stakeholder_identifier == uid).\
                 filter(Stakeholder.fk_status == status_filter)
 
+        # Apply filter for Stakeholder_Role if set ('or' if multiple)
+        if self._get_sh_role_filter(request) is not None:
+            sh_role_filter = self.Session.query(Stakeholder.id.label('role_id')).\
+                join(Involvement).\
+                join(Stakeholder_Role).\
+                filter(or_(* self._get_sh_role_filter(request))).\
+                subquery()
+            relevant_stakeholders = relevant_stakeholders.join(sh_role_filter, 
+                sh_role_filter.c.role_id == Stakeholder.id)
+
         # Count relevant stakeholders (before applying limit and offset)
         count = relevant_stakeholders.count()
 

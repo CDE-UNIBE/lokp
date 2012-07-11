@@ -508,6 +508,16 @@ class ActivityProtocol2(Protocol):
                 filter(Activity.activity_identifier == uid).\
                 filter(Activity.fk_status.in_(status_filter))
 
+        # Apply filter for Stakeholder_Role if set ('or' if multiple)
+        if self._get_sh_role_filter(request) is not None:
+            sh_role_filter = self.Session.query(Activity.id.label('role_id')).\
+                join(Involvement).\
+                join(Stakeholder_Role).\
+                filter(or_(* self._get_sh_role_filter(request))).\
+                subquery()
+            relevant_activities = relevant_activities.join(sh_role_filter, 
+                sh_role_filter.c.role_id == Activity.id)
+
         # Count relevant activities (before applying limit and offset)
         count = relevant_activities.count()
         
@@ -557,6 +567,7 @@ class ActivityProtocol2(Protocol):
             outerjoin(key_translation, key_translation.c.key_original_id == A_Key.id).\
             outerjoin(value_translation, value_translation.c.value_original_id == A_Value.id).\
             outerjoin(involvement_query, involvement_query.c.activity_id == Activity.id)
+            #.\filter(involvement_query.c.role_name.like('%Donor%'))
         
         
         # Do the ordering again
