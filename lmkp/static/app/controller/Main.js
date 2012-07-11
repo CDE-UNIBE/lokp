@@ -2,12 +2,12 @@ Ext.define('Lmkp.controller.Main', {
     extend: 'Ext.app.Controller',
 
     views: [
-    'Pending',
-    'Main',
+    'moderator.Pending',
+    'moderator.Main',
     'Filter',
     'Stakeholder',
-    'Map',
-    'Table'
+    'editor.Map',
+    'editor.Table'
     ],
     
     stores: [

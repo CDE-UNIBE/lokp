@@ -1,9 +1,9 @@
-Ext.define('Lmkp.view.Outer' ,{
+Ext.define('Lmkp.view.moderator.Outer' ,{
     extend: 'Ext.panel.Panel',
-    alias : ['widget.outerpanel'],
+    alias : ['widget.lo_moderatorouterpanel'],
 
     requires: [
-    'Lmkp.view.Main'
+    'Lmkp.view.moderator.Main'
     ],
 
     border: false,
