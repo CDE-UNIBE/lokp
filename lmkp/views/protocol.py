@@ -4,6 +4,7 @@ from lmkp.models.database_objects import A_Value
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Tag
 from lmkp.models.database_objects import SH_Value
+from lmkp.models.database_objects import Stakeholder_Role
 from lmkp.models.database_objects import Status
 from shapely import wkb
 from sqlalchemy.sql.expression import cast
@@ -255,6 +256,21 @@ class Protocol(object):
                 return q_text.subquery(), False
 
         return None, None
+
+    def _get_sh_role_filter(self, request):
+        """
+        Returns the filter for Stakeholder_Role(s) if set
+        """
+        
+        sh_role = request.params.get('sh_role', None)
+        if sh_role is not None:
+            roles = sh_role.split(',')
+            filters = []
+            for r in roles:
+                filters.append(Stakeholder_Role.name.like(r))
+            return filters
+        
+        return None
 
 class Tag(object):
 
