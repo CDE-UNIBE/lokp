@@ -1,6 +1,11 @@
-Ext.define('Lmkp.view.public.Outer' ,{
+Ext.define('Lmkp.view.editor.Outer' ,{
     extend: 'Ext.panel.Panel',
-    alias : ['widget.lo_publicouterpanel'],
+    alias : ['widget.lo_editorouterpanel'],
+
+    requires: [
+        'Lmkp.view.login.Toolbar',
+        'Lmkp.view.editor.Main'
+    ],
 
     border: false,
     layout: 'border',
@@ -12,8 +17,7 @@ Ext.define('Lmkp.view.public.Outer' ,{
         xtype: 'panel'
     },{
         region: 'center',
-        html: 'public <i>panel</i><br/>Please login to see more ...<br/>Hint: there are 3 users ;) <ul><li>user1</li><li>user2</li><li>user3</li></ul>',
-        xtype: 'panel'
+        xtype: 'lo_editormainpanel'
     }],
 
     tbar: {
