@@ -1,11 +1,10 @@
-Ext.define('Lmkp.view.moderator.Main' ,{
+Ext.define('Lmkp.view.editor.Main' ,{
     extend: 'Ext.panel.Panel',
-    alias : ['widget.main'],
+    alias : ['widget.lo_editormainpanel'],
 
     requires: [
     'Lmkp.view.editor.Map',
-    'Lmkp.view.editor.Table',
-    'Lmkp.view.moderator.Pending'
+    'Lmkp.view.editor.Table'
     ],
 
     border: false,
@@ -13,9 +12,6 @@ Ext.define('Lmkp.view.moderator.Main' ,{
 
     items: [{
         items: [{
-            title: 'Pending Changes',
-            xtype: 'lo_moderatorpendingpanel'
-        },{
             title: 'Table View',
             xtype: 'lo_editortablepanel'
         },{
@@ -27,7 +23,7 @@ Ext.define('Lmkp.view.moderator.Main' ,{
              * http://www.sencha.com/forum/showthread.php?188414-4.1-RC1-Collapse-mode-mini-doesn-t-work
              */
             // collapseMode: 'header' would be nicer but has some rendering issues
-            collapseMode: 'mini', 
+            collapseMode: 'mini',
             collapsible: true,
             split: true,
             xtype: 'lo_editormappanel'

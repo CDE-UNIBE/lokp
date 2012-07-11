@@ -1,6 +1,6 @@
 Ext.define('Lmkp.view.Filter', {
     extend: 'Ext.panel.Panel',
-    alias: ['widget.filterPanel'],
+    alias: ['widget.lo_filterpanel'],
 
     title: Lmkp.ts.msg("activities-title"),
     frame: false,
