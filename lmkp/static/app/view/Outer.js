@@ -3,9 +3,10 @@ Ext.define('Lmkp.view.Outer' ,{
     alias : ['widget.outerpanel'],
 
     requires: [
-        'Lmkp.view.Main'
+    'Lmkp.view.Main'
     ],
 
+    border: false,
     layout: 'border',
 
     items: [{
