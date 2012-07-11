@@ -421,7 +421,7 @@ class ActivityProtocol2(Protocol):
                                     ).\
             join(A_Tag_Group).\
             join(a_tag_filter, 
-                a_tag_filter.c.a_filter_tag_id == A_Tag_Group.id).\
+                a_tag_filter.c.a_filter_tg_id == A_Tag_Group.id).\
             outerjoin(order_query).\
             group_by(Activity.id, order_query.c.value)
             # order the list (needed to correctly apply limit and offset below)
@@ -445,7 +445,7 @@ class ActivityProtocol2(Protocol):
                                     ).\
             join(A_Tag_Group).\
             join(a_tag_filter, 
-                a_tag_filter.c.a_filter_tag_id == A_Tag_Group.id).\
+                a_tag_filter.c.a_filter_tg_id == A_Tag_Group.id).\
             group_by(Activity.id)
 
         # Apply filter by Stakeholder attributes if provided
