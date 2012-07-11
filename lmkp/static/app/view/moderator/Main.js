@@ -2,14 +2,21 @@ Ext.define('Lmkp.view.moderator.Main' ,{
     extend: 'Ext.panel.Panel',
     alias : ['widget.main'],
 
+    requires: [
+    'Lmkp.view.editor.Map',
+    'Lmkp.view.editor.Table',
+    'Lmkp.view.moderator.Pending'
+    ],
+
     border: false,
     layout: 'border',
 
     items: [{
         items: [{
-            xtype: 'pendingpanel'
+            xtype: 'lo_moderatorpendingpanel'
         },{
-            xtype: 'lo_tablepanel'
+            title: 'Table View',
+            xtype: 'lo_editortablepanel'
         },{
             title: 'Map View',
             /**
@@ -22,7 +29,7 @@ Ext.define('Lmkp.view.moderator.Main' ,{
             collapseMode: 'mini', 
             collapsible: true,
             split: true,
-            xtype: 'mappanel'
+            xtype: 'lo_editormappanel'
         }],
         region: 'center',
         xtype: 'tabpanel'
