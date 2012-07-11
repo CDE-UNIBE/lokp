@@ -3,6 +3,7 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
     alias : ['widget.lo_moderatorpendingpanel'],
 
     requires: [
+    'Lmkp.store.PendingActivityGrid'
     ],
 
     layout: {
@@ -25,8 +26,8 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
             flex: 1,
             border: false,
             split: true,
-            id: 'pendingFilterResults',
-            store: 'ActivityGrid',
+            itemId: 'resultgrid',
+            store: 'PendingActivityGrid',
             viewConfig: {
                 stripeRows: false
             },
@@ -47,7 +48,7 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
             dockedItems: [{
                 xtype: 'pagingtoolbar',
                 id: 'pendingActivityGridPagingToolbar',
-                store: 'ActivityGrid',
+                store: 'PendingActivityGrid',
                 dock: 'bottom',
                 enableOverflow: false,
                 displayInfo: true,
@@ -60,7 +61,7 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
         xtype: 'panel'
     },{
         flex: 0.5,
-        html: 'this <i>will</i> be the future detailpanel',
+        html: 'this <i>will</i> be the future comparison panel',
         xtype: 'panel'
     }]
 

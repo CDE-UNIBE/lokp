@@ -2,7 +2,7 @@ Ext.define('Lmkp.view.activities.History', {
 	extend: 'Ext.panel.Panel',
 	alias: ['widget.activityHistoryTab'],
 	
-	id: 'activityHistoryTab',
+	itemId: 'activityHistoryTab',
 
 	bodyPadding: 5,
 	

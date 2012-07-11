@@ -8,7 +8,16 @@ Ext.onReady(function(){
         'Lmkp.view.login.Toolbar'
         ],
 
-        controllers: ['login.Toolbar', 'editor.Map', 'Map', 'Filter', 'EditFilter', 'Stakeholder'],
+        controllers: [
+        'login.Toolbar',
+        'editor.Map',
+        'Map',
+        'editor.Table',
+        'moderator.Pending',
+        'Filter',
+        'EditFilter',
+        'Stakeholder'
+        ],
     
         launch: function() {
             Ext.create('Ext.container.Viewport', {
