@@ -1,4 +1,4 @@
-Ext.define('Lmkp.view.Main' ,{
+Ext.define('Lmkp.view.moderator.Main' ,{
     extend: 'Ext.panel.Panel',
     alias : ['widget.main'],
 

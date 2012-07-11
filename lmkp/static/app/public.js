@@ -4,11 +4,11 @@ Ext.onReady(function(){
         appFolder: 'static/app',
 
         requires: [
-        'Lmkp.view.Public',
+        'Lmkp.view.public.Outer',
         'Lmkp.view.login.Toolbar'
         ],
 
-        controllers: ['Outer', 'Main'],
+        controllers: ['login.Toolbar'],
 
         launch: function() {
             Ext.create('Ext.container.Viewport', {
@@ -18,7 +18,7 @@ Ext.onReady(function(){
                 },
                 items: [{
                     region: 'center',
-                    xtype: 'lo_publicpanel'
+                    xtype: 'lo_publicouterpanel'
                 }]
             });
         }

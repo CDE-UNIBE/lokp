@@ -1,6 +1,6 @@
-Ext.define('Lmkp.view.Public' ,{
+Ext.define('Lmkp.view.public.Outer' ,{
     extend: 'Ext.panel.Panel',
-    alias : ['widget.lo_publicpanel'],
+    alias : ['widget.lo_publicouterpanel'],
 
     border: false,
     layout: 'border',
@@ -12,7 +12,7 @@ Ext.define('Lmkp.view.Public' ,{
         xtype: 'panel'
     },{
         region: 'center',
-        html: 'public <i>panel</i>',
+        html: 'public <i>panel</i><br/>Please login to see more ...',
         xtype: 'panel'
     }],
 
