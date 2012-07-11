@@ -137,7 +137,7 @@ def index(request):
         response = request.response
         response.set_cookie('_PROFILE_', request.params.get('_PROFILE_'))
 
-    return {'script': 'main'}
+    return {}
 
 @view_config(route_name='ext_tests', renderer='lmkp:templates/tests.pt')
 def ext_tests(request):
