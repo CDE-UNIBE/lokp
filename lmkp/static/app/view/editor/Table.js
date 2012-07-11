@@ -76,7 +76,7 @@ Ext.define('Lmkp.view.editor.Table',{
             flex: 0.5,
             border: false,
             split: true,
-            id: 'filterResults',
+            itemId: 'resultgrid',
             store: 'ActivityGrid',
             viewConfig: {
                 stripeRows: false
@@ -111,8 +111,7 @@ Ext.define('Lmkp.view.editor.Table',{
         xtype: 'panel'
     },{
         flex: 0.5,
-        html: 'this <i>will</i> be the future detailpanel',
-        xtype: 'panel'
+        xtype: 'lo_editordetailpanel'
     }]
 
 });

@@ -21,7 +21,7 @@ Ext.define('Lmkp.view.editor.Map',{
     },{
         html: 'this <i>will</i> be the future detailpanel',
         flex: 0.5,
-        xtype: 'panel'
+        xtype: 'lo_editordetailpanel'
     }]
 
 });
