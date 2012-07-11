@@ -1,12 +1,27 @@
-Ext.define('Lmkp.view.Table' ,{
-    extend: 'Ext.tab.Panel',
-    alias : ['widget.lo_tablepanel'],
+Ext.define('Lmkp.view.editor.Table',{
+    extend: 'Ext.panel.Panel',
+    alias: ['widget.lo_editortablepanel'],
+
+    requires: [
+    ],
+
+    layout: {
+        type: 'hbox',
+        align: 'stretch'
+    },
+
+    border: false,
+
+    frame: false,
 
     items: [{
-        xtype: 'filterPanel'
+        flex: 0.5,
+        html: "test",
+        xtype: 'panel'
     },{
-        xtype: 'stakeholderpanel'
-    }],
+        flex: 0.5,
+        html: 'this <i>will</i> be the future detailpanel',
+        xtype: 'panel'
+    }]
 
-    title: 'Table View'
 });

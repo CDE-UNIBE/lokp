@@ -4,16 +4,11 @@ Ext.onReady(function(){
         appFolder: 'static/app',
 
         requires: [
-        'Lmkp.view.Outer',
-        'Lmkp.controller.Main',
-        'Lmkp.controller.Layers',
-        'Lmkp.controller.Map',
-        'Lmkp.controller.Filter',
-        'Lmkp.controller.EditFilter'
+        'Lmkp.view.moderator.Outer',
+        'Lmkp.view.login.Toolbar'
         ],
 
-        //controllers: Lmkp.mainControllers,
-        controllers: ['Main', 'Layers', 'Map', 'Filter', 'EditFilter', 'Stakeholder', 'Outer'],
+        controllers: ['login.Toolbar', 'editor.Map', 'Map', 'Filter', 'EditFilter', 'Stakeholder'],
     
         launch: function() {
             Ext.create('Ext.container.Viewport', {
@@ -22,12 +17,8 @@ Ext.onReady(function(){
                     padding: 0
                 },
                 items: [{
-                    // height: 100,
-                    // region: 'north',
-                    // xtype: 'header'
-                    // },{
                     region: 'center',
-                    xtype: 'outerpanel'
+                    xtype: 'lo_moderatorouterpanel'
                 }]
             });
         }

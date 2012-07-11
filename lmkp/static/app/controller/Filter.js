@@ -16,12 +16,12 @@ Ext.define('Lmkp.controller.Filter', {
     init: function() {
         // get configStore and load it
         this.getConfigStore().load()
-
+/*
         // Add an event listener to the ActivityGrid store
         this.getActivityGridStore().on('load', function(store, records, successful, operation, eOpts){
 
             // Get the MapPanel
-            var mapPanel = Ext.ComponentQuery.query('mappanel')[0];
+            var mapPanel = Ext.ComponentQuery.query('lo_editormappanel')[0];
             // and the vector layer
             var vectorLayer = mapPanel.getVectorLayer();
             vectorLayer.removeAllFeatures();
@@ -50,12 +50,13 @@ Ext.define('Lmkp.controller.Filter', {
             // Finally add all features to the vectorLayer
             vectorLayer.addFeatures(features);
         }, this);
+        */
 
         // Set the bounding box and the epsg code as an extra params to the
         // ActivityGrid store before reloading.
-        this.getActivityGridStore().on('beforeload', function(store, operation, eOpts){
+        /*this.getActivityGridStore().on('beforeload', function(store, operation, eOpts){
             // Get the MapPanel
-            var mapPanel = Ext.ComponentQuery.query('mappanel')[0];
+            var mapPanel = Ext.ComponentQuery.query('lo_editormappanel')[0];
             // Get the map
             var map = mapPanel.getMap();
             // Caclulate the current bounds (not sure if necessary)
@@ -68,7 +69,7 @@ Ext.define('Lmkp.controller.Filter', {
                 bbox: extent.toBBOX(),
                 epsg: 900913
             };
-        });
+        });*/
 
 
         this.control({
