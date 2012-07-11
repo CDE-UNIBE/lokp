@@ -21,7 +21,7 @@ def view_toolbar_config(request):
     
     str += "Lmkp.login_form = { border: false, xtype: 'toolbar', defaultType: 'textfield', items: [\n";
     str += "{id: 'username', emptyText: '%s'},\n" % _('Username', default='Username')
-    str += "{id: 'password', emptyText: '%s', inputType: 'password'},\n" % _('Password', default='Password')
+    str += "{id: 'password', emptyText: '%s', inputType: 'password', enableKeyEvents: true},\n" % _('Password', default='Password')
     str += "{xtype: 'button', id:'login_submit', text: '%s'}]};\n" % _('Login', default='Login')
 
     str += "Lmkp.mainControllers = ['Main', 'Layers', 'Map', 'Filter', 'Stakeholder'];\n"

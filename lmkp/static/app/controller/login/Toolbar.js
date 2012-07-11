@@ -37,6 +37,9 @@ Ext.define('Lmkp.controller.login.Toolbar', {
             },
             'lo_logintoolbar button[id=user_button]': {
                 click: this.onUserButtonClick
+            },
+            'lo_logintoolbar textfield[id=password]': {
+                keypress: this.onPasswordKeyPress
             }
         });
     },
@@ -61,6 +64,12 @@ Ext.define('Lmkp.controller.login.Toolbar', {
 
         // load activity grid store
         this.getActivityGridStore().load();
+    },
+
+    onPasswordKeyPress: function(textfield, event, eOpts){
+        if(event.getKey() == event.ENTER){
+            this.onLoginSubmit(textfield, event, eOpts);
+        }
     },
 
     onLoginSubmit: function(button, event, eOpts){
