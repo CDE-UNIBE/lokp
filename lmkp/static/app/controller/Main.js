@@ -25,7 +25,7 @@ Ext.define('Lmkp.controller.Main', {
 
     init: function() {
         this.control({
-            'viewport > outerpanel': {
+            'viewport outerpanel,lo_publicpanel': {
                 render: this.onPanelRendered
             }
         });

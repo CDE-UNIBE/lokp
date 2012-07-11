@@ -18,27 +18,27 @@ Ext.define('Lmkp.controller.Outer', {
 
     init: function() {
         this.control({
-            'outerpanel toolbar combobox[id=language_combobox]': {
+            'lo_logintoolbar combobox[id=language_combobox]': {
                 select: this.onLanguageSelect
             },
-            'outerpanel toolbar combobox[id=profile_combobox]': {
+            'lo_logintoolbar combobox[id=profile_combobox]': {
                 select: this.onProfileSelect
             },
-            'outerpanel toolbar button[id=login_submit]': {
+            'lo_logintoolbar button[id=login_submit]': {
                 click: this.onLoginSubmit
             },
-            'outerpanel toolbar button[id=logout_button]': {
+            'lo_logintoolbar button[id=logout_button]': {
                 click: this.onLogout
             },
-            'outerpanel toolbar button[id=user_button]': {
+            'lo_logintoolbar button[id=user_button]': {
                 click: this.onUserButtonClick
             }
         });
     },
 
     onLoginSubmit: function(button, event, eOpts){
-        var username = Ext.ComponentQuery.query('outerpanel toolbar textfield[id=username]')[0];
-        var pw = Ext.ComponentQuery.query('outerpanel toolbar textfield[id=password]')[0];
+        var username = Ext.ComponentQuery.query('toolbar textfield[id=username]')[0];
+        var pw = Ext.ComponentQuery.query('toolbar textfield[id=password]')[0];
         if (username.getValue() != '' && pw.getValue() != '') {
             var form = Ext.create('Ext.form.Panel', {
                 standardSubmit: true,

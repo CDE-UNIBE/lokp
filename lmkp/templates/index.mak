@@ -12,6 +12,7 @@ from pyramid.security import has_permission
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>Land Observatory</title>
+        ## General Styles
         <link rel="stylesheet" type="text/css" href="/static/lib/extjs-4.1.1/resources/css/ext-all.css"></link>
         <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/style.css')}"></link>
         <script type="text/javascript" src="/static/lib/extjs-4.1.1/ext-debug.js"></script>
@@ -27,13 +28,16 @@ from pyramid.security import has_permission
         <script type="text/javascript" src="/static/lib/OpenLayers-2.11/OpenLayers.js"></script>
         <!--script type="text/javascript" src="/static/lib/geoext2/src/GeoExt/GeoExt.js"></script-->
         <script type="text/javascript" src="/lang"></script>
-        <%
-        toolbarConfiguration = '/app/view/ViewToolbar.js'
-        if isinstance(has_permission('edit', request.context, request), ACLAllowed):
-            toolbarConfiguration = '/app/view/EditToolbar.js'
-        %>
-        <script type="text/javascript" src="${toolbarConfiguration}"></script>
-        <script type="text/javascript" src="${request.static_url('lmkp:static/app/%s.js' % script)}"></script>
+        % if isinstance(has_permission('administer', request.context, request), ACLAllowed) or isinstance(has_permission('moderate', request.context, request), ACLAllowed):
+        <script type="text/javascript" src="/app/view/EditToolbar.js"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/app/moderator.js')}"></script>
+        % elif isinstance(has_permission('edit', request.context, request), ACLAllowed):
+        <script type="text/javascript" src="/app/view/EditToolbar.js"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/app/editor.js')}"></script>
+        % else:
+        <script type="text/javascript" src="/app/view/ViewToolbar.js"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/app/public.js')}"></script>
+        % endif
     </head>
     <body>
         <div id="header-div">
