@@ -2,6 +2,7 @@ Ext.define('Lmkp.view.Main' ,{
     extend: 'Ext.panel.Panel',
     alias : ['widget.main'],
 
+    border: false,
     layout: 'border',
 
     items: [{
