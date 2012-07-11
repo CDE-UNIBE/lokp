@@ -304,7 +304,8 @@ class StakeholderProtocol(Protocol):
 
         return {'total': count, 'data': [sh.to_table() for sh in stakeholders]}
 
-    def _query(self, request, limit=None, offset=None, filter=None, uid=None, involvements=None):
+    def _query(self, request, limit=None, offset=None, filter=None, uid=None, 
+        involvements=None, only_guid=False):
         """
         Do the query. Returns
         - a list of (filtered) Activities
@@ -317,7 +318,19 @@ class StakeholderProtocol(Protocol):
             # Get the status status
             status_filter = self.Session.query(Status.id).filter(or_(* self._get_status(request)))
             # Get the attribute filter
-            tag_filter, filter_length = self._filter(request, SH_Tag, SH_Key, SH_Value)
+            (a_tag_filter, a_filter_length, sh_tag_filter, sh_filter_length
+            ) = self._filter(request)
+        else:
+            status_filter = (filter['status_filter'] 
+                if 'status_filter' in filter else None)
+            a_tag_filter = (filter['a_tag_filter'] 
+                if 'a_tag_filter' in filter else None)
+            a_filter_length = (filter['a_filter_length']
+                if 'a_filter_length' in filter else 0)
+            sh_tag_filter = (filter['sh_tag_filter']
+                if 'sh_tag_filter' in filter else None)
+            sh_filter_length = (filter['sh_filter_length']
+                if 'sh_filter_length' in filter else 0)
         
         # Get the order
         order_query, order_numbers = self._get_order(request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value)
@@ -327,11 +340,13 @@ class StakeholderProtocol(Protocol):
         # 'order_value' contains the values to order by.
         if order_query is not None:
             relevant_stakeholders = self.Session.query(
-                                                     Stakeholder.id.label('order_id'),
-                                                     order_query.c.value.label('order_value')
-                                                     ).\
+                                    Stakeholder.id.label('order_id'),
+                                    order_query.c.value.label('order_value'),
+                                    Stakeholder.fk_status
+                                    ).\
             join(SH_Tag_Group).\
-            join(tag_filter, tag_filter.c.filter_tag_id == SH_Tag_Group.id).\
+            join(sh_tag_filter, 
+                sh_tag_filter.c.sh_filter_tag_id == SH_Tag_Group.id).\
             outerjoin(order_query).\
             group_by(Stakeholder.id, order_query.c.value)
             # order the list (needed to correctly apply limit and offset below)
@@ -347,28 +362,66 @@ class StakeholderProtocol(Protocol):
                     relevant_stakeholders = relevant_stakeholders.order_by(asc(order_query.c.value))
         # If result is not ordered, only join with prepared filters is necessary.
         else:
+            # Use dummy value as order value
             relevant_stakeholders = self.Session.query(
-                                                     Stakeholder.id.label('order_id'),
-                                                     func.char_length('').label('order_value') # dummy value
-                                                     ).\
+                                    Stakeholder.id.label('order_id'),
+                                    func.char_length('').label('order_value'),
+                                    Stakeholder.fk_status
+                                    ).\
             join(SH_Tag_Group).\
-            join(tag_filter, tag_filter.c.filter_tag_id == SH_Tag_Group.id).\
+            join(sh_tag_filter, 
+                sh_tag_filter.c.sh_filter_tag_id == SH_Tag_Group.id).\
             group_by(Stakeholder.id)
 
+        # Apply filter by Activity attributes if provided
+        if a_filter_length > 0:
+            # Prepare a dict to simulate filter for Activity
+            a_filter_dict = {
+                'a_tag_filter': a_tag_filter,
+                'a_filter_length': a_filter_length,
+                'status_filter': status_filter
+            }
+            # Use ActivityProtocol to query identifiers
+            from lmkp.views.activity_protocol2 import ActivityProtocol2
+            ap = ActivityProtocol2(self.Session)
+            a_ids, count = ap._query(request, filter = a_filter_dict,
+                only_guid = True)
+            a_subquery = self.Session.query(Activity.id.label("a_id")).\
+                filter(Activity.activity_identifier.in_(a_ids)).\
+                subquery()
+            if self._get_logical_operator(request) == 'or':
+                # OR: use 'union' to add identifiers to relevant_activities
+                relevant_stakeholders = relevant_stakeholders.\
+                    union(self.Session.query(
+                        Stakeholder.id.label('order_id'),
+                        func.char_length('').label('order_value'), # dummy value
+                        Stakeholder.fk_status
+                    ).\
+                    join(Involvement).\
+                    join(a_subquery, a_subquery.c.a_id ==
+                        Involvement.fk_activity).\
+                    group_by(Stakeholder.id))
+            else:
+                # AND: filter identifiers of relevant stakeholders
+                relevant_stakeholders = relevant_stakeholders.\
+                    join(Involvement).\
+                    join(a_subquery, a_subquery.c.a_id ==
+                        Involvement.fk_activity).\
+                    group_by(Stakeholder.id)
+                    
         # Apply status filter
-        if status_filter:
-            relevant_stakeholders = relevant_stakeholders.filter(Stakeholder.fk_status == status_filter)
-
-        # Apply custom filter if one was provided
-        if filter:
-            relevant_stakeholders = relevant_stakeholders.filter(filter)
+        if status_filter is not None:
+            relevant_stakeholders = relevant_stakeholders.\
+                filter(Stakeholder.fk_status.in_(status_filter))
 
         # Apply logical operator
-        if self._get_logical_operator(request) == 'or' or filter_length == 0:
+        if (self._get_logical_operator(request) == 'or' or 
+            sh_filter_length == 0):
             pass
         else:
             # 'AND': all filtered values must be available
-            relevant_stakeholders = relevant_stakeholders.having(func.count() >= filter_length)
+            relevant_stakeholders = relevant_stakeholders.having(
+                func.count() >= sh_filter_length)
 
         # Special case: UID was provided, create new 'relevant_stakeholders'
         if uid is not None:
@@ -434,8 +487,17 @@ class StakeholderProtocol(Protocol):
             else:
                 query = query.order_by(asc(relevant_stakeholders.c.order_value))
 
-        # Put the stakeholders together
         stakeholders = []
+        
+        # Return array with only GUIDs if flag is set
+        if only_guid is True:
+            for i in query.all():
+                sh_id = str(i.stakeholder_identifier)
+                if sh_id not in stakeholders:
+                    stakeholders.append(sh_id)
+            return stakeholders, count
+
+        # Put the stakeholders together
         for i in query.all():
 
             # The stakeholder identifier
@@ -493,7 +555,7 @@ class StakeholderProtocol(Protocol):
                         if stakeholder.find_involvement_feature(i.activity_identifier, i.stakeholder_role) is None:
                             ap = ActivityProtocol2(self.Session)
                             # Important: involvements=False need to be set, otherwise endless loop occurs
-                            activity, count = ap._query(request, uid=i.activity_identifier, involvements=False)
+                            activity, a_count = ap._query(request, uid=i.activity_identifier, involvements=False)
                             stakeholder.add_involvement(Inv(None, activity[0], i.stakeholder_role))
                     else:
                         # Default: only basic information about Involvement
@@ -632,9 +694,10 @@ class StakeholderProtocol(Protocol):
                     if involvement_details == 'full':
                         # Full details, query Activity details
                         if stakeholder.find_involvement_feature(i.activity_identifier, i.stakeholder_role) is None:
-                            ap = ActivityProtocol(self.Session)
+                            from lmkp.views.activity_protocol2 import ActivityProtocol2
+                            ap = ActivityProtocol2(self.Session)
                             # Important: involvements=False need to be set, otherwise endless loop occurs
-                            activity, count = sp._query(request, uid=i.activity_identifier, involvements=False)
+                            activity, count = ap._query(request, uid=i.activity_identifier, involvements=False)
                             stakeholder.add_involvement(Inv(None, activity[0], i.stakeholder_role))
                     else:
                         # Default: only basic information about Involvement
