@@ -1,3 +1,10 @@
+from lmkp.models.database_objects import A_Key
+from lmkp.models.database_objects import A_Tag
+from lmkp.models.database_objects import A_Value
+from lmkp.models.database_objects import SH_Key
+from lmkp.models.database_objects import SH_Tag
+from lmkp.models.database_objects import SH_Value
+from lmkp.models.database_objects import Stakeholder_Role
 from lmkp.models.database_objects import Status
 from shapely import wkb
 from sqlalchemy.sql.expression import cast
@@ -76,31 +83,42 @@ class Protocol(object):
 
         return [Status.name == "active"]
 
-    def _filter(self, request, Tag, Key, Value):
+    def _filter(self, request):
         """
         Returns
-        - a SubQuery of Tags containing a union of all Key/Value pairs which fulfill
-          the filter condition(s)
-        - a count of the filters
+        - a SubQuery of A_Tags containing a union of all Key/Value pairs which 
+          fulfill the filter condition(s) for Activity attributes
+        - a count of the Activity filters
+        - a SubQuery of SH_Tags containing a union of all Key/Value pairs which 
+          fulfill the filter condition(s) for Stakeholder attributes
+        - a count of the Stakeholder filters
         """
 
-        def __get_filter_expression(value, op):
+        def __get_filter_expression(prefix, value, op):
+            
+            # Use prefix to determine if A_Value or SH_Value
+            if prefix == 'a':
+                v = A_Value
+            elif prefix == 'sh':
+                v = SH_Value
+            else:
+                return None
 
             # Use cast function provided by SQLAlchemy to convert
             # database values to Float.
             nbr_map = {
-                'eq': cast(Value.value, Float) == value,
-                'ne': cast(Value.value, Float) != value,
-                'lt': cast(Value.value, Float) < value,
-                'lte': cast(Value.value, Float) <= value,
-                'gt': cast(Value.value, Float) > value,
-                'gte': cast(Value.value, Float) >= value
+                'eq': cast(v.value, Float) == value,
+                'ne': cast(v.value, Float) != value,
+                'lt': cast(v.value, Float) < value,
+                'lte': cast(v.value, Float) <= value,
+                'gt': cast(v.value, Float) > value,
+                'gte': cast(v.value, Float) >= value
             }
 
             str_map = {
                 # See http://www.postgresql.org/docs/9.1/static/functions-matching.html#FUNCTIONS-POSIX-REGEXP
-                'like': Value.value.op("~")(value),
-                'ilike': Value.value.op("~*")(value)
+                'like': v.value.op("~")(value),
+                'ilike': v.value.op("~*")(value)
             }
 
             # number comparison
@@ -117,32 +135,67 @@ class Protocol(object):
 
             return None
 
-        if 'queryable' in request.params:
-            filter_expr = []
+        a_filter_expr = []
+        sh_filter_expr = []
+        if ('a__queryable' in request.params or 
+            'sh__queryable' in request.params):
             for k in request.params:
                 # Collect filter expressions
                 if len(request.params[k]) <= 0 or '__' not in k:
                     continue
-                col, op = k.split('__')
+                try:
+                    prefix, col, op = k.split('__')
+                except ValueError:
+                    continue
                 # Several values can be queried for one attributes e.g.
                 # project_use equals pending and signed. Build the URL
                 # like: queryable=project_use&project_use__eq=pending,signed
-                values = request.params[k].split(',')
-                for v in values:
-                    q = self.Session.query(Tag.id.label('filter_tag_id')).\
-                        join(Key).\
-                        join(Value).\
-                        filter(Key.key == col).\
-                        filter(__get_filter_expression(v, op))
-                    filter_expr.append(q)
-
+                # First: Activity attributes
+                if prefix == 'a' and col in request.params['a__queryable']:
+                    values = request.params[k].split(',')
+                    for v in values:
+                        q = self.Session.query(
+                                A_Tag.fk_a_tag_group.label('a_filter_tg_id')
+                            ).\
+                            join(A_Key).\
+                            join(A_Value).\
+                            filter(A_Key.key == col).\
+                            filter(__get_filter_expression(prefix, v, op))
+                        a_filter_expr.append(q)
+                # Second: Stakeholder attributes
+                elif prefix == 'sh' and col in request.params['sh__queryable']:
+                    values = request.params[k].split(',')
+                    for v in values:
+                        q = self.Session.query(
+                                SH_Tag.fk_sh_tag_group.label('sh_filter_tg_id')
+                            ).\
+                            join(SH_Key).\
+                            join(SH_Value).\
+                            filter(SH_Key.key == col).\
+                            filter(__get_filter_expression(prefix, v, op))
+                        sh_filter_expr.append(q)
+            
             # Do a union of all filter expressions and return it
-            if len(filter_expr) > 0:
-                tag = filter_expr[0].union(*filter_expr[1:])
-                return tag.subquery(), len(filter_expr)
+            a_tag = (a_filter_expr[0].union(* a_filter_expr[1:]) 
+                    if len(a_filter_expr) > 0 
+                    else self.Session.query(
+                        A_Tag.fk_a_tag_group.label("a_filter_tg_id")))
+            
+            sh_tag = (sh_filter_expr[0].union(* sh_filter_expr[1:]) 
+                    if len(sh_filter_expr) > 0 
+                    else self.Session.query(
+                        SH_Tag.fk_sh_tag_group.label("sh_filter_tg_id")))
+            
+            return (a_tag.subquery(), len(a_filter_expr), 
+                    sh_tag.subquery(), len(sh_filter_expr))
 
         # Default (no filtering)
-        return self.Session.query(Tag.id.label("filter_tag_id")).subquery(), 0
+        return (self.Session.query(
+                    A_Tag.fk_a_tag_group.label("a_filter_tg_id")).subquery(), 
+                len(a_filter_expr), 
+                self.Session.query(
+                    SH_Tag.fk_sh_tag_group.label("sh_filter_tg_id")).subquery(),
+                len(sh_filter_expr))
 
     def _get_logical_operator(self, request):
         """
@@ -211,6 +264,21 @@ class Protocol(object):
                 return q_text.subquery(), False
 
         return None, None
+
+    def _get_sh_role_filter(self, request):
+        """
+        Returns the filter for Stakeholder_Role(s) if set
+        """
+        
+        sh_role = request.params.get('sh_role', None)
+        if sh_role is not None:
+            roles = sh_role.split(',')
+            filters = []
+            for r in roles:
+                filters.append(Stakeholder_Role.name.like(r))
+            return filters
+        
+        return None
 
 class Tag(object):
 
