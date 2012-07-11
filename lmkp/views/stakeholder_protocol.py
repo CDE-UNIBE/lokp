@@ -346,7 +346,7 @@ class StakeholderProtocol(Protocol):
                                     ).\
             join(SH_Tag_Group).\
             join(sh_tag_filter, 
-                sh_tag_filter.c.sh_filter_tag_id == SH_Tag_Group.id).\
+                sh_tag_filter.c.sh_filter_tg_id == SH_Tag_Group.id).\
             outerjoin(order_query).\
             group_by(Stakeholder.id, order_query.c.value)
             # order the list (needed to correctly apply limit and offset below)
@@ -370,7 +370,7 @@ class StakeholderProtocol(Protocol):
                                     ).\
             join(SH_Tag_Group).\
             join(sh_tag_filter, 
-                sh_tag_filter.c.sh_filter_tag_id == SH_Tag_Group.id).\
+                sh_tag_filter.c.sh_filter_tg_id == SH_Tag_Group.id).\
             group_by(Stakeholder.id)
 
         # Apply filter by Activity attributes if provided

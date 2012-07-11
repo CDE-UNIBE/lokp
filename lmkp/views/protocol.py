@@ -154,7 +154,9 @@ class Protocol(object):
                 if prefix == 'a' and col in request.params['a__queryable']:
                     values = request.params[k].split(',')
                     for v in values:
-                        q = self.Session.query(A_Tag.id.label('a_filter_tag_id')).\
+                        q = self.Session.query(
+                                A_Tag.fk_a_tag_group.label('a_filter_tg_id')
+                            ).\
                             join(A_Key).\
                             join(A_Value).\
                             filter(A_Key.key == col).\
@@ -164,7 +166,9 @@ class Protocol(object):
                 elif prefix == 'sh' and col in request.params['sh__queryable']:
                     values = request.params[k].split(',')
                     for v in values:
-                        q = self.Session.query(SH_Tag.id.label('sh_filter_tag_id')).\
+                        q = self.Session.query(
+                                SH_Tag.fk_sh_tag_group.label('sh_filter_tg_id')
+                            ).\
                             join(SH_Key).\
                             join(SH_Value).\
                             filter(SH_Key.key == col).\
@@ -174,19 +178,23 @@ class Protocol(object):
             # Do a union of all filter expressions and return it
             a_tag = (a_filter_expr[0].union(* a_filter_expr[1:]) 
                     if len(a_filter_expr) > 0 
-                    else self.Session.query(A_Tag.id.label("a_filter_tag_id")))
+                    else self.Session.query(
+                        A_Tag.fk_a_tag_group.label("a_filter_tg_id")))
             
             sh_tag = (sh_filter_expr[0].union(* sh_filter_expr[1:]) 
                     if len(sh_filter_expr) > 0 
-                    else self.Session.query(SH_Tag.id.label("sh_filter_tag_id")))
+                    else self.Session.query(
+                        SH_Tag.fk_sh_tag_group.label("sh_filter_tg_id")))
             
             return (a_tag.subquery(), len(a_filter_expr), 
                     sh_tag.subquery(), len(sh_filter_expr))
 
         # Default (no filtering)
-        return (self.Session.query(A_Tag.id.label("a_filter_tag_id")).subquery(), 
+        return (self.Session.query(
+                    A_Tag.fk_a_tag_group.label("a_filter_tg_id")).subquery(), 
                 len(a_filter_expr), 
-                self.Session.query(SH_Tag.id.label("sh_filter_tag_id")).subquery(),
+                self.Session.query(
+                    SH_Tag.fk_sh_tag_group.label("sh_filter_tg_id")).subquery(),
                 len(sh_filter_expr))
 
     def _get_logical_operator(self, request):
