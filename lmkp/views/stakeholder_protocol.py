@@ -468,7 +468,7 @@ class StakeholderProtocol(Protocol):
         relevant_stakeholders = relevant_stakeholders.subquery()
         query = self.Session.query(Stakeholder.id.label("id"),
                                    Stakeholder.stakeholder_identifier.label("stakeholder_identifier"),
-                                   Stakeholder.timestamp.label("timestamp"),
+                                   SH_Changeset.timestamp.label("timestamp"),
                                    Stakeholder.version.label("version"),
                                    SH_Tag_Group.id.label("taggroup"),
                                    SH_Tag_Group.fk_tag.label("main_tag"),
@@ -481,6 +481,7 @@ class StakeholderProtocol(Protocol):
                                    involvement_query.c.activity_identifier.label("activity_identifier"),
                                    involvement_query.c.role_name.label("stakeholder_role")).\
             join(relevant_stakeholders, relevant_stakeholders.c.order_id == Stakeholder.id).\
+            join(SH_Changeset).\
             join(SH_Tag_Group).\
             join(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_sh_tag_group).\
             join(SH_Key).\
@@ -613,7 +614,7 @@ class StakeholderProtocol(Protocol):
 
         query = self.Session.query(Stakeholder.id.label("id"),
                          Stakeholder.stakeholder_identifier.label("stakeholder_identifier"),
-                         Stakeholder.timestamp.label("timestamp"),
+                         SH_Changeset.timestamp.label("timestamp"),
                          Stakeholder.version.label("version"),
                          SH_Tag_Group.id.label("taggroup"),
                          SH_Tag_Group.fk_tag.label("main_tag"),
