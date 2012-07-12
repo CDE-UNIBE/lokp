@@ -63,7 +63,7 @@ Ext.define('Lmkp.controller.manage.Main',{
     			closable: true,
     			width: 400,
     			loader: {
-    				url: '/config/scan',
+    				url: '/config/scan/activities',
     				contentType: 'html',
     				loadMask: true,
     				autoLoad: true
