@@ -331,7 +331,7 @@ def _handle_application_config(request):
                 msg.append(__check_geometry(
                     locale_app_config['application']['geometry'], locale_code))
             
-        except IOERROR:
+        except IOError:
             # No localized application configuration file found
             pass
 
