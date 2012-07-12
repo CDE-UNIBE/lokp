@@ -596,7 +596,7 @@ class Profile(Base):
     def to_json(self):
         geometry = None
         if self.geometry is not None:
-            shape = wkb.loads(str(self.point.geom_wkb))
+            shape = wkb.loads(str(self.geometry.geom_wkb))
             geometry = from_wkt(shape.wkt)
         return {'id': self.id, 'code': self.code, 'geometry': geometry}
 
