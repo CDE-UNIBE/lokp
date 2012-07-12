@@ -547,7 +547,7 @@ class ActivityProtocol2(Protocol):
         query = self.Session.query(Activity.id.label("id"),
                                    Activity.activity_identifier.label("activity_identifier"),
                                    Activity.point.label("geometry"),
-                                   Activity.timestamp.label("timestamp"),
+                                   A_Changeset.timestamp.label("timestamp"),
                                    Activity.version.label("version"),
                                    A_Tag_Group.id.label("taggroup"),
                                    A_Tag_Group.fk_a_tag.label("main_tag"),
@@ -560,6 +560,7 @@ class ActivityProtocol2(Protocol):
                                    involvement_query.c.stakeholder_identifier.label("stakeholder_identifier"),
                                    involvement_query.c.role_name.label("stakeholder_role")).\
             join(relevant_activities, relevant_activities.c.order_id == Activity.id).\
+            join(A_Changeset).\
             join(A_Tag_Group).\
             join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
             join(A_Key).\
@@ -688,7 +689,7 @@ class ActivityProtocol2(Protocol):
         query = self.Session.query(Activity.id.label("id"),
                                    Activity.activity_identifier.label("activity_identifier"),
                                    Activity.point.label("geometry"),
-                                   Activity.timestamp.label("timestamp"),
+                                   A_Changeset.timestamp.label("timestamp"),
                                    Activity.version.label("version"),
                                    A_Tag_Group.id.label("taggroup"),
                                    A_Tag_Group.fk_a_tag.label("main_tag"),

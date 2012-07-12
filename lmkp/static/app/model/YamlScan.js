@@ -23,7 +23,7 @@ Ext.define('Lmkp.model.YamlScan', {
 	
 	proxy: {
 		type: 'ajax',
-		url: '/config/scan',
+		url: '/config/scan/activities',
 		reader: {
 			type: 'json'
 		},

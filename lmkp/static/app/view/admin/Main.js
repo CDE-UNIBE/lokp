@@ -9,7 +9,7 @@ Ext.define('Lmkp.view.admin.Main', {
         title: 'Home',
         xtype: 'adminhomepanel'
     }, {
-        postUrl: '/config/add',
+        postUrl: '/config/add/activities',
         store: 'YamlScan',
         title: 'Activities',
         xtype: 'yamlscanpanel'
