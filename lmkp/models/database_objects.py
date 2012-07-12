@@ -52,6 +52,7 @@ from geoalchemy.geometry import Geometry
 from geoalchemy.geometry import GeometryColumn
 from geoalchemy.geometry import GeometryDDL
 from geoalchemy.geometry import Point
+from geoalchemy.geometry import Polygon
 
 # Password encyption (drawn from the Pylons project 'Shootout': https://github.com/Pylons/shootout/blob/master/shootout/)
 # Contrary to the example above, cryptacular.bcrypt could not be used (problem with Windows?). Instead, cryptacular.pbkdf2 is used.
@@ -134,16 +135,6 @@ class A_Value(Base):
     def __repr__(self):
 
         return "<A_Value> id [ %s ] | fk_a_value [ %s ] | fk_language [ %s ] | value [ %s ]" % (self.id, self.fk_a_value, self.fk_language, self.value)
-
-    @property
-    def __geo_interface__(self):
-       id = self.id
-       if hasattr(self, '_shape') and self._shape is not None:
-           geometry = self._shape
-       else:
-           geometry = wkb.loads(str(self.geometry.geom_wkb))
-       properties = dict(source=self.source)
-       return geojson.Feature(id=id, geometry=geometry, properties=properties)
 
 class SH_Value(Base):
     __tablename__ = 'sh_values'
@@ -483,6 +474,13 @@ users_groups = Table('users_groups', Base.metadata,
                      schema = 'data'
                      )
 
+users_profiles = Table('users_profiles', Base.metadata,
+                        Column('id', Integer, primary_key = True),
+                        Column('fk_user', Integer, ForeignKey('data.users.id'), nullable = False),
+                        Column('fk_profile', Integer, ForeignKey('data.profiles.id'), nullable = False),
+                        schema = 'data'
+                        )
+
 class User(Base):
     __tablename__ = 'users'
     __table_args__ = (
@@ -496,6 +494,7 @@ class User(Base):
     a_changesets = relationship('A_Changeset', backref='user')
     sh_changesets = relationship('SH_Changeset', backref='user')
     groups = relationship('Group', secondary=users_groups, backref=backref('users', order_by = id))
+    profiles = relationship('Profile', secondary=users_profiles, backref=backref('users', order_by = id))
     a_changeset_reviews = relationship('A_Changeset_Review', backref='user')
     sh_changeset_reviews = relationship('SH_Changeset_Review', backref='user')
     comments = relationship('Comment', backref='user')
@@ -578,6 +577,30 @@ class Permission(Base):
 
     def __repr__(self):
         return "<Permission> id [ %s ] | name [ %s ] | description [ %s ]" % (self.id, self.name, self.description)
+
+class Profile(Base):
+    __tablename__ = 'profiles'
+    __table_args__ = {'schema': 'data'}
+    id = Column(Integer, primary_key = True)
+    code = Column(String(255), nullable = False, unique = True)
+    geometry = GeometryColumn('polygon', Polygon(dimension = 2, srid = 4326, spatial_index = True))
+
+    def __init__(self, code, geometry):
+        self.code = code
+        self.geometry = geometry
+    
+    def __repr__(self):
+        geom = wkb.loads(str(self.geometry.geom_wkb)).wkt
+        return '<Profile> id [ %s ] | code [ %s ] | geometry [ %s ]' % (self.id, self.code, geom)
+
+    def to_json(self):
+        geometry = None
+        if self.geometry is not None:
+            shape = wkb.loads(str(self.point.geom_wkb))
+            geometry = from_wkt(shape.wkt)
+        return {'id': self.id, 'code': self.code, 'geometry': geometry}
+
+GeometryDDL(Profile.__table__)
 
 class A_Changeset_Review(Base):
     __tablename__ = 'a_changeset_review'
