@@ -382,7 +382,7 @@ class ActivityProtocol2(Protocol):
         self.Session.add(changeset)
 
     def _query(self, request, limit=None, offset=None, filter=None, uid=None, 
-        involvements=None, only_guid=False, profile=False):
+        involvements=None, only_guid=False, bounds=None):
         """
         Do the query. Returns
         - a list of (filtered) Activities
@@ -493,12 +493,18 @@ class ActivityProtocol2(Protocol):
         if self._create_bbox_filter(request) is not None:
             relevant_activities = relevant_activities.filter(self._create_bbox_filter(request))
         
-        # Apply profile geometry filters
-        profile_param = request.params.get('profile', None)
-        if profile is True or (profile_param is not None and 
-            profile_param.lower() == 'true'):
-            relevant_activities = relevant_activities.\
-                filter(or_(* self._create_profile_filter(request)))
+        # Apply bounds
+        bounds_param = (request.params.get('bounds', None) 
+            if bounds is None else bounds)
+        if bounds_param is not None:
+            if bounds_param.lower() == 'user':
+                # Apply bounds based on user's profiles
+                relevant_activities = relevant_activities.\
+                    filter(or_(* self._create_bound_filter_by_user(request)))
+            elif bounds_param.lower() == 'profile':
+                # Apply bounds based on current profile (can be only 1)
+                relevant_activities = relevant_activities.\
+                    filter(self._create_bound_filter_by_profile(request))
         
         # Apply logical operator
         if (self._get_logical_operator(request) == 'or' or 
@@ -858,7 +864,7 @@ class ActivityProtocol2(Protocol):
 
         return None
 
-    def _create_profile_filter(self, request):
+    def _create_bound_filter_by_user(self, request):
         """
         Create an array of geometry filters based on the user's profile(s)
         """
@@ -873,6 +879,27 @@ class ActivityProtocol2(Protocol):
                     p.geometry))
             return profile_filters
 
+        return None
+
+    def _create_bound_filter_by_profile(self, request):
+        """
+        Create a geometry filter based on the currently selected profile
+        (first look in request params, then in cookies)
+        """
+        
+        # Try to find _PROFILE_ in parameters
+        profile_code = request.params.get('_PROFILE_', None)
+        # If not found, try to find _PROFILE_ in cookies
+        if profile_code is None:
+            profile_code = request.cookies.get('_PROFILE_', None)
+        
+        if profile_code is not None:
+            # Try to find profile in DB
+            profile_db = self.Session.query(Profile).\
+                filter(Profile.code == profile_code).first()
+            if profile_db is not None:
+                return functions.intersects(Activity.point, profile_db.geometry)
+        
         return None
 
     def _key_value_is_valid(self, request, key, value):
