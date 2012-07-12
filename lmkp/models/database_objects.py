@@ -283,7 +283,6 @@ class Activity(Base):
             )
     id = Column(Integer, primary_key = True)
     activity_identifier = Column(UUID, nullable = False)
-    timestamp = Column(DateTime, nullable = False)
     point = GeometryColumn('point', Point(dimension = 2, srid = 4326, spatial_index = True))
     fk_status = Column(Integer, nullable = False)
     version = Column(Integer, nullable = False)
@@ -293,13 +292,12 @@ class Activity(Base):
     involvements = relationship("Involvement", backref = backref('activity', order_by = id))
 
     def __init__(self, activity_identifier, version, point=None):
-        self.timestamp = datetime.datetime.now()
         self.activity_identifier = activity_identifier
         self.version = version
         self.point = point
 
     def __repr__(self):
-        return "<Activity> id [ %s ] | activity_identifier [ %s ] | timestamp [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.activity_identifier, self.timestamp, wkb.loads(str(self.point.geom_wkb)).wkt, self.fk_status, self.version)
+        return "<Activity> id [ %s ] | activity_identifier [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.activity_identifier, wkb.loads(str(self.point.geom_wkb)).wkt, self.fk_status, self.version)
     
     @property
     def __geo_interface__(self):
@@ -329,7 +327,6 @@ class Stakeholder(Base):
             )
     id = Column(Integer, primary_key = True)
     stakeholder_identifier = Column(UUID, nullable = False)
-    timestamp = Column(DateTime, nullable = False)
     fk_status = Column(Integer, nullable = False)
     version = Column(Integer, nullable = False)
 
@@ -338,12 +335,11 @@ class Stakeholder(Base):
     involvements = relationship("Involvement", backref = backref('stakeholder', order_by = id))
 
     def __init__(self, stakeholder_identifier, version):
-        self.timestamp = datetime.datetime.now()
         self.stakeholder_identifier = stakeholder_identifier
         self.version = version
 
     def __repr__(self):
-        return "<Stakeholder> id [ %s ] | stakeholder_identifier [ %s ] | timestamp [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.stakeholder_identifier, self.timestamp, self.fk_status, self.version)
+        return "<Stakeholder> id [ %s ] | stakeholder_identifier [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.stakeholder_identifier, self.fk_status, self.version)
 
     def get_comments(self):
         return DBSession.query(Comment).filter(Comment.stakeholder_identifier == self.stakeholder_identifier).all()
@@ -357,6 +353,7 @@ class A_Changeset(Base):
             )
     id = Column(Integer, primary_key = True)
     fk_user = Column(Integer, nullable = False)
+    timestamp = Column(DateTime, nullable = False)
     source = Column(Text)
     fk_activity = Column(Integer, nullable = False)
     previous_version = Column(Integer)
@@ -364,11 +361,12 @@ class A_Changeset(Base):
     reviews = relationship("A_Changeset_Review", backref='changeset')
 
     def __init__(self, source=None, previous_version=None):
+        self.timestamp = datetime.datetime.now()
         self.source = source
         self.previous_version = previous_version
 
     def __repr__(self):
-        return "<A_Changeset> id [ %s ] | fk_user [ %s ] | source [ %s ] | fk_activity [ %s ] | previous_version [ %s ]" % (self.id, self.fk_user, self.source, self.fk_activity, self.previous_version)
+        return "<A_Changeset> id [ %s ] | fk_user [ %s ] | timestamp [ %s ] | source [ %s ] | fk_activity [ %s ] | previous_version [ %s ]" % (self.id, self.fk_user, self.timestamp, self.source, self.fk_activity, self.previous_version)
 
 class SH_Changeset(Base):
     __tablename__ = 'sh_changesets'
@@ -379,6 +377,7 @@ class SH_Changeset(Base):
             )
     id = Column(Integer, primary_key = True)
     fk_user = Column(Integer, nullable = False)
+    timestamp = Column(DateTime, nullable = False)
     source = Column(Text)
     fk_stakeholder = Column(Integer, nullable = False)
     previous_version = Column(Integer)
@@ -386,11 +385,12 @@ class SH_Changeset(Base):
     reviews = relationship("SH_Changeset_Review", backref='changeset')
 
     def __init__(self, source=None, previous_version=None):
+        self.timestamp = datetime.datetime.now()
         self.source = source
         self.previous_version = previous_version
 
     def __repr__(self):
-        return "<SH_Changeset> id [ %s ] | fk_user [ %s ] | source [ %s ] | fk_stakeholder [ %s ] | previous_version [ %s ]" % (self.id, self.fk_user, self.source, self.fk_stakeholder, self.previous_version)
+        return "<SH_Changeset> id [ %s ] | fk_user [ %s ] | timestamp [ %s ] | source [ %s ] | fk_stakeholder [ %s ] | previous_version [ %s ]" % (self.id, self.fk_user, self.timestamp, self.source, self.fk_stakeholder, self.previous_version)
 
 class Status(Base):
     __tablename__ = 'status'
