@@ -7,6 +7,7 @@ from PyQt4.QtCore import QString
 from qgis.core import *
 import simplejson as json
 import string
+from taggroupconfig import getTagGroupsConfiguration
 
 def createMap(filename):
     """
@@ -52,40 +53,7 @@ mainanimalsMap = createMap('mainanimals.csv')
 mineralsMap = createMap('minerals.csv')
 otherlandusesMap = createMap('otherlanduses.csv')
 
-# This dict maps the attribute names from the landmatrix input Shapefile to the
-# fields defined in the global definition yaml
-transformMap = {
-    "uuid1": "identifier",
-    "Country": "Country",
-    "Size of In": "Size of Investment",
-    "Year Inves": "Year of Investment (agreed)",
-    "Main Crop": "Main Crop",
-    "Main Cro_1": "Main Crop",
-    "Main Cro_2": "Main Crop",
-    "Main Cro_3": "Main Crop",
-    "Main Cro_4": "Main Crop",
-    "Main Cro_5": "Main Crop",
-    "Main Anima": "Main Animal",
-    "Main Ani_1": "Main Animal",
-    "Main Ani_2": "Main Animal",
-    "Main Ani_3": "Main Animal",
-    "Mineral 1": "Mineral",
-    "Mineral 2": "Mineral",
-    "Mineral 3": "Mineral",
-    "Mineral 4": "Mineral",
-    "Mineral 1": "Mineral",
-    "Other Land": "Other Landuse",
-    "Other La_1": "Other Landuse",
-    #"Name of In": "Name of Investor",      moved to stakeholders
-    #"Name of_1": "Name of Investor",       dito
-    #"Name of_2": "Name of Investor",       dito
-    #"Country of": "Country of Investor",   dito
-    #"Country_1": "Country of Investor",    dito
-    #"Country_2": "Country of Investor",    dito
-    #"Domestic P": "Domestic Partners",     dito
-    "Data Sourc": "Data Source (Research Paper)",
-    "Spatial Accuracy": "Spatial Accuracy"
-}
+identifierColumn, transformMap, groups = getTagGroupsConfiguration("landmatrix.activity.ini")
 
 vlayer = QgsVectorLayer("%s/deals_with_geom.shp" % basedir, "landmatrix", "ogr")
 if not vlayer.isValid():
@@ -103,6 +71,9 @@ for (i, field) in provider.fields().iteritems():
     if str(field.name()) in transformMap:
         attributeIndexes.append(i)
         fieldIndexMap[i] = transformMap[str(field.name())]
+    elif field.name() == identifierColumn:
+        attributeIndexes.append(i)
+        fieldIndexMap[i] = "activity_identifier"
 
 # Start data retreival: fetch geometry and all attributes for each feature
 provider.select(attributeIndexes)
@@ -123,6 +94,8 @@ while provider.nextFeature(feature):
     # Fetch map of attributes
     attrs = feature.attributeMap()
 
+    tagGroups = list({'tags': []} for i in range(len(groups)))
+
     # Fetch geometry
     geometry = feature.geometry()
     # Write the geometry to GeoJSON format
@@ -137,7 +110,7 @@ while provider.nextFeature(feature):
     # Loop all attributes
     for (k, attr) in attrs.iteritems():
         # Handle the identifier differently
-        if fieldIndexMap[k] == "identifier":
+        if fieldIndexMap[k] == "activity_identifier":
             activityObject['id'] = str(attr.toString())
 
         # Write all attributes that are not empty or None.
@@ -145,6 +118,15 @@ while provider.nextFeature(feature):
         # Each attribute is written to a separate taggroup
         elif attr.toString() != "" and attr is not None:
             #print "%s: %s" % (fieldIndexMap[k], attr.toString())
+
+            # First search the correct taggroup to append
+            attributeName = provider.fields()[k].name()
+            currentTagGroup = 0
+            for g in groups:
+                if attributeName in g:
+                    break
+                else:
+                    currentTagGroup += 1
 
             taggroupObject = {}
             taggroupObject['tags'] = []
@@ -163,10 +145,13 @@ while provider.nextFeature(feature):
             elif fieldIndexMap[k] in ['Other Landuse']:
                 value = otherlandusesMap[string.upper(value)]
             
-            taggroupObject['tags'].append({"key": fieldIndexMap[k], "value": value, "op": "add"})
-            taggroupObject['op'] = 'add'
-            taggroupObject['main_tag'] = {"key": fieldIndexMap[k], "value": value}
-            activityObject['taggroups'].append(taggroupObject)
+            tagGroups[currentTagGroup]['tags'].append({"key": fieldIndexMap[k], "value": value, "op": "add"})
+            tagGroups[currentTagGroup]['op'] = 'add'
+            tagGroups[currentTagGroup]['main_tag'] = {"key": fieldIndexMap[k], "value": value}
+
+    for tg in tagGroups:
+        if len(tg['tags']) > 0:
+            activityObject['taggroups'].append(tg)
 
     # Append the activity to the main object
     activityDiffObject['activities'].append(activityObject)

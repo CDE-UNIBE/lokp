@@ -1,6 +1,6 @@
-Ext.define('Lmkp.view.DetailPanel', {
+Ext.define('Lmkp.view.editor.Detail', {
     extend: 'Ext.tab.Panel',
-    alias: ['widget.detailPanel'],
+    alias: ['widget.lo_editordetailpanel'],
 	
     dockedItems: Lmkp.toolbar,
 	
@@ -23,6 +23,7 @@ Ext.define('Lmkp.view.DetailPanel', {
     },
 
     populateDetailsTab: function(panel, data) {
+
         if (data.length > 0) {
 
             // remove initial text if still there
@@ -71,8 +72,9 @@ Ext.define('Lmkp.view.DetailPanel', {
                 });
                 // if user is logged in (Lmkp.toolbar != false), show edit button
                 if (Lmkp.toolbar) {
+                    //console.log("add docked");
                     taggroupPanel.addDocked({
-                        dock: 'left',
+                        dock: 'right',
                         xtype: 'toolbar',
                         items: [{
                             name: 'editTaggroup',
@@ -86,7 +88,8 @@ Ext.define('Lmkp.view.DetailPanel', {
                                     selected_taggroup: taggroupStore.getAt(this.taggroup_id)
                                 });
                                 win.show();
-                            }
+                            },
+                            xtype: 'button'
                         }]
                     });
                 }

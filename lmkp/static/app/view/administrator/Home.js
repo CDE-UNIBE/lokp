@@ -1,4 +1,4 @@
-Ext.define('Lmkp.view.admin.Home', {
+Ext.define('Lmkp.view.administrator.Home', {
 	extend: 'Ext.panel.Panel',
 	
 	alias: ['widget.adminhomepanel'],
