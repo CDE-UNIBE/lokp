@@ -3,7 +3,9 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
     alias : ['widget.lo_moderatorpendingpanel'],
 
     requires: [
-    'Lmkp.store.PendingActivityGrid'
+        'Lmkp.store.PendingActivityGrid',
+        'Lmkp.store.PendingStakeholderGrid',
+        'Lmkp.view.moderator.Review'
     ],
 
     layout: {
@@ -23,25 +25,26 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
         },
         items: [{
             xtype: 'gridpanel',
-            flex: 1,
+            flex: 0.5,
             border: false,
             split: true,
-            itemId: 'resultgrid',
+            title: Lmkp.ts.msg("activities-title"),
+            itemId: 'activityGrid',
             store: 'PendingActivityGrid',
             viewConfig: {
                 stripeRows: false
             },
             // grid columns
             columns: [{
-                header: Lmkp.ts.msg("activity-nameofinvestor"),
-                name: 'nameofinvestorcolumn',
-                dataIndex: Lmkp.ts.msg("activity-nameofinvestor"),
+                header: Lmkp.ts.msg("activity-attr_country"),
+                name: 'activityCountryColumn',
+                dataIndex: Lmkp.ts.msg("activity-attr_country"),
                 flex: 1,
                 sortable: true
             }, {
-                header: Lmkp.ts.msg('activity-yearofinvestment'),
+                header: Lmkp.ts.msg('activity-attr_yearofinvestment'),
                 name: 'yearofinvestmentcolumn',
-                dataIndex: Lmkp.ts.msg('activity-yearofinvestment'),
+                dataIndex: Lmkp.ts.msg('activity-attr_yearofinvestment'),
                 flex: 0,
                 sortable: true
             }],
@@ -57,12 +60,42 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
                 displayMsg: Lmkp.ts.msg("activitypaging-message"),
                 emptyMsg: '<b>' + Lmkp.ts.msg("activitypaging-empty") + '</b>'
             }]
+        }, {
+            xtype: 'gridpanel',
+            flex: 0.5,
+            border: false,
+            split: true,
+            title: Lmkp.ts.msg("stakeholders-title"),
+            itemId: 'stakeholderGrid',
+            store: 'PendingStakeholderGrid',
+            viewConfig: {
+                stripeRows: false
+            },
+            // grid columns
+            columns: [
+                {
+                    header: 'Name',
+                    name: 'stakeholdernamecolumn',
+                    dataIndex: 'Name',
+                    flex: 1,
+                    sortable: true
+                }, {
+                    header: 'Country',
+                    name: 'stakeholdercountrycolumn',
+                    dataIndex: 'Country',
+                    flex: 0,
+                    sortable: true
+                }
+            ]
         }],
         xtype: 'panel'
     },{
         flex: 0.5,
-        html: 'this <i>will</i> be the future comparison panel',
-        xtype: 'panel'
+        layout: {
+            type: 'vbox',
+            align: 'stretch'
+        },
+        xtype: 'lo_moderatorreviewpanel'
     }]
 
 });
