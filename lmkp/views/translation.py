@@ -8,7 +8,9 @@ from ..models.meta import DBSession as Session
 from ..models.database_objects import (
     Language,
     A_Key,
-    A_Value
+    A_Value,
+    SH_Key,
+    SH_Value
 )
 
 log = logging.getLogger(__name__)
@@ -56,6 +58,7 @@ def ui_messages(request):
     'delete-button': _('delete-button', default='Delete'),
     'deletefilter-tooltip': _('deletefilter-tooltip', default='Click to delete this filter'),
     # stakeholders
+    'stakeholders-title': _('stakeholder-title', default='Stakeholders'),
     'stakeholder-name': _('stakholder-name', default='Name'),
     'stakeholder-country': _('stakholder-country', default='Country'),
     # status
@@ -89,22 +92,36 @@ def ui_messages(request):
     uiMap['locale_english-name'] = db_lang.english_name
     uiMap['locale_local-name'] = db_lang.local_name
     
+    # TODO: is this still needed?
     # Add translated name for key "Name of Investor" (needed by Ext as dataIndex when displaying the grid with activities).
-    nameofinvestorKeyEnglish = Session.query(A_Key).filter(A_Key.key == 'Name of Investor').filter(A_Key.original == None).first()
+    nameofinvestorKeyEnglish = Session.query(A_Key).filter(A_Key.key == 'Country').filter(A_Key.original == None).first()
     nameofinvestorKeyLocale = Session.query(A_Key).filter(A_Key.original == nameofinvestorKeyEnglish).filter(A_Key.language == db_lang).first()
     if nameofinvestorKeyLocale:
-        uiMap['activity-nameofinvestor'] = nameofinvestorKeyLocale.key
+        uiMap['activity-attr_country'] = nameofinvestorKeyLocale.key
     else:
-        uiMap['activity-nameofinvestor'] = 'Name of Investor'
+        uiMap['activity-attr_country'] = 'Country'
     
     # Add translated name for key "Year of Investment" (needed by Ext as dataIndex when displaying the grid with activities).
     yearofinvestmentKeyEnglish = Session.query(A_Key).filter(A_Key.key == 'Year of Investment (agreed)').filter(A_Key.original == None).first()
     yearofinvestmentKeyLocale = Session.query(A_Key).filter(A_Key.original == yearofinvestmentKeyEnglish).filter(A_Key.language == db_lang).first()
     if yearofinvestmentKeyLocale:
-        uiMap['activity-yearofinvestment'] = yearofinvestmentKeyLocale.key
+        uiMap['activity-attr_yearofinvestment'] = yearofinvestmentKeyLocale.key
     else:
-        uiMap['activity-yearofinvestment'] = 'Year of Investment (agreed)'
+        uiMap['activity-attr_yearofinvestment'] = 'Year of Investment (agreed)'
 
+    # Add translated name for SH_Key "Name" (needed by Ext as dataIndex when displaying the grid with stakeholders)
+    shNameKeyEnglish = Session.query(SH_Key).filter(SH_Key.key == 'Name').filter(SH_Key.original == None).first()
+    shNameKeyLocale = Session.query(SH_Key).filter(SH_Key.original == shNameKeyEnglish).filter(SH_Key.language == db_lang).first()
+    uiMap['stakeholder-attr_name'] = (shNameKeyLocale.key 
+        if shNameKeyLocale is not None else 'Name')
+    
+    # Add translated name for SH_Key "Country" (needed by Ext as dataIndex when displaying the grid with stakeholders)
+    shNameKeyEnglish = Session.query(SH_Key).filter(SH_Key.key == 'Country').filter(SH_Key.original == None).first()
+    shNameKeyLocale = Session.query(SH_Key).filter(SH_Key.original == shNameKeyEnglish).filter(SH_Key.language == db_lang).first()
+    uiMap['stakeholder-attr_country'] = (shNameKeyLocale.key 
+        if shNameKeyLocale is not None else 'Country')
+        
+        
     # Write the JavaScript and instantiate the global variable Lmkp.ts
     str = "Ext.namespace('Lmkp');\n"
     str += "Lmkp.ts = Ext.create('Ext.util.MixedCollection');\n" #,{\n"
