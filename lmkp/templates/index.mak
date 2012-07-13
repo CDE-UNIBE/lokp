@@ -28,7 +28,10 @@ from pyramid.security import has_permission
         <script type="text/javascript" src="/static/lib/OpenLayers-2.11/OpenLayers.js"></script>
         <!--script type="text/javascript" src="/static/lib/geoext2/src/GeoExt/GeoExt.js"></script-->
         <script type="text/javascript" src="/lang"></script>
-        % if isinstance(has_permission('administer', request.context, request), ACLAllowed) or isinstance(has_permission('moderate', request.context, request), ACLAllowed):
+        % if isinstance(has_permission('administer', request.context, request), ACLAllowed):
+        <script type="text/javascript" src="/app/view/EditToolbar.js"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/app/admin.js')}"></script>
+        % elif isinstance(has_permission('moderate', request.context, request), ACLAllowed):
         <script type="text/javascript" src="/app/view/EditToolbar.js"></script>
         <script type="text/javascript" src="${request.static_url('lmkp:static/app/moderator.js')}"></script>
         % elif isinstance(has_permission('edit', request.context, request), ACLAllowed):
