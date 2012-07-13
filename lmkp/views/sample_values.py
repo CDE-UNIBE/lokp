@@ -69,7 +69,22 @@ def insert_landmatrix(request):
 
     a = activity_wrapper(request, "%s/documents/landmatrix/%s" % (rootdir, 'landmatrix_activities.json'), 'active')
     s = stakeholder_wrapper(request, "%s/documents/landmatrix/%s" % (rootdir, 'landmatrix_stakeholders.json'), 'active')
-
+    
+    """
+    Post-processing. Set second version of Activities (with Involvements)
+    to 'active'. Also establish link between user1 and profile 'global'.
+    """
+    # Set all Activities with version 1 to 'overwritten' (fk_status = 3)
+    Session.query(Activity).filter(Activity.version == 1).\
+        update({Activity.fk_status: 3})
+    # Set all Activities with version 2 to 'active' (fk_status = 2)
+    Session.query(Activity).filter(Activity.version == 2).\
+        update({Activity.fk_status: 2})
+    # Establish link between profile 'global' and user1
+    user1 = Session.query(User).filter(User.username == 'user1').first()
+    global_profile = Session.query(Profile).filter(Profile.code == 'global').first()
+    user1.profiles = [global_profile]
+    
     return {'success': True, 'activities': a, 'stakeholders': s}
 
 @view_config(route_name='test_sample_values', renderer='json')

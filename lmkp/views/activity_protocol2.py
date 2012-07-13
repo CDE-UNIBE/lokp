@@ -31,6 +31,7 @@ from sqlalchemy.types import Float
 import uuid
 import yaml
 from lmkp.views.stakeholder_protocol import StakeholderProtocol
+from pyramid.security import authenticated_userid
 
 log = logging.getLogger(__name__)
 
@@ -381,7 +382,7 @@ class ActivityProtocol2(Protocol):
         self.Session.add(changeset)
 
     def _query(self, request, limit=None, offset=None, filter=None, uid=None, 
-        involvements=None, only_guid=False):
+        involvements=None, only_guid=False, bounds=None):
         """
         Do the query. Returns
         - a list of (filtered) Activities
@@ -489,8 +490,21 @@ class ActivityProtocol2(Protocol):
                 filter(Activity.fk_status.in_(status_filter))
 
         # Apply the geographical bounding box filter
-        if self._create_geom_filter(request) is not None:
-            relevant_activities = relevant_activities.filter(self._create_geom_filter(request))
+        if self._create_bbox_filter(request) is not None:
+            relevant_activities = relevant_activities.filter(self._create_bbox_filter(request))
+        
+        # Apply bounds
+        bounds_param = (request.params.get('bounds', None) 
+            if bounds is None else bounds)
+        if bounds_param is not None:
+            if bounds_param.lower() == 'user':
+                # Apply bounds based on user's profiles
+                relevant_activities = relevant_activities.\
+                    filter(or_(* self._create_bound_filter_by_user(request)))
+            elif bounds_param.lower() == 'profile':
+                # Apply bounds based on current profile (can be only 1)
+                relevant_activities = relevant_activities.\
+                    filter(self._create_bound_filter_by_profile(request))
         
         # Apply logical operator
         if (self._get_logical_operator(request) == 'or' or 
@@ -547,7 +561,7 @@ class ActivityProtocol2(Protocol):
         query = self.Session.query(Activity.id.label("id"),
                                    Activity.activity_identifier.label("activity_identifier"),
                                    Activity.point.label("geometry"),
-                                   Activity.timestamp.label("timestamp"),
+                                   A_Changeset.timestamp.label("timestamp"),
                                    Activity.version.label("version"),
                                    A_Tag_Group.id.label("taggroup"),
                                    A_Tag_Group.fk_a_tag.label("main_tag"),
@@ -560,6 +574,7 @@ class ActivityProtocol2(Protocol):
                                    involvement_query.c.stakeholder_identifier.label("stakeholder_identifier"),
                                    involvement_query.c.role_name.label("stakeholder_role")).\
             join(relevant_activities, relevant_activities.c.order_id == Activity.id).\
+            join(A_Changeset).\
             join(A_Tag_Group).\
             join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
             join(A_Key).\
@@ -688,7 +703,7 @@ class ActivityProtocol2(Protocol):
         query = self.Session.query(Activity.id.label("id"),
                                    Activity.activity_identifier.label("activity_identifier"),
                                    Activity.point.label("geometry"),
-                                   Activity.timestamp.label("timestamp"),
+                                   A_Changeset.timestamp.label("timestamp"),
                                    Activity.version.label("version"),
                                    A_Tag_Group.id.label("taggroup"),
                                    A_Tag_Group.fk_a_tag.label("main_tag"),
@@ -813,7 +828,7 @@ class ActivityProtocol2(Protocol):
         
         return data, len(data)
 
-    def _create_geom_filter(self, request):
+    def _create_bbox_filter(self, request):
         """
         Create a geometry filter and return the subquery
         """
@@ -849,6 +864,43 @@ class ActivityProtocol2(Protocol):
 
         return None
 
+    def _create_bound_filter_by_user(self, request):
+        """
+        Create an array of geometry filters based on the user's profile(s)
+        """
+        userid = authenticated_userid(request)
+       
+        if userid is not None:
+            profile_filters = []
+            profiles = self.Session.query(Profile).\
+                filter(Profile.users.any(username = userid))
+            for p in profiles.all():
+                profile_filters.append(functions.intersects(Activity.point, 
+                    p.geometry))
+            return profile_filters
+
+        return None
+
+    def _create_bound_filter_by_profile(self, request):
+        """
+        Create a geometry filter based on the currently selected profile
+        (first look in request params, then in cookies)
+        """
+        
+        # Try to find _PROFILE_ in parameters
+        profile_code = request.params.get('_PROFILE_', None)
+        # If not found, try to find _PROFILE_ in cookies
+        if profile_code is None:
+            profile_code = request.cookies.get('_PROFILE_', None)
+        
+        if profile_code is not None:
+            # Try to find profile in DB
+            profile_db = self.Session.query(Profile).\
+                filter(Profile.code == profile_code).first()
+            if profile_db is not None:
+                return functions.intersects(Activity.point, profile_db.geometry)
+        
+        return None
 
     def _key_value_is_valid(self, request, key, value):
         #@todo:  FIX ME if needed at all.
