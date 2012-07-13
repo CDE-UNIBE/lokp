@@ -8,7 +8,10 @@ from lmkp.models.database_objects import Stakeholder_Role
 from lmkp.models.database_objects import Status
 from shapely import wkb
 from sqlalchemy.sql.expression import cast
+from sqlalchemy.sql.expression import and_
 from sqlalchemy.types import Float
+import datetime
+from sqlalchemy import func
 
 class Protocol(object):
     """
@@ -18,6 +21,46 @@ class Protocol(object):
 
     def __init__(self):
         pass
+    
+    def _get_timestamp_filter(self, request, AorSH, Changeset):
+        """
+        
+        """
+        status_list = ['active', 'overwritten', 'deleted']
+        
+        timestamp = request.params.get('timestamp', None)
+        if timestamp is not None:
+            # Check if timestamp is valid
+            try:
+                t = datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                return None
+            
+            # Subquery to get latest version for each identifier at given time
+            version_subquery = self.Session.query(
+                    AorSH.identifier.label('timestamp_identifier'),
+                    func.max(AorSH.version).label('timestamp_version')
+                ).\
+                join(Changeset).\
+                join(Status).\
+                filter(Changeset.timestamp <= t).\
+                filter(Status.name.in_(status_list)).\
+                group_by(AorSH.identifier).\
+                subquery()
+            
+            # Join the latest version again with itself to get its ID
+            timestamp_subquery = self.Session.query(
+                    AorSH.id.label('timestamp_id')
+                ).\
+                join(version_subquery, and_(
+                    version_subquery.c.timestamp_identifier 
+                        == AorSH.identifier,
+                    version_subquery.c.timestamp_version == AorSH.version)).\
+                subquery()
+            
+            return timestamp_subquery
+            
+        return None
 
     def _get_versions(self, request):
         """
