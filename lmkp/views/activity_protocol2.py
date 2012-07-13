@@ -484,8 +484,15 @@ class ActivityProtocol2(Protocol):
                         Involvement.fk_stakeholder).\
                     group_by(Activity.id)
 
-        # Apply status filter
-        if status_filter is not None:
+        timestamp_filter = self._get_timestamp_filter(request, Activity, 
+            A_Changeset)
+        if timestamp_filter is not None:
+            relevant_activities = relevant_activities.\
+                join(timestamp_filter, 
+                    timestamp_filter.c.timestamp_id == Activity.id)
+
+        # Apply status filter (only if timestamp not set)
+        if status_filter is not None and timestamp_filter is None:
             relevant_activities = relevant_activities.\
                 filter(Activity.fk_status.in_(status_filter))
 
@@ -582,8 +589,6 @@ class ActivityProtocol2(Protocol):
             outerjoin(key_translation, key_translation.c.key_original_id == A_Key.id).\
             outerjoin(value_translation, value_translation.c.value_original_id == A_Value.id).\
             outerjoin(involvement_query, involvement_query.c.activity_id == Activity.id)
-            #.\filter(involvement_query.c.role_name.like('%Donor%'))
-        
         
         # Do the ordering again
         if order_query is not None:
