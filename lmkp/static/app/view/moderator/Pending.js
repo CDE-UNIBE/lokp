@@ -86,6 +86,20 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
                     flex: 0,
                     sortable: true
                 }
+            ],
+            dockedItems: [
+                {
+                    xtype: 'pagingtoolbar',
+                    id: 'pendingStakeholderGridPagingToolbar',
+                    store: 'PendingStakeholderGrid',
+                    dock: 'bottom',
+                    enableOverflow: false,
+                    displayInfo: true,
+                    beforePageText: Lmkp.ts.msg("activitypaging-before"),
+                    afterPageText: Lmkp.ts.msg("activitypaging-after"),
+                    displayMsg: Lmkp.ts.msg("stakeholder-paging_message"),
+                    emptyMsg: '<b>' + Lmkp.ts.msg("stakeholder-paging_empty") + '</b>'
+                }
             ]
         }],
         xtype: 'panel'
