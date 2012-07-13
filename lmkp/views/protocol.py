@@ -24,9 +24,11 @@ class Protocol(object):
     
     def _get_timestamp_filter(self, request, AorSH, Changeset):
         """
-        
+        Returns a filter of IDs of a given timestamp.
         """
-        status_list = ['active', 'overwritten', 'deleted']
+        
+        # Item is now either still 'active' or it is 'overwritten'
+        status_list = ['active', 'overwritten']
         
         timestamp = request.params.get('timestamp', None)
         if timestamp is not None:
