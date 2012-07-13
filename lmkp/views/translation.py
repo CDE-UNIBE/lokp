@@ -61,6 +61,8 @@ def ui_messages(request):
     'stakeholders-title': _('stakeholder-title', default='Stakeholders'),
     'stakeholder-name': _('stakholder-name', default='Name'),
     'stakeholder-country': _('stakholder-country', default='Country'),
+    'stakeholder-paging_message': _('stakeholder-paging_message', default='Displaying stsakeholders {0} - {1} of {2}'),
+    'stakeholder-paging_empty': _('stakeholder-paging_empty', default='No stakeholders found'),
     # status
     'status-pending': _('status-pending', default='pending'),
     'status-active': _('status-active', default='active'),
