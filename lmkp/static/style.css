@@ -13,6 +13,11 @@
     height: 16px !important;
     width: 16px !important;
 }
+.identify-feature {
+    background-image: url("/static/img/identify-feature.png") !important;
+    height: 16px !important;
+    width: 16px !important;
+}
 .ico-key { 
     width:15px;
     height:15px;

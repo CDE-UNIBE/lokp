@@ -153,6 +153,9 @@ def main(global_config, ** settings):
 
     config.add_route('rss_feed', '/rss/{status}')
 
+    # A WMS proxy
+    config.add_route('wms_proxy', '/wms', request_method='GET')
+
     # Changeset protocol, query the changeset
     config.add_route('changesets_read', '/changesets')
 
