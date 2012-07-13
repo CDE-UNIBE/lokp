@@ -8,6 +8,7 @@ from geoalchemy.utils import from_wkt
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import column_property
 import datetime
+from sqlalchemy.ext.hybrid import hybrid_property
 
 # registering of uuid needed, done in meta.py
 import uuid
@@ -282,7 +283,10 @@ class Activity(Base):
     changesets = relationship("A_Changeset", backref = backref('activity', order_by = id))
     involvements = relationship("Involvement", backref = backref('activity', order_by = id))
 
-    identifier = column_property(activity_identifier)
+    #identifier = column_property(activity_identifier)
+    @hybrid_property
+    def identifier(self):
+        return self.activity_identifier
 
     def __init__(self, activity_identifier, version, point=None):
         self.activity_identifier = activity_identifier
@@ -290,7 +294,8 @@ class Activity(Base):
         self.point = point
 
     def __repr__(self):
-        return "<Activity> id [ %s ] | activity_identifier [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.activity_identifier, wkb.loads(str(self.point.geom_wkb)).wkt, self.fk_status, self.version)
+        #return "<Activity> id [ %s ] | activity_identifier [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.activity_identifier, wkb.loads(str(self.point.geom_wkb)).wkt, self.fk_status, self.version)
+        return "<Activity> id [ %s ] | activity_identifier [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.activity_identifier, "wkb.loads(str(self.point.geom_wkb)).wkt", self.fk_status, self.version)
     
     @property
     def __geo_interface__(self):
@@ -327,7 +332,9 @@ class Stakeholder(Base):
     changesets = relationship("SH_Changeset", backref = backref('stakeholder', order_by = id))
     involvements = relationship("Involvement", backref = backref('stakeholder', order_by = id))
 
-    identifier = column_property(stakeholder_identifier)
+    @hybrid_property
+    def identifier(self):
+        return self.stakeholder_identifier
 
     def __init__(self, stakeholder_identifier, version):
         self.stakeholder_identifier = stakeholder_identifier
