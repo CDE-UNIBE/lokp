@@ -1,47 +1,33 @@
-Ext.define('Lmkp.view.Filter', {
+Ext.define('Lmkp.view.editor.Table',{
     extend: 'Ext.panel.Panel',
-    alias: ['widget.lo_filterpanel'],
+    alias: ['widget.lo_editortablepanel'],
 
-    title: Lmkp.ts.msg("activities-title"),
-    frame: false,
+    requires: [
+    'Lmkp.view.Filter'
+    ],
 
     layout: {
-        type: 'vbox',
-        padding: 5,
+        type: 'hbox',
         align: 'stretch'
     },
 
-    tbar: [{
-        xtype: 'button',
-        name: 'addAttributeFilter',
-        text: Lmkp.ts.msg("addattributefilter-button"),
-        tooltip: Lmkp.ts.msg("addattributefilter-tooltip"),
-        iconCls: 'toolbar-button-add',
-        margin: '0 5 0 0',
-        flex: 0
-    }, {
-        xtype: 'button',
-        name: 'addTimeFilter',
-        text: Lmkp.ts.msg("addtimefilter-button"),
-        tooltip: Lmkp.ts.msg("addtimefilter-tooltip"),
-        iconCls: 'toolbar-button-add',
-        flex: 0
-    },{
-        id: 'deleteAllFilters',
-        text: Lmkp.ts.msg("deleteallfilter-button"),
-        tooltip: Lmkp.ts.msg("deleteallfilter-tooltip"),
-        iconCls: 'toolbar-button-delete',
-        enableToggle: false
-    }],
-   	
-    initComponent: function() {
-        this.items = [{
+    border: false,
+
+    frame: false,
+
+    items: [{
+        flex: 0.5,
+        layout: {
+            type: 'vbox',
+            align: 'stretch'
+        },
+        items: [{
             // attribute selection
             xtype: 'panel',
             id: 'filterForm',
-            flex: 0,
-            collapsible: true,
-            collapsed: true, // TODO: For some reason, layout is not working (buttons disappear on Adding filter) when collapsed at start.
+            flex: 0.5,
+            //collapsible: true,
+            //collapsed: true, // TODO: For some reason, layout is not working (buttons disappear on Adding filter) when collapsed at start.
             title: Lmkp.ts.msg("filter-title"),
             layout: {
                 type: 'anchor'
@@ -71,24 +57,26 @@ Ext.define('Lmkp.view.Filter', {
                 }, {
                     xtype: 'button',
                     name: 'addAttributeFilter',
-			        text: Lmkp.ts.msg("addattributefilter-button"),
-			        tooltip: Lmkp.ts.msg("addattributefilter-tooltip"),
-			        iconCls: 'toolbar-button-add',
+                    text: Lmkp.ts.msg("addattributefilter-button"),
+                    tooltip: Lmkp.ts.msg("addattributefilter-tooltip"),
+                    iconCls: 'toolbar-button-add',
                     margin: '0 5 0 0',
                     flex: 0
                 }, {
                     xtype: 'button',
                     name: 'addTimeFilter',
-			        text: Lmkp.ts.msg("addtimefilter-button"),
-			        tooltip: Lmkp.ts.msg("addtimefilter-tooltip"),
-			        iconCls: 'toolbar-button-add',
+                    text: Lmkp.ts.msg("addtimefilter-button"),
+                    tooltip: Lmkp.ts.msg("addtimefilter-tooltip"),
+                    iconCls: 'toolbar-button-add',
                     flex: 0
                 }]
             }]
-        }, {
+        },{
             xtype: 'gridpanel',
+            flex: 0.5,
+            border: false,
             split: true,
-            id: 'filterResults',
+            itemId: 'resultgrid',
             store: 'ActivityGrid',
             viewConfig: {
                 stripeRows: false
@@ -101,11 +89,11 @@ Ext.define('Lmkp.view.Filter', {
                 flex: 1,
                 sortable: true
             }, {
-            	header: Lmkp.ts.msg('activity-yearofinvestment'),
-            	name: 'yearofinvestmentcolumn',
-            	dataIndex: Lmkp.ts.msg('activity-yearofinvestment'),
-            	flex: 0,
-            	sortable: true
+                header: Lmkp.ts.msg('activity-yearofinvestment'),
+                name: 'yearofinvestmentcolumn',
+                dataIndex: Lmkp.ts.msg('activity-yearofinvestment'),
+                flex: 0,
+                sortable: true
             }],
             dockedItems: [{
                 xtype: 'pagingtoolbar',
@@ -119,11 +107,11 @@ Ext.define('Lmkp.view.Filter', {
                 displayMsg: Lmkp.ts.msg("activitypaging-message"),
                 emptyMsg: '<b>' + Lmkp.ts.msg("activitypaging-empty") + '</b>'
             }]
-        } ,{
-        	xtype: 'detailPanel',
-        	flex: 1,
-        	margin: '2 0 0 0'
-        }];
-        this.callParent(arguments);
-    }
+        }],
+        xtype: 'panel'
+    },{
+        flex: 0.5,
+        xtype: 'lo_editordetailpanel'
+    }]
+
 });

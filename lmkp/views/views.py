@@ -137,26 +137,8 @@ def index(request):
         response = request.response
         response.set_cookie('_PROFILE_', request.params.get('_PROFILE_'))
 
-    return {'script': 'main'}
+    return {}
 
 @view_config(route_name='ext_tests', renderer='lmkp:templates/tests.pt')
 def ext_tests(request):
     return {}
-
-@view_config(route_name='admin', renderer='lmkp:templates/admin.mak', permission='administer')
-def admin(request):
-    """
-    The admin view under /admin
-    """
-
-    # Check if language (_LOCALE_) is set
-    if request is not None and '_LOCALE_' in request.params:
-        response = request.response
-        response.set_cookie('_LOCALE_', request.params.get('_LOCALE_'))
-
-    # Check if profile (_PROFILE_) is set
-    if request is not None and '_PROFILE_' in request.params:
-        response = request.response
-        response.set_cookie('_PROFILE_', request.params.get('_PROFILE_'))
-
-    return {'script': 'admin'}
