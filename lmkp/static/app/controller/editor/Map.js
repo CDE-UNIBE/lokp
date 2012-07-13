@@ -1,6 +1,14 @@
 Ext.define('Lmkp.controller.editor.Map', {
     extend: 'Ext.app.Controller',
 
+    requires: [
+    'Lmkp.model.Activity',
+    'Lmkp.model.TagGroup',
+    'Lmkp.model.Tag',
+    'Lmkp.model.MainTag',
+    'Lmkp.model.Point'
+    ],
+
     stores: [
     'Profiles'
     ],
@@ -18,6 +26,8 @@ Ext.define('Lmkp.controller.editor.Map', {
     },
 
     onRender: function(comp){
+
+        OpenLayers.ProxyHost = "/wms?url=";
 
         this.getProfilesStore().on('load', this.onLoad, this);
 
@@ -49,9 +59,20 @@ Ext.define('Lmkp.controller.editor.Map', {
             clickout: true
         });
 
+        var identifyCtrl = new OpenLayers.Control.WMSGetFeatureInfo({
+            eventListeners: {
+                'getfeatureinfo': this.onGetFeatureInfo
+            },
+            infoFormat: 'application/vnd.ogc.gml',
+            layers: [comp.getActivitiesLayer()],
+            title: 'Identify features by clicking',
+            url: 'http://localhost:8080/geoserver/lo/wms'
+        });
+
         // Add the controls to the map and activate them
         map.addControl(highlightCtrl);
         map.addControl(selectCtrl);
+        map.addControl(identifyCtrl);
 
         highlightCtrl.activate();
         selectCtrl.activate();
@@ -100,8 +121,15 @@ Ext.define('Lmkp.controller.editor.Map', {
             },
             iconCls: 'zoom-to-selected'
         }));
-    },
 
+        var identifyAction = Ext.create('GeoExt.Action',{
+            control: identifyCtrl,
+            iconCls: 'identify-feature',
+            map: map,
+            toggleGroup: 'map-controls'
+        });
+        tbar.add(Ext.create('Ext.button.Button', identifyAction));
+    },
 
     onLoad: function(store, records, successful, operation, eOpts) {
         var activeProfile = store.getAt(store.findExact('active', true));
@@ -118,6 +146,53 @@ Ext.define('Lmkp.controller.editor.Map', {
             new OpenLayers.Projection("EPSG:900913"));
 
         map.zoomToExtent(geom.getBounds());
+    },
+
+    onGetFeatureInfo: function(event){
+        var gml = new OpenLayers.Format.GML();
+        // Get the first vector
+        var vector = gml.read(event.text)[0];
+        if(!vector){
+            return;
+        }
+        var identifier = vector.data.activity_identifier;
+        Ext.Ajax.request({
+            url: '/activities/' + identifier,
+            success: function(response){
+                var responseObj = Ext.decode(response.responseText);
+
+                // Create a temporary memory store to properly
+                // read the server response
+                var store = Ext.create('Ext.data.Store', {
+                    autoLoad: true,
+                    model: 'Lmkp.model.Activity',
+                    data : responseObj,
+                    proxy: {
+                        type: 'memory',
+                        reader: {
+                            root: 'data',
+                            type: 'json',
+                            totalProperty: 'total'
+                        }
+                    }
+                });
+
+                var detailPanel = Ext.ComponentQuery.query('lo_editormappanel lo_editordetailpanel')[0];
+                var activeTab = detailPanel.getActiveTab();
+                switch (activeTab.getXType()) {
+                    case "activityHistoryTab":
+                        // var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
+                        // detailPanel._populateHistoryTab(selectedTab, uid)
+                        console.log("coming soon");
+                        break;
+                    default: 	// default is: activityDetailTab
+                        //console.log(activity);
+                        detailPanel.populateDetailsTab(activeTab, [store.getAt(0)]);
+                        break;
+                }
+            }
+        });
+
     }
 
 });
