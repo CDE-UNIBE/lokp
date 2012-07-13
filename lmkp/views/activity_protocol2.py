@@ -283,7 +283,7 @@ class ActivityProtocol2(Protocol):
         """
 
         identifier = kwargs['identifier'] if 'identifier' in kwargs else uuid.uuid4()
-        
+
         status = 'pending'
         if 'status' in kwargs:
             status = kwargs['status']
@@ -365,9 +365,9 @@ class ActivityProtocol2(Protocol):
                 # yes, set the main_tag attribute to this tag
                 if a_tag.key.key == main_tag_key and a_tag.value.value == main_tag_value:
                     db_taggroup.main_tag = a_tag
-
-        self._add_changeset(request, new_activity, None)
         
+        self._add_changeset(request, new_activity, None)
+
         return new_activity
 
     def _add_changeset(self, request, activity, old_version):
