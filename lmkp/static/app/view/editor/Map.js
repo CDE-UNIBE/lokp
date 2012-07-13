@@ -3,7 +3,8 @@ Ext.define('Lmkp.view.editor.Map',{
     alias: ['widget.lo_editormappanel'],
 
     requires: [
-    'Lmkp.view.editor.GxMap'
+    'Lmkp.view.editor.GxMap',
+    'Lmkp.view.editor.Detail'
     ],
 
     layout: {

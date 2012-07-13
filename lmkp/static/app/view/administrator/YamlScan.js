@@ -1,4 +1,4 @@
-Ext.define('Lmkp.view.admin.YamlScan', {
+Ext.define('Lmkp.view.administrator.YamlScan', {
     extend: 'Ext.panel.Panel',
 
     alias: ['widget.yamlscanpanel'],

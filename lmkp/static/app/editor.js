@@ -7,8 +7,15 @@ Ext.onReady(function(){
         'Lmkp.view.editor.Outer',
         ],
 
-        //controllers: ['Main', 'Layers', 'Map', 'Filter', 'EditFilter', 'Stakeholder', 'Outer'],
-        controllers: ['login.Toolbar'],
+        controllers: [
+        'login.Toolbar',
+        'editor.Map',
+        'Map',
+        'editor.Table',
+        'Filter',
+        'EditFilter',
+        'Stakeholder'
+        ],
 
         launch: function() {
             Ext.create('Ext.container.Viewport', {
