@@ -1,26 +1,23 @@
-Ext.define('Lmkp.store.PendingActivityGrid', {
+Ext.define('Lmkp.store.PendingStakeholderGrid', {
     extend: 'Ext.data.Store',
-
-    // all are needed to build relation
+    
     requires: [
-    'Lmkp.model.Activity',
-    'Lmkp.model.TagGroup',
-    'Lmkp.model.Tag',
-    'Lmkp.model.MainTag',
-    'Lmkp.model.Point'
+        'Lmkp.model.Stakeholder',
+        'Lmkp.model.TagGroup',
+        'Lmkp.model.Tag',
+        'Lmkp.model.MainTag'
     ],
-
-    model: 'Lmkp.model.Activity',
-
+    
+    model: 'Lmkp.model.Stakeholder',
+    
     pageSize: 10,
     remoteSort: true,
-
+    
     proxy: {
         type: 'ajax',
-        url: '/activities',
+        url: '/stakeholders',
         extraParams: {
-            status: 'pending',
-            bounds: 'profile'
+            status: 'pending'
         },
         reader: {
             root: 'data',

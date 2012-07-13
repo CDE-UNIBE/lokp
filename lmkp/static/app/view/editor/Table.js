@@ -76,22 +76,22 @@ Ext.define('Lmkp.view.editor.Table',{
             flex: 0.5,
             border: false,
             split: true,
-            itemId: 'resultgrid',
+            itemId: 'activityGrid',
             store: 'ActivityGrid',
             viewConfig: {
                 stripeRows: false
             },
             // grid columns
             columns: [{
-                header: Lmkp.ts.msg("activity-nameofinvestor"),
-                name: 'nameofinvestorcolumn',
-                dataIndex: Lmkp.ts.msg("activity-nameofinvestor"),
+                header: Lmkp.ts.msg("activity-attr_country"),
+                name: 'activityCountryColumn',
+                dataIndex: Lmkp.ts.msg("activity-attr_country"),
                 flex: 1,
                 sortable: true
             }, {
-                header: Lmkp.ts.msg('activity-yearofinvestment'),
+                header: Lmkp.ts.msg('activity-attr_yearofinvestment'),
                 name: 'yearofinvestmentcolumn',
-                dataIndex: Lmkp.ts.msg('activity-yearofinvestment'),
+                dataIndex: Lmkp.ts.msg('activity-attr_yearofinvestment'),
                 flex: 0,
                 sortable: true
             }],

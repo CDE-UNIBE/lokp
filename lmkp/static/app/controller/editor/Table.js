@@ -53,14 +53,20 @@ Ext.define('Lmkp.controller.editor.Table', {
             'lo_editortablepanel combobox[name=logicalOperator]': {
                 select: this.applyFilter
             },
-            'gridpanel[itemId=resultgrid] gridcolumn[name=nameofinvestorcolumn]': {
-                afterrender: this.renderNameofinvestorColumn
+            'gridpanel[itemId=activityGrid] gridcolumn[name=activityCountryColumn]': {
+                afterrender: this.renderActivityCountryColumn
             },
-            'gridpanel[itemId=resultgrid] gridcolumn[name=yearofinvestmentcolumn]': {
-                afterrender: this.renderYearofinvestmentColumn
+            'gridpanel[itemId=activityGrid] gridcolumn[name=yearofinvestmentcolumn]': {
+                afterrender: this.renderActivityYearColumn
             },
-            'gridpanel[itemId=resultgrid]': {
+            'gridpanel[itemId=activityGrid]': {
                 selectionchange: this.showActivity
+            },
+            'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdernamecolumn]': {
+                afterrender: this.renderStakeholderNameColumn
+            },
+            'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdercountrycolumn]': {
+                afterrender: this.renderStakeholderCountryColumn
             }
         });
     },
@@ -203,41 +209,20 @@ Ext.define('Lmkp.controller.editor.Table', {
         this.resetActivateButton(combobox, records);
     },
 
-    renderNameofinvestorColumn: function(comp, eOpts) {
-        comp.renderer = function(value, p, record) {
-            // loop through all tags is needed
-            var taggroupStore = record.taggroups();
-            var ret = [];
-            for (var i=0; i<taggroupStore.count(); i++) {
-                var tagStore = taggroupStore.getAt(i).tags();
-                for (var j=0; j<tagStore.count(); j++) {
-                    if (tagStore.getAt(j).get('key') == Lmkp.ts.msg("activity-nameofinvestor")) {
-                        ret.push(Ext.String.format('{0}', tagStore.getAt(j).get('value')));
-                    }
-                }
-            }
-            if (ret.length > 0) {
-                return ret.join(', ');
-            } else {
-                return Lmkp.ts.msg("unknown");
-            }
-        }
+    renderActivityCountryColumn: function(comp) {
+        this._renderColumnMultipleValues(comp, "activity-attr_country");
     },
 
-    renderYearofinvestmentColumn: function(comp, eOpts) {
-        comp.renderer = function(value, p, record) {
-            // loop through all tags is needed
-            var taggroupStore = record.taggroups();
-            for (var i=0; i<taggroupStore.count(); i++) {
-                var tagStore = taggroupStore.getAt(i).tags();
-                for (var j=0; j<tagStore.count(); j++) {
-                    if (tagStore.getAt(j).get('key') == Lmkp.ts.msg("activity-yearofinvestment")) {
-                        return Ext.String.format('{0}', tagStore.getAt(j).get('value'));
-                    }
-                }
-            }
-            return Lmkp.ts.msg("unknown");
-        }
+    renderActivityYearColumn: function(comp) {
+        this._renderColumnMultipleValues(comp, "activity-attr_yearofinvestment");
+    },
+    
+    renderStakeholderNameColumn: function(comp, bla) {
+        this._renderColumnMultipleValues(comp, "stakeholder-attr_name");
+    },
+    
+    renderStakeholderCountryColumn: function(comp) {
+        this._renderColumnMultipleValues(comp, "stakeholder-attr_country");
     },
 
     showActivity: function(model, selected, eOpts) {
@@ -644,6 +629,30 @@ Ext.define('Lmkp.controller.editor.Table', {
          * is not useful and should rather not be displayed.
          */
         return (emptyNumber == 0) ? '' : emptyNumber;
+    },
+    
+    _renderColumnMultipleValues: function(comp, dataIndex) {
+        /**
+         * Helper function to find values inside Tags and TagGroups.
+         */
+        comp.renderer = function(value, p, record) {
+            // loop through all tags is needed
+            var taggroupStore = record.taggroups();
+            var ret = [];
+            for (var i=0; i<taggroupStore.count(); i++) {
+                var tagStore = taggroupStore.getAt(i).tags();
+                for (var j=0; j<tagStore.count(); j++) {
+                    if (tagStore.getAt(j).get('key') == Lmkp.ts.msg(dataIndex)) {
+                        ret.push(Ext.String.format('{0}', tagStore.getAt(j).get('value')));
+                    }
+                }
+            }
+            if (ret.length > 0) {
+                return ret.join(', ');
+            } else {
+                return Lmkp.ts.msg("unknown");
+            }
+        }
     }
 
 });
