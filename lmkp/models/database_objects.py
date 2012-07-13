@@ -282,6 +282,8 @@ class Activity(Base):
     changesets = relationship("A_Changeset", backref = backref('activity', order_by = id))
     involvements = relationship("Involvement", backref = backref('activity', order_by = id))
 
+    identifier = column_property(activity_identifier)
+
     def __init__(self, activity_identifier, version, point=None):
         self.activity_identifier = activity_identifier
         self.version = version
@@ -324,6 +326,8 @@ class Stakeholder(Base):
     tag_groups = relationship("SH_Tag_Group", backref = backref('stakeholder', order_by = id))
     changesets = relationship("SH_Changeset", backref = backref('stakeholder', order_by = id))
     involvements = relationship("Involvement", backref = backref('stakeholder', order_by = id))
+
+    identifier = column_property(stakeholder_identifier)
 
     def __init__(self, stakeholder_identifier, version):
         self.stakeholder_identifier = stakeholder_identifier

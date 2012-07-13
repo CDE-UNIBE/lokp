@@ -408,9 +408,16 @@ class StakeholderProtocol(Protocol):
                     join(a_subquery, a_subquery.c.a_id ==
                         Involvement.fk_activity).\
                     group_by(Stakeholder.id)
-                    
-        # Apply status filter
-        if status_filter is not None:
+        
+        timestamp_filter = self._get_timestamp_filter(request, Stakeholder, 
+            SH_Changeset)
+        if timestamp_filter is not None:
+            relevant_stakeholders = relevant_stakeholders.\
+                join(timestamp_filter, 
+                    timestamp_filter.c.timestamp_id == Stakeholder.id)
+
+        # Apply status filter (only if timestamp not set)
+        if status_filter is not None and timestamp_filter is None:
             relevant_stakeholders = relevant_stakeholders.\
                 filter(Stakeholder.fk_status.in_(status_filter))
 
