@@ -1,23 +1,21 @@
+from lmkp.authentication import CustomAuthenticationPolicy
 from lmkp.models.meta import DBSession
 from lmkp.renderers.renderers import GeoJsonRenderer
-from lmkp.renderers.renderers import JsonRenderer
 from lmkp.renderers.renderers import JavaScriptRenderer
+from lmkp.renderers.renderers import JsonRenderer
 from lmkp.renderers.renderers import KmlRenderer
 from lmkp.security import group_finder
-from lmkp.authentication import CustomAuthenticationPolicy
 from lmkp.subscribers import add_localizer
 from lmkp.subscribers import add_renderer_globals
 from lmkp.subscribers import add_user
+from lmkp.views.errors import forbidden_view
+from lmkp.views.errors import notfound_view
 import papyrus
-#from papyrus.renderers import GeoJSON
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.events import BeforeRender
 from pyramid.events import NewRequest
 from sqlalchemy import engine_from_config
-# import error_views
-from lmkp.views.errors import forbidden_view
-from lmkp.views.errors import notfound_view
 
 def main(global_config, ** settings):
     """ This function returns a Pyramid WSGI application.
@@ -55,8 +53,6 @@ def main(global_config, ** settings):
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
     config.add_route('db_test', '/db_test')
-    #config.add_route('manage_events', '/manage')
-    config.add_route('admin', '/admin')
 
     # Returns configuration parameters as JSON objects
     config.add_route('yaml_translate_activities', '/config/scan/activities')

@@ -1,11 +1,13 @@
-Ext.define('Lmkp.view.MapPanel',{
+Ext.define('Lmkp.view.editor.GxMap',{
     extend: 'GeoExt.panel.Map',
-    alias: ['widget.mappanel'],
+    alias: ['widget.lo_editorgxmappanel'],
 
     requires: [
     'GeoExt.Action'
     ],
 
+    border: false,
+    frame: false,
     center: new OpenLayers.LonLat(0,0),
 
     config: {
@@ -104,16 +106,16 @@ Ext.define('Lmkp.view.MapPanel',{
 
     zoom: 2,
 
-    constructor: function(config){
+    /*constructor: function(config){
 
-        this.callParent([config]);
+            this.callParent([config]);
 
-        // It is necessary to set the map center in the constructor to get a
-        // valid map extent from the beginning.
-        this.map.setCenter(new OpenLayers.LonLat(0,0), 2);
+            // It is necessary to set the map center in the constructor to get a
+            // valid map extent from the beginning.
+            this.map.setCenter(new OpenLayers.LonLat(0,0), 2);
 
-        return this;
-    },
+            return this;
+        },*/
 
     getVectorLayer: function(){
         return this.getMap().getLayersByName('vector')[0];
