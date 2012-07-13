@@ -33,7 +33,7 @@ Ext.define('Lmkp.view.administrator.Main', {
         split: true,
         xtype: 'lo_editormappanel'
     },{
-        postUrl: '/config/add',
+        postUrl: '/config/add/activities',
         store: 'YamlScan',
         title: 'Activities',
         xtype: 'yamlscanpanel'
