@@ -2,7 +2,7 @@ Ext.define('Lmkp.view.activities.Details', {
 	extend: 'Ext.panel.Panel',
 	alias: ['widget.activityDetailTab'],
 	
-	id: 'activityDetailTab',
+	itemId: 'activityDetailTab',
 
 	bodyPadding: 5,
 	

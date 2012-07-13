@@ -5,8 +5,9 @@ from PyQt4.QtCore import QIODevice
 from PyQt4.QtCore import QRegExp
 from PyQt4.QtCore import QString
 from qgis.core import *
-import simplejson as json
 import string
+import simplejson as json
+from taggroupconfig import getTagGroupsConfiguration
 
 def createMap(filename):
     """
@@ -15,7 +16,7 @@ def createMap(filename):
     """
 
     # Open the CSV file
-    file = QFile( "%s/%s" % (basedir,filename))
+    file = QFile("%s/%s" % (basedir, filename))
     file.open(QIODevice.OpenMode(QIODevice.ReadOnly))
 
     map = {}
@@ -35,7 +36,6 @@ def createMap(filename):
 
     return map
 
-
 # Supply path to where is your qgis installed
 QgsApplication.setPrefixPath("/usr", True)
 
@@ -48,17 +48,7 @@ basedir = "/home/adrian/Documents/LandObservatory/Matrix/Data"
 
 countriesMap = createMap('countries.csv')
 
-# This dict maps the attribute names from the landmatrix input Shapefile to the
-# fields defined in the global definition yaml
-transformMap = {
-    "Name of In": "Name",
-    "Name of_1": "Name",
-    "Name of_2": "Name",
-    "Country of": "Country",
-    "Country_1": "Country",
-    "Country_2": "Country",
-    "Domestic P": "Domestic Partner",
-}
+identifierColumn, transformMap, groups = getTagGroupsConfiguration("landmatrix.stakeholder.ini")
 
 vlayer = QgsVectorLayer("%s/deals_with_geom.shp" % basedir, "landmatrix", "ogr")
 if not vlayer.isValid():
@@ -76,6 +66,9 @@ for (i, field) in provider.fields().iteritems():
     if str(field.name()) in transformMap:
         attributeIndexes.append(i)
         fieldIndexMap[i] = transformMap[str(field.name())]
+    elif field.name() == identifierColumn:
+        attributeIndexes.append(i)
+        fieldIndexMap[i] = "activity_identifier"
 
 # Start data retreival: fetch geometry and all attributes for each feature
 provider.select(attributeIndexes)
@@ -96,11 +89,20 @@ while provider.nextFeature(feature):
     # Fetch map of attributes
     attrs = feature.attributeMap()
 
+    tagGroups = list({'tags': []} for i in range(len(groups)))
+
     # Loop all attributes
     for (k, attr) in attrs.iteritems():
-        # Handle the identifier differently
-        if fieldIndexMap[k] == "identifier":
-            stakeholderObject['id'] = str(attr.toString())
+        # Handle the activity identifier differently
+        if fieldIndexMap[k] == "activity_identifier":
+            activitiesObject = []
+            activitiesObject.append({
+                                    "op": "add",
+                                    "id": str(attr.toString()),
+                                    "version": 1,
+                                    "role": 6
+                                    })
+            stakeholderObject['activities'] = activitiesObject
 
         # Write all attributes that are not empty or None.
         # It is necessary to add the op property!
@@ -108,19 +110,28 @@ while provider.nextFeature(feature):
         elif attr.toString() != "" and attr is not None:
             #print "%s: %s" % (fieldIndexMap[k], attr.toString())
 
-            taggroupObject = {}
-            taggroupObject['tags'] = []
+            # First search the correct taggroup to append
+            attributeName = provider.fields()[k].name()
+            currentTagGroup = 0
+            for g in groups:
+                if attributeName in g:
+                    break
+                else:
+                    currentTagGroup += 1
 
             # Get the value
             value = unicode(attr.toString())
             # Check if the value has to be looked up
-            if fieldIndexMap[k] in ['Country','Country of Investor']:
+            if fieldIndexMap[k] in ['Country', 'Country of Investor']:
                 value = countriesMap[string.upper(value)]
+            
+            tagGroups[currentTagGroup]['tags'].append({"key": fieldIndexMap[k], "value": value, "op": "add"})
+            tagGroups[currentTagGroup]['op'] = 'add'
+            tagGroups[currentTagGroup]['main_tag'] = {"key": fieldIndexMap[k], "value": value}
 
-            taggroupObject['tags'].append({"key": fieldIndexMap[k], "value": value, "op": "add"})
-            taggroupObject['op'] = 'add'
-            taggroupObject['main_tag'] = {"key": fieldIndexMap[k], "value": value}
-            stakeholderObject['taggroups'].append(taggroupObject)
+    for tg in tagGroups:
+        if len(tg['tags']) > 0:
+            stakeholderObject['taggroups'].append(tg)
 
     # Append the stakeholder to the main object
     stakeholderDiffObject['stakeholders'].append(stakeholderObject)

@@ -23,9 +23,10 @@ def edit_toolbar_config(request):
     str += "{itemId: 'add-activity-button', text: '%s', tooltip: '%s'}" % (_('Add new activity', default='Add new activity'), _('Submit information about a new activity', default='Submit information about a new activity'))
     str += "]}];\n"
     
-    str += "Lmkp.login_form = [{xtype: 'panel', html: '%s', border: 0, bodyCls: 'toolbar_username'}," % _('Logged in as:', default='Logged in as:')
-    str += "{id: 'user_button', text: '%s', tooltip: '%s'},'-'," % (request.user.username, _('Show user profile', default='Show user profile'))
-    str += "{id: 'logout_button', text: '%s'}];\n" % _('Logout', default='Logout')
+    str += "Lmkp.login_form = {xtype: 'toolbar', border: false, items: [\n";
+    str += "{xtype: 'label', text: '%s', border: 0, bodyCls: 'toolbar_username'},\n" % _('Logged in as:', default='Logged in as:')
+    str += "{id: 'user_button', text: '%s', tooltip: '%s'},\n" % (request.user.username, _('Show user profile', default='Show user profile'))
+    str += "{id: 'logout_button', text: '%s'}]};\n" % _('Logout', default='Logout')
 
     str += "Lmkp.mainControllers = ['Main', 'Map', 'Filter', 'Stakeholder','EditFilter'];\n"
 

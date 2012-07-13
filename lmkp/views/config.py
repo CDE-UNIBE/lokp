@@ -8,18 +8,23 @@ from lmkp.config import profile_directory_path
 from lmkp.models.database_objects import A_Key
 from lmkp.models.database_objects import A_Value
 from lmkp.models.database_objects import Language
+from lmkp.models.database_objects import Profile
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Value
 from lmkp.models.meta import DBSession as Session
 import logging
 from pyramid.view import view_config
 import yaml
+import geojson
+import simplejson as json
+import shapely
 
 log = logging.getLogger(__name__)
 
 from pyramid.i18n import get_localizer
 
 # File names in the locale profile directory
+APPLICATION_YAML = 'application.yml'
 ACTIVITY_YAML = 'activity.yml'
 STAKEHOLDER_YAML = 'stakeholder.yml'
 
@@ -260,8 +265,77 @@ def yaml_add_activity_fields(request):
     except IOError:
         # No localized configuration file found!
         pass
-   
-    return _add_to_db(global_config, A_Key, A_Value)
+    
+    ret = _add_to_db(global_config, A_Key, A_Value)
+    
+    # Also scan application YAML (geometry etc.)
+    app_scan = _handle_application_config(request)
+    if app_scan is not None:
+        ret['messagestack'] += app_scan
+    
+    return ret
+
+def _handle_application_config(request):
+
+    def __check_geometry(yaml_geom, profile_name):
+        yaml_geom_geojson = geojson.loads(json.dumps(yaml_geom),
+            object_hook=geojson.GeoJSON.to_instance)
+        yaml_geom_shape = shapely.geometry.asShape(yaml_geom_geojson)
+        # Query database
+        db_profile = Session.query(Profile).\
+            filter(Profile.code == profile_name).first()
+        if db_profile is None:
+            # Global profile does not yet exist, create it
+            Session.add(Profile(profile_name, yaml_geom_shape.wkt))
+            return "Geometry for profile '%s' created." % profile_name
+        else:
+            # Compare existing geometry with the one in config file
+            geom_db = shapely.wkb.loads(str(db_profile.geometry.geom_wkb))
+            if geom_db.equals(yaml_geom_shape) is True:
+                return ("Geometry for profile '%s' did not change." 
+                        % profile_name)
+            else:
+                # Update geometry from global profile
+                db_profile.geometry = yaml_geom_shape.wkt
+                return "Geometry for profile '%s' updated." % profile_name
+    
+    msg = []
+    
+    # First check global application configuration
+    app_stream = open("%s/%s" % 
+        (profile_directory_path(request), APPLICATION_YAML), 'r')
+    app_config = yaml.load(app_stream)
+    
+    if ('application' in app_config and 
+        'geometry' in app_config['application']):
+            
+        msg.append(__check_geometry(app_config['application']['geometry'], 
+            'global'))
+    
+    # Then check local application configuration if available
+    # Try to find _PROFILE_ in parameters
+    locale_code = request.params.get('_PROFILE_', None)
+    # If not found, try to find _PROFILE_ in cookies
+    if locale_code is None:
+        locale_code = request.cookies.get('_PROFILE_', None)
+    # Only continue if _PROFILE_ was found
+    if locale_code is not None:
+        try:
+            locale_app_stream = open("%s/%s" % 
+                (locale_profile_directory_path(request), APPLICATION_YAML), 'r')
+            locale_app_config = yaml.load(locale_app_stream)
+            
+            if ('application' in locale_app_config and
+                'geometry' in locale_app_config['application']):
+                
+                msg.append(__check_geometry(
+                    locale_app_config['application']['geometry'], locale_code))
+            
+        except IOError:
+            # No localized application configuration file found
+            pass
+
+    return msg
 
 @view_config(route_name='yaml_add_stakeholder_fields', renderer='lmkp:templates/sample_values.pt', permission='administer')
 def yaml_add_stakeholder_fields(request):
@@ -282,7 +356,14 @@ def yaml_add_stakeholder_fields(request):
         # No localized configuration file found!
         pass
 
-    return _add_to_db(global_config, SH_Key, SH_Value)
+    ret = _add_to_db(global_config, SH_Key, SH_Value)
+    
+    # Also scan application YAML (geometry etc.)
+    app_scan = _handle_application_config(request)
+    if app_scan is not None:
+        ret['messagestack'] += app_scan
+    
+    return ret
 
 def _add_to_db(config, Key, Value):
 

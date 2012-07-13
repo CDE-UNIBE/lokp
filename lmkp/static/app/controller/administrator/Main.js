@@ -1,10 +1,10 @@
-Ext.define('Lmkp.controller.admin.Main', {
+Ext.define('Lmkp.controller.administrator.Main', {
     extend: 'Ext.app.Controller',
 
     views: [
-    'admin.Main',
-    'admin.Home',
-    'admin.YamlScan'
+    'administrator.Main',
+    'administrator.Home',
+    'administrator.YamlScan'
     ],
 	
     stores: [
@@ -16,7 +16,7 @@ Ext.define('Lmkp.controller.admin.Main', {
 	
     refs: [{
         ref: 'mainPanel',
-        selector: 'adminmainpanel'
+        selector: 'lo_administratormainpanel'
     }],
 	
     init: function() {
