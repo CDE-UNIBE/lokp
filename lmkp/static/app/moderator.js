@@ -14,7 +14,6 @@ Ext.onReady(function(){
         'Map',
         'editor.Table',
         'moderator.Pending',
-        'Filter',
         'EditFilter',
         'Stakeholder'
         ],

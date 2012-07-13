@@ -2,10 +2,14 @@ Ext.define('Lmkp.controller.editor.Table', {
     extend: 'Ext.app.Controller',
 
     stores: [
-    'Config'
+    'Config',
+    'ActivityGrid'
     ],
 
     views: [
+    'editor.Detail',
+    'activities.Details',
+    'activities.History'
     ],
 
     init: function() {
@@ -56,7 +60,7 @@ Ext.define('Lmkp.controller.editor.Table', {
                 afterrender: this.renderYearofinvestmentColumn
             },
             'gridpanel[itemId=resultgrid]': {
-                selectionchange: this.onSelectionChange
+                selectionchange: this.showActivity
             }
         });
     },
@@ -236,7 +240,7 @@ Ext.define('Lmkp.controller.editor.Table', {
         }
     },
 
-    onSelectionChange: function(model, selected, eOpts) {
+    showActivity: function(model, selected, eOpts) {
 
         // Unselect all selected features on the map
         //var mapPanel = Ext.ComponentQuery.query('mappanel')[0];
@@ -514,54 +518,6 @@ Ext.define('Lmkp.controller.editor.Table', {
             }
         }
         this.applyFilter();
-    },
-
-    showActivity: function() {
-
-        // Get the selected record from the GridPanel
-        var grid = Ext.ComponentQuery.query('filterPanel gridpanel[id=filterResults]')[0];
-        var selectedRecord = grid.getSelectionModel().getSelection();
-
-        // Unselect all selected features on the map
-        var mapPanel = Ext.ComponentQuery.query('mappanel')[0];
-        var selectControl = mapPanel.getMap().getControlsBy('id', 'selectControl')[0];
-
-        // Get the vector layer from the map panel
-        var vectorLayer = mapPanel.getVectorLayer();
-
-        // Unregister the featureunselected event and unselect all features
-        vectorLayer.events.unregister('featureunselected', this, this.onFeatureUnselected);
-        selectControl.unselectAll();
-        // Register again the featureunselected event
-        vectorLayer.events.register('featureunselected', this, this.onFeatureUnselected);
-
-        // If there are selected records, highlight it on the map
-        if(selectedRecord[0]){
-            // Get the acitvity identifier
-            var id = selectedRecord[0].data.id;
-
-            // Get the feature by its fid
-            var feature = vectorLayer.getFeatureByFid(id);
-
-            // Unregister and register again the featureselected event
-            vectorLayer.events.unregister('featureselected', this, this.onFeatureSelected);
-            // Select the feature
-            selectControl.select(feature);
-            vectorLayer.events.register('featureselected', this, this.onFeatureSelected);
-        }
-
-        var detailPanel = Ext.ComponentQuery.query('filterPanel detailPanel')[0];
-        var selectedTab = detailPanel.getActiveTab();
-        switch (selectedTab.getXType()) {
-            case "activityHistoryTab":
-                // var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
-                // detailPanel._populateHistoryTab(selectedTab, uid)
-                console.log("coming soon");
-                break;
-            default: 	// default is: activityDetailTab
-                detailPanel.populateDetailsTab(selectedTab, selectedRecord);
-                break;
-        }
     },
 
     getOperator: function(xType) {

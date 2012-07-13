@@ -12,7 +12,6 @@ Ext.onReady(function(){
         'editor.Map',
         'Map',
         'editor.Table',
-        'Filter',
         'EditFilter',
         'Stakeholder'
         ],

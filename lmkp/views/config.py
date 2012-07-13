@@ -276,9 +276,9 @@ def yaml_add_activity_fields(request):
     return ret
 
 def _handle_application_config(request):
-    
+
     def __check_geometry(yaml_geom, profile_name):
-        yaml_geom_geojson = geojson.loads(json.dumps(yaml_geom), 
+        yaml_geom_geojson = geojson.loads(json.dumps(yaml_geom),
             object_hook=geojson.GeoJSON.to_instance)
         yaml_geom_shape = shapely.geometry.asShape(yaml_geom_geojson)
         # Query database

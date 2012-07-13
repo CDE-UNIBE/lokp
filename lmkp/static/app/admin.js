@@ -10,12 +10,12 @@ Ext.onReady(function(){
 
         controllers: [
         'administrator.Main',
+        'editor.Table',
         'login.Toolbar',
         'editor.Map',
         'Map',
         'editor.Table',
         'moderator.Pending',
-        'Filter',
         'EditFilter',
         'Stakeholder'
         ],
