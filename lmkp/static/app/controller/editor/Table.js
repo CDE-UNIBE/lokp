@@ -53,19 +53,19 @@ Ext.define('Lmkp.controller.editor.Table', {
             'lo_editortablepanel combobox[name=logicalOperator]': {
                 select: this.applyFilter
             },
-            'gridpanel[itemId=activityGrid] gridcolumn[name=activityCountryColumn]': {
+            'lo_editortablepanel gridpanel[itemId=activityGrid] gridcolumn[name=activityCountryColumn]': {
                 afterrender: this.renderActivityCountryColumn
             },
-            'gridpanel[itemId=activityGrid] gridcolumn[name=yearofinvestmentcolumn]': {
+            'lo_editortablepanel gridpanel[itemId=activityGrid] gridcolumn[name=yearofinvestmentcolumn]': {
                 afterrender: this.renderActivityYearColumn
             },
-            'gridpanel[itemId=activityGrid]': {
+            'lo_editortablepanel gridpanel[itemId=activityGrid]': {
                 selectionchange: this.showActivity
             },
-            'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdernamecolumn]': {
+            'lo_editortablepanel gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdernamecolumn]': {
                 afterrender: this.renderStakeholderNameColumn
             },
-            'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdercountrycolumn]': {
+            'lo_editortablepanel gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdercountrycolumn]': {
                 afterrender: this.renderStakeholderCountryColumn
             }
         });

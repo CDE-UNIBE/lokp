@@ -10,9 +10,9 @@ Ext.onReady(function(){
         controllers: [
         'login.Toolbar',
         'editor.GxMap',
+        'editor.Detail',
         'Map',
         'editor.Table',
-        'EditFilter',
         'Stakeholder'
         ],
 
