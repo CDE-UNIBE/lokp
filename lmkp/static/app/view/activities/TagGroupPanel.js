@@ -7,7 +7,7 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
         anchor: '100%'
     },
     bodyPadding: 5,
-    
+
     items: [{
         border: 0,
         name: 'maintagpanel'
