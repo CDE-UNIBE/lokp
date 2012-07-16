@@ -12,7 +12,7 @@ Ext.onReady(function(){
         'administrator.Main',
         'editor.Table',
         'login.Toolbar',
-        'editor.Map',
+        'editor.GxMap',
         'Map',
         'editor.Table',
         'moderator.Pending',

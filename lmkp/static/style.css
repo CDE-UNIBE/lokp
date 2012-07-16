@@ -1,22 +1,22 @@
 .zoom-in-button {
     background-image:url("/static/img/zoom-in.png") !important;
-    height: 16px !important;
-    width: 16px !important;
+    height: 24px !important;
+    width: 24px !important;
 }
 .pan-button {
     background-image:url("/static/img/pan.png") !important;
-    height: 16px !important;
-    width: 16px !important;
+    height: 24px !important;
+    width: 24px !important;
 }
-.zoom-to-selected {
-    background-image: url("/static/img/zoom-to-selected.png") !important;
-    height: 16px !important;
-    width: 16px !important;
+.zoom-region-button {
+    background-image: url("/static/img/zoom-region.png") !important;
+    height: 24px !important;
+    width: 24px !important;
 }
-.identify-feature {
-    background-image: url("/static/img/identify-feature.png") !important;
-    height: 16px !important;
-    width: 16px !important;
+.identify-button {
+    background-image: url("/static/img/identify.png") !important;
+    height: 24px !important;
+    width: 24px !important;
 }
 .ico-key { 
     width:15px;
