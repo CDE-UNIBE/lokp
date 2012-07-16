@@ -1,4 +1,4 @@
-Ext.define('Lmkp.controller.editor.Map', {
+Ext.define('Lmkp.controller.editor.GxMap', {
     extend: 'Ext.app.Controller',
 
     requires: [
@@ -14,7 +14,7 @@ Ext.define('Lmkp.controller.editor.Map', {
     ],
 
     views: [
-    'editor.Map',
+    'editor.GxMap',
     ],
 
     init: function() {
@@ -29,15 +29,10 @@ Ext.define('Lmkp.controller.editor.Map', {
 
         OpenLayers.ProxyHost = "/wms?url=";
 
-        this.getProfilesStore().on('load', this.onLoad, this);
-
         // Get the toolbar
         var tbar = comp.getDockedItems('toolbar')[0];
         // Get the map
         var map = comp.getMap();
-
-        // Register the moveend event with the map
-        map.events.register('moveend', this, this.onMoveEnd);
 
         // Get the vecotr layer
         var vectorLayer = comp.getVectorLayer();
@@ -83,7 +78,9 @@ Ext.define('Lmkp.controller.editor.Map', {
             }),
             map: map,
             iconCls: 'pan-button',
-            toggleGroup: 'map-controls'
+            scale: 'medium',
+            toggleGroup: 'map-controls',
+            tooltip: 'Pan'
         });
         tbar.add(Ext.create('Ext.button.Button', dragPanAction));
 
@@ -94,58 +91,76 @@ Ext.define('Lmkp.controller.editor.Map', {
             }),
             map: map,
             iconCls: 'zoom-in-button',
-            toggleGroup: 'map-controls'
+            scale: 'medium',
+            toggleGroup: 'map-controls',
+            tooltip: 'Zoom in'
         });
         tbar.add(Ext.create('Ext.button.Button', zoomBoxAction));
 
         tbar.add(Ext.create('Ext.button.Button', {
-            handler: function() {
-                var selectedFeatures = new Array();
-                var layers = map.getLayersByClass('OpenLayers.Layer.Vector');
-                for(var i = 0; i < layers.length; i++){
-                    for(var j = 0; j < layers[i].selectedFeatures.length; j++){
-                        selectedFeatures.push(layers[i].selectedFeatures[j]);
-                    }
-
-                }
-
-                console.log(selectedFeatures[0]);
-                var bounds = selectedFeatures[0].geometry.getBounds().clone();
-
-                for(var i = 1; i < selectedFeatures.length; i++) {
-                    bounds.extend(selectedFeatures[i].geometry.getBounds());
-                }
-
-                map.zoomToExtent(bounds);
-
+            handler: function(button, event, eOpts){
+                this.zoomToProfile(map);
             },
-            iconCls: 'zoom-to-selected'
+            iconCls: 'zoom-region-button',
+            scale: 'medium',
+            scope: this,
+            tooltip: 'Zoom to profile region'
         }));
 
         var identifyAction = Ext.create('GeoExt.Action',{
             control: identifyCtrl,
-            iconCls: 'identify-feature',
+            handler: identifyAction,
+            iconCls: 'identify-button',
             map: map,
-            toggleGroup: 'map-controls'
+            scale: 'medium',
+            toggleGroup: 'map-controls',
+            tooltip: "Identify feature"
         });
         tbar.add(Ext.create('Ext.button.Button', identifyAction));
+
+        // Get the map center and zoom level from the cookies if one is set
+        var location = Ext.util.Cookies.get('_LOCATION_');
+        if(location){
+            var values = location.split('|');
+            map.setCenter(new OpenLayers.LonLat(values[0], values[1]));
+            map.zoomTo(values[2]);
+        }
+        
+        // Register the moveend event with the map
+        // after setting map center and zoom level
+        map.events.register('moveend', this, this.onMoveEnd);
     },
 
-    onLoad: function(store, records, successful, operation, eOpts) {
+    onMoveEnd: function(event){
+        // Store the current map center and zoom level as cookie in the format:
+        // longitude|latitude|zoom
+        // and set the expiration date in three month
+        var map = event.object;
+        var center = map.getCenter();
+        var zoom = map.getZoom();
+        var value = center.lon + "|" + center.lat + "|" + zoom;
+
+        var expirationDate = new Date();
+        expirationDate.setMonth(new Date().getMonth() + 3);
+        Ext.util.Cookies.set('_LOCATION_', value, expirationDate);
+    },
+
+    zoomToProfile: function(map) {
+
+        var store = this.getProfilesStore();
         var activeProfile = store.getAt(store.findExact('active', true));
+        if(activeProfile){
+            var geoJson = new OpenLayers.Format.GeoJSON();
 
-        var geoJson = new OpenLayers.Format.GeoJSON();
+            var feature = geoJson.read(Ext.encode(activeProfile.get('geometry')))[0];
 
-        var feature = geoJson.read(Ext.encode(activeProfile.get('geometry')))[0];
+            var geom = feature.geometry.clone().transform(
+                new OpenLayers.Projection("EPSG:4326"),
+                new OpenLayers.Projection("EPSG:900913"));
 
-        var mappanel = Ext.ComponentQuery.query('lo_editorgxmappanel')[0];
-        var map = mappanel.getMap();
+            map.zoomToExtent(geom.getBounds());
+        }
 
-        var geom = feature.geometry.clone().transform(
-            new OpenLayers.Projection("EPSG:4326"),
-            new OpenLayers.Projection("EPSG:900913"));
-
-        map.zoomToExtent(geom.getBounds());
     },
 
     onGetFeatureInfo: function(event){
@@ -192,7 +207,6 @@ Ext.define('Lmkp.controller.editor.Map', {
                 }
             }
         });
-
     }
 
 });

@@ -93,33 +93,9 @@ Ext.define('Lmkp.view.editor.GxMap',{
     sphericalMercatorProjection: new OpenLayers.Projection("EPSG:900913"),
 
     // Add an empty toolbar to add the GeoExt actions in the Map controller
-    tbar: [],
-
-    /*tbar: [{
-        iconCls: 'pan-button',
-        toggleGroup: 'map-controls'
-    },'->',{
-        fieldLabel: 'Change Map Layer',
-        store: [
-        'mapnik',
-        'osmarenderer'
-        ],
-        queryMode: 'local',
-        xtype: 'combobox'
-    }],*/
+    tbar: {},
 
     zoom: 2,
-
-    /*constructor: function(config){
-
-            this.callParent([config]);
-
-            // It is necessary to set the map center in the constructor to get a
-            // valid map extent from the beginning.
-            this.map.setCenter(new OpenLayers.LonLat(0,0), 2);
-
-            return this;
-        },*/
 
     getVectorLayer: function(){
         return this.getMap().getLayersByName('vector')[0];
