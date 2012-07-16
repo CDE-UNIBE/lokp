@@ -12,6 +12,7 @@ from lmkp.models.database_objects import Profile
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Value
 from lmkp.models.meta import DBSession as Session
+from lmkp.views.profile import get_current_profile
 import logging
 from pyramid.view import view_config
 import yaml
@@ -313,12 +314,10 @@ def _handle_application_config(request):
             'global'))
     
     # Then check local application configuration if available
-    # Try to find _PROFILE_ in parameters
-    locale_code = request.params.get('_PROFILE_', None)
-    # If not found, try to find _PROFILE_ in cookies
-    if locale_code is None:
-        locale_code = request.cookies.get('_PROFILE_', None)
-    # Only continue if _PROFILE_ was found
+    # Try to find the profile in parameters
+    locale_code = get_current_profile(request)
+
+    # Only continue if a profile was found
     if locale_code is not None:
         try:
             locale_app_stream = open("%s/%s" % 
