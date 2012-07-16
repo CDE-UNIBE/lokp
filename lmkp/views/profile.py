@@ -5,6 +5,15 @@ from pyramid.view import view_config
 import re
 import yaml
 
+def get_current_profile(request):
+
+    if '_PROFILE_' in request.params:
+        return request.params['_PROFILE_']
+    if '_PROFILE_' in request.cookies:
+        return request.cookies['_PROFILE_']
+
+    return 'global'
+
 @view_config(route_name='profile_store', renderer='json')
 def profile_store(request):
     """
@@ -17,12 +26,6 @@ def profile_store(request):
     data = []
 
     profile_dir = profile_directory_path(request)
-
-    current_profile = None
-    if '_PROFILE_' in request.params:
-        current_profile = request.params['_PROFILE_']
-    if '_PROFILE_' in request.cookies:
-        current_profile = request.cookies['_PROFILE_']
 
     for root, dirs, files in os.walk(profile_dir):
         for filename in fnmatch.filter(files, 'application.yml'):
@@ -44,7 +47,7 @@ def profile_store(request):
                                 'name': name,
                                 'profile': profile,
                                 'geometry': geometry,
-                                'active': current_profile == profile
+                                'active': get_current_profile(request) == profile
                                 })
 
                 except TypeError:

@@ -142,3 +142,7 @@ def index(request):
 @view_config(route_name='ext_tests', renderer='lmkp:templates/tests.pt')
 def ext_tests(request):
     return {}
+
+@view_config(route_name='privileges_test', renderer='lmkp:templates/privilegestest.mak')
+def privileges_test(request):
+    return {}

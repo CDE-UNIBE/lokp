@@ -1,6 +1,7 @@
 from geoalchemy import WKBSpatialElement
 from geoalchemy.functions import functions
 from lmkp.models.database_objects import *
+from lmkp.views.profile import get_current_profile
 from lmkp.views.protocol import Feature
 from lmkp.views.protocol import Protocol
 from lmkp.views.protocol import Tag
@@ -892,11 +893,8 @@ class ActivityProtocol2(Protocol):
         (first look in request params, then in cookies)
         """
         
-        # Try to find _PROFILE_ in parameters
-        profile_code = request.params.get('_PROFILE_', None)
-        # If not found, try to find _PROFILE_ in cookies
-        if profile_code is None:
-            profile_code = request.cookies.get('_PROFILE_', None)
+        # Get the current profile
+        profile_code = get_current_profile(request)
         
         if profile_code is not None:
             # Try to find profile in DB

@@ -165,6 +165,8 @@ def main(global_config, ** settings):
     # Yet another test
     config.add_route('timestamp_test', '/timestamp')
 
+    config.add_route('privileges_test', '/privileges')
+
     # Error views
     config.add_forbidden_view(forbidden_view)
     config.add_notfound_view(notfound_view)
