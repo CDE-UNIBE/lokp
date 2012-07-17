@@ -21,7 +21,7 @@ Ext.define('Lmkp.controller.moderator.Pending', {
             'gridpanel[itemId=activityGrid]': {
                 select: this.onPendingActivityGridSelect
             },
-            'gridpanel[itemId=pendingStakeholderGrid]': {
+            'gridpanel[itemId=stakeholderGrid]': {
                 select: this.onPendingStakeholderGridSelect
             }
         });
