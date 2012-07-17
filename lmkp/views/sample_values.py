@@ -84,6 +84,10 @@ def insert_landmatrix(request):
     user1 = Session.query(User).filter(User.username == 'user1').first()
     global_profile = Session.query(Profile).filter(Profile.code == 'global').first()
     user1.profiles = [global_profile]
+    # Establish link between profile 'LA' and user2
+    user2 = Session.query(User).filter(User.username == 'user2').first()
+    la_profile = Session.query(Profile).filter(Profile.code == 'LA').first()
+    user2.profiles = [la_profile]
     
     return {'success': True, 'activities': a, 'stakeholders': s}
 
