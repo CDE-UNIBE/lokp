@@ -24,9 +24,9 @@ Ext.define('Lmkp.controller.editor.Detail', {
             'lo_editordetailpanel button[itemId=add-taggroup-button]':{
                 click: this.onAddTaggroupButtonClick
             },
-            'lo_editordetailpanel button[itemId=add-activity-button]':{
+            /*'lo_editordetailpanel button[itemId=add-activity-button]':{
                 click: this.onAddActivityButtonClick
-            },
+            },*/
             'lo_editordetailpanel button[itemId="show-all-details"]': {
                 toggle: this.onShowDetailsToggle
             }

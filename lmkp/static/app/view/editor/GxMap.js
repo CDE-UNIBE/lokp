@@ -40,53 +40,9 @@ Ext.define('Lmkp.view.editor.GxMap',{
                 maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34,
                     20037508.34, 20037508.34)
             }),
-        new OpenLayers.Layer.Vector('vector',{
-            isBaseLayer: false,
-            // Add an event listener to reproject all features from geographic
-            // projection to the spherical Mercator projection.
-            // Thus: the layer expect that all features are in EPSG:4326!
-            eventListeners: {
-                "beforefeatureadded": function(feature){
-                    var geom = feature.feature.geometry;
-                    // Reproject the feature's geometry from geographic coordinates
-                    // to spherical Mercator coordinates.
-                    geom.transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913"));
-                }
-            },
-            styleMap: new OpenLayers.StyleMap({
-                "default": new OpenLayers.Style({}, {
-                    rules: [
-                    new OpenLayers.Rule({
-                        title: "list",
-                        filter: new OpenLayers.Filter.Comparison({
-                            property: 'list',
-                            type: OpenLayers.Filter.Comparison.EQUAL_TO,
-                            value: '1'
-                        }),
-                        symbolizer: {
-                            graphicName: "star",
-                            pointRadius: 7,
-                            fillColor: "#bd0026",
-                            fillOpacity: 0.8,
-                            strokeColor: "#bd0026",
-                            strokeWidth: 1
-                        }
-                    }),
-                    new OpenLayers.Rule({
-                        elseFilter: true,
-                        symbolizer: {
-                            graphicName: "circle",
-                            pointRadius: 7,
-                            fillColor: "#ff0000",
-                            fillOpacity: 0.8,
-                            strokeColor: "#bd0026",
-                            strokeWidth: 1
-                        }
-                    })]
-                })
-            })
-        })
-        ],
+        new OpenLayers.Layer.Vector('pointLayer',{
+            isBaseLayer: false
+        })],
         projection: this.sphericalMercatorProjection
     },
 
@@ -98,7 +54,7 @@ Ext.define('Lmkp.view.editor.GxMap',{
     zoom: 2,
 
     getVectorLayer: function(){
-        return this.getMap().getLayersByName('vector')[0];
+        return this.getMap().getLayersByName('pointLayer')[0];
     },
 
     getBaseLayer: function(){
