@@ -1,4 +1,10 @@
 Ext.onReady(function(){
+    var loadingMask = Ext.get('loading-mask');
+    loadingMask.fadeOut({
+        duration: 1000,
+        remove: true
+    });
+    
     Ext.application({
         name: 'Lmkp',
         appFolder: 'static/app',
