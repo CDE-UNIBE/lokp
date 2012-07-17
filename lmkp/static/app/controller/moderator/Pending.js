@@ -44,10 +44,10 @@ Ext.define('Lmkp.controller.moderator.Pending', {
                 params: {
                     status: 'active,pending,overwritten'
                 },
+                method: 'GET',
                 success: function(response) {
                     // Update panel with data received
                     panel.updateContentActivity(
-                        panel,
                         Ext.JSON.decode(response.responseText)
                     );
                 }
@@ -70,7 +70,6 @@ Ext.define('Lmkp.controller.moderator.Pending', {
                 success: function(response) {
                     // Update panel with data received
                     panel.updateContentStakeholder(
-                        panel,
                         Ext.JSON.decode(response.responseText)
                     );
                 }
