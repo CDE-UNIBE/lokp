@@ -850,23 +850,26 @@ class ActivityProtocol2(Protocol):
         # input
         bbox = request.params.get('bbox', None)
         if bbox is not None:
-            box = map(float, bbox.split(','))
-            geometry = Polygon((
-                               (box[0], box[1]),
-                               (box[0], box[3]),
-                               (box[2], box[3]),
-                               (box[2], box[1]),
-                               (box[0], box[1]))
-                               )
+            try:
+                box = map(float, bbox.split(','))
+                geometry = Polygon((
+                                   (box[0], box[1]),
+                                   (box[0], box[3]),
+                                   (box[2], box[3]),
+                                   (box[2], box[1]),
+                                   (box[0], box[1]))
+                                   )
 
-            # Create the intersection geometry
-            wkb_geometry = WKBSpatialElement(buffer(geometry.wkb), epsg)
+                # Create the intersection geometry
+                wkb_geometry = WKBSpatialElement(buffer(geometry.wkb), epsg)
 
-            # Get the SRID used in the Activity class
-            activity_srid = functions.srid(Activity.point)
+                # Get the SRID used in the Activity class
+                activity_srid = functions.srid(Activity.point)
 
-            # Return a subquery
-            return functions.intersects(Activity.point, functions.transform(wkb_geometry, activity_srid))
+                # Return a subquery
+                return functions.intersects(Activity.point, functions.transform(wkb_geometry, activity_srid))
+            except ValueError:
+                pass
 
         return None
 

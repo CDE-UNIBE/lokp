@@ -16,6 +16,13 @@ Ext.define('Lmkp.store.ActivityGrid', {
     remoteSort: true,
 
     proxy: {
+        // Add the bounding box for the whole world as initial extra parameter
+        // for the bounding box.
+        // The bounding box is specified in the spherical mercator projection.
+        extraParams: {
+            bbox: "-20037508.34,-20037508.34,20037508.34,20037508.34",
+            epsg: 900913
+        },
         type: 'ajax',
         url: '/activities',
         reader: {

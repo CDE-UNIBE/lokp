@@ -28,7 +28,7 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
         } else {
             // special case: no main tag -> put first of tags instead
             if (me.tags.length > 0) {
-                main_tag = me.tags.pop();
+                var main_tag = me.tags.pop();
                 this._getMainTagPanel().html = Ext.String.format('<b><i>{0}</i></b>: {1}<br />', main_tag.get('key'), main_tag.get('value'))
             }
         }

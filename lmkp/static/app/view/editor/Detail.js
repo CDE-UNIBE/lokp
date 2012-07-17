@@ -1,8 +1,12 @@
 Ext.define('Lmkp.view.editor.Detail', {
     extend: 'Ext.tab.Panel',
     alias: ['widget.lo_editordetailpanel'],
-	
-    dockedItems: Lmkp.toolbar,
+
+    config: {
+        // The currently shown activity in this panel or null if no activity
+        // is shown
+        current: {}
+    },
 	
     plain: true,
     activeTab: 0,
@@ -26,6 +30,9 @@ Ext.define('Lmkp.view.editor.Detail', {
 
         if (data.length > 0) {
 
+            // Set the current selection to current
+            this.current = data[0];
+
             // remove initial text if still there
             if (panel.down('panel[name=details_initial]')) {
                 panel.remove(panel.down('panel[name=details_initial]'));
@@ -39,11 +46,6 @@ Ext.define('Lmkp.view.editor.Detail', {
             // remove comment panel
             if (panel.down('commentpanel')) {
                 panel.remove(panel.down('commentpanel'));
-            }
-
-            // remove toolbar
-            if (panel.getDockedComponent('top_toolbar')) {
-                panel.removeDocked(panel.getDockedComponent('top_toolbar'));
             }
 
             // get data
@@ -103,7 +105,7 @@ Ext.define('Lmkp.view.editor.Detail', {
             });
             panel.add(commentPanel);
 
-            panel.addDocked({
+        /*panel.addDocked({
                 id: 'top_toolbar',
                 dock: 'top',
                 xtype: 'toolbar',
@@ -124,7 +126,7 @@ Ext.define('Lmkp.view.editor.Detail', {
                         }
                     }
                 }]
-            });
+            });*/
         }
     },
 

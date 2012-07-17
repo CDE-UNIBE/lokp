@@ -18,7 +18,6 @@ Ext.onReady(function(){
         'login.Toolbar',
         'editor.GxMap',
         'editor.Detail',
-        'Map',
         'editor.Table',
         'moderator.Pending',
         'Stakeholder'
