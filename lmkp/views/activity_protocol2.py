@@ -680,13 +680,19 @@ class ActivityProtocol2(Protocol):
 
     def _history(self, request, uid, status_list=None, versions=None,
         involvements=None):
-        
-        if status_list is None:
-            status_list = ['active', 'overwritten', 'deleted']
-        
-        status_filter = self.Session.query(Status).\
-            filter(Status.name.in_(status_list)).\
-            subquery()
+
+        # If no status provided in request.params, look in function parameters
+        # or use default
+        if self._get_status(request) is None:
+            if status_list is None:
+                status_list = ['active', 'overwritten']
+            status_filter = self.Session.query(Status).\
+                filter(Status.name.in_(status_list)).\
+                subquery()
+        else:
+            status_filter = self.Session.query(Status).\
+                filter(or_(* self._get_status(request))).\
+                subquery()
 
         # Prepare query to translate keys and values
         localizer = get_localizer(request)

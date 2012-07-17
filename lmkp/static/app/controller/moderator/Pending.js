@@ -18,10 +18,10 @@ Ext.define('Lmkp.controller.moderator.Pending', {
             'lo_moderatorpendingpanel': {
                 render: this.onRender
             },
-            'gridpanel[itemId=activityGrid]': {
+            'lo_moderatorpendingpanel gridpanel[itemId=activityGrid]': {
                 select: this.onPendingActivityGridSelect
             },
-            'gridpanel[itemId=stakeholderGrid]': {
+            'lo_moderatorpendingpanel gridpanel[itemId=stakeholderGrid]': {
                 select: this.onPendingStakeholderGridSelect
             }
         });
@@ -34,19 +34,47 @@ Ext.define('Lmkp.controller.moderator.Pending', {
     
     onPendingActivityGridSelect: function(rowmodel, record) {
         
-        // get record
+        // Get record
         if (record) {
             var guid = record.get('id');
+            var panel = this.getReviewPanel();
+            // Use AJAX to get data used to update panel
+            Ext.Ajax.request({
+                url: '/activities/history/' + guid,
+                params: {
+                    status: 'active,pending,overwritten'
+                },
+                success: function(response) {
+                    // Update panel with data received
+                    panel.updateContentActivity(
+                        panel,
+                        Ext.JSON.decode(response.responseText)
+                    );
+                }
+            });
         }
-        
-        var panel = this.getReviewPanel();
-        console.log(panel);
-        
-        console.log("coming soon");
     },
     
     onPendingStakeholderGridSelect: function(rowmodel, record) {
-        console.log("coming soon");
-        console.log(record);
+
+        // Get record
+        if (record) {
+            var guid = record.get('id');
+            var panel = this.getReviewPanel();
+            // Use AJAX to get data used to update panel
+            Ext.Ajax.request({
+                url: '/stakeholders/history/' + guid,
+                params: {
+                    status: 'active,pending,overwritten'
+                },
+                success: function(response) {
+                    // Update panel with data received
+                    panel.updateContentStakeholder(
+                        panel,
+                        Ext.JSON.decode(response.responseText)
+                    );
+                }
+            });
+        }
     }
 });
