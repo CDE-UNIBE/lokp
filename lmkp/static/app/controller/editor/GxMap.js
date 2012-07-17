@@ -35,7 +35,7 @@ Ext.define('Lmkp.controller.editor.GxMap', {
         // Get the map
         var map = comp.getMap();
 
-        // Get the vecotr layer
+        // Get the vector layer
         var vectorLayer = comp.getVectorLayer();
 
         // Register the featureselected event
@@ -65,25 +65,51 @@ Ext.define('Lmkp.controller.editor.GxMap', {
             url: 'http://localhost:8080/geoserver/lo/wms'
         });
 
+        var createPointCtrl = new OpenLayers.Control.DrawFeature(vectorLayer,
+            OpenLayers.Handler.Point,{
+                eventListeners: {
+                    'featureadded': function(event){
+                        var geometry = event.feature.geometry;
+                        var win = Ext.create('Lmkp.view.activities.NewActivityWindow',{
+                            activityGeometry: geometry.clone().transform(
+                                new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"))
+                        });
+                        win.on('hide', function(comp, eOpts){
+                            vectorLayer.removeFeatures([event.feature]);
+                        }, this);
+                        win.show();
+                        createPointCtrl.deactivate();
+                        panButton.toggle(true);
+                    }
+                }
+            });
+
+        var movePointCtrl = new OpenLayers.Control.ModifyFeature(vectorLayer, {
+            mode: OpenLayers.Control.ModifyFeature.DRAG
+        })
+
         // Add the controls to the map and activate them
-        map.addControl(highlightCtrl);
-        map.addControl(selectCtrl);
+        //map.addControl(highlightCtrl);
+        //map.addControl(selectCtrl);
         map.addControl(identifyCtrl);
+        map.addControl(createPointCtrl);
 
-        highlightCtrl.activate();
-        selectCtrl.activate();
+        //highlightCtrl.activate();
+        //selectCtrl.activate();
 
-        var dragPanAction = Ext.create('GeoExt.Action',{
+        var panAction = Ext.create('GeoExt.Action',{
             control: new OpenLayers.Control.DragPan({
                 id: 'pan'
             }),
             map: map,
             iconCls: 'pan-button',
+            pressed: true,
             scale: 'medium',
             toggleGroup: 'map-controls',
             tooltip: 'Pan'
         });
-        tbar.add(Ext.create('Ext.button.Button', dragPanAction));
+        var panButton = Ext.create('Ext.button.Button', panAction);
+        tbar.add(panButton);
 
         var zoomBoxAction = Ext.create('GeoExt.Action',{
             control: new OpenLayers.Control.ZoomBox({
@@ -118,6 +144,45 @@ Ext.define('Lmkp.controller.editor.GxMap', {
             tooltip: "Identify feature"
         });
         tbar.add(Ext.create('Ext.button.Button', identifyAction));
+
+        var createAction = Ext.create('GeoExt.Action',{
+            control: createPointCtrl,
+            iconCls: 'create-button',
+            scale: 'medium',
+            text: 'Add new activity',
+            toggleGroup: 'map-controls',
+            toggleHandler: function(button, state){
+                if(state){
+                    createPointCtrl.activate();
+                } else {
+                    createPointCtrl.deactivate();
+                }
+            }
+        });
+        tbar.add(Ext.create('Ext.button.Button', createAction));
+
+        var moveAction = Ext.create('GeoExt.Action', {
+            control: movePointCtrl,
+            iconCls: 'move-button',
+            map: map,
+            scale: 'medium',
+            text: 'Move activity',
+            toggleGroup: 'map-controls',
+            toggleHandler: function(button, state){
+                state ? movePointCtrl.activate() : movePointCtrl.deactivate();
+            }
+        });
+        var moveButton = Ext.create('Ext.button.Button', moveAction);
+        moveButton.on('toggle', function(button, state){
+            if(!state) {
+                Ext.MessageBox.confirm("Save changes?",
+                    "Do you want to save the changes?",
+                    function(buttonid){
+                    // do something
+                    });
+            }
+        }, this)
+        tbar.add(moveButton);
 
         // Get the map center and zoom level from the cookies if one is set
         var location = Ext.util.Cookies.get('_LOCATION_');

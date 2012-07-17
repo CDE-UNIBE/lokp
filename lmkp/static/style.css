@@ -18,6 +18,16 @@
     height: 24px !important;
     width: 24px !important;
 }
+.create-button {
+    background-image: url("/static/img/point-create.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.move-button {
+    background-image: url("/static/img/point-move.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
 .ico-key { 
     width:15px;
     height:15px;

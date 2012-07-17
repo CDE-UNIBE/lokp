@@ -105,28 +105,19 @@ Ext.define('Lmkp.view.editor.Detail', {
             });
             panel.add(commentPanel);
 
-        /*panel.addDocked({
-                id: 'top_toolbar',
-                dock: 'top',
-                xtype: 'toolbar',
-                items: [
-                '->',
-                {
-                    text: 'show all details',
-                    handler: function() {
-                        for (var i in panel.query('taggrouppanel')) {
-                            panel.query('taggrouppanel')[i].toggleDetailButton(true);
-                        }
-                    }
-                }, {
-                    text: 'hide all details',
-                    handler: function() {
-                        for (var i in panel.query('taggrouppanel')) {
-                            panel.query('taggrouppanel')[i].toggleDetailButton(false);
-                        }
-                    }
-                }]
-            });*/
+            // Show the feature on the map
+            // Actually this does not belong here ...
+            var geom = data[0].data.geometry;
+            var geojson = new OpenLayers.Format.GeoJSON();
+            var vectors = geojson.read(Ext.encode(geom));
+            for(var j = 0; j < vectors.length; j++){
+                vectors[j].geometry.transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913"));
+            }
+            var mappanel = Ext.ComponentQuery.query('lo_editorgxmappanel')[0];
+            var vectorLayer = mappanel.getVectorLayer();
+            vectorLayer.removeAllFeatures();
+            vectorLayer.addFeatures(vectors);
+
         }
     },
 

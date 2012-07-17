@@ -36,10 +36,6 @@ Ext.define('Lmkp.view.activities.Details', {
             itemId: 'add-taggroup-button',
             text: 'Add further information',
             tooltip: 'Submit further information to an existing activity'
-        },'->',{
-            itemId: 'add-activity-button',
-            text: 'Add new activity',
-            tooltip: 'Submit information about a new activity'
         }]
     }
 	
