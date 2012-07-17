@@ -5,8 +5,11 @@ Ext.define('Lmkp.view.editor.Detail', {
     config: {
         // The currently shown activity in this panel or null if no activity
         // is shown
-        current: {}
+        current: {},
+        geojson: {}
     },
+
+    geojson: new OpenLayers.Format.GeoJSON(),
 	
     plain: true,
     activeTab: 0,
@@ -107,18 +110,82 @@ Ext.define('Lmkp.view.editor.Detail', {
 
             // Show the feature on the map
             // Actually this does not belong here ...
-            var geom = data[0].data.geometry;
-            var geojson = new OpenLayers.Format.GeoJSON();
-            var vectors = geojson.read(Ext.encode(geom));
-            for(var j = 0; j < vectors.length; j++){
-                vectors[j].geometry.transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913"));
-            }
             var mappanel = Ext.ComponentQuery.query('lo_editorgxmappanel')[0];
             var vectorLayer = mappanel.getVectorLayer();
             vectorLayer.removeAllFeatures();
-            vectorLayer.addFeatures(vectors);
-
+            vectorLayer.addFeatures(this.getFeatures(data));
+            vectorLayer.events.remove('featureunselected');
+            vectorLayer.events.register('featureunselected',
+                this,
+                function(event){
+                    Ext.MessageBox.confirm("Save changes?",
+                        "Do you want to save the changes?",
+                        function(buttonid){
+                            // In case of yes, save the feature
+                            if(buttonid == 'yes'){
+                                // do something
+                                this.saveGeometry(data, event.feature.geometry);
+                            }
+                            // If no is selected, reset the features
+                            else if(buttonid == 'no'){
+                                vectorLayer.removeAllFeatures();
+                                vectorLayer.addFeatures(this.getFeatures(data));
+                            }
+                        }, this);
+                });
         }
+    },
+
+    getFeatures: function(data){
+        var geom = data[0].data.geometry;
+        var vectors = this.geojson.read(Ext.encode(geom));
+        for(var j = 0; j < vectors.length; j++){
+            vectors[j].geometry.transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913"));
+        }
+        return vectors
+    },
+
+    /**
+     * Add a new geometry to an existing activity.
+     */
+    saveGeometry: function(data, newGeometry){
+        // Create the geojson object
+        var geom = Ext.decode(
+            this.geojson.write(
+                // Project the point back to geographic coordinates
+                newGeometry.transform(new OpenLayers.Projection("EPSG:900913"),
+                    new OpenLayers.Projection("EPSG:4326"))
+                )
+            );
+
+        // Create the diff object
+        var activities = [];
+        var activity = new Object();
+        activity.id = data[0].data.id;
+        activity.geometry = geom;
+        activity.taggroups = [];
+        activity.version = data[0].data.version + 1;
+
+        activities.push(activity);
+
+        // Send JSON through AJAX request
+        Ext.Ajax.request({
+            url: '/activities',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            },
+            jsonData: {
+                'activities': activities
+            },
+            success: function() {
+                Ext.Msg.alert('Success', 'The activity was successfully updated. It will be reviewed shortly.');
+            },
+            failure: function() {
+                Ext.Msg.alert('Failure', 'The activity could not be created.');
+            }
+        });
+
     },
 
     populateHistoryTab: function(panel, uid) {

@@ -173,15 +173,6 @@ Ext.define('Lmkp.controller.editor.GxMap', {
             }
         });
         var moveButton = Ext.create('Ext.button.Button', moveAction);
-        moveButton.on('toggle', function(button, state){
-            if(!state) {
-                Ext.MessageBox.confirm("Save changes?",
-                    "Do you want to save the changes?",
-                    function(buttonid){
-                    // do something
-                    });
-            }
-        }, this)
         tbar.add(moveButton);
 
         // Get the map center and zoom level from the cookies if one is set
