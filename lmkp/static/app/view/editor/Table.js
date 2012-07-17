@@ -96,6 +96,15 @@ Ext.define('Lmkp.view.editor.Table',{
                 sortable: true
             }],
             dockedItems: [{
+                dock: 'top',
+                items: [{
+                    boxLabel: 'Apply spatial filter',
+                    checked: true,
+                    itemId: 'spatialFilterCheckbox',
+                    xtype: 'checkbox'
+                }],
+                xtype: 'toolbar'
+            },{
                 xtype: 'pagingtoolbar',
                 id: 'activityGridPagingToolbar',
                 store: 'ActivityGrid',
@@ -112,6 +121,13 @@ Ext.define('Lmkp.view.editor.Table',{
     },{
         flex: 0.5,
         xtype: 'lo_editordetailpanel'
-    }]
+    }],
+
+    /**
+     * Returns the spatial filter checkbox
+     */
+    getSpatialFilterCheckbox: function(){
+        return Ext.ComponentQuery.query('checkbox[itemId="spatialFilterCheckbox"]')[0];
+    }
 
 });
