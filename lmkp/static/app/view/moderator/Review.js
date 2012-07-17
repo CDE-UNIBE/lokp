@@ -18,28 +18,17 @@ Ext.define('Lmkp.view.moderator.Review', {
         border: 0
     }],
 
-    updateContentActivity: function(panel, data) {
-        console.log(data);
-        console.log("Question: 2 functions (Activity / Stakeholder) needed?");
+    updateContentActivity: function(data) {
 
-        // remove the initial panel
-        if (panel.down('panel[name=review_initial]')) {
-            panel.remove(panel.down('panel[name=review_initial]'));
-        }
+        // Remove any existing panels
+        this.removeAll();
 
-        // remove existing review panel (activity)
-        while (panel.down('panel[name=review_activity]')) {
-            panel.remove(panel.down('panel[name=review_activity]'));
-        }
-
-        for (var i in data.data) {
-            if (data.data[i].status == 'pending') {
-                var newPanel = Ext.create('Ext.panel.Panel', {
-                    name: 'review_activity',
-                    html: data.data[i].source
-                });
-                panel.add(newPanel);
-            }
+        // Add a panel for each Activity
+        for (p in data.data) {
+            var p = Ext.create('Lmkp.view.activities.ActivityPanel', {
+                activity: data.data[p]
+            });
+            this.add(p);
         }
     },
 

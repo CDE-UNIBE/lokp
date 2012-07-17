@@ -28,11 +28,12 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
         } else {
             // special case: no main tag -> put first of tags instead
             if (me.tags.length > 0) {
-                main_tag = me.tags.pop();
+                var main_tag = me.tags.pop();
                 this._getMainTagPanel().html = Ext.String.format('<b><i>{0}</i></b>: {1}<br />', main_tag.get('key'), main_tag.get('value'))
             }
         }
-		
+
+        /*
         // add button to show or hide 'normal' tags panel
         if (this._getMainTagPanel().html != '' && me.tags.length > 0) {
             this.addDocked({
@@ -51,6 +52,7 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
                 }]
             });
         }
+        */
 		
         // if user is logged in (Lmkp.toolbar != false), show edit button
         // this is done in controller/Filter.js because it involves data not directly available to this panel.
