@@ -18,11 +18,11 @@ Ext.define('Lmkp.controller.moderator.Pending', {
             'lo_moderatorpendingpanel': {
                 render: this.onRender
             },
-            'gridpanel[itemId=activityGrid]': {
-                select: this.onPendingActivityGridSelect
+            'lo_moderatorpendingpanel gridpanel[itemId=activityGrid]': {
+                select: this.onPendingGridSelect
             },
-            'gridpanel[itemId=pendingStakeholderGrid]': {
-                select: this.onPendingStakeholderGridSelect
+            'lo_moderatorpendingpanel gridpanel[itemId=stakeholderGrid]': {
+                select: this.onPendingGridSelect
             }
         });
     },
@@ -32,21 +32,36 @@ Ext.define('Lmkp.controller.moderator.Pending', {
         this.getPendingStakeholderGridStore().load();
     },
     
-    onPendingActivityGridSelect: function(rowmodel, record) {
-        
-        // get record
-        if (record) {
-            var guid = record.get('id');
+    onPendingGridSelect: function(rowmodel, record) {
+
+        // Activity or Stakeholder?
+        var type = null;
+        if (rowmodel.getStore().storeId == 'PendingActivityGrid') {
+            type = 'activities';
+        } else if (rowmodel.getStore().storeId == 'PendingStakeholderGrid') {
+            type = 'stakeholders';
         }
         
-        var panel = this.getReviewPanel();
-        console.log(panel);
-        
-        console.log("coming soon");
-    },
-    
-    onPendingStakeholderGridSelect: function(rowmodel, record) {
-        console.log("coming soon");
-        console.log(record);
+        // Get record
+        if (record && type) {
+            var guid = record.get('id');
+            var panel = this.getReviewPanel();
+            // Use AJAX to get data used to update panel
+            Ext.Ajax.request({
+                url: '/' + type + '/history/' + guid,
+                params: {
+                    status: 'active,pending,overwritten',
+                    involvements: 'full'
+                },
+                method: 'GET',
+                success: function(response) {
+                    // Update panel with data received
+                    panel.updateContent(
+                        Ext.JSON.decode(response.responseText),
+                        type
+                    );
+                }
+            });
+        }
     }
 });
