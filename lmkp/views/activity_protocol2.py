@@ -41,13 +41,15 @@ class ActivityFeature2(Feature):
     Overwrites the super class Feature and adds the geometry property
     """
 
-    def __init__(self, guid, order_value, geometry=None, version=None, diff_info=None, ** kwargs):
+    def __init__(self, guid, order_value, geometry=None, version=None,
+        timestamp=None, diff_info=None, ** kwargs):
         self._taggroups = []
         self._involvements = []
         self._guid = guid
         self._order_value = order_value
         self._geometry = geometry
         self._version = version
+        self._timestamp = timestamp
         self._diff_info = diff_info
 
     def to_table(self):
@@ -75,6 +77,8 @@ class ActivityFeature2(Feature):
 
         if self._version is not None:
             ret['version'] = self._version
+        if self._timestamp is not None:
+            ret['timestamp'] = str(self._timestamp)
         if self._diff_info is not None:
             for k in self._diff_info:
                 ret[k] = self._diff_info[k]
@@ -680,13 +684,19 @@ class ActivityProtocol2(Protocol):
 
     def _history(self, request, uid, status_list=None, versions=None,
         involvements=None):
-        
-        if status_list is None:
-            status_list = ['active', 'overwritten', 'deleted']
-        
-        status_filter = self.Session.query(Status).\
-            filter(Status.name.in_(status_list)).\
-            subquery()
+
+        # If no status provided in request.params, look in function parameters
+        # or use default
+        if self._get_status(request) is None:
+            if status_list is None:
+                status_list = ['active', 'overwritten']
+            status_filter = self.Session.query(Status).\
+                filter(Status.name.in_(status_list)).\
+                subquery()
+        else:
+            status_filter = self.Session.query(Status).\
+                filter(or_(* self._get_status(request))).\
+                subquery()
 
         # Prepare query to translate keys and values
         localizer = get_localizer(request)
@@ -760,6 +770,8 @@ class ActivityProtocol2(Protocol):
             
             # use version as order value
             order_value = i.version
+
+            timestamp = i.timestamp
             
             diff_info = {
                 'status': i.status,
@@ -778,7 +790,8 @@ class ActivityProtocol2(Protocol):
             # If no existing ActivityFeature found, create new one
             if activity == None:
                 activity = ActivityFeature2(uid, order_value, geometry=g, 
-                    version=order_value, diff_info=diff_info)
+                    version=order_value, timestamp=timestamp,
+                    diff_info=diff_info)
                 data.append(activity)
             
             # Check if there is already this tag group present in the current

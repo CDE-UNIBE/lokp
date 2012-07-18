@@ -226,6 +226,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 	 * Returns a link with the user name or a predefined empty string for null values
 	 */
 	_formatUsername: function(username, userid) {
+                console.log("REFACTOR: this function is now available in utils.StringFunctions");
 		if (username == null) {
 			return Lmkp.ts.msg('anonyomus');
 		} else {
@@ -241,6 +242,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 	 * Returns a nicely formated representation of the timestamp
 	 */
 	_formatTimestamp: function(timestamp) {
+                console.log("REFACTOR: this function is now available in utils.StringFunctions");
 		return Ext.Date.format(Ext.Date.parse(timestamp, "Y-m-d H:i:s.u"), "Y/m/d H:i");
 	}
 });

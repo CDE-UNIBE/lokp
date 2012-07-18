@@ -3,11 +3,12 @@ Ext.define('Lmkp.store.PendingActivityGrid', {
 
     // all are needed to build relation
     requires: [
-    'Lmkp.model.Activity',
-    'Lmkp.model.TagGroup',
-    'Lmkp.model.Tag',
-    'Lmkp.model.MainTag',
-    'Lmkp.model.Point'
+        'Lmkp.model.Activity',
+        'Lmkp.model.TagGroup',
+        'Lmkp.model.Tag',
+        'Lmkp.model.MainTag',
+        'Lmkp.model.Point',
+        'Lmkp.model.Involvement'
     ],
 
     model: 'Lmkp.model.Activity',

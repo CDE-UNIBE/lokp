@@ -42,8 +42,8 @@ Ext.define('Lmkp.view.editor.Detail', {
             }
 
             // remove old panels
-            while (panel.down('taggrouppanel')) {
-                panel.remove(panel.down('taggrouppanel'));
+            while (panel.down('lo_taggrouppanel')) {
+                panel.remove(panel.down('lo_taggrouppanel'));
             }
 
             // remove comment panel
@@ -141,6 +141,30 @@ Ext.define('Lmkp.view.editor.Detail', {
         var vectors = this.geojson.read(Ext.encode(geom));
         for(var j = 0; j < vectors.length; j++){
             vectors[j].geometry.transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913"));
+
+//            panel.addDocked({
+//                id: 'top_toolbar',
+//                dock: 'top',
+//                xtype: 'toolbar',
+//                items: [
+//                '->',
+//                {
+//                    text: 'show all details',
+//                    handler: function() {
+//                        for (var i in panel.query('lo_taggrouppanel')) {
+//                            panel.query('lo_taggrouppanel')[i].toggleDetailButton(true);
+//                        }
+//                    }
+//                }, {
+//                    text: 'hide all details',
+//                    handler: function() {
+//                        for (var i in panel.query('lo_taggrouppanel')) {
+//                            panel.query('lo_taggrouppanel')[i].toggleDetailButton(false);
+//                        }
+//                    }
+//                }]
+//            });
+
         }
         return vectors
     },

@@ -65,19 +65,19 @@ Ext.define('Lmkp.controller.editor.Table', {
             'lo_editortablepanel combobox[name=logicalOperator]': {
                 select: this.applyFilter
             },
-            'lo_editortablepanel gridpanel[itemId=activityGrid] gridcolumn[name=activityCountryColumn]': {
+            'gridpanel[itemId=activityGrid] gridcolumn[name=activityCountryColumn]': {
                 afterrender: this.renderActivityCountryColumn
             },
-            'lo_editortablepanel gridpanel[itemId=activityGrid] gridcolumn[name=yearofinvestmentcolumn]': {
+            'gridpanel[itemId=activityGrid] gridcolumn[name=yearofinvestmentcolumn]': {
                 afterrender: this.renderActivityYearColumn
             },
             'lo_editortablepanel gridpanel[itemId=activityGrid]': {
                 selectionchange: this.showActivity
             },
-            'lo_editortablepanel gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdernamecolumn]': {
+            'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdernamecolumn]': {
                 afterrender: this.renderStakeholderNameColumn
             },
-            'lo_editortablepanel gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdercountrycolumn]': {
+            'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdercountrycolumn]': {
                 afterrender: this.renderStakeholderCountryColumn
             }
         });
@@ -276,7 +276,7 @@ Ext.define('Lmkp.controller.editor.Table', {
         this._renderColumnMultipleValues(comp, "activity-attr_yearofinvestment");
     },
     
-    renderStakeholderNameColumn: function(comp, bla) {
+    renderStakeholderNameColumn: function(comp) {
         this._renderColumnMultipleValues(comp, "stakeholder-attr_name");
     },
     
