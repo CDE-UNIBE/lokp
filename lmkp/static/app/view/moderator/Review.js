@@ -4,6 +4,7 @@ Ext.define('Lmkp.view.moderator.Review', {
 
     requires: [
         'Lmkp.view.activities.ActivityPanel',
+        'Lmkp.view.stakeholders.StakeholderPanel',
         'Lmkp.view.activities.ChangesetPanel'
     ],
 
@@ -23,7 +24,15 @@ Ext.define('Lmkp.view.moderator.Review', {
         border: 0
     }],
 
-    updateContentActivity: function(data) {
+    updateContent: function(data, type) {
+
+        // Activity or Stakeholder?
+        var xtype = null;
+        if (type == 'activities') {
+            xtype = 'lo_activitypanel'
+        } else if (type == 'stakeholders') {
+            xtype = 'lo_stakeholderpanel'
+        }
 
         // Remove any existing panels
         this.removeAll();
@@ -41,8 +50,8 @@ Ext.define('Lmkp.view.moderator.Review', {
                     username: data.data[i].username,
                     userid: data.data[i].userid,
                     additionalPanelBottom: {
-                        xtype: 'lo_activitypanel',
-                        activity: data.data[i],
+                        xtype: xtype,
+                        contentItem: data.data[i],
                         border: 0
                     },
                     // Panel settings
@@ -66,8 +75,8 @@ Ext.define('Lmkp.view.moderator.Review', {
                         username: data.data[j].username,
                         userid: data.data[j].userid,
                         additionalPanelBottom: {
-                            xtype: 'lo_activitypanel',
-                            activity: data.data[j],
+                            xtype: xtype,
+                            contentItem: data.data[j],
                             border: 0
                         },
                         // Panel settings
@@ -78,11 +87,5 @@ Ext.define('Lmkp.view.moderator.Review', {
                 }
             }
         }
-    },
-
-    updateContentStakeholder: function(data) {
-        console.log(data);
-        console.log("coming soon");
-        console.log("Question: 2 functions (Activity / Stakeholder) needed?");
     }
 });

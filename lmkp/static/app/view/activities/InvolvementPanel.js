@@ -13,46 +13,10 @@ Ext.define('Lmkp.view.activities.InvolvementPanel', {
 
     initComponent: function() {
 
-        console.log(this);
-        console.log(this.involvement);
-//        console.log(this.involvement.stakeholder());
-        console.log(this.involvement.get('id'));
-        console.log(this.involvement.getAssociatedData());
-//        console.log(this.involvement.getStakeholder());
-
-
-        if (this.involvement.raw.data) {
-            // Simulate a Store to create a Model instance which allows to access
-            // its TagGroups and Tags
-            var x = Ext.create('Ext.data.Store', {
-                model: 'Lmkp.model.Stakeholder',
-                data: this.involvement.raw,
-                proxy: {
-                    type: 'memory',
-                    reader: {
-                        type: 'json'
-                    }
-                }
-            });
-            x.load();
-            console.log(x);
-        }
-
-
-
-        if (this.involvement) {
+        if (this.involvement_type && this.involvement) {
 
             this.items = []
 
-//            this.items = [
-//                {
-//                    fieldLabel: 'ID',
-//                    value: this.involvement.get('id') // if involvements=full, this is empty
-//                }, {
-//                    fieldLabel: 'Role',
-//                    value: this.involvement.get('role')
-//                }
-//            ]
             // For full involvements, ID is empty
             if (this.involvement.get('id')) {
                 this.items.push({
@@ -65,6 +29,50 @@ Ext.define('Lmkp.view.activities.InvolvementPanel', {
                 fieldLabel: 'Role',
                 value: this.involvement.get('role')
             });
+
+            // If 'data' in raw, show full involvement
+            if (this.involvement.raw.data) {
+
+                // Activity or Stakeholder?
+                var model = null;
+                var xtype = null;
+                if (this.involvement_type == 'activity') {
+                    model = 'Lmkp.model.Activity';
+                    xtype = 'lo_activitypanel';
+                } else if (this.involvement_type == 'stakeholder') {
+                    model = 'Lmkp.model.Stakeholder';
+                    xtype = 'lo_stakeholderpanel';
+                }
+
+                // Simulate a Store to create a Model instance which allows to
+                // access its TagGroups and Tags
+                var store = Ext.create('Ext.data.Store', {
+                    model: model,
+                    data: this.involvement.raw.data,
+                    proxy: {
+                        type: 'memory',
+                        reader: {
+                            type: 'json'
+                        }
+                    }
+                });
+                store.load();
+                var invItem = store.getAt(0);
+
+                if (invItem) {
+                    this.items.push({
+                        xtype: xtype,
+                        contentItem: invItem,
+                        border: 0
+                    });
+                }
+            }
+
+        } else {
+            this.items = {
+                xtype: 'panel',
+                html: Lmkp.ts.msg('unknown')
+            }
         }
 
         // Call parent first

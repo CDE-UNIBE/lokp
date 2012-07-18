@@ -1,6 +1,6 @@
-Ext.define('Lmkp.view.activities.ActivityPanel', {
+Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
     extend: 'Ext.panel.Panel',
-    alias: ['widget.lo_activitypanel'],
+    alias: ['widget.lo_stakeholderpanel'],
 
     requires: [
         'Lmkp.view.activities.TagGroupPanel',
@@ -15,18 +15,18 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
     },
 
     initComponent: function() {
-
+        
         // Call parent first
         this.callParent(arguments);
 
         if (this.contentItem) {
 
-            // If it is not an Activity Model ...
+            // If it is not a Stakeholder Model ...
             if (!this.contentItem.isModel) {
                 // ... create one. For this purpose, simulate a Store which
                 // allows to access its TagGroups and Tags.
-                var aStore = Ext.create('Ext.data.Store', {
-                    model: 'Lmkp.model.Activity',
+                var shStore = Ext.create('Ext.data.Store', {
+                    model: 'Lmkp.model.Stakeholder',
                     data: this.contentItem,
                     proxy: {
                         type: 'memory',
@@ -35,12 +35,12 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
                         }
                     }
                 });
-                aStore.load();
-                this.contentItem = aStore.getAt(0);
+                shStore.load();
+                this.contentItem = shStore.getAt(0);
             }
 
             // Get data and handle each TagGroup separately
-            var taggroupStore = this.contentItem.taggroups();
+             var taggroupStore = this.contentItem.taggroups();
             for (var i=0; i<taggroupStore.count(); i++) {
 
                 var tagStore = taggroupStore.getAt(i).tags();
@@ -70,7 +70,7 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
                 this.add({
                     xtype: 'lo_involvementpanel',
                     involvement: involvementStore.getAt(k),
-                    involvement_type: 'stakeholder'
+                    involvement_type: 'activity'
                 });
             }
         } else {
