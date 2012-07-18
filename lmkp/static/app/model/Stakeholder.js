@@ -12,5 +12,8 @@ Ext.define('Lmkp.model.Stakeholder', {
     hasMany: [{
         model: 'Lmkp.model.TagGroup',
         name: 'taggroups'
+    }, {
+        model: 'Lmkp.model.Involvement',
+        name: 'involvements'
     }]
 });

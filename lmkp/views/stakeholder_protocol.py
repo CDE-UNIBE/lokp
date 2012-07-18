@@ -435,7 +435,7 @@ class StakeholderProtocol(Protocol):
             relevant_stakeholders = self.Session.query(Stakeholder.id.label('order_id'),
                                                      func.char_length('').label('order_value')).\
                 filter(Stakeholder.stakeholder_identifier == uid).\
-                filter(Stakeholder.fk_status == status_filter)
+                filter(Stakeholder.fk_status.in_(status_filter))
 
         # Apply filter for Stakeholder_Role if set ('or' if multiple)
         if self._get_sh_role_filter(request) is not None:
@@ -462,7 +462,7 @@ class StakeholderProtocol(Protocol):
         # Prepare query for involvements
         involvement_status = self.Session.query(Activity.id.label("activity_id"),
                                  Activity.activity_identifier.label("activity_identifier")).\
-                 filter(Activity.fk_status == status_filter).\
+                 filter(Activity.fk_status.in_(status_filter)).\
                  subquery()
         involvement_query = self.Session.query(Involvement.fk_stakeholder.label("stakeholder_id"),
                                        Stakeholder_Role.name.label("role_name"),
@@ -523,6 +523,7 @@ class StakeholderProtocol(Protocol):
 
             # The version
             version = i.version
+            timestamp = i.timestamp
 
             # The current tag group id (not global unique)
             taggroup_id = int(i.taggroup)
@@ -546,7 +547,8 @@ class StakeholderProtocol(Protocol):
 
             # If no existing feature found, create new one
             if stakeholder == None:
-                stakeholder = Feature(uid, order_value, version=version)
+                stakeholder = Feature(uid, order_value, version=version,
+                    timestamp=timestamp)
                 stakeholders.append(stakeholder)
 
             # Check if there is already this tag group present in the current

@@ -1,7 +1,12 @@
 Ext.define('Lmkp.view.moderator.Review', {
     extend: 'Ext.panel.Panel',
     alias: ['widget.lo_moderatorreviewpanel'],
-    
+
+    requires: [
+        'Lmkp.view.activities.ActivityPanel',
+        'Lmkp.view.activities.ChangesetPanel'
+    ],
+
     bodyPadding: 5,
     layout: {
         type: 'anchor'
@@ -27,25 +32,23 @@ Ext.define('Lmkp.view.moderator.Review', {
         // First add a panel for each with status 'pending'
         for (var i in data.data) {
             if (data.data[i].status == 'pending') {
-                this.add(
-                    Ext.create('Lmkp.view.activities.ChangesetPanel', {
-                        // Panel data
-                        timestamp: data.data[i].timestamp,
-                        version: data.data[i].version,
-                        previous_version: data.data[i].previous_version,
-                        username: data.data[i].username,
-                        userid: data.data[i].userid,
-                        additionalPanelBottom: Ext.create(
-                            'Lmkp.view.activities.ActivityPanel', {
-                                activity: data.data[i],
-                                border: 0
-                            }
-                        ),
-                        // Panel settings
-                        title: 'Pending version',
-                        collapsible: true
-                    })
-                );
+                this.add({
+                    xtype: 'lo_changesetpanel',
+                    // Panel data
+                    timestamp: data.data[i].timestamp,
+                    version: data.data[i].version,
+                    previous_version: data.data[i].previous_version,
+                    username: data.data[i].username,
+                    userid: data.data[i].userid,
+                    additionalPanelBottom: {
+                        xtype: 'lo_activitypanel',
+                        activity: data.data[i],
+                        border: 0
+                    },
+                    // Panel settings
+                    title: 'Pending version',
+                    collapsible: true
+                });
                 // Add its previous version to list
                 previous_version.push(data.data[i].previous_version);
             }
@@ -54,26 +57,24 @@ Ext.define('Lmkp.view.moderator.Review', {
         for (var j in data.data) {
             for (var pv in previous_version) {
                 if (data.data[j].version == previous_version[pv]) {
-                    this.add(
-                        Ext.create('Lmkp.view.activities.ChangesetPanel', {
-                            // Panel data
-                            timestamp: data.data[j].timestamp,
-                            version: data.data[j].version,
-                            previous_version: data.data[j].previous_version,
-                            username: data.data[j].username,
-                            userid: data.data[j].userid,
-                            additionalPanelBottom: Ext.create(
-                                'Lmkp.view.activities.ActivityPanel', {
-                                    activity: data.data[j],
-                                    border: 0
-                                }
-                            ),
-                            // Panel settings
-                            title: 'Previous version',
-                            collapsible: true,
-                            collapsed: true
-                        })
-                    );
+                    this.add({
+                        xtype: 'lo_changesetpanel',
+                        // Panel data
+                        timestamp: data.data[j].timestamp,
+                        version: data.data[j].version,
+                        previous_version: data.data[j].previous_version,
+                        username: data.data[j].username,
+                        userid: data.data[j].userid,
+                        additionalPanelBottom: {
+                            xtype: 'lo_activitypanel',
+                            activity: data.data[j],
+                            border: 0
+                        },
+                        // Panel settings
+                        title: 'Previous version',
+                        collapsible: true,
+                        collapsed: true
+                    });
                 }
             }
         }

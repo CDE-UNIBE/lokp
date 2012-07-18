@@ -1,5 +1,6 @@
 Ext.define('Lmkp.view.activities.ChangesetPanel', {
     extend: 'Ext.form.Panel',
+    alias: ['widget.lo_changesetpanel'],
 
     // General settings
     layout: 'anchor',
