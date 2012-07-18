@@ -19,10 +19,10 @@ Ext.define('Lmkp.controller.moderator.Pending', {
                 render: this.onRender
             },
             'lo_moderatorpendingpanel gridpanel[itemId=activityGrid]': {
-                select: this.onPendingActivityGridSelect
+                select: this.onPendingGridSelect
             },
             'lo_moderatorpendingpanel gridpanel[itemId=stakeholderGrid]': {
-                select: this.onPendingStakeholderGridSelect
+                select: this.onPendingGridSelect
             }
         });
     },
@@ -32,15 +32,23 @@ Ext.define('Lmkp.controller.moderator.Pending', {
         this.getPendingStakeholderGridStore().load();
     },
     
-    onPendingActivityGridSelect: function(rowmodel, record) {
+    onPendingGridSelect: function(rowmodel, record) {
+
+        // Activity or Stakeholder?
+        var type = null;
+        if (rowmodel.getStore().storeId == 'PendingActivityGrid') {
+            type = 'activities';
+        } else if (rowmodel.getStore().storeId == 'PendingStakeholderGrid') {
+            type = 'stakeholders';
+        }
         
         // Get record
-        if (record) {
+        if (record && type) {
             var guid = record.get('id');
             var panel = this.getReviewPanel();
             // Use AJAX to get data used to update panel
             Ext.Ajax.request({
-                url: '/activities/history/' + guid,
+                url: '/' + type + '/history/' + guid,
                 params: {
                     status: 'active,pending,overwritten',
                     involvements: 'full'
@@ -48,30 +56,9 @@ Ext.define('Lmkp.controller.moderator.Pending', {
                 method: 'GET',
                 success: function(response) {
                     // Update panel with data received
-                    panel.updateContentActivity(
-                        Ext.JSON.decode(response.responseText)
-                    );
-                }
-            });
-        }
-    },
-    
-    onPendingStakeholderGridSelect: function(rowmodel, record) {
-
-        // Get record
-        if (record) {
-            var guid = record.get('id');
-            var panel = this.getReviewPanel();
-            // Use AJAX to get data used to update panel
-            Ext.Ajax.request({
-                url: '/stakeholders/history/' + guid,
-                params: {
-                    status: 'active,pending,overwritten'
-                },
-                success: function(response) {
-                    // Update panel with data received
-                    panel.updateContentStakeholder(
-                        Ext.JSON.decode(response.responseText)
+                    panel.updateContent(
+                        Ext.JSON.decode(response.responseText),
+                        type
                     );
                 }
             });
