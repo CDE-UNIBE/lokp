@@ -32,8 +32,8 @@ Ext.define('Lmkp.view.editor.Detail', {
             }
 
             // remove old panels
-            while (panel.down('taggrouppanel')) {
-                panel.remove(panel.down('taggrouppanel'));
+            while (panel.down('lo_taggrouppanel')) {
+                panel.remove(panel.down('lo_taggrouppanel'));
             }
 
             // remove comment panel
@@ -112,15 +112,15 @@ Ext.define('Lmkp.view.editor.Detail', {
                 {
                     text: 'show all details',
                     handler: function() {
-                        for (var i in panel.query('taggrouppanel')) {
-                            panel.query('taggrouppanel')[i].toggleDetailButton(true);
+                        for (var i in panel.query('lo_taggrouppanel')) {
+                            panel.query('lo_taggrouppanel')[i].toggleDetailButton(true);
                         }
                     }
                 }, {
                     text: 'hide all details',
                     handler: function() {
-                        for (var i in panel.query('taggrouppanel')) {
-                            panel.query('taggrouppanel')[i].toggleDetailButton(false);
+                        for (var i in panel.query('lo_taggrouppanel')) {
+                            panel.query('lo_taggrouppanel')[i].toggleDetailButton(false);
                         }
                     }
                 }]

@@ -2,6 +2,11 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
     extend: 'Ext.panel.Panel',
     alias: ['widget.lo_activitypanel'],
 
+    requires: [
+        'Lmkp.view.activities.TagGroupPanel',
+        'Lmkp.view.activities.InvolvementPanel'
+    ],
+
     bodyPadding: 5,
     layout: 'anchor',
     defaults: {
@@ -54,14 +59,20 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
                     }
                 }
 
-                // Create panel
-                var tgPanel = Ext.create('Lmkp.view.activities.TagGroupPanel', {
+                this.add({
+                    xtype: 'lo_taggrouppanel',
                     main_tag: main_tag,
                     tags: tags
                 });
+            }
 
-                // Add panel
-                this.add(tgPanel);
+            // Show involvements
+            var involvementStore = this.activity.involvements();
+            for (var k=0; k<involvementStore.count(); k++) {
+                this.add({
+                    xtype: 'lo_involvementpanel',
+                    involvement: involvementStore.getAt(k)
+                });
             }
         }
     }

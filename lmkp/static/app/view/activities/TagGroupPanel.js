@@ -1,6 +1,6 @@
 Ext.define('Lmkp.view.activities.TagGroupPanel', {
     extend: 'Ext.panel.Panel',
-    alias: 'widget.taggrouppanel',
+    alias: 'widget.lo_taggrouppanel',
 	
     layout: 'anchor',
     defaults: {

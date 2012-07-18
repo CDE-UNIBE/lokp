@@ -15,5 +15,8 @@ Ext.define('Lmkp.model.Activity', {
     hasMany: [{
         model: 'Lmkp.model.TagGroup',
         name: 'taggroups'
+    }, {
+        model: 'Lmkp.model.Involvement',
+        name: 'involvements'
     }]
 });
