@@ -607,9 +607,9 @@ class Feature(object):
             # Put it all together
             diff_object = {}
             if len(diff_new) > 0:
-                diff_object['new'] = diff_new
+                diff_object['new_attr'] = diff_new
             if len(diff_old) > 0:
-                diff_object['old'] = diff_old
+                diff_object['old_attr'] = diff_old
             if len(inv_old) > 0:
                 diff_object['old_inv'] = inv_old
             if len(inv_new) > 0:

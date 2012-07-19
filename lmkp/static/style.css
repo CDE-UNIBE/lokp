@@ -112,3 +112,8 @@ div.notice {
     background-color: #ffffcc;
     border: 1px solid #808080;
 }
+
+div.blank {
+    background-color: #ffffff;
+    border: 1px solid #ffffff;
+}
