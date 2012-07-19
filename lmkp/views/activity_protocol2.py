@@ -594,7 +594,7 @@ class ActivityProtocol2(Protocol):
             outerjoin(key_translation, key_translation.c.key_original_id == A_Key.id).\
             outerjoin(value_translation, value_translation.c.value_original_id == A_Value.id).\
             outerjoin(involvement_query, involvement_query.c.activity_id == Activity.id)
-        
+
         # Do the ordering again
         if order_query is not None:
             if self._get_order_direction(request) == 'DESC':
@@ -642,7 +642,12 @@ class ActivityProtocol2(Protocol):
                         if a.get_order_value() == order_value:
                             activity = a
                     else:
-                        activity = a
+                        # If multiple statii queried, use version as separator
+                        if len(status_filter.subquery().compile().params) > 1:
+                            if a.get_version() == version:
+                                activity = a
+                        else:
+                            activity = a
 
             # If no existing ActivityFeature found, create new one
             if activity == None:

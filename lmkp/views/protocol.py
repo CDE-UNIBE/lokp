@@ -467,6 +467,9 @@ class Feature(object):
     def get_taggroups(self):
         return self._taggroups
 
+    def get_version(self):
+        return self._version
+
     def remove_taggroup(self, taggroup):
         if taggroup in self.get_taggroups():
             self.get_taggroups().remove(taggroup)

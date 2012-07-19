@@ -543,7 +543,12 @@ class StakeholderProtocol(Protocol):
                         if sh.get_order_value() == order_value:
                             stakeholder = sh
                     else:
-                        stakeholder = sh
+                        # If multiple statii queried, use version as separator
+                        if len(status_filter.subquery().compile().params) > 1:
+                            if sh.get_version() == version:
+                                stakeholder = sh
+                        else:
+                            stakeholder = sh
 
             # If no existing feature found, create new one
             if stakeholder == None:
