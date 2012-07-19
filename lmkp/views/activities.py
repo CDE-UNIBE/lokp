@@ -139,19 +139,6 @@ def read_many_html(request):
     return {'result': activity_protocol.read(request, filter=get_status_filter(request))}
 
 
-@view_config(route_name='activities_read_one_kml', renderer='kml')
-def read_one_kml(request):
-
-    uid = request.matchdict.get('uid', None)
-    return activity_protocol.read(request, filter=get_status_filter(request), uid=uid)
-
-
-@view_config(route_name='activities_read_many_kml', renderer='kml')
-def read_many_kml(request):
-
-    return activity_protocol.read(request, filter=get_status_filter(request))
-
-
 @view_config(route_name='activities_count', renderer='string')
 def count(request):
     """

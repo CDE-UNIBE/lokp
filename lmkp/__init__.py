@@ -3,7 +3,6 @@ from lmkp.models.meta import DBSession
 from lmkp.renderers.renderers import GeoJsonRenderer
 from lmkp.renderers.renderers import JavaScriptRenderer
 from lmkp.renderers.renderers import JsonRenderer
-from lmkp.renderers.renderers import KmlRenderer
 from lmkp.security import group_finder
 from lmkp.subscribers import add_localizer
 from lmkp.subscribers import add_renderer_globals
@@ -75,9 +74,6 @@ def main(global_config, ** settings):
     # Add a renderer to return ExtJS store configuration objects
     config.add_renderer('json', JsonRenderer())
 
-    # Add a renderer to return KML
-    config.add_renderer('kml', KmlRenderer())
-
     # Add a renderer to return JavaScript files
     config.add_renderer('javascript', JavaScriptRenderer())
 
@@ -88,10 +84,6 @@ def main(global_config, ** settings):
     # This is only for debugging purposes ...
     config.add_route('activities_read_many_html', '/activities/html', request_method='GET')
     config.add_route('activities_read_one_html', '/activities/html/{uid}', request_method='GET')
-
-    # Reads many activites and returns a KML file
-    config.add_route('activities_read_many_kml', '/activities/kml', request_method='GET')
-    config.add_route('activities_read_one_kml', '/activities/kml/{uid}', request_method='GET')
 
     # Reads one or many activities and returns the result as JSON that can be used
     # in ExtJS stores and forms

@@ -4,10 +4,7 @@ from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol import ActivityFeature
 from logging import getLogger
-from lxml import etree
 from papyrus.renderers import Encoder
-from pykml.factory import KML_ElementMaker as kml
-from pykml.parser import Schema
 from pyramid.i18n import get_localizer
 from shapely import wkb
 import simplejson as json
@@ -159,86 +156,5 @@ class JavaScriptRenderer(object):
                 response.content_type = 'application/javascript'
 
             return value
-
-        return _render
-
-class KmlRenderer(object):
-
-    def __call__(self, info):
-
-        def _make_placemark(request, localizer, feature):
-            """
-            Make a new placemark and return it
-            """
-
-            # Load the coordinates
-            coords = wkb.loads(str(feature.geometry.geom_wkb)).coords[0]
-
-            # Create the extended data
-            extendedData = kml.ExtendedData()
-
-            try:
-                name = getattr(feature, "name")
-                if name is None:
-                    name = "Activity %s" % feature.id
-            except:
-                name = "Activity %s" % feature.id
-
-            # Append all attributes
-            for key in feature.__dict__:
-                if feature.__dict__[key] is not None:
-                    try:
-                        # Translate the key and values
-                        k = translate_key(request, localizer, unicode(key))
-                        v = translate_value(request, localizer, unicode(feature.__dict__[key]))
-                        # Append it to the extended data
-                        extendedData.append(kml.Data(kml.value(v), name=k))
-                    except TypeError:
-                        pass
-                    
-            point = kml.Point(kml.coordinates('{lon},{lat}'.format(lon=coords[0], lat=coords[1])))
-
-            return kml.Placemark(kml.name(name), kml.styleUrl('#activity'), extendedData, point)
-
-
-        def _render(value, system):
-            """
-            
-            """
-
-            # Get the request and set the response content type to JSON
-            request = system.get('request')
-            if request is not None:
-                response = request.response
-                response.content_type = 'text/xml'
-                #response.content_type = 'application/vnd.google-earth.kml+xml'
-
-            # Get the localizer to translate the keys and values
-            localizer = get_localizer(request)
-
-            schema_ogc = Schema("ogckml22.xsd")
-
-            schema_gx = Schema("kml22gx.xsd")
-
-            # Create a document element with a single icon style
-            style = kml.Style(kml.IconStyle(kml.scale(2), kml.Icon(kml.href("http://maps.google.com/mapfiles/kml/paddle/L.png"))))
-
-            kmlobj = kml.kml(kml.Document(style, id="activity"))
-
-            if isinstance(value, ActivityFeature):
-                kmlobj.Document.append(_make_placemark(request, localizer, value))
-            else:
-                # For each each ActivityFeature add a placemark to the Document element
-                for v in value:
-                    kmlobj.Document.append(_make_placemark(request, localizer, v))
-
-            # Make sure the KML is valid
-            schema_ogc.assertValid(kmlobj)
-
-            # Debugging messages
-            log.debug("KML document is OGC valid: %s" % schema_ogc.validate(kmlobj))
-            log.debug("KML document is GX valid: %s" % schema_gx.validate(kmlobj))
-
-            return etree.tostring(etree.ElementTree(kmlobj), pretty_print=True)
 
         return _render
