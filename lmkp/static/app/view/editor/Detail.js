@@ -188,7 +188,7 @@ Ext.define('Lmkp.view.editor.Detail', {
         activity.id = data[0].data.id;
         activity.geometry = geom;
         activity.taggroups = [];
-        activity.version = data[0].data.version + 1;
+        activity.version = data[0].data.version;
 
         activities.push(activity);
 

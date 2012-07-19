@@ -1,5 +1,6 @@
 from geoalchemy import WKBSpatialElement
 from geoalchemy.functions import functions
+import geojson
 from lmkp.models.database_objects import *
 from lmkp.views.profile import get_current_profile
 from lmkp.views.protocol import Feature
@@ -42,7 +43,7 @@ class ActivityFeature2(Feature):
     """
 
     def __init__(self, guid, order_value, geometry=None, version=None,
-        timestamp=None, diff_info=None, ** kwargs):
+                 timestamp=None, diff_info=None, ** kwargs):
         self._taggroups = []
         self._involvements = []
         self._guid = guid
@@ -109,7 +110,7 @@ class ActivityProtocol2(Protocol):
         
         # Query the database
         activities, count = self._history(request, uid, status_list, 
-            versions=self._get_versions(request))
+                                          versions=self._get_versions(request))
         
         return {'total': count, 'data': [a.to_table() for a in activities]}
 
@@ -178,10 +179,13 @@ class ActivityProtocol2(Protocol):
             filter(Activity.activity_identifier == identifier).\
             order_by(desc(Activity.version)).\
             first()
+
+        # Handle the geometry
+        new_point = self._handle_geometry(request, db_a, activity_dict)
             
         new_activity = Activity(activity_identifier=db_a.activity_identifier,
                                 version=(latest_version.version + 1),
-                                point=db_a.point)
+                                point=new_point)
         new_activity.tag_groups = []
         # Set the activity status to pending
         new_activity.status = self.Session.query(Status).filter(Status.name == status).first()
@@ -250,7 +254,7 @@ class ActivityProtocol2(Protocol):
                         if 'main_tag' in taggroup_dict:
                             if taggroup_dict['main_tag']['key'] == new_tag.key.key and taggroup_dict['main_tag']['value'] == new_tag.value.value:
                                 new_taggroup.main_tag = new_tag
-        
+
         # Changesets
         self._add_changeset(request, new_activity, old_version)
         
@@ -387,7 +391,7 @@ class ActivityProtocol2(Protocol):
         self.Session.add(changeset)
 
     def _query(self, request, limit=None, offset=None, filter=None, uid=None, 
-        involvements=None, only_guid=False, bounds=None):
+               involvements=None, only_guid=False, bounds=None):
         """
         Do the query. Returns
         - a list of (filtered) Activities
@@ -400,18 +404,18 @@ class ActivityProtocol2(Protocol):
             status_filter = self.Session.query(Status.id).filter(or_(* self._get_status(request)))
             # Get the attribute filter
             (a_tag_filter, a_filter_length, sh_tag_filter, sh_filter_length
-            ) = self._filter(request)
+             ) = self._filter(request)
         else:
             status_filter = (filter['status_filter'] 
-                if 'status_filter' in filter else None)
+                             if 'status_filter' in filter else None)
             a_tag_filter = (filter['a_tag_filter'] 
-                if 'a_tag_filter' in filter else None)
+                            if 'a_tag_filter' in filter else None)
             a_filter_length = (filter['a_filter_length']
-                if 'a_filter_length' in filter else 0)
+                               if 'a_filter_length' in filter else 0)
             sh_tag_filter = (filter['sh_tag_filter']
-                if 'sh_tag_filter' in filter else None)
+                             if 'sh_tag_filter' in filter else None)
             sh_filter_length = (filter['sh_filter_length']
-                if 'sh_filter_length' in filter else 0)
+                                if 'sh_filter_length' in filter else 0)
 
         # Get the order
         order_query, order_numbers = self._get_order(request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value)
@@ -421,13 +425,13 @@ class ActivityProtocol2(Protocol):
         # 'order_value' contains the values to order by.
         if order_query is not None:
             relevant_activities = self.Session.query(
-                                    Activity.id.label('order_id'),
-                                    order_query.c.value.label('order_value'),
-                                    Activity.fk_status
-                                    ).\
+                                                     Activity.id.label('order_id'),
+                                                     order_query.c.value.label('order_value'),
+                                                     Activity.fk_status
+                                                     ).\
             join(A_Tag_Group).\
             join(a_tag_filter, 
-                a_tag_filter.c.a_filter_tg_id == A_Tag_Group.id).\
+                 a_tag_filter.c.a_filter_tg_id == A_Tag_Group.id).\
             outerjoin(order_query).\
             group_by(Activity.id, order_query.c.value)
             # order the list (needed to correctly apply limit and offset below)
@@ -445,13 +449,13 @@ class ActivityProtocol2(Protocol):
         else:
             # Use dummy value as order value
             relevant_activities = self.Session.query(
-                                    Activity.id.label('order_id'),
-                                    func.char_length('').label('order_value'),
-                                    Activity.fk_status
-                                    ).\
+                                                     Activity.id.label('order_id'),
+                                                     func.char_length('').label('order_value'),
+                                                     Activity.fk_status
+                                                     ).\
             join(A_Tag_Group).\
             join(a_tag_filter, 
-                a_tag_filter.c.a_filter_tg_id == A_Tag_Group.id).\
+                 a_tag_filter.c.a_filter_tg_id == A_Tag_Group.id).\
             group_by(Activity.id)
 
         # Apply filter by Stakeholder attributes if provided
@@ -464,37 +468,37 @@ class ActivityProtocol2(Protocol):
             }
             # Use StakeholderProtocol to query identifiers
             sp = StakeholderProtocol(self.Session)
-            sh_ids, count = sp._query(request, filter = sh_filter_dict, 
+            sh_ids, count = sp._query(request, filter = sh_filter_dict,
                 only_guid = True)
             sh_subquery = self.Session.query(Stakeholder.id.label("sh_id")).\
-                    filter(Stakeholder.stakeholder_identifier.in_(sh_ids)).\
-                    subquery()
+                filter(Stakeholder.stakeholder_identifier.in_(sh_ids)).\
+                subquery()
             if self._get_logical_operator(request) == 'or':
                 # OR: use 'union' to add identifiers to relevant_activities
                 relevant_activities = relevant_activities.\
                     union(self.Session.query(
-                        Activity.id.label('order_id'),
-                        func.char_length('').label('order_value'), # dummy value
-                        Activity.fk_status
-                    ).\
-                    join(Involvement).\
-                    join(sh_subquery, sh_subquery.c.sh_id == 
-                        Involvement.fk_stakeholder).\
-                    group_by(Activity.id))
+                          Activity.id.label('order_id'),
+                          func.char_length('').label('order_value'), # dummy value
+                          Activity.fk_status
+                          ).\
+                          join(Involvement).\
+                          join(sh_subquery, sh_subquery.c.sh_id ==
+                          Involvement.fk_stakeholder).\
+                          group_by(Activity.id))
             else:
                 # AND: filter identifiers of relevant_activities
                 relevant_activities = relevant_activities.\
                     join(Involvement).\
                     join(sh_subquery, sh_subquery.c.sh_id == 
-                        Involvement.fk_stakeholder).\
+                         Involvement.fk_stakeholder).\
                     group_by(Activity.id)
 
         timestamp_filter = self._get_timestamp_filter(request, Activity, 
-            A_Changeset)
+                                                      A_Changeset)
         if timestamp_filter is not None:
             relevant_activities = relevant_activities.\
                 join(timestamp_filter, 
-                    timestamp_filter.c.timestamp_id == Activity.id)
+                     timestamp_filter.c.timestamp_id == Activity.id)
 
         # Apply status filter (only if timestamp not set)
         if status_filter is not None and timestamp_filter is None:
@@ -507,7 +511,7 @@ class ActivityProtocol2(Protocol):
         
         # Apply bounds
         bounds_param = (request.params.get('bounds', None) 
-            if bounds is None else bounds)
+                        if bounds is None else bounds)
         if bounds_param is not None:
             if bounds_param.lower() == 'user':
                 # Apply bounds based on user's profiles
@@ -525,7 +529,7 @@ class ActivityProtocol2(Protocol):
         else:
             # 'AND': all filtered values must be available
             relevant_activities = relevant_activities.having(
-                func.count() >= a_filter_length)
+                                                             func.count() >= a_filter_length)
 
         # Special case: UID was provided, create new 'relevant_activities'
         if uid is not None:
@@ -542,7 +546,7 @@ class ActivityProtocol2(Protocol):
                 filter(or_(* self._get_sh_role_filter(request))).\
                 subquery()
             relevant_activities = relevant_activities.join(sh_role_filter, 
-                sh_role_filter.c.role_id == Activity.id)
+                                                           sh_role_filter.c.role_id == Activity.id)
 
         # Count relevant activities (before applying limit and offset)
         count = relevant_activities.count()
@@ -558,15 +562,15 @@ class ActivityProtocol2(Protocol):
 
         # Prepare query for involvements
         involvement_status = self.Session.query(Stakeholder.id.label("stakeholder_id"),
-                                 Stakeholder.stakeholder_identifier.label("stakeholder_identifier")).\
-                 filter(Stakeholder.fk_status.in_(status_filter)).\
-                 subquery()
+                                                Stakeholder.stakeholder_identifier.label("stakeholder_identifier")).\
+            filter(Stakeholder.fk_status.in_(status_filter)).\
+            subquery()
         involvement_query = self.Session.query(Involvement.fk_activity.label("activity_id"),
-                                       Stakeholder_Role.name.label("role_name"),
-                                       involvement_status.c.stakeholder_identifier.label("stakeholder_identifier")).\
-                   join(involvement_status, involvement_status.c.stakeholder_id == Involvement.fk_stakeholder).\
-                   join(Stakeholder_Role).\
-                   subquery()
+                                               Stakeholder_Role.name.label("role_name"),
+                                               involvement_status.c.stakeholder_identifier.label("stakeholder_identifier")).\
+            join(involvement_status, involvement_status.c.stakeholder_id == Involvement.fk_stakeholder).\
+            join(Stakeholder_Role).\
+            subquery()
 
         # Collect all attributes (TagGroups) of relevant activities
         relevant_activities = relevant_activities.subquery()
@@ -683,7 +687,7 @@ class ActivityProtocol2(Protocol):
         return activities, count
 
     def _history(self, request, uid, status_list=None, versions=None,
-        involvements=None):
+                 involvements=None):
 
         # If no status provided in request.params, look in function parameters
         # or use default
@@ -706,15 +710,15 @@ class ActivityProtocol2(Protocol):
             
         # Prepare query for involvements
         involvement_status = self.Session.query(Stakeholder.id.label("stakeholder_id"),
-                                 Stakeholder.stakeholder_identifier.label("stakeholder_identifier")).\
-                 join(status_filter).\
-                 subquery()
+                                                Stakeholder.stakeholder_identifier.label("stakeholder_identifier")).\
+            join(status_filter).\
+            subquery()
         involvement_query = self.Session.query(Involvement.fk_activity.label("activity_id"),
-                                       Stakeholder_Role.name.label("role_name"),
-                                       involvement_status.c.stakeholder_identifier.label("stakeholder_identifier")).\
-                   join(involvement_status, involvement_status.c.stakeholder_id == Involvement.fk_stakeholder).\
-                   join(Stakeholder_Role).\
-                   subquery()
+                                               Stakeholder_Role.name.label("role_name"),
+                                               involvement_status.c.stakeholder_identifier.label("stakeholder_identifier")).\
+            join(involvement_status, involvement_status.c.stakeholder_id == Involvement.fk_stakeholder).\
+            join(Stakeholder_Role).\
+            subquery()
 
         query = self.Session.query(Activity.id.label("id"),
                                    Activity.activity_identifier.label("activity_identifier"),
@@ -790,8 +794,8 @@ class ActivityProtocol2(Protocol):
             # If no existing ActivityFeature found, create new one
             if activity == None:
                 activity = ActivityFeature2(uid, order_value, geometry=g, 
-                    version=order_value, timestamp=timestamp,
-                    diff_info=diff_info)
+                                            version=order_value, timestamp=timestamp,
+                                            diff_info=diff_info)
                 data.append(activity)
             
             # Check if there is already this tag group present in the current
@@ -898,7 +902,7 @@ class ActivityProtocol2(Protocol):
                 filter(Profile.users.any(username = userid))
             for p in profiles.all():
                 profile_filters.append(functions.intersects(Activity.point, 
-                    p.geometry))
+                                       p.geometry))
             return profile_filters
 
         return None
@@ -1033,3 +1037,15 @@ class ActivityProtocol2(Protocol):
                     'implicit_involvement_update': True
                 }
                 new_sh = sp._handle_stakeholder(request, sh_dict, 'pending')
+
+
+    def _handle_geometry(self, request, db_a, activity_dict):
+
+        if 'geometry' in activity_dict:
+            geojson_obj = geojson.loads(json.dumps(activity_dict['geometry']),
+                                       object_hook=geojson.GeoJSON.to_instance)
+            geojson_shape = asShape(geojson_obj)
+
+            return geojson_shape.representative_point().wkt
+
+        return db_a.point
