@@ -41,7 +41,7 @@ Ext.define('Lmkp.view.activities.DiffPanel', {
                             Lmkp.ts.msg('review-diff_attr_added') + '</span>',
                         items: [
                             {
-                                xtype: 'panel',
+                                xtype: 'lo_panel',
                                 html: 'Coming soon ...'
                             }
                         ]
@@ -83,7 +83,7 @@ Ext.define('Lmkp.view.activities.DiffPanel', {
                             Lmkp.ts.msg('review-diff_attr_deleted') + '</span>',
                         items: [
                             {
-                                xtype: 'panel',
+                                xtype: 'lo_panel',
                                 html: 'Coming soon ...'
                             }
                         ]

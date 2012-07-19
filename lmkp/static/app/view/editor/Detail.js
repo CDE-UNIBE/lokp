@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.editor.Detail', {
-    extend: 'Ext.tab.Panel',
+    extend: 'Lmkp.view.Tab',
     alias: ['widget.lo_editordetailpanel'],
 
     config: {
@@ -23,7 +23,7 @@ Ext.define('Lmkp.view.editor.Detail', {
         xtype: 'activityDetailTab'
     }, {
         title: 'History',
-        xtype: 'activityHistoryTab'
+        xtype: 'lo_activityhistorypanel'
     }],
 
     initComponent: function() {
@@ -408,7 +408,7 @@ Ext.define('Lmkp.view.editor.Detail', {
                     // using the initial panel because this will be removed when selected the next activity
                     if (!json.data.active && !json.data.deleted && json.data.overwritten.length == 0) {
                         panel.add({
-                            xtype: 'panel',
+                            xtype: 'lo_panel',
                             border: 0,
                             name: 'history_initial',
                             html: 'No history found for this activity',

@@ -14,7 +14,7 @@ Ext.define('Lmkp.view.administrator.Outer' ,{
         contentEl: 'header-div',
         height: 80,
         region: 'north',
-        xtype: 'panel'
+        xtype: 'lo_panel'
     },{
         region: 'center',
         xtype: 'lo_administratormainpanel'

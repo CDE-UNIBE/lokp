@@ -336,7 +336,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
         for(var i = 0; i < detailPanels.length; i++) {
             var activeTab = detailPanels[i].getActiveTab();
             switch (activeTab.getXType()) {
-                case "activityHistoryTab":
+                case "lo_activityhistorypanel":
                     // var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
                     // detailPanel._populateHistoryTab(selectedTab, uid)
                     console.log("coming soon");

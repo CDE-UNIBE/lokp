@@ -19,7 +19,7 @@ Ext.define('Lmkp.view.moderator.Main' ,{
             xtype: 'lo_editoroverviewpanel'
         }],
         region: 'center',
-        xtype: 'tabpanel'
+        xtype: 'lo_tabpanel'
     }],
 
     initComponent: function() {
