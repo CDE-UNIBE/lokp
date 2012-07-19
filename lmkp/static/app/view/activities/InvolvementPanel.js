@@ -86,7 +86,7 @@ Ext.define('Lmkp.view.activities.InvolvementPanel', {
 
         } else {
             this.items = {
-                xtype: 'panel',
+                xtype: 'lo_panel',
                 html: Lmkp.ts.msg('unknown')
             }
         }
