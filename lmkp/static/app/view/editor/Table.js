@@ -1,9 +1,10 @@
 Ext.define('Lmkp.view.editor.Table',{
-    extend: 'Ext.panel.Panel',
+    extend: 'Lmkp.view.Panel',
     alias: ['widget.lo_editortablepanel'],
 
     requires: [
-    'Lmkp.view.Filter'
+    'Lmkp.view.Filter',
+    'Lmkp.view.Panel'
     ],
 
     layout: 'border',
@@ -19,7 +20,7 @@ Ext.define('Lmkp.view.editor.Table',{
         },
         items: [{
             // attribute selection
-            xtype: 'panel',
+            xtype: 'lo_panel',
             id: 'filterForm',
             flex: 0.5,
             //collapsible: true,
@@ -31,7 +32,7 @@ Ext.define('Lmkp.view.editor.Table',{
             // height: 500,
             bodyPadding: 5,
             items: [{
-                xtype: 'panel',
+                xtype: 'lo_panel',
                 layout: {
                     type: 'hbox',
                     flex: 'stretch'
@@ -47,7 +48,7 @@ Ext.define('Lmkp.view.editor.Table',{
                     hidden: true,
                     fieldLabel: 'Logical operator'
                 }, {
-                    xtype: 'panel', // empty panel for spacing
+                    xtype: 'lo_panel', // empty panel for spacing
                     flex: 1,
                     border: 0
                 }, {
@@ -114,7 +115,7 @@ Ext.define('Lmkp.view.editor.Table',{
             }]
         }],
         region: 'center',
-        xtype: 'panel'
+        xtype: 'lo_panel'
     }],
 
     /**
