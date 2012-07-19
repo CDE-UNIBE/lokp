@@ -40,7 +40,7 @@ Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
             }
 
             // Get data and handle each TagGroup separately
-             var taggroupStore = this.contentItem.taggroups();
+            var taggroupStore = this.contentItem.taggroups();
             for (var i=0; i<taggroupStore.count(); i++) {
 
                 var tagStore = taggroupStore.getAt(i).tags();

@@ -9,7 +9,7 @@ Ext.define('Lmkp.view.activities.InvolvementPanel', {
         margin: 0
     },
     defaultType: 'displayfield',
-    title: 'Involvement',
+    title: Lmkp.ts.msg('involvements-title'),
 
     initComponent: function() {
 
@@ -17,16 +17,32 @@ Ext.define('Lmkp.view.activities.InvolvementPanel', {
 
             this.items = []
 
+            // If it is not an Involvement Model, create one
+            if (!this.involvement.isModel) {
+                var iStore = Ext.create('Ext.data.Store', {
+                    model: 'Lmkp.model.Involvement',
+                    data: this.involvement,
+                    proxy: {
+                        type: 'memory',
+                        reader: {
+                            type: 'json'
+                        }
+                    }
+                });
+                iStore.load();
+                this.involvement = iStore.getAt(0);
+            }
+
             // For full involvements, ID is empty
             if (this.involvement.get('id')) {
                 this.items.push({
-                    fieldLabel: 'ID',
+                    fieldLabel: Lmkp.ts.msg('id'),
                     value: this.involvement.get('id')
                 });
             }
 
             this.items.push({
-                fieldLabel: 'Role',
+                fieldLabel: Lmkp.ts.msg('involvements-role'),
                 value: this.involvement.get('role')
             });
 

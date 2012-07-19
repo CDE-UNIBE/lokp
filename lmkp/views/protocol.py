@@ -467,6 +467,9 @@ class Feature(object):
     def get_taggroups(self):
         return self._taggroups
 
+    def get_version(self):
+        return self._version
+
     def remove_taggroup(self, taggroup):
         if taggroup in self.get_taggroups():
             self.get_taggroups().remove(taggroup)
@@ -604,9 +607,9 @@ class Feature(object):
             # Put it all together
             diff_object = {}
             if len(diff_new) > 0:
-                diff_object['new'] = diff_new
+                diff_object['new_attr'] = diff_new
             if len(diff_old) > 0:
-                diff_object['old'] = diff_old
+                diff_object['old_attr'] = diff_old
             if len(inv_old) > 0:
                 diff_object['old_inv'] = inv_old
             if len(inv_new) > 0:

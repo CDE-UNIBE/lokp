@@ -535,10 +535,9 @@ class StakeholderProtocol(Protocol):
 
             stakeholder = None
             for sh in stakeholders:
-                # Use UID to find existing StakeholderFeature or create new one
-                if sh.get_guid() == uid:
-                    # If list is ordered (order_value != int), use order_value as well
-                    # to find existing StakeholderFeature or create new one
+                # Use UID and version to find existing StakeholderFeature or
+                # create new one
+                if sh.get_guid() == uid and sh.get_version() == version:
                     if not isinstance(order_value, int):
                         if sh.get_order_value() == order_value:
                             stakeholder = sh
@@ -656,7 +655,7 @@ class StakeholderProtocol(Protocol):
                 outerjoin(value_translation, value_translation.c.value_original_id == SH_Value.id).\
                 outerjoin(involvement_query, involvement_query.c.stakeholder_id == Stakeholder.id).\
                 filter(Stakeholder.stakeholder_identifier == uid).\
-                order_by(Stakeholder.version)
+                order_by(desc(Stakeholder.version))
 
         # Append version limit if provided
         if versions is not None:
@@ -738,7 +737,7 @@ class StakeholderProtocol(Protocol):
                     a.create_diff()
                 else:
                     for ov in data:
-                        if ov.get_order_value() == a.get_previous_version():
+                        if ov.get_version() == a.get_previous_version():
                             a.create_diff(ov)
                             break
         # If versions specified, use version order to create diffs
