@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.activities.Details', {
-    extend: 'Ext.panel.Panel',
+    extend: 'Lmkp.view.Panel',
     alias: ['widget.activityDetailTab'],
 	
     itemId: 'activityDetailTab',
@@ -16,8 +16,7 @@ Ext.define('Lmkp.view.activities.Details', {
 	
     // initial item
     items: [{
-        xtype: 'panel',
-        border: 0,
+        xtype: 'lo_panel',
         name: 'details_initial',
         html: Lmkp.ts.msg('activity-select'),
         collapsible: false,
@@ -31,9 +30,11 @@ Ext.define('Lmkp.view.activities.Details', {
             enableToggle: true,
             itemId: 'show-all-details',
             pressed: true,
+            scale: 'medium',
             text: 'Show all details'
         },{
             itemId: 'add-taggroup-button',
+            scale: 'medium',
             text: 'Add further information',
             tooltip: 'Submit further information to an existing activity'
         }]
