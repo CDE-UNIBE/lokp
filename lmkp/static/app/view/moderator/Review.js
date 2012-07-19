@@ -5,7 +5,8 @@ Ext.define('Lmkp.view.moderator.Review', {
     requires: [
         'Lmkp.view.activities.ActivityPanel',
         'Lmkp.view.stakeholders.StakeholderPanel',
-        'Lmkp.view.activities.ChangesetPanel'
+        'Lmkp.view.activities.ChangesetPanel',
+        'Lmkp.view.activities.DiffPanel'
     ],
 
     bodyPadding: 5,
@@ -97,6 +98,14 @@ Ext.define('Lmkp.view.moderator.Review', {
                         title: Lmkp.ts.msg('reviewpanel-pending_title'),
                         collapsible: true
                     });
+                    // Show diff panel
+                    if (data.data[k].diff) {
+                        this.add({
+                            xtype: 'lo_diffpanel',
+                            diff: data.data[k].diff,
+                            contentItem: type
+                        });
+                    }
                 }
                 // Then show panel with previous version
                 if (data.data[k].version ==
@@ -125,8 +134,8 @@ Ext.define('Lmkp.view.moderator.Review', {
             // If there are multiple changes, show spacer between them
             if (j != pending.length - 1) {
                 this.add({
-                    height: 10,
-                    bodyCls: 'notice'
+                    height: 20,
+                    bodyCls: 'blank'
                 });
             }
         }

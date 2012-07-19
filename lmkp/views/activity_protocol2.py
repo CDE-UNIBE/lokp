@@ -634,20 +634,14 @@ class ActivityProtocol2(Protocol):
             
             activity = None
             for a in activities:
-                # Use UID to find existing ActivityFeature or create new one
-                if a.get_guid() == uid:
-                    # If list is ordered (order_value != int), use order_value as well
-                    # to find existing ActivityFeature or create new one
+                # Use UID and version to find existing ActivityFeature or create
+                # new one
+                if a.get_guid() == uid and a.get_version() == version:
                     if not isinstance(order_value, int):
                         if a.get_order_value() == order_value:
                             activity = a
                     else:
-                        # If multiple statii queried, use version as separator
-                        if len(status_filter.subquery().compile().params) > 1:
-                            if a.get_version() == version:
-                                activity = a
-                        else:
-                            activity = a
+                        activity = a
 
             # If no existing ActivityFeature found, create new one
             if activity == None:
@@ -839,7 +833,7 @@ class ActivityProtocol2(Protocol):
                     a.create_diff()
                 else:
                     for ov in data:
-                        if ov.get_order_value() == a.get_previous_version():
+                        if ov.get_version() == a.get_previous_version():
                             a.create_diff(ov)
                             break
         # If versions specified, use version order to create diffs

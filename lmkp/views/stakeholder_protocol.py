@@ -535,20 +535,14 @@ class StakeholderProtocol(Protocol):
 
             stakeholder = None
             for sh in stakeholders:
-                # Use UID to find existing StakeholderFeature or create new one
-                if sh.get_guid() == uid:
-                    # If list is ordered (order_value != int), use order_value as well
-                    # to find existing StakeholderFeature or create new one
+                # Use UID and version to find existing StakeholderFeature or
+                # create new one
+                if sh.get_guid() == uid and sh.get_version() == version:
                     if not isinstance(order_value, int):
                         if sh.get_order_value() == order_value:
                             stakeholder = sh
                     else:
-                        # If multiple statii queried, use version as separator
-                        if len(status_filter.subquery().compile().params) > 1:
-                            if sh.get_version() == version:
-                                stakeholder = sh
-                        else:
-                            stakeholder = sh
+                        stakeholder = sh
 
             # If no existing feature found, create new one
             if stakeholder == None:
@@ -743,7 +737,7 @@ class StakeholderProtocol(Protocol):
                     a.create_diff()
                 else:
                     for ov in data:
-                        if ov.get_order_value() == a.get_previous_version():
+                        if ov.get_version() == a.get_previous_version():
                             a.create_diff(ov)
                             break
         # If versions specified, use version order to create diffs
