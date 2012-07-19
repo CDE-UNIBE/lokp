@@ -16,9 +16,8 @@ Ext.onReady(function(){
 
         controllers: [
         'login.Toolbar',
-        'editor.GxMap',
         'editor.Detail',
-        'editor.Table',
+        'editor.Overview',
         'moderator.Pending',
         'Stakeholder'
         ],

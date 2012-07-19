@@ -6,17 +6,13 @@ Ext.define('Lmkp.view.editor.Table',{
     'Lmkp.view.Filter'
     ],
 
-    layout: {
-        type: 'hbox',
-        align: 'stretch'
-    },
+    layout: 'border',
 
     border: false,
 
     frame: false,
 
     items: [{
-        flex: 0.5,
         layout: {
             type: 'vbox',
             align: 'stretch'
@@ -117,10 +113,8 @@ Ext.define('Lmkp.view.editor.Table',{
                 emptyMsg: '<b>' + Lmkp.ts.msg("activitypaging-empty") + '</b>'
             }]
         }],
+        region: 'center',
         xtype: 'panel'
-    },{
-        flex: 0.5,
-        xtype: 'lo_editordetailpanel'
     }],
 
     /**

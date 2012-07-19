@@ -1,10 +1,9 @@
 Ext.define('Lmkp.view.moderator.Main' ,{
     extend: 'Ext.panel.Panel',
-    alias : ['widget.main'],
+    alias : ['widget.lo_moderatormainpanel'],
 
     requires: [
-    'Lmkp.view.editor.Map',
-    'Lmkp.view.editor.Table',
+    'Lmkp.view.editor.Overview',
     'Lmkp.view.moderator.Pending'
     ],
 
@@ -16,21 +15,8 @@ Ext.define('Lmkp.view.moderator.Main' ,{
             title: 'Pending Changes',
             xtype: 'lo_moderatorpendingpanel'
         },{
-            title: 'Table View',
-            xtype: 'lo_editortablepanel'
-        },{
-            title: 'Map View',
-            /**
-             * collapseMode: 'header' would be much nicer but has some rendering issues:
-             * browser window needs to be resized in order to display the collapsed bar properly.
-             * Maybe this is a bug in Ext that will be fixed just as:
-             * http://www.sencha.com/forum/showthread.php?188414-4.1-RC1-Collapse-mode-mini-doesn-t-work
-             */
-            // collapseMode: 'header' would be nicer but has some rendering issues
-            collapseMode: 'mini', 
-            collapsible: true,
-            split: true,
-            xtype: 'lo_editormappanel'
+            title: 'Overview',
+            xtype: 'lo_editoroverviewpanel'
         }],
         region: 'center',
         xtype: 'tabpanel'
