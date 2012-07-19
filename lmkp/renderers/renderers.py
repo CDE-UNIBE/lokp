@@ -2,7 +2,6 @@ from geojson.codec import GeoJSONEncoder
 from geojson.mapping import to_mapping
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
-from lmkp.views.activity_protocol import ActivityFeature
 from logging import getLogger
 from papyrus.renderers import Encoder
 from pyramid.i18n import get_localizer

@@ -1,6 +1,5 @@
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
-from lmkp.views.activity_protocol import ActivityProtocol
 from lmkp.views.activity_protocol2 import ActivityProtocol2
 import logging
 from pyramid.httpexceptions import HTTPForbidden
@@ -24,7 +23,6 @@ log = logging.getLogger(__name__)
 
 _ = TranslationStringFactory('lmkp')
 
-activity_protocol = ActivityProtocol(Session)
 activity_protocol2 = ActivityProtocol2(Session)
 
 # Translatable hashmap with all possible activity status
@@ -99,54 +97,6 @@ def read_many(request):
     activities = activity_protocol2.read(request)
     return activities
 
-@view_config(route_name='activities_read_one_json', renderer='json')
-def read_one_json(request):
-    """
-    Returns the feature with the requested id
-    """
-    uid = request.matchdict.get('uid', None)
-    return {
-        'success': True,
-        'data': activity_protocol.read(request, filter=get_status_filter(request), uid=uid)
-    }
-
-
-@view_config(route_name='activities_read_many_json', renderer='json')
-def read_many_json(request):
-    """
-    Reads many activities
-    """
-
-    return {
-        'data': activity_protocol.read(request, filter=get_status_filter(request)),
-        'success': True,
-        'total': activity_protocol.count(request, filter=get_status_filter(request))
-    }
-
-
-@view_config(route_name='activities_read_one_html', renderer='lmkp:templates/table.mak')
-def read_one_html(request):
-    """
-    Returns the feature with the requested id
-    """
-    uid = request.matchdict.get('uid', None)
-    return {'result': [activity_protocol.read(request, filter=get_status_filter(request), uid=uid)]}
-
-
-@view_config(route_name='activities_read_many_html', renderer='lmkp:templates/table.mak')
-def read_many_html(request):
-
-    return {'result': activity_protocol.read(request, filter=get_status_filter(request))}
-
-
-@view_config(route_name='activities_count', renderer='string')
-def count(request):
-    """
-    Count activities
-    """
-    return activity_protocol.count(request, filter=get_status_filter(request))
-
-
 @view_config(route_name='activities_create', renderer='json')
 def create(request):
     """
@@ -175,49 +125,6 @@ def create(request):
 
     request.response.status = 201
     return response
-
-@view_config(route_name='activities_tree', renderer='tree')
-def tree(request):
-    """
-    Returns a ExtJS tree configuration of requested activities. Geographical
-    and attribute filter are applied!
-    """
-
-    class ActivityFolder(object):
-        """
-        Define a new class instead of a named tuple, see also comments of
-        this post:
-        http://pysnippet.blogspot.com/2010/01/named-tuple.html
-        The attribute columns id and geometry are reserved and mandatory.
-        """
-
-        def __init__(self, ** kwargs):
-            self.__dict__.update(kwargs)
-
-        @property
-        def __tree_interface__(self):
-            return {
-            'id': self.__dict__['id'],
-            'name': self.__dict__['name'],
-            'children': self.__dict__['children']
-            }
-
-    localizer = get_localizer(request)
-
-    status = get_status(request)
-    if len(status) <= 1:
-        return activity_protocol.read(request, filter=get_status_filter(request))
-    else:
-        result = []
-        for s in status:
-            a = ActivityFolder(
-                               id=s,
-                               name=localizer.translate(statusMap[s]),
-                               children=activity_protocol.read(request, filter=(Status.name == s))
-                               )
-            result.append(a)
-        return result
-
 
 #@view_config(route_name='taggroups_model', renderer='string')
 def model(request):
@@ -302,18 +209,6 @@ def model(request):
     object['fields'] = fields
 
     return "Ext.define('Lmkp.model.TagGroup', %s);" % object
-
-@view_config(route_name='rss_feed', renderer='lmkp:templates/rss.mak')
-def read_many_rss(request):
-    status = "active"
-
-    if 'status' in request.matchdict:
-        status = request.matchdict['status']
-        
-    if 'order_by' not in request.params or 'dir' not in request.params:
-        return HTTPFound(route_url('rss_feed', request, status=status, _query={'order_by': 'timestamp', 'dir': 'desc'}))
-
-    return {'data': activity_protocol.read(request, filter=(Status.name == status))}
 
 @view_config(route_name='activities_history', renderer='json')
 def activities_history(request):
@@ -537,11 +432,3 @@ def _get_config_fields():
     log.info(fields)
 
     return fields
-
-@view_config(route_name='timestamp_test', renderer="lmkp:templates/table.mak")
-def timestamp_test(request):
-    query = activity_protocol._query_timestamp(request)
-
-    #return {'query': query.all()}
-    return {'result': query.all(), 'nbr': len(query.all())}
-    
