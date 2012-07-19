@@ -1,5 +1,5 @@
 {
-	"_description": "Add an Involvement (a Stakeholder) to an Activity",
+        "_description": "Add an Involvement (a Stakeholder) to an Activity",
     "activities": [{
         "id": "70eb2268-22f6-4fa7-8dcb-03161ac1d595",
         "version": 4,
