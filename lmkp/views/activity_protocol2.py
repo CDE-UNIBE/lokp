@@ -598,7 +598,7 @@ class ActivityProtocol2(Protocol):
             outerjoin(key_translation, key_translation.c.key_original_id == A_Key.id).\
             outerjoin(value_translation, value_translation.c.value_original_id == A_Value.id).\
             outerjoin(involvement_query, involvement_query.c.activity_id == Activity.id)
-        
+
         # Do the ordering again
         if order_query is not None:
             if self._get_order_direction(request) == 'DESC':
@@ -638,10 +638,9 @@ class ActivityProtocol2(Protocol):
             
             activity = None
             for a in activities:
-                # Use UID to find existing ActivityFeature or create new one
-                if a.get_guid() == uid:
-                    # If list is ordered (order_value != int), use order_value as well
-                    # to find existing ActivityFeature or create new one
+                # Use UID and version to find existing ActivityFeature or create
+                # new one
+                if a.get_guid() == uid and a.get_version() == version:
                     if not isinstance(order_value, int):
                         if a.get_order_value() == order_value:
                             activity = a
@@ -750,7 +749,7 @@ class ActivityProtocol2(Protocol):
             outerjoin(value_translation, value_translation.c.value_original_id == A_Value.id).\
             outerjoin(involvement_query, involvement_query.c.activity_id == Activity.id).\
             filter(Activity.activity_identifier == uid).\
-            order_by(Activity.version)
+            order_by(desc(Activity.version))
         
         # Append version limit if provided
         if versions is not None:
@@ -838,7 +837,7 @@ class ActivityProtocol2(Protocol):
                     a.create_diff()
                 else:
                     for ov in data:
-                        if ov.get_order_value() == a.get_previous_version():
+                        if ov.get_version() == a.get_previous_version():
                             a.create_diff(ov)
                             break
         # If versions specified, use version order to create diffs

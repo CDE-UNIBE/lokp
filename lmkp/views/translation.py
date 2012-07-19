@@ -39,6 +39,7 @@ def ui_messages(request):
     'success': _('success', default='Success'),
     'failure': _('failure', default='Failure'),
     'submit': _('submit', default='Submit'),
+    'id': _('id', default='ID'),
     # activities / filtering
     'activities-title': _('activities-title', default='Activities'),
     'addattributefilter-button': _('addattributefilter-button', default='Add attribute filter'),
@@ -63,6 +64,9 @@ def ui_messages(request):
     'stakeholder-country': _('stakholder-country', default='Country'),
     'stakeholder-paging_message': _('stakeholder-paging_message', default='Displaying stsakeholders {0} - {1} of {2}'),
     'stakeholder-paging_empty': _('stakeholder-paging_empty', default='No stakeholders found'),
+    # involvements
+    'involvements-title': _('involvements-title', default='Involvement'),
+    'involvements-role': _('involvements-role', default='Role'),
     # status
     'status-pending': _('status-pending', default='pending'),
     'status-active': _('status-active', default='active'),
@@ -76,7 +80,18 @@ def ui_messages(request):
     'comments-by': _('comments-by', default='Comment by'),
     'comments-leave': _('comments-leave', default='Leave a comment'),
     'anonymous': _('anonymous', default='Anonymous'),
-    'confirm-delete-comment': _('confirm-delete-comment', default='Do you really want to delete this comment?')
+    'confirm-delete-comment': _('confirm-delete-comment', default='Do you really want to delete this comment?'),
+    # reviews
+    'reviewpanel-empty_msg': _('reviewpanel-empty_msg', default='Select an item on the left.'),
+    'reviewpanel-multiple_changes': _('reviewpanel-multiple_changes', default='There are multiple changes pending! They may be conflicting.'),
+    'reviewpanel-not_active_changed': _('reviewpanel-not_active_changed', default='These changes are based on a version which is not the active version.'),
+    'reviewpanel-pending_title': _('reviewpanel-pending_title', default='Pending version'),
+    'reviewpanel-previous_title': _('reviewpanel-previous_title', default='Previous version'),
+    'review-diff_title': _('review-diff_title', default='Difference'),
+    'review-diff_inv_added': _('review-diff_inv_added', default='Involvement added'),
+    'review-diff_inv_deleted': _('review-diff_inv_deleted', default='Involvement deleted'),
+    'review-diff_attr_added': _('review-diff_attr_added', default='Attribute added'),
+    'review-diff_attr_deleted': _('review-diff_attr_deleted', default='Attribute deleted')
     }
 
     # Get the localizer
