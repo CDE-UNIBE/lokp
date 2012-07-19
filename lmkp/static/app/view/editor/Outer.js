@@ -3,8 +3,8 @@ Ext.define('Lmkp.view.editor.Outer' ,{
     alias : ['widget.lo_editorouterpanel'],
 
     requires: [
-        'Lmkp.view.login.Toolbar',
-        'Lmkp.view.editor.Main'
+    'Lmkp.view.login.Toolbar',
+    'Lmkp.view.editor.Overview'
     ],
 
     border: false,
@@ -16,8 +16,10 @@ Ext.define('Lmkp.view.editor.Outer' ,{
         region: 'north',
         xtype: 'panel'
     },{
+        border: 0,
+        frame: false,
         region: 'center',
-        xtype: 'lo_editormainpanel'
+        xtype: 'lo_editoroverviewpanel'
     }],
 
     tbar: {

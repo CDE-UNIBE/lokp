@@ -16,7 +16,7 @@ Ext.define('Lmkp.view.moderator.Outer' ,{
         xtype: 'panel'
     },{
         region: 'center',
-        xtype: 'main'
+        xtype: 'lo_moderatormainpanel'
     }],
 
     tbar: {

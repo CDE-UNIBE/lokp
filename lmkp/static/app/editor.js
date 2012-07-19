@@ -15,9 +15,8 @@ Ext.onReady(function(){
 
         controllers: [
         'login.Toolbar',
-        'editor.GxMap',
         'editor.Detail',
-        'editor.Table',
+        'editor.Overview',
         'Stakeholder'
         ],
 
@@ -28,6 +27,8 @@ Ext.onReady(function(){
                     padding: 0
                 },
                 items: [{
+                    border: 0,
+                    frame: false,
                     region: 'center',
                     xtype: 'lo_editorouterpanel'
                 }]

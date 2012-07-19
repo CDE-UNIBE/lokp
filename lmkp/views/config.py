@@ -309,7 +309,7 @@ def _handle_application_config(request):
     
     if ('application' in app_config and 
         'geometry' in app_config['application']):
-            
+
         msg.append(__check_geometry(app_config['application']['geometry'], 
             'global'))
     
@@ -326,7 +326,7 @@ def _handle_application_config(request):
             
             if ('application' in locale_app_config and
                 'geometry' in locale_app_config['application']):
-                
+
                 msg.append(__check_geometry(
                     locale_app_config['application']['geometry'], locale_code))
             

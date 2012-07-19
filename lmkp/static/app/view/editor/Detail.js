@@ -110,7 +110,7 @@ Ext.define('Lmkp.view.editor.Detail', {
 
             // Show the feature on the map
             // Actually this does not belong here ...
-            var mappanel = Ext.ComponentQuery.query('lo_editorgxmappanel')[0];
+            var mappanel = Ext.ComponentQuery.query('lo_editormappanel')[0];
             var vectorLayer = mappanel.getVectorLayer();
             vectorLayer.removeAllFeatures();
             vectorLayer.addFeatures(this.getFeatures(data));
