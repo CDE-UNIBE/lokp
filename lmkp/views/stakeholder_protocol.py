@@ -661,7 +661,7 @@ class StakeholderProtocol(Protocol):
                 outerjoin(value_translation, value_translation.c.value_original_id == SH_Value.id).\
                 outerjoin(involvement_query, involvement_query.c.stakeholder_id == Stakeholder.id).\
                 filter(Stakeholder.stakeholder_identifier == uid).\
-                order_by(Stakeholder.version)
+                order_by(desc(Stakeholder.version))
 
         # Append version limit if provided
         if versions is not None:

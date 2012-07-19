@@ -107,3 +107,8 @@ div.error_div {
 span.grey {
     color: #808080;
 }
+
+div.notice {
+    background-color: #ffffcc;
+    border: 1px solid #808080;
+}
