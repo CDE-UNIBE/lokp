@@ -1,6 +1,11 @@
 Ext.define('Lmkp.controller.editor.Overview', {
     extend: 'Ext.app.Controller',
 
+    refs: [{
+        ref: 'mapPanel',
+        selector: 'lo_editormappanel'
+    }],
+
     requires: [
     'Lmkp.model.Activity',
     'Lmkp.model.TagGroup',
@@ -114,7 +119,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 // Get the map view.
                 // Actually this is bad coding style! This should be done in a
                 // superior controller ...
-                var map = Ext.ComponentQuery.query('lo_editormappanel')[0].getMap();
+                var map = this.getMapPanel().getMap();
                 // Get the extent if the map is already initialized, else the
                 // map extent is still null
                 if(map.getExtent()){
