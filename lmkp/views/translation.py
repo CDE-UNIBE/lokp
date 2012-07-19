@@ -76,7 +76,13 @@ def ui_messages(request):
     'comments-by': _('comments-by', default='Comment by'),
     'comments-leave': _('comments-leave', default='Leave a comment'),
     'anonymous': _('anonymous', default='Anonymous'),
-    'confirm-delete-comment': _('confirm-delete-comment', default='Do you really want to delete this comment?')
+    'confirm-delete-comment': _('confirm-delete-comment', default='Do you really want to delete this comment?'),
+    # reviews
+    'reviewpanel-empty_msg': _('reviewpanel-empty_msg', default='Select an item on the left.'),
+    'reviewpanel-multiple_changes': _('reviewpanel-multiple_changes', default='There are multiple changes pending! They may be conflicting.'),
+    'reviewpanel-not_active_changed': _('reviewpanel-not_active_changed', default='These changes are based on a version which is not the active version.'),
+    'reviewpanel-pending_title': _('reviewpanel-pending_title', default='Pending version'),
+    'reviewpanel-previous_title': _('reviewpanel-previous_title', default='Previous version')
     }
 
     # Get the localizer

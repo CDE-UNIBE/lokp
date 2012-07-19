@@ -751,7 +751,7 @@ class ActivityProtocol2(Protocol):
             outerjoin(value_translation, value_translation.c.value_original_id == A_Value.id).\
             outerjoin(involvement_query, involvement_query.c.activity_id == Activity.id).\
             filter(Activity.activity_identifier == uid).\
-            order_by(Activity.version)
+            order_by(desc(Activity.version))
         
         # Append version limit if provided
         if versions is not None:
