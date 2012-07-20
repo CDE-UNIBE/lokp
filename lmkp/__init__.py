@@ -75,6 +75,7 @@ def main(global_config, ** settings):
 
     # Activities controllers with an api similar to Papyrus
     # Order matters!
+    config.add_route('activities_read_pending', '/activities/pending')
     # Reads one or many activities and returns GeoJSON Feature or FeatureCollection
     config.add_route('activities_read_many', '/activities', request_method='GET')
     config.add_route('activities_read_one', '/activities/{uid}', request_method='GET')
