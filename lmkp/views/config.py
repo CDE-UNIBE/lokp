@@ -3,6 +3,7 @@
 __author__ = "Adrian Weber, Centre for Development and Environment, University of Bern"
 __date__ = "$Jan 20, 2012 10:39:24 AM$"
 
+import geojson
 from lmkp.config import locale_profile_directory_path
 from lmkp.config import profile_directory_path
 from lmkp.models.database_objects import A_Key
@@ -14,11 +15,11 @@ from lmkp.models.database_objects import SH_Value
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.profile import get_current_profile
 import logging
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.view import view_config
-import yaml
-import geojson
-import simplejson as json
 import shapely
+import simplejson as json
+import yaml
 
 log = logging.getLogger(__name__)
 
@@ -71,13 +72,29 @@ def get_config(request):
     the configuration in config.yaml.
     """
 
+    # Get the requested output format
+    parameter = request.matchdict['parameter']
+
+    config_yaml = None
+    if parameter.lower() == 'activities':
+        config_yaml = ACTIVITY_YAML
+        Key = A_Key
+        Value = A_Value
+    elif parameter.lower() == 'stakeholders':
+        config_yaml = STAKEHOLDER_YAML
+        Key = SH_Key
+        Value = SH_Value
+    else:
+        return HTTPNotFound()
+
+
     # Read the global configuration file
-    global_stream = open("%s/%s" % (profile_directory_path(request), ACTIVITY_YAML), 'r')
+    global_stream = open("%s/%s" % (profile_directory_path(request), config_yaml), 'r')
     global_config = yaml.load(global_stream)
 
     # Read the localized configuration file
     try:
-        locale_stream = open("%s/%s" % (locale_profile_directory_path(request), ACTIVITY_YAML), 'r')
+        locale_stream = open("%s/%s" % (locale_profile_directory_path(request), config_yaml), 'r')
         locale_config = yaml.load(locale_stream)
 
         # If there is a localized config file then merge it with the global one
@@ -87,42 +104,33 @@ def get_config(request):
         # No localized configuration file found!
         pass
 
-    # Get the requested output format
-    parameter = request.matchdict['parameter']
+    # Get the configuration file from the YAML file
+    extObject = []
+    # Do the translation work from custom configuration format to an
+    # ExtJS configuration object.
+    fields = global_config['fields']
 
-    # If parameter=bbox is set
-    if parameter is not None and parameter.lower() == 'bbox':
-        return {'bbox': global_config['application']['bbox']}
+    # language is needed because fields are to be displayed translated
+    localizer = get_localizer(request)
+    lang = Session.query(Language).filter(Language.locale == localizer.locale_name).first()
+    if lang is None:
+        lang = Language(1, 'English', 'English', 'en')
 
-    # If parameter=form is set
-    elif parameter is not None and parameter.lower() == 'form':
-        # Get the configuration file from the YAML file
-        extObject = []
-        # Do the translation work from custom configuration format to an
-        # ExtJS configuration object.
-        fields = global_config['fields']
-        
-        # language is needed because fields are to be displayed translated
-        localizer = get_localizer(request)
-        lang = Session.query(Language).filter(Language.locale == localizer.locale_name).first()
-        if lang is None:
-            lang = Language(1, 'English', 'English', 'en')
+    # First process the mandatory fields
+    for (name, config) in fields['mandatory'].iteritems():
+        o = _get_field_config(Key, Value, name, config, lang, True)
+        if o is not None:
+            extObject.append(o)
+    # Then process also the optional fields
+    for (name, config) in fields['optional'].iteritems():
 
-        # First process the mandatory fields
-        for (name, config) in fields['mandatory'].iteritems():
-            o = _get_field_config(name, config, lang, True)
-            if o is not None:
-                extObject.append(o)
-        # Then process also the optional fields
-        for (name, config) in fields['optional'].iteritems():
-            o = _get_field_config(name, config, lang)
-            if o is not None:
-                extObject.append(o)
-        return extObject
-
-    # In all other cases return the configuration as JSON
-    else:
-        return global_config
+        print "+++++++++++++++++++++++++++"
+        print name
+        o = _get_field_config(Key, Value, name, config, lang)
+        print o
+        if o is not None:
+            extObject.append(o)
+    return extObject
 
 
 @view_config(route_name='yaml_translate_activities', renderer='json', permission='administer')
@@ -280,7 +288,7 @@ def _handle_application_config(request):
 
     def __check_geometry(yaml_geom, profile_name):
         yaml_geom_geojson = geojson.loads(json.dumps(yaml_geom),
-            object_hook=geojson.GeoJSON.to_instance)
+                                          object_hook=geojson.GeoJSON.to_instance)
         yaml_geom_shape = shapely.geometry.asShape(yaml_geom_geojson)
         # Query database
         db_profile = Session.query(Profile).\
@@ -304,14 +312,14 @@ def _handle_application_config(request):
     
     # First check global application configuration
     app_stream = open("%s/%s" % 
-        (profile_directory_path(request), APPLICATION_YAML), 'r')
+                      (profile_directory_path(request), APPLICATION_YAML), 'r')
     app_config = yaml.load(app_stream)
     
     if ('application' in app_config and 
         'geometry' in app_config['application']):
 
         msg.append(__check_geometry(app_config['application']['geometry'], 
-            'global'))
+                   'global'))
     
     # Then check local application configuration if available
     # Try to find the profile in parameters
@@ -321,14 +329,14 @@ def _handle_application_config(request):
     if locale_code is not None:
         try:
             locale_app_stream = open("%s/%s" % 
-                (locale_profile_directory_path(request), APPLICATION_YAML), 'r')
+                                     (locale_profile_directory_path(request), APPLICATION_YAML), 'r')
             locale_app_config = yaml.load(locale_app_stream)
             
             if ('application' in locale_app_config and
                 'geometry' in locale_app_config['application']):
 
                 msg.append(__check_geometry(
-                    locale_app_config['application']['geometry'], locale_code))
+                           locale_app_config['application']['geometry'], locale_code))
             
         except IOError:
             # No localized application configuration file found
@@ -424,19 +432,19 @@ def _add_to_db(config, Key, Value):
 """
 {name} is the original key as in the yaml (in english)
 """
-def _get_field_config(name, config, language, mandatory=False):
+def _get_field_config(Key, Value, name, config, language, mandatory=False):
 
     fieldConfig = {}
     fieldConfig['allowBlank'] = not mandatory
     
     # check if translated name is available
-    originalKey = Session.query(A_Key.id).filter(A_Key.key == name).filter(A_Key.fk_a_key == None).first()
-    
+    originalKey = Session.query(Key.id).filter(Key.key == name).filter(Key.fk_key == None).first()
+
     # if no original value is found in DB, return None (this cannot be selected)
     if not originalKey:
         return None
         
-    translatedName = Session.query(A_Key).filter(A_Key.fk_a_key == originalKey).filter(A_Key.language == language).first()
+    translatedName = Session.query(Key).filter(Key.fk_key == originalKey).filter(Key.language == language).first()
     
     if translatedName:
         fieldConfig['fieldLabel'] = translatedName.key
@@ -464,15 +472,15 @@ def _get_field_config(name, config, language, mandatory=False):
             all_vals.append(val)
         
         # Prepare SubQuery for translated values
-        translated_subquery = Session.query(A_Value.fk_a_value.label("original_id"),
-                                            A_Value.value.label("translated_value")).subquery()
+        translated_subquery = Session.query(Value.fk_value.label("original_id"),
+                                            Value.value.label("translated_value")).subquery()
         
         # Query original and translated values
-        values = Session.query(A_Value.id.label("original_id"),
-                               A_Value.value.label("original_value"),
+        values = Session.query(Value.id.label("original_id"),
+                               Value.value.label("original_value"),
                                translated_subquery.c.translated_value.label("translated_value")).\
-            filter(A_Value.value.in_(all_vals)).\
-            filter(A_Value.fk_a_value == None).\
+            filter(Value.value.in_(all_vals)).\
+            filter(Value.fk_value == None).\
             outerjoin(translated_subquery, translated_subquery.c.original_id == A_Value.id)
         
         # Fill vales in array

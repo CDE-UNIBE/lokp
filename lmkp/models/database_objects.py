@@ -209,6 +209,9 @@ class SH_Tag(Base):
     def __repr__(self):
         return "<SH_Tag> id [ %s ] | fk_sh_tag_group [ %s ] | fk_sh_key [ %s ] | fk_sh_value [ %s ]" % (self.id, self.fk_sh_tag_group, self.fk_sh_key, self.fk_sh_value)
 
+    def to_json(self):
+        return {'id': self.id, 'key': self.key.key, 'value': self.value.value }
+
 class A_Tag_Group(Base):
     __tablename__ = 'a_tag_groups'
     __table_args__ = (
@@ -266,6 +269,9 @@ class SH_Tag_Group(Base):
 
     def __repr__(self):
         return '<SH_Tag_Group> id [ %s ] | fk_stakeholder [ %s ] | fk_sh_tag [ %s ]' % (self.id, self.fk_stakeholder, self.fk_sh_tag)
+
+    def to_json(self):
+        return {'id': self.id, 'main_tag': self.main_tag.to_json(), 'tags': [t.to_json() for t in self.tags]}
 
 class Activity(Base):
     __tablename__ = 'activities'
@@ -345,6 +351,10 @@ class Stakeholder(Base):
 
     def get_comments(self):
         return DBSession.query(Comment).filter(Comment.stakeholder_identifier == self.stakeholder_identifier).all()
+
+    def to_json(self):
+        return {'id': str(self.stakeholder_identifier), 'version': self.version, 'taggroups': [t.to_json() for t in self.tag_groups]}
+
 
 class A_Changeset(Base):
     __tablename__ = 'a_changesets'

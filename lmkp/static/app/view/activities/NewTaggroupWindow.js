@@ -261,10 +261,10 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
             });
 			
             // load the config store
-            var store = Ext.create('Lmkp.store.Config');
+            var store = Ext.create('Lmkp.store.ActivityConfig');
             store.load();
             // another instance of the config store is needed to keep track of all attributes available
-            var completeStore = Ext.create('Lmkp.store.Config');
+            var completeStore = Ext.create('Lmkp.store.ActivityConfig');
             completeStore.load();
 			
             // if a TagGroup was selected to edit, show its values

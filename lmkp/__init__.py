@@ -60,7 +60,7 @@ def main(global_config, ** settings):
     config.add_route('yaml_translate_stakeholders', '/config/scan/stakeholders')
     config.add_route('yaml_add_stakeholder_fields', '/config/add/stakeholders')
 
-    config.add_route('config', '/config/{parameter}')
+    config.add_route('config', '/config/form/{parameter}')
 
     # Manage sample values and tests
     config.add_route('sample_values', '/sample_values/insert')
