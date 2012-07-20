@@ -19,8 +19,7 @@ Ext.define('Lmkp.view.activities.Details', {
         xtype: 'panel',
         name: 'details_initial',
         html: Lmkp.ts.msg('activity-select'),
-        collapsible: false,
-        collapsed: false
+        border: 0
     }],
 
     tbar: {

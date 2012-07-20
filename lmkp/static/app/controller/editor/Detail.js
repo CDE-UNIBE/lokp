@@ -48,7 +48,7 @@ Ext.define('Lmkp.controller.editor.Detail', {
         var selection = detailPanel.getCurrent()
 
         // If no activity is selected, show an info window and exit.
-        if(!selection){
+        if(!selection.id){
             Ext.Msg.show({
                 title: 'Edit Activity',
                 msg: 'Please select an activity first.',

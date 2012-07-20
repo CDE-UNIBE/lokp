@@ -3,7 +3,8 @@ Ext.define('Lmkp.view.editor.Detail', {
     alias: ['widget.lo_editordetailpanel'],
 
     requires: [
-        'Lmkp.view.comments.CommentPanel'
+        'Lmkp.view.comments.CommentPanel',
+        'Lmkp.view.activities.ActivityPanel'
     ],
 
     config: {

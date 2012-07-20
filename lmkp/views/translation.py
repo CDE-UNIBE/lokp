@@ -53,7 +53,7 @@ def ui_messages(request):
         'activitypaging-after': _('activitypaging-after', default='of {0}'),
         'activitypaging-message': _('paging-message', default='Displaying activities {0} - {1} of {2}'),
         'activitypaging-empty': _('activitypaging-empty', default='No activities found'),
-        'activity-select': _('activity-select', default='Select an activity above to show its details'),
+        'activity-select': _('activity-select', default='Select an activity to show its details'),
         'activate-button': _('activate-button', default='Activate'),
         'activate-tooltip': _('activate-tooltip', default='Click to activate this filter'),
         'delete-button': _('delete-button', default='Delete'),

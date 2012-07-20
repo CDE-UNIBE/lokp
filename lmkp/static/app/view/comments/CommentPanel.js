@@ -103,17 +103,17 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                                         }
                                     }]
                                 };
-                                me.add({
-                                    margin: '0 0 5 0',
-                                    bodyPadding: 5,
-                                    html: '<span class="grey">'
-                                        + Lmkp.ts.msg('comments-by') + ' '
-                                        + me.stringFunctions._formatUsername(cc.username, cc.userid)
-                                        + ' (' + me.stringFunctions._formatTimestamp(cc.timestamp)
-                                        + '):</span><br/><p>' + cc.comment + '</p>',
-                                    dockedItems: [docked]
-                                });
                             }
+                            me.add({
+                                margin: '0 0 5 0',
+                                bodyPadding: 5,
+                                html: '<span class="grey">'
+                                    + Lmkp.ts.msg('comments-by') + ' '
+                                    + me.stringFunctions._formatUsername(cc.username, cc.userid)
+                                    + ' (' + me.stringFunctions._formatTimestamp(cc.timestamp)
+                                    + '):</span><br/><p>' + cc.comment + '</p>',
+                                dockedItems: [docked]
+                            });
                         }
                     }
 					
