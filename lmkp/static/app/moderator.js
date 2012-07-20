@@ -19,7 +19,8 @@ Ext.onReady(function(){
         'editor.Detail',
         'editor.Overview',
         'moderator.Pending',
-        'Stakeholder'
+        'Stakeholder',
+        'stakeholders.StakeholderFieldContainer'
         ],
     
         launch: function() {
