@@ -97,6 +97,11 @@ def read_many(request):
     activities = activity_protocol2.read(request)
     return activities
 
+@view_config(route_name='activities_read_pending', renderer='lmkp:templates/rss.mak')
+def read_pending(request):
+    activities = activity_protocol2.read(request) #, filter={'status_filter': (Status.id==2)})
+    return {'data': activities['data']}
+
 @view_config(route_name='activities_create', renderer='json')
 def create(request):
     """
