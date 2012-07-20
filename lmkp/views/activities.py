@@ -102,6 +102,46 @@ def read_pending(request):
     activities = activity_protocol2.read(request) #, filter={'status_filter': (Status.id==2)})
     return {'data': activities['data']}
 
+@view_config(route_name='activities_review', renderer='json')
+def review(request):
+    """
+    Insert a review decision for a pending Activity
+    """
+    
+    # Check if the user is logged in and he/she has sufficient user rights
+    userid = authenticated_userid(request)
+    if userid is None:
+        return {'success': False, 'msg': 'User is not logged in.'}
+    if not isinstance(has_permission('moderate', request.context, request), ACLAllowed):
+        return {'success': False, 'msg': 'User has no permissions to add a review.'}
+    user = Session.query(User).\
+            filter(User.username == authenticated_userid(request)).first()
+
+    # Check for profile
+    profile_filters = activity_protocol2._create_bound_filter_by_user(request)
+    if len(profile_filters) == 0:
+        return {'success': False, 'msg': 'User has no profile attached.'}
+    activity = Session.query(Activity).\
+        filter(Activity.activity_identifier == request.POST['identifier']).\
+        filter(Activity.version == request.POST['version']).\
+        filter(or_(* profile_filters)).\
+        first()
+    if activity is None:
+        return {'success': False, 'msg': 'The Activity was not found or is not situated within the user\'s profiles'}
+
+    # Also query previous Activity if available
+    previous_activity = Session.query(Activity).\
+        filter(Activity.activity_identifier == request.POST['identifier']).\
+        filter(Activity.version == activity.changesets[0].previous_version).\
+        first()
+
+    # The user can add a review
+    ret = activity_protocol2._add_review(
+        request, activity, previous_activity, A_Changeset_Review, user
+    )
+
+    return ret
+
 @view_config(route_name='activities_create', renderer='json')
 def create(request):
     """

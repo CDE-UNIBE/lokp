@@ -1,6 +1,7 @@
 from lmkp.models.database_objects import A_Key
 from lmkp.models.database_objects import A_Tag
 from lmkp.models.database_objects import A_Value
+from lmkp.models.database_objects import Review_Decision
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Tag
 from lmkp.models.database_objects import SH_Value
@@ -324,6 +325,58 @@ class Protocol(object):
             return filters
         
         return None
+
+    def _add_review(self, request, item, previous_item, Changeset_Item, user):
+        """
+        Add a review decision
+        """
+        ret = {'success': False}
+
+        # Collect POST values
+        review_decision = self.Session.query(Review_Decision).\
+            get(request.POST['review_decision'])
+        if review_decision is None:
+            ret['msg'] = 'Review decision not provided or not found.'
+            return ret
+
+        review_comment = None
+        if ('comment_checkbox' in request.POST and
+            request.POST['comment_textarea'] != ''):
+            review_comment = request.POST['comment_textarea']
+
+        if review_decision.id == 1:
+            # Approved: Set previous version to 'overwritten'
+            if previous_item is not None:
+                previous_item.fk_status = 3
+
+            # Check if Item was deleted (no more tags)
+            empty_item = True
+            for tg in item.tag_groups:
+                for t in tg.tags:
+                    empty_item = False
+                    break
+
+            if empty_item is True:
+                # Set new version to 'deleted'
+                item.fk_status = 4
+            else:
+                # Set new version to 'active'
+                item.fk_status = 2
+
+        elif review_decision.id == 2:
+            # Rejected: Do not modify previous version and set new version to
+            # 'rejected'
+            item.fk_status = 5
+
+        # Add Changeset_Review
+        changeset_review = Changeset_Item(review_comment)
+        changeset_review.changeset = item.changesets[0]
+        changeset_review.user = user
+        changeset_review.review_decision = review_decision
+
+        ret['success'] = True
+        ret['msg'] = 'Review successful.'
+        return ret
 
 class Tag(object):
 

@@ -25,7 +25,6 @@ Ext.define('Lmkp.view.users.UserWindow', {
 			
             // prepare status values
             var statusStore = Ext.create('Lmkp.store.Status').load();
-            console.log(statusStore);
 			
             this.title = 'User profile of user ' + me.username;
             this.items = [{
@@ -104,7 +103,7 @@ Ext.define('Lmkp.view.users.UserWindow', {
                                             xtype: 'component',
                                             flex: 1
                                         },
-{
+                                        {
                                             xtype: 'button',
                                             text: 'Update',
                                             formBind: true,
@@ -158,10 +157,10 @@ Ext.define('Lmkp.view.users.UserWindow', {
                         columns: [{
                             // TODO: add name of activity to changeset
                             /**
-							 * It would be much nicer to show the name of an activity rather
-							 * than its UUID. But for the moment being, the changeset protocol
-							 * does not provide the name of an activity.
-							 */
+                             * It would be much nicer to show the name of an activity rather
+                             * than its UUID. But for the moment being, the changeset protocol
+                             * does not provide the name of an activity.
+                             */
                             header: 'Activity',
                             dataIndex: 'activity',
                             flex: 1
