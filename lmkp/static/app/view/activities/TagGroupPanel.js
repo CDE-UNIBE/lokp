@@ -32,7 +32,7 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
             // Second: all other tags (don't repeat main tag)
             var tStore = this.taggroup.tags();
             tStore.each(function(record) {
-                if (record.get('id') != main_tag.get('id')) {
+                if (!main_tag || record.get('id') != main_tag.get('id')) {
                     me.add(me._getTagPanel(
                         record.get('key'), record.get('value')
                     ));
