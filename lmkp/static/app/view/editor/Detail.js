@@ -2,6 +2,10 @@ Ext.define('Lmkp.view.editor.Detail', {
     extend: 'Ext.tab.Panel',
     alias: ['widget.lo_editordetailpanel'],
 
+    requires: [
+        'Lmkp.view.comments.CommentPanel'
+    ],
+
     config: {
         // The currently shown activity in this panel or null if no activity
         // is shown
@@ -37,21 +41,10 @@ Ext.define('Lmkp.view.editor.Detail', {
             // Set the current selection to current
             this.current = data[0];
 
-            // remove initial text if still there
-            if (panel.down('panel[name=details_initial]')) {
-                panel.remove(panel.down('panel[name=details_initial]'));
-            }
+            // Remove all existing panels
+            panel.removeAll();
 
-            // remove old panels
-            while (panel.down('lo_taggrouppanel')) {
-                panel.remove(panel.down('lo_taggrouppanel'));
-            }
-
-            // remove comment panel
-            if (panel.down('commentpanel')) {
-                panel.remove(panel.down('commentpanel'));
-            }
-
+            // Add the panel for the current activity
             panel.add({
                 xtype: 'lo_activitypanel',
                 contentItem: data[0],
@@ -86,11 +79,11 @@ Ext.define('Lmkp.view.editor.Detail', {
 //            }
 
             // add commenting panel
-            var commentPanel = Ext.create('Lmkp.view.comments.CommentPanel', {
-                'activity_id': data[0].get('id'),
-                'comment_object': 'activity'
+            panel.add({
+                xtype: 'lo_commentpanel',
+                identifier: data[0].get('id'),
+                comment_object: 'activity'
             });
-            panel.add(commentPanel);
 
             // Show the feature on the map
             // Actually this does not belong here ...
