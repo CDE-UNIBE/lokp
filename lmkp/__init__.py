@@ -66,8 +66,6 @@ def main(global_config, ** settings):
     config.add_route('sample_values', '/sample_values/insert')
     config.add_route('delete_sample_values', '/sample_values/delete')
     config.add_route('test_sample_values', '/sample_values/test')
-    config.add_route('geo_test', '/geo_test')
-    config.add_route('ext_tests', '/tests')
 
     # Add a renderer to return ExtJS store configuration objects
     config.add_renderer('json', JsonRenderer())
@@ -77,7 +75,6 @@ def main(global_config, ** settings):
 
     # Activities controllers with an api similar to Papyrus
     # Order matters!
-    config.add_route('activities_delete', '/activities/delete', request_method='GET')
     # Reads one or many activities and returns GeoJSON Feature or FeatureCollection
     config.add_route('activities_read_many', '/activities', request_method='GET')
     config.add_route('activities_read_one', '/activities/{uid}', request_method='GET')
@@ -131,8 +128,6 @@ def main(global_config, ** settings):
     config.add_route('evaluation_json', '/evaluation/{temp}')
 
     # Yet another test
-    config.add_route('timestamp_test', '/timestamp')
-
     config.add_route('privileges_test', '/privileges')
 
     # Error views

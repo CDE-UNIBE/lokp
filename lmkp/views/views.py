@@ -112,15 +112,6 @@ def db_test(request):
     object = "done"
     return {'object': object}
 
-@view_config(route_name='geo_test', renderer='geojson')
-def geo_test(request):
-    return {
-        'type': 'Feature',
-        'id': 1,
-        'geometry': {'type': 'Point', 'coordinates': [53, -4]},
-        'properties': {'title': 'Dict 1'}
-        }
-
 @view_config(route_name='index', renderer='lmkp:templates/index.mak')
 def index(request):
     """
@@ -139,10 +130,9 @@ def index(request):
 
     return {}
 
-@view_config(route_name='ext_tests', renderer='lmkp:templates/tests.pt')
-def ext_tests(request):
-    return {}
-
 @view_config(route_name='privileges_test', renderer='lmkp:templates/privilegestest.mak')
 def privileges_test(request):
+    """
+    Simple view to output the current privileges
+    """
     return {}
