@@ -23,6 +23,12 @@ Ext.define('Lmkp.controller.moderator.Pending', {
             },
             'lo_moderatorpendingpanel gridpanel[itemId=stakeholderGrid]': {
                 select: this.onPendingGridSelect
+            },
+            'lo_moderatorreviewpanel checkbox[name=comment_checkbox]': {
+                change: this.onReviewCommentCheckboxChange
+            },
+            'lo_moderatorreviewpanel button[name=review_submit]': {
+                click: this.onReviewSubmitButtonClick
             }
         });
     },
@@ -63,5 +69,42 @@ Ext.define('Lmkp.controller.moderator.Pending', {
                 }
             });
         }
+    },
+
+    /**
+     * Toggle the visibility of the textarea to add comments to review decision.
+     */
+    onReviewCommentCheckboxChange: function(checkbox, newValue) {
+        var textarea = checkbox.up('form').query(
+            'textarea[name=comment_textarea]'
+        )[0];
+        if (textarea) {
+            textarea.setVisible(newValue);
+        }
+    },
+
+    onReviewSubmitButtonClick: function(button) {
+        
+        var form = button.up('form').getForm();
+        
+        if (form.isValid()) {
+            form.submit({
+                success: function(form, action) {
+                    Ext.Msg.alert('Success', action.result.msg);
+                },
+                failure: function(form, action) {
+                    Ext.Msg.alert('Failure', action.result.msg);
+                }
+            });
+        }
+
+//        button.up('form').submit();
+
+        /*
+        comment_checkbox	on
+        comment_textarea
+        review_decision         2
+        */
+
     }
 });
