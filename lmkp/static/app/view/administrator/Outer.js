@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.administrator.Outer' ,{
-    extend: 'Lmkp.view.Panel',
+    extend: 'Ext.panel.Panel',
     alias : ['widget.lo_administratorouterpanel'],
 
     requires: [
@@ -14,7 +14,7 @@ Ext.define('Lmkp.view.administrator.Outer' ,{
         contentEl: 'header-div',
         height: 80,
         region: 'north',
-        xtype: 'lo_panel'
+        xtype: 'panel'
     },{
         region: 'center',
         xtype: 'lo_administratormainpanel'

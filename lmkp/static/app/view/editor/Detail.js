@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.editor.Detail', {
-    extend: 'Lmkp.view.Tab',
+    extend: 'Ext.tab.Panel',
     alias: ['widget.lo_editordetailpanel'],
 
     config: {
@@ -408,7 +408,7 @@ Ext.define('Lmkp.view.editor.Detail', {
                     // using the initial panel because this will be removed when selected the next activity
                     if (!json.data.active && !json.data.deleted && json.data.overwritten.length == 0) {
                         panel.add({
-                            xtype: 'lo_panel',
+                            xtype: 'panel',
                             border: 0,
                             name: 'history_initial',
                             html: 'No history found for this activity',

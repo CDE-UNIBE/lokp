@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.comments.CommentPanel', {
-    extend: 'Lmkp.view.Panel',
+    extend: 'Ext.panel.Panel',
     alias: 'widget.commentpanel',
 	
     collapsible: true,
@@ -136,7 +136,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                             allowBlank: false
                         }, {
                             // captcha (with empty panel for spacing)
-                            xtype: 'lo_panel',
+                            xtype: 'panel',
                             border: 0,
                             anchor: '100%',
                             layout: {
@@ -144,7 +144,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                                 flex: 'stretch'
                             },
                             items: [{
-                                xtype: 'lo_panel',
+                                xtype: 'panel',
                                 flex: 1,
                                 border: 0
                             },	recaptcha]

@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.moderator.Outer' ,{
-    extend: 'Lmkp.view.Panel',
+    extend: 'Ext.panel.Panel',
     alias : ['widget.lo_moderatorouterpanel'],
 
     requires: [
@@ -13,7 +13,7 @@ Ext.define('Lmkp.view.moderator.Outer' ,{
         contentEl: 'header-div',
         height: 80,
         region: 'north',
-        xtype: 'lo_panel'
+        xtype: 'panel'
     },{
         region: 'center',
         xtype: 'lo_moderatormainpanel'

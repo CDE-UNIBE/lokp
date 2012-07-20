@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.moderator.Pending' ,{
-    extend: 'Lmkp.view.Panel',
+    extend: 'Ext.panel.Panel',
     alias : ['widget.lo_moderatorpendingpanel'],
 
     requires: [
@@ -102,7 +102,7 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
             }
             ]
         }],
-        xtype: 'lo_panel'
+        xtype: 'panel'
     },{
         flex: 0.5,
         layout: {

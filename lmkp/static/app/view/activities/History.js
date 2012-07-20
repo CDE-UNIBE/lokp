@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.activities.History', {
-    extend: 'Lmkp.view.Panel',
+    extend: 'Ext.panel.Panel',
     alias: ['widget.lo_activityhistorypanel'],
 	
     itemId: 'activityHistoryPanel',
@@ -17,7 +17,7 @@ Ext.define('Lmkp.view.activities.History', {
     
     // initial item
     items: [{
-        xtype: 'lo_panel',
+        xtype: 'panel',
         border: 0,
         name: 'history_initial',
         html: 'Select an activity above to show its history',
