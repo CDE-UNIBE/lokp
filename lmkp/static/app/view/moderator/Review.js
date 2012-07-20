@@ -131,6 +131,54 @@ Ext.define('Lmkp.view.moderator.Review', {
                 }
             }
 
+            // Show panel for review decision
+            var rdStore = Ext.create('Lmkp.store.ReviewDecisions').load();
+            this.add({
+                xtype: 'form',
+                url: '',
+                border: 0,
+                pending_id: pending[j].version,
+                buttonAlign: 'right',
+                items: [
+                    {
+                        xtype: 'panel',
+                        layout: 'hbox',
+                        border: 0,
+                        items: [
+                            {
+                                xtype: 'combobox',
+                                store: rdStore,
+                                name: 'review_decision',
+                                queryMode: 'local',
+                                displayField: 'name',
+                                valueField: 'id',
+                                fieldLabel: 'Review decision',
+                                allowBlank: false,
+                                flex: 1,
+                                margin: '0 5 0 0'
+                            }, {
+                                xtype: 'checkbox',
+                                fieldLabel: 'Add comment',
+                                name: 'comment_checkbox',
+                                margin: '0 5 0 0'
+                            }, {
+                                xtype: 'button',
+                                text: 'Submit',
+                                name: 'review_submit'
+                            }
+                        ]
+                    }, {
+                        xtype: 'textarea',
+                        name: 'comment_textarea',
+                        width: '100%',
+                        margin: '5 0 0 0',
+                        hidden: true
+                    }
+
+
+                ]
+            });
+
             // If there are multiple changes, show spacer between them
             if (j != pending.length - 1) {
                 this.add({
