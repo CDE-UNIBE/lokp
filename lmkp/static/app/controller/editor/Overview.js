@@ -24,7 +24,8 @@ Ext.define('Lmkp.controller.editor.Overview', {
     'editor.Detail',
     'editor.Map',
     'activities.Details',
-    'activities.History'
+    'activities.History',
+    'stakeholders.StakeholderSelection'
     ],
 
     init: function() {
@@ -892,6 +893,16 @@ Ext.define('Lmkp.controller.editor.Overview', {
             },
             scale: 'medium',
             text: 'Add Stakeholder',
+            xtype: 'button'
+        });
+
+        tbar.add({
+            handler: function(button){
+              var win = Ext.create('Lmkp.view.stakeholders.StakeholderSelection');
+              win.show();
+            },
+            scale: 'medium',
+            text: 'Select Stakeholder',
             xtype: 'button'
         });
 
