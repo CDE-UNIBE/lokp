@@ -3,7 +3,6 @@ from lmkp.models.meta import DBSession
 from lmkp.renderers.renderers import GeoJsonRenderer
 from lmkp.renderers.renderers import JavaScriptRenderer
 from lmkp.renderers.renderers import JsonRenderer
-from lmkp.renderers.renderers import KmlRenderer
 from lmkp.security import group_finder
 from lmkp.subscribers import add_localizer
 from lmkp.subscribers import add_renderer_globals
@@ -63,52 +62,20 @@ def main(global_config, ** settings):
 
     config.add_route('config', '/config/{parameter}')
 
-
-
     # Manage sample values and tests
     config.add_route('sample_values', '/sample_values/insert')
     config.add_route('delete_sample_values', '/sample_values/delete')
     config.add_route('test_sample_values', '/sample_values/test')
-    config.add_route('geo_test', '/geo_test')
-    config.add_route('ext_tests', '/tests')
 
     # Add a renderer to return ExtJS store configuration objects
     config.add_renderer('json', JsonRenderer())
-
-    # Add a renderer to return KML
-    config.add_renderer('kml', KmlRenderer())
 
     # Add a renderer to return JavaScript files
     config.add_renderer('javascript', JavaScriptRenderer())
 
     # Activities controllers with an api similar to Papyrus
     # Order matters!
-
-    # Reads one or many activities and returns the result as HTML
-    # This is only for debugging purposes ...
-    config.add_route('activities_read_many_html', '/activities/html', request_method='GET')
-    config.add_route('activities_read_one_html', '/activities/html/{uid}', request_method='GET')
-
-    # Reads many activites and returns a KML file
-    config.add_route('activities_read_many_kml', '/activities/kml', request_method='GET')
-    config.add_route('activities_read_one_kml', '/activities/kml/{uid}', request_method='GET')
-
-    # Reads one or many activities and returns the result as JSON that can be used
-    # in ExtJS stores and forms
-    config.add_route('activities_read_many_json', '/activities/json', request_method='GET')
-    config.add_route('activities_read_one_json', '/activities/json/{uid}', request_method='GET')
-
-    # Reads many activities and returns a tree configuration JSON that can be
-    # used in ExtJS tree stores
-    config.add_route('activities_tree', '/activities/tree', request_method='GET')
-    
-    config.add_route('activities_delete', '/activities/delete', request_method='GET')
-
-    # Returns the number of activities matching the filter
-    config.add_route('activities_count', '/activities/count', request_method='GET')
-
-    # Reads one or many activities and returns GeoJSON Feature or
-    # FeatureCollection
+    # Reads one or many activities and returns GeoJSON Feature or FeatureCollection
     config.add_route('activities_read_many', '/activities', request_method='GET')
     config.add_route('activities_read_one', '/activities/{uid}', request_method='GET')
 
@@ -151,8 +118,6 @@ def main(global_config, ** settings):
     # Updates the information of a user
     config.add_route('user_update', '/users/update', request_method='POST')
 
-    config.add_route('rss_feed', '/rss/{status}')
-
     # A WMS proxy
     config.add_route('wms_proxy', '/wms', request_method='GET')
 
@@ -163,8 +128,6 @@ def main(global_config, ** settings):
     config.add_route('evaluation_json', '/evaluation/{temp}')
 
     # Yet another test
-    config.add_route('timestamp_test', '/timestamp')
-
     config.add_route('privileges_test', '/privileges')
 
     # Error views

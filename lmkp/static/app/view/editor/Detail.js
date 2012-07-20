@@ -6,6 +6,7 @@ Ext.define('Lmkp.view.editor.Detail', {
         // The currently shown activity in this panel or null if no activity
         // is shown
         current: {},
+        // The OpenLayers GeoJSON format
         geojson: {}
     },
 
@@ -22,7 +23,7 @@ Ext.define('Lmkp.view.editor.Detail', {
         xtype: 'activityDetailTab'
     }, {
         title: 'History',
-        xtype: 'activityHistoryTab'
+        xtype: 'lo_activityhistorypanel'
     }],
 
     initComponent: function() {

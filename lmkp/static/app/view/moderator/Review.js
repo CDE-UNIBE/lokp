@@ -3,10 +3,10 @@ Ext.define('Lmkp.view.moderator.Review', {
     alias: ['widget.lo_moderatorreviewpanel'],
 
     requires: [
-        'Lmkp.view.activities.ActivityPanel',
-        'Lmkp.view.stakeholders.StakeholderPanel',
-        'Lmkp.view.activities.ChangesetPanel',
-        'Lmkp.view.activities.DiffPanel'
+    'Lmkp.view.activities.ActivityPanel',
+    'Lmkp.view.stakeholders.StakeholderPanel',
+    'Lmkp.view.activities.ChangesetPanel',
+    'Lmkp.view.activities.DiffPanel'
     ],
 
     bodyPadding: 5,
@@ -14,8 +14,8 @@ Ext.define('Lmkp.view.moderator.Review', {
         type: 'anchor'
     },
     defaults: {
-    	margin: '0 0 5 0',
-    	anchor: '100%'
+        margin: '0 0 5 0',
+        anchor: '100%'
     },
     autoScroll: true,
     
@@ -109,7 +109,7 @@ Ext.define('Lmkp.view.moderator.Review', {
                 }
                 // Then show panel with previous version
                 if (data.data[k].version ==
-                        pending[j].previous_version) {
+                    pending[j].previous_version) {
                     this.add({
                         xtype: 'lo_changesetpanel',
                         // Panel data

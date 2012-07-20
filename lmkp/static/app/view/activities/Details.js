@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.activities.Details', {
-    extend: 'Lmkp.view.Panel',
+    extend: 'Ext.panel.Panel',
     alias: ['widget.activityDetailTab'],
 	
     itemId: 'activityDetailTab',
@@ -16,7 +16,7 @@ Ext.define('Lmkp.view.activities.Details', {
 	
     // initial item
     items: [{
-        xtype: 'lo_panel',
+        xtype: 'panel',
         name: 'details_initial',
         html: Lmkp.ts.msg('activity-select'),
         collapsible: false,

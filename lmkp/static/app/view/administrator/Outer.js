@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.administrator.Outer' ,{
-    extend: 'Lmkp.view.Panel',
+    extend: 'Ext.panel.Panel',
     alias : ['widget.lo_administratorouterpanel'],
 
     requires: [

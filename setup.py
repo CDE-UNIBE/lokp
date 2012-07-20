@@ -25,8 +25,6 @@ requires = [
     'psycopg2==2.4.5',
     'PyYAML==3.10',
     'Chameleon==2.8.5',
-    'lxml==2.3',
-    'pykml==0.1.0',
     'recaptcha-client==1.0.6'
     ]
 
