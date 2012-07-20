@@ -83,28 +83,33 @@ Ext.define('Lmkp.controller.moderator.Pending', {
         }
     },
 
+    /**
+     * Send a review request
+     */
     onReviewSubmitButtonClick: function(button) {
-        
         var form = button.up('form').getForm();
-        
+        var reviewPanel = this.getReviewPanel();
+        var activityStore = this.getPendingActivityGridStore();
+        var stakeholderStore = this.getPendingStakeholderGridStore();
         if (form.isValid()) {
             form.submit({
                 success: function(form, action) {
+                    // Reload pending store
+                    if (button.store_type == 'activities') {
+                        activityStore.load();
+                    } else if (button.store_type == 'stakeholders') {
+                        stakeholderStore.load();
+                    }
+                    // Update panel
+                    reviewPanel.showInitialContent();
+                    // Give feedback
                     Ext.Msg.alert('Success', action.result.msg);
                 },
                 failure: function(form, action) {
+                    // Give feedback
                     Ext.Msg.alert('Failure', action.result.msg);
                 }
             });
         }
-
-//        button.up('form').submit();
-
-        /*
-        comment_checkbox	on
-        comment_textarea
-        review_decision         2
-        */
-
     }
 });

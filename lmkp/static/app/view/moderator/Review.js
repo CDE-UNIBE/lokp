@@ -18,13 +18,29 @@ Ext.define('Lmkp.view.moderator.Review', {
     	anchor: '100%'
     },
     autoScroll: true,
-    
-    items: [{
-        xtype: 'panel',
-        name: 'review_initial',
-        html: Lmkp.ts.msg('reviewpanel-empty_msg'),
-        border: 0
-    }],
+
+    initComponent: function() {
+
+        // Call parents first
+        this.callParent(arguments);
+
+        // Show initial content
+        this.showInitialContent();
+    },
+
+    showInitialContent: function() {
+
+        // Remove any existing panels
+        this.removeAll();
+
+        // Show initial panel
+        this.add({
+            xtype: 'panel',
+            name: 'review_initial',
+            html: Lmkp.ts.msg('reviewpanel-empty_msg'),
+            border: 0
+        });
+    },
 
     updateContent: function(data, type) {
 
@@ -135,9 +151,8 @@ Ext.define('Lmkp.view.moderator.Review', {
             var rdStore = Ext.create('Lmkp.store.ReviewDecisions').load();
             this.add({
                 xtype: 'form',
-                url: '',
+                url: type + '/review',
                 border: 0,
-                pending_id: pending[j].version,
                 buttonAlign: 'right',
                 items: [
                     {
@@ -164,7 +179,8 @@ Ext.define('Lmkp.view.moderator.Review', {
                             }, {
                                 xtype: 'button',
                                 text: 'Submit',
-                                name: 'review_submit'
+                                name: 'review_submit',
+                                store_type: type // helper parameter
                             }
                         ]
                     }, {
@@ -173,9 +189,15 @@ Ext.define('Lmkp.view.moderator.Review', {
                         width: '100%',
                         margin: '5 0 0 0',
                         hidden: true
+                    }, {
+                        xtype: 'hiddenfield',
+                        name: 'identifier',
+                        value: data.data[0].id
+                    }, {
+                        xtype: 'hiddenfield',
+                        name: 'version',
+                        value: pending[j].current_version
                     }
-
-
                 ]
             });
 

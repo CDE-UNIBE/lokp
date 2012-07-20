@@ -112,6 +112,9 @@ def main(global_config, ** settings):
     config.add_route('activities_read_many', '/activities', request_method='GET')
     config.add_route('activities_read_one', '/activities/{uid}', request_method='GET')
 
+    # Reviews a pending activity
+    config.add_route('activities_review', '/activities/review', request_method='POST')
+
     # Creates a new activity
     config.add_route('activities_create', '/activities', request_method='POST')
 
