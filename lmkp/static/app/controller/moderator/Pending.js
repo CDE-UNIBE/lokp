@@ -23,6 +23,12 @@ Ext.define('Lmkp.controller.moderator.Pending', {
             },
             'lo_moderatorpendingpanel gridpanel[itemId=stakeholderGrid]': {
                 select: this.onPendingGridSelect
+            },
+            'lo_moderatorreviewpanel checkbox[name=comment_checkbox]': {
+                change: this.onReviewCommentCheckboxChange
+            },
+            'lo_moderatorreviewpanel button[name=review_submit]': {
+                click: this.onReviewSubmitButtonClick
             }
         });
     },
@@ -60,6 +66,48 @@ Ext.define('Lmkp.controller.moderator.Pending', {
                         Ext.JSON.decode(response.responseText),
                         type
                     );
+                }
+            });
+        }
+    },
+
+    /**
+     * Toggle the visibility of the textarea to add comments to review decision.
+     */
+    onReviewCommentCheckboxChange: function(checkbox, newValue) {
+        var textarea = checkbox.up('form').query(
+            'textarea[name=comment_textarea]'
+        )[0];
+        if (textarea) {
+            textarea.setVisible(newValue);
+        }
+    },
+
+    /**
+     * Send a review request
+     */
+    onReviewSubmitButtonClick: function(button) {
+        var form = button.up('form').getForm();
+        var reviewPanel = this.getReviewPanel();
+        var activityStore = this.getPendingActivityGridStore();
+        var stakeholderStore = this.getPendingStakeholderGridStore();
+        if (form.isValid()) {
+            form.submit({
+                success: function(form, action) {
+                    // Reload pending store
+                    if (button.store_type == 'activities') {
+                        activityStore.load();
+                    } else if (button.store_type == 'stakeholders') {
+                        stakeholderStore.load();
+                    }
+                    // Update panel
+                    reviewPanel.showInitialContent();
+                    // Give feedback
+                    Ext.Msg.alert('Success', action.result.msg);
+                },
+                failure: function(form, action) {
+                    // Give feedback
+                    Ext.Msg.alert('Failure', action.result.msg);
                 }
             });
         }

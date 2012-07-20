@@ -18,13 +18,29 @@ Ext.define('Lmkp.view.moderator.Review', {
     	anchor: '100%'
     },
     autoScroll: true,
-    
-    items: [{
-        xtype: 'panel',
-        name: 'review_initial',
-        html: Lmkp.ts.msg('reviewpanel-empty_msg'),
-        border: 0
-    }],
+
+    initComponent: function() {
+
+        // Call parents first
+        this.callParent(arguments);
+
+        // Show initial content
+        this.showInitialContent();
+    },
+
+    showInitialContent: function() {
+
+        // Remove any existing panels
+        this.removeAll();
+
+        // Show initial panel
+        this.add({
+            xtype: 'panel',
+            name: 'review_initial',
+            html: Lmkp.ts.msg('reviewpanel-empty_msg'),
+            border: 0
+        });
+    },
 
     updateContent: function(data, type) {
 
@@ -130,6 +146,60 @@ Ext.define('Lmkp.view.moderator.Review', {
                     });
                 }
             }
+
+            // Show panel for review decision
+            var rdStore = Ext.create('Lmkp.store.ReviewDecisions').load();
+            this.add({
+                xtype: 'form',
+                url: type + '/review',
+                border: 0,
+                buttonAlign: 'right',
+                items: [
+                    {
+                        xtype: 'panel',
+                        layout: 'hbox',
+                        border: 0,
+                        items: [
+                            {
+                                xtype: 'combobox',
+                                store: rdStore,
+                                name: 'review_decision',
+                                queryMode: 'local',
+                                displayField: 'name',
+                                valueField: 'id',
+                                fieldLabel: 'Review decision',
+                                allowBlank: false,
+                                flex: 1,
+                                margin: '0 5 0 0'
+                            }, {
+                                xtype: 'checkbox',
+                                fieldLabel: 'Add comment',
+                                name: 'comment_checkbox',
+                                margin: '0 5 0 0'
+                            }, {
+                                xtype: 'button',
+                                text: 'Submit',
+                                name: 'review_submit',
+                                store_type: type // helper parameter
+                            }
+                        ]
+                    }, {
+                        xtype: 'textarea',
+                        name: 'comment_textarea',
+                        width: '100%',
+                        margin: '5 0 0 0',
+                        hidden: true
+                    }, {
+                        xtype: 'hiddenfield',
+                        name: 'identifier',
+                        value: data.data[0].id
+                    }, {
+                        xtype: 'hiddenfield',
+                        name: 'version',
+                        value: pending[j].current_version
+                    }
+                ]
+            });
 
             // If there are multiple changes, show spacer between them
             if (j != pending.length - 1) {

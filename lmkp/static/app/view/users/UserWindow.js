@@ -25,9 +25,7 @@ Ext.define('Lmkp.view.users.UserWindow', {
 			
 			// prepare status values
 			var statusStore = Ext.create('Lmkp.store.Status').load();
-			console.log(statusStore);
-			
-			
+
 			this.title = 'User profile of user ' + me.username;
 			this.items = [{
 				xtype: 'tabpanel',
