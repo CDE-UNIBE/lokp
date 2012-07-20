@@ -38,6 +38,19 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
                     ));
                 }
             });
+
+            // Add button to edit TagGroup
+            me.addDocked({
+                dock: 'top',
+                xtype: 'toolbar',
+                items: ['->',
+                    {
+                        name: 'editTaggroup',
+                        text: 'edit',
+                        selected_taggroup: this.taggroup
+                    }
+                ]
+            });
         }
 
         /*
@@ -91,24 +104,6 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
     toggleDetailButton: function(toggled) {
         if (this.down('button[name=toggleDetails]')) {
             this.down('button[name=toggleDetails]').toggle(toggled);
-        }
-    },
-	
-    /**
-     * Helper method: returns the panel for the main tag.
-     */
-    _getMainTagPanel: function() {
-        if (this.down('panel[name=maintagpanel]')) {
-            return this.down('panel[name=maintagpanel]')
-        }
-    },
-	
-    /**
-     * Helper method: returns the panel for the 'normal' tags.
-     */
-    _getTagsPanel: function() {
-        if (this.down('panel[name=tagspanel]')) {
-            return this.down('panel[name=tagspanel]')
         }
     }
 });
