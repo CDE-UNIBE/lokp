@@ -159,7 +159,7 @@ class StakeholderProtocol(Protocol):
         # (and loop all again)
         if 'taggroups' in stakeholder_dict:
             for taggroup_dict in stakeholder_dict['taggroups']:
-                if 'id' not in taggroup_dict and taggroup_dict['op'] == 'add':
+                if ('id' not in taggroup_dict or ('id' in taggroup_dict and taggroup_dict['id'] is None)) and taggroup_dict['op'] == 'add':
                     new_taggroup = SH_Tag_Group()
                     new_stakeholder.tag_groups.append(new_taggroup)
                     for tag_dict in taggroup_dict['tags']:

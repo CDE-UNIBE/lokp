@@ -52,14 +52,13 @@ Ext.define('Lmkp.view.editor.Detail', {
                 panel.remove(panel.down('commentpanel'));
             }
 
-            // get data
-            var taggroupStore = data[0].taggroups();
-            taggroupStore.each(function(record) {
-                panel.add({
-                    xtype: 'lo_taggrouppanel',
-                    taggroup: record
-                });
+            panel.add({
+                xtype: 'lo_activitypanel',
+                contentItem: data[0],
+                border: 0,
+                bodyPadding: 0
             });
+
             // @TODO: FIX THE FOLLOWING
 //                // if user is logged in (Lmkp.toolbar != false), show edit button
 //                if (Lmkp.toolbar) {
