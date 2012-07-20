@@ -34,6 +34,7 @@ Ext.define('Lmkp.controller.editor.Detail', {
     },
 
     onShowDetailsToggle: function(button, pressed, eOpts) {
+        console.log("refactor me: function onShowDetailsToggle (controller.editor.Detail.js)");
         var taggrouppanels = Ext.ComponentQuery.query('lo_editordetailpanel taggrouppanel');
         for (var i = 0; i < taggrouppanels.length; i++) {
             taggrouppanels[i].toggleDetailButton(pressed);

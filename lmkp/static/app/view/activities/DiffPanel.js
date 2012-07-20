@@ -31,8 +31,20 @@ Ext.define('Lmkp.view.activities.DiffPanel', {
 
             // New attributes
             if (this.diff.new_attr) {
-                for (var i in this.diff.new_attr) {
-                    this.items.push({
+                var me = this;
+                var tgStore = Ext.create('Ext.data.Store', {
+                    model: 'Lmkp.model.TagGroup',
+                    data: this.diff.new_attr,
+                    proxy: {
+                        type: 'memory',
+                        reader: {
+                            type: 'json'
+                        }
+                    }
+                });
+                tgStore.load();
+                tgStore.each(function(record) {
+                    me.items.push({
                         xtype: 'fieldset',
                         collapsible: true,
                         collapsed: true,
@@ -41,12 +53,13 @@ Ext.define('Lmkp.view.activities.DiffPanel', {
                             Lmkp.ts.msg('review-diff_attr_added') + '</span>',
                         items: [
                             {
-                                xtype: 'panel',
-                                html: 'Coming soon ...'
+                                xtype: 'lo_taggrouppanel',
+                                taggroup: record,
+                                border: 0
                             }
                         ]
                     });
-                }
+                });
             }
             // New involvements
             if (this.diff.new_inv) {
@@ -73,8 +86,20 @@ Ext.define('Lmkp.view.activities.DiffPanel', {
             }
             // Deleted attributes
             if (this.diff.old_attr) {
-                for (var k in this.diff.old_attr) {
-                    this.items.push({
+                var me = this;
+                var tgStore = Ext.create('Ext.data.Store', {
+                    model: 'Lmkp.model.TagGroup',
+                    data: this.diff.old_attr,
+                    proxy: {
+                        type: 'memory',
+                        reader: {
+                            type: 'json'
+                        }
+                    }
+                });
+                tgStore.load();
+                tgStore.each(function(record) {
+                    me.items.push({
                         xtype: 'fieldset',
                         collapsible: true,
                         collapsed: true,
@@ -83,12 +108,13 @@ Ext.define('Lmkp.view.activities.DiffPanel', {
                             Lmkp.ts.msg('review-diff_attr_deleted') + '</span>',
                         items: [
                             {
-                                xtype: 'panel',
-                                html: 'Coming soon ...'
+                                xtype: 'lo_taggrouppanel',
+                                taggroup: record,
+                                border: 0
                             }
                         ]
                     });
-                }
+                });
             }
             // Deleted involvements
             if (this.diff.old_inv) {

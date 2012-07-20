@@ -54,53 +54,37 @@ Ext.define('Lmkp.view.editor.Detail', {
 
             // get data
             var taggroupStore = data[0].taggroups();
-
-            // add panel for each TagGroup
-            for (var i=0; i<taggroupStore.count(); i++) {
-                var tagStore = taggroupStore.getAt(i).tags();
-                var tags = [];
-                var main_tag = null;
-
-                for (var j=0; j<tagStore.count(); j++) {
-
-                    // check if it is main_tag
-                    if (taggroupStore.getAt(i).get('main_tag') == tagStore.getAt(j).get('id')) {
-                        main_tag = tagStore.getAt(j);
-                    } else {
-                        tags.push(tagStore.getAt(j));
-                    }
-                }
-
-                // create panel
-                var taggroupPanel = Ext.create('Lmkp.view.activities.TagGroupPanel', {
-                    'main_tag': main_tag,
-                    'tags': tags
+            taggroupStore.each(function(record) {
+                panel.add({
+                    xtype: 'lo_taggrouppanel',
+                    taggroup: record
                 });
-                // if user is logged in (Lmkp.toolbar != false), show edit button
-                if (Lmkp.toolbar) {
-                    //console.log("add docked");
-                    taggroupPanel.addDocked({
-                        dock: 'right',
-                        xtype: 'toolbar',
-                        items: [{
-                            name: 'editTaggroup',
-                            scale: 'small',
-                            text: 'edit',
-                            taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
-                            handler: function() {
-                                var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
-                                    activity_id: data[0].get('id'),
-                                    version: data[0].get('version'),
-                                    selected_taggroup: taggroupStore.getAt(this.taggroup_id)
-                                });
-                                win.show();
-                            },
-                            xtype: 'button'
-                        }]
-                    });
-                }
-                panel.add(taggroupPanel);
-            }
+            });
+            // @TODO: FIX THE FOLLOWING
+//                // if user is logged in (Lmkp.toolbar != false), show edit button
+//                if (Lmkp.toolbar) {
+//                    //console.log("add docked");
+//                    taggroupPanel.addDocked({
+//                        dock: 'right',
+//                        xtype: 'toolbar',
+//                        items: [{
+//                            name: 'editTaggroup',
+//                            scale: 'small',
+//                            text: 'edit',
+//                            taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
+//                            handler: function() {
+//                                var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
+//                                    activity_id: data[0].get('id'),
+//                                    version: data[0].get('version'),
+//                                    selected_taggroup: taggroupStore.getAt(this.taggroup_id)
+//                                });
+//                                win.show();
+//                            },
+//                            xtype: 'button'
+//                        }]
+//                    });
+//                }
+//            }
 
             // add commenting panel
             var commentPanel = Ext.create('Lmkp.view.comments.CommentPanel', {
