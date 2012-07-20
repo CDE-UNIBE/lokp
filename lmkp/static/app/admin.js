@@ -20,7 +20,8 @@ Ext.onReady(function(){
         'editor.Detail',
         'login.Toolbar',
         'moderator.Pending',
-        'Stakeholder'
+        'Stakeholder',
+        'stakeholders.StakeholderFieldContainer'
         ],
 
         launch: function() {
