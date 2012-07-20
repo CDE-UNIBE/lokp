@@ -10,7 +10,7 @@ Ext.define('Lmkp.controller.editor.Detail', {
     ],
 
     stores: [
-    'Config',
+    'ActivityConfig',
     'ActivityGrid'
     ],
 
@@ -72,7 +72,7 @@ Ext.define('Lmkp.controller.editor.Detail', {
     	// The form fields are requested before creating the window.
     	// This allows to create a nicely centered form window.
     	Ext.Ajax.request({
-    		url: '/config/form',
+    		url: '/config/form/activities',
     		success: function(response) {
     			var formConfig = Ext.decode(response.responseText);
     			var win = Ext.create('Lmkp.view.activities.NewActivityWindow', {
@@ -83,7 +83,7 @@ Ext.define('Lmkp.controller.editor.Detail', {
     	});
     	*/
     	
-        // var mandatoryStore = Ext.create('Lmkp.store.Config');
+        // var mandatoryStore = Ext.create('Lmkp.store.ActivityConfig');
         // mandatoryStore.filter("allowBlank", false);
         // mandatoryStore.load();
     	
