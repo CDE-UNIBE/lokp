@@ -1,6 +1,6 @@
 Ext.define('Lmkp.view.comments.CommentPanel', {
     extend: 'Ext.panel.Panel',
-    alias: 'widget.commentpanel',
+    alias: 'widget.lo_commentpanel',
 	
     collapsible: true,
     collapsed: true,
@@ -10,42 +10,48 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
         anchor: '100%'
     },
 	
-    // temporary title
+    // Temporary title
     title: Lmkp.ts.msg('loading'),
 	
     bodyStyle: {
         padding: '5px 5px 0 5px'
     },
+
+    // StringFunctions
+    stringFunctions: Ext.create('Lmkp.utils.StringFunctions'),
 	
     initComponent: function() {
-        var me = this;
-		
-        // show content
-        this.loadContent(me);
 		
         this.callParent(arguments);
+        
+        // Show content
+        this.loadContent();
+		
     },
 	
     /**
-	 * Loads ands adds all the content.
-	 */
-    loadContent: function(me) {
-        // remove any existing items (if reloaded)
-        if (me.items) {
-            me.removeAll();
+     * Loads ands adds all the content.
+     */
+    loadContent: function() {
+
+        var me = this;
+
+        // Remove any existing items (if reloaded)
+        if (this.items) {
+            this.removeAll();
         }
 		
-        if (me.activity_id && me.comment_object) {
+        if (this.identifier && this.comment_object) {
 			
             Ext.Ajax.request({
-                url: '/comments/' + me.comment_object + '/' + me.activity_id,
+                url: '/comments/' + me.comment_object + '/' + me.identifier,
                 method: 'GET',
-                success: function(response, options) {
+                success: function(response) {
                     var json = Ext.JSON.decode(response.responseText);
 					
-                    // set title
+                    // Set title
                     me.setTitle(Lmkp.ts.msg('comments') + ' (' + json.total + ')');
-                    // if no comments, add empty message
+                    // If no comments, add empty message
                     if (json.total == 0) {
                         me.add({
                             border: 0,
@@ -58,18 +64,13 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                         // display comments
                         for (var i in json.comments) {
                             var cc = json.comments[i];
-                            var panel = Ext.create('Ext.panel.Panel', {
-                                margin: '0 0 5 0',
-                                bodyPadding: 5,
-                                html: '<span class="grey">' + Lmkp.ts.msg('comments-by') + ' ' + me._formatUsername(cc.username, cc.userid) + ' (' + me._formatTimestamp(cc.timestamp) + '):</span><br/><p>' + cc.comment + '</p>'
-                            });
                             // add button do delete if permissions available
+                            var docked = null;
                             if (json.can_delete) {
-                                panel.addDocked({
-                                    dock: 'left',
+                                docked = {
+                                    dock: 'top',
                                     xtype: 'toolbar',
-                                    items: [{
-                                        scale: 'small',
+                                    items: ['->', {
                                         text: 'delete',
                                         comment_id: cc.id, // store id of comment
                                         handler: function() {
@@ -101,9 +102,18 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                                             }, this);
                                         }
                                     }]
+                                };
+                                me.add({
+                                    margin: '0 0 5 0',
+                                    bodyPadding: 5,
+                                    html: '<span class="grey">'
+                                        + Lmkp.ts.msg('comments-by') + ' '
+                                        + me.stringFunctions._formatUsername(cc.username, cc.userid)
+                                        + ' (' + me.stringFunctions._formatTimestamp(cc.timestamp)
+                                        + '):</span><br/><p>' + cc.comment + '</p>',
+                                    dockedItems: [docked]
                                 });
                             }
-                            me.add(panel);
                         }
                     }
 					
@@ -157,7 +167,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                             // identifier (hidden)
                             xtype: 'hiddenfield',
                             name: 'identifier',
-                            value: me.activity_id
+                            value: me.identifier
                         }],
                         buttons: [{
                             text: Lmkp.ts.msg('submit'),
@@ -214,35 +224,10 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
     },
 	
     /**
-	 * Does the layout after items have been removed.
-	 * (see controller/Filter.js)
-	 */
+     * Does the layout after items have been removed.
+     * (see controller/Filter.js)
+     */
     _redoLayout: function() {
-        this.ownerCt.layout.layout();
         this.forceComponentLayout();
-    },
-	
-    /**
-	 * Returns a link with the user name or a predefined empty string for null values
-	 */
-    _formatUsername: function(username, userid) {
-        console.log("REFACTOR: this function is now available in utils.StringFunctions");
-        if (username == null) {
-            return Lmkp.ts.msg('anonyomus');
-        } else {
-            if (userid == null) {
-                return username; // although this hopefully should never happen
-            } else {
-                return '<a href="#" onclick="Ext.create(\'Lmkp.view.users.UserWindow\', { username: \'' + username + '\' }).show();">' + username + '</a>';
-            }
-        }
-    },
-	
-    /**
-	 * Returns a nicely formated representation of the timestamp
-	 */
-    _formatTimestamp: function(timestamp) {
-        console.log("REFACTOR: this function is now available in utils.StringFunctions");
-        return Ext.Date.format(Ext.Date.parse(timestamp, "Y-m-d H:i:s.u"), "Y/m/d H:i");
     }
 });
