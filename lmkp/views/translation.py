@@ -90,8 +90,8 @@ def ui_messages(request):
         'review-diff_title': _('review-diff_title', default='Difference'),
         'review-diff_inv_added': _('review-diff_inv_added', default='Involvement added'),
         'review-diff_inv_deleted': _('review-diff_inv_deleted', default='Involvement deleted'),
-        'review-diff_attr_added': _('review-diff_attr_added', default='Attribute added'),
-        'review-diff_attr_deleted': _('review-diff_attr_deleted', default='Attribute deleted'),
+        'review-diff_attr_added': _('review-diff_attr_added', default='Attribute(s) added'),
+        'review-diff_attr_deleted': _('review-diff_attr_deleted', default='Attribute(s) deleted'),
         'reviewdecision-approved': _('reviewdecision-approved', default='approved'),
         'reviewdecision-rejected': _('reviewdecision-rejected', default='rejected')
     }

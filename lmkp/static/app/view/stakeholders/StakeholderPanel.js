@@ -15,6 +15,8 @@ Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
     },
 
     initComponent: function() {
+
+        var me = this;
         
         // Call parent first
         this.callParent(arguments);
@@ -41,28 +43,12 @@ Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
 
             // Get data and handle each TagGroup separately
             var taggroupStore = this.contentItem.taggroups();
-            for (var i=0; i<taggroupStore.count(); i++) {
-
-                var tagStore = taggroupStore.getAt(i).tags();
-                var tags = [];
-                var main_tag = null;
-
-                // Collect main tag and other tags
-                for (var j=0; j<tagStore.count(); j++) {
-                    if (taggroupStore.getAt(i).get('main_tag')
-                        == tagStore.getAt(j).get('id')) {
-                        main_tag = tagStore.getAt(j);
-                    } else {
-                        tags.push(tagStore.getAt(j));
-                    }
-                }
-
-                this.add({
+            taggroupStore.each(function(record) {
+                me.add({
                     xtype: 'lo_taggrouppanel',
-                    main_tag: main_tag,
-                    tags: tags
+                    taggroup: record
                 });
-            }
+            });
 
             // Show involvements
             var involvementStore = this.contentItem.involvements();
