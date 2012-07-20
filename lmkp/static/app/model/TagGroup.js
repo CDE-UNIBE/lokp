@@ -13,7 +13,8 @@ Ext.define('Lmkp.model.TagGroup', {
 	}, {
 		type: 'belongsTo',
 		model: 'Lmkp.model.Activity',
-		name: 'activity'
+		name: 'activity',
+                getterName: 'getActivity'
 	}, {
 		type: 'hasMany', // this should be 1-to-1 (belongsTo), but does not seem to work.
 		model: 'Lmkp.model.MainTag',

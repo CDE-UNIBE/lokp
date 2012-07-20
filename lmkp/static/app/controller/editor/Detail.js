@@ -29,8 +29,26 @@ Ext.define('Lmkp.controller.editor.Detail', {
             },*/
             'lo_editordetailpanel button[itemId="show-all-details"]': {
                 toggle: this.onShowDetailsToggle
+            },
+            'lo_editordetailpanel button[name=editTaggroup]': {
+                click: this.onEditTaggroupButtonClick
             }
         });
+    },
+
+    onEditTaggroupButtonClick: function(button) {
+        var taggroup = button.selected_taggroup;
+        if (taggroup) {
+            var activity = taggroup.getActivity();
+            if (activity) {
+                var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
+                    activity_id: activity.get('id'),
+                    version: activity.get('version'),
+                    selected_taggroup: taggroup
+                });
+                win.show();
+            }
+        }
     },
 
     onShowDetailsToggle: function(button, pressed, eOpts) {
@@ -58,7 +76,7 @@ Ext.define('Lmkp.controller.editor.Detail', {
             return;
         }
 
-        // create window and pass entire activity (needed because ActivityProtocol needs all old TagGroups as well)
+        // create window
         var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
             activity_id: selection.get('id'),
             version: selection.get('version'),
