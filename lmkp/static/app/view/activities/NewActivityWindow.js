@@ -244,7 +244,7 @@ Ext.define('Lmkp.view.activities.NewActivityWindow', {
             fieldContainer,
             {
                 // initially hidden panel for additional attributes
-                xtype: 'lo_panel',
+                xtype: 'panel',
                 name: record.get('name'),
                 hidden: true,
                 border: 0,

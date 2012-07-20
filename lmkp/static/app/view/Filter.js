@@ -37,7 +37,7 @@ Ext.define('Lmkp.view.Filter', {
     initComponent: function() {
         this.items = [{
             // attribute selection
-            xtype: 'lo_panel',
+            xtype: 'panel',
             id: 'filterForm',
             flex: 0,
             collapsible: true,
@@ -49,7 +49,7 @@ Ext.define('Lmkp.view.Filter', {
             // height: 500,
             bodyPadding: 5,
             items: [{
-                xtype: 'lo_panel',
+                xtype: 'panel',
                 layout: {
                     type: 'hbox',
                     flex: 'stretch'
@@ -65,7 +65,7 @@ Ext.define('Lmkp.view.Filter', {
                     hidden: true,
                     fieldLabel: 'Logical operator'
                 }, {
-                    xtype: 'lo_panel', // empty panel for spacing
+                    xtype: 'panel', // empty panel for spacing
                     flex: 1,
                     border: 0
                 }, {

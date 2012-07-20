@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.editor.Outer' ,{
-    extend: 'Lmkp.view.Panel',
+    extend: 'Ext.panel.Panel',
     alias : ['widget.lo_editorouterpanel'],
 
     requires: [
@@ -14,7 +14,7 @@ Ext.define('Lmkp.view.editor.Outer' ,{
         contentEl: 'header-div',
         height: 80,
         region: 'north',
-        xtype: 'lo_panel'
+        xtype: 'panel'
     },{
         border: 0,
         frame: false,

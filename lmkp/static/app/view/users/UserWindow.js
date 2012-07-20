@@ -29,7 +29,7 @@ Ext.define('Lmkp.view.users.UserWindow', {
 			
             this.title = 'User profile of user ' + me.username;
             this.items = [{
-                xtype: 'lo_tabpanel',
+                xtype: 'tabpanel',
                 activeItem: 0,
                 defaults: {
                     border: 0
@@ -181,7 +181,7 @@ Ext.define('Lmkp.view.users.UserWindow', {
             }]
         } else {
             this.items = [{
-                xtype: 'lo_panel',
+                xtype: 'panel',
                 html: 'Something went wrong (no username found).'
             }]
         }

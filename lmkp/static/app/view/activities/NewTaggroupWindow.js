@@ -43,7 +43,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                     value: me.version
                 }, {
                     // button to add new attribute selection to form
-                    xtype: 'lo_panel',
+                    xtype: 'panel',
                     layout: {
                         type: 'hbox',
                         flex: 'stretch'
@@ -51,7 +51,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                     border: 0,
                     items: [{
                         // empty panel for spacing
-                        xtype: 'lo_panel',
+                        xtype: 'panel',
                         flex: 1,
                         border: 0
                     }, {
