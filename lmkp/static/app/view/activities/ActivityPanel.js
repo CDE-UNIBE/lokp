@@ -62,5 +62,9 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
         } else {
             this.html = Lmkp.ts.msg('unknown');
         }
+    },
+
+    _getTaggroupPanels: function() {
+        return this.query('lo_taggrouppanel');
     }
 });
