@@ -16,7 +16,7 @@ Ext.define('Lmkp.controller.editor.Detail', {
 
     views: [
     'activities.Details',
-    'Filter'
+    'activities.Filter'
     ],
 
     init: function() {
@@ -29,6 +29,9 @@ Ext.define('Lmkp.controller.editor.Detail', {
             },*/
             'lo_editordetailpanel button[itemId="show-all-details"]': {
                 toggle: this.onShowDetailsToggle
+            },
+            'lo_editordetailpanel button[name=toggleDetails]': {
+                toggle: this.onTaggroupDetailsToggle
             },
             'lo_editordetailpanel button[name=editTaggroup]': {
                 click: this.onEditTaggroupButtonClick
@@ -51,11 +54,21 @@ Ext.define('Lmkp.controller.editor.Detail', {
         }
     },
 
-    onShowDetailsToggle: function(button, pressed, eOpts) {
-        console.log("refactor me: function onShowDetailsToggle (controller.editor.Detail.js)");
-        var taggrouppanels = Ext.ComponentQuery.query('lo_editordetailpanel taggrouppanel');
-        for (var i = 0; i < taggrouppanels.length; i++) {
-            taggrouppanels[i].toggleDetailButton(pressed);
+    onTaggroupDetailsToggle: function(button, pressed) {
+        var taggrouppanel = button.up('lo_taggrouppanel');
+        if (taggrouppanel) {
+            taggrouppanel._toggleTags(pressed);
+        }
+    },
+
+    onShowDetailsToggle: function(button, pressed) {
+        var activityPanel = Ext.ComponentQuery.query('lo_editordetailpanel lo_activitypanel')[0];
+        if (activityPanel) {
+            var taggroupPanels = activityPanel._getTaggroupPanels();
+            for (var i in taggroupPanels) {
+                // Toggle the button instead of directly toggling panel
+                taggroupPanels[i]._toggleDetailButton(pressed);
+            }
         }
     },
 

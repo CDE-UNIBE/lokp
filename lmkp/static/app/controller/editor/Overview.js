@@ -22,6 +22,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
     stores: [
     'ActivityGrid',
     'ActivityConfig',
+    'StakeholderGrid',
     'Profiles'
     ],
 
@@ -30,6 +31,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
     'editor.Map',
     'activities.Details',
     'activities.History',
+    'activities.Filter',
     'stakeholders.StakeholderSelection'
     ],
 
@@ -37,56 +39,53 @@ Ext.define('Lmkp.controller.editor.Overview', {
         // Get the ActivityConfig store and load it
         this.getActivityConfigStore().load();
 
-        /*this.getActivityGridStore().on('beforeload', function(store, operation, eOpts){
-            console.log('beforeload');
-            var proxy = store.getProxy();
-            proxy.setExtraParam('adrian', 'test');
-        }, this)*/
-
         this.control({
             'lo_editormappanel': {
                 render: this.onMapPanelRender
             },
-            'lo_editortablepanel': {
-                render: this.onTablePanelRender
+            'lo_editoractivitytablepanel': {
+                render: this.onActivityTablePanelRender
             },
-            'lo_editortablepanel checkbox[itemId="spatialFilterCheckbox"]': {
+            'lo_editorstakeholdertablepanel': {
+                render: this.onStakeholderTablePanelRender
+            },
+            'lo_editoractivitytablepanel checkbox[itemId="spatialFilterCheckbox"]': {
                 change: this.onSpatialFilterCheckboxChange
             },
-            'lo_editortablepanel button[name=addAttributeFilter]': {
+            'lo_editoractivitytablepanel button[name=addAttributeFilter]': {
                 click: this.addAttributeFilter
             },
-            'lo_editortablepanel button[name=addTimeFilter]': {
+            'lo_editoractivitytablepanel button[name=addTimeFilter]': {
                 click: this.addTimeFilter
             },
-            'lo_editortablepanel tabpanel[id=detailPanel]': {
-                tabchange: this.showActivity
+            'lo_editoractivitytablepanel tabpanel[id=detailPanel]': {
+                tabchange: this.showDetails
             },
-            'lo_editortablepanel button[id=deleteAllFilters]': {
+            'lo_editoractivitytablepanel button[id=deleteAllFilters]': {
                 click: this.deleteAllFilters
             },
-            'lo_editortablepanel button[name=activateAttributeButton]': {
+            'lo_editoractivitytablepanel button[name=activateAttributeButton]': {
                 click: this.applyFilter
             },
-            'lo_editortablepanel button[name=activateTimeButton]': {
+            'lo_editoractivitytablepanel button[name=activateTimeButton]': {
                 click: this.applyFilter
             },
-            'lo_editortablepanel combobox[name=attributeCombo]': {
+            'lo_editoractivitytablepanel combobox[name=attributeCombo]': {
                 select: this.showValueFields
             },
-            'lo_editortablepanel [name=valueField]': {
+            'lo_editoractivitytablepanel [name=valueField]': {
                 change: this.resetActivateButton
             },
-            'lo_editortablepanel combobox[name=filterOperator]': {
+            'lo_editoractivitytablepanel combobox[name=filterOperator]': {
                 select: this.resetActivateButton
             },
-            'lo_editortablepanel datefield[name=dateField]': {
+            'lo_editoractivitytablepanel datefield[name=dateField]': {
                 change: this.resetActivateButton
             },
-            'lo_editortablepanel button[name=deleteButton]': {
+            'lo_editoractivitytablepanel button[name=deleteButton]': {
                 click: this.deleteFilter
             },
-            'lo_editortablepanel combobox[name=logicalOperator]': {
+            'lo_editoractivitytablepanel combobox[name=logicalOperator]': {
                 select: this.applyFilter
             },
             'gridpanel[itemId=activityGrid] gridcolumn[name=activityCountryColumn]': {
@@ -95,8 +94,11 @@ Ext.define('Lmkp.controller.editor.Overview', {
             'gridpanel[itemId=activityGrid] gridcolumn[name=yearofinvestmentcolumn]': {
                 afterrender: this.renderActivityYearColumn
             },
-            'lo_editortablepanel gridpanel[itemId=activityGrid]': {
-                selectionchange: this.showActivity
+            'lo_editoractivitytablepanel gridpanel[itemId=activityGrid]': {
+                selectionchange: this.showDetails
+            },
+            'lo_editorstakeholdertablepanel gridpanel[itemId=stakeholderGrid]': {
+                selectionchange: this.showDetails
             },
             'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdernamecolumn]': {
                 afterrender: this.renderStakeholderNameColumn
@@ -111,7 +113,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
      * Adds a beforeload action to the ActivityGridStore to filter the activites
      * according to the current map extent.
      */
-    onTablePanelRender: function(comp){
+    onActivityTablePanelRender: function(comp){
 
         // Adds a beforeload action
         this.getActivityGridStore().on('beforeload', function(store){
@@ -146,6 +148,10 @@ Ext.define('Lmkp.controller.editor.Overview', {
         }, this)
     },
 
+    onStakeholderTablePanelRender: function() {
+        this.getStakeholderGridStore().load();
+    },
+
     /**
      * Reload the ActivityGrid store when the spatialFilterCheckbox is checked
      * or unchecked
@@ -155,12 +161,19 @@ Ext.define('Lmkp.controller.editor.Overview', {
     },
 
     addAttributeFilter: function(button, event, eOpts) {
-        var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
-        // expand form if collapsed
-        if (form.collapsed) {
-            form.toggleCollapse();
+
+        // Activity or Stakeholder?
+        var panel_xtype = null;
+        if (button.item_type == 'activity') {
+            panel_xtype = 'lo_editoractivityfilterpanel';
+        } else if (button.item_type == 'stakeholder') {
+            panel_xtype = 'lo_editorstakeholderfilterpanel';
         }
-        var insertIndex = form.items.length - 1; // always insert above the 2 buttons
+
+        var form = button.up(panel_xtype);
+        
+        // always insert above the panel with the buttons
+        var insertIndex = form.items.length - 1;
         var cbox = Ext.create('Ext.form.field.ComboBox', {
             name: 'attributeCombo',
             store: this.getActivityConfigStore(),
@@ -208,14 +221,12 @@ Ext.define('Lmkp.controller.editor.Overview', {
             }]
         });
         // show initial filter
+
         this.showValueFields(cbox, [this.getActivityConfigStore().getAt('0')]);
-        // re-layout container
-        form.ownerCt.layout.layout(); 	// TODO: Figure out why both of ...
-        form.forceComponentLayout();	// ... these lines are needed (see also addTimeFilter)
     },
 
     addTimeFilter: function(button, e, eOpts) {
-        var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
+        var form = Ext.ComponentQuery.query('panel[id=activityFilterForm]')[0];
         // expand form if collapsed
         if (form.collapsed) {
             form.toggleCollapse();
@@ -264,8 +275,6 @@ Ext.define('Lmkp.controller.editor.Overview', {
         if (button) {
             button.disable();
         }
-        form.ownerCt.layout.layout(); 	// TODO: Figure out why both of ...
-        form.forceComponentLayout();	// ... these lines are needed (see also addAttributeFilter)
     },
 
     showValueFields: function(combobox, records, eOpts) {
@@ -308,7 +317,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
         this._renderColumnMultipleValues(comp, "stakeholder-attr_country");
     },
 
-    showActivity: function(model, selected, eOpts) {
+    showDetails: function(model, selected, eOpts) {
 
         // Unselect all selected features on the map
         //var mapPanel = Ext.ComponentQuery.query('mappanel')[0];
@@ -431,123 +440,9 @@ Ext.define('Lmkp.controller.editor.Overview', {
         }
     },
 
-    addAttributeFilter: function(button, e, eOpts) {
-        var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
-        // expand form if collapsed
-        if (form.collapsed) {
-            form.toggleCollapse();
-        }
-        var insertIndex = form.items.length - 1; // always insert above the 2 buttons
-        var cbox = Ext.create('Ext.form.field.ComboBox', {
-            name: 'attributeCombo',
-            store: this.getActivityConfigStore(),
-            valueField: 'name',
-            displayField: 'fieldLabel',
-            queryMode: 'local',
-            typeAhead: true,
-            forceSelection: true,
-            value: this.getActivityConfigStore().getAt('0'),
-            flex: 0,
-            margin: '0 5 5 0'
-        });
-        form.insert(insertIndex, {
-            xtype: 'panel',
-            name: 'attributePanel',
-            border: 0,
-            anchor: '100%',
-            layout: {
-                type: 'hbox',
-                flex: 'stretch'
-            },
-            items: [
-            cbox,
-            {
-                xtype: 'panel', // empty panel for spacing
-                flex: 1,
-                border: 0
-            }, {
-                xtype: 'button',
-                name: 'activateAttributeButton',
-                text: Lmkp.ts.msg("activate-button"),
-                tooltip: Lmkp.ts.msg("activate-tooltip"),
-                iconCls: 'toolbar-button-accept',
-                enableToggle: true,
-                flex: 0,
-                margin: '0 5 0 0'
-            }, {
-                xtype: 'button',
-                name: 'deleteButton',
-                text: Lmkp.ts.msg("delete-button"),
-                tooltip: Lmkp.ts.msg("deletefilter-tooltip"),
-                iconCls: 'toolbar-button-delete',
-                enableToggle: false,
-                flex: 0
-            }]
-        });
-        // show initial filter
-        this.showValueFields(cbox, [this.getActivityConfigStore().getAt('0')]);
-        // re-layout container
-        form.ownerCt.layout.layout(); 	// TODO: Figure out why both of ...
-        form.forceComponentLayout();	// ... these lines are needed (see also addTimeFilter)
-    },
-
-    addTimeFilter: function(btn, e, eOpts) {
-        var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
-        // expand form if collapsed
-        if (form.collapsed) {
-            form.toggleCollapse();
-        }
-        var insertIndex = form.items.length - 1; // always insert above the 2 buttons
-        var picker = Ext.create('Ext.form.field.Date', {
-            name: 'dateField',
-            fieldLabel: Lmkp.ts.msg("date-label"),
-            value: new Date() // defaults to today
-        });
-        form.insert(insertIndex, {
-            xtype: 'panel',
-            name: 'timePanel',
-            border: 0,
-            layout: {
-                type: 'hbox',
-                flex: 'stretch'
-            },
-            items: [
-            picker,
-            {
-                xtype: 'panel', // empty panel for spacing
-                flex: 1,
-                border: 0
-            }, {
-                xtype: 'button',
-                name: 'activateTimeButton',
-                text: Lmkp.ts.msg("activate-button"),
-                tooltip: Lmkp.ts.msg("activate-tooltip"),
-                iconCls: 'toolbar-button-accept',
-                enableToggle: true,
-                flex: 0,
-                margin: '0 5 5 0'
-            }, {
-                xtype: 'button',
-                name: 'deleteButton',
-                text: Lmkp.ts.msg("delete-button"),
-                tooltip: Lmkp.ts.msg("deletefilter-tooltip"),
-                iconCls: 'toolbar-button-delete',
-                enableToggle: false,
-                flex: 0
-            }]
-        });
-        // disable 'add' button
-        var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
-        if (button) {
-            button.disable();
-        }
-        form.ownerCt.layout.layout(); 	// TODO: Figure out why both of ...
-        form.forceComponentLayout();	// ... these lines are needed (see also addAttributeFilter)
-    },
-
     deleteFilter: function(button, e, eOpts) {
         var attributePanel = button.up('panel');
-        var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
+        var form = Ext.ComponentQuery.query('panel[id=activityFilterForm]')[0];
         // if time was filtered, re-enable its 'add' button
         if (attributePanel.name == 'timePanel') {
             var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
@@ -566,7 +461,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
         var panels = Ext.ComponentQuery.query('panel[name=attributePanel]');
         panels = panels.concat(Ext.ComponentQuery.query('panel[name=timePanel]'));
         if (panels.length > 0) {
-            form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
+            form = Ext.ComponentQuery.query('panel[id=activityFilterForm]')[0];
             for (i=0; i<panels.length; i++) {
                 // if time was filtered, re-enable its 'add' button
                 if (panels[i].name == 'timePanel') {
@@ -986,7 +881,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
                     }
                 });
 
-                this.showActivity(null, [store.getAt(0)], null);
+                this.showDetails(null, [store.getAt(0)], null);
             }
         });
     }

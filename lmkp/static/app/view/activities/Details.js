@@ -30,12 +30,12 @@ Ext.define('Lmkp.view.activities.Details', {
             itemId: 'show-all-details',
             pressed: true,
             scale: 'medium',
-            text: 'Show all details'
+            text: Lmkp.ts.msg('details-toggle_all')
         },{
             itemId: 'add-taggroup-button',
             scale: 'medium',
             text: 'Add further information',
-            tooltip: 'Submit further information to an existing activity'
+            tooltip: Lmkp.ts.msg('activities-add_further_information')
         }]
     }
 	
