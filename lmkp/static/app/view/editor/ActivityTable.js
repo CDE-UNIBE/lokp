@@ -41,14 +41,18 @@ Ext.define('Lmkp.view.editor.ActivityTable',{
                 sortable: true
             }],
             dockedItems: [{
+                xtype: 'toolbar',
                 dock: 'top',
                 items: [{
-                    boxLabel: 'Apply spatial filter',
+                    boxLabel: Lmkp.ts.msg('filter-apply_spatial'),
                     checked: true,
                     itemId: 'spatialFilterCheckbox',
                     xtype: 'checkbox'
-                }],
-                xtype: 'toolbar'
+                }, {
+                    xtype: 'checkbox',
+                    boxLabel: Lmkp.ts.msg('filter-connect_to_stakeholders'),
+                    itemId: 'filterConnectAtoSH'
+                }]
             },{
                 xtype: 'pagingtoolbar',
                 id: 'activityGridPagingToolbar',
