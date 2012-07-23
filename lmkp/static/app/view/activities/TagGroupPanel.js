@@ -45,39 +45,17 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
                 xtype: 'toolbar',
                 items: ['->', {
                         name: 'toggleDetails',
-                        text: 'details',
+                        text: Lmkp.ts.msg('details'),
                         enableToggle: true,
                         pressed: true
                     }, {
                         name: 'editTaggroup',
-                        text: 'edit',
+                        text: Lmkp.ts.msg('edit'),
                         selected_taggroup: this.taggroup
                     }
                 ]
             });
         }
-
-        /*
-        // add button to show or hide 'normal' tags panel
-        if (this._getMainTagPanel().html != '' && me.tags.length > 0) {
-            this.addDocked({
-                dock: 'right',
-                xtype: 'toolbar',
-                items: [{
-                    name: 'toggleDetails',
-                    scale: 'small',
-                    text: 'details',
-                    enableToggle: true,
-                    pressed: true,
-                    toggleHandler: function(button, state) {
-                        // show or hide 'normal' tags panel
-                        me._getTagsPanel().setVisible(state);
-                    }
-                }]
-            });
-        }
-        */
-
     },
 
     _getTagPanel: function(key, value, is_main_tag) {

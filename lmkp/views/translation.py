@@ -40,8 +40,11 @@ def ui_messages(request):
         'failure': _('failure', default='Failure'),
         'submit': _('submit', default='Submit'),
         'id': _('id', default='ID'),
+        'edit': _('edit', default='edit'),
+        'details': _('details', default='details'),
         # activities / filtering
         'activities-title': _('activities-title', default='Activities'),
+        'activities-add_further_information': _('activities-add_further_information', default='Submit further information to an existing activity'),
         'addattributefilter-button': _('addattributefilter-button', default='Add attribute filter'),
         'addattributefilter-tooltip': _('addattributefilter-tooltip', default='Add a filter based on attribute'),
         'addtimefilter-button': _('addtimefilter-button', default='Add time filter'),
@@ -67,6 +70,8 @@ def ui_messages(request):
         # involvements
         'involvements-title': _('involvements-title', default='Involvement'),
         'involvements-role': _('involvements-role', default='Role'),
+        # details
+        'details-toggle_all': _('details-toggle_all', default='Toggle all details'),
         # status
         'status-pending': _('status-pending', default='pending'),
         'status-active': _('status-active', default='active'),
