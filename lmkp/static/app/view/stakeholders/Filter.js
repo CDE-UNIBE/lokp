@@ -5,7 +5,7 @@ Ext.define('Lmkp.view.stakeholders.Filter', {
     id: 'stakeholderFilterForm',
     flex: 0.5,
     border: 0,
-    title: Lmkp.ts.msg('filter-title'),
+    title: Lmkp.ts.msg('filter-stakeholder_title'),
     layout: {
         type: 'anchor'
     },

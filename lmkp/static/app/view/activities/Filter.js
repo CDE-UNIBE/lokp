@@ -5,7 +5,7 @@ Ext.define('Lmkp.view.activities.Filter', {
     id: 'activityFilterForm',
     flex: 0.5,
     border: 0,
-    title: Lmkp.ts.msg("filter-title"),
+    title: Lmkp.ts.msg("filter-activity_title"),
     layout: {
         type: 'anchor'
     },
