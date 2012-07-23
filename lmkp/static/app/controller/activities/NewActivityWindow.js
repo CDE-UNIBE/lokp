@@ -28,10 +28,11 @@ Ext.define('Lmkp.controller.activities.NewActivityWindow', {
 
         sel.on('close', function(panel, eOpts){
             var sh = panel.getSelectedStakeholder();
-            this.getSelectStakeholderFieldSet().add({
-                stakeholder: sh,
-                xtype: 'lo_stakeholderfieldcontainer'
-            });
+            this.getSelectStakeholderFieldSet().insert(
+                0, {
+                    stakeholder: sh,
+                    xtype: 'lo_stakeholderfieldcontainer'
+                });
         }, this);
         sel.show();
     }

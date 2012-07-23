@@ -25,16 +25,22 @@ Ext.define('Lmkp.controller.stakeholders.StakeholderSelection', {
     },
 
     onSearchSelect: function(combo, records, eOpts){
-        this.getStakeholderSelection().confirmButton.setText("Select Stakeholder");
+        var sel  = this.getStakeholderSelection();
+        sel.confirmButton.setText("Select Stakeholder");
         
         var p = Ext.create('Lmkp.view.stakeholders.StakeholderPanel',{
             contentItem: records[0],
             region: 'south'
         });
 
-        this.getStakeholderSelection().setSouthPanel(p);
-        this.getStakeholderSelection().add(p);
+        // Remove first the southern panel if there is any
+        if(sel.getSouthPanel()){
+            sel.remove(sel.getSouthPanel());
+        }
 
+        sel.setSouthPanel(p);
+        sel.add(p);
+        sel.doLayout();
     },
 
     onClearButtonClick: function(button, event, eOpts){
@@ -60,13 +66,11 @@ Ext.define('Lmkp.controller.stakeholders.StakeholderSelection', {
         } else {
             var w = Ext.create('Lmkp.view.stakeholders.NewStakeholder');
             w.on('close', function(panel, eOpts){
-                sel.setSelectedStakeholder(panel.getAddedStakeholder());
-                sel.close();
+                this.onSearchSelect(
+                    panel.down('combo[itemId="searchTextfield"]'),
+                    [panel.getAddedStakeholder()]);
             }, this);
             w.show();
-        //            w.on('close', function(panel, eOpts){
-        //                sel.close();
-        //            });
         }
 
     }
