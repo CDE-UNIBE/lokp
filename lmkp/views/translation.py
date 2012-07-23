@@ -53,7 +53,7 @@ def ui_messages(request):
         'activitypaging-after': _('activitypaging-after', default='of {0}'),
         'activitypaging-message': _('paging-message', default='Displaying activities {0} - {1} of {2}'),
         'activitypaging-empty': _('activitypaging-empty', default='No activities found'),
-        'activity-select': _('activity-select', default='Select an activity above to show its details'),
+        'activity-select': _('activity-select', default='Select an activity to show its details'),
         'activate-button': _('activate-button', default='Activate'),
         'activate-tooltip': _('activate-tooltip', default='Click to activate this filter'),
         'delete-button': _('delete-button', default='Delete'),
@@ -90,8 +90,8 @@ def ui_messages(request):
         'review-diff_title': _('review-diff_title', default='Difference'),
         'review-diff_inv_added': _('review-diff_inv_added', default='Involvement added'),
         'review-diff_inv_deleted': _('review-diff_inv_deleted', default='Involvement deleted'),
-        'review-diff_attr_added': _('review-diff_attr_added', default='Attribute added'),
-        'review-diff_attr_deleted': _('review-diff_attr_deleted', default='Attribute deleted'),
+        'review-diff_attr_added': _('review-diff_attr_added', default='Attribute(s) added'),
+        'review-diff_attr_deleted': _('review-diff_attr_deleted', default='Attribute(s) deleted'),
         'reviewdecision-approved': _('reviewdecision-approved', default='approved'),
         'reviewdecision-rejected': _('reviewdecision-rejected', default='rejected')
     }

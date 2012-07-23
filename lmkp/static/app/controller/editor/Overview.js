@@ -1,10 +1,15 @@
 Ext.define('Lmkp.controller.editor.Overview', {
     extend: 'Ext.app.Controller',
 
-    refs: [{
-        ref: 'mapPanel',
-        selector: 'lo_editormappanel'
-    }],
+    refs: [
+        {
+            ref: 'mapPanel',
+            selector: 'lo_editormappanel'
+        }, {
+            ref: 'detailPanel',
+            selector: 'lo_editordetailpanel'
+        }
+    ],
 
     requires: [
     'Lmkp.model.Activity',
@@ -333,21 +338,18 @@ Ext.define('Lmkp.controller.editor.Overview', {
             vectorLayer.events.register('featureselected', this, this.onFeatureSelected);
         }*/
 
-        var detailPanels = Ext.ComponentQuery.query('lo_editordetailpanel');
-        for(var i = 0; i < detailPanels.length; i++) {
-            var activeTab = detailPanels[i].getActiveTab();
-            switch (activeTab.getXType()) {
-                case "lo_activityhistorypanel":
-                    // var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
-                    // detailPanel._populateHistoryTab(selectedTab, uid)
-                    console.log("coming soon");
-                    break;
-                default: 	// default is: activityDetailTab
-                    detailPanels[i].populateDetailsTab(activeTab, selected);
-                    break;
-            }
+        var detailPanel = this.getDetailPanel();
+        var activeTab = detailPanel.getActiveTab();
+        switch (activeTab.getXType()) {
+            case "lo_activityhistorypanel":
+                // var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
+                // detailPanel._populateHistoryTab(selectedTab, uid)
+                console.log("coming soon");
+                break;
+            default: 	// default is: activityDetailTab
+                detailPanel.populateDetailsTab(activeTab, selected);
+                break;
         }
-       
     },
 
     resetActivateButton: function(element) {

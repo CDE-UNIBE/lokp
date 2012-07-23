@@ -138,8 +138,14 @@ class ActivityProtocol2(Protocol):
         """
         """
         # Collect information about changing involvements
-        involvement_change = activity_dict['stakeholders'] if 'stakeholders' in activity_dict else None
-        implicit_inv_change = True if involvement_change is not None and 'implicit_involvement_update' in activity_dict and activity_dict['implicit_involvement_update'] is True else False
+        involvement_change = (activity_dict['stakeholders']
+            if 'stakeholders' in activity_dict
+            else None)
+        implicit_inv_change = (True
+            if involvement_change is not None
+                and 'implicit_involvement_update' in activity_dict
+                and activity_dict['implicit_involvement_update'] is True
+            else False)
 
         # If this activity does not have an id then create a new activity
         if 'id' not in activity_dict:
@@ -245,7 +251,7 @@ class ActivityProtocol2(Protocol):
         # (and loop all again)
         if 'taggroups' in activity_dict:
             for taggroup_dict in activity_dict['taggroups']:
-                if 'id' not in taggroup_dict and taggroup_dict['op'] == 'add':
+                if ('id' not in taggroup_dict or ('id' in taggroup_dict and taggroup_dict['id'] is None)) and taggroup_dict['op'] == 'add':
                     new_taggroup = A_Tag_Group()
                     new_activity.tag_groups.append(new_taggroup)
                     for tag_dict in taggroup_dict['tags']:
