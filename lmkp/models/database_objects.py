@@ -3,9 +3,12 @@ from lmkp.models.meta import (
     DBSession
 )
 
+from geoalchemy.utils import from_wkt
+
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import column_property
 import datetime
+from sqlalchemy.ext.hybrid import hybrid_property
 
 # registering of uuid needed, done in meta.py
 import uuid
@@ -46,10 +49,11 @@ from shapely import wkb
 import geojson
 
 # imports needed for geometry table (A_Events)
-from geoalchemy.geometry import (
-    GeometryColumn,
-    Geometry
-)
+from geoalchemy.geometry import Geometry
+from geoalchemy.geometry import GeometryColumn
+from geoalchemy.geometry import GeometryDDL
+from geoalchemy.geometry import Point
+from geoalchemy.geometry import Polygon
 
 # Password encyption (drawn from the Pylons project 'Shootout': https://github.com/Pylons/shootout/blob/master/shootout/)
 # Contrary to the example above, cryptacular.bcrypt could not be used (problem with Windows?). Instead, cryptacular.pbkdf2 is used.
@@ -82,6 +86,9 @@ class A_Key(Base):
     
     def __repr__(self):
         return "<A_Key> id [ %s ] | fk_a_key [ %s ] | fk_language [ %s ] | key [ %s ]" % (self.id, self.fk_a_key, self.fk_language, self.key)
+
+    def to_json(self):
+        return self.key
 
 class SH_Key(Base):
     __tablename__ = 'sh_keys'
@@ -117,33 +124,18 @@ class A_Value(Base):
     fk_a_value = Column(Integer)
     fk_language = Column(Integer, nullable = False)
     value = Column(Text)
-    geometry = GeometryColumn('geometry', Geometry(dimension = 2, srid = 4326, spatial_index = True))
 
     fk_value = column_property(fk_a_value)
     
     translations = relationship('A_Value', backref = backref('original', remote_side = [id]))
     tags = relationship('A_Tag', backref = 'value')
     
-    def __init__(self, value, geometry=None):
+    def __init__(self, value):
         self.value = value
-        self.geometry = geometry
     
     def __repr__(self):
-        if self.geometry == None:
-            geom = '-'
-        else:
-            geom = wkb.loads(str(self.geometry.geom_wkb)).wkt
-        return "<A_Value> id [ %s ] | fk_a_value [ %s ] | fk_language [ %s ] | value [ %s ] | geometry [ %s ]" % (self.id, self.fk_a_value, self.fk_language, self.value, geom)
 
-    @property
-    def __geo_interface__(self):
-       id = self.id
-       if hasattr(self, '_shape') and self._shape is not None:
-           geometry = self._shape
-       else:
-           geometry = wkb.loads(str(self.geometry.geom_wkb))
-       properties = dict(source=self.source)
-       return geojson.Feature(id=id, geometry=geometry, properties=properties)
+        return "<A_Value> id [ %s ] | fk_a_value [ %s ] | fk_language [ %s ] | value [ %s ]" % (self.id, self.fk_a_value, self.fk_language, self.value)
 
 class SH_Value(Base):
     __tablename__ = 'sh_values'
@@ -191,6 +183,9 @@ class A_Tag(Base):
     def __repr__(self):
         return "<A_Tag> id [ %s ] | fk_a_tag_group [ %s ] | fk_a_key [ %s ] | fk_a_value [ %s ]" % (self.id, self.fk_a_tag_group, self.fk_a_key, self.fk_a_value)
 
+    def to_json(self):
+        return {'id': self.id, 'key': self.key.key, 'value': self.value.value }
+
 class SH_Tag(Base):
     __tablename__ = 'sh_tags'
     __table_args__ = (
@@ -214,6 +209,9 @@ class SH_Tag(Base):
     def __repr__(self):
         return "<SH_Tag> id [ %s ] | fk_sh_tag_group [ %s ] | fk_sh_key [ %s ] | fk_sh_value [ %s ]" % (self.id, self.fk_sh_tag_group, self.fk_sh_key, self.fk_sh_value)
 
+    def to_json(self):
+        return {'id': self.id, 'key': self.key.key, 'value': self.value.value }
+
 class A_Tag_Group(Base):
     __tablename__ = 'a_tag_groups'
     __table_args__ = (
@@ -224,17 +222,31 @@ class A_Tag_Group(Base):
     id = Column(Integer, primary_key = True)
     fk_activity = Column(Integer, nullable = False)
     fk_a_tag = Column(Integer, nullable = True)
+    geometry = GeometryColumn('geometry', Geometry(dimension = 2, srid = 4326, spatial_index = True))
 
     fk_tag = column_property(fk_a_tag)
 
     tags = relationship("A_Tag", backref = backref('tag_group', order_by = id), primaryjoin = id==A_Tag.fk_a_tag_group)
     main_tag = relationship("A_Tag", primaryjoin = fk_a_tag==A_Tag.id, post_update = True)
 
-    def __init__(self):
-        pass
+    def __init__(self, geometry=None):
+        self.geometry = geometry
     
     def __repr__(self):
-        return '<A_Tag_Group> id [ %s ] | fk_activity [ %s ] | fk_a_tag [ %s ]' % (self.id, self.fk_activity, self.fk_a_tag)
+        if self.geometry == None:
+            geom = '-'
+        else:
+            geom = wkb.loads(str(self.geometry.geom_wkb)).wkt
+        return '<A_Tag_Group> id [ %s ] | fk_activity [ %s ] | fk_a_tag [ %s ] | geometry [ %s ]' % (self.id, self.fk_activity, self.fk_a_tag, geom)
+
+    def to_json(self):
+        geometry = None
+        if self.geometry is not None:
+            shape = wkb.loads(str(self.point.geom_wkb))
+            geometry = from_wkt(shape.wkt)
+        return {'id': self.id, 'geometry': geometry, 'tags': [t.to_json() for t in self.tags]}
+
+GeometryDDL(A_Tag_Group.__table__)
 
 class SH_Tag_Group(Base):
     __tablename__ = 'sh_tag_groups'
@@ -258,6 +270,9 @@ class SH_Tag_Group(Base):
     def __repr__(self):
         return '<SH_Tag_Group> id [ %s ] | fk_stakeholder [ %s ] | fk_sh_tag [ %s ]' % (self.id, self.fk_stakeholder, self.fk_sh_tag)
 
+    def to_json(self):
+        return {'id': self.id, 'main_tag': self.main_tag.to_json(), 'tags': [t.to_json() for t in self.tags]}
+
 class Activity(Base):
     __tablename__ = 'activities'
     __table_args__ = (
@@ -266,8 +281,7 @@ class Activity(Base):
             )
     id = Column(Integer, primary_key = True)
     activity_identifier = Column(UUID, nullable = False)
-    timestamp = Column(DateTime, nullable = False)
-    point = GeometryColumn('point', Geometry(dimension = 2, srid = 4326, spatial_index = True))
+    point = GeometryColumn('point', Point(dimension = 2, srid = 4326, spatial_index = True))
     fk_status = Column(Integer, nullable = False)
     version = Column(Integer, nullable = False)
 
@@ -275,14 +289,19 @@ class Activity(Base):
     changesets = relationship("A_Changeset", backref = backref('activity', order_by = id))
     involvements = relationship("Involvement", backref = backref('activity', order_by = id))
 
+    #identifier = column_property(activity_identifier)
+    @hybrid_property
+    def identifier(self):
+        return self.activity_identifier
+
     def __init__(self, activity_identifier, version, point=None):
-        self.timestamp = datetime.datetime.now()
         self.activity_identifier = activity_identifier
         self.version = version
         self.point = point
 
     def __repr__(self):
-        return "<Activity> id [ %s ] | activity_identifier [ %s ] | timestamp [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.activity_identifier, self.timestamp, wkb.loads(str(self.point.geom_wkb)).wkt, self.fk_status, self.version)
+        #return "<Activity> id [ %s ] | activity_identifier [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.activity_identifier, wkb.loads(str(self.point.geom_wkb)).wkt, self.fk_status, self.version)
+        return "<Activity> id [ %s ] | activity_identifier [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.activity_identifier, "wkb.loads(str(self.point.geom_wkb)).wkt", self.fk_status, self.version)
     
     @property
     def __geo_interface__(self):
@@ -297,6 +316,13 @@ class Activity(Base):
     def get_comments(self):
         return DBSession.query(Comment).filter(Comment.activity_identifier == self.activity_identifier).all()
 
+    def to_json(self):
+        # The geometry as Shapely object
+        shape = wkb.loads(str(self.point.geom_wkb))
+        return {'id': str(self.activity_identifier), 'version': self.version, 'geometry': from_wkt(shape.wkt), 'taggroups': [t.to_json() for t in self.tag_groups]}
+
+GeometryDDL(Activity.__table__)
+
 class Stakeholder(Base):
     __tablename__ = 'stakeholders'
     __table_args__ = (
@@ -305,7 +331,6 @@ class Stakeholder(Base):
             )
     id = Column(Integer, primary_key = True)
     stakeholder_identifier = Column(UUID, nullable = False)
-    timestamp = Column(DateTime, nullable = False)
     fk_status = Column(Integer, nullable = False)
     version = Column(Integer, nullable = False)
 
@@ -313,16 +338,23 @@ class Stakeholder(Base):
     changesets = relationship("SH_Changeset", backref = backref('stakeholder', order_by = id))
     involvements = relationship("Involvement", backref = backref('stakeholder', order_by = id))
 
+    @hybrid_property
+    def identifier(self):
+        return self.stakeholder_identifier
+
     def __init__(self, stakeholder_identifier, version):
-        self.timestamp = datetime.datetime.now()
         self.stakeholder_identifier = stakeholder_identifier
         self.version = version
 
     def __repr__(self):
-        return "<Stakeholder> id [ %s ] | stakeholder_identifier [ %s ] | timestamp [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.stakeholder_identifier, self.timestamp, self.fk_status, self.version)
+        return "<Stakeholder> id [ %s ] | stakeholder_identifier [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.stakeholder_identifier, self.fk_status, self.version)
 
     def get_comments(self):
         return DBSession.query(Comment).filter(Comment.stakeholder_identifier == self.stakeholder_identifier).all()
+
+    def to_json(self):
+        return {'id': str(self.stakeholder_identifier), 'version': self.version, 'taggroups': [t.to_json() for t in self.tag_groups]}
+
 
 class A_Changeset(Base):
     __tablename__ = 'a_changesets'
@@ -333,6 +365,7 @@ class A_Changeset(Base):
             )
     id = Column(Integer, primary_key = True)
     fk_user = Column(Integer, nullable = False)
+    timestamp = Column(DateTime, nullable = False)
     source = Column(Text)
     fk_activity = Column(Integer, nullable = False)
     previous_version = Column(Integer)
@@ -340,11 +373,12 @@ class A_Changeset(Base):
     reviews = relationship("A_Changeset_Review", backref='changeset')
 
     def __init__(self, source=None, previous_version=None):
+        self.timestamp = datetime.datetime.now()
         self.source = source
         self.previous_version = previous_version
 
     def __repr__(self):
-        return "<A_Changeset> id [ %s ] | fk_user [ %s ] | source [ %s ] | fk_activity [ %s ] | previous_version [ %s ]" % (self.id, self.fk_user, self.source, self.fk_activity, self.previous_version)
+        return "<A_Changeset> id [ %s ] | fk_user [ %s ] | timestamp [ %s ] | source [ %s ] | fk_activity [ %s ] | previous_version [ %s ]" % (self.id, self.fk_user, self.timestamp, self.source, self.fk_activity, self.previous_version)
 
 class SH_Changeset(Base):
     __tablename__ = 'sh_changesets'
@@ -355,6 +389,7 @@ class SH_Changeset(Base):
             )
     id = Column(Integer, primary_key = True)
     fk_user = Column(Integer, nullable = False)
+    timestamp = Column(DateTime, nullable = False)
     source = Column(Text)
     fk_stakeholder = Column(Integer, nullable = False)
     previous_version = Column(Integer)
@@ -362,11 +397,12 @@ class SH_Changeset(Base):
     reviews = relationship("SH_Changeset_Review", backref='changeset')
 
     def __init__(self, source=None, previous_version=None):
+        self.timestamp = datetime.datetime.now()
         self.source = source
         self.previous_version = previous_version
 
     def __repr__(self):
-        return "<SH_Changeset> id [ %s ] | fk_user [ %s ] | source [ %s ] | fk_stakeholder [ %s ] | previous_version [ %s ]" % (self.id, self.fk_user, self.source, self.fk_stakeholder, self.previous_version)
+        return "<SH_Changeset> id [ %s ] | fk_user [ %s ] | timestamp [ %s ] | source [ %s ] | fk_stakeholder [ %s ] | previous_version [ %s ]" % (self.id, self.fk_user, self.timestamp, self.source, self.fk_stakeholder, self.previous_version)
 
 class Status(Base):
     __tablename__ = 'status'
@@ -425,7 +461,6 @@ class Involvement(Base):
     fk_stakeholder = Column(Integer, nullable = False)
     fk_stakeholder_role = Column(Integer, nullable = False)
       
-    reviews = relationship("Involvement_Review", backref='involvement')
     comments = relationship("Comment", backref='involvement')
 
     def __init__(self):
@@ -460,6 +495,13 @@ users_groups = Table('users_groups', Base.metadata,
                      schema = 'data'
                      )
 
+users_profiles = Table('users_profiles', Base.metadata,
+                        Column('id', Integer, primary_key = True),
+                        Column('fk_user', Integer, ForeignKey('data.users.id'), nullable = False),
+                        Column('fk_profile', Integer, ForeignKey('data.profiles.id'), nullable = False),
+                        schema = 'data'
+                        )
+
 class User(Base):
     __tablename__ = 'users'
     __table_args__ = (
@@ -473,9 +515,9 @@ class User(Base):
     a_changesets = relationship('A_Changeset', backref='user')
     sh_changesets = relationship('SH_Changeset', backref='user')
     groups = relationship('Group', secondary=users_groups, backref=backref('users', order_by = id))
+    profiles = relationship('Profile', secondary=users_profiles, backref=backref('users', order_by = id))
     a_changeset_reviews = relationship('A_Changeset_Review', backref='user')
     sh_changeset_reviews = relationship('SH_Changeset_Review', backref='user')
-    involvement_reviews = relationship('Involvement_Review', backref='user')
     comments = relationship('Comment', backref='user')
 
     # password encryption
@@ -557,6 +599,30 @@ class Permission(Base):
     def __repr__(self):
         return "<Permission> id [ %s ] | name [ %s ] | description [ %s ]" % (self.id, self.name, self.description)
 
+class Profile(Base):
+    __tablename__ = 'profiles'
+    __table_args__ = {'schema': 'data'}
+    id = Column(Integer, primary_key = True)
+    code = Column(String(255), nullable = False, unique = True)
+    geometry = GeometryColumn('polygon', Polygon(dimension = 2, srid = 4326, spatial_index = True))
+
+    def __init__(self, code, geometry):
+        self.code = code
+        self.geometry = geometry
+    
+    def __repr__(self):
+        geom = wkb.loads(str(self.geometry.geom_wkb)).wkt
+        return '<Profile> id [ %s ] | code [ %s ] | geometry [ %s ]' % (self.id, self.code, geom)
+
+    def to_json(self):
+        geometry = None
+        if self.geometry is not None:
+            shape = wkb.loads(str(self.geometry.geom_wkb))
+            geometry = from_wkt(shape.wkt)
+        return {'id': self.id, 'code': self.code, 'geometry': geometry}
+
+GeometryDDL(Profile.__table__)
+
 class A_Changeset_Review(Base):
     __tablename__ = 'a_changeset_review'
     __table_args__ = (
@@ -601,28 +667,6 @@ class SH_Changeset_Review(Base):
     def __repr__(self):
         return "<SH_Changeset_Review> id [ %s ] | fk_sh_changeset [ %s ] | fk_user [ %s ] | timestamp [ %s ] | fk_review_decision [ %s ] | comment [ %s ]" % (self.id, self.fk_sh_changeset, self.fk_user, self.timestamp, self.fk_review_decision, self.comment)
 
-class Involvement_Review(Base):
-    __tablename__ = 'involvement_reviews'
-    __table_args__ = (
-            ForeignKeyConstraint(['fk_involvement'], ['data.involvements.id']),
-            ForeignKeyConstraint(['fk_user'], ['data.users.id']),
-            ForeignKeyConstraint(['fk_review_decision'], ['data.review_decisions.id']),
-            {'schema': 'data'}
-            )
-    id = Column(Integer, primary_key = True)
-    fk_involvement = Column(Integer, nullable = False)
-    fk_user = Column(Integer, nullable = False)
-    timestamp = Column(DateTime, nullable = False)
-    fk_review_decision = Column(Integer, nullable = False)
-    comment = Column(Text)
-    
-    def __init__(self, comment=None):
-        self.timestamp = datetime.datetime.now()
-        self.comment = comment
-    
-    def __repr__(self):
-        return "<Involvement_Review> id [ %s ] | fk_involvement [ %s ] | fk_user [ %s ] | timestamp [ %s ] | fk_review_decision [ %s ] | comment [ %s ]" % (self.id, self.fk_involvement, self.fk_user, self.timestamp, self.fk_review_decision, self.comment)
-
 class Review_Decision(Base):
     __tablename__ = 'review_decisions'
     __table_args__ = (
@@ -634,7 +678,6 @@ class Review_Decision(Base):
 
     a_changeset_reviews = relationship('A_Changeset_Review', backref='review_decision')
     sh_changeset_reviews = relationship('SH_Changeset_Review', backref='review_decision')
-    involvement_reviews = relationship('Involvement_Review', backref='review_decision')
 
     def __init__(self, id, name, description=None):
         self.id = id

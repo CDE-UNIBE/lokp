@@ -3,8 +3,9 @@
 __author__ = "Adrian Weber, Centre for Development and Environment, University of Bern"
 __date__ = "$Jan 20, 2012 10:39:24 AM$"
 
-import logging
+from datetime import timedelta
 from lmkp.models.database_objects import User
+import logging
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import forget
 from pyramid.security import remember
@@ -34,7 +35,7 @@ def login(request):
         
         if User.check_password(login, password):
             log.debug('Login succeed')
-            headers = remember(request, login)
+            headers = remember(request, login, max_age=timedelta(days=30).total_seconds())
         else:
             log.debug('Login failed')
             headers = forget(request)

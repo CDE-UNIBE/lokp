@@ -1,7 +1,7 @@
+from datetime import timedelta
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession
 from pyramid.view import view_config
-import uuid
 
 #@view_config(route_name='home', renderer='../templates/mytemplate.pt')
 def my_view(request):
@@ -112,15 +112,6 @@ def db_test(request):
     object = "done"
     return {'object': object}
 
-@view_config(route_name='geo_test', renderer='geojson')
-def geo_test(request):
-    return {
-        'type': 'Feature',
-        'id': 1,
-        'geometry': {'type': 'Point', 'coordinates': [53, -4]},
-        'properties': {'title': 'Dict 1'}
-        }
-
 @view_config(route_name='index', renderer='lmkp:templates/index.mak')
 def index(request):
     """
@@ -130,33 +121,18 @@ def index(request):
     # Check if language (_LOCALE_) is set
     if request is not None and '_LOCALE_' in request.params:
         response = request.response
-        response.set_cookie('_LOCALE_', request.params.get('_LOCALE_'))
+        response.set_cookie('_LOCALE_', request.params.get('_LOCALE_'), timedelta(days=90))
 
     # Check if profile (_PROFILE_) is set
     if request is not None and '_PROFILE_' in request.params:
         response = request.response
-        response.set_cookie('_PROFILE_', request.params.get('_PROFILE_'))
+        response.set_cookie('_PROFILE_', request.params.get('_PROFILE_'), timedelta(days=90))
 
-    return {'script': 'main'}
-
-@view_config(route_name='ext_tests', renderer='lmkp:templates/tests.pt')
-def ext_tests(request):
     return {}
 
-@view_config(route_name='admin', renderer='lmkp:templates/admin.mak', permission='administer')
-def admin(request):
+@view_config(route_name='privileges_test', renderer='lmkp:templates/privilegestest.mak')
+def privileges_test(request):
     """
-    The admin view under /admin
+    Simple view to output the current privileges
     """
-
-    # Check if language (_LOCALE_) is set
-    if request is not None and '_LOCALE_' in request.params:
-        response = request.response
-        response.set_cookie('_LOCALE_', request.params.get('_LOCALE_'))
-
-    # Check if profile (_PROFILE_) is set
-    if request is not None and '_PROFILE_' in request.params:
-        response = request.response
-        response.set_cookie('_PROFILE_', request.params.get('_PROFILE_'))
-
-    return {'script': 'admin'}
+    return {}

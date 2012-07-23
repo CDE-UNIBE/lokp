@@ -16,13 +16,13 @@ def view_toolbar_config(request):
     """
 
     # Write the JavaScript and instantiate the global variable Lmkp.ts
-    str = "Ext.namespace('Lmkp');\n"
+    str = "Ext.ns('Lmkp');\n"
     str += "Lmkp.toolbar = false;\n"
     
-    #str += "Lmkp.login_form = {xtype: 'form', frame: true, border: 0, bodyStyle: 'padding: 0', items: ["
-    str += "Lmkp.login_form = [{xtype: 'textfield', id: 'username', emptyText: '%s'}," % _('Username', default='Username')
-    str += "{xtype: 'textfield', id: 'password', emptyText: '%s', inputType: 'password'}," % _('Password', default='Password')
-    str += "{id:'login_submit', text: '%s'}];\n" % _('Login', default='Login')
+    str += "Lmkp.login_form = { border: false, xtype: 'toolbar', defaultType: 'textfield', items: [\n";
+    str += "{id: 'username', emptyText: '%s'},\n" % _('Username', default='Username')
+    str += "{id: 'password', emptyText: '%s', inputType: 'password', enableKeyEvents: true},\n" % _('Password', default='Password')
+    str += "{xtype: 'button', id:'login_submit', text: '%s'}]};\n" % _('Login', default='Login')
 
     str += "Lmkp.mainControllers = ['Main', 'Layers', 'Map', 'Filter', 'Stakeholder'];\n"
 

@@ -1,27 +1,42 @@
 Ext.define('Lmkp.view.activities.Details', {
-	extend: 'Ext.panel.Panel',
-	alias: ['widget.activityDetailTab'],
+    extend: 'Ext.panel.Panel',
+    alias: ['widget.activityDetailTab'],
 	
-	id: 'activityDetailTab',
+    itemId: 'activityDetailTab',
 
-	bodyPadding: 5,
+    bodyPadding: 5,
 	
-	layout: {
+    layout: {
         type: 'anchor'
     },
     defaults: {
-    	margin: '0 0 5 0',
-    	anchor: '100%'
+        margin: '0 0 5 0',
+        anchor: '100%'
     },
 	
-	// initial item
+    // initial item
     items: [{
-    	xtype: 'panel',
-    	border: 0,
-    	name: 'details_initial',
-    	html: Lmkp.ts.msg('activity-select'),
-    	collapsible: false,
-    	collapsed: false
-    }]
+        xtype: 'panel',
+        name: 'details_initial',
+        html: Lmkp.ts.msg('activity-select'),
+        border: 0
+    }],
+
+    tbar: {
+        dock: 'top',
+        xtype: 'toolbar',
+        items: [{
+            enableToggle: true,
+            itemId: 'show-all-details',
+            pressed: true,
+            scale: 'medium',
+            text: Lmkp.ts.msg('details-toggle_all')
+        },{
+            itemId: 'add-taggroup-button',
+            scale: 'medium',
+            text: 'Add further information',
+            tooltip: Lmkp.ts.msg('activities-add_further_information')
+        }]
+    }
 	
 });

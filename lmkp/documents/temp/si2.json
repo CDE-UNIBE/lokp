@@ -1,0 +1,28 @@
+{
+	"_description": "Create a new Stakeholder and add an Activity (existing) to it",
+	"stakeholders": [{
+    	"id": "77e788ac-50c9-4f56-8a18-371715e4f96f",
+        "taggroups": [{
+            "main_tag": {
+                "key": "Country",
+                "value": "Switzerland"
+            },
+            "op": "add",
+            "tags": [{
+                "key": "Country",
+                "op": "add",
+                "value": "Switzerland"
+            },{
+                "key": "Name",
+                "op": "add",
+                "value": "Some Company."
+            }]
+        }],
+        "activities": [{
+            "op": "add",
+            "id": "70eb2268-22f6-4fa7-8dcb-03161ac1d595",
+            "version": 2,
+            "role": 2
+        }]
+    }]
+}

@@ -2,7 +2,10 @@
 <%
 
 import re
+import geojson
+import simplejson as json
 from shapely import wkb
+from shapely.geometry import asShape
 
 %>
 <feed xmlns="http://www.w3.org/2005/Atom"
@@ -20,30 +23,24 @@ from shapely import wkb
     <id>urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af6</id>
     %for activity in data:
     <%
-        attributes = ['id', 'timestamp', 'version', 'geometry']
 
-        entry = {}
-        for a in attributes:
-            entry[a] = activity.__dict__[a]
+    geom = geojson.loads(json.dumps(activity['geometry']), object_hook=geojson.GeoJSON.to_instance)
+    # The geometry
+    shape = asShape(geom)
 
-        d = re.search("[0-9]{4}-[0-9]{2}-[0-9]{2}", str(entry['timestamp'])).group(0)
-        t = re.search("[0-9]{2}:[0-9]{2}:[0-9]{2}", str(entry['timestamp'])).group(0)
-        entry['timestamp'] = '{day}T{time}Z'.format(day=d, time=t)
+    coords = shape.representative_point()
 
-        if activity.__dict__['Name'] is not None:
-            entry['name'] = activity.__dict__['Name']
-        else:
-            entry['name'] = "Activity id %s" % entry['id']
+    title = "%s: %s" % (activity['taggroups'][0]['main_tag']['key'],activity['taggroups'][0]['main_tag']['value'])
 
-        coords = wkb.loads(str(entry['geometry'].geom_wkb))
+    taggroups = json.dumps(activity['taggroups'], indent=4)
+
     %>
     <entry>
-        <title>${entry['name']}</title>
-        <link href="http://localhost:6543/activities/${entry['id']}"/>
-        <guid>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</guid>
+        <title>${title}</title>
+        <link href="http://localhost:6543/activities/${activity['id']}"/>
+        <guid>urn:uuid:${activity['id']}</guid>
         <!--updated>2005-08-17T07:02:32Z</updated-->
-        <updated>${entry['timestamp']}</updated>
-        <summary>${entry['name']}</summary>
+        <summary>${taggroups}</summary>
         <georss:point>${coords.x} ${coords.y}</georss:point>
     </entry>
     %endfor
