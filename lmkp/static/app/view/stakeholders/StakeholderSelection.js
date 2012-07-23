@@ -4,7 +4,7 @@ Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
     alias: ['widget.lo_stakeholderselection'],
 
     config: {
-      selectedStakeholder: {}
+        selectedStakeholder: {}
     },
 
     layout: 'border',
@@ -17,12 +17,31 @@ Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
 
     initComponent: function(){
 
-        var store = Ext.create('Lmkp.store.StakeholderGrid',{
-            autoLoad: true,
-            remoteFilter: true
-        });
+        var store = Ext.create('Ext.data.Store', {
+            requires: ['Lmkp.model.Stakeholder',
+            'Lmkp.model.TagGroup',
+            'Lmkp.model.Tag',
+            'Lmkp.model.MainTag',
+            'Lmkp.model.Point'
+            ], // all are needed to build relation
+            model: 'Lmkp.model.Stakeholder',
 
-        console.log(this.items);
+            pageSize: 10,
+
+            proxy: {
+                extraParams: {
+                    sh__queryable: Lmkp.ts.msg("stakeholder-name")
+                },
+                type: 'ajax',
+                url: '/stakeholders',
+                reader: {
+                    root: 'data',
+                    type: 'json',
+                    totalProperty: 'total'
+                },
+                startParam: 'offset'
+            }
+        });
 
         this.detailTpl = Ext.create(Ext.Template, this.tplMarkup);
 
@@ -36,57 +55,59 @@ Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
             xtype: 'panel'
         });
         
-        var gridpanel = Ext.create('Ext.grid.Panel', {
-            columns: {
-                items: [{
-                    flex: 0.4,
-                    text: 'Identifier',
-                    dataIndex: 'id'
-                },{
-                    flex: 0.6,
-                    itemId: 'stakeholderNameColumn',
-                    text: 'Name'
-                }]
-            },
-            region: 'center',
-            store: store,
-            xtype: 'gridpanel'
-        });
-
-        gridpanel.on('selectionchange', this.onRowSelect, this);
-
-        this.items.push(gridpanel);
-
-
-        this.dockedItems = [];
-
-        this.dockedItems.push({
-            dock: 'top',
-            label: 'Filter by Name:',
-            xtype: 'textfield'
-        });
-
-        this.dockedItems.push({
-            dock: 'bottom',
+        var formpanel = Ext.create('Ext.form.Panel', {
             items: [{
-                store: store,
-                xtype: 'pagingtoolbar'
-            },'->',{
-                handler: function(button, event) {
-                    button.up('window').hide();
-                },
-                scale: 'medium',
-                text: 'Cancel'
-            },{
-                handler: function(button, event) {
+                displayField: 'id',
+                // Template for the content inside text field
+                displayTpl: Ext.create('Ext.XTemplate',
+                    '<tpl for=".">',
+                    '{id}',
+                    '</tpl>'
+                    ),
+                fieldLabel: 'Name',
+                hideTrigger: true,
+                itemId: 'Name__textfield',
+                listConfig: {
+
+                    prepareData: function(data, recordIndex, record){
+ 
+                        var name = record.getTagValues(Lmkp.ts.msg('stakeholder-name'));
+                        if(name.length == 0){
+                            name = ['Unknown'];
+                        }
+
+                        return {
+                            'id': record.id,
+                            'version': record.version,
+                            'name': name.join(',')
+                        }
+                    }
+
 
                 },
-                scale: 'medium',
-                text: 'Select'
+                minChar: 3,
+                queryMode: 'remote',
+                queryParam: 'sh__' + Lmkp.ts.msg("stakeholder-name") + '__ilike',
+                remoteFilter: true,
+                store: store,
+                tpl: Ext.create('Ext.XTemplate',
+                    '<tpl for=".">',
+                    '<div class="x-boundlist-item">{name}</div>',
+                    '</tpl>'
+                    ),
+                typeAhead: true,
+                valueField: 'id',
+                xtype: 'combo'
+            },{
+                fieldLabel: 'Country',
+                itemId: 'Country__textfield',
+                xtype: 'textfield'
             }],
-            xtype: 'toolbar'
+            region: 'center'
         });
-        
+
+        this.items.push(formpanel);
+
         this.callParent(arguments);
     },
 
@@ -110,7 +131,7 @@ Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
         this.detailTpl.overwrite(detailPanel.body, {
             name: name,
             id: this.selectedStakeholder.get('id')
-            });
+        });
     }
 
 
