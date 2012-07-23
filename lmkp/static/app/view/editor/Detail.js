@@ -2,6 +2,11 @@ Ext.define('Lmkp.view.editor.Detail', {
     extend: 'Ext.tab.Panel',
     alias: ['widget.lo_editordetailpanel'],
 
+    requires: [
+        'Lmkp.view.comments.CommentPanel',
+        'Lmkp.view.activities.ActivityPanel'
+    ],
+
     config: {
         // The currently shown activity in this panel or null if no activity
         // is shown
@@ -37,77 +42,49 @@ Ext.define('Lmkp.view.editor.Detail', {
             // Set the current selection to current
             this.current = data[0];
 
-            // remove initial text if still there
-            if (panel.down('panel[name=details_initial]')) {
-                panel.remove(panel.down('panel[name=details_initial]'));
-            }
+            // Remove all existing panels
+            panel.removeAll();
 
-            // remove old panels
-            while (panel.down('lo_taggrouppanel')) {
-                panel.remove(panel.down('lo_taggrouppanel'));
-            }
+            // Add the panel for the current activity
+            panel.add({
+                xtype: 'lo_activitypanel',
+                contentItem: data[0],
+                border: 0,
+                bodyPadding: 0
+            });
 
-            // remove comment panel
-            if (panel.down('commentpanel')) {
-                panel.remove(panel.down('commentpanel'));
-            }
-
-            // get data
-            var taggroupStore = data[0].taggroups();
-
-            // add panel for each TagGroup
-            for (var i=0; i<taggroupStore.count(); i++) {
-                var tagStore = taggroupStore.getAt(i).tags();
-                var tags = [];
-                var main_tag = null;
-
-                for (var j=0; j<tagStore.count(); j++) {
-
-                    // check if it is main_tag
-                    if (taggroupStore.getAt(i).get('main_tag') == tagStore.getAt(j).get('id')) {
-                        main_tag = tagStore.getAt(j);
-                    } else {
-                        tags.push(tagStore.getAt(j));
-                    }
-                }
-
-                // create panel
-                var taggroupPanel = Ext.create('Lmkp.view.activities.TagGroupPanel', {
-                    'main_tag': main_tag,
-                    'tags': tags
-                });
-                // if user is logged in (Lmkp.toolbar != false), show edit button
-                if (Lmkp.toolbar) {
-                    //console.log("add docked");
-                    taggroupPanel.addDocked({
-                        dock: 'right',
-                        xtype: 'toolbar',
-                        items: [{
-                            name: 'editTaggroup',
-                            scale: 'small',
-                            text: 'edit',
-                            taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
-                            handler: function() {
-                                var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
-                                    activity_id: data[0].get('id'),
-                                    version: data[0].get('version'),
-                                    selected_taggroup: taggroupStore.getAt(this.taggroup_id)
-                                });
-                                win.show();
-                            },
-                            xtype: 'button'
-                        }]
-                    });
-                }
-                panel.add(taggroupPanel);
-            }
+            // @TODO: FIX THE FOLLOWING
+//                // if user is logged in (Lmkp.toolbar != false), show edit button
+//                if (Lmkp.toolbar) {
+//                    //console.log("add docked");
+//                    taggroupPanel.addDocked({
+//                        dock: 'right',
+//                        xtype: 'toolbar',
+//                        items: [{
+//                            name: 'editTaggroup',
+//                            scale: 'small',
+//                            text: 'edit',
+//                            taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
+//                            handler: function() {
+//                                var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
+//                                    activity_id: data[0].get('id'),
+//                                    version: data[0].get('version'),
+//                                    selected_taggroup: taggroupStore.getAt(this.taggroup_id)
+//                                });
+//                                win.show();
+//                            },
+//                            xtype: 'button'
+//                        }]
+//                    });
+//                }
+//            }
 
             // add commenting panel
-            var commentPanel = Ext.create('Lmkp.view.comments.CommentPanel', {
-                'activity_id': data[0].get('id'),
-                'comment_object': 'activity'
+            panel.add({
+                xtype: 'lo_commentpanel',
+                identifier: data[0].get('id'),
+                comment_object: 'activity'
             });
-            panel.add(commentPanel);
 
             // Show the feature on the map
             // Actually this does not belong here ...

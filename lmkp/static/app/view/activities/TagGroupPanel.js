@@ -1,36 +1,56 @@
 Ext.define('Lmkp.view.activities.TagGroupPanel', {
-    extend: 'Ext.panel.Panel',
+    extend: 'Ext.form.Panel',
     alias: 'widget.lo_taggrouppanel',
 	
     layout: 'anchor',
     defaults: {
-        anchor: '100%'
+        anchor: '100%',
+        margin: 0
     },
     bodyPadding: 5,
-
-    items: [{
-        border: 0,
-        name: 'maintagpanel'
-    }, {
-        border: 0,
-        name: 'tagspanel'
-    }],
+    defaultType: 'displayfield',
 	
     initComponent: function() {
+
         var me = this;
 
-        // call parent first
+        // Start with empty panel
+        me.items = [];
         this.callParent(arguments);
 
-        // main tag
-        if (me.main_tag) {
-            this._getMainTagPanel().html = Ext.String.format('<b><i>{0}</i></b>: {1}<br />', me.main_tag.get('key'), me.main_tag.get('value'));
-        } else {
-            // special case: no main tag -> put first of tags instead
-            if (me.tags.length > 0) {
-                var main_tag = me.tags.pop();
-                this._getMainTagPanel().html = Ext.String.format('<b><i>{0}</i></b>: {1}<br />', main_tag.get('key'), main_tag.get('value'))
+        // Add a field for each Tag of current TagGroup
+        if (this.taggroup) {
+
+            // First: main tag
+            var main_tag = this.taggroup.main_tag().first();
+            if (main_tag) {
+                me.add(me._getTagPanel(
+                    main_tag.get('key'), main_tag.get('value'), true
+                ));
             }
+
+            // Second: all other tags (don't repeat main tag)
+            var tStore = this.taggroup.tags();
+            tStore.each(function(record) {
+                if (!main_tag || record.get('id') != main_tag.get('id')) {
+                    me.add(me._getTagPanel(
+                        record.get('key'), record.get('value')
+                    ));
+                }
+            });
+
+            // Add button to edit TagGroup
+            me.addDocked({
+                dock: 'top',
+                xtype: 'toolbar',
+                items: ['->',
+                    {
+                        name: 'editTaggroup',
+                        text: 'edit',
+                        selected_taggroup: this.taggroup
+                    }
+                ]
+            });
         }
 
         /*
@@ -56,15 +76,26 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
 		
         // if user is logged in (Lmkp.toolbar != false), show edit button
         // this is done in controller/Filter.js because it involves data not directly available to this panel.
-		
-        // all other tags
-        if (me.tags.length > 0) {
-            var tagspanelHtml = '';
-            for (var i=0; i<me.tags.length; i++) {
-                tagspanelHtml += Ext.String.format('<b>{0}</b>: {1}<br />', me.tags[i].get('key'), me.tags[i].get('value'));
-            }
-            this._getTagsPanel().html = tagspanelHtml;
+
+    },
+
+    _getTagPanel: function(key, value, is_main_tag) {
+        return {
+            xtype: 'displayfield',
+            fieldLabel: key,
+            value: value,
+            style: this._getMainTagStyle(is_main_tag)
         }
+    },
+
+    _getMainTagStyle: function(is_main_tag) {
+        var style = null;
+        if (is_main_tag) {
+            style = {
+                'font-weight': 'bold'
+            };
+        }
+        return style;
     },
 	
     /**
@@ -73,24 +104,6 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
     toggleDetailButton: function(toggled) {
         if (this.down('button[name=toggleDetails]')) {
             this.down('button[name=toggleDetails]').toggle(toggled);
-        }
-    },
-	
-    /**
-     * Helper method: returns the panel for the main tag.
-     */
-    _getMainTagPanel: function() {
-        if (this.down('panel[name=maintagpanel]')) {
-            return this.down('panel[name=maintagpanel]')
-        }
-    },
-	
-    /**
-     * Helper method: returns the panel for the 'normal' tags.
-     */
-    _getTagsPanel: function() {
-        if (this.down('panel[name=tagspanel]')) {
-            return this.down('panel[name=tagspanel]')
         }
     }
 });

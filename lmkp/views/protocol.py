@@ -10,6 +10,7 @@ from lmkp.models.database_objects import Status
 from shapely import wkb
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.sql.expression import and_
+from sqlalchemy.sql.expression import between
 from sqlalchemy.types import Float
 import datetime
 from sqlalchemy import func
@@ -152,8 +153,10 @@ class Protocol(object):
 
             # Use cast function provided by SQLAlchemy to convert
             # database values to Float.
+            # Note: PostgreSQL throws a cast error if comparison operator
+            # 'equal' (=) is used. Therefore, 'between' is used.
             nbr_map = {
-                'eq': cast(v.value, Float) == value,
+                'eq': between(cast(v.value, Float), value, value),
                 'ne': cast(v.value, Float) != value,
                 'lt': cast(v.value, Float) < value,
                 'lte': cast(v.value, Float) <= value,
