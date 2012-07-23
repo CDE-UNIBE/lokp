@@ -68,7 +68,8 @@ Ext.define('Lmkp.view.activities.NewActivityWindow', {
                             var fieldContainer = comps[j];
                             var stakeholder = {}
                             stakeholder['id'] = fieldContainer.getStakeholderId();
-                            stakeholder['role'] = fieldContainer.getStakeholderRole();
+                            //stakeholder['role'] = fieldContainer.getStakeholderRole();
+                            stakeholder['role'] = 6;
                             stakeholder['version'] = fieldContainer.getStakeholderVersion();
                             stakeholder['op'] = 'add';
                             stakeholders.push(stakeholder);
@@ -163,21 +164,23 @@ Ext.define('Lmkp.view.activities.NewActivityWindow', {
             store.each(function(record) {
                 form.up('window')._getFormField(form, record, optionalStore_complete);
             });
+
+            // After adding all mandatory fields, add the associated stakeholder
+            // fieldset
+            form.add({
+                border: 1,
+                itemId: 'selectStakeholderFieldSet',
+                items: [
+                {
+                    itemId: 'selectStakeholderButton',
+                    text: 'Add Stakeholder',
+                    xtype: 'button'
+                }],
+                title: 'Associated Stakeholders',
+                xtype: 'fieldset'
+            });
         });
 
-        form.add({
-            border: 1,
-            itemId: 'selectStakeholderFieldSet',
-            items: [
-            {
-                itemId: 'selectStakeholderButton',
-                text: 'Add Stakeholder',
-                xtype: 'button'
-            }],
-            title: 'Associated Stakeholders',
-            xtype: 'fieldset'
-        });
-		
         this.items = form;
 
         this.callParent(arguments);
