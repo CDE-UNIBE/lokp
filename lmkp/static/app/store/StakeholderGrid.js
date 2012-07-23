@@ -1,6 +1,14 @@
 Ext.define('Lmkp.store.StakeholderGrid', {
     extend: 'Ext.data.Store',
-    requires: ['Lmkp.model.Stakeholder','Lmkp.model.TagGroup','Lmkp.model.Tag', 'Lmkp.model.MainTag', 'Lmkp.model.Point'], // all are needed to build relation
+
+    requires: [
+        'Lmkp.model.Stakeholder',
+        'Lmkp.model.TagGroup',
+        'Lmkp.model.Tag',
+        'Lmkp.model.MainTag',
+        'Lmkp.model.Involvement'
+    ],
+
     model: 'Lmkp.model.Stakeholder',
 
     pageSize: 10,
