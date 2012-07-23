@@ -23,6 +23,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
     'ActivityGrid',
     'ActivityConfig',
     'StakeholderGrid',
+    'StakeholderConfig',
     'Profiles'
     ],
 
@@ -36,8 +37,9 @@ Ext.define('Lmkp.controller.editor.Overview', {
     ],
 
     init: function() {
-        // Get the ActivityConfig store and load it
+        // Get the config stores and load them
         this.getActivityConfigStore().load();
+        this.getStakeholderConfigStore().load();
 
         this.control({
             'lo_editormappanel': {
@@ -160,14 +162,17 @@ Ext.define('Lmkp.controller.editor.Overview', {
         this.getActivityGridStore().load();
     },
 
-    addAttributeFilter: function(button, event, eOpts) {
+    addAttributeFilter: function(button) {
 
         // Activity or Stakeholder?
         var panel_xtype = null;
+        var store = null;
         if (button.item_type == 'activity') {
             panel_xtype = 'lo_editoractivityfilterpanel';
+            store = this.getActivityConfigStore();
         } else if (button.item_type == 'stakeholder') {
             panel_xtype = 'lo_editorstakeholderfilterpanel';
+            store = this.getStakeholderConfigStore();
         }
 
         var form = button.up(panel_xtype);
@@ -176,20 +181,20 @@ Ext.define('Lmkp.controller.editor.Overview', {
         var insertIndex = form.items.length - 1;
         var cbox = Ext.create('Ext.form.field.ComboBox', {
             name: 'attributeCombo',
-            store: this.getActivityConfigStore(),
+            store: store,
             valueField: 'name',
             displayField: 'fieldLabel',
             queryMode: 'local',
             typeAhead: true,
             forceSelection: true,
-            value: this.getActivityConfigStore().getAt('0'),
+            value: store.getAt('0'),
             flex: 0,
             margin: '0 5 5 0'
         });
         form.insert(insertIndex, {
             xtype: 'panel',
             name: 'attributePanel',
-            border: 0,
+            border: 1,
             anchor: '100%',
             layout: {
                 type: 'hbox',
@@ -221,26 +226,35 @@ Ext.define('Lmkp.controller.editor.Overview', {
             }]
         });
         // show initial filter
-
-        this.showValueFields(cbox, [this.getActivityConfigStore().getAt('0')]);
+        this.showValueFields(cbox, [store.getAt('0')]);
     },
 
-    addTimeFilter: function(button, e, eOpts) {
-        var form = Ext.ComponentQuery.query('panel[id=activityFilterForm]')[0];
-        // expand form if collapsed
-        if (form.collapsed) {
-            form.toggleCollapse();
+    addTimeFilter: function(button) {
+
+        // Activity or Stakeholder?
+        var panel_xtype = null;
+        if (button.item_type == 'activity') {
+            panel_xtype = 'lo_editoractivityfilterpanel';
+        } else if (button.item_type == 'stakeholder') {
+            panel_xtype = 'lo_editorstakeholderfilterpanel';
         }
-        var insertIndex = form.items.length - 1; // always insert above the 2 buttons
+
+        var form = button.up(panel_xtype);
+
+        // always insert above the panel with the buttons
+        var insertIndex = form.items.length - 2;
         var picker = Ext.create('Ext.form.field.Date', {
             name: 'dateField',
             fieldLabel: Lmkp.ts.msg("date-label"),
+            flex: 0,
+            margin: '0 5 5 0',
             value: new Date() // defaults to today
         });
         form.insert(insertIndex, {
             xtype: 'panel',
             name: 'timePanel',
-            border: 0,
+            border: 1,
+            anchor: '100%',
             layout: {
                 type: 'hbox',
                 flex: 'stretch'
@@ -271,10 +285,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
             }]
         });
         // disable 'add' button
-        var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
-        if (button) {
-            button.disable();
-        }
+        button.disable();
     },
 
     showValueFields: function(combobox, records, eOpts) {
