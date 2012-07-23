@@ -1,17 +1,32 @@
 .zoom-in-button {
     background-image:url("/static/img/zoom-in.png") !important;
-    height: 16px !important;
-    width: 16px !important;
+    height: 24px !important;
+    width: 24px !important;
 }
 .pan-button {
     background-image:url("/static/img/pan.png") !important;
-    height: 16px !important;
-    width: 16px !important;
+    height: 24px !important;
+    width: 24px !important;
 }
-.zoom-to-selected {
-    background-image: url("/static/img/zoom-to-selected.png") !important;
-    height: 16px !important;
-    width: 16px !important;
+.zoom-region-button {
+    background-image: url("/static/img/zoom-region.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.identify-button {
+    background-image: url("/static/img/identify.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.create-button {
+    background-image: url("/static/img/point-create.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.move-button {
+    background-image: url("/static/img/point-move.png") !important;
+    height: 24px !important;
+    width: 24px !important;
 }
 .ico-key { 
     width:15px;
@@ -91,4 +106,14 @@ div.error_div {
 
 span.grey {
     color: #808080;
+}
+
+div.notice {
+    background-color: #ffffcc;
+    border: 1px solid #808080;
+}
+
+div.blank {
+    background-color: #ffffff;
+    border: 1px solid #ffffff;
 }

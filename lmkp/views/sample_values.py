@@ -29,9 +29,13 @@ def activity_wrapper(request, file, status='pending'):
     if 'activities' not in data:
         return HTTPBadRequest(detail="Not a valid format")
 
+    ids = []
     for activity in data['activities']:
-        activity_protocol2._handle_activity(request, activity, status)
-
+        a = activity_protocol2._handle_activity(request, activity, status)
+        ids.append(a.id)
+    
+    return ids
+        
 def stakeholder_wrapper(request, file, status='pending'):
     """
     A small wrapper around the create method in the Activity Protocol
@@ -46,8 +50,12 @@ def stakeholder_wrapper(request, file, status='pending'):
     if 'stakeholders' not in data:
         return HTTPBadRequest(detail="Not a valid format")
 
+    ids = []
     for stakeholder in data['stakeholders']:
-        stakeholder_protocol._handle_stakeholder(request, stakeholder, status)
+        s = stakeholder_protocol._handle_stakeholder(request, stakeholder, status)
+        ids.append(s.id)
+    
+    return ids
 
 
 @view_config(route_name='sample_values', renderer='json')
@@ -59,21 +67,88 @@ def insert_landmatrix(request):
 
     rootdir = os.path.dirname(os.path.dirname(__file__))
 
-    activity_wrapper(request, "%s/documents/landmatrix/%s" % (rootdir, 'landmatrix_activities.json'), 'active')
-    stakeholder_wrapper(request, "%s/documents/landmatrix/%s" % (rootdir, 'landmatrix_stakeholders.json'), 'active')
-
-    return {'success': True}
+    a = activity_wrapper(request, "%s/documents/landmatrix/%s" % (rootdir, 'landmatrix_activities.json'), 'active')
+    s = stakeholder_wrapper(request, "%s/documents/landmatrix/%s" % (rootdir, 'landmatrix_stakeholders.json'), 'active')
+    
+    """
+    Post-processing. Set second version of Activities (with Involvements)
+    to 'active'. Also establish link between user1 and profile 'global'.
+    """
+    # Set all Activities with version 1 to 'overwritten' (fk_status = 3)
+    Session.query(Activity).filter(Activity.version == 1).\
+        update({Activity.fk_status: 3})
+    # Set all Activities with version 2 to 'active' (fk_status = 2)
+    Session.query(Activity).filter(Activity.version == 2).\
+        update({Activity.fk_status: 2})
+    # Establish link between profile 'global' and user1
+    user1 = Session.query(User).filter(User.username == 'user1').first()
+    global_profile = Session.query(Profile).filter(Profile.code == 'global').first()
+    user1.profiles = [global_profile]
+    # Establish link between profile 'LA' and user2
+    user2 = Session.query(User).filter(User.username == 'user2').first()
+    la_profile = Session.query(Profile).filter(Profile.code == 'LA').first()
+    user2.profiles = [la_profile]
+    
+    return {'success': True, 'activities': a, 'stakeholders': s}
 
 @view_config(route_name='test_sample_values', renderer='json')
 def test_sample_values(request):
     """
     Tries to load some sample data to the database using the Activity Protocol.
     """
+    """
     # Path to the parent directory
     parent_dir = os.path.split(os.path.dirname(__file__))[0]
     # Loop all JSON files, order matters!
     for file in ['addNewActivity.json', 'modifyTag.json', 'addTagToTaggroup.json', 'addNewTaggroup.json']:
         create_wrapper(request, "%s/documents/%s" % (parent_dir, file))
+    """
+    rootdir = os.path.dirname(os.path.dirname(__file__))
+
+    # Create new Stakeholder
+    #s1 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 's1.json'), 'pending')
+    # Create a new Activity and add a Stakeholder (existing) to it
+    #ai1 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'ai1.json'), 'pending')
+    # Create Activity
+    ##a1 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a1.json'), 'pending')
+    # Create a new Stakeholder and add an Activity (existing) to it
+    ##si1 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'si1.json'), 'pending')
+    # Create a new Stakeholder and add an Activity (existing) to it
+    #si2 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'si2.json'), 'pending')
+    # Add new Tag with a new Tag Group
+    #a2 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a2.json'), 'pending')
+    # Add new Tag to existing Tag Group
+    #a3 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a3.json'), 'pending')
+    # Modify an existing Tag
+    #a4 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a4.json'), 'pending')
+    # Delete an existing Tag Group
+    #a5 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a5.json'), 'pending')
+    # Add an Involvement (a Stakeholder) to an Activity
+    ##i1 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'i1.json'), 'pending')
+    # Modify an Involvement
+    #i2 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'i2.json'), 'pending')
+    # Delete an Involvement
+    #i3 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'i3.json'), 'pending')
+    # Update Stakeholder
+    #s2 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 's2.json'), 'pending')
+    
+    ###
+    # Create many new Stakeholders
+    #ms1 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'ms1.json'), 'active')
+    # Create many new Activities with links to Stakholders
+    #mai1 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'mai1.json'), 'active')
+    """
+    UPDATE data.stakeholders SET fk_status = 3;
+    UPDATE data.stakeholders SET fk_status = 2 WHERE id > 15;
+    """
+    # Update Activity 1
+    #a6 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a6.json'), 'pending')
+    """
+    UPDATE data.activities SET fk_status = 3 WHERE id = 5;
+    UPDATE data.activities SET fk_status = 2 WHERE id = 6;
+    """
+    # Remove an Involvement
+    s3 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 's3.json'), 'pending')
 
     return {'success': True}
 
@@ -116,41 +191,6 @@ def delete_all_values(request):
         stack.append(str(nbr_activities) + ' activities deleted.')
     except UnboundLocalError:
         pass
-
-    return {'messagestack': stack}
-
-
-@view_config(route_name='activities_delete', renderer='lmkp:templates/sample_values.pt', permission='administer')
-def delete_activities(request):
-    
-    stack = []
-
-    all_activities = Session.query(Activity)
-    act_counter = 0
-    tag_counter = 0
-    ch_counter = 0
-    for aa in all_activities:
-        # delete tag groups
-        tag_groups = aa.tag_groups
-        tag_groups.main_tag = None
-        for tg in tag_groups:
-            tags = tg.tags
-            for t in tags:
-                tag_counter += 1
-                Session.delete(t)
-            Session.delete(tg)
-        # delete changesets
-        changesets = aa.changesets
-        for ch in changesets:
-            ch_counter += 1
-            Session.delete(ch)
-        # delete activities
-        act_counter += 1
-        Session.delete(aa)
-    if (tag_counter > 0 or act_counter > 0 or ch_counter > 0):
-        stack.append(str(tag_counter) + " a_tags deleted.")
-        stack.append(str(ch_counter) + " a_changesets deleted.")
-        stack.append(str(act_counter) + " activities deleted.")
 
     return {'messagestack': stack}
 

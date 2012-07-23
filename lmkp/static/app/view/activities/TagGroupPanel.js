@@ -1,94 +1,96 @@
 Ext.define('Lmkp.view.activities.TagGroupPanel', {
-	extend: 'Ext.panel.Panel',
-	alias: 'widget.taggrouppanel',
+    extend: 'Ext.form.Panel',
+    alias: 'widget.lo_taggrouppanel',
 	
-	layout: 'anchor',
-	defaults: {
-		anchor: '100%'
-	},
-	bodyPadding: 5,
-    
-    items: [{
-    	border: 0,
-		name: 'maintagpanel'
-    }, {
-    	border: 0,
-    	name: 'tagspanel',
-    }],
+    layout: 'anchor',
+    defaults: {
+        anchor: '100%',
+        margin: 0
+    },
+    bodyPadding: 5,
+    defaultType: 'displayfield',
 	
-	initComponent: function() {
-		var me = this;
+    initComponent: function() {
 
-		// call parent first
-		this.callParent(arguments);
+        var me = this;
 
-		// main tag
-		if (me.main_tag) {
-			this._getMainTagPanel().html = Ext.String.format('<b><i>{0}</i></b>: {1}<br />', me.main_tag.get('key'), me.main_tag.get('value'));
-		} else {
-			// special case: no main tag -> put first of tags instead
-			if (me.tags.length > 0) {
-				main_tag = me.tags.pop();
-				this._getMainTagPanel().html = Ext.String.format('<b><i>{0}</i></b>: {1}<br />', main_tag.get('key'), main_tag.get('value'))
-			}
-		}
-		
-		// add button to show or hide 'normal' tags panel
-		if (this._getMainTagPanel().html != '' && me.tags.length > 0) {
-			this.addDocked({
-				dock: 'right',
-				xtype: 'toolbar',
-				items: [{
-					name: 'toggleDetails',
-					scale: 'small',
-					text: 'details',
-					enableToggle: true,
-					pressed: true,
-					toggleHandler: function(button, state) {
-						// show or hide 'normal' tags panel
-						me._getTagsPanel().setVisible(state);
-					}
-				}]
-			});
-		}
-		
-		// if user is logged in (Lmkp.toolbar != false), show edit button
-		// this is done in controller/Filter.js because it involves data not directly available to this panel.
-		
-		// all other tags
-		if (me.tags.length > 0) {
-			var tagspanelHtml = '';
-			for (var i=0; i<me.tags.length; i++) {
-				tagspanelHtml += Ext.String.format('<b>{0}</b>: {1}<br />', me.tags[i].get('key'), me.tags[i].get('value'));
-			}
-			this._getTagsPanel().html = tagspanelHtml;
-		}
-	},
+        // Start with empty panel
+        me.items = [];
+        this.callParent(arguments);
+
+        // Add a field for each Tag of current TagGroup
+        if (this.taggroup) {
+
+            // First: main tag
+            var main_tag = this.taggroup.main_tag().first();
+            if (main_tag) {
+                me.add(me._getTagPanel(
+                    main_tag.get('key'), main_tag.get('value'), true
+                ));
+            }
+
+            // Second: all other tags (don't repeat main tag)
+            var tStore = this.taggroup.tags();
+            tStore.each(function(record) {
+                if (!main_tag || record.get('id') != main_tag.get('id')) {
+                    me.add(me._getTagPanel(
+                        record.get('key'), record.get('value')
+                    ));
+                }
+            });
+
+            // Add button to edit TagGroup
+            me.addDocked({
+                dock: 'top',
+                xtype: 'toolbar',
+                items: ['->', {
+                        name: 'toggleDetails',
+                        text: Lmkp.ts.msg('details'),
+                        enableToggle: true,
+                        pressed: true
+                    }, {
+                        name: 'editTaggroup',
+                        text: Lmkp.ts.msg('edit'),
+                        selected_taggroup: this.taggroup
+                    }
+                ]
+            });
+        }
+    },
+
+    _getTagPanel: function(key, value, is_main_tag) {
+        return {
+            name: is_main_tag ? 'main_tag_panel' : 'tag_panel',
+            xtype: 'displayfield',
+            fieldLabel: key,
+            value: value,
+            style: this._getMainTagStyle(is_main_tag)
+        }
+    },
+
+    _getMainTagStyle: function(is_main_tag) {
+        var style = null;
+        if (is_main_tag) {
+            style = {
+                'font-weight': 'bold'
+            };
+        }
+        return style;
+    },
+
+    _toggleTags: function(toggle) {
+        var panels = this.query('displayfield[name=tag_panel]');
+        for (var i in panels) {
+            panels[i].setVisible(toggle);
+        }
+    },
 	
-	/**
-	 * Toggle (toggled = true) or unToggle (toggled = false) the button to show or hide 'normal' tags panel
-	 */
-	toggleDetailButton: function(toggled) {
-		if (this.down('button[name=toggleDetails]')) {
-			this.down('button[name=toggleDetails]').toggle(toggled);
-		}
-	},
-	
-	/**
-	 * Helper method: returns the panel for the main tag.
-	 */
-	_getMainTagPanel: function() {
-		if (this.down('panel[name=maintagpanel]')) {
-			return this.down('panel[name=maintagpanel]')
-		}
-	},
-	
-	/**
-	 * Helper method: returns the panel for the 'normal' tags.
-	 */
-	_getTagsPanel: function() {
-		if (this.down('panel[name=tagspanel]')) {
-			return this.down('panel[name=tagspanel]')
-		}
-	}
+    /**
+     * Toggle (toggle = true) or unToggle (toggled = false) the button to show or hide 'normal' tags panel
+     */
+    _toggleDetailButton: function(toggle) {
+        if (this.down('button[name=toggleDetails]')) {
+            this.down('button[name=toggleDetails]').toggle(toggle);
+        }
+    }
 });

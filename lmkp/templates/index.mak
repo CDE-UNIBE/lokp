@@ -11,16 +11,16 @@ from pyramid.security import has_permission
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Land Matrix Knowledge Platform</title>
-        <link rel="stylesheet" type="text/css" href="/static/lib/ext-4.0.7-gpl/resources/css/ext-all.css"></link>
+        <title>Land Observatory</title>
+        ## General Styles
+        <link rel="stylesheet" type="text/css" href="/static/lib/extjs-4.1.1/resources/css/ext-all.css"></link>
         <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/style.css')}"></link>
-        <script type="text/javascript" src="/static/lib/ext-4.0.7-gpl/ext-debug.js"></script>
+        <script type="text/javascript" src="/static/lib/extjs-4.1.1/ext-all.js"></script>
         <script type="text/javascript">
             Ext.Loader.setConfig({
                 enabled: true,
                 paths: {
-                    'GeoExt': '/static/lib/geoext2/src/GeoExt/',
-                    'DyLmkp': '/app'
+                    'GeoExt': '/static/lib/geoext2/src/GeoExt/'
                 }
             });
         </script>
@@ -28,49 +28,31 @@ from pyramid.security import has_permission
         <script type="text/javascript" src="/static/lib/OpenLayers-2.11/OpenLayers.js"></script>
         <!--script type="text/javascript" src="/static/lib/geoext2/src/GeoExt/GeoExt.js"></script-->
         <script type="text/javascript" src="/lang"></script>
-        <%
-        toolbarConfiguration = '/app/view/ViewToolbar.js'
-        if isinstance(has_permission('edit', request.context, request), ACLAllowed):
-            toolbarConfiguration = '/app/view/EditToolbar.js'
-        %>
-        <script type="text/javascript" src="${toolbarConfiguration}"></script>
-        <script type="text/javascript" src="${request.static_url('lmkp:static/app/%s.js' % script)}"></script>
+        % if isinstance(has_permission('administer', request.context, request), ACLAllowed):
+        <script type="text/javascript" src="/app/view/EditToolbar.js"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/app/admin.js')}"></script>
+        % elif isinstance(has_permission('moderate', request.context, request), ACLAllowed):
+        <script type="text/javascript" src="/app/view/EditToolbar.js"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/app/moderator.js')}"></script>
+        % elif isinstance(has_permission('edit', request.context, request), ACLAllowed):
+        <script type="text/javascript" src="/app/view/EditToolbar.js"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/app/editor.js')}"></script>
+        % else:
+        <script type="text/javascript" src="/app/view/ViewToolbar.js"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/app/public.js')}"></script>
+        % endif
     </head>
     <body>
-        <!-- <div id="header-div">
-            <h1>${_("Welcome")}</h1>
-            % if authenticated_userid(request) is not None:
-            <div>
-                <a href="/users/${request.user.username}">${request.user.username}</a>,
-                <%block name="welcome_header">
-                    ${_(u"Warmly welcome to the Land Matriz Knowledge Platformz!")}
-                </%block>
-                <br/>
-                ${_(u"Unbelievable, you are logged in!")}
-                <form action="/logout" method="post">
-                    <fieldset>
-                        <input type="hidden" name="came_from" value="/" />
-                        <input type="submit" name="form.logout" value="Logout" />
-                    </fieldset>
-                </form>
+        <div id="header-div">
+            <h1>Land Observatory</h1>
+            <p>Some introductory text about the project etc.</p>
+            <p>Maybe also a nice logo?</p>
+        </div>
+        <div id="loading-mask" style="width: 100%; height: 100%;">
+            <div style="position: absolute; top: 50%; right: 50%">
+                <img src="/static/img/spinner.gif"/>
             </div>
-            % else:
-            <div>
-                <div>
-                    ${welcome_header()}
-                    <br/>${_(u"Please log in!")}
-                </div>
-                <form action="/login" method="POST">
-                    <fieldset>
-                        <input type="hidden" name="came_from" value="/"/>
-                        Username: <input type="text" name="login" />
-                        Password: <input type="password" name="password" />
-                        <input type="submit" name="form.submitted" value="Login"/>
-                    </fieldset>
-                </form>
-            </div>
-            % endif
-        </div> -->
+        </div>
         <div id="main-div"></div>
     </body>
 </html>

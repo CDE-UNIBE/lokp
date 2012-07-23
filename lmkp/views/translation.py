@@ -8,7 +8,9 @@ from ..models.meta import DBSession as Session
 from ..models.database_objects import (
     Language,
     A_Key,
-    A_Value
+    A_Value,
+    SH_Key,
+    SH_Value
 )
 
 log = logging.getLogger(__name__)
@@ -22,56 +24,87 @@ def ui_messages(request):
     # user interface.
     # Add new messages to this dict!
     uiMap = {
-    # map functions
-    'zoom-button': _('zoom-button', default='Zoom'),
-    'pan-button': _('pan-button', default='Pan'),
-    # general GUI text
-    'file-menu': _('file-menu', default='File'),
-    'view-menu': _('view-menu', default='View'),
-    'date-label': _('date-label', default='Date'),
-    'profile-label': _('profile-label', default='Profile'),
-    'language-label': _('language-label', default='Language'),
-    'loading': _('loading', default='Loading ...'),
-    'unknown': _('unknown', default='Unknown'),
-    'confirm-title': _('confirm-title', default='Please confirm'),
-    'success': _('success', default='Success'),
-    'failure': _('failure', default='Failure'),
-    'submit': _('submit', default='Submit'),
-    # activities / filtering
-    'activities-title': _('activities-title', default='Activities'),
-    'addattributefilter-button': _('addattributefilter-button', default='Add attribute filter'),
-    'addattributefilter-tooltip': _('addattributefilter-tooltip', default='Add a filter based on attribute'),
-    'addtimefilter-button': _('addtimefilter-button', default='Add time filter'),
-    'addtimefilter-tooltip': _('addtimefilter-tooltip', default='Add a filter based on time'),
-    'deleteallfilter-button': _('deleteallfilter-button', default='Delete all filters'),
-    'deleteallfilter-tooltip': _('deleteallfilter-tooltip', default='Delete all attribute and temporal filters'),
-    'filter-title': _('filter-title', default='Filter'),
-    'activitypaging-before': _('activitypaging-before', default='Page'),
-    'activitypaging-after': _('activitypaging-after', default='of {0}'),
-    'activitypaging-message': _('paging-message', default='Displaying activities {0} - {1} of {2}'),
-    'activitypaging-empty': _('activitypaging-empty', default='No activities found'),
-    'activity-select': _('activity-select', default='Select an activity above to show its details'),
-    'activate-button': _('activate-button', default='Activate'),
-    'activate-tooltip': _('activate-tooltip', default='Click to activate this filter'),
-    'delete-button': _('delete-button', default='Delete'),
-    'deletefilter-tooltip': _('deletefilter-tooltip', default='Click to delete this filter'),
-    # stakeholders
-    'stakeholder-name': _('stakholder-name', default='Name'),
-    'stakeholder-country': _('stakholder-country', default='Country'),
-    # status
-    'status-pending': _('status-pending', default='pending'),
-    'status-active': _('status-active', default='active'),
-    'status-overwritten': _('status-overwritten', default='overwritten'),
-    'status-deleted': _('status-deleted', default='deleted'),
-    'status-rejected': _('status-rejected', default='rejected'),
-    # comments
-    'comment': _('comment', default='Comment'),
-    'comments': _('comments', default='Comments'),
-    'comments-empty': _('comments-empty', default='No comments yet.'),
-    'comments-by': _('comments-by', default='Comment by'),
-    'comments-leave': _('comments-leave', default='Leave a comment'),
-    'anonymous': _('anonymous', default='Anonymous'),
-    'confirm-delete-comment': _('confirm-delete-comment', default='Do you really want to delete this comment?')
+        # map functions
+        'zoom-button': _('zoom-button', default='Zoom'),
+        'pan-button': _('pan-button', default='Pan'),
+        # general GUI text
+        'file-menu': _('file-menu', default='File'),
+        'view-menu': _('view-menu', default='View'),
+        'date-label': _('date-label', default='Date'),
+        'profile-label': _('profile-label', default='Profile'),
+        'language-label': _('language-label', default='Language'),
+        'loading': _('loading', default='Loading ...'),
+        'unknown': _('unknown', default='Unknown'),
+        'confirm-title': _('confirm-title', default='Please confirm'),
+        'success': _('success', default='Success'),
+        'failure': _('failure', default='Failure'),
+        'submit': _('submit', default='Submit'),
+        'id': _('id', default='ID'),
+        'edit': _('edit', default='edit'),
+        'details': _('details', default='details'),
+        'map-view': _('map-view', default='Map View'),
+        # activities / filtering
+        'activities-title': _('activities-title', default='Activities'),
+        'activities-table_view': _('activities-table_view', default='Activities Table View'),
+        'activities-add_further_information': _('activities-add_further_information', default='Submit further information to an existing activity'),
+        'addattributefilter-button': _('addattributefilter-button', default='Add attribute filter'),
+        'addattributefilter-tooltip': _('addattributefilter-tooltip', default='Add a filter based on attribute'),
+        'addtimefilter-button': _('addtimefilter-button', default='Add time filter'),
+        'addtimefilter-tooltip': _('addtimefilter-tooltip', default='Add a filter based on time'),
+        'deleteallfilter-button': _('deleteallfilter-button', default='Delete all filters'),
+        'deleteallfilter-tooltip': _('deleteallfilter-tooltip', default='Delete all attribute and temporal filters'),
+        'filter-title': _('filter-title', default='Filter'),
+        'filter-apply_spatial': _('filter-apply_spatial', default='Apply spatial filter'),
+        'filter-connect_to_activities': _('filter-connect_to_activities', default='Combine with filter on Activities'),
+        'filter-connect_to_stakeholders': _('filter-connect_to_stakeholders', default='Combine with filter on Stakeholders'),
+        'activitypaging-before': _('activitypaging-before', default='Page'),
+        'activitypaging-after': _('activitypaging-after', default='of {0}'),
+        'activitypaging-message': _('paging-message', default='Displaying activities {0} - {1} of {2}'),
+        'activitypaging-empty': _('activitypaging-empty', default='No activities found'),
+        'activity-select': _('activity-select', default='Select an activity to show its details'),
+        'activate-button': _('activate-button', default='Activate'),
+        'activate-tooltip': _('activate-tooltip', default='Click to activate this filter'),
+        'delete-button': _('delete-button', default='Delete'),
+        'deletefilter-tooltip': _('deletefilter-tooltip', default='Click to delete this filter'),
+        # stakeholders
+        'stakeholders-title': _('stakeholder-title', default='Stakeholders'),
+        'stakeholders-table_view': _('stakeholders-table_view', default='Stakeholders Table View'),
+        'stakeholder-name': _('stakholder-name', default='Name'),
+        'stakeholder-country': _('stakholder-country', default='Country'),
+        'stakeholder-paging_message': _('stakeholder-paging_message', default='Displaying stsakeholders {0} - {1} of {2}'),
+        'stakeholder-paging_empty': _('stakeholder-paging_empty', default='No stakeholders found'),
+        # involvements
+        'involvements-title': _('involvements-title', default='Involvement'),
+        'involvements-role': _('involvements-role', default='Role'),
+        # details
+        'details-toggle_all': _('details-toggle_all', default='Toggle all details'),
+        # status
+        'status-pending': _('status-pending', default='pending'),
+        'status-active': _('status-active', default='active'),
+        'status-overwritten': _('status-overwritten', default='overwritten'),
+        'status-deleted': _('status-deleted', default='deleted'),
+        'status-rejected': _('status-rejected', default='rejected'),
+        # comments
+        'comment': _('comment', default='Comment'),
+        'comments': _('comments', default='Comments'),
+        'comments-empty': _('comments-empty', default='No comments yet.'),
+        'comments-by': _('comments-by', default='Comment by'),
+        'comments-leave': _('comments-leave', default='Leave a comment'),
+        'anonymous': _('anonymous', default='Anonymous'),
+        'confirm-delete-comment': _('confirm-delete-comment', default='Do you really want to delete this comment?'),
+        # reviews
+        'reviewpanel-empty_msg': _('reviewpanel-empty_msg', default='Select an item on the left.'),
+        'reviewpanel-multiple_changes': _('reviewpanel-multiple_changes', default='There are multiple changes pending! They may be conflicting.'),
+        'reviewpanel-not_active_changed': _('reviewpanel-not_active_changed', default='These changes are based on a version which is not the active version.'),
+        'reviewpanel-pending_title': _('reviewpanel-pending_title', default='Pending version'),
+        'reviewpanel-previous_title': _('reviewpanel-previous_title', default='Previous version'),
+        'review-diff_title': _('review-diff_title', default='Difference'),
+        'review-diff_inv_added': _('review-diff_inv_added', default='Involvement added'),
+        'review-diff_inv_deleted': _('review-diff_inv_deleted', default='Involvement deleted'),
+        'review-diff_attr_added': _('review-diff_attr_added', default='Attribute(s) added'),
+        'review-diff_attr_deleted': _('review-diff_attr_deleted', default='Attribute(s) deleted'),
+        'reviewdecision-approved': _('reviewdecision-approved', default='approved'),
+        'reviewdecision-rejected': _('reviewdecision-rejected', default='rejected')
     }
 
     # Get the localizer
@@ -89,22 +122,36 @@ def ui_messages(request):
     uiMap['locale_english-name'] = db_lang.english_name
     uiMap['locale_local-name'] = db_lang.local_name
     
+    # TODO: is this still needed?
     # Add translated name for key "Name of Investor" (needed by Ext as dataIndex when displaying the grid with activities).
-    nameofinvestorKeyEnglish = Session.query(A_Key).filter(A_Key.key == 'Name of Investor').filter(A_Key.original == None).first()
+    nameofinvestorKeyEnglish = Session.query(A_Key).filter(A_Key.key == 'Country').filter(A_Key.original == None).first()
     nameofinvestorKeyLocale = Session.query(A_Key).filter(A_Key.original == nameofinvestorKeyEnglish).filter(A_Key.language == db_lang).first()
     if nameofinvestorKeyLocale:
-        uiMap['activity-nameofinvestor'] = nameofinvestorKeyLocale.key
+        uiMap['activity-attr_country'] = nameofinvestorKeyLocale.key
     else:
-        uiMap['activity-nameofinvestor'] = 'Name of Investor'
+        uiMap['activity-attr_country'] = 'Country'
     
     # Add translated name for key "Year of Investment" (needed by Ext as dataIndex when displaying the grid with activities).
     yearofinvestmentKeyEnglish = Session.query(A_Key).filter(A_Key.key == 'Year of Investment (agreed)').filter(A_Key.original == None).first()
     yearofinvestmentKeyLocale = Session.query(A_Key).filter(A_Key.original == yearofinvestmentKeyEnglish).filter(A_Key.language == db_lang).first()
     if yearofinvestmentKeyLocale:
-        uiMap['activity-yearofinvestment'] = yearofinvestmentKeyLocale.key
+        uiMap['activity-attr_yearofinvestment'] = yearofinvestmentKeyLocale.key
     else:
-        uiMap['activity-yearofinvestment'] = 'Year of Investment (agreed)'
+        uiMap['activity-attr_yearofinvestment'] = 'Year of Investment (agreed)'
 
+    # Add translated name for SH_Key "Name" (needed by Ext as dataIndex when displaying the grid with stakeholders)
+    shNameKeyEnglish = Session.query(SH_Key).filter(SH_Key.key == 'Name').filter(SH_Key.original == None).first()
+    shNameKeyLocale = Session.query(SH_Key).filter(SH_Key.original == shNameKeyEnglish).filter(SH_Key.language == db_lang).first()
+    uiMap['stakeholder-attr_name'] = (shNameKeyLocale.key 
+        if shNameKeyLocale is not None else 'Name')
+    
+    # Add translated name for SH_Key "Country" (needed by Ext as dataIndex when displaying the grid with stakeholders)
+    shNameKeyEnglish = Session.query(SH_Key).filter(SH_Key.key == 'Country').filter(SH_Key.original == None).first()
+    shNameKeyLocale = Session.query(SH_Key).filter(SH_Key.original == shNameKeyEnglish).filter(SH_Key.language == db_lang).first()
+    uiMap['stakeholder-attr_country'] = (shNameKeyLocale.key 
+        if shNameKeyLocale is not None else 'Country')
+        
+        
     # Write the JavaScript and instantiate the global variable Lmkp.ts
     str = "Ext.namespace('Lmkp');\n"
     str += "Lmkp.ts = Ext.create('Ext.util.MixedCollection');\n" #,{\n"
