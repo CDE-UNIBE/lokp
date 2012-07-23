@@ -15,12 +15,15 @@ Ext.onReady(function(){
         ],
 
         controllers: [
+        'activities.NewActivityWindow',
         'administrator.Main',
         'editor.Overview',
         'editor.Detail',
         'login.Toolbar',
         'moderator.Pending',
-        'Stakeholder'
+        'Stakeholder',
+        'stakeholders.StakeholderFieldContainer',
+        'stakeholders.StakeholderSelection'
         ],
 
         launch: function() {
