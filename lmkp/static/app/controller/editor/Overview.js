@@ -21,6 +21,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
 
     stores: [
     'ActivityGrid',
+    'StakeholderGrid',
     'Config',
     'Profiles'
     ],
@@ -35,19 +36,15 @@ Ext.define('Lmkp.controller.editor.Overview', {
     init: function() {
         // Get the Config store and load it
         this.getConfigStore().load();
-
-        /*this.getActivityGridStore().on('beforeload', function(store, operation, eOpts){
-            console.log('beforeload');
-            var proxy = store.getProxy();
-            proxy.setExtraParam('adrian', 'test');
-        }, this)*/
-
         this.control({
             'lo_editormappanel': {
                 render: this.onMapPanelRender
             },
             'lo_editoractivitytablepanel': {
-                render: this.onTablePanelRender
+                render: this.onActivityTablePanelRender
+            },
+            'lo_editorstakeholdertablepanel': {
+                render: this.onStakeholderTablePanelRender
             },
             'lo_editoractivitytablepanel checkbox[itemId="spatialFilterCheckbox"]': {
                 change: this.onSpatialFilterCheckboxChange
@@ -59,7 +56,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 click: this.addTimeFilter
             },
             'lo_editoractivitytablepanel tabpanel[id=detailPanel]': {
-                tabchange: this.showActivity
+                tabchange: this.showDetails
             },
             'lo_editoractivitytablepanel button[id=deleteAllFilters]': {
                 click: this.deleteAllFilters
@@ -95,7 +92,10 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 afterrender: this.renderActivityYearColumn
             },
             'lo_editoractivitytablepanel gridpanel[itemId=activityGrid]': {
-                selectionchange: this.showActivity
+                selectionchange: this.showDetails
+            },
+            'lo_editorstakeholdertablepanel gridpanel[itemId=stakeholderGrid]': {
+                selectionchange: this.showDetails
             },
             'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdernamecolumn]': {
                 afterrender: this.renderStakeholderNameColumn
@@ -110,7 +110,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
      * Adds a beforeload action to the ActivityGridStore to filter the activites
      * according to the current map extent.
      */
-    onTablePanelRender: function(comp){
+    onActivityTablePanelRender: function(comp){
 
         // Adds a beforeload action
         this.getActivityGridStore().on('beforeload', function(store){
@@ -143,6 +143,10 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 }
             }
         }, this)
+    },
+
+    onStakeholderTablePanelRender: function() {
+        this.getStakeholderGridStore().load();
     },
 
     /**
@@ -307,7 +311,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
         this._renderColumnMultipleValues(comp, "stakeholder-attr_country");
     },
 
-    showActivity: function(model, selected, eOpts) {
+    showDetails: function(model, selected, eOpts) {
 
         // Unselect all selected features on the map
         //var mapPanel = Ext.ComponentQuery.query('mappanel')[0];
@@ -965,7 +969,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
                     }
                 });
 
-                this.showActivity(null, [store.getAt(0)], null);
+                this.showDetails(null, [store.getAt(0)], null);
             }
         });
     }
