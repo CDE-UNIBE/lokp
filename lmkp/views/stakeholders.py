@@ -74,7 +74,14 @@ def create(request):
     if not isinstance(has_permission('edit', request.context, request), ACLAllowed):
         return HTTPForbidden()
 
-    return stakeholder_protocol.create(request)
+    ids = stakeholder_protocol.create(request)
+
+    response = {}
+    response['data'] = [i.to_json() for i in ids]
+    response['total'] = len(response['data'])
+
+    request.response.status = 201
+    return response
 
 @view_config(route_name='stakeholders_read_one', renderer='json')
 def read_one(request):

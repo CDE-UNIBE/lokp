@@ -21,7 +21,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
 
     stores: [
     'ActivityGrid',
-    'Config',
+    'ActivityConfig',
     'Profiles'
     ],
 
@@ -29,12 +29,13 @@ Ext.define('Lmkp.controller.editor.Overview', {
     'editor.Detail',
     'editor.Map',
     'activities.Details',
-    'activities.History'
+    'activities.History',
+    'stakeholders.StakeholderSelection'
     ],
 
     init: function() {
-        // Get the Config store and load it
-        this.getConfigStore().load();
+        // Get the ActivityConfig store and load it
+        this.getActivityConfigStore().load();
 
         /*this.getActivityGridStore().on('beforeload', function(store, operation, eOpts){
             console.log('beforeload');
@@ -162,13 +163,13 @@ Ext.define('Lmkp.controller.editor.Overview', {
         var insertIndex = form.items.length - 1; // always insert above the 2 buttons
         var cbox = Ext.create('Ext.form.field.ComboBox', {
             name: 'attributeCombo',
-            store: this.getConfigStore(),
+            store: this.getActivityConfigStore(),
             valueField: 'name',
             displayField: 'fieldLabel',
             queryMode: 'local',
             typeAhead: true,
             forceSelection: true,
-            value: this.getConfigStore().getAt('0'),
+            value: this.getActivityConfigStore().getAt('0'),
             flex: 0,
             margin: '0 5 5 0'
         });
@@ -207,7 +208,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
             }]
         });
         // show initial filter
-        this.showValueFields(cbox, [this.getConfigStore().getAt('0')]);
+        this.showValueFields(cbox, [this.getActivityConfigStore().getAt('0')]);
         // re-layout container
         form.ownerCt.layout.layout(); 	// TODO: Figure out why both of ...
         form.forceComponentLayout();	// ... these lines are needed (see also addTimeFilter)
@@ -439,13 +440,13 @@ Ext.define('Lmkp.controller.editor.Overview', {
         var insertIndex = form.items.length - 1; // always insert above the 2 buttons
         var cbox = Ext.create('Ext.form.field.ComboBox', {
             name: 'attributeCombo',
-            store: this.getConfigStore(),
+            store: this.getActivityConfigStore(),
             valueField: 'name',
             displayField: 'fieldLabel',
             queryMode: 'local',
             typeAhead: true,
             forceSelection: true,
-            value: this.getConfigStore().getAt('0'),
+            value: this.getActivityConfigStore().getAt('0'),
             flex: 0,
             margin: '0 5 5 0'
         });
@@ -484,7 +485,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
             }]
         });
         // show initial filter
-        this.showValueFields(cbox, [this.getConfigStore().getAt('0')]);
+        this.showValueFields(cbox, [this.getActivityConfigStore().getAt('0')]);
         // re-layout container
         form.ownerCt.layout.layout(); 	// TODO: Figure out why both of ...
         form.forceComponentLayout();	// ... these lines are needed (see also addTimeFilter)
@@ -886,6 +887,26 @@ Ext.define('Lmkp.controller.editor.Overview', {
         });
         var moveButton = Ext.create('Ext.button.Button', moveAction);
         tbar.add(moveButton);
+
+        /*tbar.add({
+            handler: function(button){
+              var win = Ext.create('Lmkp.view.stakeholders.NewStakeholder');
+              win.show();
+            },
+            scale: 'medium',
+            text: 'Add Stakeholder',
+            xtype: 'button'
+        });*/
+
+        /*tbar.add({
+            handler: function(button){
+              var win = Ext.create('Lmkp.view.stakeholders.StakeholderSelection');
+              win.show();
+            },
+            scale: 'medium',
+            text: 'Select Stakeholder',
+            xtype: 'button'
+        });*/
 
         // Get the map center and zoom level from the cookies if one is set
         var location = Ext.util.Cookies.get('_LOCATION_');
