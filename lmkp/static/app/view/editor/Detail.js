@@ -53,32 +53,6 @@ Ext.define('Lmkp.view.editor.Detail', {
                 bodyPadding: 0
             });
 
-            // @TODO: FIX THE FOLLOWING
-//                // if user is logged in (Lmkp.toolbar != false), show edit button
-//                if (Lmkp.toolbar) {
-//                    //console.log("add docked");
-//                    taggroupPanel.addDocked({
-//                        dock: 'right',
-//                        xtype: 'toolbar',
-//                        items: [{
-//                            name: 'editTaggroup',
-//                            scale: 'small',
-//                            text: 'edit',
-//                            taggroup_id: i, // store local id (in taggroupStore) of current TagGroup
-//                            handler: function() {
-//                                var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
-//                                    activity_id: data[0].get('id'),
-//                                    version: data[0].get('version'),
-//                                    selected_taggroup: taggroupStore.getAt(this.taggroup_id)
-//                                });
-//                                win.show();
-//                            },
-//                            xtype: 'button'
-//                        }]
-//                    });
-//                }
-//            }
-
             // add commenting panel
             panel.add({
                 xtype: 'lo_commentpanel',
@@ -91,7 +65,10 @@ Ext.define('Lmkp.view.editor.Detail', {
             var mappanel = Ext.ComponentQuery.query('lo_editormappanel')[0];
             var vectorLayer = mappanel.getVectorLayer();
             vectorLayer.removeAllFeatures();
-            vectorLayer.addFeatures(this.getFeatures(data));
+            var features = this.getFeatures(data);
+            if (features) {
+                vectorLayer.addFeatures(features);
+            }
             vectorLayer.events.remove('featureunselected');
             vectorLayer.events.register('featureunselected',
                 this,
@@ -117,34 +94,13 @@ Ext.define('Lmkp.view.editor.Detail', {
     getFeatures: function(data){
         var geom = data[0].data.geometry;
         var vectors = this.geojson.read(Ext.encode(geom));
-        for(var j = 0; j < vectors.length; j++){
-            vectors[j].geometry.transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913"));
-
-//            panel.addDocked({
-//                id: 'top_toolbar',
-//                dock: 'top',
-//                xtype: 'toolbar',
-//                items: [
-//                '->',
-//                {
-//                    text: 'show all details',
-//                    handler: function() {
-//                        for (var i in panel.query('lo_taggrouppanel')) {
-//                            panel.query('lo_taggrouppanel')[i].toggleDetailButton(true);
-//                        }
-//                    }
-//                }, {
-//                    text: 'hide all details',
-//                    handler: function() {
-//                        for (var i in panel.query('lo_taggrouppanel')) {
-//                            panel.query('lo_taggrouppanel')[i].toggleDetailButton(false);
-//                        }
-//                    }
-//                }]
-//            });
+        if (vectors) {
+            for(var j = 0; j < vectors.length; j++){
+                vectors[j].geometry.transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913"));
+            }
+            return vectors
 
         }
-        return vectors
     },
 
     /**

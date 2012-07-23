@@ -6,68 +6,16 @@ Ext.define('Lmkp.view.editor.ActivityTable',{
     'Lmkp.view.activities.Filter'
     ],
 
-    layout: 'border',
-
+    layout: {
+        type: 'vbox',
+        align: 'stretch'
+    },
     border: 0,
-
     frame: false,
 
-    items: [{
-        layout: {
-            type: 'vbox',
-            align: 'stretch'
-        },
-        items: [{
-            // attribute selection
-            xtype: 'panel',
-            id: 'filterForm',
-            flex: 0.5,
-            border: 0,
-            //collapsible: true,
-            //collapsed: true, // TODO: For some reason, layout is not working (buttons disappear on Adding filter) when collapsed at start.
-            title: Lmkp.ts.msg("filter-title"),
-            layout: {
-                type: 'anchor'
-            },
-            // height: 500,
-            bodyPadding: 5,
-            items: [{
-                xtype: 'panel',
-                layout: {
-                    type: 'hbox',
-                    flex: 'stretch'
-                },
-                anchor: '100%',
-                border: 0,
-                items: [{
-                    xtype: 'combobox',
-                    store: ['and', 'or'],
-                    name: 'logicalOperator',
-                    value: 'and',
-                    editable: false,
-                    hidden: true,
-                    fieldLabel: 'Logical operator'
-                }, {
-                    xtype: 'panel', // empty panel for spacing
-                    flex: 1,
-                    border: 0
-                }, {
-                    xtype: 'button',
-                    name: 'addAttributeFilter',
-                    text: Lmkp.ts.msg("addattributefilter-button"),
-                    tooltip: Lmkp.ts.msg("addattributefilter-tooltip"),
-                    iconCls: 'toolbar-button-add',
-                    margin: '0 5 0 0',
-                    flex: 0
-                }, {
-                    xtype: 'button',
-                    name: 'addTimeFilter',
-                    text: Lmkp.ts.msg("addtimefilter-button"),
-                    tooltip: Lmkp.ts.msg("addtimefilter-tooltip"),
-                    iconCls: 'toolbar-button-add',
-                    flex: 0
-                }]
-            }]
+    items: [
+        {
+            xtype: 'lo_editoractivityfilterpanel'
         },{
             xtype: 'gridpanel',
             flex: 0.5,
@@ -112,10 +60,8 @@ Ext.define('Lmkp.view.editor.ActivityTable',{
                 afterPageText: Lmkp.ts.msg("activitypaging-after"),
                 displayMsg: Lmkp.ts.msg("activitypaging-message"),
                 emptyMsg: '<b>' + Lmkp.ts.msg("activitypaging-empty") + '</b>'
-            }]
-        }],
-        region: 'center',
-        xtype: 'panel'
+            }
+        ]
     }],
 
     /**
