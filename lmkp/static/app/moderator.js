@@ -18,8 +18,7 @@ Ext.onReady(function(){
         'login.Toolbar',
         'editor.Detail',
         'editor.Overview',
-        'moderator.Pending',
-        'Stakeholder'
+        'moderator.Pending'
         ],
     
         launch: function() {

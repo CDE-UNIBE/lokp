@@ -42,8 +42,10 @@ def ui_messages(request):
         'id': _('id', default='ID'),
         'edit': _('edit', default='edit'),
         'details': _('details', default='details'),
+        'map-view': _('map-view', default='Map View'),
         # activities / filtering
         'activities-title': _('activities-title', default='Activities'),
+        'activities-table_view': _('activities-table_view', default='Activities Table View'),
         'activities-add_further_information': _('activities-add_further_information', default='Submit further information to an existing activity'),
         'addattributefilter-button': _('addattributefilter-button', default='Add attribute filter'),
         'addattributefilter-tooltip': _('addattributefilter-tooltip', default='Add a filter based on attribute'),
@@ -63,6 +65,7 @@ def ui_messages(request):
         'deletefilter-tooltip': _('deletefilter-tooltip', default='Click to delete this filter'),
         # stakeholders
         'stakeholders-title': _('stakeholder-title', default='Stakeholders'),
+        'stakeholders-table_view': _('stakeholders-table_view', default='Stakeholders Table View'),
         'stakeholder-name': _('stakholder-name', default='Name'),
         'stakeholder-country': _('stakholder-country', default='Country'),
         'stakeholder-paging_message': _('stakeholder-paging_message', default='Displaying stsakeholders {0} - {1} of {2}'),

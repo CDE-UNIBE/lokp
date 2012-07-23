@@ -46,46 +46,46 @@ Ext.define('Lmkp.controller.editor.Overview', {
             'lo_editormappanel': {
                 render: this.onMapPanelRender
             },
-            'lo_editortablepanel': {
+            'lo_editoractivitytablepanel': {
                 render: this.onTablePanelRender
             },
-            'lo_editortablepanel checkbox[itemId="spatialFilterCheckbox"]': {
+            'lo_editoractivitytablepanel checkbox[itemId="spatialFilterCheckbox"]': {
                 change: this.onSpatialFilterCheckboxChange
             },
-            'lo_editortablepanel button[name=addAttributeFilter]': {
+            'lo_editoractivitytablepanel button[name=addAttributeFilter]': {
                 click: this.addAttributeFilter
             },
-            'lo_editortablepanel button[name=addTimeFilter]': {
+            'lo_editoractivitytablepanel button[name=addTimeFilter]': {
                 click: this.addTimeFilter
             },
-            'lo_editortablepanel tabpanel[id=detailPanel]': {
+            'lo_editoractivitytablepanel tabpanel[id=detailPanel]': {
                 tabchange: this.showActivity
             },
-            'lo_editortablepanel button[id=deleteAllFilters]': {
+            'lo_editoractivitytablepanel button[id=deleteAllFilters]': {
                 click: this.deleteAllFilters
             },
-            'lo_editortablepanel button[name=activateAttributeButton]': {
+            'lo_editoractivitytablepanel button[name=activateAttributeButton]': {
                 click: this.applyFilter
             },
-            'lo_editortablepanel button[name=activateTimeButton]': {
+            'lo_editoractivitytablepanel button[name=activateTimeButton]': {
                 click: this.applyFilter
             },
-            'lo_editortablepanel combobox[name=attributeCombo]': {
+            'lo_editoractivitytablepanel combobox[name=attributeCombo]': {
                 select: this.showValueFields
             },
-            'lo_editortablepanel [name=valueField]': {
+            'lo_editoractivitytablepanel [name=valueField]': {
                 change: this.resetActivateButton
             },
-            'lo_editortablepanel combobox[name=filterOperator]': {
+            'lo_editoractivitytablepanel combobox[name=filterOperator]': {
                 select: this.resetActivateButton
             },
-            'lo_editortablepanel datefield[name=dateField]': {
+            'lo_editoractivitytablepanel datefield[name=dateField]': {
                 change: this.resetActivateButton
             },
-            'lo_editortablepanel button[name=deleteButton]': {
+            'lo_editoractivitytablepanel button[name=deleteButton]': {
                 click: this.deleteFilter
             },
-            'lo_editortablepanel combobox[name=logicalOperator]': {
+            'lo_editoractivitytablepanel combobox[name=logicalOperator]': {
                 select: this.applyFilter
             },
             'gridpanel[itemId=activityGrid] gridcolumn[name=activityCountryColumn]': {
@@ -94,7 +94,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
             'gridpanel[itemId=activityGrid] gridcolumn[name=yearofinvestmentcolumn]': {
                 afterrender: this.renderActivityYearColumn
             },
-            'lo_editortablepanel gridpanel[itemId=activityGrid]': {
+            'lo_editoractivitytablepanel gridpanel[itemId=activityGrid]': {
                 selectionchange: this.showActivity
             },
             'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdernamecolumn]': {
