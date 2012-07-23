@@ -1,6 +1,8 @@
 Ext.define('Lmkp.view.activities.NewActivityWindow', {
     extend: 'Lmkp.view.NewItem',
 
+    alias: ['widget.lo_newactivitywindow'],
+
     requires: [
     'Lmkp.view.stakeholders.StakeholderFieldContainer'
     ],
@@ -67,6 +69,7 @@ Ext.define('Lmkp.view.activities.NewActivityWindow', {
                             var stakeholder = {}
                             stakeholder['id'] = fieldContainer.getStakeholderId();
                             stakeholder['role'] = fieldContainer.getStakeholderRole();
+                            stakeholder['version'] = fieldContainer.getStakeholderVersion();
                             stakeholder['op'] = 'add';
                             stakeholders.push(stakeholder);
                         }
@@ -163,17 +166,16 @@ Ext.define('Lmkp.view.activities.NewActivityWindow', {
         });
 
         form.add({
-            xtype: 'fieldset',
-            title: 'Associated Stakeholders',
-            //layout: 'fit',
-            /*defaults: {
-                anchor: '100%'
-            },*/
             border: 1,
+            itemId: 'selectStakeholderFieldSet',
             items: [
             {
-                xtype: 'lo_stakeholderfieldcontainer'
-            }]
+                itemId: 'selectStakeholderButton',
+                text: 'Add Stakeholder',
+                xtype: 'button'
+            }],
+            title: 'Associated Stakeholders',
+            xtype: 'fieldset'
         });
 		
         this.items = form;
