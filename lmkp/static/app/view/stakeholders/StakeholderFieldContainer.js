@@ -4,7 +4,8 @@ Ext.define('Lmkp.view.stakeholders.StakeholderFieldContainer', {
     alias: ['widget.lo_stakeholderfieldcontainer'],
 
     config: {
-        parentContainer: {}
+        parentContainer: {},
+        stakeholder: null
     },
 
     layout: 'hbox',
@@ -12,37 +13,21 @@ Ext.define('Lmkp.view.stakeholders.StakeholderFieldContainer', {
 
     initComponent: function(){
 
-        console.log(this);
-
-        var stakeholderStore = Ext.create('Lmkp.store.StakeholderGrid');
-        stakeholderStore.load();
-
-        console.log(stakeholderStore);
-
         this.items = [];
-         
+
         this.items.push({
-            /*displayTpl: Ext.create('Ext.XTemplate',
-                '<tpl for=".">',
-                '{id}',
-                '</tpl>'
-                ),
-            tpl: Ext.create('Ext.XTemplate',
-                '<tpl for=".">',
-                '<div class="x-boundlist-item">{id}</div>',
-                '</tpl>'
-                ),*/
-            displayField: 'id',
-            name: 'stakeholder.id',
-            queryMode: 'local',
-            margin: '0 0 0 0',
-            store: stakeholderStore,
-            valueField: 'id',
-            xtype: 'combo'
+            editable: false,
+            flex: 0.5,
+            name: 'stakeholder.name',
+            value: this.stakeholder.getTagValues(Lmkp.ts.msg("stakeholder-name")).join(","),
+            xtype: 'textfield'
         });
         
         this.items.push({
+            allowBlank: false,
             displayField: 'name',
+            emptyText: 'Select a Role',
+            flex: 0.5,
             label: 'Role',
             queryMode: 'local',
             margin: '0 0 0 0',
@@ -61,20 +46,19 @@ Ext.define('Lmkp.view.stakeholders.StakeholderFieldContainer', {
                     "name": "Investor"
                 }]
             },
+            valueField: 'id',
             xtype: 'combo'
-        });
-
-        this.items.push({
-            margin: '0 0 0 0',
-            text: '+',
-            xtype: 'button'
         });
         
         this.callParent(arguments);
     },
 
     getStakeholderId: function(){
-        return this.down('combo[name="stakeholder.id"]').getValue();
+        return this.stakeholder.data.id;
+    },
+
+    getStakeholderVersion: function(){
+        return this.stakeholder.data.version;
     },
 
     getStakeholderRole: function(){

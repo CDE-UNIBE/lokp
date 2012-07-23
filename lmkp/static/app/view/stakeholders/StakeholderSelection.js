@@ -4,8 +4,17 @@ Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
     alias: ['widget.lo_stakeholderselection'],
 
     config: {
-        selectedStakeholder: {}
+        selectedStakeholder: null,
+        confirmButton: {},
+        clearButton: {},
+        southPanel: null
     },
+
+    selectedStakeholder: null,
+
+    modal: true,
+
+    southPanel: null,
 
     layout: 'border',
 
@@ -13,9 +22,19 @@ Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
 
     width: 400,
 
-    tplMarkup: '<div><ul><li><b>{name}</b></li><li>{id}</li></ul></div>',
-
     initComponent: function(){
+
+        this.clearButton = Ext.create('Ext.button.Button',{
+            itemId: 'clearButton',
+            scale: 'medium',
+            text: 'Clear'
+        });
+
+        this.confirmButton = Ext.create('Ext.button.Button',{
+            itemId: 'confirmButton',
+            scale: 'medium',
+            text: 'Add new Stakeholder'
+        });
 
         var store = Ext.create('Ext.data.Store', {
             requires: ['Lmkp.model.Stakeholder',
@@ -24,6 +43,7 @@ Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
             'Lmkp.model.MainTag',
             'Lmkp.model.Point'
             ], // all are needed to build relation
+
             model: 'Lmkp.model.Stakeholder',
 
             pageSize: 10,
@@ -47,14 +67,6 @@ Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
 
         this.items = [];
         
-        this.items.push({
-            tpl: this.detailTpl,
-            itemId: 'detailpanel',
-            region: 'south',
-            height: 100,
-            xtype: 'panel'
-        });
-        
         var formpanel = Ext.create('Ext.form.Panel', {
             items: [{
                 displayField: 'id',
@@ -64,9 +76,9 @@ Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
                     '{id}',
                     '</tpl>'
                     ),
-                fieldLabel: 'Name',
+                fieldLabel: 'Search',
                 hideTrigger: true,
-                itemId: 'Name__textfield',
+                itemId: 'searchTextfield',
                 listConfig: {
 
                     prepareData: function(data, recordIndex, record){
@@ -98,41 +110,25 @@ Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
                 typeAhead: true,
                 valueField: 'id',
                 xtype: 'combo'
-            },{
-                fieldLabel: 'Country',
-                itemId: 'Country__textfield',
-                xtype: 'textfield'
             }],
             region: 'center'
         });
 
         this.items.push(formpanel);
 
-        this.callParent(arguments);
-    },
+        this.dockedItems = [];
 
-    onRowSelect: function(model, selected){
-        this.selectedStakeholder = selected[0];
-
-        // Find a name
-        var name = Lmkp.ts.msg("unknown");
-        for(var i = 0; i < this.selectedStakeholder.taggroups().getCount(); i++){
-
-            var taggroup = this.selectedStakeholder.taggroups().getAt(i);
-            for(var j = 0; j < taggroup.tags().getCount(); j++) {
-                var tag = taggroup.tags().getAt(j);
-                if(tag.get('key') == Lmkp.ts.msg("stakeholder-name")) {
-                    name = tag.get('value');
-                }
-            }
-        }
-
-        var detailPanel = this.getComponent('detailpanel');
-        this.detailTpl.overwrite(detailPanel.body, {
-            name: name,
-            id: this.selectedStakeholder.get('id')
+        this.dockedItems.push({
+            dock: 'bottom',
+            items: [
+            '->',
+            this.clearButton,
+            this.confirmButton
+            ],
+            xtype: 'toolbar'
         });
-    }
 
+        this.callParent(arguments);
+    }
 
 });

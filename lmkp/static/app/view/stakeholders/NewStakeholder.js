@@ -1,7 +1,13 @@
 Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
     extend: 'Lmkp.view.NewItem',
 
+    alias: ['widget.lo_newstakeholderwindow'],
+
     title: 'Add new Stakeholder',
+
+    config: {
+        addedStakeholder: null
+    },
 
     layout: 'fit',
     defaults: {
@@ -19,6 +25,7 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
             disabled: true,
             handler: function(button, event) {
                 var form = this.up('form');
+                var window = this.up('lo_newstakeholderwindow');
                 if (form.getForm().isValid()) {
 
                     // The form cannot be submitted 'normally' because ActivityProtocol expects a JSON object.
@@ -79,13 +86,31 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
                             'Content-Type': 'application/json;charset=utf-8'
                         },
                         jsonData: diffObject,
-                        success: function() {
-                            Ext.Msg.alert('Success', 'The stakeholder was successfully created. It will be reviewed shortly.');
-                            form.up('window').close();
+                        callback: function(options, success, response) {
+                            if(success) {
+                                Ext.Msg.alert('Success', 'The stakeholder was successfully created. It will be reviewed shortly.');
+
+                                var store = Ext.create('Ext.data.Store', {
+                                    autoLoad: true,
+                                    model: 'Lmkp.model.Stakeholder',
+                                    data : Ext.decode(response.responseText),
+                                    proxy: {
+                                        type: 'memory',
+                                        reader: {
+                                            root: 'data',
+                                            type: 'json',
+                                            totalProperty: 'total'
+                                        }
+                                    }
+                                });
+                                this.setAddedStakeholder(store.getAt(0));
+                            } else {
+                                Ext.Msg.alert('Failure', 'The stakeholder could not be created.');
+                                this.setAddedStakeholder(null);
+                            }
+                            this.close();
                         },
-                        failure: function() {
-                            Ext.Msg.alert('Failure', 'The stakeholder could not be created.');
-                        }
+                        scope: window
                     });
                 }
             },

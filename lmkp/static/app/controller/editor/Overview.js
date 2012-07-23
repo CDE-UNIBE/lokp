@@ -888,7 +888,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
         var moveButton = Ext.create('Ext.button.Button', moveAction);
         tbar.add(moveButton);
 
-        tbar.add({
+        /*tbar.add({
             handler: function(button){
               var win = Ext.create('Lmkp.view.stakeholders.NewStakeholder');
               win.show();
@@ -896,9 +896,9 @@ Ext.define('Lmkp.controller.editor.Overview', {
             scale: 'medium',
             text: 'Add Stakeholder',
             xtype: 'button'
-        });
+        });*/
 
-        tbar.add({
+        /*tbar.add({
             handler: function(button){
               var win = Ext.create('Lmkp.view.stakeholders.StakeholderSelection');
               win.show();
@@ -906,7 +906,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
             scale: 'medium',
             text: 'Select Stakeholder',
             xtype: 'button'
-        });
+        });*/
 
         // Get the map center and zoom level from the cookies if one is set
         var location = Ext.util.Cookies.get('_LOCATION_');
