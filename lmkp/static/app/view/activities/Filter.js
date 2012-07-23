@@ -2,7 +2,7 @@ Ext.define('Lmkp.view.activities.Filter', {
     extend: 'Ext.panel.Panel',
     alias: ['widget.lo_editoractivityfilterpanel'],
 
-    id: 'filterForm',
+    id: 'activityFilterForm',
     flex: 0.5,
     border: 0,
     title: Lmkp.ts.msg("filter-title"),
@@ -25,7 +25,8 @@ Ext.define('Lmkp.view.activities.Filter', {
             value: 'and',
             editable: false,
             hidden: true,
-            fieldLabel: 'Logical operator'
+            fieldLabel: 'Logical operator',
+            flex: 0
         }, {
             xtype: 'panel', // empty panel for spacing
             flex: 1,
@@ -37,7 +38,8 @@ Ext.define('Lmkp.view.activities.Filter', {
             tooltip: Lmkp.ts.msg("addattributefilter-tooltip"),
             iconCls: 'toolbar-button-add',
             margin: '0 5 0 0',
-            flex: 0
+            flex: 0,
+            item_type: 'activity'
         }, {
             xtype: 'button',
             name: 'addTimeFilter',

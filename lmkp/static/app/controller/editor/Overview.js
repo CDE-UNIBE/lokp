@@ -27,10 +27,11 @@ Ext.define('Lmkp.controller.editor.Overview', {
     ],
 
     views: [
-    'editor.Detail',
-    'editor.Map',
-    'activities.Details',
-    'activities.History'
+        'editor.Detail',
+        'editor.Map',
+        'activities.Details',
+        'activities.History',
+        'activities.Filter'
     ],
 
     init: function() {
@@ -158,12 +159,19 @@ Ext.define('Lmkp.controller.editor.Overview', {
     },
 
     addAttributeFilter: function(button, event, eOpts) {
-        var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
-        // expand form if collapsed
-        if (form.collapsed) {
-            form.toggleCollapse();
+
+        // Activity or Stakeholder?
+        var panel_xtype = null;
+        if (button.item_type == 'activity') {
+            panel_xtype = 'lo_editoractivityfilterpanel';
+        } else if (button.item_type == 'stakeholder') {
+            panel_xtype = 'lo_editorstakeholderfilterpanel';
         }
-        var insertIndex = form.items.length - 1; // always insert above the 2 buttons
+
+        var form = button.up(panel_xtype);
+        
+        // always insert above the panel with the buttons
+        var insertIndex = form.items.length - 1;
         var cbox = Ext.create('Ext.form.field.ComboBox', {
             name: 'attributeCombo',
             store: this.getConfigStore(),
@@ -212,13 +220,10 @@ Ext.define('Lmkp.controller.editor.Overview', {
         });
         // show initial filter
         this.showValueFields(cbox, [this.getConfigStore().getAt('0')]);
-        // re-layout container
-        form.ownerCt.layout.layout(); 	// TODO: Figure out why both of ...
-        form.forceComponentLayout();	// ... these lines are needed (see also addTimeFilter)
     },
 
     addTimeFilter: function(button, e, eOpts) {
-        var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
+        var form = Ext.ComponentQuery.query('panel[id=activityFilterForm]')[0];
         // expand form if collapsed
         if (form.collapsed) {
             form.toggleCollapse();
@@ -267,8 +272,6 @@ Ext.define('Lmkp.controller.editor.Overview', {
         if (button) {
             button.disable();
         }
-        form.ownerCt.layout.layout(); 	// TODO: Figure out why both of ...
-        form.forceComponentLayout();	// ... these lines are needed (see also addAttributeFilter)
     },
 
     showValueFields: function(combobox, records, eOpts) {
@@ -434,123 +437,9 @@ Ext.define('Lmkp.controller.editor.Overview', {
         }
     },
 
-    addAttributeFilter: function(button, e, eOpts) {
-        var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
-        // expand form if collapsed
-        if (form.collapsed) {
-            form.toggleCollapse();
-        }
-        var insertIndex = form.items.length - 1; // always insert above the 2 buttons
-        var cbox = Ext.create('Ext.form.field.ComboBox', {
-            name: 'attributeCombo',
-            store: this.getConfigStore(),
-            valueField: 'name',
-            displayField: 'fieldLabel',
-            queryMode: 'local',
-            typeAhead: true,
-            forceSelection: true,
-            value: this.getConfigStore().getAt('0'),
-            flex: 0,
-            margin: '0 5 5 0'
-        });
-        form.insert(insertIndex, {
-            xtype: 'panel',
-            name: 'attributePanel',
-            border: 0,
-            anchor: '100%',
-            layout: {
-                type: 'hbox',
-                flex: 'stretch'
-            },
-            items: [
-            cbox,
-            {
-                xtype: 'panel', // empty panel for spacing
-                flex: 1,
-                border: 0
-            }, {
-                xtype: 'button',
-                name: 'activateAttributeButton',
-                text: Lmkp.ts.msg("activate-button"),
-                tooltip: Lmkp.ts.msg("activate-tooltip"),
-                iconCls: 'toolbar-button-accept',
-                enableToggle: true,
-                flex: 0,
-                margin: '0 5 0 0'
-            }, {
-                xtype: 'button',
-                name: 'deleteButton',
-                text: Lmkp.ts.msg("delete-button"),
-                tooltip: Lmkp.ts.msg("deletefilter-tooltip"),
-                iconCls: 'toolbar-button-delete',
-                enableToggle: false,
-                flex: 0
-            }]
-        });
-        // show initial filter
-        this.showValueFields(cbox, [this.getConfigStore().getAt('0')]);
-        // re-layout container
-        form.ownerCt.layout.layout(); 	// TODO: Figure out why both of ...
-        form.forceComponentLayout();	// ... these lines are needed (see also addTimeFilter)
-    },
-
-    addTimeFilter: function(btn, e, eOpts) {
-        var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
-        // expand form if collapsed
-        if (form.collapsed) {
-            form.toggleCollapse();
-        }
-        var insertIndex = form.items.length - 1; // always insert above the 2 buttons
-        var picker = Ext.create('Ext.form.field.Date', {
-            name: 'dateField',
-            fieldLabel: Lmkp.ts.msg("date-label"),
-            value: new Date() // defaults to today
-        });
-        form.insert(insertIndex, {
-            xtype: 'panel',
-            name: 'timePanel',
-            border: 0,
-            layout: {
-                type: 'hbox',
-                flex: 'stretch'
-            },
-            items: [
-            picker,
-            {
-                xtype: 'panel', // empty panel for spacing
-                flex: 1,
-                border: 0
-            }, {
-                xtype: 'button',
-                name: 'activateTimeButton',
-                text: Lmkp.ts.msg("activate-button"),
-                tooltip: Lmkp.ts.msg("activate-tooltip"),
-                iconCls: 'toolbar-button-accept',
-                enableToggle: true,
-                flex: 0,
-                margin: '0 5 5 0'
-            }, {
-                xtype: 'button',
-                name: 'deleteButton',
-                text: Lmkp.ts.msg("delete-button"),
-                tooltip: Lmkp.ts.msg("deletefilter-tooltip"),
-                iconCls: 'toolbar-button-delete',
-                enableToggle: false,
-                flex: 0
-            }]
-        });
-        // disable 'add' button
-        var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
-        if (button) {
-            button.disable();
-        }
-        form.ownerCt.layout.layout(); 	// TODO: Figure out why both of ...
-        form.forceComponentLayout();	// ... these lines are needed (see also addAttributeFilter)
-    },
-
     deleteFilter: function(button, e, eOpts) {
         var attributePanel = button.up('panel');
-        var form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
+        var form = Ext.ComponentQuery.query('panel[id=activityFilterForm]')[0];
         // if time was filtered, re-enable its 'add' button
         if (attributePanel.name == 'timePanel') {
             var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
@@ -569,7 +458,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
         var panels = Ext.ComponentQuery.query('panel[name=attributePanel]');
         panels = panels.concat(Ext.ComponentQuery.query('panel[name=timePanel]'));
         if (panels.length > 0) {
-            form = Ext.ComponentQuery.query('panel[id=filterForm]')[0];
+            form = Ext.ComponentQuery.query('panel[id=activityFilterForm]')[0];
             for (i=0; i<panels.length; i++) {
                 // if time was filtered, re-enable its 'add' button
                 if (panels[i].name == 'timePanel') {

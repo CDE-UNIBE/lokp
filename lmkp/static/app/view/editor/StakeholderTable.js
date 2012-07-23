@@ -3,7 +3,7 @@ Ext.define('Lmkp.view.editor.StakeholderTable', {
     alias: ['widget.lo_editorstakeholdertablepanel'],
 
     requires: [
-        'Lmkp.view.activities.Filter'
+        'Lmkp.view.stakeholders.Filter'
     ],
 
     layout: {
@@ -15,7 +15,7 @@ Ext.define('Lmkp.view.editor.StakeholderTable', {
 
     items: [
         {
-            xtype: 'lo_editoractivityfilterpanel'
+            xtype: 'lo_editorstakeholderfilterpanel'
         }, {
             xtype: 'gridpanel',
             flex: 0.5,
@@ -43,6 +43,16 @@ Ext.define('Lmkp.view.editor.StakeholderTable', {
             ],
             dockedItems: [
                 {
+                    xtype: 'toolbar',
+                    dock: 'top',
+                    items: [
+                        {
+                            xtype: 'checkbox',
+                            boxLabel: Lmkp.ts.msg('filter-connect_to_activities'),
+                            itemId: 'filterConnectSHtoA'
+                        }
+                    ]
+                }, {
                     xtype: 'pagingtoolbar',
                     id: 'stakeholderGridPagingToolbar',
                     store: 'StakeholderGrid',
