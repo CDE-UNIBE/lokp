@@ -16,7 +16,7 @@ Ext.define('Lmkp.controller.editor.Detail', {
 
     views: [
     'activities.Details',
-    'Filter'
+    'activities.Filter'
     ],
 
     init: function() {

@@ -16,8 +16,7 @@ Ext.onReady(function(){
         controllers: [
         'login.Toolbar',
         'editor.Detail',
-        'editor.Overview',
-        'Stakeholder'
+        'editor.Overview'
         ],
 
         launch: function() {
