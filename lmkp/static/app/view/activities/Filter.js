@@ -55,8 +55,27 @@ Ext.define('Lmkp.view.activities.Filter', {
         var ret = [];
         var filterpanels = this.query('lo_itemsfilterpanel');
         for (var i in filterpanels) {
-            ret.push(filterpanels[i].getFilterValues());
+            var v = filterpanels[i].getFilterValues();
+            if (v) {
+                ret.push(v);
+            }
         }
         return ret;
+    },
+
+    toggleLogicalOperator: function() {
+        var filterpanels = this.query('lo_itemsfilterpanel[name=attributePanel]');
+        var cb = this.down('combobox[name=logicalOperator]');
+        if (cb && filterpanels) {
+            cb.setVisible(filterpanels.length > 1);
+        }
+    },
+
+    getLogicalOperator: function() {
+        var cb = this.down('combobox[name=logicalOperator]');
+        if (cb) {
+            return cb.getValue();
+        }
+        return null;
     }
 });
