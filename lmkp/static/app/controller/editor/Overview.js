@@ -45,7 +45,10 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 render: this.onMapPanelRender
             },
             'lo_activitydetailtab': {
-              render: this.onActivityDetailTabRender
+                render: this.onActivityDetailTabRender
+            },
+            'lo_newactivitypanel': {
+                render: this.onNewActivityPanelRender
             },
             'lo_editoractivitytablepanel': {
                 render: this.onActivityTablePanelRender
@@ -321,48 +324,16 @@ Ext.define('Lmkp.controller.editor.Overview', {
         this._renderColumnMultipleValues(comp, "stakeholder-attr_country");
     },
 
+    /**
+     * Shows the selected model in the details panel
+     */
     showDetails: function(model, selected, eOpts) {
 
-        // Unselect all selected features on the map
-        //var mapPanel = Ext.ComponentQuery.query('mappanel')[0];
-        //var selectControl = mapPanel.getMap().getControlsBy('id', 'selectControl')[0];
-
-        // Get the vector layer from the map panel
-        /*var vectorLayer = mapPanel.getVectorLayer();
-
-        // Unregister the featureunselected event and unselect all features
-        vectorLayer.events.unregister('featureunselected', this, this.onFeatureUnselected);
-        selectControl.unselectAll();
-        // Register again the featureunselected event
-        vectorLayer.events.register('featureunselected', this, this.onFeatureUnselected);
-
-        // If there are selected records, highlight it on the map
-        if(selectedRecord[0]){
-            // Get the acitvity identifier
-            var id = selectedRecord[0].data.id;
-
-            // Get the feature by its fid
-            var feature = vectorLayer.getFeatureByFid(id);
-
-            // Unregister and register again the featureselected event
-            vectorLayer.events.unregister('featureselected', this, this.onFeatureSelected);
-            // Select the feature
-            selectControl.select(feature);
-            vectorLayer.events.register('featureselected', this, this.onFeatureSelected);
-        }*/
-
         var detailPanel = this.getDetailPanel();
-        var activeTab = detailPanel.getActiveTab();
-        switch (activeTab.getXType()) {
-            case "lo_activityhistorypanel":
-                // var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
-                // detailPanel._populateHistoryTab(selectedTab, uid)
-                console.log("coming soon");
-                break;
-            default: 	// default is: activityDetailTab
-                detailPanel.populateDetailsTab(activeTab, selected);
-                break;
-        }
+        var d = detailPanel.down('lo_activitydetailtab');
+        detailPanel.setActiveTab(d);
+        detailPanel.populateDetailsTab(d, selected);
+
     },
 
     resetActivateButton: function(element) {
@@ -683,7 +654,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
 
         var tbar = comp.getDockedItems('toolbar[dock="top"]')[0];
 
-         var movePointCtrl = new OpenLayers.Control.ModifyFeature(mappanel.getVectorLayer(), {
+        var movePointCtrl = new OpenLayers.Control.ModifyFeature(mappanel.getVectorLayer(), {
             mode: OpenLayers.Control.ModifyFeature.DRAG
         });
 
@@ -701,6 +672,44 @@ Ext.define('Lmkp.controller.editor.Overview', {
         var moveButton = Ext.create('Ext.button.Button', moveAction);
 
         tbar.add(moveButton);
+    },
+
+    onNewActivityPanelRender: function(comp, eOpts){
+
+        // Get the map from the map panel
+        var map = this.getMapPanel().getMap();
+
+        // Get the toolbar
+        var tbar = comp.down('form').getDockedItems('toolbar[dock="top"]')[0];
+
+        var createPointCtrl = new OpenLayers.Control.DrawFeature(
+            this.getMapPanel().getVectorLayer(),
+            OpenLayers.Handler.Point,{
+                eventListeners: {
+                    'featureadded': function(event){
+                        var g = event.feature.geometry;
+                        createPointCtrl.deactivate();
+                        createButton.toggle(false);
+                        this.setActivityGeometry(g);
+                    },
+                    scope: comp
+                }
+            });
+
+        map.addControl(createPointCtrl);
+
+        var createAction = Ext.create('GeoExt.Action',{
+            control: createPointCtrl,
+            iconCls: 'create-button',
+            scale: 'medium',
+            text: 'Add Location',
+            toggleGroup: 'map-controls',
+            toggleHandler: function(button, state){
+                state ? createPointCtrl.activate() : createPointCtrl.deactivate();
+            }
+        });
+        var createButton = Ext.create('Ext.button.Button', createAction);
+        tbar.insert(0, createButton);
     }
 
 });

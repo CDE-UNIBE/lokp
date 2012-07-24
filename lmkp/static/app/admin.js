@@ -15,7 +15,7 @@ Ext.onReady(function(){
         ],
 
         controllers: [
-        'activities.NewActivityWindow',
+        'activities.NewActivity',
         'administrator.Main',
         'editor.Detail',
         'editor.Map',
