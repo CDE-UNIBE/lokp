@@ -22,7 +22,6 @@ Ext.onReady(function(){
         'editor.Overview',
         'login.Toolbar',
         'moderator.Pending',
-        'Stakeholder',
         'stakeholders.StakeholderFieldContainer',
         'stakeholders.StakeholderSelection'
         ],

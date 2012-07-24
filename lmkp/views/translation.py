@@ -40,8 +40,13 @@ def ui_messages(request):
         'failure': _('failure', default='Failure'),
         'submit': _('submit', default='Submit'),
         'id': _('id', default='ID'),
+        'edit': _('edit', default='edit'),
+        'details': _('details', default='details'),
+        'map-view': _('map-view', default='Map View'),
         # activities / filtering
         'activities-title': _('activities-title', default='Activities'),
+        'activities-table_view': _('activities-table_view', default='Activities Table View'),
+        'activities-add_further_information': _('activities-add_further_information', default='Submit further information to an existing activity'),
         'addattributefilter-button': _('addattributefilter-button', default='Add attribute filter'),
         'addattributefilter-tooltip': _('addattributefilter-tooltip', default='Add a filter based on attribute'),
         'addtimefilter-button': _('addtimefilter-button', default='Add time filter'),
@@ -49,6 +54,9 @@ def ui_messages(request):
         'deleteallfilter-button': _('deleteallfilter-button', default='Delete all filters'),
         'deleteallfilter-tooltip': _('deleteallfilter-tooltip', default='Delete all attribute and temporal filters'),
         'filter-title': _('filter-title', default='Filter'),
+        'filter-apply_spatial': _('filter-apply_spatial', default='Apply spatial filter'),
+        'filter-connect_to_activities': _('filter-connect_to_activities', default='Combine with filter on Activities'),
+        'filter-connect_to_stakeholders': _('filter-connect_to_stakeholders', default='Combine with filter on Stakeholders'),
         'activitypaging-before': _('activitypaging-before', default='Page'),
         'activitypaging-after': _('activitypaging-after', default='of {0}'),
         'activitypaging-message': _('paging-message', default='Displaying activities {0} - {1} of {2}'),
@@ -60,6 +68,7 @@ def ui_messages(request):
         'deletefilter-tooltip': _('deletefilter-tooltip', default='Click to delete this filter'),
         # stakeholders
         'stakeholders-title': _('stakeholder-title', default='Stakeholders'),
+        'stakeholders-table_view': _('stakeholders-table_view', default='Stakeholders Table View'),
         'stakeholder-name': _('stakholder-name', default='Name'),
         'stakeholder-country': _('stakholder-country', default='Country'),
         'stakeholder-paging_message': _('stakeholder-paging_message', default='Displaying stsakeholders {0} - {1} of {2}'),
@@ -67,6 +76,8 @@ def ui_messages(request):
         # involvements
         'involvements-title': _('involvements-title', default='Involvement'),
         'involvements-role': _('involvements-role', default='Role'),
+        # details
+        'details-toggle_all': _('details-toggle_all', default='Toggle all details'),
         # status
         'status-pending': _('status-pending', default='pending'),
         'status-active': _('status-active', default='active'),

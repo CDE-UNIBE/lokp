@@ -21,7 +21,6 @@ Ext.onReady(function(){
         'editor.Map',
         'editor.Overview',
         'moderator.Pending',
-        'Stakeholder',
         'stakeholders.StakeholderFieldContainer',
         'stakeholders.StakeholderSelection'
         ],

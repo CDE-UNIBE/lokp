@@ -74,15 +74,15 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
             // grid columns
             columns: [
             {
-                header: 'Name',
+                header: Lmkp.ts.msg("stakeholder-attr_name"),
                 name: 'stakeholdernamecolumn',
-                dataIndex: 'Name',
+                dataIndex: Lmkp.ts.msg("stakeholder-attr_name"),
                 flex: 1,
                 sortable: true
             }, {
-                header: 'Country',
+                header: Lmkp.ts.msg("stakeholder-attr_country"),
                 name: 'stakeholdercountrycolumn',
-                dataIndex: 'Country',
+                dataIndex: Lmkp.ts.msg("stakeholder-attr_country"),
                 flex: 0,
                 sortable: true
             }
