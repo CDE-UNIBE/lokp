@@ -476,6 +476,7 @@ class StakeholderProtocol(Protocol):
         query = self.Session.query(Stakeholder.id.label("id"),
                                    Stakeholder.stakeholder_identifier.label("stakeholder_identifier"),
                                    SH_Changeset.timestamp.label("timestamp"),
+                                   Status.name.label("status"),
                                    Stakeholder.version.label("version"),
                                    SH_Tag_Group.id.label("taggroup"),
                                    SH_Tag_Group.fk_tag.label("main_tag"),
@@ -488,6 +489,7 @@ class StakeholderProtocol(Protocol):
                                    involvement_query.c.activity_identifier.label("activity_identifier"),
                                    involvement_query.c.role_name.label("stakeholder_role")).\
             join(relevant_stakeholders, relevant_stakeholders.c.order_id == Stakeholder.id).\
+            join(Status).\
             join(SH_Changeset).\
             join(SH_Tag_Group).\
             join(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_sh_tag_group).\
@@ -547,7 +549,7 @@ class StakeholderProtocol(Protocol):
             # If no existing feature found, create new one
             if stakeholder == None:
                 stakeholder = Feature(uid, order_value, version=version,
-                    timestamp=timestamp)
+                    timestamp=timestamp, status=i.status)
                 stakeholders.append(stakeholder)
 
             # Check if there is already this tag group present in the current
