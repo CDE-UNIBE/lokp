@@ -46,7 +46,17 @@ Ext.define('Lmkp.view.activities.Filter', {
             text: Lmkp.ts.msg("addtimefilter-button"),
             tooltip: Lmkp.ts.msg("addtimefilter-tooltip"),
             iconCls: 'toolbar-button-add',
-            flex: 0
+            flex: 0,
+            item_type: 'activity'
         }]
-    }]
+    }],
+
+    getFilterItems: function() {
+        var ret = [];
+        var filterpanels = this.query('lo_itemsfilterpanel');
+        for (var i in filterpanels) {
+            ret.push(filterpanels[i].getFilterValues());
+        }
+        return ret;
+    }
 });
