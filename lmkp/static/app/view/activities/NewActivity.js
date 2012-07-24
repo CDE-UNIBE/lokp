@@ -33,6 +33,7 @@ Ext.define('Lmkp.view.activities.NewActivity', {
             tbar: ['->',{
                 disabled: true,
                 formBind: true,
+                iconCls: 'save-button',
                 itemId: 'submitButton',
                 scale: 'medium',
                 scope: this,
