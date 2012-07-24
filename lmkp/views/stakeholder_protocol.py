@@ -333,7 +333,10 @@ class StakeholderProtocol(Protocol):
                 if 'sh_filter_length' in filter else 0)
         
         # Get the order
-        order_query, order_numbers = self._get_order(request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value)
+        order_query, order_numbers = self._get_order(
+            request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value,
+            SH_Changeset
+        )
 
         # Find id's of relevant stakeholders by joining with prepared filters.
         # If result is ordered, do an Outer Join to attach ordered attributes.
