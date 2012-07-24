@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.NewItem', {
-    extend: 'Ext.window.Window',
+    extend: 'Ext.panel.Panel',
 
 
     /**
