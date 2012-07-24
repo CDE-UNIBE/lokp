@@ -1,30 +1,30 @@
-Ext.define('Lmkp.controller.activities.NewActivityWindow', {
+Ext.define('Lmkp.controller.activities.NewActivity', {
     extend: 'Ext.app.Controller',
 
     refs: [{
-        ref: 'newActivityWindow',
-        selector: 'lo_newactivitywindow'
+        ref: 'newActivityPanel',
+        selector: 'lo_newactivitypanel'
     },{
         ref: 'selectStakeholderFieldSet',
-        selector: 'lo_newactivitywindow fieldset[itemId="selectStakeholderFieldSet"]'
+        selector: 'lo_newactivitypanel fieldset[itemId="selectStakeholderFieldSet"]'
     }],
 
     views: [
-    'activities.NewActivityWindow'
+    'activities.NewActivity'
     ],
 
     init: function(){
         this.control({
-            'lo_newactivitywindow button[itemId="selectStakeholderButton"]': {
-                click: this.onButtonClick
+            'lo_newactivitypanel button[itemId="selectStakeholderButton"]': {
+                click: this.onStakeholderButtonClick
             }
         });
     },
 
-    onButtonClick: function(button, event){
+    onStakeholderButtonClick: function(button, event){
         var sel = Ext.create('Lmkp.view.stakeholders.StakeholderSelection');
 
-        var w = this.getNewActivityWindow();
+        var w = this.getNewActivityPanel();
 
         sel.on('close', function(panel, eOpts){
             var sh = panel.getSelectedStakeholder();
