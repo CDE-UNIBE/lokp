@@ -483,7 +483,7 @@ class Inv(object):
 
 class Feature(object):
 
-    def __init__(self, guid, order_value, version=None,
+    def __init__(self, guid, order_value, version=None, status=None,
         timestamp=None, diff_info=None, ** kwargs):
         self._taggroups = []
         self._involvements = []
@@ -492,6 +492,7 @@ class Feature(object):
         self._version = version
         self._timestamp = timestamp
         self._diff_info = diff_info
+        self._status = status
 
     def add_taggroup(self, taggroup):
         """
@@ -557,6 +558,8 @@ class Feature(object):
             ret['version'] = self._version
         if self._timestamp is not None:
             ret['timestamp'] = str(self._timestamp)
+        if self._status is not None:
+            ret['status'] = self._status
         if self._diff_info is not None:
             for k in self._diff_info:
                 ret[k] = self._diff_info[k]
