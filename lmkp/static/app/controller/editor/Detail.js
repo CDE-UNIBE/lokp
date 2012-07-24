@@ -30,9 +30,6 @@ Ext.define('Lmkp.controller.editor.Detail', {
             'lo_editordetailpanel button[itemId="show-all-details"]': {
                 toggle: this.onShowDetailsToggle
             },
-            'lo_editordetailpanel button[name=toggleDetails]': {
-                toggle: this.onTaggroupDetailsToggle
-            },
             'lo_editordetailpanel button[name=editTaggroup]': {
                 click: this.onEditTaggroupButtonClick
             }
@@ -51,13 +48,6 @@ Ext.define('Lmkp.controller.editor.Detail', {
                 });
                 win.show();
             }
-        }
-    },
-
-    onTaggroupDetailsToggle: function(button, pressed) {
-        var taggrouppanel = button.up('lo_taggrouppanel');
-        if (taggrouppanel) {
-            taggrouppanel._toggleTags(pressed);
         }
     },
 
