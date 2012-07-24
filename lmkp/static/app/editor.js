@@ -14,7 +14,8 @@ Ext.onReady(function(){
         ],
 
         controllers: [
-        'activities.NewActivityWindow',
+        'activities.NewActivity',
+        'activities.TagGroup',
         'login.Toolbar',
         'editor.Detail',
         'editor.Map',

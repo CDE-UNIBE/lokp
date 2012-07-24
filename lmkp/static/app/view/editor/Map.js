@@ -86,28 +86,11 @@ Ext.define('Lmkp.view.editor.Map',{
             url: 'http://localhost:8080/geoserver/lo/wms'
         });
 
-        var createPointCtrl = new OpenLayers.Control.DrawFeature(this.vectorLayer,
-            OpenLayers.Handler.Point,{
-                eventListeners: {
-                    'featureadded': function(event){
-                        var geometry = event.feature.geometry;
-                        var win = Ext.create('Lmkp.view.activities.NewActivityWindow',{
-                            activityGeometry: geometry.clone().transform(
-                                new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"))
-                        });
-                        win.on('hide', function(comp, eOpts){
-                            this.vectorLayer.removeFeatures([event.feature]);
-                        }, this);
-                        win.show();
-                        createPointCtrl.deactivate();
-                        panButton.toggle(true);
-                    }
-                }
-            });
+
 
         // Add the controls to the map
         this.map.addControl(this.identifyCtrl);
-        this.map.addControl(createPointCtrl);
+        
 
         var panAction = Ext.create('GeoExt.Action',{
             control: new OpenLayers.Control.DragPan({
@@ -154,18 +137,6 @@ Ext.define('Lmkp.view.editor.Map',{
             tooltip: "Identify feature"
         });
         this.tbar.add(Ext.create('Ext.button.Button', identifyAction));
-
-        var createAction = Ext.create('GeoExt.Action',{
-            control: createPointCtrl,
-            iconCls: 'create-button',
-            scale: 'medium',
-            text: 'Add new activity',
-            toggleGroup: 'map-controls',
-            toggleHandler: function(button, state){
-                state ? createPointCtrl.activate() : createPointCtrl.deactivate();
-            }
-        });
-        this.tbar.add(Ext.create('Ext.button.Button', createAction));
 
         this.callParent(arguments);
     }

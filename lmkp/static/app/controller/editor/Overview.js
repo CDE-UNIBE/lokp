@@ -7,6 +7,12 @@ Ext.define('Lmkp.controller.editor.Overview', {
     }, {
         ref: 'detailPanel',
         selector: 'lo_editordetailpanel'
+    },{
+        ref: 'newActivityPanel',
+        selector: 'lo_newactivitypanel'
+    },{
+        ref: 'selectStakeholderFieldSet',
+        selector: 'lo_newactivitypanel fieldset[itemId="selectStakeholderFieldSet"]'
     }],
 
     requires: [
@@ -48,8 +54,16 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 render: this.onMapPanelRender
             },
             'lo_activitydetailtab': {
-              render: this.onActivityDetailTabRender
+                render: this.onActivityDetailTabRender
             },
+            // Events concerning the NewActivity panel
+            'lo_newactivitypanel': {
+                render: this.onNewActivityPanelRender
+            },
+            'lo_newactivitypanel button[itemId="submitButton"]': {
+                click: this.onSubmitButtonClick
+            },
+            // Events concerning the ActivityTable panel
             'lo_editoractivitytablepanel': {
                 render: this.onActivityTablePanelRender
             },
@@ -277,48 +291,16 @@ Ext.define('Lmkp.controller.editor.Overview', {
         this._renderColumnMultipleValues(comp, "stakeholder-attr_country");
     },
 
+    /**
+     * Shows the selected model in the details panel
+     */
     showDetails: function(model, selected, eOpts) {
 
-        // Unselect all selected features on the map
-        //var mapPanel = Ext.ComponentQuery.query('mappanel')[0];
-        //var selectControl = mapPanel.getMap().getControlsBy('id', 'selectControl')[0];
-
-        // Get the vector layer from the map panel
-        /*var vectorLayer = mapPanel.getVectorLayer();
-
-        // Unregister the featureunselected event and unselect all features
-        vectorLayer.events.unregister('featureunselected', this, this.onFeatureUnselected);
-        selectControl.unselectAll();
-        // Register again the featureunselected event
-        vectorLayer.events.register('featureunselected', this, this.onFeatureUnselected);
-
-        // If there are selected records, highlight it on the map
-        if(selectedRecord[0]){
-            // Get the acitvity identifier
-            var id = selectedRecord[0].data.id;
-
-            // Get the feature by its fid
-            var feature = vectorLayer.getFeatureByFid(id);
-
-            // Unregister and register again the featureselected event
-            vectorLayer.events.unregister('featureselected', this, this.onFeatureSelected);
-            // Select the feature
-            selectControl.select(feature);
-            vectorLayer.events.register('featureselected', this, this.onFeatureSelected);
-        }*/
-
         var detailPanel = this.getDetailPanel();
-        var activeTab = detailPanel.getActiveTab();
-        switch (activeTab.getXType()) {
-            case "lo_activityhistorypanel":
-                // var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
-                // detailPanel._populateHistoryTab(selectedTab, uid)
-                console.log("coming soon");
-                break;
-            default: 	// default is: activityDetailTab
-                detailPanel.populateDetailsTab(activeTab, selected);
-                break;
-        }
+        var d = detailPanel.down('lo_activitydetailtab');
+        detailPanel.setActiveTab(d);
+        detailPanel.populateDetailsTab(d, selected);
+
     },
 
     resetActivateButton: function(element) {
@@ -692,7 +674,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
 
         var tbar = comp.getDockedItems('toolbar[dock="top"]')[0];
 
-         var movePointCtrl = new OpenLayers.Control.ModifyFeature(mappanel.getVectorLayer(), {
+        var movePointCtrl = new OpenLayers.Control.ModifyFeature(mappanel.getVectorLayer(), {
             mode: OpenLayers.Control.ModifyFeature.DRAG
         });
 
@@ -740,6 +722,157 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 url += queries.join('&');
             }
             return url;
+        }
+    },
+
+    onNewActivityPanelRender: function(comp, eOpts){
+
+        // Get the map from the map panel
+        var map = this.getMapPanel().getMap();
+
+        // Get the toolbar
+        var tbar = comp.down('form').getDockedItems('toolbar[dock="top"]')[0];
+
+        var createPointCtrl = new OpenLayers.Control.DrawFeature(
+            this.getMapPanel().getVectorLayer(),
+            OpenLayers.Handler.Point,{
+                eventListeners: {
+                    'featureadded': function(event){
+                        var g = event.feature.geometry;
+                        createPointCtrl.deactivate();
+                        createButton.toggle(false);
+                        this.setActivityGeometry(g);
+                    },
+                    scope: comp
+                }
+            });
+
+        map.addControl(createPointCtrl);
+
+        var createAction = Ext.create('GeoExt.Action',{
+            control: createPointCtrl,
+            iconCls: 'create-button',
+            scale: 'medium',
+            text: 'Add Location',
+            toggleGroup: 'map-controls',
+            toggleHandler: function(button, state){
+                state ? createPointCtrl.activate() : createPointCtrl.deactivate();
+            }
+        });
+        var createButton = Ext.create('Ext.button.Button', createAction);
+        tbar.insert(0, createButton);
+    },
+
+    onSubmitButtonClick: function(button, event){
+        var formpanel = button.up('form');
+        var theform = formpanel.getForm();
+        if (theform.isValid()) {
+
+            // The form cannot be submitted 'normally' because ActivityProtocol expects a JSON object.
+            // As a solution, the form values are used to create a JSON object which is sent using an
+            // AJAX request.
+            // http://www.sencha.com/forum/showthread.php?132082-jsonData-in-submit-action-of-form
+
+            // collect values and fill them into TagGroups
+            // TODO: it seems that the main tag (first added to dict) always remains in first position, but
+            // maybe this should be ensured in a better way ...
+            var taggroups = [];
+            var stakeholders = [];
+
+            // Get the geometry
+            var geometry = null;
+            var geojson = new OpenLayers.Format.GeoJSON();
+            if(this.getNewActivityPanel().getActivityGeometry()){
+                geometry = Ext.decode(geojson.write(this.getNewActivityPanel().getActivityGeometry()));
+            }
+
+            var comps = formpanel.query('lo_stakeholderfieldcontainer');
+            for(var j = 0; j < comps.length; j++ ) {
+                var fieldContainer = comps[j];
+                var stakeholder = {}
+                stakeholder['id'] = fieldContainer.getStakeholderId();
+                //stakeholder['role'] = fieldContainer.getStakeholderRole();
+                stakeholder['role'] = 6;
+                stakeholder['version'] = fieldContainer.getStakeholderVersion();
+                stakeholder['op'] = 'add';
+                stakeholders.push(stakeholder);
+            }
+
+            for (var i in formpanel.getValues()) {
+                if(i.split('.')[0] != 'stakeholder') {
+                    var tags = [];
+                    var main_tag = {};
+                    // first, look only at mandatory fields (no '__val' or '__attr' in name)
+                    if (i.indexOf("__attr") == -1 && i.indexOf("__val") == -1) {
+                        var tag = {};
+                        tag['key'] = i;
+                        tag['value'] = formpanel.getValues()[i];
+                        tag['op'] = 'add';
+                        tags.push(tag);
+                        // also add to main_tag
+                        main_tag['key'] = i;
+                        main_tag['value'] = formpanel.getValues()[i];
+
+                        // look if further attributes to this field were entered
+                        var attrs = Ext.ComponentQuery.query('[name=' + i + '__attr]');
+                        var vals = Ext.ComponentQuery.query('[name=' + i + '__val]');
+                        if (attrs.length > 0 && vals.length > 0 && attrs.length == vals.length) {
+                            for (var j=0; j<attrs.length; j++) {
+                                var tag = {};
+                                tag['key'] = attrs[j].getValue();
+                                tag['value'] = vals[j].getValue();
+                                tag['op'] = 'add';
+                                tags.push(tag);
+                            }
+                        }
+                    }
+                    if (tags.length > 0) {
+                        taggroups.push({
+                            'tags': tags,
+                            'main_tag': main_tag
+                        });
+                    }
+                }
+            }
+            var diffObject = {
+                'activities': [{
+                    'taggroups': taggroups,
+                    'geometry': geometry,
+                    'stakeholders': stakeholders
+                }]
+            };
+
+            // send JSON through AJAX request
+            Ext.Ajax.request({
+                url: '/activities',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8'
+                },
+                jsonData: diffObject,
+                callback: function(options, success, response) {
+                    if(success){
+                        Ext.Msg.alert('Success', 'The activity was successfully created. It will be reviewed shortly.');
+
+                        var p = this.getNewActivityPanel();
+                        p.setActivityGeometry(null);
+                        var formpanel = p.down('form');
+                        formpanel.getForm().reset();
+
+                        var fieldContainers = formpanel.query('lo_stakeholderfieldcontainer');
+                        for(var i = 0; i < fieldContainers.length; i++){
+                            this.getSelectStakeholderFieldSet().remove(fieldContainers[i]);
+                        }
+
+                        // Remove also the feature on the map
+                        this.getMapPanel().getVectorLayer().removeAllFeatures();
+                    } else {
+                        Ext.Msg.alert('Failure', 'The activity could not be created.');
+                    }
+
+                },
+                scope: this
+            });
         }
     }
 

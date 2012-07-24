@@ -3,12 +3,18 @@ Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
     alias: ['widget.lo_stakeholderpanel'],
 
     requires: [
-        'Lmkp.view.activities.TagGroupPanel',
-        'Lmkp.view.activities.InvolvementPanel'
+    'Lmkp.view.activities.TagGroupPanel',
+    'Lmkp.view.activities.InvolvementPanel'
     ],
 
     bodyPadding: 5,
+
+    config: {
+        editable: true
+    },
+
     layout: 'anchor',
+    
     defaults: {
         margin: '5 0 0 0',
         anchor: '100%'
@@ -45,8 +51,9 @@ Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
             var taggroupStore = this.contentItem.taggroups();
             taggroupStore.each(function(record) {
                 me.add({
-                    xtype: 'lo_taggrouppanel',
-                    taggroup: record
+                    editable: this.editable,
+                    taggroup: record,
+                    xtype: 'lo_taggrouppanel'
                 });
             });
 

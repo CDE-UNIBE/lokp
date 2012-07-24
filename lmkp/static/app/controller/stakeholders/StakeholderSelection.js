@@ -28,8 +28,9 @@ Ext.define('Lmkp.controller.stakeholders.StakeholderSelection', {
         var sel  = this.getStakeholderSelection();
         sel.confirmButton.setText("Select Stakeholder");
         
-        var p = Ext.create('Lmkp.view.stakeholders.StakeholderPanel',{
+        var p = Ext.create('Lmkp.view.stakeholders.StakeholderPanel', {
             contentItem: records[0],
+            editable: false,
             region: 'south'
         });
 

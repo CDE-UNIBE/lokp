@@ -29,6 +29,9 @@ Ext.define('Lmkp.view.editor.Detail', {
     }, {
         title: 'History',
         xtype: 'lo_activityhistorypanel'
+    }, {
+        title: 'Add new Activity',
+        xtype: 'lo_newactivitypanel'
     }],
 
     initComponent: function() {
