@@ -43,7 +43,7 @@ class ActivityFeature2(Feature):
     """
 
     def __init__(self, guid, order_value, geometry=None, version=None,
-                 timestamp=None, diff_info=None, ** kwargs):
+                 timestamp=None, diff_info=None, status=None, ** kwargs):
         self._taggroups = []
         self._involvements = []
         self._guid = guid
@@ -51,6 +51,7 @@ class ActivityFeature2(Feature):
         self._geometry = geometry
         self._version = version
         self._timestamp = timestamp
+        self._status = status
         self._diff_info = diff_info
 
     def to_table(self):
@@ -80,6 +81,8 @@ class ActivityFeature2(Feature):
             ret['version'] = self._version
         if self._timestamp is not None:
             ret['timestamp'] = str(self._timestamp)
+        if self._status is not None:
+            ret['status'] = self._status
         if self._diff_info is not None:
             for k in self._diff_info:
                 ret[k] = self._diff_info[k]
@@ -307,7 +310,7 @@ class ActivityProtocol2(Protocol):
         version = 1
 
         # Try to get the geometry
-        try:
+        if 'geometry' in activity and activity['geometry'] is not None:
             geom = geojson.loads(json.dumps(activity['geometry']),
                                  object_hook=geojson.GeoJSON.to_instance)
 
@@ -315,7 +318,7 @@ class ActivityProtocol2(Protocol):
             shape = asShape(geom)
             # Create a new activity and add a representative point to the activity
             new_activity = Activity(activity_identifier=identifier, version=version, point=shape.representative_point().wkt)
-        except KeyError:
+        else:
             # If no geometry is submitted, create a new activity without a geometry
             new_activity = Activity(activity_identifier=identifier, version=version)
 
@@ -424,7 +427,9 @@ class ActivityProtocol2(Protocol):
                                 if 'sh_filter_length' in filter else 0)
 
         # Get the order
-        order_query, order_numbers = self._get_order(request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value)
+        order_query, order_numbers = self._get_order(
+            request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value, A_Changeset
+        )
         
         # Find id's of relevant activities by joining with prepared filters.
         # If result is ordered, do an Outer Join to attach ordered attributes.
@@ -583,6 +588,7 @@ class ActivityProtocol2(Protocol):
         query = self.Session.query(Activity.id.label("id"),
                                    Activity.activity_identifier.label("activity_identifier"),
                                    Activity.point.label("geometry"),
+                                   Status.name.label("status"),
                                    A_Changeset.timestamp.label("timestamp"),
                                    Activity.version.label("version"),
                                    A_Tag_Group.id.label("taggroup"),
@@ -596,6 +602,7 @@ class ActivityProtocol2(Protocol):
                                    involvement_query.c.stakeholder_identifier.label("stakeholder_identifier"),
                                    involvement_query.c.role_name.label("stakeholder_role")).\
             join(relevant_activities, relevant_activities.c.order_id == Activity.id).\
+            join(Status).\
             join(A_Changeset).\
             join(A_Tag_Group).\
             join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
@@ -655,7 +662,10 @@ class ActivityProtocol2(Protocol):
 
             # If no existing ActivityFeature found, create new one
             if activity == None:
-                activity = ActivityFeature2(uid, order_value, geometry=g, version=version)
+                activity = ActivityFeature2(
+                    uid, order_value, geometry=g, version=version,
+                    timestamp=i.timestamp, status=i.status
+                )
                 activities.append(activity)
 
             # Check if there is already this tag group present in the current

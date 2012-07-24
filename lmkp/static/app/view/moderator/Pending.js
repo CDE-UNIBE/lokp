@@ -36,6 +36,12 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
             },
             // grid columns
             columns: [{
+                header: Lmkp.ts.msg('date-label'),
+                name: 'datecolumn',
+                dataIndex: 'timestamp',
+                flex: 0,
+                sortable: true
+            }, {
                 header: Lmkp.ts.msg("activity-attr_country"),
                 name: 'activityCountryColumn',
                 dataIndex: Lmkp.ts.msg("activity-attr_country"),
@@ -74,6 +80,12 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
             // grid columns
             columns: [
             {
+                header: Lmkp.ts.msg('date-label'),
+                name: 'datecolumn',
+                dataIndex: 'timestamp',
+                flex: 0,
+                sortable: true
+            }, {
                 header: Lmkp.ts.msg("stakeholder-attr_name"),
                 name: 'stakeholdernamecolumn',
                 dataIndex: Lmkp.ts.msg("stakeholder-attr_name"),

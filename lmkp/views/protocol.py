@@ -275,7 +275,8 @@ class Protocol(object):
                      subquery()
         return key_query, value_query
 
-    def _get_order(self, request, Mapped_Class, Tag_Group, Tag, Key, Value):
+    def _get_order(self, request, Mapped_Class, Tag_Group, Tag, Key, Value,
+        Changeset):
         """
         Returns
         - a SubQuery with an ordered list of Activity IDs and
@@ -284,33 +285,42 @@ class Protocol(object):
         """
         order_key = request.params.get('order_by', None)
         if order_key is not None:
-            # Query to order number values (cast to Float)
-            q_number = self.Session.query(
-                Mapped_Class.id,
-                cast(Value.value, Float).label('value')).\
-            join(Tag_Group).\
-            join(Tag, Tag.fk_tag_group == Tag_Group.id).\
-            join(Value).\
-            join(Key).\
-            filter(Key.key.like(order_key))
-            # Query to order string values
-            q_text = self.Session.query(
-                Mapped_Class.id,
-                Value.value.label('value')).\
-            join(Tag_Group).\
-            join(Tag, Tag.fk_tag_group == Tag_Group.id).\
-            join(Value).\
-            join(Key).\
-            filter(Key.key.like(order_key))
+            if order_key == 'timestamp':
+                q = self.Session.query(
+                    Mapped_Class.id,
+                    Changeset.timestamp.label('value')
+                ).\
+                join(Changeset).\
+                subquery()
+                return q, False
+            else:
+                # Query to order number values (cast to Float)
+                q_number = self.Session.query(
+                    Mapped_Class.id,
+                    cast(Value.value, Float).label('value')).\
+                join(Tag_Group).\
+                join(Tag, Tag.fk_tag_group == Tag_Group.id).\
+                join(Value).\
+                join(Key).\
+                filter(Key.key.like(order_key))
+                # Query to order string values
+                q_text = self.Session.query(
+                    Mapped_Class.id,
+                    Value.value.label('value')).\
+                join(Tag_Group).\
+                join(Tag, Tag.fk_tag_group == Tag_Group.id).\
+                join(Value).\
+                join(Key).\
+                filter(Key.key.like(order_key))
 
-            # Try to query numbered values and cast them
-            try:
-                x = q_number.all()
-                return q_number.subquery(), True
-            except:
-                # Rolling back of Session is needed to completely erase error thrown above
-                self.Session.rollback()
-                return q_text.subquery(), False
+                # Try to query numbered values and cast them
+                try:
+                    x = q_number.all()
+                    return q_number.subquery(), True
+                except:
+                    # Rolling back of Session is needed to completely erase error thrown above
+                    self.Session.rollback()
+                    return q_text.subquery(), False
 
         return None, None
 
@@ -483,7 +493,7 @@ class Inv(object):
 
 class Feature(object):
 
-    def __init__(self, guid, order_value, version=None,
+    def __init__(self, guid, order_value, version=None, status=None,
         timestamp=None, diff_info=None, ** kwargs):
         self._taggroups = []
         self._involvements = []
@@ -492,6 +502,7 @@ class Feature(object):
         self._version = version
         self._timestamp = timestamp
         self._diff_info = diff_info
+        self._status = status
 
     def add_taggroup(self, taggroup):
         """
@@ -557,6 +568,8 @@ class Feature(object):
             ret['version'] = self._version
         if self._timestamp is not None:
             ret['timestamp'] = str(self._timestamp)
+        if self._status is not None:
+            ret['status'] = self._status
         if self._diff_info is not None:
             for k in self._diff_info:
                 ret[k] = self._diff_info[k]
