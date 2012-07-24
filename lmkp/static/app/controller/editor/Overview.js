@@ -105,6 +105,9 @@ Ext.define('Lmkp.controller.editor.Overview', {
             },
             'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdercountrycolumn]': {
                 afterrender: this.renderStakeholderCountryColumn
+            },
+            'checkbox[itemId=filterConnect]': {
+                change: this.onConnectFilterChange
             }
         });
     },
@@ -196,6 +199,8 @@ Ext.define('Lmkp.controller.editor.Overview', {
         });
         // show initial filter
         this.showValueFields(cbox, [store.getAt('0')]);
+        // toggle logical operator
+        form.toggleLogicalOperator();
     },
 
     addTimeFilter: function(button) {
@@ -329,15 +334,34 @@ Ext.define('Lmkp.controller.editor.Overview', {
         }
     },
 
-    applyFilter: function(button) {
+    /**
+     * When using the checkbox to combine filters from Activities and
+     * Stakeholders, look for the filterpanel to provide it to 'applyFilter()'
+     */
+    onConnectFilterChange: function(checkbox) {
+        var gridpanel = checkbox.up('panel');
+        var tablepanel = gridpanel.up('panel');
+        var filterpanel = tablepanel.down('panel');
+        this.applyFilter(filterpanel);
+    },
 
-        // use button to find if new filter request came from Activities or
-        // Stakeholders
-        var itempanel = button.up('panel');
-        var filterpanel = itempanel.up('panel') ? itempanel.up('panel') : null;
+    /**
+     * If input is not a button, it is assumed that it is a filterpanel.
+     */
+    applyFilter: function(input) {
+
+        if (input.getXType() == 'button' || input.getXType() == 'combobox') {
+            // use button to find if new filter request came from Activities or
+            // Stakeholders
+            var itempanel = input.up('panel');
+            var filterpanel = itempanel.up('panel') ? itempanel.up('panel') : null;
+        } else {
+            var filterpanel = input;
+        }
 
         var store = null;
         var url = '';
+        var logical_operator = null;
 
         if (filterpanel) {
             // Fill needed values based on Activity or Stakeholder
@@ -365,7 +389,11 @@ Ext.define('Lmkp.controller.editor.Overview', {
             }
 
             // Add filters from current panel to url
-            url += this._getFilterUrl(filterpanel.getFilterItems(), prefix);
+            var filters = filterpanel.getFilterItems();
+            url += this._getFilterUrl(filters, prefix);
+            if (filters.length > 1) {
+                logical_operator = filterpanel.getLogicalOperator();
+            }
 
             // if checkbox is set, also add filters from other panel to url
             var tablepanel = filterpanel.up('panel');
@@ -374,12 +402,20 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 if (combine_checkbox && combine_checkbox.checked) {
                     var other_panel = Ext.ComponentQuery.query(other_xtype)[0];
                     if (other_panel) {
-                        url += this._getFilterUrl(other_panel.getFilterItems(), other_prefix);
+                        var other_filters = other_panel.getFilterItems();
+                        url += '&' + this._getFilterUrl(other_filters, other_prefix);
+                        if (other_filters.length > 1 && !logical_operator) {
+                            logical_operator = other_panel.getLogicalOperator();
+                        }
                     }
                 }
             }
-        }
 
+            // logical operator
+            if (logical_operator) {
+                url += '&logical_op=' + logical_operator;
+            }
+        }
 
         // Set new url and reload store
         url = url_prefix + url;
@@ -393,9 +429,13 @@ Ext.define('Lmkp.controller.editor.Overview', {
         if (url != url_prefix) {
             Ext.ComponentQuery.query('pagingtoolbar[id=' + paging_id + ']')[0].moveFirst();
         }
+    },
 
-        // @TODO: logical operator
-
+    toggleLogicalOperator: function(filterpanel, visible) {
+        var cb = filterpanel.query('combobox[name=logicalOperator]')[0];
+        if (cb) {
+            cb.setVisible(visible);
+        }
     },
 
     deleteFilter: function(button) {
@@ -421,6 +461,8 @@ Ext.define('Lmkp.controller.editor.Overview', {
             }
             filter_panel.remove(item_panel);
         }
+        // toggle logical operator
+        filter_panel.toggleLogicalOperator();
     },
 
     deleteAllFilters: function() {
