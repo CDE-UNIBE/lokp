@@ -1,6 +1,6 @@
 Ext.define('Lmkp.view.activities.Details', {
     extend: 'Ext.panel.Panel',
-    alias: ['widget.activityDetailTab'],
+    alias: ['widget.lo_activitydetailtab'],
 	
     itemId: 'activityDetailTab',
 

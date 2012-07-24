@@ -17,6 +17,7 @@ Ext.onReady(function(){
         'activities.NewActivityWindow',
         'login.Toolbar',
         'editor.Detail',
+        'editor.Map',
         'editor.Overview',
         'Stakeholder',
         'stakeholders.StakeholderFieldContainer',

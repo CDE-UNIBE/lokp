@@ -1,4 +1,4 @@
-Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
+ Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
     extend: 'Ext.window.Window',
 
     alias: ['widget.lo_stakeholderselection'],
@@ -72,12 +72,6 @@ Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
         var formpanel = Ext.create('Ext.form.Panel', {
             items: [{
                 displayField: 'id',
-                // Template for the content inside text field
-                //                displayTpl: Ext.create('Ext.XTemplate',
-                //                    '<tpl for=".">',
-                //                    '{id}',
-                //                    '</tpl>'
-                //                    ),
                 fieldLabel: 'Search',
                 flex: 1,
                 hideTrigger: true,

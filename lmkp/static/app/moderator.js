@@ -18,6 +18,7 @@ Ext.onReady(function(){
         'activities.NewActivityWindow',
         'login.Toolbar',
         'editor.Detail',
+        'editor.Map',
         'editor.Overview',
         'moderator.Pending',
         'Stakeholder',
