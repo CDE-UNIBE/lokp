@@ -21,6 +21,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
     'ActivityGrid',
     'ActivityConfig',
     'StakeholderGrid',
+    'StakeholderConfig',
     'Profiles'
     ],
 
@@ -30,12 +31,14 @@ Ext.define('Lmkp.controller.editor.Overview', {
     'activities.Details',
     'activities.History',
     'activities.Filter',
-    'stakeholders.StakeholderSelection'
+    'stakeholders.StakeholderSelection',
+    'items.FilterPanel'
     ],
 
     init: function() {
-        // Get the ActivityConfig store and load it
+        // Get the config stores and load them
         this.getActivityConfigStore().load();
+        this.getStakeholderConfigStore().load();
 
         this.control({
             'lo_editortablepanel': {
@@ -56,10 +59,10 @@ Ext.define('Lmkp.controller.editor.Overview', {
             'lo_editoractivitytablepanel checkbox[itemId="spatialFilterCheckbox"]': {
                 change: this.onSpatialFilterCheckboxChange
             },
-            'lo_editoractivitytablepanel button[name=addAttributeFilter]': {
+            'button[name=addAttributeFilter]': {
                 click: this.addAttributeFilter
             },
-            'lo_editoractivitytablepanel button[name=addTimeFilter]': {
+            'lo_editoractivityfilterpanel button[name=addTimeFilter]': {
                 click: this.addTimeFilter
             },
             'lo_editoractivitytablepanel tabpanel[id=detailPanel]': {
@@ -68,28 +71,25 @@ Ext.define('Lmkp.controller.editor.Overview', {
             'lo_editoractivitytablepanel button[id=deleteAllFilters]': {
                 click: this.deleteAllFilters
             },
-            'lo_editoractivitytablepanel button[name=activateAttributeButton]': {
+            'button[name=filterActivateButton]': {
                 click: this.applyFilter
             },
-            'lo_editoractivitytablepanel button[name=activateTimeButton]': {
-                click: this.applyFilter
-            },
-            'lo_editoractivitytablepanel combobox[name=attributeCombo]': {
+            'combobox[name=attributeCombo]': {
                 select: this.showValueFields
             },
-            'lo_editoractivitytablepanel [name=valueField]': {
+            '[name=valueField]': {
                 change: this.resetActivateButton
             },
-            'lo_editoractivitytablepanel combobox[name=filterOperator]': {
+            'combobox[name=filterOperator]': {
                 select: this.resetActivateButton
             },
             'lo_editoractivitytablepanel datefield[name=dateField]': {
                 change: this.resetActivateButton
             },
-            'lo_editoractivitytablepanel button[name=deleteButton]': {
+            'button[name=deleteButton]': {
                 click: this.deleteFilter
             },
-            'lo_editoractivitytablepanel combobox[name=logicalOperator]': {
+            'combobox[name=logicalOperator]': {
                 select: this.applyFilter
             },
             'gridpanel[itemId=activityGrid] gridcolumn[name=activityCountryColumn]': {
@@ -109,6 +109,9 @@ Ext.define('Lmkp.controller.editor.Overview', {
             },
             'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdercountrycolumn]': {
                 afterrender: this.renderStakeholderCountryColumn
+            },
+            'checkbox[itemId=filterConnect]': {
+                change: this.onConnectFilterChange
             }
         });
     },
@@ -164,7 +167,47 @@ Ext.define('Lmkp.controller.editor.Overview', {
         this.getActivityGridStore().load();
     },
 
-    addAttributeFilter: function(button, event, eOpts) {
+    addAttributeFilter: function(button) {
+
+        // Activity or Stakeholder?
+        var panel_xtype = null;
+        var store = null;
+        if (button.item_type == 'activity') {
+            panel_xtype = 'lo_editoractivityfilterpanel';
+            store = this.getActivityConfigStore();
+        } else if (button.item_type == 'stakeholder') {
+            panel_xtype = 'lo_editorstakeholderfilterpanel';
+            store = this.getStakeholderConfigStore();
+        }
+
+        var form = button.up(panel_xtype);
+
+        // always insert above the panel with the buttons
+        var insertIndex = form.items.length - 1;
+        var cbox = Ext.create('Ext.form.field.ComboBox', {
+            name: 'attributeCombo',
+            store: store,
+            valueField: 'name',
+            displayField: 'fieldLabel',
+            queryMode: 'local',
+            typeAhead: true,
+            forceSelection: true,
+            value: store.getAt('0'),
+            flex: 0,
+            margin: '0 5 5 0'
+        });
+        form.insert(insertIndex, {
+            xtype: 'lo_itemsfilterpanel',
+            name: 'attributePanel',
+            filterField: cbox
+        });
+        // show initial filter
+        this.showValueFields(cbox, [store.getAt('0')]);
+        // toggle logical operator
+        form.toggleLogicalOperator();
+    },
+
+    addTimeFilter: function(button) {
 
         // Activity or Stakeholder?
         var panel_xtype = null;
@@ -175,110 +218,23 @@ Ext.define('Lmkp.controller.editor.Overview', {
         }
 
         var form = button.up(panel_xtype);
-        
+
         // always insert above the panel with the buttons
         var insertIndex = form.items.length - 1;
-        var cbox = Ext.create('Ext.form.field.ComboBox', {
-            name: 'attributeCombo',
-            store: this.getActivityConfigStore(),
-            valueField: 'name',
-            displayField: 'fieldLabel',
-            queryMode: 'local',
-            typeAhead: true,
-            forceSelection: true,
-            value: this.getActivityConfigStore().getAt('0'),
-            flex: 0,
-            margin: '0 5 5 0'
-        });
-        form.insert(insertIndex, {
-            xtype: 'panel',
-            name: 'attributePanel',
-            border: 0,
-            anchor: '100%',
-            layout: {
-                type: 'hbox',
-                flex: 'stretch'
-            },
-            items: [
-            cbox,
-            {
-                xtype: 'panel', // empty panel for spacing
-                flex: 1,
-                border: 0
-            }, {
-                xtype: 'button',
-                name: 'activateAttributeButton',
-                text: Lmkp.ts.msg("activate-button"),
-                tooltip: Lmkp.ts.msg("activate-tooltip"),
-                iconCls: 'toolbar-button-accept',
-                enableToggle: true,
-                flex: 0,
-                margin: '0 5 0 0'
-            }, {
-                xtype: 'button',
-                name: 'deleteButton',
-                text: Lmkp.ts.msg("delete-button"),
-                tooltip: Lmkp.ts.msg("deletefilter-tooltip"),
-                iconCls: 'toolbar-button-delete',
-                enableToggle: false,
-                flex: 0
-            }]
-        });
-        // show initial filter
-
-        this.showValueFields(cbox, [this.getActivityConfigStore().getAt('0')]);
-    },
-
-    addTimeFilter: function(button, e, eOpts) {
-        var form = Ext.ComponentQuery.query('panel[id=activityFilterForm]')[0];
-        // expand form if collapsed
-        if (form.collapsed) {
-            form.toggleCollapse();
-        }
-        var insertIndex = form.items.length - 1; // always insert above the 2 buttons
         var picker = Ext.create('Ext.form.field.Date', {
             name: 'dateField',
             fieldLabel: Lmkp.ts.msg("date-label"),
+            flex: 0,
+            margin: '0 5 5 0',
             value: new Date() // defaults to today
         });
         form.insert(insertIndex, {
-            xtype: 'panel',
+            xtype: 'lo_itemsfilterpanel',
             name: 'timePanel',
-            border: 0,
-            layout: {
-                type: 'hbox',
-                flex: 'stretch'
-            },
-            items: [
-            picker,
-            {
-                xtype: 'panel', // empty panel for spacing
-                flex: 1,
-                border: 0
-            }, {
-                xtype: 'button',
-                name: 'activateTimeButton',
-                text: Lmkp.ts.msg("activate-button"),
-                tooltip: Lmkp.ts.msg("activate-tooltip"),
-                iconCls: 'toolbar-button-accept',
-                enableToggle: true,
-                flex: 0,
-                margin: '0 5 5 0'
-            }, {
-                xtype: 'button',
-                name: 'deleteButton',
-                text: Lmkp.ts.msg("delete-button"),
-                tooltip: Lmkp.ts.msg("deletefilter-tooltip"),
-                iconCls: 'toolbar-button-delete',
-                enableToggle: false,
-                flex: 0
-            }]
+            filterField: picker
         });
         // disable 'add' button
-        var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
-        if (button) {
-            button.disable();
-        }
+        button.disable();
     },
 
     showValueFields: function(combobox, records, eOpts) {
@@ -367,124 +323,177 @@ Ext.define('Lmkp.controller.editor.Overview', {
 
     resetActivateButton: function(element) {
         var attributePanel = element.up('panel');
+        var applyFilter = false;
         // try to find attribute button
-        var attrButtonIndex = attributePanel.items.findIndex('name', 'activateAttributeButton');
+        var attrButtonIndex = attributePanel.items.findIndex('name', 'filterActivateButton');
         if (attrButtonIndex != -1) {
+            var btn = attributePanel.items.getAt(attrButtonIndex);
+            if (btn.pressed) {
+                applyFilter = true;
+            }
             attributePanel.items.getAt(attrButtonIndex).toggle(false);
         }
-        // try to find time button
-        var timeButtonIndex = attributePanel.items.findIndex('name', 'activateTimeButton');
-        if (timeButtonIndex != -1) {
-            attributePanel.items.getAt(timeButtonIndex).toggle(false);
+        if (applyFilter) {
+            this.applyFilter(element);
         }
-        this.applyFilter();
     },
 
-    applyFilter: function(button, e, eOpts) {
-        var queryable = [];
-        var queries = [];
-        var queryCount = 0;
-        // attribute filter
-        var attrs = Ext.ComponentQuery.query('combobox[name=attributeCombo]');
-        var values = Ext.ComponentQuery.query('[name=valueField]');
-        var ops = Ext.ComponentQuery.query('combobox[name=filterOperator]');
-        var attrButtons = Ext.ComponentQuery.query('button[name=activateAttributeButton]');
-        if (attrs.length > 0 && values.length > 0) {
-            for (var i=0; i<attrs.length; i++) {
-                if (attrButtons[i].pressed) { // only add value if filter is activated
-                    var currAttr = attrs[i].getValue();
-                    var currVal = values[i].getValue();
-                    var currOp = ops[i].getValue();
-                    if (currAttr && currVal) {
-                        // only add attribute to queryable if not already there
-                        if (!this._isInArray(queryable, currAttr)) {
-                            queryable.push(currAttr);
+    /**
+     * When using the checkbox to combine filters from Activities and
+     * Stakeholders, look for the filterpanel to provide it to 'applyFilter()'
+     */
+    onConnectFilterChange: function(checkbox) {
+        var gridpanel = checkbox.up('panel');
+        var tablepanel = gridpanel.up('panel');
+        var filterpanel = tablepanel.down('panel');
+        this.applyFilter(filterpanel);
+    },
+
+    /**
+     * If input is not a button, it is assumed that it is a filterpanel.
+     */
+    applyFilter: function(input) {
+
+        if (input.getXType() == 'button' || input.getXType() == 'combobox') {
+            // use button to find if new filter request came from Activities or
+            // Stakeholders
+            var itempanel = input.up('panel');
+            var filterpanel = itempanel.up('panel') ? itempanel.up('panel') : null;
+        } else {
+            var filterpanel = input;
+        }
+
+        var store = null;
+        var url = '';
+        var logical_operator = null;
+
+        if (filterpanel) {
+            // Fill needed values based on Activity or Stakeholder
+            var prefix = null;
+            var other_xtype = null;
+            var other_prefix = null;
+            var url_prefix = null;
+            var paging_id = null
+            if (filterpanel.getXType() == 'lo_editoractivityfilterpanel') {
+                // Activities
+                url_prefix = 'activities?';
+                prefix = 'a';
+                other_xtype = 'lo_editorstakeholderfilterpanel';
+                other_prefix = 'sh';
+                store = this.getActivityGridStore();
+                paging_id = 'activityGridPagingToolbar';
+            } else if (filterpanel.getXType() == 'lo_editorstakeholderfilterpanel') {
+                // Stakeholders
+                url_prefix = 'stakeholders?';
+                prefix = 'sh';
+                other_xtype = 'lo_editoractivityfilterpanel';
+                other_prefix = 'a';
+                store = this.getStakeholderGridStore();
+                paging_id = 'stakeholderGridPagingToolbar';
+            }
+
+            // Add filters from current panel to url
+            var filters = filterpanel.getFilterItems();
+            url += this._getFilterUrl(filters, prefix);
+            if (filters.length > 1) {
+                logical_operator = filterpanel.getLogicalOperator();
+            }
+
+            // if checkbox is set, also add filters from other panel to url
+            var tablepanel = filterpanel.up('panel');
+            if (tablepanel) {
+                var combine_checkbox = tablepanel.query('checkbox[itemId=filterConnect]')[0];
+                if (combine_checkbox && combine_checkbox.checked) {
+                    var other_panel = Ext.ComponentQuery.query(other_xtype)[0];
+                    if (other_panel) {
+                        var other_filters = other_panel.getFilterItems();
+                        url += '&' + this._getFilterUrl(other_filters, other_prefix);
+                        if (other_filters.length > 1 && !logical_operator) {
+                            logical_operator = other_panel.getLogicalOperator();
                         }
-                        queries.push(currAttr + currOp + currVal);
-                        // add query to count
-                        queryCount++;
                     }
                 }
             }
-        }
-        // time filter (only 1 possible)
-        var date = Ext.ComponentQuery.query('datefield[name=dateField]')[0];
-        var timeButton = Ext.ComponentQuery.query('button[name=activateTimeButton]')[0];
-        if (date) {
-            if (timeButton.pressed) { // only add value if filter is activated
-                queries.push('timestamp=' + Ext.Date.format(date.getValue(), "Y-m-d H:i:s.u"));
-                // add query to count
-                queryCount++;
+
+            // logical operator
+            if (logical_operator) {
+                url += '&logical_op=' + logical_operator;
             }
         }
-        // reload store by overwriting its proxy url
-        var query_url = '';
-        if (queryable.length > 0) {
-            query_url += 'queryable=' + queryable.join(',') + '&';
+
+        // Set new url and reload store
+        url = url_prefix + url;
+        store.getProxy().url = url;
+        if (url == url_prefix) {
+            store.load();
         }
-        if (queries.length > 0) {
-            query_url += queries.join('&');
-        }
-        // logical operator
-        var operatorCombo = Ext.ComponentQuery.query('combobox[name=logicalOperator]')[0];
-        if (operatorCombo) {
-            if (queryCount >= 2) {
-                operatorCombo.setVisible(true);
-                query_url += '&logical_op=' + operatorCombo.getValue();
-            } else {
-                operatorCombo.setVisible(false);
-            }
-        }
-        var store = this.getActivityGridStore();
-        store.getProxy().url = 'activities?' + query_url;
-        store.load();
-        if (query_url) {
-            // move paging to back to page 1 when filtering (otherwise may show empty page instead of results)
-            Ext.ComponentQuery.query('pagingtoolbar[id=activityGridPagingToolbar]')[0].moveFirst();
+
+        // move paging to back to page 1 when filtering (otherwise may show
+        // empty page instead of results)
+        if (url != url_prefix) {
+            Ext.ComponentQuery.query('pagingtoolbar[id=' + paging_id + ']')[0].moveFirst();
         }
     },
 
-    deleteFilter: function(button, e, eOpts) {
-        var attributePanel = button.up('panel');
-        var form = Ext.ComponentQuery.query('panel[id=activityFilterForm]')[0];
-        // if time was filtered, re-enable its 'add' button
-        if (attributePanel.name == 'timePanel') {
-            var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
-            if (button) {
-                button.enable();
+    toggleLogicalOperator: function(filterpanel, visible) {
+        var cb = filterpanel.query('combobox[name=logicalOperator]')[0];
+        if (cb) {
+            cb.setVisible(visible);
+        }
+    },
+
+    deleteFilter: function(button) {
+
+        var item_panel = button.up('panel');
+
+        if (item_panel) {
+            var filter_panel = item_panel.up('panel');
+        }
+
+        if (item_panel && filter_panel) {
+            // if time was filtered, re-enable its 'add' button
+            if (item_panel.name == 'timePanel') {
+                var btn = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
+                if (btn) {
+                    btn.enable();
+                }
             }
+            // reload store if removed filter was activated (deactivate it first)
+            if (item_panel.filterIsActivated()) {
+                item_panel.deactivateFilter();
+                this.applyFilter(button);
+            }
+            filter_panel.remove(item_panel);
         }
-        if (form.items.contains(attributePanel)) {
-            form.remove(attributePanel, true);
-            attributePanel.destroy();
-        }
-        this.applyFilter();
+        // toggle logical operator
+        filter_panel.toggleLogicalOperator();
     },
 
     deleteAllFilters: function() {
-        var panels = Ext.ComponentQuery.query('panel[name=attributePanel]');
-        panels = panels.concat(Ext.ComponentQuery.query('panel[name=timePanel]'));
-        if (panels.length > 0) {
-            form = Ext.ComponentQuery.query('panel[id=activityFilterForm]')[0];
-            for (i=0; i<panels.length; i++) {
-                // if time was filtered, re-enable its 'add' button
-                if (panels[i].name == 'timePanel') {
-                    var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
-                    if (button) {
-                        button.enable();
-                    }
-                }
-                if (form.items.contains(panels[i])) {
-                    form.remove(panels[i], true);
-                    panels[i].destroy();
-                }
-            }
-            // collapse form if expanded
-            if (!form.collapsed) {
-                form.toggleCollapse();
-            }
-        }
-        this.applyFilter();
+        console.log("refactor me and add a button somewhere");
+//        var panels = Ext.ComponentQuery.query('panel[name=attributePanel]');
+//        panels = panels.concat(Ext.ComponentQuery.query('panel[name=timePanel]'));
+//        if (panels.length > 0) {
+//            form = Ext.ComponentQuery.query('panel[id=activityFilterForm]')[0];
+//            for (i=0; i<panels.length; i++) {
+//                // if time was filtered, re-enable its 'add' button
+//                if (panels[i].name == 'timePanel') {
+//                    var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
+//                    if (button) {
+//                        button.enable();
+//                    }
+//                }
+//                if (form.items.contains(panels[i])) {
+//                    form.remove(panels[i], true);
+//                    panels[i].destroy();
+//                }
+//            }
+//            // collapse form if expanded
+//            if (!form.collapsed) {
+//                form.toggleCollapse();
+//            }
+//        }
+//        this.applyFilter();
     },
 
     getOperator: function(xType) {
@@ -701,6 +710,37 @@ Ext.define('Lmkp.controller.editor.Overview', {
         var moveButton = Ext.create('Ext.button.Button', moveAction);
 
         tbar.add(moveButton);
+    },
+
+    _getFilterUrl: function(filters, prefix) {
+        if (filters && prefix) {
+            // Collect values
+            var queryable = [];
+            var queries = [];
+            for (var i in filters) {
+                if (filters[i] && filters[i].attr) {
+                    // attribute
+                    // only add attribute to queryable if not already there
+                    if (!this._isInArray(queryable, filters[i].attr)) {
+                        queryable.push(filters[i].attr);
+                    }
+                    queries.push(prefix + '__' + filters[i].attr + filters[i].op + filters[i].value)
+                } else if (filters[i] && filters[i].date) {
+                    // date
+                    queries.push('timestamp=' + filters[i].date);
+                }
+            }
+
+            // Put together the url
+            var url = '';
+            if (queryable.length > 0 && queries.length > 0) {
+                // queryable
+                url += prefix + '__queryable=' + queryable.join(',') + '&';
+                // queries
+                url += queries.join('&');
+            }
+            return url;
+        }
     }
 
 });

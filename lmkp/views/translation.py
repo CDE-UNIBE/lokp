@@ -53,7 +53,7 @@ def ui_messages(request):
         'addtimefilter-tooltip': _('addtimefilter-tooltip', default='Add a filter based on time'),
         'deleteallfilter-button': _('deleteallfilter-button', default='Delete all filters'),
         'deleteallfilter-tooltip': _('deleteallfilter-tooltip', default='Delete all attribute and temporal filters'),
-        'filter-title': _('filter-title', default='Filter'),
+        'filter-activity_title': _('filter-title', default='Filter Activities'),
         'filter-apply_spatial': _('filter-apply_spatial', default='Apply spatial filter'),
         'filter-connect_to_activities': _('filter-connect_to_activities', default='Combine with filter on Activities'),
         'filter-connect_to_stakeholders': _('filter-connect_to_stakeholders', default='Combine with filter on Stakeholders'),
@@ -71,6 +71,7 @@ def ui_messages(request):
         'stakeholders-table_view': _('stakeholders-table_view', default='Stakeholders Table View'),
         'stakeholder-name': _('stakholder-name', default='Name'),
         'stakeholder-country': _('stakholder-country', default='Country'),
+        'filter-stakeholder_title': _('filter-stakeholder_title', default='Filter Stakeholders'),
         'stakeholder-paging_message': _('stakeholder-paging_message', default='Displaying stsakeholders {0} - {1} of {2}'),
         'stakeholder-paging_empty': _('stakeholder-paging_empty', default='No stakeholders found'),
         # involvements

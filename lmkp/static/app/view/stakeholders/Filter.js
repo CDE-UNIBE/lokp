@@ -5,7 +5,7 @@ Ext.define('Lmkp.view.stakeholders.Filter', {
     id: 'stakeholderFilterForm',
     flex: 0.5,
     border: 0,
-    title: Lmkp.ts.msg('filter-title'),
+    title: Lmkp.ts.msg('filter-stakeholder_title'),
     layout: {
         type: 'anchor'
     },
@@ -17,7 +17,63 @@ Ext.define('Lmkp.view.stakeholders.Filter', {
     items: [
         {
             xtype: 'panel',
-            html: 'coming soon'
+            layout: {
+                type: 'hbox',
+                flex: 'stretch'
+            },
+            items: [
+                {
+                    xtype: 'combobox',
+                    store: ['and', 'or'],
+                    name: 'logicalOperator',
+                    value: 'and',
+                    editable: false,
+                    hidden: true,
+                    fieldLabel: 'Logical operator',
+                    flex: 0
+                }, {
+                    xtype: 'panel', // empty panel for spacing
+                    flex: 1,
+                    border: 0
+                }, {
+                    xtype: 'button',
+                    name: 'addAttributeFilter',
+                    text: Lmkp.ts.msg("addattributefilter-button"),
+                    tooltip: Lmkp.ts.msg("addattributefilter-tooltip"),
+                    iconCls: 'toolbar-button-add',
+                    margin: '0 5 0 0',
+                    flex: 0,
+                    item_type: 'stakeholder'
+                }
+            ]
         }
-    ]
+    ],
+
+    getFilterItems: function() {
+        var ret = [];
+        var filterpanels = this.query('lo_itemsfilterpanel');
+        for (var i in filterpanels) {
+            var v = filterpanels[i].getFilterValues();
+            if (v) {
+                ret.push(v);
+            }
+        }
+        return ret;
+    },
+
+    toggleLogicalOperator: function() {
+        var filterpanels = this.query('lo_itemsfilterpanel[name=attributePanel]');
+        var cb = this.down('combobox[name=logicalOperator]');
+        if (cb && filterpanels) {
+            cb.setVisible(filterpanels.length > 1);
+        }
+    },
+
+    getLogicalOperator: function() {
+        var cb = this.down('combobox[name=logicalOperator]');
+        if (cb) {
+            return cb.getValue();
+        }
+        return null;
+    }
 });
