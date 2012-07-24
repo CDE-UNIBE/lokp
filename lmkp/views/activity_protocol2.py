@@ -307,7 +307,7 @@ class ActivityProtocol2(Protocol):
         version = 1
 
         # Try to get the geometry
-        try:
+        if 'geometry' in activity and activity['geometry'] is not None:
             geom = geojson.loads(json.dumps(activity['geometry']),
                                  object_hook=geojson.GeoJSON.to_instance)
 
@@ -315,7 +315,7 @@ class ActivityProtocol2(Protocol):
             shape = asShape(geom)
             # Create a new activity and add a representative point to the activity
             new_activity = Activity(activity_identifier=identifier, version=version, point=shape.representative_point().wkt)
-        except KeyError:
+        else:
             # If no geometry is submitted, create a new activity without a geometry
             new_activity = Activity(activity_identifier=identifier, version=version)
 
