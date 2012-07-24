@@ -427,7 +427,9 @@ class ActivityProtocol2(Protocol):
                                 if 'sh_filter_length' in filter else 0)
 
         # Get the order
-        order_query, order_numbers = self._get_order(request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value)
+        order_query, order_numbers = self._get_order(
+            request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value, A_Changeset
+        )
         
         # Find id's of relevant activities by joining with prepared filters.
         # If result is ordered, do an Outer Join to attach ordered attributes.
