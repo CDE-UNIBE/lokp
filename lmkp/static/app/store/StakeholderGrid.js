@@ -24,6 +24,10 @@ Ext.define('Lmkp.store.StakeholderGrid', {
         },
         startParam: 'offset',
         simpleSortMode: true,
-        sortParam: 'order_by'
+        sortParam: 'order_by',
+        extraParams: {
+            // Do not load involvements in grid for faster loading
+            involvements: 'none'
+        }
     }
 });

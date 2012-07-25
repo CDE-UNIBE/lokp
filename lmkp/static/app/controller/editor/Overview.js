@@ -296,11 +296,41 @@ Ext.define('Lmkp.controller.editor.Overview', {
      */
     showDetails: function(model, selected, eOpts) {
 
-        var detailPanel = this.getDetailPanel();
-        var d = detailPanel.down('lo_activitydetailtab');
-        detailPanel.setActiveTab(d);
-        detailPanel.populateDetailsTab(d, selected);
+        if (selected && selected.length > 0) {
 
+            // Activity or Stakeholder?
+            var url_prefix = '';
+            if (selected[0].modelName == 'Lmkp.model.Stakeholder') {
+                url_prefix = '/stakeholders/';
+            } else if (selected[0].modelName == 'Lmkp.model.Activity') {
+                url_prefix = '/activities/';
+            }
+
+            // Use a data store to get the full details on current item
+            var detailStore = Ext.create('Ext.data.Store', {
+                model: selected[0].modelName,
+                proxy: {
+                    type: 'ajax',
+                    url: url_prefix + selected[0].get('id'),
+                    reader: {
+                        root: 'data',
+                        type: 'json',
+                        totalProperty: 'total'
+                    },
+                    extraParams: {
+                        involvements: 'full'
+                    }
+                }
+            });
+            // Details can only be shown once store is loaded
+            detailStore.on('load', function(detailStore){
+                var detailPanel = this.getDetailPanel();
+                var d = detailPanel.down('lo_activitydetailtab');
+                detailPanel.setActiveTab(d);
+                detailPanel.populateDetailsTab(d, detailStore.first());
+            }, this);
+            detailStore.load();
+        }
     },
 
     resetActivateButton: function(element) {
@@ -664,6 +694,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
                     }
                 });
 
+                console.log("controller/Overview.js - onGetFeatureInfo");
                 this.showDetails(null, [store.getAt(0)], null);
             }
         });
