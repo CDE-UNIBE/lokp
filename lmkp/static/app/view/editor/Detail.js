@@ -40,10 +40,10 @@ Ext.define('Lmkp.view.editor.Detail', {
 
     populateDetailsTab: function(panel, data) {
 
-        if (data.length > 0) {
+        if (data) {
 
             // Set the current selection to current
-            this.current = data[0];
+            this.current = data;
 
             // Remove all existing panels
             panel.removeAll();
@@ -51,17 +51,17 @@ Ext.define('Lmkp.view.editor.Detail', {
             // Add the panel for the current activity
             panel.add({
                 xtype: 'lo_activitypanel',
-                contentItem: data[0],
+                contentItem: data,
                 border: 0,
                 bodyPadding: 0
             });
 
             // add commenting panel
-            panel.add({
-                xtype: 'lo_commentpanel',
-                identifier: data[0].get('id'),
-                comment_object: 'activity'
-            });
+//            panel.add({
+//                xtype: 'lo_commentpanel',
+//                identifier: data[0].get('id'),
+//                comment_object: 'activity'
+//            });
 
             // Show the feature on the map
             // Actually this does not belong here ...
@@ -95,7 +95,7 @@ Ext.define('Lmkp.view.editor.Detail', {
     },
 
     getFeatures: function(data){
-        var geom = data[0].data.geometry;
+        var geom = data.get('geometry');
         var vectors = this.geojson.read(Ext.encode(geom));
         if (vectors) {
             for(var j = 0; j < vectors.length; j++){
@@ -122,10 +122,10 @@ Ext.define('Lmkp.view.editor.Detail', {
         // Create the diff object
         var activities = [];
         var activity = new Object();
-        activity.id = data[0].data.id;
+        activity.id = data.get('id');
         activity.geometry = geom;
         activity.taggroups = [];
-        activity.version = data[0].data.version;
+        activity.version = data.get('version');
 
         activities.push(activity);
 

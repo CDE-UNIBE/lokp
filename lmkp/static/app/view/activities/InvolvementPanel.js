@@ -54,10 +54,10 @@ Ext.define('Lmkp.view.activities.InvolvementPanel', {
                 var xtype = null;
                 if (this.involvement_type == 'activity') {
                     model = 'Lmkp.model.Activity';
-                    xtype = 'lo_activitypanel';
+                    xtype = 'Lmkp.view.activities.ActivityPanel';
                 } else if (this.involvement_type == 'stakeholder') {
                     model = 'Lmkp.model.Stakeholder';
-                    xtype = 'lo_stakeholderpanel';
+                    xtype = 'Lmkp.view.stakeholders.StakeholderPanel';
                 }
 
                 // Simulate a Store to create a Model instance which allows to
@@ -76,11 +76,12 @@ Ext.define('Lmkp.view.activities.InvolvementPanel', {
                 var invItem = store.getAt(0);
 
                 if (invItem) {
-                    this.items.push({
-                        xtype: xtype,
-                        contentItem: invItem,
-                        border: 0
-                    });
+                    this.items.push(
+                        Ext.create(xtype, {
+                            contentItem: invItem,
+                            border: 0
+                        })
+                    );
                 }
             }
 
