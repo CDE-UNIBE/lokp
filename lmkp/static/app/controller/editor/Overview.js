@@ -39,7 +39,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
     'activities.Filter',
     'stakeholders.StakeholderSelection',
     'items.FilterPanel'
-    ],
+],
 
     init: function() {
         // Get the config stores and load them
@@ -126,6 +126,12 @@ Ext.define('Lmkp.controller.editor.Overview', {
             },
             'checkbox[itemId=filterConnect]': {
                 change: this.onConnectFilterChange
+            },
+            'lo_itemspendinguserchanges panel[name=showDetails]': {
+                afterrender: this.onPendingUserChangesRender
+            },
+            'lo_itemspendinguserchanges panel[name=hideDetails]': {
+                afterrender: this.onPendingUserChangesRender
             }
         });
     },
@@ -296,11 +302,42 @@ Ext.define('Lmkp.controller.editor.Overview', {
      */
     showDetails: function(model, selected, eOpts) {
 
-        var detailPanel = this.getDetailPanel();
-        var d = detailPanel.down('lo_activitydetailtab');
-        detailPanel.setActiveTab(d);
-        detailPanel.populateDetailsTab(d, selected);
+        if (selected && selected.length > 0) {
 
+            // Activity or Stakeholder?
+            var url_prefix = '';
+            if (selected[0].modelName == 'Lmkp.model.Stakeholder') {
+                url_prefix = '/stakeholders/';
+            } else if (selected[0].modelName == 'Lmkp.model.Activity') {
+                url_prefix = '/activities/';
+            }
+
+            // Use a data store to get the full details on current item
+            var detailStore = Ext.create('Ext.data.Store', {
+                model: selected[0].modelName,
+                proxy: {
+                    type: 'ajax',
+                    url: url_prefix + selected[0].get('id'),
+                    reader: {
+                        root: 'data',
+                        type: 'json',
+                        totalProperty: 'total'
+                    },
+                    extraParams: {
+                        involvements: 'full',
+                        show_pending: true
+                    }
+                }
+            });
+            // Details can only be shown once store is loaded
+            detailStore.on('load', function(detailStore){
+                var detailPanel = this.getDetailPanel();
+                var d = detailPanel.down('lo_activitydetailtab');
+                detailPanel.setActiveTab(d);
+                detailPanel.populateDetailsTab(d, detailStore.first());
+            }, this);
+            detailStore.load();
+        }
     },
 
     resetActivateButton: function(element) {
@@ -664,6 +701,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
                     }
                 });
 
+                console.log("controller/Overview.js - onGetFeatureInfo");
                 this.showDetails(null, [store.getAt(0)], null);
             }
         });
@@ -914,6 +952,26 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 scope: this
             });
         }
-    }
+    },
 
+    /**
+     * Adds functions to the links to show or hide details about pending
+     * changes by current user.
+     * Because HTML links cannot be accessed directly in Ext, it is necessary to
+     * register a listener after rendering the panel.
+     */
+    onPendingUserChangesRender: function(panel) {
+        var upper_panel = panel.up('panel');
+        if (panel.name == 'showDetails') {
+            var link_showDetails = upper_panel.getEl().select('a.itemspendinguserchanges_showdetails');
+            link_showDetails.on('click', function() {
+                upper_panel.showDetails();
+            });
+        } else if (panel.name == 'hideDetails') {
+            var link_showDetails = upper_panel.getEl().select('a.itemspendinguserchanges_hidedetails');
+            link_showDetails.on('click', function() {
+                upper_panel.hideDetails();
+            });
+        }
+    }
 });

@@ -37,18 +37,55 @@ Ext.define('Lmkp.controller.editor.Detail', {
     },
 
     onEditTaggroupButtonClick: function(button) {
+
         var taggroup = button.selected_taggroup;
-        if (taggroup) {
-            var activity = taggroup.getActivity();
-            if (activity) {
-                var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
-                    activity_id: activity.get('id'),
-                    version: activity.get('version'),
-                    selected_taggroup: taggroup
-                });
-                win.show();
+
+        // Activity or Stakeholder?
+        var taggrouppanel = button.up('panel');
+        var panel = taggrouppanel ? taggrouppanel.up('panel') : null;
+
+        var item_type = null;
+        var item = null;
+        if (panel && taggroup) {
+            if (panel.getXType() == 'lo_activitypanel') {
+                item_type = 'activity';
+                item = taggroup.getActivity();
+            } else if (panel.getXType() == 'lo_stakeholderpanel') {
+                item_type = 'stakeholder';
+                item = taggroup.getStakeholder();
             }
         }
+
+        if (item_type) {
+            var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
+                item_identifier: item.get('id'),
+                version: item.get('version'),
+                selected_taggroup: taggroup,
+                item_type: item_type
+            });
+            win.show();
+        }
+        
+//        var taggroup = button.selected_taggroup;
+//
+//        console.log(taggroup);
+
+//        if (taggroup) {
+//            var activity = taggroup.getActivity();
+//
+//            console.log(activity.get('id'));
+//            console.log(activity.get('version'));
+//            console.log(taggroup);
+//
+//            if (activity) {
+//                var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
+//                    activity_id: activity.get('id'),
+//                    version: activity.get('version'),
+//                    selected_taggroup: taggroup
+//                });
+//                win.show();
+//            }
+//        }
     },
 
     onShowDetailsToggle: function(button, pressed) {
