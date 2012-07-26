@@ -124,10 +124,8 @@ def get_config(request):
     # Then process also the optional fields
     for (name, config) in fields['optional'].iteritems():
 
-        print "+++++++++++++++++++++++++++"
-        print name
         o = _get_field_config(Key, Value, name, config, lang)
-        print o
+
         if o is not None:
             extObject.append(o)
     return extObject

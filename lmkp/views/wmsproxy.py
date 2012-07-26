@@ -1,8 +1,12 @@
+from lmkp.views.errors import render_to_response
 from pyramid.httpexceptions import HTTPForbidden
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.view import view_config
-import urllib2
+from urllib import urlencode
+from urllib2 import HTTPError
+from urllib2 import urlopen
+from pyramid.security import authenticated_userid
 
-@view_config(route_name='wms_proxy', renderer='string')
 def wms_proxy(request):
     """
     This is a blind proxy that we use to get around browser
@@ -30,3 +34,38 @@ def wms_proxy(request):
     
     request.response.content_type = 'text/xml'
     return f.read()
+
+@view_config(route_name='wms_proxy', renderer='string')
+def wms(request):
+
+    if request.method != 'GET':
+        raise HTTPForbidden("%s method is not allowed on this proxy." % (request.method,))
+
+    geoserver_url = "http://cdetux2.unibe.ch/geoserver/lo/wms"
+
+    params = {}
+
+    # Make sure all keys are in upper case
+    for item in request.params.iteritems():
+        params[item[0].upper()] = item[1]
+
+    # Overwrite the CQL filter
+    if request.user != None:
+        params['CQL_FILTER'] = "(name='active') OR (username='%s' AND name='pending')" % request.user.username
+    else:
+        params['CQL_FILTER'] = "(name='active')"
+
+    try:
+        f = urlopen(geoserver_url, urlencode(params))
+    except HTTPError:
+        raise HTTPNotFound()
+
+    # Set the correct response type:
+    if params['REQUEST'] == 'GetMap':
+        request.response.content_type = 'image/png'
+    elif params['REQUEST'] == 'GetFeatureInfo':
+        request.response.content_type = 'text/xml'
+    
+    return f.read()
+
+
