@@ -242,7 +242,7 @@ class A_Tag_Group(Base):
     def to_json(self):
         geometry = None
         if self.geometry is not None:
-            shape = wkb.loads(str(self.point.geom_wkb))
+            shape = wkb.loads(str(self.geometry.geom_wkb))
             geometry = from_wkt(shape.wkt)
         return {'id': self.id, 'geometry': geometry, 'tags': [t.to_json() for t in self.tags]}
 
@@ -271,7 +271,7 @@ class SH_Tag_Group(Base):
         return '<SH_Tag_Group> id [ %s ] | fk_stakeholder [ %s ] | fk_sh_tag [ %s ]' % (self.id, self.fk_stakeholder, self.fk_sh_tag)
 
     def to_json(self):
-        return {'id': self.id, 'main_tag': self.main_tag.to_json(), 'tags': [t.to_json() for t in self.tags]}
+        return {'id': self.id, 'tags': [t.to_json() for t in self.tags]}
 
 class Activity(Base):
     __tablename__ = 'activities'
@@ -318,8 +318,11 @@ class Activity(Base):
 
     def to_json(self):
         # The geometry as Shapely object
-        shape = wkb.loads(str(self.point.geom_wkb))
-        return {'id': str(self.activity_identifier), 'version': self.version, 'geometry': from_wkt(shape.wkt), 'taggroups': [t.to_json() for t in self.tag_groups]}
+        geometry = None
+        if self.point is not None:
+            shape = wkb.loads(str(self.point.geom_wkb))
+            geometry = from_wkt(shape.wkt)
+        return {'id': str(self.activity_identifier), 'version': self.version, 'geometry': geometry, 'taggroups': [t.to_json() for t in self.tag_groups]}
 
 GeometryDDL(Activity.__table__)
 

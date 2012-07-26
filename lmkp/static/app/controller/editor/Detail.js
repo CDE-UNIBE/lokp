@@ -24,9 +24,6 @@ Ext.define('Lmkp.controller.editor.Detail', {
             'lo_editordetailpanel button[itemId=add-taggroup-button]':{
                 click: this.onAddTaggroupButtonClick
             },
-            /*'lo_editordetailpanel button[itemId=add-activity-button]':{
-                click: this.onAddActivityButtonClick
-            },*/
             'lo_editordetailpanel button[itemId="show-all-details"]': {
                 toggle: this.onShowDetailsToggle
             },
@@ -57,35 +54,22 @@ Ext.define('Lmkp.controller.editor.Detail', {
         }
 
         if (item_type) {
+            // Prepare the window
             var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
                 item_identifier: item.get('id'),
                 version: item.get('version'),
                 selected_taggroup: taggroup,
                 item_type: item_type
             });
+            // When inserted successfully, reload details in panel
+            var me = this;
+            win.on('successfulEdit', function() {
+                var controller = me.getController('editor.Overview');
+                controller.showDetails(null, [item]);
+            });
+            // Show
             win.show();
         }
-        
-//        var taggroup = button.selected_taggroup;
-//
-//        console.log(taggroup);
-
-//        if (taggroup) {
-//            var activity = taggroup.getActivity();
-//
-//            console.log(activity.get('id'));
-//            console.log(activity.get('version'));
-//            console.log(taggroup);
-//
-//            if (activity) {
-//                var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
-//                    activity_id: activity.get('id'),
-//                    version: activity.get('version'),
-//                    selected_taggroup: taggroup
-//                });
-//                win.show();
-//            }
-//        }
     },
 
     onShowDetailsToggle: function(button, pressed) {
@@ -116,38 +100,27 @@ Ext.define('Lmkp.controller.editor.Detail', {
             return;
         }
 
-        // create window
+        // Activity or Stakeholder?
+        var item_type = null;
+        if (selection.modelName == 'Lmkp.model.Activity') {
+            item_type = 'activity';
+        } else if (selection.modelName == 'Lmkp.model.Stakeholder') {
+            item_type = 'stakeholder';
+        }
+
+        // Prepare the window
         var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
-            activity_id: selection.get('id'),
+            item_identifier: selection.get('id'),
             version: selection.get('version'),
-            selected_taggroup: null
+            selected_taggroup: null,
+            item_type: item_type
+        });
+        // When inserted successfully, reload details in panel
+        var me = this;
+        win.on('successfulEdit', function() {
+            var controller = me.getController('editor.Overview');
+            controller.showDetails(null, [selection]);
         });
         win.show();
-    },
-
-    onAddActivityButtonClick: function(button, event, eOpts){
-        /**
-    	// Open new window with form to add new activity.
-    	// The form fields are requested before creating the window.
-    	// This allows to create a nicely centered form window.
-    	Ext.Ajax.request({
-    		url: '/config/form/activities',
-    		success: function(response) {
-    			var formConfig = Ext.decode(response.responseText);
-    			var win = Ext.create('Lmkp.view.activities.NewActivityWindow', {
-    				config: formConfig
-    			});
-    			win.show();
-    		}
-    	});
-    	*/
-    	
-        // var mandatoryStore = Ext.create('Lmkp.store.ActivityConfig');
-        // mandatoryStore.filter("allowBlank", false);
-        // mandatoryStore.load();
-    	
-        var win = Ext.create('Lmkp.view.activities.NewActivityWindow');
-        win.show();
     }
-
 });
