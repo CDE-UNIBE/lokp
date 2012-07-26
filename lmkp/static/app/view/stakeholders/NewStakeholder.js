@@ -16,7 +16,7 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
 
     initComponent: function(){
 
-        
+
 
         //var form = this.down('form');
         // prepare the form

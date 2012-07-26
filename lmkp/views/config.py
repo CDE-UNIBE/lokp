@@ -85,7 +85,7 @@ def get_config(request):
         Key = SH_Key
         Value = SH_Value
     else:
-        return HTTPNotFound()
+        raise HTTPNotFound()
 
 
     # Read the global configuration file
