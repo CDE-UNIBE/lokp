@@ -1,6 +1,8 @@
 Ext.define('Lmkp.model.Activity', {
     extend: 'Ext.data.Model',
 
+    idProperty: '_id',
+
     fields: [{
         name: 'id', // activity_identifier (UID)
         type: 'string'

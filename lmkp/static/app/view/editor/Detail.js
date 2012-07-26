@@ -4,7 +4,8 @@ Ext.define('Lmkp.view.editor.Detail', {
 
     requires: [
         'Lmkp.view.comments.CommentPanel',
-        'Lmkp.view.activities.ActivityPanel'
+        'Lmkp.view.activities.ActivityPanel',
+        'Lmkp.view.items.PendingUserChanges'
     ],
 
     config: {
@@ -56,7 +57,18 @@ Ext.define('Lmkp.view.editor.Detail', {
                 bodyPadding: 0
             });
 
-            // add commenting panel
+            // Add a panel for pending versions of current user
+            if (data.raw.pending) {
+                panel.add({
+                    xtype: 'lo_itemspendinguserchanges',
+                    detailData: data.raw.pending,
+                    itemModel: data.modelName,
+                    detailsOnStart: false,
+                    bodyCls: 'notice'
+                });
+            }
+
+            // Add commenting panel
             panel.add({
                 xtype: 'lo_commentpanel',
                 identifier: data.get('id'),
