@@ -22,7 +22,19 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
         var action = (me.selected_taggroup) ? 'Change' : 'Add';
         this.title = action + ' information';
 		
-        if (me.activity_id && me.version) {
+        if (me.item_identifier && me.version && me.item_type) {
+
+            // Activity or Stakeholder?
+            var url = null;
+            var diff_root = null;
+            if (me.item_type == 'activity') {
+                url = '/activities';
+                diff_root = 'activities';
+            } else if (me.item_type == 'stakeholder') {
+                url = '/stakeholders';
+                diff_root = 'stakeholders';
+            }
+
             // prepare the form
             var form = Ext.create('Ext.form.Panel', {
                 border: 0,
@@ -32,10 +44,10 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                     anchor: '100%'
                 },
                 items: [{
-                    // submit activity_identifier as well
+                    // submit identifier as well
                     xtype: 'hiddenfield',
                     name: 'activity_identifier',
-                    value: me.activity_id
+                    value: me.item_identifier
                 }, {
                     // submit version as well
                     xtype: 'hiddenfield',
@@ -216,26 +228,22 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                             // only do submit if something changed
                             if (newTags.length > 0 || deleteTags.length > 0) {
                                 // put together diff object
-                                var diffObject = {
-                                    'activities': [
-
+                                var diffObject = {}
+                                diffObject[diff_root] = [
                                     {
-                                        'id': me.activity_id,
+                                        'id': me.item_identifier,
                                         'version': me.version,
-                                        'taggroups': [
-                                        {
+                                        'taggroups': [{
                                             'id': (me.selected_taggroup) ? me.selected_taggroup.get('id') : null,
                                             'op': (me.selected_taggroup) ? null : 'add',
                                             'tags': newTags.concat(deleteTags)
-                                        }
-                                        ]
+                                        }]
                                     }
-                                    ]
-                                    };
+                                ];
 									
                                 // send JSON through AJAX request
                                 Ext.Ajax.request({
-                                    url: '/activities',
+                                    url: url,
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json;charset=utf-8'
@@ -443,5 +451,5 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
             }
         }
         return valueField;
-    },
+    }
 });

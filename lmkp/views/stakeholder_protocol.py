@@ -435,8 +435,11 @@ class StakeholderProtocol(Protocol):
 
         # Special case: UID was provided, create new 'relevant_stakeholders'
         if uid is not None:
-            relevant_stakeholders = self.Session.query(Stakeholder.id.label('order_id'),
-                                                     func.char_length('').label('order_value')).\
+            relevant_stakeholders = self.Session.query(
+                    Stakeholder.id.label('order_id'),
+                    func.char_length('').label('order_value'),
+                    Stakeholder.fk_status
+                ).\
                 filter(Stakeholder.stakeholder_identifier == uid).\
                 filter(Stakeholder.fk_status.in_(status_filter))
 
@@ -455,6 +458,21 @@ class StakeholderProtocol(Protocol):
 
         # Apply limit and offset
         relevant_stakeholders = relevant_stakeholders.limit(limit).offset(offset)
+
+        # Add pending stakeholders by current user to selection if requested
+        pending_by_user = self._get_pending_by_user(request)
+        if pending_by_user is True and uid is not None and request.user is not None:
+            pending_stakeholders = self.Session.query(
+                    Stakeholder.id.label('order_id'),
+                    func.char_length('').label('order_value'),
+                    Stakeholder.fk_status
+                ).\
+            join(SH_Changeset).\
+            filter(SH_Changeset.fk_user == request.user.id).\
+            filter(Stakeholder.fk_status == 1).\
+            filter(Stakeholder.stakeholder_identifier == uid)
+
+            relevant_stakeholders = pending_stakeholders.union(relevant_stakeholders)
 
         # Prepare query to translate keys and values
         localizer = get_localizer(request)
@@ -586,8 +604,20 @@ class StakeholderProtocol(Protocol):
                         if stakeholder.find_involvement(i.activity_identifier, i.stakeholder_role) is None:
                             stakeholder.add_involvement(Inv(i.activity_identifier, None, i.stakeholder_role))
 
-        return stakeholders, count
+        # If pending stakeholders are shown for current user, add them to
+        # active version
+        if pending_by_user is True:
+            pending = []
+            active = None
+            for sh in stakeholders:
+                if sh.get_status() == 'pending':
+                    pending.append(sh)
+                elif sh.get_status() == 'active':
+                    active = sh
+            active.set_pending(pending)
+            stakeholders = [active]
 
+        return stakeholders, count
 
     def history(self, request, uid, status_list=None):
 

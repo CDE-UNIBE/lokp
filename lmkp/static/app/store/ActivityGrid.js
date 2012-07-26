@@ -22,7 +22,9 @@ Ext.define('Lmkp.store.ActivityGrid', {
         // The bounding box is specified in the spherical mercator projection.
         extraParams: {
             bbox: "-20037508.34,-20037508.34,20037508.34,20037508.34",
-            epsg: 900913
+            epsg: 900913,
+            // Do not load involvements in grid for faster loading
+            involvements: 'none'
         },
         type: 'ajax',
         url: '/activities',
