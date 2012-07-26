@@ -130,6 +130,13 @@ class Protocol(object):
 
         return [Status.name == "active"]
 
+    def _get_pending_by_user(self, request):
+        """
+        """
+        pending_user = request.params.get('show_pending', None)
+
+        return pending_user is not None and pending_user == 'true'
+
     def _filter(self, request):
         """
         Returns
@@ -503,6 +510,7 @@ class Feature(object):
         self._timestamp = timestamp
         self._diff_info = diff_info
         self._status = status
+        self._pending = []
 
     def add_taggroup(self, taggroup):
         """
@@ -536,6 +544,12 @@ class Feature(object):
 
     def get_version(self):
         return self._version
+
+    def get_status(self):
+        return self._status
+
+    def set_pending(self, pending):
+        self._pending = pending
 
     def remove_taggroup(self, taggroup):
         if taggroup in self.get_taggroups():
@@ -573,6 +587,11 @@ class Feature(object):
         if self._diff_info is not None:
             for k in self._diff_info:
                 ret[k] = self._diff_info[k]
+        if len(self._pending) != 0:
+            pending = []
+            for p in self._pending:
+                pending.append(p.to_table())
+            ret['pending'] = pending
 
         # Involvements
         if len(self._involvements) != 0:
