@@ -53,6 +53,7 @@ class ActivityFeature2(Feature):
         self._timestamp = timestamp
         self._status = status
         self._diff_info = diff_info
+        self._pending = []
 
     def to_table(self):
         """
@@ -86,6 +87,11 @@ class ActivityFeature2(Feature):
         if self._diff_info is not None:
             for k in self._diff_info:
                 ret[k] = self._diff_info[k]
+        if len(self._pending) != 0:
+            pending = []
+            for p in self._pending:
+                pending.append(p.to_table())
+            ret['pending'] = pending
 
         # Involvements
         if len(self._involvements) != 0:
@@ -406,7 +412,7 @@ class ActivityProtocol2(Protocol):
         - a list of (filtered) Activities
         - an Integer with the count of Activities
         """
-        
+
         # If no custom filter was provided, get filters from request
         if filter is None:
             # Get the status status
@@ -544,8 +550,11 @@ class ActivityProtocol2(Protocol):
 
         # Special case: UID was provided, create new 'relevant_activities'
         if uid is not None:
-            relevant_activities = self.Session.query(Activity.id.label('order_id'),
-                                                     func.char_length('').label('order_value')).\
+            relevant_activities = self.Session.query(
+                    Activity.id.label('order_id'),
+                    func.char_length('').label('order_value'),
+                    Activity.fk_status
+                ).\
                 filter(Activity.activity_identifier == uid).\
                 filter(Activity.fk_status.in_(status_filter))
 
@@ -564,6 +573,21 @@ class ActivityProtocol2(Protocol):
         
         # Apply limit and offset
         relevant_activities = relevant_activities.limit(limit).offset(offset)
+
+        # Add pending activities by current user to selection if requested
+        pending_by_user = self._get_pending_by_user(request)
+        if pending_by_user is True and uid is not None and request.user is not None:
+            pending_activities = self.Session.query(
+                    Activity.id.label('order_id'),
+                    func.char_length('').label('order_value'),
+                    Activity.fk_status
+                ).\
+            join(A_Changeset).\
+            filter(A_Changeset.fk_user == request.user.id).\
+            filter(Activity.fk_status == 1).\
+            filter(Activity.activity_identifier == uid)
+
+            relevant_activities = pending_activities.union(relevant_activities)
 
         # Prepare query to translate keys and values
         localizer = get_localizer(request)
@@ -698,6 +722,19 @@ class ActivityProtocol2(Protocol):
                         # Default: only basic information about Involvement
                         if activity.find_involvement(i.stakeholder_identifier, i.stakeholder_role) is None:
                             activity.add_involvement(Inv(i.stakeholder_identifier, None, i.stakeholder_role))
+
+        # If pending activities are shown for current user, add them to
+        # active version
+        if pending_by_user is True:
+            pending = []
+            active = None
+            for a in activities:
+                if a.get_status() == 'pending':
+                    pending.append(a)
+                elif a.get_status() == 'active':
+                    active = a
+            active.set_pending(pending)
+            activities = [active]
 
         return activities, count
 

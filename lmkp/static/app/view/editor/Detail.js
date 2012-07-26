@@ -57,11 +57,11 @@ Ext.define('Lmkp.view.editor.Detail', {
             });
 
             // add commenting panel
-//            panel.add({
-//                xtype: 'lo_commentpanel',
-//                identifier: data[0].get('id'),
-//                comment_object: 'activity'
-//            });
+            panel.add({
+                xtype: 'lo_commentpanel',
+                identifier: data.get('id'),
+                comment_object: 'activity'
+            });
 
             // Show the feature on the map
             // Actually this does not belong here ...
