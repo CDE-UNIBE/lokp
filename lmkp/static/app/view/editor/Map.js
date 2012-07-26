@@ -33,9 +33,6 @@ Ext.define('Lmkp.view.editor.Map',{
     zoom: 2,
 
     initComponent: function() {
-
-        // Proxy host
-        OpenLayers.ProxyHost = "/wms?url=";
         
         this.baseLayer = new OpenLayers.Layer.OSM('mapnik', null, {
             sphericalMercator: true,
@@ -43,7 +40,7 @@ Ext.define('Lmkp.view.editor.Map',{
         });
         
         this.activitiesLayer = new OpenLayers.Layer.WMS('Activities',
-            'http://localhost:8080/geoserver/lo/wms',{
+            '/geoserver/lo/wms',{
                 layers: 'activities',
                 transparent: true,
                 format: 'image/png8',
@@ -83,14 +80,11 @@ Ext.define('Lmkp.view.editor.Map',{
             infoFormat: 'application/vnd.ogc.gml',
             layers: [this.activitiesLayer],
             title: 'Identify features by clicking',
-            url: 'http://localhost:8080/geoserver/lo/wms'
+            url: '/geoserver/lo/wms'
         });
-
-
 
         // Add the controls to the map
         this.map.addControl(this.identifyCtrl);
-        
 
         var panAction = Ext.create('GeoExt.Action',{
             control: new OpenLayers.Control.DragPan({

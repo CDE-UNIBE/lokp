@@ -124,7 +124,7 @@ def main(global_config, ** settings):
     config.add_route('user_update', '/users/update', request_method='POST')
 
     # A WMS proxy
-    config.add_route('wms_proxy', '/wms', request_method='GET')
+    config.add_route('wms_proxy', '/geoserver/lo/wms', request_method='GET')
 
     # Changeset protocol, query the changeset
     config.add_route('changesets_read', '/changesets')
