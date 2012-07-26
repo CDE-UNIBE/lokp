@@ -107,7 +107,8 @@ Ext.define('Lmkp.view.moderator.Review', {
                         additionalPanelBottom: {
                             xtype: xtype,
                             contentItem: data.data[k],
-                            border: 0
+                            border: 0,
+                            editable: false
                         },
                         additionalPanelTop: noticepanel,
                         // Panel settings
@@ -137,7 +138,8 @@ Ext.define('Lmkp.view.moderator.Review', {
                         additionalPanelBottom: {
                             xtype: xtype,
                             contentItem: data.data[k],
-                            border: 0
+                            border: 0,
+                            editable: false
                         },
                         // Panel settings
                         title: Lmkp.ts.msg('reviewpanel-previous_title'),

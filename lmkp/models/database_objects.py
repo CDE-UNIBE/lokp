@@ -271,7 +271,7 @@ class SH_Tag_Group(Base):
         return '<SH_Tag_Group> id [ %s ] | fk_stakeholder [ %s ] | fk_sh_tag [ %s ]' % (self.id, self.fk_stakeholder, self.fk_sh_tag)
 
     def to_json(self):
-        return {'id': self.id, 'main_tag': self.main_tag.to_json(), 'tags': [t.to_json() for t in self.tags]}
+        return {'id': self.id, 'tags': [t.to_json() for t in self.tags]}
 
 class Activity(Base):
     __tablename__ = 'activities'

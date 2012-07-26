@@ -27,12 +27,15 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
             // Activity or Stakeholder?
             var url = null;
             var diff_root = null;
+            var configStore = null;
             if (me.item_type == 'activity') {
                 url = '/activities';
                 diff_root = 'activities';
+                configStore = 'Lmkp.store.ActivityConfig';
             } else if (me.item_type == 'stakeholder') {
                 url = '/stakeholders';
                 diff_root = 'stakeholders';
+                configStore = 'Lmkp.store.StakeholderConfig';
             }
 
             // prepare the form
@@ -44,16 +47,6 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                     anchor: '100%'
                 },
                 items: [{
-                    // submit identifier as well
-                    xtype: 'hiddenfield',
-                    name: 'activity_identifier',
-                    value: me.item_identifier
-                }, {
-                    // submit version as well
-                    xtype: 'hiddenfield',
-                    name: 'version',
-                    value: me.version
-                }, {
                     // button to add new attribute selection to form
                     xtype: 'panel',
                     layout: {
@@ -251,6 +244,8 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                                     jsonData: diffObject,
                                     success: function(response, options) {
                                         Ext.Msg.alert('Success', 'The information was successfully submitted. It will be reviewed shortly.');
+                                        // Fire event to reload detail panel
+                                        form.up('window').fireEvent('successfulEdit');
                                         form.up('window').close();
                                     },
                                     failure: function(response, options) {
@@ -258,7 +253,6 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                                         form.up('window').close();
                                     }
                                 });
-                                console.log(diffObject);
                             } else {
                                 Ext.Msg.alert('Notice', 'No changes were made.');
                                 form.up('window').close();
@@ -269,10 +263,10 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
             });
 			
             // load the config store
-            var store = Ext.create('Lmkp.store.ActivityConfig');
+            var store = Ext.create(configStore);
             store.load();
             // another instance of the config store is needed to keep track of all attributes available
-            var completeStore = Ext.create('Lmkp.store.ActivityConfig');
+            var completeStore = Ext.create(configStore);
             completeStore.load();
 			
             // if a TagGroup was selected to edit, show its values

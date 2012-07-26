@@ -57,35 +57,22 @@ Ext.define('Lmkp.controller.editor.Detail', {
         }
 
         if (item_type) {
+            // Prepare the window
             var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
                 item_identifier: item.get('id'),
                 version: item.get('version'),
                 selected_taggroup: taggroup,
                 item_type: item_type
             });
+            // When inserted successfully, reload details in panel
+            var me = this;
+            win.on('successfulEdit', function() {
+                var controller = me.getController('editor.Overview');
+                controller.showDetails(null, [item]);
+            });
+            // Show
             win.show();
         }
-        
-//        var taggroup = button.selected_taggroup;
-//
-//        console.log(taggroup);
-
-//        if (taggroup) {
-//            var activity = taggroup.getActivity();
-//
-//            console.log(activity.get('id'));
-//            console.log(activity.get('version'));
-//            console.log(taggroup);
-//
-//            if (activity) {
-//                var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
-//                    activity_id: activity.get('id'),
-//                    version: activity.get('version'),
-//                    selected_taggroup: taggroup
-//                });
-//                win.show();
-//            }
-//        }
     },
 
     onShowDetailsToggle: function(button, pressed) {
