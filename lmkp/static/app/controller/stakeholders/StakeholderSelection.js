@@ -7,7 +7,8 @@ Ext.define('Lmkp.controller.stakeholders.StakeholderSelection', {
     }],
 
     views: [
-    'stakeholders.StakeholderSelection'
+    'stakeholders.StakeholderSelection',
+    'stakeholders.NewStakeholder'
     ],
 
     init: function(){
@@ -65,11 +66,21 @@ Ext.define('Lmkp.controller.stakeholders.StakeholderSelection', {
             sel.setSelectedStakeholder(contentItem);
             sel.close();
         } else {
-            var w = Ext.create('Lmkp.view.stakeholders.NewStakeholder');
-            w.on('close', function(panel, eOpts){
+            var w = Ext.create('Ext.window.Window', {
+                height: 240,
+                width: 400,
+                layout: 'border',
+                items: [{
+                    autoScroll: true,
+                    region: 'center',
+                    xtype: 'lo_newstakeholderpanel'
+                }],
+                title: 'Add new Stakeholder'
+            });
+            w.on('close', function(window, eOpts){
                 this.onSearchSelect(
-                    panel.down('combo[itemId="searchTextfield"]'),
-                    [panel.getAddedStakeholder()]);
+                    window.down('combo[itemId="searchTextfield"]'),
+                    [window.down('lo_newstakeholderpanel').getAddedStakeholder()]);
             }, this);
             w.show();
         }
