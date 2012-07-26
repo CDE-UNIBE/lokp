@@ -568,6 +568,11 @@ class ActivityProtocol2(Protocol):
             relevant_activities = relevant_activities.join(sh_role_filter, 
                                                            sh_role_filter.c.role_id == Activity.id)
 
+        # Apply filter by username if set
+        if self._get_user_filter(request, Activity, A_Changeset) is not None:
+            user_filter = self._get_user_filter(request, Activity, A_Changeset)
+            relevant_activities = relevant_activities.join(user_filter)
+
         # Count relevant activities (before applying limit and offset)
         count = relevant_activities.count()
         
@@ -955,6 +960,8 @@ class ActivityProtocol2(Protocol):
             for p in profiles.all():
                 profile_filters.append(functions.intersects(Activity.point, 
                                        p.geometry))
+                if p.code == 'global':
+                    profile_filters.append(Activity.point == None)
             return profile_filters
 
         return None
@@ -969,6 +976,8 @@ class ActivityProtocol2(Protocol):
         profile_code = get_current_profile(request)
         
         if profile_code is not None:
+            if profile_code == 'global':
+                return None
             # Try to find profile in DB
             profile_db = self.Session.query(Profile).\
                 filter(Profile.code == profile_code).first()
