@@ -424,7 +424,10 @@ class Protocol(object):
         """
 
         # Trim white spaces
-        value = value.strip()
+        try:
+            value = value.strip()
+        except AttributeError:
+            pass
 
         # Per default key and value are not valid
         key_is_valid = False
