@@ -39,7 +39,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
     'activities.Filter',
     'stakeholders.StakeholderSelection',
     'items.FilterPanel'
-    ],
+],
 
     init: function() {
         // Get the config stores and load them
@@ -126,6 +126,12 @@ Ext.define('Lmkp.controller.editor.Overview', {
             },
             'checkbox[itemId=filterConnect]': {
                 change: this.onConnectFilterChange
+            },
+            'lo_itemspendinguserchanges panel[name=showDetails]': {
+                afterrender: this.onPendingUserChangesRender
+            },
+            'lo_itemspendinguserchanges panel[name=hideDetails]': {
+                afterrender: this.onPendingUserChangesRender
             }
         });
     },
@@ -318,7 +324,8 @@ Ext.define('Lmkp.controller.editor.Overview', {
                         totalProperty: 'total'
                     },
                     extraParams: {
-                        involvements: 'full'
+                        involvements: 'full',
+                        show_pending: true
                     }
                 }
             });
@@ -905,6 +912,26 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 scope: this
             });
         }
-    }
+    },
 
+    /**
+     * Adds functions to the links to show or hide details about pending
+     * changes by current user.
+     * Because HTML links cannot be accessed directly in Ext, it is necessary to
+     * register a listener after rendering the panel.
+     */
+    onPendingUserChangesRender: function(panel) {
+        var upper_panel = panel.up('panel');
+        if (panel.name == 'showDetails') {
+            var link_showDetails = upper_panel.getEl().select('a.itemspendinguserchanges_showdetails');
+            link_showDetails.on('click', function() {
+                upper_panel.showDetails();
+            });
+        } else if (panel.name == 'hideDetails') {
+            var link_showDetails = upper_panel.getEl().select('a.itemspendinguserchanges_hidedetails');
+            link_showDetails.on('click', function() {
+                upper_panel.hideDetails();
+            });
+        }
+    }
 });
