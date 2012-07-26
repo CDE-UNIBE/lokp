@@ -11,6 +11,10 @@ Ext.define('Lmkp.view.activities.InvolvementPanel', {
     defaultType: 'displayfield',
     title: Lmkp.ts.msg('involvements-title'),
 
+    config: {
+        editable: true
+    },
+
     initComponent: function() {
 
         if (this.involvement_type && this.involvement) {
@@ -79,7 +83,8 @@ Ext.define('Lmkp.view.activities.InvolvementPanel', {
                     this.items.push(
                         Ext.create(xtype, {
                             contentItem: invItem,
-                            border: 0
+                            border: 0,
+                            editable: this.editable
                         })
                     );
                 }
