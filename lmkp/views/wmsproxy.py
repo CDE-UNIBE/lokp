@@ -1,11 +1,10 @@
-from lmkp.views.errors import render_to_response
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPNotFound
+from pyramid.security import unauthenticated_userid
 from pyramid.view import view_config
 from urllib import urlencode
 from urllib2 import HTTPError
 from urllib2 import urlopen
-from pyramid.security import authenticated_userid
 
 def wms_proxy(request):
     """
@@ -25,10 +24,10 @@ def wms_proxy(request):
     host = url.split("/")[2]
 
     if request.method != 'GET':
-        return HTTPForbidden("%s method is not allowed on this proxy." % (request.method,))
+        return HTTPForbidden("%s method is not allowed on this proxy." % (request.method, ))
 
     if host not in allowedHosts:
-        return HTTPForbidden("This proxy does not allow you to access that location (%s)." % (host,))
+        return HTTPForbidden("This proxy does not allow you to access that location (%s)." % (host, ))
 
     f = urllib2.urlopen(url)
     
@@ -39,7 +38,7 @@ def wms_proxy(request):
 def wms(request):
 
     if request.method != 'GET':
-        raise HTTPForbidden("%s method is not allowed on this proxy." % (request.method,))
+        raise HTTPForbidden("%s method is not allowed on this proxy." % (request.method, ))
 
     geoserver_url = "http://cdetux2.unibe.ch/geoserver/lo/wms"
 
@@ -50,8 +49,9 @@ def wms(request):
         params[item[0].upper()] = item[1]
 
     # Overwrite the CQL filter
-    if request.user != None:
-        params['CQL_FILTER'] = "(name='active') OR (username='%s' AND name='pending')" % request.user.username
+    current_user = unauthenticated_userid(request)
+    if current_user != None:
+        params['CQL_FILTER'] = "(name='active') OR (username='%s' AND name='pending')" % current_user
     else:
         params['CQL_FILTER'] = "(name='active')"
 
