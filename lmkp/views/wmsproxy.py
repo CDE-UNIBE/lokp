@@ -4,6 +4,7 @@ from pyramid.security import unauthenticated_userid
 from pyramid.view import view_config
 from urllib import urlencode
 from urllib2 import HTTPError
+from urllib2 import URLError
 from urllib2 import urlopen
 
 def wms_proxy(request):
@@ -58,6 +59,9 @@ def wms(request):
     try:
         f = urlopen(geoserver_url, urlencode(params))
     except HTTPError:
+        raise HTTPNotFound()
+    # URLError is raised in case of network outage
+    except URLError:
         raise HTTPNotFound()
 
     # Set the correct response type:
