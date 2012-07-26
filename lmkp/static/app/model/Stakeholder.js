@@ -7,6 +7,12 @@ Ext.define('Lmkp.model.Stakeholder', {
     }, {
         name: 'version',
         type: 'int'
+    }, {
+        name: 'status',
+        type: 'string'
+    }, {
+        name: 'timestamp',
+        type: 'string'
     }],
 
     hasMany: [{

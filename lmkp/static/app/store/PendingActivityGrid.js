@@ -16,6 +16,13 @@ Ext.define('Lmkp.store.PendingActivityGrid', {
     pageSize: 10,
     remoteSort: true,
 
+    // initial sorting
+    sortOnLoad: true,
+    sorters: {
+        property: 'timestamp',
+        direction : 'DESC'
+    },
+
     proxy: {
         type: 'ajax',
         url: '/activities',

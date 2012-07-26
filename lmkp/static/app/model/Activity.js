@@ -8,6 +8,12 @@ Ext.define('Lmkp.model.Activity', {
         name: 'version',
         type: 'int'
     }, {
+        name: 'status',
+        type: 'string'
+    }, {
+        name: 'timestamp',
+        type: 'string'
+    }, {
         name: 'geometry',
         type: 'Lmkp.model.Point'
     }],
