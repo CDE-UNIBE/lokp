@@ -20,6 +20,7 @@ Ext.onReady(function(){
         'editor.Detail',
         'editor.Map',
         'editor.Overview',
+        'stakeholders.NewStakeholder',
         'stakeholders.StakeholderFieldContainer',
         'stakeholders.StakeholderSelection'
         ],

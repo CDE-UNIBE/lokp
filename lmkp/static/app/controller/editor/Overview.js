@@ -453,29 +453,29 @@ Ext.define('Lmkp.controller.editor.Overview', {
 
     deleteAllFilters: function() {
         console.log("refactor me and add a button somewhere");
-//        var panels = Ext.ComponentQuery.query('panel[name=attributePanel]');
-//        panels = panels.concat(Ext.ComponentQuery.query('panel[name=timePanel]'));
-//        if (panels.length > 0) {
-//            form = Ext.ComponentQuery.query('panel[id=activityFilterForm]')[0];
-//            for (i=0; i<panels.length; i++) {
-//                // if time was filtered, re-enable its 'add' button
-//                if (panels[i].name == 'timePanel') {
-//                    var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
-//                    if (button) {
-//                        button.enable();
-//                    }
-//                }
-//                if (form.items.contains(panels[i])) {
-//                    form.remove(panels[i], true);
-//                    panels[i].destroy();
-//                }
-//            }
-//            // collapse form if expanded
-//            if (!form.collapsed) {
-//                form.toggleCollapse();
-//            }
-//        }
-//        this.applyFilter();
+    //        var panels = Ext.ComponentQuery.query('panel[name=attributePanel]');
+    //        panels = panels.concat(Ext.ComponentQuery.query('panel[name=timePanel]'));
+    //        if (panels.length > 0) {
+    //            form = Ext.ComponentQuery.query('panel[id=activityFilterForm]')[0];
+    //            for (i=0; i<panels.length; i++) {
+    //                // if time was filtered, re-enable its 'add' button
+    //                if (panels[i].name == 'timePanel') {
+    //                    var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
+    //                    if (button) {
+    //                        button.enable();
+    //                    }
+    //                }
+    //                if (form.items.contains(panels[i])) {
+    //                    form.remove(panels[i], true);
+    //                    panels[i].destroy();
+    //                }
+    //            }
+    //            // collapse form if expanded
+    //            if (!form.collapsed) {
+    //                form.toggleCollapse();
+    //            }
+    //        }
+    //        this.applyFilter();
     },
 
     getOperator: function(xType) {
@@ -728,26 +728,64 @@ Ext.define('Lmkp.controller.editor.Overview', {
     onNewActivityPanelRender: function(comp, eOpts){
 
         // Get the map from the map panel
-        var map = this.getMapPanel().getMap();
+        var mappanel = this.getMapPanel();
+        var map = mappanel.getMap();
 
         // Get the toolbar
         var tbar = comp.down('form').getDockedItems('toolbar[dock="top"]')[0];
 
+        var selectCtrl = new OpenLayers.Control.SelectFeature(mappanel.getVectorLayer());
+
+        // Add the control and button to move an activity
+        var movePointCtrl = new OpenLayers.Control.ModifyFeature(
+            mappanel.getVectorLayer(), {
+                mode: OpenLayers.Control.ModifyFeature.DRAG,
+                selectControl: selectCtrl
+            });
+        map.addControl(movePointCtrl);
+        mappanel.getVectorLayer().events.register('featuremodified', comp, function(event){
+            var g = event.feature.geometry;
+            this.setActivityGeometry(g);
+        });
+
+        var moveAction = Ext.create('GeoExt.Action', {
+            control: movePointCtrl,
+            iconCls: 'move-button',
+            map: map,
+            scale: 'medium',
+            text: 'Edit location',
+            toggleGroup: 'map-controls',
+            toggleHandler: function(button, state){
+                state ? movePointCtrl.activate() : movePointCtrl.deactivate();
+            }
+        });
+        var moveButton = Ext.create('Ext.button.Button', moveAction);
+        tbar.insert(0, moveButton);
+
+        // Add the control and button to create a new activity
         var createPointCtrl = new OpenLayers.Control.DrawFeature(
-            this.getMapPanel().getVectorLayer(),
+            mappanel.getVectorLayer(),
             OpenLayers.Handler.Point,{
                 eventListeners: {
                     'featureadded': function(event){
                         var g = event.feature.geometry;
+                        //selectCtrl.select(event.feature);
                         createPointCtrl.deactivate();
+                        selectCtrl.select(event.feature);
+                        movePointCtrl.activate();
+                        movePointCtrl.selectFeature(event.feature);
                         createButton.toggle(false);
+                        moveButton.toggle(true);
                         this.setActivityGeometry(g);
+                        //
                     },
                     scope: comp
                 }
             });
-
         map.addControl(createPointCtrl);
+        mappanel.getVectorLayer().events.register('beforefeatureadded', mappanel.getVectorLayer(), function(event){
+            this.removeAllFeatures();
+        });
 
         var createAction = Ext.create('GeoExt.Action',{
             control: createPointCtrl,
@@ -761,6 +799,8 @@ Ext.define('Lmkp.controller.editor.Overview', {
         });
         var createButton = Ext.create('Ext.button.Button', createAction);
         tbar.insert(0, createButton);
+
+        
     },
 
     onSubmitButtonClick: function(button, event){

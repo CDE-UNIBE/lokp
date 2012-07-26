@@ -33,6 +33,16 @@
     height: 24px !important;
     width: 24px !important;
 }
+.cancel-button {
+    background-image: url("/static/img/process-stop.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.add-info-button {
+    background-image: url("/static/img/list-add.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
 .ico-key { 
     width:15px;
     height:15px;
