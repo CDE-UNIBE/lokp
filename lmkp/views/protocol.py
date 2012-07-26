@@ -10,6 +10,7 @@ from lmkp.models.database_objects import SH_Value
 from lmkp.models.database_objects import Stakeholder_Role
 from lmkp.models.database_objects import Status
 from lmkp.views.config import merge_profiles
+from lmkp.models.database_objects import User
 from shapely import wkb
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.sql.expression import and_
@@ -348,6 +349,21 @@ class Protocol(object):
                 filters.append(Stakeholder_Role.name.like(r))
             return filters
         
+        return None
+
+    def _get_user_filter(self, request, Mapped_Class, Changeset_Class):
+        """
+
+        """
+
+        username = request.params.get('user', None)
+        if username is not None:
+            return self.Session.query(Mapped_Class.id).\
+                join(Changeset_Class).\
+                join(User).\
+                filter(User.username == username).\
+                subquery()
+
         return None
 
     def _add_review(self, request, item, previous_item, Changeset_Item, user):
