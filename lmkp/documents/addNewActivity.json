@@ -2,23 +2,27 @@
     "activities": [{
             "geometry": {
                 "coordinates": [
-                    39.0735626220703,
-                    -6.909257872188
+                    103.743398,
+                    11.117586
                 ],
                 "type": "Point"
             },
+            "id": "60186afa-c78a-4b2c-89a6-b3650ccf3db0",
+            "version": 1,
             "taggroups": [
                 {
-                    "main_tag": {
-                            "key": "Name of Investor",
-                            "value": "Heng Huy Co"
-                    },
+                    "id": 20,
                     "op": "add",
                     "tags": [
                         {
-                            "key": "Name of Investor",
+                            "key": "Mineral",
+                            "op": "delete",
+                            "value": "Coal"
+                        },
+                        {
+                            "key": "Mineral",
                             "op": "add",
-                            "value": "Heng Huy Co"
+                            "value": "Cobalt"
                         }
                     ]
                 }

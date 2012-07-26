@@ -1,3 +1,5 @@
+from lmkp.config import locale_profile_directory_path
+from lmkp.config import profile_directory_path
 from lmkp.models.database_objects import A_Key
 from lmkp.models.database_objects import A_Tag
 from lmkp.models.database_objects import A_Value
@@ -7,6 +9,7 @@ from lmkp.models.database_objects import SH_Tag
 from lmkp.models.database_objects import SH_Value
 from lmkp.models.database_objects import Stakeholder_Role
 from lmkp.models.database_objects import Status
+from lmkp.views.config import merge_profiles
 from shapely import wkb
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.sql.expression import and_
@@ -14,6 +17,7 @@ from sqlalchemy.sql.expression import between
 from sqlalchemy.types import Float
 import datetime
 from sqlalchemy import func
+import yaml
 
 class Protocol(object):
     """
@@ -22,7 +26,7 @@ class Protocol(object):
     """
 
     def __init__(self):
-        pass
+        self.configuration = None
     
     def _get_timestamp_filter(self, request, AorSH, Changeset):
         """
@@ -397,6 +401,61 @@ class Protocol(object):
         ret['success'] = True
         ret['msg'] = 'Review successful.'
         return ret
+
+    def _key_value_is_valid(self, request, configuration, key, value):
+        """
+        Validate if key and value are in the current configuration
+        """
+
+        # Trim white spaces
+        value = value.strip()
+
+        # Per default key and value are not valid
+        key_is_valid = False
+        value_is_valid = False
+
+        # Loop the optional and mandatory fields
+        for fields in configuration['fields']:
+
+            # Loop all tags in fields
+            for tags in configuration['fields'][fields].iteritems():
+                # If the current key equals the key in the tag, set key_is_valid
+                # to True
+                if key == tags[0]:
+                    key_is_valid = True
+                    # Check the value in the next step:
+                    # If the current key contains predefined values, check the
+                    # value against these
+                    if 'predefined' in tags[1]:
+                        if value in tags[1]['predefined']:
+                            value_is_valid = True
+                    # In other cases (non-predefined values), set value_is_valid
+                    # to True
+                    else:
+                        value_is_valid = True
+
+        # Return only True if key as well as value are valid
+        return key_is_valid and value_is_valid
+
+    def _read_configuration(self, request, filename):
+
+        # Read the global configuration file
+        global_stream = open("%s/%s" % (profile_directory_path(request), filename), 'r')
+        self.configuration = yaml.load(global_stream)
+
+        # Read the localized configuration file
+        try:
+            locale_stream = open("%s/%s" % (locale_profile_directory_path(request), filename), 'r')
+            locale_config = yaml.load(locale_stream)
+
+            # If there is a localized config file then merge it with the global one
+            self.configuration = merge_profiles(global_config, locale_config)
+
+        except IOError:
+            # No localized configuration file found!
+            pass
+
+        return self.configuration
 
 class Tag(object):
 
