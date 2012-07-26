@@ -453,6 +453,11 @@ class StakeholderProtocol(Protocol):
             relevant_stakeholders = relevant_stakeholders.join(sh_role_filter, 
                 sh_role_filter.c.role_id == Stakeholder.id)
 
+        # Apply filter by username if set
+        if self._get_user_filter(request, Stakeholder, SH_Changeset) is not None:
+            user_filter = self._get_user_filter(request, Stakeholder, SH_Changeset)
+            relevant_stakeholders = relevant_stakeholders.join(user_filter)
+
         # Count relevant stakeholders (before applying limit and offset)
         count = relevant_stakeholders.count()
 
