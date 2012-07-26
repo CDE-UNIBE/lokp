@@ -54,7 +54,8 @@ Ext.define('Lmkp.view.editor.Detail', {
                 xtype: 'lo_activitypanel',
                 contentItem: data,
                 border: 0,
-                bodyPadding: 0
+                bodyPadding: 0,
+                editable: true
             });
 
             // Add a panel for pending versions of current user

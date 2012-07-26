@@ -53,7 +53,8 @@ Ext.define('Lmkp.view.items.PendingUserChanges', {
                     xtype: 'lo_activitypanel',
                     contentItem: record,
                     border: 0,
-                    bodyPadding: 0
+                    bodyPadding: 0,
+                    editable: false
                 });
             });
 
