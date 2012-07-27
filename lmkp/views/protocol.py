@@ -369,6 +369,20 @@ class Protocol(object):
 
         return None
 
+    def _get_attrs(self, request):
+        """
+        Return a list of attributes if set.
+
+        So far, only special parameter 'all' is supported, returns True
+        """
+
+        attrs = request.params.get('attrs', None)
+        if attrs is not None:
+            if attrs == 'all':
+                return True
+
+        return None
+
     def _check_moderator(self, request):
         """
         Return True if currently logged in user has moderator privileges

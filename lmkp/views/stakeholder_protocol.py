@@ -536,18 +536,27 @@ class StakeholderProtocol(Protocol):
                 query = query.order_by(asc(relevant_stakeholders.c.order_value))
 
         # Decide if keys will be filtered according to current profile or not
-        profile_keys = None
-        if unauthenticated_userid(request) is None:
-            # Not logged in: filter the keys according to profile
-            profile_keys = get_current_keys(
-                request, 'sh', get_current_profile(request)
-            )
+        attrs = self._get_attrs(request)
+        restricted_keys = None
+        if attrs is not None:
+            if attrs is True:
+                # Show all attributes
+                restricted_keys = None
+            else:
+                # Show only selected attributes (not yet supported)
+                restricted_keys = attrs
         else:
-            if self._check_moderator(request) is False:
-                # Logged in but not moderator: filter keys according to profile
-                profile_keys = get_current_keys(
+            if unauthenticated_userid(request) is None:
+                # Not logged in: filter the keys according to profile
+                restricted_keys = get_current_keys(
                     request, 'sh', get_current_profile(request)
                 )
+            else:
+                if self._check_moderator(request) is False:
+                    # Logged in but not moderator: filter keys according to profile
+                    restricted_keys = get_current_keys(
+                        request, 'sh', get_current_profile(request)
+                    )
 
         stakeholders = []
         
@@ -598,7 +607,7 @@ class StakeholderProtocol(Protocol):
             # stakeholder
             # Also add it only if key (original) is not filtered by profile
             taggroup = None
-            if profile_keys is None or i.key in profile_keys:
+            if restricted_keys is None or i.key in restricted_keys:
                 if stakeholder.find_taggroup_by_id(taggroup_id) is not None:
                     taggroup = stakeholder.find_taggroup_by_id(taggroup_id)
                 else:
@@ -720,18 +729,27 @@ class StakeholderProtocol(Protocol):
             query = query.filter(Stakeholder.version.in_(versions))
 
         # Decide if keys will be filtered according to current profile or not
-        profile_keys = None
-        if unauthenticated_userid(request) is None:
-            # Not logged in: filter the keys according to profile
-            profile_keys = get_current_keys(
-                request, 'sh', get_current_profile(request)
-            )
+        attrs = self._get_attrs(request)
+        restricted_keys = None
+        if attrs is not None:
+            if attrs is True:
+                # Show all attributes
+                restricted_keys = None
+            else:
+                # Show only selected attributes (not yet supported)
+                restricted_keys = attrs
         else:
-            if self._check_moderator(request) is False:
-                # Logged in but not moderator: filter keys according to profile
-                profile_keys = get_current_keys(
+            if unauthenticated_userid(request) is None:
+                # Not logged in: filter the keys according to profile
+                restricted_keys = get_current_keys(
                     request, 'sh', get_current_profile(request)
                 )
+            else:
+                if self._check_moderator(request) is False:
+                    # Logged in but not moderator: filter keys according to profile
+                    restricted_keys = get_current_keys(
+                        request, 'sh', get_current_profile(request)
+                    )
 
         # Collect the data from query
         data = []
@@ -773,7 +791,7 @@ class StakeholderProtocol(Protocol):
             # stakeholder
             # Also add it only if key (original) is not filtered by profile
             taggroup = None
-            if profile_keys is None or i.key in profile_keys:
+            if restricted_keys is None or i.key in restricted_keys:
                 if stakeholder.find_taggroup_by_id(taggroup_id) is not None:
                     taggroup = stakeholder.find_taggroup_by_id(taggroup_id)
                 else:
