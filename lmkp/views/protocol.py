@@ -1,6 +1,8 @@
 from lmkp.models.database_objects import A_Key
 from lmkp.models.database_objects import A_Tag
 from lmkp.models.database_objects import A_Value
+from lmkp.models.database_objects import Group
+from lmkp.models.database_objects import Permission
 from lmkp.models.database_objects import Review_Decision
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Tag
@@ -15,6 +17,7 @@ from sqlalchemy.sql.expression import between
 from sqlalchemy.types import Float
 import datetime
 from sqlalchemy import func
+from pyramid.security import unauthenticated_userid
 
 class Protocol(object):
     """
@@ -105,7 +108,7 @@ class Protocol(object):
 
         return 0
 
-    def _get_status(self, request):
+    def _get_status(self, request, from_history=False):
         """
         Returns an ClauseElement array of requested activity status.
         Default value is active.
@@ -128,6 +131,10 @@ class Protocol(object):
                 return arr
         except AttributeError:
             pass
+
+        # Special case: request came from history, return None
+        if from_history is True:
+            return None
 
         return [Status.name == "active"]
 
@@ -361,6 +368,26 @@ class Protocol(object):
                 subquery()
 
         return None
+
+    def _check_moderator(self, request):
+        """
+        Return True if currently logged in user has moderator privileges
+        (permission = 'moderate'), else False.
+        """
+
+        if unauthenticated_userid(request) is None:
+            return False
+        
+        moderator_rights = self.Session.query(Permission).\
+            join(Permission.groups).\
+            join(Group.users).\
+            filter(User.username == unauthenticated_userid(request)).\
+            filter(Permission.name == 'moderate').\
+            all()
+        if len(moderator_rights) > 0:
+            return True
+
+        return False
 
     def _add_review(self, request, item, previous_item, Changeset_Item, user):
         """
