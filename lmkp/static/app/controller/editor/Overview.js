@@ -701,7 +701,6 @@ Ext.define('Lmkp.controller.editor.Overview', {
                     }
                 });
 
-                console.log("controller/Overview.js - onGetFeatureInfo");
                 this.showDetails(null, [store.getAt(0)], null);
             }
         });

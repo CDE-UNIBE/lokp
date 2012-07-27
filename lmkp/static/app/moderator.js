@@ -19,6 +19,7 @@ Ext.onReady(function(){
         'activities.TagGroup',
         'login.Toolbar',
         'editor.Detail',
+        'editor.Layers',
         'editor.Map',
         'editor.Overview',
         'moderator.Pending',
