@@ -13,7 +13,7 @@ Ext.define('Lmkp.view.editor.ContextLayers',{
 
     initComponent: function(){
 
-        this.layers = this.createLayers();
+        this.layers = Lmkp.layers;
 
         var items = [];
 
@@ -30,43 +30,6 @@ Ext.define('Lmkp.view.editor.ContextLayers',{
         this.items = items;
 
         this.callParent(arguments);
-    },
-
-    createLayers: function(){
-        var layers = [
-        new OpenLayers.Layer.WMS("Tabi Ocean",
-            "http://www.tabi.la/geoserver/tabi/wms",
-            {
-                epsg: 900913,
-                format: 'image/png8',
-                layers: "10m_ocean",
-                transparent: true
-            },{
-                visibility: false,
-                isBaseLayer: false,
-                sphericalMercator: true,
-                maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34, 20037508.34, 20037508.34),
-                opacity: 0.7
-            }),
-        new OpenLayers.Layer.WMS("DECIDE Info Poverty",
-            "http://www.decide.la/geoserver/wms",
-            {
-                epsg: 900913,
-                format: 'image/png8',
-                layers: "decide:village-polygon",
-                transparent: true,
-                styles: 'vrppoac26'
-            },{
-                visibility: false,
-                isBaseLayer: false,
-                sphericalMercator: true,
-                maxExtent: new OpenLayers.Bounds(11063487.59, 1543945.80, 12059351.76, 2593727.60),
-                opacity: 0.7
-            }),
-        ];
-
-        return layers;
     }
-
 
 });

@@ -28,6 +28,7 @@ from pyramid.security import has_permission
         <script type="text/javascript" src="/static/lib/OpenLayers-2.11/OpenLayers.js"></script>
         <!--script type="text/javascript" src="/static/lib/geoext2/src/GeoExt/GeoExt.js"></script-->
         <script type="text/javascript" src="/lang"></script>
+        <script type="text/javascript" src="/app/view/layers.js"></script>
         % if isinstance(has_permission('administer', request.context, request), ACLAllowed):
         <script type="text/javascript" src="/app/view/EditToolbar.js"></script>
         <script type="text/javascript" src="${request.static_url('lmkp:static/app/admin.js')}"></script>
