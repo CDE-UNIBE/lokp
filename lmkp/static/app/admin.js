@@ -18,6 +18,8 @@ Ext.onReady(function(){
         'activities.NewActivity',
         'activities.TagGroup',
         'administrator.Main',
+        'editor.BaseLayers',
+        'editor.ContextLayers',
         'editor.Detail',
         'editor.Map',
         'editor.Overview',

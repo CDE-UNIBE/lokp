@@ -3,7 +3,9 @@ Ext.define('Lmkp.view.editor.Map',{
     alias: ['widget.lo_editormappanel'],
 
     requires: [
-    'GeoExt.Action'
+    'GeoExt.Action',
+    'Lmkp.view.editor.BaseLayers',
+    'Lmkp.view.editor.ContextLayers'
     ],
 
     border: false,
@@ -14,7 +16,7 @@ Ext.define('Lmkp.view.editor.Map',{
 
     config: {
         activitiesLayer: null,
-        baseLayer: null,
+        baseLayers: null,
         identifyCtrl: null,
         map: null,
         vectorLayer: null
@@ -34,11 +36,6 @@ Ext.define('Lmkp.view.editor.Map',{
 
     initComponent: function() {
         
-        this.baseLayer = new OpenLayers.Layer.OSM('mapnik', null, {
-            sphericalMercator: true,
-            projection: new OpenLayers.Projection("EPSG:900913")
-        });
-        
         this.activitiesLayer = new OpenLayers.Layer.WMS('Activities',
             '/geoserver/lo/wms',{
                 layers: 'activities',
@@ -56,16 +53,12 @@ Ext.define('Lmkp.view.editor.Map',{
             isBaseLayer: false
         });
 
-        // The map
+        // Create the map, the layers are appended later, see below.
         this.map = new OpenLayers.Map({
             displayProjection: this.geographicProjection,
             controls: [
+            new OpenLayers.Control.Attribution(),
             new OpenLayers.Control.Navigation()
-            ],
-            layers: [
-            this.baseLayer,
-            this.activitiesLayer,
-            this.vectorLayer
             ],
             projection: this.sphericalMercatorProjection
         });
@@ -131,6 +124,35 @@ Ext.define('Lmkp.view.editor.Map',{
             tooltip: "Identify feature"
         });
         this.tbar.add(Ext.create('Ext.button.Button', identifyAction));
+
+        this.tbar.add('->');
+
+        // Create the base layer menu. This class will append the base layers
+        // to the map
+        var baseLayerMenu = Ext.create('Lmkp.view.editor.BaseLayers',{
+            map: this.map
+        });
+        // And add it to the toolbar
+        this.tbar.add({
+           text: Lmkp.ts.msg('Base Layers'),
+           menu: baseLayerMenu
+        });
+
+        // Now add the WMS layer showing the activities and the vector layer
+        // that is used when selecting activities.
+        // Order matters!
+        this.map.addLayers([this.activitiesLayer, this.vectorLayer]);
+
+        // Create the context layers menu. It will append the context layers to
+        // the map
+        var contextLayersMenu = Ext.create('Lmkp.view.editor.ContextLayers', {
+            map: this.map
+        });
+        // Add the context layers to the toolbar.
+        this.tbar.add({
+            text: Lmkp.ts.msg("Context Layers"),
+            menu: contextLayersMenu
+        });
 
         this.callParent(arguments);
     }
