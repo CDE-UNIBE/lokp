@@ -1,17 +1,14 @@
-from lmkp.models.database_objects import (
-    User
-)
+from lmkp.models.database_objects import Group
+from lmkp.models.database_objects import User
 from lmkp.models.meta import DBSession as Session
-from sqlalchemy.orm.exc import NoResultFound
-
-from pyramid.security import (
-    authenticated_userid,
-    has_permission,
-    ACLAllowed
-)
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPForbidden
-from pyramid.view import view_config
 from pyramid.renderers import render_to_response
+from pyramid.security import ACLAllowed
+from pyramid.security import authenticated_userid
+from pyramid.security import has_permission
+from pyramid.view import view_config
+from sqlalchemy.orm.exc import NoResultFound
 
 @view_config(route_name='user_profile_json', renderer='json')
 def user_profile_json(request):
@@ -99,3 +96,44 @@ def get_user_profile(request):
     if username != request.matchdict['userid']:
         raise HTTPForbidden
     return {}
+
+@view_config(route_name='add_user', renderer='json', permission='administer')
+def add_user(request):
+    if 'group' in request.params:
+        requested_group = request.params['group']
+    else:
+        raise HTTPBadRequest("Missing group parameter")
+
+    if 'username' in request.params:
+        username = request.params['username']
+    else:
+        raise HTTPBadRequest("Missing username parameter")
+
+    if 'email' in request.params:
+        email = request.params['email']
+    else:
+        raise HTTPBadRequest("Missing email parameter")
+
+    if 'password' in request.params:
+        password = request.params['password']
+    else:
+        raise HTTPBadRequest("Missing password parameter")
+
+    try:
+        group = Session.query(Group).filter(Group.name == requested_group).one()
+    except NoResultFound:
+        raise HTTPBadRequest("Invalid group parameter")
+
+    if not _user_exists(User.username, username):
+        new_user = User(username=username, password=password, email=email)
+        new_user.groups.append(group)
+        return {"success": True, "msg": "New user created successfully."}
+    else:
+        request.response.status= 400
+        return {"success": False, "msg": "User exists."}
+
+def _user_exists(filterColumn, filterAttr):
+    if Session.query(User).filter(filterColumn == filterAttr).count() > 0:
+        return True
+
+    return False

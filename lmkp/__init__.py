@@ -122,6 +122,8 @@ def main(global_config, ** settings):
     config.add_route('user_profile_json', '/users/json/{userid}')
     # Updates the information of a user
     config.add_route('user_update', '/users/update', request_method='POST')
+    # Add a new user
+    config.add_route('add_user', '/users/add', request_method='POST')
 
     # A WMS proxy
     config.add_route('wms_proxy', '/geoserver/lo/wms', request_method='GET')
