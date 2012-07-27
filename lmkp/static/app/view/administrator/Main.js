@@ -5,6 +5,7 @@ Ext.define('Lmkp.view.administrator.Main', {
 
     requires: [
     'Lmkp.view.administrator.Home',
+    'Lmkp.view.administrator.UserManagement',
     'Lmkp.view.administrator.YamlScan',
     'Lmkp.view.moderator.Pending',
     'Lmkp.view.editor.Overview'
@@ -28,6 +29,10 @@ Ext.define('Lmkp.view.administrator.Main', {
         store: 'ShYamlScan',
         title: 'Stakeholders',
         xtype: 'yamlscanpanel'
+    },{
+        margin: 5,
+        title: 'Add User',
+        xtype: 'lo_usermanagementpanel'
     }],
 
     initComponent: function() {
