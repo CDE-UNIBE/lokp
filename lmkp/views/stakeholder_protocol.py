@@ -15,10 +15,13 @@ from lmkp.views.protocol import Protocol
 from lmkp.views.protocol import Tag
 from lmkp.views.protocol import TagGroup
 from lmkp.views.protocol import Inv
+from lmkp.views.profile import get_current_profile
+from lmkp.views.config import get_current_keys
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPCreated
 from pyramid.i18n import get_localizer
+from pyramid.security import unauthenticated_userid
 from sqlalchemy import func
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.sql.expression import asc
@@ -525,13 +528,26 @@ class StakeholderProtocol(Protocol):
             outerjoin(value_translation, value_translation.c.value_original_id == SH_Value.id).\
             outerjoin(involvement_query, involvement_query.c.stakeholder_id == Stakeholder.id)
 
-
         # Do the ordering again
         if order_query is not None:
             if self._get_order_direction(request) == 'DESC':
                 query = query.order_by(desc(relevant_stakeholders.c.order_value))
             else:
                 query = query.order_by(asc(relevant_stakeholders.c.order_value))
+
+        # Decide if keys will be filtered according to current profile or not
+        profile_keys = None
+        if unauthenticated_userid(request) is None:
+            # Not logged in: filter the keys according to profile
+            profile_keys = get_current_keys(
+                request, 'sh', get_current_profile(request)
+            )
+        else:
+            if self._check_moderator(request) is False:
+                # Logged in but not moderator: filter keys according to profile
+                profile_keys = get_current_keys(
+                    request, 'sh', get_current_profile(request)
+                )
 
         stakeholders = []
         
@@ -580,16 +596,18 @@ class StakeholderProtocol(Protocol):
 
             # Check if there is already this tag group present in the current
             # stakeholder
+            # Also add it only if key (original) is not filtered by profile
             taggroup = None
-            if stakeholder.find_taggroup_by_id(taggroup_id) is not None:
-                taggroup = stakeholder.find_taggroup_by_id(taggroup_id)
-            else:
-                taggroup = TagGroup(taggroup_id, i.main_tag)
-                stakeholder.add_taggroup(taggroup)
+            if profile_keys is None or i.key in profile_keys:
+                if stakeholder.find_taggroup_by_id(taggroup_id) is not None:
+                    taggroup = stakeholder.find_taggroup_by_id(taggroup_id)
+                else:
+                    taggroup = TagGroup(taggroup_id, i.main_tag)
+                    stakeholder.add_taggroup(taggroup)
 
             # Because of Involvements, the same Tags appears for each Involvement, so
             # add it only once to TagGroup
-            if taggroup.get_tag_by_id(i.tag) is None:
+            if taggroup is not None and taggroup.get_tag_by_id(i.tag) is None:
                 taggroup.add_tag(Tag(i.tag, key, value))
 
             # Determine if and how detailed Involvements are to be displayed
@@ -637,7 +655,7 @@ class StakeholderProtocol(Protocol):
 
         # If no status provided in request.params, look in function parameters
         # or use default
-        if self._get_status(request) is None:
+        if self._get_status(request, True) is None:
             if status_list is None:
                 status_list = ['active', 'overwritten']
             status_filter = self.Session.query(Status).\
@@ -645,7 +663,7 @@ class StakeholderProtocol(Protocol):
                 subquery()
         else:
             status_filter = self.Session.query(Status).\
-                filter(or_(* self._get_status(request))).\
+                filter(or_(* self._get_status(request, True))).\
                 subquery()
         
         # Prepare query to translate keys and values
@@ -701,6 +719,20 @@ class StakeholderProtocol(Protocol):
         if versions is not None:
             query = query.filter(Stakeholder.version.in_(versions))
 
+        # Decide if keys will be filtered according to current profile or not
+        profile_keys = None
+        if unauthenticated_userid(request) is None:
+            # Not logged in: filter the keys according to profile
+            profile_keys = get_current_keys(
+                request, 'sh', get_current_profile(request)
+            )
+        else:
+            if self._check_moderator(request) is False:
+                # Logged in but not moderator: filter keys according to profile
+                profile_keys = get_current_keys(
+                    request, 'sh', get_current_profile(request)
+                )
+
         # Collect the data from query
         data = []
         for i in query.all():
@@ -739,16 +771,18 @@ class StakeholderProtocol(Protocol):
 
             # Check if there is already this tag group present in the current
             # stakeholder
+            # Also add it only if key (original) is not filtered by profile
             taggroup = None
-            if stakeholder.find_taggroup_by_id(taggroup_id) is not None:
-                taggroup = stakeholder.find_taggroup_by_id(taggroup_id)
-            else:
-                taggroup = TagGroup(taggroup_id, i.main_tag)
-                stakeholder.add_taggroup(taggroup)
+            if profile_keys is None or i.key in profile_keys:
+                if stakeholder.find_taggroup_by_id(taggroup_id) is not None:
+                    taggroup = stakeholder.find_taggroup_by_id(taggroup_id)
+                else:
+                    taggroup = TagGroup(taggroup_id, i.main_tag)
+                    stakeholder.add_taggroup(taggroup)
 
             # Because of Involvements, the same Tags appear for each Involvement, so
             # add it only once to TagGroup
-            if taggroup.get_tag_by_id(i.tag) is None:
+            if taggroup is not None and taggroup.get_tag_by_id(i.tag) is None:
                 taggroup.add_tag(Tag(i.tag, key, value))
 
             # Determine if and how detailed Involvements are to be displayed
