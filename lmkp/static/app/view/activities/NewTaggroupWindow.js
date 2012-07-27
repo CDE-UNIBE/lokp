@@ -1,5 +1,6 @@
 Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
     extend: 'Ext.window.Window',
+    alias: ['widget.lo_newtaggroupwindow'],
 	
     layout: 'fit',
     defaults: {
@@ -10,6 +11,19 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
     // needed to keep track of original tags
     old_tags: [],
     old_main_tag: null,
+
+    config: {
+        cb_tag: 'tg_combobox_tag',
+        cb_maintag: 'tg_combobox_maintag'
+    },
+
+    items: [
+        {
+            xtype: 'panel',
+            bodyPadding: 5,
+            html: 'Loading ...'
+        }
+    ],
 	
     initComponent: function() {
 		
@@ -152,7 +166,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                             }
 							
                             // 'normal' tags
-                            var attrs = Ext.ComponentQuery.query('combobox[name=tg_combobox]');
+                            var attrs = Ext.ComponentQuery.query('combobox[name=tg_combobox_tag]');
                             var values = Ext.ComponentQuery.query('[name=tg_valuefield]');
                             if (attrs.length > 0 && values.length > 0 && attrs.length == values.length) {
                                 for (var i=0; i<attrs.length; i++) {
@@ -217,7 +231,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                                     'op': 'delete'
                                 });
                             }
-							
+
                             // only do submit if something changed
                             if (newTags.length > 0 || deleteTags.length > 0) {
                                 // put together diff object
@@ -235,24 +249,25 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                                 ];
 									
                                 // send JSON through AJAX request
-                                Ext.Ajax.request({
-                                    url: url,
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json;charset=utf-8'
-                                    },
-                                    jsonData: diffObject,
-                                    success: function(response, options) {
-                                        Ext.Msg.alert('Success', 'The information was successfully submitted. It will be reviewed shortly.');
-                                        // Fire event to reload detail panel
-                                        form.up('window').fireEvent('successfulEdit');
-                                        form.up('window').close();
-                                    },
-                                    failure: function(response, options) {
-                                        Ext.Msg.alert('Failure', 'The information could not be submitted.');
-                                        form.up('window').close();
-                                    }
-                                });
+//                                Ext.Ajax.request({
+//                                    url: url,
+//                                    method: 'POST',
+//                                    headers: {
+//                                        'Content-Type': 'application/json;charset=utf-8'
+//                                    },
+//                                    jsonData: diffObject,
+//                                    success: function(response, options) {
+//                                        Ext.Msg.alert('Success', 'The information was successfully submitted. It will be reviewed shortly.');
+//                                        // Fire event to reload detail panel
+//                                        form.up('window').fireEvent('successfulEdit');
+//                                        form.up('window').close();
+//                                    },
+//                                    failure: function(response, options) {
+//                                        Ext.Msg.alert('Failure', 'The information could not be submitted.');
+//                                        form.up('window').close();
+//                                    }
+//                                });
+                                console.log(diffObject);
                             } else {
                                 Ext.Msg.alert('Notice', 'No changes were made.');
                                 form.up('window').close();
@@ -264,48 +279,85 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 			
             // load the config store
             var store = Ext.create(configStore);
-            store.load();
-            // another instance of the config store is needed to keep track of all attributes available
             var completeStore = Ext.create(configStore);
-            completeStore.load();
-			
-            // if a TagGroup was selected to edit, show its values
-            if (me.selected_taggroup) {
-                // fill tags into separate arrays
-				
-                me.selected_taggroup.tags().each(function(record) {
-					
-                    if (me.selected_taggroup.main_tag().first() && record.get('id') == me.selected_taggroup.main_tag().first().get('id')) {
-                        me.old_main_tag = record;
+            store.load(function() {
+                // another instance of the config store is needed to keep track
+                // of all attributes available
+                completeStore.load(function() {
+                    // Only continue both stores are loaded
+
+                    if (me.selected_taggroup) {
+                        var profile_info = null;
+
+                        // Keep track of tags
+                        me.selected_taggroup.tags().each(function(record) {
+                            // Only keep track of attributes available in
+                            // configuration store
+                            if (store.find('fieldLabel', record.get('key')) != -1) {
+                                // Treat main tags and 'normal' tags differently
+                                if (me.selected_taggroup.main_tag().first() &&
+                                    record.get('id') == me.selected_taggroup.main_tag().first().get('id')) {
+                                    me.old_main_tag = record;
+                                } else {
+                                    me.old_tags.push(record);
+                                }
+                            } else {
+                                // Show a message that at least one attribute is
+                                // not shown because of profile
+                                profile_info = true;
+                            }
+                        });
+
+                        // Display main tag first (if available)
+                        if (me.old_main_tag) {
+                            var fieldContainer = me._getFieldContainer(
+                                store, completeStore, true, true,
+                                me.old_main_tag.get('key'),
+                                me.old_main_tag.get('value')
+                            );
+                            form.insert(0, fieldContainer);
+                        }
+
+                        // Display all 'normal' tags
+                        for (var t in me.old_tags) {
+                            var fieldContainer = me._getFieldContainer(
+                                store, completeStore, true, false,
+                                me.old_tags[t].get('key'),
+                                me.old_tags[t].get('value')
+                            );
+                            form.insert(1, fieldContainer);
+                        }
                     } else {
-                        me.old_tags.push(record);
+                        // If no TagGroup was selected to edit, show initial attribute selection
+                        var fieldContainer = me._getFieldContainer(
+                            store, completeStore, false, true
+                        );
+                        form.insert(0, fieldContainer);
                     }
+
+                    // Show information if some attributes were skipped because
+                    // of profile
+                    if (profile_info) {
+                        form.insert(0, {
+                            xtype: 'panel',
+                            html: 'Some of the attributes cannot be edited '
+                                + 'because they are not part of the currently selected '
+                                + 'profile.',
+                            bodyCls: 'notice',
+                            bodyPadding: 5,
+                            margin: '0 0 5 0'
+                        });
+                    }
+
+                    // Remove the loading panel before showing form
+                    me.removeAll();
+                    me.add(form);
                 });
-
-                // first display main tag (if available)
-                if (me.old_main_tag) {
-                    var fieldContainer = this._getFieldContainer(store, completeStore, true, true, me.old_main_tag.get('key'), me.old_main_tag.get('value'));
-                    form.insert(0, fieldContainer);
-                }
-				
-                // then display all 'normal' tags
-                for (var t in me.old_tags) {
-                    var fieldContainer = this._getFieldContainer(store, completeStore, true, false, me.old_tags[t].get('key'), me.old_tags[t].get('value'));
-                    form.insert(1, fieldContainer);
-                }
-				
-            } else {
-                // if no TagGroup was selected to edit, show initial attribute selection
-                var fieldContainer = this._getFieldContainer(store, completeStore, false, true);
-                form.insert(1, fieldContainer);
-            }
-
-            // add form to window
-            this.items = form;
+            });
         }
         this.callParent(arguments);
     },
-	
+
     /**
 	 * Returns a FieldContainer with a ComboBox for attribute selection.
 	 * 'store' is needed to display only attributes that are not yet selected
@@ -314,8 +366,10 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 	 * 'main_tag' indicates whether it is main_tag or not
 	 */
     _getFieldContainer: function(store, completeStore, removable, main_tag, initialAttribute, initialValue) {
-		
-        var cb_name = (main_tag) ? 'tg_combobox_maintag' : 'tg_combobox';
+
+        var cb_name = (main_tag) ? this.getCb_maintag() : this.getCb_tag();
+
+        var win = this;
 
         // ComboBox to select attribute
         var cb = Ext.create('Ext.form.field.ComboBox', {
@@ -343,8 +397,9 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                     }
                     // replace the value field
                     fieldContainer.items.getAt(fieldContainer.items.findIndex('name', 'tg_valuefield')).destroy();
-                    var newField = this.up('window')._getValueField(currentRecord, main_tag);
-                    // if initialValue was provided (when editing selected TagGroup), then show its value
+                    var newField = win._getValueField(currentRecord, main_tag);
+                    // if initialValue was provided (when editing selected
+                    // TagGroup), then show its value
                     if (initialValue) {
                         // store old value
                         newField['oldValue'] = initialValue;
@@ -356,13 +411,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                 }
             }
         });
-        // if initialAttribute was provided (when editing selected TagGroup), then show its value
-        if (initialAttribute) {
-            // store old value
-            cb['oldAttribute'] = initialAttribute;
-            cb.setValue(initialAttribute);
-        }
-		
+
         // put together the FieldContainer
         var fieldContainer = Ext.create('Ext.form.FieldContainer', {
             layout: 'hbox',
@@ -382,18 +431,27 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                 disabled: !removable,
                 handler: function() {
                     // functionality to remove attribute
-                    var fieldContainer = this.up('fieldcontainer');
+                    var fc = this.up('fieldcontainer');
                     // add value (if selected) to store again
-                    var selectedValue = fieldContainer.items.getAt(fieldContainer.items.findIndex('name', 'tg_combobox')).getValue();
+                    var selectedValue = fc.items.getAt(
+                        fc.items.findIndex('name', 'tg_combobox')
+                    ).getValue();
                     if (selectedValue) {
                         store.add(completeStore.findRecord('name', selectedValue));
                     }
                     // remove fields
-                    fieldContainer.removeAll(); // remove items first to allow form to check its validity
-                    fieldContainer.destroy();
+                    fc.removeAll(); // remove items first to allow form to check its validity
+                    fc.destroy();
                 }
             }]
         });
+
+        // if initialAttribute was provided (when editing selected TagGroup), then show its value
+        if (initialAttribute) {
+            // store old value
+            cb['oldAttribute'] = initialAttribute;
+            cb.setValue(initialAttribute);
+        }
 
         return fieldContainer;
     },
