@@ -3,6 +3,7 @@ from geoalchemy.functions import functions
 import geojson
 from lmkp.models.database_objects import *
 from lmkp.views.profile import get_current_profile
+from lmkp.views.config import get_current_keys
 from lmkp.views.protocol import Feature
 from lmkp.views.protocol import Inv
 from lmkp.views.protocol import Protocol
@@ -35,6 +36,9 @@ from sqlalchemy.sql.expression import or_
 from sqlalchemy.types import Float
 import uuid
 import yaml
+from lmkp.views.stakeholder_protocol import StakeholderProtocol
+from pyramid.security import authenticated_userid
+from pyramid.security import unauthenticated_userid
 
 log = logging.getLogger(__name__)
 
@@ -642,6 +646,29 @@ class ActivityProtocol2(Protocol):
             else:
                 query = query.order_by(asc(relevant_activities.c.order_value))
 
+        # Decide if keys will be filtered according to current profile or not
+        attrs = self._get_attrs(request)
+        restricted_keys = None
+        if attrs is not None:
+            if attrs is True:
+                # Show all attributes
+                restricted_keys = None
+            else:
+                # Show only selected attributes (not yet supported)
+                restricted_keys = attrs
+        else:
+            if unauthenticated_userid(request) is None:
+                # Not logged in: filter the keys according to profile
+                restricted_keys = get_current_keys(
+                    request, 'a', get_current_profile(request)
+                )
+            else:
+                if self._check_moderator(request) is False:
+                    # Logged in but not moderator: filter keys by profile
+                    restricted_keys = get_current_keys(
+                        request, 'a', get_current_profile(request)
+                    )
+
         activities = []
         
         # Return array with only GUIDs if flag is set
@@ -693,16 +720,18 @@ class ActivityProtocol2(Protocol):
 
             # Check if there is already this tag group present in the current
             # activity
+            # Also add it only if key (original) is not filtered by profile
             taggroup = None
-            if activity.find_taggroup_by_id(taggroup_id) is not None:
-                taggroup = activity.find_taggroup_by_id(taggroup_id)
-            else:
-                taggroup = TagGroup(taggroup_id, i.main_tag)
-                activity.add_taggroup(taggroup)
+            if restricted_keys is None or i.key in restricted_keys:
+                if activity.find_taggroup_by_id(taggroup_id) is not None:
+                    taggroup = activity.find_taggroup_by_id(taggroup_id)
+                else:
+                    taggroup = TagGroup(taggroup_id, i.main_tag)
+                    activity.add_taggroup(taggroup)
 
             # Because of Involvements, the same Tags appears for each Involvement, so
             # add it only once to TagGroup
-            if taggroup.get_tag_by_id(i.tag) is None:
+            if taggroup is not None and taggroup.get_tag_by_id(i.tag) is None:
                 taggroup.add_tag(Tag(i.tag, key, value))
             
             # Determine if and how detailed Involvements are to be displayed
@@ -742,7 +771,7 @@ class ActivityProtocol2(Protocol):
 
         # If no status provided in request.params, look in function parameters
         # or use default
-        if self._get_status(request) is None:
+        if self._get_status(request, True) is None:
             if status_list is None:
                 status_list = ['active', 'overwritten']
             status_filter = self.Session.query(Status).\
@@ -750,7 +779,7 @@ class ActivityProtocol2(Protocol):
                 subquery()
         else:
             status_filter = self.Session.query(Status).\
-                filter(or_(* self._get_status(request))).\
+                filter(or_(* self._get_status(request, True))).\
                 subquery()
 
         # Prepare query to translate keys and values
@@ -807,6 +836,29 @@ class ActivityProtocol2(Protocol):
         if versions is not None:
             query = query.filter(Activity.version.in_(versions))
         
+        # Decide if keys will be filtered according to current profile or not
+        attrs = self._get_attrs(request)
+        restricted_keys = None
+        if attrs is not None:
+            if attrs is True:
+                # Show all attributes
+                restricted_keys = None
+            else:
+                # Show only selected attributes (not yet supported)
+                restricted_keys = attrs
+        else:
+            if unauthenticated_userid(request) is None:
+                # Not logged in: filter the keys according to profile
+                restricted_keys = get_current_keys(
+                    request, 'a', get_current_profile(request)
+                )
+            else:
+                if self._check_moderator(request) is False:
+                    # Logged in but not moderator: filter keys according to profile
+                    restricted_keys = get_current_keys(
+                        request, 'a', get_current_profile(request)
+                    )
+
         # Collect the data from query
         data = []
         for i in query.all():
@@ -851,16 +903,18 @@ class ActivityProtocol2(Protocol):
             
             # Check if there is already this tag group present in the current
             # activity
+            # Also add it only if key (original) is not filtered by profile
             taggroup = None
-            if activity.find_taggroup_by_id(taggroup_id) is not None:
-                taggroup = activity.find_taggroup_by_id(taggroup_id)
-            else:
-                taggroup = TagGroup(taggroup_id, i.main_tag)
-                activity.add_taggroup(taggroup)
+            if restricted_keys is None or i.key in restricted_keys:
+                if activity.find_taggroup_by_id(taggroup_id) is not None:
+                    taggroup = activity.find_taggroup_by_id(taggroup_id)
+                else:
+                    taggroup = TagGroup(taggroup_id, i.main_tag)
+                    activity.add_taggroup(taggroup)
 
             # Because of Involvements, the same Tags appear for each Involvement, so
             # add it only once to TagGroup
-            if taggroup.get_tag_by_id(i.tag) is None:
+            if taggroup is not None and taggroup.get_tag_by_id(i.tag) is None:
                 taggroup.add_tag(Tag(i.tag, key, value))
         
             # Determine if and how detailed Involvements are to be displayed
