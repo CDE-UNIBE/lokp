@@ -10,7 +10,7 @@ Ext.onReady(function(){
         appFolder: 'static/app',
 
         requires: [
-        'Lmkp.view.administrator.Outer',
+        'Lmkp.view.administrator.Main',
         'Lmkp.view.login.Toolbar'
         ],
 
@@ -32,13 +32,22 @@ Ext.onReady(function(){
 
         launch: function() {
             Ext.create('Ext.container.Viewport', {
+                border: false,
                 layout: {
                     type: 'border',
                     padding: 0
                 },
                 items: [{
+                    region: 'north',
+                    xtype: 'lo_logintoolbar'
+                },{
+                    contentEl: 'header-div',
+                    height: 80,
+                    region: 'north',
+                    xtype: 'panel'
+                },{
                     region: 'center',
-                    xtype: 'lo_administratorouterpanel'
+                    xtype: 'lo_administratormainpanel'
                 }]
             });
         }
