@@ -1,6 +1,8 @@
 Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
     extend: 'Ext.window.Window',
     alias: ['widget.lo_newtaggroupwindow'],
+
+    requires: ['Lmkp.view.activities.NewTaggroupPanel'],
 	
     layout: 'fit',
     defaults: {
@@ -81,9 +83,14 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                         handler: function() {
                             // functionality to add new attribute selection to form
                             // it is a main_tag if it is the first ComboBox of the form
-                            var main_tag = Ext.ComponentQuery.query('combobox[name=tg_combobox_maintag]').length == 0 && Ext.ComponentQuery.query('combobox[name=tg_combobox]').length == 0;
-                            var fieldContainer = form.up('window')._getFieldContainer(store, completeStore, true, main_tag, null, null);
-                            form.insert(form.items.length-1, fieldContainer);
+                            var main_tag = form.query('lo_newtaggrouppanel').length == 0;
+                            form.insert(form.items.length-1, {
+                                xtype: 'lo_newtaggrouppanel',
+                                is_maintag: main_tag,
+                                removable: true,
+                                main_store: store,
+                                complete_store: completeStore
+                            });
                         }
                     }]
                 }],
@@ -95,139 +102,72 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                     handler: function() {
                         var theform = form.getForm();
                         if (theform.isValid()) {
-                            // submit functionality. collect values first
-                            var main_tag = {};
+
+                            // Prepare values
+                            var main_tag = new Object();
                             var newTags = [];
                             var deleteTags = [];
-							
-                            // main tag
-                            var attr_maintag = Ext.ComponentQuery.query('combobox[name=tg_combobox_maintag]');
-                            var val_maintag = Ext.ComponentQuery.query('[name=tg_valuefield_maintag]');
-                            if (attr_maintag.length > 0 && val_maintag.length > 0) {
-                                // always add latest version as new main tag
-                                main_tag['key'] = attr_maintag[0].getValue();
-                                main_tag['value'] = val_maintag[0].getValue();
-								
-                                // check for changes in main tag
-                                if (!attr_maintag[0].oldAttribute) {
-                                    // brand new main tag (new key and new value)
-                                    // collect data to 'delete' old main tag (if available)
-                                    if (me.old_main_tag) {
-                                        deleteTags.push({
-                                            'key': me.old_main_tag.get('key'),
-                                            'value': me.old_main_tag.get('value'),
-                                            'id': me.old_main_tag.get('id'),
-                                            'op': 'delete'
-                                        });
+                            // Old tags (there on initial load of window)
+                            var ot = me.old_tags;
+                            ot.push(me.old_main_tag)
+
+                            // Go through each tag group panel
+                            var tgpanels = form.query('lo_newtaggrouppanel');
+                            for (var i=0; i<tgpanels.length; i++) {
+                                var c = tgpanels[i]
+                                if (c.getInitialValue() == c.getValueValue()
+                                    && c.getInitialKey() == c.getKeyValue()) {
+                                    // Tag has not changed, remove it from list
+                                    // Delete old tag from list
+                                    for (var x in ot) {
+                                        if (ot[x].get('id') == c.getInitialTagId()) {
+                                            ot.splice(x, 1);
+                                        }
                                     }
-                                    // collect data to 'add' new main tag
+                                } else {
+                                    // Tag has changed
                                     newTags.push({
-                                        'key': attr_maintag[0].getValue(),
-                                        'value': val_maintag[0].getValue(),
+                                        'key': c.getKeyValue(),
+                                        'value': c.getValueValue(),
                                         'op': 'add'
                                     });
-                                } else {
-                                    // main tag existed already
-                                    if (attr_maintag[0].oldAttribute != attr_maintag[0].getValue()) {
-                                        // main tag has changed (new key and new value)
-                                        // collect data to 'delete' old main tag
+                                    // Only add to 'deleted' if it had an ID
+                                    if (c.getInitialTagId()) {
                                         deleteTags.push({
-                                            'key': attr_maintag[0].oldAttribute,
-                                            'value': me.old_main_tag.get('value'),
-                                            'id': me.old_main_tag.get('id'),
+                                            'key': c.getInitialKey(),
+                                            'value': c.getInitialValue(),
+                                            'id': c.getInitialTagId(),
                                             'op': 'delete'
                                         });
-                                        // collect data to 'add' new main tag
-                                        newTags.push({
-                                            'key': attr_maintag[0].getValue(),
-                                            'value': val_maintag[0].getValue(),
-                                            'op': 'add'
-                                        });
-                                    } else {
-                                        if (val_maintag[0].oldValue != val_maintag[0].getValue()) {
-                                            // main tag has changed (only new value)
-                                            // collect data to 'delete' old main tag
-                                            deleteTags.push({
-                                                'key': attr_maintag[0].getValue(),
-                                                'value': val_maintag[0].oldValue,
-                                                'id': me.old_main_tag.get('id'),
-                                                'op': 'delete'
-                                            });
-                                            // collect data to 'add' new main tag
-                                            newTags.push({
-                                                'key': attr_maintag[0].getValue(),
-                                                'value': val_maintag[0].getValue(),
-                                                'op': 'add'
-                                            });
-                                        }
-                                    // else: main tag has not changed, do nothing
                                     }
-                                }
-                            }
-							
-                            // 'normal' tags
-                            var attrs = Ext.ComponentQuery.query('combobox[name=tg_combobox_tag]');
-                            var values = Ext.ComponentQuery.query('[name=tg_valuefield]');
-                            if (attrs.length > 0 && values.length > 0 && attrs.length == values.length) {
-                                for (var i=0; i<attrs.length; i++) {
-									
-                                    // check for changes
-                                    if (!attrs[i].oldAttribute) {
-                                        // brand new tag (new key and new value)
-                                        // collect data to 'add' new tag
-                                        newTags.push({
-                                            'key': attrs[i].getValue(),
-                                            'value': values[i].getValue(),
-                                            'op': 'add'
-                                        });
-                                    } else {
-                                        // tag existed already
-                                        if (attrs[i].oldAttribute != attrs[i].getValue()) {
-                                            // tag has changed (new key and value)
-                                            // collect data to 'add' new tag
-                                            newTags.push({
-                                                'key': attrs[i].getValue(),
-                                                'value': values[i].getValue(),
-                                                'op': 'add'
-                                            });
-                                        } else {
-                                            if (values[i].oldValue != values[i].getValue()) {
-                                                // tag has changed (only new value)
-                                                // try to collect data to 'delete' old tag
-                                                for (var i in me.old_tags) {
-                                                    if (me.old_tags[i].get('key') == attrs[i].getValue()) {
-                                                        var t = me.old_tags.pop(me.old_tags[i]);
-                                                        deleteTags.push({
-                                                            'key': t.get('key'),
-                                                            'value': t.get('value'),
-                                                            'id': t.get('id'),
-                                                            'op': 'delete'
-                                                        });
-                                                    }
-                                                }
-												
-                                                // collect data to 'add' new tag
-                                                newTags.push({
-                                                    'key': attrs[i].getValue(),
-                                                    'value': values[i].getValue(),
-                                                    'op': 'add'
-                                                });
-                                            } else {
-                                                // tag has not changed
-                                                // remove tag from list
-                                                me.old_tags.pop(me.old_tags[i]);
-                                            }
+                                    // Delete old tag from list
+                                    for (var x in ot) {
+                                        if (ot[x].get('id') == c.getInitialTagId()) {
+                                            ot.splice(x, 1);
                                         }
                                     }
                                 }
+                                if (c.isMainTag()) {
+                                    main_tag.key = c.getKeyValue();
+                                    main_tag.value = c.getValueValue();
+                                }
                             }
-							
-                            // check if there are deleted tags (still in list)
-                            for (var i in me.old_tags) {
+                            // Check if main tag has changed
+                            var new_main_tag = null;
+                            if (me.old_main_tag.get('key') != main_tag.key
+                                || me.old_main_tag.get('value') != main_tag.value) {
+                                new_main_tag = {
+                                    'key': main_tag.key,
+                                    'value': main_tag.value
+                                };
+                            }
+
+                            // Any remaining tag has been deleted
+                            for (x in ot) {
                                 deleteTags.push({
-                                    'key': me.old_tags[i].get('key'),
-                                    'value': me.old_tags[i].get('value'),
-                                    'id': me.old_tags[i].get('id'),
+                                    'key': ot[x].get('key'),
+                                    'value': ot[x].get('value'),
+                                    'id': ot[x].get('id'),
                                     'op': 'delete'
                                 });
                             }
@@ -235,39 +175,40 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                             // only do submit if something changed
                             if (newTags.length > 0 || deleteTags.length > 0) {
                                 // put together diff object
+                                var taggroup = {
+                                    'id': (me.selected_taggroup) ? me.selected_taggroup.get('id') : null,
+                                    'op': (me.selected_taggroup) ? null : 'add',
+                                    'tags': newTags.concat(deleteTags)
+                                };
+                                if (new_main_tag) {
+                                    taggroup['main_tag'] = new_main_tag;
+                                }
                                 var diffObject = {}
-                                diffObject[diff_root] = [
-                                    {
-                                        'id': me.item_identifier,
-                                        'version': me.version,
-                                        'taggroups': [{
-                                            'id': (me.selected_taggroup) ? me.selected_taggroup.get('id') : null,
-                                            'op': (me.selected_taggroup) ? null : 'add',
-                                            'tags': newTags.concat(deleteTags)
-                                        }]
-                                    }
-                                ];
+                                diffObject[diff_root] = [{
+                                    'id': me.item_identifier,
+                                    'version': me.version,
+                                    'taggroups': [taggroup]
+                                }];
 									
                                 // send JSON through AJAX request
-//                                Ext.Ajax.request({
-//                                    url: url,
-//                                    method: 'POST',
-//                                    headers: {
-//                                        'Content-Type': 'application/json;charset=utf-8'
-//                                    },
-//                                    jsonData: diffObject,
-//                                    success: function(response, options) {
-//                                        Ext.Msg.alert('Success', 'The information was successfully submitted. It will be reviewed shortly.');
-//                                        // Fire event to reload detail panel
-//                                        form.up('window').fireEvent('successfulEdit');
-//                                        form.up('window').close();
-//                                    },
-//                                    failure: function(response, options) {
-//                                        Ext.Msg.alert('Failure', 'The information could not be submitted.');
-//                                        form.up('window').close();
-//                                    }
-//                                });
-                                console.log(diffObject);
+                                Ext.Ajax.request({
+                                    url: url,
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json;charset=utf-8'
+                                    },
+                                    jsonData: diffObject,
+                                    success: function(response, options) {
+                                        Ext.Msg.alert('Success', 'The information was successfully submitted. It will be reviewed shortly.');
+                                        // Fire event to reload detail panel
+                                        form.up('window').fireEvent('successfulEdit');
+                                        form.up('window').close();
+                                    },
+                                    failure: function(response, options) {
+                                        Ext.Msg.alert('Failure', 'The information could not be submitted.');
+                                        form.up('window').close();
+                                    }
+                                });
                             } else {
                                 Ext.Msg.alert('Notice', 'No changes were made.');
                                 form.up('window').close();
@@ -310,29 +251,41 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
 
                         // Display main tag first (if available)
                         if (me.old_main_tag) {
-                            var fieldContainer = me._getFieldContainer(
-                                store, completeStore, true, true,
-                                me.old_main_tag.get('key'),
-                                me.old_main_tag.get('value')
-                            );
-                            form.insert(0, fieldContainer);
+                            form.insert(0, {
+                                xtype: 'lo_newtaggrouppanel',
+                                is_maintag: true,
+                                removable: true,
+                                main_store: store,
+                                complete_store: completeStore,
+                                initial_key: me.old_main_tag.get('key'),
+                                initial_value: me.old_main_tag.get('value'),
+                                initial_tagid: me.old_main_tag.get('id')
+                            });
                         }
 
                         // Display all 'normal' tags
                         for (var t in me.old_tags) {
-                            var fieldContainer = me._getFieldContainer(
-                                store, completeStore, true, false,
-                                me.old_tags[t].get('key'),
-                                me.old_tags[t].get('value')
-                            );
-                            form.insert(1, fieldContainer);
+                            form.insert(1, {
+                                xtype: 'lo_newtaggrouppanel',
+                                is_maintag: false,
+                                removable: true,
+                                main_store: store,
+                                complete_store: completeStore,
+                                initial_key: me.old_tags[t].get('key'),
+                                initial_value: me.old_tags[t].get('value'),
+                                initial_tagid: me.old_tags[t].get('id')
+                            });
                         }
                     } else {
-                        // If no TagGroup was selected to edit, show initial attribute selection
-                        var fieldContainer = me._getFieldContainer(
-                            store, completeStore, false, true
-                        );
-                        form.insert(0, fieldContainer);
+                        // If no TagGroup was selected to edit, show initial
+                        // attribute selection
+                        form.insert(0, {
+                            xtype: 'lo_newtaggrouppanel',
+                            is_maintag: true,
+                            removable: false,
+                            main_store: store,
+                            complete_store: completeStore
+                        });
                     }
 
                     // Show information if some attributes were skipped because
@@ -356,152 +309,5 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
             });
         }
         this.callParent(arguments);
-    },
-
-    /**
-	 * Returns a FieldContainer with a ComboBox for attribute selection.
-	 * 'store' is needed to display only attributes that are not yet selected
-	 * 'completeStore' keeps track of all attributes available
-	 * 'removable' indicates whether delete-button is disabled or not
-	 * 'main_tag' indicates whether it is main_tag or not
-	 */
-    _getFieldContainer: function(store, completeStore, removable, main_tag, initialAttribute, initialValue) {
-
-        var cb_name = (main_tag) ? this.getCb_maintag() : this.getCb_tag();
-
-        var win = this;
-
-        // ComboBox to select attribute
-        var cb = Ext.create('Ext.form.field.ComboBox', {
-            name: cb_name,
-            store: store,
-            valueField: 'name',
-            displayField: 'fieldLabel',
-            queryMode: 'local',
-            typeAhead: true,
-            forceSelection: true,
-            flex: 1,
-            allowBlank: false,
-            margin: '0 5 5 0',
-            listeners: {
-                // functionality to replace value field based on selected attribute
-                change: function(combo, newValue, oldValue, eOpts) {
-                    // remove newly selected value from store
-                    var currentRecord = store.findRecord('name', newValue);
-                    store.remove(currentRecord);
-
-                    // add previously selected (now deselected) value to store again
-                    var previousRecord = completeStore.findRecord('name', oldValue);
-                    if (previousRecord) {
-                        store.add(previousRecord);
-                    }
-                    // replace the value field
-                    fieldContainer.items.getAt(fieldContainer.items.findIndex('name', 'tg_valuefield')).destroy();
-                    var newField = win._getValueField(currentRecord, main_tag);
-                    // if initialValue was provided (when editing selected
-                    // TagGroup), then show its value
-                    if (initialValue) {
-                        // store old value
-                        newField['oldValue'] = initialValue;
-                        newField.setValue(initialValue);
-                        // 'reset' initialValue
-                        initialValue = null;
-                    }
-                    fieldContainer.insert(1, newField);
-                }
-            }
-        });
-
-        // put together the FieldContainer
-        var fieldContainer = Ext.create('Ext.form.FieldContainer', {
-            layout: 'hbox',
-            items: [
-            cb
-            , {
-                // initial dummy TextField (disabled)
-                xtype: 'textfield',
-                name: 'tg_valuefield',
-                flex: 1,
-                disabled: true,
-                margin: '0 5 0 0'
-            }, {
-                // button to delete attribute (disabled or not)
-                xtype: 'button',
-                text: '[-] Delete',
-                disabled: !removable,
-                handler: function() {
-                    // functionality to remove attribute
-                    var fc = this.up('fieldcontainer');
-                    // add value (if selected) to store again
-                    var selectedValue = fc.items.getAt(
-                        fc.items.findIndex('name', 'tg_combobox')
-                    ).getValue();
-                    if (selectedValue) {
-                        store.add(completeStore.findRecord('name', selectedValue));
-                    }
-                    // remove fields
-                    fc.removeAll(); // remove items first to allow form to check its validity
-                    fc.destroy();
-                }
-            }]
-        });
-
-        // if initialAttribute was provided (when editing selected TagGroup), then show its value
-        if (initialAttribute) {
-            // store old value
-            cb['oldAttribute'] = initialAttribute;
-            cb.setValue(initialAttribute);
-        }
-
-        return fieldContainer;
-    },
-	
-    /**
-	 * Returns a form field (ComboBox, NumberField or TextField)
-	 * Basically the same as in controller.Filter)
-	 */
-    _getValueField: function(record, main_tag) {
-		
-        var fieldName = (main_tag) ? 'tg_valuefield_maintag' : 'tg_valuefield';
-		
-        // try to find categories
-        var selectionValues = record.get('store');
-        if (selectionValues) {      // categories of possible values available, create ComboBox
-            var valueField = Ext.create('Ext.form.field.ComboBox', {
-                name: fieldName,
-                store: selectionValues,
-                queryMode: 'local',
-                editable: false,
-                value: selectionValues[0],
-                margin: '0 5 0 0',
-                allowBlank: false
-            });
-        } else {                    // no categories available, create field based on xtype
-            switch (record.get('xtype')) {
-                case "numberfield":
-                    var valueField = Ext.create('Ext.form.field.Number', {
-                        name: fieldName,
-                        margin: '0 5 0 0',
-                        allowBlank: false
-                    });
-                    // add validation if available
-                    if (record.get('validator')) {
-                        valueField.validator = new Function('value', record.get('validator'));
-                    }
-                    break;
-                default:
-                    var valueField = Ext.create('Ext.form.field.Text', {
-                        name: fieldName,
-                        margin: '0 5 0 0',
-                        allowBlank: false
-                    });
-                    // add validation if available
-                    if (record.get('validator')) {
-                        valueField.validator = new Function('value', record.get('validator'));
-                    }
-                    break;
-            }
-        }
-        return valueField;
     }
 });
