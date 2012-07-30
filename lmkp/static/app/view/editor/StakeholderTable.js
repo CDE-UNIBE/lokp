@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.editor.StakeholderTable', {
-    extend: 'Ext.panel.Panel',
+    extend: 'Ext.container.Container',
     alias: ['widget.lo_editorstakeholdertablepanel'],
 
     requires: [
