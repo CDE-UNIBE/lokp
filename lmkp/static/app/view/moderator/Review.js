@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.moderator.Review', {
-    extend: 'Ext.panel.Panel',
+    extend: 'Ext.container.Container',
     alias: ['widget.lo_moderatorreviewpanel'],
 
     requires: [
