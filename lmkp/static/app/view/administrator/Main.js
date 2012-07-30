@@ -4,11 +4,9 @@ Ext.define('Lmkp.view.administrator.Main', {
     alias: ['widget.lo_administratormainpanel'],
 
     requires: [
-    'Lmkp.view.administrator.Home',
-    'Lmkp.view.administrator.UserManagement',
-    'Lmkp.view.administrator.YamlScan',
     'Lmkp.view.moderator.Pending',
-    'Lmkp.view.editor.Overview'
+    'Lmkp.view.editor.Overview',
+    'Lmkp.view.administrator.Overview'
     ],
 
     activeTab: 0,
@@ -19,20 +17,9 @@ Ext.define('Lmkp.view.administrator.Main', {
     },{
         title: 'Overview',
         xtype: 'lo_editoroverviewpanel'
-    },{
-        postUrl: '/config/add/activities',
-        store: 'YamlScan',
-        title: 'Activities',
-        xtype: 'yamlscanpanel'
     }, {
-        postUrl: '/config/add/stakeholders',
-        store: 'ShYamlScan',
-        title: 'Stakeholders',
-        xtype: 'yamlscanpanel'
-    },{
-        margin: 5,
-        title: 'Add User',
-        xtype: 'lo_usermanagementpanel'
+        title: 'Administration',
+        xtype: 'lo_administratorpanel'
     }],
 
     initComponent: function() {
