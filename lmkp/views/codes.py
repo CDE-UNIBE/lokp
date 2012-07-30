@@ -16,6 +16,15 @@ def codes_files(request):
 
     files = []
 
+    # Empty file to allow deselecting a file
+    files.append({
+        'description': '',
+        'delimiter': '',
+        'item': '',
+        'success': True,
+        'filename': '-'
+    })
+
     dirList=os.listdir(codes_directory_path())
     for filename in dirList:
         try:
@@ -31,12 +40,14 @@ def codes_files(request):
                 'description': line[0],
                 'delimiter': line[1],
                 'item': line[2],
-                'success': True
+                'success': True,
+                'filename': filename
             }
         else:
             item = {
                 'description': 'Unable to parse file information.',
-                'success': False
+                'success': False,
+                'filename': filename
             }
         files.append(item)
 
@@ -49,9 +60,26 @@ def codes_files(request):
 def codes_add(request):
     ret = {'success': False}
 
-    filename = 'country_codes.txt'
-    delimiter = ';'
-    TableItem = SH_Value
+    filename = request.params.get('filename', None)
+    delimiter = request.params.get('delimiter', None)
+
+    if filename is None or delimiter is None:
+        ret['msg'] = 'Not all needed values provided.'
+        return ret
+
+    if len(delimiter) != 1:
+        ret['msg'] = 'Delimiter must be a 1-character string'
+        return ret
+
+    item_type = request.params.get('item_type', None)
+    if item_type == 'activity':
+        TableItem = A_Value
+    elif item_type == 'stakeholder':
+        TableItem = SH_Value
+    else:
+        ret['msg'] = 'Database item not found.'
+        return ret
+
     code_language = Session.query(Language).\
         filter(Language.locale == 'code').\
         first()
@@ -66,11 +94,15 @@ def codes_add(request):
     insertCount = 0
     msgStack = []
 
-    csvReader = csv.reader(stream, delimiter=delimiter)
+    csvReader = csv.reader(stream, delimiter=str(delimiter))
     for row in csvReader:
         # Skip the first item
         if csvReader.line_num > 1:
-            inserted = _insert_code(row[1], row[0], TableItem, code_language)
+            try:
+                inserted = _insert_code(row[1], row[0], TableItem, code_language)
+            except:
+                ret['msg'] = 'Wrong delimiter or wrong value type?'
+                return ret
             msgStack.append(inserted)
             if inserted['success'] is True:
                 insertCount += 1
@@ -78,8 +110,6 @@ def codes_add(request):
                 pass
             else:
                 errorCount += 1
-
-    print codes_directory_path()
 
     if errorCount == 0:
         ret['success'] = True
