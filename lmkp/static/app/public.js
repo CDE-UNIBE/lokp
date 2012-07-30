@@ -10,7 +10,6 @@ Ext.onReady(function(){
         appFolder: 'static/app',
 
         requires: [
-        'Lmkp.view.public.Outer',
         'Lmkp.view.login.Toolbar'
         ],
 
@@ -18,13 +17,23 @@ Ext.onReady(function(){
 
         launch: function() {
             Ext.create('Ext.container.Viewport', {
+                border: false,
                 layout: {
                     type: 'border',
                     padding: 0
                 },
                 items: [{
+                    region: 'north',
+                    xtype: 'lo_logintoolbar'
+                },{
+                    contentEl: 'header-div',
+                    height: 80,
+                    region: 'north',
+                    xtype: 'panel'
+                },{
                     region: 'center',
-                    xtype: 'lo_publicouterpanel'
+                    html: 'public <i>panel</i><br/>Please login to see more ...<br/>Hint: there are 3 users ;) <ul><li>user1</li><li>user2</li><li>user3</li></ul>',
+                    xtype: 'panel'
                 }]
             });
         }
