@@ -1,15 +1,19 @@
 Ext.define('Lmkp.controller.editor.Overview', {
     extend: 'Ext.app.Controller',
 
-    refs: [
-        {
-            ref: 'mapPanel',
-            selector: 'lo_editormappanel'
-        }, {
-            ref: 'detailPanel',
-            selector: 'lo_editordetailpanel'
-        }
-    ],
+    refs: [{
+        ref: 'mapPanel',
+        selector: 'lo_editormappanel'
+    }, {
+        ref: 'detailPanel',
+        selector: 'lo_editordetailpanel'
+    },{
+        ref: 'newActivityPanel',
+        selector: 'lo_newactivitypanel'
+    },{
+        ref: 'selectStakeholderFieldSet',
+        selector: 'lo_newactivitypanel fieldset[itemId="selectStakeholderFieldSet"]'
+    }],
 
     requires: [
     'Lmkp.model.Activity',
@@ -23,6 +27,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
     'ActivityGrid',
     'ActivityConfig',
     'StakeholderGrid',
+    'StakeholderConfig',
     'Profiles'
     ],
 
@@ -32,17 +37,33 @@ Ext.define('Lmkp.controller.editor.Overview', {
     'activities.Details',
     'activities.History',
     'activities.Filter',
-    'stakeholders.StakeholderSelection'
-    ],
+    'stakeholders.StakeholderSelection',
+    'items.FilterPanel'
+],
 
     init: function() {
-        // Get the ActivityConfig store and load it
+        // Get the config stores and load them
         this.getActivityConfigStore().load();
+        this.getStakeholderConfigStore().load();
 
         this.control({
+            'lo_editortablepanel': {
+                render: this.onTablePanelRender
+            },
             'lo_editormappanel': {
                 render: this.onMapPanelRender
             },
+            'lo_activitydetailtab': {
+                render: this.onActivityDetailTabRender
+            },
+            // Events concerning the NewActivity panel
+            'lo_newactivitypanel': {
+                render: this.onNewActivityPanelRender
+            },
+            'lo_newactivitypanel button[itemId="submitButton"]': {
+                click: this.onSubmitButtonClick
+            },
+            // Events concerning the ActivityTable panel
             'lo_editoractivitytablepanel': {
                 render: this.onActivityTablePanelRender
             },
@@ -52,10 +73,10 @@ Ext.define('Lmkp.controller.editor.Overview', {
             'lo_editoractivitytablepanel checkbox[itemId="spatialFilterCheckbox"]': {
                 change: this.onSpatialFilterCheckboxChange
             },
-            'lo_editoractivitytablepanel button[name=addAttributeFilter]': {
+            'button[name=addAttributeFilter]': {
                 click: this.addAttributeFilter
             },
-            'lo_editoractivitytablepanel button[name=addTimeFilter]': {
+            'lo_editoractivityfilterpanel button[name=addTimeFilter]': {
                 click: this.addTimeFilter
             },
             'lo_editoractivitytablepanel tabpanel[id=detailPanel]': {
@@ -64,28 +85,25 @@ Ext.define('Lmkp.controller.editor.Overview', {
             'lo_editoractivitytablepanel button[id=deleteAllFilters]': {
                 click: this.deleteAllFilters
             },
-            'lo_editoractivitytablepanel button[name=activateAttributeButton]': {
+            'button[name=filterActivateButton]': {
                 click: this.applyFilter
             },
-            'lo_editoractivitytablepanel button[name=activateTimeButton]': {
-                click: this.applyFilter
-            },
-            'lo_editoractivitytablepanel combobox[name=attributeCombo]': {
+            'combobox[name=attributeCombo]': {
                 select: this.showValueFields
             },
-            'lo_editoractivitytablepanel [name=valueField]': {
+            '[name=valueField]': {
                 change: this.resetActivateButton
             },
-            'lo_editoractivitytablepanel combobox[name=filterOperator]': {
+            'combobox[name=filterOperator]': {
                 select: this.resetActivateButton
             },
             'lo_editoractivitytablepanel datefield[name=dateField]': {
                 change: this.resetActivateButton
             },
-            'lo_editoractivitytablepanel button[name=deleteButton]': {
+            'button[name=deleteButton]': {
                 click: this.deleteFilter
             },
-            'lo_editoractivitytablepanel combobox[name=logicalOperator]': {
+            'combobox[name=logicalOperator]': {
                 select: this.applyFilter
             },
             'gridpanel[itemId=activityGrid] gridcolumn[name=activityCountryColumn]': {
@@ -105,6 +123,15 @@ Ext.define('Lmkp.controller.editor.Overview', {
             },
             'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdercountrycolumn]': {
                 afterrender: this.renderStakeholderCountryColumn
+            },
+            'checkbox[itemId=filterConnect]': {
+                change: this.onConnectFilterChange
+            },
+            'lo_itemspendinguserchanges panel[name=showDetails]': {
+                afterrender: this.onPendingUserChangesRender
+            },
+            'lo_itemspendinguserchanges panel[name=hideDetails]': {
+                afterrender: this.onPendingUserChangesRender
             }
         });
     },
@@ -160,7 +187,47 @@ Ext.define('Lmkp.controller.editor.Overview', {
         this.getActivityGridStore().load();
     },
 
-    addAttributeFilter: function(button, event, eOpts) {
+    addAttributeFilter: function(button) {
+
+        // Activity or Stakeholder?
+        var panel_xtype = null;
+        var store = null;
+        if (button.item_type == 'activity') {
+            panel_xtype = 'lo_editoractivityfilterpanel';
+            store = this.getActivityConfigStore();
+        } else if (button.item_type == 'stakeholder') {
+            panel_xtype = 'lo_editorstakeholderfilterpanel';
+            store = this.getStakeholderConfigStore();
+        }
+
+        var form = button.up(panel_xtype);
+
+        // always insert above the panel with the buttons
+        var insertIndex = form.items.length - 1;
+        var cbox = Ext.create('Ext.form.field.ComboBox', {
+            name: 'attributeCombo',
+            store: store,
+            valueField: 'name',
+            displayField: 'fieldLabel',
+            queryMode: 'local',
+            typeAhead: true,
+            forceSelection: true,
+            value: store.getAt('0'),
+            flex: 0,
+            margin: '0 5 5 0'
+        });
+        form.insert(insertIndex, {
+            xtype: 'lo_itemsfilterpanel',
+            name: 'attributePanel',
+            filterField: cbox
+        });
+        // show initial filter
+        this.showValueFields(cbox, [store.getAt('0')]);
+        // toggle logical operator
+        form.toggleLogicalOperator();
+    },
+
+    addTimeFilter: function(button) {
 
         // Activity or Stakeholder?
         var panel_xtype = null;
@@ -171,110 +238,23 @@ Ext.define('Lmkp.controller.editor.Overview', {
         }
 
         var form = button.up(panel_xtype);
-        
+
         // always insert above the panel with the buttons
         var insertIndex = form.items.length - 1;
-        var cbox = Ext.create('Ext.form.field.ComboBox', {
-            name: 'attributeCombo',
-            store: this.getActivityConfigStore(),
-            valueField: 'name',
-            displayField: 'fieldLabel',
-            queryMode: 'local',
-            typeAhead: true,
-            forceSelection: true,
-            value: this.getActivityConfigStore().getAt('0'),
-            flex: 0,
-            margin: '0 5 5 0'
-        });
-        form.insert(insertIndex, {
-            xtype: 'panel',
-            name: 'attributePanel',
-            border: 0,
-            anchor: '100%',
-            layout: {
-                type: 'hbox',
-                flex: 'stretch'
-            },
-            items: [
-            cbox,
-            {
-                xtype: 'panel', // empty panel for spacing
-                flex: 1,
-                border: 0
-            }, {
-                xtype: 'button',
-                name: 'activateAttributeButton',
-                text: Lmkp.ts.msg("activate-button"),
-                tooltip: Lmkp.ts.msg("activate-tooltip"),
-                iconCls: 'toolbar-button-accept',
-                enableToggle: true,
-                flex: 0,
-                margin: '0 5 0 0'
-            }, {
-                xtype: 'button',
-                name: 'deleteButton',
-                text: Lmkp.ts.msg("delete-button"),
-                tooltip: Lmkp.ts.msg("deletefilter-tooltip"),
-                iconCls: 'toolbar-button-delete',
-                enableToggle: false,
-                flex: 0
-            }]
-        });
-        // show initial filter
-
-        this.showValueFields(cbox, [this.getActivityConfigStore().getAt('0')]);
-    },
-
-    addTimeFilter: function(button, e, eOpts) {
-        var form = Ext.ComponentQuery.query('panel[id=activityFilterForm]')[0];
-        // expand form if collapsed
-        if (form.collapsed) {
-            form.toggleCollapse();
-        }
-        var insertIndex = form.items.length - 1; // always insert above the 2 buttons
         var picker = Ext.create('Ext.form.field.Date', {
             name: 'dateField',
             fieldLabel: Lmkp.ts.msg("date-label"),
+            flex: 0,
+            margin: '0 5 5 0',
             value: new Date() // defaults to today
         });
         form.insert(insertIndex, {
-            xtype: 'panel',
+            xtype: 'lo_itemsfilterpanel',
             name: 'timePanel',
-            border: 0,
-            layout: {
-                type: 'hbox',
-                flex: 'stretch'
-            },
-            items: [
-            picker,
-            {
-                xtype: 'panel', // empty panel for spacing
-                flex: 1,
-                border: 0
-            }, {
-                xtype: 'button',
-                name: 'activateTimeButton',
-                text: Lmkp.ts.msg("activate-button"),
-                tooltip: Lmkp.ts.msg("activate-tooltip"),
-                iconCls: 'toolbar-button-accept',
-                enableToggle: true,
-                flex: 0,
-                margin: '0 5 5 0'
-            }, {
-                xtype: 'button',
-                name: 'deleteButton',
-                text: Lmkp.ts.msg("delete-button"),
-                tooltip: Lmkp.ts.msg("deletefilter-tooltip"),
-                iconCls: 'toolbar-button-delete',
-                enableToggle: false,
-                flex: 0
-            }]
+            filterField: picker
         });
         // disable 'add' button
-        var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
-        if (button) {
-            button.disable();
-        }
+        button.disable();
     },
 
     showValueFields: function(combobox, records, eOpts) {
@@ -317,170 +297,222 @@ Ext.define('Lmkp.controller.editor.Overview', {
         this._renderColumnMultipleValues(comp, "stakeholder-attr_country");
     },
 
+    /**
+     * Shows the selected model in the details panel
+     */
     showDetails: function(model, selected, eOpts) {
 
-        // Unselect all selected features on the map
-        //var mapPanel = Ext.ComponentQuery.query('mappanel')[0];
-        //var selectControl = mapPanel.getMap().getControlsBy('id', 'selectControl')[0];
+        if (selected && selected.length > 0) {
 
-        // Get the vector layer from the map panel
-        /*var vectorLayer = mapPanel.getVectorLayer();
+            // Activity or Stakeholder?
+            var url_prefix = '';
+            if (selected[0].modelName == 'Lmkp.model.Stakeholder') {
+                url_prefix = '/stakeholders/';
+            } else if (selected[0].modelName == 'Lmkp.model.Activity') {
+                url_prefix = '/activities/';
+            }
 
-        // Unregister the featureunselected event and unselect all features
-        vectorLayer.events.unregister('featureunselected', this, this.onFeatureUnselected);
-        selectControl.unselectAll();
-        // Register again the featureunselected event
-        vectorLayer.events.register('featureunselected', this, this.onFeatureUnselected);
-
-        // If there are selected records, highlight it on the map
-        if(selectedRecord[0]){
-            // Get the acitvity identifier
-            var id = selectedRecord[0].data.id;
-
-            // Get the feature by its fid
-            var feature = vectorLayer.getFeatureByFid(id);
-
-            // Unregister and register again the featureselected event
-            vectorLayer.events.unregister('featureselected', this, this.onFeatureSelected);
-            // Select the feature
-            selectControl.select(feature);
-            vectorLayer.events.register('featureselected', this, this.onFeatureSelected);
-        }*/
-
-        var detailPanel = this.getDetailPanel();
-        var activeTab = detailPanel.getActiveTab();
-        switch (activeTab.getXType()) {
-            case "lo_activityhistorypanel":
-                // var uid = (selectedRecord.length > 0) ? selectedRecord[0].raw['activity_identifier'] : null;
-                // detailPanel._populateHistoryTab(selectedTab, uid)
-                console.log("coming soon");
-                break;
-            default: 	// default is: activityDetailTab
-                detailPanel.populateDetailsTab(activeTab, selected);
-                break;
+            // Use a data store to get the full details on current item
+            var detailStore = Ext.create('Ext.data.Store', {
+                model: selected[0].modelName,
+                proxy: {
+                    type: 'ajax',
+                    url: url_prefix + selected[0].get('id'),
+                    reader: {
+                        root: 'data',
+                        type: 'json',
+                        totalProperty: 'total'
+                    },
+                    extraParams: {
+                        involvements: 'full',
+                        show_pending: true
+                    }
+                }
+            });
+            // Details can only be shown once store is loaded
+            detailStore.on('load', function(detailStore){
+                var detailPanel = this.getDetailPanel();
+                var d = detailPanel.down('lo_activitydetailtab');
+                detailPanel.setActiveTab(d);
+                detailPanel.populateDetailsTab(d, detailStore.first());
+            }, this);
+            detailStore.load();
         }
     },
 
     resetActivateButton: function(element) {
         var attributePanel = element.up('panel');
+        var applyFilter = false;
         // try to find attribute button
-        var attrButtonIndex = attributePanel.items.findIndex('name', 'activateAttributeButton');
+        var attrButtonIndex = attributePanel.items.findIndex('name', 'filterActivateButton');
         if (attrButtonIndex != -1) {
+            var btn = attributePanel.items.getAt(attrButtonIndex);
+            if (btn.pressed) {
+                applyFilter = true;
+            }
             attributePanel.items.getAt(attrButtonIndex).toggle(false);
         }
-        // try to find time button
-        var timeButtonIndex = attributePanel.items.findIndex('name', 'activateTimeButton');
-        if (timeButtonIndex != -1) {
-            attributePanel.items.getAt(timeButtonIndex).toggle(false);
+        if (applyFilter) {
+            this.applyFilter(element);
         }
-        this.applyFilter();
     },
 
-    applyFilter: function(button, e, eOpts) {
-        var queryable = [];
-        var queries = [];
-        var queryCount = 0;
-        // attribute filter
-        var attrs = Ext.ComponentQuery.query('combobox[name=attributeCombo]');
-        var values = Ext.ComponentQuery.query('[name=valueField]');
-        var ops = Ext.ComponentQuery.query('combobox[name=filterOperator]');
-        var attrButtons = Ext.ComponentQuery.query('button[name=activateAttributeButton]');
-        if (attrs.length > 0 && values.length > 0) {
-            for (var i=0; i<attrs.length; i++) {
-                if (attrButtons[i].pressed) { // only add value if filter is activated
-                    var currAttr = attrs[i].getValue();
-                    var currVal = values[i].getValue();
-                    var currOp = ops[i].getValue();
-                    if (currAttr && currVal) {
-                        // only add attribute to queryable if not already there
-                        if (!this._isInArray(queryable, currAttr)) {
-                            queryable.push(currAttr);
+    /**
+     * When using the checkbox to combine filters from Activities and
+     * Stakeholders, look for the filterpanel to provide it to 'applyFilter()'
+     */
+    onConnectFilterChange: function(checkbox) {
+        var gridpanel = checkbox.up('panel');
+        var tablepanel = gridpanel.up('panel');
+        var filterpanel = tablepanel.down('panel');
+        this.applyFilter(filterpanel);
+    },
+
+    /**
+     * If input is not a button, it is assumed that it is a filterpanel.
+     */
+    applyFilter: function(input) {
+
+        if (input.getXType() == 'button' || input.getXType() == 'combobox') {
+            // use button to find if new filter request came from Activities or
+            // Stakeholders
+            var itempanel = input.up('panel');
+            var filterpanel = itempanel.up('panel') ? itempanel.up('panel') : null;
+        } else {
+            var filterpanel = input;
+        }
+
+        var store = null;
+        var url = '';
+        var logical_operator = null;
+
+        if (filterpanel) {
+            // Fill needed values based on Activity or Stakeholder
+            var prefix = null;
+            var other_xtype = null;
+            var other_prefix = null;
+            var url_prefix = null;
+            var paging_id = null
+            if (filterpanel.getXType() == 'lo_editoractivityfilterpanel') {
+                // Activities
+                url_prefix = 'activities?';
+                prefix = 'a';
+                other_xtype = 'lo_editorstakeholderfilterpanel';
+                other_prefix = 'sh';
+                store = this.getActivityGridStore();
+                paging_id = 'activityGridPagingToolbar';
+            } else if (filterpanel.getXType() == 'lo_editorstakeholderfilterpanel') {
+                // Stakeholders
+                url_prefix = 'stakeholders?';
+                prefix = 'sh';
+                other_xtype = 'lo_editoractivityfilterpanel';
+                other_prefix = 'a';
+                store = this.getStakeholderGridStore();
+                paging_id = 'stakeholderGridPagingToolbar';
+            }
+
+            // Add filters from current panel to url
+            var filters = filterpanel.getFilterItems();
+            url += this._getFilterUrl(filters, prefix);
+            if (filters.length > 1) {
+                logical_operator = filterpanel.getLogicalOperator();
+            }
+
+            // if checkbox is set, also add filters from other panel to url
+            var tablepanel = filterpanel.up('panel');
+            if (tablepanel) {
+                var combine_checkbox = tablepanel.query('checkbox[itemId=filterConnect]')[0];
+                if (combine_checkbox && combine_checkbox.checked) {
+                    var other_panel = Ext.ComponentQuery.query(other_xtype)[0];
+                    if (other_panel) {
+                        var other_filters = other_panel.getFilterItems();
+                        url += '&' + this._getFilterUrl(other_filters, other_prefix);
+                        if (other_filters.length > 1 && !logical_operator) {
+                            logical_operator = other_panel.getLogicalOperator();
                         }
-                        queries.push(currAttr + currOp + currVal);
-                        // add query to count
-                        queryCount++;
                     }
                 }
             }
-        }
-        // time filter (only 1 possible)
-        var date = Ext.ComponentQuery.query('datefield[name=dateField]')[0];
-        var timeButton = Ext.ComponentQuery.query('button[name=activateTimeButton]')[0];
-        if (date) {
-            if (timeButton.pressed) { // only add value if filter is activated
-                queries.push('timestamp=' + Ext.Date.format(date.getValue(), "Y-m-d H:i:s.u"));
-                // add query to count
-                queryCount++;
+
+            // logical operator
+            if (logical_operator) {
+                url += '&logical_op=' + logical_operator;
             }
         }
-        // reload store by overwriting its proxy url
-        var query_url = '';
-        if (queryable.length > 0) {
-            query_url += 'queryable=' + queryable.join(',') + '&';
+
+        // Set new url and reload store
+        url = url_prefix + url;
+        store.getProxy().url = url;
+        if (url == url_prefix) {
+            store.load();
         }
-        if (queries.length > 0) {
-            query_url += queries.join('&');
-        }
-        // logical operator
-        var operatorCombo = Ext.ComponentQuery.query('combobox[name=logicalOperator]')[0];
-        if (operatorCombo) {
-            if (queryCount >= 2) {
-                operatorCombo.setVisible(true);
-                query_url += '&logical_op=' + operatorCombo.getValue();
-            } else {
-                operatorCombo.setVisible(false);
-            }
-        }
-        var store = this.getActivityGridStore();
-        store.getProxy().url = 'activities?' + query_url;
-        store.load();
-        if (query_url) {
-            // move paging to back to page 1 when filtering (otherwise may show empty page instead of results)
-            Ext.ComponentQuery.query('pagingtoolbar[id=activityGridPagingToolbar]')[0].moveFirst();
+
+        // move paging to back to page 1 when filtering (otherwise may show
+        // empty page instead of results)
+        if (url != url_prefix) {
+            Ext.ComponentQuery.query('pagingtoolbar[id=' + paging_id + ']')[0].moveFirst();
         }
     },
 
-    deleteFilter: function(button, e, eOpts) {
-        var attributePanel = button.up('panel');
-        var form = Ext.ComponentQuery.query('panel[id=activityFilterForm]')[0];
-        // if time was filtered, re-enable its 'add' button
-        if (attributePanel.name == 'timePanel') {
-            var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
-            if (button) {
-                button.enable();
+    toggleLogicalOperator: function(filterpanel, visible) {
+        var cb = filterpanel.query('combobox[name=logicalOperator]')[0];
+        if (cb) {
+            cb.setVisible(visible);
+        }
+    },
+
+    deleteFilter: function(button) {
+
+        var item_panel = button.up('panel');
+
+        if (item_panel) {
+            var filter_panel = item_panel.up('panel');
+        }
+
+        if (item_panel && filter_panel) {
+            // if time was filtered, re-enable its 'add' button
+            if (item_panel.name == 'timePanel') {
+                var btn = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
+                if (btn) {
+                    btn.enable();
+                }
             }
+            // reload store if removed filter was activated (deactivate it first)
+            if (item_panel.filterIsActivated()) {
+                item_panel.deactivateFilter();
+                this.applyFilter(button);
+            }
+            filter_panel.remove(item_panel);
         }
-        if (form.items.contains(attributePanel)) {
-            form.remove(attributePanel, true);
-            attributePanel.destroy();
-        }
-        this.applyFilter();
+        // toggle logical operator
+        filter_panel.toggleLogicalOperator();
     },
 
     deleteAllFilters: function() {
-        var panels = Ext.ComponentQuery.query('panel[name=attributePanel]');
-        panels = panels.concat(Ext.ComponentQuery.query('panel[name=timePanel]'));
-        if (panels.length > 0) {
-            form = Ext.ComponentQuery.query('panel[id=activityFilterForm]')[0];
-            for (i=0; i<panels.length; i++) {
-                // if time was filtered, re-enable its 'add' button
-                if (panels[i].name == 'timePanel') {
-                    var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
-                    if (button) {
-                        button.enable();
-                    }
-                }
-                if (form.items.contains(panels[i])) {
-                    form.remove(panels[i], true);
-                    panels[i].destroy();
-                }
-            }
-            // collapse form if expanded
-            if (!form.collapsed) {
-                form.toggleCollapse();
-            }
-        }
-        this.applyFilter();
+        console.log("refactor me and add a button somewhere");
+    //        var panels = Ext.ComponentQuery.query('panel[name=attributePanel]');
+    //        panels = panels.concat(Ext.ComponentQuery.query('panel[name=timePanel]'));
+    //        if (panels.length > 0) {
+    //            form = Ext.ComponentQuery.query('panel[id=activityFilterForm]')[0];
+    //            for (i=0; i<panels.length; i++) {
+    //                // if time was filtered, re-enable its 'add' button
+    //                if (panels[i].name == 'timePanel') {
+    //                    var button = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
+    //                    if (button) {
+    //                        button.enable();
+    //                    }
+    //                }
+    //                if (form.items.contains(panels[i])) {
+    //                    form.remove(panels[i], true);
+    //                    panels[i].destroy();
+    //                }
+    //            }
+    //            // collapse form if expanded
+    //            if (!form.collapsed) {
+    //                form.toggleCollapse();
+    //            }
+    //        }
+    //        this.applyFilter();
     },
 
     getOperator: function(xType) {
@@ -633,222 +665,10 @@ Ext.define('Lmkp.controller.editor.Overview', {
         }
     },
 
-    onMapPanelRender: function(comp){
-
-        OpenLayers.ProxyHost = "/wms?url=";
-
-        // Get the toolbar
-        var tbar = comp.getDockedItems('toolbar')[0];
-        // Get the map
-        var map = comp.getMap();
-
-        // Get the vector layer
-        var vectorLayer = comp.getVectorLayer();
-
-        // Register the featureselected event
-        vectorLayer.events.register('featureselected', this, this.onFeatureSelected);
-        vectorLayer.events.register('featureunselected', this, this.onFeatureUnselected);
-
-        // Create the highlight and select control
-        var highlightCtrl = new OpenLayers.Control.SelectFeature(vectorLayer, {
-            id: 'highlightControl',
-            hover: true,
-            highlightOnly: true,
-            renderIntent: "temporary"
-        });
-
-        var selectCtrl = new OpenLayers.Control.SelectFeature(vectorLayer, {
-            id: 'selectControl',
-            clickout: true
-        });
-
-        var identifyCtrl = new OpenLayers.Control.WMSGetFeatureInfo({
-            eventListeners: {
-                'getfeatureinfo': this.onGetFeatureInfo,
-                scope: this
-            },
-            infoFormat: 'application/vnd.ogc.gml',
-            layers: [comp.getActivitiesLayer()],
-            title: 'Identify features by clicking',
-            url: 'http://localhost:8080/geoserver/lo/wms'
-        });
-
-        var createPointCtrl = new OpenLayers.Control.DrawFeature(vectorLayer,
-            OpenLayers.Handler.Point,{
-                eventListeners: {
-                    'featureadded': function(event){
-                        var geometry = event.feature.geometry;
-                        var win = Ext.create('Lmkp.view.activities.NewActivityWindow',{
-                            activityGeometry: geometry.clone().transform(
-                                new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"))
-                        });
-                        win.on('hide', function(comp, eOpts){
-                            vectorLayer.removeFeatures([event.feature]);
-                        }, this);
-                        win.show();
-                        createPointCtrl.deactivate();
-                        panButton.toggle(true);
-                    }
-                }
-            });
-
-        var movePointCtrl = new OpenLayers.Control.ModifyFeature(vectorLayer, {
-            mode: OpenLayers.Control.ModifyFeature.DRAG
-        })
-
-        // Add the controls to the map and activate them
-        //map.addControl(highlightCtrl);
-        //map.addControl(selectCtrl);
-        map.addControl(identifyCtrl);
-        map.addControl(createPointCtrl);
-
-        //highlightCtrl.activate();
-        //selectCtrl.activate();
-
-        var panAction = Ext.create('GeoExt.Action',{
-            control: new OpenLayers.Control.DragPan({
-                id: 'pan'
-            }),
-            map: map,
-            iconCls: 'pan-button',
-            pressed: true,
-            scale: 'medium',
-            toggleGroup: 'map-controls',
-            tooltip: 'Pan'
-        });
-        var panButton = Ext.create('Ext.button.Button', panAction);
-        tbar.add(panButton);
-
-        var zoomBoxAction = Ext.create('GeoExt.Action',{
-            control: new OpenLayers.Control.ZoomBox({
-                id: 'zoombox',
-                type: OpenLayers.Control.TYPE_TOGGLE
-            }),
-            map: map,
-            iconCls: 'zoom-in-button',
-            scale: 'medium',
-            toggleGroup: 'map-controls',
-            tooltip: 'Zoom in'
-        });
-        tbar.add(Ext.create('Ext.button.Button', zoomBoxAction));
-
-        tbar.add(Ext.create('Ext.button.Button', {
-            handler: function(button, event, eOpts){
-                this.zoomToProfile(map);
-            },
-            iconCls: 'zoom-region-button',
-            scale: 'medium',
-            scope: this,
-            tooltip: 'Zoom to profile region'
-        }));
-
-        var identifyAction = Ext.create('GeoExt.Action',{
-            control: identifyCtrl,
-            handler: identifyAction,
-            iconCls: 'identify-button',
-            map: map,
-            scale: 'medium',
-            toggleGroup: 'map-controls',
-            tooltip: "Identify feature"
-        });
-        tbar.add(Ext.create('Ext.button.Button', identifyAction));
-
-        var createAction = Ext.create('GeoExt.Action',{
-            control: createPointCtrl,
-            iconCls: 'create-button',
-            scale: 'medium',
-            text: 'Add new activity',
-            toggleGroup: 'map-controls',
-            toggleHandler: function(button, state){
-                if(state){
-                    createPointCtrl.activate();
-                } else {
-                    createPointCtrl.deactivate();
-                }
-            }
-        });
-        tbar.add(Ext.create('Ext.button.Button', createAction));
-
-        var moveAction = Ext.create('GeoExt.Action', {
-            control: movePointCtrl,
-            iconCls: 'move-button',
-            map: map,
-            scale: 'medium',
-            text: 'Move activity',
-            toggleGroup: 'map-controls',
-            toggleHandler: function(button, state){
-                state ? movePointCtrl.activate() : movePointCtrl.deactivate();
-            }
-        });
-        var moveButton = Ext.create('Ext.button.Button', moveAction);
-        tbar.add(moveButton);
-
-        /*tbar.add({
-            handler: function(button){
-              var win = Ext.create('Lmkp.view.stakeholders.NewStakeholder');
-              win.show();
-            },
-            scale: 'medium',
-            text: 'Add Stakeholder',
-            xtype: 'button'
-        });*/
-
-        /*tbar.add({
-            handler: function(button){
-              var win = Ext.create('Lmkp.view.stakeholders.StakeholderSelection');
-              win.show();
-            },
-            scale: 'medium',
-            text: 'Select Stakeholder',
-            xtype: 'button'
-        });*/
-
-        // Get the map center and zoom level from the cookies if one is set
-        var location = Ext.util.Cookies.get('_LOCATION_');
-        if(location){
-            var values = location.split('|');
-            map.setCenter(new OpenLayers.LonLat(values[0], values[1]));
-            map.zoomTo(values[2]);
-        }
-
-        // Register the moveend event with the map
-        // after setting map center and zoom level
-        map.events.register('moveend', this, this.onMoveEnd);
-    },
-
-    onMoveEnd: function(event){
-        // Store the current map center and zoom level as cookie in the format:
-        // longitude|latitude|zoom
-        // and set the expiration date in three month
-        var map = event.object;
-        var center = map.getCenter();
-        var zoom = map.getZoom();
-        var value = center.lon + "|" + center.lat + "|" + zoom;
-
-        var expirationDate = new Date();
-        expirationDate.setMonth(new Date().getMonth() + 3);
-        Ext.util.Cookies.set('_LOCATION_', value, expirationDate);
-
-        // Reload the ActivityGrid store
-        this.getActivityGridStore().load();
-    },
-
-    zoomToProfile: function(map) {
-
-        var store = this.getProfilesStore();
-        var activeProfile = store.getAt(store.findExact('active', true));
-        if(activeProfile){
-            var geoJson = new OpenLayers.Format.GeoJSON();
-
-            var feature = geoJson.read(Ext.encode(activeProfile.get('geometry')))[0];
-
-            var geom = feature.geometry.clone().transform(
-                new OpenLayers.Projection("EPSG:4326"),
-                new OpenLayers.Projection("EPSG:900913"));
-
-            map.zoomToExtent(geom.getBounds());
-        }
-
+    onMapPanelRender: function(comp, eOpts){
+        // Register the getfeatureinfo event to the identify control
+        var identifyCtrl = comp.getIdentifyCtrl();
+        identifyCtrl.events.register('getfeatureinfo', this, this.onGetFeatureInfo);
     },
 
     onGetFeatureInfo: function(event){
@@ -884,6 +704,273 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 this.showDetails(null, [store.getAt(0)], null);
             }
         });
-    }
+    },
 
+    onActivityDetailTabRender: function(comp, eOpts){
+        var mappanel = this.getMapPanel();
+
+        var tbar = comp.getDockedItems('toolbar[dock="top"]')[0];
+
+        var movePointCtrl = new OpenLayers.Control.ModifyFeature(mappanel.getVectorLayer(), {
+            mode: OpenLayers.Control.ModifyFeature.DRAG
+        });
+
+        var moveAction = Ext.create('GeoExt.Action', {
+            control: movePointCtrl,
+            iconCls: 'move-button',
+            map: mappanel.getMap(),
+            scale: 'medium',
+            text: 'Edit location',
+            toggleGroup: 'map-controls',
+            toggleHandler: function(button, state){
+                state ? movePointCtrl.activate() : movePointCtrl.deactivate();
+            }
+        });
+        var moveButton = Ext.create('Ext.button.Button', moveAction);
+
+        tbar.add(moveButton);
+    },
+
+    _getFilterUrl: function(filters, prefix) {
+        if (filters && prefix) {
+            // Collect values
+            var queryable = [];
+            var queries = [];
+            for (var i in filters) {
+                if (filters[i] && filters[i].attr) {
+                    // attribute
+                    // only add attribute to queryable if not already there
+                    if (!this._isInArray(queryable, filters[i].attr)) {
+                        queryable.push(filters[i].attr);
+                    }
+                    queries.push(prefix + '__' + filters[i].attr + filters[i].op + filters[i].value)
+                } else if (filters[i] && filters[i].date) {
+                    // date
+                    queries.push('timestamp=' + filters[i].date);
+                }
+            }
+
+            // Put together the url
+            var url = '';
+            if (queryable.length > 0 && queries.length > 0) {
+                // queryable
+                url += prefix + '__queryable=' + queryable.join(',') + '&';
+                // queries
+                url += queries.join('&');
+            }
+            return url;
+        }
+    },
+
+    onNewActivityPanelRender: function(comp, eOpts){
+
+        // Get the map from the map panel
+        var mappanel = this.getMapPanel();
+        var map = mappanel.getMap();
+
+        // Get the toolbar
+        var tbar = comp.down('form').getDockedItems('toolbar[dock="top"]')[0];
+
+        var selectCtrl = new OpenLayers.Control.SelectFeature(mappanel.getVectorLayer());
+
+        // Add the control and button to move an activity
+        var movePointCtrl = new OpenLayers.Control.ModifyFeature(
+            mappanel.getVectorLayer(), {
+                mode: OpenLayers.Control.ModifyFeature.DRAG,
+                selectControl: selectCtrl
+            });
+        map.addControl(movePointCtrl);
+        mappanel.getVectorLayer().events.register('featuremodified', comp, function(event){
+            var g = event.feature.geometry;
+            this.setActivityGeometry(g);
+        });
+
+        var moveAction = Ext.create('GeoExt.Action', {
+            control: movePointCtrl,
+            iconCls: 'move-button',
+            map: map,
+            scale: 'medium',
+            text: 'Edit location',
+            toggleGroup: 'map-controls',
+            toggleHandler: function(button, state){
+                state ? movePointCtrl.activate() : movePointCtrl.deactivate();
+            }
+        });
+        var moveButton = Ext.create('Ext.button.Button', moveAction);
+        tbar.insert(0, moveButton);
+
+        // Add the control and button to create a new activity
+        var createPointCtrl = new OpenLayers.Control.DrawFeature(
+            mappanel.getVectorLayer(),
+            OpenLayers.Handler.Point,{
+                eventListeners: {
+                    'featureadded': function(event){
+                        var g = event.feature.geometry;
+                        //selectCtrl.select(event.feature);
+                        createPointCtrl.deactivate();
+                        selectCtrl.select(event.feature);
+                        movePointCtrl.activate();
+                        movePointCtrl.selectFeature(event.feature);
+                        createButton.toggle(false);
+                        moveButton.toggle(true);
+                        this.setActivityGeometry(g);
+                        //
+                    },
+                    scope: comp
+                }
+            });
+        map.addControl(createPointCtrl);
+        mappanel.getVectorLayer().events.register('beforefeatureadded', mappanel.getVectorLayer(), function(event){
+            this.removeAllFeatures();
+        });
+
+        var createAction = Ext.create('GeoExt.Action',{
+            control: createPointCtrl,
+            iconCls: 'create-button',
+            scale: 'medium',
+            text: 'Add Location',
+            toggleGroup: 'map-controls',
+            toggleHandler: function(button, state){
+                state ? createPointCtrl.activate() : createPointCtrl.deactivate();
+            }
+        });
+        var createButton = Ext.create('Ext.button.Button', createAction);
+        tbar.insert(0, createButton);
+
+        
+    },
+
+    onSubmitButtonClick: function(button, event){
+        var formpanel = button.up('form');
+        var theform = formpanel.getForm();
+        if (theform.isValid()) {
+
+            // The form cannot be submitted 'normally' because ActivityProtocol expects a JSON object.
+            // As a solution, the form values are used to create a JSON object which is sent using an
+            // AJAX request.
+            // http://www.sencha.com/forum/showthread.php?132082-jsonData-in-submit-action-of-form
+
+            // collect values and fill them into TagGroups
+            // TODO: it seems that the main tag (first added to dict) always remains in first position, but
+            // maybe this should be ensured in a better way ...
+            var taggroups = [];
+            var stakeholders = [];
+
+            // Get the geometry
+            var geometry = null;
+            var geojson = new OpenLayers.Format.GeoJSON();
+            if(this.getNewActivityPanel().getActivityGeometry()){
+                geometry = Ext.decode(geojson.write(this.getNewActivityPanel().getActivityGeometry()));
+            }
+
+            var comps = formpanel.query('lo_stakeholderfieldcontainer');
+            for(var j = 0; j < comps.length; j++ ) {
+                var fieldContainer = comps[j];
+                var stakeholder = {}
+                stakeholder['id'] = fieldContainer.getStakeholderId();
+                //stakeholder['role'] = fieldContainer.getStakeholderRole();
+                stakeholder['role'] = 6;
+                stakeholder['version'] = fieldContainer.getStakeholderVersion();
+                stakeholder['op'] = 'add';
+                stakeholders.push(stakeholder);
+            }
+
+            for (var i in formpanel.getValues()) {
+                if(i.split('.')[0] != 'stakeholder') {
+                    var tags = [];
+                    var main_tag = {};
+                    // first, look only at mandatory fields (no '__val' or '__attr' in name)
+                    if (i.indexOf("__attr") == -1 && i.indexOf("__val") == -1) {
+                        var tag = {};
+                        tag['key'] = i;
+                        tag['value'] = formpanel.getValues()[i];
+                        tag['op'] = 'add';
+                        tags.push(tag);
+                        // also add to main_tag
+                        main_tag['key'] = i;
+                        main_tag['value'] = formpanel.getValues()[i];
+
+                        // look if further attributes to this field were entered
+                        var attrs = Ext.ComponentQuery.query('[name=' + i + '__attr]');
+                        var vals = Ext.ComponentQuery.query('[name=' + i + '__val]');
+                        if (attrs.length > 0 && vals.length > 0 && attrs.length == vals.length) {
+                            for (var j=0; j<attrs.length; j++) {
+                                var tag = {};
+                                tag['key'] = attrs[j].getValue();
+                                tag['value'] = vals[j].getValue();
+                                tag['op'] = 'add';
+                                tags.push(tag);
+                            }
+                        }
+                    }
+                    if (tags.length > 0) {
+                        taggroups.push({
+                            'tags': tags,
+                            'main_tag': main_tag
+                        });
+                    }
+                }
+            }
+            var diffObject = {
+                'activities': [{
+                    'taggroups': taggroups,
+                    'geometry': geometry,
+                    'stakeholders': stakeholders
+                }]
+            };
+
+            // send JSON through AJAX request
+            Ext.Ajax.request({
+                url: '/activities',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8'
+                },
+                jsonData: diffObject,
+                callback: function(options, success, response) {
+                    if(success){
+                        Ext.Msg.alert('Success', 'The activity was successfully created. It will be reviewed shortly.');
+
+                        var p = this.getNewActivityPanel();
+                        p.setActivityGeometry(null);
+                        var formpanel = p.down('form');
+                        formpanel.getForm().reset();
+
+                        var fieldContainers = formpanel.query('lo_stakeholderfieldcontainer');
+                        for(var i = 0; i < fieldContainers.length; i++){
+                            this.getSelectStakeholderFieldSet().remove(fieldContainers[i]);
+                        }
+
+                        // Remove also the feature on the map
+                        this.getMapPanel().getVectorLayer().removeAllFeatures();
+                    } else {
+                        Ext.Msg.alert('Failure', 'The activity could not be created.');
+                    }
+
+                },
+                scope: this
+            });
+        }
+    },
+
+    /**
+     * Adds functions to the links to show or hide details about pending
+     * changes by current user.
+     * Because HTML links cannot be accessed directly in Ext, it is necessary to
+     * register a listener after rendering the panel.
+     */
+    onPendingUserChangesRender: function(panel) {
+        var upper_panel = panel.up('panel');
+        if (panel.name == 'showDetails') {
+            var link_showDetails = upper_panel.getEl().select('a.itemspendinguserchanges_showdetails');
+            link_showDetails.on('click', function() {
+                upper_panel.showDetails();
+            });
+        } else if (panel.name == 'hideDetails') {
+            var link_showDetails = upper_panel.getEl().select('a.itemspendinguserchanges_hidedetails');
+            link_showDetails.on('click', function() {
+                upper_panel.hideDetails();
+            });
+        }
+    }
 });

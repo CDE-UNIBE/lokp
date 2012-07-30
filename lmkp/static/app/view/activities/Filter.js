@@ -5,7 +5,7 @@ Ext.define('Lmkp.view.activities.Filter', {
     id: 'activityFilterForm',
     flex: 0.5,
     border: 0,
-    title: Lmkp.ts.msg("filter-title"),
+    title: Lmkp.ts.msg("filter-activity_title"),
     layout: {
         type: 'anchor'
     },
@@ -46,7 +46,36 @@ Ext.define('Lmkp.view.activities.Filter', {
             text: Lmkp.ts.msg("addtimefilter-button"),
             tooltip: Lmkp.ts.msg("addtimefilter-tooltip"),
             iconCls: 'toolbar-button-add',
-            flex: 0
+            flex: 0,
+            item_type: 'activity'
         }]
-    }]
+    }],
+
+    getFilterItems: function() {
+        var ret = [];
+        var filterpanels = this.query('lo_itemsfilterpanel');
+        for (var i in filterpanels) {
+            var v = filterpanels[i].getFilterValues();
+            if (v) {
+                ret.push(v);
+            }
+        }
+        return ret;
+    },
+
+    toggleLogicalOperator: function() {
+        var filterpanels = this.query('lo_itemsfilterpanel[name=attributePanel]');
+        var cb = this.down('combobox[name=logicalOperator]');
+        if (cb && filterpanels) {
+            cb.setVisible(filterpanels.length > 1);
+        }
+    },
+
+    getLogicalOperator: function() {
+        var cb = this.down('combobox[name=logicalOperator]');
+        if (cb) {
+            return cb.getValue();
+        }
+        return null;
+    }
 });

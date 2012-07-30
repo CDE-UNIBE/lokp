@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.NewItem', {
-    extend: 'Ext.window.Window',
+    extend: 'Ext.panel.Panel',
 
 
     /**
@@ -61,7 +61,7 @@ Ext.define('Lmkp.view.NewItem', {
             xtype: 'button',
             name: record.get('name') + '__btn',
             text: '+',
-            handler: function() {
+            handler: function(button, event, eOpts) {
                 // create store to keep track of already selected attributes
                 var optionalStore = Ext.create('Lmkp.store.ActivityConfig');
                 // again, 'normal' filtering of stores does not work (asynchronous problem?)
@@ -76,11 +76,12 @@ Ext.define('Lmkp.view.NewItem', {
 
                 // populate Panel that allows selecting additional attributes
                 var additionalPanel = Ext.ComponentQuery.query('panel[name=' + record.get('name') + ']')[0];
-                this.up('window')._addOptionalFields(additionalPanel, optionalStore, optionalStore_complete);
+                this._addOptionalFields(additionalPanel, optionalStore, optionalStore_complete);
 
                 // disable button if clicked
-                this.disable();
-            }
+                button.disable();
+            },
+            scope: this
         });
 
         // put it all together and add it to form

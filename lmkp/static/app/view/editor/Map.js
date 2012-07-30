@@ -3,33 +3,41 @@ Ext.define('Lmkp.view.editor.Map',{
     alias: ['widget.lo_editormappanel'],
 
     requires: [
-    'GeoExt.Action'
+    'GeoExt.Action',
+    'Lmkp.view.editor.BaseLayers',
+    'Lmkp.view.editor.ContextLayers'
     ],
 
     border: false,
     frame: false,
+
+    // Initial center
     center: new OpenLayers.LonLat(0,0),
 
     config: {
-        map: {}
+        activitiesLayer: null,
+        baseLayers: null,
+        identifyCtrl: null,
+        map: null,
+        vectorLayer: null
     },
 
     layout: 'fit',
 
     geographicProjection: new OpenLayers.Projection("EPSG:4326"),
 
-    map: {
-        displayProjection: this.geographicProjection,
-        controls: [
-        new OpenLayers.Control.Navigation()
-        ],
-        layers: [
-        new OpenLayers.Layer.OSM('mapnik', null, {
-            sphericalMercator: true,
-            projection: new OpenLayers.Projection("EPSG:900913")
-        }),
-        new OpenLayers.Layer.WMS('Activities',
-            'http://localhost:8080/geoserver/lo/wms',{
+    sphericalMercatorProjection: new OpenLayers.Projection("EPSG:900913"),
+
+    // Toolbar
+    tbar: null,
+
+    // Initial zoom level
+    zoom: 2,
+
+    initComponent: function() {
+        
+        this.activitiesLayer = new OpenLayers.Layer.WMS('Activities',
+            '/geoserver/lo/wms',{
                 layers: 'activities',
                 transparent: true,
                 format: 'image/png8',
@@ -39,30 +47,114 @@ Ext.define('Lmkp.view.editor.Map',{
                 sphericalMercator: true,
                 maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34,
                     20037508.34, 20037508.34)
-            }),
-        new OpenLayers.Layer.Vector('pointLayer',{
+            });
+
+        this.vectorLayer = new OpenLayers.Layer.Vector('pointLayer',{
             isBaseLayer: false
-        })],
-        projection: this.sphericalMercatorProjection
-    },
+        });
 
-    sphericalMercatorProjection: new OpenLayers.Projection("EPSG:900913"),
+        // Create the map, the layers are appended later, see below.
+        this.map = new OpenLayers.Map({
+            displayProjection: this.geographicProjection,
+            controls: [
+            new OpenLayers.Control.Attribution(),
+            new OpenLayers.Control.Navigation()
+            ],
+            projection: this.sphericalMercatorProjection
+        });
 
-    // Add an empty toolbar to add the GeoExt actions in the Map controller
-    tbar: [],
 
-    zoom: 2,
+        // Create the toolbar
+        this.tbar = Ext.create('Ext.toolbar.Toolbar',{
+            dock: 'top'
+        });
 
-    getVectorLayer: function(){
-        return this.getMap().getLayersByName('pointLayer')[0];
-    },
+        this.identifyCtrl = new OpenLayers.Control.WMSGetFeatureInfo({
+            infoFormat: 'application/vnd.ogc.gml',
+            layers: [this.activitiesLayer],
+            title: 'Identify features by clicking',
+            url: '/geoserver/lo/wms'
+        });
 
-    getBaseLayer: function(){
-        return this.getMap().getLayersByName('mapnik')[0];
-    },
+        // Add the controls to the map
+        this.map.addControl(this.identifyCtrl);
 
-    getActivitiesLayer: function(){
-        return this.getMap().getLayersByName('Activities')[0];
+        var panAction = Ext.create('GeoExt.Action',{
+            control: new OpenLayers.Control.DragPan({
+                id: 'pan'
+            }),
+            map: this.map,
+            iconCls: 'pan-button',
+            pressed: true,
+            scale: 'medium',
+            toggleGroup: 'map-controls',
+            tooltip: 'Pan'
+        });
+        var panButton = Ext.create('Ext.button.Button', panAction);
+        this.tbar.add(panButton);
+
+        var zoomBoxAction = Ext.create('GeoExt.Action',{
+            control: new OpenLayers.Control.ZoomBox({
+                id: 'zoombox',
+                type: OpenLayers.Control.TYPE_TOGGLE
+            }),
+            map: this.map,
+            iconCls: 'zoom-in-button',
+            scale: 'medium',
+            toggleGroup: 'map-controls',
+            tooltip: 'Zoom in'
+        });
+        this.tbar.add(Ext.create('Ext.button.Button', zoomBoxAction));
+
+        this.tbar.add(Ext.create('Ext.button.Button', {
+            iconCls: 'zoom-region-button',
+            itemId: 'zoomRegionButton',
+            scale: 'medium',
+            scope: this,
+            tooltip: 'Zoom to profile region'
+        }));
+
+        var identifyAction = Ext.create('GeoExt.Action',{
+            control: this.identifyCtrl,
+            handler: identifyAction,
+            iconCls: 'identify-button',
+            map: this.map,
+            scale: 'medium',
+            toggleGroup: 'map-controls',
+            tooltip: "Identify feature"
+        });
+        this.tbar.add(Ext.create('Ext.button.Button', identifyAction));
+
+        this.tbar.add('->');
+
+        // Create the base layer menu. This class will append the base layers
+        // to the map
+        var baseLayerMenu = Ext.create('Lmkp.view.editor.BaseLayers',{
+            map: this.map
+        });
+        // And add it to the toolbar
+        this.tbar.add({
+           text: Lmkp.ts.msg('Base Layers'),
+           menu: baseLayerMenu
+        });
+
+        // Now add the WMS layer showing the activities and the vector layer
+        // that is used when selecting activities.
+        // Order matters!
+        this.map.addLayers([this.activitiesLayer, this.vectorLayer]);
+
+        // Create the context layers menu. It will append the context layers to
+        // the map
+        var contextLayersMenu = Ext.create('Lmkp.view.editor.ContextLayers', {
+            map: this.map
+        });
+        // Add the context layers to the toolbar.
+        this.tbar.add({
+            text: Lmkp.ts.msg("Context Layers"),
+            menu: contextLayersMenu
+        });
+
+        this.callParent(arguments);
     }
 
 });

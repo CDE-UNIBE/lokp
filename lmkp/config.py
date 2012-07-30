@@ -12,11 +12,15 @@ def locale_profile_directory_path(request):
     filepath = os.path.dirname(__file__)
 
     if '_PROFILE_' in request.params:
-        return "%s/profiles/%s" % (filepath, request.params['_PROFILE_'])
-    if '_PROFILE_' in request.cookies:
-        return "%s/profiles/%s" % (filepath, request.cookies['_PROFILE_'])
-    else:
-        return ''
+        p = "%s/profiles/%s" % (filepath, request.params['_PROFILE_'])
+        if os.path.exists(p):
+            return p
+    elif '_PROFILE_' in request.cookies:
+        p = "%s/profiles/%s" % (filepath, request.cookies['_PROFILE_'])
+        if os.path.exists(p):
+            return p
+
+    return '%s/profiles' % filepath
 
 def profile_directory_path(request=None):
     """

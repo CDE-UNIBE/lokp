@@ -49,7 +49,7 @@ Ext.define('Lmkp.view.editor.StakeholderTable', {
                         {
                             xtype: 'checkbox',
                             boxLabel: Lmkp.ts.msg('filter-connect_to_activities'),
-                            itemId: 'filterConnectSHtoA'
+                            itemId: 'filterConnect'
                         }
                     ]
                 }, {

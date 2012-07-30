@@ -14,14 +14,18 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
         anchor: '100%'
     },
 
+    config: {
+        editable: true
+    },
+
     initComponent: function() {
 
-        var me = this;
 
         // Call parent first
         this.callParent(arguments);
 
         if (this.contentItem) {
+            var editable = this.editable;
 
             // If it is not an Activity Model ...
             if (!this.contentItem.isModel) {
@@ -43,22 +47,29 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
 
             // Get data and handle each TagGroup separately
             var taggroupStore = this.contentItem.taggroups();
+            var tgPanels = [];
             taggroupStore.each(function(record) {
-                me.add({
+                tgPanels.push({
                     xtype: 'lo_taggrouppanel',
-                    taggroup: record
+                    taggroup: record,
+                    editable: editable
                 });
             });
+            // Add all panels at once (layout needs to be done only once)
+            this.add(tgPanels);
 
             // Show involvements
             var involvementStore = this.contentItem.involvements();
-            for (var k=0; k<involvementStore.count(); k++) {
-                this.add({
+            var invPanels = [];
+            involvementStore.each(function(record) {
+                invPanels.push({
                     xtype: 'lo_involvementpanel',
-                    involvement: involvementStore.getAt(k),
-                    involvement_type: 'stakeholder'
+                    involvement: record,
+                    involvement_type: 'stakeholder',
+                    editable: editable
                 });
-            }
+            });
+            this.add(invPanels);
         } else {
             this.html = Lmkp.ts.msg('unknown');
         }

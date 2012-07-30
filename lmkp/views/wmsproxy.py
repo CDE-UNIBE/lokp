@@ -1,8 +1,12 @@
 from pyramid.httpexceptions import HTTPForbidden
+from pyramid.httpexceptions import HTTPNotFound
+from pyramid.security import unauthenticated_userid
 from pyramid.view import view_config
-import urllib2
+from urllib import urlencode
+from urllib2 import HTTPError
+from urllib2 import URLError
+from urllib2 import urlopen
 
-@view_config(route_name='wms_proxy', renderer='string')
 def wms_proxy(request):
     """
     This is a blind proxy that we use to get around browser
@@ -21,12 +25,51 @@ def wms_proxy(request):
     host = url.split("/")[2]
 
     if request.method != 'GET':
-        return HTTPForbidden("%s method is not allowed on this proxy." % (request.method,))
+        return HTTPForbidden("%s method is not allowed on this proxy." % (request.method, ))
 
     if host not in allowedHosts:
-        return HTTPForbidden("This proxy does not allow you to access that location (%s)." % (host,))
+        return HTTPForbidden("This proxy does not allow you to access that location (%s)." % (host, ))
 
     f = urllib2.urlopen(url)
     
     request.response.content_type = 'text/xml'
     return f.read()
+
+@view_config(route_name='wms_proxy', renderer='string')
+def wms(request):
+
+    if request.method != 'GET':
+        raise HTTPForbidden("%s method is not allowed on this proxy." % (request.method, ))
+
+    geoserver_url = "http://cdetux2.unibe.ch/geoserver/lo/wms"
+
+    params = {}
+
+    # Make sure all keys are in upper case
+    for item in request.params.iteritems():
+        params[item[0].upper()] = item[1]
+
+    # Overwrite the CQL filter
+    current_user = unauthenticated_userid(request)
+    if current_user != None:
+        params['CQL_FILTER'] = "(name='active') OR (username='%s' AND name='pending')" % current_user
+    else:
+        params['CQL_FILTER'] = "(name='active')"
+
+    try:
+        f = urlopen(geoserver_url, urlencode(params))
+    except HTTPError:
+        raise HTTPNotFound()
+    # URLError is raised in case of network outage
+    except URLError:
+        raise HTTPNotFound()
+
+    # Set the correct response type:
+    if params['REQUEST'] == 'GetMap':
+        request.response.content_type = 'image/png'
+    elif params['REQUEST'] == 'GetFeatureInfo':
+        request.response.content_type = 'text/xml'
+    
+    return f.read()
+
+

@@ -27,7 +27,9 @@ def activity_wrapper(request, file, status='pending'):
 
     # Check if the json body is a valid diff file
     if 'activities' not in data:
-        return HTTPBadRequest(detail="Not a valid format")
+        raise HTTPBadRequest(detail="Not a valid format")
+
+    activity_protocol2._read_configuration(request, 'activity.yml')
 
     ids = []
     for activity in data['activities']:
@@ -48,7 +50,9 @@ def stakeholder_wrapper(request, file, status='pending'):
 
     # Check if the json body is a valid diff file
     if 'stakeholders' not in data:
-        return HTTPBadRequest(detail="Not a valid format")
+        raise HTTPBadRequest(detail="Not a valid format")
+
+    stakeholder_protocol._read_configuration(request, 'stakeholder.yml')
 
     ids = []
     for stakeholder in data['stakeholders']:

@@ -7,7 +7,8 @@ Ext.define('Lmkp.controller.stakeholders.StakeholderSelection', {
     }],
 
     views: [
-    'stakeholders.StakeholderSelection'
+    'stakeholders.StakeholderSelection',
+    'stakeholders.NewStakeholder'
     ],
 
     init: function(){
@@ -25,16 +26,23 @@ Ext.define('Lmkp.controller.stakeholders.StakeholderSelection', {
     },
 
     onSearchSelect: function(combo, records, eOpts){
-        this.getStakeholderSelection().confirmButton.setText("Select Stakeholder");
+        var sel  = this.getStakeholderSelection();
+        sel.confirmButton.setText("Select Stakeholder");
         
-        var p = Ext.create('Lmkp.view.stakeholders.StakeholderPanel',{
+        var p = Ext.create('Lmkp.view.stakeholders.StakeholderPanel', {
             contentItem: records[0],
+            editable: false,
             region: 'south'
         });
 
-        this.getStakeholderSelection().setSouthPanel(p);
-        this.getStakeholderSelection().add(p);
+        // Remove first the southern panel if there is any
+        if(sel.getSouthPanel()){
+            sel.remove(sel.getSouthPanel());
+        }
 
+        sel.setSouthPanel(p);
+        sel.add(p);
+        sel.doLayout();
     },
 
     onClearButtonClick: function(button, event, eOpts){
@@ -58,15 +66,23 @@ Ext.define('Lmkp.controller.stakeholders.StakeholderSelection', {
             sel.setSelectedStakeholder(contentItem);
             sel.close();
         } else {
-            var w = Ext.create('Lmkp.view.stakeholders.NewStakeholder');
-            w.on('close', function(panel, eOpts){
-                sel.setSelectedStakeholder(panel.getAddedStakeholder());
-                sel.close();
+            var w = Ext.create('Ext.window.Window', {
+                height: 240,
+                width: 400,
+                layout: 'border',
+                items: [{
+                    autoScroll: true,
+                    region: 'center',
+                    xtype: 'lo_newstakeholderpanel'
+                }],
+                title: 'Add new Stakeholder'
+            });
+            w.on('close', function(window, eOpts){
+                this.onSearchSelect(
+                    window.down('combo[itemId="searchTextfield"]'),
+                    [window.down('lo_newstakeholderpanel').getAddedStakeholder()]);
             }, this);
             w.show();
-        //            w.on('close', function(panel, eOpts){
-        //                sel.close();
-        //            });
         }
 
     }
