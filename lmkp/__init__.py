@@ -112,6 +112,8 @@ def main(global_config, ** settings):
     # A view that returns an editing toolbar configuration object
     config.add_route('edit_toolbar_config', '/app/view/EditToolbar.js')
     config.add_route('view_toolbar_config', '/app/view/ViewToolbar.js')
+
+    config.add_route('context_layers', '/app/view/layers.js')
     # Return a json with all available profiles from disk
     config.add_route('profile_store', '/profiles/all')
 
@@ -122,9 +124,11 @@ def main(global_config, ** settings):
     config.add_route('user_profile_json', '/users/json/{userid}')
     # Updates the information of a user
     config.add_route('user_update', '/users/update', request_method='POST')
+    # Add a new user
+    config.add_route('add_user', '/users/add', request_method='POST')
 
     # A WMS proxy
-    config.add_route('wms_proxy', '/wms', request_method='GET')
+    config.add_route('wms_proxy', '/geoserver/lo/wms', request_method='GET')
 
     # Changeset protocol, query the changeset
     config.add_route('changesets_read', '/changesets')

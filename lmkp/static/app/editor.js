@@ -10,29 +10,44 @@ Ext.onReady(function(){
         appFolder: 'static/app',
 
         requires: [
-        'Lmkp.view.editor.Outer',
+        'Lmkp.view.editor.Overview',
+        'Lmkp.view.login.Toolbar'
         ],
 
         controllers: [
-        'activities.NewActivityWindow',
+        'activities.NewActivity',
+        'activities.TagGroup',
         'login.Toolbar',
+        'editor.BaseLayers',
+        'editor.ContextLayers',
         'editor.Detail',
+        'editor.Map',
         'editor.Overview',
+        'stakeholders.NewStakeholder',
         'stakeholders.StakeholderFieldContainer',
         'stakeholders.StakeholderSelection'
         ],
 
         launch: function() {
             Ext.create('Ext.container.Viewport', {
+                border: false,
                 layout: {
                     type: 'border',
                     padding: 0
                 },
                 items: [{
+                    region: 'north',
+                    xtype: 'lo_logintoolbar'
+                },{
+                    contentEl: 'header-div',
+                    height: 80,
+                    region: 'north',
+                    xtype: 'panel'
+                },{
                     border: 0,
                     frame: false,
                     region: 'center',
-                    xtype: 'lo_editorouterpanel'
+                    xtype: 'lo_editoroverviewpanel'
                 }]
             });
         }

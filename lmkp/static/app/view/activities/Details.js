@@ -1,6 +1,6 @@
 Ext.define('Lmkp.view.activities.Details', {
     extend: 'Ext.panel.Panel',
-    alias: ['widget.activityDetailTab'],
+    alias: ['widget.lo_activitydetailtab'],
 	
     itemId: 'activityDetailTab',
 
@@ -25,13 +25,14 @@ Ext.define('Lmkp.view.activities.Details', {
     tbar: {
         dock: 'top',
         xtype: 'toolbar',
-        items: [{
+        items: [/*{
             enableToggle: true,
             itemId: 'show-all-details',
             pressed: true,
             scale: 'medium',
             text: Lmkp.ts.msg('details-toggle_all')
-        },{
+        },*/{
+            iconCls: 'add-info-button',
             itemId: 'add-taggroup-button',
             scale: 'medium',
             text: 'Add further information',

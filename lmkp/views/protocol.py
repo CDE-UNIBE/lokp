@@ -1,12 +1,18 @@
+from lmkp.config import locale_profile_directory_path
+from lmkp.config import profile_directory_path
 from lmkp.models.database_objects import A_Key
 from lmkp.models.database_objects import A_Tag
 from lmkp.models.database_objects import A_Value
+from lmkp.models.database_objects import Group
+from lmkp.models.database_objects import Permission
 from lmkp.models.database_objects import Review_Decision
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Tag
 from lmkp.models.database_objects import SH_Value
 from lmkp.models.database_objects import Stakeholder_Role
 from lmkp.models.database_objects import Status
+from lmkp.views.config import merge_profiles
+from lmkp.models.database_objects import User
 from shapely import wkb
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.sql.expression import and_
@@ -14,6 +20,8 @@ from sqlalchemy.sql.expression import between
 from sqlalchemy.types import Float
 import datetime
 from sqlalchemy import func
+import yaml
+from pyramid.security import unauthenticated_userid
 
 class Protocol(object):
     """
@@ -22,7 +30,7 @@ class Protocol(object):
     """
 
     def __init__(self):
-        pass
+        self.configuration = None
     
     def _get_timestamp_filter(self, request, AorSH, Changeset):
         """
@@ -104,7 +112,7 @@ class Protocol(object):
 
         return 0
 
-    def _get_status(self, request):
+    def _get_status(self, request, from_history=False):
         """
         Returns an ClauseElement array of requested activity status.
         Default value is active.
@@ -128,7 +136,18 @@ class Protocol(object):
         except AttributeError:
             pass
 
+        # Special case: request came from history, return None
+        if from_history is True:
+            return None
+
         return [Status.name == "active"]
+
+    def _get_pending_by_user(self, request):
+        """
+        """
+        pending_user = request.params.get('show_pending', None)
+
+        return pending_user is not None and pending_user == 'true'
 
     def _filter(self, request):
         """
@@ -275,7 +294,8 @@ class Protocol(object):
                      subquery()
         return key_query, value_query
 
-    def _get_order(self, request, Mapped_Class, Tag_Group, Tag, Key, Value):
+    def _get_order(self, request, Mapped_Class, Tag_Group, Tag, Key, Value,
+        Changeset):
         """
         Returns
         - a SubQuery with an ordered list of Activity IDs and
@@ -284,33 +304,42 @@ class Protocol(object):
         """
         order_key = request.params.get('order_by', None)
         if order_key is not None:
-            # Query to order number values (cast to Float)
-            q_number = self.Session.query(
-                Mapped_Class.id,
-                cast(Value.value, Float).label('value')).\
-            join(Tag_Group).\
-            join(Tag, Tag.fk_tag_group == Tag_Group.id).\
-            join(Value).\
-            join(Key).\
-            filter(Key.key.like(order_key))
-            # Query to order string values
-            q_text = self.Session.query(
-                Mapped_Class.id,
-                Value.value.label('value')).\
-            join(Tag_Group).\
-            join(Tag, Tag.fk_tag_group == Tag_Group.id).\
-            join(Value).\
-            join(Key).\
-            filter(Key.key.like(order_key))
+            if order_key == 'timestamp':
+                q = self.Session.query(
+                    Mapped_Class.id,
+                    Changeset.timestamp.label('value')
+                ).\
+                join(Changeset).\
+                subquery()
+                return q, False
+            else:
+                # Query to order number values (cast to Float)
+                q_number = self.Session.query(
+                    Mapped_Class.id,
+                    cast(Value.value, Float).label('value')).\
+                join(Tag_Group).\
+                join(Tag, Tag.fk_tag_group == Tag_Group.id).\
+                join(Value).\
+                join(Key).\
+                filter(Key.key.like(order_key))
+                # Query to order string values
+                q_text = self.Session.query(
+                    Mapped_Class.id,
+                    Value.value.label('value')).\
+                join(Tag_Group).\
+                join(Tag, Tag.fk_tag_group == Tag_Group.id).\
+                join(Value).\
+                join(Key).\
+                filter(Key.key.like(order_key))
 
-            # Try to query numbered values and cast them
-            try:
-                x = q_number.all()
-                return q_number.subquery(), True
-            except:
-                # Rolling back of Session is needed to completely erase error thrown above
-                self.Session.rollback()
-                return q_text.subquery(), False
+                # Try to query numbered values and cast them
+                try:
+                    x = q_number.all()
+                    return q_number.subquery(), True
+                except:
+                    # Rolling back of Session is needed to completely erase error thrown above
+                    self.Session.rollback()
+                    return q_text.subquery(), False
 
         return None, None
 
@@ -328,6 +357,55 @@ class Protocol(object):
             return filters
         
         return None
+
+    def _get_user_filter(self, request, Mapped_Class, Changeset_Class):
+        """
+
+        """
+
+        username = request.params.get('user', None)
+        if username is not None:
+            return self.Session.query(Mapped_Class.id).\
+                join(Changeset_Class).\
+                join(User).\
+                filter(User.username == username).\
+                subquery()
+
+        return None
+
+    def _get_attrs(self, request):
+        """
+        Return a list of attributes if set.
+
+        So far, only special parameter 'all' is supported, returns True
+        """
+
+        attrs = request.params.get('attrs', None)
+        if attrs is not None:
+            if attrs == 'all':
+                return True
+
+        return None
+
+    def _check_moderator(self, request):
+        """
+        Return True if currently logged in user has moderator privileges
+        (permission = 'moderate'), else False.
+        """
+
+        if unauthenticated_userid(request) is None:
+            return False
+        
+        moderator_rights = self.Session.query(Permission).\
+            join(Permission.groups).\
+            join(Group.users).\
+            filter(User.username == unauthenticated_userid(request)).\
+            filter(Permission.name == 'moderate').\
+            all()
+        if len(moderator_rights) > 0:
+            return True
+
+        return False
 
     def _add_review(self, request, item, previous_item, Changeset_Item, user):
         """
@@ -380,6 +458,64 @@ class Protocol(object):
         ret['success'] = True
         ret['msg'] = 'Review successful.'
         return ret
+
+    def _key_value_is_valid(self, request, configuration, key, value):
+        """
+        Validate if key and value are in the current configuration
+        """
+
+        # Trim white spaces
+        try:
+            value = value.strip()
+        except AttributeError:
+            pass
+
+        # Per default key and value are not valid
+        key_is_valid = False
+        value_is_valid = False
+
+        # Loop the optional and mandatory fields
+        for fields in configuration['fields']:
+
+            # Loop all tags in fields
+            for tags in configuration['fields'][fields].iteritems():
+                # If the current key equals the key in the tag, set key_is_valid
+                # to True
+                if key == tags[0]:
+                    key_is_valid = True
+                    # Check the value in the next step:
+                    # If the current key contains predefined values, check the
+                    # value against these
+                    if 'predefined' in tags[1]:
+                        if value in tags[1]['predefined']:
+                            value_is_valid = True
+                    # In other cases (non-predefined values), set value_is_valid
+                    # to True
+                    else:
+                        value_is_valid = True
+
+        # Return only True if key as well as value are valid
+        return key_is_valid and value_is_valid
+
+    def _read_configuration(self, request, filename):
+
+        # Read the global configuration file
+        global_stream = open("%s/%s" % (profile_directory_path(request), filename), 'r')
+        self.configuration = yaml.load(global_stream)
+
+        # Read the localized configuration file
+        try:
+            locale_stream = open("%s/%s" % (locale_profile_directory_path(request), filename), 'r')
+            locale_config = yaml.load(locale_stream)
+
+            # If there is a localized config file then merge it with the global one
+            self.configuration = merge_profiles(global_config, locale_config)
+
+        except IOError:
+            # No localized configuration file found!
+            pass
+
+        return self.configuration
 
 class Tag(object):
 
@@ -483,7 +619,7 @@ class Inv(object):
 
 class Feature(object):
 
-    def __init__(self, guid, order_value, version=None,
+    def __init__(self, guid, order_value, version=None, status=None,
         timestamp=None, diff_info=None, ** kwargs):
         self._taggroups = []
         self._involvements = []
@@ -492,6 +628,8 @@ class Feature(object):
         self._version = version
         self._timestamp = timestamp
         self._diff_info = diff_info
+        self._status = status
+        self._pending = []
 
     def add_taggroup(self, taggroup):
         """
@@ -526,6 +664,12 @@ class Feature(object):
     def get_version(self):
         return self._version
 
+    def get_status(self):
+        return self._status
+
+    def set_pending(self, pending):
+        self._pending = pending
+
     def remove_taggroup(self, taggroup):
         if taggroup in self.get_taggroups():
             self.get_taggroups().remove(taggroup)
@@ -557,9 +701,16 @@ class Feature(object):
             ret['version'] = self._version
         if self._timestamp is not None:
             ret['timestamp'] = str(self._timestamp)
+        if self._status is not None:
+            ret['status'] = self._status
         if self._diff_info is not None:
             for k in self._diff_info:
                 ret[k] = self._diff_info[k]
+        if len(self._pending) != 0:
+            pending = []
+            for p in self._pending:
+                pending.append(p.to_table())
+            ret['pending'] = pending
 
         # Involvements
         if len(self._involvements) != 0:

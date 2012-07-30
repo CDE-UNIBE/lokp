@@ -51,7 +51,7 @@ Ext.define('Lmkp.view.editor.ActivityTable',{
                 }, {
                     xtype: 'checkbox',
                     boxLabel: Lmkp.ts.msg('filter-connect_to_stakeholders'),
-                    itemId: 'filterConnectAtoSH'
+                    itemId: 'filterConnect'
                 }]
             },{
                 xtype: 'pagingtoolbar',

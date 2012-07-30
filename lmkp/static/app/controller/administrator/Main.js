@@ -142,7 +142,7 @@ Ext.define('Lmkp.controller.administrator.Main', {
         
         var win = Ext.create('Ext.window.Window', {
             title: 'Add to DB',
-            closable: false,
+            closable: true,
             layout: 'fit',
             loader: {
                 url: panel.getPostUrl(),
@@ -170,10 +170,8 @@ Ext.define('Lmkp.controller.administrator.Main', {
         var cbLang = Ext.ComponentQuery.query('combobox[id=language_combobox]')[0];
         var cbProfile = Ext.ComponentQuery.query('combobox[id=profile_combobox]')[0];
 
-        // Get the parent panel
-        var panel = button.ownerCt.ownerCt;
         // Then get the treepanel and its store
-        var treepanel = panel.query('treepanel')[0];
+        var treepanel = button.up('panel');
         var store = treepanel.getStore();
         var root = store.getRootNode();
         // catch error when no language is in db yet

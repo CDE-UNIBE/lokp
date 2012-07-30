@@ -1,6 +1,6 @@
 from lmkp.models.database_objects import Activity
-from lmkp.models.database_objects import Language
 from lmkp.models.database_objects import Involvement
+from lmkp.models.database_objects import Language
 from lmkp.models.database_objects import SH_Changeset
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Tag
@@ -11,17 +11,21 @@ from lmkp.models.database_objects import Stakeholder_Role
 from lmkp.models.database_objects import Status
 from lmkp.models.database_objects import User
 from lmkp.views.protocol import Feature
+from lmkp.views.protocol import Inv
 from lmkp.views.protocol import Protocol
 from lmkp.views.protocol import Tag
 from lmkp.views.protocol import TagGroup
 from lmkp.views.protocol import Inv
+from lmkp.views.profile import get_current_profile
+from lmkp.views.config import get_current_keys
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPCreated
 from pyramid.i18n import get_localizer
+from pyramid.security import unauthenticated_userid
 from sqlalchemy import func
-from sqlalchemy.sql.expression import cast
 from sqlalchemy.sql.expression import asc
+from sqlalchemy.sql.expression import cast
 from sqlalchemy.sql.expression import desc
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.types import Float
@@ -43,7 +47,10 @@ class StakeholderProtocol(Protocol):
         # Check if the json body is a valid diff file
         #if 'create' not in raw and 'modify' not in raw and 'delete' not in raw:
         if 'stakeholders' not in raw:
-            return HTTPBadRequest(detail="Not a valid format")
+            raise HTTPBadRequest(detail="Not a valid format")
+
+        # Get the current configuration file to validate key and value pairs
+        self.configuration = self._read_configuration(request, 'stakeholder.yml')
 
         ids = []
         for stakeholder in raw['stakeholders']:
@@ -181,6 +188,12 @@ class StakeholderProtocol(Protocol):
         """
         Creates a new SQLAlchemy tag object and appends it to the parent list.
         """
+
+        # Validate the key and value pair with the configuration file
+        if not self._key_value_is_valid(request, self.configuration, key, value):
+            self.Session.rollback()
+            raise HTTPBadRequest("Key: %s or Value: %s is not valid." % (key,value))
+
         # The key has to be already in the database
         k = self.Session.query(SH_Key).filter(SH_Key.key == key).first()
 
@@ -255,24 +268,7 @@ class StakeholderProtocol(Protocol):
                 key = tag['key']
                 value = tag['value']
 
-                # Check if the key and value are allowed by the global yaml
-                if not self._key_value_is_valid(request, key, value):
-                    continue
-
-                # The key has to be already in the database
-                k = self.Session.query(SH_Key).filter(SH_Key.key == key).first()
-
-                # If the value is not yet in the database, create a new value
-                v = self.Session.query(SH_Value).filter(SH_Value.value == unicode(value)).first()
-                if v is None:
-                    v = SH_Value(value=value)
-                    v.fk_language = 1
-
-                # Create a new tag with key and value and append it to the tag group
-                sh_tag = SH_Tag()
-                db_taggroup.tags.append(sh_tag)
-                sh_tag.key = k
-                sh_tag.value = v
+                sh_tag = self._create_tag(request, db_taggroup.tags, key, value)
 
                 # Check if the current tag is the main tag of this tag group. If
                 # yes, set the main_tag attribute to this tag
@@ -294,9 +290,6 @@ class StakeholderProtocol(Protocol):
         changeset.stakeholder = stakeholder
         self.Session.add(changeset)
 
-    def _key_value_is_valid(self, request, key, value):
-        return True
-
     def read(self, request, filter=None, uid=None):
 
         # Query the database
@@ -305,7 +298,7 @@ class StakeholderProtocol(Protocol):
         return {'total': count, 'data': [sh.to_table() for sh in stakeholders]}
 
     def _query(self, request, limit=None, offset=None, filter=None, uid=None, 
-        involvements=None, only_guid=False):
+               involvements=None, only_guid=False):
         """
         Do the query. Returns
         - a list of (filtered) Activities
@@ -319,34 +312,37 @@ class StakeholderProtocol(Protocol):
             status_filter = self.Session.query(Status.id).filter(or_(* self._get_status(request)))
             # Get the attribute filter
             (a_tag_filter, a_filter_length, sh_tag_filter, sh_filter_length
-            ) = self._filter(request)
+             ) = self._filter(request)
         else:
             status_filter = (filter['status_filter'] 
-                if 'status_filter' in filter else None)
+                             if 'status_filter' in filter else None)
             a_tag_filter = (filter['a_tag_filter'] 
-                if 'a_tag_filter' in filter else None)
+                            if 'a_tag_filter' in filter else None)
             a_filter_length = (filter['a_filter_length']
-                if 'a_filter_length' in filter else 0)
+                               if 'a_filter_length' in filter else 0)
             sh_tag_filter = (filter['sh_tag_filter']
-                if 'sh_tag_filter' in filter else None)
+                             if 'sh_tag_filter' in filter else None)
             sh_filter_length = (filter['sh_filter_length']
-                if 'sh_filter_length' in filter else 0)
+                                if 'sh_filter_length' in filter else 0)
         
         # Get the order
-        order_query, order_numbers = self._get_order(request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value)
+        order_query, order_numbers = self._get_order(
+                                                     request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value,
+                                                     SH_Changeset
+                                                     )
 
         # Find id's of relevant stakeholders by joining with prepared filters.
         # If result is ordered, do an Outer Join to attach ordered attributes.
         # 'order_value' contains the values to order by.
         if order_query is not None:
             relevant_stakeholders = self.Session.query(
-                                    Stakeholder.id.label('order_id'),
-                                    order_query.c.value.label('order_value'),
-                                    Stakeholder.fk_status
-                                    ).\
+                                                       Stakeholder.id.label('order_id'),
+                                                       order_query.c.value.label('order_value'),
+                                                       Stakeholder.fk_status
+                                                       ).\
             join(SH_Tag_Group).\
             join(sh_tag_filter, 
-                sh_tag_filter.c.sh_filter_tg_id == SH_Tag_Group.id).\
+                 sh_tag_filter.c.sh_filter_tg_id == SH_Tag_Group.id).\
             outerjoin(order_query).\
             group_by(Stakeholder.id, order_query.c.value)
             # order the list (needed to correctly apply limit and offset below)
@@ -364,13 +360,13 @@ class StakeholderProtocol(Protocol):
         else:
             # Use dummy value as order value
             relevant_stakeholders = self.Session.query(
-                                    Stakeholder.id.label('order_id'),
-                                    func.char_length('').label('order_value'),
-                                    Stakeholder.fk_status
-                                    ).\
+                                                       Stakeholder.id.label('order_id'),
+                                                       func.char_length('').label('order_value'),
+                                                       Stakeholder.fk_status
+                                                       ).\
             join(SH_Tag_Group).\
             join(sh_tag_filter, 
-                sh_tag_filter.c.sh_filter_tg_id == SH_Tag_Group.id).\
+                 sh_tag_filter.c.sh_filter_tg_id == SH_Tag_Group.id).\
             group_by(Stakeholder.id)
 
         # Apply filter by Activity attributes if provided
@@ -384,8 +380,8 @@ class StakeholderProtocol(Protocol):
             # Use ActivityProtocol to query identifiers
             from lmkp.views.activity_protocol2 import ActivityProtocol2
             ap = ActivityProtocol2(self.Session)
-            a_ids, count = ap._query(request, filter = a_filter_dict,
-                only_guid = True)
+            a_ids, count = ap._query(request, filter=a_filter_dict,
+                                     only_guid=True)
             a_subquery = self.Session.query(Activity.id.label("a_id")).\
                 filter(Activity.activity_identifier.in_(a_ids)).\
                 subquery()
@@ -393,28 +389,28 @@ class StakeholderProtocol(Protocol):
                 # OR: use 'union' to add identifiers to relevant_activities
                 relevant_stakeholders = relevant_stakeholders.\
                     union(self.Session.query(
-                        Stakeholder.id.label('order_id'),
-                        func.char_length('').label('order_value'), # dummy value
-                        Stakeholder.fk_status
-                    ).\
-                    join(Involvement).\
-                    join(a_subquery, a_subquery.c.a_id ==
-                        Involvement.fk_activity).\
-                    group_by(Stakeholder.id))
+                          Stakeholder.id.label('order_id'),
+                          func.char_length('').label('order_value'), # dummy value
+                          Stakeholder.fk_status
+                          ).\
+                          join(Involvement).\
+                          join(a_subquery, a_subquery.c.a_id ==
+                          Involvement.fk_activity).\
+                          group_by(Stakeholder.id))
             else:
                 # AND: filter identifiers of relevant stakeholders
                 relevant_stakeholders = relevant_stakeholders.\
                     join(Involvement).\
                     join(a_subquery, a_subquery.c.a_id ==
-                        Involvement.fk_activity).\
+                         Involvement.fk_activity).\
                     group_by(Stakeholder.id)
         
         timestamp_filter = self._get_timestamp_filter(request, Stakeholder, 
-            SH_Changeset)
+                                                      SH_Changeset)
         if timestamp_filter is not None:
             relevant_stakeholders = relevant_stakeholders.\
                 join(timestamp_filter, 
-                    timestamp_filter.c.timestamp_id == Stakeholder.id)
+                     timestamp_filter.c.timestamp_id == Stakeholder.id)
 
         # Apply status filter (only if timestamp not set)
         if status_filter is not None and timestamp_filter is None:
@@ -428,12 +424,15 @@ class StakeholderProtocol(Protocol):
         else:
             # 'AND': all filtered values must be available
             relevant_stakeholders = relevant_stakeholders.having(
-                func.count() >= sh_filter_length)
+                                                                 func.count() >= sh_filter_length)
 
         # Special case: UID was provided, create new 'relevant_stakeholders'
         if uid is not None:
-            relevant_stakeholders = self.Session.query(Stakeholder.id.label('order_id'),
-                                                     func.char_length('').label('order_value')).\
+            relevant_stakeholders = self.Session.query(
+                                                       Stakeholder.id.label('order_id'),
+                                                       func.char_length('').label('order_value'),
+                                                       Stakeholder.fk_status
+                                                       ).\
                 filter(Stakeholder.stakeholder_identifier == uid).\
                 filter(Stakeholder.fk_status.in_(status_filter))
 
@@ -445,13 +444,33 @@ class StakeholderProtocol(Protocol):
                 filter(or_(* self._get_sh_role_filter(request))).\
                 subquery()
             relevant_stakeholders = relevant_stakeholders.join(sh_role_filter, 
-                sh_role_filter.c.role_id == Stakeholder.id)
+                                                               sh_role_filter.c.role_id == Stakeholder.id)
+
+        # Apply filter by username if set
+        if self._get_user_filter(request, Stakeholder, SH_Changeset) is not None:
+            user_filter = self._get_user_filter(request, Stakeholder, SH_Changeset)
+            relevant_stakeholders = relevant_stakeholders.join(user_filter)
 
         # Count relevant stakeholders (before applying limit and offset)
         count = relevant_stakeholders.count()
 
         # Apply limit and offset
         relevant_stakeholders = relevant_stakeholders.limit(limit).offset(offset)
+
+        # Add pending stakeholders by current user to selection if requested
+        pending_by_user = self._get_pending_by_user(request)
+        if pending_by_user is True and uid is not None and request.user is not None:
+            pending_stakeholders = self.Session.query(
+                                                      Stakeholder.id.label('order_id'),
+                                                      func.char_length('').label('order_value'),
+                                                      Stakeholder.fk_status
+                                                      ).\
+            join(SH_Changeset).\
+            filter(SH_Changeset.fk_user == request.user.id).\
+            filter(Stakeholder.fk_status == 1).\
+            filter(Stakeholder.stakeholder_identifier == uid)
+
+            relevant_stakeholders = pending_stakeholders.union(relevant_stakeholders)
 
         # Prepare query to translate keys and values
         localizer = get_localizer(request)
@@ -461,21 +480,22 @@ class StakeholderProtocol(Protocol):
 
         # Prepare query for involvements
         involvement_status = self.Session.query(Activity.id.label("activity_id"),
-                                 Activity.activity_identifier.label("activity_identifier")).\
-                 filter(Activity.fk_status.in_(status_filter)).\
-                 subquery()
+                                                Activity.activity_identifier.label("activity_identifier")).\
+            filter(Activity.fk_status.in_(status_filter)).\
+            subquery()
         involvement_query = self.Session.query(Involvement.fk_stakeholder.label("stakeholder_id"),
-                                       Stakeholder_Role.name.label("role_name"),
-                                       involvement_status.c.activity_identifier.label("activity_identifier")).\
-                   join(involvement_status, involvement_status.c.activity_id == Involvement.fk_activity).\
-                   join(Stakeholder_Role).\
-                   subquery()
+                                               Stakeholder_Role.name.label("role_name"),
+                                               involvement_status.c.activity_identifier.label("activity_identifier")).\
+            join(involvement_status, involvement_status.c.activity_id == Involvement.fk_activity).\
+            join(Stakeholder_Role).\
+            subquery()
 
         # Collect all attributes (TagGroups) of relevant stakeholders
         relevant_stakeholders = relevant_stakeholders.subquery()
         query = self.Session.query(Stakeholder.id.label("id"),
                                    Stakeholder.stakeholder_identifier.label("stakeholder_identifier"),
                                    SH_Changeset.timestamp.label("timestamp"),
+                                   Status.name.label("status"),
                                    Stakeholder.version.label("version"),
                                    SH_Tag_Group.id.label("taggroup"),
                                    SH_Tag_Group.fk_tag.label("main_tag"),
@@ -488,6 +508,7 @@ class StakeholderProtocol(Protocol):
                                    involvement_query.c.activity_identifier.label("activity_identifier"),
                                    involvement_query.c.role_name.label("stakeholder_role")).\
             join(relevant_stakeholders, relevant_stakeholders.c.order_id == Stakeholder.id).\
+            join(Status).\
             join(SH_Changeset).\
             join(SH_Tag_Group).\
             join(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_sh_tag_group).\
@@ -497,13 +518,35 @@ class StakeholderProtocol(Protocol):
             outerjoin(value_translation, value_translation.c.value_original_id == SH_Value.id).\
             outerjoin(involvement_query, involvement_query.c.stakeholder_id == Stakeholder.id)
 
-
         # Do the ordering again
         if order_query is not None:
             if self._get_order_direction(request) == 'DESC':
                 query = query.order_by(desc(relevant_stakeholders.c.order_value))
             else:
                 query = query.order_by(asc(relevant_stakeholders.c.order_value))
+
+        # Decide if keys will be filtered according to current profile or not
+        attrs = self._get_attrs(request)
+        restricted_keys = None
+        if attrs is not None:
+            if attrs is True:
+                # Show all attributes
+                restricted_keys = None
+            else:
+                # Show only selected attributes (not yet supported)
+                restricted_keys = attrs
+        else:
+            if unauthenticated_userid(request) is None:
+                # Not logged in: filter the keys according to profile
+                restricted_keys = get_current_keys(
+                    request, 'sh', get_current_profile(request)
+                )
+            else:
+                if self._check_moderator(request) is False:
+                    # Logged in but not moderator: filter keys according to profile
+                    restricted_keys = get_current_keys(
+                        request, 'sh', get_current_profile(request)
+                    )
 
         stakeholders = []
         
@@ -547,21 +590,23 @@ class StakeholderProtocol(Protocol):
             # If no existing feature found, create new one
             if stakeholder == None:
                 stakeholder = Feature(uid, order_value, version=version,
-                    timestamp=timestamp)
+                                      timestamp=timestamp, status=i.status)
                 stakeholders.append(stakeholder)
 
             # Check if there is already this tag group present in the current
             # stakeholder
+            # Also add it only if key (original) is not filtered by profile
             taggroup = None
-            if stakeholder.find_taggroup_by_id(taggroup_id) is not None:
-                taggroup = stakeholder.find_taggroup_by_id(taggroup_id)
-            else:
-                taggroup = TagGroup(taggroup_id, i.main_tag)
-                stakeholder.add_taggroup(taggroup)
+            if restricted_keys is None or i.key in restricted_keys:
+                if stakeholder.find_taggroup_by_id(taggroup_id) is not None:
+                    taggroup = stakeholder.find_taggroup_by_id(taggroup_id)
+                else:
+                    taggroup = TagGroup(taggroup_id, i.main_tag)
+                    stakeholder.add_taggroup(taggroup)
 
             # Because of Involvements, the same Tags appears for each Involvement, so
             # add it only once to TagGroup
-            if taggroup.get_tag_by_id(i.tag) is None:
+            if taggroup is not None and taggroup.get_tag_by_id(i.tag) is None:
                 taggroup.add_tag(Tag(i.tag, key, value))
 
             # Determine if and how detailed Involvements are to be displayed
@@ -581,23 +626,35 @@ class StakeholderProtocol(Protocol):
                         if stakeholder.find_involvement(i.activity_identifier, i.stakeholder_role) is None:
                             stakeholder.add_involvement(Inv(i.activity_identifier, None, i.stakeholder_role))
 
-        return stakeholders, count
+        # If pending stakeholders are shown for current user, add them to
+        # active version
+        if pending_by_user is True:
+            pending = []
+            active = None
+            for sh in stakeholders:
+                if sh.get_status() == 'pending':
+                    pending.append(sh)
+                elif sh.get_status() == 'active':
+                    active = sh
+            active.set_pending(pending)
+            stakeholders = [active]
 
+        return stakeholders, count
 
     def history(self, request, uid, status_list=None):
 
         # Query the database
         stakeholders, count = self._history(request, uid, status_list, 
-            versions=self._get_versions(request))
+                                            versions=self._get_versions(request))
         
         return {'total': count, 'data': [sh.to_table() for sh in stakeholders]}
 
     def _history(self, request, uid, status_list=None, versions=None, 
-        involvements=None):
+                 involvements=None):
 
         # If no status provided in request.params, look in function parameters
         # or use default
-        if self._get_status(request) is None:
+        if self._get_status(request, True) is None:
             if status_list is None:
                 status_list = ['active', 'overwritten']
             status_filter = self.Session.query(Status).\
@@ -605,7 +662,7 @@ class StakeholderProtocol(Protocol):
                 subquery()
         else:
             status_filter = self.Session.query(Status).\
-                filter(or_(* self._get_status(request))).\
+                filter(or_(* self._get_status(request, True))).\
                 subquery()
         
         # Prepare query to translate keys and values
@@ -616,50 +673,73 @@ class StakeholderProtocol(Protocol):
 
         # Prepare query for involvements
         involvement_status = self.Session.query(Activity.id.label("activity_id"),
-                                 Activity.activity_identifier.label("activity_identifier")).\
-                 join(status_filter).\
-                 subquery()
+                                                Activity.activity_identifier.label("activity_identifier")).\
+            join(status_filter).\
+            subquery()
         involvement_query = self.Session.query(Involvement.fk_stakeholder.label("stakeholder_id"),
-                                       Stakeholder_Role.name.label("role_name"),
-                                       involvement_status.c.activity_identifier.label("activity_identifier")).\
-                   join(involvement_status, involvement_status.c.activity_id == Involvement.fk_activity).\
-                   join(Stakeholder_Role).\
-                   subquery()
+                                               Stakeholder_Role.name.label("role_name"),
+                                               involvement_status.c.activity_identifier.label("activity_identifier")).\
+            join(involvement_status, involvement_status.c.activity_id == Involvement.fk_activity).\
+            join(Stakeholder_Role).\
+            subquery()
 
         query = self.Session.query(Stakeholder.id.label("id"),
-                         Stakeholder.stakeholder_identifier.label("stakeholder_identifier"),
-                         SH_Changeset.timestamp.label("timestamp"),
-                         Stakeholder.version.label("version"),
-                         SH_Tag_Group.id.label("taggroup"),
-                         SH_Tag_Group.fk_tag.label("main_tag"),
-                         SH_Tag.id.label("tag"),
-                         SH_Key.key.label("key"),
-                         SH_Value.value.label("value"),
-                         SH_Changeset.previous_version.label("previous_version"),
-                         SH_Changeset.source.label("source"),
-                         User.id.label("userid"),
-                         User.username.label("username"),
-                         status_filter.c.name.label("status"),
-                         key_translation.c.key_translated.label("key_translated"),
-                         value_translation.c.value_translated.label("value_translated"),
-                         involvement_query.c.activity_identifier.label("activity_identifier"),
-                         involvement_query.c.role_name.label("stakeholder_role")).\
-                join(status_filter).\
-                join(SH_Changeset).\
-                join(User).\
-                join(SH_Tag_Group).\
-                join(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_tag_group).\
-                join(SH_Key).\
-                join(SH_Value).\
-                outerjoin(key_translation, key_translation.c.key_original_id == SH_Key.id).\
-                outerjoin(value_translation, value_translation.c.value_original_id == SH_Value.id).\
-                outerjoin(involvement_query, involvement_query.c.stakeholder_id == Stakeholder.id).\
-                filter(Stakeholder.stakeholder_identifier == uid).\
-                order_by(desc(Stakeholder.version))
+                                   Stakeholder.stakeholder_identifier.label("stakeholder_identifier"),
+                                   SH_Changeset.timestamp.label("timestamp"),
+                                   Stakeholder.version.label("version"),
+                                   SH_Tag_Group.id.label("taggroup"),
+                                   SH_Tag_Group.fk_tag.label("main_tag"),
+                                   SH_Tag.id.label("tag"),
+                                   SH_Key.key.label("key"),
+                                   SH_Value.value.label("value"),
+                                   SH_Changeset.previous_version.label("previous_version"),
+                                   SH_Changeset.source.label("source"),
+                                   User.id.label("userid"),
+                                   User.username.label("username"),
+                                   status_filter.c.name.label("status"),
+                                   key_translation.c.key_translated.label("key_translated"),
+                                   value_translation.c.value_translated.label("value_translated"),
+                                   involvement_query.c.activity_identifier.label("activity_identifier"),
+                                   involvement_query.c.role_name.label("stakeholder_role")).\
+            join(status_filter).\
+            join(SH_Changeset).\
+            join(User).\
+            join(SH_Tag_Group).\
+            join(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_tag_group).\
+            join(SH_Key).\
+            join(SH_Value).\
+            outerjoin(key_translation, key_translation.c.key_original_id == SH_Key.id).\
+            outerjoin(value_translation, value_translation.c.value_original_id == SH_Value.id).\
+            outerjoin(involvement_query, involvement_query.c.stakeholder_id == Stakeholder.id).\
+            filter(Stakeholder.stakeholder_identifier == uid).\
+            order_by(desc(Stakeholder.version))
 
         # Append version limit if provided
         if versions is not None:
             query = query.filter(Stakeholder.version.in_(versions))
+
+        # Decide if keys will be filtered according to current profile or not
+        attrs = self._get_attrs(request)
+        restricted_keys = None
+        if attrs is not None:
+            if attrs is True:
+                # Show all attributes
+                restricted_keys = None
+            else:
+                # Show only selected attributes (not yet supported)
+                restricted_keys = attrs
+        else:
+            if unauthenticated_userid(request) is None:
+                # Not logged in: filter the keys according to profile
+                restricted_keys = get_current_keys(
+                    request, 'sh', get_current_profile(request)
+                )
+            else:
+                if self._check_moderator(request) is False:
+                    # Logged in but not moderator: filter keys according to profile
+                    restricted_keys = get_current_keys(
+                        request, 'sh', get_current_profile(request)
+                    )
 
         # Collect the data from query
         data = []
@@ -678,12 +758,12 @@ class StakeholderProtocol(Protocol):
             order_value = i.version
 
             diff_info = {
-                 'status': i.status,
-                 'previous_version': i.previous_version,
-                 'userid': i.userid,
-                 'username': i.username,
-                 'source': i.source
-             }
+                'status': i.status,
+                'previous_version': i.previous_version,
+                'userid': i.userid,
+                'username': i.username,
+                'source': i.source
+            }
 
             stakeholder = None
             for a in data:
@@ -694,21 +774,23 @@ class StakeholderProtocol(Protocol):
             # If no existing ActivityFeature found, create new one
             if stakeholder == None:
                 stakeholder = Feature(uid, order_value, version=order_value, 
-                    diff_info=diff_info)
+                                      diff_info=diff_info)
                 data.append(stakeholder)
 
             # Check if there is already this tag group present in the current
             # stakeholder
+            # Also add it only if key (original) is not filtered by profile
             taggroup = None
-            if stakeholder.find_taggroup_by_id(taggroup_id) is not None:
-                taggroup = stakeholder.find_taggroup_by_id(taggroup_id)
-            else:
-                taggroup = TagGroup(taggroup_id, i.main_tag)
-                stakeholder.add_taggroup(taggroup)
+            if restricted_keys is None or i.key in restricted_keys:
+                if stakeholder.find_taggroup_by_id(taggroup_id) is not None:
+                    taggroup = stakeholder.find_taggroup_by_id(taggroup_id)
+                else:
+                    taggroup = TagGroup(taggroup_id, i.main_tag)
+                    stakeholder.add_taggroup(taggroup)
 
             # Because of Involvements, the same Tags appear for each Involvement, so
             # add it only once to TagGroup
-            if taggroup.get_tag_by_id(i.tag) is None:
+            if taggroup is not None and taggroup.get_tag_by_id(i.tag) is None:
                 taggroup.add_tag(Tag(i.tag, key, value))
 
             # Determine if and how detailed Involvements are to be displayed

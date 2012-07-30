@@ -3,17 +3,21 @@ from geoalchemy.functions import functions
 import geojson
 from lmkp.models.database_objects import *
 from lmkp.views.profile import get_current_profile
+from lmkp.views.config import get_current_keys
 from lmkp.views.protocol import Feature
+from lmkp.views.protocol import Inv
 from lmkp.views.protocol import Protocol
 from lmkp.views.protocol import Tag
 from lmkp.views.protocol import TagGroup
-from lmkp.views.protocol import Inv
+from lmkp.views.stakeholder_protocol import StakeholderProtocol
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPCreated
+from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.i18n import get_localizer
+from pyramid.security import authenticated_userid
 from shapely.geometry import asShape
 from shapely.geometry.polygon import Polygon
 import simplejson as json
@@ -34,6 +38,7 @@ import uuid
 import yaml
 from lmkp.views.stakeholder_protocol import StakeholderProtocol
 from pyramid.security import authenticated_userid
+from pyramid.security import unauthenticated_userid
 
 log = logging.getLogger(__name__)
 
@@ -43,7 +48,7 @@ class ActivityFeature2(Feature):
     """
 
     def __init__(self, guid, order_value, geometry=None, version=None,
-                 timestamp=None, diff_info=None, ** kwargs):
+                 timestamp=None, diff_info=None, status=None, ** kwargs):
         self._taggroups = []
         self._involvements = []
         self._guid = guid
@@ -51,7 +56,9 @@ class ActivityFeature2(Feature):
         self._geometry = geometry
         self._version = version
         self._timestamp = timestamp
+        self._status = status
         self._diff_info = diff_info
+        self._pending = []
 
     def to_table(self):
         """
@@ -80,9 +87,16 @@ class ActivityFeature2(Feature):
             ret['version'] = self._version
         if self._timestamp is not None:
             ret['timestamp'] = str(self._timestamp)
+        if self._status is not None:
+            ret['status'] = self._status
         if self._diff_info is not None:
             for k in self._diff_info:
                 ret[k] = self._diff_info[k]
+        if len(self._pending) != 0:
+            pending = []
+            for p in self._pending:
+                pending.append(p.to_table())
+            ret['pending'] = pending
 
         # Involvements
         if len(self._involvements) != 0:
@@ -124,7 +138,10 @@ class ActivityProtocol2(Protocol):
         # Check if the json body is a valid diff file
         #if 'create' not in raw and 'modify' not in raw and 'delete' not in raw:
         if 'activities' not in raw:
-            return HTTPBadRequest(detail="Not a valid format")
+            raise HTTPBadRequest(detail="Not a valid format")
+
+        # Get the current configuration file to validate key and value pairs
+        self.configuration = self._read_configuration(request, 'activity.yml')
 
         ids = []
         for activity in raw['activities']:
@@ -139,13 +156,13 @@ class ActivityProtocol2(Protocol):
         """
         # Collect information about changing involvements
         involvement_change = (activity_dict['stakeholders']
-            if 'stakeholders' in activity_dict
-            else None)
+                              if 'stakeholders' in activity_dict
+                              else None)
         implicit_inv_change = (True
-            if involvement_change is not None
-                and 'implicit_involvement_update' in activity_dict
-                and activity_dict['implicit_involvement_update'] is True
-            else False)
+                               if involvement_change is not None
+                               and 'implicit_involvement_update' in activity_dict
+                               and activity_dict['implicit_involvement_update'] is True
+                               else False)
 
         # If this activity does not have an id then create a new activity
         if 'id' not in activity_dict:
@@ -273,6 +290,12 @@ class ActivityProtocol2(Protocol):
         """
         Creates a new SQLAlchemy tag object and appends it to the parent list.
         """
+
+        # Validate the key and value pair with the configuration file
+        if not self._key_value_is_valid(request, self.configuration, key, value):
+            self.Session.rollback()
+            raise HTTPBadRequest("Key: %s or Value: %s is not valid." % (key,value))
+
         # The key has to be already in the database
         k = self.Session.query(A_Key).filter(A_Key.key == key).first()
 
@@ -307,7 +330,7 @@ class ActivityProtocol2(Protocol):
         version = 1
 
         # Try to get the geometry
-        try:
+        if 'geometry' in activity and activity['geometry'] is not None:
             geom = geojson.loads(json.dumps(activity['geometry']),
                                  object_hook=geojson.GeoJSON.to_instance)
 
@@ -315,7 +338,7 @@ class ActivityProtocol2(Protocol):
             shape = asShape(geom)
             # Create a new activity and add a representative point to the activity
             new_activity = Activity(activity_identifier=identifier, version=version, point=shape.representative_point().wkt)
-        except KeyError:
+        else:
             # If no geometry is submitted, create a new activity without a geometry
             new_activity = Activity(activity_identifier=identifier, version=version)
 
@@ -357,24 +380,8 @@ class ActivityProtocol2(Protocol):
                 key = tag['key']
                 value = tag['value']
 
-                # Check if the key and value are allowed by the global yaml
-                if not self._key_value_is_valid(request, key, value):
-                    continue
-
-                # The key has to be already in the database
-                k = self.Session.query(A_Key).filter(A_Key.key == key).first()
-
-                # If the value is not yet in the database, create a new value
-                v = self.Session.query(A_Value).filter(A_Value.value == unicode(value)).first()
-                if v is None:
-                    v = A_Value(value=value)
-                    v.fk_language = 1
-
-                # Create a new tag with key and value and append it to the tag group
-                a_tag = A_Tag()
-                db_taggroup.tags.append(a_tag)
-                a_tag.key = k
-                a_tag.value = v
+                # Create the new tag
+                a_tag = self._create_tag(request, db_taggroup.tags, key, value)
 
                 # Check if the current tag is the main tag of this tag group. If
                 # yes, set the main_tag attribute to this tag
@@ -403,7 +410,7 @@ class ActivityProtocol2(Protocol):
         - a list of (filtered) Activities
         - an Integer with the count of Activities
         """
-        
+
         # If no custom filter was provided, get filters from request
         if filter is None:
             # Get the status status
@@ -424,7 +431,9 @@ class ActivityProtocol2(Protocol):
                                 if 'sh_filter_length' in filter else 0)
 
         # Get the order
-        order_query, order_numbers = self._get_order(request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value)
+        order_query, order_numbers = self._get_order(
+                                                     request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value, A_Changeset
+                                                     )
         
         # Find id's of relevant activities by joining with prepared filters.
         # If result is ordered, do an Outer Join to attach ordered attributes.
@@ -474,8 +483,8 @@ class ActivityProtocol2(Protocol):
             }
             # Use StakeholderProtocol to query identifiers
             sp = StakeholderProtocol(self.Session)
-            sh_ids, count = sp._query(request, filter = sh_filter_dict,
-                only_guid = True)
+            sh_ids, count = sp._query(request, filter=sh_filter_dict,
+                                      only_guid=True)
             sh_subquery = self.Session.query(Stakeholder.id.label("sh_id")).\
                 filter(Stakeholder.stakeholder_identifier.in_(sh_ids)).\
                 subquery()
@@ -539,8 +548,11 @@ class ActivityProtocol2(Protocol):
 
         # Special case: UID was provided, create new 'relevant_activities'
         if uid is not None:
-            relevant_activities = self.Session.query(Activity.id.label('order_id'),
-                                                     func.char_length('').label('order_value')).\
+            relevant_activities = self.Session.query(
+                                                     Activity.id.label('order_id'),
+                                                     func.char_length('').label('order_value'),
+                                                     Activity.fk_status
+                                                     ).\
                 filter(Activity.activity_identifier == uid).\
                 filter(Activity.fk_status.in_(status_filter))
 
@@ -554,11 +566,31 @@ class ActivityProtocol2(Protocol):
             relevant_activities = relevant_activities.join(sh_role_filter, 
                                                            sh_role_filter.c.role_id == Activity.id)
 
+        # Apply filter by username if set
+        if self._get_user_filter(request, Activity, A_Changeset) is not None:
+            user_filter = self._get_user_filter(request, Activity, A_Changeset)
+            relevant_activities = relevant_activities.join(user_filter)
+
         # Count relevant activities (before applying limit and offset)
         count = relevant_activities.count()
         
         # Apply limit and offset
         relevant_activities = relevant_activities.limit(limit).offset(offset)
+
+        # Add pending activities by current user to selection if requested
+        pending_by_user = self._get_pending_by_user(request)
+        if pending_by_user is True and uid is not None and request.user is not None:
+            pending_activities = self.Session.query(
+                                                    Activity.id.label('order_id'),
+                                                    func.char_length('').label('order_value'),
+                                                    Activity.fk_status
+                                                    ).\
+            join(A_Changeset).\
+            filter(A_Changeset.fk_user == request.user.id).\
+            filter(Activity.fk_status == 1).\
+            filter(Activity.activity_identifier == uid)
+
+            relevant_activities = pending_activities.union(relevant_activities)
 
         # Prepare query to translate keys and values
         localizer = get_localizer(request)
@@ -583,6 +615,7 @@ class ActivityProtocol2(Protocol):
         query = self.Session.query(Activity.id.label("id"),
                                    Activity.activity_identifier.label("activity_identifier"),
                                    Activity.point.label("geometry"),
+                                   Status.name.label("status"),
                                    A_Changeset.timestamp.label("timestamp"),
                                    Activity.version.label("version"),
                                    A_Tag_Group.id.label("taggroup"),
@@ -596,6 +629,7 @@ class ActivityProtocol2(Protocol):
                                    involvement_query.c.stakeholder_identifier.label("stakeholder_identifier"),
                                    involvement_query.c.role_name.label("stakeholder_role")).\
             join(relevant_activities, relevant_activities.c.order_id == Activity.id).\
+            join(Status).\
             join(A_Changeset).\
             join(A_Tag_Group).\
             join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
@@ -611,6 +645,29 @@ class ActivityProtocol2(Protocol):
                 query = query.order_by(desc(relevant_activities.c.order_value))
             else:
                 query = query.order_by(asc(relevant_activities.c.order_value))
+
+        # Decide if keys will be filtered according to current profile or not
+        attrs = self._get_attrs(request)
+        restricted_keys = None
+        if attrs is not None:
+            if attrs is True:
+                # Show all attributes
+                restricted_keys = None
+            else:
+                # Show only selected attributes (not yet supported)
+                restricted_keys = attrs
+        else:
+            if unauthenticated_userid(request) is None:
+                # Not logged in: filter the keys according to profile
+                restricted_keys = get_current_keys(
+                    request, 'a', get_current_profile(request)
+                )
+            else:
+                if self._check_moderator(request) is False:
+                    # Logged in but not moderator: filter keys by profile
+                    restricted_keys = get_current_keys(
+                        request, 'a', get_current_profile(request)
+                    )
 
         activities = []
         
@@ -655,21 +712,26 @@ class ActivityProtocol2(Protocol):
 
             # If no existing ActivityFeature found, create new one
             if activity == None:
-                activity = ActivityFeature2(uid, order_value, geometry=g, version=version)
+                activity = ActivityFeature2(
+                                            uid, order_value, geometry=g, version=version,
+                                            timestamp=i.timestamp, status=i.status
+                                            )
                 activities.append(activity)
 
             # Check if there is already this tag group present in the current
             # activity
+            # Also add it only if key (original) is not filtered by profile
             taggroup = None
-            if activity.find_taggroup_by_id(taggroup_id) is not None:
-                taggroup = activity.find_taggroup_by_id(taggroup_id)
-            else:
-                taggroup = TagGroup(taggroup_id, i.main_tag)
-                activity.add_taggroup(taggroup)
+            if restricted_keys is None or i.key in restricted_keys:
+                if activity.find_taggroup_by_id(taggroup_id) is not None:
+                    taggroup = activity.find_taggroup_by_id(taggroup_id)
+                else:
+                    taggroup = TagGroup(taggroup_id, i.main_tag)
+                    activity.add_taggroup(taggroup)
 
             # Because of Involvements, the same Tags appears for each Involvement, so
             # add it only once to TagGroup
-            if taggroup.get_tag_by_id(i.tag) is None:
+            if taggroup is not None and taggroup.get_tag_by_id(i.tag) is None:
                 taggroup.add_tag(Tag(i.tag, key, value))
             
             # Determine if and how detailed Involvements are to be displayed
@@ -689,6 +751,19 @@ class ActivityProtocol2(Protocol):
                         if activity.find_involvement(i.stakeholder_identifier, i.stakeholder_role) is None:
                             activity.add_involvement(Inv(i.stakeholder_identifier, None, i.stakeholder_role))
 
+        # If pending activities are shown for current user, add them to
+        # active version
+        if pending_by_user is True:
+            pending = []
+            active = None
+            for a in activities:
+                if a.get_status() == 'pending':
+                    pending.append(a)
+                elif a.get_status() == 'active':
+                    active = a
+            active.set_pending(pending)
+            activities = [active]
+
         return activities, count
 
     def _history(self, request, uid, status_list=None, versions=None,
@@ -696,7 +771,7 @@ class ActivityProtocol2(Protocol):
 
         # If no status provided in request.params, look in function parameters
         # or use default
-        if self._get_status(request) is None:
+        if self._get_status(request, True) is None:
             if status_list is None:
                 status_list = ['active', 'overwritten']
             status_filter = self.Session.query(Status).\
@@ -704,7 +779,7 @@ class ActivityProtocol2(Protocol):
                 subquery()
         else:
             status_filter = self.Session.query(Status).\
-                filter(or_(* self._get_status(request))).\
+                filter(or_(* self._get_status(request, True))).\
                 subquery()
 
         # Prepare query to translate keys and values
@@ -761,6 +836,29 @@ class ActivityProtocol2(Protocol):
         if versions is not None:
             query = query.filter(Activity.version.in_(versions))
         
+        # Decide if keys will be filtered according to current profile or not
+        attrs = self._get_attrs(request)
+        restricted_keys = None
+        if attrs is not None:
+            if attrs is True:
+                # Show all attributes
+                restricted_keys = None
+            else:
+                # Show only selected attributes (not yet supported)
+                restricted_keys = attrs
+        else:
+            if unauthenticated_userid(request) is None:
+                # Not logged in: filter the keys according to profile
+                restricted_keys = get_current_keys(
+                    request, 'a', get_current_profile(request)
+                )
+            else:
+                if self._check_moderator(request) is False:
+                    # Logged in but not moderator: filter keys according to profile
+                    restricted_keys = get_current_keys(
+                        request, 'a', get_current_profile(request)
+                    )
+
         # Collect the data from query
         data = []
         for i in query.all():
@@ -805,16 +903,18 @@ class ActivityProtocol2(Protocol):
             
             # Check if there is already this tag group present in the current
             # activity
+            # Also add it only if key (original) is not filtered by profile
             taggroup = None
-            if activity.find_taggroup_by_id(taggroup_id) is not None:
-                taggroup = activity.find_taggroup_by_id(taggroup_id)
-            else:
-                taggroup = TagGroup(taggroup_id, i.main_tag)
-                activity.add_taggroup(taggroup)
+            if restricted_keys is None or i.key in restricted_keys:
+                if activity.find_taggroup_by_id(taggroup_id) is not None:
+                    taggroup = activity.find_taggroup_by_id(taggroup_id)
+                else:
+                    taggroup = TagGroup(taggroup_id, i.main_tag)
+                    activity.add_taggroup(taggroup)
 
             # Because of Involvements, the same Tags appear for each Involvement, so
             # add it only once to TagGroup
-            if taggroup.get_tag_by_id(i.tag) is None:
+            if taggroup is not None and taggroup.get_tag_by_id(i.tag) is None:
                 taggroup.add_tag(Tag(i.tag, key, value))
         
             # Determine if and how detailed Involvements are to be displayed
@@ -904,10 +1004,12 @@ class ActivityProtocol2(Protocol):
         if userid is not None:
             profile_filters = []
             profiles = self.Session.query(Profile).\
-                filter(Profile.users.any(username = userid))
+                filter(Profile.users.any(username=userid))
             for p in profiles.all():
                 profile_filters.append(functions.intersects(Activity.point, 
                                        p.geometry))
+                if p.code == 'global':
+                    profile_filters.append(Activity.point == None)
             return profile_filters
 
         return None
@@ -922,6 +1024,8 @@ class ActivityProtocol2(Protocol):
         profile_code = get_current_profile(request)
         
         if profile_code is not None:
+            if profile_code == 'global':
+                return None
             # Try to find profile in DB
             profile_db = self.Session.query(Profile).\
                 filter(Profile.code == profile_code).first()
@@ -930,17 +1034,6 @@ class ActivityProtocol2(Protocol):
         
         return None
 
-    def _key_value_is_valid(self, request, key, value):
-        #@todo:  FIX ME if needed at all.
-        """
-        # Read the global configuration file
-        #global_stream = open(config_file_path(request), 'r')
-        #global_config = yaml.load(global_stream)
-
-        log.debug(global_config)
-        """
-        return True
-    
     def _handle_involvements(self, request, old_version, new_version, inv_change, implicit=False):
         """
         Handle the involvements of an Activity.
@@ -1048,7 +1141,7 @@ class ActivityProtocol2(Protocol):
 
         if 'geometry' in activity_dict:
             geojson_obj = geojson.loads(json.dumps(activity_dict['geometry']),
-                                       object_hook=geojson.GeoJSON.to_instance)
+                                        object_hook=geojson.GeoJSON.to_instance)
             geojson_shape = asShape(geojson_obj)
 
             return geojson_shape.representative_point().wkt

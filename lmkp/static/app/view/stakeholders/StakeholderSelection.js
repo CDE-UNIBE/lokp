@@ -1,4 +1,4 @@
-Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
+ Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
     extend: 'Ext.window.Window',
 
     alias: ['widget.lo_stakeholderselection'],
@@ -19,6 +19,8 @@ Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
     layout: 'border',
 
     height: 600,
+
+    title: 'Select Stakeholder',
 
     width: 400,
 
@@ -70,13 +72,8 @@ Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
         var formpanel = Ext.create('Ext.form.Panel', {
             items: [{
                 displayField: 'id',
-                // Template for the content inside text field
-                displayTpl: Ext.create('Ext.XTemplate',
-                    '<tpl for=".">',
-                    '{id}',
-                    '</tpl>'
-                    ),
                 fieldLabel: 'Search',
+                flex: 1,
                 hideTrigger: true,
                 itemId: 'searchTextfield',
                 listConfig: {
@@ -97,6 +94,7 @@ Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
 
 
                 },
+                margin: 5,
                 minChar: 3,
                 queryMode: 'remote',
                 queryParam: 'sh__' + Lmkp.ts.msg("stakeholder-name") + '__ilike',
@@ -111,6 +109,7 @@ Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
                 valueField: 'id',
                 xtype: 'combo'
             }],
+            layout: 'hbox',
             region: 'center'
         });
 
