@@ -525,7 +525,7 @@ def _get_field_config(Key, Value, name, config, language, mandatory=False):
                                translated_subquery.c.translated_value.label("translated_value")).\
             filter(Value.value.in_(all_vals)).\
             filter(Value.fk_value == None).\
-            outerjoin(translated_subquery, translated_subquery.c.original_id == A_Value.id)
+            outerjoin(translated_subquery, translated_subquery.c.original_id == Value.id)
         
         # Fill vales in array
         store = []
