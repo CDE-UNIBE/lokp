@@ -43,6 +43,14 @@ Ext.define('Lmkp.view.editor.Detail', {
 
         if (data) {
 
+            // Activity or Stakeholder?
+            var xtype = null;
+            if (data.modelName == 'Lmkp.model.Activity') {
+                xtype = 'lo_activitypanel';
+            } else if (data.modelName == 'Lmkp.model.Stakeholder') {
+                xtype = 'lo_stakeholderpanel';
+            }
+
             // Set the current selection to current
             this.current = data;
 
@@ -51,7 +59,7 @@ Ext.define('Lmkp.view.editor.Detail', {
 
             // Add the panel for the current activity
             panel.add({
-                xtype: 'lo_activitypanel',
+                xtype: xtype,
                 contentItem: data,
                 border: 0,
                 bodyPadding: 0,
