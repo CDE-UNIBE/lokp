@@ -127,6 +127,10 @@ def main(global_config, ** settings):
     # Add a new user
     config.add_route('add_user', '/users/add', request_method='POST')
 
+    # Codes
+    config.add_route('codes_files', '/codes/files')
+    config.add_route('codes_add', '/codes/add')
+
     # A WMS proxy
     config.add_route('wms_proxy', '/geoserver/lo/wms', request_method='GET')
 

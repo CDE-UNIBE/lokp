@@ -18,6 +18,7 @@ Ext.onReady(function(){
         'activities.NewActivity',
         'activities.TagGroup',
         'administrator.Main',
+        'administrator.Code',
         'editor.BaseLayers',
         'editor.ContextLayers',
         'editor.Detail',

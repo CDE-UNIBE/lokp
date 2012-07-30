@@ -91,6 +91,14 @@ span.deleted {
     color: red;
 }
 
+span.green {
+    color: green;
+}
+
+span.red {
+    color: red;
+}
+
 div.toolbar_username {
     background-color: transparent;
     font-size: 11px;
