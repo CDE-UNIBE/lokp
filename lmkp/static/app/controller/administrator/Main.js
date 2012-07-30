@@ -142,7 +142,7 @@ Ext.define('Lmkp.controller.administrator.Main', {
         
         var win = Ext.create('Ext.window.Window', {
             title: 'Add to DB',
-            closable: false,
+            closable: true,
             layout: 'fit',
             loader: {
                 url: panel.getPostUrl(),
