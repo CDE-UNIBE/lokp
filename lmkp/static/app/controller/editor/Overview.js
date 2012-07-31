@@ -518,56 +518,59 @@ Ext.define('Lmkp.controller.editor.Overview', {
     getOperator: function(xType) {
         // prepare values of the store depending on selected xType
         switch (xType) {
-            case "combo": // possibilities: == (eq) | != (ne)
+            case "combobox": // possibilities: like | nlike
                 var data = [
-                {
-                    'queryOperator': '__eq=',
-                    'displayOperator': '=='
-                },
-
-                {
-                    'queryOperator': '__ne=',
-                    'displayOperator': '!='
-                }
+                    {
+                        'queryOperator': '__like=',
+                        'displayOperator': Lmkp.ts.msg('filter-operator_is')
+                    }, {
+                        'queryOperator': '__nlike=',
+                        'displayOperator': Lmkp.ts.msg('filter-operator_is-not')
+                    }
                 ];
                 break;
-            case "textfield": // possibilities: == (like)
-                var data = [{
-                    'queryOperator': '__like=',
-                    'displayOperator': '=='
-                }];
+            case "textfield": // possibilities: like | ilike | nlike | nilike
+                var data = [
+                    {
+                        'queryOperator': '__like=',
+                        'displayOperator': 
+                            Lmkp.ts.msg('filter-operator_contains-case-sensitive')
+                    }, {
+                        'queryOperator': '__ilike=',
+                        'displayOperator': 
+                            Lmkp.ts.msg('filter-operator_contains-case-insensitive')
+                    }, {
+                        'queryOperator': '__nlike=',
+                        'displayOperator': 
+                            Lmkp.ts.msg('filter-operator_contains-not-case-sensitive')
+                    }, {
+                        'queryOperator': '__nilike=',
+                        'displayOperator': 
+                            Lmkp.ts.msg('filter-operator_contains-not-case-insensitive')
+                    }
+                ];
                 break;
             default: // default is also used for numberfield
                 var data = [
-                {
-                    'queryOperator': '__eq=',
-                    'displayOperator': '=='
-                },
-
-                {
-                    'queryOperator': '__lt=',
-                    'displayOperator': '<'
-                },
-
-                {
-                    'queryOperator': '__lte=',
-                    'displayOperator': '<='
-                },
-
-                {
-                    'queryOperator': '__gte=',
-                    'displayOperator': '>='
-                },
-
-                {
-                    'queryOperator': '__gt=',
-                    'displayOperator': '>'
-                },
-
-                {
-                    'queryOperator': '__ne=',
-                    'displayOperator': '!='
-                },
+                    {
+                        'queryOperator': '__eq=',
+                        'displayOperator': Lmkp.ts.msg('filter-operator_equals')
+                    }, {
+                        'queryOperator': '__lt=',
+                        'displayOperator': Lmkp.ts.msg('filter-operator_less-than')
+                    }, {
+                        'queryOperator': '__lte=',
+                        'displayOperator': Lmkp.ts.msg('filter-operator_less-than-or-equal')
+                    }, {
+                        'queryOperator': '__gte=',
+                        'displayOperator': Lmkp.ts.msg('filter-operator_greater-than-or-equal')
+                    }, {
+                        'queryOperator': '__gt=',
+                        'displayOperator': Lmkp.ts.msg('filter-operator_greater-than')
+                    }, {
+                        'queryOperator': '__ne=',
+                        'displayOperator': Lmkp.ts.msg('filter-operator_not-equals')
+                    }
                 ];
                 break;
         }
@@ -601,7 +604,8 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 name: fieldName,
                 store: selectionValues,
                 queryMode: 'local',
-                editable: false,
+                editable: true,
+                forceSelection: true,
                 value: selectionValues[0][0],
                 margin: '0 5 0 0'
             });
