@@ -1,4 +1,4 @@
-ISO country codes;";";stakeholder
+ISO country codes for activity;";";activity
 AFG;Afghanistan
 ALA;Åland
 ALB;Albania
