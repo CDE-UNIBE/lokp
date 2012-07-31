@@ -186,7 +186,9 @@ class Protocol(object):
             str_map = {
                 # See http://www.postgresql.org/docs/9.1/static/functions-matching.html#FUNCTIONS-POSIX-REGEXP
                 'like': v.value.op("~")(value),
-                'ilike': v.value.op("~*")(value)
+                'ilike': v.value.op("~*")(value),
+                'nlike': v.value.op("!~")(value),
+                'nilike': v.value.op("!~*")(value)
             }
 
             # number comparison

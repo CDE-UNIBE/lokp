@@ -105,7 +105,20 @@ def ui_messages(request):
         'review-diff_attr_added': _('review-diff_attr_added', default='Attribute(s) added'),
         'review-diff_attr_deleted': _('review-diff_attr_deleted', default='Attribute(s) deleted'),
         'reviewdecision-approved': _('reviewdecision-approved', default='approved'),
-        'reviewdecision-rejected': _('reviewdecision-rejected', default='rejected')
+        'reviewdecision-rejected': _('reviewdecision-rejected', default='rejected'),
+        # filter operators
+        'filter-operator_is': _('filter-operator_is', default='is'),
+        'filter-operator_is-not': _('filter-operator_is-not', default='is not'),
+        'filter-operator_contains-case-sensitive': _('filter-operator_contains-case-sensitive', default='contains (case sensitive)'),
+        'filter-operator_contains-case-insensitive': _('filter-operator_contains-case-insensitive', default='contains (case insensitive)'),
+        'filter-operator_contains-not-case-sensitive': _('filter-operator_contains-not-case-sensitive', default='contains not (case sensitive)'),
+        'filter-operator_contains-not-case-insensitive': _('filter-operator_contains-not-case-insensitive', default='contains not (case insensitive)'),
+        'filter-operator_equals': _('filter-operator_equals', default='equals'),
+        'filter-operator_less-than': _('filter-operator_less-than', default='less than'),
+        'filter-operator_less-than-or-equal': _('filter-operator_less-than-or-equal', default='less than or equal'),
+        'filter-operator_greater-than-or-equal': _('filter-operator_greater-than-or-equal', default='greater than or equal'),
+        'filter-operator_greater-than': _('filter-operator_greater-than', default='greater than'),
+        'filter-operator_not-equals': _('filter-operator_not-equals', default='not equals')
     }
 
     # Get the localizer
