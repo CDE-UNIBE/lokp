@@ -35,6 +35,9 @@ Ext.define('Lmkp.view.activities.History', {
                 xtype = 'lo_stakeholderpanel';
             }
 
+            // Remove any existing panels
+            this.removeAll();
+
             var panels = [];
             for (var i in data.data) {
                 var first = (i == 0);
