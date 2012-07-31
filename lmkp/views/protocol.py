@@ -509,7 +509,7 @@ class Protocol(object):
             locale_config = yaml.load(locale_stream)
 
             # If there is a localized config file then merge it with the global one
-            self.configuration = merge_profiles(global_config, locale_config)
+            self.configuration = merge_profiles(self.configuration, locale_config)
 
         except IOError:
             # No localized configuration file found!
