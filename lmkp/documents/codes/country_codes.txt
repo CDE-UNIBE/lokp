@@ -1,4 +1,4 @@
-﻿This is some description;";";stakeholder
+ISO country codes;";";stakeholder
 AFG;Afghanistan
 ALA;Åland
 ALB;Albania
