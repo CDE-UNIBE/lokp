@@ -32,7 +32,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
@@ -44,7 +44,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 }
@@ -63,7 +63,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "Republic of Korea"
+                        "value": "South Korea"
                     },
                     "op": "add",
                     "tags": [
@@ -75,7 +75,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "Republic of Korea"
+                            "value": "South Korea"
                         }
                     ]
                 }
@@ -94,14 +94,14 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "Republic of Korea"
+                        "value": "South Korea"
                     },
                     "op": "add",
                     "tags": [
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "Republic of Korea"
+                            "value": "South Korea"
                         }
                     ]
                 }
@@ -151,7 +151,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United States of America"
+                        "value": "United States"
                     },
                     "op": "add",
                     "tags": [
@@ -163,7 +163,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United States of America"
+                            "value": "United States"
                         }
                     ]
                 }
@@ -351,7 +351,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "Republic of Korea"
+                        "value": "South Korea"
                     },
                     "op": "add",
                     "tags": [
@@ -363,7 +363,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "Republic of Korea"
+                            "value": "South Korea"
                         }
                     ]
                 }
@@ -612,14 +612,14 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "Republic of Korea"
+                        "value": "South Korea"
                     },
                     "op": "add",
                     "tags": [
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "Republic of Korea"
+                            "value": "South Korea"
                         }
                     ]
                 }
@@ -638,14 +638,14 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "Republic of Korea"
+                        "value": "South Korea"
                     },
                     "op": "add",
                     "tags": [
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "Republic of Korea"
+                            "value": "South Korea"
                         }
                     ]
                 }
@@ -664,7 +664,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "Republic of Korea"
+                        "value": "South Korea"
                     },
                     "op": "add",
                     "tags": [
@@ -676,7 +676,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "Republic of Korea"
+                            "value": "South Korea"
                         }
                     ]
                 }
@@ -845,14 +845,14 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United States of America"
+                        "value": "United States"
                     },
                     "op": "add",
                     "tags": [
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United States of America"
+                            "value": "United States"
                         }
                     ]
                 }
@@ -1127,7 +1127,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
@@ -1144,7 +1144,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 },
@@ -1182,7 +1182,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
@@ -1199,7 +1199,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 },
@@ -1544,14 +1544,14 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 }
@@ -1589,14 +1589,14 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 }
@@ -1639,14 +1639,14 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 }
@@ -4216,7 +4216,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United States of America"
+                        "value": "United States"
                     },
                     "op": "add",
                     "tags": [
@@ -4228,7 +4228,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United States of America"
+                            "value": "United States"
                         }
                     ]
                 }
@@ -4247,7 +4247,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United States of America"
+                        "value": "United States"
                     },
                     "op": "add",
                     "tags": [
@@ -4259,7 +4259,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United States of America"
+                            "value": "United States"
                         }
                     ]
                 }
@@ -4335,7 +4335,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United States of America"
+                        "value": "United States"
                     },
                     "op": "add",
                     "tags": [
@@ -4347,7 +4347,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United States of America"
+                            "value": "United States"
                         }
                     ]
                 }
@@ -4366,7 +4366,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "Democratic People's Republic of Korea"
+                        "value": "South Korea"
                     },
                     "op": "add",
                     "tags": [
@@ -4378,7 +4378,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "Democratic People's Republic of Korea"
+                            "value": "South Korea"
                         }
                     ]
                 }
@@ -4557,7 +4557,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United States of America"
+                        "value": "United States"
                     },
                     "op": "add",
                     "tags": [
@@ -4569,7 +4569,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United States of America"
+                            "value": "United States"
                         }
                     ]
                 }
@@ -5531,7 +5531,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
@@ -5543,7 +5543,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 }
@@ -5629,7 +5629,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United States of America"
+                        "value": "United States"
                     },
                     "op": "add",
                     "tags": [
@@ -5641,7 +5641,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United States of America"
+                            "value": "United States"
                         }
                     ]
                 }
@@ -5765,7 +5765,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United States of America"
+                        "value": "United States"
                     },
                     "op": "add",
                     "tags": [
@@ -5777,7 +5777,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United States of America"
+                            "value": "United States"
                         }
                     ]
                 }
@@ -5953,7 +5953,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
@@ -5965,7 +5965,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 }
@@ -6051,7 +6051,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
@@ -6063,7 +6063,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 },
@@ -6296,14 +6296,14 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "Viet Nam"
+                        "value": "Vietnam"
                     },
                     "op": "add",
                     "tags": [
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "Viet Nam"
+                            "value": "Vietnam"
                         }
                     ]
                 }
@@ -6789,7 +6789,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
@@ -6801,14 +6801,14 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 },
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Republic of Tanzania"
+                        "value": "Tanzania"
                     },
                     "op": "add",
                     "tags": [
@@ -6820,7 +6820,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Republic of Tanzania"
+                            "value": "Tanzania"
                         }
                     ]
                 }
@@ -6839,7 +6839,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Republic of Tanzania"
+                        "value": "Tanzania"
                     },
                     "op": "add",
                     "tags": [
@@ -6851,21 +6851,21 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Republic of Tanzania"
+                            "value": "Tanzania"
                         }
                     ]
                 },
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 }
@@ -7110,7 +7110,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
@@ -7127,7 +7127,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 }
@@ -7146,7 +7146,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
@@ -7158,7 +7158,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 }
@@ -7222,7 +7222,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
@@ -7234,14 +7234,14 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 },
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Republic of Tanzania"
+                        "value": "Tanzania"
                     },
                     "op": "add",
                     "tags": [
@@ -7253,7 +7253,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Republic of Tanzania"
+                            "value": "Tanzania"
                         }
                     ]
                 }
@@ -7272,7 +7272,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Republic of Tanzania"
+                        "value": "Tanzania"
                     },
                     "op": "add",
                     "tags": [
@@ -7284,7 +7284,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Republic of Tanzania"
+                            "value": "Tanzania"
                         }
                     ]
                 },
@@ -7348,7 +7348,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Republic of Tanzania"
+                        "value": "Tanzania"
                     },
                     "op": "add",
                     "tags": [
@@ -7360,7 +7360,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Republic of Tanzania"
+                            "value": "Tanzania"
                         }
                     ]
                 }
@@ -7379,7 +7379,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United States of America"
+                        "value": "United States"
                     },
                     "op": "add",
                     "tags": [
@@ -7396,14 +7396,14 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United States of America"
+                            "value": "United States"
                         }
                     ]
                 },
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United States of America"
+                        "value": "United States"
                     },
                     "op": "add",
                     "tags": [
@@ -7415,7 +7415,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United States of America"
+                            "value": "United States"
                         }
                     ]
                 },
@@ -7453,7 +7453,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United States of America"
+                        "value": "United States"
                     },
                     "op": "add",
                     "tags": [
@@ -7470,14 +7470,14 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United States of America"
+                            "value": "United States"
                         }
                     ]
                 },
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United States of America"
+                        "value": "United States"
                     },
                     "op": "add",
                     "tags": [
@@ -7489,7 +7489,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United States of America"
+                            "value": "United States"
                         }
                     ]
                 },
@@ -7527,7 +7527,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United States of America"
+                        "value": "United States"
                     },
                     "op": "add",
                     "tags": [
@@ -7544,14 +7544,14 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United States of America"
+                            "value": "United States"
                         }
                     ]
                 },
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United States of America"
+                        "value": "United States"
                     },
                     "op": "add",
                     "tags": [
@@ -7563,7 +7563,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United States of America"
+                            "value": "United States"
                         }
                     ]
                 },
@@ -7601,7 +7601,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Republic of Tanzania"
+                        "value": "Tanzania"
                     },
                     "op": "add",
                     "tags": [
@@ -7613,7 +7613,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Republic of Tanzania"
+                            "value": "Tanzania"
                         }
                     ]
                 },
@@ -7646,7 +7646,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Republic of Tanzania"
+                        "value": "Tanzania"
                     },
                     "op": "add",
                     "tags": [
@@ -7658,7 +7658,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Republic of Tanzania"
+                            "value": "Tanzania"
                         }
                     ]
                 }
@@ -8208,7 +8208,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Republic of Tanzania"
+                        "value": "Tanzania"
                     },
                     "op": "add",
                     "tags": [
@@ -8220,7 +8220,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Republic of Tanzania"
+                            "value": "Tanzania"
                         }
                     ]
                 }
@@ -8270,14 +8270,14 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Republic of Tanzania"
+                        "value": "Tanzania"
                     },
                     "op": "add",
                     "tags": [
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Republic of Tanzania"
+                            "value": "Tanzania"
                         }
                     ]
                 }
@@ -8296,7 +8296,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Republic of Tanzania"
+                        "value": "Tanzania"
                     },
                     "op": "add",
                     "tags": [
@@ -8308,7 +8308,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Republic of Tanzania"
+                            "value": "Tanzania"
                         }
                     ]
                 }
@@ -8327,7 +8327,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Republic of Tanzania"
+                        "value": "Tanzania"
                     },
                     "op": "add",
                     "tags": [
@@ -8339,7 +8339,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Republic of Tanzania"
+                            "value": "Tanzania"
                         }
                     ]
                 }
@@ -8458,14 +8458,14 @@
                 {
                     "main_tag": {
                         "key": "Name",
-                        "value": "Unilever Group / PHC (Plantations et Huileries du Congo)"
+                        "value": "Unilever Group / PHC (Plantations et Huileries du Republic of Congo)"
                     },
                     "op": "add",
                     "tags": [
                         {
                             "key": "Name",
                             "op": "add",
-                            "value": "Unilever Group / PHC (Plantations et Huileries du Congo)"
+                            "value": "Unilever Group / PHC (Plantations et Huileries du Republic of Congo)"
                         }
                     ]
                 }
@@ -8495,7 +8495,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
@@ -8507,7 +8507,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 }
@@ -8655,7 +8655,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United States of America"
+                        "value": "United States"
                     },
                     "op": "add",
                     "tags": [
@@ -8667,7 +8667,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United States of America"
+                            "value": "United States"
                         }
                     ]
                 },
@@ -8693,7 +8693,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "Republic of Korea"
+                        "value": "South Korea"
                     },
                     "op": "add",
                     "tags": [
@@ -8705,7 +8705,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "Republic of Korea"
+                            "value": "South Korea"
                         }
                     ]
                 }
@@ -8786,7 +8786,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
@@ -8803,14 +8803,14 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 },
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Republic of Tanzania"
+                        "value": "Tanzania"
                     },
                     "op": "add",
                     "tags": [
@@ -8822,7 +8822,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Republic of Tanzania"
+                            "value": "Tanzania"
                         }
                     ]
                 }
@@ -9414,7 +9414,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
@@ -9426,7 +9426,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 }
@@ -9516,7 +9516,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "Syrian Arab Republic"
+                        "value": "Syria"
                     },
                     "op": "add",
                     "tags": [
@@ -9528,7 +9528,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "Syrian Arab Republic"
+                            "value": "Syria"
                         }
                     ]
                 }
@@ -9609,7 +9609,7 @@
                 {
                     "main_tag": {
                         "key": "Country",
-                        "value": "United Kingdom of Great Britain and Northern Ireland"
+                        "value": "United Kingdom"
                     },
                     "op": "add",
                     "tags": [
@@ -9621,7 +9621,7 @@
                         {
                             "key": "Country",
                             "op": "add",
-                            "value": "United Kingdom of Great Britain and Northern Ireland"
+                            "value": "United Kingdom"
                         }
                     ]
                 }
