@@ -278,7 +278,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
         var valueField = this.getValueField(records[0], xtype);
         attributePanel.insert(2, valueField);
         // reset ActivateButton
-        this.resetActivateButton(combobox, records);
+        this.resetActivateButton(combobox);
     },
 
     renderActivityCountryColumn: function(comp) {
@@ -602,7 +602,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 store: selectionValues,
                 queryMode: 'local',
                 editable: false,
-                value: selectionValues[0],
+                value: selectionValues[0][0],
                 margin: '0 5 0 0'
             });
         } else {                    // no categories available, create field based on xtype
