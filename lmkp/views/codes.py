@@ -125,7 +125,7 @@ def _insert_code(value, code, TableItem, code_language):
     # Query the database to find english entry of value
     english_value_q = Session.query(TableItem).\
         filter(TableItem.value == value).\
-        filter(TableItem.fk_sh_value == None).\
+        filter(TableItem.fk_value == None).\
         filter(TableItem.fk_language == 1)
     try:
         english_value = english_value_q.one()
