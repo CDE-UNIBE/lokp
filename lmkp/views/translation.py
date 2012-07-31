@@ -43,6 +43,7 @@ def ui_messages(request):
         'edit': _('edit', default='edit'),
         'details': _('details', default='details'),
         'map-view': _('map-view', default='Map View'),
+        'version': _('version', default='Version'),
         # activities / filtering
         'activities-title': _('activities-title', default='Activities'),
         'activities-table_view': _('activities-table_view', default='Activities Table View'),
