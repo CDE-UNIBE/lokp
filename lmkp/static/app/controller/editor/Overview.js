@@ -48,7 +48,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
 
         this.control({
             'lo_editortablepanel': {
-                render: this.onTablePanelRender
+                //render: this.onTablePanelRender
             },
             'lo_editormappanel': {
                 render: this.onMapPanelRender
