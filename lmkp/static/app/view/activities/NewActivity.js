@@ -49,6 +49,7 @@ Ext.define('Lmkp.view.activities.NewActivity', {
 
     showForm: function(mandatoryStore, completeStore) {
 
+        var me = this;
         var form = this.down('form');
 
         // Delete all existing items
@@ -66,23 +67,29 @@ Ext.define('Lmkp.view.activities.NewActivity', {
             var main_store = Ext.create('Lmkp.store.ActivityConfig');
             main_store.add(all_records);
 
-            form.add({
-                xtype: 'fieldset',
-                border: 0,
-                bodyPadding: 0,
-                padding: 0,
-                margin: 0,
-                items: [
-                    {
-                        xtype: 'lo_newtaggrouppanel',
-                        is_maintag: true,
-                        removable: true,
-                        main_store: main_store,
-                        complete_store: completeStore,
-                        initial_key: record.get('name')
-                    }
-                ]
-            });
+            form.add(me._getFieldset(
+                main_store,
+                completeStore,
+                record.get('name')
+            ));
+        });
+
+        // Add a button to add a new taggroup
+        form.add({
+            xtype: 'fieldset',
+            border: 0,
+            layout: 'hbox',
+            items: [
+                {
+                    xtype: 'panel',
+                    border: 0,
+                    flex: 1
+                }, {
+                    xtype: 'button',
+                    itemId: 'addAdditionalTaggroupButton',
+                    text: '[+] Add'
+                }
+            ]
         });
 
         // After adding all mandatory fields, add the associated stakeholder
@@ -99,5 +106,33 @@ Ext.define('Lmkp.view.activities.NewActivity', {
             title: 'Associated Stakeholders',
             xtype: 'fieldset'
         });
+    },
+
+    _getFieldset: function(mainStore, completeStore, initial_key) {
+        return {
+            xtype: 'fieldset',
+            name: 'taggroupfieldset',
+            border: 0,
+            padding: '0 0 10 0',
+            bodyPadding: 0,
+            margin: 0,
+            items: [
+                {
+                    xtype: 'lo_newtaggrouppanel',
+                    is_maintag: true,
+                    removable: true,
+                    main_store: mainStore,
+                    complete_store: completeStore,
+                    initial_key: initial_key,
+                    right_field: {
+                        xtype: 'button',
+                        name: 'addAdditionalTagButton',
+                        text: '[+] Add',
+                        margin: '0 0 0 5',
+                        tooltip: 'Add additional information'
+                    }
+                }
+            ]
+        }
     }
 });

@@ -43,6 +43,11 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
             }
         });
 
+        // Add an additional field to the right if provided
+        if (this.right_field) {
+            this.add(this.right_field);
+        }
+
         // Set initial key
         if (this.initial_key) {
             this.getKeyField().setValue(this.initial_key);
