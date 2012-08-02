@@ -15,6 +15,7 @@ Ext.require('Ext.layout.container.Column');
 Ext.require('Lmkp.utils.StringFunctions');
 Ext.require('Lmkp.store.ActivityChangesets');
 Ext.require('Lmkp.store.Status');
+Ext.require('Lmkp.view.comments.ReCaptcha');
 Ext.require('Lmkp.view.users.ChangePasswordWindow');
 Ext.require('Lmkp.view.users.UserWindow');
 
