@@ -63,7 +63,8 @@ Ext.define('Lmkp.view.moderator.Review', {
             if (data.data[i].status == 'pending') {
                 pending.push({
                     'current_version': data.data[i].version,
-                    'previous_version': data.data[i].previous_version
+                    'previous_version': data.data[i].previous_version,
+                    'complete': data.data[i].complete
                 });
             }
             if (data.data[i].status == 'active') {
@@ -149,7 +150,8 @@ Ext.define('Lmkp.view.moderator.Review', {
                 }
             }
 
-            // Show panel for review decision
+
+            // Show panel for review decision. 
             var rdStore = Ext.create('Lmkp.store.ReviewDecisions').load();
             this.add({
                 xtype: 'form',
@@ -202,6 +204,16 @@ Ext.define('Lmkp.view.moderator.Review', {
                     }
                 ]
             });
+
+            // Show notice if not all fields are there
+            if (!pending[j].complete) {
+                this.add({
+                    xtype: 'panel',
+                    html: 'This version cannot be approved (set public) because not all mandatory fields are there.',
+                    bodyCls: 'notice',
+                    bodyPadding: 5
+                });
+            }
 
             // If there are multiple changes, show spacer between them
             if (j != pending.length - 1) {

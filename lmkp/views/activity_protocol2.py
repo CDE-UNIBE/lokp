@@ -4,6 +4,7 @@ import geojson
 from lmkp.models.database_objects import *
 from lmkp.views.profile import get_current_profile
 from lmkp.views.config import get_current_keys
+from lmkp.views.config import get_mandatory_keys
 from lmkp.views.protocol import Feature
 from lmkp.views.protocol import Inv
 from lmkp.views.protocol import Protocol
@@ -59,6 +60,7 @@ class ActivityFeature2(Feature):
         self._status = status
         self._diff_info = diff_info
         self._pending = []
+        self._complete = None
 
     def to_table(self):
         """
@@ -97,6 +99,8 @@ class ActivityFeature2(Feature):
             for p in self._pending:
                 pending.append(p.to_table())
             ret['pending'] = pending
+        if self._complete is not None:
+            ret['complete'] = self._complete
 
         # Involvements
         if len(self._involvements) != 0:
@@ -764,6 +768,13 @@ class ActivityProtocol2(Protocol):
             active.set_pending(pending)
             activities = [active]
 
+        # Mark records as complete if requested
+        # TODO: This should go to pending protocol
+        if self._get_mark_complete(request) is True:
+            mandatory_keys = get_mandatory_keys(request, 'a')
+            for a in activities:
+                a.mark_complete(mandatory_keys)
+
         return activities, count
 
     def _history(self, request, uid, status_list=None, versions=None,
@@ -954,6 +965,13 @@ class ActivityProtocol2(Protocol):
                 else:
                     a.create_diff(data[i-1])
         
+        # Mark records as complete if requested
+        # TODO: This should go to pending protocol
+        if self._get_mark_complete(request) is True:
+            mandatory_keys = get_mandatory_keys(request, 'a')
+            for d in data:
+                d.mark_complete(mandatory_keys)
+
         return data, len(data)
 
     def _create_bbox_filter(self, request):

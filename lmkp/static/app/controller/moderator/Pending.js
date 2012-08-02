@@ -29,6 +29,9 @@ Ext.define('Lmkp.controller.moderator.Pending', {
             },
             'lo_moderatorreviewpanel button[name=review_submit]': {
                 click: this.onReviewSubmitButtonClick
+            },
+            'gridpanel gridcolumn[name=completeColumn]': {
+                afterrender: this.renderCompleteColumn
             }
         });
     },
@@ -36,6 +39,16 @@ Ext.define('Lmkp.controller.moderator.Pending', {
     onRender: function(comp){
         this.getPendingActivityGridStore().load();
         this.getPendingStakeholderGridStore().load();
+    },
+
+    renderCompleteColumn: function(comp) {
+        comp.renderer = function(value) {
+            if (value == true) {
+                return 'OK'
+            } else {
+                return '-'
+            }
+        }
     },
     
     onPendingGridSelect: function(rowmodel, record) {
@@ -57,7 +70,8 @@ Ext.define('Lmkp.controller.moderator.Pending', {
                 url: '/' + type + '/history/' + guid,
                 params: {
                     status: 'active,pending,overwritten',
-                    involvements: 'full'
+                    involvements: 'full',
+                    mark_complete: 'true'
                 },
                 method: 'GET',
                 success: function(response) {
