@@ -35,6 +35,12 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
             },
             // grid columns
             columns: [{
+                header: 'Complete',
+                name: 'completeColumn',
+                dataIndex: 'complete',
+                flex: 0,
+                sortable: true
+            }, {
                 header: Lmkp.ts.msg('date-label'),
                 name: 'datecolumn',
                 dataIndex: 'timestamp',
@@ -77,7 +83,13 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
             },
             // grid columns
             columns: [
-            {
+                {
+                header: 'Complete',
+                name: 'completeColumn',
+                dataIndex: 'complete',
+                flex: 0,
+                sortable: true
+            }, {
                 header: Lmkp.ts.msg('date-label'),
                 name: 'datecolumn',
                 dataIndex: 'timestamp',

@@ -65,6 +65,31 @@ def merge_profiles(global_config, locale_config):
 
     return global_config
 
+def get_mandatory_keys(request, item):
+    if item == 'a':
+        config_yaml = ACTIVITY_YAML
+    elif item == 'sh':
+        config_yaml = STAKEHOLDER_YAML
+
+    # Read the global configuration file
+    global_stream = open("%s/%s" % (profile_directory_path(request), config_yaml), 'r')
+    global_config = yaml.load(global_stream)
+
+    if 'fields' not in global_config:
+        return None
+
+    fields = global_config['fields']
+
+    keys = []
+    if 'mandatory' in fields:
+        for (name, config) in fields['mandatory'].iteritems():
+            keys.append(name)
+
+    if len(keys) > 0:
+        return keys
+
+    return None
+
 def get_current_keys(request, item, profile):
     """
     Returns a list of all keys (original, no translation) of a given profile

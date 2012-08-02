@@ -28,7 +28,8 @@ Ext.define('Lmkp.store.PendingActivityGrid', {
         url: '/activities',
         extraParams: {
             status: 'pending',
-            bounds: 'profile'
+            bounds: 'profile',
+            mark_complete: 'true'
         },
         reader: {
             root: 'data',
