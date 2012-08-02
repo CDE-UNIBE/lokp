@@ -4,13 +4,6 @@ fields:
   mandatory:
     Name:
       type: String
-    Project Use:
-      type: String
-      predefined:
-      - food production
-      - tourism
-      - forestry for wood and fiber
-      - agrofuels
     Project Status:
       type: String
       predefined:

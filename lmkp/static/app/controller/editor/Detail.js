@@ -32,7 +32,24 @@ Ext.define('Lmkp.controller.editor.Detail', {
             },
             'lo_editordetailpanel lo_activityhistorypanel': {
                 activate: this.onHistoryTabActivate
+            },
+            'lo_editordetailpanel lo_newactivitypanel': {
+                activate: this.onNewActivityTabActivate
             }
+        });
+    },
+
+    onNewActivityTabActivate: function(panel) {
+        // Create and load a store with all mandatory keys
+        var mandatoryStore = Ext.create('Lmkp.store.ActivityConfig');
+        mandatoryStore.filter('allowBlank', false);
+        mandatoryStore.load(function() {
+            // Create and load a second store with all keys
+            var completeStore = Ext.create('Lmkp.store.ActivityConfig');
+            completeStore.load(function() {
+                // When loaded, show panel
+                panel.showForm(mandatoryStore, completeStore);
+            });
         });
     },
 
