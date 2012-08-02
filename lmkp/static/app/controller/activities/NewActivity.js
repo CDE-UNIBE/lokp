@@ -49,7 +49,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
         if (fieldset && newtaggrouppanel) {
             fieldset.add({
                 xtype: 'lo_newtaggrouppanel',
-                is_maintag: true,
+                is_maintag: false,
                 removable: true,
                 main_store: newtaggrouppanel.main_store,
                 complete_store: newtaggrouppanel.complete_store,
