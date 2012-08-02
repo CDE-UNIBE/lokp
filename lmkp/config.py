@@ -27,3 +27,10 @@ def profile_directory_path(request=None):
     Returns the absolute path to the directory containing the profiles
     """
     return "%s/profiles/" % os.path.dirname(__file__)
+
+def codes_directory_path():
+    """
+    Returns the absolute path to the directory containing the files for code
+    translation
+    """
+    return "%s/documents/codes" % os.path.dirname(__file__)
