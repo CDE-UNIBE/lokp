@@ -149,6 +149,13 @@ class Protocol(object):
 
         return pending_user is not None and pending_user == 'true'
 
+    def _get_mark_complete(self, request):
+
+        mark_complete = request.params.get('mark_complete', None)
+
+        return mark_complete is not None and mark_complete == 'true'
+
+
     def _filter(self, request):
         """
         Returns
@@ -632,6 +639,7 @@ class Feature(object):
         self._diff_info = diff_info
         self._status = status
         self._pending = []
+        self._complete = None
 
     def add_taggroup(self, taggroup):
         """
@@ -676,6 +684,16 @@ class Feature(object):
         if taggroup in self.get_taggroups():
             self.get_taggroups().remove(taggroup)
 
+    def mark_complete(self, mandatory_keys):
+        self._complete = True
+        for k in mandatory_keys:
+            key_found = False
+            for tg in self.get_taggroups():
+                if tg.get_tag_by_key(k) is not None:
+                    key_found = True
+                    break
+            self._complete = key_found and self._complete
+
     def to_table(self):
         """
         Returns a JSON compatible representation of this object
@@ -713,6 +731,8 @@ class Feature(object):
             for p in self._pending:
                 pending.append(p.to_table())
             ret['pending'] = pending
+        if self._complete is not None:
+            ret['complete'] = self._complete
 
         # Involvements
         if len(self._involvements) != 0:
