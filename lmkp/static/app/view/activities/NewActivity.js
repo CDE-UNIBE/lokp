@@ -4,7 +4,8 @@ Ext.define('Lmkp.view.activities.NewActivity', {
     alias: ['widget.lo_newactivitypanel'],
 
     requires: [
-    'Lmkp.view.stakeholders.StakeholderFieldContainer'
+    'Lmkp.view.stakeholders.StakeholderFieldContainer',
+    'Lmkp.view.activities.NewTaggroupPanel'
     ],
 	
     title: 'Add new Activity',
@@ -40,50 +41,98 @@ Ext.define('Lmkp.view.activities.NewActivity', {
                 text: 'Submit'
             }]
         });
-		
-        // load a store containing only the mandatory fields.
-        var mandatoryStore = Ext.create('Lmkp.store.ActivityConfig');
-        mandatoryStore.filter("allowBlank", false);
-        mandatoryStore.load();
-    	
-        // load a store containing only the optional fields.
-        // This is needed to keep track of all the optional fields available.
-        var optionalStore_complete = Ext.create('Lmkp.store.ActivityConfig');
-        // for some reason, 'normal' filtering of stores does not work (asynchronous problem?)
-        // instead, 'filtering' is done manually
-        optionalStore_complete.on('load', function(store) {
-            store.each(function(record) {
-                if (record && record.get('allowBlank') != true) {
-                    store.remove(record);
-                }
-            });
-        });
-        optionalStore_complete.load();
-
-        // create a field for each mandatory attribute.
-        mandatoryStore.on('load', function(store) {
-            store.each(function(record) {
-                form.up('panel')._getFormField(form, record, optionalStore_complete);
-            });
-
-            // After adding all mandatory fields, add the associated stakeholder
-            // fieldset
-            form.add({
-                border: 1,
-                itemId: 'selectStakeholderFieldSet',
-                items: [
-                {
-                    itemId: 'selectStakeholderButton',
-                    text: 'Add Stakeholder',
-                    xtype: 'button'
-                }],
-                title: 'Associated Stakeholders',
-                xtype: 'fieldset'
-            });
-        });
 
         this.items = form;
 
         this.callParent(arguments);
-    } 
+    },
+
+    showForm: function(mandatoryStore, completeStore) {
+
+        var me = this;
+        var form = this.down('form');
+
+        // Delete all existing items
+        form.removeAll();
+
+        // Collect all records of completeStore
+        var all_records = [];
+        completeStore.each(function(r){
+            all_records.push(r.copy());
+        });
+
+        // Add a fieldset for each mandatory Key
+        mandatoryStore.each(function(record) {
+            // All keys should be available for each fieldset -> 'copy' store
+            var main_store = Ext.create('Lmkp.store.ActivityConfig');
+            main_store.add(all_records);
+
+            form.add(me._getFieldset(
+                main_store,
+                completeStore,
+                record.get('name')
+            ));
+        });
+
+        // Add a button to add a new taggroup
+        form.add({
+            xtype: 'fieldset',
+            border: 0,
+            layout: 'hbox',
+            items: [
+                {
+                    xtype: 'panel',
+                    border: 0,
+                    flex: 1
+                }, {
+                    xtype: 'button',
+                    itemId: 'addAdditionalTaggroupButton',
+                    text: '[+] Add'
+                }
+            ]
+        });
+
+        // After adding all mandatory fields, add the associated stakeholder
+        // fieldset
+        form.add({
+            border: 1,
+            itemId: 'selectStakeholderFieldSet',
+            items: [
+            {
+                itemId: 'selectStakeholderButton',
+                text: 'Add Stakeholder',
+                xtype: 'button'
+            }],
+            title: 'Associated Stakeholders',
+            xtype: 'fieldset'
+        });
+    },
+
+    _getFieldset: function(mainStore, completeStore, initial_key) {
+        return {
+            xtype: 'fieldset',
+            name: 'taggroupfieldset',
+            border: 0,
+            padding: '0 0 10 0',
+            bodyPadding: 0,
+            margin: 0,
+            items: [
+                {
+                    xtype: 'lo_newtaggrouppanel',
+                    is_maintag: true,
+                    removable: true,
+                    main_store: mainStore,
+                    complete_store: completeStore,
+                    initial_key: initial_key,
+                    right_field: {
+                        xtype: 'button',
+                        name: 'addAdditionalTagButton',
+                        text: '[+] Add',
+                        margin: '0 0 0 5',
+                        tooltip: 'Add additional information'
+                    }
+                }
+            ]
+        }
+    }
 });
