@@ -1,6 +1,7 @@
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol2 import ActivityProtocol2
+from lmkp.views.config import get_mandatory_keys
 import logging
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPFound
@@ -128,6 +129,27 @@ def review(request):
         first()
     if activity is None:
         return {'success': False, 'msg': 'The Activity was not found or is not situated within the user\'s profiles'}
+
+    # If review decision is 'approved', make sure that all mandatory fields are 
+    # there
+    try:
+        review_decision = int(request.POST['review_decision'])
+    except:
+        review_decision = None
+
+    if review_decision == 1: # Approved
+        mandatory_keys = get_mandatory_keys(request, 'a')
+        # Query keys
+        activity_keys = Session.query(A_Key.key).\
+            join(A_Tag).\
+            join(A_Tag_Group, A_Tag.fk_tag_group == A_Tag_Group.id).\
+            filter(A_Tag_Group.activity == activity)
+        keys = []
+        for k in activity_keys.all():
+            keys.append(k.key)
+        for mk in mandatory_keys:
+            if mk not in keys:
+                return {'success': False, 'msg': 'Not all mandatory keys are provided.'}
 
     # Also query previous Activity if available
     previous_activity = Session.query(Activity).\
