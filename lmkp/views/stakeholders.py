@@ -1,8 +1,7 @@
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.stakeholder_protocol import StakeholderProtocol
-from lmkp.models.database_objects import User
-from lmkp.models.database_objects import SH_Changeset_Review
-from lmkp.models.database_objects import Stakeholder
+from lmkp.views.config import get_mandatory_keys
+from lmkp.models.database_objects import *
 import logging
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.i18n import TranslationStringFactory
@@ -40,6 +39,27 @@ def review(request):
         first()
     if stakeholder is None:
         return {'success': False, 'msg': 'The Stakeholder was not found'}
+
+    # If review decision is 'approved', make sure that all mandatory fields are
+    # there
+    try:
+        review_decision = int(request.POST['review_decision'])
+    except:
+        review_decision = None
+
+    if review_decision == 1: # Approved
+        mandatory_keys = get_mandatory_keys(request, 'sh')
+        # Query keys
+        activity_keys = Session.query(SH_Key.key).\
+            join(SH_Tag).\
+            join(SH_Tag_Group, SH_Tag.fk_tag_group == SH_Tag_Group.id).\
+            filter(SH_Tag_Group.stakeholder == stakeholder)
+        keys = []
+        for k in activity_keys.all():
+            keys.append(k.key)
+        for mk in mandatory_keys:
+            if mk not in keys:
+                return {'success': False, 'msg': 'Not all mandatory keys are provided.'}
 
     # Also query previous Stakeholder if available
     previous_stakeholder = Session.query(Stakeholder).\

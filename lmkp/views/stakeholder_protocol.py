@@ -18,6 +18,7 @@ from lmkp.views.protocol import TagGroup
 from lmkp.views.protocol import Inv
 from lmkp.views.profile import get_current_profile
 from lmkp.views.config import get_current_keys
+from lmkp.views.config import get_mandatory_keys
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPCreated
@@ -639,6 +640,13 @@ class StakeholderProtocol(Protocol):
             active.set_pending(pending)
             stakeholders = [active]
 
+        # Mark records as complete if requested
+        # TODO: This should go to pending protocol
+        if self._get_mark_complete(request) is True:
+            mandatory_keys = get_mandatory_keys(request, 'sh')
+            for sh in stakeholders:
+                sh.mark_complete(mandatory_keys)
+
         return stakeholders, count
 
     def history(self, request, uid, status_list=None):
@@ -829,6 +837,13 @@ class StakeholderProtocol(Protocol):
                     a.create_diff()
                 else:
                     a.create_diff(data[i-1])
+
+        # Mark records as complete if requested
+        # TODO: This should go to pending protocol
+        if self._get_mark_complete(request) is True:
+            mandatory_keys = get_mandatory_keys(request, 'sh')
+            for d in data:
+                d.mark_complete(mandatory_keys)
 
         return data, len(data)
     
