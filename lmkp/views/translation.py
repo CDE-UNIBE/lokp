@@ -168,20 +168,35 @@ def ui_messages(request):
         
         
     # Write the JavaScript and instantiate the global variable Lmkp.ts
-    str = "Ext.namespace('Lmkp');\n"
-    str += "Lmkp.ts = Ext.create('Ext.util.MixedCollection');\n" #,{\n"
+    #str = "Ext.namespace('Lmkp');\n"
+    #str += "Lmkp.ts = Ext.create('Ext.util.MixedCollection');\n" #,{\n"
 
     # Add a new method that returns the requested key instead of undefined
     # if a key does not exist. Use this method in the ExtJS views.
-    str += "Lmkp.ts.msg = function(key) {\n"
-    str += "\treturn this.containsKey(key) ? this.get(key) : key;\n"
-    str += "};\n"
+    #str += "Lmkp.ts.msg = function(key) {\n"
+    #str += "\treturn this.containsKey(key) ? this.get(key) : key;\n"
+    #str += "};\n"
 
     # Add all translated keys and values to this MixedCollection
-    str += "Lmkp.ts.addAll("
+    #str += "Lmkp.ts.addAll("
+    #json_ustr = json.dumps(uiMap, ensure_ascii=False, indent=8, sort_keys=True)
+    #str += json_ustr.encode('utf-8')
+    #str += ");\n"
+
+    # Define Lmkp.ts as class with static objects
+    str = "Ext.define('Lmkp.ts',{\n"
+    str += "\tstatics: {\n"
+    str += "\t\tstrings: "
     json_ustr = json.dumps(uiMap, ensure_ascii=False, indent=8, sort_keys=True)
     str += json_ustr.encode('utf-8')
-    str += ");\n"
+    str += ",\n"
+
+    str += "\t\tmsg: function(key) {\n"
+    str += "\t\t\treturn this.strings[key] ? this.strings[key] : key;\n"
+    str += "\t\t}\n"
+    str += "\t}\n"
+
+    str += "});"
 
     return str
 
