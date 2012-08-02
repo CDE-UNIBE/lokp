@@ -24,7 +24,8 @@ Ext.define('Lmkp.store.PendingStakeholderGrid', {
         type: 'ajax',
         url: '/stakeholders',
         extraParams: {
-            status: 'pending'
+            status: 'pending',
+            mark_complete: 'true'
         },
         reader: {
             root: 'data',
