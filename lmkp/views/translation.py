@@ -43,6 +43,7 @@ def ui_messages(request):
         'edit': _('edit', default='edit'),
         'details': _('details', default='details'),
         'map-view': _('map-view', default='Map View'),
+        'version': _('version', default='Version'),
         # activities / filtering
         'activities-title': _('activities-title', default='Activities'),
         'activities-table_view': _('activities-table_view', default='Activities Table View'),
@@ -105,7 +106,20 @@ def ui_messages(request):
         'review-diff_attr_added': _('review-diff_attr_added', default='Attribute(s) added'),
         'review-diff_attr_deleted': _('review-diff_attr_deleted', default='Attribute(s) deleted'),
         'reviewdecision-approved': _('reviewdecision-approved', default='approved'),
-        'reviewdecision-rejected': _('reviewdecision-rejected', default='rejected')
+        'reviewdecision-rejected': _('reviewdecision-rejected', default='rejected'),
+        # filter operators
+        'filter-operator_is': _('filter-operator_is', default='is'),
+        'filter-operator_is-not': _('filter-operator_is-not', default='is not'),
+        'filter-operator_contains-case-sensitive': _('filter-operator_contains-case-sensitive', default='contains (case sensitive)'),
+        'filter-operator_contains-case-insensitive': _('filter-operator_contains-case-insensitive', default='contains (case insensitive)'),
+        'filter-operator_contains-not-case-sensitive': _('filter-operator_contains-not-case-sensitive', default='contains not (case sensitive)'),
+        'filter-operator_contains-not-case-insensitive': _('filter-operator_contains-not-case-insensitive', default='contains not (case insensitive)'),
+        'filter-operator_equals': _('filter-operator_equals', default='equals'),
+        'filter-operator_less-than': _('filter-operator_less-than', default='less than'),
+        'filter-operator_less-than-or-equal': _('filter-operator_less-than-or-equal', default='less than or equal'),
+        'filter-operator_greater-than-or-equal': _('filter-operator_greater-than-or-equal', default='greater than or equal'),
+        'filter-operator_greater-than': _('filter-operator_greater-than', default='greater than'),
+        'filter-operator_not-equals': _('filter-operator_not-equals', default='not equals')
     }
 
     # Get the localizer
@@ -154,20 +168,35 @@ def ui_messages(request):
         
         
     # Write the JavaScript and instantiate the global variable Lmkp.ts
-    str = "Ext.namespace('Lmkp');\n"
-    str += "Lmkp.ts = Ext.create('Ext.util.MixedCollection');\n" #,{\n"
+    #str = "Ext.namespace('Lmkp');\n"
+    #str += "Lmkp.ts = Ext.create('Ext.util.MixedCollection');\n" #,{\n"
 
     # Add a new method that returns the requested key instead of undefined
     # if a key does not exist. Use this method in the ExtJS views.
-    str += "Lmkp.ts.msg = function(key) {\n"
-    str += "\treturn this.containsKey(key) ? this.get(key) : key;\n"
-    str += "};\n"
+    #str += "Lmkp.ts.msg = function(key) {\n"
+    #str += "\treturn this.containsKey(key) ? this.get(key) : key;\n"
+    #str += "};\n"
 
     # Add all translated keys and values to this MixedCollection
-    str += "Lmkp.ts.addAll("
+    #str += "Lmkp.ts.addAll("
+    #json_ustr = json.dumps(uiMap, ensure_ascii=False, indent=8, sort_keys=True)
+    #str += json_ustr.encode('utf-8')
+    #str += ");\n"
+
+    # Define Lmkp.ts as class with static objects
+    str = "Ext.define('Lmkp.ts',{\n"
+    str += "\tstatics: {\n"
+    str += "\t\tstrings: "
     json_ustr = json.dumps(uiMap, ensure_ascii=False, indent=8, sort_keys=True)
     str += json_ustr.encode('utf-8')
-    str += ");\n"
+    str += ",\n"
+
+    str += "\t\tmsg: function(key) {\n"
+    str += "\t\t\treturn this.strings[key] ? this.strings[key] : key;\n"
+    str += "\t\t}\n"
+    str += "\t}\n"
+
+    str += "});"
 
     return str
 

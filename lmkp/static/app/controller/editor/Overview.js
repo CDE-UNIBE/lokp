@@ -48,7 +48,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
 
         this.control({
             'lo_editortablepanel': {
-                render: this.onTablePanelRender
+                //render: this.onTablePanelRender
             },
             'lo_editormappanel': {
                 render: this.onMapPanelRender
@@ -278,7 +278,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
         var valueField = this.getValueField(records[0], xtype);
         attributePanel.insert(2, valueField);
         // reset ActivateButton
-        this.resetActivateButton(combobox, records);
+        this.resetActivateButton(combobox);
     },
 
     renderActivityCountryColumn: function(comp) {
@@ -518,56 +518,59 @@ Ext.define('Lmkp.controller.editor.Overview', {
     getOperator: function(xType) {
         // prepare values of the store depending on selected xType
         switch (xType) {
-            case "combo": // possibilities: == (eq) | != (ne)
+            case "combobox": // possibilities: like | nlike
                 var data = [
-                {
-                    'queryOperator': '__eq=',
-                    'displayOperator': '=='
-                },
-
-                {
-                    'queryOperator': '__ne=',
-                    'displayOperator': '!='
-                }
+                    {
+                        'queryOperator': '__like=',
+                        'displayOperator': Lmkp.ts.msg('filter-operator_is')
+                    }, {
+                        'queryOperator': '__nlike=',
+                        'displayOperator': Lmkp.ts.msg('filter-operator_is-not')
+                    }
                 ];
                 break;
-            case "textfield": // possibilities: == (like)
-                var data = [{
-                    'queryOperator': '__like=',
-                    'displayOperator': '=='
-                }];
+            case "textfield": // possibilities: like | ilike | nlike | nilike
+                var data = [
+                    {
+                        'queryOperator': '__like=',
+                        'displayOperator': 
+                            Lmkp.ts.msg('filter-operator_contains-case-sensitive')
+                    }, {
+                        'queryOperator': '__ilike=',
+                        'displayOperator': 
+                            Lmkp.ts.msg('filter-operator_contains-case-insensitive')
+                    }, {
+                        'queryOperator': '__nlike=',
+                        'displayOperator': 
+                            Lmkp.ts.msg('filter-operator_contains-not-case-sensitive')
+                    }, {
+                        'queryOperator': '__nilike=',
+                        'displayOperator': 
+                            Lmkp.ts.msg('filter-operator_contains-not-case-insensitive')
+                    }
+                ];
                 break;
             default: // default is also used for numberfield
                 var data = [
-                {
-                    'queryOperator': '__eq=',
-                    'displayOperator': '=='
-                },
-
-                {
-                    'queryOperator': '__lt=',
-                    'displayOperator': '<'
-                },
-
-                {
-                    'queryOperator': '__lte=',
-                    'displayOperator': '<='
-                },
-
-                {
-                    'queryOperator': '__gte=',
-                    'displayOperator': '>='
-                },
-
-                {
-                    'queryOperator': '__gt=',
-                    'displayOperator': '>'
-                },
-
-                {
-                    'queryOperator': '__ne=',
-                    'displayOperator': '!='
-                },
+                    {
+                        'queryOperator': '__eq=',
+                        'displayOperator': Lmkp.ts.msg('filter-operator_equals')
+                    }, {
+                        'queryOperator': '__lt=',
+                        'displayOperator': Lmkp.ts.msg('filter-operator_less-than')
+                    }, {
+                        'queryOperator': '__lte=',
+                        'displayOperator': Lmkp.ts.msg('filter-operator_less-than-or-equal')
+                    }, {
+                        'queryOperator': '__gte=',
+                        'displayOperator': Lmkp.ts.msg('filter-operator_greater-than-or-equal')
+                    }, {
+                        'queryOperator': '__gt=',
+                        'displayOperator': Lmkp.ts.msg('filter-operator_greater-than')
+                    }, {
+                        'queryOperator': '__ne=',
+                        'displayOperator': Lmkp.ts.msg('filter-operator_not-equals')
+                    }
                 ];
                 break;
         }
@@ -601,8 +604,9 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 name: fieldName,
                 store: selectionValues,
                 queryMode: 'local',
-                editable: false,
-                value: selectionValues[0],
+                editable: true,
+                forceSelection: true,
+                value: selectionValues[0][0],
                 margin: '0 5 0 0'
             });
         } else {                    // no categories available, create field based on xtype
@@ -841,6 +845,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
     },
 
     onSubmitButtonClick: function(button, event){
+        var me = this;
         var formpanel = button.up('form');
         var theform = formpanel.getForm();
         if (theform.isValid()) {
@@ -875,42 +880,33 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 stakeholders.push(stakeholder);
             }
 
-            for (var i in formpanel.getValues()) {
-                if(i.split('.')[0] != 'stakeholder') {
-                    var tags = [];
-                    var main_tag = {};
-                    // first, look only at mandatory fields (no '__val' or '__attr' in name)
-                    if (i.indexOf("__attr") == -1 && i.indexOf("__val") == -1) {
-                        var tag = {};
-                        tag['key'] = i;
-                        tag['value'] = formpanel.getValues()[i];
-                        tag['op'] = 'add';
-                        tags.push(tag);
-                        // also add to main_tag
-                        main_tag['key'] = i;
-                        main_tag['value'] = formpanel.getValues()[i];
-
-                        // look if further attributes to this field were entered
-                        var attrs = Ext.ComponentQuery.query('[name=' + i + '__attr]');
-                        var vals = Ext.ComponentQuery.query('[name=' + i + '__val]');
-                        if (attrs.length > 0 && vals.length > 0 && attrs.length == vals.length) {
-                            for (var j=0; j<attrs.length; j++) {
-                                var tag = {};
-                                tag['key'] = attrs[j].getValue();
-                                tag['value'] = vals[j].getValue();
-                                tag['op'] = 'add';
-                                tags.push(tag);
-                            }
-                        }
-                    }
-                    if (tags.length > 0) {
-                        taggroups.push({
-                            'tags': tags,
-                            'main_tag': main_tag
-                        });
+            // Loop through each fieldset (they form taggroups)
+            var fieldsets = formpanel.query('fieldset[name=taggroupfieldset]');
+            for (var i in fieldsets) {
+                var tags = [];
+                var main_tag = new Object();
+                // Within a taggroup, loop through each tag
+                var tgpanels = fieldsets[i].query('lo_newtaggrouppanel');
+                for (var j in tgpanels) {
+                    var c = tgpanels[j];
+                    tags.push({
+                        'key': c.getKeyValue(),
+                        'value': c.getValueValue(),
+                        'op': 'add'
+                    });
+                    if (c.isMainTag()) {
+                        main_tag.key = c.getKeyValue();
+                        main_tag.value = c.getValueValue()
                     }
                 }
+                if (tags.length > 0) {
+                    taggroups.push({
+                        'tags': tags,
+                        'main_tag': main_tag
+                    });
+                }
             }
+
             var diffObject = {
                 'activities': [{
                     'taggroups': taggroups,
@@ -933,8 +929,10 @@ Ext.define('Lmkp.controller.editor.Overview', {
 
                         var p = this.getNewActivityPanel();
                         p.setActivityGeometry(null);
-                        var formpanel = p.down('form');
-                        formpanel.getForm().reset();
+
+                        // Reset form
+                        var controller = me.getController('editor.Detail');
+                        controller.onNewActivityTabActivate(p);
 
                         var fieldContainers = formpanel.query('lo_stakeholderfieldcontainer');
                         for(var i = 0; i < fieldContainers.length; i++){

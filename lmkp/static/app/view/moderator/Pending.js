@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.moderator.Pending' ,{
-    extend: 'Ext.panel.Panel',
+    extend: 'Ext.container.Container',
     alias : ['widget.lo_moderatorpendingpanel'],
 
     requires: [
@@ -26,7 +26,6 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
         items: [{
             xtype: 'gridpanel',
             flex: 0.5,
-            border: false,
             split: true,
             title: Lmkp.ts.msg("activities-title"),
             itemId: 'activityGrid',
@@ -69,7 +68,6 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
         }, {
             xtype: 'gridpanel',
             flex: 0.5,
-            border: false,
             split: true,
             title: Lmkp.ts.msg("stakeholders-title"),
             itemId: 'stakeholderGrid',
@@ -114,7 +112,7 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
             }
             ]
         }],
-        xtype: 'panel'
+        xtype: 'container'
     },{
         flex: 0.5,
         layout: {

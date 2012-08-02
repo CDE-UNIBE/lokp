@@ -20,6 +20,7 @@ from pyramid.view import view_config
 import shapely
 import simplejson as json
 import yaml
+from sqlalchemy import func
 
 log = logging.getLogger(__name__)
 
@@ -168,12 +169,16 @@ def get_config(request):
         if o is not None:
             extObject.append(o)
     # Then process also the optional fields
-    for (name, config) in fields['optional'].iteritems():
-
-        o = _get_field_config(Key, Value, name, config, lang)
-
-        if o is not None:
-            extObject.append(o)
+    if 'optional' in fields:
+        for (name, config) in fields['optional'].iteritems():
+            # Don't do a database query for indicators that values are from local
+            # YAML (added during merge_yaml above)
+            if name == 'local' or name == 'values':
+                pass
+            else:
+                o = _get_field_config(Key, Value, name, config, lang)
+            if o is not None:
+                extObject.append(o)
     return extObject
 
 
@@ -478,79 +483,114 @@ def _add_to_db(config, Key, Value):
 """
 def _get_field_config(Key, Value, name, config, language, mandatory=False):
 
-    fieldConfig = {}
-    fieldConfig['allowBlank'] = not mandatory
-    
-    # check if translated name is available
-    originalKey = Session.query(Key.id).filter(Key.key == name).filter(Key.fk_key == None).first()
-
-    # if no original value is found in DB, return None (this cannot be selected)
-    if not originalKey:
-        return None
-        
-    translatedName = Session.query(Key).filter(Key.fk_key == originalKey).filter(Key.language == language).first()
-    
-    if translatedName:
-        fieldConfig['fieldLabel'] = translatedName.key
-    else:
-        fieldConfig['fieldLabel'] = name
-    
-    fieldConfig['name'] = name
+    # Determine XType
     xtype = 'textfield'
     try:
         if config['type'] == 'Number':
             xtype = 'numberfield'
-        if config['type'] == 'Date':
+        elif config['type'] == 'Date':
             #xtype = 'datefield'
             xtype = 'numberfield'
+        elif 'predefined' in config:
+            xtype = 'combobox'
     except KeyError:
         pass
 
-    try:
-        # If it's a ComboBox, try to find translated values.
-        # Process all predefined values of one ComboBox at once.
+    if language.id == 1:
+        # English: no database query needed because YAML is in English by
+        # default
+        fieldLabel = fieldName = name
 
-        # First, collect all values
-        all_vals = []
-        for val in config['predefined']:
-            all_vals.append(val)
-        
-        # Prepare SubQuery for translated values
-        translated_subquery = Session.query(Value.fk_value.label("original_id"),
-                                            Value.value.label("translated_value")).subquery()
-        
-        # Query original and translated values
-        values = Session.query(Value.id.label("original_id"),
-                               Value.value.label("original_value"),
-                               translated_subquery.c.translated_value.label("translated_value")).\
-            filter(Value.value.in_(all_vals)).\
-            filter(Value.fk_value == None).\
-            outerjoin(translated_subquery, translated_subquery.c.original_id == A_Value.id)
-        
-        # Fill vales in array
+        if xtype == 'combobox':
+            # For combobox, sort the values before returning it
+            store = []
+            for i in sorted(config['predefined']):
+                store.append([i, i])
+
+    else:
+        # Not English: Prepare query to translated keys
+        keyTranslated = Session.query(
+                Key.fk_key.label('original_id'),
+                Key.key.label('translated')
+            ).\
+            filter(Key.language == language).\
+            subquery()
+
+        keys = Session.query(
+                Key.key.label('original'),
+                keyTranslated.c.translated.label('translated'),
+                # Use column 'keyorvalue' to separate keys (0) from values (1)
+                func.char_length('').label('keyorvalue')
+            ).\
+            filter(Key.key == name).\
+            filter(Key.original == None).\
+            outerjoin(keyTranslated, keyTranslated.c.original_id == Key.id)
+
+        query = keys
+
+        # If predefined values are available, query these values as well (use
+        # union to perform only one query)
+        if xtype == 'combobox':
+            # Collect values
+            all_vals = []
+            for val in config['predefined']:
+                all_vals.append(val)
+
+            valuesTranslated = Session.query(
+                    Value.fk_value.label('original_id'),
+                    Value.value.label('translated')
+                ).\
+                filter(Value.language == language).\
+                subquery()
+
+            values = Session.query(
+                    Value.value.label('original'),
+                    valuesTranslated.c.translated.label('translated'),
+                    # Use column 'keyorvalue' to separate keys (0) from values (1)
+                    func.char_length(' ').label('keyorvalue')
+                ).\
+                filter(Value.value.in_(all_vals)).\
+                filter(Value.original == None).\
+                outerjoin(valuesTranslated, valuesTranslated.c.original_id == Value.id)
+
+            query = keys.union(values)
+
+        # Collect the values
         store = []
-        for val in values.all():
-            singleEntry = []
-            # first value is internal (original) value
-            singleEntry.append(val.original_value)
-            # second value is translated value if available, else same as original value
-            if val.translated_value is not None:
-                singleEntry.append(val.translated_value)
-            else:
-                singleEntry.append(val.original_value)
-            store.append(singleEntry)
-        
-        fieldConfig['store'] = store
-        xtype = 'combo'
-    except KeyError:
-        pass
+        for x in query.all():
+            if x.keyorvalue == 0:
+                # Key
+                fieldName = x.original
+                fieldLabel = (x.translated
+                    if x.translated is not None
+                    else x.original)
+            elif x.keyorvalue == 1:
+                # Value: First value is internal (original) value, second is
+                # external (translated) value
+                s = []
+                s.append(x.original)
+                if x.translated is not None:
+                    s.append(x.translated)
+                else:
+                    s.append(x.original)
+                store.append(s)
+        # Sort store by their display (translated) value
+        if len(store) > 0:
+            store = sorted(store, key=lambda value: value[1])
 
+    # Prepare return object
+    fieldConfig = {
+        'allowBlank': not mandatory,
+        'fieldLabel': fieldLabel,
+        'xtype': xtype,
+        'name': fieldName
+    }
+    if xtype == 'combobox':
+        fieldConfig['store'] = store
     try:
         fieldConfig['validator'] = config['validator']
     except KeyError:
         pass
-
-    fieldConfig['xtype'] = xtype
 
     return fieldConfig
 
