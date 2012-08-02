@@ -845,6 +845,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
     },
 
     onSubmitButtonClick: function(button, event){
+        var me = this;
         var formpanel = button.up('form');
         var theform = formpanel.getForm();
         if (theform.isValid()) {
@@ -879,42 +880,33 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 stakeholders.push(stakeholder);
             }
 
-            for (var i in formpanel.getValues()) {
-                if(i.split('.')[0] != 'stakeholder') {
-                    var tags = [];
-                    var main_tag = {};
-                    // first, look only at mandatory fields (no '__val' or '__attr' in name)
-                    if (i.indexOf("__attr") == -1 && i.indexOf("__val") == -1) {
-                        var tag = {};
-                        tag['key'] = i;
-                        tag['value'] = formpanel.getValues()[i];
-                        tag['op'] = 'add';
-                        tags.push(tag);
-                        // also add to main_tag
-                        main_tag['key'] = i;
-                        main_tag['value'] = formpanel.getValues()[i];
-
-                        // look if further attributes to this field were entered
-                        var attrs = Ext.ComponentQuery.query('[name=' + i + '__attr]');
-                        var vals = Ext.ComponentQuery.query('[name=' + i + '__val]');
-                        if (attrs.length > 0 && vals.length > 0 && attrs.length == vals.length) {
-                            for (var j=0; j<attrs.length; j++) {
-                                var tag = {};
-                                tag['key'] = attrs[j].getValue();
-                                tag['value'] = vals[j].getValue();
-                                tag['op'] = 'add';
-                                tags.push(tag);
-                            }
-                        }
-                    }
-                    if (tags.length > 0) {
-                        taggroups.push({
-                            'tags': tags,
-                            'main_tag': main_tag
-                        });
+            // Loop through each fieldset (they form taggroups)
+            var fieldsets = formpanel.query('fieldset[name=taggroupfieldset]');
+            for (var i in fieldsets) {
+                var tags = [];
+                var main_tag = new Object();
+                // Within a taggroup, loop through each tag
+                var tgpanels = fieldsets[i].query('lo_newtaggrouppanel');
+                for (var j in tgpanels) {
+                    var c = tgpanels[j];
+                    tags.push({
+                        'key': c.getKeyValue(),
+                        'value': c.getValueValue(),
+                        'op': 'add'
+                    });
+                    if (c.isMainTag()) {
+                        main_tag.key = c.getKeyValue();
+                        main_tag.value = c.getValueValue()
                     }
                 }
+                if (tags.length > 0) {
+                    taggroups.push({
+                        'tags': tags,
+                        'main_tag': main_tag
+                    });
+                }
             }
+
             var diffObject = {
                 'activities': [{
                     'taggroups': taggroups,
@@ -937,8 +929,10 @@ Ext.define('Lmkp.controller.editor.Overview', {
 
                         var p = this.getNewActivityPanel();
                         p.setActivityGeometry(null);
-                        var formpanel = p.down('form');
-                        formpanel.getForm().reset();
+
+                        // Reset form
+                        var controller = me.getController('editor.Detail');
+                        controller.onNewActivityTabActivate(p);
 
                         var fieldContainers = formpanel.query('lo_stakeholderfieldcontainer');
                         for(var i = 0; i < fieldContainers.length; i++){
