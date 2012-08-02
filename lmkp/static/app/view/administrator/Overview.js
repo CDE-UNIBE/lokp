@@ -7,21 +7,28 @@ Ext.define('Lmkp.view.administrator.Overview', {
         'Lmkp.view.administrator.UserManagement'
     ],
 
+    frame: false,
+    border: 0,
+
+    defaults: {
+        border: 0,
+        frame: false
+    },
+
     items: [
         {
-            border: 0,
-            frame: false,
             title: 'Activities',
             xtype: 'yamlscanpanel',
             postUrl: '/config/add/activities',
             store: 'YamlScan'
         }, {
-            border: 0,
-            frame: false,
             title: 'Stakeholders',
             xtype: 'yamlscanpanel',
             postUrl: '/config/add/stakeholders',
             store: 'ShYamlScan'
+        }, {
+            title: 'Codes',
+            xtype: 'lo_administratorcodetab'
         }, {
             title: 'Add User',
             xtype: 'lo_usermanagementpanel'

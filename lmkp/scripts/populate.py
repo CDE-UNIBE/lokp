@@ -79,6 +79,7 @@ def main(argv=sys.argv):
     with transaction.manager:
         # language
         lang1 = _addIfNotExists_ID(Language(id=1, english_name='English', local_name='English', locale='en'))
+        lang2 = _addIfNotExists_ID(Language(id=2, english_name='Codes', local_name='Codes', locale='code'))
         # status
         status1 = _addIfNotExists_ID(Status(id=1, name='pending', description='Review pending. Not published yet.'))
         status2 = _addIfNotExists_ID(Status(id=2, name='active', description='Reviewed and accepted. Currently published.'))
