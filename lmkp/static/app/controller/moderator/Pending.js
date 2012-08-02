@@ -70,7 +70,8 @@ Ext.define('Lmkp.controller.moderator.Pending', {
                 url: '/' + type + '/history/' + guid,
                 params: {
                     status: 'active,pending,overwritten',
-                    involvements: 'full'
+                    involvements: 'full',
+                    mark_complete: 'true'
                 },
                 method: 'GET',
                 success: function(response) {

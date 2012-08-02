@@ -63,7 +63,8 @@ Ext.define('Lmkp.view.moderator.Review', {
             if (data.data[i].status == 'pending') {
                 pending.push({
                     'current_version': data.data[i].version,
-                    'previous_version': data.data[i].previous_version
+                    'previous_version': data.data[i].previous_version,
+                    'complete': data.data[i].complete
                 });
             }
             if (data.data[i].status == 'active') {
@@ -149,59 +150,70 @@ Ext.define('Lmkp.view.moderator.Review', {
                 }
             }
 
-            // Show panel for review decision
-            var rdStore = Ext.create('Lmkp.store.ReviewDecisions').load();
-            this.add({
-                xtype: 'form',
-                url: type + '/review',
-                border: 0,
-                buttonAlign: 'right',
-                items: [
-                    {
-                        xtype: 'panel',
-                        layout: 'hbox',
-                        border: 0,
-                        items: [
-                            {
-                                xtype: 'combobox',
-                                store: rdStore,
-                                name: 'review_decision',
-                                queryMode: 'local',
-                                displayField: 'name',
-                                valueField: 'id',
-                                fieldLabel: 'Review decision',
-                                allowBlank: false,
-                                flex: 1,
-                                margin: '0 5 0 0'
-                            }, {
-                                xtype: 'checkbox',
-                                fieldLabel: 'Add comment',
-                                name: 'comment_checkbox',
-                                margin: '0 5 0 0'
-                            }, {
-                                xtype: 'button',
-                                text: 'Submit',
-                                name: 'review_submit',
-                                store_type: type // helper parameter
-                            }
-                        ]
-                    }, {
-                        xtype: 'textarea',
-                        name: 'comment_textarea',
-                        width: '100%',
-                        margin: '5 0 0 0',
-                        hidden: true
-                    }, {
-                        xtype: 'hiddenfield',
-                        name: 'identifier',
-                        value: data.data[0].id
-                    }, {
-                        xtype: 'hiddenfield',
-                        name: 'version',
-                        value: pending[j].current_version
-                    }
-                ]
-            });
+
+            // Show panel for review decision. Show it only if record is
+            // complete (all mandatory fields are there). Else show notice.
+            if (pending[j].complete) {
+                var rdStore = Ext.create('Lmkp.store.ReviewDecisions').load();
+                this.add({
+                    xtype: 'form',
+                    url: type + '/review',
+                    border: 0,
+                    buttonAlign: 'right',
+                    items: [
+                        {
+                            xtype: 'panel',
+                            layout: 'hbox',
+                            border: 0,
+                            items: [
+                                {
+                                    xtype: 'combobox',
+                                    store: rdStore,
+                                    name: 'review_decision',
+                                    queryMode: 'local',
+                                    displayField: 'name',
+                                    valueField: 'id',
+                                    fieldLabel: 'Review decision',
+                                    allowBlank: false,
+                                    flex: 1,
+                                    margin: '0 5 0 0'
+                                }, {
+                                    xtype: 'checkbox',
+                                    fieldLabel: 'Add comment',
+                                    name: 'comment_checkbox',
+                                    margin: '0 5 0 0'
+                                }, {
+                                    xtype: 'button',
+                                    text: 'Submit',
+                                    name: 'review_submit',
+                                    store_type: type // helper parameter
+                                }
+                            ]
+                        }, {
+                            xtype: 'textarea',
+                            name: 'comment_textarea',
+                            width: '100%',
+                            margin: '5 0 0 0',
+                            hidden: true
+                        }, {
+                            xtype: 'hiddenfield',
+                            name: 'identifier',
+                            value: data.data[0].id
+                        }, {
+                            xtype: 'hiddenfield',
+                            name: 'version',
+                            value: pending[j].current_version
+                        }
+                    ]
+                });
+            } else {
+                this.add({
+                    xtype: 'panel',
+                    html: 'This version cannot be set active (public) because not all mandatory fields are there.',
+                    bodyCls: 'notice',
+                    bodyPadding: 5
+                });
+            }
 
             // If there are multiple changes, show spacer between them
             if (j != pending.length - 1) {
