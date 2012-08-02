@@ -1,5 +1,5 @@
 fields:
-  mandatory:
+  optional:
     Name:
       validator: "if 1 > 0; return true"
     Project Use:
@@ -10,7 +10,6 @@ fields:
       - agrofuels
       - forestry
       - viehwirtschaft
-  optional:
     Alpine Farming:
       predefined:
         - all-season
