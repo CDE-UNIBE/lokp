@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.editor.Overview' ,{
-    extend: 'Ext.panel.Panel',
+    extend: 'Ext.container.Container',
     alias : ['widget.lo_editoroverviewpanel'],
 
     requires: [

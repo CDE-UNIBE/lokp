@@ -1,16 +1,9 @@
-﻿# Global configuration file for the installation.
+# Global configuration file for the installation.
 # Within this file mandatory and optional fields are defined.
 fields:
   mandatory:
     Name:
       type: String
-    Project Use:
-      type: String
-      predefined:
-      - food production
-      - tourism
-      - forestry for wood and fiber
-      - agrofuels
     Project Status:
       type: String
       predefined:
@@ -18,206 +11,6 @@ fields:
       - signed
       - abandoned
     Country:
-      type: String
-    Size of Investment:
-      type: Number
-      validator: if(value >= 0){return true;} else {return "Must be greater than 0";}
-    Year of Investment (agreed):
-      type: Date
-      validator: if(value == 0 || (value > 1900 && value < 2100)){return true;} else {return "1900 < year of investment < 2100";}
-    Main Crop:
-      type: String
-      predefined:
-      - Accacia
-      - Alfalfa
-      - Algae
-      - Almond
-      - Aloe Vera
-      - Apple
-      - Aquaculture
-      - Bamboo
-      - Banana
-      - Barley
-      - Bean
-      - Bottle Gourd
-      - Buckwheat
-      - Cacao
-      - Canola
-      - Cashew
-      - Cassava (Maniok)
-      - Castor Oil Plant
-      - Cereals (no specification)
-      - Chat
-      - Cherries
-      - Chert
-      - Citrus Fruits
-      - Coconut
-      - Coffee Plant
-      - Corn (Maize)
-      - Cotton
-      - Croton
-      - Dill
-      - Eucalyptus
-      - Fig-Nut
-      - Flowers
-      - Fodder Plants
-      - Fruit
-      - Glucose Syrup
-      - Grains
-      - Grapes
-      - Herbs (no specification)
-      - Jatropha
-      - Lentils
-      - Mango
-      - Mariculture
-      - Mustard
-      - Oil Palm
-      - Oil Seeds
-      - Oleagionous plant
-      - Olives
-      - Onion
-      - Palms
-      - Papaya
-      - Passion fruit
-      - Peanut
-      - Peas
-      - Pepper
-      - Pine
-      - Pineapple
-      - Pomegranate
-      - Pongamia Pinnata
-      - Potatoes
-      - Pulses
-      - Rapeseed
-      - Rice
-      - Rice (hybrid)
-      - Roses
-      - Rubber
-      - Rye
-      - Sea Cucumber
-      - Seed Production
-      - Sesame
-      - Sisal
-      - Sorghum
-      - Soya Beans
-      - Starch
-      - Sugar (no specification)
-      - Sugar beet
-      - Sugar Cane
-      - Sun Flower
-      - Sweet Potatoes
-      - Tea
-      - Teak
-      - Teff
-      - Tomatoes
-      - Trees
-      - Vegetables
-      - Vineyard
-      - Wheat
-      - Yam
-      - Food crops (no specification)
-  optional:
-    Main Animal:
-      type: String
-      predefined:
-      - Abalone
-      - Aquaculture
-      - Bees
-      - Cattle
-      - Chicken
-      - Cows
-      - Dairy Cattle
-      - Fish
-      - Goats
-      - Mariculture
-      - Pork
-      - Poultry
-      - Sheep
-      - Tilapia Fish
-    Other Landuse:
-      type: String
-      predefined:
-      - Alumina refinery
-      - Aluminium extraction
-      - Aluminium/Alumina processing industry
-      - Automobile factory
-      - Bottling Industry
-      - Charcoal production
-      - Chemical industry
-      - Community Infrastructure
-      - Earth Nutrients production
-      - Eco-charcoal production
-      - Energy Business
-      - Engineering industry
-      - Farming Technologies/ Systems
-      - Forest Cultivation
-      - Housing
-      - Industry
-      - IT/ITES
-      - Logistic Infrastructure
-      - Mining Industry/Mineral Extraction, including petroleum
-      - Oil Mill
-      - Palm Oil refinery
-      - Paper factory
-      - Pasture
-      - Processing plant
-      - Renewable Energy Development
-      - Research/Development Facilities
-      - Road Construction
-      - Services
-      - Stainless Steel industry
-      - Storage
-      - Telecommunications
-      - Textile industry
-      - Touristic Infrastructure
-      - Water Management Systems
-    Mineral:
-      type: String
-      predefined:
-      - Anthracite
-      - Asphaltite
-      - Barite
-      - Basalt
-      - Bauxite
-      - Building materials
-      - Carbon
-      - Clay
-      - Coal
-      - Cobalt
-      - Copper
-      - Diamond mining
-      - Emerald
-      - Feldspar
-      - Fluoride
-      - Gas
-      - Gold
-      - Granite
-      - Gravel
-      - Ilmenite
-      - Iron
-      - Jade
-      - Lead
-      - Limestone
-      - Manganese
-      - Marble
-      - Molybdenum
-      - Nickel
-      - Petroleum
-      - Phosphorous
-      - Platinum
-      - Pynions
-      - Pyrolisis Plant
-      - Salt
-      - Sand
-      - Silica
-      - Silver
-      - Stone
-      - Titanium
-      - Uranium
-      - Zinc
-    Name of Investor:
-      type: String
-    Country of Investor:
       type: String
       predefined:
       - Afghanistan
@@ -473,6 +266,202 @@ fields:
       - Yemen
       - Zambia
       - Zimbabwe
+    Size of Investment:
+      type: Number
+      validator: if(value >= 0){return true;} else {return "Must be greater than 0";}
+    Year of Investment (agreed):
+      type: Date
+      validator: if(value == 0 || (value > 1900 && value < 2100)){return true;} else {return "1900 < year of investment < 2100";}
+    Main Crop:
+      type: String
+      predefined:
+      - Accacia
+      - Alfalfa
+      - Algae
+      - Almond
+      - Aloe Vera
+      - Apple
+      - Aquaculture
+      - Bamboo
+      - Banana
+      - Barley
+      - Bean
+      - Bottle Gourd
+      - Buckwheat
+      - Cacao
+      - Canola
+      - Cashew
+      - Cassava (Maniok)
+      - Castor Oil Plant
+      - Cereals (no specification)
+      - Chat
+      - Cherries
+      - Chert
+      - Citrus Fruits
+      - Coconut
+      - Coffee Plant
+      - Corn (Maize)
+      - Cotton
+      - Croton
+      - Dill
+      - Eucalyptus
+      - Fig-Nut
+      - Flowers
+      - Fodder Plants
+      - Fruit
+      - Glucose Syrup
+      - Grains
+      - Grapes
+      - Herbs (no specification)
+      - Jatropha
+      - Lentils
+      - Mango
+      - Mariculture
+      - Mustard
+      - Oil Palm
+      - Oil Seeds
+      - Oleagionous plant
+      - Olives
+      - Onion
+      - Palms
+      - Papaya
+      - Passion fruit
+      - Peanut
+      - Peas
+      - Pepper
+      - Pine
+      - Pineapple
+      - Pomegranate
+      - Pongamia Pinnata
+      - Potatoes
+      - Pulses
+      - Rapeseed
+      - Rice
+      - Rice (hybrid)
+      - Roses
+      - Rubber
+      - Rye
+      - Sea Cucumber
+      - Seed Production
+      - Sesame
+      - Sisal
+      - Sorghum
+      - Soya Beans
+      - Starch
+      - Sugar (no specification)
+      - Sugar beet
+      - Sugar Cane
+      - Sun Flower
+      - Sweet Potatoes
+      - Tea
+      - Teak
+      - Teff
+      - Tomatoes
+      - Trees
+      - Vegetables
+      - Vineyard
+      - Wheat
+      - Yam
+      - Food crops (no specification)
+  optional:
+    Main Animal:
+      type: String
+      predefined:
+      - Abalone
+      - Aquaculture
+      - Bees
+      - Cattle
+      - Chicken
+      - Cows
+      - Dairy Cattle
+      - Fish
+      - Goats
+      - Mariculture
+      - Pork
+      - Poultry
+      - Sheep
+      - Tilapia Fish
+    Other Landuse:
+      type: String
+      predefined:
+      - Alumina refinery
+      - Aluminium extraction
+      - Aluminium/Alumina processing industry
+      - Automobile factory
+      - Bottling Industry
+      - Charcoal production
+      - Chemical industry
+      - Community Infrastructure
+      - Earth Nutrients production
+      - Eco-charcoal production
+      - Energy Business
+      - Engineering industry
+      - Farming Technologies/ Systems
+      - Forest Cultivation
+      - Housing
+      - Industry
+      - IT/ITES
+      - Logistic Infrastructure
+      - Mining Industry/Mineral Extraction, including petroleum
+      - Oil Mill
+      - Palm Oil refinery
+      - Paper factory
+      - Pasture
+      - Processing plant
+      - Renewable Energy Development
+      - Research/Development Facilities
+      - Road Construction
+      - Services
+      - Stainless Steel industry
+      - Storage
+      - Telecommunications
+      - Textile industry
+      - Touristic Infrastructure
+      - Water Management Systems
+    Mineral:
+      type: String
+      predefined:
+      - Anthracite
+      - Asphaltite
+      - Barite
+      - Basalt
+      - Bauxite
+      - Building materials
+      - Carbon
+      - Clay
+      - Coal
+      - Cobalt
+      - Copper
+      - Diamond mining
+      - Emerald
+      - Feldspar
+      - Fluoride
+      - Gas
+      - Gold
+      - Granite
+      - Gravel
+      - Ilmenite
+      - Iron
+      - Jade
+      - Lead
+      - Limestone
+      - Manganese
+      - Marble
+      - Molybdenum
+      - Nickel
+      - Petroleum
+      - Phosphorous
+      - Platinum
+      - Pynions
+      - Pyrolisis Plant
+      - Salt
+      - Sand
+      - Silica
+      - Silver
+      - Stone
+      - Titanium
+      - Uranium
+      - Zinc
     Domestic Partners:
       type: String
     Data Source (Research Paper):

@@ -17,6 +17,12 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
         this.control({
             'lo_newactivitypanel button[itemId="selectStakeholderButton"]': {
                 click: this.onStakeholderButtonClick
+            },
+            'lo_newactivitypanel button[name=addAdditionalTagButton]': {
+                click: this.onAddAdditionalTagButtonClick
+            },
+            'lo_newactivitypanel button[itemId=addAdditionalTaggroupButton]': {
+                click: this.onAddAdditionalTaggroupButtonClick
             }
         });
     },
@@ -35,6 +41,49 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 });
         }, this);
         sel.show();
+    },
+
+    onAddAdditionalTagButtonClick: function(button) {
+        var fieldset = button.up('fieldset');
+        var newtaggrouppanel = fieldset.down('lo_newtaggrouppanel');
+        if (fieldset && newtaggrouppanel) {
+            fieldset.add({
+                xtype: 'lo_newtaggrouppanel',
+                is_maintag: false,
+                removable: true,
+                main_store: newtaggrouppanel.main_store,
+                complete_store: newtaggrouppanel.complete_store,
+                right_field: {
+                    xtype: 'button',
+                    name: 'addAdditionalTagButton',
+                    text: '[+] Add',
+                    margin: '0 0 0 5',
+                    tooltip: 'Add additional information'
+                }
+            });
+        }
+    },
+
+    onAddAdditionalTaggroupButtonClick: function(button) {
+        var form = button.up('form');
+        var panel = form.up('panel');
+
+        if (form && panel) {
+            // create the stores
+            var mainStore = Ext.create('Lmkp.store.ActivityConfig');
+            mainStore.load(function() {
+                // Create and load a second store with all keys
+                var completeStore = Ext.create('Lmkp.store.ActivityConfig');
+                completeStore.load(function() {
+                    // When loaded, show panel
+                    form.insert(form.items.length - 2, panel._getFieldset(
+                        mainStore,
+                        completeStore,
+                        null
+                    ));
+                });
+            });
+        }
     }
 
 });

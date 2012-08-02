@@ -29,8 +29,63 @@ Ext.define('Lmkp.controller.editor.Detail', {
             },
             'lo_editordetailpanel button[name=editTaggroup]': {
                 click: this.onEditTaggroupButtonClick
+            },
+            'lo_editordetailpanel lo_activityhistorypanel': {
+                activate: this.onHistoryTabActivate
+            },
+            'lo_editordetailpanel lo_newactivitypanel': {
+                activate: this.onNewActivityTabActivate
             }
         });
+    },
+
+    onNewActivityTabActivate: function(panel) {
+        // Create and load a store with all mandatory keys
+        var mandatoryStore = Ext.create('Lmkp.store.ActivityConfig');
+        mandatoryStore.filter('allowBlank', false);
+        mandatoryStore.load(function() {
+            // Create and load a second store with all keys
+            var completeStore = Ext.create('Lmkp.store.ActivityConfig');
+            completeStore.load(function() {
+                // When loaded, show panel
+                panel.showForm(mandatoryStore, completeStore);
+            });
+        });
+    },
+
+    onHistoryTabActivate: function(panel) {
+        // Use detailpanel to find currently selected item
+        var detailPanel = Ext.ComponentQuery.query('lo_editordetailpanel')[0];
+        if (detailPanel) {
+            var selected = detailPanel.getCurrent();
+        }
+        // Activity or Stakeholder?
+        var types = null;
+        if (selected && selected.modelName) {
+            if (selected.modelName == 'Lmkp.model.Activity') {
+                types = 'activities';
+            } else if (selected.modelName == 'Lmkp.model.Stakeholder') {
+                types = 'stakeholders';
+            }
+        }
+        // Use AJAX to get data used to update panel
+        if (selected && types) {
+            panel.removeAll();
+            Ext.Ajax.request({
+                url: '/' + types + '/history/' + selected.get('id'),
+                params: {
+                    involvements: 'full'
+                },
+                method: 'GET',
+                success: function(response) {
+                    // Update panel
+                    panel.updateContent(
+                        Ext.JSON.decode(response.responseText),
+                        types
+                    );
+                }
+            });
+        }
     },
 
     onEditTaggroupButtonClick: function(button) {
