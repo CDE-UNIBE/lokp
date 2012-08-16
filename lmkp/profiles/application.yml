@@ -19,6 +19,19 @@ application:
     - sphericalMercator: true
     - maxExtent: [11063487.59, 1543945.80, 12059351.76, 2593727.60]
     - opacity: 0.7
+  - name: "Accessability"
+    url: "http://cdetux2.unibe.ch/geoserver/lo/wms"
+    wms_options:
+    - epsg: 900913
+    - format: "image/jpeg"
+    - layers: "accessability"
+    - transparent: true
+    ol_options:
+    - visibility: false
+    - isBaseLayer: false
+    - sphericalMercator: true
+    - maxExtent: [-20037508.34, -20037508.34, 20037508.34, 20037508.34]
+    - opacity: 0.7
   - name: "Tabi Ocean"
     url: "http://www.tabi.la/geoserver/tabi/wms"
     wms_options:
