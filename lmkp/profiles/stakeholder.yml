@@ -269,3 +269,11 @@ fields:
       type: String
     Domestic Partner:
       type: String
+    Economic Sector:
+      type: String
+      predefined:
+      - Financial Investment
+      - Agroindustry 
+      - Food industry
+      - Energy sector
+      
