@@ -15,7 +15,7 @@ Ext.define('Lmkp.view.administrator.YamlScan', {
     dockedItems: [{
         items: [{
             itemId: 'yaml-scan-button',
-            text: 'Scan'
+            text: 'Refresh'
         }, {
             itemId: 'yaml-add-button',
             text: 'Add all to DB'

@@ -20,12 +20,12 @@ Ext.define('Lmkp.view.administrator.Overview', {
             title: 'Activities',
             xtype: 'yamlscanpanel',
             postUrl: '/config/add/activities',
-            store: 'YamlScan'
+            store: 'ActivityYamlScan'
         }, {
             title: 'Stakeholders',
             xtype: 'yamlscanpanel',
             postUrl: '/config/add/stakeholders',
-            store: 'ShYamlScan'
+            store: 'StakeholderYamlScan'
         }, {
             title: 'Codes',
             xtype: 'lo_administratorcodetab'
