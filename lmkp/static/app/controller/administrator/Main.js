@@ -56,7 +56,14 @@ Ext.define('Lmkp.controller.administrator.Main', {
         // only do some action if original is not in english (translation != 0)
         // and only if original is in database
         if (record.get('translation') != 0 && record.get('exists')) {
-            var panel = this;
+
+            // Save some values to refresh grid after submitting translation
+            var controller = this;
+            var panel = g.up('panel');
+            if (panel) {
+                var button = panel.down('button[itemId=yaml-scan-button]');
+            }
+
             var win = Ext.create('Ext.window.Window', {
                 title: 'Translation',
                 layout: 'fit',
@@ -71,7 +78,7 @@ Ext.define('Lmkp.controller.administrator.Main', {
                     items: [{
                         xtype: 'displayfield',
                         fieldLabel: 'Language',
-                        value: Ext.ComponentQuery.query('combobox[id=scanLanguageCombo]')[0].lastSelection[0].get('english_name')
+                        value: Lmkp.ts.msg('locale_english-name')
                     }, {
                         xtype: 'displayfield',
                         fieldLabel: 'Key/Value',
@@ -96,7 +103,7 @@ Ext.define('Lmkp.controller.administrator.Main', {
                     }, {
                         name: 'language',
                         hidden: true,
-                        value: Ext.ComponentQuery.query('combobox[id=scanLanguageCombo]')[0].lastSelection[0].get('locale'),
+                        value: Lmkp.ts.msg('locale'),
                         allowBlank: false
                     }, {
                         name: 'keyvalue',
@@ -113,7 +120,10 @@ Ext.define('Lmkp.controller.administrator.Main', {
                                     success: function(form, action) {
                                         win.close();
                                         Ext.Msg.alert('Success', action.result.msg);
-                                        panel.scanDoScan();
+                                        // Reload grid
+                                        if (button) {
+                                            controller.onScanButtonClick(button);
+                                        }
                                     },
                                     failure: function(form, action) {
                                         Ext.Msg.alert('Failure', action.result.msg);
@@ -144,6 +154,9 @@ Ext.define('Lmkp.controller.administrator.Main', {
             title: 'Add to DB',
             closable: true,
             layout: 'fit',
+            height: 300,
+            width: 400,
+            autoScroll: true,
             loader: {
                 url: panel.getPostUrl(),
                 params: {
