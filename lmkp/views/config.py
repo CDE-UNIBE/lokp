@@ -322,7 +322,7 @@ def yaml_add_activity_fields(request):
     except IOError:
         # No localized configuration file found!
         pass
-    
+
     ret = _add_to_db(global_config, A_Key, A_Value)
     
     # Also scan application YAML (geometry etc.)
@@ -426,10 +426,8 @@ def _add_to_db(config, Key, Value):
     stack.append('Scan results:')
 
     # check for english language (needs to have id=1)
-    english_language = Session.query(Language).filter(Language.id == 1).filter(Language.english_name == 'English').all()
-    if len(english_language) == 1:
-        language = english_language[0]
-    else:
+    language = Session.query(Language).get(1)
+    if language is None:
         # language not found, insert it.
         language = Language(1, 'English', 'English', 'en')
         Session.add(language)
@@ -473,6 +471,21 @@ def _add_to_db(config, Key, Value):
                             new_value.language = language
                             Session.add(new_value)
                             stack.append('Value added to database: %s' % v)
+                # Values from local YAML are one level deeper
+                if k == 'values':
+                    for k2, v2 in val.items():
+                        if k2 == 'predefined':
+                            for v in v2:
+                                # check if value is already in database
+                                if v in db_values:
+                                    # value is already there, do nothing
+                                    stack.append('Value already in database: %s' % v)
+                                else:
+                                    # value is not yet in database, insert it
+                                    new_value = Value(v)
+                                    new_value.language = language
+                                    Session.add(new_value)
+                                    stack.append('Value added to database: %s' % v)
 
     return {'messagestack': stack}
 
@@ -484,6 +497,7 @@ def _get_field_config(Key, Value, name, config, language, mandatory=False):
 
     # Determine XType
     xtype = 'textfield'
+    predefined = None
     try:
         if config['type'] == 'Number':
             xtype = 'numberfield'
@@ -492,18 +506,26 @@ def _get_field_config(Key, Value, name, config, language, mandatory=False):
             xtype = 'numberfield'
         elif 'predefined' in config:
             xtype = 'combobox'
+            predefined = config['predefined']
     except KeyError:
-        pass
+        # Values from local YAML are one level deeper
+        try:
+            if 'predefined' in config['values']:
+                print "***"
+                xtype = 'combobox'
+                predefined = config['values']['predefined']
+        except KeyError:
+            pass
 
     if language.id == 1:
         # English: no database query needed because YAML is in English by
         # default
         fieldLabel = fieldName = name
 
-        if xtype == 'combobox':
+        if predefined:
             # For combobox, sort the values before returning it
             store = []
-            for i in sorted(config['predefined']):
+            for i in sorted(predefined):
                 store.append([i, i])
 
     else:
@@ -529,10 +551,10 @@ def _get_field_config(Key, Value, name, config, language, mandatory=False):
 
         # If predefined values are available, query these values as well (use
         # union to perform only one query)
-        if xtype == 'combobox':
+        if predefined:
             # Collect values
             all_vals = []
-            for val in config['predefined']:
+            for val in predefined:
                 all_vals.append(val)
 
             valuesTranslated = Session.query(
@@ -640,6 +662,11 @@ def _get_admin_scan(Key, Value, name, config, language, mandatory, local=False):
     try:
         if 'predefined' in config:
             store = True
+            predefined = config['predefined']
+        # Local predefined are one level further down
+        elif 'predefined' in config['values']:
+            store = True
+            predefined = config['values']['predefined']
     except KeyError:
         pass
 
@@ -649,7 +676,7 @@ def _get_admin_scan(Key, Value, name, config, language, mandatory, local=False):
 
         # Collect values first
         all_vals = []
-        for val in config['predefined']:
+        for val in predefined:
             all_vals.append(val)
 
         # Prepare subquery for translations
