@@ -275,22 +275,14 @@ def get_translated_keys(request, global_config, Key, Value):
     
     if lang is None:
         lang = Language(1, 'English', 'English', 'en')
-    #lang = Session.query(Language).get(2)
     
     # First process the mandatory fields
     for (name, config) in fields['mandatory'].iteritems():
-        try:
-            # predefined values available
-            config['predefined']
-            currObject = _get_yaml_scan('key', True, name, db_keys, lang, False)
-            currChildren = []
-            for val in config['predefined']:
-                currChildren.append(_get_yaml_scan('value', True, val, db_values, lang, True))
-            currObject['children'] = currChildren
-        except KeyError:
-            # no predefined values available
-            currObject = _get_yaml_scan('key', True, name, db_keys, lang, True)
+
+        currObject = _get_admin_scan(Key, Value, name, config, lang, True,
+            False)
         extObject.append(currObject)
+
     # Then process the optional fields
     for (name, config) in fields['optional'].iteritems():
         
@@ -301,29 +293,11 @@ def get_translated_keys(request, global_config, Key, Value):
             local = True
         except KeyError:
             pass
-        
-        try:
-            # global predefined values available
-            config['predefined']
-            currObject = _get_yaml_scan('key', False, name, db_keys, lang, False, local)
-            currChildren = []
-            for val in config['predefined']:
-                currChildren.append(_get_yaml_scan('value', False, val, db_values, lang, True, local))
-            currObject['children'] = currChildren
-        except KeyError:
-            try:
-                # local predefined values available
-                config['values']['predefined']
-                currObject = _get_yaml_scan('key', False, name, db_keys, lang, False, local)
-                currChildren = []
-                for val in config['values']['predefined']:
-                    currChildren.append(_get_yaml_scan('value', False, val, db_values, lang, True, local))
-                currObject['children'] = currChildren
-            except KeyError:
-                # no predefined values available
-                currObject = _get_yaml_scan('key', False, name, db_keys, lang, True, local)
+
+        currObject = _get_admin_scan(Key, Value, name, config, lang, False,
+            local)
         extObject.append(currObject)
-        
+      
     ret = {}
     ret['success'] = True
     ret['children'] = extObject
@@ -603,6 +577,15 @@ def _get_field_config(Key, Value, name, config, language, mandatory=False):
         if len(store) > 0:
             store = sorted(store, key=lambda value: value[1])
 
+    # Don't try to put together fieldConfig if fieldLabel or fieldName are not
+    # there yet. This happens when initially loading application without any
+    # Keys or Values in database.
+    try:
+        fieldLabel
+        fieldName
+    except:
+        return None
+
     # Prepare return object
     fieldConfig = {
         'allowBlank': not mandatory,
@@ -620,44 +603,143 @@ def _get_field_config(Key, Value, name, config, language, mandatory=False):
     return fieldConfig
 
 
-def _get_yaml_scan(kv, mandatory, value, db_values, language, leaf, local=False):
-    
-    fieldConfig = {}
-    
-    fieldConfig['keyvalue'] = kv
-    fieldConfig['mandatory'] = mandatory
-    fieldConfig['exists'] = value in db_values
-    fieldConfig['value'] = value
-    fieldConfig['language'] = language.english_name
-    fieldConfig['local'] = local
-    if leaf:
-        fieldConfig['leaf'] = True
-    else:
-        fieldConfig['expanded'] = True
-        
-    if kv == 'key':
-        fieldConfig['iconCls'] = 'ico-key'
-    else:
-        fieldConfig['iconCls'] = 'ico-value'
+def _get_admin_scan(Key, Value, name, config, language, mandatory, local=False):
 
-    if language.id != 1:
-        if kv == 'key':
-            # try to find original
-            original = Session.query(A_Key).filter(A_Key.fk_a_key == None).filter(A_Key.key == value).first()
-            translated = Session.query(A_Key).filter(A_Key.original == original).filter(A_Key.language == language).first()
-            if original and translated:
-                fieldConfig['translation'] = translated.key
+    # Create fieldConfig with some obvious return values
+    fieldConfig = {
+        'language': language.english_name,
+        'mandatory': mandatory,
+        'local': local
+    }
+
+    # Keys
+
+    # Prepare subquery for translations
+    keyTranslated = Session.query(
+            Key.fk_key.label('original_id'),
+            Key.key.label('translated')
+        ).\
+        filter(Key.language == language).\
+        subquery()
+
+    # Query keys
+    keys = Session.query(
+            Key.key.label('original'),
+            keyTranslated.c.translated.label('translated'),
+            # Use column 'keyorvalue' to separate keys (0) from values (1)
+            func.char_length('').label('keyorvalue')
+        ).\
+        filter(Key.key == name).\
+        filter(Key.original == None).\
+        outerjoin(keyTranslated, keyTranslated.c.original_id == Key.id)
+
+    query = keys
+
+    # Predefined values available or not?
+    store = False
+    try:
+        if 'predefined' in config:
+            store = True
+    except KeyError:
+        pass
+
+    if store:
+        # Values
+        value_store = []
+
+        # Collect values first
+        all_vals = []
+        for val in config['predefined']:
+            all_vals.append(val)
+
+        # Prepare subquery for translations
+        valuesTranslated = Session.query(
+                Value.fk_value.label('original_id'),
+                Value.value.label('translated')
+            ).\
+            filter(Value.language == language).\
+            subquery()
+
+        # Query values
+        values = Session.query(
+                Value.value.label('original'),
+                valuesTranslated.c.translated.label('translated'),
+                # Use column 'keyorvalue' to separate keys (0) from values (1)
+                func.char_length(' ').label('keyorvalue')
+            ).\
+            filter(Value.value.in_(all_vals)).\
+            filter(Value.original == None).\
+            outerjoin(valuesTranslated, valuesTranslated.c.original_id == Value.id)
+
+        # Union with keys
+        query = keys.union(values)
+
+    # Go through each key/value
+    for x in query.all():
+        if x.keyorvalue == 0:
+            # Key
+            fieldConfig['keyvalue'] = 'key'
+            fieldConfig['exists'] = True
+            fieldConfig['value'] = x.original
+            fieldConfig['iconCls'] = 'ico-key'
+            if language.id == 1:
+                # Already in english
+                fieldConfig['translation'] = 0
+            elif x.translated is None:
+                # Not yet translated
+                fieldConfig['translation'] = 1
             else:
-                fieldConfig['translation'] = 1  # not yet translated
-        if kv == 'value':
-            # try to find original
-            original = Session.query(A_Value).filter(A_Value.fk_a_value == None).filter(A_Value.value == value).first()
-            translated = Session.query(A_Value).filter(A_Value.original == original).filter(A_Value.language == language).first()
-            if translated:
-                fieldConfig['translation'] = translated.value
+                fieldConfig['translation'] = x.translated
+        else:
+            # Value
+            val = {}
+            val['keyvalue'] = 'value'
+            val['exists'] = True
+            val['value'] = x.original
+            val['mandatory'] = mandatory
+            val['language'] = language.english_name
+            val['local'] = local
+            val['leaf'] = True
+            val['iconCls'] = 'ico-value'
+            if language.id == 1:
+                # Already in english
+                val['translation'] = 0
+            elif x.translated is None:
+                # Not yet translated
+                val['translation'] = 1
             else:
-                fieldConfig['translation'] = 1  # not yet translated
+                val['translation'] = x.translated
+            value_store.append(val)
+
+            # Remove value from array with all possible values
+            all_vals.remove(x.original)
+
+    # Key is not yet in database
+    try:
+        fieldConfig['keyvalue']
+    except KeyError:
+        fieldConfig['keyvalue'] = 'key'
+        fieldConfig['exists'] = False
+        fieldConfig['value'] = name
+        fieldConfig['iconCls'] = 'ico-key'
+        fieldConfig['translation'] = 1 # Not yet translated
+
+    if store:
+        # Add values which are not yet inserted to store
+        for i in all_vals:
+            val = {}
+            val['keyvalue'] = 'value'
+            val['exists'] = False
+            val['value'] = i
+            val['mandatory'] = mandatory
+            val['language'] = language.english_name
+            val['local'] = local
+            val['leaf'] = True
+            val['iconCls'] = 'ico-value'
+            val['translation'] = 1 # Not yet translated
+            value_store.append(val)
+        fieldConfig['children'] = value_store
     else:
-        fieldConfig['translation'] = 0          # key/value is already in english
-    
+        fieldConfig['leaf'] = True
+
     return fieldConfig
