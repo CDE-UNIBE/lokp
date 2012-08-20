@@ -8,8 +8,8 @@ Ext.define('Lmkp.controller.administrator.Main', {
     ],
 	
     stores: [
-    'YamlScan',
-    'ShYamlScan',
+    'ActivityYamlScan',
+    'StakeholderYamlScan',
     'Languages',
     'Profiles'
     ],
