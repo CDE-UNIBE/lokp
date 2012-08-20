@@ -142,7 +142,8 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                                     }
                                     // Delete old tag from list
                                     for (var x in ot) {
-                                        if (ot[x].get('id') == c.getInitialTagId()) {
+                                        if (ot[x] &&
+                                            ot[x].get('id') == c.getInitialTagId()) {
                                             ot.splice(x, 1);
                                         }
                                     }
@@ -154,22 +155,26 @@ Ext.define('Lmkp.view.activities.NewTaggroupWindow', {
                             }
                             // Check if main tag has changed
                             var new_main_tag = null;
-                            if (me.old_main_tag.get('key') != main_tag.key
-                                || me.old_main_tag.get('value') != main_tag.value) {
-                                new_main_tag = {
-                                    'key': main_tag.key,
-                                    'value': main_tag.value
-                                };
+                            if (me.old_main_tag) {
+                                if (me.old_main_tag.get('key') != main_tag.key
+                                    || me.old_main_tag.get('value') != main_tag.value) {
+                                    new_main_tag = {
+                                        'key': main_tag.key,
+                                        'value': main_tag.value
+                                    };
+                                }
                             }
 
                             // Any remaining tag has been deleted
                             for (x in ot) {
-                                deleteTags.push({
-                                    'key': ot[x].get('key'),
-                                    'value': ot[x].get('value'),
-                                    'id': ot[x].get('id'),
-                                    'op': 'delete'
-                                });
+                                if (ot[x]) {
+                                    deleteTags.push({
+                                        'key': ot[x].get('key'),
+                                        'value': ot[x].get('value'),
+                                        'id': ot[x].get('id'),
+                                        'op': 'delete'
+                                    });
+                                }
                             }
 
                             // only do submit if something changed
