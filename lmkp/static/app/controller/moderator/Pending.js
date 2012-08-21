@@ -69,7 +69,7 @@ Ext.define('Lmkp.controller.moderator.Pending', {
             Ext.Ajax.request({
                 url: '/' + type + '/history/' + guid,
                 params: {
-                    status: 'active,pending,overwritten',
+                    status: 'pending,active,inactive,deleted,rejected,edited',
                     involvements: 'full',
                     mark_complete: 'true'
                 },

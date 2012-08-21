@@ -26,53 +26,54 @@ _ = TranslationStringFactory('lmkp')
 
 activity_protocol2 = ActivityProtocol2(Session)
 
-# Translatable hashmap with all possible activity status
-statusMap = {
-'active': _('Active Activities', default='Active Activities'),
-'overwritten': _('Overwritten Activities', default='Overwritten Activities'),
-'pending': _('Pending Activities', default='Pending Activities'),
-'deleted': _('Deleted Activities', default='Deleted Activities'),
-'rejected': _('Rejected Activities', default='Rejected Activities')
-}
-
-def get_status(request):
-    """
-    Returns a list of requested and valid status
-    """
-
-    # Set the default status
-    defaultStatus = ['active']
-
-    # Get the status parameter if set, else active per default
-    requestedStatus = request.params.get('status', defaultStatus)
-    try:
-        status = requestedStatus.split(',')
-    except AttributeError:
-        status = requestedStatus
-
-    # Make sure that all status elements are in the statusMap. If not, remove it
-    for s in status:
-        if s not in statusMap:
-            status.remove(s)
-
-    # Make sure that not an empty status is returned
-    if len(status) == 0:
-        status = defaultStatus
-
-    # Return a list of valid status
-    return status
-
-def get_status_filter(request):
-    status = get_status(request)
-    if len(status) == 0:
-        return None
-    elif len(status) == 1:
-        return (Status.name == status[0])
-    else:
-        filters = []
-        for s in status:
-            filters.append((Status.name == s))
-        return or_(* filters)
+# TODO: quite possibly, this could be deleted ... Not sure though
+## Translatable hashmap with all possible activity status
+#statusMap = {
+#'active': _('Active Activities', default='Active Activities'),
+#'overwritten': _('Overwritten Activities', default='Overwritten Activities'),
+#'pending': _('Pending Activities', default='Pending Activities'),
+#'deleted': _('Deleted Activities', default='Deleted Activities'),
+#'rejected': _('Rejected Activities', default='Rejected Activities')
+#}
+#
+#def get_status(request):
+#    """
+#    Returns a list of requested and valid status
+#    """
+#
+#    # Set the default status
+#    defaultStatus = ['active']
+#
+#    # Get the status parameter if set, else active per default
+#    requestedStatus = request.params.get('status', defaultStatus)
+#    try:
+#        status = requestedStatus.split(',')
+#    except AttributeError:
+#        status = requestedStatus
+#
+#    # Make sure that all status elements are in the statusMap. If not, remove it
+#    for s in status:
+#        if s not in statusMap:
+#            status.remove(s)
+#
+#    # Make sure that not an empty status is returned
+#    if len(status) == 0:
+#        status = defaultStatus
+#
+#    # Return a list of valid status
+#    return status
+#
+#def get_status_filter(request):
+#    status = get_status(request)
+#    if len(status) == 0:
+#        return None
+#    elif len(status) == 1:
+#        return (Status.name == status[0])
+#    else:
+#        filters = []
+#        for s in status:
+#            filters.append((Status.name == s))
+#        return or_(* filters)
 
 def get_timestamp(request):
     """
