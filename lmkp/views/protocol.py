@@ -774,7 +774,8 @@ class Feature(object):
         in previous version.
         Also find new or removed Involvements.
         """
-        if previous is not None:           
+
+        if previous is not None:
             # Collect new TagGroups
             diff_new = []
             # Loop through TagGroups of current version
@@ -830,6 +831,9 @@ class Feature(object):
 
             # Reset all TagGroups to compare with next version
             for tg in self._taggroups:
+                tg.setDiffFlag(None)
+            # Also reset TagGroups of previous version
+            for tg in previous._taggroups:
                 tg.setDiffFlag(None)
 
             # Collect new Involvements
