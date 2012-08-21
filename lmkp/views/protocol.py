@@ -418,7 +418,8 @@ class Protocol(object):
 
         return False
 
-    def _add_review(self, request, item, previous_item, Changeset_Item, user):
+    def _add_review(self, request, item, previous_item, Changeset_Item, Db_Item,
+        user):
         """
         Add a review decision
         """
@@ -437,7 +438,8 @@ class Protocol(object):
         # Same for review decisions
         reviewdecisionArray = [
             'approved',
-            'rejected'
+            'rejected',
+            'edited'
         ]
 
         ret = {'success': False}
@@ -475,13 +477,23 @@ class Protocol(object):
                 # Set new version to 'deleted'
                 item.fk_status = statusArray.index('deleted') + 1
             else:
-                # Set new version to 'active'
+                # Set new version to 'active'. But first make sure there is no
+                # other one active by setting any with 'active' to 'inactive'
+                self.Session.query(Db_Item).\
+                    filter(Db_Item.identifier == item.identifier).\
+                    filter(Db_Item.fk_status == statusArray.index('active')+1).\
+                    update({Db_Item.fk_status: statusArray.index('inactive')+1})
                 item.fk_status = statusArray.index('active') + 1
 
         elif review_decision.id == reviewdecisionArray.index('rejected') + 1:
             # Rejected: Do not modify previous version and set new version to
             # 'rejected'
             item.fk_status = statusArray.index('rejected') + 1
+
+        elif review_decision.id == reviewdecisionArray.index('edited') + 1:
+            # Edited: Do not modify previous version and set new version to
+            # 'edited'
+            item.fk_status = statusArray.index('edited') + 1
 
         # Add Changeset_Review
         changeset_review = Changeset_Item(review_comment)

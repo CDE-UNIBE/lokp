@@ -160,7 +160,7 @@ def review(request):
 
     # The user can add a review
     ret = activity_protocol2._add_review(
-        request, activity, previous_activity, A_Changeset_Review, user
+        request, activity, previous_activity, A_Changeset_Review, Activity, user
     )
 
     return ret
