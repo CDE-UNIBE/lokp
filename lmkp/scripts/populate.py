@@ -115,6 +115,7 @@ def main(argv=sys.argv):
         # review decisions
         reviewdecision1 = _addIfNotExists_ID(Review_Decision(id=1, name='approved', description='Information was approved.'))
         reviewdecision1 = _addIfNotExists_ID(Review_Decision(id=2, name='rejected', description='Event or Involvement was rejected.'))
+        reviewdecision3 = _addIfNotExists_ID(Review_Decision(id=3, name='edited', description='Information was edited by a moderator'))
         # users (only 1 admin user)
         user1 = _addIfNotExists_NoIDUnique(User(username='user1', password='pw', email='user1@cde.unibe.ch'), User.username, 'user1')
         user1.groups.append(group1)

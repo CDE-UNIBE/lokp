@@ -69,7 +69,8 @@ def review(request):
 
     # The user can add a review
     ret = stakeholder_protocol._add_review(
-        request, stakeholder, previous_stakeholder, SH_Changeset_Review, user
+        request, stakeholder, previous_stakeholder, SH_Changeset_Review,
+        Stakeholder, user
     )
 
     return ret

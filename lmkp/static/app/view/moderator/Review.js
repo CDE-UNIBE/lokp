@@ -109,7 +109,7 @@ Ext.define('Lmkp.view.moderator.Review', {
                             xtype: xtype,
                             contentItem: data.data[k],
                             border: 0,
-                            editable: false
+                            editable: true
                         },
                         additionalPanelTop: noticepanel,
                         // Panel settings
