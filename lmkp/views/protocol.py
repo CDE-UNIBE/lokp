@@ -767,7 +767,8 @@ class Feature(object):
             pending = []
             for p in self._pending:
                 pending.append(p.to_table())
-            ret['pending'] = pending
+            ret['pending'] = sorted(pending, key=lambda k: k['version'],
+                reverse=True)
         if self._complete is not None:
             ret['complete'] = self._complete
 
