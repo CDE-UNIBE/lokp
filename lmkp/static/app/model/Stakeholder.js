@@ -16,8 +16,8 @@ Ext.define('Lmkp.model.Stakeholder', {
         name: 'timestamp',
         type: 'string'
     }, {
-        name: 'complete',
-        type: 'boolean'
+        name: 'missing_keys',
+        type: 'array'
     }],
 
     hasMany: [{
