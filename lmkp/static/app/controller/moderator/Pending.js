@@ -21,6 +21,12 @@ Ext.define('Lmkp.controller.moderator.Pending', {
 
     init: function(){
         this.control({
+            'lo_moderatormainpanel tabpanel': {
+                tabchange: this.onMainTabChange
+            },
+            'lo_administratormainpanel': {
+                tabchange: this.onMainTabChange
+            },
             'lo_moderatorpendingpanel': {
                 render: this.onRender
             },
@@ -43,6 +49,13 @@ Ext.define('Lmkp.controller.moderator.Pending', {
                 afterrender: this.renderCompleteColumn
             }
         });
+    },
+
+    onMainTabChange: function(panel, newCard, oldCard) {
+        // Reload pending stores when switching to pending tab
+        if (newCard.xtype == 'lo_moderatorpendingpanel') {
+            this.onRender();
+        }
     },
 
     /**
