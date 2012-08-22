@@ -19,8 +19,8 @@ Ext.define('Lmkp.model.Activity', {
         name: 'geometry',
         type: 'Lmkp.model.Point'
     }, {
-        name: 'complete',
-        type: 'boolean'
+        name: 'missing_keys',
+        type: 'array'
     }],
 	
     hasMany: [{
