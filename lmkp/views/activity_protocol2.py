@@ -60,7 +60,7 @@ class ActivityFeature2(Feature):
         self._status = status
         self._diff_info = diff_info
         self._pending = []
-        self._complete = None
+        self._missing_keys = None
 
     def to_table(self):
         """
@@ -100,8 +100,8 @@ class ActivityFeature2(Feature):
                 pending.append(p.to_table())
             ret['pending'] = sorted(pending, key=lambda k: k['version'],
                 reverse=True)
-        if self._complete is not None:
-            ret['complete'] = self._complete
+        if self._missing_keys is not None:
+            ret['missing_keys'] = self._missing_keys
 
         # Involvements
         if len(self._involvements) != 0:
