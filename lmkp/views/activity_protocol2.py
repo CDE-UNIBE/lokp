@@ -772,7 +772,7 @@ class ActivityProtocol2(Protocol):
         # Mark records as complete if requested
         # TODO: This should go to pending protocol
         if self._get_mark_complete(request) is True:
-            mandatory_keys = get_mandatory_keys(request, 'a')
+            mandatory_keys = get_mandatory_keys(request, 'a', True)
             for a in activities:
                 a.mark_complete(mandatory_keys)
 
@@ -969,7 +969,7 @@ class ActivityProtocol2(Protocol):
         # Mark records as complete if requested
         # TODO: This should go to pending protocol
         if self._get_mark_complete(request) is True:
-            mandatory_keys = get_mandatory_keys(request, 'a')
+            mandatory_keys = get_mandatory_keys(request, 'a', True)
             for d in data:
                 d.mark_complete(mandatory_keys)
 
