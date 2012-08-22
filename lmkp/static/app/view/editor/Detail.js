@@ -57,23 +57,53 @@ Ext.define('Lmkp.view.editor.Detail', {
             // Remove all existing panels
             panel.removeAll();
 
-            // Add the panel for the current activity
-            panel.add({
-                xtype: xtype,
-                contentItem: data,
-                border: 0,
-                bodyPadding: 0,
-                editable: true
-            });
-
-            // Add a panel for pending versions of current user
             if (data.raw.pending) {
+                // If the user has current versions pending
+
+                // Show a notice
                 panel.add({
-                    xtype: 'lo_itemspendinguserchanges',
-                    detailData: data.raw.pending,
-                    itemModel: data.modelName,
-                    detailsOnStart: false,
+                    bodyPadding: 5,
+                    html: 'You are seeing a pending version, which needs to be \n\
+                        reviewed before it is publicly visible',
                     bodyCls: 'notice'
+                });
+                // Display latest pending version
+                panel.add({
+                    xtype: xtype,
+                    contentItem: data.raw.pending[0],
+                    border: 0,
+                    bodyPadding: 0,
+                    editable: true
+                });
+                // Show original active version (hidden)
+                panel.add({
+                    xtype: xtype,
+                    contentItem: data,
+                    editable: true,
+                    hiddenOriginal: true,
+                    bodyCls: 'notice'
+                });
+                // Show other pending changes
+                if (data.raw.pending.length > 1) {
+                    // Remove the first pending version (shown already)
+                    data.raw.pending.shift();
+                    panel.add({
+                        xtype: 'lo_itemspendinguserchanges',
+                        detailData: data.raw.pending,
+                        itemModel: data.modelName,
+                        detailsOnStart: false,
+                        bodyCls: 'notice'
+                    });
+                }
+
+            } else {
+                // If there are no versions pending, simply show active version
+                panel.add({
+                    xtype: xtype,
+                    contentItem: data,
+                    border: 0,
+                    bodyPadding: 0,
+                    editable: true
                 });
             }
 

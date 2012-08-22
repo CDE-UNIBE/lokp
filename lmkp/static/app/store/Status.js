@@ -9,20 +9,25 @@ Ext.define('Lmkp.store.Status', {
 	
 	fields: ['db_name', 'display_name'],
 	
-	data: [{
+	data: [
+            {
 		'db_name': 'pending',
 		'display_name': Lmkp.ts.msg('status-pending')
-	}, {
+            }, {
 		'db_name': 'active',
 		'display_name': Lmkp.ts.msg('status-active')
-	}, {
-		'db_name': 'overwritten',
-		'display_name': Lmkp.ts.msg('status-overwritten')
-	}, {
+            }, {
+		'db_name': 'inactive',
+		'display_name': Lmkp.ts.msg('status-inactive')
+            }, {
 		'db_name': 'deleted',
 		'display_name': Lmkp.ts.msg('status-deleted')
-	}, {
+            }, {
 		'db_name': 'rejected',
 		'display_name': Lmkp.ts.msg('status-rejected')
-	}]
+            }, {
+                'db_name': 'edited',
+                'display_name': Lmkp.ts.msg('status-edited')
+            }
+        ]
 });

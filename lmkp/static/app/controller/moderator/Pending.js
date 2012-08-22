@@ -10,6 +10,12 @@ Ext.define('Lmkp.controller.moderator.Pending', {
         {
             ref: 'reviewPanel',
             selector: 'lo_moderatorreviewpanel'
+        }, {
+            ref: 'activityGridPanel',
+            selector: 'lo_moderatorpendingpanel gridpanel[itemId=activityGrid]'
+        }, {
+            ref: 'stakeholderGridPanel',
+            selector: 'lo_moderatorpendingpanel gridpanel[itemId=stakeholderGrid]'
         }
     ],
 
@@ -27,6 +33,9 @@ Ext.define('Lmkp.controller.moderator.Pending', {
             'lo_moderatorreviewpanel checkbox[name=comment_checkbox]': {
                 change: this.onReviewCommentCheckboxChange
             },
+            'lo_moderatorreviewpanel button[name=editTaggroup]': {
+                click: this.onEditTaggroupButtonClick
+            },
             'lo_moderatorreviewpanel button[name=review_submit]': {
                 click: this.onReviewSubmitButtonClick
             },
@@ -34,6 +43,51 @@ Ext.define('Lmkp.controller.moderator.Pending', {
                 afterrender: this.renderCompleteColumn
             }
         });
+    },
+
+    /**
+     * This is based very much on the function with the same name in
+     * controller\editor\Detail.js
+     * However, after successfully editing a taggroup, function
+     * 'onPendingEdit' is called to reload the content.
+     */
+    onEditTaggroupButtonClick: function(button) {
+
+        var taggroup = button.selected_taggroup;
+
+        // Activity or Stakeholder?
+        var taggrouppanel = button.up('panel');
+        var panel = taggrouppanel ? taggrouppanel.up('panel') : null;
+
+        var item_type = null;
+        var item = null;
+        if (panel && taggroup) {
+            if (panel.getXType() == 'lo_activitypanel') {
+                item_type = 'activity';
+                item = taggroup.getActivity();
+            } else if (panel.getXType() == 'lo_stakeholderpanel') {
+                item_type = 'stakeholder';
+                item = taggroup.getStakeholder();
+            }
+        }
+
+        if (item_type) {
+            // Prepare the window
+            var win = Ext.create('Lmkp.view.activities.NewTaggroupWindow', {
+                item_identifier: item.get('id'),
+                version: item.get('version'),
+                selected_taggroup: taggroup,
+                item_type: item_type
+            });
+
+            // When inserted successfully, call function to reload content
+            var controller = this;
+            win.on('successfulEdit', function() {
+                controller.onPendingEdit(item, button);
+            });
+            // Show
+            win.show();
+        }
     },
 
     onRender: function(comp){
@@ -69,7 +123,7 @@ Ext.define('Lmkp.controller.moderator.Pending', {
             Ext.Ajax.request({
                 url: '/' + type + '/history/' + guid,
                 params: {
-                    status: 'active,pending,overwritten',
+                    status: 'pending,active,inactive,deleted,rejected,edited',
                     involvements: 'full',
                     mark_complete: 'true'
                 },
@@ -122,6 +176,66 @@ Ext.define('Lmkp.controller.moderator.Pending', {
                 failure: function(form, action) {
                     // Give feedback
                     Ext.Msg.alert('Failure', action.result.msg);
+                }
+            });
+        }
+    },
+
+    /**
+     * Simulate a review decision and reload content
+     */
+    onPendingEdit: function(item, button) {
+
+        // Activity or Stakeholder?
+        var item_type = null;
+        if (item.modelName == 'Lmkp.model.Activity') {
+            item_type = 'activities';
+        } else if (item.modelName == 'Lmkp.model.Stakeholder') {
+            item_type = 'stakeholders';
+        }
+
+        if (item_type) {
+            var activityStore = this.getPendingActivityGridStore();
+            var activityGridPanel = this.getActivityGridPanel();
+            var stakeholderStore = this.getPendingStakeholderGridStore();
+            var stakeholderGridPanel = this.getStakeholderGridPanel();
+
+            // Do an AJAX request to simulate the submission of a review
+            Ext.Ajax.request({
+                url: item_type + '/review',
+                method: 'POST',
+                params: {
+                    'review_decision': 3, // 'edited'
+                    'identifier': item.get('id'),
+                    'version': item.get('version')
+                },
+                success: function() {
+
+                    // Activity or Stakeholder?
+                    var store = null;
+                    var gridpanel = null;
+                    if (item_type == 'activities') {
+                        store = activityStore;
+                        gridpanel = activityGridPanel;
+                    } else if (item_type == 'stakeholders') {
+                        store = stakeholderStore;
+                        gridpanel = stakeholderGridPanel;
+                    }
+                    
+                    if (store && gridpanel) {
+                        // Reload store
+                        store.load(function() {
+                            // After reload, select record in grid to show its details
+                            var record = this.findRecord('id', item.get('id'));
+                            gridpanel.getSelectionModel().select([record]);
+                            // Give feedback
+                            Ext.Msg.alert('Success', 'Edited changes were submitted');
+                        });
+                    }
+                },
+                failure: function() {
+                    // Give feedback
+                    Ext.Msg.alert('Failure', 'Edited changes could not be submitted');
                 }
             });
         }

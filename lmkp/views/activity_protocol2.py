@@ -98,7 +98,8 @@ class ActivityFeature2(Feature):
             pending = []
             for p in self._pending:
                 pending.append(p.to_table())
-            ret['pending'] = pending
+            ret['pending'] = sorted(pending, key=lambda k: k['version'],
+                reverse=True)
         if self._complete is not None:
             ret['complete'] = self._complete
 
@@ -784,7 +785,7 @@ class ActivityProtocol2(Protocol):
         # or use default
         if self._get_status(request, True) is None:
             if status_list is None:
-                status_list = ['active', 'overwritten']
+                status_list = ['active', 'inactive']
             status_filter = self.Session.query(Status).\
                 filter(Status.name.in_(status_list)).\
                 subquery()
