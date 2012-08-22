@@ -65,7 +65,7 @@ def merge_profiles(global_config, locale_config):
 
     return global_config
 
-def get_mandatory_keys(request, item):
+def get_mandatory_keys(request, item, translated=False):
     if item == 'a':
         config_yaml = ACTIVITY_YAML
     elif item == 'sh':
@@ -86,6 +86,36 @@ def get_mandatory_keys(request, item):
             keys.append(name)
 
     if len(keys) > 0:
+
+        if translated:
+            # Translate before returning
+            localizer = get_localizer(request)
+            translatedKeys = Session.query(
+                    A_Key.fk_key.label('original_id'),
+                    A_Key.key.label('translation')
+                ).\
+                join(Language).\
+                filter(Language.locale == localizer.locale_name).\
+                subquery()
+
+            queryKeys = Session.query(
+                    A_Key.key.label('original'),
+                    translatedKeys.c.translation.label('translation')
+                ).\
+                filter(A_Key.key.in_(keys)).\
+                filter(A_Key.original == None).\
+                outerjoin(translatedKeys, translatedKeys.c.original_id == A_Key.id)
+
+            translated_keys = []
+            for k in queryKeys.all():
+                if k.translation:
+                    translated_keys.append(k.translation)
+                else:
+                    translated_keys.append(k.original)
+
+            return translated_keys
+
+        # Return original keys
         return keys
 
     return None

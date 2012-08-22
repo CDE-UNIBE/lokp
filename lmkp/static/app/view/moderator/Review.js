@@ -64,7 +64,7 @@ Ext.define('Lmkp.view.moderator.Review', {
                 pending.push({
                     'current_version': data.data[i].version,
                     'previous_version': data.data[i].previous_version,
-                    'complete': data.data[i].complete
+                    'missing_keys': data.data[i].missing_keys
                 });
             }
             if (data.data[i].status == 'active') {
@@ -205,11 +205,19 @@ Ext.define('Lmkp.view.moderator.Review', {
                 ]
             });
 
-            // Show notice if not all fields are there
-            if (!pending[j].complete) {
+            // Show notice and list with missing fields if not all mandatory
+            // attributes are there.
+            if (pending[j].missing_keys.length > 0) {
+                var html = 'This version cannot be approved (set public) '
+                        + 'because not all mandatory fields are there.'
+                        + '<br/>Missing fields are:<ul>';
+                for (var mf in pending[j].missing_keys) {
+                    html += '<li><b>' + pending[j].missing_keys[mf] + '</b></li>';
+                }
+                html += '</ul>';
                 this.add({
                     xtype: 'panel',
-                    html: 'This version cannot be approved (set public) because not all mandatory fields are there.',
+                    html: html,
                     bodyCls: 'notice',
                     bodyPadding: 5
                 });

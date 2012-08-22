@@ -676,7 +676,7 @@ class Feature(object):
         self._diff_info = diff_info
         self._status = status
         self._pending = []
-        self._complete = None
+        self._missing_keys = None
 
     def add_taggroup(self, taggroup):
         """
@@ -722,14 +722,17 @@ class Feature(object):
             self.get_taggroups().remove(taggroup)
 
     def mark_complete(self, mandatory_keys):
-        self._complete = True
+
+        # Make a copy of mandatory keys
+        mk = mandatory_keys[:]
+
         for k in mandatory_keys:
-            key_found = False
             for tg in self.get_taggroups():
                 if tg.get_tag_by_key(k) is not None:
-                    key_found = True
+                    mk.remove(k)
                     break
-            self._complete = key_found and self._complete
+
+        self._missing_keys = mk
 
     def to_table(self):
         """
@@ -769,8 +772,8 @@ class Feature(object):
                 pending.append(p.to_table())
             ret['pending'] = sorted(pending, key=lambda k: k['version'],
                 reverse=True)
-        if self._complete is not None:
-            ret['complete'] = self._complete
+        if self._missing_keys is not None:
+            ret['missing_keys'] = self._missing_keys
 
         # Involvements
         if len(self._involvements) != 0:

@@ -643,7 +643,7 @@ class StakeholderProtocol(Protocol):
         # Mark records as complete if requested
         # TODO: This should go to pending protocol
         if self._get_mark_complete(request) is True:
-            mandatory_keys = get_mandatory_keys(request, 'sh')
+            mandatory_keys = get_mandatory_keys(request, 'sh', True)
             for sh in stakeholders:
                 sh.mark_complete(mandatory_keys)
 
@@ -841,7 +841,7 @@ class StakeholderProtocol(Protocol):
         # Mark records as complete if requested
         # TODO: This should go to pending protocol
         if self._get_mark_complete(request) is True:
-            mandatory_keys = get_mandatory_keys(request, 'sh')
+            mandatory_keys = get_mandatory_keys(request, 'sh', True)
             for d in data:
                 d.mark_complete(mandatory_keys)
 

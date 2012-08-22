@@ -37,7 +37,7 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
             columns: [{
                 header: 'Complete',
                 name: 'completeColumn',
-                dataIndex: 'complete',
+                dataIndex: 'missing_keys',
                 flex: 0,
                 sortable: true
             }, {
@@ -86,7 +86,7 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
                 {
                 header: 'Complete',
                 name: 'completeColumn',
-                dataIndex: 'complete',
+                dataIndex: 'missing_keys',
                 flex: 0,
                 sortable: true
             }, {
