@@ -78,7 +78,7 @@ def insert_landmatrix(request):
     Post-processing. Set second version of Activities (with Involvements)
     to 'active'. Also establish link between user1 and profile 'global'.
     """
-    # Set all Activities with version 1 to 'overwritten' (fk_status = 3)
+    # Set all Activities with version 1 to 'inactive' (fk_status = 3)
     Session.query(Activity).filter(Activity.version == 1).\
         update({Activity.fk_status: 3})
     # Set all Activities with version 2 to 'active' (fk_status = 2)
