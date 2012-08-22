@@ -23,6 +23,8 @@ from sqlalchemy import func
 import yaml
 from pyramid.security import unauthenticated_userid
 
+from lmkp.views.translation import statusMap
+
 class Protocol(object):
     """
     A class that contains general methods for the activity protocol and the
@@ -37,8 +39,8 @@ class Protocol(object):
         Returns a filter of IDs of a given timestamp.
         """
         
-        # Item is now either still 'active' or it is 'overwritten'
-        status_list = ['active', 'overwritten']
+        # Item is now either still 'active' or it is 'inactive'
+        status_list = ['active', 'inactive']
         
         timestamp = request.params.get('timestamp', None)
         if timestamp is not None:
@@ -128,7 +130,7 @@ class Protocol(object):
             # performant than requesting the database
             arr = []
             for s in status:
-                if s in ["pending", "active", "overwritten", "deleted", "rejected"]:
+                if s in statusMap:
                     arr.append(Status.name == s)
 
             if len(arr) > 0:
@@ -416,10 +418,30 @@ class Protocol(object):
 
         return False
 
-    def _add_review(self, request, item, previous_item, Changeset_Item, user):
+    def _add_review(self, request, item, previous_item, Changeset_Item, Db_Item,
+        user):
         """
         Add a review decision
         """
+
+        # Hard coded list of statii as in database. Needs to be in same order!
+        # Not very nice but efficient and more comprehensible than just using
+        # the indices.
+        statusArray = [
+            'pending',
+            'active',
+            'inactive',
+            'deleted',
+            'rejected',
+            'edited'
+        ]
+        # Same for review decisions
+        reviewdecisionArray = [
+            'approved',
+            'rejected',
+            'edited'
+        ]
+
         ret = {'success': False}
 
         # Collect POST values
@@ -434,10 +456,15 @@ class Protocol(object):
             request.POST['comment_textarea'] != ''):
             review_comment = request.POST['comment_textarea']
 
-        if review_decision.id == 1:
-            # Approved: Set previous version to 'overwritten'
+        if review_decision.id == reviewdecisionArray.index('approved') + 1:
+            # Approved
             if previous_item is not None:
-                previous_item.fk_status = 3
+                # Set previous version to 'inactive' if it was active before
+                if previous_item.fk_status == statusArray.index('active') + 1:
+                    previous_item.fk_status = statusArray.index('inactive') + 1
+                # Set previous version to 'edited' if it was pending before
+                elif previous_item.fk_status == statusArray.index('pending') + 1:
+                    previous_item.fk_status = statusArray.index('edited') + 1
 
             # Check if Item was deleted (no more tags)
             empty_item = True
@@ -448,15 +475,25 @@ class Protocol(object):
 
             if empty_item is True:
                 # Set new version to 'deleted'
-                item.fk_status = 4
+                item.fk_status = statusArray.index('deleted') + 1
             else:
-                # Set new version to 'active'
-                item.fk_status = 2
+                # Set new version to 'active'. But first make sure there is no
+                # other one active by setting any with 'active' to 'inactive'
+                self.Session.query(Db_Item).\
+                    filter(Db_Item.identifier == item.identifier).\
+                    filter(Db_Item.fk_status == statusArray.index('active')+1).\
+                    update({Db_Item.fk_status: statusArray.index('inactive')+1})
+                item.fk_status = statusArray.index('active') + 1
 
-        elif review_decision.id == 2:
+        elif review_decision.id == reviewdecisionArray.index('rejected') + 1:
             # Rejected: Do not modify previous version and set new version to
             # 'rejected'
-            item.fk_status = 5
+            item.fk_status = statusArray.index('rejected') + 1
+
+        elif review_decision.id == reviewdecisionArray.index('edited') + 1:
+            # Edited: Do not modify previous version and set new version to
+            # 'edited'
+            item.fk_status = statusArray.index('edited') + 1
 
         # Add Changeset_Review
         changeset_review = Changeset_Item(review_comment)
@@ -730,7 +767,8 @@ class Feature(object):
             pending = []
             for p in self._pending:
                 pending.append(p.to_table())
-            ret['pending'] = pending
+            ret['pending'] = sorted(pending, key=lambda k: k['version'],
+                reverse=True)
         if self._complete is not None:
             ret['complete'] = self._complete
 
@@ -749,7 +787,8 @@ class Feature(object):
         in previous version.
         Also find new or removed Involvements.
         """
-        if previous is not None:           
+
+        if previous is not None:
             # Collect new TagGroups
             diff_new = []
             # Loop through TagGroups of current version
@@ -805,6 +844,9 @@ class Feature(object):
 
             # Reset all TagGroups to compare with next version
             for tg in self._taggroups:
+                tg.setDiffFlag(None)
+            # Also reset TagGroups of previous version
+            for tg in previous._taggroups:
                 tg.setDiffFlag(None)
 
             # Collect new Involvements

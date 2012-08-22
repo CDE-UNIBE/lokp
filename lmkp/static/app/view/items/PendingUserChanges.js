@@ -54,7 +54,8 @@ Ext.define('Lmkp.view.items.PendingUserChanges', {
                     contentItem: record,
                     border: 0,
                     bodyPadding: 0,
-                    editable: false
+                    editable: true,
+                    margin: '0 0 15 0'
                 });
             });
 
@@ -66,7 +67,6 @@ Ext.define('Lmkp.view.items.PendingUserChanges', {
                 name: 'hideDetails',
                 html: '<a href="#" class="itemspendinguserchanges_hidedetails">'
                     + 'Hide changes</a>',
-                margin: '5 0 0 0',
                 border: 0
             });
         }
@@ -79,7 +79,7 @@ Ext.define('Lmkp.view.items.PendingUserChanges', {
         this.removeAll();
         this.add({
             name: 'showDetails',
-            html: 'There are changes pending. <a href="#" '
+            html: 'There are other changes pending. <a href="#" '
                 + 'class="itemspendinguserchanges_showdetails">Show changes</a>',
             border: 0
         });
