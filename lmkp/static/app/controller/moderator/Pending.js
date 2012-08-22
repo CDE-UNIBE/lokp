@@ -97,7 +97,7 @@ Ext.define('Lmkp.controller.moderator.Pending', {
 
     renderCompleteColumn: function(comp) {
         comp.renderer = function(value) {
-            if (value == true) {
+            if (value.length == 0) {
                 return 'OK'
             } else {
                 return '-'
