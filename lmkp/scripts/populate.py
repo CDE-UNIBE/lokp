@@ -83,9 +83,10 @@ def main(argv=sys.argv):
         # status
         status1 = _addIfNotExists_ID(Status(id=1, name='pending', description='Review pending. Not published yet.'))
         status2 = _addIfNotExists_ID(Status(id=2, name='active', description='Reviewed and accepted. Currently published.'))
-        status3 = _addIfNotExists_ID(Status(id=3, name='overwritten', description='Overwritten. Not published anymore.'))
-        status3 = _addIfNotExists_ID(Status(id=4, name='deleted', description='Deleted. Not published anymore.'))
-        status3 = _addIfNotExists_ID(Status(id=5, name='rejected', description='Reviewed and rejected. Never published.'))
+        status3 = _addIfNotExists_ID(Status(id=3, name='inactive', description='Inactive. Previously active.'))
+        status4 = _addIfNotExists_ID(Status(id=4, name='deleted', description='Deleted. Not published anymore.'))
+        status5 = _addIfNotExists_ID(Status(id=5, name='rejected', description='Reviewed and rejected. Never published.'))
+        status6 = _addIfNotExists_ID(Status(id=6, name='edited', description='Edited. Previously pending.'))
         # stakeholder roles
         sh_role1 = _addIfNotExists_ID(Stakeholder_Role(id=1, name='Donor'))
         sh_role2 = _addIfNotExists_ID(Stakeholder_Role(id=2, name='Implementing agency'))
@@ -114,7 +115,7 @@ def main(argv=sys.argv):
         # review decisions
         reviewdecision1 = _addIfNotExists_ID(Review_Decision(id=1, name='approved', description='Information was approved.'))
         reviewdecision1 = _addIfNotExists_ID(Review_Decision(id=2, name='rejected', description='Event or Involvement was rejected.'))
-        reviewdecision1 = _addIfNotExists_ID(Review_Decision(id=3, name='deleted', description='Event or Involvement was deleted.'))
+        reviewdecision3 = _addIfNotExists_ID(Review_Decision(id=3, name='edited', description='Information was edited by a moderator'))
         # users (only 1 admin user)
         user1 = _addIfNotExists_NoIDUnique(User(username='user1', password='pw', email='user1@cde.unibe.ch'), User.username, 'user1')
         user1.groups.append(group1)

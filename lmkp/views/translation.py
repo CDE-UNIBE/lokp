@@ -17,6 +17,16 @@ log = logging.getLogger(__name__)
 
 _ = TranslationStringFactory('lmkp')
 
+# Translatable hashmap with all possible status
+statusMap = {
+    'pending': _('pending', default='pending'),
+    'active': _('active', default='active'),
+    'inactive': _('inactive', default='inactive'),
+    'deleted': _('deleted', default='deleted'),
+    'rejected': _('rejected', default='rejected'),
+    'edited': _('edited', default='edited')
+}
+
 @view_config(route_name='ui_translation', renderer='javascript')
 def ui_messages(request):
 
@@ -81,11 +91,13 @@ def ui_messages(request):
         # details
         'details-toggle_all': _('details-toggle_all', default='Toggle all details'),
         # status
+        # Maybe hashmap (see top) could be used? > Used by store/Status.js
         'status-pending': _('status-pending', default='pending'),
         'status-active': _('status-active', default='active'),
-        'status-overwritten': _('status-overwritten', default='overwritten'),
+        'status-inactive': _('status-inactive', default='inactive'),
         'status-deleted': _('status-deleted', default='deleted'),
         'status-rejected': _('status-rejected', default='rejected'),
+        'status-edited': _('status-edited', default='edited'),
         # comments
         'comment': _('comment', default='Comment'),
         'comments': _('comments', default='Comments'),
