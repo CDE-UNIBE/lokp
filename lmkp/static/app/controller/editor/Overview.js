@@ -132,6 +132,12 @@ Ext.define('Lmkp.controller.editor.Overview', {
             },
             'lo_itemspendinguserchanges panel[name=hideDetails]': {
                 afterrender: this.onPendingUserChangesRender
+            },
+            'lo_activitypanel panel[name=showDetails]': {
+                afterrender: this.onRenderHiddenOriginal
+            },
+            'lo_activitypanel panel[name=hideDetails]': {
+                afterrender: this.onRenderHiddenOriginal
             }
         });
     },
@@ -966,6 +972,26 @@ Ext.define('Lmkp.controller.editor.Overview', {
             });
         } else if (panel.name == 'hideDetails') {
             var link_showDetails = upper_panel.getEl().select('a.itemspendinguserchanges_hidedetails');
+            link_showDetails.on('click', function() {
+                upper_panel.hideDetails();
+            });
+        }
+    },
+
+    /**
+     * Adds functions to the links to show or hide original
+     * Because HTML links cannot be accessed directly in Ext, it is necessary to
+     * register a listener after rendering the panel.
+     */
+    onRenderHiddenOriginal: function(panel) {
+        var upper_panel = panel.up('panel');
+        if (panel.name == 'showDetails') {
+            var link_showDetails = upper_panel.getEl().select('a.activitypanel_showdetails');
+            link_showDetails.on('click', function() {
+                upper_panel.showDetails();
+            });
+        } else if (panel.name == 'hideDetails') {
+            var link_showDetails = upper_panel.getEl().select('a.activitypanel_hidedetails');
             link_showDetails.on('click', function() {
                 upper_panel.hideDetails();
             });
