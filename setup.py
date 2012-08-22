@@ -28,7 +28,7 @@ requires = [
     'recaptcha-client==1.0.6'
     ]
 
-setup(name='LandMatrixKnowledgePlatform',
+setup(name='LMKP',
       version='0.1',
       description='The Land Matrix Knowledge Platform',
       long_description=README + '\n\n' + CHANGES,
