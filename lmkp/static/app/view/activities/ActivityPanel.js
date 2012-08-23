@@ -86,7 +86,7 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
             if (this.hiddenOriginal) {
                 this.add({
                     name: 'hideDetails',
-                    html: '<a href="#" class="activitypanel_hidedetails">'
+                    html: '<a href="#" class="itempanel_hidedetails">'
                         + 'Hide active version</a>',
                     margin: '5 0 0 0',
                     border: 0,
@@ -103,7 +103,7 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
         this.removeAll();
         this.add({
             name: 'showDetails',
-            html: '<a href="#" class="activitypanel_showdetails">'
+            html: '<a href="#" class="itempanel_showdetails">'
                 + 'Show active version</a>',
             border: 0,
             bodyStyle: 'background:transparent',

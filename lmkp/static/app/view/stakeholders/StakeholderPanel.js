@@ -25,7 +25,20 @@ Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
         // Call parent first
         this.callParent(arguments);
 
+        if (this.hiddenOriginal) {
+            this.hideDetails();
+        } else {
+            this.showDetails();
+        }
+    },
+
+    showDetails: function() {
+
         if (this.contentItem) {
+
+            // Remove any existing panels
+            this.removeAll();
+
             var editable = this.editable;
 
             // If it is not a Stakeholder Model ...
@@ -71,8 +84,33 @@ Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
                 });
             });
             this.add(invPanels);
+
+            // Show link to hide original version if needed
+            if (this.hiddenOriginal) {
+                this.add({
+                    name: 'hideDetails',
+                    html: '<a href="#" class="itempanel_hidedetails">'
+                        + 'Hide active version</a>',
+                    margin: '5 0 0 0',
+                    border: 0,
+                    bodyStyle: 'background:transparent'
+                });
+            }
+
         } else {
             this.html = Lmkp.ts.msg('unknown');
         }
+    },
+
+    hideDetails: function() {
+        this.removeAll();
+        this.add({
+            name: 'showDetails',
+            html: '<a href="#" class="itempanel_showdetails">'
+                + 'Show active version</a>',
+            border: 0,
+            bodyStyle: 'background:transparent',
+            margin: 0
+        });
     }
 });

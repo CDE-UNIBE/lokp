@@ -159,7 +159,7 @@ class StakeholderProtocol(Protocol):
                         # immediately, otherwise SQLAlchemy tries to do this the
                         # next time a tag is created and throws an error because
                         # of assumingly null values
-                        new_activity.tag_groups.append(new_taggroup)
+                        new_stakeholder.tag_groups.append(new_taggroup)
                         taggroupadded = True
 
             # Next step is to add new tags to this tag group without existing ids
