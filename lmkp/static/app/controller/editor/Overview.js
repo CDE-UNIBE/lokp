@@ -738,7 +738,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
         });
         var moveButton = Ext.create('Ext.button.Button', moveAction);
 
-        tbar.add(moveButton);
+        tbar.insert(1, moveButton);
     },
 
     _getFilterUrl: function(filters, prefix) {

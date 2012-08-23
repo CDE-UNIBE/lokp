@@ -118,12 +118,15 @@ class StakeholderProtocol(Protocol):
         # version with its tags
         for db_taggroup in self.Session.query(SH_Tag_Group).filter(SH_Tag_Group.fk_stakeholder == db_sh.id):
 
-            # Create a new tag group and add it to the new stakeholder version
+            # Create a new tag group but don't add it yet to the new stakeholder
+            # version. Indicator (taggroupadded) is needed because the moment
+            # when to add a taggroup to database is a very delicate thing in
+            # SQLAlchemy.
+            taggroupadded = False
             new_taggroup = SH_Tag_Group()
-            new_stakeholder.tag_groups.append(new_taggroup)
 
             # And loop the tags
-            for db_tag in self.Session.query(SH_Tag).filter(SH_Tag.fk_sh_tag_group == db_taggroup.id):
+            for db_tag in db_taggroup.tags:
 
                 # Before copying the tag, make sure that it is not to delete
                 copy_tag = True
@@ -151,6 +154,14 @@ class StakeholderProtocol(Protocol):
                     if db_taggroup.main_tag == db_tag:
                         new_taggroup.main_tag = new_tag
 
+                    if taggroupadded is False:
+                        # It is necessary to add taggroup to database
+                        # immediately, otherwise SQLAlchemy tries to do this the
+                        # next time a tag is created and throws an error because
+                        # of assumingly null values
+                        new_activity.tag_groups.append(new_taggroup)
+                        taggroupadded = True
+
             # Next step is to add new tags to this tag group without existing ids
             if 'taggroups' in stakeholder_dict:
                 for taggroup_dict in stakeholder_dict['taggroups']:
@@ -162,6 +173,12 @@ class StakeholderProtocol(Protocol):
                                 if 'main_tag' in taggroup_dict:
                                     if taggroup_dict['main_tag']['key'] == new_tag.key.key and taggroup_dict['main_tag']['value'] == new_tag.value.value:
                                         new_taggroup.main_tag = new_tag
+
+            # If taggroups were not added to database yet, then do it now. But
+            # only if add new tag groups to the new version if they have any
+            # tags in them (which is not the case if they were deleted).
+            if len(new_taggroup.tags) > 0 and taggroupadded is False:
+                new_stakeholder.tag_groups.append(new_taggroup)
 
         # Finally new tag groups (without id) needs to be added
         # (and loop all again)
@@ -341,8 +358,8 @@ class StakeholderProtocol(Protocol):
                                                        order_query.c.value.label('order_value'),
                                                        Stakeholder.fk_status
                                                        ).\
-            join(SH_Tag_Group).\
-            join(sh_tag_filter, 
+            outerjoin(SH_Tag_Group).\
+            outerjoin(sh_tag_filter,
                  sh_tag_filter.c.sh_filter_tg_id == SH_Tag_Group.id).\
             outerjoin(order_query).\
             group_by(Stakeholder.id, order_query.c.value)
@@ -365,8 +382,8 @@ class StakeholderProtocol(Protocol):
                                                        func.char_length('').label('order_value'),
                                                        Stakeholder.fk_status
                                                        ).\
-            join(SH_Tag_Group).\
-            join(sh_tag_filter, 
+            outerjoin(SH_Tag_Group).\
+            outerjoin(sh_tag_filter,
                  sh_tag_filter.c.sh_filter_tg_id == SH_Tag_Group.id).\
             group_by(Stakeholder.id)
 
@@ -511,10 +528,10 @@ class StakeholderProtocol(Protocol):
             join(relevant_stakeholders, relevant_stakeholders.c.order_id == Stakeholder.id).\
             join(Status).\
             join(SH_Changeset).\
-            join(SH_Tag_Group).\
-            join(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_sh_tag_group).\
-            join(SH_Key).\
-            join(SH_Value).\
+            outerjoin(SH_Tag_Group).\
+            outerjoin(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_sh_tag_group).\
+            outerjoin(SH_Key).\
+            outerjoin(SH_Value).\
             outerjoin(key_translation, key_translation.c.key_original_id == SH_Key.id).\
             outerjoin(value_translation, value_translation.c.value_original_id == SH_Value.id).\
             outerjoin(involvement_query, involvement_query.c.stakeholder_id == Stakeholder.id)
@@ -570,7 +587,7 @@ class StakeholderProtocol(Protocol):
             timestamp = i.timestamp
 
             # The current tag group id (not global unique)
-            taggroup_id = int(i.taggroup)
+            taggroup_id = int(i.taggroup) if i.taggroup is not None else None
 
             key = i.key_translated if i.key_translated is not None else i.key
             value = i.value_translated if i.value_translated is not None else i.value
@@ -712,10 +729,10 @@ class StakeholderProtocol(Protocol):
             join(status_filter).\
             join(SH_Changeset).\
             join(User).\
-            join(SH_Tag_Group).\
-            join(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_tag_group).\
-            join(SH_Key).\
-            join(SH_Value).\
+            outerjoin(SH_Tag_Group).\
+            outerjoin(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_tag_group).\
+            outerjoin(SH_Key).\
+            outerjoin(SH_Value).\
             outerjoin(key_translation, key_translation.c.key_original_id == SH_Key.id).\
             outerjoin(value_translation, value_translation.c.value_original_id == SH_Value.id).\
             outerjoin(involvement_query, involvement_query.c.stakeholder_id == Stakeholder.id).\
@@ -757,7 +774,7 @@ class StakeholderProtocol(Protocol):
             uid = str(i.stakeholder_identifier)
 
             # The current tag group id (not global unique)
-            taggroup_id = int(i.taggroup)
+            taggroup_id = int(i.taggroup) if i.taggroup is not None else None
 
             key = i.key_translated if i.key_translated is not None else i.key
             value = i.value_translated if i.value_translated is not None else i.value
