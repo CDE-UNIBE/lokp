@@ -26,46 +26,58 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
         // Add a field for each Tag of current TagGroup
         if (this.taggroup) {
 
-            // First: main tag
-            var main_tag = this.taggroup.main_tag().first();
-            if (main_tag) {
-                me.add(me._getTagPanel(
-                    main_tag.get('key'), main_tag.get('value'), true
-                    ));
-            }
+            if (this.taggroup.get('id') != 0) {
+                // Tag group is not empty
 
-            // Second: all other tags (don't repeat main tag)
-            var tStore = this.taggroup.tags();
-            tStore.each(function(record) {
-                if (!main_tag || record.get('id') != main_tag.get('id')) {
+                // First: main tag
+                var main_tag = this.taggroup.main_tag().first();
+                if (main_tag) {
                     me.add(me._getTagPanel(
-                        record.get('key'), record.get('value')
+                        main_tag.get('key'), main_tag.get('value'), true
                         ));
                 }
-            });
 
-            // Add buttons to edit TagGroup
-            
-            var buttons = ['->', {
-                name: 'toggleDetails',
-                text: Lmkp.ts.msg('details'),
-                enableToggle: true,
-                pressed: true
-            }];
-        
-            if(this.editable){
-                buttons.push({
-                    name: 'editTaggroup',
-                    text: Lmkp.ts.msg('edit'),
-                    selected_taggroup: this.taggroup
+                // Second: all other tags (don't repeat main tag)
+                var tStore = this.taggroup.tags();
+                tStore.each(function(record) {
+                    if (!main_tag || record.get('id') != main_tag.get('id')) {
+                        me.add(me._getTagPanel(
+                            record.get('key'), record.get('value')
+                        ));
+                    }
+                });
+
+                // Add buttons to edit TagGroup
+
+                var buttons = ['->', {
+                    name: 'toggleDetails',
+                    text: Lmkp.ts.msg('details'),
+                    enableToggle: true,
+                    pressed: true
+                }];
+
+                if(this.editable){
+                    buttons.push({
+                        name: 'editTaggroup',
+                        text: Lmkp.ts.msg('edit'),
+                        selected_taggroup: this.taggroup
+                    });
+                }
+
+                me.addDocked({
+                    dock: 'top',
+                    xtype: 'toolbar',
+                    items: buttons
+                });
+                
+            } else {
+                // Tag group is empty
+                me.add({
+                    xtype: 'panel',
+                    html: 'No attributes to show',
+                    border: 0
                 });
             }
-            
-            me.addDocked({
-                dock: 'top',
-                xtype: 'toolbar',
-                items: buttons
-            });
         }
     },
 

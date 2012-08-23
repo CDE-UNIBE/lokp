@@ -6,7 +6,8 @@ Ext.define('Lmkp.controller.editor.Detail', {
     ],
 
     requires: [
-    'Ext.window.MessageBox'
+        'Ext.window.MessageBox',
+        'Lmkp.utils.MessageBox'
     ],
 
     stores: [
@@ -23,6 +24,9 @@ Ext.define('Lmkp.controller.editor.Detail', {
         this.control({
             'lo_editordetailpanel button[itemId=add-taggroup-button]':{
                 click: this.onAddTaggroupButtonClick
+            },
+            'lo_editordetailpanel button[itemId=delete-item-button]': {
+                click: this.onItemDeleteButtonClick
             },
             'lo_editordetailpanel button[itemId="show-all-details"]': {
                 toggle: this.onShowDetailsToggle
@@ -177,5 +181,90 @@ Ext.define('Lmkp.controller.editor.Detail', {
             controller.showDetails(null, [selection]);
         });
         win.show();
+    },
+
+    onItemDeleteButtonClick: function() {
+
+        var detailPanel = Ext.ComponentQuery.query('lo_editordetailpanel')[0];
+
+        var selection = detailPanel.getCurrent()
+
+        // If no activity is selected, show an info window and exit.
+        if(!selection.id){
+            Ext.Msg.show({
+                title: 'Edit Activity',
+                msg: 'Please select an activity first.',
+                buttons: Ext.Msg.OK,
+                icon: Ext.window.MessageBox.INFO
+            });
+            return;
+        }
+
+        // Activity or Stakeholder?
+        var item = null;
+        if (selection.modelName == 'Lmkp.model.Activity') {
+            item = 'activities';
+        } else if (selection.modelName == 'Lmkp.model.Stakeholder') {
+            item = 'stakeholders';
+        }
+
+        var confirmwindow = Ext.create('Lmkp.utils.MessageBox');
+
+        var me = this;
+        confirmwindow.confirm('Delete', 'Are you sure?', function(button) {
+            if (button === 'yes') {
+                // Collect data: Taggroups
+                var deletedTaggroups = [];
+                var tgStore = selection.taggroups();
+                tgStore.each(function(taggroup) {
+                    // Collect data: Tags
+                    var deletedTags = [];
+                    var tags = taggroup.tags();
+                    tags.each(function(tag) {
+                        deletedTags.push({
+                            'op': 'delete',
+                            'id': tag.get('id'),
+                            'key': tag.get('key'),
+                            'value': tag.get('value')
+                        });
+                    });
+                    deletedTaggroups.push({
+                        'op': 'delete',
+                        'id': taggroup.get('id'),
+                        'tags': deletedTags
+                    });
+                });
+
+                // Prepare diff
+                var diffObject = {};
+                diffObject[item] = [
+                    {
+                        'id': selection.get('id'),
+                        'version': selection.get('version'),
+                        'taggroups': deletedTaggroups
+                    }
+                ];
+
+                // send JSON through AJAX
+                Ext.Ajax.request({
+                    url: item,
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json;charset=utf-8'
+                    },
+                    jsonData: diffObject,
+                    success: function() {
+                        // Reload detail panel
+                        var controller = me.getController('editor.Overview');
+                        controller.showDetails(null, [selection]);
+                        // Show feedback
+                        Ext.Msg.alert('Success', 'The information was successfully submitted. It will be reviewed shortly.');
+                    },
+                    failure: function() {
+                        Ext.Msg.alert('Failure', 'The information could not be submitted.');
+                    }
+                });
+            }
+        });
     }
 });
