@@ -796,48 +796,54 @@ class Feature(object):
             diff_new = []
             # Loop through TagGroups of current version
             for tg in self._taggroups:
-                # Indicator (None, False or TagGroup) to check if all Tags were found in the same TagGroup
-                foundinsametaggroup = None
-                # Loop through Tags of current version
-                for t in tg.get_tags():
-                    # Indicator (True or False) to flag if a Tag was found in the previous version
-                    newtag_found = False
-                    # Variable to store the old TagGroup where a Tag was found
-                    foundintaggroup = None
-                    # Try to find the same Tag in previous version by looping through TagGroups of previous version
-                    for tg_old in previous.get_taggroups():
-                        # Only look at old TagGroups that were not yet found
-                        if tg_old.getDiffFlag() is not True:
-                            # Loop through Tags of previous version
-                            for t_old in tg_old.get_tags():
-                                # Compare Key and Value of current and previous Tag
-                                if t.get_key() == t_old.get_key() \
-                                    and t.get_value() == t_old.get_value():
-                                    # Tag is found in previous version, set indicator and store TagGroup
-                                    newtag_found = True
-                                    foundintaggroup = tg_old
-                                    break
-
-                    # Tag was found in old Tags
-                    if newtag_found is True:
-                        # For the first tag of a TagGroup, store the old TagGroup
-                        if foundinsametaggroup is None:
-                            foundinsametaggroup = foundintaggroup
-                        # Check if the found Tag is not in the same TagGroup as the others
-                        elif foundintaggroup != foundinsametaggroup:
-                            foundinsametaggroup = False
-                    # Tag was not found after looping through all old Tags
-                    else:
-                        foundinsametaggroup = False
-
-                # All Tags were in the same TagGroup
-                if foundinsametaggroup is not False:
-                    if foundinsametaggroup is not None:
-                        # Mark old TagGroup as found
-                        foundinsametaggroup.setDiffFlag(True)
-                # Else, TagGroup is new
+                # Special case: Item was deleted, then the taggroup has only one empty tag: Do not mark this as new attribute.
+                if (len(tg.get_tags()) == 1
+                    and tg.get_tags()[0].get_key() is None
+                    and tg.get_tags()[0].get_value() is None):
+                    pass
                 else:
-                    diff_new.append(tg.to_table())
+                    # Indicator (None, False or TagGroup) to check if all Tags were found in the same TagGroup
+                    foundinsametaggroup = None
+                    # Loop through Tags of current version
+                    for t in tg.get_tags():
+                        # Indicator (True or False) to flag if a Tag was found in the previous version
+                        newtag_found = False
+                        # Variable to store the old TagGroup where a Tag was found
+                        foundintaggroup = None
+                        # Try to find the same Tag in previous version by looping through TagGroups of previous version
+                        for tg_old in previous.get_taggroups():
+                            # Only look at old TagGroups that were not yet found
+                            if tg_old.getDiffFlag() is not True:
+                                # Loop through Tags of previous version
+                                for t_old in tg_old.get_tags():
+                                    # Compare Key and Value of current and previous Tag
+                                    if t.get_key() == t_old.get_key() \
+                                        and t.get_value() == t_old.get_value():
+                                        # Tag is found in previous version, set indicator and store TagGroup
+                                        newtag_found = True
+                                        foundintaggroup = tg_old
+                                        break
+
+                        # Tag was found in old Tags
+                        if newtag_found is True:
+                            # For the first tag of a TagGroup, store the old TagGroup
+                            if foundinsametaggroup is None:
+                                foundinsametaggroup = foundintaggroup
+                            # Check if the found Tag is not in the same TagGroup as the others
+                            elif foundintaggroup != foundinsametaggroup:
+                                foundinsametaggroup = False
+                        # Tag was not found after looping through all old Tags
+                        else:
+                            foundinsametaggroup = False
+
+                    # All Tags were in the same TagGroup
+                    if foundinsametaggroup is not False:
+                        if foundinsametaggroup is not None:
+                            # Mark old TagGroup as found
+                            foundinsametaggroup.setDiffFlag(True)
+                    # Else, TagGroup is new
+                    else:
+                        diff_new.append(tg.to_table())
 
             # Collect old TagGroups that are not there anymore
             diff_old = []

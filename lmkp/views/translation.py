@@ -54,6 +54,10 @@ def ui_messages(request):
         'details': _('details', default='details'),
         'map-view': _('map-view', default='Map View'),
         'version': _('version', default='Version'),
+        'yes': _('yes', default='Yes'),
+        'no': _('no', default='No'),
+        'ok': _('ok', default='OK'),
+        'cancel': _('cancel', default='Cancel'),
         # activities / filtering
         'activities-title': _('activities-title', default='Activities'),
         'activities-table_view': _('activities-table_view', default='Activities Table View'),
