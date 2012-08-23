@@ -722,6 +722,10 @@ class Feature(object):
             self.get_taggroups().remove(taggroup)
 
     def mark_complete(self, mandatory_keys):
+        """
+        Return a list of missing mandatory keys. Return [0] if item is to be
+        deleted
+        """
 
         # Make a copy of mandatory keys
         mk = mandatory_keys[:]
@@ -731,6 +735,15 @@ class Feature(object):
                 if tg.get_tag_by_key(k) is not None:
                     mk.remove(k)
                     break
+
+        # If all mandatory keys are still there, check if version is pending to 
+        # be deleted
+        if len(mk) == len(mandatory_keys):
+            if len(self.get_taggroups()) > 0:
+                if len(self.get_taggroups()[0].get_tags()) > 0:
+                    if (self.get_taggroups()[0].get_tags()[0].get_key() is None
+                        and self.get_taggroups()[0].get_tags()[0].get_value() is None):
+                        mk = [0]
 
         self._missing_keys = mk
 

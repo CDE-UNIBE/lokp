@@ -208,13 +208,22 @@ Ext.define('Lmkp.view.moderator.Review', {
             // Show notice and list with missing fields if not all mandatory
             // attributes are there.
             if (pending[j].missing_keys.length > 0) {
-                var html = 'This version cannot be approved (set public) '
-                        + 'because not all mandatory fields are there.'
-                        + '<br/>Missing fields are:<ul>';
-                for (var mf in pending[j].missing_keys) {
-                    html += '<li><b>' + pending[j].missing_keys[mf] + '</b></li>';
+                if (pending[j].missing_keys.length == 1 &&
+                    pending[j].missing_keys[0] == 0) {
+                    // Item is pending to be deleted
+                    var html = 'This version is pending to be deleted. If '
+                        + 'approved, it will no longer be visible.';
+                } else {
+                    // Show list of missing keys
+                    var html = 'This version cannot be approved (set public) '
+                            + 'because not all mandatory fields are there.'
+                            + '<br/>Missing fields are:<ul>';
+                    for (var mf in pending[j].missing_keys) {
+                        html += '<li><b>' + pending[j].missing_keys[mf] + '</b></li>';
+                    }
+                    html += '</ul>';
                 }
-                html += '</ul>';
+                
                 this.add({
                     xtype: 'panel',
                     html: html,

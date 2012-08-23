@@ -113,7 +113,12 @@ Ext.define('Lmkp.controller.moderator.Pending', {
             if (value.length == 0) {
                 return 'OK'
             } else {
-                return '-'
+                // Special case: item is to be deleted: [0]
+                if (value.length == 1 && value[0] == 0) {
+                    return '*'
+                } else {
+                    return '-'
+                }
             }
         }
     },
