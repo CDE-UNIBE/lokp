@@ -37,6 +37,12 @@ Ext.define('Lmkp.view.activities.Details', {
             scale: 'medium',
             text: 'Add further information',
             tooltip: Lmkp.ts.msg('activities-add_further_information')
+        }, '->', {
+            // @TODO: Add an iconCls
+            text: 'Delete', // also translate tooltip
+            scale: 'medium',
+            itemId: 'delete-item-button',
+            tooltip: 'to be translated'
         }]
     }
 	

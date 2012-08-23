@@ -21,6 +21,12 @@ Ext.define('Lmkp.controller.moderator.Pending', {
 
     init: function(){
         this.control({
+            'lo_moderatormainpanel tabpanel': {
+                tabchange: this.onMainTabChange
+            },
+            'lo_administratormainpanel': {
+                tabchange: this.onMainTabChange
+            },
             'lo_moderatorpendingpanel': {
                 render: this.onRender
             },
@@ -43,6 +49,13 @@ Ext.define('Lmkp.controller.moderator.Pending', {
                 afterrender: this.renderCompleteColumn
             }
         });
+    },
+
+    onMainTabChange: function(panel, newCard, oldCard) {
+        // Reload pending stores when switching to pending tab
+        if (newCard.xtype == 'lo_moderatorpendingpanel') {
+            this.onRender();
+        }
     },
 
     /**
@@ -100,7 +113,12 @@ Ext.define('Lmkp.controller.moderator.Pending', {
             if (value.length == 0) {
                 return 'OK'
             } else {
-                return '-'
+                // Special case: item is to be deleted: [0]
+                if (value.length == 1 && value[0] == 0) {
+                    return '*'
+                } else {
+                    return '-'
+                }
             }
         }
     },

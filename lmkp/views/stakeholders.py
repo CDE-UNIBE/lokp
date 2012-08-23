@@ -41,25 +41,28 @@ def review(request):
         return {'success': False, 'msg': 'The Stakeholder was not found'}
 
     # If review decision is 'approved', make sure that all mandatory fields are
-    # there
+    # there, except if it is to be deleted
     try:
         review_decision = int(request.POST['review_decision'])
     except:
         review_decision = None
 
     if review_decision == 1: # Approved
-        mandatory_keys = get_mandatory_keys(request, 'sh')
-        # Query keys
-        activity_keys = Session.query(SH_Key.key).\
-            join(SH_Tag).\
-            join(SH_Tag_Group, SH_Tag.fk_tag_group == SH_Tag_Group.id).\
-            filter(SH_Tag_Group.stakeholder == stakeholder)
-        keys = []
-        for k in activity_keys.all():
-            keys.append(k.key)
-        for mk in mandatory_keys:
-            if mk not in keys:
-                return {'success': False, 'msg': 'Not all mandatory keys are provided.'}
+        # Only check for mandatory keys if new version is not to be deleted
+        # (has no tag groups)
+        if len(stakeholder.tag_groups) > 0:
+            mandatory_keys = get_mandatory_keys(request, 'sh')
+            # Query keys
+            stakeholder_keys = Session.query(SH_Key.key).\
+                join(SH_Tag).\
+                join(SH_Tag_Group, SH_Tag.fk_tag_group == SH_Tag_Group.id).\
+                filter(SH_Tag_Group.stakeholder == stakeholder)
+            keys = []
+            for k in stakeholder_keys.all():
+                keys.append(k.key)
+            for mk in mandatory_keys:
+                if mk not in keys:
+                    return {'success': False, 'msg': 'Not all mandatory keys are provided.'}
 
     # Also query previous Stakeholder if available
     previous_stakeholder = Session.query(Stakeholder).\
