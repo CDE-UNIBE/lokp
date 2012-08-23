@@ -42,5 +42,18 @@ Ext.define('Lmkp.model.Stakeholder', {
             }
         }
         return values;
+    },
+
+    isEmpty: function() {
+        var empty = true;
+        var taggroupStore = this.taggroups();
+        taggroupStore.each(function(taggroup) {
+            if (empty && taggroup.get('id') != 0) {
+                empty = empty && false;
+            } else {
+                empty = empty && true;
+            }
+        });
+        return empty;
     }
 });

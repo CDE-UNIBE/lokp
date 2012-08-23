@@ -138,6 +138,12 @@ Ext.define('Lmkp.controller.editor.Overview', {
             },
             'lo_activitypanel panel[name=hideDetails]': {
                 afterrender: this.onRenderHiddenOriginal
+            },
+            'lo_stakeholderpanel panel[name=showDetails]': {
+                afterrender: this.onRenderHiddenOriginal
+            },
+            'lo_stakeholderpanel panel[name=hideDetails]': {
+                afterrender: this.onRenderHiddenOriginal
             }
         });
     },
@@ -738,7 +744,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
         });
         var moveButton = Ext.create('Ext.button.Button', moveAction);
 
-        tbar.add(moveButton);
+        tbar.insert(1, moveButton);
     },
 
     _getFilterUrl: function(filters, prefix) {
@@ -986,12 +992,12 @@ Ext.define('Lmkp.controller.editor.Overview', {
     onRenderHiddenOriginal: function(panel) {
         var upper_panel = panel.up('panel');
         if (panel.name == 'showDetails') {
-            var link_showDetails = upper_panel.getEl().select('a.activitypanel_showdetails');
+            var link_showDetails = upper_panel.getEl().select('a.itempanel_showdetails');
             link_showDetails.on('click', function() {
                 upper_panel.showDetails();
             });
         } else if (panel.name == 'hideDetails') {
-            var link_showDetails = upper_panel.getEl().select('a.activitypanel_hidedetails');
+            var link_showDetails = upper_panel.getEl().select('a.itempanel_hidedetails');
             link_showDetails.on('click', function() {
                 upper_panel.hideDetails();
             });
