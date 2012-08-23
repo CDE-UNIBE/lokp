@@ -69,24 +69,27 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
             // Add all panels at once (layout needs to be done only once)
             this.add(tgPanels);
 
-            // Show involvements
-            var involvementStore = this.contentItem.involvements();
-            var invPanels = [];
-            involvementStore.each(function(record) {
-                invPanels.push({
-                    xtype: 'lo_involvementpanel',
-                    involvement: record,
-                    involvement_type: 'stakeholder',
-                    editable: editable
+            // Show involvements: Only show them if Activity is not deleted
+            // (empty)
+            if (!this.contentItem.isEmpty()) {
+                var involvementStore = this.contentItem.involvements();
+                var invPanels = [];
+                involvementStore.each(function(record) {
+                    invPanels.push({
+                        xtype: 'lo_involvementpanel',
+                        involvement: record,
+                        involvement_type: 'stakeholder',
+                        editable: editable
+                    });
                 });
-            });
-            this.add(invPanels);
+                this.add(invPanels);
+            }
 
             // Show link to hide original version if needed
             if (this.hiddenOriginal) {
                 this.add({
                     name: 'hideDetails',
-                    html: '<a href="#" class="activitypanel_hidedetails">'
+                    html: '<a href="#" class="itempanel_hidedetails">'
                         + 'Hide active version</a>',
                     margin: '5 0 0 0',
                     border: 0,
@@ -103,7 +106,7 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
         this.removeAll();
         this.add({
             name: 'showDetails',
-            html: '<a href="#" class="activitypanel_showdetails">'
+            html: '<a href="#" class="itempanel_showdetails">'
                 + 'Show active version</a>',
             border: 0,
             bodyStyle: 'background:transparent',
