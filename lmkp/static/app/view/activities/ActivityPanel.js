@@ -69,18 +69,21 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
             // Add all panels at once (layout needs to be done only once)
             this.add(tgPanels);
 
-            // Show involvements
-            var involvementStore = this.contentItem.involvements();
-            var invPanels = [];
-            involvementStore.each(function(record) {
-                invPanels.push({
-                    xtype: 'lo_involvementpanel',
-                    involvement: record,
-                    involvement_type: 'stakeholder',
-                    editable: editable
+            // Show involvements: Only show them if Activity is not deleted
+            // (empty)
+            if (!this.contentItem.isEmpty()) {
+                var involvementStore = this.contentItem.involvements();
+                var invPanels = [];
+                involvementStore.each(function(record) {
+                    invPanels.push({
+                        xtype: 'lo_involvementpanel',
+                        involvement: record,
+                        involvement_type: 'stakeholder',
+                        editable: editable
+                    });
                 });
-            });
-            this.add(invPanels);
+                this.add(invPanels);
+            }
 
             // Show link to hide original version if needed
             if (this.hiddenOriginal) {

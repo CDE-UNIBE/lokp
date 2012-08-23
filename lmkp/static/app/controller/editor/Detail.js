@@ -210,6 +210,7 @@ Ext.define('Lmkp.controller.editor.Detail', {
 
         var confirmwindow = Ext.create('Lmkp.utils.MessageBox');
 
+        var me = this;
         confirmwindow.confirm('Delete', 'Are you sure?', function(button) {
             if (button === 'yes') {
                 // Collect data: Taggroups
@@ -253,6 +254,10 @@ Ext.define('Lmkp.controller.editor.Detail', {
                     },
                     jsonData: diffObject,
                     success: function() {
+                        // Reload detail panel
+                        var controller = me.getController('editor.Overview');
+                        controller.showDetails(null, [selection]);
+                        // Show feedback
                         Ext.Msg.alert('Success', 'The information was successfully submitted. It will be reviewed shortly.');
                     },
                     failure: function() {
