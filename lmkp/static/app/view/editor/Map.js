@@ -146,7 +146,7 @@ Ext.define('Lmkp.view.editor.Map',{
         // Create the context layers menu. It will append the context layers to
         // the map
         var contextLayersMenu = Ext.create('Lmkp.view.editor.ContextLayers', {
-            map: this.map
+            parent: this
         });
         // Add the context layers to the toolbar.
         this.tbar.add({
