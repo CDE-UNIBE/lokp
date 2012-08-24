@@ -106,6 +106,15 @@ Ext.define('Lmkp.view.editor.Map',{
         });
         this.tbar.add(Ext.create('Ext.button.Button', zoomBoxAction));
 
+        var zoomOutAction = Ext.create('GeoExt.Action',{
+            control: new OpenLayers.Control.ZoomOut(),
+            map: this.map,
+            iconCls: 'zoom-out-button',
+            scale: 'medium',
+            tooltip: 'Zoom out'
+        });
+        this.tbar.add(Ext.create('Ext.button.Button', zoomOutAction));
+
         this.tbar.add(Ext.create('Ext.button.Button', {
             iconCls: 'zoom-region-button',
             itemId: 'zoomRegionButton',

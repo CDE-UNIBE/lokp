@@ -27,9 +27,7 @@ Ext.define('Lmkp.controller.editor.ContextLayers', {
 
         // Construct the WMS GetLegendGraphic URL
         var imgsrc = layer.url
-        + '?service=WMS&version=1.1.0&request=GetLegendGraphic&FORMAT=image/png&width='
-        + width
-        + '&layer='
+        + '?service=WMS&version=1.1.0&request=GetLegendGraphic&FORMAT=image/png&width=25&height=25&layer='
         + layer.params.LAYERS
         + '&style='
         + layer.params.STYLES
@@ -38,9 +36,17 @@ Ext.define('Lmkp.controller.editor.ContextLayers', {
             layout: 'fit',
             hideMode: 'display',
             items: {
+                // Redo the layout after rendering to make sure the whole image
+                // is shown. But not sure if this is really the final and best
+                // solution... ?
+                listeners: {
+                    'afterrender': function(comp, eOpts){
+                        comp.doLayout();
+                    }
+                },
                 html: '<img src="' + imgsrc + '">',
                 padding: 5,
-                xtype: 'container'
+                xtype: 'panel'
             }
         }).show();
     }
