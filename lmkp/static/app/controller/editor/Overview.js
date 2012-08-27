@@ -39,7 +39,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
     'activities.Filter',
     'stakeholders.StakeholderSelection',
     'items.FilterPanel'
-],
+    ],
 
     init: function() {
         // Get the config stores and load them
@@ -48,7 +48,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
 
         this.control({
             'lo_editortablepanel': {
-                //render: this.onTablePanelRender
+            //render: this.onTablePanelRender
             },
             'lo_editormappanel': {
                 render: this.onMapPanelRender
@@ -413,7 +413,8 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 other_prefix = 'sh';
                 store = this.getActivityGridStore();
                 paging_id = 'activityGridPagingToolbar';
-            } else if (filterpanel.getXType() == 'lo_editorstakeholderfilterpanel') {
+            }
+            else if (filterpanel.getXType() == 'lo_editorstakeholderfilterpanel') {
                 // Stakeholders
                 url_prefix = 'stakeholders?';
                 prefix = 'sh';
@@ -532,57 +533,57 @@ Ext.define('Lmkp.controller.editor.Overview', {
         switch (xType) {
             case "combobox": // possibilities: like | nlike
                 var data = [
-                    {
-                        'queryOperator': '__like=',
-                        'displayOperator': Lmkp.ts.msg('filter-operator_is')
-                    }, {
-                        'queryOperator': '__nlike=',
-                        'displayOperator': Lmkp.ts.msg('filter-operator_is-not')
-                    }
+                {
+                    'queryOperator': '__like=',
+                    'displayOperator': Lmkp.ts.msg('filter-operator_is')
+                }, {
+                    'queryOperator': '__nlike=',
+                    'displayOperator': Lmkp.ts.msg('filter-operator_is-not')
+                }
                 ];
                 break;
             case "textfield": // possibilities: like | ilike | nlike | nilike
                 var data = [
-                    {
-                        'queryOperator': '__like=',
-                        'displayOperator': 
-                            Lmkp.ts.msg('filter-operator_contains-case-sensitive')
-                    }, {
-                        'queryOperator': '__ilike=',
-                        'displayOperator': 
-                            Lmkp.ts.msg('filter-operator_contains-case-insensitive')
-                    }, {
-                        'queryOperator': '__nlike=',
-                        'displayOperator': 
-                            Lmkp.ts.msg('filter-operator_contains-not-case-sensitive')
-                    }, {
-                        'queryOperator': '__nilike=',
-                        'displayOperator': 
-                            Lmkp.ts.msg('filter-operator_contains-not-case-insensitive')
-                    }
+                {
+                    'queryOperator': '__like=',
+                    'displayOperator':
+                    Lmkp.ts.msg('filter-operator_contains-case-sensitive')
+                }, {
+                    'queryOperator': '__ilike=',
+                    'displayOperator':
+                    Lmkp.ts.msg('filter-operator_contains-case-insensitive')
+                }, {
+                    'queryOperator': '__nlike=',
+                    'displayOperator':
+                    Lmkp.ts.msg('filter-operator_contains-not-case-sensitive')
+                }, {
+                    'queryOperator': '__nilike=',
+                    'displayOperator':
+                    Lmkp.ts.msg('filter-operator_contains-not-case-insensitive')
+                }
                 ];
                 break;
             default: // default is also used for numberfield
                 var data = [
-                    {
-                        'queryOperator': '__eq=',
-                        'displayOperator': Lmkp.ts.msg('filter-operator_equals')
-                    }, {
-                        'queryOperator': '__lt=',
-                        'displayOperator': Lmkp.ts.msg('filter-operator_less-than')
-                    }, {
-                        'queryOperator': '__lte=',
-                        'displayOperator': Lmkp.ts.msg('filter-operator_less-than-or-equal')
-                    }, {
-                        'queryOperator': '__gte=',
-                        'displayOperator': Lmkp.ts.msg('filter-operator_greater-than-or-equal')
-                    }, {
-                        'queryOperator': '__gt=',
-                        'displayOperator': Lmkp.ts.msg('filter-operator_greater-than')
-                    }, {
-                        'queryOperator': '__ne=',
-                        'displayOperator': Lmkp.ts.msg('filter-operator_not-equals')
-                    }
+                {
+                    'queryOperator': '__eq=',
+                    'displayOperator': Lmkp.ts.msg('filter-operator_equals')
+                }, {
+                    'queryOperator': '__lt=',
+                    'displayOperator': Lmkp.ts.msg('filter-operator_less-than')
+                }, {
+                    'queryOperator': '__lte=',
+                    'displayOperator': Lmkp.ts.msg('filter-operator_less-than-or-equal')
+                }, {
+                    'queryOperator': '__gte=',
+                    'displayOperator': Lmkp.ts.msg('filter-operator_greater-than-or-equal')
+                }, {
+                    'queryOperator': '__gt=',
+                    'displayOperator': Lmkp.ts.msg('filter-operator_greater-than')
+                }, {
+                    'queryOperator': '__ne=',
+                    'displayOperator': Lmkp.ts.msg('filter-operator_not-equals')
+                }
                 ];
                 break;
         }
@@ -727,8 +728,11 @@ Ext.define('Lmkp.controller.editor.Overview', {
 
         var tbar = comp.getDockedItems('toolbar[dock="top"]')[0];
 
+        var selectCtrl = new OpenLayers.Control.SelectFeature(mappanel.getVectorLayer());
+
         var movePointCtrl = new OpenLayers.Control.ModifyFeature(mappanel.getVectorLayer(), {
-            mode: OpenLayers.Control.ModifyFeature.DRAG
+            mode: OpenLayers.Control.ModifyFeature.DRAG,
+            selectControl: selectCtrl
         });
 
         var moveAction = Ext.create('GeoExt.Action', {
@@ -739,7 +743,20 @@ Ext.define('Lmkp.controller.editor.Overview', {
             text: 'Edit location',
             toggleGroup: 'map-controls',
             toggleHandler: function(button, state){
-                state ? movePointCtrl.activate() : movePointCtrl.deactivate();
+                if(state){
+                    // Activate the DrawFeature control and select the activity
+                    // on the map
+                    var f = mappanel.getVectorLayer().features[0];
+                    selectCtrl.select(f);
+                    movePointCtrl.activate();
+                    movePointCtrl.selectFeature(f);
+                    // Get the parent tabpanel
+                    var tp = mappanel.up('tabpanel');
+                    // Set the mappanel active
+                    tp.setActiveTab(mappanel);
+                } else {
+                    movePointCtrl.deactivate();
+                }
             }
         });
         var moveButton = Ext.create('Ext.button.Button', moveAction);
@@ -809,7 +826,16 @@ Ext.define('Lmkp.controller.editor.Overview', {
             text: 'Edit location',
             toggleGroup: 'map-controls',
             toggleHandler: function(button, state){
-                state ? movePointCtrl.activate() : movePointCtrl.deactivate();
+                if(state){
+                    // Activate the DrawFeature control
+                    movePointCtrl.activate();
+                    // Get the parent tabpanel
+                    var tp = mappanel.up('tabpanel');
+                    // Set the mappanel active
+                    tp.setActiveTab(mappanel);
+                } else {
+                    movePointCtrl.deactivate();
+                }
             }
         });
         var moveButton = Ext.create('Ext.button.Button', moveAction);
@@ -830,7 +856,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
                         createButton.toggle(false);
                         moveButton.toggle(true);
                         this.setActivityGeometry(g);
-                        //
+                    //
                     },
                     scope: comp
                 }
@@ -847,7 +873,17 @@ Ext.define('Lmkp.controller.editor.Overview', {
             text: 'Add Location',
             toggleGroup: 'map-controls',
             toggleHandler: function(button, state){
-                state ? createPointCtrl.activate() : createPointCtrl.deactivate();
+                // If button is pressed, state is true
+                if(state){
+                    // Activate the DrawFeature control
+                    createPointCtrl.activate();
+                    // Get the parent tabpanel
+                    var tp = mappanel.up('tabpanel');
+                    // Set the mappanel active
+                    tp.setActiveTab(mappanel);
+                } else{
+                    createPointCtrl.deactivate();
+                }
             }
         });
         var createButton = Ext.create('Ext.button.Button', createAction);
