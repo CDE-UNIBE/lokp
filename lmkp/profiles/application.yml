@@ -22,16 +22,16 @@ application:
   - name: "Accessability"
     url: "http://cdetux2.unibe.ch/geoserver/lo/wms"
     wms_options:
-     epsg: 900913
-     format: "image/jpeg"
-     layers: "accessability"
-     transparent: true
+    - epsg: 900913
+    - format: "image/jpeg"
+    - layers: "accessability"
+    - transparent: true
     ol_options:
-     visibility: false
-     isBaseLayer: false
-     sphericalMercator: true
-     maxExtent: [-20037508.34, -20037508.34, 20037508.34, 20037508.34]
-     opacity: 0.6
+    - visibility: false
+    - isBaseLayer: false
+    - sphericalMercator: true
+    - maxExtent: [-20037508.34, -20037508.34, 20037508.34, 20037508.34]
+    - opacity: 0.6
   - name: "Population Density 2008"
     url: "http://cdetux2.unibe.ch/geoserver/lo/wms"
     wms_options:
