@@ -456,44 +456,56 @@ class ActivityProtocol2(Protocol):
         order_query, order_numbers = self._get_order(
                                                      request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value, A_Changeset
                                                      )
-        
-        # Find id's of relevant activities by joining with prepared filters.
-        # If result is ordered, do an Outer Join to attach ordered attributes.
-        # 'order_value' contains the values to order by.
-        if order_query is not None:
-            relevant_activities = self.Session.query(
-                                                     Activity.id.label('order_id'),
-                                                     order_query.c.value.label('order_value'),
-                                                     Activity.fk_status
-                                                     ).\
-            outerjoin(A_Tag_Group).\
-            outerjoin(a_tag_filter,
-                 a_tag_filter.c.a_filter_tg_id == A_Tag_Group.id).\
-            outerjoin(order_query).\
-            group_by(Activity.id, order_query.c.value)
+
+        # Find id's of relevant activities by joining with prepared filter and
+        # order queries.
+        relevant_activities = self.Session.query(
+             Activity.id.label('order_id'),
+             order_query.c.value.label('order_value'),
+             Activity.fk_status
+             ).\
+        outerjoin(A_Tag_Group).\
+        join(a_tag_filter,
+            a_tag_filter.c.a_filter_tg_id == A_Tag_Group.id).\
+        outerjoin(order_query, order_query.c.id == Activity.id).\
+        filter(self._get_spatial_filter(request))
+
+        # Special cases: deleted and pending. In this case make a union with
+        # previous relevant activities
+        statusParameter = request.params.get('status', None)
+        try:
+            specialStatus = statusParameter.split(',')
+        except AttributeError:
+            specialStatus = None
+        if specialStatus is not None and (
+            'pending' in specialStatus or 'delete' in specialStatus):
+            relevant_activities = relevant_activities.\
+                union(self.Session.query(
+                        Activity.id.label('order_id'),
+                        order_query.c.value.label('order_value'),
+                        Activity.fk_status
+                    ).\
+                    outerjoin(order_query, order_query.c.id == Activity.id).\
+                    join(Status).\
+                    filter(Status.name.in_(specialStatus)).\
+                    filter(self._get_spatial_filter(request))
+                )
+
+        relevant_activities = relevant_activities.\
+            group_by(Activity.id, order_query.c.value, Activity.fk_status)
+
+        if order_numbers is not None:
             # order the list (needed to correctly apply limit and offset below)
             if self._get_order_direction(request) == 'DESC':
-                if order_numbers:
+                if order_numbers is True:
                     relevant_activities = relevant_activities.order_by(desc(cast(order_query.c.value, Float)))
                 else:
                     relevant_activities = relevant_activities.order_by(desc(order_query.c.value))
             else:
-                if order_numbers:
+                if order_numbers is True:
                     relevant_activities = relevant_activities.order_by(asc(cast(order_query.c.value, Float)))
                 else:
                     relevant_activities = relevant_activities.order_by(asc(order_query.c.value))
-        # If result is not ordered, only join with prepared filters is necessary.
-        else:
-            # Use dummy value as order value
-            relevant_activities = self.Session.query(
-                                                     Activity.id.label('order_id'),
-                                                     func.char_length('').label('order_value'),
-                                                     Activity.fk_status
-                                                     ).\
-            outerjoin(A_Tag_Group).\
-            outerjoin(a_tag_filter,
-                 a_tag_filter.c.a_filter_tg_id == A_Tag_Group.id).\
-            group_by(Activity.id)
 
         # Apply filter by Stakeholder attributes if provided
         if sh_filter_length > 0:
@@ -542,23 +554,6 @@ class ActivityProtocol2(Protocol):
             relevant_activities = relevant_activities.\
                 filter(Activity.fk_status.in_(status_filter))
 
-        # Apply the geographical bounding box filter
-        if self._create_bbox_filter(request) is not None:
-            relevant_activities = relevant_activities.filter(self._create_bbox_filter(request))
-        
-        # Apply bounds
-        bounds_param = (request.params.get('bounds', None) 
-                        if bounds is None else bounds)
-        if bounds_param is not None:
-            if bounds_param.lower() == 'user':
-                # Apply bounds based on user's profiles
-                relevant_activities = relevant_activities.\
-                    filter(or_(* self._create_bound_filter_by_user(request)))
-            elif bounds_param.lower() == 'profile':
-                # Apply bounds based on current profile (can be only 1)
-                relevant_activities = relevant_activities.\
-                    filter(self._create_bound_filter_by_profile(request))
-        
         # Apply logical operator
         if (self._get_logical_operator(request) == 'or' or 
             a_filter_length == 0):
@@ -991,6 +986,27 @@ class ActivityProtocol2(Protocol):
                 d.mark_complete(mandatory_keys)
 
         return data, len(data)
+
+    def _get_spatial_filter(self, request):
+        """
+        Decide which spatial filter is to be applied
+        """
+
+        # BBOX?
+        if request.params.get('bbox', None) is not None:
+            return self._create_bbox_filter(request)
+
+        # Bounds based on user's profiles?
+        if (request.params.get('bounds', None) is not None
+            and request.params.get('bounds').lower() == 'user'):
+            return or_(* self._create_bound_filter_by_user(request))
+
+        # Bounds based on current profile (can be only 1)
+        if (request.params.get('bounds', None) is not None
+            and request.params.get('bounds').lower() == 'profile'):
+            return self._create_bound_filter_by_profile(request)
+
+        return None
 
     def _create_bbox_filter(self, request):
         """
