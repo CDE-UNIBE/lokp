@@ -315,6 +315,7 @@ class Protocol(object):
         """
         order_key = request.params.get('order_by', None)
         if order_key is not None:
+            # Ordering
             if order_key == 'timestamp':
                 q = self.Session.query(
                     Mapped_Class.id,
@@ -351,6 +352,13 @@ class Protocol(object):
                     # Rolling back of Session is needed to completely erase error thrown above
                     self.Session.rollback()
                     return q_text.subquery(), False
+        else:
+            # No ordering, use dummy value
+            q_no_order = self.Session.query(
+                    Mapped_Class.id,
+                    func.char_length('').label('value') # Dummy value
+                )
+            return q_no_order.subquery(), None
 
         return None, None
 
