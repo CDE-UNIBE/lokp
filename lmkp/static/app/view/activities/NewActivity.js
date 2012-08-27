@@ -32,8 +32,6 @@ Ext.define('Lmkp.view.activities.NewActivity', {
                 anchor: '100%'
             },
             tbar: ['->',{
-                disabled: true,
-                formBind: true,
                 iconCls: 'save-button',
                 itemId: 'submitButton',
                 scale: 'medium',
@@ -110,12 +108,21 @@ Ext.define('Lmkp.view.activities.NewActivity', {
 
     _getFieldset: function(mainStore, completeStore, initial_key) {
         return {
-            xtype: 'fieldset',
+            xtype: 'form',
             name: 'taggroupfieldset',
-            border: 0,
-            padding: '0 0 10 0',
-            bodyPadding: 0,
-            margin: 0,
+            bodyPadding: 5,
+            margin: '0 0 10 0',
+            defaults: {
+                margin: 0
+            },
+            // Toolbar to add additional Tags to Tag Group
+            tbar: ['->', 
+                {
+                    xtype: 'button',
+                    name: 'addAdditionalTagButton',
+                    text: 'Add more information'
+                }
+            ],
             items: [
                 {
                     xtype: 'lo_newtaggrouppanel',
@@ -123,14 +130,7 @@ Ext.define('Lmkp.view.activities.NewActivity', {
                     removable: true,
                     main_store: mainStore,
                     complete_store: completeStore,
-                    initial_key: initial_key,
-                    right_field: {
-                        xtype: 'button',
-                        name: 'addAdditionalTagButton',
-                        text: '[+] Add',
-                        margin: '0 0 0 5',
-                        tooltip: 'Add additional information'
-                    }
+                    initial_key: initial_key
                 }
             ]
         }
