@@ -55,7 +55,7 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
         // instead, 'filtering' is done manually
         optionalStore_complete.on('load', function(store) {
             store.each(function(record) {
-                if (record.get('allowBlank') != true) {
+                if (record && record.get('allowBlank') != true) {
                     store.remove(record);
                 }
             });

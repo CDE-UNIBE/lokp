@@ -928,13 +928,13 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 stakeholders.push(stakeholder);
             }
 
-            // Loop through each fieldset (they form taggroups)
-            var fieldsets = formpanel.query('fieldset[name=taggroupfieldset]');
-            for (var i in fieldsets) {
+            // Loop through each form panel (they form taggroups)
+            var forms = formpanel.query('form[name=taggroupfieldset]');
+            for (var i in forms) {
                 var tags = [];
                 var main_tag = new Object();
                 // Within a taggroup, loop through each tag
-                var tgpanels = fieldsets[i].query('lo_newtaggrouppanel');
+                var tgpanels = forms[i].query('lo_newtaggrouppanel');
                 for (var j in tgpanels) {
                     var c = tgpanels[j];
                     tags.push({
