@@ -2,8 +2,6 @@
 # Within this file mandatory and optional fields are defined.
 fields:
   mandatory:
-    Name:
-      type: String
     Project Status:
       type: String
       predefined:
@@ -364,6 +362,8 @@ fields:
       - Yam
       - Food crops (no specification)
   optional:
+    Name:
+      type: String
     Main Animal:
       type: String
       predefined:

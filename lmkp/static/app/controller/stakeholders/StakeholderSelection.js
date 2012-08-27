@@ -50,8 +50,10 @@ Ext.define('Lmkp.controller.stakeholders.StakeholderSelection', {
         var sel = this.getStakeholderSelection();
 
         var p = sel.getSouthPanel();
-        sel.remove(p);
-        sel.setSouthPanel(null);
+        if (p) {
+            sel.remove(p);
+            sel.setSouthPanel(null);
+        }
 
         sel.getConfirmButton().setText("Add new Stakeholder");
 

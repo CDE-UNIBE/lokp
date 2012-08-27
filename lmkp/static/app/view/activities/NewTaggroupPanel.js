@@ -36,6 +36,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
         }, {
             // Button to delete attribute (disabled or not)
             xtype: 'button',
+            name: 'deleteTag',
             text: '[-] Delete',
             disabled: !this.removable,
             handler: function() {
