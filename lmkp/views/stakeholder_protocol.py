@@ -349,43 +349,53 @@ class StakeholderProtocol(Protocol):
                                                      SH_Changeset
                                                      )
 
-        # Find id's of relevant stakeholders by joining with prepared filters.
-        # If result is ordered, do an Outer Join to attach ordered attributes.
-        # 'order_value' contains the values to order by.
-        if order_query is not None:
-            relevant_stakeholders = self.Session.query(
-                                                       Stakeholder.id.label('order_id'),
-                                                       order_query.c.value.label('order_value'),
-                                                       Stakeholder.fk_status
-                                                       ).\
-            outerjoin(SH_Tag_Group).\
-            outerjoin(sh_tag_filter,
-                 sh_tag_filter.c.sh_filter_tg_id == SH_Tag_Group.id).\
-            outerjoin(order_query).\
-            group_by(Stakeholder.id, order_query.c.value)
+        # Find id's of relevant stakeholders by joining with prepared filter and
+        # order queries.
+        relevant_stakeholders = self.Session.query(
+            Stakeholder.id.label('order_id'),
+            order_query.c.value.label('order_value'),
+            Stakeholder.fk_status
+            ).\
+        outerjoin(SH_Tag_Group).\
+        join(sh_tag_filter,
+             sh_tag_filter.c.sh_filter_tg_id == SH_Tag_Group.id).\
+        outerjoin(order_query, order_query.c.id == Stakeholder.id)
+
+        # Special cases: deleted and pending. In this case make a union with
+        # previous relevant stakeholders
+        statusParameter = request.params.get('status', None)
+        try:
+            specialStatus = statusParameter.split(',')
+        except AttributeError:
+            specialStatus = None
+        if specialStatus is not None and (
+            'pending' in specialStatus or 'delete' in specialStatus):
+            relevant_stakeholders = relevant_stakeholders.\
+                union(self.Session.query(
+                        Stakeholder.id.label('order_id'),
+                        order_query.c.value.label('order_value'),
+                        Stakeholder.fk_status
+                    ).\
+                    outerjoin(order_query, order_query.c.id == Stakeholder.id).\
+                    join(Status).\
+                    filter(Status.name.in_(specialStatus))
+                )
+
+        relevant_stakeholders = relevant_stakeholders.\
+            group_by(Stakeholder.id, order_query.c.value, Stakeholder.fk_status)
+
+        if order_numbers is not None:
             # order the list (needed to correctly apply limit and offset below)
             if self._get_order_direction(request) == 'DESC':
-                if order_numbers:
+                if order_numbers is True:
                     relevant_stakeholders = relevant_stakeholders.order_by(desc(cast(order_query.c.value, Float)))
                 else:
                     relevant_stakeholders = relevant_stakeholders.order_by(desc(order_query.c.value))
             else:
-                if order_numbers:
+                if order_numbers is True:
                     relevant_stakeholders = relevant_stakeholders.order_by(asc(cast(order_query.c.value, Float)))
                 else:
                     relevant_stakeholders = relevant_stakeholders.order_by(asc(order_query.c.value))
-        # If result is not ordered, only join with prepared filters is necessary.
-        else:
-            # Use dummy value as order value
-            relevant_stakeholders = self.Session.query(
-                                                       Stakeholder.id.label('order_id'),
-                                                       func.char_length('').label('order_value'),
-                                                       Stakeholder.fk_status
-                                                       ).\
-            outerjoin(SH_Tag_Group).\
-            outerjoin(sh_tag_filter,
-                 sh_tag_filter.c.sh_filter_tg_id == SH_Tag_Group.id).\
-            group_by(Stakeholder.id)
 
         # Apply filter by Activity attributes if provided
         if a_filter_length > 0:
