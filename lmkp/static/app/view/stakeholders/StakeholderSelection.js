@@ -71,7 +71,7 @@
         
         var formpanel = Ext.create('Ext.form.Panel', {
             items: [{
-                displayField: 'id',
+                displayField: 'name',
                 fieldLabel: 'Search',
                 flex: 1,
                 hideTrigger: true,
@@ -84,11 +84,15 @@
                         if(name.length == 0){
                             name = ['Unknown'];
                         }
+                        
+                        // temporarily set 'name' to be able to access it using
+                        // displayField
+                        record.set('name', name.join(', '));
 
                         return {
                             'id': record.id,
                             'version': record.version,
-                            'name': name.join(',')
+                            'name': name.join(', ')
                         }
                     }
 
@@ -100,6 +104,7 @@
                 queryParam: 'sh__' + Lmkp.ts.msg("stakeholder-name") + '__ilike',
                 remoteFilter: true,
                 store: store,
+                pageSize: 10,
                 tpl: Ext.create('Ext.XTemplate',
                     '<tpl for=".">',
                     '<div class="x-boundlist-item">{name}</div>',
