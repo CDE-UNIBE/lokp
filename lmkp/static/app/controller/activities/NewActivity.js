@@ -23,8 +23,23 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
             },
             'lo_newactivitypanel button[itemId=addAdditionalTaggroupButton]': {
                 click: this.onAddAdditionalTaggroupButtonClick
+            },
+            // Intercept normal functionality of button (defined in
+            // Lmkp.view.activities.NewTaggroupPanel)
+            'lo_newactivitypanel lo_newtaggrouppanel button[name=deleteTag]': {
+                click: this.onDeleteTagButtonClick
             }
         });
+    },
+
+    /**
+     * If the last item of a form is to be removed, destroy entire form panel.
+     */
+    onDeleteTagButtonClick: function(button) {
+        var form = button.up('form');
+        if (form && form.items.length == 1) {
+            form.destroy();
+        }
     },
 
     onStakeholderButtonClick: function(button, event){
@@ -44,22 +59,15 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
     },
 
     onAddAdditionalTagButtonClick: function(button) {
-        var fieldset = button.up('fieldset');
-        var newtaggrouppanel = fieldset.down('lo_newtaggrouppanel');
-        if (fieldset && newtaggrouppanel) {
-            fieldset.add({
+        var form = button.up('form');
+        var newtaggrouppanel = form.down('lo_newtaggrouppanel')
+        if (form && newtaggrouppanel) {
+            form.add({
                 xtype: 'lo_newtaggrouppanel',
                 is_maintag: false,
                 removable: true,
                 main_store: newtaggrouppanel.main_store,
-                complete_store: newtaggrouppanel.complete_store,
-                right_field: {
-                    xtype: 'button',
-                    name: 'addAdditionalTagButton',
-                    text: '[+] Add',
-                    margin: '0 0 0 5',
-                    tooltip: 'Add additional information'
-                }
+                complete_store: newtaggrouppanel.complete_store
             });
         }
     },
