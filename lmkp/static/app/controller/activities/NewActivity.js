@@ -38,6 +38,9 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
     onDeleteTagButtonClick: function(button) {
         var form = button.up('form');
         if (form && form.items.length == 1) {
+            // Disable form first in order to keep track of fields that are not
+            // allowed blank
+            form.disable();
             form.destroy();
         }
     },
