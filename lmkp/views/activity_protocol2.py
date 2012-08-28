@@ -620,9 +620,12 @@ class ActivityProtocol2(Protocol):
                                                 Stakeholder.stakeholder_identifier.label("stakeholder_identifier")).\
             filter(Stakeholder.fk_status.in_(status_filter)).\
             subquery()
-        involvement_query = self.Session.query(Involvement.fk_activity.label("activity_id"),
-                                               Stakeholder_Role.name.label("role_name"),
-                                               involvement_status.c.stakeholder_identifier.label("stakeholder_identifier")).\
+        involvement_query = self.Session.query(
+                Involvement.fk_activity.label("activity_id"),
+                Stakeholder_Role.id.label("role_id"),
+                Stakeholder_Role.name.label("role_name"),
+                involvement_status.c.stakeholder_identifier.label("stakeholder_identifier")
+            ).\
             join(involvement_status, involvement_status.c.stakeholder_id == Involvement.fk_stakeholder).\
             join(Stakeholder_Role).\
             subquery()
@@ -644,7 +647,8 @@ class ActivityProtocol2(Protocol):
                                    key_translation.c.key_translated.label("key_translated"),
                                    value_translation.c.value_translated.label("value_translated"),
                                    involvement_query.c.stakeholder_identifier.label("stakeholder_identifier"),
-                                   involvement_query.c.role_name.label("stakeholder_role")).\
+                                   involvement_query.c.role_name.label("stakeholder_role"),
+                                   involvement_query.c.role_id.label("stakeholder_role_id")).\
             join(relevant_activities, relevant_activities.c.order_id == Activity.id).\
             join(Status).\
             join(A_Changeset).\
@@ -762,11 +766,14 @@ class ActivityProtocol2(Protocol):
                             sp = StakeholderProtocol(self.Session)
                             # Important: involvements=False need to be set, otherwise endless loop occurs
                             stakeholder, sh_count = sp._query(request, uid=i.stakeholder_identifier, involvements=False)
-                            activity.add_involvement(Inv(None, stakeholder[0], i.stakeholder_role))
+                            activity.add_involvement(Inv(None, stakeholder[0],
+                                i.stakeholder_role, i.stakeholder_role_id))
                     else:
                         # Default: only basic information about Involvement
                         if activity.find_involvement(i.stakeholder_identifier, i.stakeholder_role) is None:
-                            activity.add_involvement(Inv(i.stakeholder_identifier, None, i.stakeholder_role))
+                            activity.add_involvement(Inv(
+                                i.stakeholder_identifier, None,
+                                i.stakeholder_role, i.stakeholder_role_id))
 
         # If pending activities are shown for current user, add them to
         # active version
@@ -817,9 +824,12 @@ class ActivityProtocol2(Protocol):
                                                 Stakeholder.stakeholder_identifier.label("stakeholder_identifier")).\
             join(status_filter).\
             subquery()
-        involvement_query = self.Session.query(Involvement.fk_activity.label("activity_id"),
-                                               Stakeholder_Role.name.label("role_name"),
-                                               involvement_status.c.stakeholder_identifier.label("stakeholder_identifier")).\
+        involvement_query = self.Session.query(
+                Involvement.fk_activity.label("activity_id"),
+                Stakeholder_Role.id.label("role_id"),
+                Stakeholder_Role.name.label("role_name"),
+                involvement_status.c.stakeholder_identifier.label("stakeholder_identifier")
+            ).\
             join(involvement_status, involvement_status.c.stakeholder_id == Involvement.fk_stakeholder).\
             join(Stakeholder_Role).\
             subquery()
@@ -842,7 +852,8 @@ class ActivityProtocol2(Protocol):
                                    key_translation.c.key_translated.label("key_translated"),
                                    value_translation.c.value_translated.label("value_translated"),
                                    involvement_query.c.stakeholder_identifier.label("stakeholder_identifier"),
-                                   involvement_query.c.role_name.label("stakeholder_role")).\
+                                   involvement_query.c.role_name.label("stakeholder_role"),
+                                   involvement_query.c.role_id.label("stakeholder_role_id")).\
             join(status_filter).\
             join(A_Changeset).\
             join(User).\
@@ -952,11 +963,14 @@ class ActivityProtocol2(Protocol):
                             sp = StakeholderProtocol(self.Session)
                             # Important: involvements=False need to be set, otherwise endless loop occurs
                             stakeholder, count = sp._query(request, uid=i.stakeholder_identifier, involvements=False)
-                            activity.add_involvement(Inv(None, stakeholder[0], i.stakeholder_role))
+                            activity.add_involvement(Inv(None, stakeholder[0],
+                                i.stakeholder_role, i.stakeholder_role_id))
                     else:
                         # Default: only basic information about Involvement
                         if activity.find_involvement(i.stakeholder_identifier, i.stakeholder_role) is None:
-                            activity.add_involvement(Inv(i.stakeholder_identifier, None, i.stakeholder_role))
+                            activity.add_involvement(Inv(
+                                i.stakeholder_identifier, None,
+                                i.stakeholder_role, i.stakeholder_role_id))
 
         
         # Create diffs
