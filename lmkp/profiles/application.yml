@@ -31,7 +31,7 @@ application:
     - isBaseLayer: false
     - sphericalMercator: true
     - maxExtent: [-20037508.34, -20037508.34, 20037508.34, 20037508.34]
-    - opacity: 0.7
+    - opacity: 0.6
   - name: "Population Density 2008"
     url: "http://cdetux2.unibe.ch/geoserver/lo/wms"
     wms_options:
@@ -76,7 +76,7 @@ application:
     wms_options:
     - epsg: 900913
     - format: "image/jpeg"
-    - layers: "Global Pasture Land"
+    - layers: "gl_pasture"
     - transparent: true
     ol_options:
     - visibility: false
