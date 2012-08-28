@@ -621,7 +621,6 @@ class ActivityProtocol2(Protocol):
             # 'pending' to filter
             status_filter = status_filter.union(self.Session.query(Status.id).\
                 filter(Status.id==1))
-
         involvement_status = self.Session.query(Stakeholder.id.label("stakeholder_id"),
                                                 Stakeholder.stakeholder_identifier.label("stakeholder_identifier")).\
             filter(Stakeholder.fk_status.in_(status_filter)).\
@@ -772,7 +771,8 @@ class ActivityProtocol2(Protocol):
                             sp = StakeholderProtocol(self.Session)
                             # Important: involvements=False need to be set, otherwise endless loop occurs
                             stakeholder, sh_count = sp._query(request, uid=i.stakeholder_identifier, involvements=False)
-                            activity.add_involvement(Inv(None, stakeholder[0],
+                            activity.add_involvement(Inv(
+                                i.stakeholder_identifier, stakeholder[0],
                                 i.stakeholder_role, i.stakeholder_role_id))
                     else:
                         # Default: only basic information about Involvement
@@ -969,7 +969,8 @@ class ActivityProtocol2(Protocol):
                             sp = StakeholderProtocol(self.Session)
                             # Important: involvements=False need to be set, otherwise endless loop occurs
                             stakeholder, count = sp._query(request, uid=i.stakeholder_identifier, involvements=False)
-                            activity.add_involvement(Inv(None, stakeholder[0],
+                            activity.add_involvement(Inv(
+                                i.stakeholder_identifier, stakeholder[0],
                                 i.stakeholder_role, i.stakeholder_role_id))
                     else:
                         # Default: only basic information about Involvement
