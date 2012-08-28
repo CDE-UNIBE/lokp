@@ -151,10 +151,10 @@ Ext.define('Lmkp.controller.editor.Detail', {
     onAddInvolvementButtonClick: function() {
         var detailPanel = Ext.ComponentQuery.query('lo_editordetailpanel')[0];
 
-        var selection = detailPanel.getCurrent()
+        var activity = detailPanel.getCurrent()
 
         // If no activity is selected, show an info window and exit.
-        if(!selection.id){
+        if(!activity.id){
             Ext.Msg.show({
                 title: 'Edit Activity',
                 msg: 'Please select an activity first.',
@@ -164,7 +164,59 @@ Ext.define('Lmkp.controller.editor.Detail', {
             return;
         }
 
-        console.log(selection);
+        var sel = Ext.create('Lmkp.view.stakeholders.StakeholderSelection');
+
+        var me = this;
+        sel.on('close', function(panel) {
+            var stakeholder = panel.getSelectedStakeholder();
+            if (stakeholder) {
+                var confirmwindow = Ext.create('Lmkp.utils.MessageBox');
+                confirmwindow.confirm('Add Involvement', 'Are you sure?',
+                    function(btn) {
+                    if (btn === 'yes') {
+                        var diffObject = {
+                            'activities': [
+                                {
+                                    'id': activity.get('id'),
+                                    'version': activity.get('version'),
+                                    'stakeholders': [
+                                        {
+                                            'op': 'add',
+                                            'id': stakeholder.get('id'),
+                                            'version': stakeholder.get('version'),
+                                            // So far, this is HARD CODED: New
+                                            // involvements always have
+                                            // Stakeholder_Role 6 (Investor)
+                                            'role': 6
+                                        }
+                                    ]
+                                }
+                            ]
+                        };
+                        // send JSON through AJAX request
+                        Ext.Ajax.request({
+                            url: '/activities',
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json;charset=utf-8'
+                            },
+                            jsonData: diffObject,
+                            success: function() {
+                                // Reload detail panel
+                                var controller = me.getController('editor.Overview');
+                                controller.showDetails(null, [activity]);
+                                // Show feedback
+                                Ext.Msg.alert('Success', 'The information was successfully submitted. It will be reviewed shortly.');
+                            },
+                            failure: function() {
+                                Ext.Msg.alert('Failure', 'The information could not be submitted.');
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        sel.show();
     },
 
 
