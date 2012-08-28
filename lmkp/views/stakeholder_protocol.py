@@ -507,6 +507,11 @@ class StakeholderProtocol(Protocol):
         key_translation, value_translation = self._get_translatedKV(lang, SH_Key, SH_Value)
 
         # Prepare query for involvements
+        if pending_by_user is True:
+            # If pending stakeholders by current users are to be shown, add 
+            # status 'pending' to filter
+            status_filter = status_filter.union(self.Session.query(Status.id).\
+                filter(Status.id==1))
         involvement_status = self.Session.query(Activity.id.label("activity_id"),
                                                 Activity.activity_identifier.label("activity_identifier")).\
             filter(Activity.fk_status.in_(status_filter)).\
@@ -652,7 +657,8 @@ class StakeholderProtocol(Protocol):
                             ap = ActivityProtocol2(self.Session)
                             # Important: involvements=False need to be set, otherwise endless loop occurs
                             activity, a_count = ap._query(request, uid=i.activity_identifier, involvements=False)
-                            stakeholder.add_involvement(Inv(None, activity[0],
+                            stakeholder.add_involvement(Inv(
+                                i.activity_identifier, activity[0],
                                 i.stakeholder_role, i.stakeholder_role_id))
                     else:
                         # Default: only basic information about Involvement
@@ -851,7 +857,8 @@ class StakeholderProtocol(Protocol):
                             ap = ActivityProtocol2(self.Session)
                             # Important: involvements=False need to be set, otherwise endless loop occurs
                             activity, count = ap._query(request, uid=i.activity_identifier, involvements=False)
-                            stakeholder.add_involvement(Inv(None, activity[0],
+                            stakeholder.add_involvement(Inv(
+                                i.activity_identifier, activity[0],
                                 i.stakeholder_role, i.stakeholder_role_id))
                     else:
                         # Default: only basic information about Involvement
