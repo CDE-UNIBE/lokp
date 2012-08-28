@@ -25,6 +25,9 @@ Ext.define('Lmkp.controller.editor.Detail', {
             'lo_editordetailpanel button[itemId=add-taggroup-button]':{
                 click: this.onAddTaggroupButtonClick
             },
+            'lo_editordetailpanel button[itemId=add-involvement-button]': {
+                click: this.onAddInvolvementButtonClick
+            },
             'lo_editordetailpanel button[itemId=delete-item-button]': {
                 click: this.onItemDeleteButtonClick
             },
@@ -144,6 +147,26 @@ Ext.define('Lmkp.controller.editor.Detail', {
             }
         }
     },
+
+    onAddInvolvementButtonClick: function() {
+        var detailPanel = Ext.ComponentQuery.query('lo_editordetailpanel')[0];
+
+        var selection = detailPanel.getCurrent()
+
+        // If no activity is selected, show an info window and exit.
+        if(!selection.id){
+            Ext.Msg.show({
+                title: 'Edit Activity',
+                msg: 'Please select an activity first.',
+                buttons: Ext.Msg.OK,
+                icon: Ext.window.MessageBox.INFO
+            });
+            return;
+        }
+
+        console.log(selection);
+    },
+
 
     onAddTaggroupButtonClick: function(button, event, eOpts){
 

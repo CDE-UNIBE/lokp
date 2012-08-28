@@ -53,9 +53,6 @@ Ext.define('Lmkp.controller.editor.Overview', {
             'lo_editormappanel': {
                 render: this.onMapPanelRender
             },
-            'lo_activitydetailtab': {
-                render: this.onActivityDetailTabRender
-            },
             // Events concerning the NewActivity panel
             'lo_newactivitypanel': {
                 render: this.onNewActivityPanelRender
@@ -341,14 +338,101 @@ Ext.define('Lmkp.controller.editor.Overview', {
                     }
                 }
             });
+            var me = this;
             // Details can only be shown once store is loaded
             detailStore.on('load', function(detailStore){
                 var detailPanel = this.getDetailPanel();
                 var d = detailPanel.down('lo_activitydetailtab');
                 detailPanel.setActiveTab(d);
                 detailPanel.populateDetailsTab(d, detailStore.first());
+
+                // Show or hide toolbar buttons specific for Activities
+                var current = detailPanel.getCurrent();
+                var item_type = null;
+                if (current) {
+                    if (current.modelName == 'Lmkp.model.Activity') {
+                        item_type = 'activity';
+                    } else if (current.modelName == 'Lmkp.model.Stakeholder') {
+                        item_type = 'stakeholder';
+                    }
+                }
+                if (item_type && item_type == 'activity') {
+                    me.toggleActivityButtons(d, true);
+                } else if (item_type && item_type == 'stakeholder') {
+                    me.toggleActivityButtons(d, false);
+                }
             }, this);
             detailStore.load();
+        }
+    },
+
+    /**
+     * Show or hide toolbar buttons which are specific for Activities (eg. "Add
+     * involvements" or "Edit location")
+     */
+    toggleActivityButtons: function(detailsTab, toggle) {
+
+        var tbar = detailsTab.getDockedItems('toolbar[dock="top"]')[0];
+
+        if (tbar) {
+            if (toggle) {
+                // Show
+                if (tbar.query('button[itemId=add-involvement-button]').length == 0) {
+                    // Button to Add Involvements
+                    var addInvButton = {
+                        iconCls: 'add-involvement-button',
+                        itemId: 'add-involvement-button',
+                        scale: 'medium',
+                        text: 'Add involvement',
+                        tooltip: 'to be translated'
+                    };
+                    tbar.insert(1, addInvButton);
+                }
+                if (tbar.query('button[itemId=edit-location-button]').length == 0) {
+                    // Button to Edit Location
+                    var mappanel = this.getMapPanel();
+                    var selectCtrl = new OpenLayers.Control.SelectFeature(mappanel.getVectorLayer());
+                    var movePointCtrl = new OpenLayers.Control.ModifyFeature(mappanel.getVectorLayer(), {
+                        mode: OpenLayers.Control.ModifyFeature.DRAG,
+                        selectControl: selectCtrl
+                    });
+                    var moveAction = Ext.create('GeoExt.Action', {
+                        control: movePointCtrl,
+                        iconCls: 'move-button',
+                        itemId: 'edit-location-button',
+                        map: mappanel.getMap(),
+                        scale: 'medium',
+                        text: 'Edit location',
+                        toggleGroup: 'map-controls',
+                        toggleHandler: function(button, state){
+                            if(state){
+                                // Activate the DrawFeature control and select the activity
+                                // on the map
+                                var f = mappanel.getVectorLayer().features[0];
+                                selectCtrl.select(f);
+                                movePointCtrl.activate();
+                                movePointCtrl.selectFeature(f);
+                                // Get the parent tabpanel
+                                var tp = mappanel.up('tabpanel');
+                                // Set the mappanel active
+                                tp.setActiveTab(mappanel);
+                            } else {
+                                movePointCtrl.deactivate();
+                            }
+                        }
+                    });
+                    var moveButton = Ext.create('Ext.button.Button', moveAction);
+                    tbar.insert(1, moveButton);
+                }
+            } else {
+                // Hide
+                if (tbar.query('button[itemId=add-involvement-button]').length == 1) {
+                    tbar.remove(tbar.query('button[itemId=add-involvement-button]')[0]);
+                }
+                if (tbar.query('button[itemId=edit-location-button]').length == 1) {
+                    tbar.remove(tbar.query('button[itemId=edit-location-button]')[0]);
+                }
+            }
         }
     },
 
@@ -721,47 +805,6 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 this.showDetails(null, [store.getAt(0)], null);
             }
         });
-    },
-
-    onActivityDetailTabRender: function(comp, eOpts){
-        var mappanel = this.getMapPanel();
-
-        var tbar = comp.getDockedItems('toolbar[dock="top"]')[0];
-
-        var selectCtrl = new OpenLayers.Control.SelectFeature(mappanel.getVectorLayer());
-
-        var movePointCtrl = new OpenLayers.Control.ModifyFeature(mappanel.getVectorLayer(), {
-            mode: OpenLayers.Control.ModifyFeature.DRAG,
-            selectControl: selectCtrl
-        });
-
-        var moveAction = Ext.create('GeoExt.Action', {
-            control: movePointCtrl,
-            iconCls: 'move-button',
-            map: mappanel.getMap(),
-            scale: 'medium',
-            text: 'Edit location',
-            toggleGroup: 'map-controls',
-            toggleHandler: function(button, state){
-                if(state){
-                    // Activate the DrawFeature control and select the activity
-                    // on the map
-                    var f = mappanel.getVectorLayer().features[0];
-                    selectCtrl.select(f);
-                    movePointCtrl.activate();
-                    movePointCtrl.selectFeature(f);
-                    // Get the parent tabpanel
-                    var tp = mappanel.up('tabpanel');
-                    // Set the mappanel active
-                    tp.setActiveTab(mappanel);
-                } else {
-                    movePointCtrl.deactivate();
-                }
-            }
-        });
-        var moveButton = Ext.create('Ext.button.Button', moveAction);
-
-        tbar.insert(1, moveButton);
     },
 
     _getFilterUrl: function(filters, prefix) {
