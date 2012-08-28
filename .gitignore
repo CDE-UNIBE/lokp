@@ -13,6 +13,9 @@
 # Ignore Pyramid log folder
 /logs/
 
+# Ignore Application YAML configuration files
+/profiles/
+
 # Ignore packages
 *.egg
 *.egg-info
@@ -24,3 +27,6 @@ lmkp/static/lib/
 
 # Ignore compiled translation files
 *.mo
+
+# Ignore configuration files
+*.ini

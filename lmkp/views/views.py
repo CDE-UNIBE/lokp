@@ -1,7 +1,10 @@
 from datetime import timedelta
+import logging
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession
 from pyramid.view import view_config
+
+log = logging.getLogger(__name__)
 
 #@view_config(route_name='home', renderer='../templates/mytemplate.pt')
 def my_view(request):
@@ -117,7 +120,7 @@ def index(request):
     """
     Returns the main HTML page
     """
-    
+
     # Check if language (_LOCALE_) is set
     if request is not None and '_LOCALE_' in request.params:
         response = request.response
