@@ -507,6 +507,11 @@ class StakeholderProtocol(Protocol):
         key_translation, value_translation = self._get_translatedKV(lang, SH_Key, SH_Value)
 
         # Prepare query for involvements
+        if pending_by_user is True:
+            # If pending stakeholders by current users are to be shown, add 
+            # status 'pending' to filter
+            status_filter = status_filter.union(self.Session.query(Status.id).\
+                filter(Status.id==1))
         involvement_status = self.Session.query(Activity.id.label("activity_id"),
                                                 Activity.activity_identifier.label("activity_identifier")).\
             filter(Activity.fk_status.in_(status_filter)).\
