@@ -657,7 +657,8 @@ class StakeholderProtocol(Protocol):
                             ap = ActivityProtocol2(self.Session)
                             # Important: involvements=False need to be set, otherwise endless loop occurs
                             activity, a_count = ap._query(request, uid=i.activity_identifier, involvements=False)
-                            stakeholder.add_involvement(Inv(None, activity[0],
+                            stakeholder.add_involvement(Inv(
+                                i.activity_identifier, activity[0],
                                 i.stakeholder_role, i.stakeholder_role_id))
                     else:
                         # Default: only basic information about Involvement
@@ -856,7 +857,8 @@ class StakeholderProtocol(Protocol):
                             ap = ActivityProtocol2(self.Session)
                             # Important: involvements=False need to be set, otherwise endless loop occurs
                             activity, count = ap._query(request, uid=i.activity_identifier, involvements=False)
-                            stakeholder.add_involvement(Inv(None, activity[0],
+                            stakeholder.add_involvement(Inv(
+                                i.activity_identifier, activity[0],
                                 i.stakeholder_role, i.stakeholder_role_id))
                     else:
                         # Default: only basic information about Involvement
