@@ -654,10 +654,11 @@ class TagGroup(object):
 
 class Inv(object):
 
-    def __init__(self, guid, feature, role):
+    def __init__(self, guid, feature, role, role_id):
         self._guid = guid
         self._feature = feature
         self._role = role
+        self._role_id = role_id
 
     def get_guid(self):
         return self._guid
@@ -667,9 +668,17 @@ class Inv(object):
 
     def to_table(self):
         if self._feature is None:
-            return {'id': str(self._guid), 'role': self._role}
+            return {
+                'id': str(self._guid),
+                'role': self._role,
+                'role_id': self._role_id
+            }
         else:
-            return {'data': self._feature.to_table(), 'role': self._role}
+            return {
+                'data': self._feature.to_table(),
+                'role': self._role,
+                'role_id': self._role_id
+            }
 
 class Feature(object):
 
