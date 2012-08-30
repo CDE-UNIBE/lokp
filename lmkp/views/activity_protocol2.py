@@ -464,11 +464,24 @@ class ActivityProtocol2(Protocol):
              order_query.c.value.label('order_value'),
              Activity.fk_status
              ).\
-        outerjoin(A_Tag_Group).\
-        join(a_tag_filter,
-            a_tag_filter.c.a_filter_tg_id == A_Tag_Group.id).\
-        outerjoin(order_query, order_query.c.id == Activity.id).\
-        filter(self._get_spatial_filter(request))
+        outerjoin(A_Tag_Group)
+
+        if a_filter_length == 0 or self._get_logical_operator(request) == 'or':
+            # OR: one single join needed (even with multiple criteria)
+            # If no filter provided, perform simple join as well
+            relevant_activities = relevant_activities.join(a_tag_filter,
+                a_tag_filter.c.a_filter_tg_id == A_Tag_Group.id)
+
+        else:
+            # AND: multiple criteria have to be joined. Convert each to subquery and join them
+            for x in a_tag_filter:
+                y = x.subquery()
+                relevant_activities = relevant_activities.join(y,
+                    y.c.a_filter_tg_id == A_Tag_Group.id)
+
+        relevant_activities = relevant_activities.\
+            outerjoin(order_query, order_query.c.id == Activity.id).\
+            filter(self._get_spatial_filter(request))
 
         # Special cases: deleted and pending. In this case make a union with
         # previous relevant activities
@@ -553,15 +566,6 @@ class ActivityProtocol2(Protocol):
         if status_filter is not None and timestamp_filter is None:
             relevant_activities = relevant_activities.\
                 filter(Activity.fk_status.in_(status_filter))
-
-        # Apply logical operator
-        if (self._get_logical_operator(request) == 'or' or 
-            a_filter_length == 0):
-            pass
-        else:
-            # 'AND': all filtered values must be available
-            relevant_activities = relevant_activities.having(
-                                                             func.count() >= a_filter_length)
 
         # Special case: UID was provided, create new 'relevant_activities'
         if uid is not None:
