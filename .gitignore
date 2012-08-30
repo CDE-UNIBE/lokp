@@ -23,6 +23,7 @@
 
 # Ignore JavaScript libraries
 lmkp/static/lib/
+lmkp/static/lib.tar.gz
 .pydevproject
 .project
 
