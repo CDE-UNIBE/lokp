@@ -7,7 +7,10 @@ from sqlalchemy import distinct
 from sqlalchemy.types import Float
 from sqlalchemy.sql.expression import cast
 
+@view_config(route_name='charts', renderer='lmkp:templates/charts.mak')
+def show_charts(request):
 
+    return {}
 
 @view_config(route_name='evaluation_json', renderer='json')
 def evaluation_json(request):
@@ -45,7 +48,7 @@ def evaluation_json(request):
                     'sql': ''
                 },
                 'attributes': {
-                    'Size of Investement': 'sum',
+                    'Size of Investment': 'sum',
                     'Activity': 'count'
                 },
                 'group_by': ['Country', 'Country of Investor']
