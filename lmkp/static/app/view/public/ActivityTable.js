@@ -1,6 +1,6 @@
-Ext.define('Lmkp.view.editor.ActivityTable',{
+Ext.define('Lmkp.view.public.ActivityTable',{
     extend: 'Ext.container.Container',
-    alias: ['widget.lo_editoractivitytablepanel'],
+    alias: ['widget.lo_publicactivitytablepanel'],
 
     requires: [
     'Lmkp.view.activities.Filter'

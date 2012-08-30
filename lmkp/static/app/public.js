@@ -1,8 +1,10 @@
 Ext.require('Ext.container.Viewport');
 Ext.require('Ext.form.action.StandardSubmit');
+Ext.require('Ext.form.field.Checkbox');
 Ext.require('Ext.form.field.ComboBox');
 Ext.require('Ext.form.Panel');
 Ext.require('Ext.fx.*');
+Ext.require('Ext.grid.Panel');
 Ext.require('Ext.layout.container.Border');
 
 Ext.onReady(function(){
@@ -17,10 +19,16 @@ Ext.onReady(function(){
         appFolder: 'static/app',
 
         requires: [
-        'Lmkp.view.login.Toolbar'
+        'Lmkp.view.login.Toolbar',
+        'Lmkp.view.public.Main'
         ],
 
-        controllers: ['login.Toolbar'],
+        controllers: [
+        'login.Toolbar',
+        'public.BaseLayers',
+        'public.ContextLayers',
+        'public.Map'
+        ],
 
         launch: function() {
             Ext.create('Ext.container.Viewport', {
@@ -39,8 +47,7 @@ Ext.onReady(function(){
                     xtype: 'panel'
                 },{
                     region: 'center',
-                    html: 'public <i>panel</i><br/>Please login to see more ...<br/>Hint: there are 3 users ;) <ul><li>user1</li><li>user2</li><li>user3</li></ul>',
-                    xtype: 'panel'
+                    xtype: 'lo_publicmainpanel'
                 }]
             });
         }

@@ -1,9 +1,9 @@
-Ext.define('Lmkp.view.editor.ContextLayers',{
+Ext.define('Lmkp.view.public.ContextLayers',{
     extend: 'Ext.menu.Menu',
     alias: ['widget.lo_contextlayers'],
 
     requires: [
-    'Lmkp.view.editor.LayerCheckItem'
+    'Lmkp.view.public.LayerCheckItem'
     ],
 
     config: {

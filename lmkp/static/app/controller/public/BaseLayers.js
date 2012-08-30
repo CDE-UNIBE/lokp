@@ -1,8 +1,8 @@
-Ext.define('Lmkp.controller.editor.BaseLayers', {
+Ext.define('Lmkp.controller.public.BaseLayers', {
     extend: 'Ext.app.Controller',
 
     views: [
-    'editor.BaseLayers'
+    'public.BaseLayers'
     ],
 
     init: function() {
