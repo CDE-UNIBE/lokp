@@ -15,9 +15,8 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
 
     items: [
         {
-            xtype: 'lo_editorstakeholderfilterpanel'
-        }, {
             xtype: 'gridpanel',
+            title: 'Stakeholders',
             flex: 0.5,
             border: false,
             split: true,
@@ -47,9 +46,8 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
                     dock: 'top',
                     items: [
                         {
-                            xtype: 'checkbox',
-                            boxLabel: Lmkp.ts.msg('filter-connect_to_activities'),
-                            itemId: 'filterConnect'
+                            text: 'Filter',
+                            itemId: 'stakeholderFilterButton'
                         }
                     ]
                 }, {
