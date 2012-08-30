@@ -183,6 +183,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
                     break;
             }
         }
+        valueField.flex = 1;
         return valueField;
     }
 

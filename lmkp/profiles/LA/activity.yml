@@ -1,7 +1,0 @@
-fields:
-  optional:
-    Kumban:
-      type: String
-      predefined:
-      - YES
-      - NO

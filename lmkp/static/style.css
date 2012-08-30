@@ -28,6 +28,11 @@
     height: 24px !important;
     width: 24px !important;
 }
+.delete-button {
+    background-image: url("/static/img/point-delete.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
 .move-button {
     background-image: url("/static/img/point-move.png") !important;
     height: 24px !important;
@@ -45,6 +50,11 @@
 }
 .add-info-button {
     background-image: url("/static/img/list-add.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.add-involvement-button {
+    background-image: url("/static/img/link_add.png") !important;
     height: 24px !important;
     width: 24px !important;
 }

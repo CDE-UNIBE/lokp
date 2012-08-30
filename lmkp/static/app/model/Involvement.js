@@ -8,6 +8,9 @@ Ext.define('Lmkp.model.Involvement', {
         }, {
             type: 'string',
             name: 'role'
+        }, {
+            type: 'int',
+            name: 'role_id'
         }
     ],
 
@@ -15,7 +18,8 @@ Ext.define('Lmkp.model.Involvement', {
         {
             type: 'belongsTo',
             model: 'Lmkp.model.Activity',
-            name: 'activity'
+            name: 'activity',
+            getterName: 'getActivity'
         }, {
             type: 'belongsTo',
             model: 'Lmkp.model.Stakeholder',
