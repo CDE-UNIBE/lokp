@@ -356,10 +356,23 @@ class StakeholderProtocol(Protocol):
             order_query.c.value.label('order_value'),
             Stakeholder.fk_status
             ).\
-        outerjoin(SH_Tag_Group).\
-        join(sh_tag_filter,
-             sh_tag_filter.c.sh_filter_tg_id == SH_Tag_Group.id).\
-        outerjoin(order_query, order_query.c.id == Stakeholder.id)
+        outerjoin(SH_Tag_Group)
+
+        if sh_filter_length == 0 or self._get_logical_operator(request) == 'or':
+            # OR: one single join needed (even with multiple criteria)
+            # If no filter provided, perform simple join as well
+            relevant_stakeholders = relevant_stakeholders.join(sh_tag_filter,
+                sh_tag_filter.c.sh_filter_tg_id == SH_Tag_Group.id)
+
+        else:
+            # AND: multiple criteria have to be joined. Convert each to subquery and join them
+            for x in sh_tag_filter:
+                y = x.subquery()
+                relevant_stakeholders = relevant_stakeholders.join(y,
+                    y.c.sh_filter_tg_id == SH_Tag_Group.id)
+
+        relevant_stakeholders = relevant_stakeholders.\
+            outerjoin(order_query, order_query.c.id == Stakeholder.id)
 
         # Special cases: deleted and pending. In this case make a union with
         # previous relevant stakeholders
