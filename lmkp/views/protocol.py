@@ -253,20 +253,37 @@ class Protocol(object):
                             filter(SH_Key.key == col).\
                             filter(__get_filter_expression(prefix, v, op))
                         sh_filter_expr.append(q)
-            
-            # Do a union of all filter expressions and return it
-            a_tag = (a_filter_expr[0].union(* a_filter_expr[1:]) 
-                    if len(a_filter_expr) > 0 
+
+            if self._get_logical_operator(request) == 'or':
+                # OR: make union out of criteria and return single subquery
+                a_tag = (a_filter_expr[0].union(* a_filter_expr[1:])
+                    if len(a_filter_expr) > 0
                     else self.Session.query(
                         A_Tag.fk_a_tag_group.label("a_filter_tg_id")))
-            
-            sh_tag = (sh_filter_expr[0].union(* sh_filter_expr[1:]) 
-                    if len(sh_filter_expr) > 0 
+                a_tag = a_tag.subquery()
+
+                sh_tag = (sh_filter_expr[0].union(* sh_filter_expr[1:])
+                    if len(sh_filter_expr) > 0
                     else self.Session.query(
                         SH_Tag.fk_sh_tag_group.label("sh_filter_tg_id")))
-            
-            return (a_tag.subquery(), len(a_filter_expr), 
-                    sh_tag.subquery(), len(sh_filter_expr))
+                sh_tag = sh_tag.subquery()
+
+            else:
+                # AND: return criteria as an array
+                a_tag = a_filter_expr
+                
+                sh_tag = sh_filter_expr
+
+            # Do not return empty a_tag or sh_tag even if no filtering on any of these attributes (needed to perform correct join)
+            if a_tag == []:
+                a_tag = self.Session.query(
+                    A_Tag.fk_a_tag_group.label("a_filter_tg_id")).subquery()
+            if sh_tag == []:
+                sh_tag = self.Session.query(
+                    SH_Tag.fk_sh_tag_group.label("sh_filter_tg_id")).subquery()
+
+            return (a_tag, len(a_filter_expr), 
+                    sh_tag, len(sh_filter_expr))
 
         # Default (no filtering)
         return (self.Session.query(
