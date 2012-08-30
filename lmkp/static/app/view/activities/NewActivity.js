@@ -31,13 +31,14 @@ Ext.define('Lmkp.view.activities.NewActivity', {
             defaults: {
                 anchor: '100%'
             },
-            tbar: ['->',{
-                iconCls: 'save-button',
-                itemId: 'submitButton',
-                scale: 'medium',
-                scope: this,
-                text: 'Submit'
-            }]
+            tbar: [
+                {
+                    iconCls: 'add-info-button',
+                    itemId: 'addAdditionalTaggroupButton',
+                    scale: 'medium',
+                    text: 'Add further information'
+                }
+            ]
         });
 
         this.items = form;
@@ -79,13 +80,16 @@ Ext.define('Lmkp.view.activities.NewActivity', {
             layout: 'hbox',
             items: [
                 {
+                    // Empty panel for spacing
                     xtype: 'panel',
                     border: 0,
                     flex: 1
                 }, {
                     xtype: 'button',
-                    itemId: 'addAdditionalTaggroupButton',
-                    text: '[+] Add'
+                    itemId: 'submitButton',
+                    iconCls: 'save-button',
+                    scale: 'medium',
+                    text: 'Submit'
                 }
             ]
         });

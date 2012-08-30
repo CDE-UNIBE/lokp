@@ -53,6 +53,11 @@
     height: 24px !important;
     width: 24px !important;
 }
+.add-involvement-button {
+    background-image: url("/static/img/link_add.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
 .ico-key { 
     width:15px;
     height:15px;
