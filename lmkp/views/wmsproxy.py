@@ -1,3 +1,4 @@
+import logging
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.security import unauthenticated_userid
@@ -6,6 +7,8 @@ from urllib import urlencode
 from urllib2 import HTTPError
 from urllib2 import URLError
 from urllib2 import urlopen
+
+log = logging.getLogger(__name__)
 
 def wms_proxy(request):
     """
@@ -41,7 +44,8 @@ def wms(request):
     if request.method != 'GET':
         raise HTTPForbidden("%s method is not allowed on this proxy." % (request.method, ))
 
-    geoserver_url = "http://cdetux2.unibe.ch/geoserver/lo/wms"
+    # Get the base WMS url from the .ini settings file
+    geoserver_url = request.registry.settings['lmkp.base_wms']
 
     params = {}
 

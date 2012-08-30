@@ -2,6 +2,7 @@
 # and open the template in the editor.
 
 import os.path
+from os import sep as separator
 
 def locale_profile_directory_path(request):
     """
@@ -9,24 +10,24 @@ def locale_profile_directory_path(request):
     cookie _PROFILE_
     """
 
-    filepath = os.path.dirname(__file__)
+    profiles_dir = request.registry.settings['lmkp.profiles_dir']
 
     if '_PROFILE_' in request.params:
-        p = "%s/profiles/%s" % (filepath, request.params['_PROFILE_'])
+        p = profiles_dir + separator + request.params['_PROFILE_']
         if os.path.exists(p):
             return p
     elif '_PROFILE_' in request.cookies:
-        p = "%s/profiles/%s" % (filepath, request.cookies['_PROFILE_'])
+        p = profiles_dir + separator + request.cookies['_PROFILE_']
         if os.path.exists(p):
             return p
 
-    return '%s/profiles' % filepath
+    return profiles_dir
 
 def profile_directory_path(request=None):
     """
     Returns the absolute path to the directory containing the profiles
     """
-    return "%s/profiles/" % os.path.dirname(__file__)
+    return request.registry.settings['lmkp.profiles_dir']
 
 def codes_directory_path():
     """

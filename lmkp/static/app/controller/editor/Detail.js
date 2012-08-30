@@ -25,6 +25,9 @@ Ext.define('Lmkp.controller.editor.Detail', {
             'lo_editordetailpanel button[itemId=add-taggroup-button]':{
                 click: this.onAddTaggroupButtonClick
             },
+            'lo_editordetailpanel button[itemId=add-involvement-button]': {
+                click: this.onAddInvolvementButtonClick
+            },
             'lo_editordetailpanel button[itemId=delete-item-button]': {
                 click: this.onItemDeleteButtonClick
             },
@@ -39,6 +42,9 @@ Ext.define('Lmkp.controller.editor.Detail', {
             },
             'lo_editordetailpanel lo_newactivitypanel': {
                 activate: this.onNewActivityTabActivate
+            },
+            'lo_editordetailpanel button[name=deleteInvolvementButton]': {
+                click: this.onInvolvementDeleteButtonClick
             }
         });
     },
@@ -142,6 +148,78 @@ Ext.define('Lmkp.controller.editor.Detail', {
         }
     },
 
+    onAddInvolvementButtonClick: function() {
+        var detailPanel = Ext.ComponentQuery.query('lo_editordetailpanel')[0];
+
+        var activity = detailPanel.getCurrent()
+
+        // If no activity is selected, show an info window and exit.
+        if(!activity.id){
+            Ext.Msg.show({
+                title: 'Edit Activity',
+                msg: 'Please select an activity first.',
+                buttons: Ext.Msg.OK,
+                icon: Ext.window.MessageBox.INFO
+            });
+            return;
+        }
+
+        var sel = Ext.create('Lmkp.view.stakeholders.StakeholderSelection');
+
+        var me = this;
+        sel.on('close', function(panel) {
+            var stakeholder = panel.getSelectedStakeholder();
+            if (stakeholder) {
+                var confirmwindow = Ext.create('Lmkp.utils.MessageBox');
+                confirmwindow.confirm('Add Involvement', 'Are you sure?',
+                    function(btn) {
+                    if (btn === 'yes') {
+                        var diffObject = {
+                            'activities': [
+                                {
+                                    'id': activity.get('id'),
+                                    'version': activity.get('version'),
+                                    'stakeholders': [
+                                        {
+                                            'op': 'add',
+                                            'id': stakeholder.get('id'),
+                                            'version': stakeholder.get('version'),
+                                            // So far, this is HARD CODED: New
+                                            // involvements always have
+                                            // Stakeholder_Role 6 (Investor)
+                                            'role': 6
+                                        }
+                                    ]
+                                }
+                            ]
+                        };
+                        // send JSON through AJAX request
+                        Ext.Ajax.request({
+                            url: '/activities',
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json;charset=utf-8'
+                            },
+                            jsonData: diffObject,
+                            success: function() {
+                                // Reload detail panel
+                                var controller = me.getController('editor.Overview');
+                                controller.showDetails(null, [activity]);
+                                // Show feedback
+                                Ext.Msg.alert('Success', 'The information was successfully submitted. It will be reviewed shortly.');
+                            },
+                            failure: function() {
+                                Ext.Msg.alert('Failure', 'The information could not be submitted.');
+                            }
+                        });
+                    }
+                });
+            }
+        });
+        sel.show();
+    },
+
+
     onAddTaggroupButtonClick: function(button, event, eOpts){
 
         var detailPanel = Ext.ComponentQuery.query('lo_editordetailpanel')[0];
@@ -181,6 +259,80 @@ Ext.define('Lmkp.controller.editor.Detail', {
             controller.showDetails(null, [selection]);
         });
         win.show();
+    },
+
+    onInvolvementDeleteButtonClick: function(button) {
+
+        var confirmwindow = Ext.create('Lmkp.utils.MessageBox');
+
+        var me = this;
+        confirmwindow.confirm('Delete', 'Are you sure?', function(btn) {
+            if (btn === 'yes') {
+
+                var involvement = (button.up('lo_involvementpanel'))
+                    ? button.up('lo_involvementpanel').involvement : null;
+
+                if (involvement) {
+                    // Get Activity
+                    var activity = involvement.getActivity();
+
+                    // In order to find out Stakeholder, it is necessary to create a
+                    // model instance (simulate a store) using the raw data of the
+                    // involvement
+                    var shStore = Ext.create('Ext.data.Store', {
+                        model: 'Lmkp.model.Stakeholder',
+                        data: involvement.raw.data,
+                        proxy: {
+                            type: 'memory',
+                            reader: {
+                                type: 'json'
+                            }
+                        }
+                    });
+                    shStore.load();
+                    var stakeholder = shStore.getAt(0);
+
+                    if (activity && stakeholder) {
+                        var diffObject = {
+                            'activities': [
+                                {
+                                    'id': activity.get('id'),
+                                    'version': activity.get('version'),
+                                    'stakeholders': [
+                                        {
+                                            'op': 'delete',
+                                            'id': stakeholder.get('id'),
+                                            'version': stakeholder.get('version'),
+                                            'role': involvement.get('role_id')
+                                        }
+                                    ]
+                                }
+                            ]
+                        };
+
+                        // send JSON through AJAX request
+                        Ext.Ajax.request({
+                            url: '/activities',
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json;charset=utf-8'
+                            },
+                            jsonData: diffObject,
+                            success: function() {
+                                // Reload detail panel
+                                var controller = me.getController('editor.Overview');
+                                controller.showDetails(null, [activity]);
+                                // Show feedback
+                                Ext.Msg.alert('Success', 'The information was successfully submitted. It will be reviewed shortly.');
+                            },
+                            failure: function() {
+                                Ext.Msg.alert('Failure', 'The information could not be submitted.');
+                            }
+                        });
+                    }
+                }
+            }
+        });
     },
 
     onItemDeleteButtonClick: function() {

@@ -13,14 +13,22 @@
 # Ignore Pyramid log folder
 /logs/
 
+# Ignore Application YAML configuration files
+/profiles/
+*.yaml
+
 # Ignore packages
 *.egg
 *.egg-info
 
 # Ignore JavaScript libraries
 lmkp/static/lib/
+lmkp/static/lib.tar.gz
 .pydevproject
 .project
 
 # Ignore compiled translation files
 *.mo
+
+# Ignore configuration files
+*.ini
