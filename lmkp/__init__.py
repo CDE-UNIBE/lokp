@@ -139,6 +139,8 @@ def main(global_config, ** settings):
 
     # Evaluation
     config.add_route('evaluation_json', '/evaluation/{temp}')
+    # Some (hopefully) nice charts from the evalution
+    config.add_route('charts', '/charts')
 
     # Yet another test
     config.add_route('privileges_test', '/privileges')
