@@ -1,14 +1,14 @@
-Ext.define('Lmkp.view.editor.Map',{
+Ext.define('Lmkp.view.public.Map',{
     extend: 'GeoExt.panel.Map',
-    alias: ['widget.lo_editormappanel'],
+    alias: ['widget.lo_publicmappanel'],
 
     requires: [
     'GeoExt.Action',
-    'Lmkp.view.editor.BaseLayers',
-    'Lmkp.view.editor.ContextLayers'
+    'Lmkp.view.public.BaseLayers',
+    'Lmkp.view.public.ContextLayers'
     ],
 
-    border: false,
+    //border: false,
     frame: false,
 
     // Initial center
@@ -138,7 +138,7 @@ Ext.define('Lmkp.view.editor.Map',{
 
         // Create the base layer menu. This class will append the base layers
         // to the map
-        var baseLayerMenu = Ext.create('Lmkp.view.editor.BaseLayers',{
+        var baseLayerMenu = Ext.create('Lmkp.view.public.BaseLayers',{
             map: this.map
         });
         // And add it to the toolbar
@@ -154,7 +154,7 @@ Ext.define('Lmkp.view.editor.Map',{
 
         // Create the context layers menu. It will append the context layers to
         // the map
-        var contextLayersMenu = Ext.create('Lmkp.view.editor.ContextLayers', {
+        var contextLayersMenu = Ext.create('Lmkp.view.public.ContextLayers', {
             parent: this
         });
         // Add the context layers to the toolbar.

@@ -1,6 +1,6 @@
-Ext.define('Lmkp.view.editor.StakeholderTable', {
+Ext.define('Lmkp.view.public.StakeholderTable', {
     extend: 'Ext.container.Container',
-    alias: ['widget.lo_editorstakeholdertablepanel'],
+    alias: ['widget.lo_publicstakeholdertablepanel'],
 
     requires: [
         'Lmkp.view.stakeholders.Filter'

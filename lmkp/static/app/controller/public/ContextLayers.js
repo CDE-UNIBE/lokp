@@ -1,8 +1,8 @@
-Ext.define('Lmkp.controller.editor.ContextLayers', {
+Ext.define('Lmkp.controller.public.ContextLayers', {
     extend: 'Ext.app.Controller',
 
     views: [
-    'editor.ContextLayers'
+    'public.ContextLayers'
     ],
 
     init: function() {

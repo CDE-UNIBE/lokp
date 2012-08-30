@@ -1,9 +1,9 @@
-Ext.define('Lmkp.controller.editor.Map', {
+Ext.define('Lmkp.controller.public.Map', {
     extend: 'Ext.app.Controller',
 
     refs: [{
         ref: 'mapPanel',
-        selector: 'lo_editormappanel'
+        selector: 'lo_publicmappanel'
     }],
 
     stores: [
@@ -13,10 +13,10 @@ Ext.define('Lmkp.controller.editor.Map', {
 
     init: function() {
         this.control({
-            'lo_editormappanel': {
+            'lo_publicmappanel': {
                 render: this.onMapPanelRender
             },
-            'lo_editormappanel button[itemId="zoomRegionButton"]': {
+            'lo_publicmappanel button[itemId="zoomRegionButton"]': {
                 click: this.onZoomRegionButtonClick
             }
         });

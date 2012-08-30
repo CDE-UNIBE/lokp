@@ -1,4 +1,4 @@
-Ext.define('Lmkp.view.editor.LayerCheckItem',{
+Ext.define('Lmkp.view.public.LayerCheckItem',{
     extend: 'Ext.container.Container',
     alias: ['widget.lo_layercheckitem'],
 

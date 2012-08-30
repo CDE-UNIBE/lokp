@@ -1,9 +1,9 @@
-Ext.define('Lmkp.view.editor.BaseLayers',{
+Ext.define('Lmkp.view.public.BaseLayers',{
     extend: 'Ext.menu.Menu',
     alias: ['widget.lo_baselayers'],
 
     requires: [
-    'Lmkp.view.editor.LayerCheckItem'
+    'Lmkp.view.public.LayerCheckItem'
     ],
 
     config: {
