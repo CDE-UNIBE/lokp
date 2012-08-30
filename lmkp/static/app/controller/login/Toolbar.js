@@ -61,9 +61,6 @@ Ext.define('Lmkp.controller.login.Toolbar', {
         // set current profile as selected in combobox
         var profile_cb = Ext.ComponentQuery.query('combobox[id=profile_combobox]')[0];
         profile_cb.setValue(profile);
-
-        // load activity grid store
-        this.getActivityGridStore().load();
     },
 
     onPasswordKeyPress: function(textfield, event, eOpts){
