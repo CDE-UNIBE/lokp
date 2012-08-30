@@ -25,6 +25,7 @@ Ext.onReady(function(){
 
         controllers: [
         'login.Toolbar',
+        'public.Main',
         'public.BaseLayers',
         'public.ContextLayers',
         'public.Map'

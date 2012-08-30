@@ -15,9 +15,8 @@ Ext.define('Lmkp.view.public.ActivityTable',{
 
     items: [
         {
-            xtype: 'lo_editoractivityfilterpanel'
-        },{
             xtype: 'gridpanel',
+            title: 'Activities',
             flex: 0.5,
             border: false,
             split: true,
@@ -43,16 +42,12 @@ Ext.define('Lmkp.view.public.ActivityTable',{
             dockedItems: [{
                 xtype: 'toolbar',
                 dock: 'top',
-                items: [{
-                    boxLabel: Lmkp.ts.msg('filter-apply_spatial'),
-                    checked: true,
-                    itemId: 'spatialFilterCheckbox',
-                    xtype: 'checkbox'
-                }, {
-                    xtype: 'checkbox',
-                    boxLabel: Lmkp.ts.msg('filter-connect_to_stakeholders'),
-                    itemId: 'filterConnect'
-                }]
+                items: [
+                    {
+                        text: 'Filter',
+                        itemId: 'activityFilterButton'
+                    }
+                ]
             },{
                 xtype: 'pagingtoolbar',
                 id: 'activityGridPagingToolbar',
