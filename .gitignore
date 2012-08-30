@@ -15,7 +15,7 @@
 
 # Ignore Application YAML configuration files
 /profiles/
-*.yaml
+*.yml
 
 # Ignore packages
 *.egg
