@@ -90,6 +90,23 @@ Ext.define('Lmkp.view.activities.InvolvementPanel', {
                 }
             }
 
+            if (this.editable) {
+                this.dockedItems = [
+                    {
+                        xtype: 'toolbar',
+                        dock: 'top',
+                        items: ['->',
+                            {
+                                xtype: 'button',
+                                name: 'deleteInvolvementButton',
+                                text: 'Delete',
+                                tooltip: 'Delete this involvement'
+                            }
+                        ]
+                    }
+                ];
+            }
+
         } else {
             this.items = {
                 xtype: 'panel',
