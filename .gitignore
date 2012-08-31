@@ -1,0 +1,34 @@
+# Ignore compiled Python files
+*.pyc
+*.pyo
+
+# Ignore PyDev project files
+.project
+.pydevproject
+.settings
+
+# Ignore Netbeans project folder
+/nbproject/
+
+# Ignore Pyramid log folder
+/logs/
+
+# Ignore Application YAML configuration files
+/profiles/
+*.yml
+
+# Ignore packages
+*.egg
+*.egg-info
+
+# Ignore JavaScript libraries
+lmkp/static/lib/
+lmkp/static/lib.tar.gz
+.pydevproject
+.project
+
+# Ignore compiled translation files
+*.mo
+
+# Ignore configuration files
+*.ini

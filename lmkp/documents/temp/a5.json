@@ -1,0 +1,22 @@
+{
+	"_description": "Delete an existing Tag Group",
+    "activities": [{
+        "id": "70eb2268-22f6-4fa7-8dcb-03161ac1d595",
+        "version": 4,
+        "taggroups": [{
+            "op": "delete",
+            "id": 6,
+            "tags": [{
+                "op": "delete",
+                "id": 11,
+                "key": "Name",
+                "value": "Some other Company."
+            },{
+                "op": "delete",
+                "id": 10,
+                "key": "Main Crop",
+                "value": "Algae"
+            }]
+        }]
+    }]
+}
