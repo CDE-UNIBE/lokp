@@ -1,0 +1,157 @@
+.zoom-in-button {
+    background-image:url("/static/img/zoom-in.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.zoom-out-button {
+    background-image:url("/static/img/zoom-out.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.pan-button {
+    background-image:url("/static/img/pan.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.zoom-region-button {
+    background-image: url("/static/img/zoom-region.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.identify-button {
+    background-image: url("/static/img/identify.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.create-button {
+    background-image: url("/static/img/point-create.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.delete-button {
+    background-image: url("/static/img/point-delete.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.move-button {
+    background-image: url("/static/img/point-move.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.save-button {
+    background-image: url("/static/img/save1.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.cancel-button {
+    background-image: url("/static/img/process-stop.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.add-info-button {
+    background-image: url("/static/img/list-add.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.add-involvement-button {
+    background-image: url("/static/img/link_add.png") !important;
+    height: 24px !important;
+    width: 24px !important;
+}
+.ico-key { 
+    width:15px;
+    height:15px;
+    background-image:url("/static/img/symbol_key.png") !important
+}
+
+.ico-value { 
+    width:15px;
+    height:15px;
+    background-image:url("/static/img/symbol_value.png") !important
+}
+
+.toolbar-button-add {
+    width: 16px !important;
+    height: 16px !important;
+    background-image: url("/static/img/add.png") !important;
+}
+
+.toolbar-button-delete {
+    width: 16px !important;
+    height: 16px !important;
+    background-image: url("/static/img/cancel.png") !important;
+}
+
+.toolbar-button-accept {
+    width: 16px !important;
+    height: 16px !important;
+    background-image: url("/static/img/accept.png") !important;
+}
+
+p.version_info {
+    border: 1px solid silver;
+    background-color: #FFFFCC;
+    padding: 5px;
+}
+
+span.new {
+    color: green;
+}
+
+span.modified {
+    color: blue;
+}
+
+span.deleted {
+    color: red;
+}
+
+span.green {
+    color: green;
+}
+
+span.red {
+    color: red;
+}
+
+div.toolbar_username {
+    background-color: transparent;
+    font-size: 11px;
+}
+
+fieldset.simple_login {
+    border: 1px solid silver;
+    padding: 10px;
+    width: 200px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+}
+
+input.simple_login {
+    width: 194px;
+}
+
+div.error_div {
+    border: 1px solid red;
+    width: 400px;
+    margin: 0 auto;
+    padding: 10px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    text-align: center;
+}
+
+span.grey {
+    color: #808080;
+}
+
+div.notice {
+    background-color: #ffffcc;
+    border: 1px solid #808080;
+}
+
+div.blank {
+    background-color: #ffffff;
+    border: 1px solid #ffffff;
+}
