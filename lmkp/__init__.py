@@ -147,6 +147,9 @@ def main(global_config, ** settings):
 
     config.add_route('lao_read_activities', '/read/lao/activities')
     config.add_route('lao_read_stakeholders', '/read/lao/stakeholders')
+
+    config.add_route('cambodia_read_stakeholders', '/read/cambodia/stakeholders')
+    config.add_route('cambodia_read_activities', '/read/cambodia/activities')
     
     # Error views
     config.add_forbidden_view(forbidden_view)
