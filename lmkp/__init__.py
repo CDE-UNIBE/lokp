@@ -145,8 +145,9 @@ def main(global_config, ** settings):
     # Yet another test
     config.add_route('privileges_test', '/privileges')
 
-    config.add_route('lao_import', '/import/lao')
-
+    config.add_route('lao_read_activities', '/read/lao/activities')
+    config.add_route('lao_read_stakeholders', '/read/lao/stakeholders')
+    
     # Error views
     config.add_forbidden_view(forbidden_view)
     config.add_notfound_view(notfound_view)

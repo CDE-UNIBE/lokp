@@ -22,8 +22,3 @@ AND area_ha_final_cde > 50
 
 -- Create a Shapefile with ogr2ogr
 -- ogr2ogr -sql "`cat lmkp/documents/external_scripts/laoimport/SelectProjects.sql`" -a_srs EPSG:32648 -lco ENCODING=UTF-8 ~/Desktop/landconcessions.shp PG:'dbname=landconcessions user=landconcessions'
-
--- With the new database version
-SELECT * FROM (SELECT ST_AsText(ST_Centroid(ST_Union(the_geom))) AS wkb_geometry,
-project_code FROM data.geo_point WHERE data.geo_point.project_code ILIKE '05%' GROUP BY project_code) AS p
-JOIN data.project ON data.project.project_code=p.project_code;

@@ -1,143 +1,160 @@
-import uuid
-
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 import psycopg2
 from pyramid.view import view_config
-from shapely.geometry import asShape
-from sqlalchemy import distinct
-from sqlalchemy import func
-from sqlalchemy.sql.expression import cast
-from sqlalchemy.types import Float
+from sqlalchemy.sql.expression import and_
 
-@view_config(route_name='lao_import', renderer='json')
-def lao_import(request):
+@view_config(route_name='lao_read_stakeholders', renderer='json')
+def lao_import_stakeholders(request):
 
     connection = psycopg2.connect("dbname=landconcessions user=stefan password=stefan host=localhost")
 
     cursor = connection.cursor()
 
-    # Execute a command: this creates a new table
+    # Select all relevant stakeholders. Relevant are stakeholders linked to
+    # projects in Bokeo and to projects with a georeference
+    sh_sql_query = "SELECT data.project.id_company FROM data.geo_point\
+    JOIN data.project ON data.geo_point.project_code = data.project.project_code\
+    WHERE data.project.project_code ILIKE '05%' GROUP BY data.project.id_company;"
 
-    sql = "SELECT * FROM (SELECT ST_AsGeoJSON(ST_Union(ST_Transform(the_geom, 4326))) AS json_geometry, "
-    sql = sql + "project_code FROM data.geo_point WHERE data.geo_point.project_code "
-    sql = sql + "ILIKE \'05%\' GROUP BY project_code) AS p "
-    sql = sql + "JOIN data.project ON data.project.project_code=p.project_code;"
+    cursor.execute(sh_sql_query)
 
-    print sql
+    stakeholders = []
 
-    cursor.execute(sql)
+    stakeholder = {}
+    
 
-    result = []
-    for a_record in cursor:
+    for sh_record in cursor:
 
-        sh_cursor = connection.cursor()
+        taggroups = []
 
-        #**********************************************************************#
-        # Handle first the stakeholder
-        #**********************************************************************#
-        # Get the stakeholder id
-        sh_id = a_record[7]
+        single_sh_cursor = connection.cursor()
 
-        # Get the full stakeholder info from the db:
-        sh_query = "SELECT data.lut_company.id, data.lut_company.name_eng, data.lut_country.name_eng "
-        sh_query = sh_query + "FROM data.lut_company LEFT JOIN data.lut_country "
-        sh_query = sh_query + "ON data.lut_company.id_country = data.lut_country.id WHERE data.lut_company.id = "
-        sh_query = sh_query + str(sh_id) + ";"
+        # Get the full information for each stakeholder
+        single_sh_query = "SELECT data.lut_company.id, data.lut_company.name_eng, data.lut_country.name_eng FROM data.lut_company\
+        JOIN data.lut_country ON data.lut_company.id_country = data.lut_country.id\
+        WHERE data.lut_company.id = " + str(sh_record[0]) + ";"
 
-        sh_cursor.execute(sh_query)
+        
+        single_sh_cursor.execute(single_sh_query)
+        try:
+            id, name, country = single_sh_cursor.fetchone()
 
-        existing_sh = None
-       
-        for sh_record in sh_cursor:
-            print "***********************************************"
-            print existing_sh
-            #result.append({'origin_db_id': sh_record[0], 'Name': sh_record[1], 'Country': sh_record[2]})
-            
-            # Check first if stakeholder already exists
-            existing_sh = Session.query(Stakeholder).filter(SH_Key.key == 'origin_db_id').filter(SH_Value.value == str(sh_record[0])).first()
+            # Special case lao-china
+            if country == 'Lao-China':
+                countries = ['Laos', 'China']
+                # Init taggroup
+                taggroup = {}
+                taggroup['op'] = 'add'
+                taggroup['tags'] = []
+                taggroup['tags'].append({'key': 'origin_db_id', 'op': 'add', 'value': id})
+                taggroup['tags'].append({'key': 'Name', 'op': 'add', 'value': name})
+                taggroup['tags'].append({'key': 'Country', 'op': 'add', 'value': countries[0]})
+                taggroup['main_tag'] = {'key': 'Name', 'op': 'add', 'value': name}
+                taggroups.append(taggroup)
+                # Init taggroup
+                taggroup = {}
+                taggroup['op'] = 'add'
+                taggroup['tags'] = []
+                taggroup['tags'].append({'key': 'Country', 'op': 'add', 'value': countries[1]})
+                taggroup['main_tag'] = {'key': 'Country', 'op': 'add', 'value': countries[1]}
+                taggroups.append(taggroup)
 
-            # Create the stakeholder if it does not exist
-            if existing_sh is None:
+            else:
+                # Init taggroup
+                taggroup = {}
+                taggroup['op'] = 'add'
+                taggroup['tags'] = []
+                # Append keys
+                taggroup['tags'].append({'key': 'origin_db_id', 'op': 'add', 'value': id})
+                taggroup['tags'].append({'key': 'Name', 'op': 'add', 'value': name})
+                taggroup['tags'].append({'key': 'Country', 'op': 'add', 'value': country})
+                taggroup['main_tag'] = {'key': 'Name', 'op': 'add', 'value': name}
+                taggroups.append(taggroup)
 
-                new_stakeholder = Stakeholder(uuid.uuid4(), 1)
-                new_stakeholder.fk_status = 1
+            stakeholder = {'taggroups': taggroups}
+            stakeholders.append(stakeholder)
+                
+        except TypeError:
+            # In case no stakeholder is found
+            pass
 
-                # Create a tag group
-                sh_taggroup = SH_Tag_Group()
-                new_stakeholder.tag_groups.append(sh_taggroup)
-                # Create a Name tag
-                if sh_record[0] is not None:
-                    sh_taggroup.tags.append(create_tag(request, 'origin_db_id', sh_record[0]))
-                if sh_record[1] is not None:
-                    sh_taggroup.tags.append(create_tag(request, 'Name', sh_record[1]))
-                if sh_record[2] is not None:
-                    sh_taggroup.tags.append(create_tag(request, 'Country', sh_record[2]))
+    return {"stakeholders": stakeholders}
 
-                Session.add(new_stakeholder)
+@view_config(route_name='lao_read_activities', renderer='json')
+def lao_import_activities(request):
+    activities = []
 
-                # The stakeholder that is connected to the activity through an involvement
-                existing_sh = new_stakeholder
+    connection = psycopg2.connect("dbname=landconcessions user=stefan password=stefan host=localhost")
 
-                print "***********************************************"
-                print existing_sh
+    cursor = connection.cursor()
 
-        #**********************************************************************#
-        # Handle the activity
-        #**********************************************************************#
-        geojson_obj = geojson.loads(a_record[0], object_hook=geojson.GeoJSON.to_instance)
-        geojson_shape = asShape(geojson_obj)
+    a_sql_query = "SELECT\
+    ST_X(ST_Transform(data.geo_point.the_geom,4326)),\
+    ST_Y(ST_Transform(data.geo_point.the_geom,4326)),\
+    data.project.id,\
+    'Laos' AS \"Country\",\
+    data.project.name_eng AS \"Name\",\
+    data.lut_status.name_eng AS \"Status\",\
+    data.project.area_ha_final AS \"Size of Investment\",\
+    CASE WHEN data.doc_agreement.sign_date IS NOT NULL THEN to_char(data.doc_agreement.sign_date, 'YYYY') ELSE '0' END AS \"Year of Investment (agreed)\",\
+    data.lut_sources.name_eng AS \"Source\",\
+    data.lut_subsect.name_eng AS \"Main Crop\",\
+    data.lut_company.id AS \"Company id\"\
+    FROM data.project\
+    JOIN data.geo_point ON data.project.project_code = data.geo_point.project_code\
+    JOIN data.lut_status ON data.project.id_status = data.lut_status.id\
+    JOIN data.doc_agreement ON data.project.id_doc_agreement = data.doc_agreement.id\
+    JOIN data.lut_sources ON data.project.id_sources_status = data.lut_sources.id\
+    JOIN data.lut_subsect ON data.project.id_subsect = data.lut_subsect.id\
+    JOIN data.lut_company ON data.project.id_company = data.lut_company.id\
+    WHERE data.project.project_code ILIKE '05%';"
 
-        value = a_record[4]
+    cursor.execute(a_sql_query)
 
-        taggroup = A_Tag_Group()
+    for lon, lat, id, country, name, status, size_of_investment, year_of_investment, source, main_crop, company_id in cursor:
+        activity = {}
+        activity['geometry'] = {'coordinates': [lon, lat], 'type': 'Point'}
 
-        k = Session.query(A_Key).filter(A_Key.key == 'Name').first()
-        # If the value is not yet in the database, create a new value
-        v = Session.query(A_Value).filter(A_Value.value == unicode(value)).first()
-        if v is None:
-            v = A_Value(value=value)
-            v.fk_language = 1
+        taggroup = {}
+        taggroup['tags'] = []
+        taggroup['tags'].append(create_tag_dict('origin_db_id', id))
+        taggroup['tags'].append(create_tag_dict('Country', country))
+        taggroup['tags'].append(create_tag_dict('Project Status', status))
+        taggroup['tags'].append(create_tag_dict('Size of Investment', size_of_investment))
+        taggroup['tags'].append(create_tag_dict('Year of Investment (agreed)', int(year_of_investment)))
+        taggroup['tags'].append(create_tag_dict('Data Source (Research Paper)', source))
+        taggroup['tags'].append(create_tag_dict('Main Crop', main_crop))
+        taggroup['op'] = 'add'
+        taggroup['main_tag'] = create_tag_dict('Country', country)
 
-        # Create a new tag with key and value and append it to the parent tag group
-        a_tag = A_Tag()
-        taggroup.tags.append(a_tag)
-        a_tag.key = k
-        a_tag.value = v
+        activity['taggroups'] = []
+        activity['taggroups'].append(taggroup)
 
-        activity_identifier = uuid.uuid4()
-        new_activity = Activity(activity_identifier, 1, geojson_shape.representative_point().wkt)
-        new_activity.fk_status = 1
-        new_activity.tag_groups.append(taggroup)
+        # The stakeholder link
+        try:
+            sh = Session.query(Stakeholder).join(SH_Tag_Group).\
+            join(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_sh_tag_group).\
+            join(SH_Key).\
+            join(SH_Value).filter(and_(SH_Key.key == 'origin_db_id', SH_Value.value == str(company_id))).first()
 
-        Session.add(new_activity)
+            stakeholders = []
+            stakeholders.append({
+            "id": str(sh.stakeholder_identifier),
+            "op": "add",
+            "role": 6,
+            "version": 1
+            })
 
-        #**********************************************************************#
-        # The involvement
-        #**********************************************************************#
-        new_involvement = Involvement()
-        new_involvement.fk_activity = Session.query(Activity.id).filter(Activity.activity_identifier == activity_identifier).first()[0]
-        new_involvement.fk_stakeholder = existing_sh.id
-        new_involvement.fk_stakeholder_role = 6
-        Session.add(new_involvement)
+            activity['stakeholders'] = stakeholders
 
-        result.append({"a": new_activity, "sh": existing_sh, "i": new_involvement})
+        except AttributeError:
+            # No stakeholder is found
+            pass
 
-    return result
+        activities.append(activity)
 
+    return {'activities': activities}
 
-def create_tag(request, key, value):
-    """
-    Create a new tag
-    """
-    tag = SH_Tag()
-    k = Session.query(SH_Key).filter(SH_Key.key == key).first()
-    # If the value is not yet in the database, create a new value
-    v = Session.query(SH_Value).filter(SH_Value.value == unicode(value)).first()
-    if v is None:
-        v = SH_Value(value=value)
-        v.fk_language = 1
-    tag.key = k
-    tag.value = v
-
-    return tag
+def create_tag_dict(key, value):
+    return {'key': key, 'op': 'add', 'value': value}
