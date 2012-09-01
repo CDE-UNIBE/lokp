@@ -36,5 +36,9 @@ Ext.define('Lmkp.store.ActivityGrid', {
         startParam: 'offset',
         simpleSortMode: true,
         sortParam: 'order_by'
+    },
+    
+    syncWithStakeholders: function() {
+    	console.log("ActivityGrid ComingSoon");
     }
 });

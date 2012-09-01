@@ -29,5 +29,20 @@ Ext.define('Lmkp.store.StakeholderGrid', {
             // Do not load involvements in grid for faster loading
             involvements: 'none'
         }
+    },
+    
+    syncWithActivities: function(extraParams) {
+    	
+    	// Update url
+    	this.proxy.url = '/activities';
+    	
+    	// Update extraParams
+    	if (!extraParams['return_sh']) {
+    		extraParams['return_sh'] = true;
+       	}
+    	this.proxy.extraParams = extraParams;
+
+		// (Re)load store
+    	this.load();
     }
 });

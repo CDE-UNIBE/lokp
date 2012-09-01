@@ -8,7 +8,8 @@ Ext.define('Lmkp.controller.public.Map', {
 
     stores: [
     'ActivityGrid',
-    'Profiles'
+    'Profiles',
+    'StakeholderGrid'
     ],
 
     init: function() {
@@ -74,8 +75,21 @@ Ext.define('Lmkp.controller.public.Map', {
         expirationDate.setMonth(new Date().getMonth() + 3);
         Ext.util.Cookies.set('_LOCATION_', value, expirationDate);
 
-        // Reload the ActivityGrid store
-        this.getActivityGridStore().load();
+        // Reload the ActivityGrid store. Also refresh StakeholderGrid.
+        var me = this;
+       	
+       	// Make sure that ActivityGridStore does not display any Stakeholders
+       	var params = this.getActivityGridStore().getProxy().extraParams;
+       	if ('return_sh' in params) {
+	        delete params.return_sh;
+	        this.getActivityGridStore().getProxy().extraParams = params;
+       	}
+       	
+        this.getActivityGridStore().load(function() {
+        	// Update StakeholderGrid store to match ActivityGrid
+        	var shStore = me.getStakeholderGridStore();
+        	shStore.syncWithActivities(this.getProxy().extraParams);
+        });
     }
 
 });
