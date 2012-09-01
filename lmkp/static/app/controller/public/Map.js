@@ -78,10 +78,14 @@ Ext.define('Lmkp.controller.public.Map', {
         // Reload the ActivityGrid store. Also refresh StakeholderGrid.
         var me = this;
        	
-       	// Make sure that ActivityGridStore does not display any Stakeholders
+       	// Make sure that ActivityGridStore does not display any Stakeholders 
+       	// (return_sh). Also refresh if Activities were shown based on a 
+       	// Stakeholder (sh_id). Also set EPSG again
        	var params = this.getActivityGridStore().getProxy().extraParams;
-       	if ('return_sh' in params) {
+       	if (!params['return_sh'] || params['sh_id'] || !params['epsg']) {
 	        delete params.return_sh;
+	        delete params.sh_id;
+	        params['epsg'] = 900913;
 	        this.getActivityGridStore().getProxy().extraParams = params;
        	}
        	

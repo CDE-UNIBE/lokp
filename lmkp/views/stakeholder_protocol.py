@@ -515,6 +515,20 @@ class StakeholderProtocol(Protocol):
                 return ap._query(request, sp_query=relevant_stakeholders.subquery(), 
                     involvements=False, limit=limit, offset=offset)
 
+        # If sh_id was provided, create new relevant_activities consisting only 
+        # of the ones involved with given stakeholder
+        if self._get_a_id(request) is not None:
+            relevant_stakeholders = self.Session.query(
+                    Stakeholder.id.label('order_id'),
+                    func.char_length('').label('order_value'),
+                    Stakeholder.fk_status
+                ).\
+                join(Involvement).\
+                join(Activity).\
+                join(Status, Activity.fk_status == Status.id).\
+                filter(Activity.identifier == self._get_a_id(request)).\
+                filter(Status.name == 'active')
+
         # Count relevant stakeholders (before applying limit and offset)
         count = relevant_stakeholders.count()
 
