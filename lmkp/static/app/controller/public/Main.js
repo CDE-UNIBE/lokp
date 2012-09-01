@@ -22,11 +22,17 @@ Ext.define('Lmkp.controller.public.Main', {
             'lo_publicactivitytablepanel': {
                 render: this.onActivityTablePanelRender
             },
+            'lo_publicactivitytablepanel gridpanel[itemId=activityGrid]': {
+                selectionchange: this.onTableSelectionChange
+            },
             'gridpanel[itemId=activityGrid] gridcolumn[name=activityCountryColumn]': {
                 afterrender: this.onActivityCountryColumnAfterrender
             },
             'gridpanel[itemId=activityGrid] gridcolumn[name=yearofinvestmentcolumn]': {
                 afterrender: this.onActivityYearColumnAfterrender
+            },
+            'lo_publicstakeholdertablepanel gridpanel[itemId=stakeholderGrid]': {
+                selectionchange: this.onTableSelectionChange
             },
             'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdernamecolumn]': {
                 afterrender: this.onStakeholderNameColumnAfterrender
@@ -67,6 +73,34 @@ Ext.define('Lmkp.controller.public.Main', {
                     proxy.setExtraParam("bbox", map.getExtent().toBBOX());
                 }
         }, this);
+    },
+    
+    onTableSelectionChange: function(model, selected) {
+    	
+    	
+    	if (selected && selected.length > 0) {
+    		var sel = selected[0];
+    		
+    		// Activity or Stakeholder?
+            var type = null;
+            var otherStore = null;
+            if (sel.modelName == 'Lmkp.model.Stakeholder') {
+                type = 'stakeholder';
+                otherStore = this.getActivityGridStore();
+            } else if (sel.modelName == 'Lmkp.model.Activity') {
+                type = 'activity';
+                otherStore = this.getStakeholderGridStore();
+            }
+            
+            if (type) {
+            	// Show details
+            	console.log("Coming soon: Details for: " + type);
+            	console.log(sel);
+            	
+            	// Update other grid panel
+            	otherStore.syncByOtherId(sel.get('id'));
+            }
+    	}
     },
 
     /**

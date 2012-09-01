@@ -39,6 +39,31 @@ Ext.define('Lmkp.store.ActivityGrid', {
     },
     
     syncWithStakeholders: function() {
-    	console.log("ActivityGrid ComingSoon");
+    	
+    	// Update url
+    	this.proxy.url = '/stakeholders';
+    	
+    	// Update extraParams
+    	if (!extraParams['return_a']) {
+    		extraParams['return_a'] = true;
+       	}
+    	this.proxy.extraParams = extraParams;
+
+		// (Re)load store (load at page 1, otherwise entries may be hidden)
+    	this.loadPage(1);
+    },
+    
+    syncByOtherId: function(identifier) {
+    	
+    	// Update url
+    	this.proxy.url = '/activities';
+    	
+    	// Update extraParams
+    	this.proxy.extraParams = {
+    		'sh_id': identifier
+    	};
+    	
+    	// Reload store (load at page 1, otherwise entries may be hidden)
+    	this.loadPage(1);
     }
 });

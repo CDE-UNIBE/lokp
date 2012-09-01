@@ -42,7 +42,21 @@ Ext.define('Lmkp.store.StakeholderGrid', {
        	}
     	this.proxy.extraParams = extraParams;
 
-		// (Re)load store
-    	this.load();
+		// (Re)load store (load at page 1, otherwise entries may be hidden)
+    	this.loadPage(1);
+    },
+    
+    syncByOtherId: function(identifier) {
+    	
+    	// Update url
+    	this.proxy.url = '/stakeholders';
+    	
+    	// Update extraParams
+    	this.proxy.extraParams = {
+    		'a_id': identifier
+    	};
+    	
+    	// Reload store (load at page 1, otherwise entries may be hidden)
+    	this.loadPage(1);
     }
 });
