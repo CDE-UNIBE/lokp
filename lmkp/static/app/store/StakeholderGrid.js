@@ -29,5 +29,34 @@ Ext.define('Lmkp.store.StakeholderGrid', {
             // Do not load involvements in grid for faster loading
             involvements: 'none'
         }
+    },
+    
+    syncWithActivities: function(extraParams) {
+    	
+    	// Update url
+    	this.proxy.url = '/activities';
+    	
+    	// Update extraParams
+    	if (!extraParams['return_sh']) {
+    		extraParams['return_sh'] = true;
+       	}
+    	this.proxy.extraParams = extraParams;
+
+		// (Re)load store (load at page 1, otherwise entries may be hidden)
+    	this.loadPage(1);
+    },
+    
+    syncByOtherId: function(identifier) {
+    	
+    	// Update url
+    	this.proxy.url = '/stakeholders';
+    	
+    	// Update extraParams
+    	this.proxy.extraParams = {
+    		'a_id': identifier
+    	};
+    	
+    	// Reload store (load at page 1, otherwise entries may be hidden)
+    	this.loadPage(1);
     }
 });
