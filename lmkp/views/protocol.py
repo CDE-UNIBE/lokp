@@ -409,6 +409,24 @@ class Protocol(object):
 
         return None
 
+    def _get_return_stakeholders(self, request):
+        ret = request.params.get('return_sh', None)
+        if ret is not None and ret.lower() == 'true':
+            return True
+        return False
+    
+    def _get_return_activities(self, request):
+        ret = request.params.get('return_a', None)
+        if ret is not None and ret.lower() == 'true':
+            return True
+        return False
+    
+    def _get_sh_id(self, request):
+        return request.params.get('sh_id', None)
+
+    def _get_a_id(self, request):
+        return request.params.get('a_id', None)
+
     def _get_attrs(self, request):
         """
         Return a list of attributes if set.

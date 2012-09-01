@@ -87,7 +87,7 @@ def ui_messages(request):
         'stakeholder-name': _('stakholder-name', default='Name'),
         'stakeholder-country': _('stakholder-country', default='Country'),
         'filter-stakeholder_title': _('filter-stakeholder_title', default='Filter Stakeholders'),
-        'stakeholder-paging_message': _('stakeholder-paging_message', default='Displaying stsakeholders {0} - {1} of {2}'),
+        'stakeholder-paging_message': _('stakeholder-paging_message', default='Displaying stakeholders {0} - {1} of {2}'),
         'stakeholder-paging_empty': _('stakeholder-paging_empty', default='No stakeholders found'),
         # involvements
         'involvements-title': _('involvements-title', default='Involvement'),

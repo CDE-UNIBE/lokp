@@ -426,7 +426,8 @@ class ActivityProtocol2(Protocol):
         self.Session.add(changeset)
 
     def _query(self, request, limit=None, offset=None, filter=None, uid=None, 
-               involvements=None, only_guid=False, bounds=None):
+               involvements=None, only_guid=False, bounds=None, sp_query=None,
+               return_sh=False):
         """
         Do the query. Returns
         - a list of (filtered) Activities
@@ -592,6 +593,42 @@ class ActivityProtocol2(Protocol):
             user_filter = self._get_user_filter(request, Activity, A_Changeset)
             relevant_activities = relevant_activities.join(user_filter)
 
+        # If the query came from Activities, create new relevant_stakeholders 
+        # based on these activities
+        if sp_query is not None:
+            relevant_activities = self.Session.query(
+                    Activity.id.label('order_id'),
+                    func.char_length('').label('order_value'),
+                    Activity.fk_status
+                ).\
+                join(Involvement).\
+                join(sp_query, sp_query.c.order_id == Involvement.fk_stakeholder)
+
+        # If stakeholders are to be returned, use Stakeholder_Protocol to get
+        # them based on the relevant_activities.
+        # Do not return activities if the query comes from AP2 (when stakeholder 
+        # attributes are filtered). In this case, only_guid is set to 'True'
+        if only_guid is not True:
+            if return_sh is True or self._get_return_stakeholders(request) is True:
+                sp = StakeholderProtocol(self.Session)
+                # Important: involvements=False need to be set, otherwise endless loop occurs
+                return sp._query(request, ap_query=relevant_activities.subquery(), 
+                    involvements=False, limit=limit, offset=offset)
+        
+        # If sh_id was provided, create new relevant_activities consisting only 
+        # of the ones involved with given stakeholder
+        if self._get_sh_id(request) is not None:
+            relevant_activities = self.Session.query(
+                    Activity.id.label('order_id'),
+                    func.char_length('').label('order_value'),
+                    Activity.fk_status
+                ).\
+                join(Involvement).\
+                join(Stakeholder).\
+                join(Status, Stakeholder.fk_status == Status.id).\
+                filter(Stakeholder.identifier == self._get_sh_id(request)).\
+                filter(Status.name == 'active')
+        
         # Count relevant activities (before applying limit and offset)
         count = relevant_activities.count()
         
