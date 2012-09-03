@@ -3,6 +3,7 @@ Ext.define('Lmkp.view.stakeholders.Details',{
     alias: ['widget.lo_stakeholderdetailwindow'],
 
     bodyPadding: 5,
+    modal: true,
 
     config: {
         centerPanel: null,
@@ -16,9 +17,9 @@ Ext.define('Lmkp.view.stakeholders.Details',{
 
     itemId: 'stakeholderDetailWindow',
 
-    height: 600,
-
     layout: 'border',
+    height: 400,
+    width: 600,
 
     requires: [
     'Lmkp.view.stakeholders.StakeholderPanel',
@@ -36,12 +37,11 @@ Ext.define('Lmkp.view.stakeholders.Details',{
         xtype: 'toolbar'
     },
 
-    width: 800,
-
     initComponent: function(){
 
         this.centerPanel = Ext.create('Ext.panel.Panel',{
-            region: 'center'
+            region: 'center',
+            autoScroll: true
         });
 
         var historyStore = Ext.create('Ext.data.Store', {
@@ -76,7 +76,7 @@ Ext.define('Lmkp.view.stakeholders.Details',{
         });
 
         this.historyPanel = Ext.create('Ext.grid.Panel',{
-            collapsed: true,
+//            collapsed: true, -> Collapsing is done 'manually'
             collapsible: true,
             collapseMode: 'header',
             columns: [{
@@ -102,9 +102,19 @@ Ext.define('Lmkp.view.stakeholders.Details',{
         this.historyPanel
         ];
 
-        this.title = 'Details Stakeholder ' + this.stakeholder.get('id');
+        this.title = 'Details on Stakeholder ' + this.stakeholder.get('id');
 
         this.callParent(arguments);
+    },
+
+    /**
+     * Ext has some serious issues with panels collapsed on start. Instead, this
+     * function is called right after showing this window.
+     */
+    _collapseHistoryPanel: function() {
+        if (this.historyPanel) {
+            this.historyPanel.collapse();
+        }
     },
 
     /**
