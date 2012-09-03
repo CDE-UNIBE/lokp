@@ -32,13 +32,13 @@ from pyramid.security import has_permission
         <script type="text/javascript" src="/app/view/layers.js"></script>
         % if isinstance(has_permission('administer', request.context, request), ACLAllowed):
         <script type="text/javascript" src="/app/view/EditToolbar.js"></script>
-        <script type="text/javascript" src="${request.static_url('lmkp:static/app/admin.js')}"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/app/public.js')}"></script>
         % elif isinstance(has_permission('moderate', request.context, request), ACLAllowed):
         <script type="text/javascript" src="/app/view/EditToolbar.js"></script>
-        <script type="text/javascript" src="${request.static_url('lmkp:static/app/moderator.js')}"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/app/public.js')}"></script>
         % elif isinstance(has_permission('edit', request.context, request), ACLAllowed):
         <script type="text/javascript" src="/app/view/EditToolbar.js"></script>
-        <script type="text/javascript" src="${request.static_url('lmkp:static/app/editor.js')}"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/app/public.js')}"></script>
         % else:
         <script type="text/javascript" src="/app/view/ViewToolbar.js"></script>
         <script type="text/javascript" src="${request.static_url('lmkp:static/app/public.js')}"></script>
