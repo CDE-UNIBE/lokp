@@ -49,12 +49,12 @@ Ext.define('Lmkp.view.public.ActivityTable',{
             }],
             dockedItems: [{
                 xtype: 'toolbar',
+                id: 'activityGridTopToolbar',
                 dock: 'top',
-                items: [
-                    {
+                items: ['->', {
                         text: 'Clear selection',
                         itemId: 'activityResetSelectionButton'
-                    }, '->', {
+                    }, {                    	
                         text: 'Filter',
                         itemId: 'activityFilterButton'
                     }

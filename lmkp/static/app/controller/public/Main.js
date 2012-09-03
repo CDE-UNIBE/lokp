@@ -6,12 +6,16 @@ Ext.define('Lmkp.controller.public.Main', {
         'Lmkp.utils.StringFunctions',
         'Lmkp.view.activities.Details',
         'Lmkp.view.stakeholders.Details',
-        'Lmkp.view.comments.ReCaptcha'
+        'Lmkp.view.comments.ReCaptcha',
+        'Lmkp.view.activities.NewActivity'
     ],
 
     refs: [{
         ref: 'mapPanel',
         selector: 'lo_publicmappanel'
+    }, {
+    	ref: 'activityGridTopToolbar',
+    	selector: 'toolbar[id=activityGridTopToolbar]'
     }],
 
     stores: [
@@ -36,11 +40,14 @@ Ext.define('Lmkp.controller.public.Main', {
             'lo_publicactivitytablepanel gridpanel templatecolumn[name=showDetailsColumn]': {
                 click: this.onShowDetailsColumnClick
             },
-            'gridpanel[itemId=activityGrid] gridcolumn[name=activityCountryColumn]': {
-                afterrender: this.onActivityCountryColumnAfterrender
+            'lo_publicactivitytablepanel button[itemId=activityFilterButton]': {
+                click: this.onActivityFilterButtonClick
             },
-            'gridpanel[itemId=activityGrid] gridcolumn[name=yearofinvestmentcolumn]': {
-                afterrender: this.onActivityYearColumnAfterrender
+            'lo_publicactivitytablepanel button[itemId=activityResetSelectionButton]': {
+                click: this.onClearSelectionButtonClick
+            },
+            'lo_publicactivitytablepanel button[itemId=newActivityButton]': {
+            	click: this.onNewActivityButtonClick
             },
             'lo_publicstakeholdertablepanel gridpanel[itemId=stakeholderGrid]': {
                 selectionchange: this.onTableSelectionChange
@@ -48,23 +55,23 @@ Ext.define('Lmkp.controller.public.Main', {
             'lo_publicstakeholdertablepanel gridpanel templatecolumn[name=showDetailsColumn]': {
                 click: this.onShowDetailsColumnClick
             },
-            'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdernamecolumn]': {
-                afterrender: this.onStakeholderNameColumnAfterrender
-            },
-            'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdercountrycolumn]': {
-                afterrender: this.onStakeholderCountryColumnAfterrender
-            },
-            'lo_publicactivitytablepanel button[itemId=activityFilterButton]': {
-                click: this.onActivityFilterButtonClick
-            },
-            'lo_publicactivitytablepanel button[itemId=activityResetSelectionButton]': {
-                click: this.onClearSelectionButtonClick
-            },
             'lo_publicstakeholdertablepanel button[itemId=stakeholderFilterButton]': {
                 click: this.onStakeholderFilterButtonClick
             },
             'lo_publicstakeholdertablepanel button[itemId=stakeholderResetSelectionButton]': {
                 click: this.onClearSelectionButtonClick
+            },
+            'gridpanel[itemId=activityGrid] gridcolumn[name=yearofinvestmentcolumn]': {
+                afterrender: this.onActivityYearColumnAfterrender
+            },
+            'gridpanel[itemId=activityGrid] gridcolumn[name=activityCountryColumn]': {
+                afterrender: this.onActivityCountryColumnAfterrender
+            },
+            'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdernamecolumn]': {
+                afterrender: this.onStakeholderNameColumnAfterrender
+            },
+            'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdercountrycolumn]': {
+                afterrender: this.onStakeholderCountryColumnAfterrender
             }
         });
     },
@@ -93,6 +100,17 @@ Ext.define('Lmkp.controller.public.Main', {
                 proxy.setExtraParam("bbox", map.getExtent().toBBOX());
             }
         }, this);
+        
+        // If logged in, add a button to add new Activity
+        if (Lmkp.toolbar != false) {
+        	var tb = this.getActivityGridTopToolbar();
+        	if (tb) {
+        		tb.insert(0, {
+        			text: 'Add new Activity',
+        			itemId: 'newActivityButton'
+        		});
+        	}
+        }
     },
 
     /**
@@ -157,6 +175,27 @@ Ext.define('Lmkp.controller.public.Main', {
                 w._collapseHistoryPanel();
             }
         }
+    },
+    
+    onNewActivityButtonClick: function() {
+    	// Create and load a store with all mandatory keys
+        var mandatoryStore = Ext.create('Lmkp.store.ActivityConfig');
+        mandatoryStore.filter('allowBlank', false);
+        mandatoryStore.load(function() {
+            // Create and load a second store with all keys
+            var completeStore = Ext.create('Lmkp.store.ActivityConfig');
+            completeStore.load(function() {
+                // When loaded, create panel and show window
+                var panel = Ext.create('Lmkp.view.activities.NewActivity');
+                panel.showForm(mandatoryStore, completeStore);
+		    	var win = Ext.create('Ext.window.Window', {
+		    		autoScroll: true,
+		    		modal: true,
+		    		items: [panel]
+		    	});
+		    	win.show();
+            });
+        });
     },
 
     /**
