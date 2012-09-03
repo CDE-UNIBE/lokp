@@ -14,6 +14,13 @@ Ext.onReady(function(){
         remove: true
     });
     
+    // Collect additional controllers (based on login permissions, eg. see 
+    // function 'edit_toolbar_config' in 'views/editors.py')
+    var additionalControllers = [];
+    if (Lmkp.editorControllers) {
+    	additionalControllers = additionalControllers.concat(Lmkp.editorControllers);
+    }
+
     Ext.application({
         name: 'Lmkp',
         appFolder: 'static/app',
@@ -31,8 +38,8 @@ Ext.onReady(function(){
         'public.ContextLayers',
         'stakeholders.Details',
         'public.Filter',
-        'public.Map'
-        ],
+        'public.Map',
+        ].concat(additionalControllers),
 
         launch: function() {
             Ext.create('Ext.container.Viewport', {
