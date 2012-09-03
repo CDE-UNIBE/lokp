@@ -25,7 +25,7 @@ Ext.define('Lmkp.view.public.BaseLayers',{
                 group: 'baselayers',
                 layer: this.layers[i],
                 text: this.layers[i].name,
-                xtype: 'lo_layercheckitem'
+                xtype: 'menucheckitem'
             });
             if(i==0) {
                 this.map.setBaseLayer(this.layers[i]);

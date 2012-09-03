@@ -23,8 +23,6 @@ Ext.define('Lmkp.controller.public.ContextLayers', {
      */
     onMenuShowLegend: function(item, layer){
 
-        var width = 100;
-
         // Construct the WMS GetLegendGraphic URL
         var imgsrc = layer.url
         + '?service=WMS&version=1.1.0&request=GetLegendGraphic&FORMAT=image/png&width=25&height=25&layer='
@@ -32,8 +30,8 @@ Ext.define('Lmkp.controller.public.ContextLayers', {
         + '&style='
         + layer.params.STYLES
         Ext.create('Ext.window.Window', {
-            title: layer.name,
             layout: 'fit',
+            height: 450,
             hideMode: 'display',
             items: {
                 // Redo the layout after rendering to make sure the whole image
@@ -47,7 +45,9 @@ Ext.define('Lmkp.controller.public.ContextLayers', {
                 html: '<img src="' + imgsrc + '">',
                 padding: 5,
                 xtype: 'panel'
-            }
+            },
+            title: layer.name,
+            width: 350
         }).show();
     }
 
