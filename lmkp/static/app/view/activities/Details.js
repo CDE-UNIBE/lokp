@@ -2,9 +2,8 @@ Ext.define('Lmkp.view.activities.Details', {
     extend: 'Ext.window.Window',
     alias: ['widget.lo_activitydetailwindow'],
 
-    autoScroll: true,
-
     bodyPadding: 5,
+    modal: true,
     
     config: {
         centerPanel: null,
@@ -13,9 +12,9 @@ Ext.define('Lmkp.view.activities.Details', {
     
     itemId: 'activityDetailWindow',
 
-    height: 200,
-
     layout: 'border',
+    height: 400,
+    width: 600,
 
     requires: [
     'Lmkp.view.activities.ActivityPanel',
@@ -32,13 +31,12 @@ Ext.define('Lmkp.view.activities.Details', {
         xtype: 'toolbar'
     },
 
-    width: 800,
-
     initComponent: function(){
 
         this.centerPanel = Ext.create('Ext.panel.Panel',{
             region: 'center',
             layout: 'anchor',
+            autoScroll: true,
             title: 'Details'
         });
 
@@ -76,7 +74,7 @@ Ext.define('Lmkp.view.activities.Details', {
         });
 
         this.historyPanel = Ext.create('Ext.grid.Panel',{
-            collapsed: true,
+//            collapsed: true, 
             collapsible: true,
             collapseMode: 'header',
             columns: [{
@@ -102,9 +100,19 @@ Ext.define('Lmkp.view.activities.Details', {
             this.historyPanel
         ];
 
-        this.title = 'Details Activity ' + this.activity.get('id');
+        this.title = 'Details on Activity ' + this.activity.get('id');
 
         this.callParent(arguments);
+    },
+
+    /**
+     * Ext has some serious issues with panels collapsed on start. Instead, this
+     * function is called right after showing this window.
+     */
+    _collapseHistoryPanel: function() {
+        if (this.historyPanel) {
+            this.historyPanel.collapse();
+        }
     },
 
     /**

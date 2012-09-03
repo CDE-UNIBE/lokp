@@ -140,11 +140,13 @@ Ext.define('Lmkp.controller.public.Main', {
                 w = Ext.create('Lmkp.view.activities.Details',{
                     activity: record
                 }).show();
+                w._collapseHistoryPanel();
             } else if (type == 'stakeholder') {
                 // Show details window
                 w = Ext.create('Lmkp.view.stakeholders.Details',{
                     stakeholder: record
                 }).show();
+                w._collapseHistoryPanel();
             }
         }
     },
