@@ -45,6 +45,7 @@ Ext.define('Lmkp.store.ActivityGrid', {
 
         //
         delete this.proxy.extraParams['sh_id'];
+        delete this.proxy.extraParams['return_sh'];
 
         // Set EPSG again if it is missing
         if (this.proxy.extraParams['bbox'] && !this.proxy.extraParams['epsg']) {
