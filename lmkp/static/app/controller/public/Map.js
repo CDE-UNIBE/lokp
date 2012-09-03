@@ -1,6 +1,6 @@
 Ext.define('Lmkp.controller.public.Map', {
     extend: 'Ext.app.Controller',
-
+    
     refs: [{
         ref: 'mapPanel',
         selector: 'lo_publicmappanel'
@@ -11,6 +11,11 @@ Ext.define('Lmkp.controller.public.Map', {
     'Profiles',
     'StakeholderGrid'
     ],
+
+    config: {
+        geojson: {}
+    },
+    geojson: new OpenLayers.Format.GeoJSON(),
 
     init: function() {
         this.control({
@@ -86,6 +91,42 @@ Ext.define('Lmkp.controller.public.Map', {
         	shStore.syncWithActivities(this.getProxy().extraParams);
             }
         });
+    },
+
+    showActivityOnMap: function(activity) {
+
+        // Make sure item is an 'Activity'
+        if (activity.modelName == 'Lmkp.model.Activity') {
+            var vLayer = this.getMapPanel().getVectorLayer();
+
+            // Assumption: only one activity can be shown at a time
+            vLayer.removeAllFeatures();
+            var features = this._getVectorsFromActivity(activity);
+            if (features) {
+                vLayer.addFeatures(features);
+            }
+        }
+    },
+
+    _getVectorsFromActivity: function(activity) {
+
+        // Make sure item is an 'Activity'
+        if (activity.modelName != 'Lmkp.model.Activity') {
+            return null;
+        }
+
+        // Collect vectors, transform and return them
+        var geom = activity.get('geometry');
+        var vectors = this.geojson.read(Ext.encode(geom));
+        if (vectors) {
+            for(var j = 0; j < vectors.length; j++){
+                vectors[j].geometry.transform(
+                    new OpenLayers.Projection("EPSG:4326"),
+                    new OpenLayers.Projection("EPSG:900913")
+                );
+            }
+            return vectors;
+        }
     }
 
 });

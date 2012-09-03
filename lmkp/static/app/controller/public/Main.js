@@ -108,6 +108,12 @@ Ext.define('Lmkp.controller.public.Main', {
             	// Update other grid panel
             	otherStore.syncByOtherId(sel.get('id'));
             }
+
+            // If Activity was selected, also show Feature on map
+            if (sel.modelName == 'Lmkp.model.Activity') {
+                var mapController = this.getController('public.Map');
+                mapController.showActivityOnMap(sel);
+            }
     	}
     },
 
