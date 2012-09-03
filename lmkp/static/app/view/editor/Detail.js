@@ -26,7 +26,7 @@ Ext.define('Lmkp.view.editor.Detail', {
 
     items: [{
         title: 'Details',
-        xtype: 'lo_activitydetailtab'
+        xtype: 'lo_activitydetailwindow'
     }, {
         title: 'History',
         xtype: 'lo_activityhistorypanel'
