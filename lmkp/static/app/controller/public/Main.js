@@ -170,12 +170,16 @@ Ext.define('Lmkp.controller.public.Main', {
     },
 
     onActivityFilterButtonClick: function() {
-        var win = Ext.create('Lmkp.view.public.FilterActivityWindow');
+        // Only create window once
+        var q = Ext.ComponentQuery.query('lo_filteractivitywindow');
+        var win = q.length > 0 ? q[0] : Ext.create('Lmkp.view.public.FilterActivityWindow');
         win.show();
     },
 
     onStakeholderFilterButtonClick: function() {
-        var win = Ext.create('Lmkp.view.public.FilterStakeholderWindow');
+        // Only create window once
+        var q = Ext.ComponentQuery.query('lo_filterstakeholderwindow');
+        var win = q.length > 0 ? q[0] : Ext.create('Lmkp.view.public.FilterStakeholderWindow');;
         win.show();
     },
 
@@ -190,7 +194,7 @@ Ext.define('Lmkp.controller.public.Main', {
         aStore.loadPage(1, {
             callback: function() {
                 // Reload StakeholderGrid
-                shStore.syncWithActivities(aStore.getProxy().extraParams)
+                shStore.syncWithActivities(aStore.getProxy().extraParams);
             }
         });
     },

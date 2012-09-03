@@ -30,9 +30,29 @@ Ext.define('Lmkp.store.StakeholderGrid', {
             involvements: 'none'
         }
     },
+
+    setInitialProxy: function() {
+
+        // Update url
+        this.proxy.url = '/stakeholders';
+
+        // Delete any reference to activities
+        delete this.proxy.extraParams['a_id'];
+        delete this.proxy.extraParams['return_a'];
+
+        // Delete any filters
+        var prefix_a = 'a__';
+        var prefix_sh = 'sh__';
+        for (var i in this.proxy.extraParams) {
+            if (i.slice(0, prefix_a.length) == prefix_a
+                || i.slice(0, prefix_sh.length == prefix_sh)) {
+                delete this.proxy.extraParams[i];
+            }
+        }
+    },
     
     syncWithActivities: function(extraParams) {
-    	
+
     	// Update url
     	this.proxy.url = '/activities';
     	
@@ -44,6 +64,10 @@ Ext.define('Lmkp.store.StakeholderGrid', {
 
 		// (Re)load store (load at page 1, otherwise entries may be hidden)
     	this.loadPage(1);
+    },
+
+    syncWithOther: function(extraParams) {
+        this.syncWithActivities(extraParams);
     },
     
     syncByOtherId: function(identifier) {
