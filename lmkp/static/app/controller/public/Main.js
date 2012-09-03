@@ -170,11 +170,13 @@ Ext.define('Lmkp.controller.public.Main', {
     },
 
     onActivityFilterButtonClick: function() {
-        console.log("popup with filters for activities coming soon.");
+        var win = Ext.create('Lmkp.view.public.FilterActivityWindow');
+        win.show();
     },
 
     onStakeholderFilterButtonClick: function() {
-        console.log("popup with filters for stakeholders coming soon.");
+        var win = Ext.create('Lmkp.view.public.FilterStakeholderWindow');
+        win.show();
     },
 
     onResetSelectionButtonClick: function() {
