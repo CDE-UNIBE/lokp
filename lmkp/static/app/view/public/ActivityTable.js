@@ -3,7 +3,8 @@ Ext.define('Lmkp.view.public.ActivityTable',{
     alias: ['widget.lo_publicactivitytablepanel'],
 
     requires: [
-    'Lmkp.view.activities.Filter'
+    'Lmkp.view.activities.Filter',
+    'Ext.grid.column.Template'
     ],
 
     layout: {
@@ -38,6 +39,13 @@ Ext.define('Lmkp.view.public.ActivityTable',{
                 dataIndex: Lmkp.ts.msg('activity-attr_yearofinvestment'),
                 flex: 0,
                 sortable: true
+            }, {
+                xtype: 'templatecolumn',
+                flex: 0,
+                name: 'showDetailsColumn',
+                width: 24,
+                align: 'center',
+                tpl: '<img src="static/img/information.png" style="cursor:pointer;" title="Show details">'
             }],
             dockedItems: [{
                 xtype: 'toolbar',

@@ -25,6 +25,9 @@ Ext.define('Lmkp.controller.public.Main', {
             'lo_publicactivitytablepanel gridpanel[itemId=activityGrid]': {
                 selectionchange: this.onTableSelectionChange
             },
+            'lo_publicactivitytablepanel gridpanel templatecolumn[name=showDetailsColumn]': {
+                click: this.onShowDetailsColumnClick
+            },
             'gridpanel[itemId=activityGrid] gridcolumn[name=activityCountryColumn]': {
                 afterrender: this.onActivityCountryColumnAfterrender
             },
@@ -33,6 +36,9 @@ Ext.define('Lmkp.controller.public.Main', {
             },
             'lo_publicstakeholdertablepanel gridpanel[itemId=stakeholderGrid]': {
                 selectionchange: this.onTableSelectionChange
+            },
+            'lo_publicstakeholdertablepanel gridpanel templatecolumn[name=showDetailsColumn]': {
+                click: this.onShowDetailsColumnClick
             },
             'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdernamecolumn]': {
                 afterrender: this.onStakeholderNameColumnAfterrender
@@ -74,31 +80,51 @@ Ext.define('Lmkp.controller.public.Main', {
                 }
         }, this);
     },
-    
+
+    /**
+     * Change selection in other grid when a row is selected. Also highlight
+     * feature on map (only for Activities?)
+     */
     onTableSelectionChange: function(model, selected) {
     	
-    	
     	if (selected && selected.length > 0) {
-    		var sel = selected[0];
+            var sel = selected[0];
     		
-    		// Activity or Stakeholder?
-            var type = null;
+            // Activity or Stakeholder?
             var otherStore = null;
             if (sel.modelName == 'Lmkp.model.Stakeholder') {
-                type = 'stakeholder';
                 otherStore = this.getActivityGridStore();
             } else if (sel.modelName == 'Lmkp.model.Activity') {
-                type = 'activity';
                 otherStore = this.getStakeholderGridStore();
             }
             
+            if (otherStore) {
+            	// Update other grid panel
+            	otherStore.syncByOtherId(sel.get('id'));
+            }
+    	}
+    },
+
+    /**
+     * Show details of selected item in popup window.
+     */
+    onShowDetailsColumnClick: function(grid) {
+        var record = grid.getSelectionModel().getSelection()[0];
+
+        if (record) {
+
+            // Activity or Stakeholder?
+            var type = null;
+            if (record.modelName == 'Lmkp.model.Stakeholder') {
+                type = 'stakeholder';
+            } else if (record.modelName == 'Lmkp.model.Activity') {
+                type = 'activity';
+            }
+
             if (type) {
             	// Show details
             	console.log("Coming soon: Details for: " + type);
-            	console.log(sel);
-            	
-            	// Update other grid panel
-            	otherStore.syncByOtherId(sel.get('id'));
+            	console.log(record);
             }
     	}
     },
