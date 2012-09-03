@@ -1,14 +1,16 @@
+import logging
+import os
+import random
+
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol2 import ActivityProtocol2
 from lmkp.views.stakeholder_protocol import StakeholderProtocol
-import logging
-import os
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.view import view_config
-import random
 import simplejson as json
 from sqlalchemy import and_
+from sqlalchemy import func
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 import transaction
@@ -94,6 +96,36 @@ def insert_landmatrix(request):
     user2.profiles = [la_profile]
     
     return {'success': True, 'activities': a, 'stakeholders': s}
+
+@view_config(route_name='set_lao_active', renderer='json', permission='administer')
+def set_lao_active(request):
+    """
+    Set the latest activities and stakeholders active after a lao import.
+    """
+
+    # Set all Activities with version 1 to 'active' (fk_status = 2)
+    Session.query(Activity).filter(Activity.version == 1).\
+        update({Activity.fk_status: 2})
+
+    # Get the latest version for each stakeholder
+    latest_sh_query = Session.query(Stakeholder.stakeholder_identifier, func.max(Stakeholder.version)).\
+        group_by(Stakeholder.stakeholder_identifier)
+
+    # Set all Stakeholder versions to inactive except the latest one (fk_status = 3)
+    for id, v in Session.query(Stakeholder.stakeholder_identifier, Stakeholder.version).except_(latest_sh_query):
+        Session.query(Stakeholder).\
+            filter(Stakeholder.stakeholder_identifier == id).\
+            filter(Stakeholder.version == v).\
+            update({Stakeholder.fk_status: 3})
+
+    # Set all latest Stakeholder versions to active
+    for id, v in latest_sh_query.all():
+        Session.query(Stakeholder).\
+            filter(Stakeholder.stakeholder_identifier == id).\
+            filter(Stakeholder.version == v).\
+            update({Stakeholder.fk_status: 2})
+
+    return {'success': True}
 
 @view_config(route_name='test_sample_values', renderer='json')
 def test_sample_values(request):
