@@ -28,6 +28,7 @@ Ext.onReady(function(){
         'public.Main',
         'public.BaseLayers',
         'public.ContextLayers',
+        'public.Filter',
         'public.Map'
         ],
 

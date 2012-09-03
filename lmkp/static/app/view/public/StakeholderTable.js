@@ -53,11 +53,11 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
                     dock: 'top',
                     items: [
                         {
-                            text: 'Filter',
-                            itemId: 'stakeholderFilterButton'
-                        }, {
                             text: 'Clear selection',
                             itemId: 'stakeholderResetSelectionButton'
+                        }, '->', {
+                            text: 'Filter',
+                            itemId: 'stakeholderFilterButton'
                         }
                     ]
                 }, {
