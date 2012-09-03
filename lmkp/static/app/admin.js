@@ -39,20 +39,13 @@ Ext.onReady(function(){
         ],
 
         controllers: [
-        'activities.NewActivity',
-        'activities.TagGroup',
-        'administrator.Main',
-        'administrator.Code',
-        'editor.BaseLayers',
-        'editor.ContextLayers',
-        'editor.Detail',
-        'editor.Map',
-        'editor.Overview',
+        'activities.Details',
         'login.Toolbar',
-        'moderator.Pending',
-        'stakeholders.NewStakeholder',
-        'stakeholders.StakeholderFieldContainer',
-        'stakeholders.StakeholderSelection'
+        'public.Main',
+        'public.BaseLayers',
+        'public.ContextLayers',
+        'public.Map',
+        'stakeholders.Details'
         ],
 
         launch: function() {
