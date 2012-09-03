@@ -54,6 +54,9 @@ Ext.define('Lmkp.view.public.ActivityTable',{
                     {
                         text: 'Filter',
                         itemId: 'activityFilterButton'
+                    }, {
+                        text: 'Clear selection',
+                        itemId: 'activityResetSelectionButton'
                     }
                 ]
             },{

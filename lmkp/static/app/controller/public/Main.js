@@ -49,8 +49,14 @@ Ext.define('Lmkp.controller.public.Main', {
             'lo_publicactivitytablepanel button[itemId=activityFilterButton]': {
                 click: this.onActivityFilterButtonClick
             },
+            'lo_publicactivitytablepanel button[itemId=activityResetSelectionButton]': {
+                click: this.onResetSelectionButtonClick
+            },
             'lo_publicstakeholdertablepanel button[itemId=stakeholderFilterButton]': {
                 click: this.onStakeholderFilterButtonClick
+            },
+            'lo_publicstakeholdertablepanel button[itemId=stakeholderResetSelectionButton]': {
+                click: this.onResetSelectionButtonClick
             }
         });
     },
@@ -163,6 +169,22 @@ Ext.define('Lmkp.controller.public.Main', {
 
     onStakeholderFilterButtonClick: function() {
         console.log("popup with filters for stakeholders coming soon.");
+    },
+
+    onResetSelectionButtonClick: function() {
+
+        // Get stores
+        var aStore = this.getActivityGridStore();
+        var shStore = this.getStakeholderGridStore();
+
+        // Reload ActivityGrid
+        aStore.setInitialProxy();
+        aStore.loadPage(1, {
+            callback: function() {
+                // Reload StakeholderGrid
+                shStore.syncWithActivities(aStore.getProxy().extraParams)
+            }
+        });
     },
 
     /**
