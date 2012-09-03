@@ -342,7 +342,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
             // Details can only be shown once store is loaded
             detailStore.on('load', function(detailStore){
                 var detailPanel = this.getDetailPanel();
-                var d = detailPanel.down('lo_activitydetailtab');
+                var d = detailPanel.down('lo_activitydetailwindow');
                 detailPanel.setActiveTab(d);
                 detailPanel.populateDetailsTab(d, detailStore.first());
 

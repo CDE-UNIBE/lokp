@@ -28,7 +28,8 @@ Ext.onReady(function(){
         'public.Main',
         'public.BaseLayers',
         'public.ContextLayers',
-        'public.Map'
+        'public.Map',
+        'stakeholders.Details'
         ],
 
         launch: function() {

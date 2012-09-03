@@ -1,26 +1,31 @@
 Ext.define('Lmkp.view.activities.Details', {
-    extend: 'Ext.panel.Panel',
-    alias: ['widget.lo_activitydetailtab'],
-	
-    itemId: 'activityDetailTab',
-
+    extend: 'Ext.window.Window',
+    alias: ['widget.lo_activitydetailwindow'],
+    
     bodyPadding: 5,
-	
-    layout: {
-        type: 'anchor'
+    
+    config: {
+        centerPanel: null,
+        historyPanel: null
     },
+    
     defaults: {
         margin: '0 0 5 0',
         anchor: '100%'
     },
-	
-    // initial item
-    items: [{
-        xtype: 'panel',
-        name: 'details_initial',
-        html: Lmkp.ts.msg('activity-select'),
-        border: 0
-    }],
+
+    itemId: 'activityDetailWindow',
+
+    height: 600,
+
+    layout: {
+        type: 'border'
+    },
+
+    requires: [
+    'Lmkp.view.activities.ActivityPanel',
+    'Lmkp.view.comments.CommentPanel'
+    ],
 
     tbar: {
         dock: 'top',
@@ -45,6 +50,66 @@ Ext.define('Lmkp.view.activities.Details', {
             itemId: 'delete-item-button',
             tooltip: 'to be translated'
         }]
+    },
+
+    width: 800,
+
+    initComponent: function(){
+
+        this.centerPanel = Ext.create('Ext.panel.Panel',{
+            defaults: {
+                margin: '0 0 5 0',
+                anchor: '100%'
+            },
+            region: 'center',
+            layout: 'anchor'
+        });
+
+        this.historyPanel = Ext.create('Ext.panel')
+
+        this._populateDetails(this.activity)
+
+        var items = [this.centerPanel];
+
+        this.items = items;
+
+        this.callParent(arguments);
+    },
+
+    /**
+     * Parameter activity is an instance of Lmkp.model.Activity
+     */
+    _populateDetails: function(activity){
+
+        if (activity) {
+
+            // Set the current selection to current
+            this.current = activity;
+
+            // Remove all existing panels
+            this.centerPanel.removeAll();
+
+            // If there are no versions pending, simply show active version
+            this.centerPanel.add({
+                contentItem: activity,
+                border: 0,
+                bodyPadding: 0,
+                editable: false,
+                hiddenOriginal: false,
+                xtype: 'lo_activitypanel'
+            });
+
+            // Add commenting panel
+            this.centerPanel.add({
+                xtype: 'lo_commentpanel',
+                identifier: activity.get('id'),
+                comment_object: 'activity'
+            });
+            
+        }
+
+        return activity;
+
     }
 	
 });
