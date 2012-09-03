@@ -1,6 +1,14 @@
 Ext.define('Lmkp.controller.public.Main', {
     extend: 'Ext.app.Controller',
 
+    requires: [
+        'Ext.form.field.Hidden',
+        'Lmkp.utils.StringFunctions',
+        'Lmkp.view.activities.Details',
+        'Lmkp.view.stakeholders.Details',
+        'Lmkp.view.comments.ReCaptcha'
+    ],
+
     refs: [{
         ref: 'mapPanel',
         selector: 'lo_publicmappanel'
@@ -159,10 +167,12 @@ Ext.define('Lmkp.controller.public.Main', {
     },
 
     /**
-     * Nicely render 'Year of Investment' column of Activity grid.
+     * Nicely render 'Year of Investment' column of Activity grid. Value '0' is
+     * treated as null
      */
     onActivityYearColumnAfterrender: function(comp) {
-        this._renderColumnMultipleValues(comp, "activity-attr_yearofinvestment");
+        this._renderColumnMultipleValues(comp, "activity-attr_yearofinvestment",
+        [0]);
     },
 
     /**
@@ -203,25 +213,35 @@ Ext.define('Lmkp.controller.public.Main', {
 
     /**
      * Helper function to find values inside Tags and TagGroups.
+     * 'ignored': Optionally provide an array of (dummy) values to be ignored.
      */
-    _renderColumnMultipleValues: function(comp, dataIndex) {
+    _renderColumnMultipleValues: function(comp, dataIndex, ignored) {
+        var me = this;
         comp.renderer = function(value, p, record) {
             // loop through all tags is needed
             var taggroupStore = record.taggroups();
             var ret = [];
-            for (var i=0; i<taggroupStore.count(); i++) {
-                var tagStore = taggroupStore.getAt(i).tags();
-                for (var j=0; j<tagStore.count(); j++) {
-                    if (tagStore.getAt(j).get('key') == Lmkp.ts.msg(dataIndex)) {
-                        ret.push(Ext.String.format('{0}', tagStore.getAt(j).get('value')));
+            taggroupStore.each(function(taggroup) {
+                var tagStore = taggroup.tags();
+                tagStore.each(function(tag) {
+                    if (tag.get('key') == Lmkp.ts.msg(dataIndex)) {
+                        if (!ignored || !me._isInArray(ignored, tag.get('value'))) {
+                            ret.push(Ext.String.format('{0}', tag.get('value')));
+                        }
                     }
-                }
-            }
+                });
+            });
             if (ret.length > 0) {
                 return ret.join(', ');
             } else {
                 return Lmkp.ts.msg("unknown");
             }
+        }
+    },
+
+    _isInArray: function(arr, obj) {
+        for(var i=0; i<arr.length; i++) {
+            if (arr[i] == obj) return true;
         }
     }
 });
