@@ -4,6 +4,12 @@ Ext.define('Lmkp.controller.public.Main', {
     refs: [{
         ref: 'mapPanel',
         selector: 'lo_publicmappanel'
+    },{
+        ref: 'showPendingActivitiesCheckbox',
+        selector: 'checkbox[itemId="showPendingActivitiesCheckbox"]'
+    },{
+        ref: 'showPendingStakeholdersCheckbox',
+        selector: 'checkbox[itemId="showPendingStakeholdersCheckbox"]'
     }],
 
     stores: [
@@ -21,6 +27,9 @@ Ext.define('Lmkp.controller.public.Main', {
         this.control({
             'lo_publicactivitytablepanel': {
                 render: this.onActivityTablePanelRender
+            },
+            'lo_publicstakeholdertablepanel': {
+                render: this.onStakeholderTablePanelRender
             },
             'lo_publicactivitytablepanel gridpanel[itemId=activityGrid]': {
                 selectionchange: this.onTableSelectionChange
@@ -52,11 +61,17 @@ Ext.define('Lmkp.controller.public.Main', {
             'lo_publicactivitytablepanel button[itemId=activityResetSelectionButton]': {
                 click: this.onClearSelectionButtonClick
             },
+            'lo_publicactivitytablepanel checkbox[itemId="showPendingActivitiesCheckbox"]': {
+                change: this.onShowPendingActivitiesCheckboxChange
+            },
             'lo_publicstakeholdertablepanel button[itemId=stakeholderFilterButton]': {
                 click: this.onStakeholderFilterButtonClick
             },
             'lo_publicstakeholdertablepanel button[itemId=stakeholderResetSelectionButton]': {
                 click: this.onClearSelectionButtonClick
+            },
+            'lo_publicstakeholdertablepanel checkbox[itemId="showPendingStakeholdersCheckbox"]': {
+                change: this.onShowPendingStakeholdersCheckboxChange
             }
         });
     },
@@ -75,8 +90,6 @@ Ext.define('Lmkp.controller.public.Main', {
             // Get the store proxy
             var proxy = store.getProxy();
             // Get the map view.
-            // Actually this is bad coding style! This should be done in a
-            // superior controller ...
             var map = this.getMapPanel().getMap();
             // Get the extent if the map is already initialized, else the
             // map extent is still null
@@ -84,7 +97,39 @@ Ext.define('Lmkp.controller.public.Main', {
                 // Set the bounding box as extra parameter
                 proxy.setExtraParam("bbox", map.getExtent().toBBOX());
             }
+
+            // Check if pending changes are requested
+            if(this.getShowPendingActivitiesCheckbox()){
+                this.getShowPendingActivitiesCheckbox().getValue() ?
+                proxy.setExtraParam('status', 'pending') : proxy.setExtraParam('status', null);
+            }
         }, this);
+    },
+
+    onStakeholderTablePanelRender: function(comp) {
+        this.getStakeholderGridStore().on('beforeload', function(store)  {
+            var proxy = store.getProxy();
+            if(this.getShowPendingStakeholdersCheckbox()){
+                this.getShowPendingStakeholdersCheckbox().getValue() ?
+                proxy.setExtraParam('status', 'pending') : proxy.setExtraParam('status', null);
+            }
+        }, this);
+    },
+
+    /**
+     * Reloads the Activities grid whenever the checkbox to show or hide activites
+     * with pending changes is checked or unchecked.
+     */
+    onShowPendingActivitiesCheckboxChange: function(field, newValue, oldValue){
+        this.getActivityGridStore().load();
+    },
+
+    /**
+     * Reloads the Stakeholders grid whenever the checkbox to show or hide activites
+     * with pending changes is checked or unchecked.
+     */
+    onShowPendingStakeholdersCheckboxChange: function(field, newValue, oldValue){
+        this.getStakeholderGridStore().load();
     },
 
     /**
@@ -114,7 +159,7 @@ Ext.define('Lmkp.controller.public.Main', {
                 var mapController = this.getController('public.Map');
                 mapController.showActivityOnMap(sel);
             }
-    	}
+        }
     },
 
     /**
@@ -187,7 +232,8 @@ Ext.define('Lmkp.controller.public.Main', {
     onStakeholderFilterButtonClick: function() {
         // Only create window once
         var q = Ext.ComponentQuery.query('lo_filterstakeholderwindow');
-        var win = q.length > 0 ? q[0] : Ext.create('Lmkp.view.public.FilterStakeholderWindow');;
+        var win = q.length > 0 ? q[0] : Ext.create('Lmkp.view.public.FilterStakeholderWindow');
+        ;
         win.show();
     },
 

@@ -13,7 +13,7 @@ Ext.define('Lmkp.view.activities.Details', {
     
     itemId: 'activityDetailWindow',
 
-    height: 200,
+    height: 600,
 
     layout: 'border',
 
@@ -62,6 +62,9 @@ Ext.define('Lmkp.view.activities.Details', {
             remoteSort: true,
 
             proxy: {
+                extraParams: {
+                    status: 'pending'
+                },
                 type: 'ajax',
                 url: '/activities/history/' + this.activity.get('id'),
                 reader: {
@@ -98,8 +101,8 @@ Ext.define('Lmkp.view.activities.Details', {
         this._populateDetails(this.activity)
 
         this.items = [
-            this.centerPanel,
-            this.historyPanel
+        this.centerPanel,
+        this.historyPanel
         ];
 
         this.title = 'Details Activity ' + this.activity.get('id');
