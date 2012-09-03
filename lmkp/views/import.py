@@ -113,6 +113,9 @@ def lao_import_activities(request):
 
     cursor.execute(a_sql_query)
 
+    # List of already added stakeholders
+    added_sh = []
+
     for lon, lat, id, country, name, status, size_of_investment, year_of_investment, source, main_crop, company_id in cursor:
         activity = {}
         activity['geometry'] = {'coordinates': [lon, lat], 'type': 'Point'}
@@ -139,13 +142,21 @@ def lao_import_activities(request):
             join(SH_Key).\
             join(SH_Value).filter(and_(SH_Key.key == 'origin_db_id', SH_Value.value == str(company_id))).first()
 
+            sh_identifier = str(sh.stakeholder_identifier)
+
+            # Check if this stakeholder is already added, then we increase the
+            # version
+            previous_version = added_sh.count(sh_identifier)
+
             stakeholders = []
             stakeholders.append({
-                                "id": str(sh.stakeholder_identifier),
+                                "id": sh_identifier,
                                 "op": "add",
                                 "role": 6,
-                                "version": 1
+                                "version": previous_version + 1
                                 })
+
+            added_sh.append(sh_identifier)
 
             activity['stakeholders'] = stakeholders
 
