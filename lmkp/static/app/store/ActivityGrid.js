@@ -37,8 +37,22 @@ Ext.define('Lmkp.store.ActivityGrid', {
         simpleSortMode: true,
         sortParam: 'order_by'
     },
+
+    setInitialProxy: function() {
+
+        // Update url
+        this.proxy.url = '/activities';
+
+        //
+        delete this.proxy.extraParams['sh_id'];
+
+        // Set EPSG again if it is missing
+        if (this.proxy.extraParams['bbox'] && !this.proxy.extraParams['epsg']) {
+            this.proxy.extraParams['epsg'] = 900913;
+        }
+    },
     
-    syncWithStakeholders: function() {
+    syncWithStakeholders: function(extraParams) {
     	
     	// Update url
     	this.proxy.url = '/stakeholders';
@@ -49,7 +63,7 @@ Ext.define('Lmkp.store.ActivityGrid', {
        	}
     	this.proxy.extraParams = extraParams;
 
-		// (Re)load store (load at page 1, otherwise entries may be hidden)
+        // (Re)load store (load at page 1, otherwise entries may be hidden)
     	this.loadPage(1);
     },
     
