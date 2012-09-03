@@ -10,6 +10,11 @@ Ext.define('Lmkp.view.activities.Details', {
         historyPanel: null
     },
     
+    defaults: {
+        margin: '0 0 5 0',
+        anchor: '100%'
+    },
+    
     itemId: 'activityDetailWindow',
 
     layout: 'border',
@@ -81,10 +86,14 @@ Ext.define('Lmkp.view.activities.Details', {
                 dataIndex: 'version',
                 flex: 1,
                 text: 'Version'
-            },{
+            }, {
                 dataIndex: 'status',
                 flex: 1,
                 text: 'Status'
+            }, {
+            	dataIndex: 'timestamp',
+            	flex: 1,
+            	text: 'Timestamp'
             }],
             itemId: 'historyPanel',
             region: 'west',
@@ -133,7 +142,7 @@ Ext.define('Lmkp.view.activities.Details', {
                 contentItem: activity,
                 border: 0,
                 bodyPadding: 0,
-                editable: false,
+                editable: true,
                 hiddenOriginal: false,
                 xtype: 'lo_activitypanel'
             });

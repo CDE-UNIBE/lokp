@@ -41,11 +41,14 @@ Ext.define('Lmkp.view.stakeholders.Details',{
 
         this.centerPanel = Ext.create('Ext.panel.Panel',{
             region: 'center',
-            autoScroll: true
+            autoScroll: true,
+            layout: 'anchor',
+            title: 'Details'
         });
 
         var historyStore = Ext.create('Ext.data.Store', {
             autoLoad: true,
+            autoScroll: true,
             storeId: 'historyStore',
             // all are needed to build relation
             requires: [
@@ -83,10 +86,14 @@ Ext.define('Lmkp.view.stakeholders.Details',{
                 dataIndex: 'version',
                 flex: 1,
                 text: 'Version'
-            },{
+            }, {
                 dataIndex: 'status',
                 flex: 1,
                 text: 'Status'
+            }, {
+            	dataIndex: 'timestamp',
+            	flex: 1,
+            	text: 'Timestamp'
             }],
             itemId: 'historyPanel',
             region: 'west',
@@ -135,7 +142,7 @@ Ext.define('Lmkp.view.stakeholders.Details',{
                 contentItem: stakeholder,
                 border: 0,
                 bodyPadding: 0,
-                editable: false,
+                editable: true,
                 hiddenOriginal: false,
                 xtype: 'lo_stakeholderpanel'
             });
