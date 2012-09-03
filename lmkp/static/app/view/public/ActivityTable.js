@@ -15,62 +15,65 @@ Ext.define('Lmkp.view.public.ActivityTable',{
     frame: false,
 
     items: [
-        {
-            xtype: 'gridpanel',
-            title: 'Activities',
-            flex: 0.5,
-            border: false,
-            split: true,
-            itemId: 'activityGrid',
-            store: 'ActivityGrid',
-            viewConfig: {
-                stripeRows: false
+    {
+        xtype: 'gridpanel',
+        title: 'Activities',
+        flex: 0.5,
+        border: false,
+        split: true,
+        itemId: 'activityGrid',
+        store: 'ActivityGrid',
+        viewConfig: {
+            stripeRows: false
+        },
+        // grid columns
+        columns: [{
+            header: Lmkp.ts.msg("activity-attr_country"),
+            name: 'activityCountryColumn',
+            dataIndex: Lmkp.ts.msg("activity-attr_country"),
+            flex: 1,
+            sortable: true
+        }, {
+            header: Lmkp.ts.msg('activity-attr_yearofinvestment'),
+            name: 'yearofinvestmentcolumn',
+            dataIndex: Lmkp.ts.msg('activity-attr_yearofinvestment'),
+            flex: 0,
+            sortable: true
+        }, {
+            xtype: 'templatecolumn',
+            flex: 0,
+            name: 'showDetailsColumn',
+            width: 24,
+            align: 'center',
+            tpl: '<img src="static/img/information.png" style="cursor:pointer;" title="Show details">'
+        }],
+        dockedItems: [{
+            xtype: 'toolbar',
+            dock: 'top',
+            items: [
+            {
+                text: 'Clear selection',
+                itemId: 'activityResetSelectionButton'
             },
-            // grid columns
-            columns: [{
-                header: Lmkp.ts.msg("activity-attr_country"),
-                name: 'activityCountryColumn',
-                dataIndex: Lmkp.ts.msg("activity-attr_country"),
-                flex: 1,
-                sortable: true
-            }, {
-                header: Lmkp.ts.msg('activity-attr_yearofinvestment'),
-                name: 'yearofinvestmentcolumn',
-                dataIndex: Lmkp.ts.msg('activity-attr_yearofinvestment'),
-                flex: 0,
-                sortable: true
-            }, {
-                xtype: 'templatecolumn',
-                flex: 0,
-                name: 'showDetailsColumn',
-                width: 24,
-                align: 'center',
-                tpl: '<img src="static/img/information.png" style="cursor:pointer;" title="Show details">'
-            }],
-            dockedItems: [{
-                xtype: 'toolbar',
-                dock: 'top',
-                items: [
-                    {
-                        text: 'Clear selection',
-                        itemId: 'activityResetSelectionButton'
-                    }, '->', {
-                        text: 'Filter',
-                        itemId: 'activityFilterButton'
-                    }
-                ]
-            },{
-                xtype: 'pagingtoolbar',
-                id: 'activityGridPagingToolbar',
-                store: 'ActivityGrid',
-                dock: 'bottom',
-                enableOverflow: false,
-                displayInfo: true,
-                beforePageText: Lmkp.ts.msg("activitypaging-before"),
-                afterPageText: Lmkp.ts.msg("activitypaging-after"),
-                displayMsg: Lmkp.ts.msg("activitypaging-message"),
-                emptyMsg: '<b>' + Lmkp.ts.msg("activitypaging-empty") + '</b>'
+            '->',
+            Lmkp.moderator.showPendingActivitiesCheckbox,
+            {
+                text: 'Filter',
+                itemId: 'activityFilterButton'
             }
+            ]
+        },{
+            xtype: 'pagingtoolbar',
+            id: 'activityGridPagingToolbar',
+            store: 'ActivityGrid',
+            dock: 'bottom',
+            enableOverflow: false,
+            displayInfo: true,
+            beforePageText: Lmkp.ts.msg("activitypaging-before"),
+            afterPageText: Lmkp.ts.msg("activitypaging-after"),
+            displayMsg: Lmkp.ts.msg("activitypaging-message"),
+            emptyMsg: '<b>' + Lmkp.ts.msg("activitypaging-empty") + '</b>'
+        }
         ]
     }],
 

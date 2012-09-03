@@ -112,6 +112,7 @@ def main(global_config, ** settings):
     # A view that returns an editing toolbar configuration object
     config.add_route('edit_toolbar_config', '/app/view/EditToolbar.js')
     config.add_route('view_toolbar_config', '/app/view/ViewToolbar.js')
+    config.add_route('moderator_toolbar_config', '/app/view/ModeratorToolbar.js')
 
     config.add_route('context_layers', '/app/view/layers.js')
     # Return a json with all available profiles from disk
