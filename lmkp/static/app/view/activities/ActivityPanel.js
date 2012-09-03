@@ -10,7 +10,7 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
     bodyPadding: 5,
     layout: 'anchor',
     defaults: {
-        margin: '5 0 0 0',
+        margin: '3',
         anchor: '100%'
     },
 

@@ -7,14 +7,15 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 	
     layout: 'anchor',
     defaults: {
-        anchor: '100%'
+        anchor: '100%',
+        margin: '3'
     },
 	
     // Temporary title
     title: Lmkp.ts.msg('loading'),
 	
     bodyStyle: {
-        padding: '5px 5px 0 5px'
+        padding: '3px'
     },
 
     // StringFunctions
