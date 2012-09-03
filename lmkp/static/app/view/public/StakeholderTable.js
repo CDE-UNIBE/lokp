@@ -38,6 +38,13 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
                     dataIndex: Lmkp.ts.msg('stakeholder-attr_country'),
                     flex: 0,
                     sortable: true
+                }, {
+                    xtype: 'templatecolumn',
+                    flex: 0,
+                    name: 'showDetailsColumn',
+                    width: 24,
+                    align: 'center',
+                    tpl: '<img src="static/img/information.png" style="cursor:pointer;" title="Show details">'
                 }
             ],
             dockedItems: [
