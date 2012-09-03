@@ -52,6 +52,9 @@ Ext.define('Lmkp.view.public.ActivityTable',{
                 dock: 'top',
                 items: [
                     {
+                        text: 'Clear selection',
+                        itemId: 'activityResetSelectionButton'
+                    }, '->', {
                         text: 'Filter',
                         itemId: 'activityFilterButton'
                     }

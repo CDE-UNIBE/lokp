@@ -29,8 +29,9 @@ Ext.onReady(function(){
         'public.Main',
         'public.BaseLayers',
         'public.ContextLayers',
-        'public.Map',
-        'stakeholders.Details'
+        'stakeholders.Details',
+        'public.Filter',
+        'public.Map'
         ],
 
         launch: function() {
