@@ -7,10 +7,10 @@ Ext.define('Lmkp.controller.public.Main', {
     }],
 
     stores: [
-        'ActivityGrid',
-        'ActivityConfig',
-        'StakeholderGrid',
-        'StakeholderConfig',
+    'ActivityGrid',
+    'ActivityConfig',
+    'StakeholderGrid',
+    'StakeholderConfig',
     ],
 
     init: function() {
@@ -68,16 +68,16 @@ Ext.define('Lmkp.controller.public.Main', {
 
             // Get the store proxy
             var proxy = store.getProxy();
-                // Get the map view.
-                // Actually this is bad coding style! This should be done in a
-                // superior controller ...
-                var map = this.getMapPanel().getMap();
-                // Get the extent if the map is already initialized, else the
-                // map extent is still null
-                if(map.getExtent()){
-                    // Set the bounding box as extra parameter
-                    proxy.setExtraParam("bbox", map.getExtent().toBBOX());
-                }
+            // Get the map view.
+            // Actually this is bad coding style! This should be done in a
+            // superior controller ...
+            var map = this.getMapPanel().getMap();
+            // Get the extent if the map is already initialized, else the
+            // map extent is still null
+            if(map.getExtent()){
+                // Set the bounding box as extra parameter
+                proxy.setExtraParam("bbox", map.getExtent().toBBOX());
+            }
         }, this);
     },
 
@@ -87,7 +87,7 @@ Ext.define('Lmkp.controller.public.Main', {
      */
     onTableSelectionChange: function(model, selected) {
     	
-    	if (selected && selected.length > 0) {
+        if (selected && selected.length > 0) {
             var sel = selected[0];
     		
             // Activity or Stakeholder?
@@ -99,10 +99,10 @@ Ext.define('Lmkp.controller.public.Main', {
             }
             
             if (otherStore) {
-            	// Update other grid panel
-            	otherStore.syncByOtherId(sel.get('id'));
+                // Update other grid panel
+                otherStore.syncByOtherId(sel.get('id'));
             }
-    	}
+        }
     },
 
     /**
@@ -121,12 +121,20 @@ Ext.define('Lmkp.controller.public.Main', {
                 type = 'activity';
             }
 
-            if (type) {
-            	// Show details
-            	console.log("Coming soon: Details for: " + type);
-            	console.log(record);
+            var w;
+
+            if (type == 'activity') {
+                // Show details window
+                w = Ext.create('Lmkp.view.activities.Details',{
+                    activity: record
+                }).show();
+            } else if (type == 'stakeholder') {
+                // Show details window
+                w = Ext.create('Lmkp.view.stakeholders.Details',{
+                    stakeholder: record
+                }).show();
             }
-    	}
+        }
     },
 
     /**

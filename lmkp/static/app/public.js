@@ -24,11 +24,13 @@ Ext.onReady(function(){
         ],
 
         controllers: [
+        'activities.Details',
         'login.Toolbar',
         'public.Main',
         'public.BaseLayers',
         'public.ContextLayers',
-        'public.Map'
+        'public.Map',
+        'stakeholders.Details'
         ],
 
         launch: function() {
