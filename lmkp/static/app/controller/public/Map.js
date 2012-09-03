@@ -76,27 +76,15 @@ Ext.define('Lmkp.controller.public.Map', {
         Ext.util.Cookies.set('_LOCATION_', value, expirationDate);
 
         // Reload the ActivityGrid store. Also refresh StakeholderGrid.
-        var me = this;
-       	
-       	// Make sure that ActivityGridStore does not display any Stakeholders 
-       	// (return_sh). Also refresh if Activities were shown based on a 
-       	// Stakeholder (sh_id)
-       	var params = this.getActivityGridStore().getProxy().extraParams;
-       	if (!params['return_sh'] || params['sh_id'] || !params['epsg']) {
-	        delete params.return_sh;
-	        delete params.sh_id;
-	        this.getActivityGridStore().getProxy().extraParams = params;
-       	}
+        var aStore = this.getActivityGridStore();
+        var shStore = this.getStakeholderGridStore();
 
-        // Set EPSG again if not already set
-        if (!params['epsg']) {
-            params['epsg'] = 900913;
-        }
-       	
-        this.getActivityGridStore().load(function() {
-        	// Update StakeholderGrid store to match ActivityGrid
-        	var shStore = me.getStakeholderGridStore();
+        aStore.setInitialProxy();
+        this.getActivityGridStore().loadPage(1, {
+            callback: function() {
+                // Update StakeholderGrid store to match ActivityGrid
         	shStore.syncWithActivities(this.getProxy().extraParams);
+            }
         });
     }
 
