@@ -49,8 +49,14 @@ Ext.define('Lmkp.controller.public.Main', {
             'lo_publicactivitytablepanel button[itemId=activityFilterButton]': {
                 click: this.onActivityFilterButtonClick
             },
+            'lo_publicactivitytablepanel button[itemId=activityResetSelectionButton]': {
+                click: this.onClearSelectionButtonClick
+            },
             'lo_publicstakeholdertablepanel button[itemId=stakeholderFilterButton]': {
                 click: this.onStakeholderFilterButtonClick
+            },
+            'lo_publicstakeholdertablepanel button[itemId=stakeholderResetSelectionButton]': {
+                click: this.onClearSelectionButtonClick
             }
         });
     },
@@ -102,7 +108,13 @@ Ext.define('Lmkp.controller.public.Main', {
                 // Update other grid panel
                 otherStore.syncByOtherId(sel.get('id'));
             }
-        }
+
+            // If Activity was selected, also show Feature on map
+            if (sel.modelName == 'Lmkp.model.Activity') {
+                var mapController = this.getController('public.Map');
+                mapController.showActivityOnMap(sel);
+            }
+    	}
     },
 
     /**
@@ -166,11 +178,25 @@ Ext.define('Lmkp.controller.public.Main', {
     },
 
     onActivityFilterButtonClick: function() {
-        console.log("popup with filters for activities coming soon.");
+        // Only create window once
+        var q = Ext.ComponentQuery.query('lo_filteractivitywindow');
+        var win = q.length > 0 ? q[0] : Ext.create('Lmkp.view.public.FilterActivityWindow');
+        win.show();
     },
 
     onStakeholderFilterButtonClick: function() {
-        console.log("popup with filters for stakeholders coming soon.");
+        // Only create window once
+        var q = Ext.ComponentQuery.query('lo_filterstakeholderwindow');
+        var win = q.length > 0 ? q[0] : Ext.create('Lmkp.view.public.FilterStakeholderWindow');;
+        win.show();
+    },
+
+    onClearSelectionButtonClick: function() {
+
+        // Reload ActivityGrid. Use the filter controller in order to keep
+        // results filtered
+        var filterController = this.getController('public.Filter');
+        filterController.applyFilter();
     },
 
     /**
