@@ -1,50 +1,148 @@
 Ext.define('Lmkp.view.activities.Details', {
-    extend: 'Ext.panel.Panel',
-    alias: ['widget.lo_activitydetailtab'],
-	
-    itemId: 'activityDetailTab',
+    extend: 'Ext.window.Window',
+    alias: ['widget.lo_activitydetailwindow'],
+
+    autoScroll: true,
 
     bodyPadding: 5,
-	
-    layout: {
-        type: 'anchor'
+    
+    config: {
+        centerPanel: null,
+        historyPanel: null
     },
-    defaults: {
-        margin: '0 0 5 0',
-        anchor: '100%'
-    },
-	
-    // initial item
-    items: [{
-        xtype: 'panel',
-        name: 'details_initial',
-        html: Lmkp.ts.msg('activity-select'),
-        border: 0
-    }],
+    
+    itemId: 'activityDetailWindow',
 
-    tbar: {
-        dock: 'top',
-        xtype: 'toolbar',
-        items: [/*{
-            enableToggle: true,
-            itemId: 'show-all-details',
-            pressed: true,
+    height: 200,
+
+    layout: 'border',
+
+    requires: [
+    'Lmkp.view.activities.ActivityPanel',
+    'Lmkp.view.comments.CommentPanel'
+    ],
+
+    bbar: {
+        items: ['->', {
+            iconCls: 'cancel-button',
+            text: 'Close', // also translate tooltip
             scale: 'medium',
-            text: Lmkp.ts.msg('details-toggle_all')
-        },*/{
-            iconCls: 'add-info-button',
-            itemId: 'add-taggroup-button',
-            scale: 'medium',
-            text: 'Add further information',
-            tooltip: Lmkp.ts.msg('activities-add_further_information')
-        }, '->', {
-            // @TODO: Add an iconCls
-            iconCls: 'delete-button',
-            text: 'Delete', // also translate tooltip
-            scale: 'medium',
-            itemId: 'delete-item-button',
-            tooltip: 'to be translated'
-        }]
+            itemId: 'closeWindowButton'
+        }],
+        xtype: 'toolbar'
+    },
+
+    width: 800,
+
+    initComponent: function(){
+
+        this.centerPanel = Ext.create('Ext.panel.Panel',{
+            region: 'center',
+            layout: 'anchor',
+            title: 'Details'
+        });
+
+        var historyStore = Ext.create('Ext.data.Store', {
+            autoLoad: true,
+            autoScroll: true,
+            storeId: 'historyStore',
+            // all are needed to build relation
+            requires: [
+            'Lmkp.model.Activity',
+            'Lmkp.model.TagGroup',
+            'Lmkp.model.Tag',
+            'Lmkp.model.MainTag',
+            'Lmkp.model.Involvement',
+            'Lmkp.model.Point'
+            ],
+
+            model: 'Lmkp.model.Activity',
+
+            pageSize: 10,
+            remoteSort: true,
+
+            proxy: {
+                type: 'ajax',
+                url: '/activities/history/' + this.activity.get('id'),
+                reader: {
+                    root: 'data',
+                    type: 'json',
+                    totalProperty: 'total'
+                },
+                startParam: 'offset',
+                simpleSortMode: true,
+                sortParam: 'order_by'
+            }
+        });
+
+        this.historyPanel = Ext.create('Ext.grid.Panel',{
+            collapsed: true,
+            collapsible: true,
+            collapseMode: 'header',
+            columns: [{
+                dataIndex: 'version',
+                flex: 1,
+                text: 'Version'
+            },{
+                dataIndex: 'status',
+                flex: 1,
+                text: 'Status'
+            }],
+            itemId: 'historyPanel',
+            region: 'west',
+            store: historyStore,
+            title: 'History',
+            width: 250
+        });
+
+        this._populateDetails(this.activity)
+
+        this.items = [
+            this.centerPanel,
+            this.historyPanel
+        ];
+
+        this.title = 'Details Activity ' + this.activity.get('id');
+
+        this.callParent(arguments);
+    },
+
+    /**
+     * Parameter activity is an instance of Lmkp.model.Activity
+     */
+    _populateDetails: function(activity){
+
+        if (activity) {
+
+            // Set the current selection to current
+            this.current = activity;
+
+            // Remove all existing panels
+            this.centerPanel.removeAll();
+
+            // If there are no versions pending, simply show active version
+            this.centerPanel.add({
+                contentItem: activity,
+                border: 0,
+                bodyPadding: 0,
+                editable: false,
+                hiddenOriginal: false,
+                xtype: 'lo_activitypanel'
+            });
+
+            // Add commenting panel
+            this.centerPanel.add({
+                xtype: 'lo_commentpanel',
+                identifier: activity.get('id'),
+                comment_object: 'activity'
+            });
+            
+        }
+
+        this.doLayout();
+
+        return activity;
+
     }
 	
 });
