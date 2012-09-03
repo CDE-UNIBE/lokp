@@ -603,6 +603,10 @@ class ActivityProtocol2(Protocol):
                 ).\
                 join(Involvement).\
                 join(sp_query, sp_query.c.order_id == Involvement.fk_stakeholder)
+            # Apply status filter (only if timestamp not set)
+            if status_filter is not None and timestamp_filter is None:
+                relevant_activities = relevant_activities.\
+                    filter(Activity.fk_status.in_(status_filter))
 
         # If stakeholders are to be returned, use Stakeholder_Protocol to get
         # them based on the relevant_activities.
