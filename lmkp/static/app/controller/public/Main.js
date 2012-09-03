@@ -121,9 +121,6 @@ Ext.define('Lmkp.controller.public.Main', {
                 type = 'activity';
             }
 
-            console.log("Coming soon: Details for: " + type);
-            console.log(record);
-
             var w;
 
             if (type == 'activity') {

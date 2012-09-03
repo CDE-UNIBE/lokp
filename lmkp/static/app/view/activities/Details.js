@@ -1,7 +1,9 @@
 Ext.define('Lmkp.view.activities.Details', {
     extend: 'Ext.window.Window',
     alias: ['widget.lo_activitydetailwindow'],
-    
+
+    autoScroll: true,
+
     bodyPadding: 5,
     
     config: {
@@ -9,47 +11,25 @@ Ext.define('Lmkp.view.activities.Details', {
         historyPanel: null
     },
     
-    defaults: {
-        margin: '0 0 5 0',
-        anchor: '100%'
-    },
-
     itemId: 'activityDetailWindow',
 
-    height: 600,
+    height: 200,
 
-    layout: {
-        type: 'border'
-    },
+    layout: 'border',
 
     requires: [
     'Lmkp.view.activities.ActivityPanel',
     'Lmkp.view.comments.CommentPanel'
     ],
 
-    tbar: {
-        dock: 'top',
-        xtype: 'toolbar',
-        items: [/*{
-            enableToggle: true,
-            itemId: 'show-all-details',
-            pressed: true,
+    bbar: {
+        items: ['->', {
+            iconCls: 'cancel-button',
+            text: 'Close', // also translate tooltip
             scale: 'medium',
-            text: Lmkp.ts.msg('details-toggle_all')
-        },*/{
-            iconCls: 'add-info-button',
-            itemId: 'add-taggroup-button',
-            scale: 'medium',
-            text: 'Add further information',
-            tooltip: Lmkp.ts.msg('activities-add_further_information')
-        }, '->', {
-            // @TODO: Add an iconCls
-            iconCls: 'delete-button',
-            text: 'Delete', // also translate tooltip
-            scale: 'medium',
-            itemId: 'delete-item-button',
-            tooltip: 'to be translated'
-        }]
+            itemId: 'closeWindowButton'
+        }],
+        xtype: 'toolbar'
     },
 
     width: 800,
@@ -57,21 +37,72 @@ Ext.define('Lmkp.view.activities.Details', {
     initComponent: function(){
 
         this.centerPanel = Ext.create('Ext.panel.Panel',{
-            defaults: {
-                margin: '0 0 5 0',
-                anchor: '100%'
-            },
             region: 'center',
-            layout: 'anchor'
+            layout: 'anchor',
+            title: 'Details'
         });
 
-        this.historyPanel = Ext.create('Ext.panel')
+        var historyStore = Ext.create('Ext.data.Store', {
+            autoLoad: true,
+            autoScroll: true,
+            storeId: 'historyStore',
+            // all are needed to build relation
+            requires: [
+            'Lmkp.model.Activity',
+            'Lmkp.model.TagGroup',
+            'Lmkp.model.Tag',
+            'Lmkp.model.MainTag',
+            'Lmkp.model.Involvement',
+            'Lmkp.model.Point'
+            ],
+
+            model: 'Lmkp.model.Activity',
+
+            pageSize: 10,
+            remoteSort: true,
+
+            proxy: {
+                type: 'ajax',
+                url: '/activities/history/' + this.activity.get('id'),
+                reader: {
+                    root: 'data',
+                    type: 'json',
+                    totalProperty: 'total'
+                },
+                startParam: 'offset',
+                simpleSortMode: true,
+                sortParam: 'order_by'
+            }
+        });
+
+        this.historyPanel = Ext.create('Ext.grid.Panel',{
+            collapsed: true,
+            collapsible: true,
+            collapseMode: 'header',
+            columns: [{
+                dataIndex: 'version',
+                flex: 1,
+                text: 'Version'
+            },{
+                dataIndex: 'status',
+                flex: 1,
+                text: 'Status'
+            }],
+            itemId: 'historyPanel',
+            region: 'west',
+            store: historyStore,
+            title: 'History',
+            width: 250
+        });
 
         this._populateDetails(this.activity)
 
-        var items = [this.centerPanel];
+        this.items = [
+            this.centerPanel,
+            this.historyPanel
+        ];
 
-        this.items = items;
+        this.title = 'Details Activity ' + this.activity.get('id');
 
         this.callParent(arguments);
     },
@@ -107,6 +138,8 @@ Ext.define('Lmkp.view.activities.Details', {
             });
             
         }
+
+        this.doLayout();
 
         return activity;
 

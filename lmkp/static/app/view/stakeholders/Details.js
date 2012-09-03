@@ -62,10 +62,6 @@ Ext.define('Lmkp.view.stakeholders.Details',{
             remoteSort: true,
 
             proxy: {
-                extraParams: {
-                    // Do not load involvements in grid for faster loading
-                    involvements: 'none'
-                },
                 type: 'ajax',
                 url: '/stakeholders/history/' + this.stakeholder.get('id'),
                 reader: {
