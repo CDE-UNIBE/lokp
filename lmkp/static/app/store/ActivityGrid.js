@@ -52,7 +52,7 @@ Ext.define('Lmkp.store.ActivityGrid', {
         var prefix_sh = 'sh__';
         for (var i in this.proxy.extraParams) {
             if (i.slice(0, prefix_a.length) == prefix_a
-                || i.slice(0, prefix_sh.length == prefix_sh)) {
+                || i.slice(0, prefix_sh.length) == prefix_sh) {
                 delete this.proxy.extraParams[i];
             }
         }
