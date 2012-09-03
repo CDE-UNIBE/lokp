@@ -8,7 +8,9 @@ Ext.define('Lmkp.controller.public.Filter', {
 
     stores: [
         'ActivityConfig',
-        'StakeholderConfig'
+        'ActivityGrid',
+        'StakeholderConfig',
+        'StakeholderGrid'
     ],
 
     views: [
@@ -20,8 +22,32 @@ Ext.define('Lmkp.controller.public.Filter', {
             'lo_filteractivitywindow button[name=addAttributeFilter]': {
                 click: this.onAddActivityAttributeFilterButtonClick
             },
+            'lo_filteractivitywindow button[name=addTimeFilter]': {
+//                TODO
+            },
             'lo_filterstakeholderwindow button[name=addAttributeFilter]': {
                 click: this.onAddStakeholderAttributeFilterButtonClick
+            },
+            'button[name=filterActivateButton]': {
+                click: this.applyFilter
+            },
+            'combobox[name=attributeCombo]': {
+                select: this.showValueFields
+            },
+            '[name=valueField]': {
+                change: this.resetActivateButton
+            },
+            'combobox[name=filterOperator]': {
+                select: this.resetActivateButton
+            },
+            'lo_filteractivitywindow datefield[name=dateField]': {
+                change: this.resetActivateButton
+            },
+            'button[name=deleteButton]': {
+                click: this.deleteFilter
+            },
+            'combobox[name=logicalOperator]': {
+                select: this.applyFilter
             }
         });
     },
@@ -96,10 +122,10 @@ Ext.define('Lmkp.controller.public.Filter', {
             case "combobox": // possibilities: like | nlike
                 var data = [
                 {
-                    'queryOperator': '__like=',
+                    'queryOperator': '__like',
                     'displayOperator': Lmkp.ts.msg('filter-operator_is')
                 }, {
-                    'queryOperator': '__nlike=',
+                    'queryOperator': '__nlike',
                     'displayOperator': Lmkp.ts.msg('filter-operator_is-not')
                 }
                 ];
@@ -107,19 +133,19 @@ Ext.define('Lmkp.controller.public.Filter', {
             case "textfield": // possibilities: like | ilike | nlike | nilike
                 var data = [
                 {
-                    'queryOperator': '__like=',
+                    'queryOperator': '__like',
                     'displayOperator':
                     Lmkp.ts.msg('filter-operator_contains-case-sensitive')
                 }, {
-                    'queryOperator': '__ilike=',
+                    'queryOperator': '__ilike',
                     'displayOperator':
                     Lmkp.ts.msg('filter-operator_contains-case-insensitive')
                 }, {
-                    'queryOperator': '__nlike=',
+                    'queryOperator': '__nlike',
                     'displayOperator':
                     Lmkp.ts.msg('filter-operator_contains-not-case-sensitive')
                 }, {
-                    'queryOperator': '__nilike=',
+                    'queryOperator': '__nilike',
                     'displayOperator':
                     Lmkp.ts.msg('filter-operator_contains-not-case-insensitive')
                 }
@@ -128,22 +154,22 @@ Ext.define('Lmkp.controller.public.Filter', {
             default: // default is also used for numberfield
                 var data = [
                 {
-                    'queryOperator': '__eq=',
+                    'queryOperator': '__eq',
                     'displayOperator': Lmkp.ts.msg('filter-operator_equals')
                 }, {
-                    'queryOperator': '__lt=',
+                    'queryOperator': '__lt',
                     'displayOperator': Lmkp.ts.msg('filter-operator_less-than')
                 }, {
-                    'queryOperator': '__lte=',
+                    'queryOperator': '__lte',
                     'displayOperator': Lmkp.ts.msg('filter-operator_less-than-or-equal')
                 }, {
-                    'queryOperator': '__gte=',
+                    'queryOperator': '__gte',
                     'displayOperator': Lmkp.ts.msg('filter-operator_greater-than-or-equal')
                 }, {
-                    'queryOperator': '__gt=',
+                    'queryOperator': '__gt',
                     'displayOperator': Lmkp.ts.msg('filter-operator_greater-than')
                 }, {
-                    'queryOperator': '__ne=',
+                    'queryOperator': '__ne',
                     'displayOperator': Lmkp.ts.msg('filter-operator_not-equals')
                 }
                 ];
@@ -219,6 +245,157 @@ Ext.define('Lmkp.controller.public.Filter', {
         }
         if (applyFilter) {
             this.applyFilter(element);
+        }
+    },
+
+    /**
+     * If input is not a button, it is assumed that it is a filterpanel.
+     */
+    applyFilter: function(input) {
+
+        var filterpanel = null;
+        if (input.getXType() == 'button' || input.getXType() == 'combobox') {
+            // use button to find if new filter request came from Activities or
+            // Stakeholders
+            var itempanel = input.up('panel');
+            filterpanel = itempanel.up('panel') ? itempanel.up('panel') : null;
+        } else {
+            filterpanel = input;
+        }
+
+        var store = null;
+        var otherstore = null;
+
+        if (filterpanel) {
+            // Fill needed values based on Activity or Stakeholder
+            if (filterpanel.getXType() == 'lo_editoractivityfilterpanel') {
+                // Activities
+                store = this.getActivityGridStore();
+                otherstore = this.getStakeholderGridStore();
+            }
+            else if (filterpanel.getXType() == 'lo_editorstakeholderfilterpanel') {
+                // Stakeholders
+                store = this.getStakeholderGridStore();
+                otherstore = this.getActivityGridStore();
+            }
+
+            store.setInitialProxy();
+            var extraParams = store.getProxy().extraParams;
+
+            // Collect filters on current store
+            var type = 'activity';
+            var filters = filterpanel.getFilterItems();
+            extraParams = this._appendFilterParams(extraParams, filters, type);
+
+            // Also collect filters on other store
+            // @TODO!!
+            var otherType = 'stakeholder';
+            var otherFilters = [];
+            extraParams = this._appendFilterParams(extraParams, otherFilters, otherType);
+
+            if (filters.length > 1) {
+                // Apply logical operator if selected
+                extraParams["logical_op"] = filterpanel.getLogicalOperator();
+            }
+
+            // Assumption: Queries are _ALWAYS_ connected.
+//            // if checkbox is set, also add filters from other panel to url
+//            var tablepanel = filterpanel.up('panel');
+//            if (tablepanel) {
+//                var combine_checkbox = tablepanel.query('checkbox[itemId=filterConnect]')[0];
+//                if (combine_checkbox && combine_checkbox.checked) {
+//                    var other_panel = Ext.ComponentQuery.query(other_xtype)[0];
+//                    if (other_panel) {
+//                        var other_filters = other_panel.getFilterItems();
+//                        url += '&' + this._getFilterUrl(other_filters, other_prefix);
+//                        if (other_filters.length > 1 && !logical_operator) {
+//                            logical_operator = other_panel.getLogicalOperator();
+//                        }
+//                    }
+//                }
+//            }
+        }
+
+        // Reload store
+        store.getProxy().extraParams = extraParams;
+        store.loadPage(1, {
+            callback: function() {
+                // Also reload other store
+                otherstore.syncWithOther(store.getProxy().extraParams);
+            }
+        });
+    },
+
+    deleteFilter: function(button) {
+
+        var item_panel = button.up('panel');
+
+        if (item_panel) {
+            var filter_panel = item_panel.up('panel');
+        }
+
+        if (item_panel && filter_panel) {
+            // if time was filtered, re-enable its 'add' button
+            if (item_panel.name == 'timePanel') {
+                var btn = Ext.ComponentQuery.query('button[name=addTimeFilter]')[0];
+                if (btn) {
+                    btn.enable();
+                }
+            }
+            // reload store if removed filter was activated (deactivate it first)
+            if (item_panel.filterIsActivated()) {
+                item_panel.deactivateFilter();
+                this.applyFilter(button);
+            }
+            filter_panel.remove(item_panel);
+        }
+        // toggle logical operator
+        filter_panel.toggleLogicalOperator();
+    },
+
+    _appendFilterParams: function(params, filters, type) {
+        var prefix = null;
+        if (type == 'activity') prefix = 'a__';
+        else if (type == 'stakeholder') prefix = 'sh__';
+
+        if (params && filters && prefix) {
+            var queryable = [];
+            for (var i in filters) {
+                if (filters[i] && filters[i].attr) {
+                    // queryable
+                    // only add attribute to queryable if not already there
+                    if (!this._isInArray(queryable, filters[i].attr)) {
+                        queryable.push(filters[i].attr);
+                    }
+                    // Parameters. Multiple must be possible (eg.
+                    // a__Country__like=Abc&a__Country__like=Xyz)
+                    var p = prefix + filters[i].attr + filters[i].op;
+                    if (!params[p]) {
+                        params[p] = filters[i].value;
+                    } else {
+                        // Add same multiple times: use array
+                        var queries = params[p];
+                        if (queries instanceof Array != true) {
+                            // Create a new Array
+                            queries = [queries];
+                        }
+                        queries.push(filters[i].value);
+                        params[p] = queries;
+                    }
+                } else if (filters[i] && filters[i].date) {
+                    params['timestamp'] = filters[i].date;
+                }
+            }
+            if (queryable.length > 0) {
+                params[prefix + 'queryable'] = queryable.join(',');
+            }
+        }
+        return params;
+    },
+
+    _isInArray: function(arr, obj) { // http://stackoverflow.com/questions/143847/best-way-to-find-an-item-in-a-javascript-array
+        for(var i=0; i<arr.length; i++) {
+            if (arr[i] == obj) return true;
         }
     }
 });

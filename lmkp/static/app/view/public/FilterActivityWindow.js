@@ -5,8 +5,11 @@ Ext.define('Lmkp.view.public.FilterActivityWindow', {
     requires: ['Lmkp.view.activities.Filter'],
 
     layout: 'fit',
-    modal: true,
     border: 0,
+
+    // Never destroy window, only hide it
+    closeAction: 'hide',
+    modal: true,
 
     items: [
         {
