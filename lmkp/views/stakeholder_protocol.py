@@ -492,7 +492,7 @@ class StakeholderProtocol(Protocol):
         if self._get_user_filter(request, Stakeholder, SH_Changeset) is not None:
             user_filter = self._get_user_filter(request, Stakeholder, SH_Changeset)
             relevant_stakeholders = relevant_stakeholders.join(user_filter)
-        
+
         # If the query came from Activities, create new relevant_stakeholders 
         # based on these activities
         if ap_query is not None:
@@ -503,6 +503,10 @@ class StakeholderProtocol(Protocol):
                 ).\
                 join(Involvement).\
                 join(ap_query, ap_query.c.order_id == Involvement.fk_activity)
+            # Apply status filter (only if timestamp not set)
+            if status_filter is not None and timestamp_filter is None:
+                relevant_stakeholders = relevant_stakeholders.\
+                    filter(Stakeholder.fk_status.in_(status_filter))
 
         # If activities are to be returned, use ActivityProtocol2 to get
         # them based on the relevant_stakeholders.
