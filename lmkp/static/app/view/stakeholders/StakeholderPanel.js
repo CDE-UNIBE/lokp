@@ -8,16 +8,14 @@ Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
     ],
 
     bodyPadding: 5,
-
+    layout: 'anchor',    
+    defaults: {
+        margin: '3',
+        anchor: '100%'
+    },
+    
     config: {
         editable: true
-    },
-
-    layout: 'anchor',
-    
-    defaults: {
-        margin: '5 0 0 0',
-        anchor: '100%'
     },
 
     initComponent: function() {
@@ -39,7 +37,7 @@ Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
             // Remove any existing panels
             this.removeAll();
 
-            var editable = this.editable;
+            var editable = this.editable && Lmkp.toolbar != false;
 
             // If it is not a Stakeholder Model ...
             if (!this.contentItem.isModel) {

@@ -48,27 +48,19 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
                 });
 
                 // Add buttons to edit TagGroup
-
-                var buttons = ['->', {
-                    name: 'toggleDetails',
-                    text: Lmkp.ts.msg('details'),
-                    enableToggle: true,
-                    pressed: true
-                }];
-
-                if(this.editable){
-                    buttons.push({
-                        name: 'editTaggroup',
-                        text: Lmkp.ts.msg('edit'),
-                        selected_taggroup: this.taggroup
-                    });
+                if (this.editable) {
+                	me.addDocked({
+                		dock: 'top',
+                		xtype: 'toolbar',
+                		items: ['->',
+                			{
+		                        name: 'editTaggroup',
+		                        text: Lmkp.ts.msg('edit'),
+		                        selected_taggroup: this.taggroup
+                			}
+                		]
+                	});
                 }
-
-                me.addDocked({
-                    dock: 'top',
-                    xtype: 'toolbar',
-                    items: buttons
-                });
                 
             } else {
                 // Tag group is empty
