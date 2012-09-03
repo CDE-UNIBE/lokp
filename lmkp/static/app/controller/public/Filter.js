@@ -253,67 +253,47 @@ Ext.define('Lmkp.controller.public.Filter', {
      */
     applyFilter: function(input) {
 
-        var filterpanel = null;
-        if (input.getXType() == 'button' || input.getXType() == 'combobox') {
-            // use button to find if new filter request came from Activities or
-            // Stakeholders
-            var itempanel = input.up('panel');
-            filterpanel = itempanel.up('panel') ? itempanel.up('panel') : null;
-        } else {
-            filterpanel = input;
+        // Get filter panels
+        var afpq = Ext.ComponentQuery.query('lo_editoractivityfilterpanel');
+        var activityFilterPanel = afpq.length > 0 ? afpq[0]: null;
+        var sfpq = Ext.ComponentQuery.query('lo_editorstakeholderfilterpanel');
+        var stakeholderFilterPanel = sfpq.length > 0 ? sfpq[0] : null;
+
+        // Get stores
+        var store = this.getActivityGridStore();
+        var otherstore = this.getStakeholderGridStore();
+
+        // Reset proxy
+        store.setInitialProxy();
+
+        // Get existing extraParams
+        var extraParams = store.getProxy().extraParams;
+
+        // Collect filters on Activities
+        if (activityFilterPanel) {
+            extraParams = this._appendFilterParams(
+                extraParams,
+                activityFilterPanel.getFilterItems(),
+                'activity'
+            );
+            if (activityFilterPanel.getFilterItems().length > 1) {
+                // Apply logical operator if selected
+                extraParams["logical_op"] =
+                    activityFilterPanel.getLogicalOperator();
+            }
         }
 
-        var store = null;
-        var otherstore = null;
-
-        if (filterpanel) {
-            // Fill needed values based on Activity or Stakeholder
-            if (filterpanel.getXType() == 'lo_editoractivityfilterpanel') {
-                // Activities
-                store = this.getActivityGridStore();
-                otherstore = this.getStakeholderGridStore();
-            }
-            else if (filterpanel.getXType() == 'lo_editorstakeholderfilterpanel') {
-                // Stakeholders
-                store = this.getStakeholderGridStore();
-                otherstore = this.getActivityGridStore();
-            }
-
-            store.setInitialProxy();
-            var extraParams = store.getProxy().extraParams;
-
-            // Collect filters on current store
-            var type = 'activity';
-            var filters = filterpanel.getFilterItems();
-            extraParams = this._appendFilterParams(extraParams, filters, type);
-
-            // Also collect filters on other store
-            // @TODO!!
-            var otherType = 'stakeholder';
-            var otherFilters = [];
-            extraParams = this._appendFilterParams(extraParams, otherFilters, otherType);
-
-            if (filters.length > 1) {
+        // Also collect filters on Stakeholders
+        if (stakeholderFilterPanel) {
+            extraParams = this._appendFilterParams(
+                extraParams,
+                stakeholderFilterPanel.getFilterItems(),
+                'stakeholder');
+            if (stakeholderFilterPanel.getFilterItems().length > 1) {
                 // Apply logical operator if selected
-                extraParams["logical_op"] = filterpanel.getLogicalOperator();
+                extraParams["logical_op"] =
+                    stakeholderFilterPanel.getLogicalOperator();
             }
-
-            // Assumption: Queries are _ALWAYS_ connected.
-//            // if checkbox is set, also add filters from other panel to url
-//            var tablepanel = filterpanel.up('panel');
-//            if (tablepanel) {
-//                var combine_checkbox = tablepanel.query('checkbox[itemId=filterConnect]')[0];
-//                if (combine_checkbox && combine_checkbox.checked) {
-//                    var other_panel = Ext.ComponentQuery.query(other_xtype)[0];
-//                    if (other_panel) {
-//                        var other_filters = other_panel.getFilterItems();
-//                        url += '&' + this._getFilterUrl(other_filters, other_prefix);
-//                        if (other_filters.length > 1 && !logical_operator) {
-//                            logical_operator = other_panel.getLogicalOperator();
-//                        }
-//                    }
-//                }
-//            }
         }
 
         // Reload store

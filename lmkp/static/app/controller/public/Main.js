@@ -50,13 +50,13 @@ Ext.define('Lmkp.controller.public.Main', {
                 click: this.onActivityFilterButtonClick
             },
             'lo_publicactivitytablepanel button[itemId=activityResetSelectionButton]': {
-                click: this.onResetSelectionButtonClick
+                click: this.onClearSelectionButtonClick
             },
             'lo_publicstakeholdertablepanel button[itemId=stakeholderFilterButton]': {
                 click: this.onStakeholderFilterButtonClick
             },
             'lo_publicstakeholdertablepanel button[itemId=stakeholderResetSelectionButton]': {
-                click: this.onResetSelectionButtonClick
+                click: this.onClearSelectionButtonClick
             }
         });
     },
@@ -183,20 +183,12 @@ Ext.define('Lmkp.controller.public.Main', {
         win.show();
     },
 
-    onResetSelectionButtonClick: function() {
+    onClearSelectionButtonClick: function() {
 
-        // Get stores
-        var aStore = this.getActivityGridStore();
-        var shStore = this.getStakeholderGridStore();
-
-        // Reload ActivityGrid
-        aStore.setInitialProxy();
-        aStore.loadPage(1, {
-            callback: function() {
-                // Reload StakeholderGrid
-                shStore.syncWithActivities(aStore.getProxy().extraParams);
-            }
-        });
+        // Reload ActivityGrid. Use the filter controller in order to keep
+        // results filtered
+        var filterController = this.getController('public.Filter');
+        filterController.applyFilter();
     },
 
     /**
