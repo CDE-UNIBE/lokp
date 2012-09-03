@@ -862,6 +862,8 @@ class StakeholderProtocol(Protocol):
 
             # use version as order value
             order_value = i.version
+            
+            timestamp = i.timestamp
 
             diff_info = {
                 'status': i.status,
@@ -880,7 +882,7 @@ class StakeholderProtocol(Protocol):
             # If no existing ActivityFeature found, create new one
             if stakeholder == None:
                 stakeholder = Feature(uid, order_value, version=order_value, 
-                                      diff_info=diff_info)
+                                      timestamp=timestamp, diff_info=diff_info)
                 data.append(stakeholder)
 
             # Check if there is already this tag group present in the current
