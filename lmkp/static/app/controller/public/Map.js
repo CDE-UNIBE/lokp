@@ -65,6 +65,12 @@ Ext.define('Lmkp.controller.public.Map', {
         // Register the moveend event with the map
         // after setting map center and zoom level
         map.events.register('moveend', this, this.onMoveEnd);
+
+        // If logged in, show controls for editors (add or edit location etc.)
+        if (Lmkp.toolbar != false) {
+            var editorMapController = this.getController('editor.Map');
+            editorMapController.initEditorControls();
+        }
     },
 
     onMoveEnd: function(event){
