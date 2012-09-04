@@ -40,10 +40,9 @@ Ext.define('Lmkp.view.activities.Details', {
     initComponent: function(){
 
         this.centerPanel = Ext.create('Ext.panel.Panel',{
-            region: 'center',
-            layout: 'anchor',
             autoScroll: true,
-            title: 'Details'
+            layout: 'anchor',
+            itemId: 'activityDetailCenterPanel'
         });
         
 
@@ -80,7 +79,6 @@ Ext.define('Lmkp.view.activities.Details', {
         });
 
         this.historyPanel = Ext.create('Ext.grid.Panel',{
-            //            collapsed: true,
             collapsible: true,
             collapseMode: 'header',
             columns: [{
@@ -105,8 +103,15 @@ Ext.define('Lmkp.view.activities.Details', {
 
         this._populateDetails(this.activity)
 
-        this.items = [
-        this.centerPanel,
+        this.items = [{
+            bodyPadding: 5,
+            layout: 'card',
+            margin: 3,
+            itemId: 'activityDetailWrapperPanel',
+            items: [ this.centerPanel ],
+            region: 'center',
+            title: 'Details'
+        },
         this.historyPanel
         ];
 
@@ -134,7 +139,7 @@ Ext.define('Lmkp.view.activities.Details', {
 
             // Set the current selection to current
             this.current = activity;
-
+            this.centerPanel.currentActivity = activity;
             // Remove all existing panels
             this.centerPanel.removeAll();
 
