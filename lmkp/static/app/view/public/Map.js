@@ -19,7 +19,8 @@ Ext.define('Lmkp.view.public.Map',{
         baseLayers: null,
         identifyCtrl: null,
         map: null,
-        vectorLayer: null
+        vectorLayer: null,
+        activityGeometry: null
     },
 
     layout: 'fit',
@@ -66,7 +67,8 @@ Ext.define('Lmkp.view.public.Map',{
 
         // Create the toolbar
         this.tbar = Ext.create('Ext.toolbar.Toolbar',{
-            dock: 'top'
+            dock: 'top',
+            itemId: 'mapPanelToolbar'
         });
 
         this.identifyCtrl = new OpenLayers.Control.WMSGetFeatureInfo({
