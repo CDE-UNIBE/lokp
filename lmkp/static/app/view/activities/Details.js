@@ -116,10 +116,6 @@ Ext.define('Lmkp.view.activities.Details', {
     },
 
     /**
-<<<<<<< HEAD
- * Parameter activity is an instance of Lmkp.model.Activity
- */
-=======
      * Ext has some serious issues with panels collapsed on start. Instead, this
      * function is called right after showing this window.
      */
@@ -132,7 +128,6 @@ Ext.define('Lmkp.view.activities.Details', {
     /**
      * Parameter activity is an instance of Lmkp.model.Activity
      */
->>>>>>> b33bd569272e76068610f61b46170f8031a005f6
     _populateDetails: function(activity){
 
         if (activity) {

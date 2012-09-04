@@ -61,9 +61,7 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
             }, {
                 text: 'Delete all filters',
                 itemId: 'stakeholderDeleteAllFiltersButton'
-            },'->',
-            Lmkp.moderator.showPendingStakeholdersCheckbox
-            ]
+            }]
         }]
     },{
         xtype: 'pagingtoolbar',
