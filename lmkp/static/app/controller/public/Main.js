@@ -55,6 +55,9 @@ Ext.define('Lmkp.controller.public.Main', {
             'lo_publicactivitytablepanel button[itemId=activityResetSelectionButton]': {
                 click: this.onClearSelectionButtonClick
             },
+            'lo_publicactivitytablepanel button[itemId=activityDeleteAllFiltersButton]': {
+                click: this.onActivityDeleteAllFiltersButtonClick
+            },
             'lo_publicactivitytablepanel button[itemId=newActivityButton]': {
             	click: this.onNewActivityButtonClick
             },
@@ -69,6 +72,9 @@ Ext.define('Lmkp.controller.public.Main', {
             },
             'lo_publicstakeholdertablepanel button[itemId=stakeholderResetSelectionButton]': {
                 click: this.onClearSelectionButtonClick
+            },
+            'lo_publicstakeholdertablepanel button[itemId=stakeholderDeleteAllFiltersButton]': {
+                click: this.onStakeholderDeleteAllFiltersButtonClick
             },
             'gridpanel[itemId=activityGrid] gridcolumn[name=yearofinvestmentcolumn]': {
                 afterrender: this.onActivityYearColumnAfterrender
@@ -272,6 +278,38 @@ Ext.define('Lmkp.controller.public.Main', {
         filterController.applyFilter();
     },
 
+    onActivityDeleteAllFiltersButtonClick: function() {
+        var q = Ext.ComponentQuery.query('lo_editoractivityfilterpanel');
+        var filterPanel = q.length > 0 ? q[0] : null;
+        if (filterPanel) {
+            // Delete all filter items
+            var filterItems = filterPanel.query('lo_itemsfilterpanel');
+            for (var i in filterItems) {
+                filterItems[i].destroy();
+            }
+            // Reapply filter
+            var filterController = this.getController('public.Filter');
+            filterController.applyFilter(true);
+            this._updateFilterCount('activities');
+        }
+    },
+
+    onStakeholderDeleteAllFiltersButtonClick: function() {
+        var q = Ext.ComponentQuery.query('lo_editorstakeholderfilterpanel');
+        var filterPanel = q.length > 0 ? q[0] : null;
+        if (filterPanel) {
+            // Delete all filter items
+            var filterItems = filterPanel.query('lo_itemsfilterpanel');
+            for (var i in filterItems) {
+                filterItems[i].destroy();
+            }
+            // Reapply filter
+            var filterController = this.getController('public.Filter');
+            filterController.applyFilter(true);
+            this._updateFilterCount('stakeholders');
+        }
+    },
+
     /**
      * Helper function to find values inside Tags and TagGroups.
      * 'ignored': Optionally provide an array of (dummy) values to be ignored.
@@ -316,30 +354,36 @@ Ext.define('Lmkp.controller.public.Main', {
         if (!items || items == 'activities') {
             // Activities
             var aToolbar = this.getActivityGridTopToolbar();
-            var aButtonId = 'activityFilterButton';
+            var aItemId = 'activity';
             var aCount = this.getActivityTablePanel().getFilterCount();
-            __updateButton(aToolbar, aButtonId, aCount);
+            __updateButton(aToolbar, aItemId, aCount);
         }
 
         if (!items || items == 'stakeholders') {
             // Stakeholders
             var shToolbar = this.getStakeholderGridTopToolbar();
-            var shButtonId = 'stakeholderFilterButton';
+            var shItemId = 'stakeholder';
             var shCount = this.getStakeholderTablePanel().getFilterCount();
-            __updateButton(shToolbar, shButtonId, shCount);
+            __updateButton(shToolbar, shItemId, shCount);
         }
 
-        function __updateButton(toolbar, buttonId, count) {
-            var button = toolbar.down('button[itemId=' + buttonId + ']');
+        function __updateButton(toolbar, itemId, count) {
+            // Update button showing count
+            var button = toolbar.down('button[itemId=' + itemId + 'FilterButton]');
             if (toolbar && button && count != null) {
                 // Remove old button
                 toolbar.remove(button);
                 // Create new button
                 var newbutton = Ext.create('Ext.button.Button', {
                     text: 'Filter (' + count + ' active)',
-                    itemId: buttonId
+                    itemId: itemId + 'FilterButton'
                 });
                 toolbar.add(newbutton);
+            }
+            // Also enable/disable button to delete all filters
+            var deleteButton = toolbar.down('button[itemId=' + itemId + 'DeleteAllFiltersButton]');
+            if (deleteButton) {
+                deleteButton.setDisabled(count == 0);
             }
         }
     }
