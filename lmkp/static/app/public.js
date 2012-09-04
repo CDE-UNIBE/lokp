@@ -2,10 +2,15 @@ Ext.require('Ext.container.Viewport');
 Ext.require('Ext.form.action.StandardSubmit');
 Ext.require('Ext.form.field.Checkbox');
 Ext.require('Ext.form.field.ComboBox');
+Ext.require('Ext.form.field.Hidden');
+Ext.require('Ext.form.Label');
 Ext.require('Ext.form.Panel');
 Ext.require('Ext.fx.*');
 Ext.require('Ext.grid.Panel');
 Ext.require('Ext.layout.container.Border');
+Ext.require('Lmkp.utils.StringFunctions');
+Ext.require('Lmkp.view.activities.Details');
+Ext.require('Lmkp.view.comments.ReCaptcha');
 
 Ext.onReady(function(){
     var loadingMask = Ext.get('loading-mask');
@@ -14,6 +19,16 @@ Ext.onReady(function(){
         remove: true
     });
     
+    // Collect additional controllers (based on login permissions, eg. see 
+    // function 'edit_toolbar_config' in 'views/editors.py')
+    var additionalControllers = [];
+    if (Lmkp.editorControllers) {
+    	additionalControllers = additionalControllers.concat(Lmkp.editorControllers);
+    }
+    if(Lmkp.moderatorControllers) {
+        additionalControllers = additionalControllers.concat(Lmkp.moderatorControllers);
+    }
+
     Ext.application({
         name: 'Lmkp',
         appFolder: 'static/app',
@@ -31,8 +46,8 @@ Ext.onReady(function(){
         'public.ContextLayers',
         'stakeholders.Details',
         'public.Filter',
-        'public.Map'
-        ],
+        'public.Map',
+        ].concat(additionalControllers),
 
         launch: function() {
             Ext.create('Ext.container.Viewport', {

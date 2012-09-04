@@ -3,10 +3,12 @@ Ext.define('Lmkp.view.stakeholders.Details',{
     alias: ['widget.lo_stakeholderdetailwindow'],
 
     bodyPadding: 5,
+    modal: true,
 
     config: {
         centerPanel: null,
-        historyPanel: null
+        historyPanel: null,
+        historyStore: null
     },
 
     defaults: {
@@ -16,9 +18,9 @@ Ext.define('Lmkp.view.stakeholders.Details',{
 
     itemId: 'stakeholderDetailWindow',
 
-    height: 600,
-
     layout: 'border',
+    height: 400,
+    width: 600,
 
     requires: [
     'Lmkp.view.stakeholders.StakeholderPanel',
@@ -36,16 +38,18 @@ Ext.define('Lmkp.view.stakeholders.Details',{
         xtype: 'toolbar'
     },
 
-    width: 800,
-
     initComponent: function(){
 
         this.centerPanel = Ext.create('Ext.panel.Panel',{
-            region: 'center'
+            region: 'center',
+            autoScroll: true,
+            layout: 'anchor',
+            title: 'Details'
         });
 
-        var historyStore = Ext.create('Ext.data.Store', {
+        this.historyStore = Ext.create('Ext.data.Store', {
             autoLoad: true,
+            autoScroll: true,
             storeId: 'historyStore',
             // all are needed to build relation
             requires: [
@@ -76,21 +80,25 @@ Ext.define('Lmkp.view.stakeholders.Details',{
         });
 
         this.historyPanel = Ext.create('Ext.grid.Panel',{
-            collapsed: true,
+//            collapsed: true, -> Collapsing is done 'manually'
             collapsible: true,
             collapseMode: 'header',
             columns: [{
                 dataIndex: 'version',
                 flex: 1,
                 text: 'Version'
-            },{
+            }, {
                 dataIndex: 'status',
                 flex: 1,
                 text: 'Status'
+            }, {
+            	dataIndex: 'timestamp',
+            	flex: 1,
+            	text: 'Timestamp'
             }],
             itemId: 'historyPanel',
             region: 'west',
-            store: historyStore,
+            store: this.historyStore,
             title: 'History',
             width: 250
         });
@@ -102,9 +110,19 @@ Ext.define('Lmkp.view.stakeholders.Details',{
         this.historyPanel
         ];
 
-        this.title = 'Details Stakeholder ' + this.stakeholder.get('id');
+        this.title = 'Details on Stakeholder ' + this.stakeholder.get('id');
 
         this.callParent(arguments);
+    },
+
+    /**
+     * Ext has some serious issues with panels collapsed on start. Instead, this
+     * function is called right after showing this window.
+     */
+    _collapseHistoryPanel: function() {
+        if (this.historyPanel) {
+            this.historyPanel.collapse();
+        }
     },
 
     /**
@@ -125,7 +143,7 @@ Ext.define('Lmkp.view.stakeholders.Details',{
                 contentItem: stakeholder,
                 border: 0,
                 bodyPadding: 0,
-                editable: false,
+                editable: true,
                 hiddenOriginal: false,
                 xtype: 'lo_stakeholderpanel'
             });
