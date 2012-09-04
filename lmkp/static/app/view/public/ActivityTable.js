@@ -14,6 +14,10 @@ Ext.define('Lmkp.view.public.ActivityTable',{
     border: 0,
     frame: false,
 
+    config: {
+        filterCount: 0
+    },
+
     items: [
         {
             xtype: 'gridpanel',
