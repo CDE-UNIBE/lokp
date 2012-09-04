@@ -14,8 +14,11 @@ Ext.define('Lmkp.view.public.ActivityTable',{
     border: 0,
     frame: false,
 
-    items: [
-    {
+    config: {
+        filterCount: 0
+    },
+
+    items: [{
         xtype: 'gridpanel',
         title: 'Activities',
         flex: 0.5,
@@ -49,37 +52,34 @@ Ext.define('Lmkp.view.public.ActivityTable',{
         }],
         dockedItems: [{
             xtype: 'toolbar',
+            id: 'activityGridTopToolbar',
             dock: 'top',
-            items: [
-            {
+            items: ['->', {
                 text: 'Clear selection',
                 itemId: 'activityResetSelectionButton'
-            },
-            '->',
+            }, {                    	
+                text: 'Delete all filters',
+                itemId: 'activityDeleteAllFiltersButton'
+            }, '->',
             Lmkp.moderator.showPendingActivitiesCheckbox,
-            {
-                text: 'Filter',
-                itemId: 'activityFilterButton'
-            }
             ]
-        },{
-            xtype: 'pagingtoolbar',
-            id: 'activityGridPagingToolbar',
-            store: 'ActivityGrid',
-            dock: 'bottom',
-            enableOverflow: false,
-            displayInfo: true,
-            beforePageText: Lmkp.ts.msg("activitypaging-before"),
-            afterPageText: Lmkp.ts.msg("activitypaging-after"),
-            displayMsg: Lmkp.ts.msg("activitypaging-message"),
-            emptyMsg: '<b>' + Lmkp.ts.msg("activitypaging-empty") + '</b>'
-        }
-        ]
+        }]
+    },{
+        xtype: 'pagingtoolbar',
+        id: 'activityGridPagingToolbar',
+        store: 'ActivityGrid',
+        dock: 'bottom',
+        enableOverflow: false,
+        displayInfo: true,
+        beforePageText: Lmkp.ts.msg("activitypaging-before"),
+        afterPageText: Lmkp.ts.msg("activitypaging-after"),
+        displayMsg: Lmkp.ts.msg("activitypaging-message"),
+        emptyMsg: '<b>' + Lmkp.ts.msg("activitypaging-empty") + '</b>'
     }],
 
     /**
-     * Returns the spatial filter checkbox
-     */
+ * Returns the spatial filter checkbox
+ */
     getSpatialFilterCheckbox: function(){
         return Ext.ComponentQuery.query('checkbox[itemId="spatialFilterCheckbox"]')[0];
     }

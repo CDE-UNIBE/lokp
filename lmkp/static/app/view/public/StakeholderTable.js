@@ -13,6 +13,10 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
     border: 0,
     frame: false,
 
+    config: {
+        filterCount: 0
+    },
+
     items: [
     {
         xtype: 'gridpanel',
@@ -45,38 +49,33 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
             width: 24,
             align: 'center',
             tpl: '<img src="static/img/information.png" style="cursor:pointer;" title="Show details">'
-        }
-        ],
+        }],
         dockedItems: [
         {
             xtype: 'toolbar',
+            id: 'stakeholderGridTopToolbar',
             dock: 'top',
-            items: [
-            {
+            items: ['->', {
                 text: 'Clear selection',
                 itemId: 'stakeholderResetSelectionButton'
-            },
-            '->',
-            Lmkp.moderator.showPendingStakeholdersCheckbox,
-            {
-                text: 'Filter',
-                itemId: 'stakeholderFilterButton'
-            }
+            }, {
+                text: 'Delete all filters',
+                itemId: 'stakeholderDeleteAllFiltersButton'
+            },'->',
+            Lmkp.moderator.showPendingStakeholdersCheckbox
             ]
-        }, {
-            xtype: 'pagingtoolbar',
-            id: 'stakeholderGridPagingToolbar',
-            store: 'StakeholderGrid',
-            dock: 'bottom',
-            enableOverflow: false,
-            displayInfo: true,
-            beforePageText: Lmkp.ts.msg("activitypaging-before"),
-            afterPageText: Lmkp.ts.msg("activitypaging-after"),
-            displayMsg: Lmkp.ts.msg("stakeholder-paging_message"),
-            emptyMsg: '<b>' + Lmkp.ts.msg("stakeholder-paging_empty") + '</b>'
-        }
-        ]
-    }
-    ]
+        }]
+    },{
+        xtype: 'pagingtoolbar',
+        id: 'stakeholderGridPagingToolbar',
+        store: 'StakeholderGrid',
+        dock: 'bottom',
+        enableOverflow: false,
+        displayInfo: true,
+        beforePageText: Lmkp.ts.msg("activitypaging-before"),
+        afterPageText: Lmkp.ts.msg("activitypaging-after"),
+        displayMsg: Lmkp.ts.msg("stakeholder-paging_message"),
+        emptyMsg: '<b>' + Lmkp.ts.msg("stakeholder-paging_empty") + '</b>'
+    }]
 
 });

@@ -8,6 +8,8 @@ log = logging.getLogger(__name__)
 
 _ = TranslationStringFactory('lmkp')
 
+
+# @TODO: A big part of the following function probably is not needed anymore.
 @view_config(route_name='edit_toolbar_config', renderer='javascript', permission='edit')
 def edit_toolbar_config(request):
     """
@@ -28,7 +30,9 @@ def edit_toolbar_config(request):
     str += "{id: 'user_button', text: '%s', tooltip: '%s'},\n" % (request.user.username, _('Show user profile', default='Show user profile'))
     str += "{id: 'logout_button', text: '%s'}]};\n" % _('Logout', default='Logout')
 
-    str += "Lmkp.mainControllers = ['Main', 'Map', 'Filter', 'Stakeholder','EditFilter'];\n"
+    str += "Lmkp.mainControllers = ['Main', 'Map', 'Filter', 'Stakeholder', 'EditFilter', 'NewActivity'];\n"
+
+    str += "Lmkp.editorControllers = ['activities.NewActivity']"
 
     return str
 
