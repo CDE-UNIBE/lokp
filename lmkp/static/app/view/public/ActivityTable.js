@@ -61,9 +61,6 @@ Ext.define('Lmkp.view.public.ActivityTable',{
                     }, {                    	
                         text: 'Delete all filters',
                         itemId: 'activityDeleteAllFiltersButton'
-                    }, {
-                        text: 'Filter',
-                        itemId: 'activityFilterButton'
                     }
                 ]
             },{
