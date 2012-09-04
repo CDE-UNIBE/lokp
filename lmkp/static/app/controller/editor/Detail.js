@@ -22,6 +22,7 @@ Ext.define('Lmkp.controller.editor.Detail', {
 
     init: function() {
         this.control({
+            /*
             'lo_editordetailpanel button[itemId=add-taggroup-button]':{
                 click: this.onAddTaggroupButtonClick
             },
@@ -46,9 +47,11 @@ Ext.define('Lmkp.controller.editor.Detail', {
             'lo_editordetailpanel button[name=deleteInvolvementButton]': {
                 click: this.onInvolvementDeleteButtonClick
             }
+            */
         });
     },
 
+    /*
     onNewActivityTabActivate: function(panel) {
         // Create and load a store with all mandatory keys
         var mandatoryStore = Ext.create('Lmkp.store.ActivityConfig');
@@ -419,4 +422,6 @@ Ext.define('Lmkp.controller.editor.Detail', {
             }
         });
     }
+
+    */
 });
