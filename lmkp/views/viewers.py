@@ -26,4 +26,7 @@ def view_toolbar_config(request):
 
     str += "Lmkp.mainControllers = ['Main', 'Layers', 'Map', 'Filter', 'Stakeholder'];\n"
 
+    str += "Ext.ns('Lmkp.moderator');\n"
+    str += "Lmkp.moderator.showPendingActivitiesCheckbox = null; Lmkp.moderator.showPendingStakeholdersCheckbox = null;"
+
     return str

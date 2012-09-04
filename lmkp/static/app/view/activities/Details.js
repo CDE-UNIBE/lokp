@@ -2,20 +2,25 @@ Ext.define('Lmkp.view.activities.Details', {
     extend: 'Ext.window.Window',
     alias: ['widget.lo_activitydetailwindow'],
 
-    autoScroll: true,
-
     bodyPadding: 5,
+    modal: true,
     
     config: {
         centerPanel: null,
-        historyPanel: null
+        historyPanel: null,
+        historyStore: null
+    },
+    
+    defaults: {
+        margin: '0 0 5 0',
+        anchor: '100%'
     },
     
     itemId: 'activityDetailWindow',
 
-    height: 200,
-
     layout: 'border',
+    height: 400,
+    width: 600,
 
     requires: [
     'Lmkp.view.activities.ActivityPanel',
@@ -32,17 +37,17 @@ Ext.define('Lmkp.view.activities.Details', {
         xtype: 'toolbar'
     },
 
-    width: 800,
-
     initComponent: function(){
 
         this.centerPanel = Ext.create('Ext.panel.Panel',{
             region: 'center',
             layout: 'anchor',
+            autoScroll: true,
             title: 'Details'
         });
+        
 
-        var historyStore = Ext.create('Ext.data.Store', {
+        this.historyStore = Ext.create('Ext.data.Store', {
             autoLoad: true,
             autoScroll: true,
             storeId: 'historyStore',
@@ -59,38 +64,41 @@ Ext.define('Lmkp.view.activities.Details', {
             model: 'Lmkp.model.Activity',
 
             pageSize: 10,
-            remoteSort: true,
-
             proxy: {
-                type: 'ajax',
-                url: '/activities/history/' + this.activity.get('id'),
                 reader: {
                     root: 'data',
                     type: 'json',
                     totalProperty: 'total'
                 },
-                startParam: 'offset',
                 simpleSortMode: true,
-                sortParam: 'order_by'
-            }
+                sortParam: 'order_by',
+                startParam: 'offset',
+                type: 'ajax',
+                url: '/activities/history/' + this.activity.get('id')
+            },
+            remoteSort: true
         });
 
         this.historyPanel = Ext.create('Ext.grid.Panel',{
-            collapsed: true,
+//            collapsed: true, 
             collapsible: true,
             collapseMode: 'header',
             columns: [{
                 dataIndex: 'version',
                 flex: 1,
                 text: 'Version'
-            },{
+            }, {
                 dataIndex: 'status',
                 flex: 1,
                 text: 'Status'
+            }, {
+            	dataIndex: 'timestamp',
+            	flex: 1,
+            	text: 'Timestamp'
             }],
             itemId: 'historyPanel',
             region: 'west',
-            store: historyStore,
+            store: this.historyStore,
             title: 'History',
             width: 250
         });
@@ -98,13 +106,23 @@ Ext.define('Lmkp.view.activities.Details', {
         this._populateDetails(this.activity)
 
         this.items = [
-            this.centerPanel,
-            this.historyPanel
+        this.centerPanel,
+        this.historyPanel
         ];
 
-        this.title = 'Details Activity ' + this.activity.get('id');
+        this.title = 'Details on Activity ' + this.activity.get('id');
 
         this.callParent(arguments);
+    },
+
+    /**
+     * Ext has some serious issues with panels collapsed on start. Instead, this
+     * function is called right after showing this window.
+     */
+    _collapseHistoryPanel: function() {
+        if (this.historyPanel) {
+            this.historyPanel.collapse();
+        }
     },
 
     /**
@@ -125,7 +143,7 @@ Ext.define('Lmkp.view.activities.Details', {
                 contentItem: activity,
                 border: 0,
                 bodyPadding: 0,
-                editable: false,
+                editable: true,
                 hiddenOriginal: false,
                 xtype: 'lo_activitypanel'
             });
