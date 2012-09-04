@@ -3,7 +3,6 @@ Ext.define('Lmkp.view.activities.Details', {
     alias: ['widget.lo_activitydetailwindow'],
 
     bodyPadding: 5,
-    modal: true,
     
     config: {
         centerPanel: null,
@@ -12,13 +11,14 @@ Ext.define('Lmkp.view.activities.Details', {
     },
     
     defaults: {
-        margin: '0 0 5 0',
         anchor: '100%'
     },
     
     itemId: 'activityDetailWindow',
 
     layout: 'border',
+
+    modal: true,
     height: 400,
     width: 600,
 
@@ -80,7 +80,7 @@ Ext.define('Lmkp.view.activities.Details', {
         });
 
         this.historyPanel = Ext.create('Ext.grid.Panel',{
-//            collapsed: true, 
+            //            collapsed: true,
             collapsible: true,
             collapseMode: 'header',
             columns: [{
@@ -92,9 +92,9 @@ Ext.define('Lmkp.view.activities.Details', {
                 flex: 1,
                 text: 'Status'
             }, {
-            	dataIndex: 'timestamp',
-            	flex: 1,
-            	text: 'Timestamp'
+                dataIndex: 'timestamp',
+                flex: 1,
+                text: 'Timestamp'
             }],
             itemId: 'historyPanel',
             region: 'west',
@@ -128,7 +128,7 @@ Ext.define('Lmkp.view.activities.Details', {
     /**
      * Parameter activity is an instance of Lmkp.model.Activity
      */
-    _populateDetails: function(activity){
+    _populateDetails: function(activity, pendingVersion){
 
         if (activity) {
 
@@ -137,6 +137,18 @@ Ext.define('Lmkp.view.activities.Details', {
 
             // Remove all existing panels
             this.centerPanel.removeAll();
+
+            // Show a notice if this version is a pending one
+            if(pendingVersion) {
+                this.centerPanel.add({
+                    bodyCls: 'notice',
+                    bodyPadding: 5,
+                    html: 'You are seeing a pending version, which needs to be \n\
+                        reviewed before it is publicly visible',
+                    margin: '3 3 0 3'
+                    
+                });
+            }
 
             // If there are no versions pending, simply show active version
             this.centerPanel.add({
@@ -150,14 +162,13 @@ Ext.define('Lmkp.view.activities.Details', {
 
             // Add commenting panel
             this.centerPanel.add({
-                xtype: 'lo_commentpanel',
+                comment_object: 'activity',
                 identifier: activity.get('id'),
-                comment_object: 'activity'
+                margin: 3,
+                xtype: 'lo_commentpanel'
             });
             
         }
-
-        this.doLayout();
 
         return activity;
 
