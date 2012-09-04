@@ -1,6 +1,8 @@
 Ext.require('Ext.data.JsonStore');
 Ext.require('Ext.chart.Chart');
+Ext.require('Ext.chart.series.Scatter');
 Ext.require('Ext.container.Viewport');
+Ext.require('Ext.form.Label');
 Ext.require('Ext.layout.container.Border');
 Ext.require('Ext.chart.series.Bar');
 Ext.require('Ext.chart.axis.Category');
@@ -15,6 +17,16 @@ Ext.onReady(function () {
         remove: true
     });
 
+    var mainTabPanel = Ext.create('Ext.tab.Panel',{
+        items: [{
+            contentEl: 'heatmap-div',
+            padding: 5,
+            title: 'Heat Map',
+            xtype: 'panel'
+        }],
+        region: 'center'
+    });
+
     var store1 = Ext.create('Ext.data.JsonStore',{
         autoLoad: true,
         proxy: {
@@ -23,65 +35,75 @@ Ext.onReady(function () {
             reader: {
                 type: 'json',
                 root: 'data',
-                idProperty: 'Main Crop'
+                idProperty: 'main_crop'
             }
         },
         fields: [{
-            name: 'Activity (count)',
-            type: 'integer'
+            mapping: "Activity (count)",
+            name: 'activities',
+            type: 'int'
         }, {
-            name: 'Main Crop',
+            mapping: "Main Crop",
+            name: 'main_crop',
             type: 'string'
         }]
     });
+    
+    store1.on('load', function(store, records, successful){
+        if(successful){
+            // Create the chart after loading
+            var chart1 = Ext.create('Ext.chart.Chart',{
+                title: 'Count of Activities per Product',
+                width: 600,
+                height: 800,
+                animate: true,
+                store: store1,
+                axes: [{
+                    type: 'Category',
+                    position: 'left',
+                    fields: ['main_crop'],
+                    label: {
+                    //renderer: Ext.util.Format.numberRenderer('0')
+                    },
+                    title: 'Product'
+                }, {
+                    minimum: 0,
+                    maximum: store.max('activities'),
+                    grid: true,
+                    type: 'Numeric',
+                    position: 'bottom',
+                    fields: ['activities'],
+                    title: 'Number of activities'
+                }],
+                series: [{
+                    type: 'bar',
+                    axis: 'left',
+                    highlight: true,
+                    tips: {
+                        trackMouse: true,
+                        width: 140,
+                        height: 28,
+                        renderer: function(storeItem, item) {
+                            this.setTitle(storeItem.get('main_crop') + ": " + storeItem.get('activities'));
+                        }
+                    },
+                    label: {
+                        display: 'insideEnd',
+                        field: 'activities',
+                        renderer: Ext.util.Format.numberRenderer('0'),
+                        orientation: 'horizontal',
+                        color: '#333',
+                        'text-anchor': 'middle'
+                    },
+                    yField: 'activities',
+                    xField: 'main_crop'
+                }]
+            });
+            this.insert(chart1);
+        }
+    }, mainTabPanel);
 
-    var chart1 = Ext.create('Ext.chart.Chart',{
-        title: 'Count of Activities per Product',
-        width: 600,
-        height: 800,
-        animate: true,
-        store: store1,
-        axes: [{
-            type: 'Category',
-            position: 'left',
-            fields: ['Main Crop'],
-            label: {
-            //renderer: Ext.util.Format.numberRenderer('0')
-            },
-            title: 'Product'
-        }, {
-            minimum: 0,
-            maximum: 50,
-            grid: true,
-            type: 'Numeric',
-            position: 'bottom',
-            fields: ['Activity (Count)'],
-            title: 'Number of activities'
-        }],
-        series: [{
-            type: 'bar',
-            axis: 'left',
-            highlight: true,
-            tips: {
-                trackMouse: true,
-                width: 140,
-                height: 28,
-                renderer: function(storeItem, item) {
-                    this.setTitle(storeItem.get('Main Crop') + ": " + storeItem.get('Activity (count)'));
-                }
-            },
-            label: {
-                display: 'insideEnd',
-                field: 'Activity (Count)',
-                renderer: Ext.util.Format.numberRenderer('0'),
-                orientation: 'horizontal',
-                color: '#333',
-                'text-anchor': 'middle'
-            },
-            yField: 'Activity (count)',
-            xField: 'Main Crop'
-        }]
-    });
+    
 
     var store3 = Ext.create('Ext.data.JsonStore',{
         autoLoad: true,
@@ -122,7 +144,7 @@ Ext.onReady(function () {
             fields: ['Activity (count)'],
             title: 'Number of activities',
             minimum: 0,
-            maximum: 20
+            maximum: store3.max('Activity (count)')
         }],
         series: [{
             type: 'scatter',
@@ -148,6 +170,7 @@ Ext.onReady(function () {
             yField: 'Size of Investment (sum)'
         }]
     });
+    mainTabPanel.insert(chart3);
 
     Ext.application({
         name: 'Lmkp',
@@ -168,19 +191,8 @@ Ext.onReady(function () {
                     type: 'border',
                     padding: 0
                 },
-                items: [{
-                    items: [
-                    chart1,
-                    chart3,
-                    {
-                        contentEl: 'heatmap-div',
-                        padding: 5,
-                        title: 'Heat Map',
-                        xtype: 'panel'
-                    }],
-                    region: 'center',
-                    xtype: 'tabpanel'
-                },{
+                items: [
+                mainTabPanel,{
                     region: 'north',
                     xtype: 'lo_logintoolbar'
                 },{
