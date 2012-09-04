@@ -14,8 +14,17 @@ Ext.define('Lmkp.controller.public.Main', {
         ref: 'mapPanel',
         selector: 'lo_publicmappanel'
     }, {
+        ref: 'activityTablePanel',
+        selector: 'lo_publicactivitytablepanel'
+    }, {
+        ref: 'stakeholderTablePanel',
+        selector: 'lo_publicstakeholdertablepanel'
+    }, {
     	ref: 'activityGridTopToolbar',
     	selector: 'toolbar[id=activityGridTopToolbar]'
+    }, {
+        ref: 'stakeholderGridTopToolbar',
+        selector: 'toolbar[id=stakeholderGridTopToolbar]'
     }],
 
     stores: [
@@ -46,6 +55,9 @@ Ext.define('Lmkp.controller.public.Main', {
             'lo_publicactivitytablepanel button[itemId=activityResetSelectionButton]': {
                 click: this.onClearSelectionButtonClick
             },
+            'lo_publicactivitytablepanel button[itemId=activityDeleteAllFiltersButton]': {
+                click: this.onActivityDeleteAllFiltersButtonClick
+            },
             'lo_publicactivitytablepanel button[itemId=newActivityButton]': {
             	click: this.onNewActivityButtonClick
             },
@@ -60,6 +72,9 @@ Ext.define('Lmkp.controller.public.Main', {
             },
             'lo_publicstakeholdertablepanel button[itemId=stakeholderResetSelectionButton]': {
                 click: this.onClearSelectionButtonClick
+            },
+            'lo_publicstakeholdertablepanel button[itemId=stakeholderDeleteAllFiltersButton]': {
+                click: this.onStakeholderDeleteAllFiltersButtonClick
             },
             'gridpanel[itemId=activityGrid] gridcolumn[name=yearofinvestmentcolumn]': {
                 afterrender: this.onActivityYearColumnAfterrender
@@ -100,16 +115,19 @@ Ext.define('Lmkp.controller.public.Main', {
                 proxy.setExtraParam("bbox", map.getExtent().toBBOX());
             }
         }, this);
-        
+
+        // Update filter count
+        this._updateFilterCount();
+
         // If logged in, add a button to add new Activity
         if (Lmkp.toolbar != false) {
-        	var tb = this.getActivityGridTopToolbar();
-        	if (tb) {
-        		tb.insert(0, {
-        			text: 'Add new Activity',
-        			itemId: 'newActivityButton'
-        		});
-        	}
+            var tb = this.getActivityGridTopToolbar();
+            if (tb) {
+                tb.insert(0, {
+                    text: 'Add new Activity',
+                    itemId: 'newActivityButton'
+                });
+            }
         }
     },
 
@@ -232,6 +250,11 @@ Ext.define('Lmkp.controller.public.Main', {
         // Only create window once
         var q = Ext.ComponentQuery.query('lo_filteractivitywindow');
         var win = q.length > 0 ? q[0] : Ext.create('Lmkp.view.public.FilterActivityWindow');
+        // Update filter count when filters are modified
+        var me = this;
+        win.on('filterEdited', function() {
+            me._updateFilterCount('activities');
+        });
         win.show();
     },
 
@@ -239,6 +262,11 @@ Ext.define('Lmkp.controller.public.Main', {
         // Only create window once
         var q = Ext.ComponentQuery.query('lo_filterstakeholderwindow');
         var win = q.length > 0 ? q[0] : Ext.create('Lmkp.view.public.FilterStakeholderWindow');;
+        // Update filter count when filters are modified
+        var me = this;
+        win.on('filterEdited', function() {
+            me._updateFilterCount('stakeholders');
+        });
         win.show();
     },
 
@@ -248,6 +276,38 @@ Ext.define('Lmkp.controller.public.Main', {
         // results filtered
         var filterController = this.getController('public.Filter');
         filterController.applyFilter();
+    },
+
+    onActivityDeleteAllFiltersButtonClick: function() {
+        var q = Ext.ComponentQuery.query('lo_editoractivityfilterpanel');
+        var filterPanel = q.length > 0 ? q[0] : null;
+        if (filterPanel) {
+            // Delete all filter items
+            var filterItems = filterPanel.query('lo_itemsfilterpanel');
+            for (var i in filterItems) {
+                filterItems[i].destroy();
+            }
+            // Reapply filter
+            var filterController = this.getController('public.Filter');
+            filterController.applyFilter(true);
+            this._updateFilterCount('activities');
+        }
+    },
+
+    onStakeholderDeleteAllFiltersButtonClick: function() {
+        var q = Ext.ComponentQuery.query('lo_editorstakeholderfilterpanel');
+        var filterPanel = q.length > 0 ? q[0] : null;
+        if (filterPanel) {
+            // Delete all filter items
+            var filterItems = filterPanel.query('lo_itemsfilterpanel');
+            for (var i in filterItems) {
+                filterItems[i].destroy();
+            }
+            // Reapply filter
+            var filterController = this.getController('public.Filter');
+            filterController.applyFilter(true);
+            this._updateFilterCount('stakeholders');
+        }
     },
 
     /**
@@ -281,6 +341,50 @@ Ext.define('Lmkp.controller.public.Main', {
     _isInArray: function(arr, obj) {
         for(var i=0; i<arr.length; i++) {
             if (arr[i] == obj) return true;
+        }
+    },
+
+    /**
+     * Update the filter buttons to show the count of currently active filters.
+     * {items}: Optional identifier ('activities' or 'stakeholders') to update
+     * only one button.
+     */
+    _updateFilterCount: function(items) {
+
+        if (!items || items == 'activities') {
+            // Activities
+            var aToolbar = this.getActivityGridTopToolbar();
+            var aItemId = 'activity';
+            var aCount = this.getActivityTablePanel().getFilterCount();
+            __updateButton(aToolbar, aItemId, aCount);
+        }
+
+        if (!items || items == 'stakeholders') {
+            // Stakeholders
+            var shToolbar = this.getStakeholderGridTopToolbar();
+            var shItemId = 'stakeholder';
+            var shCount = this.getStakeholderTablePanel().getFilterCount();
+            __updateButton(shToolbar, shItemId, shCount);
+        }
+
+        function __updateButton(toolbar, itemId, count) {
+            // Update button showing count
+            var button = toolbar.down('button[itemId=' + itemId + 'FilterButton]');
+            if (toolbar && button && count != null) {
+                // Remove old button
+                toolbar.remove(button);
+                // Create new button
+                var newbutton = Ext.create('Ext.button.Button', {
+                    text: 'Filter (' + count + ' active)',
+                    itemId: itemId + 'FilterButton'
+                });
+                toolbar.add(newbutton);
+            }
+            // Also enable/disable button to delete all filters
+            var deleteButton = toolbar.down('button[itemId=' + itemId + 'DeleteAllFiltersButton]');
+            if (deleteButton) {
+                deleteButton.setDisabled(count == 0);
+            }
         }
     }
 });
