@@ -8,7 +8,8 @@ Ext.define('Lmkp.view.activities.Details', {
     
     config: {
         centerPanel: null,
-        historyPanel: null
+        historyPanel: null,
+        historyStore: null
     },
     
     itemId: 'activityDetailWindow',
@@ -41,8 +42,9 @@ Ext.define('Lmkp.view.activities.Details', {
             layout: 'anchor',
             title: 'Details'
         });
+        
 
-        var historyStore = Ext.create('Ext.data.Store', {
+        this.historyStore = Ext.create('Ext.data.Store', {
             autoLoad: true,
             autoScroll: true,
             storeId: 'historyStore',
@@ -59,23 +61,19 @@ Ext.define('Lmkp.view.activities.Details', {
             model: 'Lmkp.model.Activity',
 
             pageSize: 10,
-            remoteSort: true,
-
             proxy: {
-                extraParams: {
-                    status: 'pending'
-                },
-                type: 'ajax',
-                url: '/activities/history/' + this.activity.get('id'),
                 reader: {
                     root: 'data',
                     type: 'json',
                     totalProperty: 'total'
                 },
-                startParam: 'offset',
                 simpleSortMode: true,
-                sortParam: 'order_by'
-            }
+                sortParam: 'order_by',
+                startParam: 'offset',
+                type: 'ajax',
+                url: '/activities/history/' + this.activity.get('id')
+            },
+            remoteSort: true
         });
 
         this.historyPanel = Ext.create('Ext.grid.Panel',{
@@ -93,7 +91,7 @@ Ext.define('Lmkp.view.activities.Details', {
             }],
             itemId: 'historyPanel',
             region: 'west',
-            store: historyStore,
+            store: this.historyStore,
             title: 'History',
             width: 250
         });
@@ -111,8 +109,8 @@ Ext.define('Lmkp.view.activities.Details', {
     },
 
     /**
-     * Parameter activity is an instance of Lmkp.model.Activity
-     */
+ * Parameter activity is an instance of Lmkp.model.Activity
+ */
     _populateDetails: function(activity){
 
         if (activity) {
