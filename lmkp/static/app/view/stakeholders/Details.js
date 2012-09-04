@@ -80,7 +80,7 @@ Ext.define('Lmkp.view.stakeholders.Details',{
         });
 
         this.historyPanel = Ext.create('Ext.grid.Panel',{
-//            collapsed: true, -> Collapsing is done 'manually'
+            //            collapsed: true, -> Collapsing is done 'manually'
             collapsible: true,
             collapseMode: 'header',
             columns: [{
@@ -92,9 +92,9 @@ Ext.define('Lmkp.view.stakeholders.Details',{
                 flex: 1,
                 text: 'Status'
             }, {
-            	dataIndex: 'timestamp',
-            	flex: 1,
-            	text: 'Timestamp'
+                dataIndex: 'timestamp',
+                flex: 1,
+                text: 'Timestamp'
             }],
             itemId: 'historyPanel',
             region: 'west',
@@ -128,7 +128,7 @@ Ext.define('Lmkp.view.stakeholders.Details',{
     /**
      * Parameter stakeholder is an instance of Lmkp.model.Stakeholder
      */
-    _populateDetails: function(stakeholder){
+    _populateDetails: function(stakeholder, pendingVersion){
 
         if (stakeholder) {
 
@@ -137,6 +137,17 @@ Ext.define('Lmkp.view.stakeholders.Details',{
 
             // Remove all existing panels
             this.centerPanel.removeAll();
+
+            // Show a notice if this version is a pending one
+            if(pendingVersion) {
+                console.log("pending vErsion");
+                this.centerPanel.add({
+                    bodyPadding: 5,
+                    html: 'You are seeing a pending version, which needs to be \n\
+                        reviewed before it is publicly visible',
+                    bodyCls: 'notice'
+                });
+            }           
 
             // If there are no versions pending, simply show active version
             this.centerPanel.add({

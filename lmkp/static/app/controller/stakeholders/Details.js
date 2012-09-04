@@ -9,17 +9,12 @@ Ext.define('Lmkp.controller.stakeholders.Details', {
     init: function() {
         this.control({
             'lo_stakeholderdetailwindow gridpanel[itemId="historyPanel"]': {
-                render: this.onHistoryPanelRender,
                 select: this.onHistoryPanelSelect
             },
             'lo_stakeholderdetailwindow button[itemId="closeWindowButton"]': {
                 click: this.onCloseWindowButtonClick
             }
         });
-    },
-
-    onHistoryPanelRender: function(comp){
-
     },
 
     onHistoryPanelSelect: function(rowModel, record, index, eOpts){
