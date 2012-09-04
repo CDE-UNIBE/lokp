@@ -196,24 +196,16 @@ Ext.define('Lmkp.controller.public.Main', {
     },
     
     onNewActivityButtonClick: function() {
-    	// Create and load a store with all mandatory keys
-        var mandatoryStore = Ext.create('Lmkp.store.ActivityConfig');
-        mandatoryStore.filter('allowBlank', false);
-        mandatoryStore.load(function() {
-            // Create and load a second store with all keys
-            var completeStore = Ext.create('Lmkp.store.ActivityConfig');
-            completeStore.load(function() {
-                // When loaded, create panel and show window
-                var panel = Ext.create('Lmkp.view.activities.NewActivity');
-                panel.showForm(mandatoryStore, completeStore);
-		    	var win = Ext.create('Ext.window.Window', {
-		    		autoScroll: true,
-		    		modal: true,
-		    		items: [panel]
-		    	});
-		    	win.show();
-            });
-        });
+        var me = this;
+        var infoWindow = Ext.create('Lmkp.utils.MessageBox');
+        infoWindow.alert(
+            "New Activity",
+            "Step 1: Please select a point on the map.",
+            function() {
+                var editorMapController = me.getController('editor.Map');
+                editorMapController.clickAddLocationButton();
+            }
+        );
     },
 
     /**
