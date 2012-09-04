@@ -18,7 +18,7 @@ Ext.define('Lmkp.controller.activities.Details', {
     },
 
     onHistoryPanelSelect: function(rowModel, record, index, eOpts){
-        this.getActivityDetailWindow()._populateDetails(record);
+        this.getActivityDetailWindow()._populateDetails(record, record.get('status') == 'pending');
     },
 
     onCloseWindowButtonClick: function(){

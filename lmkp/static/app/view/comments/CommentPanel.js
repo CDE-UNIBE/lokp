@@ -14,9 +14,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
     // Temporary title
     title: Lmkp.ts.msg('loading'),
 	
-    bodyStyle: {
-        padding: '3px'
-    },
+    bodyPadding: 5,
 
     // StringFunctions
     stringFunctions: Ext.create('Lmkp.utils.StringFunctions'),
