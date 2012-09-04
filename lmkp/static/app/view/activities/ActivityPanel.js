@@ -36,7 +36,7 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
             // Remove any existing panels
             this.removeAll();
 
-            var editable = this.editable;
+            var editable = this.editable && Lmkp.toolbar != false;
 
             // If it is not an Activity Model ...
             if (!this.contentItem.isModel) {

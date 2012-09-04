@@ -2,9 +2,8 @@ Ext.define('Lmkp.view.activities.Details', {
     extend: 'Ext.window.Window',
     alias: ['widget.lo_activitydetailwindow'],
 
-    autoScroll: true,
-
     bodyPadding: 5,
+    modal: true,
     
     config: {
         centerPanel: null,
@@ -12,11 +11,16 @@ Ext.define('Lmkp.view.activities.Details', {
         historyStore: null
     },
     
+    defaults: {
+        margin: '0 0 5 0',
+        anchor: '100%'
+    },
+    
     itemId: 'activityDetailWindow',
 
-    height: 600,
-
     layout: 'border',
+    height: 400,
+    width: 600,
 
     requires: [
     'Lmkp.view.activities.ActivityPanel',
@@ -33,13 +37,12 @@ Ext.define('Lmkp.view.activities.Details', {
         xtype: 'toolbar'
     },
 
-    width: 800,
-
     initComponent: function(){
 
         this.centerPanel = Ext.create('Ext.panel.Panel',{
             region: 'center',
             layout: 'anchor',
+            autoScroll: true,
             title: 'Details'
         });
         
@@ -77,17 +80,21 @@ Ext.define('Lmkp.view.activities.Details', {
         });
 
         this.historyPanel = Ext.create('Ext.grid.Panel',{
-            collapsed: true,
+//            collapsed: true, 
             collapsible: true,
             collapseMode: 'header',
             columns: [{
                 dataIndex: 'version',
                 flex: 1,
                 text: 'Version'
-            },{
+            }, {
                 dataIndex: 'status',
                 flex: 1,
                 text: 'Status'
+            }, {
+            	dataIndex: 'timestamp',
+            	flex: 1,
+            	text: 'Timestamp'
             }],
             itemId: 'historyPanel',
             region: 'west',
@@ -103,14 +110,29 @@ Ext.define('Lmkp.view.activities.Details', {
         this.historyPanel
         ];
 
-        this.title = 'Details Activity ' + this.activity.get('id');
+        this.title = 'Details on Activity ' + this.activity.get('id');
 
         this.callParent(arguments);
     },
 
     /**
+<<<<<<< HEAD
  * Parameter activity is an instance of Lmkp.model.Activity
  */
+=======
+     * Ext has some serious issues with panels collapsed on start. Instead, this
+     * function is called right after showing this window.
+     */
+    _collapseHistoryPanel: function() {
+        if (this.historyPanel) {
+            this.historyPanel.collapse();
+        }
+    },
+
+    /**
+     * Parameter activity is an instance of Lmkp.model.Activity
+     */
+>>>>>>> b33bd569272e76068610f61b46170f8031a005f6
     _populateDetails: function(activity){
 
         if (activity) {
@@ -126,7 +148,7 @@ Ext.define('Lmkp.view.activities.Details', {
                 contentItem: activity,
                 border: 0,
                 bodyPadding: 0,
-                editable: false,
+                editable: true,
                 hiddenOriginal: false,
                 xtype: 'lo_activitypanel'
             });
