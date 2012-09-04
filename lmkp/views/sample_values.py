@@ -103,9 +103,13 @@ def set_lao_active(request):
     Set the latest activities and stakeholders active after a lao import.
     """
 
-    # Set all Activities with version 1 to 'active' (fk_status = 2)
-    Session.query(Activity).filter(Activity.version == 1).\
-        update({Activity.fk_status: 2})
+    # Set the ten first Activities with version 1 to 'active' (fk_status = 2)
+    for a in Session.query(Activity).filter(Activity.version == 1).limit(10):
+        a.fk_status = 2
+
+    # Set the others to 'pending'
+    for a in Session.query(Activity).filter(Activity.version == 1).offset(10):
+        a.fk_status = 1
 
     # Get the latest version for each stakeholder
     latest_sh_query = Session.query(Stakeholder.stakeholder_identifier, func.max(Stakeholder.version)).\
@@ -119,11 +123,17 @@ def set_lao_active(request):
             update({Stakeholder.fk_status: 3})
 
     # Set all latest Stakeholder versions to active
-    for id, v in latest_sh_query.all():
+    for id, v in latest_sh_query.limit(10).all():
         Session.query(Stakeholder).\
             filter(Stakeholder.stakeholder_identifier == id).\
             filter(Stakeholder.version == v).\
             update({Stakeholder.fk_status: 2})
+
+    for id, v in latest_sh_query.offset(10).all():
+        Session.query(Stakeholder).\
+            filter(Stakeholder.stakeholder_identifier == id).\
+            filter(Stakeholder.version == v).\
+            update({Stakeholder.fk_status: 1})
 
     return {'success': True}
 

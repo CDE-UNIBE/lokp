@@ -28,6 +28,9 @@ Ext.define('Lmkp.controller.public.Main', {
             'lo_publicactivitytablepanel': {
                 render: this.onActivityTablePanelRender
             },
+            'lo_activitydetailwindow': {
+                beforeshow: this.onActivityDetailWindowBeforeShow
+            },
             'lo_publicstakeholdertablepanel': {
                 render: this.onStakeholderTablePanelRender
             },
@@ -130,6 +133,15 @@ Ext.define('Lmkp.controller.public.Main', {
      */
     onShowPendingStakeholdersCheckboxChange: function(field, newValue, oldValue){
         this.getStakeholderGridStore().load();
+    },
+
+    onActivityDetailWindowBeforeShow: function(comp){
+        var proxy = comp.getHistoryStore().getProxy();
+        this.getShowPendingActivitiesCheckbox().getValue?
+        // Show all versions with any status
+        proxy.setExtraParam('status', 'pending,active,inactive,deleted,rejected,edited') :
+        // else show only active and inactive versions
+        proxy.setExtraParam('status', '')
     },
 
     /**
