@@ -259,9 +259,12 @@ Ext.define('Lmkp.controller.public.Filter', {
     },
 
     /**
-     * If input is not a button, it is assumed that it is a filterpanel.
+     * Go through the filter panels (in windows) to collect all filters
+     * activated.
+     * {externalCall}: Set to 'true' if filters are to be applied without a
+     * visible filter window.
      */
-    applyFilter: function() {
+    applyFilter: function(externalCall) {
 
         // Get filter panels
         var afpq = Ext.ComponentQuery.query('lo_editoractivityfilterpanel');
@@ -317,14 +320,17 @@ Ext.define('Lmkp.controller.public.Filter', {
 
         // Fire event to update filter count (based on currently active window)
         if (activityFilterPanel &&
-            !activityFilterPanel.up('window').isHidden()) {
+            (!activityFilterPanel.up('window').isHidden() || 
+            externalCall == true)) {
             var aTablePanel = this.getActivityTablePanel();
             aTablePanel.setFilterCount(
                 activityFilterPanel.getFilterItems().length
             );
             activityFilterPanel.up('window').fireEvent('filterEdited');
-        } else if (stakeholderFilterPanel &&
-            !stakeholderFilterPanel.up('window').isHidden()) {
+        }
+        if (stakeholderFilterPanel &&
+            (!stakeholderFilterPanel.up('window').isHidden() || 
+            externalCall == true)) {
             var shTablePanel = this.getStakeholderTablePanel();
             shTablePanel.setFilterCount(
                 stakeholderFilterPanel.getFilterItems().length
