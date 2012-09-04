@@ -60,9 +60,7 @@ Ext.define('Lmkp.view.public.ActivityTable',{
             }, {                    	
                 text: 'Delete all filters',
                 itemId: 'activityDeleteAllFiltersButton'
-            }, '->',
-            Lmkp.moderator.showPendingActivitiesCheckbox,
-            ]
+            }]
         }]
     },{
         xtype: 'pagingtoolbar',

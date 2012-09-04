@@ -11,23 +11,13 @@ _ = TranslationStringFactory('lmkp')
 @view_config(route_name='moderator_toolbar_config', renderer='javascript', permission='moderate')
 def moderator_toolbar_config(request):
 
-    str = "Ext.namespace('Lmkp.moderator');\n"
-    str += "Lmkp.moderator.toolbar = [{\n"
+    str = "Ext.namespace('Lmkp');\n"
 
-    str += "}];\n"
-    
-    str += "Lmkp.moderator.showPendingActivitiesCheckbox = {\n"
-    str += "boxLabel: 'Activities with pending changes', checked: true, itemId: 'showPendingActivitiesCheckbox', xtype: 'checkbox'\n"
-    str += "};\n"
+    str += "Lmkp.login_form = {\n\txtype: 'toolbar',\n\tborder: false,\n\titems: [\n";
+    str += "\t\t{xtype: 'label', text: '%s', border: 0, bodyCls: 'toolbar_username'},\n" % _('Logged in as:', default='Logged in as:')
+    str += "\t\t{id: 'user_button', text: '%s', tooltip: '%s'},\n" % (request.user.username, _('Show user profile', default='Show user profile'))
+    str += "\t\t{id: 'logout_button', text: '%s'}\n\t]\n};\n" % _('Logout', default='Logout')
 
-    str += "Lmkp.moderator.showPendingStakeholdersCheckbox = {\n"
-    str += "boxLabel: 'Stakeholders with pending changes', checked: true, itemId: 'showPendingStakeholdersCheckbox', xtype: 'checkbox'\n"
-    str += "};\n"
-
-    str += "Lmkp.login_form = {xtype: 'toolbar', border: false, items: [\n";
-    str += "{xtype: 'label', text: '%s', border: 0, bodyCls: 'toolbar_username'},\n" % _('Logged in as:', default='Logged in as:')
-    str += "{id: 'user_button', text: '%s', tooltip: '%s'},\n" % (request.user.username, _('Show user profile', default='Show user profile'))
-    str += "{id: 'logout_button', text: '%s'}]};\n" % _('Logout', default='Logout')
-
+    str += "Lmkp.moderatorControllers = ['moderator.Main']"
 
     return str

@@ -3,6 +3,7 @@ Ext.require('Ext.form.action.StandardSubmit');
 Ext.require('Ext.form.field.Checkbox');
 Ext.require('Ext.form.field.ComboBox');
 Ext.require('Ext.form.field.Hidden');
+Ext.require('Ext.form.Label');
 Ext.require('Ext.form.Panel');
 Ext.require('Ext.fx.*');
 Ext.require('Ext.grid.Panel');
@@ -23,6 +24,9 @@ Ext.onReady(function(){
     var additionalControllers = [];
     if (Lmkp.editorControllers) {
     	additionalControllers = additionalControllers.concat(Lmkp.editorControllers);
+    }
+    if(Lmkp.moderatorControllers) {
+        additionalControllers = additionalControllers.concat(Lmkp.moderatorControllers);
     }
 
     Ext.application({

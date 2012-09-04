@@ -2,32 +2,26 @@ Ext.define('Lmkp.controller.public.Main', {
     extend: 'Ext.app.Controller',
 
     requires: [
-        'Ext.form.field.Hidden',
-        'Lmkp.utils.StringFunctions',
-        'Lmkp.view.activities.Details',
-        'Lmkp.view.stakeholders.Details',
-        'Lmkp.view.comments.ReCaptcha',
-        'Lmkp.view.activities.NewActivity'
+    'Ext.form.field.Hidden',
+    'Lmkp.utils.StringFunctions',
+    'Lmkp.view.activities.Details',
+    'Lmkp.view.stakeholders.Details',
+    'Lmkp.view.comments.ReCaptcha',
+    'Lmkp.view.activities.NewActivity'
     ],
 
     refs: [{
         ref: 'mapPanel',
         selector: 'lo_publicmappanel'
     },{
-        ref: 'showPendingActivitiesCheckbox',
-        selector: 'checkbox[itemId="showPendingActivitiesCheckbox"]'
-    },{
-        ref: 'showPendingStakeholdersCheckbox',
-        selector: 'checkbox[itemId="showPendingStakeholdersCheckbox"]'
-    }, {
         ref: 'activityTablePanel',
         selector: 'lo_publicactivitytablepanel'
     }, {
         ref: 'stakeholderTablePanel',
         selector: 'lo_publicstakeholdertablepanel'
     }, {
-    	ref: 'activityGridTopToolbar',
-    	selector: 'toolbar[id=activityGridTopToolbar]'
+        ref: 'activityGridTopToolbar',
+        selector: 'toolbar[id=activityGridTopToolbar]'
     }, {
         ref: 'stakeholderGridTopToolbar',
         selector: 'toolbar[id=stakeholderGridTopToolbar]'
@@ -49,9 +43,6 @@ Ext.define('Lmkp.controller.public.Main', {
             'lo_publicactivitytablepanel': {
                 render: this.onActivityTablePanelRender
             },
-            'lo_activitydetailwindow': {
-                beforeshow: this.onActivityDetailWindowBeforeShow
-            },
             'lo_publicstakeholdertablepanel': {
                 render: this.onStakeholderTablePanelRender
             },
@@ -71,7 +62,7 @@ Ext.define('Lmkp.controller.public.Main', {
                 click: this.onActivityDeleteAllFiltersButtonClick
             },
             'lo_publicactivitytablepanel button[itemId=newActivityButton]': {
-            	click: this.onNewActivityButtonClick
+                click: this.onNewActivityButtonClick
             },
             'lo_publicstakeholdertablepanel gridpanel[itemId=stakeholderGrid]': {
                 selectionchange: this.onTableSelectionChange
@@ -79,7 +70,6 @@ Ext.define('Lmkp.controller.public.Main', {
             'lo_publicstakeholdertablepanel gridpanel templatecolumn[name=showDetailsColumn]': {
                 click: this.onShowDetailsColumnClick
             },
-<<<<<<< HEAD
             'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdernamecolumn]': {
                 afterrender: this.onStakeholderNameColumnAfterrender
             },
@@ -92,21 +82,12 @@ Ext.define('Lmkp.controller.public.Main', {
             'lo_publicactivitytablepanel button[itemId=activityResetSelectionButton]': {
                 click: this.onClearSelectionButtonClick
             },
-            'lo_publicactivitytablepanel checkbox[itemId="showPendingActivitiesCheckbox"]': {
-                change: this.onShowPendingActivitiesCheckboxChange
-            },
-=======
->>>>>>> b33bd569272e76068610f61b46170f8031a005f6
             'lo_publicstakeholdertablepanel button[itemId=stakeholderFilterButton]': {
                 click: this.onStakeholderFilterButtonClick
             },
             'lo_publicstakeholdertablepanel button[itemId=stakeholderResetSelectionButton]': {
                 click: this.onClearSelectionButtonClick
             },
-<<<<<<< HEAD
-            'lo_publicstakeholdertablepanel checkbox[itemId="showPendingStakeholdersCheckbox"]': {
-                change: this.onShowPendingStakeholdersCheckboxChange
-=======
             'lo_publicstakeholdertablepanel button[itemId=stakeholderDeleteAllFiltersButton]': {
                 click: this.onStakeholderDeleteAllFiltersButtonClick
             },
@@ -121,7 +102,6 @@ Ext.define('Lmkp.controller.public.Main', {
             },
             'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdercountrycolumn]': {
                 afterrender: this.onStakeholderCountryColumnAfterrender
->>>>>>> b33bd569272e76068610f61b46170f8031a005f6
             }
         });
     },
@@ -147,23 +127,10 @@ Ext.define('Lmkp.controller.public.Main', {
                 // Set the bounding box as extra parameter
                 proxy.setExtraParam("bbox", map.getExtent().toBBOX());
             }
-
-            // Check if pending changes are requested
-            if(this.getShowPendingActivitiesCheckbox()){
-                this.getShowPendingActivitiesCheckbox().getValue() ?
-                proxy.setExtraParam('status', 'pending') : proxy.setExtraParam('status', null);
-            }
         }, this);
     },
 
     onStakeholderTablePanelRender: function(comp) {
-        this.getStakeholderGridStore().on('beforeload', function(store)  {
-            var proxy = store.getProxy();
-            if(this.getShowPendingStakeholdersCheckbox()){
-                this.getShowPendingStakeholdersCheckbox().getValue() ?
-                proxy.setExtraParam('status', 'pending') : proxy.setExtraParam('status', null);
-            }
-        }, this);
 
         // Update filter count
         this._updateFilterCount();
@@ -178,31 +145,6 @@ Ext.define('Lmkp.controller.public.Main', {
                 });
             }
         }
-    },
-
-    /**
-     * Reloads the Activities grid whenever the checkbox to show or hide activites
-     * with pending changes is checked or unchecked.
-     */
-    onShowPendingActivitiesCheckboxChange: function(field, newValue, oldValue){
-        this.getActivityGridStore().load();
-    },
-
-    /**
-     * Reloads the Stakeholders grid whenever the checkbox to show or hide activites
-     * with pending changes is checked or unchecked.
-     */
-    onShowPendingStakeholdersCheckboxChange: function(field, newValue, oldValue){
-        this.getStakeholderGridStore().load();
-    },
-
-    onActivityDetailWindowBeforeShow: function(comp){
-        var proxy = comp.getHistoryStore().getProxy();
-        this.getShowPendingActivitiesCheckbox().getValue?
-        // Show all versions with any status
-        proxy.setExtraParam('status', 'pending,active,inactive,deleted,rejected,edited') :
-        // else show only active and inactive versions
-        proxy.setExtraParam('status', '')
     },
 
     /**
@@ -270,7 +212,7 @@ Ext.define('Lmkp.controller.public.Main', {
     },
     
     onNewActivityButtonClick: function() {
-    	// Create and load a store with all mandatory keys
+        // Create and load a store with all mandatory keys
         var mandatoryStore = Ext.create('Lmkp.store.ActivityConfig');
         mandatoryStore.filter('allowBlank', false);
         mandatoryStore.load(function() {
@@ -280,12 +222,12 @@ Ext.define('Lmkp.controller.public.Main', {
                 // When loaded, create panel and show window
                 var panel = Ext.create('Lmkp.view.activities.NewActivity');
                 panel.showForm(mandatoryStore, completeStore);
-		    	var win = Ext.create('Ext.window.Window', {
-		    		autoScroll: true,
-		    		modal: true,
-		    		items: [panel]
-		    	});
-		    	win.show();
+                var win = Ext.create('Ext.window.Window', {
+                    autoScroll: true,
+                    modal: true,
+                    items: [panel]
+                });
+                win.show();
             });
         });
     },
@@ -303,7 +245,7 @@ Ext.define('Lmkp.controller.public.Main', {
      */
     onActivityYearColumnAfterrender: function(comp) {
         this._renderColumnMultipleValues(comp, "activity-attr_yearofinvestment",
-        [0]);
+            [0]);
     },
 
     /**
@@ -335,17 +277,13 @@ Ext.define('Lmkp.controller.public.Main', {
     onStakeholderFilterButtonClick: function() {
         // Only create window once
         var q = Ext.ComponentQuery.query('lo_filterstakeholderwindow');
-<<<<<<< HEAD
         var win = q.length > 0 ? q[0] : Ext.create('Lmkp.view.public.FilterStakeholderWindow');
         ;
-=======
-        var win = q.length > 0 ? q[0] : Ext.create('Lmkp.view.public.FilterStakeholderWindow');;
         // Update filter count when filters are modified
         var me = this;
         win.on('filterEdited', function() {
             me._updateFilterCount('stakeholders');
         });
->>>>>>> b33bd569272e76068610f61b46170f8031a005f6
         win.show();
     },
 

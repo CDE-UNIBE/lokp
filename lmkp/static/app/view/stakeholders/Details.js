@@ -7,7 +7,8 @@ Ext.define('Lmkp.view.stakeholders.Details',{
 
     config: {
         centerPanel: null,
-        historyPanel: null
+        historyPanel: null,
+        historyStore: null
     },
 
     defaults: {
@@ -46,7 +47,7 @@ Ext.define('Lmkp.view.stakeholders.Details',{
             title: 'Details'
         });
 
-        var historyStore = Ext.create('Ext.data.Store', {
+        this.historyStore = Ext.create('Ext.data.Store', {
             autoLoad: true,
             autoScroll: true,
             storeId: 'historyStore',
@@ -97,7 +98,7 @@ Ext.define('Lmkp.view.stakeholders.Details',{
             }],
             itemId: 'historyPanel',
             region: 'west',
-            store: historyStore,
+            store: this.historyStore,
             title: 'History',
             width: 250
         });
