@@ -14,6 +14,10 @@ Ext.define('Lmkp.view.public.ActivityTable',{
     border: 0,
     frame: false,
 
+    config: {
+        filterCount: 0
+    },
+
     items: [
         {
             xtype: 'gridpanel',
@@ -55,6 +59,9 @@ Ext.define('Lmkp.view.public.ActivityTable',{
                         text: 'Clear selection',
                         itemId: 'activityResetSelectionButton'
                     }, {                    	
+                        text: 'Delete all filters',
+                        itemId: 'activityDeleteAllFiltersButton'
+                    }, {
                         text: 'Filter',
                         itemId: 'activityFilterButton'
                     }
