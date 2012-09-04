@@ -13,6 +13,10 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
     border: 0,
     frame: false,
 
+    config: {
+        filterCount: 0
+    },
+
     items: [
         {
             xtype: 'gridpanel',
@@ -50,6 +54,7 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
             dockedItems: [
                 {
                     xtype: 'toolbar',
+                    id: 'stakeholderGridTopToolbar',
                     dock: 'top',
                     items: ['->', {
                             text: 'Clear selection',

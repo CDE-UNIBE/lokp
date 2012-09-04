@@ -13,6 +13,16 @@ Ext.define('Lmkp.controller.public.Filter', {
         'StakeholderGrid'
     ],
 
+    refs: [
+        {
+            ref: 'activityTablePanel',
+            selector: 'lo_publicactivitytablepanel'
+        }, {
+            ref: 'stakeholderTablePanel',
+            selector: 'lo_publicstakeholdertablepanel'
+        }
+    ],
+
     views: [
         'items.FilterPanel'
     ],
@@ -251,7 +261,7 @@ Ext.define('Lmkp.controller.public.Filter', {
     /**
      * If input is not a button, it is assumed that it is a filterpanel.
      */
-    applyFilter: function(input) {
+    applyFilter: function() {
 
         // Get filter panels
         var afpq = Ext.ComponentQuery.query('lo_editoractivityfilterpanel');
@@ -304,6 +314,23 @@ Ext.define('Lmkp.controller.public.Filter', {
                 otherstore.syncWithOther(store.getProxy().extraParams);
             }
         });
+
+        // Fire event to update filter count (based on currently active window)
+        if (activityFilterPanel &&
+            !activityFilterPanel.up('window').isHidden()) {
+            var aTablePanel = this.getActivityTablePanel();
+            aTablePanel.setFilterCount(
+                activityFilterPanel.getFilterItems().length
+            );
+            activityFilterPanel.up('window').fireEvent('filterEdited');
+        } else if (stakeholderFilterPanel &&
+            !stakeholderFilterPanel.up('window').isHidden()) {
+            var shTablePanel = this.getStakeholderTablePanel();
+            shTablePanel.setFilterCount(
+                stakeholderFilterPanel.getFilterItems().length
+            );
+            stakeholderFilterPanel.up('window').fireEvent('filterEdited');
+        }
     },
 
     deleteFilter: function(button) {
