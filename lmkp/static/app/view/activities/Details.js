@@ -19,8 +19,8 @@ Ext.define('Lmkp.view.activities.Details', {
     layout: 'border',
 
     modal: true,
-    height: 400,
-    width: 600,
+    height: 500,
+    width: 700,
 
     requires: [
     'Lmkp.view.activities.ActivityPanel',
@@ -107,7 +107,7 @@ Ext.define('Lmkp.view.activities.Details', {
             bodyPadding: 5,
             layout: 'card',
             margin: 3,
-            itemId: 'activityDetailWrapperPanel',
+            itemId: 'detailWizardPanel',
             items: [ this.centerPanel ],
             region: 'center',
             title: 'Details'
