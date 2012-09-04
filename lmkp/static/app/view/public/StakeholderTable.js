@@ -62,9 +62,6 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
                         }, {
                             text: 'Delete all filters',
                             itemId: 'stakeholderDeleteAllFiltersButton'
-                        }, {
-                            text: 'Filter',
-                            itemId: 'stakeholderFilterButton'
                         }
                     ]
                 }, {

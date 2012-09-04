@@ -370,9 +370,11 @@ Ext.define('Lmkp.controller.public.Main', {
         function __updateButton(toolbar, itemId, count) {
             // Update button showing count
             var button = toolbar.down('button[itemId=' + itemId + 'FilterButton]');
-            if (toolbar && button && count != null) {
+            if (button) {
                 // Remove old button
                 toolbar.remove(button);
+            }
+            if (toolbar && count != null) {
                 // Create new button
                 var newbutton = Ext.create('Ext.button.Button', {
                     text: 'Filter (' + count + ' active)',
