@@ -133,9 +133,10 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
         var geometry = null;
         var geojson = new OpenLayers.Format.GeoJSON();
         if (this.getMapPanel().getActivityGeometry()) {
+            var editorMapController = this.getController('editor.Map');
             geometry = Ext.decode(geojson.write(
-                this.getMapPanel().getActivityGeometry())
-            );
+                editorMapController.getActivityGeometryFromMap(true)
+            ));
         }
 
         // Collect Stakeholder information
