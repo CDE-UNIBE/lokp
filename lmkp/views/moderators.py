@@ -18,6 +18,6 @@ def moderator_toolbar_config(request):
     str += "\t\t{id: 'user_button', text: '%s', tooltip: '%s'},\n" % (request.user.username, _('Show user profile', default='Show user profile'))
     str += "\t\t{id: 'logout_button', text: '%s'}\n\t]\n};\n" % _('Logout', default='Logout')
 
-    str += "Lmkp.moderatorControllers = ['moderator.Main', 'moderator.Details', 'activities.NewActivity', 'editor.Map']"
+    str += "Lmkp.moderatorControllers = ['moderator.Main', 'moderator.Details', 'activities.NewActivity', 'editor.Map', 'stakeholders.NewStakeholder']"
 
     return str
