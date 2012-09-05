@@ -17,14 +17,12 @@ Ext.define('Lmkp.view.stakeholders.StakeholderFieldContainer', {
 
         if(this.stakeholder){
             this.items.push({
-                editable: false,
                 flex: 1,
                 name: 'stakeholder.name',
                 value: this.stakeholder.getTagValues(Lmkp.ts.msg("stakeholder-name")).join(","),
-                xtype: 'textfield'
+                xtype: 'displayfield'
             });
         }
-        
 
         /*
         this.items.push({

@@ -24,6 +24,7 @@ Ext.define('Lmkp.view.activities.NewActivity', {
 		
         // prepare the form
         var form = Ext.create('Ext.form.Panel', {
+            itemId: 'newActivityForm',
             autoScroll: true,
             border: 0,
             bodyPadding: 5,
@@ -71,42 +72,6 @@ Ext.define('Lmkp.view.activities.NewActivity', {
                 completeStore,
                 record.get('name')
             ));
-        });
-
-        // Add a button to add a new taggroup
-        form.add({
-            xtype: 'fieldset',
-            border: 0,
-            layout: 'hbox',
-            items: [
-                {
-                    // Empty panel for spacing
-                    xtype: 'panel',
-                    border: 0,
-                    flex: 1
-                }, {
-                    xtype: 'button',
-                    itemId: 'submitButton',
-                    iconCls: 'save-button',
-                    scale: 'medium',
-                    text: 'Submit'
-                }
-            ]
-        });
-
-        // After adding all mandatory fields, add the associated stakeholder
-        // fieldset
-        form.add({
-            border: 1,
-            itemId: 'selectStakeholderFieldSet',
-            items: [
-            {
-                itemId: 'selectStakeholderButton',
-                text: 'Add Stakeholder',
-                xtype: 'button'
-            }],
-            title: 'Associated Stakeholders',
-            xtype: 'fieldset'
         });
     },
 
