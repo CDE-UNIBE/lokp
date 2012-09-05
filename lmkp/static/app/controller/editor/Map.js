@@ -139,6 +139,24 @@ Ext.define('Lmkp.controller.editor.Map', {
             ]
         });
         popup.show();
+    },
+
+    /**
+     * Return the geometry of the newly created activity (stored in map's
+     * 'activityGeometry' config).
+     * {transform}: Optional parameter. Set to 'true' transforms the geometry to
+     * the map's geographic Projection.
+     */
+    getActivityGeometryFromMap: function(transform) {
+        var map = this.getMapPanel();
+        var geom = map.getActivityGeometry();
+        if (geom && transform == true) {
+            geom.transform(
+                map.sphericalMercatorProjection,
+                map.geographicProjection
+            );
+        }
+        return geom;
     }
 
 });
