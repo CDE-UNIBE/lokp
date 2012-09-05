@@ -262,9 +262,11 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 });
                 shPanel.showForm();
                 // Put everything in a window and show it.
+                var activityEdit = (item != null);
                 var win = Ext.create('Lmkp.view.public.NewActivityWindow', {
                     aPanel: aPanel,
-                    shPanel: shPanel
+                    shPanel: shPanel,
+                    activityEdit: activityEdit
                 });
                 win.show();
             });
@@ -286,10 +288,15 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
         Ext.getCmp('card-prev').setDisabled(!layout.getPrev());
         Ext.getCmp('card-next').setDisabled(!layout.getNext());
 
-        // Enable the submit button if the last card is shown
+        // Enable the submit button if the last card is shown or if an Activity
+        // is edited
         var tbar = button.up('toolbar');
         var submitbutton = tbar.down('button[itemId=submitButton]');
-        submitbutton.setDisabled(layout.getNext());
+        if (!layout.getNext() || panel.activityEdit) {
+            submitbutton.enable();
+        } else {
+            submitbutton.disable();
+        }
     },
 
     /**
