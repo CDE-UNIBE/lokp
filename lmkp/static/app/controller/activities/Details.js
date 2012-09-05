@@ -33,12 +33,12 @@ Ext.define('Lmkp.controller.activities.Details', {
      * Activity but fill out the form with the current values.
      */
     onEditTaggroupButtonClick: function(button) {
-        var activitypanel = button.up('lo_activitypanel');
-        if (activitypanel && activitypanel.contentItem) {
+        var activityPanel = button.up('lo_activitypanel');
+        if (activityPanel && activityPanel.contentItem) {
             var newActivityController = this.getController('activities.NewActivity');
             newActivityController.showNewActivityWindow(
                 // Provide current item
-                activitypanel.contentItem
+                activityPanel.contentItem
             );
         }
     }
