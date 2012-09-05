@@ -13,6 +13,9 @@ Ext.define('Lmkp.controller.activities.Details', {
             },
             'lo_activitydetailwindow button[itemId="closeWindowButton"]': {
                 click: this.onCloseWindowButtonClick
+            },
+            'lo_activitydetailwindow button[name=editTaggroup]': {
+                click: this.onEditTaggroupButtonClick
             }
         });
     },
@@ -23,7 +26,21 @@ Ext.define('Lmkp.controller.activities.Details', {
 
     onCloseWindowButtonClick: function(){
         this.getActivityDetailWindow().close();
-    }
+    },
 
+    /**
+     * If any Tag Group is to be edited, show same window as when adding a new
+     * Activity but fill out the form with the current values.
+     */
+    onEditTaggroupButtonClick: function(button) {
+        var activitypanel = button.up('lo_activitypanel');
+        if (activitypanel && activitypanel.contentItem) {
+            var newActivityController = this.getController('activities.NewActivity');
+            newActivityController.showNewActivityWindow(
+                // Provide current item
+                activitypanel.contentItem
+            );
+        }
+    }
 
 });

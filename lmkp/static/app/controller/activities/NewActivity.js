@@ -109,11 +109,14 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 var completeStore = Ext.create('Lmkp.store.ActivityConfig');
                 completeStore.load(function() {
                     // When loaded, show panel
-                    form.insert(form.items.length - 2, panel._getFieldset(
+                    var fieldset = panel._getFieldset();
+                    fieldset.add(panel._getSingleFormItem(
                         mainStore,
                         completeStore,
                         null
                     ));
+                    // Insert it always at the bottom.
+                    form.insert(form.items.length, fieldset);
                 });
             });
         }
@@ -235,8 +238,10 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
 
     /**
      * Show a window containing the form to add a new Activity.
+     * {item}: Optional possibility to provide an existing item (instance of
+     * model.Activity)
      */
-    showNewActivityWindow: function() {
+    showNewActivityWindow: function(item) {
         // Create and load a store with all mandatory keys
         var mandatoryStore = Ext.create('Lmkp.store.ActivityConfig');
         mandatoryStore.filter('allowBlank', false);
@@ -249,7 +254,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                     height: 500,
                     width: 400
                 });
-                aPanel.showForm(mandatoryStore, completeStore);
+                aPanel.showForm(mandatoryStore, completeStore, item);
                 // Also create and load panel for Stakeholders
                 var shPanel = Ext.create('Lmkp.view.stakeholders.NewStakeholderSelection', {
                     height: 500,
