@@ -21,7 +21,8 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
     views: [
         'public.NewActivityWindow',
         'activities.NewActivity',
-        'stakeholders.StakeholderSelection'
+        'stakeholders.StakeholderSelection',
+        'stakeholders.NewStakeholder'
     ],
 
     init: function(){
@@ -109,11 +110,14 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 var completeStore = Ext.create('Lmkp.store.ActivityConfig');
                 completeStore.load(function() {
                     // When loaded, show panel
-                    form.insert(form.items.length - 2, panel._getFieldset(
+                    var fieldset = panel._getFieldset();
+                    fieldset.add(panel._getSingleFormItem(
                         mainStore,
                         completeStore,
                         null
                     ));
+                    // Insert it always at the bottom.
+                    form.insert(form.items.length, fieldset);
                 });
             });
         }
@@ -133,9 +137,10 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
         var geometry = null;
         var geojson = new OpenLayers.Format.GeoJSON();
         if (this.getMapPanel().getActivityGeometry()) {
+            var editorMapController = this.getController('editor.Map');
             geometry = Ext.decode(geojson.write(
-                this.getMapPanel().getActivityGeometry())
-            );
+                editorMapController.getActivityGeometryFromMap(true)
+            ));
         }
 
         // Collect Stakeholder information
@@ -234,8 +239,10 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
 
     /**
      * Show a window containing the form to add a new Activity.
+     * {item}: Optional possibility to provide an existing item (instance of
+     * model.Activity)
      */
-    showNewActivityWindow: function() {
+    showNewActivityWindow: function(item) {
         // Create and load a store with all mandatory keys
         var mandatoryStore = Ext.create('Lmkp.store.ActivityConfig');
         mandatoryStore.filter('allowBlank', false);
@@ -248,7 +255,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                     height: 500,
                     width: 400
                 });
-                aPanel.showForm(mandatoryStore, completeStore);
+                aPanel.showForm(mandatoryStore, completeStore, item);
                 // Also create and load panel for Stakeholders
                 var shPanel = Ext.create('Lmkp.view.stakeholders.NewStakeholderSelection', {
                     height: 500,
@@ -256,9 +263,11 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 });
                 shPanel.showForm();
                 // Put everything in a window and show it.
+                var activityEdit = (item != null);
                 var win = Ext.create('Lmkp.view.public.NewActivityWindow', {
                     aPanel: aPanel,
-                    shPanel: shPanel
+                    shPanel: shPanel,
+                    activityEdit: activityEdit
                 });
                 win.show();
             });
@@ -280,10 +289,15 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
         Ext.getCmp('card-prev').setDisabled(!layout.getPrev());
         Ext.getCmp('card-next').setDisabled(!layout.getNext());
 
-        // Enable the submit button if the last card is shown
+        // Enable the submit button if the last card is shown or if an Activity
+        // is edited
         var tbar = button.up('toolbar');
         var submitbutton = tbar.down('button[itemId=submitButton]');
-        submitbutton.setDisabled(layout.getNext());
+        if (!layout.getNext() || panel.activityEdit) {
+            submitbutton.enable();
+        } else {
+            submitbutton.disable();
+        }
     },
 
     /**
@@ -365,6 +379,47 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
      * If a new Stakeholder is to be created, show separate window to do so.
      */
     onCreateNewStakeholderButtonClick: function() {
-        console.log("todo");
+        var win = Ext.create('Ext.window.Window', {
+            layout: 'fit',
+            autoScroll: true,
+            items: [
+                {
+                    xtype: 'lo_newstakeholderpanel'
+                }
+            ],
+            title: 'Create new Stakeholder'
+        });
+        win.show();
+    },
+
+    /**
+     * Append newly created Stakeholder (this happens in separate window) to 
+     * fieldset with involved Stakeholders
+     * {stakeholder}: Instance of model.Stakeholder
+     */
+    _onNewStakeholderCreated: function(stakeholder) {
+
+        var sel = this.getStakeholderSelection();
+        var form = sel.down('form');
+
+        if (stakeholder) {
+            // Insert stakeholder into fieldset above
+            var fieldset = this.getSelectStakeholderFieldSet();
+            fieldset.insert(0, {
+                stakeholder: stakeholder,
+                xtype: 'lo_stakeholderfieldcontainer'
+            });
+
+            // Remove stakeholder panel
+            if (form.down('lo_stakeholderpanel')) {
+                form.remove(form.down('lo_stakeholderpanel'));
+            }
+
+            // Reset search field
+            form.down('combo[itemId="searchTextfield"]').setValue(null);
+
+            // Disable button
+            sel.confirmButton.disable();
+        }
     }
 });

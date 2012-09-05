@@ -10,14 +10,26 @@ Ext.define('Lmkp.view.public.NewActivityWindow', {
 
     initComponent: function() {
 
+        /**
+         * Parameters:
+         * {aPanel}: (eg. instance of Lmkp.view.activities.NewActivity)
+         * {shPanel}: (eg. instance of Lmkp.view.stakeholders.NewStakeholderSelection)
+         * {activityEdit}: Boolean
+         */
+
         if (this.aPanel && this.shPanel) {
-            this.items = [this.aPanel, this.shPanel];
+
+            this.items = [
+                this.aPanel,
+                this.shPanel
+            ];
+
             this.bbar = [
                 {
                     xtype: 'button',
                     itemId: 'submitButton',
                     text: 'Submit',
-                    disabled: true
+                    disabled: !this.activityEdit
                 },
                 '->', {
                     id: 'card-prev',
