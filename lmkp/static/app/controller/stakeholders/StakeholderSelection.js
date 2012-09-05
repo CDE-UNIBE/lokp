@@ -1,3 +1,8 @@
+/**
+ * 05.09.2012 08:17: This is most probably not needed anymore. Lukas.
+ */
+
+
 Ext.define('Lmkp.controller.stakeholders.StakeholderSelection', {
     extend: 'Ext.app.Controller',
 
