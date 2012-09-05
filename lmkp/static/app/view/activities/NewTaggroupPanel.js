@@ -154,16 +154,14 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
                 queryMode: 'local',
                 editable: false,
                 value: selectionValues[0],
-                margin: '0 5 0 0',
-                allowBlank: false
+                margin: '0 5 0 0'
             });
         } else {                    // no categories available, create field based on xtype
             switch (record.get('xtype')) {
                 case "numberfield":
                     var valueField = Ext.create('Ext.form.field.Number', {
                         name: 'newtaggrouppanel_value',
-                        margin: '0 5 0 0',
-                        allowBlank: false
+                        margin: '0 5 0 0'
                     });
                     // add validation if available
                     if (record.get('validator')) {
@@ -173,8 +171,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
                 default:
                     var valueField = Ext.create('Ext.form.field.Text', {
                         name: 'newtaggrouppanel_value',
-                        margin: '0 5 0 0',
-                        allowBlank: false
+                        margin: '0 5 0 0'
                     });
                     // add validation if available
                     if (record.get('validator')) {
