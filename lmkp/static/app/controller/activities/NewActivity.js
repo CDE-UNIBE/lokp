@@ -21,7 +21,8 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
     views: [
         'public.NewActivityWindow',
         'activities.NewActivity',
-        'stakeholders.StakeholderSelection'
+        'stakeholders.StakeholderSelection',
+        'stakeholders.NewStakeholder'
     ],
 
     init: function(){
@@ -378,6 +379,47 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
      * If a new Stakeholder is to be created, show separate window to do so.
      */
     onCreateNewStakeholderButtonClick: function() {
-        console.log("todo");
+        var win = Ext.create('Ext.window.Window', {
+            layout: 'fit',
+            autoScroll: true,
+            items: [
+                {
+                    xtype: 'lo_newstakeholderpanel'
+                }
+            ],
+            title: 'Create new Stakeholder'
+        });
+        win.show();
+    },
+
+    /**
+     * Append newly created Stakeholder (this happens in separate window) to 
+     * fieldset with involved Stakeholders
+     * {stakeholder}: Instance of model.Stakeholder
+     */
+    _onNewStakeholderCreated: function(stakeholder) {
+
+        var sel = this.getStakeholderSelection();
+        var form = sel.down('form');
+
+        if (stakeholder) {
+            // Insert stakeholder into fieldset above
+            var fieldset = this.getSelectStakeholderFieldSet();
+            fieldset.insert(0, {
+                stakeholder: stakeholder,
+                xtype: 'lo_stakeholderfieldcontainer'
+            });
+
+            // Remove stakeholder panel
+            if (form.down('lo_stakeholderpanel')) {
+                form.remove(form.down('lo_stakeholderpanel'));
+            }
+
+            // Reset search field
+            form.down('combo[itemId="searchTextfield"]').setValue(null);
+
+            // Disable button
+            sel.confirmButton.disable();
+        }
     }
 });

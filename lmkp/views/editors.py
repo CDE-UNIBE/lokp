@@ -32,7 +32,7 @@ def edit_toolbar_config(request):
 
     str += "Lmkp.mainControllers = ['Main', 'Map', 'Filter', 'Stakeholder', 'EditFilter', 'NewActivity'];\n"
 
-    str += "Lmkp.editorControllers = ['activities.NewActivity', 'editor.Map']"
+    str += "Lmkp.editorControllers = ['activities.NewActivity', 'editor.Map', 'stakeholders.NewStakeholder']"
 
     return str
 
