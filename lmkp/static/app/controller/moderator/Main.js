@@ -125,6 +125,12 @@ Ext.define('Lmkp.controller.moderator.Main', {
      */
     onPendingActivitiesCheckboxChange: function(field, newValue, oldValue){
         this.getActivityGridStore().load();
+        // Syncronize with the checkbox above the stakeholder grid.
+        // Unregister first the load event to prevent an endless loop.
+        var cb = this.getPendingStakeholdersCheckbox();
+        cb.un('load', this.onPendingStakeholdersCheckboxChange);
+        cb.setValue(field.getValue());
+        cb.on('load', this.onPendingStakeholdersCheckboxChange);
     },
 
     /**
@@ -133,6 +139,12 @@ Ext.define('Lmkp.controller.moderator.Main', {
      */
     onPendingStakeholdersCheckboxChange: function(field, newValue, oldValue){
         this.getStakeholderGridStore().load();
+        // Syncronize with the checkbox above the activity grid.
+        // Unregister first the load event to prevent an endless loop.
+        var cb = this.getPendingActivitiesCheckbox();
+        cb.un('load', this.onPendingActivitiesCheckboxChange);
+        cb.setValue(field.getValue());
+        cb.on('load', this.onPendingActivitiesCheckboxChange);
     }
 
 });
