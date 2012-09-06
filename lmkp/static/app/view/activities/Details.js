@@ -116,7 +116,7 @@ Ext.define('Lmkp.view.activities.Details', {
             bodyPadding: 5,
             layout: 'card',
             margin: 3,
-            itemId: 'detailWizardPanel',
+            itemId: 'activityDetailWizardPanel',
             items: [ this.centerPanel ],
             region: 'center',
             title: 'Details'
