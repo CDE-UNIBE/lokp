@@ -407,6 +407,32 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                     height: 500,
                     width: 400
                 });
+
+                if (item) {
+                    var involvedStakeholders = [];
+                    // Use Involvement store to get Stakeholders
+                    var invStore = item.involvements();
+                    invStore.each(function(inv) {
+                        if (inv.raw.data) {
+                            var shStore = Ext.create('Ext.data.Store', {
+                                model: 'Lmkp.model.Stakeholder',
+                                data: inv.raw.data,
+                                proxy: {
+                                    type: 'memory',
+                                    reader: {
+                                        type: 'json'
+                                    }
+                                }
+                            });
+                            shStore.load(function(stakeholders) {
+                                involvedStakeholders
+                                    = involvedStakeholders.concat(stakeholders);
+                            });
+                        }
+                    });
+                    console.log(involvedStakeholders);
+                }
+
                 shPanel.showForm();
                 // Put everything in a window and show it.
                 var activityEdit = (item != null);
