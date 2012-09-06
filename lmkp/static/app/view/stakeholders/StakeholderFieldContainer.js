@@ -5,7 +5,7 @@ Ext.define('Lmkp.view.stakeholders.StakeholderFieldContainer', {
 
     config: {
         parentContainer: {},
-        stakeholder: null
+        involvement: null
     },
 
     layout: 'hbox',
@@ -15,9 +15,9 @@ Ext.define('Lmkp.view.stakeholders.StakeholderFieldContainer', {
 
         this.items = [];
 
-        if(this.stakeholder){
+        if(this.involvement){
 
-            var name = this.stakeholder.getTagValues(
+            var name = this.involvement.stakeholder.getTagValues(
                 Lmkp.ts.msg("stakeholder-name")
             ).join(", ");
             if (!name) {
@@ -29,6 +29,11 @@ Ext.define('Lmkp.view.stakeholders.StakeholderFieldContainer', {
                 name: 'stakeholder.name',
                 value: name,
                 xtype: 'displayfield'
+            }, {
+            	xtype: 'button',
+            	name: 'stakeholderRemoveButton',
+            	text: '-',
+            	tooltip: 'Remove this stakeholder'
             });
         }
 
@@ -65,15 +70,15 @@ Ext.define('Lmkp.view.stakeholders.StakeholderFieldContainer', {
     },
 
     getStakeholderId: function(){
-        return this.stakeholder.data.id;
+        return this.involvement.stakeholder.get('id');
     },
 
     getStakeholderVersion: function(){
-        return this.stakeholder.data.version;
+        return this.involvement.stakeholder.get('version');
     },
 
-    getStakeholderRole: function(){
-        return this.down('combo[name="stakeholder.role"]').getValue()
+    getStakeholderRoleId: function(){
+        return this.involvement.role_id;
     }
 
 });
