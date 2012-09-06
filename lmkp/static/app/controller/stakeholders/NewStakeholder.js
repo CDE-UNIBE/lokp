@@ -17,10 +17,11 @@ Ext.define('Lmkp.controller.stakeholders.NewStakeholder', {
     },
 
     onCancelButtonClick: function(button, event, eOpts){
-        button.up('window').hide();
+        button.up('window').destroy();
     },
 
     onSubmitButtonClick: function(button, event, eOpts){
+        var me = this;
         var form = button.up('form');
         var p = button.up('lo_newstakeholderpanel');
         if (form.getForm().isValid()) {
@@ -87,6 +88,7 @@ Ext.define('Lmkp.controller.stakeholders.NewStakeholder', {
                     if(success) {
                         Ext.Msg.alert('Success', 'The stakeholder was successfully created. It will be reviewed shortly.');
 
+                        // Put newly created Stakeholder into a store.
                         var store = Ext.create('Ext.data.Store', {
                             autoLoad: true,
                             model: 'Lmkp.model.Stakeholder',
@@ -100,7 +102,15 @@ Ext.define('Lmkp.controller.stakeholders.NewStakeholder', {
                                 }
                             }
                         });
-                        this.setAddedStakeholder(store.getAt(0));
+
+                        // Add newly created Stakeholder to fieldset in other
+                        // window
+                        var newActivityController =
+                            me.getController('activities.NewActivity');
+                        newActivityController._onNewStakeholderCreated(
+                            store.getAt(0)
+                        );
+
                     } else {
                         Ext.Msg.alert('Failure', 'The stakeholder could not be created.');
                         this.setAddedStakeholder(null);

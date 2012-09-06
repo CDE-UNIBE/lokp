@@ -1,28 +1,17 @@
  Ext.define('Lmkp.view.stakeholders.StakeholderSelection', {
-    extend: 'Ext.window.Window',
+    extend: 'Ext.panel.Panel',
 
     alias: ['widget.lo_stakeholderselection'],
 
     config: {
         selectedStakeholder: null,
         confirmButton: {},
-        clearButton: {},
-        southPanel: null
+        clearButton: {}
     },
 
     selectedStakeholder: null,
 
-    modal: true,
-
-    southPanel: null,
-
-    layout: 'border',
-
-    height: 600,
-
-    title: 'Select Stakeholder',
-
-    width: 400,
+    title: 'Search Stakeholder',
 
     initComponent: function(){
 
@@ -35,7 +24,8 @@
         this.confirmButton = Ext.create('Ext.button.Button',{
             itemId: 'confirmButton',
             scale: 'medium',
-            text: 'Add new Stakeholder'
+            text: 'Select Stakeholder',
+            disabled: true
         });
 
         var store = Ext.create('Ext.data.Store', {
@@ -66,14 +56,14 @@
         });
 
         this.detailTpl = Ext.create(Ext.Template, this.tplMarkup);
-
-        this.items = [];
         
         var formpanel = Ext.create('Ext.form.Panel', {
+            border: 0,
             items: [{
                 displayField: 'name',
                 fieldLabel: 'Search',
                 flex: 1,
+                border: 0,
                 hideTrigger: true,
                 itemId: 'searchTextfield',
                 listConfig: {
@@ -114,16 +104,18 @@
                 valueField: 'id',
                 xtype: 'combo'
             }],
-            layout: 'hbox',
-            region: 'center'
+            layout: 'anchor',
+            defaults: {
+                anchor: '100%'
+            }
         });
 
-        this.items.push(formpanel);
+        this.items = formpanel;
 
         this.dockedItems = [];
 
         this.dockedItems.push({
-            dock: 'bottom',
+            dock: 'top',
             items: [
             '->',
             this.clearButton,
