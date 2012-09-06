@@ -13,6 +13,9 @@ Ext.define('Lmkp.controller.stakeholders.Details', {
             },
             'lo_stakeholderdetailwindow button[itemId="closeWindowButton"]': {
                 click: this.onCloseWindowButtonClick
+            },
+            'lo_stakeholderdetailwindow button[name=editTaggroup]': {
+                click: this.onEditTaggroupButtonClick
             }
         });
     },
@@ -23,6 +26,18 @@ Ext.define('Lmkp.controller.stakeholders.Details', {
 
     onCloseWindowButtonClick: function(){
         this.getStakeholderDetailWindow().close();
+    },
+
+    onEditTaggroupButtonClick: function(button) {
+        var stakeholderPanel = button.up('lo_stakeholderpanel');
+        if (stakeholderPanel && stakeholderPanel.contentItem) {
+            var newActivityController =
+                this.getController('activities.NewActivity');
+            newActivityController.showNewStakeholderWindow(
+                // Provide current item
+                stakeholderPanel.contentItem
+            );
+        }
     }
     
     
