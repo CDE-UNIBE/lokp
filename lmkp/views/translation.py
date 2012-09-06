@@ -45,6 +45,7 @@ def ui_messages(request):
         'language-label': _('language-label', default='Language'),
         'loading': _('loading', default='Loading ...'),
         'unknown': _('unknown', default='Unknown'),
+        'unknown-name': _('unknown-name', default='Unknown name'),
         'confirm-title': _('confirm-title', default='Please confirm'),
         'success': _('success', default='Success'),
         'failure': _('failure', default='Failure'),

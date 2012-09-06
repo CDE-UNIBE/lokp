@@ -67,6 +67,8 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
      * TagGroup, remove the entire TagGroup panel.
      * This actually adds additional functionality to the default behaviour when
      * clicking button to remove a TagGroup.
+     * NOTE: This function is also used by
+     * - controller.stakeholders.NewStakeholder
      */
     onDeleteTagButtonClick: function(button) {
         var form = button.up('form');
@@ -80,6 +82,8 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
 
     /**
      * Adds an additional Tag to a TagGroup panel.
+     * NOTE: This function is also used by
+     * - controller.stakeholders.NewStakeholder
      */
     onAddAdditionalTagButtonClick: function(button) {
         var form = button.up('form');
@@ -379,17 +383,31 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
      * If a new Stakeholder is to be created, show separate window to do so.
      */
     onCreateNewStakeholderButtonClick: function() {
-        var win = Ext.create('Ext.window.Window', {
-            layout: 'fit',
-            autoScroll: true,
-            items: [
-                {
-                    xtype: 'lo_newstakeholderpanel'
-                }
-            ],
-            title: 'Create new Stakeholder'
+
+        // Create and load a store with all mandatory keys
+        var mandatoryStore = Ext.create('Lmkp.store.StakeholderConfig');
+        mandatoryStore.filter('allowBlank', false);
+        mandatoryStore.load(function() {
+            // Create and load a store with all keys
+            var completeStore = Ext.create('Lmkp.store.StakeholderConfig');
+            completeStore.load(function() {
+                // When loaded, create and load panel for Stakeholders
+                var shPanel = Ext.create('Lmkp.view.stakeholders.NewStakeholder', {
+                    height: 500,
+                    width: 400
+                });
+                shPanel.showForm(mandatoryStore, completeStore);
+                // Put everything in a window and show it
+                var win = Ext.create('Ext.window.Window', {
+                    title: 'Create new Stakeholder',
+                    autoScroll: true,
+                    border: 0,
+                    layout: 'fit',
+                    items: shPanel
+                });
+                win.show();
+            });
         });
-        win.show();
     },
 
     /**
