@@ -407,8 +407,11 @@ class ActivityProtocol2(Protocol):
 
                 # Check if the current tag is the main tag of this tag group. If
                 # yes, set the main_tag attribute to this tag
-                if a_tag.key.key == main_tag_key and a_tag.value.value == main_tag_value:
-                    db_taggroup.main_tag = a_tag
+                try:
+                    if a_tag.key.key == main_tag_key and a_tag.value.value == main_tag_value:
+                        db_taggroup.main_tag = a_tag
+                except AttributeError:
+                    pass
         
         self._add_changeset(request, new_activity, None)
 
