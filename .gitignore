@@ -15,6 +15,7 @@
 
 # Ignore Application YAML configuration files
 /profiles/
+/profiles-production/
 *.yml
 
 # Ignore packages

@@ -49,6 +49,13 @@ Ext.define('Lmkp.view.activities.Details', {
         this.historyStore = Ext.create('Ext.data.Store', {
             autoLoad: true,
             autoScroll: true,
+            listeners: {
+                load: function(store, records, successful){
+                    var firstRecord = store.first();
+                    this._populateDetails(firstRecord, firstRecord.get('status') == 'pending');
+                },
+                scope: this
+            },
             storeId: 'historyStore',
             // all are needed to build relation
             requires: [
@@ -64,6 +71,9 @@ Ext.define('Lmkp.view.activities.Details', {
 
             pageSize: 10,
             proxy: {
+                extraParams: {
+                    involvements: 'full'
+                },
                 reader: {
                     root: 'data',
                     type: 'json',
@@ -77,6 +87,7 @@ Ext.define('Lmkp.view.activities.Details', {
             },
             remoteSort: true
         });
+
 
         this.historyPanel = Ext.create('Ext.grid.Panel',{
             collapsible: true,
@@ -100,8 +111,6 @@ Ext.define('Lmkp.view.activities.Details', {
             title: 'History',
             width: 250
         });
-
-        this._populateDetails(this.activity)
 
         this.items = [{
             bodyPadding: 5,

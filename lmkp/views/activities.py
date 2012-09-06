@@ -3,9 +3,11 @@ from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol2 import ActivityProtocol2
 from lmkp.views.config import get_mandatory_keys
 import logging
+from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.httpexceptions import HTTPCreated
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPFound
-from pyramid.httpexceptions import HTTPCreated
+from pyramid.httpexceptions import HTTPUnauthorized
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
 from pyramid.security import ACLAllowed
@@ -113,23 +115,27 @@ def review(request):
     # Check if the user is logged in and he/she has sufficient user rights
     userid = authenticated_userid(request)
     if userid is None:
-        return {'success': False, 'msg': 'User is not logged in.'}
+        raise HTTPUnauthorized('User is not logged in.')
+        #return {'success': False, 'msg': 'User is not logged in.'}
     if not isinstance(has_permission('moderate', request.context, request), ACLAllowed):
-        return {'success': False, 'msg': 'User has no permissions to add a review.'}
+        raise HTTPUnauthorized('User has no permissions to add a review.')
+        #return {'success': False, 'msg': 'User has no permissions to add a review.'}
     user = Session.query(User).\
             filter(User.username == authenticated_userid(request)).first()
 
     # Check for profile
     profile_filters = activity_protocol2._create_bound_filter_by_user(request)
     if len(profile_filters) == 0:
-        return {'success': False, 'msg': 'User has no profile attached.'}
+        raise HTTPBadRequest('User has no profile attached')
+        #return {'success': False, 'msg': 'User has no profile attached.'}
     activity = Session.query(Activity).\
         filter(Activity.activity_identifier == request.POST['identifier']).\
         filter(Activity.version == request.POST['version']).\
         filter(or_(* profile_filters)).\
         first()
     if activity is None:
-        return {'success': False, 'msg': 'The Activity was not found or is not situated within the user\'s profiles'}
+        raise HTTPUnauthorized('The Activity was not found or is not situated within the user\'s profiles')
+        #return {'success': False, 'msg': 'The Activity was not found or is not situated within the user\'s profiles'}
 
     # If review decision is 'approved', make sure that all mandatory fields are 
     # there, except if it is to be deleted
