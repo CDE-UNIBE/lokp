@@ -16,10 +16,18 @@ Ext.define('Lmkp.view.stakeholders.StakeholderFieldContainer', {
         this.items = [];
 
         if(this.stakeholder){
+
+            var name = this.stakeholder.getTagValues(
+                Lmkp.ts.msg("stakeholder-name")
+            ).join(", ");
+            if (!name) {
+                name = Lmkp.ts.msg("unknown-name");
+            }
+
             this.items.push({
                 flex: 1,
                 name: 'stakeholder.name',
-                value: this.stakeholder.getTagValues(Lmkp.ts.msg("stakeholder-name")).join(","),
+                value: name,
                 xtype: 'displayfield'
             });
         }

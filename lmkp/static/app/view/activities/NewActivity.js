@@ -213,7 +213,7 @@ Ext.define('Lmkp.view.activities.NewActivity', {
                 {
                     xtype: 'button',
                     name: 'addAdditionalTagButton',
-                    text: 'Add more information'
+                    text: 'Add more specific information'
                 }
             ]
         });
