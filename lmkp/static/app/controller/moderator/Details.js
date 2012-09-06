@@ -7,15 +7,14 @@ Ext.define('Lmkp.controller.moderator.Details', {
     refs: [{
         ref: 'activityDetailWindow',
         selector: 'lo_activitydetailwindow'
+    },{
+        ref: 'detailWizardPanel',
+        selector: 'lo_activitydetailwindow panel[itemId="detailWizardPanel"]'
     }],
 
-    requires: [
-    ],
+    requires: [],
 
-    stores: [
-    'ActivityConfig',
-    'ActivityGrid'
-    ],
+    stores: [],
 
     views: [
     'activities.Details',
@@ -25,7 +24,7 @@ Ext.define('Lmkp.controller.moderator.Details', {
 
     init: function() {
         this.control({
-            'lo_activitydetailwindow panel[itemId="activityDetailCenterPanel"]':{
+            'lo_activitydetailwindow panel[itemId="detailWizardPanel"]':{
                 render: this.onActivityDetailCenterPanelRender
             }
         });
@@ -33,14 +32,16 @@ Ext.define('Lmkp.controller.moderator.Details', {
 
     onActivityDetailCenterPanelRender: function(comp){
 
+        var store = this.getActivityDetailWindow().getHistoryStore();
+
         var toolbar = comp.down('toolbar[dock="bottom"]');
         toolbar ? comp.remove(toolbar) : null;
 
-        if(comp.currentActivity.get('status') == 'pending'){
+        store.on('load', function(store, records, successful){
 
-            var wrapperPanel = comp.up('panel');
+            if(store.first().get('status') == 'pending'){
 
-            /* var reviewPanel = Ext.create('Ext.form.Panel',{
+                /* var reviewPanel = Ext.create('Ext.form.Panel',{
                 bbar: {
                     items: [{
                         itemId: 'card-prev',
@@ -92,55 +93,53 @@ Ext.define('Lmkp.controller.moderator.Details', {
 
             wrapperPanel.add(reviewPanel);*/
 
-            var store = this.getActivityDetailWindow().getHistoryStore();
-            store.on('load', function(store, records){
                 var panel = Ext.create('Lmkp.view.moderator.Review',{
                     itemId: 'reviewPanel',
                     store: store,
                     type: 'activities'
                 });
-                wrapperPanel.add(panel);
-            }, this);
-            
-            var prevButton = Ext.create('Ext.button.Button',{
-                disabled: true,
-                itemId: 'card-prev',
-                handler: function(btn) {
-                    var layout = wrapperPanel.getLayout();
-                    if(layout.getPrev()){
-                        layout.setActiveItem(layout.getPrev());
-                    }
-                    btn.setDisabled(!layout.getPrev());
-                    nextButton.setDisabled(!layout.getNext());
-                },
-                text: '&laquo; Back'
-            });
 
-            var nextButton = Ext.create('Ext.button.Button',{
-                itemId: 'card-next',
-                handler: function(btn){
-                    var layout = wrapperPanel.getLayout();
-                    if(layout.getNext()){
-                        layout.setActiveItem(layout.getNext());
-                    }
-                    btn.setDisabled(!layout.getNext());
-                    prevButton.setDisabled(!layout.getPrev());
-                },
-                text: 'Review pending changes &raquo;'
-            });
+                comp.add(panel);
             
-            toolbar = Ext.create('Ext.toolbar.Toolbar',{
-                dock: 'bottom',
-                items: [prevButton, '->', nextButton]
-            });
-            wrapperPanel.addDocked(toolbar);
-        }
+                var prevButton = Ext.create('Ext.button.Button',{
+                    disabled: true,
+                    itemId: 'card-prev',
+                    handler: function(btn) {
+                        var layout = comp.getLayout();
+                        if(layout.getPrev()){
+                            layout.setActiveItem(layout.getPrev());
+                        }
+                        btn.setDisabled(!layout.getPrev());
+                        nextButton.setDisabled(!layout.getNext());
+                    },
+                    text: '&laquo; Back'
+                });
+
+                var nextButton = Ext.create('Ext.button.Button',{
+                    itemId: 'card-next',
+                    handler: function(btn){
+                        var layout = comp.getLayout();
+                        if(layout.getNext()){
+                            layout.setActiveItem(layout.getNext());
+                        }
+                        btn.setDisabled(!layout.getNext());
+                        prevButton.setDisabled(!layout.getPrev());
+                    },
+                    text: 'Review pending changes &raquo;'
+                });
+            
+                toolbar = Ext.create('Ext.toolbar.Toolbar',{
+                    dock: 'bottom',
+                    items: [prevButton, '->', nextButton]
+                });
+                comp.addDocked(toolbar);
+            }
+        }, this);
 
     },
 
     onCardPreviousClick: function(button, event){
-        var panel = button.up('detailWizardPanel');
-        var layout = panel.getLayout();
+        var layout = this.getDetailWizardPanel().getLayout();
         layout.setActiveItem(layout.getPrev());
     }
     
