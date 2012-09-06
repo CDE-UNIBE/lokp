@@ -3,10 +3,6 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
 
     alias: ['widget.lo_newstakeholderpanel'],
 
-    config: {
-        addedStakeholder: null
-    },
-
     layout: 'fit',
     defaults: {
         border: 0
@@ -15,8 +11,6 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
     width: 400,
 
     initComponent: function(){
-
-
 
         //var form = this.down('form');
         // prepare the form
@@ -31,7 +25,8 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
             buttons: [{
                 iconCls: 'cancel-button',
                 scale: 'medium',
-                text: 'Cancel'
+                text: 'Cancel',
+                itemId: 'cancelButton'
             },{
                 disabled: true,
                 formBind: true,

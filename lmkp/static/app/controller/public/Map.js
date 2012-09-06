@@ -123,12 +123,13 @@ Ext.define('Lmkp.controller.public.Map', {
 
         // Collect vectors, transform and return them
         var geom = activity.get('geometry');
+        var map = this.getMapPanel();
         var vectors = this.geojson.read(Ext.encode(geom));
         if (vectors) {
             for(var j = 0; j < vectors.length; j++){
                 vectors[j].geometry.transform(
-                    new OpenLayers.Projection("EPSG:4326"),
-                    new OpenLayers.Projection("EPSG:900913")
+                    map.geographicProjection,
+                    map.sphericalMercatorProjection
                 );
             }
             return vectors;
