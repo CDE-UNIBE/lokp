@@ -230,12 +230,17 @@ def lao_read_activities2(request):
                     join(SH_Value).filter(and_(SH_Key.key == 'Name', SH_Value.value == investor_name)).first()
 
                 stakeholdersObject.append({"id": str(sh.stakeholder_identifier), "op": "add", "role": 6, "version": 1})
+                activityObject['stakeholders'] = stakeholdersObject
 
         activityObject['taggroups'].append(create_taggroup_dict('Country', 'Laos'))
+        # Not sure about these sources
         activityObject['taggroups'].append(create_taggroup_dict('Data source', 'Government sources'))
+        # Not sure about the negotiation status
         activityObject['taggroups'].append(create_taggroup_dict('Negotiation Status', 'Contract signed'))
 
-        activityObject['stakeholders'] = stakeholdersObject
+        # Add geometry to activity
+        activityObject['geometry'] = {'coordinates': [record.shape.points[0][0], record.shape.points[0][1]], 'type': 'Point'}
+        
         activityDiffObject['activities'].append(activityObject)
 
     return activityDiffObject
