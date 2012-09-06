@@ -33,7 +33,7 @@ Ext.define('Lmkp.view.stakeholders.Details',{
             itemId: 'closeWindowButton',
             scale: 'medium',
             text: 'Close', // also translate tooltip
-            tooltip: 'Close window'
+            tooltip: Lmkp.ts.msg('Close window')
         }],
         xtype: 'toolbar'
     },
@@ -41,15 +41,21 @@ Ext.define('Lmkp.view.stakeholders.Details',{
     initComponent: function(){
 
         this.centerPanel = Ext.create('Ext.panel.Panel',{
-            region: 'center',
             autoScroll: true,
             layout: 'anchor',
-            title: 'Details'
+            itemId: 'stakeholderDetailCenterPanel'
         });
 
         this.historyStore = Ext.create('Ext.data.Store', {
             autoLoad: true,
             autoScroll: true,
+            listeners: {
+                load: function(store, records, successful){
+                    var firstRecord = store.first();
+                    this._populateDetails(firstRecord, firstRecord.get('status') == 'pending');
+                },
+                scope: this
+            },
             storeId: 'historyStore',
             // all are needed to build relation
             requires: [
@@ -63,24 +69,26 @@ Ext.define('Lmkp.view.stakeholders.Details',{
             model: 'Lmkp.model.Stakeholder',
 
             pageSize: 10,
-            remoteSort: true,
-
             proxy: {
-                type: 'ajax',
-                url: '/stakeholders/history/' + this.stakeholder.get('id'),
+                extraParams: {
+                    involvements: 'full'
+                },
                 reader: {
                     root: 'data',
                     type: 'json',
                     totalProperty: 'total'
                 },
-                startParam: 'offset',
                 simpleSortMode: true,
-                sortParam: 'order_by'
-            }
+                sortParam: 'order_by',
+                startParam: 'offset',
+                type: 'ajax',
+                url: '/stakeholders/history/' + this.stakeholder.get('id')
+            },
+            remoteSort: true
         });
 
         this.historyPanel = Ext.create('Ext.grid.Panel',{
-            //            collapsed: true, -> Collapsing is done 'manually'
+            // collapsed: true, -> Collapsing is done 'manually'
             collapsible: true,
             collapseMode: 'header',
             columns: [{
@@ -103,10 +111,15 @@ Ext.define('Lmkp.view.stakeholders.Details',{
             width: 250
         });
 
-        this._populateDetails(this.stakeholder)
-
-        this.items = [
-        this.centerPanel,
+        this.items = [{
+            bodyPadding: 5,
+            layout: 'card',
+            margin: 3,
+            itemId: 'stakeholderDetailWizardPanel',
+            items: [ this.centerPanel ],
+            region: 'center',
+            title: 'Details'
+        },
         this.historyPanel
         ];
 
@@ -140,14 +153,15 @@ Ext.define('Lmkp.view.stakeholders.Details',{
 
             // Show a notice if this version is a pending one
             if(pendingVersion) {
-                console.log("pending vErsion");
                 this.centerPanel.add({
+                    bodyCls: 'notice',
                     bodyPadding: 5,
                     html: 'You are seeing a pending version, which needs to be \n\
                         reviewed before it is publicly visible',
-                    bodyCls: 'notice'
+                    margin: '3 3 0 3'
+                    
                 });
-            }           
+            }
 
             // If there are no versions pending, simply show active version
             this.centerPanel.add({

@@ -30,9 +30,10 @@ Ext.define('Lmkp.view.activities.Details', {
     bbar: {
         items: ['->', {
             iconCls: 'cancel-button',
-            text: 'Close', // also translate tooltip
+            itemId: 'closeWindowButton',
             scale: 'medium',
-            itemId: 'closeWindowButton'
+            text: 'Close', // also translate tooltip
+            tooltip: Lmkp.ts.msg('Close window')
         }],
         xtype: 'toolbar'
     },
@@ -44,7 +45,6 @@ Ext.define('Lmkp.view.activities.Details', {
             layout: 'anchor',
             itemId: 'activityDetailCenterPanel'
         });
-        
 
         this.historyStore = Ext.create('Ext.data.Store', {
             autoLoad: true,
@@ -181,7 +181,6 @@ Ext.define('Lmkp.view.activities.Details', {
                 margin: 3,
                 xtype: 'lo_commentpanel'
             });
-            
         }
 
         return activity;
