@@ -58,6 +58,9 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
             },
             'lo_newstakeholderselection button[itemId=addNewStakeholderButton]': {
                 click: this.showNewStakeholderWindow
+            },
+            'lo_stakeholderfieldcontainer button[name=stakeholderRemoveButton]': {
+            	click: this.onStakeholderRemoveButtonClick
             }
         });
     },
@@ -136,7 +139,6 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
         var form = this.getNewActivityForm();
         var newTaggroups = [];
         var oldTaggroups = form.taggroups;
-        var stakeholders = [];
 
         // Get the geometry
         var geometry = null;
@@ -148,19 +150,63 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
             ));
         }
 
-        // Collect Stakeholder information
+        // Collect Stakeholder (involvement) information
         var shFieldset = this.getSelectStakeholderFieldSet();
-        var shComps = shFieldset.query('lo_stakeholderfieldcontainer');
-        for(var j = 0; j < shComps.length; j++ ) {
-            var fieldContainer = shComps[j];
-            var stakeholder = {}
-            stakeholder['id'] = fieldContainer.getStakeholderId();
-            //stakeholder['role'] = fieldContainer.getStakeholderRole();
-            stakeholder['role'] = 6;
-            stakeholder['version'] = fieldContainer.getStakeholderVersion();
-            stakeholder['op'] = 'add';
-            stakeholders.push(stakeholder);
+        // Make a real copy of the fieldset's involvements
+        var oldInvolvements = [];
+        for (var oi in shFieldset.involvements) {
+        	oldInvolvements.push(shFieldset.involvements[oi]);
         }
+        var newStakeholders = [];
+        var deletedStakeholders = [];
+
+        // Get the stakeholders of the form 
+        var shComps = shFieldset.query('lo_stakeholderfieldcontainer');
+        for (var j = 0; j < shComps.length; j++ ) {
+            var fieldContainer = shComps[j];
+            
+            // Try to find Involvement in list with existing Involvements
+            var oldInvFound = false;
+            for (var oiv in oldInvolvements) {
+            	var coiv = oldInvolvements[oiv];
+            	if (coiv.stakeholder.get('id') 
+            		== fieldContainer.getStakeholderId() 
+            		&& coiv.stakeholder.get('version') 
+            		== fieldContainer.getStakeholderVersion()
+            		&& coiv.role_id == fieldContainer.getStakeholderRoleId()) {
+        			// Stakeholder did not change, remove it from list with 
+        			// existing Stakeholders
+        			oldInvolvements.splice(oiv, 1);
+        			oldInvFound = true;
+        		}
+            }
+            
+            if (oldInvFound == false) {
+            	// Involvement was not found in list with existing Involvements,
+            	// it must be a new one
+            	newStakeholders.push({
+            		'id': fieldContainer.getStakeholderId(),
+            		'role': fieldContainer.getStakeholderRoleId(),
+            		'version': fieldContainer.getStakeholderVersion(),
+            		'op': 'add'
+            	});
+            }
+        }
+        
+        // Any remaining Involvements in the list with existing Involvements has 
+        // been deleted since it is not in the fieldContainer anymore
+        for (var roi in oldInvolvements) {
+        	var croi = oldInvolvements[roi];
+        	deletedStakeholders.push({
+        		'id': croi.stakeholder.get('id'),
+        		'version': croi.stakeholder.get('version'),
+        		'role': croi.role_id,
+        		'op': 'delete'
+        	});
+        }
+        
+        // Put new and deleted together for diff
+        var stakeholders = newStakeholders.concat(deletedStakeholders);
 
         // Collect Activity information
         var taggroupfieldsets = form.query('form[name=taggroupfieldset]');
@@ -341,46 +387,51 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 'activities': [diffActivity]
             }
         }
-
-        // Send the diff JSON through AJAX request
-        Ext.Ajax.request({
-            url: '/activities',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json;charset=utf-8'
-            },
-            jsonData: diffObject,
-            callback: function(options, success, response) {
-                if (success) {
-                    Ext.Msg.alert('Success', 'The activity was successfully created. It will be reviewed shortly.');
-
-                    // Reset geometry of map panel
-                    me.getMapPanel().setActivityGeometry(null);
-
-                    // If mappopup still there, remove it
-                    var popup = (
-                        Ext.ComponentQuery.query('window[itemId=mappopup]').length > 0)
-                        ? Ext.ComponentQuery.query('window[itemId=mappopup]')[0]
-                        : null;
-                    if (popup) popup.destroy();
-
-                    // Close form window
-                    var win = form.up('window');
-                    win.destroy();
-
-                    var fieldContainers = form.query('lo_stakeholderfieldcontainer');
-                    for(var i = 0; i < fieldContainers.length; i++){
-                        this.getSelectStakeholderFieldSet().remove(fieldContainers[i]);
-                    }
-
-                    // Remove also the feature on the map
-                    this.getMapPanel().getVectorLayer().removeAllFeatures();
-                } else {
-                    Ext.Msg.alert('Failure', 'The activity could not be created.');
-                }
-            },
-            scope: this
-       });
+        
+        if (diffObject) {
+	        // Send the diff JSON through AJAX request
+	        Ext.Ajax.request({
+	            url: '/activities',
+	            method: 'POST',
+	            headers: {
+	                'Content-Type': 'application/json;charset=utf-8'
+	            },
+	            jsonData: diffObject,
+	            callback: function(options, success, response) {
+	                if (success) {
+	                    Ext.Msg.alert('Success', 'The activity was successfully created. It will be reviewed shortly.');
+	
+	                    // Reset geometry of map panel
+	                    me.getMapPanel().setActivityGeometry(null);
+	
+	                    // If mappopup still there, remove it
+	                    var popup = (
+	                        Ext.ComponentQuery.query('window[itemId=mappopup]').length > 0)
+	                        ? Ext.ComponentQuery.query('window[itemId=mappopup]')[0]
+	                        : null;
+	                    if (popup) popup.destroy();
+	
+	                    // Close form window
+	                    var win = form.up('window');
+	                    win.destroy();
+	
+	                    var fieldContainers = form.query('lo_stakeholderfieldcontainer');
+	                    for(var i = 0; i < fieldContainers.length; i++){
+	                        this.getSelectStakeholderFieldSet().remove(fieldContainers[i]);
+	                    }
+	
+	                    // Remove also the feature on the map
+	                    this.getMapPanel().getVectorLayer().removeAllFeatures();
+	                } else {
+	                    Ext.Msg.alert('Failure', 'The activity could not be created.');
+	                }
+	            },
+	            scope: this
+	       });
+        } else {
+        	// Nothing was changed, do nothing
+        	Ext.Msg.alert('No changes made', 'You did not make any changes.');
+        }
     },
 
     /**
@@ -407,7 +458,38 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                     height: 500,
                     width: 400
                 });
-                shPanel.showForm();
+
+                var involvedStakeholders = [];
+                if (item) {
+                    // Use Involvement store to get Stakeholders
+                    var invStore = item.involvements();
+                    invStore.each(function(inv) {
+                        if (inv.raw.data) {
+                            var shStore = Ext.create('Ext.data.Store', {
+                                model: 'Lmkp.model.Stakeholder',
+                                data: inv.raw.data,
+                                proxy: {
+                                    type: 'memory',
+                                    reader: {
+                                        type: 'json'
+                                    }
+                                }
+                            });
+                            shStore.load(function(stakeholders) {
+                            	// Each involvement only contains 1 Stakeholder.
+                            	// Also add information about the role of the 
+                            	// Stakeholder.
+                                involvedStakeholders.push({
+                                	'stakeholder': stakeholders[0],
+                                	'role': inv.get('role'),
+                                	'role_id': inv.get('role_id')
+                                });
+                            });
+                        }
+                    });
+                }
+
+                shPanel.showForm(involvedStakeholders);
                 // Put everything in a window and show it.
                 var activityEdit = (item != null);
                 var win = Ext.create('Lmkp.view.public.NewActivityWindow', {
@@ -503,10 +585,19 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
         var shpanel = form.down('lo_stakeholderpanel');
 
         if (shpanel) {
-            // Insert stakeholder into fieldset above
             var fieldset = this.getSelectStakeholderFieldSet();
+            
+        	// If initial panel in fieldset still exists, remove it first
+            	if (fieldset.down('[itemId=initialText]')) {
+            		fieldset.remove(fieldset.down('[itemId=initialText]'));
+            	}
+        	
+            // Insert stakeholder into fieldset above
             fieldset.insert(0, {
-                stakeholder: shpanel.contentItem,
+            	involvement: {
+                	stakeholder: shpanel.contentItem,
+                	role_id: 6 // Investor by default
+                },
                 xtype: 'lo_stakeholderfieldcontainer'
             });
 
@@ -551,6 +642,24 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
             });
         });
     },
+    
+    /**
+     * Remove a Stakeholder from the fieldset containing all the associated 
+     * Stakeholders
+     */
+    onStakeholderRemoveButtonClick: function(button) {
+    	// If the last Stakeholder was removed, show initial Text again
+    	var fieldset = button.up('fieldset[itemId=selectStakeholderFieldSet]');
+    	if (fieldset.query('lo_stakeholderfieldcontainer').length == 1) {
+    		var selectionPanel = button.up('lo_newstakeholderselection');
+    		if (selectionPanel) {
+	    		selectionPanel._showInitialText();
+    		}
+    	}
+ 		// Remove fieldcontainer   	
+    	var fieldcontainer = button.up('lo_stakeholderfieldcontainer');
+    	fieldcontainer.destroy();
+    },
 
     /**
      * If Stakeholder was newly created (this happens in separate window), 
@@ -565,10 +674,18 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
             var form = sel.down('form');
 
             if (stakeholder) {
-                // Insert stakeholder into fieldset above
                 var fieldset = this.getSelectStakeholderFieldSet();
+            	// If initial panel in fieldset still exists, remove it first
+            	if (fieldset.down('[itemId=initialText]')) {
+            		fieldset.remove(fieldset.down('[itemId=initialText]'));
+            	}
+            	
+                // Insert stakeholder into fieldset above
                 fieldset.insert(0, {
-                    stakeholder: stakeholder,
+                    involvement: {
+                    	stakeholder: stakeholder,
+                    	role_id: 6 // Investor by default
+                    },
                     xtype: 'lo_stakeholderfieldcontainer'
                 });
 
