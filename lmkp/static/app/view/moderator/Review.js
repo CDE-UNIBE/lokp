@@ -42,14 +42,6 @@ Ext.define('Lmkp.view.moderator.Review', {
 
         // Remove any existing panels
         this.removeAll();
-        // Add the bottom toolbar
-        /*this.addDocked(Ext.create('Ext.toolbar.Toolbar',{
-            dock: 'bottom',
-            items: ['->', {
-                itemId: 'card-prev',
-                text: 'Show difference to active version &raquo;'
-            }]
-        }));*/
         
         // Loop through all data to collect all 'pending' items. Also remember
         // which is the active version
@@ -152,45 +144,78 @@ Ext.define('Lmkp.view.moderator.Review', {
             // Show panel for review decision.
             var rdStore = Ext.create('Lmkp.store.ReviewDecisions').load();
             this.add({
+                buttons: [{
+                    handler: function(btn){
+                        btn.up('form').submit({
+                            failure: function(form, response) {
+                                var msg = 'Request failed.<br/>Server response: ';
+                                msg += response.response.status + ' ' + response.response.statusText;
+                                Ext.Msg.show({
+                                    buttons: Ext.Msg.CANCEL,
+                                    icon: Ext.Msg.ERROR,
+                                    msg: msg,
+                                    scope: this,
+                                    title: 'Failed'
+                                });
+                            },
+                            scope: this.up('window'),
+                            success: function(form, response) {
+                                var returnJson = Ext.decode(response.response.responseText);
+                                if(returnJson.success){
+                                    Ext.Msg.show({
+                                        buttons: Ext.Msg.OK,
+                                        fn: function(buttonId, text, opt){
+                                            this.close();
+                                        },
+                                        icon: Ext.Msg.INFO,
+                                        msg: returnJson.msg,
+                                        scope: this,
+                                        title: 'Success'
+                                    });
+                                } else {
+                                    Ext.Msg.show({
+                                        buttons: Ext.Msg.CANCEL,
+                                        icon: Ext.Msg.ERROR,
+                                        msg: returnJson.msg,
+                                        scope: this,
+                                        title: 'Failed'
+                                    });
+                                }
+                                
+                            }
+                        });
+                    },
+                    iconCls: 'save-button',
+                    name: 'review_submit',
+                    scale: 'medium',
+                    scope: this,
+                    store_type: type, // helper parameter
+                    text: 'Submit',
+                    xtype: 'button'
+                }],
                 xtype: 'form',
                 url: type + '/review',
                 border: 0,
                 buttonAlign: 'right',
-                items: [
-                {
-                    xtype: 'panel',
-                    layout: 'hbox',
-                    border: 0,
-                    items: [
-                    {
-                        xtype: 'combobox',
-                        store: rdStore,
-                        name: 'review_decision',
-                        queryMode: 'local',
-                        displayField: 'name',
-                        valueField: 'id',
-                        fieldLabel: 'Review decision',
-                        allowBlank: false,
-                        flex: 1,
-                        margin: '0 5 0 0'
-                    }, {
-                        xtype: 'checkbox',
-                        fieldLabel: 'Add comment',
-                        name: 'comment_checkbox',
-                        margin: '0 5 0 0'
-                    }, {
-                        xtype: 'button',
-                        text: 'Submit',
-                        name: 'review_submit',
-                        store_type: type // helper parameter
-                    }
-                    ]
+                items: [{
+                    store: rdStore,
+                    name: 'review_decision',
+                    queryMode: 'local',
+                    displayField: 'name',
+                    valueField: 'id',
+                    fieldLabel: 'Review decision',
+                    allowBlank: false,
+                    flex: 1,
+                    margin: 3,
+                    value: 1,
+                    width: 400,
+                    xtype: 'combobox'
                 }, {
-                    xtype: 'textarea',
+                    fieldLabel: 'Review comment',
+                    margin: 3,
                     name: 'comment_textarea',
-                    width: '100%',
-                    margin: '5 0 0 0',
-                    hidden: true
+                    width: 400,
+                    xtype: 'textarea'
                 }, {
                     xtype: 'hiddenfield',
                     name: 'identifier',
@@ -199,8 +224,7 @@ Ext.define('Lmkp.view.moderator.Review', {
                     xtype: 'hiddenfield',
                     name: 'version',
                     value: pending[j].current_version
-                }
-                ]
+                }]
             });
 
             // Show notice and list with missing fields if not all mandatory

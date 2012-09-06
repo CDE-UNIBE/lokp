@@ -8,6 +8,8 @@ Ext.require('Ext.form.Panel');
 Ext.require('Ext.fx.*');
 Ext.require('Ext.grid.Panel');
 Ext.require('Ext.layout.container.Border');
+Ext.require('Ext.layout.container.Card');
+Ext.require('Lmkp.store.ReviewDecisions');
 Ext.require('Lmkp.utils.StringFunctions');
 Ext.require('Lmkp.view.activities.Details');
 Ext.require('Lmkp.view.comments.ReCaptcha');
