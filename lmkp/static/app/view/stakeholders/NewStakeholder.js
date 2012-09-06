@@ -67,21 +67,17 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
         // Delete all existing items
         form.removeAll();
 
-        if (item) {
+        if (item != null && item.modelName == 'Lmkp.model.Stakeholder') {
             // Edit item. Show previous Tag Groups
 
             // Flag to show if some tags were not displayed because they are not
             // in current profile
             var profile_info = null;
 
-            // Make sure item is an 'Stakeholder'
-            if (item.modelName != 'Lmkp.model.Stakeholder') {
-                return null;
-            }
-
-            // Store old Tag Groups (used upon submission of form to create the
-            // diff)
-            this.oldTaggroups = [];
+            // Store Stakeholder identifiert and version (needed for diff)
+            form.stakeholder_identifier = (item) ? item.get('id') : null;
+            form.stakeholder_version = (item) ? item.get('version') : null;
+            form.taggroups = [];
 
             // In a first step, it is necessary to collect only the tags of
             // current profile
@@ -150,17 +146,20 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
                     }
 
                     // Prepare fieldset
-                    var fieldset = me._getFieldset();
+                    var fieldset = me._getFieldset(
+                        tempTags.concat(tempMainTag),
+                        taggroup.get('id')
+                    );
                     fieldset.add(formMainTag);
                     fieldset.add(formTags);
 
                     // Add fieldset to form
                     form.add(fieldset);
 
-                    // Store Tag Group
-                    me.oldTaggroups.push({
-                        tags: tempTags,
-                        mainTag: tempMainTag
+                    // Store visible Tag Group (needed for diff)
+                    form.taggroups.push({
+                        id: taggroup.get('id'),
+                        tags: tempTags.concat(tempMainTag)
                     });
                 });
 
@@ -208,8 +207,10 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
      * Returns the basic fieldset (which is actually a 'form') to display the
      * form items of a Tag Group.
      */
-    _getFieldset: function() {
+    _getFieldset: function(oldTags, taggroupId) {
         return Ext.create('Ext.form.Panel', {
+            oldTags: oldTags,
+            taggroupId: taggroupId,
             name: 'taggroupfieldset',
             bodyPadding: 5,
             margin: '0 0 10 0',

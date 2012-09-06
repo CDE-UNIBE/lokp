@@ -41,47 +41,184 @@ Ext.define('Lmkp.controller.stakeholders.NewStakeholder', {
         button.up('window').destroy();
     },
 
-    onSubmitButtonClick: function(button, event, eOpts){
+    onSubmitButtonClick: function(){
         var me = this;
-        var formpanel = this.getNewStakeholderForm();
-        var taggroups = [];
+        var form = this.getNewStakeholderForm();
+        var newTaggroups = [];
+        var oldTaggroups = form.taggroups;
 
-        // Loop through each form panel
-        var forms = formpanel.query('form[name=taggroupfieldset]');
-        for (var i in forms) {
-            var tags = [];
+        // Collect Activity information
+        var taggroupfieldsets = form.query('form[name=taggroupfieldset]');
+
+        // Loop through each taggroup of form
+        for (var i in taggroupfieldsets) {
+
+            var taggroupfieldset = taggroupfieldsets[i];
+
+            var newTags = [];
+            var oldTags = [];
             var main_tag = new Object();
-            // Within a taggroup, loop through each tag
-            var tgpanels = forms[i].query('lo_newtaggrouppanel');
-            for (var j in tgpanels) {
-                var c = tgpanels[j];
-                // Only add Tags where Value or Key are not empty
-                if (c.getKeyValue() != null && c.getValueValue() != null) {
-                    tags.push({
-                        'key': c.getKeyValue(),
-                        'value': c.getValueValue(),
-                        'op': 'add'
-                    });
-                    if (c.isMainTag()) {
-                        main_tag.key = c.getKeyValue();
-                        main_tag.value = c.getValueValue();
+            var deletedTags = [];
+
+            // Collect all old Tags of current Taggroup
+            if (taggroupfieldset.oldTags) {
+                for (var ot in taggroupfieldset.oldTags) {
+                    if (taggroupfieldset.oldTags[ot]) {
+                        oldTags.push({
+                            id: taggroupfieldset.oldTags[ot].get('id'),
+                            key: taggroupfieldset.oldTags[ot].get('key'),
+                            value: taggroupfieldset.oldTags[ot].get('value')
+                        });
                     }
                 }
             }
-            if (tags.length > 0) {
-                taggroups.push({
-                    'tags': tags,
-                    'main_tag': main_tag
+            var initiallyEmpty = (oldTags.length == 0);
+
+            // Loop through all current Tags of form
+            var tagpanels = taggroupfieldset.query('lo_newtaggrouppanel');
+            for (var ct in tagpanels) {
+                var c = tagpanels[ct];
+                // Only look at Tags where Key or Value is not empty
+                if (c.getKeyValue() != null && c.getValueValue() != null) {
+
+                    // Check if Tag has changed
+                    if (c.getInitialValue() == c.getValueValue()
+                        && c.getInitialKey() == c.getKeyValue()) {
+                        // Tag has not changed. Find it in list with all old
+                        // Tags and remove it from there
+                        for (var findUnchangedTag in oldTags) {
+                            if (oldTags[findUnchangedTag]
+                                && oldTags[findUnchangedTag].id
+                                    == c.getInitialTagId()) {
+                                oldTags.splice(findUnchangedTag, 1);
+                            }
+                        }
+                    } else {
+                        // Tag has changed
+                        // Add new Tag to list
+                        newTags.push({
+                            'key': c.getKeyValue(),
+                            'value': c.getValueValue(),
+                            'op': 'add'
+                        });
+                        // Check if it is a Main Tag
+                        if (c.isMainTag()) {
+                            main_tag.key = c.getKeyValue();
+                            main_tag.value = c.getValueValue()
+                        }
+                        // If the Tag has an ID, it existed before.
+                        if (c.getInitialTagId()) {
+                            // Add it to list with deleted Tags
+                            deletedTags.push({
+                                'key': c.getInitialKey(),
+                                'value': c.getInitialValue(),
+                                'id': c.getInitialTagId(),
+                                'op': 'delete'
+                            });
+                            // Delete it from list with the old tags
+                            for (var findChangedTag in oldTags) {
+                                if (oldTags[findChangedTag]
+                                    && oldTags[findChangedTag].id
+                                        == c.getInitialTagId()) {
+                                    oldTags.splice(findChangedTag, 1);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // After looping through each Tag of Taggroup, any remaining Tag in
+            // the list of old Tags has been deleted since it is not in the form
+            // anymore.
+            for (var remainingTag in oldTags) {
+                if (oldTags[remainingTag]) {
+                    deletedTags.push({
+                        'key': oldTags[remainingTag].key,
+                        'value': oldTags[remainingTag].value,
+                        'id': oldTags[remainingTag].id,
+                        'op': 'delete'
+                    });
+                }
+            }
+
+            // Put together the diff for current Taggroup
+            var diffTags = newTags.concat(deletedTags);
+
+            if (diffTags.length > 0) {
+
+                var diffTaggroup = {
+                    tags: diffTags
+                };
+                if (main_tag.key && main_tag.value) {
+                    diffTaggroup.main_tag = main_tag;
+                }
+                if (taggroupfieldset.taggroupId) {
+                    diffTaggroup.id = taggroupfieldset.taggroupId;
+                }
+                if (initiallyEmpty) {
+                    diffTaggroup.op = 'add';
+                }
+
+                newTaggroups.push(diffTaggroup);
+            }
+
+            // Taggroup was found and processed, remove it from list with old
+            // Taggroups
+            for (var findProcessedTaggroup in oldTaggroups) {
+                if (oldTaggroups[findProcessedTaggroup]
+                    && oldTaggroups[findProcessedTaggroup].id
+                        == taggroupfieldset.taggroupId) {
+                    oldTaggroups.splice(findProcessedTaggroup, 1);
+                }
+            }
+        }
+
+        // After looping through each Taggroup of the form, any remaining
+        // Taggroup in the list of old Taggroups has been deleted since it is
+        // not in the form anymore.
+        var deletedTaggroups = [];
+        for (var remainingTaggroup in oldTaggroups) {
+            if (oldTaggroups[remainingTaggroup]) {
+                var cTaggroup = oldTaggroups[remainingTaggroup];
+                var dTags = [];
+                // Loop through each Tag of Taggroup
+                for (var t in cTaggroup.tags) {
+                    dTags.push({
+                        'key': cTaggroup.tags[t].get('key'),
+                        'value': cTaggroup.tags[t].get('value'),
+                        'id': cTaggroup.tags[t].get('id'),
+                        'op': 'delete'
+                    });
+                }
+                deletedTaggroups.push({
+                    'id': cTaggroup.id,
+                    'op': 'delete',
+                    'tags': dTags
                 });
             }
         }
 
+        var taggroups = newTaggroups.concat(deletedTaggroups);
+
         // Put together the diff object.
-        var diffObject = {
-            'stakeholders': [{
-                'taggroups': taggroups
-            }]
-        };
+        var diffStakeholder = new Object();
+        if (taggroups.length > 0) {
+            diffStakeholder.taggroups = taggroups;
+        }
+
+        var diffObject;
+        if (diffStakeholder.taggroups) {
+            // Add identifier and version as well if available
+            if (form.stakeholder_identifier) {
+                diffStakeholder.id = form.stakeholder_identifier;
+            }
+            if (form.stakeholder_version) {
+                diffStakeholder.version = form.stakeholder_version;
+            }
+            diffObject = {
+                'stakeholders': [diffStakeholder]
+            }
+        }
 
         // send the diff JSON through AJAX request
         Ext.Ajax.request({
@@ -119,8 +256,8 @@ Ext.define('Lmkp.controller.stakeholders.NewStakeholder', {
                     );
 
                     // Close form window
-                    formpanel.up('window').close();
-                    
+                    form.up('window').close();
+
                 } else {
                     Ext.Msg.alert('Failure', 'The stakeholder could not be created.');
                 }
