@@ -57,7 +57,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 click: this.onStakeholderSearchConfirmButtonClick
             },
             'lo_newstakeholderselection button[itemId=addNewStakeholderButton]': {
-                click: this.onCreateNewStakeholderButtonClick
+                click: this.showNewStakeholderWindow
             }
         });
     },
@@ -133,8 +133,9 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
      */
     onSubmitButtonClick: function() {
     	var me = this;
-        var formpanel = this.getNewActivityForm();
-        var taggroups = [];
+        var form = this.getNewActivityForm();
+        var newTaggroups = [];
+        var oldTaggroups = form.taggroups;
         var stakeholders = [];
 
         // Get the geometry
@@ -161,44 +162,185 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
             stakeholders.push(stakeholder);
         }
 
-        // Loop through each form panel (they form taggroups)
-        var forms = formpanel.query('form[name=taggroupfieldset]');
-        for (var i in forms) {
-            var tags = [];
+        // Collect Activity information
+        var taggroupfieldsets = form.query('form[name=taggroupfieldset]');
+
+        // Loop through each taggroup of form
+        for (var i in taggroupfieldsets) {
+
+            var taggroupfieldset = taggroupfieldsets[i];
+
+            var newTags = [];
+            var oldTags = [];
             var main_tag = new Object();
-            // Within a taggroup, loop through each tag
-            var tgpanels = forms[i].query('lo_newtaggrouppanel');
-            for (var j in tgpanels) {
-                var c = tgpanels[j];
-                // Only add Tags where Value or Key are not empty
-                if (c.getKeyValue() != null && c.getValueValue() != null) {
-                    tags.push({
-                        'key': c.getKeyValue(),
-                        'value': c.getValueValue(),
-                        'op': 'add'
-                    });
-                    if (c.isMainTag()) {
-                        main_tag.key = c.getKeyValue();
-                        main_tag.value = c.getValueValue()
+            var deletedTags = [];
+
+            // Collect all old Tags of current Taggroup
+            if (taggroupfieldset.oldTags) {
+                for (var ot in taggroupfieldset.oldTags) {
+                    if (taggroupfieldset.oldTags[ot]) {
+                        oldTags.push({
+                            id: taggroupfieldset.oldTags[ot].get('id'),
+                            key: taggroupfieldset.oldTags[ot].get('key'),
+                            value: taggroupfieldset.oldTags[ot].get('value')
+                        });
                     }
                 }
             }
-            if (tags.length > 0) {
-                taggroups.push({
-                    'tags': tags,
-                    'main_tag': main_tag
+            var initiallyEmpty = (oldTags.length == 0);
+
+            // Loop through all current Tags of form
+            var tagpanels = taggroupfieldset.query('lo_newtaggrouppanel');
+            for (var ct in tagpanels) {
+                var c = tagpanels[ct];
+                // Only look at Tags where Key or Value is not empty
+                if (c.getKeyValue() != null && c.getValueValue() != null) {
+
+                    // Check if Tag has changed
+                    if (c.getInitialValue() == c.getValueValue() 
+                        && c.getInitialKey() == c.getKeyValue()) {
+                        // Tag has not changed. Find it in list with all old 
+                        // Tags and remove it from there
+                        for (var findUnchangedTag in oldTags) {
+                            if (oldTags[findUnchangedTag] 
+                                && oldTags[findUnchangedTag].id
+                                    == c.getInitialTagId()) {
+                                oldTags.splice(findUnchangedTag, 1);
+                            }
+                        }
+                    } else {
+                        // Tag has changed
+                        // Add new Tag to list
+                        newTags.push({
+                            'key': c.getKeyValue(),
+                            'value': c.getValueValue(),
+                            'op': 'add'
+                        });
+                        // Check if it is a Main Tag
+                        if (c.isMainTag()) {
+                            main_tag.key = c.getKeyValue();
+                            main_tag.value = c.getValueValue()
+                        }
+                        // If the Tag has an ID, it existed before.
+                        if (c.getInitialTagId()) {
+                            // Add it to list with deleted Tags
+                            deletedTags.push({
+                                'key': c.getInitialKey(),
+                                'value': c.getInitialValue(),
+                                'id': c.getInitialTagId(),
+                                'op': 'delete'
+                            });
+                            // Delete it from list with the old tags
+                            for (var findChangedTag in oldTags) {
+                                if (oldTags[findChangedTag]
+                                    && oldTags[findChangedTag].id 
+                                        == c.getInitialTagId()) {
+                                    oldTags.splice(findChangedTag, 1);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // After looping through each Tag of Taggroup, any remaining Tag in
+            // the list of old Tags has been deleted since it is not in the form
+            // anymore.
+            for (var remainingTag in oldTags) {
+                if (oldTags[remainingTag]) {
+                    deletedTags.push({
+                        'key': oldTags[remainingTag].key,
+                        'value': oldTags[remainingTag].value,
+                        'id': oldTags[remainingTag].id,
+                        'op': 'delete'
+                    });
+                }
+            }
+
+            // Put together the diff for current Taggroup
+            var diffTags = newTags.concat(deletedTags);
+
+            if (diffTags.length > 0) {
+
+                var diffTaggroup = {
+                    tags: diffTags
+                };
+                if (main_tag.key && main_tag.value) {
+                    diffTaggroup.main_tag = main_tag;
+                }
+                if (taggroupfieldset.taggroupId) {
+                    diffTaggroup.id = taggroupfieldset.taggroupId;
+                }
+                if (initiallyEmpty) {
+                    diffTaggroup.op = 'add';
+                }
+
+                newTaggroups.push(diffTaggroup);
+            }
+
+            // Taggroup was found and processed, remove it from list with old
+            // Taggroups
+            for (var findProcessedTaggroup in oldTaggroups) {
+                if (oldTaggroups[findProcessedTaggroup]
+                    && oldTaggroups[findProcessedTaggroup].id
+                        == taggroupfieldset.taggroupId) {
+                    oldTaggroups.splice(findProcessedTaggroup, 1);
+                }
+            }
+        }
+
+        // After looping through each Taggroup of the form, any remaining
+        // Taggroup in the list of old Taggroups has been deleted since it is
+        // not in the form anymore.
+        var deletedTaggroups = [];
+        for (var remainingTaggroup in oldTaggroups) {
+            if (oldTaggroups[remainingTaggroup]) {
+                var cTaggroup = oldTaggroups[remainingTaggroup];
+                var dTags = [];
+                // Loop through each Tag of Taggroup
+                for (var t in cTaggroup.tags) {
+                    dTags.push({
+                        'key': cTaggroup.tags[t].get('key'),
+                        'value': cTaggroup.tags[t].get('value'),
+                        'id': cTaggroup.tags[t].get('id'),
+                        'op': 'delete'
+                    });
+                }
+                deletedTaggroups.push({
+                    'id': cTaggroup.id,
+                    'op': 'delete',
+                    'tags': dTags
                 });
             }
         }
 
+        var taggroups = newTaggroups.concat(deletedTaggroups);
+
         // Put together the diff object.
-        var diffObject = {
-            'activities': [{
-                'taggroups': taggroups,
-                'geometry': geometry,
-                'stakeholders': stakeholders
-            }]
-        };
+        var diffActivity = new Object();
+        if (taggroups.length > 0) {
+            diffActivity.taggroups = taggroups;
+        }
+        if (geometry) {
+            diffActivity.geometry = geometry;
+        }
+        if (stakeholders.length > 0) {
+            diffActivity.stakeholders = stakeholders;
+        }
+
+        var diffObject;
+        if (diffActivity.taggroups || diffActivity.geometry
+            || diffActivity.stakeholders) {
+            // Add identifier and version as well if available
+            if (form.activity_identifier) {
+                diffActivity.id = form.activity_identifier;
+            }
+            if (form.activity_version) {
+                diffActivity.version = form.activity_version;
+            }
+            diffObject = {
+                'activities': [diffActivity]
+            }
+        }
 
         // Send the diff JSON through AJAX request
         Ext.Ajax.request({
@@ -223,10 +365,10 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                     if (popup) popup.destroy();
 
                     // Close form window
-                    var win = formpanel.up('window');
+                    var win = form.up('window');
                     win.destroy();
 
-                    var fieldContainers = formpanel.query('lo_stakeholderfieldcontainer');
+                    var fieldContainers = form.query('lo_stakeholderfieldcontainer');
                     for(var i = 0; i < fieldContainers.length; i++){
                         this.getSelectStakeholderFieldSet().remove(fieldContainers[i]);
                     }
@@ -382,7 +524,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
     /**
      * If a new Stakeholder is to be created, show separate window to do so.
      */
-    onCreateNewStakeholderButtonClick: function() {
+    showNewStakeholderWindow: function(item) {
 
         // Create and load a store with all mandatory keys
         var mandatoryStore = Ext.create('Lmkp.store.StakeholderConfig');
@@ -396,7 +538,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                     height: 500,
                     width: 400
                 });
-                shPanel.showForm(mandatoryStore, completeStore);
+                shPanel.showForm(mandatoryStore, completeStore, item);
                 // Put everything in a window and show it
                 var win = Ext.create('Ext.window.Window', {
                     title: 'Create new Stakeholder',
@@ -411,33 +553,36 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
     },
 
     /**
-     * Append newly created Stakeholder (this happens in separate window) to 
-     * fieldset with involved Stakeholders
+     * If Stakeholder was newly created (this happens in separate window), 
+     * append it to fieldset with involved Stakeholders.
      * {stakeholder}: Instance of model.Stakeholder
      */
     _onNewStakeholderCreated: function(stakeholder) {
 
         var sel = this.getStakeholderSelection();
-        var form = sel.down('form');
+        if (sel) {
+            // Add new stakeholder to fieldset
+            var form = sel.down('form');
 
-        if (stakeholder) {
-            // Insert stakeholder into fieldset above
-            var fieldset = this.getSelectStakeholderFieldSet();
-            fieldset.insert(0, {
-                stakeholder: stakeholder,
-                xtype: 'lo_stakeholderfieldcontainer'
-            });
+            if (stakeholder) {
+                // Insert stakeholder into fieldset above
+                var fieldset = this.getSelectStakeholderFieldSet();
+                fieldset.insert(0, {
+                    stakeholder: stakeholder,
+                    xtype: 'lo_stakeholderfieldcontainer'
+                });
 
-            // Remove stakeholder panel
-            if (form.down('lo_stakeholderpanel')) {
-                form.remove(form.down('lo_stakeholderpanel'));
+                // Remove stakeholder panel
+                if (form.down('lo_stakeholderpanel')) {
+                    form.remove(form.down('lo_stakeholderpanel'));
+                }
+
+                // Reset search field
+                form.down('combo[itemId="searchTextfield"]').setValue(null);
+
+                // Disable button
+                sel.confirmButton.disable();
             }
-
-            // Reset search field
-            form.down('combo[itemId="searchTextfield"]').setValue(null);
-
-            // Disable button
-            sel.confirmButton.disable();
         }
     }
 });
