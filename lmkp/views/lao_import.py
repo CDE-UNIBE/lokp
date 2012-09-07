@@ -159,6 +159,7 @@ def lao_read_activities2(request):
         activityObject['taggroups'].append(create_taggroup_dict('Data source', 'Government sources'))
         # Not sure about the negotiation status
         activityObject['taggroups'].append(create_taggroup_dict('Negotiation Status', 'Contract signed'))
+        activityObject['taggroups'].append(create_taggroup_dict('Spatial Accuracy', 'very accurate'))
 
         # Add geometry to activity
         activityObject['geometry'] = {'coordinates': [record.shape.points[0][0], record.shape.points[0][1]], 'type': 'Point'}

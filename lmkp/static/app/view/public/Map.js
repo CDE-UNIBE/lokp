@@ -4,6 +4,8 @@ Ext.define('Lmkp.view.public.Map',{
 
     requires: [
     'GeoExt.Action',
+    'GeoExt.data.proxy.Protocol',
+    'Lmkp.store.ActivityVector',
     'Lmkp.view.public.BaseLayers',
     'Lmkp.view.public.ContextLayers'
     ],
@@ -37,12 +39,59 @@ Ext.define('Lmkp.view.public.Map',{
     zoom: 2,
 
     initComponent: function() {
+
+        var fillOpacity = 0.6;
+
+        var rules = [
+        // Rule for active Activities
+        new OpenLayers.Rule({
+            title: "Active Activities",
+            filter: new OpenLayers.Filter.Comparison({
+                property: 'status',
+                type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                value: 'active'
+            }),
+            symbolizer: {
+                graphicName: "circle",
+                pointRadius: 7,
+                fillColor: "#bd0026",
+                fillOpacity: fillOpacity,
+                strokeColor: "#bd0026",
+                strokeWidth: 1
+            }
+        }), new OpenLayers.Rule({
+            title: "Pending Activities",
+            filter: new OpenLayers.Filter.Comparison({
+                property: 'status',
+                type: OpenLayers.Filter.Comparison.EQUAL_TO,
+                value: 'pending'
+            }),
+            symbolizer: {
+                graphicName: "triangle",
+                pointRadius: 7,
+                fillColor: "#ff6100",
+                fillOpacity: fillOpacity,
+                strokeColor: "#ff6100",
+                strokeWidth: 1
+            }
+        })
+        ];
         
         this.activitiesLayer = new OpenLayers.Layer.Vector('Activities', {
             isBaseLayer: false,
             maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34,
                 20037508.34, 20037508.34),
-            sphericalMercator: true
+            sphericalMercator: true,
+            styleMap: new OpenLayers.StyleMap({
+                "default": new OpenLayers.Style({}, {
+                    rules: rules
+                }),
+                "select": new OpenLayers.Style({
+                    fillColor: '#00ffff',
+                    fillOpacity: 0.8,
+                    strokeColor: '#006666'
+                })
+            })
         });
 
         this.vectorLayer = new OpenLayers.Layer.Vector('pointLayer',{

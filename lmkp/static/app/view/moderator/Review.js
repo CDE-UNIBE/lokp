@@ -145,47 +145,8 @@ Ext.define('Lmkp.view.moderator.Review', {
             var rdStore = Ext.create('Lmkp.store.ReviewDecisions').load();
             this.add({
                 buttons: [{
-                    handler: function(btn){
-                        btn.up('form').submit({
-                            failure: function(form, response) {
-                                var msg = 'Request failed.<br/>Server response: ';
-                                msg += response.response.status + ' ' + response.response.statusText;
-                                Ext.Msg.show({
-                                    buttons: Ext.Msg.CANCEL,
-                                    icon: Ext.Msg.ERROR,
-                                    msg: msg,
-                                    scope: this,
-                                    title: 'Failed'
-                                });
-                            },
-                            scope: this.up('window'),
-                            success: function(form, response) {
-                                var returnJson = Ext.decode(response.response.responseText);
-                                if(returnJson.success){
-                                    Ext.Msg.show({
-                                        buttons: Ext.Msg.OK,
-                                        fn: function(buttonId, text, opt){
-                                            this.close();
-                                        },
-                                        icon: Ext.Msg.INFO,
-                                        msg: returnJson.msg,
-                                        scope: this,
-                                        title: 'Success'
-                                    });
-                                } else {
-                                    Ext.Msg.show({
-                                        buttons: Ext.Msg.CANCEL,
-                                        icon: Ext.Msg.ERROR,
-                                        msg: returnJson.msg,
-                                        scope: this,
-                                        title: 'Failed'
-                                    });
-                                }
-                                
-                            }
-                        });
-                    },
                     iconCls: 'save-button',
+                    itemId: 'reviewSubmitButton',
                     name: 'review_submit',
                     scale: 'medium',
                     scope: this,
