@@ -22,10 +22,17 @@ Ext.define('Lmkp.controller.editor.Map', {
         newActivityController.showNewActivityWindow();
     },
 
+    /**
+     * Activate the map control to create a new point on the map.
+     */
     clickAddLocationButton: function() {
-        var tbar = this.getMapPanelToolbar();
-        var btn = tbar.down('button[itemId=addLocationButton]');
-        btn.toggle(true);
+        var mappanel = this.getMapPanel();
+        var map = mappanel.getMap();
+        var controls = map.getControlsBy('type', 'createPointControl');
+        if (controls && controls[0]) {
+            var createPointControl = controls[0];
+            createPointControl.activate();
+        }
     },
 
     initEditorControls: function() {
@@ -81,12 +88,12 @@ Ext.define('Lmkp.controller.editor.Map', {
                         selectCtrl.select(event.feature);
                         movePointCtrl.activate();
                         movePointCtrl.selectFeature(event.feature);
-                        createButton.toggle(false);
                         moveButton.toggle(true);
                         this.setActivityGeometry(g);
                     },
                     scope: mappanel
-                }
+                },
+                'type': 'createPointControl'
             });
         map.addControl(createPointCtrl);
 
@@ -95,26 +102,6 @@ Ext.define('Lmkp.controller.editor.Map', {
             mappanel.getVectorLayer(), function(event){
             this.removeAllFeatures();
         });
-
-        var createAction = Ext.create('GeoExt.Action',{
-            itemId: 'addLocationButton',
-            control: createPointCtrl,
-            iconCls: 'create-button',
-            scale: 'medium',
-            text: 'Add Location',
-            toggleGroup: 'map-controls',
-            toggleHandler: function(button, state){
-                // If button is pressed, state is true
-                if(state){
-                    // Activate the DrawFeature control
-                    createPointCtrl.activate();
-                } else{
-                    createPointCtrl.deactivate();
-                }
-            }
-        });
-        var createButton = Ext.create('Ext.button.Button', createAction);
-        tbar.insert(0, createButton);
 
         // When feature is selected, show popup
         var me = this;
