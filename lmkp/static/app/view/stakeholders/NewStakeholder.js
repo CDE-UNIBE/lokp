@@ -67,6 +67,15 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
         // Delete all existing items
         form.removeAll();
 
+        // A separate store is needed for each taggroup. Instead of
+        // loading a new ActivityConfig store (and querying the server)
+        // each time, copy all the entries of the complete store and add
+        // them manually to each store.
+        var records = [];
+        completeStore.each(function(r) {
+            records.push(r.copy());
+        });
+
         if (item != null && item.modelName == 'Lmkp.model.Stakeholder') {
             // Edit item. Show previous Tag Groups
 
@@ -86,39 +95,40 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
             var taggroups = item.taggroups();
             taggroups.each(function(taggroup) {
 
-                // A separate store is needed for each taggroup
                 var store = Ext.create('Lmkp.store.StakeholderConfig');
-                store.load(function() {
+                store.add(records);
 
-                    var tempTags = [];
-                    var tempMainTag = {};
+                var tempTags = [];
+                var tempMainTag = {};
 
-                    // Go through each tag
-                    var tags = taggroup.tags();
-                    tags.each(function(tag) {
-                        // Only keep track of attributes available in
-                        // configuration store
-                        if (completeStore.find('fieldLabel', tag.get('key')) != -1) {
-                            // Treat main tags and 'normal' tags differently
-                            if (taggroup.main_tag().first() &&
-                                tag.get('id') == taggroup.main_tag().first().get('id')) {
-                                tempMainTag = tag;
-                            } else {
-                                tempTags.push(tag);
-                            }
+                // Go through each tag
+                var tags = taggroup.tags();
+                tags.each(function(tag) {
+                    // Only keep track of attributes available in
+                    // configuration store
+                    if (completeStore.find('fieldLabel', tag.get('key')) != -1) {
+                        // Treat main tags and 'normal' tags differently
+                        if (taggroup.main_tag().first() &&
+                            tag.get('id') == taggroup.main_tag().first().get('id')) {
+                            tempMainTag = tag;
                         } else {
-                            // Show a message that at least one attribute is
-                            // not shown because of profile
-                            profile_info = true;
+                            tempTags.push(tag);
                         }
-                    });
+                    } else {
+                        // Show a message that at least one attribute is
+                        // not shown because of profile
+                        profile_info = true;
+                    }
+                });
 
-                    // Collect items for the form
-                    var formMainTag = null;
-                    var formTags = (tempTags.length > 0) ? [] : null;
+                // Collect items for the form
+                var formMainTag = null;
+                var formTags = (tempTags.length > 0) ? [] : null;
 
-                    // Form: Main Tag
-                    if (tempMainTag) {
+                // Form: Main Tag
+                if (tempMainTag && tempMainTag.isModel) {
+                    if (tempMainTag.get('key') && tempMainTag.get('value')
+                        && tempMainTag.get('id')) {
                         formMainTag = {
                             xtype: 'lo_newtaggrouppanel',
                             is_maintag: true,
@@ -130,37 +140,37 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
                             initial_tagid: tempMainTag.get('id')
                         };
                     }
+                }
 
-                    // Form: normal Tags
-                    for (var t in tempTags) {
-                        formTags.push({
-                            xtype: 'lo_newtaggrouppanel',
-                            is_maintag: false,
-                            removable: true,
-                            main_store: store,
-                            complete_store: completeStore,
-                            initial_key: tempTags[t].get('key'),
-                            initial_value: tempTags[t].get('value'),
-                            initial_tagid: tempTags[t].get('id')
-                        });
-                    }
-
-                    // Prepare fieldset
-                    var fieldset = me._getFieldset(
-                        tempTags.concat(tempMainTag),
-                        taggroup.get('id')
-                    );
-                    fieldset.add(formMainTag);
-                    fieldset.add(formTags);
-
-                    // Add fieldset to form
-                    form.add(fieldset);
-
-                    // Store visible Tag Group (needed for diff)
-                    form.taggroups.push({
-                        id: taggroup.get('id'),
-                        tags: tempTags.concat(tempMainTag)
+                // Form: normal Tags
+                for (var t in tempTags) {
+                    formTags.push({
+                        xtype: 'lo_newtaggrouppanel',
+                        is_maintag: false,
+                        removable: true,
+                        main_store: store,
+                        complete_store: completeStore,
+                        initial_key: tempTags[t].get('key'),
+                        initial_value: tempTags[t].get('value'),
+                        initial_tagid: tempTags[t].get('id')
                     });
+                }
+
+                // Prepare fieldset
+                var fieldset = me._getFieldset(
+                    tempTags.concat(tempMainTag),
+                    taggroup.get('id')
+                );
+                fieldset.add(formMainTag);
+                fieldset.add(formTags);
+
+                // Add fieldset to form
+                form.add(fieldset);
+
+                // Store visible Tag Group (needed for diff)
+                form.taggroups.push({
+                    id: taggroup.get('id'),
+                    tags: tempTags.concat(tempMainTag)
                 });
 
                 // In the end, show information if some attributes were skipped
@@ -180,17 +190,12 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
 
         } else {
             // No item to edit. Show all new fields.
-            // Collect all records of completeStore
-            var all_records = [];
-            completeStore.each(function(r){
-                all_records.push(r.copy());
-            });
 
             // Add a fieldset for each mandatory Key
             mandatoryStore.each(function(record) {
                 // All keys should be available for each fieldset -> 'copy' store
                 var main_store = Ext.create('Lmkp.store.StakeholderConfig');
-                main_store.add(all_records);
+                main_store.add(records);
 
                 var fieldset = me._getFieldset();
                 fieldset.add(me._getSingleFormItem(

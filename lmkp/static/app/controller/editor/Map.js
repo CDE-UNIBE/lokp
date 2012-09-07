@@ -116,8 +116,18 @@ Ext.define('Lmkp.controller.editor.Map', {
             itemId: 'mappopup',
             title: 'New Activity',
             location: feature,
-            html: '<p>You can drag and drop the point.</p><p>Once you are done, click "Continue".</p>',
-            bbar: [
+            unpinnable: false,
+            draggable: true,
+            layout: 'fit',
+            items: [
+                {
+                    xtype: 'panel',
+                    border: 0,
+                    bodyPadding: 5,
+                    html: '<p>You can drag and drop the point.</p><p>Once you are done, click "Continue".</p>'
+                }
+            ],
+            bbar: ['->',
                 {
                     xtype: 'button',
                     itemId: 'mapPopupContinueButton',
