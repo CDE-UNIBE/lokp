@@ -68,21 +68,27 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholderSelection', {
     	}
     	
         form.add(fieldset,
-        	{
-            	xtype: 'lo_stakeholderselection'
-        	}
+            {
+                xtype: 'lo_stakeholderselection'
+            }
         );
     },
     
-    _showInitialText: function() {
-    	var fieldset = this.down('fieldset[itemId=selectStakeholderFieldSet]');
-    	fieldset.add({
-			xtype: 'container',
-			itemId: 'initialText',
-			html: 'No associated Stakeholders so far. You can search and '
-			 	+ 'select a Stakeholder using the Search field below. Or '
-			 	+ 'you can create a new Stakeholder by clicking on the '
-			 	+ 'button above.'
-		});
+    _showInitialText: function(fieldset) {
+        if (!fieldset) {
+            // If not fieldset was provided, try to find it in panel
+            fieldset = this.down('fieldset[itemId=selectStakeholderFieldSet]');
+        }
+
+        if (fieldset) {
+            fieldset.add({
+                xtype: 'container',
+                itemId: 'initialText',
+                html: 'No associated Stakeholders so far. You can search and '
+                        + 'select a Stakeholder using the Search field below. Or '
+                        + 'you can create a new Stakeholder by clicking on the '
+                        + 'button above.'
+            });
+        }
     }
 });
