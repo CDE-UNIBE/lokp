@@ -420,8 +420,10 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
 	                        this.getSelectStakeholderFieldSet().remove(fieldContainers[i]);
 	                    }
 	
-	                    // Remove also the feature on the map
-	                    this.getMapPanel().getVectorLayer().removeAllFeatures();
+	                    // Refresh the map with the new activities
+	                    this.getMapPanel().getVectorStore().load();
+                            this.getMapPanel().getIdentifyCtrl().unselectAll();
+                            //this.getMapPanel().getActivitiesLayer().redraw();
 	                } else {
 	                    Ext.Msg.alert('Failure', 'The activity could not be created.');
 	                }
