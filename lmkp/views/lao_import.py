@@ -102,7 +102,7 @@ def lao_read_activities2(request):
     attributeMap = {
         2: 'Name',
         27: 'Contract area (ha)',
-        1: 'Intention of Investment',
+        136: 'Intention of Investment', # Product1 needs to be mapped probably
         59: 'Year of agreement'
     }
 
