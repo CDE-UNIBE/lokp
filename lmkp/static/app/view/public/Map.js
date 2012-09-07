@@ -12,7 +12,7 @@ Ext.define('Lmkp.view.public.Map',{
     frame: false,
 
     // Initial center
-    center: new OpenLayers.LonLat(0,0),
+//    center: new OpenLayers.LonLat(0,0),
 
     config: {
         activitiesLayer: null,
@@ -33,10 +33,10 @@ Ext.define('Lmkp.view.public.Map',{
     tbar: null,
 
     // Initial zoom level
-    zoom: 2,
+//    zoom: 2,
 
     initComponent: function() {
-        
+
         this.activitiesLayer = new OpenLayers.Layer.WMS('Activities',
             '/geoserver/lo/wms',{
                 layers: 'activities',
@@ -63,7 +63,6 @@ Ext.define('Lmkp.view.public.Map',{
             ],
             projection: this.sphericalMercatorProjection
         });
-
 
         // Create the toolbar
         this.tbar = Ext.create('Ext.toolbar.Toolbar',{
@@ -165,6 +164,32 @@ Ext.define('Lmkp.view.public.Map',{
             menu: contextLayersMenu
         });
 
+        // Map center and zoom extent
+        var location = Ext.util.Cookies.get('_LOCATION_');
+        if (location) {
+            // If a location is set in cookies, use this one
+            var values = location.split('|');
+            this.center = new OpenLayers.LonLat(values[0], values[1]);
+            this.zoom = values[2];
+        } else {
+            // If no cookie is set, try to get information from current profile
+            var profileExtent = Lmkp.currentProfileExtent;
+            if (profileExtent) {
+                var geojson = new OpenLayers.Format.GeoJSON()
+                var feature = geojson.read(Ext.encode(profileExtent))[0];
+                var bounds = feature.geometry.getBounds().clone();
+                // Transform coordinates
+                bounds.transform(
+                    this.geographicProjection,
+                    this.sphericalMercatorProjection
+                );
+                this.extent = bounds;
+            } else {
+                // Fall back
+                this.center = new OpenLayers.LonLat(0,0);
+                this.zoom = 2;
+            }
+        }
         this.callParent(arguments);
     }
 
