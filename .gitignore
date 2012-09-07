@@ -33,3 +33,7 @@ lmkp/static/lib.tar.gz
 
 # Ignore configuration files
 *.ini
+
+# Ignore generate JSON files
+activities.json
+stakeholders.json
