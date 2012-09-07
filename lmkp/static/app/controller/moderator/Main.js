@@ -44,6 +44,9 @@ Ext.define('Lmkp.controller.moderator.Main', {
             },
             'lo_publicactivitytablepanel checkbox[itemId="pendingActivitiesCheckbox"]': {
                 change: this.onPendingActivitiesCheckboxChange
+            },
+            'lo_moderatorreviewpanel button[itemId="reviewSubmitButton"]': {
+                click: this.onReviewSubmitButton
             }
         });
     },
@@ -145,6 +148,54 @@ Ext.define('Lmkp.controller.moderator.Main', {
         cb.un('load', this.onPendingActivitiesCheckboxChange);
         cb.setValue(field.getValue());
         cb.on('load', this.onPendingActivitiesCheckboxChange);
+    },
+
+    onReviewSubmitButton: function(btn){
+
+        var mapPanel = this.getMapPanel();
+
+        btn.up('form').submit({
+            failure: function(form, response) {
+                var msg = 'Request failed.<br/>Server response: ';
+                msg += response.response.status + ' ' + response.response.statusText;
+                Ext.Msg.show({
+                    buttons: Ext.Msg.CANCEL,
+                    icon: Ext.Msg.ERROR,
+                    msg: msg,
+                    scope: this,
+                    title: 'Failed'
+                });
+            },
+            scope: btn.up('window'),
+            success: function(form, response) {
+                var returnJson = Ext.decode(response.response.responseText);
+                if(returnJson.success){
+                    Ext.Msg.show({
+                        buttons: Ext.Msg.OK,
+                        fn: function(buttonId, text, opt){
+                            this.close();
+                        },
+                        icon: Ext.Msg.INFO,
+                        msg: returnJson.msg,
+                        scope: this,
+                        title: 'Success'
+                    });
+                    // If the review was successful it is necessary to reload
+                    // the ActivityVector store
+                    mapPanel.getVectorStore().load();
+                } else {
+                    Ext.Msg.show({
+                        buttons: Ext.Msg.CANCEL,
+                        icon: Ext.Msg.ERROR,
+                        msg: returnJson.msg,
+                        scope: this,
+                        title: 'Failed'
+                    });
+                }
+            }
+        });
+
+        
     }
 
 });
