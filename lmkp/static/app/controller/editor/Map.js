@@ -45,6 +45,8 @@ Ext.define('Lmkp.controller.editor.Map', {
             //mappanel.getVectorLayer()
             mappanel.getActivitiesLayer()
             );*/
+        var selectCtrl = mappanel.getIdentifyCtrl();
+        var publicMapController = this.getController('public.Map');
 
         
         //map.addControl(dragCtrl);
@@ -135,10 +137,14 @@ Ext.define('Lmkp.controller.editor.Map', {
                         var g = event.feature.geometry;
                         //selectCtrl.select(event.feature);
                         createPointCtrl.deactivate();
+
+                        // Unregister first the select event
+                        selectCtrl.events.unregister('featurehighlighted', mappanel, publicMapController.openDetailWindow);
                         selectCtrl.select(event.feature);
                         movePointCtrl.activate();
-                        movePointCtrl.selectFeature(event.feature);
+                        //movePointCtrl.selectFeature(event.feature);
                         moveButton.toggle(true);
+                        selectCtrl.events.register('featurehighlighted', mappanel, publicMapController.openDetailWindow);
                         this.setActivityGeometry(g);
                     },
                     scope: mappanel
