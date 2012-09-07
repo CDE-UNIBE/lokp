@@ -22,10 +22,17 @@ Ext.define('Lmkp.controller.editor.Map', {
         newActivityController.showNewActivityWindow();
     },
 
+    /**
+     * Activate the map control to create a new point on the map.
+     */
     clickAddLocationButton: function() {
-        var tbar = this.getMapPanelToolbar();
-        var btn = tbar.down('button[itemId=addLocationButton]');
-        btn.toggle(true);
+        var mappanel = this.getMapPanel();
+        var map = mappanel.getMap();
+        var controls = map.getControlsBy('type', 'createPointControl');
+        if (controls && controls[0]) {
+            var createPointControl = controls[0];
+            createPointControl.activate();
+        }
     },
 
     initEditorControls: function() {
@@ -81,12 +88,12 @@ Ext.define('Lmkp.controller.editor.Map', {
                         selectCtrl.select(event.feature);
                         movePointCtrl.activate();
                         movePointCtrl.selectFeature(event.feature);
-                        createButton.toggle(false);
                         moveButton.toggle(true);
                         this.setActivityGeometry(g);
                     },
                     scope: mappanel
-                }
+                },
+                'type': 'createPointControl'
             });
         map.addControl(createPointCtrl);
 
@@ -95,26 +102,6 @@ Ext.define('Lmkp.controller.editor.Map', {
             mappanel.getVectorLayer(), function(event){
             this.removeAllFeatures();
         });
-
-        var createAction = Ext.create('GeoExt.Action',{
-            itemId: 'addLocationButton',
-            control: createPointCtrl,
-            iconCls: 'create-button',
-            scale: 'medium',
-            text: 'Add Location',
-            toggleGroup: 'map-controls',
-            toggleHandler: function(button, state){
-                // If button is pressed, state is true
-                if(state){
-                    // Activate the DrawFeature control
-                    createPointCtrl.activate();
-                } else{
-                    createPointCtrl.deactivate();
-                }
-            }
-        });
-        var createButton = Ext.create('Ext.button.Button', createAction);
-        tbar.insert(0, createButton);
 
         // When feature is selected, show popup
         var me = this;
@@ -125,12 +112,39 @@ Ext.define('Lmkp.controller.editor.Map', {
     },
 
     createPopup: function(feature) {
+
+        var configStore = Ext.create('Lmkp.store.ActivityConfig');
+        configStore.load();
+        console.log(configStore);
+
         var popup = Ext.create('GeoExt.window.Popup', {
             itemId: 'mappopup',
             title: 'New Activity',
             location: feature,
-            html: '<p>You can drag and drop the point.</p><p>Once you are done, click "Continue".</p>',
-            bbar: [
+            unpinnable: false,
+            draggable: true,
+            layout: 'fit',
+            items: [
+                {
+                    xtype: 'form',
+                    border: 0,
+                    bodyPadding: 5,
+                    layout: 'anchor',
+                    defaults: {
+                        anchor: '100%'
+                    },
+                    items: [
+                        {
+                            xtype: 'container',
+                            html: '<p>You can drag and drop the point.</p><p>Once you are done, click "Continue".</p>'
+                        }, {
+                            xtype: 'textfield',
+                            value: 'Spatial Accuracy soon to come ...'
+                        }
+                    ]
+                }
+            ],
+            bbar: ['->',
                 {
                     xtype: 'button',
                     itemId: 'mapPopupContinueButton',
