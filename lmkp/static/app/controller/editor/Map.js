@@ -112,6 +112,11 @@ Ext.define('Lmkp.controller.editor.Map', {
     },
 
     createPopup: function(feature) {
+
+        var configStore = Ext.create('Lmkp.store.ActivityConfig');
+        configStore.load();
+        console.log(configStore);
+
         var popup = Ext.create('GeoExt.window.Popup', {
             itemId: 'mappopup',
             title: 'New Activity',
@@ -121,10 +126,22 @@ Ext.define('Lmkp.controller.editor.Map', {
             layout: 'fit',
             items: [
                 {
-                    xtype: 'panel',
+                    xtype: 'form',
                     border: 0,
                     bodyPadding: 5,
-                    html: '<p>You can drag and drop the point.</p><p>Once you are done, click "Continue".</p>'
+                    layout: 'anchor',
+                    defaults: {
+                        anchor: '100%'
+                    },
+                    items: [
+                        {
+                            xtype: 'container',
+                            html: '<p>You can drag and drop the point.</p><p>Once you are done, click "Continue".</p>'
+                        }, {
+                            xtype: 'textfield',
+                            value: 'Spatial Accuracy soon to come ...'
+                        }
+                    ]
                 }
             ],
             bbar: ['->',
