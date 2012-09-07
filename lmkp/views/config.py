@@ -377,8 +377,9 @@ def _handle_application_config(request):
             return "Geometry for profile '%s' created." % profile_name
         else:
             # Compare existing geometry with the one in config file
-            geom_db = shapely.wkb.loads(str(db_profile.geometry.geom_wkb))
-            if geom_db.equals(yaml_geom_shape) is True:
+            geom_db = (shapely.wkb.loads(str(db_profile.geometry.geom_wkb))
+                if db_profile.geometry else None)
+            if geom_db and geom_db.equals(yaml_geom_shape) is True:
                 return ("Geometry for profile '%s' did not change." 
                         % profile_name)
             else:

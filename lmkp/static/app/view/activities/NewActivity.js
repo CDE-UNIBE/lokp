@@ -68,12 +68,11 @@ Ext.define('Lmkp.view.activities.NewActivity', {
             records.push(r.copy());
         });
 
+        // Flag to show if some tags were not displayed because they are not
+        // in current profile
+        var profile_info = null;
         if (item != null && item.modelName == 'Lmkp.model.Activity') {
             // Edit item. Show previous Tag Groups
-
-            // Flag to show if some tags were not displayed because they are not
-            // in current profile
-            var profile_info = null;
 
             // Store Activity Identifier and version (needed for diff)
             form.activity_identifier = (item) ? item.get('id') : null;
@@ -165,20 +164,20 @@ Ext.define('Lmkp.view.activities.NewActivity', {
                     tags: tempTags.concat(tempMainTag)
                 });
 
-                // In the end, show information if some attributes were skipped
-                // because of profile
-                if (profile_info) {
-                    form.insert(0, {
-                        xtype: 'panel',
-                        html: 'Some of the attributes cannot be edited '
-                            + 'because they are not part of the currently selected '
-                            + 'profile.',
-                        bodyCls: 'notice',
-                        bodyPadding: 5,
-                        margin: '0 0 5 0'
-                    });
-                }
             });
+            // In the end, show information if some attributes were skipped
+            // because of profile
+            if (profile_info) {
+                form.insert(0, {
+                    xtype: 'panel',
+                    html: 'Some of the attributes cannot be edited '
+                        + 'because they are not part of the currently selected '
+                        + 'profile.',
+                    bodyCls: 'notice',
+                    bodyPadding: 5,
+                    margin: '0 0 5 0'
+                });
+            }
 
         } else {
             // No item to edit. Show all new fields.
