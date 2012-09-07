@@ -71,6 +71,20 @@ Ext.define('Lmkp.controller.public.Map', {
             var editorMapController = this.getController('editor.Map');
             editorMapController.initEditorControls();
         }
+
+        var ctrl = comp.getIdentifyCtrl();
+        ctrl.events.register('featurehighlighted', comp, function(event){
+            var f = event.feature
+            if (f) {
+                // Show details window
+                var w = Ext.create('Lmkp.view.activities.Details',{
+                    activity_identifier: f.attributes.activity_identifier
+                }).show()._collapseHistoryPanel();
+                w.on('close', function(panel){
+                    this.unselectAll();
+                }, ctrl);
+            }
+        });
     },
 
     onMoveEnd: function(event){
@@ -94,7 +108,7 @@ Ext.define('Lmkp.controller.public.Map', {
         this.getActivityGridStore().loadPage(1, {
             callback: function() {
                 // Update StakeholderGrid store to match ActivityGrid
-        	shStore.syncWithActivities(this.getProxy().extraParams);
+                shStore.syncWithActivities(this.getProxy().extraParams);
             }
         });
     },
@@ -130,7 +144,7 @@ Ext.define('Lmkp.controller.public.Map', {
                 vectors[j].geometry.transform(
                     map.geographicProjection,
                     map.sphericalMercatorProjection
-                );
+                    );
             }
             return vectors;
         }
