@@ -4,6 +4,8 @@ from pyramid.i18n import get_localizer
 from pyramid.view import view_config
 import simplejson as json
 
+from lmkp.views.profile import _getCurrentProfileExtent
+
 log = logging.getLogger(__name__)
 
 _ = TranslationStringFactory('lmkp')
@@ -32,7 +34,9 @@ def edit_toolbar_config(request):
 
     str += "Lmkp.mainControllers = ['Main', 'Map', 'Filter', 'Stakeholder', 'EditFilter', 'NewActivity'];\n"
 
-    str += "Lmkp.editorControllers = ['activities.NewActivity', 'editor.Map', 'stakeholders.NewStakeholder']"
+    str += "Lmkp.editorControllers = ['activities.NewActivity', 'editor.Map', 'stakeholders.NewStakeholder'];\n"
+
+    str += "Lmkp.currentProfileExtent = %s" % _getCurrentProfileExtent(request)
 
     return str
 
