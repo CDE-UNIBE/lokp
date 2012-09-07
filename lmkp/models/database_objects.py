@@ -614,7 +614,10 @@ class Profile(Base):
         self.geometry = geometry
     
     def __repr__(self):
-        geom = wkb.loads(str(self.geometry.geom_wkb)).wkt
+        if self.geometry == None:
+            geom = '-'
+        else:
+            geom = wkb.loads(str(self.geometry.geom_wkb)).wkt
         return '<Profile> id [ %s ] | code [ %s ] | geometry [ %s ]' % (self.id, self.code, geom)
 
     def to_json(self):
