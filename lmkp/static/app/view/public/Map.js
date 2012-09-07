@@ -20,7 +20,8 @@ Ext.define('Lmkp.view.public.Map',{
         identifyCtrl: null,
         map: null,
         vectorLayer: null,
-        activityGeometry: null
+        activityGeometry: null,
+        vectorStore: null
     },
 
     layout: 'fit',
@@ -37,22 +38,38 @@ Ext.define('Lmkp.view.public.Map',{
 
     initComponent: function() {
         
-        this.activitiesLayer = new OpenLayers.Layer.WMS('Activities',
-            '/geoserver/lo/wms',{
-                layers: 'activities',
-                transparent: true,
-                format: 'image/png8',
-                epsg: 900913
-            },{
-                isBaseLayer: false,
-                sphericalMercator: true,
-                maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34,
-                    20037508.34, 20037508.34)
-            });
+        this.activitiesLayer = new OpenLayers.Layer.Vector('Activities', {
+            isBaseLayer: false,
+            maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34,
+                20037508.34, 20037508.34),
+            sphericalMercator: true
+        });
 
         this.vectorLayer = new OpenLayers.Layer.Vector('pointLayer',{
             isBaseLayer: false
         });
+
+        this.vectorStore = Ext.create('Lmkp.store.ActivityVector',{
+            autoLoad: true,
+            layer: this.activitiesLayer,
+            proxy: Ext.create('GeoExt.data.proxy.Protocol',{
+                protocol: new OpenLayers.Protocol.HTTP({
+                    format: new OpenLayers.Format.GeoJSON({
+                        externalProjection: this.geographicProjection,
+                        internalProjection: this.sphericalMercatorProjection
+                    }),
+                    url: "/activities/geojson"
+                }),
+                reader: {
+                    root: 'features',
+                    type: 'feature'
+                }
+            })
+        });
+
+        this.vectorStore.on('load', function(store, records, successful){
+            //console.log(this.activitiesLayer);
+        }, this);
 
         // Create the map, the layers are appended later, see below.
         this.map = new OpenLayers.Map({
@@ -145,8 +162,8 @@ Ext.define('Lmkp.view.public.Map',{
         });
         // And add it to the toolbar
         this.tbar.add({
-           text: Lmkp.ts.msg('Base Layers'),
-           menu: baseLayerMenu
+            text: Lmkp.ts.msg('Base Layers'),
+            menu: baseLayerMenu
         });
 
         // Now add the WMS layer showing the activities and the vector layer
