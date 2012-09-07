@@ -509,3 +509,7 @@ def _get_config_fields():
     log.info(fields)
 
     return fields
+
+@view_config(route_name='activities_read_geojson', renderer='json')
+def activities_read_geojson(request):
+    return activity_protocol2.read_geojson(request)
