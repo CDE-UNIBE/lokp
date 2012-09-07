@@ -6,6 +6,10 @@ Ext.define('Lmkp.controller.public.Map', {
         selector: 'lo_publicmappanel'
     }],
 
+    requires: [
+    'Lmkp.view.editor.EditLocation'
+    ],
+
     stores: [
     'ActivityGrid',
     'Profiles',
@@ -83,9 +87,6 @@ Ext.define('Lmkp.controller.public.Map', {
             var w = Ext.create('Lmkp.view.activities.Details',{
                 activity_identifier: f.attributes.activity_identifier
             }).show()._collapseHistoryPanel();
-            w.on('close', function(panel){
-                this.unselectAll();
-            }, this.getMapPanel().getIdentifyCtrl());
         }
     },
 
