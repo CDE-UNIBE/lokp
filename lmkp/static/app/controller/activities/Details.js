@@ -4,6 +4,9 @@ Ext.define('Lmkp.controller.activities.Details', {
     refs: [{
         ref: 'activityDetailWindow',
         selector: 'lo_activitydetailwindow'
+    },{
+        ref: 'mapPanel',
+        selector: 'lo_publicmappanel'
     }],
 
     init: function() {
@@ -26,6 +29,7 @@ Ext.define('Lmkp.controller.activities.Details', {
 
     onCloseWindowButtonClick: function(){
         this.getActivityDetailWindow().close();
+        this.getMapPanel().getIdentifyCtrl().unselectAll();
     },
 
     /**

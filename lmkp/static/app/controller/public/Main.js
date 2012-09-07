@@ -201,6 +201,18 @@ Ext.define('Lmkp.controller.public.Main', {
                     activity: record
                 }).show();
                 w._collapseHistoryPanel();
+
+                // Highlight the Activity on the map
+                var layer = this.getMapPanel().getActivitiesLayer();
+                var ctrl = this.getMapPanel().getIdentifyCtrl();
+                var publicMapController = this.getController('public.Map');
+                // Try to find the corresponding feature
+                var feature = layer.getFeaturesByAttribute('activity_identifier', record.get('id'))[0];
+                if(feature){
+                    ctrl.events.unregister('featurehighlighted', this.getMapPanel(), publicMapController.openDetailWindow);
+                    ctrl.select(feature);
+                    ctrl.events.register('featurehighlighted', this.getMapPanel(), publicMapController.openDetailWindow);
+                }
             } else if (type == 'stakeholder') {
                 // Show details window
                 w = Ext.create('Lmkp.view.stakeholders.Details',{
@@ -221,7 +233,7 @@ Ext.define('Lmkp.controller.public.Main', {
                 var editorMapController = me.getController('editor.Map');
                 editorMapController.clickAddLocationButton();
             }
-        );
+            );
     },
 
     /**

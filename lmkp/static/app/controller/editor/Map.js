@@ -41,23 +41,73 @@ Ext.define('Lmkp.controller.editor.Map', {
         var tbar = mappanel.getDockedItems('toolbar')[0];
 
         // Select
-        var selectCtrl = new OpenLayers.Control.SelectFeature(
-            mappanel.getVectorLayer()
-        );
+        /*var selectCtrl = new OpenLayers.Control.SelectFeature(
+            //mappanel.getVectorLayer()
+            mappanel.getActivitiesLayer()
+            );*/
 
+        
+        //map.addControl(dragCtrl);
         // Add the control and button to move an activity
-        var movePointCtrl = new OpenLayers.Control.ModifyFeature(
-            mappanel.getVectorLayer(), {
+        /*var movePointCtrl = new OpenLayers.Control.ModifyFeature(
+            mappanel.getActivitiesLayer(), {
                 mode: OpenLayers.Control.ModifyFeature.DRAG,
-                selectControl: selectCtrl
-            });
-        map.addControl(movePointCtrl);
-        mappanel.getVectorLayer().events.register('featuremodified', mappanel,
-            function(event) {
-            var g = event.feature.geometry;
-            this.setActivityGeometry(g);
+                selectControl: mappanel.identifyCtrl,
+                dragControl: dragCtrl
+            });*/
+
+        var me = this;
+
+        var editLocationWindow = Ext.create('Lmkp.view.editor.EditLocation',{
+            identifyCtrl: mappanel.getIdentifyCtrl()
         });
+
+        var movePointCtrl = new OpenLayers.Control.DragFeature(mappanel.getActivitiesLayer(),{
+            onComplete: function(feature, pixel){
+                var controller = me.getController('public.Map');
+                var ctrl = mappanel.getIdentifyCtrl();
+                ctrl.events.register('featurehighlighted', mappanel, controller.openDetailWindow);
+            },
+            onStart: function(feature, pixel){
+                var controller = me.getController('public.Map');
+                var ctrl = mappanel.getIdentifyCtrl();
+                ctrl.events.unregister('featurehighlighted', mappanel, controller.openDetailWindow);
+                ctrl.unselectAll();
+                //mappanel.getIdentifyCtrl().highlight(feature);
+                mappanel.getIdentifyCtrl().select(feature);
+                editLocationWindow.setPosition(mappanel.getBox().x + 5, mappanel.getBox().y + 40);
+                editLocationWindow.setFeature(feature);
+                editLocationWindow.show();
+
+            }
+        });
+
+        movePointCtrl.events.register('activate', this, function(control, element){
+            });
+
+        movePointCtrl.events.register('deactivate', this, function(control, element){
+            mappanel.getIdentifyCtrl().unselectAll();
+        });
+
+        map.addControl(movePointCtrl);
+        /* mappanel.getActivitiesLayer().events.register('featuremodified', mappanel,
+            function(event) {
+                console.log("featuremodified");
+                var g = event.feature.geometry;
+                this.setActivityGeometry(g);
+
+                mappanel.addDocked(Ext.create('Ext.toolbar.Toolbar', {
+                    dock: 'top',
+                    items: [{
+
+                        text: "warning!",
+                        xtype: 'label'
+                    }]
+                }));
+
+            });*/
         var moveAction = Ext.create('GeoExt.Action', {
+            disabled: true,
             control: movePointCtrl,
             iconCls: 'move-button',
             map: map,
@@ -100,8 +150,8 @@ Ext.define('Lmkp.controller.editor.Map', {
         // Allow only one feature at a time
         mappanel.getVectorLayer().events.register('beforefeatureadded',
             mappanel.getVectorLayer(), function(event){
-            this.removeAllFeatures();
-        });
+                this.removeAllFeatures();
+            });
 
         // When feature is selected, show popup
         var me = this;
@@ -115,7 +165,6 @@ Ext.define('Lmkp.controller.editor.Map', {
 
         var configStore = Ext.create('Lmkp.store.ActivityConfig');
         configStore.load();
-        console.log(configStore);
 
         var popup = Ext.create('GeoExt.window.Popup', {
             itemId: 'mappopup',
@@ -125,31 +174,31 @@ Ext.define('Lmkp.controller.editor.Map', {
             draggable: true,
             layout: 'fit',
             items: [
+            {
+                xtype: 'form',
+                border: 0,
+                bodyPadding: 5,
+                layout: 'anchor',
+                defaults: {
+                    anchor: '100%'
+                },
+                items: [
                 {
-                    xtype: 'form',
-                    border: 0,
-                    bodyPadding: 5,
-                    layout: 'anchor',
-                    defaults: {
-                        anchor: '100%'
-                    },
-                    items: [
-                        {
-                            xtype: 'container',
-                            html: '<p>You can drag and drop the point.</p><p>Once you are done, click "Continue".</p>'
-                        }, {
-                            xtype: 'textfield',
-                            value: 'Spatial Accuracy soon to come ...'
-                        }
-                    ]
+                    xtype: 'container',
+                    html: '<p>You can drag and drop the point.</p><p>Once you are done, click "Continue".</p>'
+                }, {
+                    xtype: 'textfield',
+                    value: 'Spatial Accuracy soon to come ...'
                 }
+                ]
+            }
             ],
             bbar: ['->',
-                {
-                    xtype: 'button',
-                    itemId: 'mapPopupContinueButton',
-                    text: 'Continue'
-                }
+            {
+                xtype: 'button',
+                itemId: 'mapPopupContinueButton',
+                text: 'Continue'
+            }
             ]
         });
         popup.show();
@@ -168,7 +217,7 @@ Ext.define('Lmkp.controller.editor.Map', {
             geom.transform(
                 map.sphericalMercatorProjection,
                 map.geographicProjection
-            );
+                );
         }
         return geom;
     }
