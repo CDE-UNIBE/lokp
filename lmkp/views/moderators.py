@@ -4,6 +4,8 @@ from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
 from pyramid.view import view_config
 
+from lmkp.views.profile import _getCurrentProfileExtent
+
 log = logging.getLogger(__name__)
 
 _ = TranslationStringFactory('lmkp')
@@ -18,6 +20,8 @@ def moderator_toolbar_config(request):
     str += "\t\t{id: 'user_button', text: '%s', tooltip: '%s'},\n" % (request.user.username, _('Show user profile', default='Show user profile'))
     str += "\t\t{id: 'logout_button', text: '%s'}\n\t]\n};\n" % _('Logout', default='Logout')
 
-    str += "Lmkp.moderatorControllers = ['moderator.Main', 'moderator.Details', 'activities.NewActivity', 'editor.Map', 'stakeholders.NewStakeholder']"
+    str += "Lmkp.moderatorControllers = ['moderator.Main', 'moderator.Details', 'activities.NewActivity', 'editor.Map', 'stakeholders.NewStakeholder'];\n"
+
+    str += "Lmkp.currentProfileExtent = %s" % _getCurrentProfileExtent(request)
 
     return str

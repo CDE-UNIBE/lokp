@@ -40,31 +40,19 @@ Ext.define('Lmkp.controller.public.Map', {
 
         var store = this.getProfilesStore();
         var activeProfile = store.getAt(store.findExact('active', true));
-        if(activeProfile){
+        if (activeProfile && activeProfile.get('geometry')) {
             var geoJson = new OpenLayers.Format.GeoJSON();
-
             var feature = geoJson.read(Ext.encode(activeProfile.get('geometry')))[0];
-
             var geom = feature.geometry.clone().transform(
                 new OpenLayers.Projection("EPSG:4326"),
                 new OpenLayers.Projection("EPSG:900913"));
-
             map.zoomToExtent(geom.getBounds());
         }
-
     },
 
     onMapPanelRender: function(comp){
         // Get the map
         var map = comp.getMap();
-
-        // Get the map center and zoom level from the cookies if one is set
-        var location = Ext.util.Cookies.get('_LOCATION_');
-        if(location){
-            var values = location.split('|');
-            map.setCenter(new OpenLayers.LonLat(values[0], values[1]));
-            map.zoomTo(values[2]);
-        }
 
         // Register the moveend event with the map
         // after setting map center and zoom level
