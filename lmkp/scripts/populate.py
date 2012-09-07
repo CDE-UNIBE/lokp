@@ -119,10 +119,16 @@ def main(argv=sys.argv):
         # users (only 1 admin user)
         user1 = _addIfNotExists_NoIDUnique(User(username='user1', password='pw', email='user1@cde.unibe.ch'), User.username, 'user1')
         user1.groups.append(group1)
+        # connected with profile1 (global)
         user2 = _addIfNotExists_NoIDUnique(User(username='user2', password='pw', email='user2@cde.unibe.ch'), User.username, 'user2')
         user2.groups.append(group2)
+        # connected with profile1 (global)
         user3 = _addIfNotExists_NoIDUnique(User(username='user3', password='pw', email='user3@cde.unibe.ch'), User.username, 'user3')
         user3.groups.append(group3)
+        # Profile
+        profile1 = _addIfNotExists_NoIDUnique(Profile(code='global', geometry=None), Profile.code, 'global')
+        profile1.users = [user1, user2]
+
         
 
 def _addIfNotExists_ID(object):
