@@ -69,7 +69,7 @@ Ext.define('Lmkp.view.public.Map',{
 
         this.vectorStore.on('load', function(store, records, successful){
             //console.log(this.activitiesLayer);
-        }, this);
+            }, this);
 
         // Create the map, the layers are appended later, see below.
         this.map = new OpenLayers.Map({
@@ -88,12 +88,8 @@ Ext.define('Lmkp.view.public.Map',{
             itemId: 'mapPanelToolbar'
         });
 
-        this.identifyCtrl = new OpenLayers.Control.WMSGetFeatureInfo({
-            infoFormat: 'application/vnd.ogc.gml',
-            layers: [this.activitiesLayer],
-            title: 'Identify features by clicking',
-            url: '/geoserver/lo/wms'
-        });
+        // Create the identify control and action
+        this.identifyCtrl = new OpenLayers.Control.SelectFeature(this.activitiesLayer);
 
         // Add the controls to the map
         this.map.addControl(this.identifyCtrl);

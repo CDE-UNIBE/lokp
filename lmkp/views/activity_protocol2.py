@@ -1289,7 +1289,9 @@ class ActivityProtocol2(Protocol):
             properties = {'status': status, 'activity_identifier': str(identifier), 'version': int(version)}
             feature['properties'] = properties
 
+            # Doppelt genaeht haelt besser
             feature['fid'] = int(id)
+            feature['id'] = int(id)
             feature['type'] = 'Feature'
 
             return feature

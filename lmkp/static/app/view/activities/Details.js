@@ -40,6 +40,10 @@ Ext.define('Lmkp.view.activities.Details', {
 
     initComponent: function(){
 
+        var activity_identifier;
+
+        this.activity ? activity_identifier = this.activity.get('id') : activity_identifier = this.activity_identifier
+
         this.centerPanel = Ext.create('Ext.panel.Panel',{
             autoScroll: true,
             layout: 'anchor',
@@ -83,7 +87,7 @@ Ext.define('Lmkp.view.activities.Details', {
                 sortParam: 'order_by',
                 startParam: 'offset',
                 type: 'ajax',
-                url: '/activities/history/' + this.activity.get('id')
+                url: '/activities/history/' + activity_identifier
             },
             remoteSort: true
         });
@@ -124,7 +128,7 @@ Ext.define('Lmkp.view.activities.Details', {
         this.historyPanel
         ];
 
-        this.title = 'Details on Activity ' + this.activity.get('id');
+        this.title = 'Details on Activity ' + activity_identifier;
 
         this.callParent(arguments);
     },
@@ -137,6 +141,8 @@ Ext.define('Lmkp.view.activities.Details', {
         if (this.historyPanel) {
             this.historyPanel.collapse();
         }
+
+        return this;
     },
 
     /**
