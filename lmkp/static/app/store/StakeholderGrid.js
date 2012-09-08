@@ -88,7 +88,7 @@ Ext.define('Lmkp.store.StakeholderGrid', {
     	// Reload store (load at page 1, otherwise entries may be hidden)
     	this.loadPage(1);
     },
-    
+
     /**
      * Try to find checkbox to show only pending stakeholders. 
      * If it exists and is checked, add parameter to proxy. If it does not exist
@@ -104,8 +104,11 @@ Ext.define('Lmkp.store.StakeholderGrid', {
     	}
         
         if (checkbox && checkbox.isChecked()) {
+        	this.proxy.url = 'stakeholders';
         	this.proxy.setExtraParam('status', 'pending');
         } else {
+        	this.proxy.url = 'activities';
+        	this.proxy.setExtraParam('return_sh', true);
         	delete this.proxy.extraParams['status'];
         }
     }

@@ -16,6 +16,12 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
     }, {
         ref: 'mapPanel',
         selector: 'lo_publicmappanel'
+    }, {
+    	ref: 'activityDetailWindow',
+    	selector: 'lo_activitydetailwindow'
+    }, {
+    	ref: 'stakeholderDetailWindow',
+    	selector: 'lo_stakeholderdetailwindow'
     }],
 
     views: [
@@ -224,7 +230,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
             // Collect all old Tags of current Taggroup
             if (taggroupfieldset.oldTags) {
                 for (var ot in taggroupfieldset.oldTags) {
-                    if (taggroupfieldset.oldTags[ot]) {
+                    if (taggroupfieldset.oldTags[ot].fields) {
                         oldTags.push({
                             id: taggroupfieldset.oldTags[ot].get('id'),
                             key: taggroupfieldset.oldTags[ot].get('key'),
@@ -418,6 +424,15 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
 	                    var fieldContainers = form.query('lo_stakeholderfieldcontainer');
 	                    for(var i = 0; i < fieldContainers.length; i++){
 	                        this.getSelectStakeholderFieldSet().remove(fieldContainers[i]);
+	                    }
+	                    
+	                    // Refresh the detail window
+	                    var detailWindow = this.getActivityDetailWindow();
+	                    if (detailWindow) {
+	                    	var historyStore = detailWindow.getHistoryStore();
+	                    	if (historyStore) {
+	                    		historyStore.load();
+	                    	}
 	                    }
 	
 	                    // Refresh the map with the new activities
@@ -670,8 +685,11 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
      */
     _onNewStakeholderCreated: function(stakeholder) {
 
+    	// Check if Stakeholder was created from Activity (new involvement) 
+    	// panel 
         var sel = this.getStakeholderSelection();
         if (sel) {
+        	
             // Add new stakeholder to fieldset
             var form = sel.down('form');
 
@@ -702,6 +720,16 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 // Disable button
                 sel.confirmButton.disable();
             }
+        }
+        
+        // Check if Stakeholder was created / edited from detail window.
+        var detailWindow = this.getStakeholderDetailWindow();
+        if (detailWindow) {
+        	// Try to find historyStore to reload it
+        	var historyStore = detailWindow.getHistoryStore();
+        	if (historyStore) {
+        		historyStore.load();
+        	}
         }
     }
 });
