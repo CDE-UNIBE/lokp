@@ -19,6 +19,9 @@ Ext.define('Lmkp.controller.activities.Details', {
             },
             'lo_activitydetailwindow button[name=editTaggroup]': {
                 click: this.onEditTaggroupButtonClick
+            },
+            'lo_involvementpanel button[name=editInvolvementButton]': {
+            	click: this.onEditInvolvementButtonClick
             }
         });
     },
@@ -45,6 +48,18 @@ Ext.define('Lmkp.controller.activities.Details', {
                 activityPanel.contentItem
             );
         }
+    },
+    
+    onEditInvolvementButtonClick: function(button) {
+    	var activityPanel = button.up('lo_activitypanel');
+    	if (activityPanel && activityPanel.contentItem) {
+    		var newActivityController = this.getController('activities.NewActivity');
+            newActivityController.showNewActivityWindow(
+                // Provide current item
+                activityPanel.contentItem,
+                1 // 1: Involvements
+            );
+    	}
     }
 
 });
