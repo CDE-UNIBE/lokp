@@ -98,9 +98,9 @@ Ext.define('Lmkp.view.activities.InvolvementPanel', {
                         items: ['->',
                             {
                                 xtype: 'button',
-                                name: 'deleteInvolvementButton',
-                                text: 'Delete',
-                                tooltip: 'Delete this involvement'
+                                name: 'editInvolvementButton',
+                                text: 'edit',
+                                tooltip: 'Edit this involvement'
                             }
                         ]
                     }
