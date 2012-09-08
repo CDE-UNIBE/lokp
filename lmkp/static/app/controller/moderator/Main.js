@@ -57,11 +57,14 @@ Ext.define('Lmkp.controller.moderator.Main', {
     onActivityTablePanelBeforeRender: function(comp) {
         var pendingCheckbox = Ext.create('Ext.form.Checkbox',{
             checked: true,
-            boxLabel: 'Show pending changes',
             itemId: 'pendingActivitiesCheckbox'
         });
+        var pendingLabel = Ext.create('Ext.form.Label', {
+        	text: 'Show pending changes',
+        	margin: '0 0 0 3'
+        });
         var tbar = comp.down('[id="activityGridTopToolbar"]');
-        tbar.insert(1, pendingCheckbox);
+        tbar.insert(1, ['-', pendingCheckbox, pendingLabel, '-']);
     },
 
     /**
@@ -84,11 +87,14 @@ Ext.define('Lmkp.controller.moderator.Main', {
     onStakeholderTablePanelBeforeRender: function(comp) {
         var checkbox = Ext.create('Ext.form.Checkbox', {
             checked: true,
-            boxLabel: 'Show pending changes',
             itemId: 'pendingStakeholdersCheckbox'
         });
+        var pendingLabel = Ext.create('Ext.form.Label', {
+        	text: 'Show pending changes',
+        	margin: '0 0 0 3'
+        });
         var tbar = comp.down('[id="stakeholderGridTopToolbar"]');
-        tbar.insert(1, checkbox);
+        tbar.insert(1, ['-', checkbox, pendingLabel, '-']);
     },
 
     onStakeholderTablePanelRender: function(comp) {
