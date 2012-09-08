@@ -25,6 +25,7 @@ from pyramid.httpexceptions import HTTPCreated
 from pyramid.i18n import get_localizer
 from pyramid.security import unauthenticated_userid
 from sqlalchemy import func
+from sqlalchemy import distinct
 from sqlalchemy.sql.expression import asc
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.sql.expression import desc
@@ -529,9 +530,36 @@ class StakeholderProtocol(Protocol):
                 ).\
                 join(Involvement).\
                 join(Activity).\
-                join(Status, Activity.fk_status == Status.id).\
                 filter(Activity.identifier == self._get_a_id(request)).\
-                filter(Status.name == 'active')
+		filter(Activity.fk_status == 2).\
+		filter(Stakeholder.fk_status == 2)
+
+	    # Yet another special case: moderator is calling ...
+        if request.params.get('moderator') == 'true':
+            # Gather pending and deleted versions. Return only the active version of each.
+            moderator_statii = [1, 4] # Pending and delete
+            moderator_statii_subquery = self.Session.query(
+                    distinct(Stakeholder.stakeholder_identifier).label('identifier')
+                ).\
+                filter(Stakeholder.fk_status.in_(moderator_statii)).\
+                subquery()
+            moderator_active = self.Session.query(
+                    Stakeholder.id.label('order_id'),
+                    func.char_length('').label('order_value'),
+                    Stakeholder.fk_status
+                ).\
+                filter(Stakeholder.stakeholder_identifier.in_(moderator_statii_subquery)).\
+                filter(Stakeholder.fk_status == 2)
+            # Newly pending versions have to be collected separately since they have no active version.
+            moderator_new = self.Session.query(
+                    Stakeholder.id.label('order_id'),
+                    func.char_length('').label('order_value'),
+                    Stakeholder.fk_status
+                ).\
+                filter(Stakeholder.fk_status == 1).\
+                filter(Stakeholder.version == 1)
+
+            relevant_stakeholders = moderator_active.union(moderator_new)
 
         # Count relevant stakeholders (before applying limit and offset)
         count = relevant_stakeholders.count()

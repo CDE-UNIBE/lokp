@@ -105,11 +105,11 @@ Ext.define('Lmkp.store.StakeholderGrid', {
         
         if (checkbox && checkbox.isChecked()) {
         	this.proxy.url = 'stakeholders';
-        	this.proxy.setExtraParam('status', 'pending');
+        	this.proxy.setExtraParam('moderator', true);
         } else {
         	this.proxy.url = 'activities';
         	this.proxy.setExtraParam('return_sh', true);
-        	delete this.proxy.extraParams['status'];
+        	delete this.proxy.extraParams['moderator'];
         }
     }
 });
