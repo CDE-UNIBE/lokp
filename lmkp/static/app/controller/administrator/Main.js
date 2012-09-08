@@ -3,8 +3,7 @@ Ext.define('Lmkp.controller.administrator.Main', {
 
     views: [
     'administrator.CodeTab',
-    'administrator.Overview',
-    //'administrator.Home',
+    'administrator.Main',
     'administrator.UserManagement',
     'administrator.YamlScan'
     ],
