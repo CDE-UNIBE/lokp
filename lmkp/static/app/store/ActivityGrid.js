@@ -47,6 +47,13 @@ Ext.define('Lmkp.store.ActivityGrid', {
         delete this.proxy.extraParams['sh_id'];
         delete this.proxy.extraParams['return_sh'];
 
+        // Set EPSG again if it is missing
+        if (this.proxy.extraParams['bbox'] && !this.proxy.extraParams['epsg']) {
+            this.proxy.extraParams['epsg'] = 900913;
+        }
+    },
+    
+    deleteFilters: function() {
         // Delete any filters
         var prefix_a = 'a__';
         var prefix_sh = 'sh__';
@@ -55,13 +62,7 @@ Ext.define('Lmkp.store.ActivityGrid', {
                 || i.slice(0, prefix_sh.length) == prefix_sh) {
                 delete this.proxy.extraParams[i];
             }
-        }
-
-        // Set EPSG again if it is missing
-        if (this.proxy.extraParams['bbox'] && !this.proxy.extraParams['epsg']) {
-            this.proxy.extraParams['epsg'] = 900913;
-        }
-    },
+        }    },
     
     syncWithStakeholders: function(extraParams) {
     	

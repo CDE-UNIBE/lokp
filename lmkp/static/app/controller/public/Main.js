@@ -97,6 +97,9 @@ Ext.define('Lmkp.controller.public.Main', {
             'gridpanel[itemId=activityGrid] gridcolumn[name=activityCountryColumn]': {
                 afterrender: this.onActivityCountryColumnAfterrender
             },
+            'gridpanel[itemId=activityGrid] gridcolumn[name=activitySizeColumn]': {
+            	afterrender: this.onActivitySizeColumnAfterrender
+            },
             'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdernamecolumn]': {
                 afterrender: this.onStakeholderNameColumnAfterrender
             },
@@ -250,6 +253,13 @@ Ext.define('Lmkp.controller.public.Main', {
     onActivityYearColumnAfterrender: function(comp) {
         this._renderColumnMultipleValues(comp, "activity-attr_yearofinvestment",
             [0]);
+    },
+    
+    /**
+     * Nicely render 'Size' column of Activity grid.
+     */
+    onActivitySizeColumnAfterrender: function(comp) {
+    	this._renderColumnMultipleValues(comp, "activity-attr_size")
     },
 
     /**

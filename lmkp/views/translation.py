@@ -156,20 +156,31 @@ def ui_messages(request):
     
     # TODO: is this still needed?
     # Add translated name for key "Name of Investor" (needed by Ext as dataIndex when displaying the grid with activities).
-    nameofinvestorKeyEnglish = Session.query(A_Key).filter(A_Key.key == 'Country').filter(A_Key.original == None).first()
-    nameofinvestorKeyLocale = Session.query(A_Key).filter(A_Key.original == nameofinvestorKeyEnglish).filter(A_Key.language == db_lang).first()
-    if nameofinvestorKeyLocale:
-        uiMap['activity-attr_country'] = nameofinvestorKeyLocale.key
+    aCountryKey = 'Country'
+    aCountryKeyEnglish = Session.query(A_Key).filter(A_Key.key == aCountryKey).filter(A_Key.original == None).first()
+    aCountryKeyLocale = Session.query(A_Key).filter(A_Key.original == aCountryKeyEnglish).filter(A_Key.language == db_lang).first()
+    if aCountryKeyLocale:
+        uiMap['activity-attr_country'] = aCountryKeyLocale.key
     else:
-        uiMap['activity-attr_country'] = 'Country'
+        uiMap['activity-attr_country'] = aCountryKey
     
     # Add translated name for key "Year of Investment" (needed by Ext as dataIndex when displaying the grid with activities).
-    yearofinvestmentKeyEnglish = Session.query(A_Key).filter(A_Key.key == 'Year of Investment (agreed)').filter(A_Key.original == None).first()
+    yearofinvestmentKey = 'Year of agreement' # Must be exactly (!) as in global activity.yml
+    yearofinvestmentKeyEnglish = Session.query(A_Key).filter(A_Key.key == yearofinvestmentKey).filter(A_Key.original == None).first()
     yearofinvestmentKeyLocale = Session.query(A_Key).filter(A_Key.original == yearofinvestmentKeyEnglish).filter(A_Key.language == db_lang).first()
     if yearofinvestmentKeyLocale:
         uiMap['activity-attr_yearofinvestment'] = yearofinvestmentKeyLocale.key
     else:
-        uiMap['activity-attr_yearofinvestment'] = 'Year of Investment (agreed)'
+        uiMap['activity-attr_yearofinvestment'] = yearofinvestmentKey
+
+    # Add translated name for key "Size" (needed by Ext as dataIndex when displaying the grid with activities).
+    sizeKey = 'Contract area (ha)' # Must be exactly (!) as in global activity.yml
+    sizeKeyEnglish = Session.query(A_Key).filter(A_Key.key == sizeKey).filter(A_Key.original == None).first()
+    sizeKeyLocale = Session.query(A_Key).filter(A_Key.original == sizeKeyEnglish).filter(A_Key.language == db_lang).first()
+    if sizeKeyLocale:
+        uiMap['activity-attr_size'] = sizeKeyLocale.key
+    else:
+        uiMap['activity-attr_size'] = sizeKey
 
     # Add translated name for SH_Key "Name" (needed by Ext as dataIndex when displaying the grid with stakeholders)
     shNameKeyEnglish = Session.query(SH_Key).filter(SH_Key.key == 'Name').filter(SH_Key.original == None).first()
