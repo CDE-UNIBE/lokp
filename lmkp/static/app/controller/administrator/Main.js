@@ -2,8 +2,10 @@ Ext.define('Lmkp.controller.administrator.Main', {
     extend: 'Ext.app.Controller',
 
     views: [
-    'administrator.Main',
-    'administrator.Home',
+    'administrator.CodeTab',
+    'administrator.Overview',
+    //'administrator.Home',
+    'administrator.UserManagement',
     'administrator.YamlScan'
     ],
 	
@@ -30,10 +32,10 @@ Ext.define('Lmkp.controller.administrator.Main', {
             'panel[id=outer-panel] toolbar button[id=logout_button]': {
                 click: this.logout
             },
-            'yamlscanpanel toolbar button[itemId=yaml-scan-button]': {
+            'lo_administratoryamlscanpanel toolbar button[itemId=yaml-scan-button]': {
                 click: this.onScanButtonClick
             },
-            'yamlscanpanel toolbar button[itemId=yaml-add-button]': {
+            'lo_administratoryamlscanpanel toolbar button[itemId=yaml-add-button]': {
                 click: this.onAddButtonClick
             }
         });

@@ -3,8 +3,11 @@ Ext.define('Lmkp.view.administrator.Overview', {
     alias: ['widget.lo_administratorpanel'],
 
     requires: [
-        'Lmkp.view.administrator.YamlScan',
-        'Lmkp.view.administrator.UserManagement'
+    'Lmkp.store.ActivityYamlScan',
+    'Lmkp.store.StakeholderYamlScan',
+    'Lmkp.view.administrator.CodeTab',
+    'Lmkp.view.administrator.UserManagement',
+    'Lmkp.view.administrator.YamlScan'
     ],
 
     frame: false,
@@ -15,23 +18,32 @@ Ext.define('Lmkp.view.administrator.Overview', {
         frame: false
     },
 
-    items: [
+    initComponent: function(){
+
+        var stakeholderStore = Ext.create('Lmkp.store.StakeholderYamlScan');
+        var activityStore = Ext.create('Lmkp.store.ActivityYamlScan');
+
+        var items = [
         {
-            title: 'Activities',
-            xtype: 'yamlscanpanel',
             postUrl: '/config/add/activities',
-            store: 'ActivityYamlScan'
-        }, {
-            title: 'Stakeholders',
-            xtype: 'yamlscanpanel',
+            store: activityStore,
+            title: 'Activities',
+            xtype: 'lo_administratoryamlscanpanel'
+        },{
             postUrl: '/config/add/stakeholders',
-            store: 'StakeholderYamlScan'
-        }, {
+            store: stakeholderStore,
+            title: 'Stakeholders',
+            xtype: 'lo_administratoryamlscanpanel'
+        },{
             title: 'Codes',
             xtype: 'lo_administratorcodetab'
-        }, {
+        },{
             title: 'Add User',
             xtype: 'lo_usermanagementpanel'
-        }
-    ]
+        }];
+
+        this.items = items;
+
+        this.callParent(arguments);
+    }
 });

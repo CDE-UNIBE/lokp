@@ -324,8 +324,7 @@ def get_translated_keys(request, global_config, Key, Value):
         except KeyError:
             pass
 
-        currObject = _get_admin_scan(Key, Value, name, config, lang, False,
-            local)
+        currObject = _get_admin_scan(Key, Value, name, config, lang, False, local)
         extObject.append(currObject)
       
     ret = {}
