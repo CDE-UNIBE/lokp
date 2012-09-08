@@ -127,7 +127,10 @@ Ext.define('Lmkp.controller.moderator.Main', {
      * with pending changes is checked or unchecked.
      */
     onPendingActivitiesCheckboxChange: function(field, newValue, oldValue){
-        this.getActivityGridStore().load();
+        // Set initial proxy (this makes sure to delete all reference to 
+        // stakeholders and adds/removes parameter to show/hide pending)
+        this.getActivityGridStore().setInitialProxy();
+        this.getActivityGridStore().loadPage(1);
         // Syncronize with the checkbox above the stakeholder grid.
         // Unregister first the load event to prevent an endless loop.
         var cb = this.getPendingStakeholdersCheckbox();
@@ -141,7 +144,10 @@ Ext.define('Lmkp.controller.moderator.Main', {
      * with pending changes is checked or unchecked.
      */
     onPendingStakeholdersCheckboxChange: function(field, newValue, oldValue){
-        this.getStakeholderGridStore().load();
+        // Set initial proxy (this makes sure to delete all reference to 
+        // activities and adds/removes parameter to show/hide pending)
+        this.getStakeholderGridStore().setInitialProxy();
+        this.getStakeholderGridStore().loadPage(1);
         // Syncronize with the checkbox above the activity grid.
         // Unregister first the load event to prevent an endless loop.
         var cb = this.getPendingActivitiesCheckbox();
