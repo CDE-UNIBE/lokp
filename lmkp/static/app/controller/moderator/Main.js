@@ -77,9 +77,12 @@ Ext.define('Lmkp.controller.moderator.Main', {
             // Get the store proxy
             var proxy = store.getProxy();
             // Check if pending changes are requested
-            if(this.getPendingActivitiesCheckbox()){
-                this.getPendingActivitiesCheckbox().getValue() ?
-                proxy.setExtraParam('status', 'pending') : proxy.setExtraParam('status', null);
+            if (this.getPendingActivitiesCheckbox()) {
+            	if (this.getPendingActivitiesCheckbox().getValue()) {
+            		proxy.setExtraParam('moderator', true);
+            	} else {
+            		delete proxy.extraParams.moderator;
+            	}
             }
         }, this);
     },
@@ -107,7 +110,7 @@ Ext.define('Lmkp.controller.moderator.Main', {
             	if (this.getPendingStakeholdersCheckbox().getValue()) {
             		// Reconfigure proxy to show pending stakeholders
             		proxy.url = 'stakeholders';
-            		proxy.setExtraParam('status', 'pending');
+            		proxy.setExtraParam('moderator', true);
             	}
             }
         }, this);
