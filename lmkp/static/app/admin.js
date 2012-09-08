@@ -19,7 +19,6 @@ Ext.onReady(function(){
         appFolder: 'static/app',
 
         requires: [
-        'Lmkp.view.administrator.Overview',
         'Lmkp.view.login.Toolbar'
         ],
 

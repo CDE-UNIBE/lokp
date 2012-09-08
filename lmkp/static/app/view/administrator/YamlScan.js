@@ -24,6 +24,11 @@ Ext.define('Lmkp.view.administrator.YamlScan', {
     }],
 
     store: this.store,
+
+    viewConfig: {
+        loadMask: true
+    },
+
     rootVisible: false,
     // TODO: autoScroll not yet working properly. Although scroll bar appears, it does so too late.
     autoScroll: true,

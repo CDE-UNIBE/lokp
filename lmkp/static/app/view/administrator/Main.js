@@ -1,4 +1,4 @@
-Ext.define('Lmkp.view.administrator.Overview', {
+Ext.define('Lmkp.view.administrator.Main', {
     extend: 'Ext.tab.Panel',
     alias: ['widget.lo_administratorpanel'],
 
