@@ -39,8 +39,10 @@ Ext.define('Lmkp.store.StakeholderGrid', {
         // Delete any reference to activities
         delete this.proxy.extraParams['a_id'];
         delete this.proxy.extraParams['return_a'];
-
-        // Delete any filters
+    },
+    
+    deleteFilters: function() {
+    	// Delete any filters
         var prefix_a = 'a__';
         var prefix_sh = 'sh__';
         for (var i in this.proxy.extraParams) {
