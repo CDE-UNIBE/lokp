@@ -47,6 +47,16 @@ Ext.define('Lmkp.store.ActivityGrid', {
         delete this.proxy.extraParams['sh_id'];
         delete this.proxy.extraParams['return_sh'];
 
+        // Set EPSG again if it is missing
+        if (this.proxy.extraParams['bbox'] && !this.proxy.extraParams['epsg']) {
+            this.proxy.extraParams['epsg'] = 900913;
+        }
+		
+		// Show or hide pending activities?
+        this.getPendingCheckbox();
+    },
+    
+    deleteFilters: function() {
         // Delete any filters
         var prefix_a = 'a__';
         var prefix_sh = 'sh__';
@@ -55,13 +65,7 @@ Ext.define('Lmkp.store.ActivityGrid', {
                 || i.slice(0, prefix_sh.length) == prefix_sh) {
                 delete this.proxy.extraParams[i];
             }
-        }
-
-        // Set EPSG again if it is missing
-        if (this.proxy.extraParams['bbox'] && !this.proxy.extraParams['epsg']) {
-            this.proxy.extraParams['epsg'] = 900913;
-        }
-    },
+        }    },
     
     syncWithStakeholders: function(extraParams) {
     	
@@ -94,5 +98,26 @@ Ext.define('Lmkp.store.ActivityGrid', {
     	
     	// Reload store (load at page 1, otherwise entries may be hidden)
     	this.loadPage(1);
+    },
+    
+    /**
+     * Try to find checkbox to show only pending activities. 
+     * If it exists and is checked, add parameter to proxy. If it does not exist
+     * or it is unchecked, remove the parameter. 
+     */
+    getPendingCheckbox: function() {
+        var checkbox;
+        
+    	// Try to find checkbox
+    	var checkbox_q = Ext.ComponentQuery.query('lo_publicactivitytablepanel checkbox[itemId="pendingActivitiesCheckbox"]');
+    	if (checkbox_q && checkbox_q.length > 0) {
+    		checkbox = checkbox_q[0];
+    	}
+        
+        if (checkbox && checkbox.isChecked()) {
+        	this.proxy.setExtraParam('status', 'pending');
+        } else {
+        	delete this.proxy.extraParams['status'];
+        }
     }
 });

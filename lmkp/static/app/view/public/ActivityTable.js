@@ -43,6 +43,12 @@ Ext.define('Lmkp.view.public.ActivityTable',{
             flex: 0,
             sortable: true
         }, {
+        	header: Lmkp.ts.msg('activity-attr_size'),
+        	name: 'activitySizeColumn',
+        	dataIndex: Lmkp.ts.msg('activity-attr_size'),
+        	flex: 0,
+        	sortable: true
+        }, {
             xtype: 'templatecolumn',
             flex: 0,
             name: 'showDetailsColumn',

@@ -277,7 +277,7 @@ Ext.define('Lmkp.controller.public.Filter', {
         var otherstore = this.getStakeholderGridStore();
 
         // Reset proxy
-        store.setInitialProxy();
+        store.setInitialProxy();		store.deleteFilters();
 
         // Get existing extraParams
         var extraParams = store.getProxy().extraParams;
