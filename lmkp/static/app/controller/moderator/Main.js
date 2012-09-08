@@ -104,8 +104,11 @@ Ext.define('Lmkp.controller.moderator.Main', {
             var proxy = store.getProxy();
             // Check if pending changes are requested
             if(this.getPendingStakeholdersCheckbox()){
-                this.getPendingStakeholdersCheckbox().getValue() ?
-                proxy.setExtraParam('status', 'pending') : proxy.setExtraParam('status', null);
+            	if (this.getPendingStakeholdersCheckbox().getValue()) {
+            		// Reconfigure proxy to show pending stakeholders
+            		proxy.url = 'stakeholders';
+            		proxy.setExtraParam('status', 'pending');
+            	}
             }
         }, this);
     },
