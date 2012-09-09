@@ -31,7 +31,6 @@ Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
     },
 
     showDetails: function() {
-
         if (this.contentItem) {
 
             // Remove any existing panels
@@ -55,6 +54,16 @@ Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
                 });
                 shStore.load();
                 this.contentItem = shStore.getAt(0);
+            }
+            
+            if (this.contentItem.get('status') == 'pending') {
+            	this.add({
+            		bodyCls: 'notice',
+                    bodyPadding: 5,
+                    html: 'You are seeing a pending version, which needs to be \n\
+                        reviewed before it is publicly visible',
+                    margin: '3 3 0 3'
+            	});
             }
 
             // Get data and handle each TagGroup separately
