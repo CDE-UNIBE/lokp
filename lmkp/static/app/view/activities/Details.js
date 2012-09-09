@@ -158,6 +158,9 @@ Ext.define('Lmkp.view.activities.Details', {
             // Remove all existing panels
             this.centerPanel.removeAll();
 
+			/**
+			 * Function moved to StakeholderPanel on Sept. 9, 2012. If this 
+			 * seems to work out, also delete function parameter pendingVersion
             // Show a notice if this version is a pending one
             if(pendingVersion) {
                 this.centerPanel.add({
@@ -169,6 +172,7 @@ Ext.define('Lmkp.view.activities.Details', {
                     
                 });
             }
+			 */
 
             // If there are no versions pending, simply show active version
             this.centerPanel.add({

@@ -903,9 +903,24 @@ class ActivityProtocol2(Protocol):
         key_translation, value_translation = self._get_translatedKV(lang, A_Key, A_Value)        
             
         # Prepare query for involvements
+        """
         involvement_status = self.Session.query(Stakeholder.id.label("stakeholder_id"),
                                                 Stakeholder.stakeholder_identifier.label("stakeholder_identifier")).\
             join(status_filter).\
+            subquery()
+        """
+        # Assumption (is this correct?): Moderators see active, pending and deleted Stakeholders.
+        # All others only see active Stakeholders.
+        if self._check_moderator(request):
+            inv_status_filter = self.Session.query(Status.id).filter(or_(Status.name == 'active', Status.name == 'pending', Status.name == 'deleted'))
+        else:
+            inv_status_filter = self.Session.query(Status.id).filter(Status.name == 'active')
+        isf = inv_status_filter.subquery()
+        involvement_status = self.Session.query(
+                Stakeholder.id.label("stakeholder_id"),
+                Stakeholder.stakeholder_identifier.label("stakeholder_identifier")
+            ).\
+            join(isf).\
             subquery()
         involvement_query = self.Session.query(
                                                Involvement.fk_activity.label("activity_id"),
@@ -1045,9 +1060,17 @@ class ActivityProtocol2(Protocol):
                         if activity.find_involvement_feature(i.stakeholder_identifier, i.stakeholder_role) is None:
                             sp = StakeholderProtocol(self.Session)
                             # Important: involvements=False need to be set, otherwise endless loop occurs
-                            stakeholder, count = sp._query(request, uid=i.stakeholder_identifier, involvements=False)
-                            activity.add_involvement(Inv(
-                                                     i.stakeholder_identifier, stakeholder[0],
+                            # Assumption: Moderators see active, pending and deleted Stakeholders.
+                            # All others only see active involvements
+                            sh_filter_dict = {
+                                'status_filter': inv_status_filter,
+                                'sh_tag_filter': self.Session.query(SH_Tag.fk_sh_tag_group.label("sh_filter_tg_id")).subquery(),
+                                'sh_filter_length': 0
+                            }
+                            stakeholder, count = sp._query(request, uid=i.stakeholder_identifier, filter=sh_filter_dict, involvements=False)
+                            for s in stakeholder:
+                                activity.add_involvement(Inv(
+                                                     i.stakeholder_identifier, s,
                                                      i.stakeholder_role, i.stakeholder_role_id))
                     else:
                         # Default: only basic information about Involvement
