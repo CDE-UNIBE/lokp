@@ -152,7 +152,8 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
                 name: 'newtaggrouppanel_value',
                 store: selectionValues,
                 queryMode: 'local',
-                editable: false,
+                editable: true,
+                forceSelection: true,
                 value: selectionValues[0],
                 margin: '0 5 0 0'
             });

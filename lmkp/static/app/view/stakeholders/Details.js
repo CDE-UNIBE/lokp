@@ -23,8 +23,9 @@ Ext.define('Lmkp.view.stakeholders.Details',{
     width: 600,
 
     requires: [
-    'Lmkp.view.stakeholders.StakeholderPanel',
-    'Lmkp.view.comments.CommentPanel'
+    'Lmkp.view.stakeholders.StakeholderPanel'
+    // For the time being, comments on Stakeholders are not yet supported.
+    // 'Lmkp.view.comments.CommentPanel'
     ],
 
     bbar: {
@@ -151,6 +152,9 @@ Ext.define('Lmkp.view.stakeholders.Details',{
             // Remove all existing panels
             this.centerPanel.removeAll();
 
+			/**
+			 * Function moved to StakeholderPanel on Sept. 9, 2012. If this 
+			 * seems to work out, also delete function parameter pendingVersion
             // Show a notice if this version is a pending one
             if(pendingVersion) {
                 this.centerPanel.add({
@@ -162,6 +166,7 @@ Ext.define('Lmkp.view.stakeholders.Details',{
                     
                 });
             }
+			 */
 
             // If there are no versions pending, simply show active version
             this.centerPanel.add({
@@ -173,12 +178,13 @@ Ext.define('Lmkp.view.stakeholders.Details',{
                 xtype: 'lo_stakeholderpanel'
             });
 
-            // Add commenting panel
-            this.centerPanel.add({
-                comment_object: 'stakeholder',
-                identifier: stakeholder.get('id'),
-                xtype: 'lo_commentpanel'
-            });
+            // Add commenting panel. For now (Sept. 9, 2012), comments on 
+            // Stakeholders are not yet supported.
+            // this.centerPanel.add({
+                // comment_object: 'stakeholder',
+                // identifier: stakeholder.get('id'),
+                // xtype: 'lo_commentpanel'
+            // });
         }
 
         return stakeholder;

@@ -16,7 +16,8 @@ Ext.define('Lmkp.view.login.Toolbar' ,{
         store: 'Profiles',
         displayField: 'name',
         valueField: 'profile',
-        forceSelection: true
+        forceSelection: true,
+        editable: false
     },{
         fieldLabel: Lmkp.ts.msg("language-label"),
         //labelAlign: 'right',
@@ -25,6 +26,7 @@ Ext.define('Lmkp.view.login.Toolbar' ,{
         store: 'Languages',
         displayField: 'english_name',
         valueField: 'locale',
-        forceSelection: true
+        forceSelection: true,
+        editable: false
     }, '->', Lmkp.login_form]
 });
