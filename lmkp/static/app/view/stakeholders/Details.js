@@ -23,8 +23,9 @@ Ext.define('Lmkp.view.stakeholders.Details',{
     width: 600,
 
     requires: [
-    'Lmkp.view.stakeholders.StakeholderPanel',
-    'Lmkp.view.comments.CommentPanel'
+    'Lmkp.view.stakeholders.StakeholderPanel'
+    // For the time being, comments on Stakeholders are not yet supported.
+    // 'Lmkp.view.comments.CommentPanel'
     ],
 
     bbar: {
@@ -173,12 +174,13 @@ Ext.define('Lmkp.view.stakeholders.Details',{
                 xtype: 'lo_stakeholderpanel'
             });
 
-            // Add commenting panel
-            this.centerPanel.add({
-                comment_object: 'stakeholder',
-                identifier: stakeholder.get('id'),
-                xtype: 'lo_commentpanel'
-            });
+            // Add commenting panel. For now (Sept. 9, 2012), comments on 
+            // Stakeholders are not yet supported.
+            // this.centerPanel.add({
+                // comment_object: 'stakeholder',
+                // identifier: stakeholder.get('id'),
+                // xtype: 'lo_commentpanel'
+            // });
         }
 
         return stakeholder;
