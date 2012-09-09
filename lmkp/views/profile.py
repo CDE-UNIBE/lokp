@@ -64,8 +64,6 @@ def _getCurrentProfileExtent(request):
     database query
     """
 
-#    from pyramid.renderers import render
-#    return render('javascript', 'basdfasdf', request)
     current_profile = get_current_profile(request)
 
     path = APPLICATION_YAML
@@ -79,7 +77,7 @@ def _getCurrentProfileExtent(request):
 
         if 'application' not in profile_config:
             # Not a valid config file
-            return None
+            return 'null'
 
         if 'geometry' in profile_config['application']:
             return profile_config['application']['geometry']
@@ -88,7 +86,7 @@ def _getCurrentProfileExtent(request):
         # File not found
         pass
 
-    return None
+    return 'null'
 
 def _processProfile(request, dbProfile, isGlobal=False):
 

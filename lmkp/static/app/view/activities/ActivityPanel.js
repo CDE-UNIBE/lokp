@@ -55,6 +55,16 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
                 aStore.load();
                 this.contentItem = aStore.getAt(0);
             }
+            
+            if (this.contentItem.get('status') == 'pending') {
+            	this.add({
+            		bodyCls: 'notice',
+                    bodyPadding: 5,
+                    html: 'You are seeing a pending version, which needs to be \n\
+                        reviewed before it is publicly visible',
+                    margin: '3 3 0 3'
+            	});
+            }
 
             // Get data and handle each TagGroup separately
             var taggroupStore = this.contentItem.taggroups();
