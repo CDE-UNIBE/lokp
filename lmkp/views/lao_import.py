@@ -100,10 +100,17 @@ def lao_read_activities2(request):
     # This dictionary maps the attribute in the Shapefile to the mandatory and
     # optional fields
     attributeMap = {
-        2: 'Name',
-        27: 'Contract area (ha)',
-        136: 'Intention of Investment', # Product1 needs to be mapped probably
-        59: 'Year of agreement'
+        2: 'Name', # name_of_co
+        59: 'Year of agreement', # Date_Sign
+        117: 'Negotiation Status', # txt_status
+        127: 'Contract area (ha)', # Area_F
+        135: 'Intention of Investment' # Subsector1
+    }
+
+    statusMap = {
+    'Approved for surveying': 'Contract signed',
+    'Not operational': 'Contract cancelled',
+    'Operational': 'Contract signed'
     }
 
     shp = shapefile.Reader(filepath)
@@ -113,6 +120,10 @@ def lao_read_activities2(request):
     activityDiffObject = {}
     activityDiffObject['activities'] = []
 
+    # List of already used stakeholders. This is necessary to increase the
+    # reference version in involvements.
+    usedStakeholders = []
+
     # Retreive every feature with its geometry and attributes
     for record in records:
 
@@ -121,14 +132,25 @@ def lao_read_activities2(request):
         activityObject['taggroups'] = []
         stakeholdersObject = []
 
-        for k in [2, 27, 1, 59]:
+        for k, value in attributeMap.items():
 
-            if k == 27:
-                activityObject['taggroups'].append(create_taggroup_dict(attributeMap[k], float(record.record[k])))
+            if k == 2:
 
-            if k == 1:
-                value = guess_intention(record.record[k])
-                activityObject['taggroups'].append(create_taggroup_dict(attributeMap[k], value))
+                investor_name = record.record[k]
+
+                sh = Session.query(Stakeholder).join(SH_Tag_Group).\
+                    join(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_sh_tag_group).\
+                    join(SH_Key).\
+                    join(SH_Value).filter(and_(SH_Key.key == 'Name', SH_Value.value == investor_name)).first()
+
+                # Version:
+                version = usedStakeholders.count(str(sh.stakeholder_identifier))
+                usedStakeholders.append(str(sh.stakeholder_identifier))
+
+                stakeholdersObject.append({"id": str(sh.stakeholder_identifier), "op": "add", "role": 6, "version": (version + 1)})
+                activityObject['stakeholders'] = stakeholdersObject
+
+                
 
             if k == 59:
                 year = 0
@@ -141,29 +163,29 @@ def lao_read_activities2(request):
                         year = 2000 + lastdigits
 
                 activityObject['taggroups'].append(create_taggroup_dict(attributeMap[k], year))
-            
-            if k == 2:
 
-                investor_name = record.record[k]
+            if k == 117:
+                if record.record[k].strip() != '' and statusMap[record.record[k]] is not None:
+                    activityObject['taggroups'].append(create_taggroup_dict(value, statusMap[record.record[k]]))
+                else:
+                    activityObject['taggroups'].append(create_taggroup_dict(value, 'Contract signed'))
 
-                sh = Session.query(Stakeholder).join(SH_Tag_Group).\
-                    join(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_sh_tag_group).\
-                    join(SH_Key).\
-                    join(SH_Value).filter(and_(SH_Key.key == 'Name', SH_Value.value == investor_name)).first()
+            if k == 127:
+                activityObject['taggroups'].append(create_taggroup_dict(value, float(record.record[k])))
 
-                stakeholdersObject.append({"id": str(sh.stakeholder_identifier), "op": "add", "role": 6, "version": 1})
-                activityObject['stakeholders'] = stakeholdersObject
+            if k == 135:
+                #value = guess_intention(record.record[k])
+                activityObject['taggroups'].append(create_taggroup_dict(value, record.record[k]))
 
+        # The country is obviously Laos
         activityObject['taggroups'].append(create_taggroup_dict('Country', 'Laos'))
         # Not sure about these sources
         activityObject['taggroups'].append(create_taggroup_dict('Data source', 'Government sources'))
-        # Not sure about the negotiation status
-        activityObject['taggroups'].append(create_taggroup_dict('Negotiation Status', 'Contract signed'))
         activityObject['taggroups'].append(create_taggroup_dict('Spatial Accuracy', 'very accurate'))
 
         # Add geometry to activity
         activityObject['geometry'] = {'coordinates': [record.shape.points[0][0], record.shape.points[0][1]], 'type': 'Point'}
-        
+
         activityDiffObject['activities'].append(activityObject)
 
     return activityDiffObject
