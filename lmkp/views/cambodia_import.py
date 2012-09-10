@@ -116,6 +116,9 @@ def cambodia_read_activities2(request):
     activityDiffObject = {}
     activityDiffObject['activities'] = []
 
+    # List of already used stakeholders
+    usedStakeholders = []
+
     # Retreive every feature with its geometry and attributes
     for record in records:
 
@@ -183,7 +186,13 @@ def cambodia_read_activities2(request):
                         join(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_sh_tag_group).\
                         join(SH_Key).\
                         join(SH_Value).filter(and_(SH_Key.key == 'Name', SH_Value.value == investor_name)).first()
-                    stakeholdersObject.append({"id": str(sh.stakeholder_identifier), "op": "add", "role": 6, "version": 1})
+
+                    if sh is not None:
+                        previous_version = usedStakeholders.count(str(sh.stakeholder_identifier))
+
+                        stakeholdersObject.append({"id": str(sh.stakeholder_identifier), "op": "add", "role": 6, "version": (previous_version + 1)})
+
+                        usedStakeholders.append(str(sh.stakeholder_identifier))
 
 
             elif isinstance(record.record[k], Number):
