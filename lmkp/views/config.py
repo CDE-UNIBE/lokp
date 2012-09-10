@@ -234,8 +234,9 @@ def get_config(request):
                 o = _get_field_config(Key, Value, name, config, lang)
             if o is not None:
                 extObject.append(o)
-    return extObject
 
+    # Return it sorted
+    return sorted(extObject, key=lambda value: value['name'])
 
 @view_config(route_name='yaml_translate_activities', renderer='json', permission='administer')
 def yaml_translate_activities(request):
