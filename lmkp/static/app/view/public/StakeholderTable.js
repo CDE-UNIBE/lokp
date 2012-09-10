@@ -35,13 +35,13 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
             name: 'stakeholdernamecolumn',
             dataIndex: Lmkp.ts.msg('stakeholder-attr_name'),
             flex: 1,
-            sortable: true
+//            sortable: true
         }, {
             header: Lmkp.ts.msg('stakeholder-attr_country'),
             name: 'stakeholdercountrycolumn',
             dataIndex: Lmkp.ts.msg('stakeholder-attr_country'),
             flex: 0,
-            sortable: true
+//            sortable: true
         }, {
             xtype: 'templatecolumn',
             flex: 0,
