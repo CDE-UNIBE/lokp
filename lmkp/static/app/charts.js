@@ -19,6 +19,7 @@ Ext.onReady(function () {
 
     var mainTabPanel = Ext.create('Ext.tab.Panel',{
         items: [{
+            autoScroll: true,
             contentEl: 'heatmap-div',
             padding: 5,
             title: 'Heat Map',
@@ -35,7 +36,7 @@ Ext.onReady(function () {
             reader: {
                 type: 'json',
                 root: 'data',
-                idProperty: 'main_crop'
+                idProperty: 'intention_of_investment'
             }
         },
         fields: [{
@@ -43,8 +44,8 @@ Ext.onReady(function () {
             name: 'activities',
             type: 'int'
         }, {
-            mapping: "Main Crop",
-            name: 'main_crop',
+            mapping: "Intention of Investment",
+            name: 'intention_of_investment',
             type: 'string'
         }]
     });
@@ -53,7 +54,7 @@ Ext.onReady(function () {
         if(successful){
             // Create the chart after loading
             var chart1 = Ext.create('Ext.chart.Chart',{
-                title: 'Count of Activities per Product',
+                title: 'Deals per Sector',
                 width: 600,
                 height: 800,
                 animate: true,
@@ -61,11 +62,11 @@ Ext.onReady(function () {
                 axes: [{
                     type: 'Category',
                     position: 'left',
-                    fields: ['main_crop'],
+                    fields: ['intention_of_investment'],
                     label: {
                     //renderer: Ext.util.Format.numberRenderer('0')
                     },
-                    title: 'Product'
+                    title: 'Sector'
                 }, {
                     minimum: 0,
                     maximum: store.max('activities'),
@@ -73,7 +74,7 @@ Ext.onReady(function () {
                     type: 'Numeric',
                     position: 'bottom',
                     fields: ['activities'],
-                    title: 'Number of activities'
+                    title: 'Number of land deals'
                 }],
                 series: [{
                     type: 'bar',
@@ -84,7 +85,7 @@ Ext.onReady(function () {
                         width: 140,
                         height: 28,
                         renderer: function(storeItem, item) {
-                            this.setTitle(storeItem.get('main_crop') + ": " + storeItem.get('activities'));
+                            this.setTitle(storeItem.get('intention_of_investment') + ": " + storeItem.get('activities'));
                         }
                     },
                     label: {
@@ -96,7 +97,7 @@ Ext.onReady(function () {
                         'text-anchor': 'middle'
                     },
                     yField: 'activities',
-                    xField: 'main_crop'
+                    xField: 'intention_of_investment'
                 }]
             });
             this.insert(chart1);
@@ -120,7 +121,7 @@ Ext.onReady(function () {
             name: 'Activity (count)',
             type: 'integer'
         },{
-            name: 'Size of Investment (sum)',
+            name: 'Contract area (ha) (sum)',
             type: 'integer'
         },{
             name: 'Country',
@@ -129,20 +130,20 @@ Ext.onReady(function () {
     });
 
     var chart3 = Ext.create('Ext.chart.Chart', {
-        title: 'Number of Activities and Total Size of Investments per Country',
+        title: 'Land deals and contracted Area per Country',
         animate: true,
         //theme:'Category2',
         store: store3,
         axes: [{
             type: 'Numeric',
             position: 'left',
-            fields: ['Size of Investment (sum)'],
-            title: 'Total size of investments'
+            fields: ['Contract area (ha) (sum)'],
+            title: 'Contracted area in hectares'
         }, {
             type: 'Numeric',
             position: 'bottom',
             fields: ['Activity (count)'],
-            title: 'Number of activities',
+            title: 'Number of land deals',
             minimum: 0,
             maximum: store3.max('Activity (count)')
         }],
@@ -161,16 +162,118 @@ Ext.onReady(function () {
                     var msg = storeItem.get('Country') + ":<br/>";
                     msg += storeItem.get('Activity (count)');
                     msg += " activities with a total area of ";
-                    msg += storeItem.get('Size of Investment (sum)');
+                    msg += storeItem.get('Contract area (ha) (sum)');
+                    msg += " hectares."
                     this.setTitle(msg);
                 }
             },
             axis: 'bottom',
             xField: 'Activity (count)',
-            yField: 'Size of Investment (sum)'
+            yField: 'Contract area (ha) (sum)'
         }]
     });
     mainTabPanel.insert(chart3);
+
+    var store4 = Ext.create('Ext.data.JsonStore',{
+        autoLoad: true,
+        proxy: {
+            type: 'ajax',
+            url: '/evaluation/4',
+            reader: {
+                type: 'json',
+                root: 'data',
+                idProperty: 'year_of_agreement'
+            }
+        },
+        fields: [{
+            mapping: "Year of agreement",
+            name: 'year_of_agreement',
+            type: 'int'
+        }, {
+            mapping: "Activity (count)",
+            name: 'activity',
+            type: 'int'
+        }, {
+            mapping: "Contract area (ha) (sum)",
+            name: 'contract_area',
+            type: 'float'
+        }]
+    });
+
+    // Insert the new chart as new tab panel as soon as the store is loaded
+    store4.on('load', function(store, records, successful){
+        if(successful){
+            var chart4 = Ext.create('Ext.chart.Chart', {
+                title: 'Contracts per Year',
+                animate: true,
+                store: store4,
+                axes: [{
+                    type: 'Numeric',
+                    position: 'left',
+                    fields: ['activity'],
+                    title: 'Number of newly signed contracts'
+                }, {
+                    type: 'Numeric',
+                    position: 'right',
+                    fields: ['contract_area'],
+                    title: 'Newly contracted area in ha'
+                }, {
+                    type: 'Numeric',
+                    position: 'bottom',
+                    fields: ['year_of_agreement'],
+                    title: 'Year',
+                    minimum: 1995,
+                    maximum: 2011
+                }],
+                series: [{
+                    axis: 'left',
+                    type: 'line',
+                    markerConfig: {
+                        radius: 5,
+                        size: 5
+                    },
+                    highlight: true,
+                    smooth: true,
+                    tips: {
+                        trackMouse: true,
+                        width: 120,
+                        height: 47,
+                        renderer: function(storeItem, item) {
+                            var msg = storeItem.get('year_of_agreement') + ":<br/>";
+                            msg += storeItem.get('activity');
+                            msg += " newly signed contracts";
+                            this.setTitle(msg);
+                        }
+                    },
+                    xField: 'year_of_agreement',
+                    yField: 'activity'
+                },{
+                    axis: 'right',
+                    type: 'line',
+                    markerConfig: {
+                        radius: 5,
+                        size: 5
+                    },
+                    highlight: true,
+                    smooth: true,
+                    tips: {
+                        trackMouse: true,
+                        width: 200,
+                        height: 47,
+                        renderer: function(storeItem, item) {
+                            var msg = storeItem.get('year_of_agreement') + ":<br/>";
+                            msg += storeItem.get('contract_area');
+                            msg += " newly contracted hectares";
+                            this.setTitle(msg);
+                        }
+                    },
+                    xField: 'year_of_agreement',
+                    yField: 'contract_area'
+                }]
+            });
+            mainTabPanel.insert(chart4);
+        }
+    }, this);
 
     Ext.application({
         name: 'Lmkp',
