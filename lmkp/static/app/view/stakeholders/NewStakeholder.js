@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
-    extend: 'Lmkp.view.NewItem',
+    extend: 'Lmkp.view.items.NewItem',
 
     alias: ['widget.lo_newstakeholderpanel'],
 
