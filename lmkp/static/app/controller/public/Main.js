@@ -251,8 +251,7 @@ Ext.define('Lmkp.controller.public.Main', {
      * treated as null
      */
     onActivityYearColumnAfterrender: function(comp) {
-        this._renderColumnMultipleValues(comp, "activity-attr_yearofinvestment",
-            [0]);
+        this._renderColumnMultipleValues(comp, "activity-attr_yearofinvestment");
     },
     
     /**
