@@ -1,6 +1,14 @@
 Ext.define('Lmkp.view.comments.CommentPanel', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.lo_commentpanel',
+
+    /**
+     * CONFIGURATION
+     */
+    // Use captcha or not? Disable for example if no internet connection is
+    // available. Also disable on server side (function comment_add in
+    // views/comments.py)
+    USE_CAPTCHA: true,
 	
     collapsible: true,
     collapsed: true,
@@ -145,13 +153,16 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
         }
 
         // create the ReCaptcha
-        var recaptcha = Ext.create('Lmkp.view.comments.ReCaptcha', {
-            name: 'recaptcha',
-            recaptchaId: 'recaptcha',
-            publickey: '6LfqmNESAAAAAM1aYTR5LNizhBprFGF0TgyJ43Dw',
-            theme: 'white',
-            lang: Lmkp.ts.msg('locale')
-        });
+        var recaptcha_panel = null;
+        if (this.USE_CAPTCHA) {
+            recaptcha_panel = Ext.create('Lmkp.view.comments.ReCaptcha', {
+                name: 'recaptcha',
+                recaptchaId: 'recaptcha',
+                publickey: '6LfqmNESAAAAAM1aYTR5LNizhBprFGF0TgyJ43Dw',
+                theme: 'white',
+                lang: Lmkp.ts.msg('locale')
+            });
+        }
 
         // form to add new comment
         var form = Ext.create('Ext.form.Panel', {
@@ -185,7 +196,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                     flex: 1,
                     border: 0
                 },
-                recaptcha
+                recaptcha_panel
                 ]
             }, {
                 // object (hidden)
@@ -202,11 +213,17 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                 handler: function() {
                     var form = this.up('form').getForm();
                     if (form.isValid()) {
+
+                        var params = null;
+                        if (me.USE_CAPTCHA) {
+                            params = {
+                                recaptcha_challenge_field: recaptcha_panel.getChallenge(),
+                                recaptcha_response_field: recaptcha_panel.getResponse()
+                            }
+                        }
+                        
                         form.submit({
-                            params: {
-                                recaptcha_challenge_field: recaptcha.getChallenge(),
-                                recaptcha_response_field: recaptcha.getResponse()
-                            },
+                            params: params,
                             success: function(form, action) {
                                 // give feedback
                                 Ext.Msg.alert(Lmkp.ts.msg('success'), action.result.message);
