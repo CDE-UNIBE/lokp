@@ -78,12 +78,21 @@ def comment_add(request):
     """
     Add a new comment
     """
+
+    """
+    CONFIGURATION
+    """
+    # Use captcha or not? Disable for example if no internet connection is
+    # available. Also disable in JavaScript code (view.comments.CommentPanel)
+    USE_CAPTCHA = True
+
     ret = {'success': False}
         
     # check if captcha is available
-    if request.POST['recaptcha_challenge_field'] is None or request.POST['recaptcha_response_field'] is None:
-        ret['message'] = 'No captcha provided.'
-        return ret
+    if USE_CAPTCHA:
+        if request.POST['recaptcha_challenge_field'] is None or request.POST['recaptcha_response_field'] is None:
+            ret['message'] = 'No captcha provided.'
+            return ret
     
     # check if object is available
     if request.POST['object'] is None:
@@ -99,15 +108,20 @@ def comment_add(request):
     if request.POST['identifier'] is None:
         ret['message'] = 'No identifier provided.'
         return ret
-    
-    # check captcha
-    private_key = '6LfqmNESAAAAAKM_cXox32Nnz0Zo7nlOeDPjgIoh'
-    response = captcha.submit(
-        request.POST['recaptcha_challenge_field'],
-        request.POST['recaptcha_response_field'],
-        private_key,
-        request.referer
-    )
+
+    if not USE_CAPTCHA:
+        class C(object):
+            is_valid = True
+        response = C()
+    else:
+        # check captcha
+        private_key = '6LfqmNESAAAAAKM_cXox32Nnz0Zo7nlOeDPjgIoh'
+        response = captcha.submit(
+            request.POST['recaptcha_challenge_field'],
+            request.POST['recaptcha_response_field'],
+            private_key,
+            request.referer
+        )
     
     if not response.is_valid:
         # captcha not correct
