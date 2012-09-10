@@ -1,4 +1,6 @@
 from lmkp.authentication import CustomAuthenticationPolicy
+from lmkp.models.database_objects import Group
+from lmkp.models.database_objects import User
 from lmkp.models.meta import DBSession
 from lmkp.renderers.renderers import GeoJsonRenderer
 from lmkp.renderers.renderers import JavaScriptRenderer
@@ -15,6 +17,7 @@ from pyramid.config import Configurator
 from pyramid.events import BeforeRender
 from pyramid.events import NewRequest
 from sqlalchemy import engine_from_config
+import transaction
 
 def main(global_config, ** settings):
     """ This function returns a Pyramid WSGI application.
@@ -22,8 +25,10 @@ def main(global_config, ** settings):
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
 
+    _update_admin_user(DBSession, settings)
+
     # Authentiaction policy
-    authnPolicy = CustomAuthenticationPolicy('walhalla', callback=group_finder)
+    authnPolicy = CustomAuthenticationPolicy('9ZbfPv Ez-eV8LeTJVNjUhQf FXWBBi_cWKn2fqnpz3PA', callback=group_finder)
     # Authorization policy
     authzPolicy = ACLAuthorizationPolicy()
 
@@ -163,3 +168,33 @@ def main(global_config, ** settings):
 
     config.scan()
     return config.make_wsgi_app()
+
+def _update_admin_user(Session, settings):
+    """
+    Reads the init settings at application start up and sets or add the admin
+    user with the set password.
+    The necessary setting keys are \"lmkp.admin_password\" and \"lmkp.admin_email\".
+    """
+
+    try:
+        pw = settings['lmkp.admin_password']
+        email = settings['lmkp.admin_email']
+    except KeyError:
+        raise Exception('\"lmkp.admin_password\" or \"lmkp.admin_email\" setting is missing in configuration file.')
+
+    # Try to get the admin user from the database
+    admin_user = Session.query(User).filter(User.username == 'admin').first()
+
+    if admin_user == None:
+
+        admin_group = Session.query(Group).filter(Group.name == 'administrators').first()
+        admin_user = User(username='admin', password=pw, email=email)
+        admin_user.groups.append(admin_group)
+        Session.add(admin_user)
+
+    else:
+        admin_user.password = pw
+        admin_user.email = email
+
+    transaction.commit()
+
