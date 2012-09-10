@@ -1112,11 +1112,6 @@ class ActivityProtocol2(Protocol):
         """
         Decide which spatial filter is to be applied
         """
-
-        # BBOX?
-        if request.params.get('bbox', None) is not None:
-            return self._create_bbox_filter(request)
-
         # Bounds based on user's profiles?
         if (request.params.get('bounds', None) is not None
             and request.params.get('bounds').lower() == 'user'):
@@ -1126,6 +1121,10 @@ class ActivityProtocol2(Protocol):
         if (request.params.get('bounds', None) is not None
             and request.params.get('bounds').lower() == 'profile'):
             return self._create_bound_filter_by_profile(request)
+
+        # BBOX?
+        if request.params.get('bbox', None) is not None:
+            return self._create_bbox_filter(request)
 
         return None
 

@@ -35,19 +35,46 @@ Ext.define('Lmkp.view.public.ActivityTable',{
             name: 'activityCountryColumn',
             dataIndex: Lmkp.ts.msg("activity-attr_country"),
             flex: 1,
-            sortable: true
+            sortable: true,
+            doSort: function(state) {
+                var store = this.up('tablepanel').store;
+                if (store) {
+                    store.doCustomSort(
+                        Lmkp.ts.msg('activity-attr_country'),
+                        state
+                    );
+                }
+            }
         }, {
             header: Lmkp.ts.msg('activity-attr_yearofinvestment'),
             name: 'yearofinvestmentcolumn',
             dataIndex: Lmkp.ts.msg('activity-attr_yearofinvestment'),
             flex: 0,
-            sortable: true
+            sortable: true,
+            doSort: function(state) {
+                var store = this.up('tablepanel').store;
+                if (store) {
+                    store.doCustomSort(
+                        Lmkp.ts.msg('activity-attr_yearofinvestment'),
+                        state
+                    );
+                }
+            }
         }, {
-        	header: Lmkp.ts.msg('activity-attr_size'),
-        	name: 'activitySizeColumn',
-        	dataIndex: Lmkp.ts.msg('activity-attr_size'),
-        	flex: 0,
-        	sortable: true
+            header: Lmkp.ts.msg('activity-attr_size'),
+            name: 'activitySizeColumn',
+            dataIndex: Lmkp.ts.msg('activity-attr_size'),
+            flex: 0,
+            sortable: true,
+            doSort: function(state) {
+                var store = this.up('tablepanel').store;
+                if (store) {
+                    store.doCustomSort(
+                        Lmkp.ts.msg('activity-attr_size'),
+                        state
+                    );
+                }
+            }
         }, {
             xtype: 'templatecolumn',
             flex: 0,
