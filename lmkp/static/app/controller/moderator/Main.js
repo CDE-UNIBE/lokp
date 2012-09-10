@@ -80,8 +80,10 @@ Ext.define('Lmkp.controller.moderator.Main', {
             if (this.getPendingActivitiesCheckbox()) {
             	if (this.getPendingActivitiesCheckbox().getValue()) {
             		proxy.setExtraParam('moderator', true);
+                        proxy.setExtraParam('bounds', 'user');
             	} else {
             		delete proxy.extraParams.moderator;
+                        delete proxy.extraParams.bounds;
             	}
             }
         }, this);

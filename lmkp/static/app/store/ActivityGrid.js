@@ -127,8 +127,10 @@ Ext.define('Lmkp.store.ActivityGrid', {
         
         if (checkbox && checkbox.isChecked()) {
         	this.proxy.setExtraParam('status', 'pending');
+                this.proxy.setExtraParam('bounds', 'user');
         } else {
         	delete this.proxy.extraParams['status'];
+                delete this.proxy.extraParams['bounds'];
         }
     }
 });
