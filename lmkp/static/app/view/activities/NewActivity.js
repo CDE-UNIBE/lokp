@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.activities.NewActivity', {
-    extend: 'Lmkp.view.NewItem',
+    extend: 'Lmkp.view.items.NewItem',
 
     alias: ['widget.lo_newactivitypanel'],
 

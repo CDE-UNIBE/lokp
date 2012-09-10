@@ -1,6 +1,9 @@
-Ext.define('Lmkp.view.NewItem', {
+/**
+ * Superclass for Lmkp.view.activities.NewActivity and
+ * Lmkp.view.stakeholders.NewStakeholder
+ */
+Ext.define('Lmkp.view.items.NewItem', {
     extend: 'Ext.panel.Panel',
-
 
     /**
      * Adds a form field to 'form' for each 'record'.
