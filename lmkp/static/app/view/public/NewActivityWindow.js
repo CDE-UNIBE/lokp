@@ -15,6 +15,7 @@ Ext.define('Lmkp.view.public.NewActivityWindow', {
          * {aPanel}: (eg. instance of Lmkp.view.activities.NewActivity)
          * {shPanel}: (eg. instance of Lmkp.view.stakeholders.NewStakeholderSelection)
          * {activityEdit}: Boolean
+         * {showPage}: Integer
          */
 
         if (this.aPanel && this.shPanel) {
@@ -34,14 +35,13 @@ Ext.define('Lmkp.view.public.NewActivityWindow', {
                 '->', {
                     id: 'card-prev',
                     text: 'Previous',
-                    _dir: 'prev',
-                    disabled: true
+                    _dir: 'prev'
                 }, {
                     id: 'card-next',
                     text: 'Next',
                     _dir: 'next'
                 }
-            ]
+            ];
         }
 
         this.callParent(arguments);

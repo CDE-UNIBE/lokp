@@ -605,6 +605,7 @@ class ActivityProtocol2(Protocol):
                                                      ).\
                 join(Involvement).\
                 join(sp_query, sp_query.c.order_id == Involvement.fk_stakeholder)
+
             # Apply status filter (only if timestamp not set)
             if status_filter is not None and timestamp_filter is None:
                 relevant_activities = relevant_activities.\
@@ -625,16 +626,45 @@ class ActivityProtocol2(Protocol):
         # of the ones involved with given stakeholder
         if self._get_sh_id(request) is not None:
             relevant_activities = self.Session.query(
-                                                     Activity.id.label('order_id'),
-                                                     func.char_length('').label('order_value'),
-                                                     Activity.fk_status
-                                                     ).\
+                     Activity.id.label('order_id'),
+                     func.char_length('').label('order_value'),
+                     Activity.fk_status
+                     ).\
                 join(Involvement).\
                 join(Stakeholder).\
-                join(Status, Stakeholder.fk_status == Status.id).\
                 filter(Stakeholder.identifier == self._get_sh_id(request)).\
-                filter(Status.name == 'active')
-        
+		        filter(Stakeholder.fk_status == 2).\
+		        filter(Activity.fk_status == 2)
+
+        # Yet another special case: moderator is calling ...
+        if request.params.get('moderator') == 'true':
+            # Gather pending and deleted versions. Return only the active version of each.
+            moderator_statii = [1, 4] # Pending and delete
+            moderator_statii_subquery = self.Session.query(
+                    distinct(Activity.activity_identifier).label('identifier')
+                ).\
+                filter(Activity.fk_status.in_(moderator_statii)).\
+                subquery()
+            moderator_active = self.Session.query(
+                    Activity.id.label('order_id'),
+                    func.char_length('').label('order_value'),
+                    Activity.fk_status
+                ).\
+                filter(Activity.activity_identifier.in_(moderator_statii_subquery)).\
+                filter(Activity.fk_status == 2).\
+                filter(self._get_spatial_filter(request))
+            # Newly pending versions have to be collected separately since they have no active version.
+            moderator_new = self.Session.query(
+                    Activity.id.label('order_id'),
+                    func.char_length('').label('order_value'),
+                    Activity.fk_status
+                ).\
+                filter(Activity.fk_status == 1).\
+                filter(Activity.version == 1).\
+                filter(self._get_spatial_filter(request))
+
+            relevant_activities = moderator_active.union(moderator_new)
+
         # Count relevant activities (before applying limit and offset)
         count = relevant_activities.count()
         
@@ -873,9 +903,24 @@ class ActivityProtocol2(Protocol):
         key_translation, value_translation = self._get_translatedKV(lang, A_Key, A_Value)        
             
         # Prepare query for involvements
+        """
         involvement_status = self.Session.query(Stakeholder.id.label("stakeholder_id"),
                                                 Stakeholder.stakeholder_identifier.label("stakeholder_identifier")).\
             join(status_filter).\
+            subquery()
+        """
+        # Assumption (is this correct?): Moderators see active, pending and deleted Stakeholders.
+        # All others only see active Stakeholders.
+        if self._check_moderator(request):
+            inv_status_filter = self.Session.query(Status.id).filter(or_(Status.name == 'active', Status.name == 'pending', Status.name == 'deleted'))
+        else:
+            inv_status_filter = self.Session.query(Status.id).filter(Status.name == 'active')
+        isf = inv_status_filter.subquery()
+        involvement_status = self.Session.query(
+                Stakeholder.id.label("stakeholder_id"),
+                Stakeholder.stakeholder_identifier.label("stakeholder_identifier")
+            ).\
+            join(isf).\
             subquery()
         involvement_query = self.Session.query(
                                                Involvement.fk_activity.label("activity_id"),
@@ -1015,9 +1060,17 @@ class ActivityProtocol2(Protocol):
                         if activity.find_involvement_feature(i.stakeholder_identifier, i.stakeholder_role) is None:
                             sp = StakeholderProtocol(self.Session)
                             # Important: involvements=False need to be set, otherwise endless loop occurs
-                            stakeholder, count = sp._query(request, uid=i.stakeholder_identifier, involvements=False)
-                            activity.add_involvement(Inv(
-                                                     i.stakeholder_identifier, stakeholder[0],
+                            # Assumption: Moderators see active, pending and deleted Stakeholders.
+                            # All others only see active involvements
+                            sh_filter_dict = {
+                                'status_filter': inv_status_filter,
+                                'sh_tag_filter': self.Session.query(SH_Tag.fk_sh_tag_group.label("sh_filter_tg_id")).subquery(),
+                                'sh_filter_length': 0
+                            }
+                            stakeholder, count = sp._query(request, uid=i.stakeholder_identifier, filter=sh_filter_dict, involvements=False)
+                            for s in stakeholder:
+                                activity.add_involvement(Inv(
+                                                     i.stakeholder_identifier, s,
                                                      i.stakeholder_role, i.stakeholder_role_id))
                     else:
                         # Default: only basic information about Involvement

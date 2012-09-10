@@ -16,8 +16,9 @@ Ext.define('Lmkp.view.stakeholders.Details',{
     itemId: 'stakeholderDetailWindow',
 
     requires: [
-    'Lmkp.view.stakeholders.StakeholderPanel',
-    'Lmkp.view.comments.CommentPanel'
+    'Lmkp.view.stakeholders.StakeholderPanel'
+    // For the time being, comments on Stakeholders are not yet supported.
+    // 'Lmkp.view.comments.CommentPanel'
     ],
 
     initComponent: function(){

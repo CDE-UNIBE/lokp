@@ -39,8 +39,13 @@ Ext.define('Lmkp.store.StakeholderGrid', {
         // Delete any reference to activities
         delete this.proxy.extraParams['a_id'];
         delete this.proxy.extraParams['return_a'];
-
-        // Delete any filters
+        
+        // Show or hide pending stakeholders?
+        this.getPendingCheckbox();
+    },
+    
+    deleteFilters: function() {
+    	// Delete any filters
         var prefix_a = 'a__';
         var prefix_sh = 'sh__';
         for (var i in this.proxy.extraParams) {
@@ -82,5 +87,29 @@ Ext.define('Lmkp.store.StakeholderGrid', {
     	
     	// Reload store (load at page 1, otherwise entries may be hidden)
     	this.loadPage(1);
+    },
+
+    /**
+     * Try to find checkbox to show only pending stakeholders. 
+     * If it exists and is checked, add parameter to proxy. If it does not exist
+     * or it is unchecked, remove the parameter. 
+     */
+    getPendingCheckbox: function() {
+    	var checkbox;
+        
+    	// Try to find checkbox
+    	var checkbox_q = Ext.ComponentQuery.query('lo_publicstakeholdertablepanel checkbox[itemId="pendingStakeholdersCheckbox"]');
+    	if (checkbox_q && checkbox_q.length > 0) {
+    		checkbox = checkbox_q[0];
+    	}
+        
+        if (checkbox && checkbox.isChecked()) {
+        	this.proxy.url = 'stakeholders';
+        	this.proxy.setExtraParam('moderator', true);
+        } else {
+        	this.proxy.url = 'activities';
+        	this.proxy.setExtraParam('return_sh', true);
+        	delete this.proxy.extraParams['moderator'];
+        }
     }
 });
