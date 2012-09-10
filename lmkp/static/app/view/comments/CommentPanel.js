@@ -26,7 +26,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
     initComponent: function() {
 		
         this.callParent(arguments);
-        
+
         // Show content
         //this.identifier ? this.loadContent();
         this.commentsObject ? this._renderComments(this.commentsObject) : this._loadContent();
@@ -115,7 +115,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                                                 // give feedback
                                                 Ext.Msg.alert(Lmkp.ts.msg('success'), del_json.message);
                                                 // reload comments
-                                                me.loadContent(me);
+                                                me._loadContent(me);
                                                 // re-layout container
                                                 me._redoLayout();
                                             },
@@ -184,7 +184,9 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                     xtype: 'panel',
                     flex: 1,
                     border: 0
-                },	recaptcha]
+                },
+                recaptcha
+                ]
             }, {
                 // object (hidden)
                 xtype: 'hiddenfield',
@@ -209,7 +211,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                                 // give feedback
                                 Ext.Msg.alert(Lmkp.ts.msg('success'), action.result.message);
                                 // reload comments
-                                me.loadContent(me);
+                                me._loadContent(me);
                                 // re-layout container
                                 me._redoLayout();
                             },
