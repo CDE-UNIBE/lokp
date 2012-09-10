@@ -16,7 +16,8 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
             valueField: 'name',
             displayField: 'fieldLabel',
             queryMode: 'local',
-            typeAhead: true,
+            editable: false,
+//            typeAhead: true,
             forceSelection: true,
             flex: 1,
             allowBlank: false,
@@ -120,27 +121,31 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
     // Replace value field based on selected attribute
     onKeyChanged: function(oldValue, newValue) {
 
-        // remove newly selected value from store
-        var currentRecord = this.main_store.findRecord('name', newValue);
-        this.main_store.remove(currentRecord);
+        if (newValue) {
+            // remove newly selected value from store
+            var currentRecord = this.main_store.findRecord('name', newValue);
+            if (currentRecord) {
+                this.main_store.remove(currentRecord);
 
-        // add previously selected (now deselected) value to store again
-        var previousRecord = this.complete_store.findRecord('name', oldValue);
-        if (previousRecord) {
-            this.main_store.add(previousRecord);
-        }
-        // replace the value field
-        this.items.getAt(
-            this.items.findIndex('name', 'newtaggrouppanel_value')
-        ).destroy();
+                // add previously selected (now deselected) value to store again
+                var previousRecord = this.complete_store.findRecord('name', oldValue);
+                if (previousRecord) {
+                    this.main_store.add(previousRecord);
+                }
+                // replace the value field
+                this.items.getAt(
+                    this.items.findIndex('name', 'newtaggrouppanel_value')
+                ).destroy();
 
-        var newField = this.getNewValueField(currentRecord);
-        if (this.initial_value && !this.initial_value_set) {
-            // Set initial value (set it only once)
-            newField.setValue(this.initial_value);
-            this.initial_value_set = true;
+                var newField = this.getNewValueField(currentRecord);
+                if (this.initial_value && !this.initial_value_set) {
+                    // Set initial value (set it only once)
+                    newField.setValue(this.initial_value);
+                    this.initial_value_set = true;
+                }
+                this.insert(1, newField);
+            }
         }
-        this.insert(1, newField);
     },
 
     getNewValueField: function(record) {
