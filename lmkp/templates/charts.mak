@@ -48,8 +48,24 @@ from pyramid.security import has_permission
             </div>
         </div>
         <div id="heatmap-div">
-            <h1>Heat Map</h1>
-            <p>Distribution of activities worldwide</p>
+            <h2>Heat map for Cambodia and Laos</h2>
+            <p>
+                Distribution of land related deals in Cambodia and for
+                Champasak and Attapeu province in Laos.<br/>
+                Data for Cambodia are provided by the website
+                <a href="http://www.opendevelopmentcambodia.net">www.opendevelopmentcambodia.net</a>.
+                Data for Laos are based on the landconcessions database.
+            </p>
+            <p>
+                <img src="${request.static_url('lmkp:static/img/activities_la_kh.png')}" alt="Distribution of activities in Cambodia and Laos (partly)"/>
+            </p>
+            <h2>Distribution of activities worldwide</h2>
+            <p>
+                Worldwide distribution of land related deals based on the
+                Landmatrix database available at <a href="http://www.landportal.info/matrix">
+                    www.landportal.info/matrix
+                </a>
+            </p>
             <p>
                 <img src="${request.static_url('lmkp:static/img/worldwide_deals.png')}" alt="World-wide heatmap of activities"/>
             </p>

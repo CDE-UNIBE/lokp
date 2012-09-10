@@ -27,7 +27,7 @@ def evaluation_json(request):
                 'attributes': {
                     'Activity': 'count'
                 },
-                'group_by': ['Main Crop']
+                'group_by': ['Intention of Investment']
             }
     elif tempSwitch == '2':
         input = {
@@ -48,10 +48,22 @@ def evaluation_json(request):
                     'sql': ''
                 },
                 'attributes': {
-                    'Size of Investment': 'sum',
+                    'Contract area (ha)': 'sum',
                     'Activity': 'count'
                 },
                 'group_by': ['Country', 'Country of Investor']
+            }
+    elif tempSwitch == '4':
+        input = {
+                'filter': {
+                    'geometry': '',
+                    'sql': ''
+                },
+                'attributes': {
+                    'Activity': 'count',
+                    'Contract area (ha)': 'sum'
+                },
+                'group_by': ['Year of agreement']
             }
     else:
         ret['msg'] = 'Temporarily only /1, /2 and /3 available.'
