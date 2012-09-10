@@ -40,9 +40,22 @@ Ext.define('Lmkp.view.administrator.UserManagement', {
         regexText: 'Not allowed special chars found.'
     },{
         allowBlank: false,
+        submitValue: false,
         fieldLabel: 'Password',
         inputType: 'password',
-        name: 'password'
+        itemId: 'passwordField'
+    },{
+        allowBlank: false,
+        fieldLabel: 'Retype password',
+        inputType: 'password',
+        name: 'password',
+        validator: function(value){
+            var pw = this.previousSibling('[itemId="passwordField"]');
+            if(pw.getValue() == value){
+                return true;
+            }
+            return "Password does not match.";
+        }
     },{
         allowBlank: false,
         fieldLabel: 'Email',
