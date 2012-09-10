@@ -97,19 +97,18 @@ def insert_landmatrix(request):
     
     return {'success': True, 'activities': a, 'stakeholders': s}
 
-@view_config(route_name='set_lao_active', renderer='json', permission='administer')
+@view_config(route_name='set_lao_active', renderer='lmkp:templates/sample_values.pt', permission='administer')
 def set_lao_active(request):
     """
     Set the latest activities and stakeholders active after a lao import.
     """
 
-    # Set the ten first Activities with version 1 to 'active' (fk_status = 2)
-    for a in Session.query(Activity).filter(Activity.version == 1).limit(10):
-        a.fk_status = 2
+    stack = []
 
-    # Set the others to 'pending'
-    for a in Session.query(Activity).filter(Activity.version == 1).offset(10):
-        a.fk_status = 1
+    # Set the Activities with version 1 to 'active' (fk_status = 2)
+    for a in Session.query(Activity).filter(Activity.version == 1):
+        stack.append(str(a.activity_identifier) + " version 1: set to status \"active\"")
+        a.fk_status = 2
 
     # Get the latest version for each stakeholder
     latest_sh_query = Session.query(Stakeholder.stakeholder_identifier, func.max(Stakeholder.version)).\
@@ -117,25 +116,21 @@ def set_lao_active(request):
 
     # Set all Stakeholder versions to inactive except the latest one (fk_status = 3)
     for id, v in Session.query(Stakeholder.stakeholder_identifier, Stakeholder.version).except_(latest_sh_query):
+        stack.append(str(id) + " version " + str(v) + ": set to status \"inactive\"")
         Session.query(Stakeholder).\
             filter(Stakeholder.stakeholder_identifier == id).\
             filter(Stakeholder.version == v).\
             update({Stakeholder.fk_status: 3})
 
     # Set all latest Stakeholder versions to active
-    for id, v in latest_sh_query.limit(10).all():
+    for id, v in latest_sh_query.all():
+        stack.append(str(id) + " version " + str(v) + ": set to status \"active\"")
         Session.query(Stakeholder).\
             filter(Stakeholder.stakeholder_identifier == id).\
             filter(Stakeholder.version == v).\
             update({Stakeholder.fk_status: 2})
 
-    for id, v in latest_sh_query.offset(10).all():
-        Session.query(Stakeholder).\
-            filter(Stakeholder.stakeholder_identifier == id).\
-            filter(Stakeholder.version == v).\
-            update({Stakeholder.fk_status: 1})
-
-    return {'success': True}
+    return {'messagestack': stack}
 
 @view_config(route_name='test_sample_values', renderer='json')
 def test_sample_values(request):
