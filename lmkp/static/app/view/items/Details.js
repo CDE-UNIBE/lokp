@@ -73,8 +73,17 @@ Ext.define('Lmkp.view.items.Details',{
 
             // Add commenting panel
             if(this.commentPanelType != null){
+
+                // Activity or Stakeholder?
+                var comment_object;
+                if (item.modelName == 'Lmkp.model.Activity') {
+                    comment_object = 'activity';
+                } else if (item.modelName == 'Lmkp.model.Stakeholder') {
+                    comment_object = 'stakeholder';
+                }
+
                 this.centerPanel.add({
-                    comment_object: 'stakeholder',
+                    comment_object: comment_object,
                     identifier: item.get('id'),
                     xtype: this.commentPanelType
                 });
