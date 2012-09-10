@@ -16,6 +16,12 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
     }, {
         ref: 'mapPanel',
         selector: 'lo_publicmappanel'
+    }, {
+    	ref: 'activityDetailWindow',
+    	selector: 'lo_activitydetailwindow'
+    }, {
+    	ref: 'stakeholderDetailWindow',
+    	selector: 'lo_stakeholderdetailwindow'
     }],
 
     views: [
@@ -224,7 +230,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
             // Collect all old Tags of current Taggroup
             if (taggroupfieldset.oldTags) {
                 for (var ot in taggroupfieldset.oldTags) {
-                    if (taggroupfieldset.oldTags[ot]) {
+                    if (taggroupfieldset.oldTags[ot].fields) {
                         oldTags.push({
                             id: taggroupfieldset.oldTags[ot].get('id'),
                             key: taggroupfieldset.oldTags[ot].get('key'),
@@ -419,6 +425,15 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
 	                    for(var i = 0; i < fieldContainers.length; i++){
 	                        this.getSelectStakeholderFieldSet().remove(fieldContainers[i]);
 	                    }
+	                    
+	                    // Refresh the detail window
+	                    var detailWindow = this.getActivityDetailWindow();
+	                    if (detailWindow) {
+	                    	var historyStore = detailWindow.getHistoryStore();
+	                    	if (historyStore) {
+	                    		historyStore.load();
+	                    	}
+	                    }
 	
 	                    // Refresh the map with the new activities
 	                    this.getMapPanel().getVectorStore().load();
@@ -440,8 +455,11 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
      * Show a window containing the form to add a new Activity.
      * {item}: Optional possibility to provide an existing item (instance of
      * model.Activity)
+     * {showPage}: Optional possibility to open the window at a given page
+     * (0: Activity, 1: Involvements)
      */
-    showNewActivityWindow: function(item) {
+    showNewActivityWindow: function(item, showPage) {
+    	var me = this;
         // Create and load a store with all mandatory keys
         var mandatoryStore = Ext.create('Lmkp.store.ActivityConfig');
         mandatoryStore.filter('allowBlank', false);
@@ -497,9 +515,20 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 var win = Ext.create('Lmkp.view.public.NewActivityWindow', {
                     aPanel: aPanel,
                     shPanel: shPanel,
-                    activityEdit: activityEdit
+                    activityEdit: activityEdit,
+                    showPage: showPage
                 });
                 win.show();
+                // If a page was provided, try to jump there
+                if (showPage) {
+                	var layout = win.getLayout();
+                	var layoutitems = layout.getLayoutItems();
+                	if (layoutitems[showPage]) {
+                		layout.setActiveItem(showPage);
+                	}
+                }
+                // Check buttons
+                me._checkCardButtons(win.getLayout(), activityEdit);
             });
         });
     },
@@ -514,22 +543,10 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
 
         // Move to card
         layout[button._dir]();
-
-        // Disable buttons if no other cards next to it
-        Ext.getCmp('card-prev').setDisabled(!layout.getPrev());
-        Ext.getCmp('card-next').setDisabled(!layout.getNext());
-
-        // Enable the submit button if the last card is shown or if an Activity
-        // is edited
-        var tbar = button.up('toolbar');
-        var submitbutton = tbar.down('button[itemId=submitButton]');
-        if (!layout.getNext() || panel.activityEdit) {
-            submitbutton.enable();
-        } else {
-            submitbutton.disable();
-        }
+        
+        this._checkCardButtons(layout, panel.activityEdit);
     },
-
+    
     /**
      * If a Stakeholder is selected in the search-combobox, show its details in
      * a panel below.
@@ -670,8 +687,11 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
      */
     _onNewStakeholderCreated: function(stakeholder) {
 
+    	// Check if Stakeholder was created from Activity (new involvement) 
+    	// panel 
         var sel = this.getStakeholderSelection();
         if (sel) {
+        	
             // Add new stakeholder to fieldset
             var form = sel.down('form');
 
@@ -702,6 +722,34 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 // Disable button
                 sel.confirmButton.disable();
             }
+        }
+        
+        // Check if Stakeholder was created / edited from detail window.
+        var detailWindow = this.getStakeholderDetailWindow();
+        if (detailWindow) {
+        	// Try to find historyStore to reload it
+        	var historyStore = detailWindow.getHistoryStore();
+        	if (historyStore) {
+        		historyStore.load();
+        	}
+        }
+    },
+    
+    _checkCardButtons: function(layout, activityEdit) {
+    	// Disable buttons if no other cards next to it
+        Ext.getCmp('card-prev').setDisabled(!layout.getPrev());
+        Ext.getCmp('card-next').setDisabled(!layout.getNext());
+        
+        // Enable the submit button if the last card is shown or if an Activity
+        // is edited
+        var submitbutton_q = Ext.ComponentQuery.query('button[itemId=submitButton]');
+        if (submitbutton_q && submitbutton_q.length > 0) {
+        	var submitbutton = submitbutton_q[0];
+	        if (!layout.getNext() || activityEdit) {
+	            submitbutton.enable();
+	        } else {
+	            submitbutton.disable();
+	        }
         }
     }
 });

@@ -1,10 +1,10 @@
 Ext.define('Lmkp.view.activities.ActivityPanel', {
-    extend: 'Ext.panel.Panel',
+    extend: 'Lmkp.view.items.ItemPanel',
     alias: ['widget.lo_activitypanel'],
 
     requires: [
-        'Lmkp.view.activities.TagGroupPanel',
-        'Lmkp.view.activities.InvolvementPanel'
+    'Lmkp.view.activities.TagGroupPanel',
+    'Lmkp.view.activities.InvolvementPanel'
     ],
 
     bodyPadding: 5,
@@ -56,6 +56,18 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
                 this.contentItem = aStore.getAt(0);
             }
 
+            this._addStatusIndicator();
+
+            /*if (this.contentItem.get('status') == 'pending') {
+                this.add({
+                    bodyCls: 'notice',
+                    bodyPadding: 5,
+                    html: 'You are seeing a pending version, which needs to be \n\
+                        reviewed before it is publicly visible',
+                    margin: '3 3 0 3'
+                });
+            }*/
+
             // Get data and handle each TagGroup separately
             var taggroupStore = this.contentItem.taggroups();
             var tgPanels = [];
@@ -90,7 +102,7 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
                 this.add({
                     name: 'hideDetails',
                     html: '<a href="#" class="itempanel_hidedetails">'
-                        + 'Hide active version</a>',
+                    + 'Hide active version</a>',
                     margin: '5 0 0 0',
                     border: 0,
                     bodyStyle: 'background:transparent'
@@ -107,7 +119,7 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
         this.add({
             name: 'showDetails',
             html: '<a href="#" class="itempanel_showdetails">'
-                + 'Show active version</a>',
+            + 'Show active version</a>',
             border: 0,
             bodyStyle: 'background:transparent',
             margin: 0

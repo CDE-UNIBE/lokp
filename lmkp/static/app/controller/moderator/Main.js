@@ -57,11 +57,14 @@ Ext.define('Lmkp.controller.moderator.Main', {
     onActivityTablePanelBeforeRender: function(comp) {
         var pendingCheckbox = Ext.create('Ext.form.Checkbox',{
             checked: true,
-            boxLabel: 'Show pending changes',
             itemId: 'pendingActivitiesCheckbox'
         });
+        var pendingLabel = Ext.create('Ext.form.Label', {
+        	text: 'Show pending changes',
+        	margin: '0 0 0 3'
+        });
         var tbar = comp.down('[id="activityGridTopToolbar"]');
-        tbar.insert(1, pendingCheckbox);
+        tbar.insert(1, ['-', pendingCheckbox, pendingLabel, '-']);
     },
 
     /**
@@ -74,9 +77,12 @@ Ext.define('Lmkp.controller.moderator.Main', {
             // Get the store proxy
             var proxy = store.getProxy();
             // Check if pending changes are requested
-            if(this.getPendingActivitiesCheckbox()){
-                this.getPendingActivitiesCheckbox().getValue() ?
-                proxy.setExtraParam('status', 'pending') : proxy.setExtraParam('status', null);
+            if (this.getPendingActivitiesCheckbox()) {
+            	if (this.getPendingActivitiesCheckbox().getValue()) {
+            		proxy.setExtraParam('moderator', true);
+            	} else {
+            		delete proxy.extraParams.moderator;
+            	}
             }
         }, this);
     },
@@ -84,11 +90,14 @@ Ext.define('Lmkp.controller.moderator.Main', {
     onStakeholderTablePanelBeforeRender: function(comp) {
         var checkbox = Ext.create('Ext.form.Checkbox', {
             checked: true,
-            boxLabel: 'Show pending changes',
             itemId: 'pendingStakeholdersCheckbox'
         });
+        var pendingLabel = Ext.create('Ext.form.Label', {
+        	text: 'Show pending changes',
+        	margin: '0 0 0 3'
+        });
         var tbar = comp.down('[id="stakeholderGridTopToolbar"]');
-        tbar.insert(1, checkbox);
+        tbar.insert(1, ['-', checkbox, pendingLabel, '-']);
     },
 
     onStakeholderTablePanelRender: function(comp) {
@@ -98,8 +107,11 @@ Ext.define('Lmkp.controller.moderator.Main', {
             var proxy = store.getProxy();
             // Check if pending changes are requested
             if(this.getPendingStakeholdersCheckbox()){
-                this.getPendingStakeholdersCheckbox().getValue() ?
-                proxy.setExtraParam('status', 'pending') : proxy.setExtraParam('status', null);
+            	if (this.getPendingStakeholdersCheckbox().getValue()) {
+            		// Reconfigure proxy to show pending stakeholders
+            		proxy.url = 'stakeholders';
+            		proxy.setExtraParam('moderator', true);
+            	}
             }
         }, this);
     },
@@ -127,7 +139,10 @@ Ext.define('Lmkp.controller.moderator.Main', {
      * with pending changes is checked or unchecked.
      */
     onPendingActivitiesCheckboxChange: function(field, newValue, oldValue){
-        this.getActivityGridStore().load();
+        // Set initial proxy (this makes sure to delete all reference to 
+        // stakeholders and adds/removes parameter to show/hide pending)
+        this.getActivityGridStore().setInitialProxy();
+        this.getActivityGridStore().loadPage(1);
         // Syncronize with the checkbox above the stakeholder grid.
         // Unregister first the load event to prevent an endless loop.
         var cb = this.getPendingStakeholdersCheckbox();
@@ -141,7 +156,10 @@ Ext.define('Lmkp.controller.moderator.Main', {
      * with pending changes is checked or unchecked.
      */
     onPendingStakeholdersCheckboxChange: function(field, newValue, oldValue){
-        this.getStakeholderGridStore().load();
+        // Set initial proxy (this makes sure to delete all reference to 
+        // activities and adds/removes parameter to show/hide pending)
+        this.getStakeholderGridStore().setInitialProxy();
+        this.getStakeholderGridStore().loadPage(1);
         // Syncronize with the checkbox above the activity grid.
         // Unregister first the load event to prevent an endless loop.
         var cb = this.getPendingActivitiesCheckbox();

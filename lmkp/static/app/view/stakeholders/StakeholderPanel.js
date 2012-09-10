@@ -1,5 +1,5 @@
 Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
-    extend: 'Ext.panel.Panel',
+    extend: 'Lmkp.view.items.ItemPanel',
     alias: ['widget.lo_stakeholderpanel'],
 
     requires: [
@@ -31,7 +31,6 @@ Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
     },
 
     showDetails: function() {
-
         if (this.contentItem) {
 
             // Remove any existing panels
@@ -56,6 +55,18 @@ Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
                 shStore.load();
                 this.contentItem = shStore.getAt(0);
             }
+
+            this._addStatusIndicator();
+            
+            /*if (this.contentItem.get('status') == 'pending') {
+                this.add({
+                    bodyCls: 'notice',
+                    bodyPadding: 5,
+                    html: 'You are seeing a pending version, which needs to be \n\
+                        reviewed before it is publicly visible',
+                    margin: '3 3 0 3'
+                });
+            }*/
 
             // Get data and handle each TagGroup separately
             var taggroupStore = this.contentItem.taggroups();
@@ -91,7 +102,7 @@ Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
                 this.add({
                     name: 'hideDetails',
                     html: '<a href="#" class="itempanel_hidedetails">'
-                        + 'Hide active version</a>',
+                    + 'Hide active version</a>',
                     margin: '5 0 0 0',
                     border: 0,
                     bodyStyle: 'background:transparent'
@@ -108,7 +119,7 @@ Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
         this.add({
             name: 'showDetails',
             html: '<a href="#" class="itempanel_showdetails">'
-                + 'Show active version</a>',
+            + 'Show active version</a>',
             border: 0,
             bodyStyle: 'background:transparent',
             margin: 0

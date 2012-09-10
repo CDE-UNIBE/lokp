@@ -1,15 +1,4 @@
-from lmkp.models.database_objects import Activity
-from lmkp.models.database_objects import Involvement
-from lmkp.models.database_objects import Language
-from lmkp.models.database_objects import SH_Changeset
-from lmkp.models.database_objects import SH_Key
-from lmkp.models.database_objects import SH_Tag
-from lmkp.models.database_objects import SH_Tag_Group
-from lmkp.models.database_objects import SH_Value
-from lmkp.models.database_objects import Stakeholder
-from lmkp.models.database_objects import Stakeholder_Role
-from lmkp.models.database_objects import Status
-from lmkp.models.database_objects import User
+from lmkp.models.database_objects import *
 from lmkp.views.protocol import Feature
 from lmkp.views.protocol import Inv
 from lmkp.views.protocol import Protocol
@@ -25,6 +14,7 @@ from pyramid.httpexceptions import HTTPCreated
 from pyramid.i18n import get_localizer
 from pyramid.security import unauthenticated_userid
 from sqlalchemy import func
+from sqlalchemy import distinct
 from sqlalchemy.sql.expression import asc
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.sql.expression import desc
@@ -343,7 +333,7 @@ class StakeholderProtocol(Protocol):
                              if 'sh_tag_filter' in filter else None)
             sh_filter_length = (filter['sh_filter_length']
                                 if 'sh_filter_length' in filter else 0)
-        
+
         # Get the order
         order_query, order_numbers = self._get_order(
                                                      request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value,
@@ -529,9 +519,36 @@ class StakeholderProtocol(Protocol):
                 ).\
                 join(Involvement).\
                 join(Activity).\
-                join(Status, Activity.fk_status == Status.id).\
                 filter(Activity.identifier == self._get_a_id(request)).\
-                filter(Status.name == 'active')
+		filter(Activity.fk_status == 2).\
+		filter(Stakeholder.fk_status == 2)
+
+	    # Yet another special case: moderator is calling ...
+        if request.params.get('moderator') == 'true':
+            # Gather pending and deleted versions. Return only the active version of each.
+            moderator_statii = [1, 4] # Pending and delete
+            moderator_statii_subquery = self.Session.query(
+                    distinct(Stakeholder.stakeholder_identifier).label('identifier')
+                ).\
+                filter(Stakeholder.fk_status.in_(moderator_statii)).\
+                subquery()
+            moderator_active = self.Session.query(
+                    Stakeholder.id.label('order_id'),
+                    func.char_length('').label('order_value'),
+                    Stakeholder.fk_status
+                ).\
+                filter(Stakeholder.stakeholder_identifier.in_(moderator_statii_subquery)).\
+                filter(Stakeholder.fk_status == 2)
+            # Newly pending versions have to be collected separately since they have no active version.
+            moderator_new = self.Session.query(
+                    Stakeholder.id.label('order_id'),
+                    func.char_length('').label('order_value'),
+                    Stakeholder.fk_status
+                ).\
+                filter(Stakeholder.fk_status == 1).\
+                filter(Stakeholder.version == 1)
+
+            relevant_stakeholders = moderator_active.union(moderator_new)
 
         # Count relevant stakeholders (before applying limit and offset)
         count = relevant_stakeholders.count()
@@ -774,9 +791,24 @@ class StakeholderProtocol(Protocol):
         key_translation, value_translation = self._get_translatedKV(lang, SH_Key, SH_Value)    
 
         # Prepare query for involvements
+        """
         involvement_status = self.Session.query(Activity.id.label("activity_id"),
                                                 Activity.activity_identifier.label("activity_identifier")).\
             join(status_filter).\
+            subquery()
+        """
+        # Assumption (is this correct?): Moderators see active, pending and deleted Activities.
+        # All others only see active Activities.
+        if self._check_moderator(request):
+            inv_status_filter = self.Session.query(Status.id).filter(or_(Status.name == 'active', Status.name == 'pending', Status.name == 'deleted'))
+        else:
+            inv_status_filter = self.Session.query(Status.id).filter(Status.name == 'active')
+        isf = inv_status_filter.subquery()
+        involvement_status = self.Session.query(
+                Activity.id.label("activity_id"),
+                Activity.activity_identifier.label("activity_identifier")
+            ).\
+            join(isf).\
             subquery()
         involvement_query = self.Session.query(
                 Involvement.fk_stakeholder.label("stakeholder_id"),
@@ -912,10 +944,18 @@ class StakeholderProtocol(Protocol):
                             from lmkp.views.activity_protocol2 import ActivityProtocol2
                             ap = ActivityProtocol2(self.Session)
                             # Important: involvements=False need to be set, otherwise endless loop occurs
-                            activity, count = ap._query(request, uid=i.activity_identifier, involvements=False)
-                            stakeholder.add_involvement(Inv(
-                                i.activity_identifier, activity[0],
-                                i.stakeholder_role, i.stakeholder_role_id))
+                            # Assumption: Moderators see active, pending and deleted Activities.
+                            # All others only see active involvements
+                            a_filter_dict = {
+                                'status_filter': inv_status_filter,
+                                'a_tag_filter': self.Session.query(A_Tag.fk_a_tag_group.label("a_filter_tg_id")).subquery(),
+                                'a_filter_length': 0
+                            }
+                            activity, count = ap._query(request, uid=i.activity_identifier, filter=a_filter_dict, involvements=False)
+                            for a in activity:                            
+                                stakeholder.add_involvement(Inv(
+                                    i.activity_identifier, a,
+                                    i.stakeholder_role, i.stakeholder_role_id))
                     else:
                         # Default: only basic information about Involvement
                         if stakeholder.find_involvement(i.activity_identifier, i.stakeholder_role) is None:

@@ -20,6 +20,8 @@ Ext.define('Lmkp.view.items.Details',{
 
     centerPanelType: null,
 
+    commentPanelType: null,
+
     defaults: {
         margin: '0 0 5 0',
         anchor: '100%'
@@ -59,50 +61,6 @@ Ext.define('Lmkp.view.items.Details',{
             // Remove all existing panels
             this.centerPanel.removeAll();
 
-            // Show a notice with the current status of this version
-            if(item.get('status') == 'pending') {
-                this.centerPanel.add({
-                    bodyCls: 'notice',
-                    bodyPadding: 5,
-                    html: 'You are seeing a <b>pending</b> version, which needs to be \n\
-                        reviewed before it is publicly visible.',
-                    margin: '3 3 0 3'
-
-                });
-            } else if(item.get('status') == 'inactive') {
-                this.centerPanel.add({
-                    bodyCls: 'notice',
-                    bodyPadding: 5,
-                    html: 'You are seeing an <b>inactive</b> version, which was previously active.',
-                    margin: '3 3 0 3'
-
-                });
-            } else if(item.get('status') == 'deleted') {
-                this.centerPanel.add({
-                    bodyCls: 'warning',
-                    bodyPadding: 5,
-                    html: 'You are seeing a <b>deleted</b> version.',
-                    margin: '3 3 0 3'
-
-                });
-            } else if(item.get('status') == 'rejected') {
-                this.centerPanel.add({
-                    bodyCls: 'warning',
-                    bodyPadding: 5,
-                    html: 'You are seeing a <b>rejected</b> version.',
-                    margin: '3 3 0 3'
-
-                });
-            } else if(item.get('status') == 'edited') {
-                this.centerPanel.add({
-                    bodyCls: 'notice',
-                    bodyPadding: 5,
-                    html: 'You are seeing an <b>edited</b> version.',
-                    margin: '3 3 0 3'
-
-                });
-            }
-
             // If there are no versions pending, simply show active version
             this.centerPanel.add({
                 contentItem: item,
@@ -114,11 +72,14 @@ Ext.define('Lmkp.view.items.Details',{
             });
 
             // Add commenting panel
-            this.centerPanel.add({
-                comment_object: 'stakeholder',
-                identifier: item.get('id'),
-                xtype: 'lo_commentpanel'
-            });
+            if(this.commentPanelType != null){
+                this.centerPanel.add({
+                    comment_object: 'stakeholder',
+                    identifier: item.get('id'),
+                    xtype: this.commentPanelType
+                });
+            }
+            
         }
 
         return item;

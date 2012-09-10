@@ -6,6 +6,8 @@ Ext.define('Lmkp.view.activities.Details', {
     alias: ['widget.lo_activitydetailwindow'],
 
     centerPanelType: 'lo_activitypanel',
+
+    commentPanelType: 'lo_commentpanel',
     
     config: {
         centerPanel: null,
