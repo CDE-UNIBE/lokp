@@ -69,15 +69,23 @@ Ext.define('Lmkp.store.ActivityGrid', {
     },
     
     syncWithStakeholders: function(extraParams) {
-    	
+
+        // Do not directly use extraParams provided by other store (any changes
+        // made on these params would also affect the other store). Instead,
+        // create a copy of the parameters.
+        var ep = new Object();
+        for (var e in extraParams) {
+            ep[e] = extraParams[e];
+        }
+
     	// Update url
     	this.proxy.url = '/stakeholders';
     	
     	// Update extraParams
-    	if (!extraParams['return_a']) {
-    		extraParams['return_a'] = true;
+    	if (!ep['return_a']) {
+    		ep['return_a'] = true;
        	}
-    	this.proxy.extraParams = extraParams;
+    	this.proxy.extraParams = ep;
 
         // (Re)load store (load at page 1, otherwise entries may be hidden)
     	this.loadPage(1);
