@@ -1,8 +1,11 @@
+/**
+ * Subclass of Lmkp.view.items.Details window.
+ */
 Ext.define('Lmkp.view.activities.Details', {
-    extend: 'Ext.window.Window',
+    extend: 'Lmkp.view.items.Details',
     alias: ['widget.lo_activitydetailwindow'],
 
-    bodyPadding: 5,
+    centerPanelType: 'lo_activitypanel',
     
     config: {
         centerPanel: null,
@@ -10,33 +13,14 @@ Ext.define('Lmkp.view.activities.Details', {
         historyStore: null
     },
     
-    defaults: {
-        anchor: '100%'
-    },
-    
     itemId: 'activityDetailWindow',
 
     layout: 'border',
-
-    modal: true,
-    height: 500,
-    width: 700,
 
     requires: [
     'Lmkp.view.activities.ActivityPanel',
     'Lmkp.view.comments.CommentPanel'
     ],
-
-    bbar: {
-        items: ['->', {
-            iconCls: 'cancel-button',
-            itemId: 'closeWindowButton',
-            scale: 'medium',
-            text: 'Close', // also translate tooltip
-            tooltip: Lmkp.ts.msg('Close window')
-        }],
-        xtype: 'toolbar'
-    },
 
     initComponent: function(){
 
@@ -56,7 +40,7 @@ Ext.define('Lmkp.view.activities.Details', {
             listeners: {
                 load: function(store, records, successful){
                     var firstRecord = store.first();
-                    this._populateDetails(firstRecord, firstRecord.get('status') == 'pending');
+                    this._populateDetails(firstRecord);
                 },
                 scope: this
             },
@@ -131,66 +115,5 @@ Ext.define('Lmkp.view.activities.Details', {
         this.title = 'Details on Activity ' + activity_identifier;
 
         this.callParent(arguments);
-    },
-
-    /**
-     * Ext has some serious issues with panels collapsed on start. Instead, this
-     * function is called right after showing this window.
-     */
-    _collapseHistoryPanel: function() {
-        if (this.historyPanel) {
-            this.historyPanel.collapse();
-        }
-
-        return this;
-    },
-
-    /**
-     * Parameter activity is an instance of Lmkp.model.Activity
-     */
-    _populateDetails: function(activity, pendingVersion){
-
-        if (activity) {
-
-            // Set the current selection to current
-            this.current = activity;
-            this.centerPanel.currentActivity = activity;
-            // Remove all existing panels
-            this.centerPanel.removeAll();
-
-            // Show a notice if this version is a pending one
-            if(pendingVersion) {
-                this.centerPanel.add({
-                    bodyCls: 'notice',
-                    bodyPadding: 5,
-                    html: 'You are seeing a pending version, which needs to be \n\
-                        reviewed before it is publicly visible',
-                    margin: '3 3 0 3'
-                    
-                });
-            }
-
-            // If there are no versions pending, simply show active version
-            this.centerPanel.add({
-                contentItem: activity,
-                border: 0,
-                bodyPadding: 0,
-                editable: true,
-                hiddenOriginal: false,
-                xtype: 'lo_activitypanel'
-            });
-
-            // Add commenting panel
-            this.centerPanel.add({
-                comment_object: 'activity',
-                identifier: activity.get('id'),
-                margin: 3,
-                xtype: 'lo_commentpanel'
-            });
-        }
-
-        return activity;
-
-    }
-	
+    }	
 });

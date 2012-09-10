@@ -1,9 +1,11 @@
+/**
+ * Subclass of Lmkp.view.items.Details window.
+ */
 Ext.define('Lmkp.view.stakeholders.Details',{
-    extend: 'Ext.window.Window',
+    extend: 'Lmkp.view.items.Details',
     alias: ['widget.lo_stakeholderdetailwindow'],
 
-    bodyPadding: 5,
-    modal: true,
+    centerPanelType: 'lo_stakeholderpanel',
 
     config: {
         centerPanel: null,
@@ -11,32 +13,12 @@ Ext.define('Lmkp.view.stakeholders.Details',{
         historyStore: null
     },
 
-    defaults: {
-        margin: '0 0 5 0',
-        anchor: '100%'
-    },
-
     itemId: 'stakeholderDetailWindow',
-
-    layout: 'border',
-    height: 400,
-    width: 600,
 
     requires: [
     'Lmkp.view.stakeholders.StakeholderPanel',
     'Lmkp.view.comments.CommentPanel'
     ],
-
-    bbar: {
-        items: ['->', {
-            iconCls: 'cancel-button',
-            itemId: 'closeWindowButton',
-            scale: 'medium',
-            text: 'Close', // also translate tooltip
-            tooltip: Lmkp.ts.msg('Close window')
-        }],
-        xtype: 'toolbar'
-    },
 
     initComponent: function(){
 
@@ -52,7 +34,7 @@ Ext.define('Lmkp.view.stakeholders.Details',{
             listeners: {
                 load: function(store, records, successful){
                     var firstRecord = store.first();
-                    this._populateDetails(firstRecord, firstRecord.get('status') == 'pending');
+                    this._populateDetails(firstRecord);
                 },
                 scope: this
             },
@@ -126,63 +108,5 @@ Ext.define('Lmkp.view.stakeholders.Details',{
         this.title = 'Details on Stakeholder ' + this.stakeholder.get('id');
 
         this.callParent(arguments);
-    },
-
-    /**
-     * Ext has some serious issues with panels collapsed on start. Instead, this
-     * function is called right after showing this window.
-     */
-    _collapseHistoryPanel: function() {
-        if (this.historyPanel) {
-            this.historyPanel.collapse();
-        }
-    },
-
-    /**
-     * Parameter stakeholder is an instance of Lmkp.model.Stakeholder
-     */
-    _populateDetails: function(stakeholder, pendingVersion){
-
-        if (stakeholder) {
-
-            // Set the current selection to current
-            this.current = stakeholder;
-
-            // Remove all existing panels
-            this.centerPanel.removeAll();
-
-            // Show a notice if this version is a pending one
-            if(pendingVersion) {
-                this.centerPanel.add({
-                    bodyCls: 'notice',
-                    bodyPadding: 5,
-                    html: 'You are seeing a pending version, which needs to be \n\
-                        reviewed before it is publicly visible',
-                    margin: '3 3 0 3'
-                    
-                });
-            }
-
-            // If there are no versions pending, simply show active version
-            this.centerPanel.add({
-                contentItem: stakeholder,
-                border: 0,
-                bodyPadding: 0,
-                editable: true,
-                hiddenOriginal: false,
-                xtype: 'lo_stakeholderpanel'
-            });
-
-            // Add commenting panel
-            this.centerPanel.add({
-                comment_object: 'stakeholder',
-                identifier: stakeholder.get('id'),
-                xtype: 'lo_commentpanel'
-            });
-        }
-
-        return stakeholder;
-
     }
-
 });
