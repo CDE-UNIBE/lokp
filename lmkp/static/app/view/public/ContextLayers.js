@@ -33,8 +33,6 @@ Ext.define('Lmkp.view.public.ContextLayers',{
 
         // Raise the activities layer to the top of the WMS / raster layers
         this.map.raiseLayer(this.parent.activitiesLayer, ++this.layers.length);
-        // Raise the (highligth) vector layer to the top of the layers
-        this.map.raiseLayer(this.parent.vectorLayer, ++this.layers.length);
 
         this.items = items;
 
