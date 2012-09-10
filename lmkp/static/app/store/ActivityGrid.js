@@ -65,7 +65,8 @@ Ext.define('Lmkp.store.ActivityGrid', {
                 || i.slice(0, prefix_sh.length) == prefix_sh) {
                 delete this.proxy.extraParams[i];
             }
-        }    },
+        }
+    },
     
     syncWithStakeholders: function(extraParams) {
     	
@@ -80,6 +81,16 @@ Ext.define('Lmkp.store.ActivityGrid', {
 
         // (Re)load store (load at page 1, otherwise entries may be hidden)
     	this.loadPage(1);
+    },
+
+    doCustomSort: function(dataIndex, direction) {
+        // Reset initial proxy to never show Stakeholders by mistake
+        this.setInitialProxy();
+        // Do the sort
+        this.sort({
+            property: dataIndex,
+            direction: direction
+        });
     },
 
     syncWithOther: function(extraParams) {
