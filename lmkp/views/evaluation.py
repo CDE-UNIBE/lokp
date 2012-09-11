@@ -25,7 +25,8 @@ def evaluation_json(request):
                     'sql': ''
                 },
                 'attributes': {
-                    'Activity': 'count'
+                    'Activity': 'count',
+                    'Contract area (ha)': 'sum'
                 },
                 'group_by': ['Intention of Investment']
             }
@@ -64,6 +65,18 @@ def evaluation_json(request):
                     'Contract area (ha)': 'sum'
                 },
                 'group_by': ['Year of agreement']
+            }
+    elif tempSwitch == '5':
+        input = {
+                'filter': {
+                    'geometry': '',
+                    'sql': ''
+                },
+                'attributes': {
+                    'Activity': 'count',
+                    'Contract area (ha)': 'sum'
+                },
+                'group_by': ['Year of agreement', 'Intention of Investment']
             }
     else:
         ret['msg'] = 'Temporarily only /1, /2 and /3 available.'
