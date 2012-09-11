@@ -9,6 +9,7 @@ Ext.require('Ext.chart.axis.Category');
 Ext.require('Ext.chart.axis.Numeric');
 Ext.require('Ext.tab.Panel');
 Ext.require('Ext.form.field.ComboBox');
+Ext.require('Lmkp.model.Evaluation5');
 
 Ext.onReady(function () {
     var loadingMask = Ext.get('loading-mask');
@@ -272,6 +273,145 @@ Ext.onReady(function () {
                 }]
             });
             mainTabPanel.insert(chart4);
+        }
+    }, this);
+
+    var reader5 = Ext.create('Ext.data.reader.Json', {
+
+        getResponseData: function(response){
+
+            var responseObj = Ext.decode(response.responseText);
+
+            var inputStore = Ext.create('Ext.data.Store', {
+                fields: [{
+                    mapping: 'Intention of Investment',
+                    name: 'intention_of_investment',
+                    type: 'string'
+                },{
+                    mapping: 'Year of agreement',
+                    name: 'year',
+                    type: 'int'
+                },{
+                    mapping: 'Activity (count)',
+                    name: 'activity',
+                    type: 'int'
+                },{
+                    mapping: 'Contract area (ha) (sum)',
+                    name: 'area',
+                    type: 'float'
+                }],
+                data: responseObj.data,
+                proxy: {
+                    type: 'memory',
+                    reader: {
+                        type: 'json'
+                    }
+                }
+            });
+
+            
+            var outputStore = Ext.create('Ext.data.Store',{
+                model: 'Lmkp.model.Evaluation5'
+            });
+
+            inputStore.each(function(record){
+                var y = record.get('year');
+                var matchedIndex = outputStore.find('year', y);
+
+                if(matchedIndex != -1){
+                    var outputRecord = outputStore.getAt(matchedIndex);
+                    switch(record.get('intention_of_investment')){
+                        case 'Agriculture':
+                            outputRecord.set('agriculture', record.get('area'));
+                            break;
+                        case 'Forestry':
+                            outputRecord.set('forestry', record.get('area'));
+                            break;
+                    }
+
+                } else {
+                    switch(record.get('intention_of_investment')){
+                        case 'Agriculture':
+                            outputStore.add(Ext.create('Lmkp.model.Evaluation5',{
+                                year: record.get('year'),
+                                agriculture: record.get('area')
+                            }));
+                            break;
+                        case 'Forestry':
+                            outputStore.add(Ext.create('Lmkp.model.Evaluation5',{
+                                year: record.get('year'),
+                                forestry: record.get('area')
+                            }));
+                            break;
+                    }
+                }
+
+            }, this);
+
+            var resultSet = Ext.create('Ext.data.ResultSet',{
+                records: outputStore.getRange()
+            });
+
+            console.log(resultSet);
+
+            return resultSet;
+        }
+
+    });
+
+    var store5 = Ext.create('Ext.data.JsonStore',{
+        autoLoad: true,
+        model: 'Lmkp.model.Evaluation5',
+        proxy: {
+            type: 'ajax',
+            url: '/evaluation/5',
+            reader: reader5
+        }
+    });
+
+    // Insert the new chart as new tab panel as soon as the store is loaded
+    store5.on('load', function(store, records, successful){
+
+        console.log(records);
+        if(successful){
+            var chart5 = Ext.create('Ext.chart.Chart', {
+                title: 'Contracts per Year',
+                animate: true,
+                store: store5,
+                axes: [{
+                    type: 'Category',
+                    position: 'left',
+                    fields: ['year'],
+                    title: 'Year',
+                    minimum: 1995,
+                    maximum: 2011
+                }, {
+                    type: 'Numeric',
+                    position: 'bottom',
+                    fields: ['agriculture', 'forestry']
+                }],
+                series: [{
+                    axis: 'bottom',
+                    type: 'bar',
+                    gutter: 80,
+                    highlight: true,
+                    smooth: true,
+                    tips: {
+                        trackMouse: true,
+                        width: 120,
+                        height: 47,
+                        renderer: function(storeItem, item) {
+                            var msg = storeItem.get('year_of_agreement') + ":<br/>";
+                            msg += storeItem.get('activity');
+                            msg += " newly signed contracts";
+                            this.setTitle(msg);
+                        }
+                    },
+                    xField: 'year',
+                    yField: ['agriculture', 'forestry']
+                }]
+            });
+            mainTabPanel.insert(chart5);
         }
     }, this);
 
