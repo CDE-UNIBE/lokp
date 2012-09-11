@@ -340,27 +340,69 @@ class StakeholderProtocol(Protocol):
                                                      SH_Changeset
                                                      )
 
-        # Find id's of relevant stakeholders by joining with prepared filter and
-        # order queries.
-        relevant_stakeholders = self.Session.query(
-            Stakeholder.id.label('order_id'),
-            order_query.c.value.label('order_value'),
-            Stakeholder.fk_status
-            ).\
-        outerjoin(SH_Tag_Group)
+        # Filter subqueries
+        filter_subqueries = None
 
-        if sh_filter_length == 0 or self._get_logical_operator(request) == 'or':
-            # OR: one single join needed (even with multiple criteria)
-            # If no filter provided, perform simple join as well
-            relevant_stakeholders = relevant_stakeholders.join(sh_tag_filter,
-                sh_tag_filter.c.sh_filter_tg_id == SH_Tag_Group.id)
+        if sh_filter_length == 0:
+            # If no filter is provided: pass
+            pass
+
+        elif self._get_logical_operator(request) == 'or':
+            # OR
+            all_subqueries = []
+            for x in sh_tag_filter:
+                # Collect the Stakeholder IDs for each filter
+                taggroups_sq = x.subquery()
+                single_subquery = self.Session.query(
+                        Stakeholder.id.label('sh_filter_id')
+                    ).\
+                    join(SH_Tag_Group).\
+                    join(taggroups_sq,
+                        taggroups_sq.c.sh_filter_tg_id == SH_Tag_Group.id)
+                all_subqueries.append(single_subquery)
+            # Put all found Stakeholder IDs together (UNION)
+            filter_subqueries = all_subqueries[0].\
+                union(* all_subqueries[1:]).\
+                subquery()
 
         else:
-            # AND: multiple criteria have to be joined. Convert each to subquery and join them
+            # AND
+            filter_subqueries = self.Session.query(
+                Stakeholder.id.label('sh_filter_id')
+            )
             for x in sh_tag_filter:
-                y = x.subquery()
-                relevant_stakeholders = relevant_stakeholders.join(y,
-                    y.c.sh_filter_tg_id == SH_Tag_Group.id)
+                # Collect the Stakeholder IDs for each filter
+                taggroups_sq = x.subquery()
+                single_subquery = self.Session.query(
+                        Stakeholder.id.label('sh_filter_id')
+                    ).\
+                    join(SH_Tag_Group).\
+                    join(taggroups_sq,
+                        taggroups_sq.c.sh_filter_tg_id == SH_Tag_Group.id).\
+                    subquery()
+                # Join each found Stakeholder ID with previously found IDs
+                filter_subqueries = filter_subqueries.\
+                    join(single_subquery,
+                        single_subquery.c.sh_filter_id == Stakeholder.id)
+            filter_subqueries = filter_subqueries.subquery()
+
+        # Create relevant stakeholders
+        relevant_stakeholders = self.Session.query(
+                 Stakeholder.id.label('order_id'),
+                 order_query.c.value.label('order_value'),
+                 Stakeholder.fk_status
+             )
+
+        if filter_subqueries is not None:
+            # If a filter was provided, join with filtered subqueries
+            relevant_stakeholders = relevant_stakeholders.\
+                join(filter_subqueries,
+                    filter_subqueries.c.sh_filter_id == Stakeholder.id)
+        else:
+            # If no filter was provided, simply join with SH_Tag_Group (outer
+            # join to also capture empty Items)
+            relevant_stakeholders = relevant_stakeholders.\
+                outerjoin(SH_Tag_Group)
 
         relevant_stakeholders = relevant_stakeholders.\
             outerjoin(order_query, order_query.c.id == Stakeholder.id)
