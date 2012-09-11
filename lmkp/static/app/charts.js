@@ -1,15 +1,18 @@
 Ext.require('Ext.data.JsonStore');
+Ext.require('Ext.data.reader.Json');
 Ext.require('Ext.chart.Chart');
+Ext.require('Ext.chart.axis.Category');
+Ext.require('Ext.chart.axis.Numeric');
 Ext.require('Ext.chart.series.Scatter');
+Ext.require('Ext.chart.series.Bar');
+Ext.require('Ext.chart.series.Line');
+Ext.require('Ext.chart.series.Pie');
 Ext.require('Ext.container.Viewport');
 Ext.require('Ext.form.Label');
 Ext.require('Ext.layout.container.Border');
-Ext.require('Ext.chart.series.Bar');
-Ext.require('Ext.chart.axis.Category');
-Ext.require('Ext.chart.axis.Numeric');
 Ext.require('Ext.tab.Panel');
 Ext.require('Ext.form.field.ComboBox');
-Ext.require('Lmkp.model.Evaluation5');
+Ext.require('Lmkp.model.SectorAreaPerYear');
 
 Ext.onReady(function () {
     var loadingMask = Ext.get('loading-mask');
@@ -302,7 +305,7 @@ Ext.onReady(function () {
             });
 
             var outputStore = Ext.create('Ext.data.Store',{
-                model: 'Lmkp.model.Evaluation5'
+                model: 'Lmkp.model.SectorAreaPerYear'
             });
 
             inputStore.each(function(record){
@@ -318,7 +321,7 @@ Ext.onReady(function () {
                 if(matchedIndex != -1){
                     outputRecord = outputStore.getAt(matchedIndex);
                 } else {
-                    outputRecord = Ext.create('Lmkp.model.Evaluation5',{
+                    outputRecord = Ext.create('Lmkp.model.SectorAreaPerYear',{
                         year: y
                     });
                     outputStore.add(outputRecord);
@@ -351,7 +354,7 @@ Ext.onReady(function () {
 
             var store5 = Ext.create('Ext.data.JsonStore',{
                 autoLoad: true,
-                model: 'Lmkp.model.Evaluation5',
+                model: 'Lmkp.model.SectorAreaPerYear',
                 data: outputStore.getRange()
             });
 
@@ -399,6 +402,65 @@ Ext.onReady(function () {
             mainTabPanel.insert(chart5);
         }
     });
+    
+    var store6 = Ext.create('Ext.data.JsonStore',{
+        autoLoad: true,
+        proxy: {
+            type: 'ajax',
+            url: '/evaluation/6',
+            reader: {
+                type: 'json',
+                root: 'data',
+                idProperty: 'country'
+            }
+        },
+        fields: [{
+            mapping: "Country",
+            name: 'country',
+            type: 'string'
+        }, {
+            mapping: "Stakeholder (count)",
+            name: 'stakeholder',
+            type: 'int'
+        }]
+    });
+
+    var chart6 = Ext.create('Ext.chart.Chart', {
+        animate: true,
+        legend: {
+            position: 'right'
+        },
+        series: [{
+            markerConfig: {
+                radius: 5,
+                size: 5
+            },
+            field: 'stakeholder',
+            highlight: true,
+            label: {
+                field: 'country',
+                display: 'rotate',
+                contrast: true,
+                font: '18px Arial'
+            },
+            showInLegend: true,
+            tips: {
+                trackMouse: true,
+                width: 120,
+                height: 47,
+                renderer: function(storeItem, item) {
+                    var msg = storeItem.get('stakeholder');
+                    msg += " stakeholders from " + storeItem.get('country');
+                    this.setTitle(msg);
+                }
+            },
+            type: 'pie'
+        }],
+        shadow: true,
+        store: store6,
+        title: 'Stakeholders\' country of origin'
+    });
+    mainTabPanel.insert(chart6);
 
     Ext.application({
         name: 'Lmkp',

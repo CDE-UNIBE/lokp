@@ -1,4 +1,8 @@
-Ext.define('Lmkp.model.Evaluation5', {
+/**
+ * A model to store the area (in hectares) per sector per year. Currently only
+ * used in the /charts view
+ */
+Ext.define('Lmkp.model.SectorAreaPerYear', {
     extend: 'Ext.data.Model',
 
     fields: [{
@@ -27,6 +31,14 @@ Ext.define('Lmkp.model.Evaluation5', {
     },{
         defaultValue: 0.,
         name: 'tourism',
+        type: 'int'
+    },{
+        defaultValue: 0.,
+        name: 'industry',
+        type: 'int'
+    },{
+        defaultValue: 0.,
+        name: 'conservation',
         type: 'int'
     }]
 });
