@@ -27,6 +27,8 @@ from pyramid.security import has_permission
         </script>
         <script type="text/javascript" src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>
         <script type="text/javascript" src="/static/lib/OpenLayers-2.11/OpenLayers.js"></script>
+        <link rel="stylesheet" type="text/css" href="/static/lib/OpenLayers-2.11/theme/default/google.css"></link>
+        <script src="http://maps.google.com/maps/api/js?v=3&amp;sensor=false"></script>
         <!--script type="text/javascript" src="/static/lib/geoext2/src/GeoExt/GeoExt.js"></script-->
         <script type="text/javascript" src="/lang"></script>
         <script type="text/javascript" src="/app/view/layers.js"></script>
