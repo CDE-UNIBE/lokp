@@ -108,8 +108,7 @@ Ext.define('Lmkp.controller.login.Toolbar', {
 
     onProfileSelect: function(combo, records, eOpts) {
         var form = Ext.create('Ext.form.Panel', {
-            standardSubmit: true,
-            url: '/'
+            standardSubmit: true
         });
         form.submit({
             params: {
@@ -120,8 +119,7 @@ Ext.define('Lmkp.controller.login.Toolbar', {
 
     onLanguageSelect: function(combo, records, eOpts) {
         var form = Ext.create('Ext.form.Panel', {
-            standardSubmit: true,
-            url: '/'
+            standardSubmit: true
         });
         form.submit({
             params: {

@@ -141,7 +141,7 @@ def index(request):
 
     return {}
 
-@view_config(route_name='administration', renderer='lmkp:templates/administration.mak')
+@view_config(route_name='administration', renderer='lmkp:templates/administration.mak', permission='administer')
 def administration(request):
     """
     Returns the administration HTML page

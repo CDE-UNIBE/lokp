@@ -15,7 +15,7 @@ from pyramid.security import has_permission
         ## General Styles
         <link rel="stylesheet" type="text/css" href="/static/lib/extjs-4.1.1/resources/css/ext-all.css"></link>
         <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/style.css')}"></link>
-        <script type="text/javascript" src="/static/lib/extjs-4.1.1/ext-dev.js"></script>
+        <script type="text/javascript" src="/static/lib/extjs-4.1.1/ext.js"></script>
         <script type="text/javascript">
             Ext.Loader.setConfig({
                 enabled: true,
