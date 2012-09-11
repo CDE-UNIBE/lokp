@@ -1,11 +1,10 @@
-from pyramid.view import view_config
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
-
-from sqlalchemy import func
+from pyramid.view import view_config
 from sqlalchemy import distinct
-from sqlalchemy.types import Float
+from sqlalchemy import func
 from sqlalchemy.sql.expression import cast
+from sqlalchemy.types import Float
 
 @view_config(route_name='charts', renderer='lmkp:templates/charts.mak')
 def show_charts(request):
@@ -20,54 +19,59 @@ def evaluation_json(request):
     tempSwitch = request.matchdict.get('temp', None)
     if tempSwitch == '1':
         input = {
-                'filter': {
-                    'geometry': '',
-                    'sql': ''
-                },
-                'attributes': {
-                    'Activity': 'count',
-                    'Contract area (ha)': 'sum'
-                },
-                'group_by': ['Intention of Investment']
-            }
+        'item': 'Activity',
+            'filter': {
+                'geometry': '',
+                'sql': ''
+            },
+            'attributes': {
+                'Activity': 'count',
+                'Contract area (ha)': 'sum'
+            },
+            'group_by': ['Intention of Investment']
+        }
     elif tempSwitch == '2':
         input = {
-                'filter': {
-                    'geometry': '',
-                    'sql': ''
-                },
-                'attributes': {
-                    'Activity': 'count',
-                    'Name of Investor': 'count distinct'
-                },
-                'group_by': ['Country']
-            }
+        'item': 'Activity',
+            'filter': {
+                'geometry': '',
+                'sql': ''
+            },
+            'attributes': {
+                'Activity': 'count',
+                'Name of Investor': 'count distinct'
+            },
+            'group_by': ['Country']
+        }
     elif tempSwitch == '3':
         input = {
-                'filter': {
-                    'geometry': '',
-                    'sql': ''
-                },
-                'attributes': {
-                    'Contract area (ha)': 'sum',
-                    'Activity': 'count'
-                },
-                'group_by': ['Country', 'Country of Investor']
-            }
+        'item': 'Activity',
+            'filter': {
+                'geometry': '',
+                'sql': ''
+            },
+            'attributes': {
+                'Contract area (ha)': 'sum',
+                'Activity': 'count'
+            },
+            'group_by': ['Country', 'Country of Investor']
+        }
     elif tempSwitch == '4':
         input = {
-                'filter': {
-                    'geometry': '',
-                    'sql': ''
-                },
-                'attributes': {
-                    'Activity': 'count',
-                    'Contract area (ha)': 'sum'
-                },
-                'group_by': ['Year of agreement']
-            }
+        'item': 'Activity',
+            'filter': {
+                'geometry': '',
+                'sql': ''
+            },
+            'attributes': {
+                'Activity': 'count',
+                'Contract area (ha)': 'sum'
+            },
+            'group_by': ['Year of agreement']
+        }
     elif tempSwitch == '5':
         input = {
+                'item': 'Activity',
                 'filter': {
                     'geometry': '',
                     'sql': ''
@@ -78,9 +82,35 @@ def evaluation_json(request):
                 },
                 'group_by': ['Year of agreement', 'Intention of Investment']
             }
+    elif tempSwitch == '6':
+        input = {
+            'item': 'Stakeholder',
+            'filter': {
+                'geometry': '',
+                'sql': ''
+            },
+            'attributes': {
+                'Stakeholder': 'count'
+            },
+            'group_by': ['Country']
+        }
     else:
         ret['msg'] = 'Temporarily only /1, /2 and /3 available.'
         return ret
+
+
+    if input['item'] == 'Stakeholder':
+        Item = Stakeholder
+        Tag_Group = SH_Tag_Group
+        Tag = SH_Tag
+        Key = SH_Key
+        Value = SH_Value
+    else:
+        Item = Activity
+        Tag_Group = A_Tag_Group
+        Tag = A_Tag
+        Key = A_Key
+        Value = A_Value
     
     # Test input
     if 'group_by' not in input:
@@ -93,33 +123,33 @@ def evaluation_json(request):
         ret['msg'] = "Missing attributes: No attributes were specified."
         return ret
     for attr in input['attributes']:
-        test = _checkFunction(input['attributes'][attr], attr)
+        test = _checkFunction(Item, Tag_Group, Tag, Key, Value, input['attributes'][attr], attr)
         if test is not True:
             ret['msg'] = test
             return ret
-    
+
     # Get groups
-    groups_subqueries, groups_columns = _getGroupBy(input['group_by'])
+    groups_subqueries, groups_columns = _getGroupBy(Item, Tag_Group, Tag, Key, Value, input['group_by'])
 
     # Get functions
-    functions_subqueries, functions_columns = _getAttributeFunctions(input['attributes'])
+    functions_subqueries, functions_columns = _getAttributeFunctions(Item, Tag_Group, Tag, Key, Value, input['attributes'])
 
     # Prepare basic query (already joins first group)
     q = Session.query(*groups_columns + functions_columns).\
-        join(A_Tag_Group).\
-        join(Activity)
+        join(Tag_Group).\
+        join(Item)
 
     # Join with further groups
     for g_sq in groups_subqueries[1:]:
-        q = q.outerjoin(g_sq, g_sq.c.a_id == Activity.id)
+        q = q.outerjoin(g_sq, g_sq.c.a_id == Item.id)
 
     # Join with functions
     for f_sq in functions_subqueries:
-        q = q.outerjoin(f_sq, f_sq.c.a_id == Activity.id)
+        q = q.outerjoin(f_sq, f_sq.c.a_id == Item.id)
     
     # Apply status filter (fix: active)
     fk_status = Session.query(Status.id).filter(Status.name == 'active')
-    q = q.filter(Activity.fk_status == fk_status)
+    q = q.filter(Item.fk_status == fk_status)
     
     # Apply grouping and ordering
     q = q.group_by(*groups_columns).\
@@ -133,7 +163,7 @@ def evaluation_json(request):
             entry[group] = res[i]
         # then go through functions
         for i, attr in enumerate(input['attributes']):
-            entry["%s (%s)" % (attr, input['attributes'][attr])] = res[i+len(input['group_by'])]
+            entry["%s (%s)" % (attr, input['attributes'][attr])] = res[i + len(input['group_by'])]
         data.append(entry)
     
     ret['success'] = True
@@ -141,7 +171,7 @@ def evaluation_json(request):
     
     return ret
 
-def _getAttributeFunctions(attributes):
+def _getAttributeFunctions(Item, Tag_Group, Tag, Key, Value, attributes):
     """
     Returns
     - an array with SubQueries
@@ -152,28 +182,28 @@ def _getAttributeFunctions(attributes):
     for attr in attributes:
         function = attributes[attr]
         if function == 'sum':
-            sq = Session.query(Activity.id.label('a_id'),
-                               cast(A_Value.value, Float).label('v')).\
-                 join(A_Tag_Group).\
-                 join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
-                 join(A_Value).\
-                 join(A_Key).\
-                 filter(A_Key.key == attr).\
-                 subquery()
+            sq = Session.query(Item.id.label('a_id'),
+                               cast(Value.value, Float).label('v')).\
+                join(Tag_Group).\
+                join(Tag, Tag_Group.id == Tag.fk_tag_group).\
+                join(Value).\
+                join(Key).\
+                filter(Key.key == attr).\
+                subquery()
             subqueries.append(sq)
             columns.append(func.sum(sq.c.v))
         elif function == 'count' or function == 'count distinct':
-            if attr == 'Activity':
+            if attr == 'Activity' or attr == 'Stakeholder':
                 columns.append(func.count())
             else:
-                sq = Session.query(Activity.id.label('a_id'),
-                                   A_Value.value.label('v')).\
-                     join(A_Tag_Group).\
-                     join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
-                     join(A_Value).\
-                     join(A_Key).\
-                     filter(A_Key.key == attr).\
-                     subquery()
+                sq = Session.query(Item.id.label('a_id'),
+                                   Value.value.label('v')).\
+                    join(Tag_Group).\
+                    join(Tag, Tag_Group.id == Tag.fk_tag_group).\
+                    join(Value).\
+                    join(Key).\
+                    filter(Key.key == attr).\
+                    subquery()
                 subqueries.append(sq)
                 if (function == 'count distinct'):
                     columns.append(func.count(distinct(sq.c.v)))
@@ -181,13 +211,13 @@ def _getAttributeFunctions(attributes):
                     columns.append(func.count(sq.c.v))
     return subqueries, columns
 
-def _checkFunction(function, attr):
+def _checkFunction(Item, Tag_Group, Tag, Key, Value, function, attr):
     """
     Returns True if a function is predefined and if targeted 
     attribute is of valid type (where needed)
     """
     if function == 'sum':
-        if _castToNumber(attr):
+        if _castToNumber(Item, Tag_Group, Tag, Key, Value, attr):
             return True
         else:
             return "Invalid type for function '%s': '%s' should contain only number values." % (function, attr)
@@ -198,7 +228,7 @@ def _checkFunction(function, attr):
     else:
         return "Unknown function: '%s' is not a predefined function." % function
 
-def _getGroupBy(group_by):
+def _getGroupBy(Item, Tag_Group, Tag, Key, Value, group_by):
     """
     Returns
     - an array with SubQueries
@@ -209,26 +239,26 @@ def _getGroupBy(group_by):
     for i, gb in enumerate(group_by):
         # first one different
         if i == 0:
-            sq = Session.query(A_Value.value.label('v'),
-                               A_Tag.fk_a_tag_group.label('group1_taggroupid')).\
-                       join(A_Tag).\
-                       join(A_Key).\
-                       filter(A_Key.key == gb).\
-                       subquery()
+            sq = Session.query(Value.value.label('v'),
+                               Tag.fk_tag_group.label('group1_taggroupid')).\
+                join(Tag).\
+                join(Key).\
+                filter(Key.key == gb).\
+                subquery()
         else:
-            sq = Session.query(Activity.id.label('a_id'),
-                               A_Value.value.label('v')).\
-                       join(A_Tag_Group).\
-                       join(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
-                       join(A_Value).\
-                       join(A_Key).\
-                       filter(A_Key.key == gb).\
-                       subquery()
+            sq = Session.query(Item.id.label('a_id'),
+                               Value.value.label('v')).\
+                join(Tag_Group).\
+                join(Tag, Tag_Group.id == Tag.fk_tag_group).\
+                join(Value).\
+                join(Key).\
+                filter(Key.key == gb).\
+                subquery()
         subqueries.append(sq)
         columns.append(sq.c.v)
     return subqueries, columns
 
-def _castToNumber(key):
+def _castToNumber(Item, Tag_Group, Tag, Key, Value, key):
     """
     Returns True if the given key has number values
     """
