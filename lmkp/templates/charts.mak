@@ -62,8 +62,8 @@ from pyramid.security import has_permission
             <h2>Distribution of activities worldwide</h2>
             <p>
                 Worldwide distribution of land related deals based on the
-                Landmatrix database available at <a href="http://www.landportal.info/matrix">
-                    www.landportal.info/matrix
+                Landmatrix database available at <a href="http://www.landportal.info/landmatrix">
+                    www.landportal.info/landmatrix
                 </a>
             </p>
             <p>
