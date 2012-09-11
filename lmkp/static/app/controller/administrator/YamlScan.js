@@ -1,4 +1,4 @@
-Ext.define('Lmkp.controller.administrator.Main', {
+Ext.define('Lmkp.controller.administrator.YamlScan', {
     extend: 'Ext.app.Controller',
 
     views: [
@@ -22,14 +22,8 @@ Ext.define('Lmkp.controller.administrator.Main', {
 	
     init: function() {
         this.control({
-            'yamlscanpanel templatecolumn[name=editColumn]': {
+            'lo_administratoryamlscanpanel templatecolumn[name=editColumn]': {
                 click: this.showTranslationWindow
-            },
-            'panel[id=outer-panel]': {
-                afterrender: this.onOuterPanelAfterRender
-            },
-            'panel[id=outer-panel] toolbar button[id=logout_button]': {
-                click: this.logout
             },
             'lo_administratoryamlscanpanel toolbar button[itemId=yaml-scan-button]': {
                 click: this.onScanButtonClick
@@ -40,18 +34,6 @@ Ext.define('Lmkp.controller.administrator.Main', {
         });
     },
 
-    logout: function(){
-        var form = Ext.create('Ext.form.Panel', {
-            standardSubmit: true,
-            url: '/logout'
-        });
-        form.submit({
-            params: {
-                'form.logout': true
-            }
-        });
-    },
-	
     showTranslationWindow: function(g, td) {
         var record = g.getSelectionModel().getSelection()[0];
         // only do some action if original is not in english (translation != 0)
@@ -211,16 +193,6 @@ Ext.define('Lmkp.controller.administrator.Main', {
                 }
             });
         }
-    },
-
-    onOuterPanelAfterRender: function() {
-        this.getLanguagesStore().load();
-        var cb1 = Ext.ComponentQuery.query('combobox[id=language_combobox]')[0];
-        cb1.setValue(Lmkp.ts.msg("locale"));
-        this.getProfilesStore().load();
-        var initialProfile = 'global';
-        var cb2 = Ext.ComponentQuery.query('combobox[id=profile_combobox]')[0];
-        cb2.setValue(initialProfile);
     }
     
 });

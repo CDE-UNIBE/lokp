@@ -24,7 +24,7 @@ Ext.onReady(function(){
 
         controllers: [
         'administrator.Code',
-        'administrator.Main',
+        'administrator.YamlScan',
         'login.Toolbar'
         ],
 
