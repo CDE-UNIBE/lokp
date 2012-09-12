@@ -192,7 +192,8 @@ Ext.define('Lmkp.view.activities.NewActivity', {
                 fieldset.add(me._getSingleFormItem(
                     main_store,
                     completeStore,
-                    record.get('name')
+                    record.get('name'),
+                    true
                 ));
                 form.add(fieldset);
             });
@@ -226,15 +227,19 @@ Ext.define('Lmkp.view.activities.NewActivity', {
 
     /**
      * Returns a single form entry.
+     * {is_mandatory}: Boolean. Renders the combobox of the newtaggrouppanel
+     * disabled (cannot be changed)
      */
-    _getSingleFormItem: function(mainStore, completeStore, initial_key) {
+    _getSingleFormItem: function(mainStore, completeStore, initial_key,
+        is_mandatory) {
         return {
             xtype: 'lo_newtaggrouppanel', // This should be named tagpanel
             is_maintag: true,
             removable: true,
             main_store: mainStore,
             complete_store: completeStore,
-            initial_key: initial_key
+            initial_key: initial_key,
+            is_mandatory: is_mandatory
         };
     }
 });
