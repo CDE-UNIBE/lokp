@@ -14,11 +14,13 @@ Ext.define('Lmkp.view.public.Map',{
     frame: false,
 
     // Initial center
-//    center: new OpenLayers.LonLat(0,0),
+    //    center: new OpenLayers.LonLat(0,0),
 
     config: {
         activitiesLayer: null,
         baseLayers: null,
+        highlightCtrl: null,
+        selectCtrl: null,
         identifyCtrl: null,
         map: null,
         vectorLayer: null,
@@ -36,7 +38,7 @@ Ext.define('Lmkp.view.public.Map',{
     tbar: null,
 
     // Initial zoom level
-//    zoom: 2,
+    //    zoom: 2,
 
     initComponent: function() {
 
@@ -137,10 +139,18 @@ Ext.define('Lmkp.view.public.Map',{
         });
 
         // Create the identify control and action
-        this.identifyCtrl = new OpenLayers.Control.SelectFeature(this.activitiesLayer);
+        this.selectCtrl = new OpenLayers.Control.SelectFeature(this.activitiesLayer);
+        this.map.addControl(this.selectCtrl);
+
+        this.highlightCtrl = new OpenLayers.Control.SelectFeature(this.activitiesLayer, {
+            hover: true,
+            highlightOnly: true,
+            renderIntent: "temporary"
+        });
+        this.map.addControl(this.highlightCtrl);
 
         // Add the controls to the map
-        this.map.addControl(this.identifyCtrl);
+        //this.map.addControl(this.identifyCtrl);
 
         var panAction = Ext.create('GeoExt.Action',{
             control: new OpenLayers.Control.DragPan({
@@ -186,16 +196,16 @@ Ext.define('Lmkp.view.public.Map',{
             tooltip: 'Zoom to profile region'
         }));
 
-        var identifyAction = Ext.create('GeoExt.Action',{
-            control: this.identifyCtrl,
-            handler: identifyAction,
+        var selectAction = Ext.create('GeoExt.Action',{
+            control: this.selectCtrl,
+            handler: selectAction,
             iconCls: 'identify-button',
             map: this.map,
             scale: 'medium',
             toggleGroup: 'map-controls',
             tooltip: "Identify feature"
         });
-        this.tbar.add(Ext.create('Ext.button.Button', identifyAction));
+        this.tbar.add(Ext.create('Ext.button.Button', selectAction));
 
         this.tbar.add('->');
 
@@ -244,7 +254,7 @@ Ext.define('Lmkp.view.public.Map',{
                 bounds.transform(
                     this.geographicProjection,
                     this.sphericalMercatorProjection
-                );
+                    );
                 this.extent = bounds;
             } else {
                 // Fall back

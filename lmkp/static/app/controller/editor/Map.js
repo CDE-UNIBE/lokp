@@ -68,12 +68,12 @@ Ext.define('Lmkp.controller.editor.Map', {
             onComplete: function(feature, pixel){
                 var controller = me.getController('public.Map');
                 var ctrl = mappanel.getIdentifyCtrl();
-                ctrl.events.register('featurehighlighted', mappanel, controller.openDetailWindow);
+                //ctrl.events.register('featurehighlighted', mappanel, controller.openDetailWindow);
             },
             onStart: function(feature, pixel){
                 var controller = me.getController('public.Map');
                 var ctrl = mappanel.getIdentifyCtrl();
-                ctrl.events.unregister('featurehighlighted', mappanel, controller.openDetailWindow);
+                //ctrl.events.unregister('featurehighlighted', mappanel, controller.openDetailWindow);
                 ctrl.unselectAll();
                 //mappanel.getIdentifyCtrl().highlight(feature);
                 mappanel.getIdentifyCtrl().select(feature);
