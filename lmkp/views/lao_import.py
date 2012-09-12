@@ -45,51 +45,49 @@ def lao_read_stakeholders2(request):
         stakeholderObject = {}
         stakeholderObject['taggroups'] = []
 
-        # A list to store all already added stakeholders
-        knownStakeholders = []
+        # Handle the name
+        nameIndex = 2
+        name = record.record[nameIndex]
 
-        # Loop all attributes
-        for i in [2, 3]:
+        # If this stakeholder is already in the list of known stakeholders,
+        # go to the next record
+        if name in knownStakeholders:
+            continue
 
-            # Handle the stakeholder names
-            if i == 2:
-                # Each attribute is written to a separate taggroup
-                if record.record[i].strip() != '':
+        # Check if the name is not empty
+        if name.strip() != '' and name is not None:
+            stakeholderObject['taggroups'].append(create_taggroup_dict(attributeMap[nameIndex], name))
+            knownStakeholders.append(name)
 
-                    attributeValue = record.record[i]
+        # Handle the country of origin
+        countryIndex = 3
+        country = record.record[countryIndex]
 
-                    # Check if we already added this stakeholder
-                    if attributeValue not in knownStakeholders:
+        # Check if the country is not empty and add a new taggroup
+        if country.strip() != '':
 
-                        stakeholderObject['taggroups'].append(create_taggroup_dict(attributeMap[i], attributeValue))
-                        knownStakeholders.append(attributeValue)
+            # Handle joint venture stakeholders from different countries
+            # In the source Shapefile different countries are connected using
+            # hyphens.
+            if len(country.split('-')) > 1:
+                countries = country.split('-')
+                for c in countries:
+                    value = c.strip()
 
-            # Handle the stakeholder origin country
-            if i == 3:
+                    if value in countriesMap:
+                        value = countriesMap[value]
 
-                attributeValue = record.record[i]
-                if attributeValue.strip() != '':
+                    stakeholderObject['taggroups'].append(create_taggroup_dict(attributeMap[countryIndex], value))
+            else:
 
-                    # Handle joint venture stakeholders
-                    if len(attributeValue.split('-')) > 1:
-                        countries = attributeValue.split('-')
-                        for c in countries:
-                            value = c.strip()
+                value = country.strip()
+                if value in countriesMap:
+                    value = countriesMap[value]
 
-                            if value in countriesMap:
-                                value = countriesMap[value]
+                stakeholderObject['taggroups'].append(create_taggroup_dict(attributeMap[countryIndex], value))
 
-                            stakeholderObject['taggroups'].append(create_taggroup_dict(attributeMap[i], value))
-                    else:
-
-                        value = attributeValue.strip()
-                        if value in countriesMap:
-                            value = countriesMap[value]
-
-                        stakeholderObject['taggroups'].append(create_taggroup_dict(attributeMap[i], value))
-
+        # Finally add the current stakeholder to the list of stakeholders
         stakeholderDiffObject['stakeholders'].append(stakeholderObject)
-
 
     return stakeholderDiffObject
 
