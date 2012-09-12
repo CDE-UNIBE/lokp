@@ -17,15 +17,35 @@ Ext.define('Lmkp.view.public.Map',{
     //    center: new OpenLayers.LonLat(0,0),
 
     config: {
+        /**
+         * An OpenLayers.Layer.Vector layer that holds all active activities
+         * and pending changes of the logged in user.
+         */
         activitiesLayer: null,
+        /**
+         * A GeoExt.data.FeatureStore that holds the features from activitesLayer
+         */
+        activityFeatureStore: null,
         baseLayers: null,
-        highlightCtrl: null,
-        selectCtrl: null,
-        identifyCtrl: null,
+        /**
+         * OpenLayers.Geometry that store the geometry of newly created activities
+         */
+        newFeatureGeometry: null,
+        /**
+         * A SelectFeature control to select newly set activities when creating
+         * new activities.
+         */
+        newFeatureSelectCtrl: null,
         map: null,
-        vectorLayer: null,
-        activityGeometry: null,
-        vectorStore: null
+        /**
+         * A SelectFeature control to select activities.
+         */
+        selectCtrl: null,
+        /**
+         * Helper OpenLayers.Layer.Vector layer that is solely used when a new
+         * activity is created
+         */
+        vectorLayer: null
     },
 
     layout: 'fit',
@@ -100,7 +120,7 @@ Ext.define('Lmkp.view.public.Map',{
             isBaseLayer: false
         });
 
-        this.vectorStore = Ext.create('Lmkp.store.ActivityVector',{
+        this.activityFeatureStore = Ext.create('Lmkp.store.ActivityVector',{
             autoLoad: true,
             layer: this.activitiesLayer,
             proxy: Ext.create('GeoExt.data.proxy.Protocol',{
@@ -117,10 +137,6 @@ Ext.define('Lmkp.view.public.Map',{
                 }
             })
         });
-
-        this.vectorStore.on('load', function(store, records, successful){
-            //console.log(this.activitiesLayer);
-            }, this);
 
         // Create the map, the layers are appended later, see below.
         this.map = new OpenLayers.Map({
@@ -139,18 +155,15 @@ Ext.define('Lmkp.view.public.Map',{
         });
 
         // Create the identify control and action
-        this.selectCtrl = new OpenLayers.Control.SelectFeature(this.activitiesLayer);
+        this.selectCtrl = new OpenLayers.Control.SelectFeature(this.activitiesLayer,{
+            clickout: false,
+            multiple: false
+        });
         this.map.addControl(this.selectCtrl);
 
-        this.highlightCtrl = new OpenLayers.Control.SelectFeature(this.activitiesLayer, {
-            hover: true,
-            highlightOnly: true,
-            renderIntent: "temporary"
-        });
-        this.map.addControl(this.highlightCtrl);
-
-        // Add the controls to the map
-        //this.map.addControl(this.identifyCtrl);
+        // Create the identify control and action
+        this.newFeatureSelectCtrl = new OpenLayers.Control.SelectFeature(this.vectorLayer);
+        this.map.addControl(this.newFeatureSelectCtrl);
 
         var panAction = Ext.create('GeoExt.Action',{
             control: new OpenLayers.Control.DragPan({

@@ -4,6 +4,9 @@ Ext.define('Lmkp.controller.public.Map', {
     refs: [{
         ref: 'mapPanel',
         selector: 'lo_publicmappanel'
+    },{
+        ref: 'activityGridPanel',
+        selector: 'lo_publicactivitytablepanel gridpanel[itemId="activityGrid"]'
     }],
 
     requires: [
@@ -64,14 +67,37 @@ Ext.define('Lmkp.controller.public.Map', {
             editorMapController.initEditorControls();
         }
 
-    //var ctrl = comp.getIdentifyCtrl();
-    //ctrl.events.register('featurehighlighted', comp, this.openDetailWindow);
+        var ctrl = comp.getSelectCtrl();
+        ctrl.events.register('featurehighlighted', this, this.openDetailWindow);
     },
     
     openDetailWindow: function(event){
         var f = event.feature
         if (f) {
-            // Show details window
+            // Get the selection model of the activity grid
+            var selectionModel = this.getActivityGridPanel().getSelectionModel();
+            // Deselect all activities in the store
+            selectionModel.deselectAll(true);
+            // and its store
+            var store = selectionModel.getStore();
+
+            // Try to find the record in the store (only the showed activities!)
+            var activity = store.findRecord('id', f.attributes.activity_identifier);
+
+            // If we find an activity in the current page of the store, select
+            // it!
+            // Else it is not possible to know on which page the record is.
+            if(activity){
+                selectionModel.select([activity], false, true);
+            }
+
+            // Show in any case the related stakeholder
+            if (this.getStakeholderGridStore()) {
+                // Update other grid panel
+                this.getStakeholderGridStore().syncByOtherId(f.attributes.activity_identifier);
+            }
+
+            // Finally show the window with details
             var w = Ext.create('Lmkp.view.activities.Details',{
                 activity_identifier: f.attributes.activity_identifier
             }).show()._collapseHistoryPanel();
@@ -87,6 +113,8 @@ Ext.define('Lmkp.controller.public.Map', {
         var zoom = map.getZoom();
         var value = center.lon + "|" + center.lat + "|" + zoom;
 
+        var me = this;
+
         var expirationDate = new Date();
         expirationDate.setMonth(new Date().getMonth() + 3);
         Ext.util.Cookies.set('_LOCATION_', value, expirationDate);
@@ -100,49 +128,54 @@ Ext.define('Lmkp.controller.public.Map', {
             callback: function() {
                 // Update StakeholderGrid store to match ActivityGrid
                 shStore.syncWithActivities(this.getProxy().extraParams);
+                me.unselectAll();
             }
         });
     },
 
-    highlightActivity: function(activity) {
+    /**
+     * Select an activity on the map.
+     */
+    selectActivity: function(activity, suppressWindow){
+        
+        this.unselectAll();
 
-        // Make sure item is an 'Activity'
-        if (activity.modelName == 'Lmkp.model.Activity') {
-            var layer = this.getMapPanel().getActivitiesLayer();
-            var ctrl = this.getMapPanel().getHighlightCtrl();
-
-            // Assumption: only one activity can be shown at a time
-            var f = layer.getFeaturesByAttribute('activity_identifier', activity.get('id'))[0];
-            ctrl.highlight(f);
-        }
-    },
-
-    unhighlightActivity: function(activity){
-        // Make sure item is an 'Activity'
-        if (activity.modelName == 'Lmkp.model.Activity') {
-            var layer = this.getMapPanel().getActivitiesLayer();
-            var ctrl = this.getMapPanel().getHighlightCtrl();
-
-            // Assumption: only one activity can be shown at a time
-            var f = layer.getFeaturesByAttribute('activity_identifier', activity.get('id'))[0];
-            ctrl.unhighlight(f);
-        }
-    },
-
-    selectActivity: function(activity){
-
-        var layer = this.getMapPanel().getActivitiesLayer();
         var ctrl = this.getMapPanel().getSelectCtrl();
-        // Try to find the corresponding feature
-        var feature = layer.getFeaturesByAttribute('activity_identifier', activity.get('id'))[0];
-        if(feature){
-            //ctrl.events.unregister('featurehighlighted', this.getMapPanel(), publicMapController.openDetailWindow);
-            ctrl.select(feature);
-        //ctrl.events.register('featurehighlighted', this.getMapPanel(), publicMapController.openDetailWindow);
+        
+        ctrl.events.unregister('featurehighlighted', this, this.openDetailWindow);
+        
+        if (activity.modelName == 'Lmkp.model.Activity') {
+            var layer = this.getMapPanel().getActivitiesLayer();
+            // Try to find the corresponding feature
+            var feature = layer.getFeaturesByAttribute('activity_identifier', activity.get('id'))[0];
+            if(feature){
+                ctrl.select(feature);
+            }
         }
+
+        ctrl.events.register('featurehighlighted', this, this.openDetailWindow);
+        
     },
 
-    unselectActivity: function(activity){
+    selectFeature: function(feature){
+
+        this.unselectAll();
+
+        var ctrl = this.getMapPanel().getSelectCtrl();
+
+        ctrl.events.unregister('featurehighlighted', this, this.openDetailWindow);
+
+        if(feature){
+            ctrl.select(feature);
+        }
+
+        ctrl.events.register('featurehighlighted', this, this.openDetailWindow);
+    },
+
+    /**
+     * Unselect all activities.
+     */
+    unselectAll: function(){
         this.getMapPanel().getSelectCtrl().unselectAll();
     },
 
