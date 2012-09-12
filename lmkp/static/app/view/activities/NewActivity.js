@@ -11,7 +11,7 @@ Ext.define('Lmkp.view.activities.NewActivity', {
     title: 'Add new Activity',
 
     config: {
-        activityGeometry: null
+        newFeatureGeometry: null
     },
 	
     layout: 'fit',

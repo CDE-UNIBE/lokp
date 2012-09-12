@@ -52,9 +52,7 @@ Ext.define('Lmkp.controller.public.Main', {
                 render: this.onStakeholderTablePanelRender
             },
             'lo_publicactivitytablepanel gridpanel[itemId=activityGrid]': {
-                selectionchange: this.onTableSelectionChange,
-                itemmouseenter: this.onActivityTablePanelMouseEnter,
-                itemmouseleave: this.onActivityTablePanelMouseLeave
+                selectionchange: this.onTableSelectionChange
             },
             'lo_publicactivitytablepanel gridpanel templatecolumn[name=showDetailsColumn]': {
                 click: this.onShowDetailsColumnClick
@@ -179,10 +177,8 @@ Ext.define('Lmkp.controller.public.Main', {
                 otherStore.syncByOtherId(sel.get('id'));
             }
 
-            // If Activity was selected, also show Feature on map
-            if (sel.modelName == 'Lmkp.model.Activity') {
-                this.mapController.selectActivity(sel);
-            }
+            // Show Feature on the map
+            this.mapController.selectActivity(sel);
         }
     },
 
@@ -211,17 +207,9 @@ Ext.define('Lmkp.controller.public.Main', {
                 }).show();
                 w._collapseHistoryPanel();
 
-                // Highlight the Activity on the map
-                var layer = this.getMapPanel().getActivitiesLayer();
-                var ctrl = this.getMapPanel().getSelectCtrl();
-                var publicMapController = this.getController('public.Map');
-                // Try to find the corresponding feature
-                var feature = layer.getFeaturesByAttribute('activity_identifier', record.get('id'))[0];
-                if(feature){
-                    //ctrl.events.unregister('featurehighlighted', this.getMapPanel(), publicMapController.openDetailWindow);
-                    ctrl.select(feature);
-                    //ctrl.events.register('featurehighlighted', this.getMapPanel(), publicMapController.openDetailWindow);
-                }
+                // Show Feature on the map
+                this.mapController.selectActivity(record);
+                
             } else if (type == 'stakeholder') {
                 // Show details window
                 w = Ext.create('Lmkp.view.stakeholders.Details',{
@@ -312,6 +300,9 @@ Ext.define('Lmkp.controller.public.Main', {
         // results filtered
         var filterController = this.getController('public.Filter');
         filterController.applyFilter();
+
+        //
+        this.mapController.unselectAll();
     },
 
     onActivityDeleteAllFiltersButtonClick: function() {
@@ -424,14 +415,6 @@ Ext.define('Lmkp.controller.public.Main', {
                 deleteButton.setDisabled(count == 0);
             }
         }
-    },
-
-    onActivityTablePanelMouseEnter: function(view, record, item, index, event){
-        this.mapController.highlightActivity(record);
-    },
-
-    onActivityTablePanelMouseLeave: function(view, record, item, index, event){
-        this.mapController.unhighlightActivity(record);
     }
 
 });
