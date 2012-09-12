@@ -542,7 +542,7 @@ def _get_field_config(Key, Value, name, config, language, mandatory=False):
         # Values from local YAML are one level deeper
         try:
             if 'predefined' in config['values']:
-                print "***"
+                #print "***"
                 xtype = 'combobox'
                 predefined = config['values']['predefined']
         except KeyError:
