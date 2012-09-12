@@ -16,6 +16,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
             valueField: 'name',
             displayField: 'fieldLabel',
             queryMode: 'local',
+            readOnly: this.is_mandatory,
             editable: false,
 //            typeAhead: true,
             forceSelection: true,
