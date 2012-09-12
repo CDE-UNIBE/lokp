@@ -35,7 +35,6 @@ Ext.define('Lmkp.controller.activities.Details', {
 
     onCloseWindowButtonClick: function(){
         this.getActivityDetailWindow().close();
-        this.getMapPanel().getIdentifyCtrl().unselectAll();
     },
 
     /**

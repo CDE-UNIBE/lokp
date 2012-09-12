@@ -50,9 +50,6 @@ Ext.define('Lmkp.controller.editor.Overview', {
             'lo_editortablepanel': {
             //render: this.onTablePanelRender
             },
-            'lo_editormappanel': {
-                render: this.onMapPanelRender
-            },
             // Events concerning the NewActivity panel
             'lo_newactivitypanel': {
                 render: this.onNewActivityPanelRender
@@ -766,12 +763,6 @@ Ext.define('Lmkp.controller.editor.Overview', {
         }
     },
 
-    onMapPanelRender: function(comp, eOpts){
-        // Register the getfeatureinfo event to the identify control
-        var identifyCtrl = comp.getIdentifyCtrl();
-        identifyCtrl.events.register('getfeatureinfo', this, this.onGetFeatureInfo);
-    },
-
     onGetFeatureInfo: function(event){
         var gml = new OpenLayers.Format.GML();
         // Get the first vector
@@ -858,7 +849,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
         map.addControl(movePointCtrl);
         mappanel.getVectorLayer().events.register('featuremodified', comp, function(event){
             var g = event.feature.geometry;
-            this.setActivityGeometry(g);
+            this.setNewGeometryGeometry(g);
         });
 
         var moveAction = Ext.create('GeoExt.Action', {
@@ -898,7 +889,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
                         movePointCtrl.selectFeature(event.feature);
                         createButton.toggle(false);
                         moveButton.toggle(true);
-                        this.setActivityGeometry(g);
+                        this.setNewFeatureGeometry(g);
                     //
                     },
                     scope: comp
@@ -955,8 +946,8 @@ Ext.define('Lmkp.controller.editor.Overview', {
             // Get the geometry
             var geometry = null;
             var geojson = new OpenLayers.Format.GeoJSON();
-            if(this.getNewActivityPanel().getActivityGeometry()){
-                geometry = Ext.decode(geojson.write(this.getNewActivityPanel().getActivityGeometry()));
+            if(this.getNewActivityPanel().getNewFeatureGeometry()){
+                geometry = Ext.decode(geojson.write(this.getNewActivityPanel().getNewFeatureGeometry()));
             }
 
             var comps = formpanel.query('lo_stakeholderfieldcontainer');
@@ -1019,7 +1010,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
                         Ext.Msg.alert('Success', 'The activity was successfully created. It will be reviewed shortly.');
 
                         var p = this.getNewActivityPanel();
-                        p.setActivityGeometry(null);
+                        p.setNewFeatureGeometry(null);
 
                         // Reset form
                         var controller = me.getController('editor.Detail');

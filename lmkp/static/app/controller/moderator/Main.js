@@ -202,7 +202,7 @@ Ext.define('Lmkp.controller.moderator.Main', {
                     });
                     // If the review was successful it is necessary to reload
                     // the ActivityVector store
-                    mapPanel.getVectorStore().load();
+                    mapPanel.getActivityFeatureStore().load();
                 } else {
                     Ext.Msg.show({
                         buttons: Ext.Msg.CANCEL,
