@@ -38,77 +38,18 @@ Ext.define('Lmkp.controller.editor.Map', {
     initEditorControls: function() {
         var mappanel = this.getMapPanel();
         var map = mappanel.getMap();
-        var tbar = mappanel.getDockedItems('toolbar')[0];
-
-        // Select
-        /*var selectCtrl = new OpenLayers.Control.SelectFeature(
-            //mappanel.getVectorLayer()
-            mappanel.getActivitiesLayer()
-            );*/
-        var selectCtrl = mappanel.getIdentifyCtrl();
-        var publicMapController = this.getController('public.Map');
-
-        
-        //map.addControl(dragCtrl);
-        // Add the control and button to move an activity
-        /*var movePointCtrl = new OpenLayers.Control.ModifyFeature(
-            mappanel.getActivitiesLayer(), {
-                mode: OpenLayers.Control.ModifyFeature.DRAG,
-                selectControl: mappanel.identifyCtrl,
-                dragControl: dragCtrl
-            });*/
 
         var me = this;
 
-        var editLocationWindow = Ext.create('Lmkp.view.editor.EditLocation',{
-            identifyCtrl: mappanel.getIdentifyCtrl()
-        });
-
-        var movePointCtrl = new OpenLayers.Control.DragFeature(mappanel.getActivitiesLayer(),{
+        // The DragFeature control to move newly added activtiies
+        var movePointCtrl = new OpenLayers.Control.DragFeature(mappanel.getVectorLayer(),{
             onComplete: function(feature, pixel){
-                var controller = me.getController('public.Map');
-                var ctrl = mappanel.getIdentifyCtrl();
-                ctrl.events.register('featurehighlighted', mappanel, controller.openDetailWindow);
-            },
-            onStart: function(feature, pixel){
-                var controller = me.getController('public.Map');
-                var ctrl = mappanel.getIdentifyCtrl();
-                ctrl.events.unregister('featurehighlighted', mappanel, controller.openDetailWindow);
-                ctrl.unselectAll();
-                //mappanel.getIdentifyCtrl().highlight(feature);
-                mappanel.getIdentifyCtrl().select(feature);
-                editLocationWindow.setPosition(mappanel.getBox().x + 5, mappanel.getBox().y + 40);
-                editLocationWindow.setFeature(feature);
-                editLocationWindow.show();
-
+                mappanel.setNewFeatureGeometry(feature.geometry);
             }
         });
-
-        movePointCtrl.events.register('activate', this, function(control, element){
-            });
-
-        movePointCtrl.events.register('deactivate', this, function(control, element){
-            mappanel.getIdentifyCtrl().unselectAll();
-        });
-
         map.addControl(movePointCtrl);
-        /* mappanel.getActivitiesLayer().events.register('featuremodified', mappanel,
-            function(event) {
-                console.log("featuremodified");
-                var g = event.feature.geometry;
-                this.setActivityGeometry(g);
 
-                mappanel.addDocked(Ext.create('Ext.toolbar.Toolbar', {
-                    dock: 'top',
-                    items: [{
-
-                        text: "warning!",
-                        xtype: 'label'
-                    }]
-                }));
-
-            });*/
-        var moveAction = Ext.create('GeoExt.Action', {
+        /*var moveAction = Ext.create('GeoExt.Action', {
             disabled: true,
             control: movePointCtrl,
             iconCls: 'move-button',
@@ -126,7 +67,8 @@ Ext.define('Lmkp.controller.editor.Map', {
             }
         });
         var moveButton = Ext.create('Ext.button.Button', moveAction);
-        tbar.insert(0, moveButton);
+        var tbar = mappanel.getDockedItems('toolbar')[0];
+        tbar.insert(0, moveButton);*/
 
         // Add the control and button to create a new activity
         var createPointCtrl = new OpenLayers.Control.DrawFeature(
@@ -135,17 +77,15 @@ Ext.define('Lmkp.controller.editor.Map', {
                 eventListeners: {
                     'featureadded': function(event){
                         var g = event.feature.geometry;
-                        //selectCtrl.select(event.feature);
+                        // Select the newly created point in order to be able
+                        // to move it.
+                        this.getNewFeatureSelectCtrl().select(event.feature);
+                        // Deactivate the create point control
                         createPointCtrl.deactivate();
-
-                        // Unregister first the select event
-                        selectCtrl.events.unregister('featurehighlighted', mappanel, publicMapController.openDetailWindow);
-                        selectCtrl.select(event.feature);
+                        // But activate the move point control
                         movePointCtrl.activate();
-                        //movePointCtrl.selectFeature(event.feature);
-                        moveButton.toggle(true);
-                        selectCtrl.events.register('featurehighlighted', mappanel, publicMapController.openDetailWindow);
-                        this.setActivityGeometry(g);
+                        // Store the new activity geometry to the mappanel
+                        this.setNewFeatureGeometry(g);
                     },
                     scope: mappanel
                 },
@@ -160,7 +100,6 @@ Ext.define('Lmkp.controller.editor.Map', {
             });
 
         // When feature is selected, show popup
-        var me = this;
         mappanel.getVectorLayer().events.register('featureselected',
             mappanel.getVectorLayer(), function(event) {
                 me.createPopup(event.feature);
@@ -212,13 +151,13 @@ Ext.define('Lmkp.controller.editor.Map', {
 
     /**
      * Return the geometry of the newly created activity (stored in map's
-     * 'activityGeometry' config).
+     * 'newFeatureGeometry' config).
      * {transform}: Optional parameter. Set to 'true' transforms the geometry to
      * the map's geographic Projection.
      */
     getActivityGeometryFromMap: function(transform) {
         var map = this.getMapPanel();
-        var geom = map.getActivityGeometry();
+        var geom = map.getNewFeatureGeometry();
         if (geom && transform == true) {
             geom.transform(
                 map.sphericalMercatorProjection,

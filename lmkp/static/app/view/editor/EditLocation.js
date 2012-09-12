@@ -4,7 +4,7 @@ Ext.define('Lmkp.view.editor.EditLocation',{
 
     config: {
         feature: null,
-        identifyCtrl: null
+        selectCtrl: null
     },
     height: 150,
     modal: false,
@@ -21,7 +21,7 @@ Ext.define('Lmkp.view.editor.EditLocation',{
         },{
             handler: function(btn){
                 this.hide();
-                this.identifyCtrl.unselectAll();
+                this.selectCtrl.unselectAll();
             },
             region: 'south',
             scope: this,
