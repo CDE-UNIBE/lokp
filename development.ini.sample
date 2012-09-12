@@ -16,6 +16,7 @@ lmkp.base_wms = http://cdetux2.unibe.ch/geoserver/lo/wms
 lmkp.profiles_dir = /var/www/lmkp/profiles
 lmkp.admin_password = admin_password
 lmkp.admin_email = info@cde.unibe.ch
+lmkp.use_js_builds = false
 
 [server:main]
 use = egg:waitress#main

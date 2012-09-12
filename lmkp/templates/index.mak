@@ -4,6 +4,11 @@ from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
 from pyramid.security import has_permission
 
+if str(request.registry.settings['lmkp.use_js_builds']).lower() == "true":
+    use_js_builds = True
+else:
+    use_js_builds = False
+
 %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
@@ -18,11 +23,15 @@ from pyramid.security import has_permission
         <script type="text/javascript" src="/static/lib/extjs-4.1.1/ext.js"></script>
         <script type="text/javascript">
             Ext.Loader.setConfig({
+                % if use_js_builds:
+                enabled: false
+                % else:
                 enabled: true,
                 paths: {
                     'GeoExt': '/static/lib/geoext2/src/GeoExt',
                     'Lmkp': '/static/app'
                 }
+                % endif
             });
         </script>
         <script type="text/javascript" src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>
@@ -33,17 +42,17 @@ from pyramid.security import has_permission
         <script type="text/javascript" src="/app/view/layers.js"></script>
         % if isinstance(has_permission('administer', request.context, request), ACLAllowed):
         <script type="text/javascript" src="/app/view/ModeratorToolbar.js"></script>
-        <script type="text/javascript" src="${request.static_url('lmkp:static/app/public.js')}"></script>
         % elif isinstance(has_permission('moderate', request.context, request), ACLAllowed):
         <script type="text/javascript" src="/app/view/ModeratorToolbar.js"></script>
-        <script type="text/javascript" src="${request.static_url('lmkp:static/app/public.js')}"></script>
         % elif isinstance(has_permission('edit', request.context, request), ACLAllowed):
         <script type="text/javascript" src="/app/view/EditToolbar.js"></script>
-        <script type="text/javascript" src="${request.static_url('lmkp:static/app/public.js')}"></script>
         % else:
         <script type="text/javascript" src="/app/view/ViewToolbar.js"></script>
-        <script type="text/javascript" src="${request.static_url('lmkp:static/app/public.js')}"></script>
         % endif
+        % if use_js_builds:
+        <script type="text/javascript" src="${request.static_url('lmkp:static/main-ext-all.js')}"></script>
+        % endif
+        <script type="text/javascript" src="${request.static_url('lmkp:static/app/main.js')}"></script>
     </head>
     <body>
         <div id="header-div">
