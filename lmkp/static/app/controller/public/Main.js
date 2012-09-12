@@ -34,10 +34,15 @@ Ext.define('Lmkp.controller.public.Main', {
     'StakeholderConfig',
     ],
 
+    // Make the public.Map controller available in the whole instance
+    mapController: null,
+
     init: function() {
         // Get the config stores and load them
         this.getActivityConfigStore().load();
         this.getStakeholderConfigStore().load();
+
+        this.mapController = this.getController('public.Map');
 
         this.control({
             'lo_publicactivitytablepanel': {
@@ -47,7 +52,9 @@ Ext.define('Lmkp.controller.public.Main', {
                 render: this.onStakeholderTablePanelRender
             },
             'lo_publicactivitytablepanel gridpanel[itemId=activityGrid]': {
-                selectionchange: this.onTableSelectionChange
+                selectionchange: this.onTableSelectionChange,
+                itemmouseenter: this.onActivityTablePanelMouseEnter,
+                itemmouseleave: this.onActivityTablePanelMouseLeave
             },
             'lo_publicactivitytablepanel gridpanel templatecolumn[name=showDetailsColumn]': {
                 click: this.onShowDetailsColumnClick
@@ -98,7 +105,7 @@ Ext.define('Lmkp.controller.public.Main', {
                 afterrender: this.onActivityCountryColumnAfterrender
             },
             'gridpanel[itemId=activityGrid] gridcolumn[name=activitySizeColumn]': {
-            	afterrender: this.onActivitySizeColumnAfterrender
+                afterrender: this.onActivitySizeColumnAfterrender
             },
             'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdernamecolumn]': {
                 afterrender: this.onStakeholderNameColumnAfterrender
@@ -174,8 +181,7 @@ Ext.define('Lmkp.controller.public.Main', {
 
             // If Activity was selected, also show Feature on map
             if (sel.modelName == 'Lmkp.model.Activity') {
-                var mapController = this.getController('public.Map');
-                mapController.showActivityOnMap(sel);
+                this.mapController.selectActivity(sel);
             }
         }
     },
@@ -207,14 +213,14 @@ Ext.define('Lmkp.controller.public.Main', {
 
                 // Highlight the Activity on the map
                 var layer = this.getMapPanel().getActivitiesLayer();
-                var ctrl = this.getMapPanel().getIdentifyCtrl();
+                var ctrl = this.getMapPanel().getSelectCtrl();
                 var publicMapController = this.getController('public.Map');
                 // Try to find the corresponding feature
                 var feature = layer.getFeaturesByAttribute('activity_identifier', record.get('id'))[0];
                 if(feature){
-                    ctrl.events.unregister('featurehighlighted', this.getMapPanel(), publicMapController.openDetailWindow);
+                    //ctrl.events.unregister('featurehighlighted', this.getMapPanel(), publicMapController.openDetailWindow);
                     ctrl.select(feature);
-                    ctrl.events.register('featurehighlighted', this.getMapPanel(), publicMapController.openDetailWindow);
+                    //ctrl.events.register('featurehighlighted', this.getMapPanel(), publicMapController.openDetailWindow);
                 }
             } else if (type == 'stakeholder') {
                 // Show details window
@@ -258,7 +264,7 @@ Ext.define('Lmkp.controller.public.Main', {
      * Nicely render 'Size' column of Activity grid.
      */
     onActivitySizeColumnAfterrender: function(comp) {
-    	this._renderColumnMultipleValues(comp, "activity-attr_size")
+        this._renderColumnMultipleValues(comp, "activity-attr_size")
     },
 
     /**
@@ -418,5 +424,14 @@ Ext.define('Lmkp.controller.public.Main', {
                 deleteButton.setDisabled(count == 0);
             }
         }
+    },
+
+    onActivityTablePanelMouseEnter: function(view, record, item, index, event){
+        this.mapController.highlightActivity(record);
+    },
+
+    onActivityTablePanelMouseLeave: function(view, record, item, index, event){
+        this.mapController.unhighlightActivity(record);
     }
+
 });

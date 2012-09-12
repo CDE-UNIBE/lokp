@@ -64,8 +64,8 @@ Ext.define('Lmkp.controller.public.Map', {
             editorMapController.initEditorControls();
         }
 
-        var ctrl = comp.getIdentifyCtrl();
-        ctrl.events.register('featurehighlighted', comp, this.openDetailWindow);
+    //var ctrl = comp.getIdentifyCtrl();
+    //ctrl.events.register('featurehighlighted', comp, this.openDetailWindow);
     },
     
     openDetailWindow: function(event){
@@ -104,19 +104,46 @@ Ext.define('Lmkp.controller.public.Map', {
         });
     },
 
-    showActivityOnMap: function(activity) {
+    highlightActivity: function(activity) {
 
         // Make sure item is an 'Activity'
         if (activity.modelName == 'Lmkp.model.Activity') {
-            var vLayer = this.getMapPanel().getVectorLayer();
+            var layer = this.getMapPanel().getActivitiesLayer();
+            var ctrl = this.getMapPanel().getHighlightCtrl();
 
             // Assumption: only one activity can be shown at a time
-            vLayer.removeAllFeatures();
-            var features = this._getVectorsFromActivity(activity);
-            if (features) {
-                vLayer.addFeatures(features);
-            }
+            var f = layer.getFeaturesByAttribute('activity_identifier', activity.get('id'))[0];
+            ctrl.highlight(f);
         }
+    },
+
+    unhighlightActivity: function(activity){
+        // Make sure item is an 'Activity'
+        if (activity.modelName == 'Lmkp.model.Activity') {
+            var layer = this.getMapPanel().getActivitiesLayer();
+            var ctrl = this.getMapPanel().getHighlightCtrl();
+
+            // Assumption: only one activity can be shown at a time
+            var f = layer.getFeaturesByAttribute('activity_identifier', activity.get('id'))[0];
+            ctrl.unhighlight(f);
+        }
+    },
+
+    selectActivity: function(activity){
+
+        var layer = this.getMapPanel().getActivitiesLayer();
+        var ctrl = this.getMapPanel().getSelectCtrl();
+        // Try to find the corresponding feature
+        var feature = layer.getFeaturesByAttribute('activity_identifier', activity.get('id'))[0];
+        if(feature){
+            //ctrl.events.unregister('featurehighlighted', this.getMapPanel(), publicMapController.openDetailWindow);
+            ctrl.select(feature);
+        //ctrl.events.register('featurehighlighted', this.getMapPanel(), publicMapController.openDetailWindow);
+        }
+    },
+
+    unselectActivity: function(activity){
+        this.getMapPanel().getSelectCtrl().unselectAll();
     },
 
     _getVectorsFromActivity: function(activity) {
