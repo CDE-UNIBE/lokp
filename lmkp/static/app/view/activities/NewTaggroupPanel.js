@@ -159,7 +159,6 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
                 queryMode: 'local',
                 editable: true,
                 forceSelection: true,
-                value: selectionValues[0],
                 margin: '0 5 0 0'
             });
         } else {                    // no categories available, create field based on xtype
