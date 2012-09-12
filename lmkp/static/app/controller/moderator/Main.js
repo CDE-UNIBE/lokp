@@ -173,6 +173,7 @@ Ext.define('Lmkp.controller.moderator.Main', {
     onReviewSubmitButton: function(btn){
 
         var mapPanel = this.getMapPanel();
+        var me = this;
 
         btn.up('form').submit({
             failure: function(form, response) {
@@ -203,6 +204,10 @@ Ext.define('Lmkp.controller.moderator.Main', {
                     // If the review was successful it is necessary to reload
                     // the ActivityVector store
                     mapPanel.getVectorStore().load();
+                    // Also reload the grids. To do this, simulate a change of
+                    // the filters.
+                    var filterController = me.getController('public.Filter');
+                    filterController.applyFilter();
                 } else {
                     Ext.Msg.show({
                         buttons: Ext.Msg.CANCEL,
