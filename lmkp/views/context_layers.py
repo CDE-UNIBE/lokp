@@ -5,8 +5,8 @@ import yaml
 @view_config(route_name='context_layers', renderer='javascript')
 def get_context_layers(request):
 
-    res = "Ext.namespace('Lmkp');\n"
-    res += "Lmkp.layers=[\n"
+    res = "Ext.namespace('Lmkp');"
+    res += "Lmkp.layers=["
 
     # Read the global configuration file
     try:
@@ -21,7 +21,7 @@ def get_context_layers(request):
         for layer in layers:
             res += "new OpenLayers.Layer.WMS(\""
             res += layer['name']
-            res += "\",\n\""
+            res += "\",\""
             res += layer['url']
             res += "\",{\n"
 
@@ -46,6 +46,13 @@ def _cast_type(config, value):
         return "new OpenLayers.Bounds(%s, %s, %s, %s)" % (value[0], value[1], value[2], value[3])
     elif value == True or value == False:
         return str(value).lower()
+
+    # Try to cast the value for EPSG to integer
+    if config.lower() == 'epsg':
+        try:
+            return int(value)
+        except ValueError:
+            pass
 
     try:
         return float(value)
