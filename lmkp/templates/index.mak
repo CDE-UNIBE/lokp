@@ -18,9 +18,9 @@ else:
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>Land Observatory</title>
         ## General Styles
-        <link rel="stylesheet" type="text/css" href="/static/lib/extjs-4.1.1/resources/css/ext-all.css"></link>
+        <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/lib/extjs-4.1.1/resources/css/ext-all.css')}"></link>
         <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/style.css')}"></link>
-        <script type="text/javascript" src="/static/lib/extjs-4.1.1/ext.js"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/lib/extjs-4.1.1/ext.js')}"></script>
         <script type="text/javascript">
             Ext.Loader.setConfig({
                 % if use_js_builds:
@@ -35,19 +35,18 @@ else:
             });
         </script>
         <script type="text/javascript" src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>
-        <script type="text/javascript" src="/static/lib/OpenLayers-2.11/OpenLayers.js"></script>
-        <script src="http://maps.google.com/maps/api/js?v=3&amp;sensor=false"></script>
-        <!--script type="text/javascript" src="/static/lib/geoext2/src/GeoExt/GeoExt.js"></script-->
-        <script type="text/javascript" src="/lang"></script>
-        <script type="text/javascript" src="/app/view/layers.js"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/lib/OpenLayers-2.11/OpenLayers.js')}"></script>
+        <script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3&amp;sensor=false"></script>
+        <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
+        <script type="text/javascript" src="${request.route_url('context_layers')}"></script>
         % if isinstance(has_permission('administer', request.context, request), ACLAllowed):
-        <script type="text/javascript" src="/app/view/ModeratorToolbar.js"></script>
+        <script type="text/javascript" src="${request.route_url('moderator_toolbar_config')}"></script>
         % elif isinstance(has_permission('moderate', request.context, request), ACLAllowed):
-        <script type="text/javascript" src="/app/view/ModeratorToolbar.js"></script>
+        <script type="text/javascript" src="${request.route_url('moderator_toolbar_config')}"></script>
         % elif isinstance(has_permission('edit', request.context, request), ACLAllowed):
-        <script type="text/javascript" src="/app/view/EditToolbar.js"></script>
+        <script type="text/javascript" src="${request.route_url('edit_toolbar_config')}"></script>
         % else:
-        <script type="text/javascript" src="/app/view/ViewToolbar.js"></script>
+        <script type="text/javascript" src="${request.route_url('view_toolbar_config')}"></script>
         % endif
         % if use_js_builds:
         <script type="text/javascript" src="${request.static_url('lmkp:static/main-ext-all.js')}"></script>
@@ -62,7 +61,7 @@ else:
         </div>
         <div id="loading-mask" style="width: 100%; height: 100%;">
             <div style="position: absolute; top: 50%; right: 50%">
-                <img src="/static/img/spinner.gif"/>
+                <img src="/static/img/spinner.gif" alt="loading ..."/>
             </div>
         </div>
         <div id="main-div"></div>
