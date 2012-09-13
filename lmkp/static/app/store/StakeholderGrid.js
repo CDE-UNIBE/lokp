@@ -63,7 +63,10 @@ Ext.define('Lmkp.store.StakeholderGrid', {
         // create a copy of the parameters.
         var ep = new Object();
         for (var e in extraParams) {
-            ep[e] = extraParams[e];
+            // Do not copy parameter 'bounds''
+            if (e != 'bounds') {
+                ep[e] = extraParams[e];
+            }
         }
 
     	// Update url
@@ -115,9 +118,10 @@ Ext.define('Lmkp.store.StakeholderGrid', {
         	this.proxy.url = 'stakeholders';
         	this.proxy.setExtraParam('moderator', true);
         } else {
-        	this.proxy.url = 'activities';
-        	this.proxy.setExtraParam('return_sh', true);
         	delete this.proxy.extraParams['moderator'];
+                // Let function to sync with Activities handle all other
+                // parameters
+                this.syncWithActivities(this.proxy.extraParams);
         }
     }
 });
