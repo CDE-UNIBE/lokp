@@ -529,7 +529,7 @@ class StakeholderProtocol(Protocol):
         # based on these activities
         if ap_query is not None:
             relevant_stakeholders = self.Session.query(
-                    Stakeholder.id.label('order_id'),
+                    distinct(Stakeholder.id).label('order_id'),
                     func.char_length('').label('order_value'),
                     Stakeholder.fk_status
                 ).\
