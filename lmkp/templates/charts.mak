@@ -4,6 +4,11 @@ from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
 from pyramid.security import has_permission
 
+if str(request.registry.settings['lmkp.use_js_builds']).lower() == "true":
+    use_js_builds = True
+else:
+    use_js_builds = False
+
 %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
@@ -12,16 +17,20 @@ from pyramid.security import has_permission
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>Land Observatory</title>
-        <link rel="stylesheet" type="text/css" href="/static/lib/extjs-4.1.1/resources/css/ext-all.css"></link>
+        <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/lib/extjs-4.1.1/resources/css/ext-all.css')}"></link>
         <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/style.css')}"></link>
-        <script type="text/javascript" src="/static/lib/extjs-4.1.1/ext-dev.js"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/lib/extjs-4.1.1/ext.js')}"></script>
         <script type="text/javascript">
             Ext.Loader.setConfig({
+                % if use_js_builds:
+                enabled: false
+                % else:
                 enabled: true,
                 paths: {
                     'GeoExt': '/static/lib/geoext2/src/GeoExt',
                     'Lmkp': '/static/app'
                 }
+                % endif
             });
         </script>
         <script type="text/javascript" src="/lang"></script>
@@ -33,6 +42,9 @@ from pyramid.security import has_permission
         <script type="text/javascript" src="/app/view/EditToolbar.js"></script>
         % else:
         <script type="text/javascript" src="/app/view/ViewToolbar.js"></script>
+        % endif
+        % if use_js_builds:
+        <script type="text/javascript" src="${request.static_url('lmkp:static/charts-ext-all.js')}"></script>
         % endif
         <script type="text/javascript" src="${request.static_url('lmkp:static/app/charts.js')}"></script>
     </head>

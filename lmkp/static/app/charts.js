@@ -9,10 +9,14 @@ Ext.require('Ext.chart.series.Line');
 Ext.require('Ext.chart.series.Pie');
 Ext.require('Ext.container.Viewport');
 Ext.require('Ext.form.Label');
+Ext.require('Ext.form.Panel');
+Ext.require('Ext.form.action.StandardSubmit');
 Ext.require('Ext.layout.container.Border');
 Ext.require('Ext.tab.Panel');
 Ext.require('Ext.form.field.ComboBox');
+Ext.require('Lmkp.controller.login.Toolbar');
 Ext.require('Lmkp.model.SectorAreaPerYear');
+Ext.require('Lmkp.view.login.Toolbar');
 
 Ext.onReady(function () {
     var loadingMask = Ext.get('loading-mask');
