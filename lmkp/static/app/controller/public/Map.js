@@ -54,6 +54,14 @@ Ext.define('Lmkp.controller.public.Map', {
     },
 
     onMapPanelRender: function(comp){
+
+        // Do some OpenLayers magic to prevent pink tiles
+        // Copied from http://drupal.org/node/787838
+        OpenLayers.Util.onImageLoadError = function(){
+            this.src='/static/img/blank.gif';
+        }
+        OpenLayers.Tile.Image.useBlankTile=false;
+
         // Get the map
         var map = comp.getMap();
 
