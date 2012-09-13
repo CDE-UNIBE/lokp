@@ -55,13 +55,32 @@ else:
     </head>
     <body>
         <div id="header-div">
-            <h1>Land Observatory</h1>
-            <p>Some introductory text about the project etc.</p>
-            <p>Maybe also a nice logo?</p>
+            <div id="title-div">
+                <h1>Land Observatory</h1>
+                <p>
+                    The Land Observatory will make information on large-scale land acquisition
+                    transparent and accessible through an interactive, map-based platform.
+                    We are piloting the project in five countries, with partners and governments
+                    who will work to open government data, crowdsource and help customize local observatories.
+                    Updated information on land will benefit citizens, but also governments
+                    and companies interested in sustainability.
+                </p>
+                <p>
+                    The pilot project is coordinated by the
+                    <a href="http://www.landcoalition.org/">International Land Coalition</a>
+                    and the
+                    <a href="http://www.cde.unibe.ch/">Centre for Development and Environment</a> at the University of Bern, Switzerland.
+                    It is funded by the <a href="http://www.sdc.admin.ch/">Swiss Agency for Development Cooperation</a>,
+                    with co-funding from other ILC and CDE programs.​
+                </p>
+            </div>
+            <div id="logo-div">
+                <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" height="100" width="100" alt="Land Observatory"/>
+            </div>
         </div>
         <div id="loading-mask" style="width: 100%; height: 100%;">
             <div style="position: absolute; top: 50%; right: 50%">
-                <img src="/static/img/spinner.gif" alt="loading ..."/>
+                <img src="${request.static_url('lmkp:static/img/spinner.gif')}" alt="loading ..."/>
             </div>
         </div>
         <div id="main-div"></div>

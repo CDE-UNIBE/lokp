@@ -490,8 +490,9 @@ Ext.onReady(function () {
                     region: 'north',
                     xtype: 'lo_logintoolbar'
                 },{
+                    autoScroll: true,
                     contentEl: 'header-div',
-                    height: 80,
+                    height: 105,
                     region: 'north',
                     xtype: 'panel'
                 }]

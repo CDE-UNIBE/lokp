@@ -53,7 +53,7 @@ Ext.define('Lmkp.view.public.BaseLayers',{
         // Try to get the Google Satellite layer
         try {
             layers.push(new OpenLayers.Layer.Google( "Satellite imagery", {
-                type: google.maps.MapTypeId.SATELLITE,
+                type: google.maps.MapTypeId.HYBRID,
                 numZoomLevels: 22
             }));
             

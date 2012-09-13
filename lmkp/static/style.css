@@ -181,3 +181,17 @@ div.olLayerGooglePoweredBy
 {
     display: none !important;
 }
+/* Style for the main html page */
+#header-div {
+    float: left;
+    width: 100%;
+}
+#title-div {
+    float: left;
+    margin-right: 200px;
+}
+#logo-div {
+    float: right;
+    width: 100px;
+    margin-left: -200px;
+}
