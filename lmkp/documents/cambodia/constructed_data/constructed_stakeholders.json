@@ -1,16 +1,16 @@
 {
 	"stakeholders": [
 		{
-			"id": "00000000-0000-0000-0000-000000000001",
+			"id": "11111111-1111-1111-1111-11111111111a",
 			"taggroups": [
 				{
 					"main_tag": {
-						"value": "(Demo) Rubber Company L1",
+						"value": "(Demo) Rubber Company C1",
 						"key": "Name"
 					}, 
 					"tags": [
 						{
-							"value": "(Demo) Rubber Company L1",
+							"value": "(Demo) Rubber Company C1",
 							"key": "Name", 
 							"op": "add"
 						}
@@ -19,12 +19,12 @@
 				}, 
 				{
 					"main_tag": {
-						"value": "Laos", 
+						"value": "Cambodia",
 						"key": "Country"
 					}, 
 					"tags": [
 						{
-							"value": "Laos", 
+							"value": "Cambodia",
 							"key": "Country", 
 							"op": "add"
 						}
@@ -47,12 +47,12 @@
 				},
 				{
 					"main_tag": {
-						"value": "+856 (0)00 000 00 00", 
+						"value": "+855 (0)00 000 00 00",
 						"key": "Phone"
 					}, 
 					"tags": [
 						{
-							"value": "+856 (0)00 000 00 00",
+							"value": "+855 (0)00 000 00 00",
 							"key": "Phone",
 							"op": "add"
 						}
@@ -62,7 +62,7 @@
 			],
 			"activities": [
 				{
-					"id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
+					"id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb1",
 					"role": 6,
 					"version": 1,
 					"op": "add"
@@ -70,16 +70,16 @@
 			]
 		}, 
 		{
-			"id": "00000000-0000-0000-0000-000000000002",
+			"id": "11111111-1111-1111-1111-11111111111b",
 			"taggroups": [
 				{
 					"main_tag": {
-						"value": "(Demo) Rubber Company L2",
+						"value": "(Demo) Rubber Company C2",
 						"key": "Name"
 					}, 
 					"tags": [
 						{
-							"value": "(Demo) Rubber Company L2",
+							"value": "(Demo) Rubber Company C2",
 							"key": "Name", 
 							"op": "add"
 						}
@@ -131,13 +131,13 @@
 			],
 			"activities": [
 				{
-					"id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
+					"id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb1",
 					"role": 3,
 					"version": 2,
 					"op": "add"
 				},
 				{
-					"id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3",
+					"id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb3",
 					"role": 6,
 					"version": 1,
 					"op": "add"
@@ -145,16 +145,16 @@
 			]
 		}, 
 		{
-			"id": "00000000-0000-0000-0000-000000000003",
+			"id": "11111111-1111-1111-1111-11111111111c",
 			"taggroups": [
 				{
 					"main_tag": {
-						"value": "(Demo) Wood Company L",
+						"value": "(Demo) Wood Company Cambodia C",
 						"key": "Name"
 					}, 
 					"tags": [
 						{
-							"value": "(Demo) Wood Company L",
+							"value": "(Demo) Wood Company Cambodia C",
 							"key": "Name", 
 							"op": "add"
 						}
@@ -206,7 +206,7 @@
 			],
 			"activities": [
 				{
-					"id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2",
+					"id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2",
 					"role": 6,
 					"version": 1,
 					"op": "add"
@@ -214,16 +214,16 @@
 			]
 		},
 		{
-			"id": "00000000-0000-0000-0000-000000000004",
+			"id": "11111111-1111-1111-1111-11111111111d",
 			"taggroups": [
 				{
 					"main_tag": {
-						"value": "(Demo) Pension Fund L",
+						"value": "(Demo) Pension Fund C",
 						"key": "Name"
 					}, 
 					"tags": [
 						{
-							"value": "(Demo) Pension Fund L",
+							"value": "(Demo) Pension Fund C",
 							"key": "Name", 
 							"op": "add"
 						}
@@ -285,7 +285,7 @@
 			],
 			"activities": [
 				{
-					"id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2",
+					"id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2",
 					"role": 6,
 					"version": 2,
 					"op": "add"
@@ -293,16 +293,16 @@
 			]
 		},
 		{
-			"id": "00000000-0000-0000-0000-000000000005",
+			"id": "11111111-1111-1111-1111-11111111111e",
 			"taggroups": [
 				{
 					"main_tag": {
-						"value": "(Demo) Governmental Agency Laos",
+						"value": "(Demo) Governmental Agency Cambodia",
 						"key": "Name"
 					}, 
 					"tags": [
 						{
-							"value": "(Demo) Governmental Agency Laos",
+							"value": "(Demo) Governmental Agency Cambodia",
 							"key": "Name", 
 							"op": "add"
 						}
@@ -311,12 +311,12 @@
 				}, 
 				{
 					"main_tag": {
-						"value": "Laos", 
+						"value": "Cambodia",
 						"key": "Country"
 					}, 
 					"tags": [
 						{
-							"value": "Laos", 
+							"value": "Cambodia",
 							"key": "Country", 
 							"op": "add"
 						}
@@ -339,12 +339,12 @@
 				},
 				{
 					"main_tag": {
-						"value": "+856 (0)00 000 00 00", 
+						"value": "+855 (0)00 000 00 00",
 						"key": "Phone"
 					}, 
 					"tags": [
 						{
-							"value": "+856 (0)00 000 00 00",
+							"value": "+855 (0)00 000 00 00",
 							"key": "Phone",
 							"op": "add"
 						}
@@ -354,13 +354,13 @@
 			],
 			"activities": [
 				{
-					"id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2",
+					"id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2",
 					"role": 3,
 					"version": 3,
 					"op": "add"
 				},
 				{
-					"id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3",
+					"id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb3",
 					"role": 3,
 					"version": 2,
 					"op": "add"
@@ -368,16 +368,16 @@
 			]
 		},
 		{
-			"id": "00000000-0000-0000-0000-000000000006",
+			"id": "11111111-1111-1111-1111-11111111111f",
 			"taggroups": [
 				{
 					"main_tag": {
-						"value": "(Demo) Furniture Company L",
+						"value": "(Demo) Furniture Company C",
 						"key": "Name"
 					}, 
 					"tags": [
 						{
-							"value": "(Demo) Furniture Company L",
+							"value": "(Demo) Furniture Company C",
 							"key": "Name", 
 							"op": "add"
 						}
@@ -401,13 +401,13 @@
 			],
 			"activities": [
 				{
-					"id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2",
+					"id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2",
 					"role": 4,
 					"version": 4,
 					"op": "add"
 				},
 				{
-					"id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3",
+					"id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb3",
 					"role": 6,
 					"version": 3,
 					"op": "add"
