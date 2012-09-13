@@ -4,6 +4,11 @@ from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
 from pyramid.security import has_permission
 
+if str(request.registry.settings['lmkp.use_js_builds']).lower() == "true":
+    use_js_builds = True
+else:
+    use_js_builds = False
+
 %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
@@ -11,64 +16,74 @@ from pyramid.security import has_permission
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Land Matrix Knowledge Platform</title>
-        <link rel="stylesheet" type="text/css" href="/static/lib/ext-4.0.7-gpl/resources/css/ext-all.css"></link>
+        <title>Land Observatory</title>
+        ## General Styles
+        <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/lib/extjs-4.1.1/resources/css/ext-all.css')}"></link>
         <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/style.css')}"></link>
-        <script type="text/javascript" src="/static/lib/ext-4.0.7-gpl/ext-debug.js"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/lib/extjs-4.1.1/ext.js')}"></script>
         <script type="text/javascript">
             Ext.Loader.setConfig({
+                % if use_js_builds:
+                enabled: false
+                % else:
                 enabled: true,
                 paths: {
-                    'GeoExt': '/static/lib/GeoExt4/src',
-                    'DyLmkp': '/app'
+                    'GeoExt': '/static/lib/geoext2/src/GeoExt',
+                    'Lmkp': '/static/app'
                 }
+                % endif
             });
         </script>
-        <script type="text/javascript" src="/static/lib/OpenLayers-2.11/OpenLayers.js"></script>
-        <script type="text/javascript" src="/static/lib/GeoExt4/GeoExt.js"></script>
-        <script type="text/javascript" src="/lang"></script>
-        <%
-        toolbarConfiguration = '/app/view/ViewToolbar.js'
-        if isinstance(has_permission('edit', request.context, request), ACLAllowed):
-            toolbarConfiguration = '/app/view/EditToolbar.js'
-        %>
-        <script type="text/javascript" src="${toolbarConfiguration}"></script>
-        <script type="text/javascript" src="${request.static_url('lmkp:static/app/%s.js' % script)}"></script>
+        <script type="text/javascript" src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/lib/OpenLayers-2.11/OpenLayers.js')}"></script>
+        <script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3&amp;sensor=false"></script>
+        <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
+        <script type="text/javascript" src="${request.route_url('context_layers')}"></script>
+        % if isinstance(has_permission('administer', request.context, request), ACLAllowed):
+        <script type="text/javascript" src="${request.route_url('moderator_toolbar_config')}"></script>
+        % elif isinstance(has_permission('moderate', request.context, request), ACLAllowed):
+        <script type="text/javascript" src="${request.route_url('moderator_toolbar_config')}"></script>
+        % elif isinstance(has_permission('edit', request.context, request), ACLAllowed):
+        <script type="text/javascript" src="${request.route_url('edit_toolbar_config')}"></script>
+        % else:
+        <script type="text/javascript" src="${request.route_url('view_toolbar_config')}"></script>
+        % endif
+        % if use_js_builds:
+        <script type="text/javascript" src="${request.static_url('lmkp:static/main-ext-all.js')}"></script>
+        % endif
+        <script type="text/javascript" src="${request.static_url('lmkp:static/app/main.js')}"></script>
     </head>
     <body>
         <div id="header-div">
-            <h1>${_("Welcome")}</h1>
-            % if authenticated_userid(request) is not None:
-            <div>
-                <a href="/users/${request.user.username}">${request.user.username}</a>,
-                <%block name="welcome_header">
-                    ${_(u"Warmly welcome to the Land Matriz Knowledge Platformz!")}
-                </%block>
-                <br/>
-                ${_(u"Unbelievable, you are logged in!")}
-                <form action="/logout" method="post">
-                    <fieldset>
-                        <input type="hidden" name="came_from" value="/" />
-                        <input type="submit" name="form.logout" value="Logout" />
-                    </fieldset>
-                </form>
+            <div id="title-div">
+                <h1>Land Observatory</h1>
+                <p>
+                    The Land Observatory will make information on large-scale land acquisition
+                    transparent and accessible through an interactive, map-based platform.
+                    We are piloting the project in five countries, with partners and governments
+                    who will work to open government data, crowdsource and help customize local observatories.
+                    Updated information on land will benefit citizens, but also governments
+                    and companies interested in sustainability.
+                </p>
+                <p>
+                    The pilot project is coordinated by the
+                    <a href="http://www.landcoalition.org/">International Land Coalition</a>
+                    and the
+                    <a href="http://www.cde.unibe.ch/">Centre for Development and Environment</a> at the University of Bern, Switzerland.
+                    It is funded by the <a href="http://www.sdc.admin.ch/">Swiss Agency for Development Cooperation</a>,
+                    with co-funding from other ILC and CDE programs.​
+                </p>
             </div>
-            % else:
-            <div>
-                <div>
-                    ${welcome_header()}
-                    <br/>${_(u"Please log in!")}
-                </div>
-                <form action="/login" method="POST">
-                    <fieldset>
-                        <input type="hidden" name="came_from" value="/"/>
-                        Username: <input type="text" name="login" />
-                        Password: <input type="password" name="password" />
-                        <input type="submit" name="form.submitted" value="Login"/>
-                    </fieldset>
-                </form>
+            <div id="logo-div">
+                <a href="http://www.landportal.info/observatory">
+                    <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" height="100" width="100" alt="Land Observatory"/>
+                </a>
             </div>
-            % endif
+        </div>
+        <div id="loading-mask" style="width: 100%; height: 100%;">
+            <div style="position: absolute; top: 50%; right: 50%">
+                <img src="${request.static_url('lmkp:static/img/spinner.gif')}" alt="loading ..."/>
+            </div>
         </div>
         <div id="main-div"></div>
     </body>

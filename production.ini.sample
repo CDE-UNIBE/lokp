@@ -1,0 +1,68 @@
+[app:main]
+use = egg:LMKP
+
+pyramid.reload_templates = false
+pyramid.debug_authorization = false
+pyramid.debug_notfound = false
+pyramid.debug_routematch = false
+pyramid.debug_templates = false
+pyramid.default_locale_name = en
+pyramid.includes = pyramid_tm
+
+sqlalchemy.url = postgresql://username:password@localhost:5432/database
+
+lmkp.base_wms = http://cdetux2.unibe.ch/geoserver/lo/wms
+lmkp.profiles_dir = /var/www/lmkp/profiles
+lmkp.admin_password = admin_password
+lmkp.admin_email = info@cde.unibe.ch
+lmkp.use_js_builds = true
+
+[server:main]
+use = egg:waitress#main
+host = 0.0.0.0
+port = 6543
+
+# Begin logging configuration
+
+[loggers]
+keys = root, lmkp, sqlalchemy
+
+[handlers]
+keys = filelog
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = WARN
+handlers = filelog
+
+[logger_lmkp]
+level = WARN
+handlers =
+qualname = lmkp
+
+[logger_sqlalchemy]
+level = INFO
+handlers =
+qualname = sqlalchemy.engine
+# "level = INFO" logs SQL queries.
+# "level = DEBUG" logs SQL queries and results.
+# "level = WARN" logs neither.  (Recommended for production systems.)
+
+#[handler_console]
+#class = StreamHandler
+#args = (sys.stderr,)
+#level = NOTSET
+#formatter = generic
+
+[handler_filelog]
+class = FileHandler
+args = ('%(here)s/logs/lmkp-production.log','a')
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s
+
+# End logging configuration

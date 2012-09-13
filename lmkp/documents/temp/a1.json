@@ -1,0 +1,22 @@
+{
+	"_description": "Create Activity",
+    "activities": [{
+    	"id": "70eb2268-22f6-4fa7-8dcb-03161ac1d595",
+        "taggroups": [{
+            "main_tag": {
+                "key": "Main Crop",
+                "value": "Algae"
+            },
+            "op": "add",
+            "tags": [{
+                "key": "Name",
+                "op": "add",
+                "value": "New Investment Development Co."
+            },{
+                "key": "Main Crop",
+                "op": "add",
+                "value": "Algae"
+            }]
+        }]
+    }]
+}

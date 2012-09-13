@@ -16,11 +16,14 @@ Ext.define('Lmkp.model.YamlScan', {
 	}, {
 		name: 'keyvalue',
 		type: 'string'
+	}, {
+		name: 'local',
+		type: 'boolean'
 	}],
 	
 	proxy: {
 		type: 'ajax',
-		url: '/config/scan',
+		url: '/config/scan/activities',
 		reader: {
 			type: 'json'
 		},

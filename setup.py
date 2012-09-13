@@ -1,36 +1,37 @@
 import os
-
-from setuptools import setup, find_packages
+from setuptools import find_packages
+from setuptools import setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
-    'pyramid',
-    'SQLAlchemy',
-    'transaction',
-    'pyramid_tm',
-    'pyramid_debugtoolbar',
-    'zope.sqlalchemy',
-    'waitress',
-    'papyrus',
-    'Mako>=0.6',
-    'WebTest',
+    'pyramid==1.3',
+    'SQLAlchemy==0.7.6',
+    'GeoAlchemy==0.7.1',
+    'transaction==1.2.0',
+    'pyramid_tm==0.4',
+    'pyramid_debugtoolbar==1.0.2',
+    'zope.sqlalchemy==0.7',
+    'waitress==0.8.1',
+    'papyrus==0.8.1',
+    'Mako==0.6',
+    'WebTest==1.3.4',
     'cryptacular',
-    'Babel',
-    'lingua',
-    'psycopg2',
-    'pyyaml',
-    'chameleon>=2.8',
-    'lxml==2.3',
-    'pykml'
+    'Babel==0.9.6',
+    'lingua==1.3',
+    'PasteScript==1.7.5',
+    'psycopg2==2.4.5',
+    'PyYAML==3.10',
+    'Chameleon==2.8.5',
+    'recaptcha-client==1.0.6'
     ]
 
-setup(name='LandMatrixKnowledgePlatform',
+setup(name='LMKP',
       version='0.1',
       description='The Land Matrix Knowledge Platform',
-      long_description=README + '\n\n' +  CHANGES,
+      long_description=README + '\n\n' + CHANGES,
       classifiers=[
       "Programming Language :: Python",
       "Framework :: Pylons",
@@ -55,6 +56,6 @@ setup(name='LandMatrixKnowledgePlatform',
       [paste.app_factory]
       main = lmkp:main
       [console_scripts]
-      populate_LMKP = lmkp.scripts.populate:main
+      populate_lmkp = lmkp.scripts.populate:main
       """,
       )

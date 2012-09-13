@@ -1,9 +1,10 @@
+from datetime import timedelta
+import logging
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession
-from pyramid.httpexceptions import HTTPForbidden
-from pyramid.security import authenticated_userid
 from pyramid.view import view_config
-import uuid
+
+log = logging.getLogger(__name__)
 
 #@view_config(route_name='home', renderer='../templates/mytemplate.pt')
 def my_view(request):
@@ -73,44 +74,102 @@ def db_test(request):
     # # END OF TEST CASE
     #===========================================================================
     
+    #===========================================================================
+    # # START OF TEST CASE to test main_tags
+    # # some test values
+    # id1 = "c32212f8-e704-48e3-94bc-5670cfd01884"
+    # s1 = DBSession.query(Status).get(1)
+    # k1 = DBSession.query(A_Key).get(1)
+    # k2 = DBSession.query(A_Key).get(2)
+    # v1 = DBSession.query(A_Value).get(1)
+    # v2 = DBSession.query(A_Value).get(2)
+    # 
+    # # add an activity with a tag group that contains a main tag
+    # """
+    # t1 = A_Tag()
+    # t1.key = k1
+    # t1.value = v1
+    # 
+    # t2 = A_Tag()
+    # t2.key = k2
+    # t2.value = v2
+    # 
+    # tg1 = A_Tag_Group()
+    # tg1.tags = [t1, t2]
+    # tg1.main_tag = t1
+    # 
+    # a1 = Activity(activity_identifier=id1, version=1, point="POINT (10 20)")
+    # a1.status = s1
+    # a1.tag_groups = [tg1]
+    # 
+    # DBSession.add(a1)
+    # """
+    # 
+    # # test it by querying it
+    # """
+    # q = DBSession.query(Activity).filter(Activity.activity_identifier == id1).first()
+    # object = q.tag_groups[0].main_tag
+    # """
+    #===========================================================================
     
     object = "done"
     return {'object': object}
-
-@view_config(route_name='geo_test', renderer='geojson')
-def geo_test(request):
-    return {
-        'type': 'Feature',
-        'id': 1,
-        'geometry': {'type': 'Point', 'coordinates': [53, -4]},
-        'properties': {'title': 'Dict 1'}
-        }
 
 @view_config(route_name='index', renderer='lmkp:templates/index.mak')
 def index(request):
     """
     Returns the main HTML page
     """
-    
+
     # Check if language (_LOCALE_) is set
-    if request is not None and '_LOCALE_' in request.params:
+    if request is not None and ('_LOCALE_' in request.params
+        or '_LOCALE_' in request.cookies):
         response = request.response
-        response.set_cookie('_LOCALE_', request.params.get('_LOCALE_'))
+        response.set_cookie('_LOCALE_', request.params.get('_LOCALE_'), timedelta(days=90))
 
     # Check if profile (_PROFILE_) is set
-    if request is not None and '_PROFILE_' in request.params:
+    if request is not None:
         response = request.response
-        response.set_cookie('_PROFILE_', request.params.get('_PROFILE_'))
+        if '_PROFILE_' in request.params:
+            response.set_cookie('_PROFILE_', request.params.get('_PROFILE_'), timedelta(days=90))
+        elif '_PROFILE_' in request.cookies:
+            # Profile already set, leave it
+            pass
+        else:
+            # If no profile is set, set 'global' profile
+            response.set_cookie('_PROFILE_', 'global', timedelta(days=90))
 
-    return {'script': 'main'}
-
-@view_config(route_name='user_profile', renderer='lmkp:templates/user.mak')
-def get_user_profile(request):
-    username = authenticated_userid(request)
-    if username != request.matchdict['userid']:
-        raise HTTPForbidden
     return {}
 
-@view_config(route_name='ext_tests', renderer='lmkp:templates/tests.pt')
-def ext_tests(request):
+@view_config(route_name='administration', renderer='lmkp:templates/administration.mak', permission='administer')
+def administration(request):
+    """
+    Returns the administration HTML page
+    """
+
+    # Check if language (_LOCALE_) is set
+    if request is not None and ('_LOCALE_' in request.params
+        or '_LOCALE_' in request.cookies):
+        response = request.response
+        response.set_cookie('_LOCALE_', request.params.get('_LOCALE_'), timedelta(days=90))
+
+    # Check if profile (_PROFILE_) is set
+    if request is not None:
+        response = request.response
+        if '_PROFILE_' in request.params:
+            response.set_cookie('_PROFILE_', request.params.get('_PROFILE_'), timedelta(days=90))
+        elif '_PROFILE_' in request.cookies:
+            # Profile already set, leave it
+            pass
+        else:
+            # If no profile is set, set 'global' profile
+            response.set_cookie('_PROFILE_', 'global', timedelta(days=90))
+
+    return {}
+
+@view_config(route_name='privileges_test', renderer='lmkp:templates/privilegestest.mak')
+def privileges_test(request):
+    """
+    Simple view to output the current privileges
+    """
     return {}

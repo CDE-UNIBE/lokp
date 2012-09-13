@@ -4,6 +4,8 @@ from pyramid.i18n import get_localizer
 from pyramid.view import view_config
 import simplejson as json
 
+from lmkp.views.profile import _getCurrentProfileExtent
+
 log = logging.getLogger(__name__)
 
 _ = TranslationStringFactory('lmkp')
@@ -11,16 +13,24 @@ _ = TranslationStringFactory('lmkp')
 @view_config(route_name='view_toolbar_config', renderer='javascript', permission='view')
 def view_toolbar_config(request):
     """
-    Returns an array of objects that configure an ExtJS toolbar for users with
+    Returns an array of objects that configure an ExtJS toolbar for users without
     editing permission.
     """
 
     # Write the JavaScript and instantiate the global variable Lmkp.ts
-    str = "Ext.namespace('Lmkp');\n"
-    str += "Lmkp.toolbar = [];\n"
+    str = "Ext.ns('Lmkp');\n"
+    str += "Lmkp.toolbar = false;\n"
+    
+    str += "Lmkp.login_form = { border: false, xtype: 'toolbar', defaultType: 'textfield', items: [\n";
+    str += "{id: 'username', emptyText: '%s'},\n" % _('Username', default='Username')
+    str += "{id: 'password', emptyText: '%s', inputType: 'password', enableKeyEvents: true},\n" % _('Password', default='Password')
+    str += "{xtype: 'button', id:'login_submit', text: '%s'}]};\n" % _('Login', default='Login')
 
-    str += "Lmkp.mainControllers = ['Main', 'Layers', 'Map', 'Filter'];\n"
+    str += "Lmkp.mainControllers = ['Main', 'Layers', 'Map', 'Filter', 'Stakeholder'];\n"
+
+    str += "Ext.ns('Lmkp.moderator');\n"
+    str += "Lmkp.moderator.showPendingActivitiesCheckbox = null; Lmkp.moderator.showPendingStakeholdersCheckbox = null;\n"
+
+    str += "Lmkp.currentProfileExtent = %s" % _getCurrentProfileExtent(request)
 
     return str
-
-

@@ -1,17 +1,242 @@
-from pyramid.view import view_config
+import logging
+import os
+import random
 
-# import exceptions for sqlalchemy
+from lmkp.models.database_objects import *
+from lmkp.models.meta import DBSession as Session
+from lmkp.views.activity_protocol2 import ActivityProtocol2
+from lmkp.views.stakeholder_protocol import StakeholderProtocol
+from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.view import view_config
+import simplejson as json
+from sqlalchemy import and_
+from sqlalchemy import func
+from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 import transaction
 
-from sqlalchemy import delete, or_
+log = logging.getLogger(__name__)
 
-import random
+def activity_wrapper(request, file, status='pending'):
+    """
+    A small wrapper around the create method in the Activity Protocol
+    """
+    # Create a new activity protocol object
+    activity_protocol2 = ActivityProtocol2(Session)
+    # Read the data JSON file
+    data_stream = open(file, 'r')
+    data = json.loads(data_stream.read())
 
-from ..models.meta import DBSession as Session
-from ..models.database_objects import *
+    # Check if the json body is a valid diff file
+    if 'activities' not in data:
+        raise HTTPBadRequest(detail="Not a valid format")
 
-@view_config(route_name='sample_values', renderer='lmkp:templates/sample_values.pt')
+    activity_protocol2._read_configuration(request, 'activity.yml')
+
+    ids = []
+    for activity in data['activities']:
+        a = activity_protocol2._handle_activity(request, activity, status)
+        ids.append(a.id)
+    
+    return ids
+        
+def stakeholder_wrapper(request, file, status='pending'):
+    """
+    A small wrapper around the create method in the Activity Protocol
+    """
+    # Create a new activity protocol object
+    stakeholder_protocol = StakeholderProtocol(Session)
+    # Read the data JSON file
+    data_stream = open(file, 'r')
+    data = json.loads(data_stream.read())
+
+    # Check if the json body is a valid diff file
+    if 'stakeholders' not in data:
+        raise HTTPBadRequest(detail="Not a valid format")
+
+    stakeholder_protocol._read_configuration(request, 'stakeholder.yml')
+
+    ids = []
+    for stakeholder in data['stakeholders']:
+        s = stakeholder_protocol._handle_stakeholder(request, stakeholder, status)
+        ids.append(s.id)
+    
+    return ids
+
+
+@view_config(route_name='sample_values', renderer='json')
+def insert_landmatrix(request):
+    """
+    Inserts the landmatrix data into an empty, i.e. freshly populated database
+    and sets all activities immediately active.
+    """
+
+    rootdir = os.path.dirname(os.path.dirname(__file__))
+
+    a = activity_wrapper(request, "%s/documents/landmatrix/%s" % (rootdir, 'landmatrix_activities.json'), 'active')
+    s = stakeholder_wrapper(request, "%s/documents/landmatrix/%s" % (rootdir, 'landmatrix_stakeholders.json'), 'active')
+    
+    """
+    Post-processing. Set second version of Activities (with Involvements)
+    to 'active'. Also establish link between user1 and profile 'global'.
+    """
+    # Set all Activities with version 1 to 'inactive' (fk_status = 3)
+    Session.query(Activity).filter(Activity.version == 1).\
+        update({Activity.fk_status: 3})
+    # Set all Activities with version 2 to 'active' (fk_status = 2)
+    Session.query(Activity).filter(Activity.version == 2).\
+        update({Activity.fk_status: 2})
+    # Establish link between profile 'global' and user1
+    user1 = Session.query(User).filter(User.username == 'user1').first()
+    global_profile = Session.query(Profile).filter(Profile.code == 'global').first()
+    user1.profiles = [global_profile]
+    # Establish link between profile 'LA' and user2
+    user2 = Session.query(User).filter(User.username == 'user2').first()
+    la_profile = Session.query(Profile).filter(Profile.code == 'LA').first()
+    user2.profiles = [la_profile]
+    
+    return {'success': True, 'activities': a, 'stakeholders': s}
+
+@view_config(route_name='set_lao_active', renderer='lmkp:templates/sample_values.pt', permission='administer')
+def set_lao_active(request):
+    """
+    Set the latest activities and stakeholders active after a lao import.
+    """
+
+    stack = []
+
+    # Set the Activities with version 1 to 'active' (fk_status = 2)
+    for a in Session.query(Activity).filter(Activity.version == 1):
+        stack.append(str(a.activity_identifier) + " version 1: set to status \"active\"")
+        a.fk_status = 2
+
+    # Get the latest version for each stakeholder
+    latest_sh_query = Session.query(Stakeholder.stakeholder_identifier, func.max(Stakeholder.version)).\
+        group_by(Stakeholder.stakeholder_identifier)
+
+    # Set all Stakeholder versions to inactive except the latest one (fk_status = 3)
+    for id, v in Session.query(Stakeholder.stakeholder_identifier, Stakeholder.version).except_(latest_sh_query):
+        stack.append(str(id) + " version " + str(v) + ": set to status \"inactive\"")
+        Session.query(Stakeholder).\
+            filter(Stakeholder.stakeholder_identifier == id).\
+            filter(Stakeholder.version == v).\
+            update({Stakeholder.fk_status: 3})
+
+    # Set all latest Stakeholder versions to active
+    for id, v in latest_sh_query.all():
+        stack.append(str(id) + " version " + str(v) + ": set to status \"active\"")
+        Session.query(Stakeholder).\
+            filter(Stakeholder.stakeholder_identifier == id).\
+            filter(Stakeholder.version == v).\
+            update({Stakeholder.fk_status: 2})
+
+    return {'messagestack': stack}
+
+@view_config(route_name='test_sample_values', renderer='json')
+def test_sample_values(request):
+    """
+    Tries to load some sample data to the database using the Activity Protocol.
+    """
+    """
+    # Path to the parent directory
+    parent_dir = os.path.split(os.path.dirname(__file__))[0]
+    # Loop all JSON files, order matters!
+    for file in ['addNewActivity.json', 'modifyTag.json', 'addTagToTaggroup.json', 'addNewTaggroup.json']:
+        create_wrapper(request, "%s/documents/%s" % (parent_dir, file))
+    """
+    rootdir = os.path.dirname(os.path.dirname(__file__))
+
+    # Create new Stakeholder
+    #s1 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 's1.json'), 'pending')
+    # Create a new Activity and add a Stakeholder (existing) to it
+    #ai1 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'ai1.json'), 'pending')
+    # Create Activity
+    ##a1 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a1.json'), 'pending')
+    # Create a new Stakeholder and add an Activity (existing) to it
+    ##si1 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'si1.json'), 'pending')
+    # Create a new Stakeholder and add an Activity (existing) to it
+    #si2 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'si2.json'), 'pending')
+    # Add new Tag with a new Tag Group
+    #a2 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a2.json'), 'pending')
+    # Add new Tag to existing Tag Group
+    #a3 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a3.json'), 'pending')
+    # Modify an existing Tag
+    #a4 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a4.json'), 'pending')
+    # Delete an existing Tag Group
+    #a5 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a5.json'), 'pending')
+    # Add an Involvement (a Stakeholder) to an Activity
+    ##i1 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'i1.json'), 'pending')
+    # Modify an Involvement
+    #i2 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'i2.json'), 'pending')
+    # Delete an Involvement
+    #i3 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'i3.json'), 'pending')
+    # Update Stakeholder
+    #s2 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 's2.json'), 'pending')
+    
+    ###
+    # Create many new Stakeholders
+    #ms1 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'ms1.json'), 'active')
+    # Create many new Activities with links to Stakholders
+    #mai1 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'mai1.json'), 'active')
+    """
+    UPDATE data.stakeholders SET fk_status = 3;
+    UPDATE data.stakeholders SET fk_status = 2 WHERE id > 15;
+    """
+    # Update Activity 1
+    #a6 = activity_wrapper(request, "%s/documents/temp/%s" % (rootdir, 'a6.json'), 'pending')
+    """
+    UPDATE data.activities SET fk_status = 3 WHERE id = 5;
+    UPDATE data.activities SET fk_status = 2 WHERE id = 6;
+    """
+    # Remove an Involvement
+    s3 = stakeholder_wrapper(request, "%s/documents/temp/%s" % (rootdir, 's3.json'), 'pending')
+
+    return {'success': True}
+
+#@view_config(route_name='delete_sample_values', renderer='lmkp:templates/sample_values.pt')
+def delete_all_values(request):
+
+    stack = []
+
+    nbr_activities = 0
+    for activity in Session.query(Activity).all():
+
+        nbr_changesets = 0
+        for changeset in Session.query(A_Changeset).filter(A_Changeset.fk_activity == activity.id).all():
+            Session.delete(changeset)
+            nbr_changesets += 1
+
+        nbr_tag_groups = 0
+        for tag_group in Session.query(A_Tag_Group).filter(A_Tag_Group.fk_activity == activity.id).all():
+            tag_group.fk_a_tag = None
+            Session.flush()
+
+            nbr_tags = 0
+            for tag in Session.query(A_Tag).join(A_Tag_Group, A_Tag_Group.id == A_Tag.fk_a_tag_group).join(Activity).filter(and_(A_Tag.fk_a_tag_group == tag_group.id,
+                                                                                                                            A_Tag_Group.fk_activity == activity.id)).all():
+
+                Session.delete(tag)
+                nbr_tags += 1
+
+            Session.flush()
+            Session.delete(tag_group)
+            nbr_tag_groups += 1
+
+        Session.delete(activity)
+        nbr_activities += 1
+
+    try:
+        stack.append(str(nbr_changesets) + ' changesets deleted.')
+        stack.append(str(nbr_tags) + ' tags deleted.')
+        stack.append(str(nbr_tag_groups) + ' tag groups deleted.')
+        stack.append(str(nbr_activities) + ' activities deleted.')
+    except UnboundLocalError:
+        pass
+
+    return {'messagestack': stack}
+
+
+#@view_config(route_name='sample_values', renderer='lmkp:templates/sample_values.pt')
 def sample_values(request):
     stack = []
     list_activities = []
@@ -24,6 +249,7 @@ def sample_values(request):
     #list_predefined_a_values_projectStatus = []
 # BEGIN fix data ----------------------------------------------------------------------------------
     stack.append('--- fix data ---')
+    """
     # status
     count = []
     status1 = Status(id=1, name='pending', description='Review pending. Not published yet.')
@@ -42,6 +268,13 @@ def sample_values(request):
     count.append(_add_to_db(status5, 'status 5 (rejected)'))
     list_status.append(status5)
     stack.append(str(count.count(1)) + ' status added.')
+    """
+    status1 = Session.query(Status).get(1)
+    status2 = Session.query(Status).get(2)
+    status3 = Session.query(Status).get(3)
+    status4 = Session.query(Status).get(4)
+    status5 = Session.query(Status).get(5)
+    """
     # stakeholder_roles
     count = []
     sh_role1 = Stakeholder_Role(id=1, name='Donor')
@@ -57,13 +290,20 @@ def sample_values(request):
     sh_role6 = Stakeholder_Role(id=6, name='Investor')
     count.append(_add_to_db(sh_role6, 'stakeholder role 6 (investor)'))
     stack.append(str(count.count(1)) + ' stakeholder_roles added.')
+    """
+    sh_role1 = Session.query(Stakeholder_Role).get(1)
+    sh_role2 = Session.query(Stakeholder_Role).get(2)
+    sh_role3 = Session.query(Stakeholder_Role).get(3)
+    sh_role4 = Session.query(Stakeholder_Role).get(4)
+    sh_role5 = Session.query(Stakeholder_Role).get(5)
+    sh_role6 = Session.query(Stakeholder_Role).get(6)
     # languages
     count = []
     """
     lang1 = Language(id=1, english_name='English', local_name='English')
     count.append(_add_to_db(lang1, 'language 1 (english)'))
     """
-    lang1 = Session.query(Language).first()
+    lang1 = Session.query(Language).get(1)
     lang2 = Language(id=2, english_name='Spanish', local_name='Espanol', locale='es')
     count.append(_add_to_db(lang2, 'language 2 (spanish)'))
     stack.append(str(count.count(1)) + ' languages added.')
@@ -149,6 +389,7 @@ def sample_values(request):
     predefined_sh_value1.language = lang1
     count.append(_add_to_db(predefined_sh_value1, 'predefined sh_value 1 (sample value'))
     stack.append(str(count.count(1)) + ' predefined sh_values added.')
+    """
     # permissions
     count = []
     permission1 = Permission(id=1, name='read')
@@ -156,6 +397,8 @@ def sample_values(request):
     permission2 = Permission(id=2, name='write')
     count.append(_add_to_db(permission2, 'permission 2 (write)'))
     stack.append(str(count.count(1)) + ' permissions added.')
+    """
+    """
     # groups (with permissions)
     count = []
     group1 = Group(id=1, name='editors')
@@ -166,6 +409,8 @@ def sample_values(request):
     group2.permissions.append(permission1)
     count.append(_add_to_db(group2, 'group 2 (moderators)'))
     stack.append(str(count.count(1)) + ' groups added.')
+    """
+    """
     # review_decisions
     count = []
     reviewdecision1 = Review_Decision(id=1, name='approved', description='Event or Involvement was approved.')
@@ -175,19 +420,28 @@ def sample_values(request):
     reviewdecision3 = Review_Decision(id=3, name='deleted', description='Event or Involvement was deleted.')
     count.append(_add_to_db(reviewdecision3, 'review decision 3 (deleted)'))
     stack.append(str(count.count(1)) + ' review_decisions added.')
+    """
+    reviewdecision1 = Session.query(Review_Decision).get(1)
+    reviewdecision2 = Session.query(Review_Decision).get(2)
+    reviewdecision3 = Session.query(Review_Decision).get(3)
 # END fix data ------------------------------------------------------------------------------------
 # BEGIN sample data -------------------------------------------------------------------------------
     stack.append('--- sample data (users) ---')
-  # -- users
+# -- users
     count = []
+    """
     # user 1, belongs to admin group
     user1 = User(username='user1', password='pw', email='me@you.com')
     user1.groups.append(group1)
     count.append(_add_to_db(user1, 'user 1'))
     list_users.append(user1)
+    """
+    # add first user (by populate script) to list
+    user1 = Session.query(User).filter(User.username == 'user1').one()
+    list_users.append(user1)
     # user 2, belongs to user group
     user2 = User(username='user2', password='pw', email='you@me.com')
-    user2.groups.append(group2)
+    user2.groups.append(Session.query(Group).get(2))
     count.append(_add_to_db(user2, 'user 2'))
     list_users.append(user2)
     stack.append(str(count.count(1)) + ' users added.')
@@ -196,7 +450,7 @@ def sample_values(request):
     count1 = []
     count2 = []
     stack.append('--- sample data (active activities) ---')
-    for i in range(1,11):
+    for i in range(1, 11):
         # switch
         switch = (i % len(list_predefined_a_keys))
         # prepare key
@@ -205,7 +459,7 @@ def sample_values(request):
         if (switch == 0): # project use
             theValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
-            theValue = A_Value(value=random.randint(1,100))
+            theValue = A_Value(value=random.randint(1, 100))
             theValue.language = lang1
         if (switch == 2): # project status
             theValue = random.choice(list_predefined_a_values_projectStatus)
@@ -216,7 +470,7 @@ def sample_values(request):
             theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
             theValue.language = lang1
         if (switch == 5): # year of investment
-            theValue = A_Value(value=random.randint(1990,2020))
+            theValue = A_Value(value=random.randint(1990, 2020))
             theValue.language = lang1
         """
         if (switch == 0): # name
@@ -240,12 +494,13 @@ def sample_values(request):
         # tag_group
         tag_group = A_Tag_Group()
         tag_group.tags.append(tag)
+        tag_group.main_tag = tag
         # prepare changeset
         changeset = A_Changeset(source='[active] Source ' + str(i))
         changeset.user = random.choice(list_users)
         # prepare activity
         identifier = uuid.uuid4()
-        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,90)) + ")")
+        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1, 180)) + " " + str(random.randint(1, 90)) + ")")
         activity.status = status2 # active
         activity.tag_groups.append(tag_group)
         activity.changesets.append(changeset)
@@ -264,7 +519,7 @@ def sample_values(request):
     count1 = []
     count2 = []
     stack.append('--- sample data (active activities, 2 tags) ---')
-    for i in range(11,21):
+    for i in range(11, 21):
         # switch
         switch = (i % len(list_predefined_a_keys))
         # prepare key
@@ -273,7 +528,7 @@ def sample_values(request):
         if (switch == 0): # project use
             theValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
-            theValue = A_Value(value=random.randint(1,100))
+            theValue = A_Value(value=random.randint(1, 100))
             theValue.language = lang1
         if (switch == 2): # project status
             theValue = random.choice(list_predefined_a_values_projectStatus)
@@ -284,7 +539,7 @@ def sample_values(request):
             theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
             theValue.language = lang1
         if (switch == 5): # year of investment
-            theValue = A_Value(value=random.randint(1990,2020))
+            theValue = A_Value(value=random.randint(1990, 2020))
             theValue.language = lang1
         # prepare tag
         tag = A_Tag()
@@ -293,13 +548,14 @@ def sample_values(request):
         # tag_group
         tag_group = A_Tag_Group()
         tag_group.tags.append(tag)
+        tag_group.main_tag = tag
         # add another tag_group
-        switch = random.randint(0,len(list_predefined_a_keys)-1)
+        switch = random.randint(0, len(list_predefined_a_keys)-1)
         theKey = list_predefined_a_keys[switch]
         if (switch == 0): # project use
             theValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
-            theValue = A_Value(value=random.randint(1,100))
+            theValue = A_Value(value=random.randint(1, 100))
             theValue.language = lang1
         if (switch == 2): # project status
             theValue = random.choice(list_predefined_a_values_projectStatus)
@@ -310,7 +566,7 @@ def sample_values(request):
             theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
             theValue.language = lang1
         if (switch == 5): # year of investment
-            theValue = A_Value(value=random.randint(1990,2020))
+            theValue = A_Value(value=random.randint(1990, 2020))
             theValue.language = lang1
         tag = A_Tag()
         tag.key = theKey
@@ -321,7 +577,7 @@ def sample_values(request):
         changeset.user = random.choice(list_users)
         # prepare activity
         identifier = uuid.uuid4()
-        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1, 180)) + " " + str(random.randint(1, 180)) + ")")
         activity.status = status2 # active
         activity.tag_groups.append(tag_group)
         activity.changesets.append(changeset)
@@ -339,7 +595,7 @@ def sample_values(request):
     # random activities with status=pending, no reviews
     count1 = []
     stack.append('--- sample data (pending activities) ---')
-    for i in range(21,31):
+    for i in range(21, 31):
         # switch
         switch = (i % len(list_predefined_a_keys))
         # prepare key
@@ -348,7 +604,7 @@ def sample_values(request):
         if (switch == 0): # project use
             theValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
-            theValue = A_Value(value=random.randint(1,100))
+            theValue = A_Value(value=random.randint(1, 100))
             theValue.language = lang1
         if (switch == 2): # project status
             theValue = random.choice(list_predefined_a_values_projectStatus)
@@ -359,7 +615,7 @@ def sample_values(request):
             theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
             theValue.language = lang1
         if (switch == 5): # year of investment
-            theValue = A_Value(value=random.randint(1990,2020))
+            theValue = A_Value(value=random.randint(1990, 2020))
             theValue.language = lang1
         # prepare tag
         tag = A_Tag()
@@ -368,12 +624,13 @@ def sample_values(request):
         # tag_group
         tag_group = A_Tag_Group()
         tag_group.tags.append(tag)
+        tag_group.main_tag = tag
         # prepare changeset
         changeset = A_Changeset(source='[pending] Source ' + str(i))
         changeset.user = random.choice(list_users)
         # prepare activity
         identifier = uuid.uuid4()
-        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1, 180)) + " " + str(random.randint(1, 180)) + ")")
         activity.status = status1 # pending
         activity.tag_groups.append(tag_group)
         activity.changesets.append(changeset)
@@ -384,7 +641,7 @@ def sample_values(request):
     count1 = []
     count2 = []
     stack.append('--- sample data (deleted activities) ---')
-    for i in range(31,41):
+    for i in range(31, 41):
         # switch
         switch = (i % len(list_predefined_a_keys))
         # prepare key
@@ -393,7 +650,7 @@ def sample_values(request):
         if (switch == 0): # project use
             theValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
-            theValue = A_Value(value=random.randint(1,100))
+            theValue = A_Value(value=random.randint(1, 100))
             theValue.language = lang1
         if (switch == 2): # project status
             theValue = random.choice(list_predefined_a_values_projectStatus)
@@ -404,7 +661,7 @@ def sample_values(request):
             theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
             theValue.language = lang1
         if (switch == 5): # year of investment
-            theValue = A_Value(value=random.randint(1990,2020))
+            theValue = A_Value(value=random.randint(1990, 2020))
             theValue.language = lang1
         # prepare tag
         tag = A_Tag()
@@ -413,12 +670,13 @@ def sample_values(request):
         # tag_group
         tag_group = A_Tag_Group()
         tag_group.tags.append(tag)
+        tag_group.main_tag = tag
         # prepare changeset
         changeset = A_Changeset(source='[deleted] Source ' + str(i))
         changeset.user = random.choice(list_users)
         # prepare activity
         identifier = uuid.uuid4()
-        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1, 180)) + " " + str(random.randint(1, 180)) + ")")
         activity.status = status4 # deleted
         activity.tag_groups.append(tag_group)
         activity.changesets.append(changeset)
@@ -437,7 +695,7 @@ def sample_values(request):
     count2 = []
     count3 = []
     stack.append('--- sample data (overwritten activities) ---')
-    for i in range(41,51):
+    for i in range(41, 51):
         # switch
         switch = (i % len(list_predefined_a_keys))
         # prepare key
@@ -446,7 +704,7 @@ def sample_values(request):
         if (switch == 0): # project use
             theValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
-            theValue = A_Value(value=random.randint(1,100))
+            theValue = A_Value(value=random.randint(1, 100))
             theValue.language = lang1
         if (switch == 2): # project status
             theValue = random.choice(list_predefined_a_values_projectStatus)
@@ -457,7 +715,7 @@ def sample_values(request):
             theValue = A_Value(value=random.choice(['small', 'medium', 'big']))
             theValue.language = lang1
         if (switch == 5): # year of investment
-            theValue = A_Value(value=random.randint(1990,2020))
+            theValue = A_Value(value=random.randint(1990, 2020))
             theValue.language = lang1
         # prepare tag
         tag = A_Tag()
@@ -466,12 +724,13 @@ def sample_values(request):
         # tag_group
         tag_group = A_Tag_Group()
         tag_group.tags.append(tag)
+        tag_group.main_tag = tag
         # prepare changeset
         changeset = A_Changeset(source='[overwritten] Source ' + str(i))
         changeset.user = random.choice(list_users)
         # prepare activity
         identifier = uuid.uuid4()
-        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+        activity = Activity(activity_identifier=identifier, version=1, point="POINT(" + str(random.randint(1, 180)) + " " + str(random.randint(1, 180)) + ")")
         activity.status = status3 # deleted
         activity.tag_groups.append(tag_group)
         activity.changesets.append(changeset)
@@ -485,15 +744,15 @@ def sample_values(request):
         review.review_decision = reviewdecision1    # approved
         count3.append(_add_to_db(review, 'review decision ' + str(i)))
         # -- version 2
-        new_activity = Activity(activity_identifier=identifier, version=2, point="POINT(" + str(random.randint(1,180)) + " " + str(random.randint(1,180)) + ")")
+        new_activity = Activity(activity_identifier=identifier, version=2, point="POINT(" + str(random.randint(1, 180)) + " " + str(random.randint(1, 180)) + ")")
         new_activity.status = status2   # active
         new_tag_group = A_Tag_Group()
-        switch = random.randint(0,len(list_predefined_a_keys)-1)
+        switch = random.randint(0, len(list_predefined_a_keys)-1)
         newKey = list_predefined_a_keys[switch]
         if (switch == 0): # project use
             newValue = random.choice(list_predefined_a_values_projectUse)
         if (switch == 1): # area
-            newValue = A_Value(value=random.randint(1,100))
+            newValue = A_Value(value=random.randint(1, 100))
             newValue.language = lang1
         if (switch == 2): # project status
             newValue = random.choice(list_predefined_a_values_projectStatus)
@@ -504,24 +763,25 @@ def sample_values(request):
             newValue = A_Value(value=random.choice(['small', 'medium', 'big']))
             newValue.language = lang1
         if (switch == 5): # year of investment
-            newValue = A_Value(value=random.randint(1990,2020))
+            newValue = A_Value(value=random.randint(1990, 2020))
             newValue.language = lang1
         new_tag = A_Tag()
         new_tag.key = newKey
         new_tag.value = newValue
         new_tag_group.activity = new_activity
         new_tag_group.tags.append(new_tag)
+        new_tag_group.main_tag = new_tag
         # copy old key/value pairs
         session = Session()
         old_activity = session.query(Activity).filter(Activity.activity_identifier == identifier).first()
         for old_tag_group in old_activity.tag_groups:
-           copy_tag_group = A_Tag_Group()
-           for old_tag in old_tag_group.tags:
-               copy_tag = A_Tag()
-               copy_tag.fk_a_key = old_tag.fk_a_key
-               copy_tag.fk_a_value = old_tag.fk_a_value
-               copy_tag_group.tags.append(copy_tag)
-           new_activity.tag_groups.append(copy_tag_group)
+            copy_tag_group = A_Tag_Group()
+            for old_tag in old_tag_group.tags:
+                copy_tag = A_Tag()
+                copy_tag.fk_a_key = old_tag.fk_a_key
+                copy_tag.fk_a_value = old_tag.fk_a_value
+                copy_tag_group.tags.append(copy_tag)
+            new_activity.tag_groups.append(copy_tag_group)
         # prepare changeset
         changeset = A_Changeset(source='[overwritten] Source ' + str(i))
         changeset.user = random.choice(list_users)
@@ -542,7 +802,7 @@ def sample_values(request):
     count1 = []
     count2 = []
     stack.append('--- sample data (active stakeholders) ---')
-    for i in range(1,21):
+    for i in range(1, 21):
         # switch
         switch = (i % 2)
         theKey = list_predefined_sh_keys[switch]
@@ -559,6 +819,7 @@ def sample_values(request):
         # tag_group
         tag_group = SH_Tag_Group()
         tag_group.tags.append(tag)
+        tag_group.main_tag = tag
         # prepare changeset
         changeset = SH_Changeset(source='[active] Source ' + str(i))
         changeset.user = random.choice(list_users)
@@ -619,14 +880,20 @@ def delete_sample_values(request):
         Session.delete(asr)
     if (rev_counter > 0):
         stack.append(str(rev_counter) + " sh_changeset_reviews deleted.")
-    all_activities = Session.query(Activity).join(A_Changeset).filter(or_(A_Changeset.source.like('[active] Source %'), A_Changeset.source.like('[pending] Source %'), A_Changeset.source.like('[overwritten] Source %'), A_Changeset.source.like('[deleted] Source %'), A_Changeset.source.like('[overwritten] Source %'))).all()
+    #all_activities = Session.query(Activity).join(A_Changeset).filter(or_(A_Changeset.source.like('[active] Source %'), A_Changeset.source.like('[pending] Source %'), A_Changeset.source.like('[overwritten] Source %'), A_Changeset.source.like('[deleted] Source %'), A_Changeset.source.like('[overwritten] Source %'))).all()
+    # Select all activities
+    all_activities = Session.query(Activity)
     act_counter = 0
     tag_counter = 0
     ch_counter = 0
     for aa in all_activities:
         # delete tag groups
         tag_groups = aa.tag_groups
+        tag_groups.main_tag = None
         for tg in tag_groups:
+
+            tg.fk_a_tag = None
+
             tags = tg.tags
             for t in tags:
                 tag_counter += 1
