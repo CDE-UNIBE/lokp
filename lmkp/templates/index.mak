@@ -75,7 +75,9 @@ else:
                 </p>
             </div>
             <div id="logo-div">
-                <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" height="100" width="100" alt="Land Observatory"/>
+                <a href="http://www.landportal.info/observatory">
+                    <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" height="100" width="100" alt="Land Observatory"/>
+                </a>
             </div>
         </div>
         <div id="loading-mask" style="width: 100%; height: 100%;">
