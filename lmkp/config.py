@@ -2,28 +2,36 @@
 # and open the template in the editor.
 
 import os.path
+from os import sep as separator
 
-def config_file_path(request=None):
-    """
-    Returns the absolute path to the global.yaml file
-    """
-    return "%s/profiles/global.yml" % os.path.dirname(__file__)
-
-def locale_config_file_path(request):
+def locale_profile_directory_path(request):
     """
     Returns the absolute path to the profile .yaml file, based on params _PROFILE_ or
     cookie _PROFILE_
     """
-    
+
+    profiles_dir = request.registry.settings['lmkp.profiles_dir']
+
     if '_PROFILE_' in request.params:
-        return "%s/profiles/%s.yml" % (os.path.dirname(__file__), request.params['_PROFILE_'])
-    if '_PROFILE_' in request.cookies:
-        return "%s/profiles/%s.yml" % (os.path.dirname(__file__), request.cookies['_PROFILE_'])
-    else:
-        return ''
+        p = profiles_dir + separator + request.params['_PROFILE_']
+        if os.path.exists(p):
+            return p
+    elif '_PROFILE_' in request.cookies:
+        p = profiles_dir + separator + request.cookies['_PROFILE_']
+        if os.path.exists(p):
+            return p
+
+    return profiles_dir
 
 def profile_directory_path(request=None):
     """
     Returns the absolute path to the directory containing the profiles
     """
-    return "%s/profiles/" % os.path.dirname(__file__)
+    return request.registry.settings['lmkp.profiles_dir']
+
+def codes_directory_path():
+    """
+    Returns the absolute path to the directory containing the files for code
+    translation
+    """
+    return "%s/documents/codes" % os.path.dirname(__file__)

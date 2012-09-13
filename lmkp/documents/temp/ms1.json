@@ -1,0 +1,74 @@
+{
+	"_description": "Create many new Stakeholders",
+    "stakeholders": [{
+    	"id": "00000000-0000-0000-0000-000000000001",
+        "taggroups": [{
+            "main_tag": {
+                "key": "Name",
+                "value": "Mr. A"
+            },
+            "op": "add",
+            "tags": [{
+                "key": "Name",
+                "op": "add",
+                "value": "Mr. A"
+            }]
+        }]
+    }, {
+    	"id": "00000000-0000-0000-0000-000000000002",
+        "taggroups": [{
+            "main_tag": {
+                "key": "Name",
+                "value": "Mr. B"
+            },
+            "op": "add",
+            "tags": [{
+                "key": "Name",
+                "op": "add",
+                "value": "Mr. B"
+            }]
+        }]
+    }, {
+    	"id": "00000000-0000-0000-0000-000000000003",
+        "taggroups": [{
+            "main_tag": {
+                "key": "Name",
+                "value": "Mr. C"
+            },
+            "op": "add",
+            "tags": [{
+                "key": "Name",
+                "op": "add",
+                "value": "Mr. C"
+            }]
+        }]
+    }, {
+    	"id": "00000000-0000-0000-0000-000000000004",
+        "taggroups": [{
+            "main_tag": {
+                "key": "Name",
+                "value": "Mr. D"
+            },
+            "op": "add",
+            "tags": [{
+                "key": "Name",
+                "op": "add",
+                "value": "Mr. D"
+            }]
+        }]
+    }, {
+    	"id": "00000000-0000-0000-0000-000000000005",
+        "taggroups": [{
+            "main_tag": {
+                "key": "Name",
+                "value": "Mr. E"
+            },
+            "op": "add",
+            "tags": [{
+                "key": "Name",
+                "op": "add",
+                "value": "Mr. E"
+            }]
+        }]
+    }]
+}

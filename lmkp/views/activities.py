@@ -1,11 +1,13 @@
-from lmkp.config import config_file_path
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
-from lmkp.views.activity_protocol import ActivityProtocol
+from lmkp.views.activity_protocol2 import ActivityProtocol2
+from lmkp.views.config import get_mandatory_keys
 import logging
+from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.httpexceptions import HTTPCreated
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPFound
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPUnauthorized
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
 from pyramid.security import ACLAllowed
@@ -16,9 +18,7 @@ from pyramid.url import route_url
 from pyramid.view import view_config
 from sqlalchemy.sql.expression import or_, and_
 import yaml
-
-from lmkp.config import config_file_path
-from lmkp.config import locale_config_file_path
+import simplejson as json
 
 from lmkp.renderers.renderers import translate_key
 
@@ -26,55 +26,56 @@ log = logging.getLogger(__name__)
 
 _ = TranslationStringFactory('lmkp')
 
-activity_protocol = ActivityProtocol(Session)
+activity_protocol2 = ActivityProtocol2(Session)
 
-# Translatable hashmap with all possible activity status
-statusMap = {
-'active': _('Active Activities', default='Active Activities'),
-'overwritten': _('Overwritten Activities', default='Overwritten Activities'),
-'pending': _('Pending Activities', default='Pending Activities'),
-'deleted': _('Deleted Activities', default='Deleted Activities'),
-'rejected': _('Rejected Activities', default='Rejected Activities')
-}
-
-def get_status(request):
-    """
-    Returns a list of requested and valid status
-    """
-
-    # Set the default status
-    defaultStatus = ['active']
-
-    # Get the status parameter if set, else active per default
-    requestedStatus = request.params.get('status', defaultStatus)
-    try:
-        status = requestedStatus.split(',')
-    except AttributeError:
-        status = requestedStatus
-
-    # Make sure that all status elements are in the statusMap. If not, remove it
-    for s in status:
-        if s not in statusMap:
-            status.remove(s)
-
-    # Make sure that not an empty status is returned
-    if len(status) == 0:
-        status = defaultStatus
-
-    # Return a list of valid status
-    return status
-
-def get_status_filter(request):
-    status = get_status(request)
-    if len(status) == 0:
-        return None
-    elif len(status) == 1:
-        return (Status.name == status[0])
-    else:
-        filters = []
-        for s in status:
-            filters.append((Status.name == s))
-        return or_(* filters)
+# TODO: quite possibly, this could be deleted ... Not sure though
+## Translatable hashmap with all possible activity status
+#statusMap = {
+#'active': _('Active Activities', default='Active Activities'),
+#'overwritten': _('Overwritten Activities', default='Overwritten Activities'),
+#'pending': _('Pending Activities', default='Pending Activities'),
+#'deleted': _('Deleted Activities', default='Deleted Activities'),
+#'rejected': _('Rejected Activities', default='Rejected Activities')
+#}
+#
+#def get_status(request):
+#    """
+#    Returns a list of requested and valid status
+#    """
+#
+#    # Set the default status
+#    defaultStatus = ['active']
+#
+#    # Get the status parameter if set, else active per default
+#    requestedStatus = request.params.get('status', defaultStatus)
+#    try:
+#        status = requestedStatus.split(',')
+#    except AttributeError:
+#        status = requestedStatus
+#
+#    # Make sure that all status elements are in the statusMap. If not, remove it
+#    for s in status:
+#        if s not in statusMap:
+#            status.remove(s)
+#
+#    # Make sure that not an empty status is returned
+#    if len(status) == 0:
+#        status = defaultStatus
+#
+#    # Return a list of valid status
+#    return status
+#
+#def get_status_filter(request):
+#    status = get_status(request)
+#    if len(status) == 0:
+#        return None
+#    elif len(status) == 1:
+#        return (Status.name == status[0])
+#    else:
+#        filters = []
+#        for s in status:
+#            filters.append((Status.name == s))
+#        return or_(* filters)
 
 def get_timestamp(request):
     """
@@ -89,80 +90,89 @@ def read_one(request):
     Returns the feature with the requested id
     """
     uid = request.matchdict.get('uid', None)
-    return activity_protocol.read(request, filter=get_status_filter(request), uid=uid)
+    return activity_protocol2.read(request, uid=uid)
 
 
-@view_config(route_name='activities_read_many', renderer='geojson')
+@view_config(route_name='activities_read_many', renderer='json')
 def read_many(request):
     """
     Reads many active activities
     """
+    activities = activity_protocol2.read(request)
+    return activities
 
-    log.debug(get_status_filter(request))
+@view_config(route_name='activities_read_pending', renderer='lmkp:templates/rss.mak')
+def read_pending(request):
+    activities = activity_protocol2.read(request) #, filter={'status_filter': (Status.id==2)})
+    return {'data': activities['data']}
 
-    return activity_protocol.read(request, filter=get_status_filter(request))
-
-
-@view_config(route_name='activities_read_one_json', renderer='json')
-def read_one_json(request):
+@view_config(route_name='activities_review', renderer='json')
+def review(request):
     """
-    Returns the feature with the requested id
+    Insert a review decision for a pending Activity
     """
-    uid = request.matchdict.get('uid', None)
-    return {
-        'success': True,
-        'data': activity_protocol.read(request, filter=get_status_filter(request), uid=uid)
-    }
+    
+    # Check if the user is logged in and he/she has sufficient user rights
+    userid = authenticated_userid(request)
+    if userid is None:
+        raise HTTPUnauthorized('User is not logged in.')
+        #return {'success': False, 'msg': 'User is not logged in.'}
+    if not isinstance(has_permission('moderate', request.context, request), ACLAllowed):
+        raise HTTPUnauthorized('User has no permissions to add a review.')
+        #return {'success': False, 'msg': 'User has no permissions to add a review.'}
+    user = Session.query(User).\
+            filter(User.username == authenticated_userid(request)).first()
 
+    # Check for profile
+    profile_filters = activity_protocol2._create_bound_filter_by_user(request)
+    if len(profile_filters) == 0:
+        raise HTTPBadRequest('User has no profile attached')
+        #return {'success': False, 'msg': 'User has no profile attached.'}
+    activity = Session.query(Activity).\
+        filter(Activity.activity_identifier == request.POST['identifier']).\
+        filter(Activity.version == request.POST['version']).\
+        filter(or_(* profile_filters)).\
+        first()
+    if activity is None:
+        raise HTTPUnauthorized('The Activity was not found or is not situated within the user\'s profiles')
+        #return {'success': False, 'msg': 'The Activity was not found or is not situated within the user\'s profiles'}
 
-@view_config(route_name='activities_read_many_json', renderer='json')
-def read_many_json(request):
-    """
-    Reads many activities
-    """
+    # If review decision is 'approved', make sure that all mandatory fields are 
+    # there, except if it is to be deleted
+    try:
+        review_decision = int(request.POST['review_decision'])
+    except:
+        review_decision = None
 
-    return {
-        'data': activity_protocol.read(request, filter=get_status_filter(request)),
-        'success': True,
-        'total': activity_protocol.count(request, filter=get_status_filter(request))
-    }
+    if review_decision == 1: # Approved
+        # Only check for mandatory keys if new version is not to be deleted
+        # (has no tag groups)
+        if len(activity.tag_groups) > 0:
+            mandatory_keys = get_mandatory_keys(request, 'a')
+            # Query keys
+            activity_keys = Session.query(A_Key.key).\
+                join(A_Tag).\
+                join(A_Tag_Group, A_Tag.fk_tag_group == A_Tag_Group.id).\
+                filter(A_Tag_Group.activity == activity)
+            keys = []
+            for k in activity_keys.all():
+                keys.append(k.key)
+            for mk in mandatory_keys:
+                if mk not in keys:
+                    return {'success': False, 'msg': 'Not all mandatory keys are provided.'}
 
+    # Also query previous Activity if available
+    previous_activity = Session.query(Activity).\
+        filter(Activity.activity_identifier == request.POST['identifier']).\
+        filter(Activity.version == activity.changesets[0].previous_version).\
+        first()
 
-@view_config(route_name='activities_read_one_html', renderer='lmkp:templates/table.mak')
-def read_one_html(request):
-    """
-    Returns the feature with the requested id
-    """
-    uid = request.matchdict.get('uid', None)
-    return {'result': [activity_protocol.read(request, filter=get_status_filter(request), uid=uid)]}
+    # The user can add a review
+    ret = activity_protocol2._add_review(
+        request, activity, previous_activity, A_Changeset_Review, Activity, user
+    )
 
-
-@view_config(route_name='activities_read_many_html', renderer='lmkp:templates/table.mak')
-def read_many_html(request):
-
-    return {'result': activity_protocol.read(request, filter=get_status_filter(request))}
-
-
-@view_config(route_name='activities_read_one_kml', renderer='kml')
-def read_one_kml(request):
-
-    uid = request.matchdict.get('uid', None)
-    return activity_protocol.read(request, filter=get_status_filter(request), uid=uid)
-
-
-@view_config(route_name='activities_read_many_kml', renderer='kml')
-def read_many_kml(request):
-
-    return activity_protocol.read(request, filter=get_status_filter(request))
-
-
-@view_config(route_name='activities_count', renderer='string')
-def count(request):
-    """
-    Count activities
-    """
-    return activity_protocol.count(request, filter=get_status_filter(request))
-
+    return ret
 
 @view_config(route_name='activities_create', renderer='json')
 def create(request):
@@ -171,7 +181,7 @@ def create(request):
     Implements the create functionality (HTTP POST) in the CRUD model
 
     Test the POST request e.g. with
-    curl --data @line.json http://localhost:6543/activities
+    curl -u "user1:pw" -d @addNewActivity.json -H "Content-Type: application/json" http://localhost:6543/activities
 
     """
 
@@ -180,60 +190,25 @@ def create(request):
     print effective_principals(request)
 
     if userid is None:
-        return HTTPForbidden()
+        raise HTTPForbidden()
     if not isinstance(has_permission('edit', request.context, request), ACLAllowed):
-        return HTTPForbidden()
+        raise HTTPForbidden()
 
-    return activity_protocol.create(request)
+    ids = activity_protocol2.create(request)
 
-@view_config(route_name='activities_tree', renderer='tree')
-def tree(request):
-    """
-    Returns a ExtJS tree configuration of requested activities. Geographical
-    and attribute filter are applied!
-    """
+    response = {}
+    response['data'] = [i.to_json() for i in ids]
+    response['total'] = len(response['data'])
 
-    class ActivityFolder(object):
-        """
-        Define a new class instead of a named tuple, see also comments of
-        this post:
-        http://pysnippet.blogspot.com/2010/01/named-tuple.html
-        The attribute columns id and geometry are reserved and mandatory.
-        """
+    request.response.status = 201
+    return response
 
-        def __init__(self, ** kwargs):
-            self.__dict__.update(kwargs)
-
-        @property
-        def __tree_interface__(self):
-            return {
-            'id': self.__dict__['id'],
-            'name': self.__dict__['name'],
-            'children': self.__dict__['children']
-            }
-
-    localizer = get_localizer(request)
-
-    status = get_status(request)
-    if len(status) <= 1:
-        return activity_protocol.read(request, filter=get_status_filter(request))
-    else:
-        result = []
-        for s in status:
-            a = ActivityFolder(
-                               id=s,
-                               name=localizer.translate(statusMap[s]),
-                               children=activity_protocol.read(request, filter=(Status.name == s))
-                               )
-            result.append(a)
-        return result
-
-
-@view_config(route_name='activities_model', renderer='string')
+#@view_config(route_name='taggroups_model', renderer='string')
 def model(request):
     """
     Controller that returns a dynamically generated JavaScript that builds the
-    client-side Activity model. The model is set up based on the defined mandatory
+    client-side TagGroup model, which is related (belongsTo / hasMany) to the 
+    static Activity model. The model is set up based on the defined mandatory
     and optional field in the configuration yaml file.
     """
     def _merge_config(parent_key, global_config, locale_config):
@@ -264,7 +239,7 @@ def model(request):
     object = {}
 
     object['extend'] = 'Ext.data.Model'
-    object['proxy'] = {'type': 'ajax', 'url': '/activities', 'reader': {'type': 'json', 'root': 'children'}}
+    object['belongsTo'] = 'Lmkp.model.Activity'
 
     # Get a stream of the config yaml file to extract the fields
     stream = open(config_file_path(), 'r')
@@ -285,7 +260,6 @@ def model(request):
         # No localized configuration file found!
         pass
 
-
     fields = []
     fieldsConfig = global_config['application']['fields']
 
@@ -297,29 +271,21 @@ def model(request):
 
     # First process the mandatory fields
     for (name, config) in fieldsConfig['mandatory'].iteritems():
-        fields.append(_get_extjs_config(name, config, lang))
+        o = _get_extjs_config(name, config, lang)
+        if o is not None:
+            o['mandatory'] = 1
+            fields.append(o)
     # Then process also the optional fields
     for (name, config) in fieldsConfig['optional'].iteritems():
-        fields.append(_get_extjs_config(name, config, lang))
+        o = _get_extjs_config(name, config, lang)
+        if o is not None:
+            fields.append(o)
 
     fields.append({'name': 'id', 'type': 'string'})
 
     object['fields'] = fields
 
-    return "Ext.define('Lmkp.model.Activity', %s);" % object
-
-
-@view_config(route_name='rss_feed', renderer='lmkp:templates/rss.mak')
-def read_many_rss(request):
-    status = "active"
-
-    if 'status' in request.matchdict:
-        status = request.matchdict['status']
-        
-    if 'order_by' not in request.params or 'dir' not in request.params:
-        return HTTPFound(route_url('rss_feed', request, status=status, _query={'order_by': 'timestamp', 'dir': 'desc'}))
-
-    return {'data': activity_protocol.read(request, filter=(Status.name == status))}
+    return "Ext.define('Lmkp.model.TagGroup', %s);" % object
 
 @view_config(route_name='activities_history', renderer='json')
 def activities_history(request):
@@ -327,7 +293,13 @@ def activities_history(request):
     
     # Get the localizer from the request
     localizer = get_localizer(request)
+    
+    activity = activity_protocol2.history(request, uid=uid)
+    return activity
+    
+    # TODO: ...
 
+    """
     # The ActivityProtocol does not perform filter operations when UUID is passed as a parameter.
     # As a workaround, UUID is passed as a filter.
     overwrittenfilter = []
@@ -411,7 +383,7 @@ def activities_history(request):
         'success': True,
         'total': len(overwritten) + activeCount + deletedCount
     }
-    
+    """
 
 
 def _check_difference(new, old, localizer=None):
@@ -483,6 +455,11 @@ def _get_extjs_config(name, config, language):
     
     # check if translated name is available
     originalKey = Session.query(A_Key.id).filter(A_Key.key == name).filter(A_Key.fk_a_key == None).first()
+    
+    # if no original value is found in DB, return None (this cannot be selected)
+    if not originalKey:
+        return None
+    
     translatedName = Session.query(A_Key).filter(A_Key.fk_a_key == originalKey).filter(A_Key.language == language).first()
     
     if translatedName:
@@ -533,10 +510,6 @@ def _get_config_fields():
 
     return fields
 
-@view_config(route_name='timestamp_test', renderer="lmkp:templates/table.mak")
-def timestamp_test(request):
-    query = activity_protocol._query_timestamp(request)
-
-    #return {'query': query.all()}
-    return {'result': query.all(), 'nbr': len(query.all())}
-    
+@view_config(route_name='activities_read_geojson', renderer='json')
+def activities_read_geojson(request):
+    return activity_protocol2.read_geojson(request)

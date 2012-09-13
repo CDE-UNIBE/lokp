@@ -8,7 +8,7 @@ from pyramid.view import view_config
 
 log = logging.getLogger(__name__)
 
-@view_config(route_name='manage_events', renderer='lmkp:templates/index.pt')
+#@view_config(route_name='manage_events', renderer='lmkp:templates/index.pt')
 def manage_events(request):
 
     if request is not None and '_LOCALE_' in request.params:

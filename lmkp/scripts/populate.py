@@ -3,6 +3,7 @@ import sys
 import transaction
 
 from sqlalchemy import engine_from_config
+from sqlalchemy.orm.exc import NoResultFound
 
 from pyramid.paster import (
     get_appsettings,
@@ -31,6 +32,8 @@ def main(argv=sys.argv):
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
     Base.metadata.create_all(engine)
+    
+    # add triggers
     engine.execute("CREATE OR REPLACE FUNCTION data.check_uniqueVersionActive() RETURNS TRIGGER AS $check_uniqueVersionActive$ \
                         DECLARE \
                             active_count integer; \
@@ -71,3 +74,77 @@ def main(argv=sys.argv):
                     BEFORE UPDATE OR INSERT ON data.stakeholders \
                     FOR EACH ROW \
                     EXECUTE PROCEDURE data.check_uniqueVersionActive();")
+    
+    # add initial values
+    with transaction.manager:
+        # language
+        lang1 = _addIfNotExists_ID(Language(id=1, english_name='English', local_name='English', locale='en'))
+        lang2 = _addIfNotExists_ID(Language(id=2, english_name='Codes', local_name='Codes', locale='code'))
+        # status
+        status1 = _addIfNotExists_ID(Status(id=1, name='pending', description='Review pending. Not published yet.'))
+        status2 = _addIfNotExists_ID(Status(id=2, name='active', description='Reviewed and accepted. Currently published.'))
+        status3 = _addIfNotExists_ID(Status(id=3, name='inactive', description='Inactive. Previously active.'))
+        status4 = _addIfNotExists_ID(Status(id=4, name='deleted', description='Deleted. Not published anymore.'))
+        status5 = _addIfNotExists_ID(Status(id=5, name='rejected', description='Reviewed and rejected. Never published.'))
+        status6 = _addIfNotExists_ID(Status(id=6, name='edited', description='Edited. Previously pending.'))
+        # stakeholder roles
+        sh_role1 = _addIfNotExists_ID(Stakeholder_Role(id=1, name='Donor'))
+        sh_role2 = _addIfNotExists_ID(Stakeholder_Role(id=2, name='Implementing agency'))
+        sh_role3 = _addIfNotExists_ID(Stakeholder_Role(id=3, name='Partner'))
+        sh_role4 = _addIfNotExists_ID(Stakeholder_Role(id=4, name='Beneficiary'))
+        sh_role5 = _addIfNotExists_ID(Stakeholder_Role(id=5, name='Informant'))
+        sh_role6 = _addIfNotExists_ID(Stakeholder_Role(id=6, name='Investor'))
+        # permissions
+        permission1 = _addIfNotExists_ID(Permission(id=1, name='administer', description='Can add key/values and edit translations.'))
+        permission2 = _addIfNotExists_ID(Permission(id=2, name='moderate', description='Can make review decisions on reported information.'))
+        permission3 = _addIfNotExists_ID(Permission(id=3, name='edit', description='Can report information.'))
+        permission4 = _addIfNotExists_ID(Permission(id=4, name='view', description='Can see information. (basic permission - granted to everyone)'))
+        # groups (with permissions)
+        group1 = _addIfNotExists_ID(Group(id=1, name='administrators'))
+        group1.permissions.append(permission1)
+        group1.permissions.append(permission2)
+        group1.permissions.append(permission3)
+        group1.permissions.append(permission4)
+        group2 = _addIfNotExists_ID(Group(id=2, name='moderators'))
+        group2.permissions.append(permission2)
+        group2.permissions.append(permission3)
+        group2.permissions.append(permission4)
+        group3 = _addIfNotExists_ID(Group(id=3, name='editors'))
+        group3.permissions.append(permission3)
+        group3.permissions.append(permission4)
+        # review decisions
+        reviewdecision1 = _addIfNotExists_ID(Review_Decision(id=1, name='approved', description='Information was approved.'))
+        reviewdecision1 = _addIfNotExists_ID(Review_Decision(id=2, name='rejected', description='Event or Involvement was rejected.'))
+        reviewdecision3 = _addIfNotExists_ID(Review_Decision(id=3, name='edited', description='Information was edited by a moderator'))
+        # users (only 1 admin user)
+        admin_password = settings['lmkp.admin_password']
+        admin_email = settings['lmkp.admin_email']
+        user1 = _addIfNotExists_NoIDUnique(User(username='admin', password=admin_password, email=admin_email), User.username, 'admin')
+        user1.groups.append(group1)
+        # connected with profile1 (global)
+        #user2 = _addIfNotExists_NoIDUnique(User(username='user2', password='pw', email='user2@cde.unibe.ch'), User.username, 'user2')
+        #user2.groups.append(group2)
+        # connected with profile1 (global)
+        #user3 = _addIfNotExists_NoIDUnique(User(username='user3', password='pw', email='user3@cde.unibe.ch'), User.username, 'user3')
+        #user3.groups.append(group3)
+        # Profile
+        profile1 = _addIfNotExists_NoIDUnique(Profile(code='global', geometry=None), Profile.code, 'global')
+        profile1.users = [user1] #, user2]
+
+        
+
+def _addIfNotExists_ID(object):
+    q = DBSession.query(object.__mapper__).get(object.id)
+    if q is None:
+        # object does not yet exist -> create
+        DBSession.add(object)
+        return object
+    else:
+        return q
+
+def _addIfNotExists_NoIDUnique(object, filterColumn, filterAttr):
+    try:
+        q = DBSession.query(User).filter(filterColumn == filterAttr).one()
+        return q
+    except NoResultFound:
+        return object

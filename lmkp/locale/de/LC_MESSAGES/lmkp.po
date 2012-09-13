@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2012-04-02 10:16+0200\n"
+"POT-Creation-Date: 2012-06-20 16:19+0200\n"
 "PO-Revision-Date: 2012-04-02 14:56+0100\n"
 "Last-Translator: Adrian Weber <adrian.weber@cde.unibe.ch>\n"
 "Language-Team: de <LL@li.org>\n"
@@ -16,76 +16,334 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"X-Poedit-Basepath: ../../../../\n"
 
-#: lmkp/templates/index.mak:40
+#: lmkp/templates/index.mak:41
 msgid "Welcome"
 msgstr "Willkommen"
 
-#: lmkp/templates/index.mak:45 lmkp/templates/index.pt:46
+#: lmkp/templates/index.mak:46
 msgid "Warmly welcome to the Land Matriz Knowledge Platformz!"
 msgstr "Herzlich Willkommen auf der Wissensplattform zu ländlichen Matrizen!"
 
-#: lmkp/templates/index.mak:48 lmkp/templates/index.pt:49
+#: lmkp/templates/index.mak:49
 msgid "Unbelievable, you are logged in!"
 msgstr "Nicht zu fassen, du bist eingeloggt!"
 
-#: lmkp/templates/index.mak:60
+#: lmkp/templates/index.mak:61
 msgid "Please log in!"
 msgstr "Bitte anmelden!"
 
+#: lmkp/templates/user.mak:9
+msgid "You are user"
+msgstr ""
+
 #. Default: Active Activities
-#: lmkp/views/activities.py:21
+#: lmkp/views/activities.py:35
 msgid "Active Activities"
 msgstr "Gültige Aktivitäten"
 
 #. Default: Overwritten Activities
-#: lmkp/views/activities.py:22
+#: lmkp/views/activities.py:36
 msgid "Overwritten Activities"
 msgstr "Überschriebene Aktivitiäten"
 
 #. Default: Pending Activities
-#: lmkp/views/activities.py:23
+#: lmkp/views/activities.py:37
 msgid "Pending Activities"
 msgstr "Ausstehende Aktivitäten"
 
 #. Default: Deleted Activities
-#: lmkp/views/activities.py:24
+#: lmkp/views/activities.py:38
 msgid "Deleted Activities"
 msgstr "Gelöschte Aktivitäten"
 
 #. Default: Rejected Activities
-#: lmkp/views/activities.py:25
+#: lmkp/views/activities.py:39
 msgid "Rejected Activities"
 msgstr "Abgelehnte Aktivitäten"
 
-#. Default: Edit
-#: lmkp/views/editors.py:21
-msgid "Edit"
-msgstr "Bearbeiten"
+#. Default: Captcha not correct.
+#: lmkp/views/comments.py:114
+msgid "Captcha not correct."
+msgstr ""
 
-#. Default: Add
+#. Default: Comment successfully inserted.
+#: lmkp/views/comments.py:134
+msgid "Comment successfully inserted."
+msgstr ""
+
+#. Default: Comment successfully deleted.
+#: lmkp/views/comments.py:177
+msgid "Comment successfully deleted."
+msgstr ""
+
+#. Default: Add further information
 #: lmkp/views/editors.py:22
-msgid "Add"
-msgstr "Hinzufügen"
+msgid "Add further information"
+msgstr ""
+
+#. Default: Submit further information to an existing activity
+#: lmkp/views/editors.py:22
+msgid "Submit further information to an existing activity"
+msgstr ""
+
+#. Default: Add new activity
+#: lmkp/views/editors.py:23
+msgid "Add new activity"
+msgstr ""
+
+#. Default: Submit information about a new activity
+#: lmkp/views/editors.py:23
+msgid "Submit information about a new activity"
+msgstr ""
+
+#. Default: Logged in as:
+#: lmkp/views/editors.py:26
+msgid "Logged in as:"
+msgstr ""
+
+#. Default: Show user profile
+#: lmkp/views/editors.py:27
+msgid "Show user profile"
+msgstr ""
+
+#. Default: Logout
+#: lmkp/views/editors.py:28
+msgid "Logout"
+msgstr ""
 
 #. Default: Zoom
-#: lmkp/views/translation.py:25
+#: lmkp/views/translation.py:26
 msgid "zoom-button"
 msgstr "Vergrössern"
 
 #. Default: Pan
-#: lmkp/views/translation.py:26
+#: lmkp/views/translation.py:27
 msgid "pan-button"
 msgstr "Verschieben"
 
 #. Default: File
-#: lmkp/views/translation.py:27
+#: lmkp/views/translation.py:29
 msgid "file-menu"
 msgstr "Datei"
 
 #. Default: View
-#: lmkp/views/translation.py:28
+#: lmkp/views/translation.py:30
 msgid "view-menu"
 msgstr "Ansicht"
+
+#. Default: Date
+#: lmkp/views/translation.py:31
+msgid "date-label"
+msgstr ""
+
+#. Default: Profile
+#: lmkp/views/translation.py:32
+msgid "profile-label"
+msgstr ""
+
+#. Default: Language
+#: lmkp/views/translation.py:33
+msgid "language-label"
+msgstr ""
+
+#. Default: Loading ...
+#: lmkp/views/translation.py:34
+msgid "loading"
+msgstr ""
+
+#. Default: Unknown
+#: lmkp/views/translation.py:35
+msgid "unknown"
+msgstr ""
+
+#. Default: Please confirm
+#: lmkp/views/translation.py:36
+msgid "confirm-title"
+msgstr ""
+
+#. Default: Success
+#: lmkp/views/translation.py:37
+msgid "success"
+msgstr ""
+
+#. Default: Failure
+#: lmkp/views/translation.py:38
+msgid "failure"
+msgstr ""
+
+#. Default: Submit
+#: lmkp/views/translation.py:39
+msgid "submit"
+msgstr ""
+
+#. Default: Activities
+#: lmkp/views/translation.py:41
+msgid "activities-title"
+msgstr ""
+
+#. Default: Add attribute filter
+#: lmkp/views/translation.py:42
+msgid "addattributefilter-button"
+msgstr ""
+
+#. Default: Add a filter based on attribute
+#: lmkp/views/translation.py:43
+msgid "addattributefilter-tooltip"
+msgstr ""
+
+#. Default: Add time filter
+#: lmkp/views/translation.py:44
+msgid "addtimefilter-button"
+msgstr ""
+
+#. Default: Add a filter based on time
+#: lmkp/views/translation.py:45
+msgid "addtimefilter-tooltip"
+msgstr ""
+
+#. Default: Delete all filters
+#: lmkp/views/translation.py:46
+msgid "deleteallfilter-button"
+msgstr ""
+
+#. Default: Delete all attribute and temporal filters
+#: lmkp/views/translation.py:47
+msgid "deleteallfilter-tooltip"
+msgstr ""
+
+#. Default: Filter
+#: lmkp/views/translation.py:48
+msgid "filter-title"
+msgstr ""
+
+#. Default: Page
+#: lmkp/views/translation.py:49
+msgid "activitypaging-before"
+msgstr ""
+
+#. Default: of {0}
+#: lmkp/views/translation.py:50
+msgid "activitypaging-after"
+msgstr ""
+
+#. Default: Displaying activities {0} - {1} of {2}
+#: lmkp/views/translation.py:51
+msgid "paging-message"
+msgstr ""
+
+#. Default: No activities found
+#: lmkp/views/translation.py:52
+msgid "activitypaging-empty"
+msgstr ""
+
+#. Default: Select an activity above to show its details
+#: lmkp/views/translation.py:53
+msgid "activity-select"
+msgstr ""
+
+#. Default: Activate
+#: lmkp/views/translation.py:54
+#, fuzzy
+#| msgid "pan-button"
+msgid "activate-button"
+msgstr "Verschieben"
+
+#. Default: Click to activate this filter
+#: lmkp/views/translation.py:55
+msgid "activate-tooltip"
+msgstr ""
+
+#. Default: Delete
+#: lmkp/views/translation.py:56
+#, fuzzy
+#| msgid "pan-button"
+msgid "delete-button"
+msgstr "Verschieben"
+
+#. Default: Click to delete this filter
+#: lmkp/views/translation.py:57
+msgid "deletefilter-tooltip"
+msgstr ""
+
+#. Default: pending
+#: lmkp/views/translation.py:59
+msgid "status-pending"
+msgstr ""
+
+#. Default: active
+#: lmkp/views/translation.py:60
+msgid "status-active"
+msgstr ""
+
+#. Default: overwritten
+#: lmkp/views/translation.py:61
+msgid "status-overwritten"
+msgstr ""
+
+#. Default: deleted
+#: lmkp/views/translation.py:62
+msgid "status-deleted"
+msgstr ""
+
+#. Default: rejected
+#: lmkp/views/translation.py:63
+msgid "status-rejected"
+msgstr ""
+
+#. Default: Comment
+#: lmkp/views/translation.py:65
+msgid "comment"
+msgstr ""
+
+#. Default: Comments
+#: lmkp/views/translation.py:66
+msgid "comments"
+msgstr ""
+
+#. Default: No comments yet.
+#: lmkp/views/translation.py:67
+msgid "comments-empty"
+msgstr ""
+
+#. Default: Comment by
+#: lmkp/views/translation.py:68
+msgid "comments-by"
+msgstr ""
+
+#. Default: Leave a comment
+#: lmkp/views/translation.py:69
+msgid "comments-leave"
+msgstr ""
+
+#. Default: Anonymous
+#: lmkp/views/translation.py:70
+msgid "anonymous"
+msgstr ""
+
+#. Default: Do you really want to delete this comment?
+#: lmkp/views/translation.py:71
+msgid "confirm-delete-comment"
+msgstr ""
+
+#. Default: Username
+#: lmkp/views/viewers.py:23
+msgid "Username"
+msgstr ""
+
+#. Default: Password
+#: lmkp/views/viewers.py:24
+msgid "Password"
+msgstr ""
+
+#. Default: Login
+#: lmkp/views/viewers.py:25
+msgid "Login"
+msgstr ""
+
+#~ msgid "Edit"
+#~ msgstr "Bearbeiten"
+
+#~ msgid "Add"
+#~ msgstr "Hinzufügen"
 
