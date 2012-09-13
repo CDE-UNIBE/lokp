@@ -11,7 +11,7 @@ Set them active:
 -- Set them all to 'inactive'
 UPDATE data.activities
 SET fk_status = 3
-WHERE activity_identifier IN
+WHERE activity_identifier IN 
 	(
                 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1',
 		'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2',
@@ -22,13 +22,13 @@ WHERE activity_identifier IN
 	);
 -- Set the latest version of each Activity to 'active'
 UPDATE data.activities
-SET fk_status = 2
+SET fk_status = 2 
 WHERE id IN (
         SELECT b.id
         FROM (
                 SELECT activity_identifier, max(version) AS maxversion
                 FROM data.activities
-				WHERE activity_identifier IN
+				WHERE activity_identifier IN 
 					(
                                             'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1',
                                             'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2',
@@ -45,7 +45,7 @@ WHERE id IN (
 -- Set them all to 'inactive'
 UPDATE data.stakeholders
 SET fk_status = 3
-WHERE stakeholder_identifier IN
+WHERE stakeholder_identifier IN 
 	(
                 '00000000-0000-0000-0000-000000000001',
 		'00000000-0000-0000-0000-000000000002',
@@ -62,7 +62,7 @@ WHERE stakeholder_identifier IN
 	);
 -- Set the latest version of each Stakeholder to 'active'
 UPDATE data.stakeholders
-SET fk_status = 2
+SET fk_status = 2 
 WHERE id IN (
         SELECT b.id
         FROM (
