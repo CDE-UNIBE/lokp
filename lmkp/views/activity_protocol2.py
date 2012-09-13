@@ -641,10 +641,10 @@ class ActivityProtocol2(Protocol):
         # based on these activities
         if sp_query is not None:
             relevant_activities = self.Session.query(
-                                                     Activity.id.label('order_id'),
-                                                     func.char_length('').label('order_value'),
-                                                     Activity.fk_status
-                                                     ).\
+                    distinct(Activity.id).label('order_id'),
+                    func.char_length('').label('order_value'),
+                    Activity.fk_status
+                ).\
                 join(Involvement).\
                 join(sp_query, sp_query.c.order_id == Involvement.fk_stakeholder)
 
