@@ -25,7 +25,7 @@ Ext.define('Lmkp.view.public.LayerCheckItem',{
         },{
             html: this.text,
             padding: '4 0 0 20',
-            width: 180,
+            width: 250,
             xtype: 'container'
         },{
             handler: function(button, event){
