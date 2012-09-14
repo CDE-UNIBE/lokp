@@ -4,6 +4,7 @@
  */
 Ext.define('Lmkp.view.items.Details',{
     extend: 'Ext.window.Window',
+    alias: ['widget.lo_itemdetailwindow'],
 
     bbar: {
         items: ['->', {
@@ -20,7 +21,18 @@ Ext.define('Lmkp.view.items.Details',{
 
     centerPanelType: null,
 
-    commentPanelType: null,
+    config: {
+        /**
+         * XType of the comment panel that will be inserted.
+         */
+        commentPanelType: null,
+        /**
+         * A comment object for this item (activity resp. stakeholder). The object
+         * is the result from a /comments/activity/{id} resp.
+         * /comments/stakeholder/{id} request.
+         */
+        itemComment: null
+    },
 
     defaults: {
         margin: '0 0 5 0',
@@ -71,28 +83,44 @@ Ext.define('Lmkp.view.items.Details',{
                 xtype: this.centerPanelType
             });
 
-            // Add commenting panel
-            if(this.commentPanelType != null){
-
-                // Activity or Stakeholder?
-                var comment_object;
-                if (item.modelName == 'Lmkp.model.Activity') {
-                    comment_object = 'activity';
-                } else if (item.modelName == 'Lmkp.model.Stakeholder') {
-                    comment_object = 'stakeholder';
-                }
-
-                this.centerPanel.add({
-                    comment_object: comment_object,
-                    identifier: item.get('id'),
-                    xtype: this.commentPanelType
-                });
-            }
+            this._populateComment(item);
             
         }
 
         return item;
 
+    },
+
+    _populateComment: function(item){
+
+        // First check if there is already an existing comment panel and remove
+        // it if yes.
+        var cp = this.centerPanel.down(this.commentPanelType + '[itemId="panelcommentPanel"]');
+        if(cp){
+            this.centerPanel.remove(cp);
+        }
+
+        // Add commenting panel
+        if(this.commentPanelType != null && this.itemComment != null){
+
+            // Activity or Stakeholder?
+            var commentType;
+            if (item.modelName == 'Lmkp.model.Activity') {
+                commentType = 'activity';
+            } else if (item.modelName == 'Lmkp.model.Stakeholder') {
+                commentType = 'stakeholder';
+            }
+
+            var commentPanel = this.centerPanel.add({
+                commentType: commentType,
+                commentsObject: this.itemComment,
+                itemId: 'commentPanel',
+                identifier: item.get('id'),
+                margin: 3,
+                xtype: this.commentPanelType
+            });
+            commentPanel._redoLayout();
+        }
     }
 
 });

@@ -9,7 +9,9 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
     // available. Also disable on server side (function comment_add in
     // views/comments.py)
     USE_CAPTCHA: true,
-	
+
+    bodyPadding: 5,
+
     collapsible: true,
     collapsed: true,
 
@@ -17,17 +19,18 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
         commentsObject: null
     },
 	
-    layout: 'anchor',
     defaults: {
         anchor: '100%',
         margin: '3'
     },
-	
+
+    header: true,
+
+    layout: 'anchor',
+
     // Temporary title
     title: Lmkp.ts.msg('loading'),
 	
-    bodyPadding: 5,
-
     // StringFunctions
     stringFunctions: Ext.create('Lmkp.utils.StringFunctions'),
 	
@@ -53,10 +56,10 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
             this.removeAll();
         }
 		
-        if (this.identifier && this.comment_object) {
+        if (this.identifier && this.commentType) {
 			
             Ext.Ajax.request({
-                url: '/comments/' + me.comment_object + '/' + me.identifier,
+                url: '/comments/' + me.commentType + '/' + me.identifier,
                 method: 'GET',
                 failure: function(response, options) {
                     var json = Ext.JSON.decode(response.responseText);
@@ -71,6 +74,9 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                 success: function(response) {
                     me.setCommentsObject(Ext.JSON.decode(response.responseText));
                     me._renderComments(me.getCommentsObject());
+
+                    // Inform the enclosing detail window that there's new comments
+                    me.up('lo_itemdetailwindow').setItemComment(me.getCommentsObject());
                 }
             });
         }
@@ -166,6 +172,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
 
         // form to add new comment
         var form = Ext.create('Ext.form.Panel', {
+            header: true,
             title: Lmkp.ts.msg('comments-leave'),
             url: '/comments/add',
             margin: '0 0 5 0',
