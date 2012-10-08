@@ -1,41 +1,35 @@
 import logging
-from pyramid.i18n import TranslationStringFactory
-from pyramid.i18n import get_localizer
 from pyramid.view import view_config
-import simplejson as json
 
 from lmkp.views.profile import _getCurrentProfileExtent
 
 log = logging.getLogger(__name__)
 
-_ = TranslationStringFactory('lmkp')
-
-
-# @TODO: A big part of the following function probably is not needed anymore.
 @view_config(route_name='edit_toolbar_config', renderer='javascript', permission='edit')
 def edit_toolbar_config(request):
     """
-    Returns an array of objects that configure an ExtJS toolbar for users with
-    editing permission.
+    Returns an array of JavaScript objects for users with editing permission.
     """
+
+    _ = request.translate
     
     # Write the JavaScript and instantiate the global variable Lmkp.ts
     str = "Ext.namespace('Lmkp');\n"
-    str += "Lmkp.toolbar = [{"
-    str += "xtype: 'toolbar', dock: 'bottom', items: ['->',"
-    str += "{itemId: 'add-taggroup-button', text: '%s', tooltip: '%s'}," % (_('Add further information', default='Add further information'), _('Submit further information to an existing activity', default='Submit further information to an existing activity'))
-    str += "{itemId: 'add-activity-button', text: '%s', tooltip: '%s'}" % (_('Add new activity', default='Add new activity'), _('Submit information about a new activity', default='Submit information about a new activity'))
-    str += "]}];\n"
-    
+
+    # Flag if user is logged in (editor) or not. This determines if buttons to
+    # add or edit Activities or Stakeholders are shown.
+    str += "Lmkp.editor = true;\n"
+
+    # Login form: Show current user and button to log out.
     str += "Lmkp.login_form = {xtype: 'toolbar', border: false, items: [\n";
-    str += "{xtype: 'label', text: '%s', border: 0, bodyCls: 'toolbar_username'},\n" % _('Logged in as:', default='Logged in as:')
-    str += "{id: 'user_button', text: '%s', tooltip: '%s'},\n" % (request.user.username, _('Show user profile', default='Show user profile'))
-    str += "{id: 'logout_button', text: '%s'}]};\n" % _('Logout', default='Logout')
+    str += "{xtype: 'label', text: '%s', border: 0, bodyCls: 'toolbar_username'},\n" % _('Logged in as:')
+    str += "{id: 'user_button', text: '%s', tooltip: '%s'},\n" % (request.user.username, _('Show user profile'))
+    str += "{id: 'logout_button', text: '%s'}]};\n" % _('Logout')
 
-    str += "Lmkp.mainControllers = ['Main', 'Map', 'Filter', 'Stakeholder', 'EditFilter', 'NewActivity'];\n"
-
+    # Specific controllers for editors.
     str += "Lmkp.editorControllers = ['activities.NewActivity', 'editor.Map', 'stakeholders.NewStakeholder'];\n"
 
+    # The current profile extent.
     str += "Lmkp.currentProfileExtent = %s" % _getCurrentProfileExtent(request)
 
     return str

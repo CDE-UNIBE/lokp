@@ -67,7 +67,7 @@ else:
                     and the
                     <a href="http://www.cde.unibe.ch/">Centre for Development and Environment</a> at the University of Bern, Switzerland.
                     It is funded by the <a href="http://www.sdc.admin.ch/">Swiss Agency for Development Cooperation</a>,
-                    with co-funding from other ILC and CDE programs.​
+                    with co-funding from other ILC and CDE programs.
                 </p>
             </div>
             <div id="logo-div">

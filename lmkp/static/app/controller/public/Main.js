@@ -144,7 +144,7 @@ Ext.define('Lmkp.controller.public.Main', {
         this._updateFilterCount();
 
         // If logged in, add a button to add new Activity
-        if (Lmkp.toolbar != false) {
+        if (Lmkp.editor) {
             var tb = this.getActivityGridTopToolbar();
             if (tb) {
                 tb.insert(0, {

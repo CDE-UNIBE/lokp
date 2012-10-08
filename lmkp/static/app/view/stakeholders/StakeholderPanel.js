@@ -36,7 +36,7 @@ Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
             // Remove any existing panels
             this.removeAll();
 
-            var editable = this.editable && Lmkp.toolbar != false;
+            var editable = this.editable && Lmkp.editor;
 
             // If it is not a Stakeholder Model ...
             if (!this.contentItem.isModel) {
