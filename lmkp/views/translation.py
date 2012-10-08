@@ -34,15 +34,28 @@ def ui_messages(request):
     # user interface.
     # Add new messages to this dict!
     uiMap = {
-        # map functions
-        'zoom-button': _('zoom-button', default='Zoom'),
-        'pan-button': _('pan-button', default='Pan'),
-        # general GUI text
+        # Buttons
+        'button_map_base-layers': _('button_map_base-layers', default='Base Layers'),
+        'button_map_context-layers': _('button_map_context-layers', default='Context Layers'),
+        'button_map_satellite-map': _('button_map_satellite-map', default='Satellite Imagery'),
+        'button_map_show-legend': _('button_map_show-legend', default='Show Legend'),
+        'button_map_street-map': _('button_map_street-map', default='Street Map'),
+        'button_map_terrain-map': _('button_map_terrain-map', default='Terrain Map'),
+        # Tooltips
+        'tooltip_map_identify-feature': _('tooltip_map_identify-feature', default='Identify Feature'),
+        'tooltip_map_pan': _('tooltip_map_pan', default='Pan'),
+        'tooltip_map_zoom-in': _('tooltip_map_zoom-in', default='Zoom In'),
+        'tooltip_map_zoom-out': _('tooltip_map_zoom-out', default='Zoom Out'),
+        'tooltip_map_zoom-to-profile-region': _('tooltip_map_zoom-to-profile-region', default='Zoom to Profile Region'),
+        # General GUI text
+        'gui_profile': _('gui_profile', default='Profile'),
+        'gui_language': _('gui_language', default='Language'),
+
+
+
         'file-menu': _('file-menu', default='File'),
         'view-menu': _('view-menu', default='View'),
         'date-label': _('date-label', default='Date'),
-        'profile-label': _('profile-label', default='Profile'),
-        'language-label': _('language-label', default='Language'),
         'loading': _('loading', default='Loading ...'),
         'unknown': _('unknown', default='Unknown'),
         'unknown-name': _('unknown-name', default='Unknown name'),

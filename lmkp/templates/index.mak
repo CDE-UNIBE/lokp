@@ -16,7 +16,7 @@ else:
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Land Observatory</title>
+        <title>${_("Land Observatory")}</title>
         ## General Styles
         <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/lib/extjs-4.1.1/resources/css/ext-all.css')}"></link>
         <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/style.css')}"></link>
@@ -56,33 +56,31 @@ else:
     <body>
         <div id="header-div">
             <div id="title-div">
-                <h1>Land Observatory</h1>
+                <h1>
+                    ${_("Land Observatory")}
+                </h1>
                 <p>
-                    The Land Observatory will make information on large-scale land acquisition
-                    transparent and accessible through an interactive, map-based platform.
-                    We are piloting the project in five countries, with partners and governments
-                    who will work to open government data, crowdsource and help customize local observatories.
-                    Updated information on land will benefit citizens, but also governments
-                    and companies interested in sustainability.
+                    ${_("The Land Observatory will make information on large-scale land acquisition transparent and accessible through an interactive, map-based platform. We are piloting the project in five countries, with partners and governments who will work to open government data, crowdsource and help customize local observatories. Updated information on land will benefit citizens, but also governments and companies interested in sustainability.")}
                 </p>
                 <p>
-                    The pilot project is coordinated by the
-                    <a href="http://www.landcoalition.org/">International Land Coalition</a>
-                    and the
-                    <a href="http://www.cde.unibe.ch/">Centre for Development and Environment</a> at the University of Bern, Switzerland.
-                    It is funded by the <a href="http://www.sdc.admin.ch/">Swiss Agency for Development Cooperation</a>,
-                    with co-funding from other ILC and CDE programs.​
+                    ${_("The pilot project is coordinated by the")}
+                    <a href="http://www.landcoalition.org/">${_("International Land Coalition")}</a>
+                    ${_("and the")}
+                    <a href="http://www.cde.unibe.ch/">${_("Centre for Development and Environment")}</a>
+                    ${_("at the University of Bern, Switzerland. It is funded by the")}
+                    <a href="http://www.sdc.admin.ch/">${_("Swiss Agency for Development Cooperation")}</a>
+                    ${_(", with co-funding from other ILC and CDE programs.")}
                 </p>
             </div>
             <div id="logo-div">
                 <a href="http://www.landportal.info/observatory">
-                    <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" height="100" width="100" alt="Land Observatory"/>
+                    <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" height="100" width="100" alt="${_('Land Observatory')}"/>
                 </a>
             </div>
         </div>
         <div id="loading-mask" style="width: 100%; height: 100%;">
             <div style="position: absolute; top: 50%; right: 50%">
-                <img src="${request.static_url('lmkp:static/img/spinner.gif')}" alt="loading ..."/>
+                <img src="${request.static_url('lmkp:static/img/spinner.gif')}" alt="${_('loading')}"/>
             </div>
         </div>
         <div id="main-div"></div>

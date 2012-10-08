@@ -70,7 +70,7 @@ Ext.define('Lmkp.controller.public.Map', {
         map.events.register('moveend', this, this.onMoveEnd);
 
         // If logged in, show controls for editors (add or edit location etc.)
-        if (Lmkp.toolbar != false) {
+        if (Lmkp.editor) {
             var editorMapController = this.getController('editor.Map');
             editorMapController.initEditorControls();
         }

@@ -8,8 +8,7 @@ Ext.define('Lmkp.view.login.Toolbar' ,{
     },
 
     items: [{
-        fieldLabel: Lmkp.ts.msg("profile-label"),
-        //labelAlign: 'right',
+        fieldLabel: Lmkp.ts.msg("gui_profile"),
         id: 'profile_combobox',
         itemId: 'profile_combobox',
         queryMode: 'local',
@@ -19,12 +18,11 @@ Ext.define('Lmkp.view.login.Toolbar' ,{
         forceSelection: true,
         editable: false
     },{
-        fieldLabel: Lmkp.ts.msg("language-label"),
-        //labelAlign: 'right',
+        fieldLabel: Lmkp.ts.msg("gui_language"),
         id: 'language_combobox',
         queryMode: 'local',
         store: 'Languages',
-        displayField: 'english_name',
+        displayField: 'local_name',
         valueField: 'locale',
         forceSelection: true,
         editable: false

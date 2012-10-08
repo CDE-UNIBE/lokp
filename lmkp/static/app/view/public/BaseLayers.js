@@ -38,7 +38,7 @@ Ext.define('Lmkp.view.public.BaseLayers',{
     },
 
     createLayers: function(){
-        var layers = [new OpenLayers.Layer.OSM('Street Map', [
+        var layers = [new OpenLayers.Layer.OSM(Lmkp.ts.msg('button_map_street-map'), [
                 "http://otile1.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
                 "http://otile2.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
                 "http://otile3.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
@@ -52,18 +52,18 @@ Ext.define('Lmkp.view.public.BaseLayers',{
 
         // Try to get the Google Satellite layer
         try {
-            layers.push(new OpenLayers.Layer.Google( "Satellite imagery", {
+            layers.push(new OpenLayers.Layer.Google(Lmkp.ts.msg('button_map_satellite-map'), {
                 type: google.maps.MapTypeId.HYBRID,
                 numZoomLevels: 22
             }));
             
-            layers.push(new OpenLayers.Layer.Google( "Terrain map", {
+            layers.push(new OpenLayers.Layer.Google(Lmkp.ts.msg('button_map_terrain-map'), {
                 type: google.maps.MapTypeId.TERRAIN
             }));
         // else get backup layers that don't block the application in case there
         // is no internet connection.
         } catch(error) {
-            layers.push(new OpenLayers.Layer.OSM('Satellite imagery', [
+            layers.push(new OpenLayers.Layer.OSM(Lmkp.ts.msg('button_map_satellite-map'), [
                 "http://oatile1.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
                 "http://oatile2.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
                 "http://oatile3.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
