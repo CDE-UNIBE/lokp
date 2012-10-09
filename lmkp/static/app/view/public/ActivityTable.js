@@ -20,7 +20,7 @@ Ext.define('Lmkp.view.public.ActivityTable',{
 
     items: [{
         xtype: 'gridpanel',
-        title: 'Activities',
+        title: Lmkp.ts.msg('activities_title'),
         flex: 0.5,
         border: false,
         split: true,
@@ -31,46 +31,46 @@ Ext.define('Lmkp.view.public.ActivityTable',{
         },
         // grid columns
         columns: [{
-            header: Lmkp.ts.msg("activity-attr_country"),
+            header: Lmkp.ts.msg('activity_db-key-country'),
             name: 'activityCountryColumn',
-            dataIndex: Lmkp.ts.msg("activity-attr_country"),
+            dataIndex: Lmkp.ts.msg('activity_db-key-country'),
             flex: 1,
             sortable: true,
             doSort: function(state) {
                 var store = this.up('tablepanel').store;
                 if (store) {
                     store.doCustomSort(
-                        Lmkp.ts.msg('activity-attr_country'),
+                        Lmkp.ts.msg('activity_db-key-country'),
                         state
                     );
                 }
             }
         }, {
-            header: Lmkp.ts.msg('activity-attr_yearofinvestment'),
+            header: Lmkp.ts.msg('activity_db-key-yearofagreement'),
             name: 'yearofinvestmentcolumn',
-            dataIndex: Lmkp.ts.msg('activity-attr_yearofinvestment'),
+            dataIndex: Lmkp.ts.msg('activity_db-key-yearofagreement'),
             flex: 0,
             sortable: true,
             doSort: function(state) {
                 var store = this.up('tablepanel').store;
                 if (store) {
                     store.doCustomSort(
-                        Lmkp.ts.msg('activity-attr_yearofinvestment'),
+                        Lmkp.ts.msg('activity_db-key-yearofagreement-original'),
                         state
                     );
                 }
             }
         }, {
-            header: Lmkp.ts.msg('activity-attr_size'),
+            header: Lmkp.ts.msg('activity_db-key-contractarea'),
             name: 'activitySizeColumn',
-            dataIndex: Lmkp.ts.msg('activity-attr_size'),
+            dataIndex: Lmkp.ts.msg('activity_db-key-contractarea'),
             flex: 0,
             sortable: true,
             doSort: function(state) {
                 var store = this.up('tablepanel').store;
                 if (store) {
                     store.doCustomSort(
-                        Lmkp.ts.msg('activity-attr_size'),
+                        Lmkp.ts.msg('activity_db-key-contractarea-original'),
                         state
                     );
                 }
@@ -81,17 +81,17 @@ Ext.define('Lmkp.view.public.ActivityTable',{
             name: 'showDetailsColumn',
             width: 24,
             align: 'center',
-            tpl: '<img src="static/img/information.png" style="cursor:pointer;" title="Show details">'
+            tpl: '<img src="static/img/information.png" style="cursor:pointer;" title="' + Lmkp.ts.msg('gui_show-details') + '">'
         }],
         dockedItems: [{
             xtype: 'toolbar',
             id: 'activityGridTopToolbar',
             dock: 'top',
             items: ['->', {
-                text: 'Clear selection',
+                text: Lmkp.ts.msg('gui_clear-selection'),
                 itemId: 'activityResetSelectionButton'
             }, {                    	
-                text: 'Delete all filters',
+                text: Lmkp.ts.msg('gui_delete-all-filters'),
                 itemId: 'activityDeleteAllFiltersButton'
             }]
         }]
@@ -102,10 +102,10 @@ Ext.define('Lmkp.view.public.ActivityTable',{
         dock: 'bottom',
         enableOverflow: false,
         displayInfo: true,
-        beforePageText: Lmkp.ts.msg("activitypaging-before"),
-        afterPageText: Lmkp.ts.msg("activitypaging-after"),
-        displayMsg: Lmkp.ts.msg("activitypaging-message"),
-        emptyMsg: '<b>' + Lmkp.ts.msg("activitypaging-empty") + '</b>'
+        beforePageText: Lmkp.ts.msg('gui_paging-before'),
+        afterPageText: Lmkp.ts.msg('gui_paging-after'),
+        displayMsg: Lmkp.ts.msg('activities_paging-message'),
+        emptyMsg: '<b>' + Lmkp.ts.msg('activities_paging-empty') + '</b>'
     }],
 
     /**

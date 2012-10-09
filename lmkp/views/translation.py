@@ -48,9 +48,23 @@ def ui_messages(request):
         'tooltip_map_zoom-out': _('tooltip_map_zoom-out', default='Zoom Out'),
         'tooltip_map_zoom-to-profile-region': _('tooltip_map_zoom-to-profile-region', default='Zoom to Profile Region'),
         # General GUI text
-        'gui_profile': _('gui_profile', default='Profile'),
+        'gui_clear-selection': _('gui_clear-selection', default='Clear Selection'),
+        'gui_delete-all-filters': _('gui_delete-all-filters', default='Delete all Filters'),
         'gui_language': _('gui_language', default='Language'),
+        'gui_profile': _('gui_profile', default='Profile'),
+        'gui_show-details': _('gui_show-details', default='Show Details'),
+        'gui_paging-before': _('gui_paging-before', default='Page'),
+        'gui_paging-after': _('gui_paging-after', default='of {0}'),
 
+        # Activities
+        'activities_title': _('activities_title', default='Activities'),
+        'activities_paging-message': _('activities_paging-message', default='Displaying activities {0} - {1} of {2}'),
+        'activities_paging-empty': _('activities_paging-empty', default='No activities found'),
+
+        # Stakeholders
+        'stakeholders_title': _('stakeholder_title', default='Stakeholders'),
+        'stakeholders_paging-message': _('stakeholders_paging-message', default='Displaying stakeholders {0} - {1} of {2}'),
+        'stakeholders_paging-empty': _('stakeholders_paging-empty', default='No stakeholders found'),
 
 
         'file-menu': _('file-menu', default='File'),
@@ -73,7 +87,6 @@ def ui_messages(request):
         'ok': _('ok', default='OK'),
         'cancel': _('cancel', default='Cancel'),
         # activities / filtering
-        'activities-title': _('activities-title', default='Activities'),
         'activities-table_view': _('activities-table_view', default='Activities Table View'),
         'activities-add_further_information': _('activities-add_further_information', default='Submit further information to an existing activity'),
         'addattributefilter-button': _('addattributefilter-button', default='Add attribute filter'),
@@ -86,23 +99,16 @@ def ui_messages(request):
         'filter-apply_spatial': _('filter-apply_spatial', default='Apply spatial filter'),
         'filter-connect_to_activities': _('filter-connect_to_activities', default='Combine with filter on Activities'),
         'filter-connect_to_stakeholders': _('filter-connect_to_stakeholders', default='Combine with filter on Stakeholders'),
-        'activitypaging-before': _('activitypaging-before', default='Page'),
-        'activitypaging-after': _('activitypaging-after', default='of {0}'),
-        'activitypaging-message': _('paging-message', default='Displaying activities {0} - {1} of {2}'),
-        'activitypaging-empty': _('activitypaging-empty', default='No activities found'),
         'activity-select': _('activity-select', default='Select an activity to show its details'),
         'activate-button': _('activate-button', default='Activate'),
         'activate-tooltip': _('activate-tooltip', default='Click to activate this filter'),
         'delete-button': _('delete-button', default='Delete'),
         'deletefilter-tooltip': _('deletefilter-tooltip', default='Click to delete this filter'),
         # stakeholders
-        'stakeholders-title': _('stakeholder-title', default='Stakeholders'),
         'stakeholders-table_view': _('stakeholders-table_view', default='Stakeholders Table View'),
         'stakeholder-name': _('stakholder-name', default='Name'),
         'stakeholder-country': _('stakholder-country', default='Country'),
         'filter-stakeholder_title': _('filter-stakeholder_title', default='Filter Stakeholders'),
-        'stakeholder-paging_message': _('stakeholder-paging_message', default='Displaying stakeholders {0} - {1} of {2}'),
-        'stakeholder-paging_empty': _('stakeholder-paging_empty', default='No stakeholders found'),
         # involvements
         'involvements-title': _('involvements-title', default='Involvement'),
         'involvements-role': _('involvements-role', default='Role'),
@@ -166,63 +172,104 @@ def ui_messages(request):
     uiMap['locale'] = db_lang.locale
     uiMap['locale_english-name'] = db_lang.english_name
     uiMap['locale_local-name'] = db_lang.local_name
+
+    """
+    For the table view of Activities and Stakeholders, Ext needs to know the key
+    from the database (for example to correctly address table columns). It is
+    also necessary to check if there are translations of these keys available.
+    However, where columns are to be sorted, the original data index needs to be
+    known as well.
+    See the first example for details how this is done.
+    """
+
+    # Activity key: Country
+    aKeyCountry = 'Country' # Must be exactly (!) as in global activity.yml
+
+    # Prepare a query for the original key (original == None)
+    original_query = Session.query(
+            A_Key.id,
+            A_Key.key
+        ).\
+        filter(A_Key.key == aKeyCountry).\
+        filter(A_Key.original == None)
+
+    # A subquery is needed to correctly join the translated query with the
+    # original key
+    original_subquery = original_query.subquery()
+
+    # Prepare a query for the translated key (original == original key from
+    # query above)
+    translation_query = Session.query(
+            A_Key.id,
+            A_Key.key
+        ).\
+        join(original_subquery, original_subquery.c.id == A_Key.fk_a_key).\
+        filter(A_Key.language == db_lang)
     
-    # TODO: is this still needed?
-    # Add translated name for key "Name of Investor" (needed by Ext as dataIndex when displaying the grid with activities).
-    aCountryKey = 'Country'
-    aCountryKeyEnglish = Session.query(A_Key).filter(A_Key.key == aCountryKey).filter(A_Key.original == None).first()
-    aCountryKeyLocale = Session.query(A_Key).filter(A_Key.original == aCountryKeyEnglish).filter(A_Key.language == db_lang).first()
-    if aCountryKeyLocale:
-        uiMap['activity-attr_country'] = aCountryKeyLocale.key
-    else:
-        uiMap['activity-attr_country'] = aCountryKey
-    
-    # Add translated name for key "Year of Investment" (needed by Ext as dataIndex when displaying the grid with activities).
-    yearofinvestmentKey = 'Year of agreement' # Must be exactly (!) as in global activity.yml
-    yearofinvestmentKeyEnglish = Session.query(A_Key).filter(A_Key.key == yearofinvestmentKey).filter(A_Key.original == None).first()
-    yearofinvestmentKeyLocale = Session.query(A_Key).filter(A_Key.original == yearofinvestmentKeyEnglish).filter(A_Key.language == db_lang).first()
-    if yearofinvestmentKeyLocale:
-        uiMap['activity-attr_yearofinvestment'] = yearofinvestmentKeyLocale.key
-    else:
-        uiMap['activity-attr_yearofinvestment'] = yearofinvestmentKey
+    # Also store the original of the key (needed for sorting)
+    uiMap['activity_db-key-country-original'] = aKeyCountry
 
-    # Add translated name for key "Size" (needed by Ext as dataIndex when displaying the grid with activities).
-    sizeKey = 'Contract area (ha)' # Must be exactly (!) as in global activity.yml
-    sizeKeyEnglish = Session.query(A_Key).filter(A_Key.key == sizeKey).filter(A_Key.original == None).first()
-    sizeKeyLocale = Session.query(A_Key).filter(A_Key.original == sizeKeyEnglish).filter(A_Key.language == db_lang).first()
-    if sizeKeyLocale:
-        uiMap['activity-attr_size'] = sizeKeyLocale.key
-    else:
-        uiMap['activity-attr_size'] = sizeKey
+    # Union and do a single query. The original is always the first, so if there is a 
+    # translated entry (2nd), simply overwrite the original.
+    uiMap['activity_db-key-country'] = aKeyCountry # Fallback
+    for k in original_query.union(translation_query).all():
+        uiMap['activity_db-key-country'] = k.key
 
-    # Add translated name for SH_Key "Name" (needed by Ext as dataIndex when displaying the grid with stakeholders)
-    shNameKeyEnglish = Session.query(SH_Key).filter(SH_Key.key == 'Name').filter(SH_Key.original == None).first()
-    shNameKeyLocale = Session.query(SH_Key).filter(SH_Key.original == shNameKeyEnglish).filter(SH_Key.language == db_lang).first()
-    uiMap['stakeholder-attr_name'] = (shNameKeyLocale.key 
-        if shNameKeyLocale is not None else 'Name')
-    
-    # Add translated name for SH_Key "Country" (needed by Ext as dataIndex when displaying the grid with stakeholders)
-    shNameKeyEnglish = Session.query(SH_Key).filter(SH_Key.key == 'Country').filter(SH_Key.original == None).first()
-    shNameKeyLocale = Session.query(SH_Key).filter(SH_Key.original == shNameKeyEnglish).filter(SH_Key.language == db_lang).first()
-    uiMap['stakeholder-attr_country'] = (shNameKeyLocale.key 
-        if shNameKeyLocale is not None else 'Country')
-        
-        
-    # Write the JavaScript and instantiate the global variable Lmkp.ts
-    #str = "Ext.namespace('Lmkp');\n"
-    #str += "Lmkp.ts = Ext.create('Ext.util.MixedCollection');\n" #,{\n"
+    # Activity key: Year of Agreement
+    aKeyYearofagreement = 'Year of agreement' # Must be exactly (!) as in global activity.yml
+    original_query = Session.query(A_Key.id, A_Key.key).\
+        filter(A_Key.key == aKeyYearofagreement).\
+        filter(A_Key.original == None)
+    original_subquery = original_query.subquery()
+    translation_query = Session.query(A_Key.id, A_Key.key).\
+        join(original_subquery, original_subquery.c.id == A_Key.fk_a_key).\
+        filter(A_Key.language == db_lang)
+    uiMap['activity_db-key-yearofagreement-original'] = aKeyYearofagreement
+    uiMap['activity_db-key-yearofagreement'] = aKeyYearofagreement
+    for k in original_query.union(translation_query).all():
+        uiMap['activity_db-key-yearofagreement'] = k.key
 
-    # Add a new method that returns the requested key instead of undefined
-    # if a key does not exist. Use this method in the ExtJS views.
-    #str += "Lmkp.ts.msg = function(key) {\n"
-    #str += "\treturn this.containsKey(key) ? this.get(key) : key;\n"
-    #str += "};\n"
+    # Activity key: Contract area
+    aKeyContractarea = 'Contract area (ha)' # Must be exactly (!) as in global activity.yml
+    original_query = Session.query(A_Key.id, A_Key.key).\
+        filter(A_Key.key == aKeyContractarea).\
+        filter(A_Key.original == None)
+    original_subquery = original_query.subquery()
+    translation_query = Session.query(A_Key.id, A_Key.key).\
+        join(original_subquery, original_subquery.c.id == A_Key.fk_a_key).\
+        filter(A_Key.language == db_lang)
+    uiMap['activity_db-key-contractarea-original'] = aKeyContractarea
+    uiMap['activity_db-key-contractarea'] = aKeyContractarea
+    for k in original_query.union(translation_query).all():
+        uiMap['activity_db-key-contractarea'] = k.key
 
-    # Add all translated keys and values to this MixedCollection
-    #str += "Lmkp.ts.addAll("
-    #json_ustr = json.dumps(uiMap, ensure_ascii=False, indent=8, sort_keys=True)
-    #str += json_ustr.encode('utf-8')
-    #str += ");\n"
+    # Stakeholder key: Name
+    shKeyName = 'Name' # Must be exactly (!) as in global stakeholder.yml
+    original_query = Session.query(SH_Key.id, SH_Key.key).\
+        filter(SH_Key.key == shKeyName).\
+        filter(SH_Key.original == None)
+    original_subquery = original_query.subquery()
+    translation_query = Session.query(SH_Key.id, SH_Key.key).\
+        join(original_subquery, original_subquery.c.id == SH_Key.fk_sh_key).\
+        filter(SH_Key.language == db_lang)
+    uiMap['stakeholder_db-key-name-original'] = shKeyName
+    uiMap['stakeholder_db-key-name'] = shKeyName
+    for k in original_query.union(translation_query).all():
+        uiMap['stakeholder_db-key-name'] = k.key
+
+    # Stakeholder key: Country
+    shKeyCountry = 'Country' # Must be exactly (!) as in global stakeholder.yml
+    original_query = Session.query(SH_Key.id, SH_Key.key).\
+        filter(SH_Key.key == shKeyCountry).\
+        filter(SH_Key.original == None)
+    original_subquery = original_query.subquery()
+    translation_query = Session.query(SH_Key.id, SH_Key.key).\
+        join(original_subquery, original_subquery.c.id == SH_Key.fk_sh_key).\
+        filter(SH_Key.language == db_lang)
+    uiMap['stakeholder_db-key-country-original'] = shKeyCountry
+    uiMap['stakeholder_db-key-country'] = shKeyCountry
+    for k in original_query.union(translation_query).all():
+        uiMap['stakeholder_db-key-country'] = k.key
 
     # Define Lmkp.ts as class with static objects
     str = "Ext.define('Lmkp.ts',{\n"
@@ -262,16 +309,22 @@ def edit_translation(request):
     success = False
     msg = 'Translation not successful'
     print request.params
-    if 'original' and 'translation' and 'language' and 'keyvalue' in request.params:
+    if 'original' and 'translation' and 'language' and 'keyvalue' and 'item_type' in request.params:
         # find language
         language = Session.query(Language).filter(Language.locale == request.params['language']).all()
         if language and len(language) == 1:
             if request.params['keyvalue'] == 'key':
+                # Activity or Stakeholder?
+                Key = None
+                if request.params['item_type'] == 'activity':
+                    Key = A_Key
+                elif request.params['item_type'] == 'stakeholder':
+                    Key = SH_Key
                 # find original (fk_a_key empty)
-                original = Session.query(A_Key).filter(A_Key.key == request.params['original']).filter(A_Key.fk_a_key == None).all()
+                original = Session.query(Key).filter(Key.key == request.params['original']).filter(Key.original == None).all()
                 if original and len(original) == 1:
                     # check if a translation of this key is already there
-                    oldTranslation = Session.query(A_Key).filter(A_Key.original == original[0]).filter(A_Key.language == language[0]).all()
+                    oldTranslation = Session.query(Key).filter(Key.original == original[0]).filter(Key.language == language[0]).all()
                     if oldTranslation and len(oldTranslation) == 1:
                         # translation found, just update it.
                         oldTranslation[0].key = request.params['translation']
@@ -279,7 +332,7 @@ def edit_translation(request):
                         msg = 'Updated translation (<b>%s</b> for key <b>%s</b>.' % (request.params['translation'], request.params['original'])
                     else:
                         # no translation available yet, add it to DB
-                        translation = A_Key(request.params['translation'])
+                        translation = Key(request.params['translation'])
                         translation.original = original[0]
                         translation.language = language[0]
                         Session.add(translation)
@@ -288,11 +341,17 @@ def edit_translation(request):
                 else:
                     msg = 'Original key not found' # should never happen
             if request.params['keyvalue'] == 'value':
+                # Activity or Stakeholder?
+                Value = None
+                if request.params['item_type'] == 'activity':
+                    Value = A_Value
+                elif request.params['item_type'] == 'stakeholder':
+                    Value = SH_Value
                 # find original (fk_a_value empty)
-                original = Session.query(A_Value).filter(A_Value.value == request.params['original']).filter(A_Value.fk_a_value == None).all()
+                original = Session.query(Value).filter(Value.value == request.params['original']).filter(Value.original == None).all()
                 if original and len(original) == 1:
                     # check if a translation of this value is already there
-                    oldTranslation = Session.query(A_Value).filter(A_Value.original == original[0]).filter(A_Value.language == language[0]).all()
+                    oldTranslation = Session.query(Value).filter(Value.original == original[0]).filter(Value.language == language[0]).all()
                     if oldTranslation and len(oldTranslation) == 1:
                         # translation found, just update it.
                         oldTranslation[0].value = request.params['translation']
@@ -300,7 +359,7 @@ def edit_translation(request):
                         msg = 'Updated translation (<b>%s</b>) for value <b>%s</b>.' % (request.params['translation'], request.params['original'])
                     else:
                         # no translation available yet, add it to DB
-                        translation = A_Value(request.params['translation'])
+                        translation = Value(request.params['translation'])
                         translation.original = original[0]
                         translation.language = language[0]
                         Session.add(translation)
