@@ -148,7 +148,7 @@ Ext.define('Lmkp.controller.public.Main', {
             var tb = this.getActivityGridTopToolbar();
             if (tb) {
                 tb.insert(0, {
-                    text: 'Add new Activity',
+                    text: Lmkp.ts.msg('activities_add-new-activity'),
                     itemId: 'newActivityButton'
                 });
             }
@@ -360,7 +360,7 @@ Ext.define('Lmkp.controller.public.Main', {
             if (ret.length > 0) {
                 return ret.join(', ');
             } else {
-                return Lmkp.ts.msg("unknown");
+                return Lmkp.ts.msg('gui_unknown');
             }
         }
     },
@@ -404,7 +404,8 @@ Ext.define('Lmkp.controller.public.Main', {
             if (toolbar && count != null) {
                 // Create new button
                 var newbutton = Ext.create('Ext.button.Button', {
-                    text: 'Filter (' + count + ' active)',
+//                    text: 'Filter (' + count + ' active)',
+                    text: Lmkp.ts.msg('gui_filter-count').replace('{0}', count),
                     itemId: itemId + 'FilterButton'
                 });
                 toolbar.add(newbutton);

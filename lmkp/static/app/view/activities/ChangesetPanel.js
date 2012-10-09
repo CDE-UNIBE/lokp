@@ -50,7 +50,7 @@ Ext.define('Lmkp.view.activities.ChangesetPanel', {
         if (v) {
             return v;
         } else {
-            return Lmkp.ts.msg('unknown');
+            return Lmkp.ts.msg('gui_unknown');
         }
     }
 

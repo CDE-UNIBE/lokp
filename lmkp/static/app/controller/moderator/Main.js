@@ -60,7 +60,7 @@ Ext.define('Lmkp.controller.moderator.Main', {
             itemId: 'pendingActivitiesCheckbox'
         });
         var pendingLabel = Ext.create('Ext.form.Label', {
-        	text: 'Show pending changes',
+        	text: Lmkp.ts.msg('moderator_show-pending-changes'),
         	margin: '0 0 0 3'
         });
         var tbar = comp.down('[id="activityGridTopToolbar"]');
@@ -95,7 +95,7 @@ Ext.define('Lmkp.controller.moderator.Main', {
             itemId: 'pendingStakeholdersCheckbox'
         });
         var pendingLabel = Ext.create('Ext.form.Label', {
-        	text: 'Show pending changes',
+        	text: Lmkp.ts.msg('moderator_show-pending-changes'),
         	margin: '0 0 0 3'
         });
         var tbar = comp.down('[id="stakeholderGridTopToolbar"]');

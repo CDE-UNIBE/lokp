@@ -758,7 +758,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
             if (ret.length > 0) {
                 return ret.join(', ');
             } else {
-                return Lmkp.ts.msg("unknown");
+                return Lmkp.ts.msg('gui_unknown');
             }
         }
     },
