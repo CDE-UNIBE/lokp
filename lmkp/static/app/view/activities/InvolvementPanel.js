@@ -110,7 +110,7 @@ Ext.define('Lmkp.view.activities.InvolvementPanel', {
         } else {
             this.items = {
                 xtype: 'panel',
-                html: Lmkp.ts.msg('unknown')
+                html: Lmkp.ts.msg('gui_unknown')
             }
         }
 

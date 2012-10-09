@@ -85,20 +85,20 @@ Ext.define('Lmkp.view.activities.Details', {
             columns: [{
                 dataIndex: 'version',
                 flex: 1,
-                text: 'Version'
+                text: Lmkp.ts.msg('gui_version')
             }, {
                 dataIndex: 'status',
                 flex: 1,
-                text: 'Status'
+                text: Lmkp.ts.msg('status_name')
             }, {
                 dataIndex: 'timestamp',
                 flex: 1,
-                text: 'Timestamp'
+                text: Lmkp.ts.msg('gui_timestamp')
             }],
             itemId: 'historyPanel',
             region: 'west',
             store: this.historyStore,
-            title: 'History',
+            title: Lmkp.ts.msg('gui_history'),
             width: 250
         });
 
@@ -109,12 +109,12 @@ Ext.define('Lmkp.view.activities.Details', {
             itemId: 'activityDetailWizardPanel',
             items: [ this.centerPanel ],
             region: 'center',
-            title: 'Details'
+            title: Lmkp.ts.msg('gui_details')
         },
         this.historyPanel
         ];
 
-        this.title = 'Details on Activity ' + activity_identifier;
+        this.title = Lmkp.ts.msg('activity_details-title') + ' ' + activity_identifier;
 
         this.callParent(arguments);
     }	

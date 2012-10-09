@@ -29,7 +29,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
     layout: 'anchor',
 
     // Temporary title
-    title: Lmkp.ts.msg('loading'),
+    title: Lmkp.ts.msg('gui_loading'),
 	
     // StringFunctions
     stringFunctions: Ext.create('Lmkp.utils.StringFunctions'),

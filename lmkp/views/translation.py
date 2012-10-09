@@ -17,14 +17,14 @@ log = logging.getLogger(__name__)
 
 _ = TranslationStringFactory('lmkp')
 
-# Translatable hashmap with all possible status
+# Translatable hashmap with all possible statuses
 statusMap = {
-    'pending': _('pending', default='pending'),
-    'active': _('active', default='active'),
-    'inactive': _('inactive', default='inactive'),
-    'deleted': _('deleted', default='deleted'),
-    'rejected': _('rejected', default='rejected'),
-    'edited': _('edited', default='edited')
+    'pending': _('status_pending', default='pending'),
+    'active': _('status_active', default='active'),
+    'inactive': _('status_inactive', default='inactive'),
+    'deleted': _('status_deleted', default='deleted'),
+    'rejected': _('status_rejected', default='rejected'),
+    'edited': _('status_edited', default='edited')
 }
 
 @view_config(route_name='ui_translation', renderer='javascript')
@@ -34,44 +34,71 @@ def ui_messages(request):
     # user interface.
     # Add new messages to this dict!
     uiMap = {
+        # Status
+        'status_name': _('status_name', default='Status'),
+        'status_pending': statusMap['pending'],
+        'status_active': statusMap['active'],
+        'status_inactive': statusMap['inactive'],
+        'status_deleted': statusMap['deleted'],
+        'status_rejected': statusMap['rejected'],
+        'status_edited': statusMap['edited'],
+
         # Buttons
+        'button_back': _('button_back', default='Back'),
         'button_map_base-layers': _('button_map_base-layers', default='Base Layers'),
         'button_map_context-layers': _('button_map_context-layers', default='Context Layers'),
         'button_map_satellite-map': _('button_map_satellite-map', default='Satellite Imagery'),
         'button_map_show-legend': _('button_map_show-legend', default='Show Legend'),
         'button_map_street-map': _('button_map_street-map', default='Street Map'),
         'button_map_terrain-map': _('button_map_terrain-map', default='Terrain Map'),
+
         # Tooltips
         'tooltip_map_identify-feature': _('tooltip_map_identify-feature', default='Identify Feature'),
         'tooltip_map_pan': _('tooltip_map_pan', default='Pan'),
         'tooltip_map_zoom-in': _('tooltip_map_zoom-in', default='Zoom In'),
         'tooltip_map_zoom-out': _('tooltip_map_zoom-out', default='Zoom Out'),
         'tooltip_map_zoom-to-profile-region': _('tooltip_map_zoom-to-profile-region', default='Zoom to Profile Region'),
+
         # General GUI text
         'gui_clear-selection': _('gui_clear-selection', default='Clear Selection'),
         'gui_delete-all-filters': _('gui_delete-all-filters', default='Delete all Filters'),
+        'gui_details': _('gui_details', default='Details'),
+        'gui_filter-count': _('gui_filter-count', default='Filter ({0} active)'),
+        'gui_history': _('gui_history', default='History'),
         'gui_language': _('gui_language', default='Language'),
-        'gui_profile': _('gui_profile', default='Profile'),
-        'gui_show-details': _('gui_show-details', default='Show Details'),
+        'gui_loading': _('gui_loading', default='Loading ...'),
         'gui_paging-before': _('gui_paging-before', default='Page'),
         'gui_paging-after': _('gui_paging-after', default='of {0}'),
+        'gui_profile': _('gui_profile', default='Profile'),
+        'gui_show-details': _('gui_show-details', default='Show Details'),
+        'gui_timestamp': _('gui_timestamp', default='Timestamp'),
+        'gui_unknown': _('gui_unknown', default='Unknown'),
+        'gui_version': _('gui_version', default='Version'),
+        'gui_previous-version': _('gui_previous-version', default='Previous Version'),
 
         # Activities
         'activities_title': _('activities_title', default='Activities'),
-        'activities_paging-message': _('activities_paging-message', default='Displaying activities {0} - {1} of {2}'),
-        'activities_paging-empty': _('activities_paging-empty', default='No activities found'),
+        'activities_paging-message': _('activities_paging-message', default='Displaying Activities {0} - {1} of {2}'),
+        'activities_paging-empty': _('activities_paging-empty', default='No Activities found'),
+        'activities_add-new-activity': _('activities_add-new-activity', default='Add new Activity'),
+        'activity_details-title': _('activities_details-title', default='Details on Activity'),
 
         # Stakeholders
         'stakeholders_title': _('stakeholder_title', default='Stakeholders'),
         'stakeholders_paging-message': _('stakeholders_paging-message', default='Displaying stakeholders {0} - {1} of {2}'),
         'stakeholders_paging-empty': _('stakeholders_paging-empty', default='No stakeholders found'),
+        'stakeholder_details-title': _('stakeholders_details-title', default='Details on Stakeholder '),
 
+        # Moderator
+        'moderator_show-pending-changes': _('moderator_show-pending-changes', default='Show pending changes'),
+        'moderator_review-pending-changes': _('moderator_review-pending-changes', default='Review pending changes'),
+        'moderator_changes-not-based-on-active': _('moderator_changes-not-based-on-active', default='These changes are based on a version which is not the active version.'),
+        'moderator_multiple-changes-pending': _('moderator_multiple-changes-pending', default='There are multiple changes pending! They may be conflicting.'),
+        'moderator_pending-version-title': _('moderator_pending-version-title', default='Pending version'),
 
         'file-menu': _('file-menu', default='File'),
         'view-menu': _('view-menu', default='View'),
         'date-label': _('date-label', default='Date'),
-        'loading': _('loading', default='Loading ...'),
-        'unknown': _('unknown', default='Unknown'),
         'unknown-name': _('unknown-name', default='Unknown name'),
         'confirm-title': _('confirm-title', default='Please confirm'),
         'success': _('success', default='Success'),
@@ -114,14 +141,7 @@ def ui_messages(request):
         'involvements-role': _('involvements-role', default='Role'),
         # details
         'details-toggle_all': _('details-toggle_all', default='Toggle all details'),
-        # status
-        # Maybe hashmap (see top) could be used? > Used by store/Status.js
-        'status-pending': _('status-pending', default='pending'),
-        'status-active': _('status-active', default='active'),
-        'status-inactive': _('status-inactive', default='inactive'),
-        'status-deleted': _('status-deleted', default='deleted'),
-        'status-rejected': _('status-rejected', default='rejected'),
-        'status-edited': _('status-edited', default='edited'),
+
         # comments
         'comment': _('comment', default='Comment'),
         'comments': _('comments', default='Comments'),
@@ -131,11 +151,6 @@ def ui_messages(request):
         'anonymous': _('anonymous', default='Anonymous'),
         'confirm-delete-comment': _('confirm-delete-comment', default='Do you really want to delete this comment?'),
         # reviews
-        'reviewpanel-empty_msg': _('reviewpanel-empty_msg', default='Select an item on the left.'),
-        'reviewpanel-multiple_changes': _('reviewpanel-multiple_changes', default='There are multiple changes pending! They may be conflicting.'),
-        'reviewpanel-not_active_changed': _('reviewpanel-not_active_changed', default='These changes are based on a version which is not the active version.'),
-        'reviewpanel-pending_title': _('reviewpanel-pending_title', default='Pending version'),
-        'reviewpanel-previous_title': _('reviewpanel-previous_title', default='Previous version'),
         'review-diff_title': _('review-diff_title', default='Difference'),
         'review-diff_inv_added': _('review-diff_inv_added', default='Involvement added'),
         'review-diff_inv_deleted': _('review-diff_inv_deleted', default='Involvement deleted'),
@@ -374,3 +389,12 @@ def edit_translation(request):
         'success': success,
         'msg': msg
     }
+
+def get_translated_status(request, status):
+    """
+    Get the translated name of a status. A request is needed to know in which
+    language to translate
+    """
+    localizer = get_localizer(request)
+    if status in statusMap:
+        return localizer.translate(statusMap[status])
