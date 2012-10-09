@@ -237,7 +237,7 @@ Ext.define('Lmkp.controller.public.Main', {
      * Nicely render 'Country' column of Activity grid.
      */
     onActivityCountryColumnAfterrender: function(comp) {
-        this._renderColumnMultipleValues(comp, "activity-attr_country");
+        this._renderColumnMultipleValues(comp, 'activity_db-key-country');
     },
 
     /**
@@ -245,28 +245,28 @@ Ext.define('Lmkp.controller.public.Main', {
      * treated as null
      */
     onActivityYearColumnAfterrender: function(comp) {
-        this._renderColumnMultipleValues(comp, "activity-attr_yearofinvestment");
+        this._renderColumnMultipleValues(comp, 'activity_db-key-yearofagreement');
     },
     
     /**
      * Nicely render 'Size' column of Activity grid.
      */
     onActivitySizeColumnAfterrender: function(comp) {
-        this._renderColumnMultipleValues(comp, "activity-attr_size")
+        this._renderColumnMultipleValues(comp, 'activity_db-key-contractarea')
     },
 
     /**
      * Nicely render 'Name' column of Stakeholder grid.
      */
     onStakeholderNameColumnAfterrender: function(comp) {
-        this._renderColumnMultipleValues(comp, "stakeholder-attr_name");
+        this._renderColumnMultipleValues(comp, 'stakeholder_db-key-name');
     },
 
     /**
      * Nicely render 'Country' column of Stakeholder grid.
      */
     onStakeholderCountryColumnAfterrender: function(comp) {
-        this._renderColumnMultipleValues(comp, "stakeholder-attr_country");
+        this._renderColumnMultipleValues(comp, 'stakeholder_db-key-country');
     },
 
     onActivityFilterButtonClick: function() {

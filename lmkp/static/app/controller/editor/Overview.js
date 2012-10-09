@@ -288,19 +288,19 @@ Ext.define('Lmkp.controller.editor.Overview', {
     },
 
     renderActivityCountryColumn: function(comp) {
-        this._renderColumnMultipleValues(comp, "activity-attr_country");
+        this._renderColumnMultipleValues(comp, 'activity_db-key-country');
     },
 
     renderActivityYearColumn: function(comp) {
-        this._renderColumnMultipleValues(comp, "activity-attr_yearofinvestment");
+        this._renderColumnMultipleValues(comp, 'activity_db-key-yearofagreement');
     },
     
     renderStakeholderNameColumn: function(comp) {
-        this._renderColumnMultipleValues(comp, "stakeholder-attr_name");
+        this._renderColumnMultipleValues(comp, 'stakeholder_db-key-name');
     },
     
     renderStakeholderCountryColumn: function(comp) {
-        this._renderColumnMultipleValues(comp, "stakeholder-attr_country");
+        this._renderColumnMultipleValues(comp, 'stakeholder_db-key-country');
     },
 
     /**
