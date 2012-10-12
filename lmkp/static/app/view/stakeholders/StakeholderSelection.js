@@ -11,20 +11,20 @@
 
     selectedStakeholder: null,
 
-    title: 'Search Stakeholder',
+    title: Lmkp.ts.msg('stakeholders_search'),
 
     initComponent: function(){
 
         this.clearButton = Ext.create('Ext.button.Button',{
             itemId: 'clearButton',
             scale: 'medium',
-            text: 'Clear'
+            text: Lmkp.ts.msg('button_clear')
         });
 
         this.confirmButton = Ext.create('Ext.button.Button',{
             itemId: 'confirmButton',
             scale: 'medium',
-            text: 'Select Stakeholder',
+            text: Lmkp.ts.msg('stakeholders_select-stakeholder'),
             disabled: true
         });
 
@@ -42,7 +42,8 @@
 
             proxy: {
                 extraParams: {
-                    sh__queryable: Lmkp.ts.msg("stakeholder-name")
+                    sh__queryable: Lmkp.ts.msg('stakeholder_db-key-name-original'),
+                    involvements: 'full'
                 },
                 type: 'ajax',
                 url: '/stakeholders',
@@ -61,7 +62,7 @@
             border: 0,
             items: [{
                 displayField: 'name',
-                fieldLabel: 'Search',
+                fieldLabel: Lmkp.ts.msg('gui_search'),
                 flex: 1,
                 border: 0,
                 hideTrigger: true,
@@ -70,9 +71,9 @@
 
                     prepareData: function(data, recordIndex, record){
  
-                        var name = record.getTagValues(Lmkp.ts.msg('stakeholder-name'));
+                        var name = record.getTagValues(Lmkp.ts.msg('stakeholder_db-key-name'));
                         if(name.length == 0){
-                            name = ['Unknown'];
+                            name = [Lmkp.ts.msg('gui_unknown')];
                         }
                         
                         // temporarily set 'name' to be able to access it using
@@ -91,7 +92,7 @@
                 margin: 5,
                 minChar: 3,
                 queryMode: 'remote',
-                queryParam: 'sh__' + Lmkp.ts.msg("stakeholder-name") + '__ilike',
+                queryParam: 'sh__' + Lmkp.ts.msg('stakeholder_db-key-name-original') + '__ilike',
                 remoteFilter: true,
                 store: store,
                 pageSize: 10,

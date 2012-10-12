@@ -8,7 +8,7 @@ Ext.define('Lmkp.view.activities.NewActivity', {
     'Lmkp.view.activities.NewTaggroupPanel'
     ],
 	
-    title: 'Add new Activity',
+    title: Lmkp.ts.msg('activities_add-new-activity'),
 
     config: {
         newFeatureGeometry: null
@@ -37,7 +37,7 @@ Ext.define('Lmkp.view.activities.NewActivity', {
                     iconCls: 'add-info-button',
                     itemId: 'addAdditionalTaggroupButton',
                     scale: 'medium',
-                    text: 'Add further information'
+                    text: Lmkp.ts.msg('button_add-new-taggroup')
                 }
             ]
         });
@@ -170,9 +170,7 @@ Ext.define('Lmkp.view.activities.NewActivity', {
             if (profile_info) {
                 form.insert(0, {
                     xtype: 'panel',
-                    html: 'Some of the attributes cannot be edited '
-                        + 'because they are not part of the currently selected '
-                        + 'profile.',
+                    html: Lmkp.ts.msg('feedback_some-attributes-not-editable-because-of-profile'),
                     bodyCls: 'notice',
                     bodyPadding: 5,
                     margin: '0 0 5 0'
@@ -219,7 +217,7 @@ Ext.define('Lmkp.view.activities.NewActivity', {
                 {
                     xtype: 'button',
                     name: 'addAdditionalTagButton',
-                    text: 'Add more specific information'
+                    text: Lmkp.ts.msg('button_add-new-tag')
                 }
             ]
         });

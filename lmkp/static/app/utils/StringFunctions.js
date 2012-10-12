@@ -5,7 +5,7 @@ Ext.define('Lmkp.utils.StringFunctions', {
      */
     _formatUsername: function(username, userid) {
         if (username == null) {
-            return Lmkp.ts.msg('anonyomus');
+            return Lmkp.ts.msg('gui_anonymous');
         } else {
             if (userid == null) {
                     return username; // although this hopefully should never happen

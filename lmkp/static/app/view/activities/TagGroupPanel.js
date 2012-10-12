@@ -55,7 +55,7 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
                 		items: ['->',
                 			{
 		                        name: 'editTaggroup',
-		                        text: Lmkp.ts.msg('edit'),
+		                        text: Lmkp.ts.msg('button_edit'),
 		                        selected_taggroup: this.taggroup
                 			}
                 		]
@@ -66,7 +66,7 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
                 // Tag group is empty
                 me.add({
                     xtype: 'panel',
-                    html: 'No attributes to show',
+                    html: Lmkp.ts.msg('gui_no-attributes'),
                     border: 0
                 });
             }

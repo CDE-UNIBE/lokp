@@ -11,9 +11,12 @@ Ext.define('Lmkp.view.public.FilterStakeholderWindow', {
     closeAction: 'hide',
     modal: true,
 
+    title: Lmkp.ts.msg('stakeholders_filter-title'),
+    width: 550,
+
     items: [
         {
-            xtype: 'lo_editorstakeholderfilterpanel'
+            xtype: 'lo_stakeholderfilterpanel'
         }
     ]
 });

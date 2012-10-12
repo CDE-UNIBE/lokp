@@ -19,13 +19,11 @@ Ext.define('Lmkp.view.public.Main' ,{
             border: 0,
             flex: 0.5,
             frame: false,
-            title: Lmkp.ts.msg('activities-table_view'),
             xtype: 'lo_publicactivitytablepanel'
         }, {
             border: 0,
             flex: 0.5,
             frame: false,
-            title: Lmkp.ts.msg('stakeholders-table_view'),
             xtype: 'lo_publicstakeholdertablepanel'
         }],
         layout: {

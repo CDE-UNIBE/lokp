@@ -28,13 +28,13 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
                     iconCls: 'add-info-button',
                     itemId: 'addAdditionalTaggroupButton',
                     scale: 'medium',
-                    text: 'Add further information'
+                    text: Lmkp.ts.msg('button_add-new-taggroup')
                 }
             ],
             buttons: [{
                 iconCls: 'cancel-button',
                 scale: 'medium',
-                text: 'Cancel',
+                text: Lmkp.ts.msg('button_cancel'),
                 itemId: 'cancelButton'
             },{
                 disabled: true,
@@ -43,7 +43,7 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
                 itemId: 'submitButton',
                 scale: 'medium',
                 scope: this,
-                text: 'Submit'
+                text: Lmkp.ts.msg('button_submit')
             }]
         });
 
@@ -178,9 +178,7 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
                 if (profile_info) {
                     form.insert(0, {
                         xtype: 'panel',
-                        html: 'Some of the attributes cannot be edited '
-                            + 'because they are not part of the currently selected '
-                            + 'profile.',
+                        html: Lmkp.ts.msg('feedback_some-attributes-not-editable-because-of-profile'),
                         bodyCls: 'notice',
                         bodyPadding: 5,
                         margin: '0 0 5 0'
@@ -228,7 +226,7 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
                 {
                     xtype: 'button',
                     name: 'addAdditionalTagButton',
-                    text: 'Add more specific information'
+                    text: Lmkp.ts.msg('button_add-new-tag')
                 }
             ]
         });
