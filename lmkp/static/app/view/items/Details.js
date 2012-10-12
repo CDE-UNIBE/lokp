@@ -11,8 +11,8 @@ Ext.define('Lmkp.view.items.Details',{
             iconCls: 'cancel-button',
             itemId: 'closeWindowButton',
             scale: 'medium',
-            text: 'Close', // also translate tooltip
-            tooltip: Lmkp.ts.msg('Close window')
+            text: Lmkp.ts.msg('button_close'),
+            tooltip: Lmkp.ts.msg('tooltip_close-window')
         }],
         xtype: 'toolbar'
     },

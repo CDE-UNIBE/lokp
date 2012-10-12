@@ -12,8 +12,13 @@ Ext.define('Lmkp.view.items.ItemPanel', {
                 this.add({
                     bodyCls: 'notice',
                     bodyPadding: 5,
-                    html: 'You are seeing a <b>pending</b> version, which needs to be \n\
-                        reviewed before it is publicly visible',
+                    html:
+                        Lmkp.ts.msg(
+                            'gui_currently-seeing-pending-version'
+                        ).replace(
+                            '{0}',
+                            '<b>' + Lmkp.ts.msg('status_pending') + '</b>'
+                        ),
                     margin: '3 3 0 3'
                 });
                 break;
@@ -21,7 +26,13 @@ Ext.define('Lmkp.view.items.ItemPanel', {
                 this.add({
                     bodyCls: 'notice',
                     bodyPadding: 5,
-                    html: 'You are seeing an <b>inactive</b> version, which was previously active.',
+                    html:
+                        Lmkp.ts.msg(
+                            'gui_currently-seeing-inactive-version'
+                        ).replace(
+                            '{0}',
+                            '<b>' + Lmkp.ts.msg('status_inactive') + '</b>'
+                        ),
                     margin: '3 3 0 3'
 
                 });
@@ -30,7 +41,13 @@ Ext.define('Lmkp.view.items.ItemPanel', {
                 this.add({
                     bodyCls: 'warning',
                     bodyPadding: 5,
-                    html: 'You are seeing a <b>deleted</b> version.',
+                    html:
+                        Lmkp.ts.msg(
+                            'gui_currently-seeing-deleted-version'
+                        ).replace(
+                            '{0}',
+                            '<b>' + Lmkp.ts.msg('status_deleted') + '</b>'
+                        ),
                     margin: '3 3 0 3'
 
                 });
@@ -39,7 +56,13 @@ Ext.define('Lmkp.view.items.ItemPanel', {
                 this.add({
                     bodyCls: 'warning',
                     bodyPadding: 5,
-                    html: 'You are seeing a <b>rejected</b> version.',
+                    html:
+                        Lmkp.ts.msg(
+                            'gui_currently-seeing-rejected-version'
+                        ).replace(
+                            '{0}',
+                            '<b>' + Lmkp.ts.msg('status_rejected') + '</b>'
+                        ),
                     margin: '3 3 0 3'
 
                 });
@@ -48,7 +71,13 @@ Ext.define('Lmkp.view.items.ItemPanel', {
                 this.add({
                     bodyCls: 'notice',
                     bodyPadding: 5,
-                    html: 'You are seeing an <b>edited</b> version.',
+                    html:
+                        Lmkp.ts.msg(
+                            'gui_currently-seeing-edited-version'
+                        ).replace(
+                            '{0}',
+                            '<b>' + Lmkp.ts.msg('status_edited') + '</b>'
+                        ),
                     margin: '3 3 0 3'
 
                 });

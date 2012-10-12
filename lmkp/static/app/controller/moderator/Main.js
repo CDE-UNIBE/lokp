@@ -174,24 +174,23 @@ Ext.define('Lmkp.controller.moderator.Main', {
 
         var mapPanel = this.getMapPanel();
         var me = this;
+        var win = Ext.create('Lmkp.utils.MessageBox');
 
         btn.up('form').submit({
             failure: function(form, response) {
-                var msg = 'Request failed.<br/>Server response: ';
-                msg += response.response.status + ' ' + response.response.statusText;
-                Ext.Msg.show({
+                win.show({
                     buttons: Ext.Msg.CANCEL,
                     icon: Ext.Msg.ERROR,
-                    msg: msg,
+                    msg: response.response.responseText,
                     scope: this,
-                    title: 'Failed'
+                    title: Lmkp.ts.msg('feedback_failure')
                 });
             },
             scope: btn.up('window'),
             success: function(form, response) {
                 var returnJson = Ext.decode(response.response.responseText);
                 if(returnJson.success){
-                    Ext.Msg.show({
+                    win.show({
                         buttons: Ext.Msg.OK,
                         fn: function(buttonId, text, opt){
                             this.close();
@@ -199,7 +198,7 @@ Ext.define('Lmkp.controller.moderator.Main', {
                         icon: Ext.Msg.INFO,
                         msg: returnJson.msg,
                         scope: this,
-                        title: 'Success'
+                        title: Lmkp.ts.msg('feedback_success')
                     });
                     // If the review was successful it is necessary to reload
                     // the ActivityVector store
@@ -209,12 +208,12 @@ Ext.define('Lmkp.controller.moderator.Main', {
                     var filterController = me.getController('public.Filter');
                     filterController.applyFilter();
                 } else {
-                    Ext.Msg.show({
+                    win.show({
                         buttons: Ext.Msg.CANCEL,
                         icon: Ext.Msg.ERROR,
                         msg: returnJson.msg,
                         scope: this,
-                        title: 'Failed'
+                        title: Lmkp.ts.msg('feedback_failure')
                     });
                 }
             }

@@ -12,10 +12,10 @@ Ext.define('Lmkp.store.ReviewDecisions', {
     data: [
         {
             'id': 1,
-            'name': Lmkp.ts.msg('reviewdecision-approved')
+            'name': Lmkp.ts.msg('reviewdecision_approved')
         }, {
             'id': 2,
-            'name': Lmkp.ts.msg('reviewdecision-rejected')
+            'name': Lmkp.ts.msg('reviewdecision_rejected')
         }
     ]
 });
