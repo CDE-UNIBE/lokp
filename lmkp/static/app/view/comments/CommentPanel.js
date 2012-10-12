@@ -64,7 +64,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                 failure: function(response, options) {
                     var json = Ext.JSON.decode(response.responseText);
                     // set title
-                    me.setTitle(Lmkp.ts.msg('comments'));
+                    me.setTitle(Lmkp.ts.msg('comments_title'));
                     // show error message
                     me.add({
                         border: 0,
@@ -91,14 +91,14 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
         me.removeAll();
 					
         // Set title
-        me.setTitle(Lmkp.ts.msg('comments') + ' (' + json.total + ')');
+        me.setTitle(Lmkp.ts.msg('comments_title') + ' (' + json.total + ')');
         // If no comments, add empty message
         if (json.total == 0) {
             me.add({
                 border: 0,
                 margin: '0 0 5 0',
                 bodyPadding: 5,
-                html: Lmkp.ts.msg('comments-empty')
+                html: Lmkp.ts.msg('comments_empty')
             });
 						
         } else {
@@ -116,31 +116,36 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                             comment_id: cc.id, // store id of comment
                             handler: function() {
                                 // show confirmation dialogue
-                                Ext.Msg.confirm(Lmkp.ts.msg('confirm-title'), Lmkp.ts.msg('confirm-delete-comment'), function(btn) {
-                                    if (btn == 'yes') {
-                                        Ext.Ajax.request({
-                                            url: '/comments/delete',
-                                            method: 'POST',
-                                            params: {
-                                                'id': this.comment_id
-                                            },
-                                            success: function(response, options) {
-                                                var del_json = Ext.JSON.decode(response.responseText);
-                                                // give feedback
-                                                Ext.Msg.alert(Lmkp.ts.msg('success'), del_json.message);
-                                                // reload comments
-                                                me._loadContent(me);
-                                                // re-layout container
-                                                me._redoLayout();
-                                            },
-                                            failure: function(response, options) {
-                                                var del_json = Ext.JSON.decode(response.responseText);
-                                                // give feedback
-                                                Ext.Msg.alert(Lmkp.ts.msg('failure'), del_json.message);
-                                            }
-                                        });
-                                    }
-                                }, this);
+                                var win = Ext.create('Lmkp.utils.MessageBox');
+                                win.confirm(
+                                    Lmkp.ts.msg('gui_confirm'),
+                                    Lmkp.ts.msg('comments_confirm-delete-comment'),
+                                    function(btn) {
+                                        if (btn == 'yes') {
+                                            Ext.Ajax.request({
+                                                url: '/comments/delete',
+                                                method: 'POST',
+                                                params: {
+                                                    'id': this.comment_id
+                                                },
+                                                success: function(response, options) {
+                                                    var del_json = Ext.JSON.decode(response.responseText);
+                                                    // give feedback
+                                                    Ext.Msg.alert(Lmkp.ts.msg('feedback_success'), del_json.message);
+                                                    // reload comments
+                                                    me._loadContent(me);
+                                                    // re-layout container
+                                                    me._redoLayout();
+                                                },
+                                                failure: function(response, options) {
+                                                    var del_json = Ext.JSON.decode(response.responseText);
+                                                    // give feedback
+                                                    Ext.Msg.alert(Lmkp.ts.msg('feedback_failure'), del_json.message);
+                                                }
+                                            });
+                                        }
+                                    }, this
+                                );
                             }
                         }]
                     };
@@ -149,7 +154,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                     margin: '0 0 5 0',
                     bodyPadding: 5,
                     html: '<span class="grey">'
-                    + Lmkp.ts.msg('comments-by') + ' '
+                    + Lmkp.ts.msg('comments_comment-by') + ' '
                     + me.stringFunctions._formatUsername(cc.username, cc.userid)
                     + ' (' + me.stringFunctions._formatTimestamp(cc.timestamp)
                     + '):</span><br/><p>' + cc.comment + '</p>',
@@ -173,7 +178,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
         // form to add new comment
         var form = Ext.create('Ext.form.Panel', {
             header: true,
-            title: Lmkp.ts.msg('comments-leave'),
+            title: Lmkp.ts.msg('comments_leave-comment'),
             url: '/comments/add',
             margin: '0 0 5 0',
             bodyPadding: 5,
@@ -186,7 +191,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
             items: [{
                 // comment TextArea
                 xtype: 'textareafield',
-                fieldLabel: Lmkp.ts.msg('comment'),
+                fieldLabel: Lmkp.ts.msg('comments_singular'),
                 name: 'comment',
                 allowBlank: false
             }, {
@@ -233,7 +238,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                             params: params,
                             success: function(form, action) {
                                 // give feedback
-                                Ext.Msg.alert(Lmkp.ts.msg('success'), action.result.message);
+                                Ext.Msg.alert(Lmkp.ts.msg('feedback_success'), action.result.message);
                                 // reload comments
                                 me._loadContent(me);
                                 // re-layout container
@@ -241,7 +246,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                             },
                             failure: function(form, action) {
                                 // give feedback
-                                Ext.Msg.alert(Lmkp.ts.msg('failure'), action.result.message);
+                                Ext.Msg.alert(Lmkp.ts.msg('feedback_failure'), action.result.message);
 											
                                 // if captcha was wrong, reload it.
                                 if (action.result.captcha_reload) {

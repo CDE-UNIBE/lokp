@@ -114,7 +114,7 @@ Ext.define('Lmkp.view.activities.Details', {
         this.historyPanel
         ];
 
-        this.title = Lmkp.ts.msg('activity_details-title') + ' ' + activity_identifier;
+        this.title = Lmkp.ts.msg('activities_details-title') + ' ' + activity_identifier;
 
         this.callParent(arguments);
     }	

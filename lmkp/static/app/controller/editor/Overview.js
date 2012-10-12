@@ -70,7 +70,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
             'button[name=addAttributeFilter]': {
                 click: this.addAttributeFilter
             },
-            'lo_editoractivityfilterpanel button[name=addTimeFilter]': {
+            'lo_activityfilterpanel button[name=addTimeFilter]': {
                 click: this.addTimeFilter
             },
             'lo_editoractivitytablepanel tabpanel[id=detailPanel]': {
@@ -199,10 +199,10 @@ Ext.define('Lmkp.controller.editor.Overview', {
         var panel_xtype = null;
         var store = null;
         if (button.item_type == 'activity') {
-            panel_xtype = 'lo_editoractivityfilterpanel';
+            panel_xtype = 'lo_activityfilterpanel';
             store = this.getActivityConfigStore();
         } else if (button.item_type == 'stakeholder') {
-            panel_xtype = 'lo_editorstakeholderfilterpanel';
+            panel_xtype = 'lo_stakeholderfilterpanel';
             store = this.getStakeholderConfigStore();
         }
 
@@ -238,9 +238,9 @@ Ext.define('Lmkp.controller.editor.Overview', {
         // Activity or Stakeholder?
         var panel_xtype = null;
         if (button.item_type == 'activity') {
-            panel_xtype = 'lo_editoractivityfilterpanel';
+            panel_xtype = 'lo_activityfilterpanel';
         } else if (button.item_type == 'stakeholder') {
-            panel_xtype = 'lo_editorstakeholderfilterpanel';
+            panel_xtype = 'lo_stakeholderfilterpanel';
         }
 
         var form = button.up(panel_xtype);
@@ -249,7 +249,7 @@ Ext.define('Lmkp.controller.editor.Overview', {
         var insertIndex = form.items.length - 1;
         var picker = Ext.create('Ext.form.field.Date', {
             name: 'dateField',
-            fieldLabel: Lmkp.ts.msg("date-label"),
+            fieldLabel: Lmkp.ts.msg("gui_date"),
             flex: 0,
             margin: '0 5 5 0',
             value: new Date() // defaults to today
@@ -486,20 +486,20 @@ Ext.define('Lmkp.controller.editor.Overview', {
             var other_prefix = null;
             var url_prefix = null;
             var paging_id = null
-            if (filterpanel.getXType() == 'lo_editoractivityfilterpanel') {
+            if (filterpanel.getXType() == 'lo_activityfilterpanel') {
                 // Activities
                 url_prefix = 'activities?';
                 prefix = 'a';
-                other_xtype = 'lo_editorstakeholderfilterpanel';
+                other_xtype = 'lo_stakeholderfilterpanel';
                 other_prefix = 'sh';
                 store = this.getActivityGridStore();
                 paging_id = 'activityGridPagingToolbar';
             }
-            else if (filterpanel.getXType() == 'lo_editorstakeholderfilterpanel') {
+            else if (filterpanel.getXType() == 'lo_stakeholderfilterpanel') {
                 // Stakeholders
                 url_prefix = 'stakeholders?';
                 prefix = 'sh';
-                other_xtype = 'lo_editoractivityfilterpanel';
+                other_xtype = 'lo_activityfilterpanel';
                 other_prefix = 'a';
                 store = this.getStakeholderGridStore();
                 paging_id = 'stakeholderGridPagingToolbar';
@@ -616,10 +616,10 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 var data = [
                 {
                     'queryOperator': '__like=',
-                    'displayOperator': Lmkp.ts.msg('filter-operator_is')
+                    'displayOperator': Lmkp.ts.msg('filter_operator-is')
                 }, {
                     'queryOperator': '__nlike=',
-                    'displayOperator': Lmkp.ts.msg('filter-operator_is-not')
+                    'displayOperator': Lmkp.ts.msg('filter_operator-is-not')
                 }
                 ];
                 break;
@@ -628,19 +628,19 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 {
                     'queryOperator': '__like=',
                     'displayOperator':
-                    Lmkp.ts.msg('filter-operator_contains-case-sensitive')
+                    Lmkp.ts.msg('filter_operator-contains-case-sensitive')
                 }, {
                     'queryOperator': '__ilike=',
                     'displayOperator':
-                    Lmkp.ts.msg('filter-operator_contains-case-insensitive')
+                    Lmkp.ts.msg('filter_operator-contains-case-insensitive')
                 }, {
                     'queryOperator': '__nlike=',
                     'displayOperator':
-                    Lmkp.ts.msg('filter-operator_contains-not-case-sensitive')
+                    Lmkp.ts.msg('filter_operator-contains-not-case-sensitive')
                 }, {
                     'queryOperator': '__nilike=',
                     'displayOperator':
-                    Lmkp.ts.msg('filter-operator_contains-not-case-insensitive')
+                    Lmkp.ts.msg('filter_operator-contains-not-case-insensitive')
                 }
                 ];
                 break;
@@ -648,22 +648,22 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 var data = [
                 {
                     'queryOperator': '__eq=',
-                    'displayOperator': Lmkp.ts.msg('filter-operator_equals')
+                    'displayOperator': Lmkp.ts.msg('filter_operator-equals')
                 }, {
                     'queryOperator': '__lt=',
-                    'displayOperator': Lmkp.ts.msg('filter-operator_less-than')
+                    'displayOperator': Lmkp.ts.msg('filter_operator-less-than')
                 }, {
                     'queryOperator': '__lte=',
-                    'displayOperator': Lmkp.ts.msg('filter-operator_less-than-or-equal')
+                    'displayOperator': Lmkp.ts.msg('filter_operator-less-than-or-equal')
                 }, {
                     'queryOperator': '__gte=',
-                    'displayOperator': Lmkp.ts.msg('filter-operator_greater-than-or-equal')
+                    'displayOperator': Lmkp.ts.msg('filter_operator-greater-than-or-equal')
                 }, {
                     'queryOperator': '__gt=',
-                    'displayOperator': Lmkp.ts.msg('filter-operator_greater-than')
+                    'displayOperator': Lmkp.ts.msg('filter_operator-greater-than')
                 }, {
                     'queryOperator': '__ne=',
-                    'displayOperator': Lmkp.ts.msg('filter-operator_not-equals')
+                    'displayOperator': Lmkp.ts.msg('filter_operator-not-equals')
                 }
                 ];
                 break;
@@ -708,14 +708,14 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 case "numberfield":
                     var valueField = Ext.create('Ext.form.field.Number', {
                         name: fieldName,
-                        emptyText: 'Specify number value',
+                        emptyText: Lmkp.ts.msg('filter_specify-number-value'),
                         margin: '0 5 0 0'
                     });
                     break;
                 default:
                     var valueField = Ext.create('Ext.form.field.Text', {
                         name: fieldName,
-                        emptyText: 'Specify value',
+                        emptyText: Lmkp.ts.msg('filter_specify-text-value'),
                         margin: '0 5 0 0'
                     });
                     break;
@@ -1007,7 +1007,10 @@ Ext.define('Lmkp.controller.editor.Overview', {
                 jsonData: diffObject,
                 callback: function(options, success, response) {
                     if(success){
-                        Ext.Msg.alert('Success', 'The activity was successfully created. It will be reviewed shortly.');
+                        Ext.Msg.alert(
+                            Lmkp.ts.msg('feedback_success'),
+                            Lmkp.ts.msg('feedback_new-activity-created')
+                        );
 
                         var p = this.getNewActivityPanel();
                         p.setNewFeatureGeometry(null);
@@ -1024,7 +1027,10 @@ Ext.define('Lmkp.controller.editor.Overview', {
                         // Remove also the feature on the map
                         this.getMapPanel().getVectorLayer().removeAllFeatures();
                     } else {
-                        Ext.Msg.alert('Failure', 'The activity could not be created.');
+                        Ext.Msg.alert(
+                            Lmkp.ts.msg('feedback_failure'),
+                            Lmkp.ts.msg('feedback_new-activity-not-created')
+                        );
                     }
 
                 },

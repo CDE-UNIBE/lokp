@@ -63,14 +63,14 @@ Ext.define('Lmkp.controller.public.Filter', {
     },
 
     onAddStakeholderAttributeFilterButtonClick: function(button) {
-        var form = button.up('lo_editorstakeholderfilterpanel');
+        var form = button.up('lo_stakeholderfilterpanel');
         var store = this.getStakeholderConfigStore();
 
         this.addSingleFilterPanel(form, store);
     },
 
     onAddActivityAttributeFilterButtonClick: function(button) {
-        var form = button.up('lo_editoractivityfilterpanel');
+        var form = button.up('lo_activityfilterpanel');
         var store = this.getActivityConfigStore();
 
         this.addSingleFilterPanel(form, store);
@@ -133,10 +133,10 @@ Ext.define('Lmkp.controller.public.Filter', {
                 var data = [
                 {
                     'queryOperator': '__like',
-                    'displayOperator': Lmkp.ts.msg('filter-operator_is')
+                    'displayOperator': Lmkp.ts.msg('filter_operator-is')
                 }, {
                     'queryOperator': '__nlike',
-                    'displayOperator': Lmkp.ts.msg('filter-operator_is-not')
+                    'displayOperator': Lmkp.ts.msg('filter_operator-is-not')
                 }
                 ];
                 break;
@@ -145,19 +145,19 @@ Ext.define('Lmkp.controller.public.Filter', {
                 {
                     'queryOperator': '__like',
                     'displayOperator':
-                    Lmkp.ts.msg('filter-operator_contains-case-sensitive')
+                    Lmkp.ts.msg('filter_operator-contains-case-sensitive')
                 }, {
                     'queryOperator': '__ilike',
                     'displayOperator':
-                    Lmkp.ts.msg('filter-operator_contains-case-insensitive')
+                    Lmkp.ts.msg('filter_operator-contains-case-insensitive')
                 }, {
                     'queryOperator': '__nlike',
                     'displayOperator':
-                    Lmkp.ts.msg('filter-operator_contains-not-case-sensitive')
+                    Lmkp.ts.msg('filter_operator-contains-not-case-sensitive')
                 }, {
                     'queryOperator': '__nilike',
                     'displayOperator':
-                    Lmkp.ts.msg('filter-operator_contains-not-case-insensitive')
+                    Lmkp.ts.msg('filter_operator-contains-not-case-insensitive')
                 }
                 ];
                 break;
@@ -165,22 +165,22 @@ Ext.define('Lmkp.controller.public.Filter', {
                 var data = [
                 {
                     'queryOperator': '__eq',
-                    'displayOperator': Lmkp.ts.msg('filter-operator_equals')
+                    'displayOperator': Lmkp.ts.msg('filter_operator-equals')
                 }, {
                     'queryOperator': '__lt',
-                    'displayOperator': Lmkp.ts.msg('filter-operator_less-than')
+                    'displayOperator': Lmkp.ts.msg('filter_operator-less-than')
                 }, {
                     'queryOperator': '__lte',
-                    'displayOperator': Lmkp.ts.msg('filter-operator_less-than-or-equal')
+                    'displayOperator': Lmkp.ts.msg('filter_operator-less-than-or-equal')
                 }, {
                     'queryOperator': '__gte',
-                    'displayOperator': Lmkp.ts.msg('filter-operator_greater-than-or-equal')
+                    'displayOperator': Lmkp.ts.msg('filter_operator-greater-than-or-equal')
                 }, {
                     'queryOperator': '__gt',
-                    'displayOperator': Lmkp.ts.msg('filter-operator_greater-than')
+                    'displayOperator': Lmkp.ts.msg('filter_operator-greater-than')
                 }, {
                     'queryOperator': '__ne',
-                    'displayOperator': Lmkp.ts.msg('filter-operator_not-equals')
+                    'displayOperator': Lmkp.ts.msg('filter_operator-not-equals')
                 }
                 ];
                 break;
@@ -225,14 +225,14 @@ Ext.define('Lmkp.controller.public.Filter', {
                 case "numberfield":
                     var valueField = Ext.create('Ext.form.field.Number', {
                         name: fieldName,
-                        emptyText: 'Specify number value',
+                        emptyText: Lmkp.ts.msg('filter_specify-number-value'),
                         margin: '0 5 0 0'
                     });
                     break;
                 default:
                     var valueField = Ext.create('Ext.form.field.Text', {
                         name: fieldName,
-                        emptyText: 'Specify value',
+                        emptyText: Lmkp.ts.msg('filter_specify-text-value'),
                         margin: '0 5 0 0'
                     });
                     break;
@@ -267,9 +267,9 @@ Ext.define('Lmkp.controller.public.Filter', {
     applyFilter: function(externalCall) {
 
         // Get filter panels
-        var afpq = Ext.ComponentQuery.query('lo_editoractivityfilterpanel');
+        var afpq = Ext.ComponentQuery.query('lo_activityfilterpanel');
         var activityFilterPanel = afpq.length > 0 ? afpq[0]: null;
-        var sfpq = Ext.ComponentQuery.query('lo_editorstakeholderfilterpanel');
+        var sfpq = Ext.ComponentQuery.query('lo_stakeholderfilterpanel');
         var stakeholderFilterPanel = sfpq.length > 0 ? sfpq[0] : null;
 
         // Get stores
@@ -277,7 +277,8 @@ Ext.define('Lmkp.controller.public.Filter', {
         var otherstore = this.getStakeholderGridStore();
 
         // Reset proxy
-        store.setInitialProxy();		store.deleteFilters();
+        store.setInitialProxy();
+		store.deleteFilters();
 
         // Get existing extraParams
         var extraParams = store.getProxy().extraParams;

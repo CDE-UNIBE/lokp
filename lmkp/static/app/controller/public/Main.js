@@ -224,8 +224,8 @@ Ext.define('Lmkp.controller.public.Main', {
         var me = this;
         var infoWindow = Ext.create('Lmkp.utils.MessageBox');
         infoWindow.alert(
-            "New Activity",
-            "Step 1: Please select a point on the map.",
+            Lmkp.ts.msg('activities_new-title'),
+            Lmkp.ts.msg('activities_new-step-1'),
             function() {
                 var editorMapController = me.getController('editor.Map');
                 editorMapController.clickAddLocationButton();
@@ -306,7 +306,7 @@ Ext.define('Lmkp.controller.public.Main', {
     },
 
     onActivityDeleteAllFiltersButtonClick: function() {
-        var q = Ext.ComponentQuery.query('lo_editoractivityfilterpanel');
+        var q = Ext.ComponentQuery.query('lo_activityfilterpanel');
         var filterPanel = q.length > 0 ? q[0] : null;
         if (filterPanel) {
             // Delete all filter items
@@ -322,7 +322,7 @@ Ext.define('Lmkp.controller.public.Main', {
     },
 
     onStakeholderDeleteAllFiltersButtonClick: function() {
-        var q = Ext.ComponentQuery.query('lo_editorstakeholderfilterpanel');
+        var q = Ext.ComponentQuery.query('lo_stakeholderfilterpanel');
         var filterPanel = q.length > 0 ? q[0] : null;
         if (filterPanel) {
             // Delete all filter items
