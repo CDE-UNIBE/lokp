@@ -20,7 +20,7 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
     items: [
     {
         xtype: 'gridpanel',
-        title: 'Stakeholders',
+        title: Lmkp.ts.msg('stakeholders_title'),
         flex: 0.5,
         border: false,
         split: true,
@@ -31,15 +31,15 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
         },
         columns: [
         {
-            header: Lmkp.ts.msg('stakeholder-attr_name'),
+            header: Lmkp.ts.msg('stakeholder_db-key-name'),
             name: 'stakeholdernamecolumn',
-            dataIndex: Lmkp.ts.msg('stakeholder-attr_name'),
+            dataIndex: Lmkp.ts.msg('stakeholder_db-key-name'),
             flex: 1,
 //            sortable: true
         }, {
-            header: Lmkp.ts.msg('stakeholder-attr_country'),
+            header: Lmkp.ts.msg('stakeholder_db-key-country'),
             name: 'stakeholdercountrycolumn',
-            dataIndex: Lmkp.ts.msg('stakeholder-attr_country'),
+            dataIndex: Lmkp.ts.msg('stakeholder_db-key-country'),
             flex: 0,
 //            sortable: true
         }, {
@@ -48,7 +48,7 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
             name: 'showDetailsColumn',
             width: 24,
             align: 'center',
-            tpl: '<img src="static/img/information.png" style="cursor:pointer;" title="Show details">'
+            tpl: '<img src="static/img/information.png" style="cursor:pointer;" title="' + Lmkp.ts.msg('gui_show-details') + '">'
         }],
         dockedItems: [
         {
@@ -56,10 +56,10 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
             id: 'stakeholderGridTopToolbar',
             dock: 'top',
             items: ['->', {
-                text: 'Clear selection',
+                text: Lmkp.ts.msg('gui_clear-selection'),
                 itemId: 'stakeholderResetSelectionButton'
             }, {
-                text: 'Delete all filters',
+                text: Lmkp.ts.msg('gui_delete-all-filters'),
                 itemId: 'stakeholderDeleteAllFiltersButton'
             }]
         }]
@@ -70,10 +70,10 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
         dock: 'bottom',
         enableOverflow: false,
         displayInfo: true,
-        beforePageText: Lmkp.ts.msg("activitypaging-before"),
-        afterPageText: Lmkp.ts.msg("activitypaging-after"),
-        displayMsg: Lmkp.ts.msg("stakeholder-paging_message"),
-        emptyMsg: '<b>' + Lmkp.ts.msg("stakeholder-paging_empty") + '</b>'
+        beforePageText: Lmkp.ts.msg('gui_paging-before'),
+        afterPageText: Lmkp.ts.msg('gui_paging-after'),
+        displayMsg: Lmkp.ts.msg('stakeholders_paging-message'),
+        emptyMsg: '<b>' + Lmkp.ts.msg('stakeholders_paging-empty') + '</b>'
     }]
 
 });

@@ -47,15 +47,16 @@ setup(name='LMKP',
       zip_safe=False,
       test_suite='lmkp',
       install_requires=requires,
-      message_extractors={'.': [
+      message_extractors={'lmkp': [
       ('**.py', 'lingua_python', None),
       ('**.pt', 'lingua_xml', None),
       ('**.mak', 'mako', None),
+      ('lmkp/static/**', 'ignore', None)
       ]},
       entry_points="""\
       [paste.app_factory]
       main = lmkp:main
       [console_scripts]
       populate_lmkp = lmkp.scripts.populate:main
-      """,
+      """
       )

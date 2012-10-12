@@ -20,18 +20,18 @@ Ext.define('Lmkp.view.activities.ChangesetPanel', {
         this.items = [
             this.additionalPanelTop,
             {
-                fieldLabel: 'Timestamp',
+                fieldLabel: Lmkp.ts.msg('gui_timestamp'),
                 value: this._valueOrUnknown(
                     this.stringFunctions._formatTimestamp(this.timestamp)
                 )
             }, {
-                fieldLabel: 'Version',
+                fieldLabel: Lmkp.ts.msg('gui_version'),
                 value: this._valueOrUnknown(this.version)
             }, {
-                fieldLabel: 'Previous version',
+                fieldLabel: Lmkp.ts.msg('gui_previous-version'),
                 value: this._valueOrUnknown(this.previous_version)
             }, {
-                fieldLabel: 'User',
+                fieldLabel: Lmkp.ts.msg('gui_user'),
                 value: this._valueOrUnknown(
                     this.stringFunctions._formatUsername(
                         this.username, this.userid)
@@ -50,7 +50,7 @@ Ext.define('Lmkp.view.activities.ChangesetPanel', {
         if (v) {
             return v;
         } else {
-            return Lmkp.ts.msg('unknown');
+            return Lmkp.ts.msg('gui_unknown');
         }
     }
 

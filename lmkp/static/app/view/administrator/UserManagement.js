@@ -9,6 +9,7 @@ Ext.define('Lmkp.view.administrator.UserManagement', {
             if (form.isValid()) {
                 // Submit the Ajax request and handle the response
                 form.submit({
+                    url: '/users/add',
                     success: function(form, response) {
                         var res = Ext.decode(response.response.responseText);
                         res.success ? Ext.Msg.alert('Success', res.msg) : Ext.Msg.alert('Failure', res.msg);
@@ -75,7 +76,5 @@ Ext.define('Lmkp.view.administrator.UserManagement', {
         xtype: 'combo'
     }],
     layout: 'vbox',
-    method: 'POST',
-    url: '/users/add'
-
+    method: 'POST'
 });

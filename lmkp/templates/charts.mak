@@ -67,7 +67,7 @@ else:
                     and the
                     <a href="http://www.cde.unibe.ch/">Centre for Development and Environment</a> at the University of Bern, Switzerland.
                     It is funded by the <a href="http://www.sdc.admin.ch/">Swiss Agency for Development Cooperation</a>,
-                    with co-funding from other ILC and CDE programs.​
+                    with co-funding from other ILC and CDE programs.
                 </p>
             </div>
             <div id="logo-div">
@@ -78,7 +78,7 @@ else:
         </div>
         <div id="loading-mask" style="width: 100%; height: 100%;">
             <div style="position: absolute; top: 50%; right: 50%">
-                <img src="${request.static_url('lmkp:static/img/spinner.gif')}" alt="loading ..."/>
+                <img src="${request.static_url('lmkp:static/img/spinner.gif')}" alt="${_('gui_loading')} ..."/>
             </div>
         </div>
         <div id="heatmap-div">

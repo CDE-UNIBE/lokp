@@ -11,9 +11,12 @@ Ext.define('Lmkp.view.public.FilterActivityWindow', {
     closeAction: 'hide',
     modal: true,
 
+    title: Lmkp.ts.msg('activities_filter-title'),
+    width: 550,
+
     items: [
         {
-            xtype: 'lo_editoractivityfilterpanel'
+            xtype: 'lo_activityfilterpanel'
         }
     ]
 });

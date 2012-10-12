@@ -40,6 +40,9 @@ from sqlalchemy.sql.expression import or_
 from sqlalchemy.types import Float
 import yaml
 
+from lmkp.views.translation import statusMap
+from lmkp.views.translation import get_translated_status
+
 log = logging.getLogger(__name__)
 
 class ActivityFeature2(Feature):
@@ -61,7 +64,7 @@ class ActivityFeature2(Feature):
         self._pending = []
         self._missing_keys = None
 
-    def to_table(self):
+    def to_table(self, request):
         """
         Returns a JSON compatible representation of this object
         """
@@ -88,15 +91,21 @@ class ActivityFeature2(Feature):
             ret['version'] = self._version
         if self._timestamp is not None:
             ret['timestamp'] = str(self._timestamp)
-        if self._status is not None:
-            ret['status'] = self._status
+        # @TODO: Is status only defined through diff_info? self._status possibly
+        # only used for involvements?
+        if self._status is not None and self._status in statusMap:
+            ret['status'] = get_translated_status(request, self._status)
         if self._diff_info is not None:
             for k in self._diff_info:
-                ret[k] = self._diff_info[k]
+                # Try to translate status
+                if k == 'status':
+                    ret[k] = get_translated_status(request, self._diff_info[k])
+                else:
+                    ret[k] = self._diff_info[k]
         if len(self._pending) != 0:
             pending = []
             for p in self._pending:
-                pending.append(p.to_table())
+                pending.append(p.to_table(request))
             ret['pending'] = sorted(pending, key=lambda k: k['version'],
                                     reverse=True)
         if self._missing_keys is not None:
@@ -106,7 +115,7 @@ class ActivityFeature2(Feature):
         if len(self._involvements) != 0:
             sh = []
             for i in self._involvements:
-                sh.append(i.to_table())
+                sh.append(i.to_table(request))
             ret['involvements'] = sh
 
         return ret
@@ -122,7 +131,7 @@ class ActivityProtocol2(Protocol):
         # Query the database
         activities, count = self._query(request, limit=self._get_limit(request), offset=self._get_offset(request), filter=filter, uid=uid)
 
-        return {'total': count, 'data': [a.to_table() for a in activities]}
+        return {'total': count, 'data': [a.to_table(request) for a in activities]}
 
     def history(self, request, uid, status_list=None):
 
@@ -130,7 +139,7 @@ class ActivityProtocol2(Protocol):
         activities, count = self._history(request, uid, status_list,
                                           versions=self._get_versions(request))
 
-        return {'total': count, 'data': [a.to_table() for a in activities]}
+        return {'total': count, 'data': [a.to_table(request) for a in activities]}
 
     def create(self, request):
         """
@@ -1127,19 +1136,19 @@ class ActivityProtocol2(Protocol):
         if versions is None:
             for a in data:
                 if a.get_previous_version() is None:
-                    a.create_diff()
+                    a.create_diff(request)
                 else:
                     for ov in data:
                         if ov.get_version() == a.get_previous_version():
-                            a.create_diff(ov)
+                            a.create_diff(request, ov)
                             break
         # If versions specified, use version order to create diffs
         else:
             for i, a in enumerate(data):
                 if i == 0:
-                    a.create_diff()
+                    a.create_diff(request)
                 else:
-                    a.create_diff(data[i-1])
+                    a.create_diff(request, data[i-1])
 
         # Mark records as complete if requested
         # TODO: This should go to pending protocol
