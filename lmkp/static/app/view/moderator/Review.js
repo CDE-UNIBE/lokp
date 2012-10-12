@@ -71,7 +71,6 @@ Ext.define('Lmkp.view.moderator.Review', {
 
         // Show panels
         for (var j in pending) {
-            //for (var k in data.data) {
             store.each(function(record){
                 // First show panel with pending item
                 if (record.get('version') == pending[j].current_version) {
@@ -150,7 +149,7 @@ Ext.define('Lmkp.view.moderator.Review', {
                     scale: 'medium',
                     scope: this,
                     store_type: type, // helper parameter
-                    text: 'Submit',
+                    text: Lmkp.ts.msg('button_submit'),
                     xtype: 'button'
                 }],
                 xtype: 'form',
@@ -163,7 +162,7 @@ Ext.define('Lmkp.view.moderator.Review', {
                     queryMode: 'local',
                     displayField: 'name',
                     valueField: 'id',
-                    fieldLabel: 'Review decision',
+                    fieldLabel: Lmkp.ts.msg('moderator_review-decision'),
                     allowBlank: false,
                     flex: 1,
                     margin: 3,
@@ -171,7 +170,7 @@ Ext.define('Lmkp.view.moderator.Review', {
                     width: 400,
                     xtype: 'combobox'
                 }, {
-                    fieldLabel: 'Review comment',
+                    fieldLabel: Lmkp.ts.msg('moderator_review-comment'),
                     margin: 3,
                     name: 'comment_textarea',
                     width: 400,
@@ -189,6 +188,7 @@ Ext.define('Lmkp.view.moderator.Review', {
 
             // Show notice and list with missing fields if not all mandatory
             // attributes are there.
+            // @TODO: Make this work again ...
             if (pending[j].missing_keys.length > 0) {
                 if (pending[j].missing_keys.length == 1 &&
                     pending[j].missing_keys[0] == 0) {

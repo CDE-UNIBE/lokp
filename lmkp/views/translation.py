@@ -27,6 +27,12 @@ statusMap = {
     'edited': _('status_edited', default='edited')
 }
 
+# Translatable hashmap with all possible statuses
+reviewdecisionMap = {
+    'approved': _('reviewdecision_approved', default='approved'),
+    'rejected': _('reviewdecision_rejected', default='rejected')
+}
+
 @view_config(route_name='ui_translation', renderer='javascript')
 def ui_messages(request):
 
@@ -43,16 +49,28 @@ def ui_messages(request):
         'status_rejected': statusMap['rejected'],
         'status_edited': statusMap['edited'],
 
+        # Review decision
+        'reviewdecision_approved': reviewdecisionMap['approved'],
+        'reviewdecision_rejected': reviewdecisionMap['rejected'],
+
         # Buttons
         'button_back': _('button_back', default='Back'),
+        'button_close': _('button_close', default='Close'),
+        'button_edit': _('button_edit', default='Edit'),
         'button_map_base-layers': _('button_map_base-layers', default='Base Layers'),
         'button_map_context-layers': _('button_map_context-layers', default='Context Layers'),
         'button_map_satellite-map': _('button_map_satellite-map', default='Satellite Imagery'),
         'button_map_show-legend': _('button_map_show-legend', default='Show Legend'),
         'button_map_street-map': _('button_map_street-map', default='Street Map'),
         'button_map_terrain-map': _('button_map_terrain-map', default='Terrain Map'),
+        'button_submit': _('button_submit', default='Submit'),
+        'button_yes': _('button_yes', default='Yes'),
+        'button_no': _('button_no', default='No'),
+        'button_ok': _('button_ok', default='OK'),
+        'button_cancel': _('button_cancel', default='Cancel'),
 
         # Tooltips
+        'tooltip_close-window': _('tooltip_close-window', default='Close Window'),
         'tooltip_map_identify-feature': _('tooltip_map_identify-feature', default='Identify Feature'),
         'tooltip_map_pan': _('tooltip_map_pan', default='Pan'),
         'tooltip_map_zoom-in': _('tooltip_map_zoom-in', default='Zoom In'),
@@ -61,20 +79,33 @@ def ui_messages(request):
 
         # General GUI text
         'gui_clear-selection': _('gui_clear-selection', default='Clear Selection'),
+        'gui_currently-seeing-pending-version': _('gui_currently-seeing-pending-version', default='You are seeing a {0} version, which needs to be reviewed before it is publicly visible'),
+        'gui_currently-seeing-inactive-version': _('gui_currently-seeing-inactive-version', default='You are seeing an {0} version, which was previously active and publicly visible.'),
+        'gui_currently-seeing-deleted-version': _('gui_currently-seeing-deleted-version', default='You are seeing a {0} version, which was previously active and publicly visible.'),
+        'gui_currently-seeing-rejected-version': _('gui_currently-seeing-rejected-version', default='You are seeing a {0} version, which was never publicly visible.'),
+        'gui_currently-seeing-edited-version': _('gui_currently-seeing-edited-version', default='You are seeing an {0} version, which was edited by a moderator and was never publicly visible.'),
         'gui_delete-all-filters': _('gui_delete-all-filters', default='Delete all Filters'),
         'gui_details': _('gui_details', default='Details'),
         'gui_filter-count': _('gui_filter-count', default='Filter ({0} active)'),
         'gui_history': _('gui_history', default='History'),
         'gui_language': _('gui_language', default='Language'),
         'gui_loading': _('gui_loading', default='Loading ...'),
+        'gui_no-attributes': _('gui_no-attributes', default='No attributes to show'),
         'gui_paging-before': _('gui_paging-before', default='Page'),
         'gui_paging-after': _('gui_paging-after', default='of {0}'),
+        'gui_previous-version': _('gui_previous-version', default='Previous Version'),
         'gui_profile': _('gui_profile', default='Profile'),
         'gui_show-details': _('gui_show-details', default='Show Details'),
         'gui_timestamp': _('gui_timestamp', default='Timestamp'),
         'gui_unknown': _('gui_unknown', default='Unknown'),
+        'gui_user': _('gui_user', default='User'),
         'gui_version': _('gui_version', default='Version'),
-        'gui_previous-version': _('gui_previous-version', default='Previous Version'),
+
+        # Feedback
+        'feedback_success': _('feedback_success', default='Success'),
+        'feedback_failure': _('feedback_failure', default='Failure'),
+        'feedback_pending-edit-submitted': _('feedback_pending-edit-submitted', default='Edited changes were successfully submitted'),
+        'feedback_pending-edit-not-submitted': _('feedback_pending-edit-not-submitted', default='Edited changes could not be submitted'),
 
         # Activities
         'activities_title': _('activities_title', default='Activities'),
@@ -95,6 +126,8 @@ def ui_messages(request):
         'moderator_changes-not-based-on-active': _('moderator_changes-not-based-on-active', default='These changes are based on a version which is not the active version.'),
         'moderator_multiple-changes-pending': _('moderator_multiple-changes-pending', default='There are multiple changes pending! They may be conflicting.'),
         'moderator_pending-version-title': _('moderator_pending-version-title', default='Pending version'),
+        'moderator_review-decision': _('moderator_review-decision', default='Review Decision'),
+        'moderator_review-comment': _('moderator_review-comment', default='Review Comment'),
 
         'file-menu': _('file-menu', default='File'),
         'view-menu': _('view-menu', default='View'),
@@ -103,9 +136,7 @@ def ui_messages(request):
         'confirm-title': _('confirm-title', default='Please confirm'),
         'success': _('success', default='Success'),
         'failure': _('failure', default='Failure'),
-        'submit': _('submit', default='Submit'),
         'id': _('id', default='ID'),
-        'edit': _('edit', default='edit'),
         'details': _('details', default='details'),
         'map-view': _('map-view', default='Map View'),
         'version': _('version', default='Version'),
@@ -156,8 +187,6 @@ def ui_messages(request):
         'review-diff_inv_deleted': _('review-diff_inv_deleted', default='Involvement deleted'),
         'review-diff_attr_added': _('review-diff_attr_added', default='Attribute(s) added'),
         'review-diff_attr_deleted': _('review-diff_attr_deleted', default='Attribute(s) deleted'),
-        'reviewdecision-approved': _('reviewdecision-approved', default='approved'),
-        'reviewdecision-rejected': _('reviewdecision-rejected', default='rejected'),
         # filter operators
         'filter-operator_is': _('filter-operator_is', default='is'),
         'filter-operator_is-not': _('filter-operator_is-not', default='is not'),

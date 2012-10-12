@@ -251,7 +251,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                         });
                     }
                 },
-                text: Lmkp.ts.msg('Submit')
+                text: Lmkp.ts.msg('button_submit')
             }]
         });
 					
