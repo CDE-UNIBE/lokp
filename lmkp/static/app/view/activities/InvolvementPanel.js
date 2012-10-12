@@ -9,7 +9,7 @@ Ext.define('Lmkp.view.activities.InvolvementPanel', {
         margin: 0
     },
     defaultType: 'displayfield',
-    title: Lmkp.ts.msg('involvements-title'),
+    title: Lmkp.ts.msg('involvements_title'),
 
     config: {
         editable: true
@@ -40,13 +40,13 @@ Ext.define('Lmkp.view.activities.InvolvementPanel', {
             // For full involvements, ID is empty
             if (this.involvement.get('id')) {
                 this.items.push({
-                    fieldLabel: Lmkp.ts.msg('id'),
+                    fieldLabel: Lmkp.ts.msg('gui_id'),
                     value: this.involvement.get('id')
                 });
             }
 
             this.items.push({
-                fieldLabel: Lmkp.ts.msg('involvements-role'),
+                fieldLabel: Lmkp.ts.msg('involvements_stakeholder-role'),
                 value: this.involvement.get('role')
             });
 
@@ -99,8 +99,8 @@ Ext.define('Lmkp.view.activities.InvolvementPanel', {
                             {
                                 xtype: 'button',
                                 name: 'editInvolvementButton',
-                                text: 'edit',
-                                tooltip: 'Edit this involvement'
+                                text: Lmkp.ts.msg('button_edit'),
+                                tooltip: Lmkp.ts.msg('involvements_edit-involvement')
                             }
                         ]
                     }

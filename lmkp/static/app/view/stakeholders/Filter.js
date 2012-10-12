@@ -1,11 +1,10 @@
 Ext.define('Lmkp.view.stakeholders.Filter', {
     extend: 'Ext.panel.Panel',
-    alias: ['widget.lo_editorstakeholderfilterpanel'],
+    alias: ['widget.lo_stakeholderfilterpanel'],
 
     id: 'stakeholderFilterForm',
     flex: 0.5,
     border: 0,
-    title: Lmkp.ts.msg('filter-stakeholder_title'),
     layout: {
         type: 'anchor'
     },
@@ -29,7 +28,7 @@ Ext.define('Lmkp.view.stakeholders.Filter', {
                     value: 'and',
                     editable: false,
                     hidden: true,
-                    fieldLabel: 'Logical operator',
+                    fieldLabel: Lmkp.ts.msg('filter_logical-operator'),
                     flex: 0
                 }, {
                     xtype: 'panel', // empty panel for spacing
@@ -38,8 +37,8 @@ Ext.define('Lmkp.view.stakeholders.Filter', {
                 }, {
                     xtype: 'button',
                     name: 'addAttributeFilter',
-                    text: Lmkp.ts.msg("addattributefilter-button"),
-                    tooltip: Lmkp.ts.msg("addattributefilter-tooltip"),
+                    text: Lmkp.ts.msg('button_add-attribute-filter'),
+                    tooltip: Lmkp.ts.msg('tooltip_add-attribute-filter'),
                     iconCls: 'toolbar-button-add',
                     margin: '0 5 0 0',
                     flex: 0,

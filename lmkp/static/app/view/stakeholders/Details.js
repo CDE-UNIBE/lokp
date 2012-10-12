@@ -106,7 +106,7 @@ Ext.define('Lmkp.view.stakeholders.Details',{
         this.historyPanel
         ];
 
-        this.title = Lmkp.ts.msg('stakeholder_details-title') + ' ' + this.stakeholder.get('id');
+        this.title = Lmkp.ts.msg('stakeholders_details-title') + ' ' + this.stakeholder.get('id');
 
         this.callParent(arguments);
     }

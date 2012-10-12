@@ -41,7 +41,7 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
                 flex: 0,
                 sortable: true
             }, {
-                header: Lmkp.ts.msg('date-label'),
+                header: Lmkp.ts.msg('gui_date'),
                 name: 'datecolumn',
                 dataIndex: 'timestamp',
                 flex: 0,
@@ -90,7 +90,7 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
                 flex: 0,
                 sortable: true
             }, {
-                header: Lmkp.ts.msg('date-label'),
+                header: Lmkp.ts.msg('gui_date'),
                 name: 'datecolumn',
                 dataIndex: 'timestamp',
                 flex: 0,
