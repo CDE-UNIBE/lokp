@@ -12,7 +12,7 @@ Ext.define('Lmkp.view.public.FilterActivityWindow', {
     modal: true,
 
     title: Lmkp.ts.msg('activities_filter-title'),
-    width: 550,
+    width: 570,
 
     items: [
         {
