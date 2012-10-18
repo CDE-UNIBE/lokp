@@ -2,29 +2,29 @@ Ext.define('Lmkp.controller.public.Filter', {
     extend: 'Ext.app.Controller',
 
     requires: [
-        'Lmkp.view.public.FilterActivityWindow',
-        'Lmkp.view.public.FilterStakeholderWindow'
+    'Lmkp.view.public.FilterActivityWindow',
+    'Lmkp.view.public.FilterStakeholderWindow'
     ],
 
     stores: [
-        'ActivityConfig',
-        'ActivityGrid',
-        'StakeholderConfig',
-        'StakeholderGrid'
+    'ActivityConfig',
+    'ActivityGrid',
+    'StakeholderConfig',
+    'StakeholderGrid'
     ],
 
     refs: [
-        {
-            ref: 'activityTablePanel',
-            selector: 'lo_publicactivitytablepanel'
-        }, {
-            ref: 'stakeholderTablePanel',
-            selector: 'lo_publicstakeholdertablepanel'
-        }
+    {
+        ref: 'activityTablePanel',
+        selector: 'lo_publicactivitytablepanel'
+    }, {
+        ref: 'stakeholderTablePanel',
+        selector: 'lo_publicstakeholdertablepanel'
+    }
     ],
 
     views: [
-        'items.FilterPanel'
+    'items.FilterPanel'
     ],
 
     init: function() {
@@ -33,7 +33,7 @@ Ext.define('Lmkp.controller.public.Filter', {
                 click: this.onAddActivityAttributeFilterButtonClick
             },
             'lo_filteractivitywindow button[name=addTimeFilter]': {
-//                TODO
+            //                TODO
             },
             'lo_filterstakeholderwindow button[name=addAttributeFilter]': {
                 click: this.onAddStakeholderAttributeFilterButtonClick
@@ -65,6 +65,9 @@ Ext.define('Lmkp.controller.public.Filter', {
     onAddStakeholderAttributeFilterButtonClick: function(button) {
         var form = button.up('lo_stakeholderfilterpanel');
         var store = this.getStakeholderConfigStore();
+        if(store.isFiltered) {
+            store.clearFilter(true);
+        }
 
         this.addSingleFilterPanel(form, store);
     },
@@ -72,7 +75,10 @@ Ext.define('Lmkp.controller.public.Filter', {
     onAddActivityAttributeFilterButtonClick: function(button) {
         var form = button.up('lo_activityfilterpanel');
         var store = this.getActivityConfigStore();
-
+        if(store.isFiltered()){
+            store.clearFilter(true);
+        }
+        
         this.addSingleFilterPanel(form, store);
     },
 
@@ -278,7 +284,7 @@ Ext.define('Lmkp.controller.public.Filter', {
 
         // Reset proxy
         store.setInitialProxy();
-		store.deleteFilters();
+        store.deleteFilters();
 
         // Get existing extraParams
         var extraParams = store.getProxy().extraParams;
@@ -289,11 +295,11 @@ Ext.define('Lmkp.controller.public.Filter', {
                 extraParams,
                 activityFilterPanel.getFilterItems(),
                 'activity'
-            );
+                );
             if (activityFilterPanel.getFilterItems().length > 1) {
                 // Apply logical operator if selected
                 extraParams["logical_op"] =
-                    activityFilterPanel.getLogicalOperator();
+                activityFilterPanel.getLogicalOperator();
             }
         }
 
@@ -306,7 +312,7 @@ Ext.define('Lmkp.controller.public.Filter', {
             if (stakeholderFilterPanel.getFilterItems().length > 1) {
                 // Apply logical operator if selected
                 extraParams["logical_op"] =
-                    stakeholderFilterPanel.getLogicalOperator();
+                stakeholderFilterPanel.getLogicalOperator();
             }
         }
 
@@ -322,20 +328,20 @@ Ext.define('Lmkp.controller.public.Filter', {
         // Fire event to update filter count (based on currently active window)
         if (activityFilterPanel &&
             (!activityFilterPanel.up('window').isHidden() || 
-            externalCall == true)) {
+                externalCall == true)) {
             var aTablePanel = this.getActivityTablePanel();
             aTablePanel.setFilterCount(
                 activityFilterPanel.getFilterItems().length
-            );
+                );
             activityFilterPanel.up('window').fireEvent('filterEdited');
         }
         if (stakeholderFilterPanel &&
             (!stakeholderFilterPanel.up('window').isHidden() || 
-            externalCall == true)) {
+                externalCall == true)) {
             var shTablePanel = this.getStakeholderTablePanel();
             shTablePanel.setFilterCount(
                 stakeholderFilterPanel.getFilterItems().length
-            );
+                );
             stakeholderFilterPanel.up('window').fireEvent('filterEdited');
         }
     },
