@@ -1,5 +1,6 @@
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.stakeholder_protocol import StakeholderProtocol
+from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.config import get_mandatory_keys
 from lmkp.models.database_objects import *
 import logging
@@ -16,6 +17,7 @@ log = logging.getLogger(__name__)
 _ = TranslationStringFactory('lmkp')
 
 stakeholder_protocol = StakeholderProtocol(Session)
+stakeholder_protocol3 = StakeholderProtocol3(Session)
 
 @view_config(route_name='stakeholders_review', renderer='json')
 def review(request):
@@ -115,6 +117,20 @@ def read_one(request):
     uid = request.matchdict.get('uid', None)
     return stakeholder_protocol.read(request, uid=uid)
 
+@view_config(route_name='blablabla_SH_OneActive', renderer='json')
+def blablabla_SH_OneActive(request):
+    uid = request.matchdict.get('uid', None)
+    return stakeholder_protocol3.read_one_active(request, uid=uid)
+
+@view_config(route_name='blablabla_SH_OnePublic', renderer='json')
+def blablabla_SH_OnePublic(request):
+    uid = request.matchdict.get('uid', None)
+    return stakeholder_protocol3.read_one(request, uid=uid, public=True)
+
+@view_config(route_name='blablabla_SH_OneUser', renderer='json')
+def blablabla_SH_OneUser(request):
+    uid = request.matchdict.get('uid', None)
+    return stakeholder_protocol3.read_one(request, uid=uid, public=False)
 
 @view_config(route_name='stakeholders_read_many', renderer='json')
 def read_many(request):
@@ -122,6 +138,26 @@ def read_many(request):
     Reads many active activities
     """
     return stakeholder_protocol.read(request)
+
+@view_config(route_name='blablabla_SH_user', renderer='json')
+def blablabla_SH_user(request):
+    return stakeholder_protocol3.read_many(request, public=False)
+
+@view_config(route_name='blablabla_SH_public', renderer='json')
+def blablabla_SH_public(request):
+    return stakeholder_protocol3.read_many(request, public=True)
+
+@view_config(route_name='blablabla_SH_ManyByAPublic', renderer='json')
+def blablabla_SH_ManyByAPublic(request):
+    uid = request.matchdict.get('uid', None)
+    return stakeholder_protocol3.read_many_by_activity(request, uid=uid,
+    public=True)
+
+@view_config(route_name='blablabla_SH_ManyByAUser', renderer='json')
+def blablabla_SH_ManyByAUser(request):
+    uid = request.matchdict.get('uid', None)
+    return stakeholder_protocol3.read_many_by_activity(request, uid=uid,
+    public=False)
 
 @view_config(route_name='stakeholders_history', renderer='json')
 def stakeholders_history(request):
