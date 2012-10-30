@@ -112,10 +112,6 @@ def main(argv=sys.argv):
         group3 = _addIfNotExists_ID(Group(id=3, name='editors'))
         group3.permissions.append(permission3)
         group3.permissions.append(permission4)
-        # review decisions
-        reviewdecision1 = _addIfNotExists_ID(Review_Decision(id=1, name='approved', description='Information was approved.'))
-        reviewdecision1 = _addIfNotExists_ID(Review_Decision(id=2, name='rejected', description='Event or Involvement was rejected.'))
-        reviewdecision3 = _addIfNotExists_ID(Review_Decision(id=3, name='edited', description='Information was edited by a moderator'))
         # users (only 1 admin user)
         admin_password = settings['lmkp.admin_password']
         admin_email = settings['lmkp.admin_email']

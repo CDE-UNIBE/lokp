@@ -220,24 +220,37 @@ class A_Tag_Group(Base):
             {'schema': 'data'}
             )
     id = Column(Integer, primary_key = True)
+    tg_id = Column(Integer, nullable = False)
     fk_activity = Column(Integer, nullable = False)
     fk_a_tag = Column(Integer, nullable = True)
     geometry = GeometryColumn('geometry', Geometry(dimension = 2, srid = 4326, spatial_index = True))
+    valid_from = Column(DateTime)
+    valid_to = Column(DateTime)
 
     fk_tag = column_property(fk_a_tag)
 
     tags = relationship("A_Tag", backref = backref('tag_group', order_by = id), primaryjoin = id==A_Tag.fk_a_tag_group)
     main_tag = relationship("A_Tag", primaryjoin = fk_a_tag==A_Tag.id, post_update = True)
 
-    def __init__(self, geometry=None):
+    def __init__(self, tg_id, geometry=None, valid_from=None, valid_to=None):
+        self.tg_id = tg_id
         self.geometry = geometry
+        self.valid_from = (valid_from if valid_from is not None
+            else datetime.datetime.now())
+        self.valid_to = valid_to
     
     def __repr__(self):
         if self.geometry == None:
             geom = '-'
         else:
             geom = wkb.loads(str(self.geometry.geom_wkb)).wkt
-        return '<A_Tag_Group> id [ %s ] | fk_activity [ %s ] | fk_a_tag [ %s ] | geometry [ %s ]' % (self.id, self.fk_activity, self.fk_a_tag, geom)
+        return (
+            '<A_Tag_Group> id [ %s ] | tg_id [%s] | fk_activity [ %s ] | ' +
+            'fk_a_tag [ %s ] | geometry [ %s ] | valid_from [ %s ] | ' +
+            'valid_to [ %s ]' %
+            (self.id, self.tg_id, self.fk_activity, self.fk_a_tag, geom,
+            self.valid_from, self.valid_to)
+        )
 
     def to_json(self):
         geometry = None
@@ -256,19 +269,30 @@ class SH_Tag_Group(Base):
             {'schema': 'data'}
             )
     id = Column(Integer, primary_key = True)
+    tg_id = Column(Integer, nullable = False)
     fk_stakeholder = Column(Integer, nullable = False)
     fk_sh_tag = Column(Integer, nullable = True)
+    valid_from = Column(DateTime)
+    valid_to = Column(DateTime)
     
     tags = relationship("SH_Tag", backref = backref('tag_group', order_by = id), primaryjoin = id==SH_Tag.fk_sh_tag_group)
     main_tag = relationship("SH_Tag", primaryjoin = fk_sh_tag==SH_Tag.id, post_update = True)
 
     fk_tag = column_property(fk_sh_tag)
 
-    def __init__(self):
-        pass
+    def __init__(self, tg_id, valid_from=None, valid_to=None):
+        self.tg_id = tg_id
+        self.valid_from = (valid_from if valid_from is not None
+            else datetime.datetime.now())
+        self.valid_to = valid_to
 
     def __repr__(self):
-        return '<SH_Tag_Group> id [ %s ] | fk_stakeholder [ %s ] | fk_sh_tag [ %s ]' % (self.id, self.fk_stakeholder, self.fk_sh_tag)
+        return (
+            '<SH_Tag_Group> id [ %s ] | tg_id [%s] | fk_stakeholder [ %s ] | ' +
+            'fk_sh_tag [ %s ] | valid_from [ %s ] | valid_to [ %s ]' %
+            (self.id, self.tg_id, self.fk_stakeholder, self.fk_sh_tag,
+            self.valid_from, self.valid_to)
+        )
 
     def to_json(self):
         return {'id': self.id, 'tags': [t.to_json() for t in self.tags]}
@@ -277,16 +301,22 @@ class Activity(Base):
     __tablename__ = 'activities'
     __table_args__ = (
             ForeignKeyConstraint(['fk_status'], ['data.status.id']),
+            ForeignKeyConstraint(['fk_changeset'], ['data.changesets.id']),
+            ForeignKeyConstraint(['fk_user_review'], ['data.users.id']),
             {'schema': 'data'}
             )
     id = Column(Integer, primary_key = True)
     activity_identifier = Column(UUID, nullable = False)
+    fk_changeset = Column(Integer, nullable = False)
     point = GeometryColumn('point', Point(dimension = 2, srid = 4326, spatial_index = True))
     fk_status = Column(Integer, nullable = False)
     version = Column(Integer, nullable = False)
+    previous_version = Column(Integer)
+    fk_user_review = Column(Integer)
+    timestamp_review = Column(DateTime)
+    comment_review = Column(Text)
 
     tag_groups = relationship("A_Tag_Group", backref = backref('activity', order_by = id))
-    changesets = relationship("A_Changeset", backref = backref('activity', order_by = id))
     involvements = relationship("Involvement", backref = backref('activity', order_by = id))
 
     #identifier = column_property(activity_identifier)
@@ -294,14 +324,29 @@ class Activity(Base):
     def identifier(self):
         return self.activity_identifier
 
-    def __init__(self, activity_identifier, version, point=None):
+    def __init__(self, activity_identifier, version, previous_version=None, 
+        point=None, timestamp_review=None, comment_review=None):
         self.activity_identifier = activity_identifier
         self.version = version
+        self.previous_version = previous_version
         self.point = point
+        self.timestamp_review = timestamp_review
+        self.comment_review = comment_review
 
     def __repr__(self):
-        #return "<Activity> id [ %s ] | activity_identifier [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.activity_identifier, wkb.loads(str(self.point.geom_wkb)).wkt, self.fk_status, self.version)
-        return "<Activity> id [ %s ] | activity_identifier [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.activity_identifier, "wkb.loads(str(self.point.geom_wkb)).wkt", self.fk_status, self.version)
+        if self.point == None:
+            geom = '-'
+        else:
+            geom = wkb.loads(str(self.point.geom_wkb)).wkt
+        return (
+            '<Activity> id [ %s ] | activity_identifier [ %s ] | ' +
+            'fk_changeset [ %s ] | point [ %s ] | fk_status [ %s ] | ' +
+            'version [ %s ] | previous_version [ %s ] | fk_user_review [ %s ] '+
+            '| timestamp_review [ %s ] | comment_review [ %s ]' %
+            (self.id, self.activity_identifier, self.fk_changeset, geom,
+            self.fk_status, self.version, self.previous_version,
+            self.fk_user_review, self.timestamp_review, self.comment_review)
+        )
     
     @property
     def __geo_interface__(self):
@@ -330,27 +375,45 @@ class Stakeholder(Base):
     __tablename__ = 'stakeholders'
     __table_args__ = (
             ForeignKeyConstraint(['fk_status'], ['data.status.id']),
+            ForeignKeyConstraint(['fk_changeset'], ['data.changesets.id']),
+            ForeignKeyConstraint(['fk_user_review'], ['data.users.id']),
             {'schema': 'data'}
             )
     id = Column(Integer, primary_key = True)
     stakeholder_identifier = Column(UUID, nullable = False)
+    fk_changeset = Column(Integer, nullable = False)
     fk_status = Column(Integer, nullable = False)
     version = Column(Integer, nullable = False)
+    previous_version = Column(Integer)
+    fk_user_review = Column(Integer)
+    timestamp_review = Column(DateTime)
+    comment_review = Column(Text)
 
     tag_groups = relationship("SH_Tag_Group", backref = backref('stakeholder', order_by = id))
-    changesets = relationship("SH_Changeset", backref = backref('stakeholder', order_by = id))
     involvements = relationship("Involvement", backref = backref('stakeholder', order_by = id))
 
     @hybrid_property
     def identifier(self):
         return self.stakeholder_identifier
 
-    def __init__(self, stakeholder_identifier, version):
-        self.stakeholder_identifier = stakeholder_identifier
+    def __init__(self, activity_identifier, version, previous_version=None,
+        timestamp_review=None, comment_review=None):
+        self.activity_identifier = activity_identifier
         self.version = version
+        self.previous_version = previous_version
+        self.timestamp_review = timestamp_review
+        self.comment_review = comment_review
 
     def __repr__(self):
-        return "<Stakeholder> id [ %s ] | stakeholder_identifier [ %s ] | fk_status [ %s ] | version [ %s ]" % (self.id, self.stakeholder_identifier, self.fk_status, self.version)
+        return (
+            '<Activity> id [ %s ] | activity_identifier [ %s ] | ' +
+            'fk_changeset [ %s ] | fk_status [ %s ] | version [ %s ] | ' +
+            'previous_version [ %s ] | fk_user_review [ %s ] | '+
+            'timestamp_review [ %s ] | comment_review [ %s ]' %
+            (self.id, self.activity_identifier, self.fk_changeset,
+            self.fk_status, self.version, self.previous_version,
+            self.fk_user_review, self.timestamp_review, self.comment_review)
+        )
 
     def get_comments(self):
         return DBSession.query(Comment).filter(Comment.stakeholder_identifier == self.stakeholder_identifier).all()
@@ -359,30 +422,34 @@ class Stakeholder(Base):
         return {'id': str(self.stakeholder_identifier), 'version': self.version, 'taggroups': [t.to_json() for t in self.tag_groups]}
 
 
-class A_Changeset(Base):
-    __tablename__ = 'a_changesets'
+class Changeset(Base):
+    __tablename__ = 'changesets'
     __table_args__ = (
             ForeignKeyConstraint(['fk_user'], ['data.users.id']),
-            ForeignKeyConstraint(['fk_activity'], ['data.activities.id']),
             {'schema': 'data'}
             )
     id = Column(Integer, primary_key = True)
     fk_user = Column(Integer, nullable = False)
     timestamp = Column(DateTime, nullable = False)
     source = Column(Text)
-    fk_activity = Column(Integer, nullable = False)
-    previous_version = Column(Integer)
+    diff = Column(Text)
 
-    reviews = relationship("A_Changeset_Review", backref='changeset')
+    activities = relationship('Activity', backref='changeset')
+    stakeholders = relationship('Stakeholder', backref='changeset')
 
-    def __init__(self, source=None, previous_version=None):
+    def __init__(self, source=None, diff=None):
         self.timestamp = datetime.datetime.now()
         self.source = source
-        self.previous_version = previous_version
+        self.diff = diff
 
     def __repr__(self):
-        return "<A_Changeset> id [ %s ] | fk_user [ %s ] | timestamp [ %s ] | source [ %s ] | fk_activity [ %s ] | previous_version [ %s ]" % (self.id, self.fk_user, self.timestamp, self.source, self.fk_activity, self.previous_version)
+        return (
+            '<Changeset> id [ %s ] | fk_user [ %s ] | timestamp [ %s ] | ' +
+            'source [ %s ] | diff [ %s ]' %
+            (self.id, self.fk_user, self.timestamp, self.source, self.diff)
+        )
 
+"""
 class SH_Changeset(Base):
     __tablename__ = 'sh_changesets'
     __table_args__ = (
@@ -406,6 +473,7 @@ class SH_Changeset(Base):
 
     def __repr__(self):
         return "<SH_Changeset> id [ %s ] | fk_user [ %s ] | timestamp [ %s ] | source [ %s ] | fk_stakeholder [ %s ] | previous_version [ %s ]" % (self.id, self.fk_user, self.timestamp, self.source, self.fk_stakeholder, self.previous_version)
+"""
 
 class Status(Base):
     __tablename__ = 'status'
@@ -515,13 +583,12 @@ class User(Base):
     username = Column(String(255), nullable = False)
     email = Column(String(255), nullable = False)
 
-    a_changesets = relationship('A_Changeset', backref='user')
-    sh_changesets = relationship('SH_Changeset', backref='user')
+    changesets = relationship('Changeset', backref='user')
     groups = relationship('Group', secondary=users_groups, backref=backref('users', order_by = id))
     profiles = relationship('Profile', secondary=users_profiles, backref=backref('users', order_by = id))
-    a_changeset_reviews = relationship('A_Changeset_Review', backref='user')
-    sh_changeset_reviews = relationship('SH_Changeset_Review', backref='user')
     comments = relationship('Comment', backref='user')
+    a_reviews = relationship('Activity', backref='user_review')
+    sh_reviews = relationship('Stakeholder', backref='user_review')
 
     # password encryption
     _password = Column('password', Unicode(64))
@@ -629,6 +696,7 @@ class Profile(Base):
 
 GeometryDDL(Profile.__table__)
 
+"""
 class A_Changeset_Review(Base):
     __tablename__ = 'a_changeset_review'
     __table_args__ = (
@@ -692,6 +760,7 @@ class Review_Decision(Base):
 
     def __repr__(self):
         return "<Review_Decision> id [ %s ] | name [ %s ] | description [ %s ]" % (self.id, self.name, self.description)
+"""
     
 class Comment(Base):
     __tablename__ = 'comments'
