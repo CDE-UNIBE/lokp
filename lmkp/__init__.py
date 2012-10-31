@@ -87,7 +87,14 @@ def main(global_config, ** settings):
     config.add_route('activities_read_pending', '/activities/pending')
     # Reads one or many activities and returns GeoJSON Feature or FeatureCollection
     config.add_route('activities_read_many', '/activities', request_method='GET')
+    config.add_route('blablabla', 'blablabla')
+    config.add_route('blablabla_public', 'blablabla2')
+    config.add_route('blablablaManyBySHPublic', '/blablablaManyBySHPublic/{uid}')
+    config.add_route('blablablaManyBySHUser', '/blablablaManyBySHUser/{uid}')
     config.add_route('activities_read_one', '/activities/{uid}', request_method='GET')
+    config.add_route('blablaOneActive', '/blablaOneActive/{uid}')
+    config.add_route('blablaOnePublic', '/blablaOnePublic/{uid}', request_method='GET')
+    config.add_route('blablaOneUser', '/blablaOneUser/{uid}', request_method='GET')
 
     # Reviews a pending activity
     config.add_route('activities_review', '/activities/review', request_method='POST')
@@ -106,7 +113,14 @@ def main(global_config, ** settings):
     config.add_route('activities_history', '/activities/history/{uid}')
 
     config.add_route('stakeholders_read_many', '/stakeholders', request_method='GET')
+    config.add_route('blablabla_SH_user', '/blablablaSH')
+    config.add_route('blablabla_SH_public', '/blablablaSHpublic')
+    config.add_route('blablabla_SH_ManyByAPublic', '/blablablaSHbyA/{uid}')
+    config.add_route('blablabla_SH_ManyByAUser', '/blablablaSHbyAUser/{uid}')
     config.add_route('stakeholders_read_one', '/stakeholders/{uid}', request_method='GET')
+    config.add_route('blablabla_SH_OneActive', '/blablablaSHOneActive/{uid}', request_method='GET')
+    config.add_route('blablabla_SH_OnePublic', '/blablablaSHOnePublic/{uid}', request_method='GET')
+    config.add_route('blablabla_SH_OneUser', '/blablablaSHOneUser/{uid}', request_method='GET')
     config.add_route('stakeholders_review', '/stakeholders/review', request_method='POST')
     config.add_route('stakeholders_create', '/stakeholders', request_method='POST')
     config.add_route('stakeholders_history', '/stakeholders/history/{uid}')
