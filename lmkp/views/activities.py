@@ -1,6 +1,7 @@
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol2 import ActivityProtocol2
+from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.config import get_mandatory_keys
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
@@ -27,6 +28,7 @@ log = logging.getLogger(__name__)
 #_ = TranslationStringFactory('lmkp')
 
 activity_protocol2 = ActivityProtocol2(Session)
+activity_protocol3 = ActivityProtocol3(Session)
 
 # TODO: quite possibly, this could be deleted ... Not sure though
 ## Translatable hashmap with all possible activity status
@@ -92,6 +94,20 @@ def read_one(request):
     uid = request.matchdict.get('uid', None)
     return activity_protocol2.read(request, uid=uid)
 
+@view_config(route_name='blablaOneActive', renderer='json')
+def blablaOneActive(request):
+    uid = request.matchdict.get('uid', None)
+    return activity_protocol3.read_one_active(request, uid=uid)
+
+@view_config(route_name='blablaOnePublic', renderer='json')
+def blablaOnePublic(request):
+    uid = request.matchdict.get('uid', None)
+    return activity_protocol3.read_one(request, uid=uid, public=True)
+
+@view_config(route_name='blablaOneUser', renderer='json')
+def blablaOneUser(request):
+    uid = request.matchdict.get('uid', None)
+    return activity_protocol3.read_one(request, uid=uid, public=False)
 
 @view_config(route_name='activities_read_many', renderer='json')
 def read_many(request):
@@ -100,6 +116,26 @@ def read_many(request):
     """
     activities = activity_protocol2.read(request)
     return activities
+
+@view_config(route_name='blablabla', renderer='json')
+def blablabla(request):
+    return activity_protocol3.read_many(request, public=False)
+
+@view_config(route_name='blablabla_public', renderer='json')
+def blablabla_public(request):
+    return activity_protocol3.read_many(request, public=True)
+
+@view_config(route_name='blablablaManyBySHPublic', renderer='json')
+def blablablaManyBySHPublic(request):
+    uid = request.matchdict.get('uid', None)
+    return activity_protocol3.read_many_by_stakeholder(request, uid=uid,
+    public=True)
+
+@view_config(route_name='blablablaManyBySHUser', renderer='json')
+def blablablaManyBySHUser(request):
+    uid = request.matchdict.get('uid', None)
+    return activity_protocol3.read_many_by_stakeholder(request, uid=uid,
+    public=False)
 
 @view_config(route_name='activities_read_pending', renderer='lmkp:templates/rss.mak')
 def read_pending(request):

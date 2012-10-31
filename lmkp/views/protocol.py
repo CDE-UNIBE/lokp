@@ -21,6 +21,7 @@ import datetime
 from sqlalchemy import func
 import yaml
 from pyramid.security import unauthenticated_userid
+from pyramid.security import effective_principals
 
 from lmkp.views.translation import statusMap
 from lmkp.views.translation import get_translated_status
@@ -114,15 +115,71 @@ class Protocol(object):
 
         return 0
 
+    def _get_user_status(self, principals=None):
+
+        if principals is not None:
+            return (
+                'system.Authenticated' in principals,
+                'group:moderators' in principals
+            )
+
+        return (
+            None,
+            None
+        )
+
+    def _get_status_detail(self, request, public_query):
+        """
+        For detail view.
+        Default values are 'active', 'inactive' and 'deleted', as well as
+        'pending' and 'edited' for moderators
+        Only moderators can query 'pending' and 'edited'.
+        """
+
+        statusParameter = request.params.get('status', None)
+
+        logged_in, is_moderator = self._get_user_status(
+            effective_principals(request))
+
+        try:
+            status = statusParameter.split(',')
+            arr = []
+            for s in status:
+                if s in statusMap:
+                    if s == 'pending' or s == 'edited':
+                        if logged_in and is_moderator:
+                            arr.append(Status.name == s)
+                    else:
+                        arr.append(Status.name == s)
+            if len(arr) > 0:
+                return arr
+        except AttributeError:
+            pass
+
+        ret = [
+            Status.name == 'active',
+            Status.name == 'inactive',
+            Status.name == 'deleted'
+        ]
+        if logged_in and is_moderator and not public_query:
+            ret.append(Status.name == 'pending')
+            ret.append(Status.name == 'edited')
+        return ret
+
+
     def _get_status(self, request, from_history=False):
         """
         Returns an ClauseElement array of requested activity status.
         Default value is active.
         It is possible to request activities with different status using
         status=active,pending
+        Only moderators can query 'pending' and 'edited'.
         """
 
         statusParameter = request.params.get('status', None)
+
+        logged_in, is_moderator = self._get_user_status(
+            effective_principals(request))
 
         try:
             status = statusParameter.split(',')
@@ -131,7 +188,11 @@ class Protocol(object):
             arr = []
             for s in status:
                 if s in statusMap:
-                    arr.append(Status.name == s)
+                    if s == 'pending' or s == 'edited':
+                        if logged_in and is_moderator:
+                            arr.append(Status.name == s)
+                    else:
+                        arr.append(Status.name == s)
 
             if len(arr) > 0:
                 return arr
@@ -143,6 +204,99 @@ class Protocol(object):
             return None
 
         return [Status.name == "active"]
+
+    def _get_involvement_status(self, request):
+        """
+        Returns a ClauseElement array of statuses used upon involvements.
+        Default value is active.
+        They are based on the following rules:
+        - If not logged in, only show 'active' involvements
+        """
+
+        logged_in, is_moderator = self._get_user_status(
+            effective_principals(request))
+
+        statuses = [
+            Status.name == 'active',
+            Status.name == 'inactive'
+        ]
+
+        if logged_in:
+            statuses.append(
+                Status.name == 'pending'
+            )
+
+        return statuses
+
+    def _flag_add_involvement(self, this_object, this_status_id,
+        other_status_id, other_identifier, other_version, other_user_id,
+        stakeholder_role, request_user_id, public_query, logged_in,
+        is_moderator):
+        """
+        Decide whether to attach an Involvement (to the _other_ object) to a
+        Feature (to _this_ object).
+        ''this_object'': The Feature object (activity / stakeholder) where the
+          Involvement is to be attachted
+        ''this_status_id'': The status id of the current Feature object
+        ''other_status_id'': The status id of the other Feature object
+        ''other_identifier'': The identifier of the other Feature object
+        ''other_version'': The version of the other Feature object
+        ''other_user_id'': The id of the user who submitted the other Feature
+          object
+        ''stakeholder_role'': The stakeholder role of the Involvement
+        ''request_user_id'': The id of the currently logged in user
+        ''public_query'': Boolean whether it is a public query (do not show
+          pending) or not
+        ''logged_in'': Boolean whether a user is logged in or not
+        ''is_moderator'': Boolean whether a user is moderator for the current
+          profile or not
+        """
+
+        # Flag indicating if Involvement to this Activity is not yet found
+        # ('none') or not to be added ('false')
+        inv = None
+
+        # If ''this_status'' is 'deleted', do not show any Involvements
+        if this_status_id == 4:
+            inv = False
+
+        # Involvements where Feature is 'pending' ...
+        if inv is None and other_status_id == 1:
+            # ... are never shown for public queries or if not logged in
+            if public_query is True or not logged_in:
+                inv = False
+            else:
+                # ... are only shown to moderators or to the user who submitted
+                # the 'pending' other Feature
+                if not is_moderator and other_user_id != request_user_id:
+                    inv = False
+
+        if inv is None:
+            # Check if an Involvement to this Feature already exists
+            inv = this_object.find_involvement_by_guid(other_identifier)
+            if inv is not None:
+                # Check if current Involvement has a different Role than the
+                # Involvement already existing
+                inv = this_object.find_involvement_by_role(other_identifier,
+                    stakeholder_role)
+                if inv is not None:
+                    # Check if current Involvement points to a different Feature
+                    # version than the Involvement already existing
+                    inv = this_object.find_involvement(other_identifier, 
+                        stakeholder_role, other_version)
+                    if inv is not None:
+                        # If the current Involvement is 'active' and the
+                        # previous Involvement was 'inactive', replace the
+                        # previous Involvement
+                        if (other_status_id == 2 and
+                            this_object.find_involvement_by_role(
+                                other_identifier, stakeholder_role).get_status()
+                                == 3):
+                            this_object.remove_involvement(
+                                this_object.find_involvement_by_role(
+                                    other_identifier, stakeholder_role))
+
+        return inv
 
     def _get_pending_by_user(self, request):
         """
@@ -658,36 +812,51 @@ class TagGroup(object):
 
 class Inv(object):
 
-    def __init__(self, guid, feature, role, role_id):
+    def __init__(self, guid, feature, role, role_id, version, status_id):
         self._guid = guid
         self._feature = feature
         self._role = role
         self._role_id = role_id
+        self._version = version
+        self._status_id = status_id
 
     def get_guid(self):
         return self._guid
 
     def get_role(self):
         return self._role
+    
+    def get_role_id(self):
+        return self._role_id
+
+    def get_version(self):
+        return self._version
+
+    def get_status(self):
+        return self._status_id
 
     def to_table(self, request):
         if self._feature is None:
             return {
                 'id': str(self._guid),
                 'role': self._role,
-                'role_id': self._role_id
+                'role_id': self._role_id,
+                'version': self._version,
+                'status_id': self._status_id
             }
         else:
             return {
                 'data': self._feature.to_table(request),
                 'role': self._role,
-                'role_id': self._role_id
+                'role_id': self._role_id,
+                'version': self._version,
+                'status_id': self._status_id
             }
 
 class Feature(object):
 
     def __init__(self, guid, order_value, version=None, status=None,
-        timestamp=None, diff_info=None, ** kwargs):
+        status_id=None, timestamp=None, diff_info=None, ** kwargs):
         self._taggroups = []
         self._involvements = []
         self._guid = guid
@@ -696,6 +865,7 @@ class Feature(object):
         self._timestamp = timestamp
         self._diff_info = diff_info
         self._status = status
+        self._status_id = status_id
         self._pending = []
         self._missing_keys = None
 
@@ -708,9 +878,25 @@ class Feature(object):
     def add_involvement(self, involvement):
         self._involvements.append(involvement)
 
-    def find_involvement(self, guid, role):
+    def remove_involvement(self, involvement):
+        self._involvements.remove(involvement)
+
+    def find_involvement_by_guid(self, guid):
         for i in self._involvements:
-            if i.get_guid() == guid and i.get_role() == role:
+            if (i.get_guid() == guid):
+                return i
+        return None
+
+    def find_involvement_by_role(self, guid, role):
+        for i in self._involvements:
+            if (i.get_guid() == guid and i.get_role() == role):
+                return i
+        return None
+
+    def find_involvement(self, guid, role, version):
+        for i in self._involvements:
+            if (i.get_guid() == guid and i.get_role() == role and
+                i.get_version() == version):
                 return i
         return None
 
@@ -734,6 +920,12 @@ class Feature(object):
 
     def get_status(self):
         return self._status
+
+    def get_status_id(self):
+        return self._status_id
+
+    def get_guid(self):
+        return self._guid
 
     def set_pending(self, pending):
         self._pending = pending
@@ -797,6 +989,8 @@ class Feature(object):
             ret['timestamp'] = str(self._timestamp)
         if self._status is not None:
             ret['status'] = get_translated_status(request, self._status)
+        if self._status_id is not None:
+            ret['status_id'] = self._status_id
         if self._diff_info is not None:
             for k in self._diff_info:
                 # Try to translate status
