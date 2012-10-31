@@ -5,7 +5,6 @@ from lmkp.models.database_objects import A_Tag
 from lmkp.models.database_objects import A_Value
 from lmkp.models.database_objects import Group
 from lmkp.models.database_objects import Permission
-from lmkp.models.database_objects import Review_Decision
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Tag
 from lmkp.models.database_objects import SH_Value
@@ -451,6 +450,11 @@ class Protocol(object):
         ]
 
         ret = {'success': False}
+
+        # @TODO: Fix review decision
+        # Temporarily aborting here because no Review Decisions in data model
+        # anymore. Fix this!
+        return False
 
         # Collect POST values
         review_decision = self.Session.query(Review_Decision).\
