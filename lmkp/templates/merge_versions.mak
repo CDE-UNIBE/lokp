@@ -16,8 +16,9 @@
             });
 
             Ext.require([
-                'Ext.data.*',
-                'Ext.grid.*',
+                'Ext.container.Viewport',
+                'Ext.data.reader.Xml',
+                'Ext.layout.container.Anchor',
                 'Ext.ux.grid.TransformGrid'
             ]);
 
@@ -34,8 +35,8 @@
                 var grid = Ext.create('Ext.ux.grid.TransformGrid', 'merge-table', {
                     stripeRows: true,
                     anchor: '100%',
-                    flex: 1,
                     sortable: false,
+                    resizable: true,
                     margin: 5
                 });
                 //  grid.render(Ext.getBody());
