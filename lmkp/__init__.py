@@ -72,6 +72,7 @@ def main(global_config, ** settings):
     config.add_route('sample_values', '/sample_values/insert')
     config.add_route('delete_sample_values', '/sample_values/delete')
     config.add_route('test_sample_values', '/sample_values/test')
+    config.add_route('sample_values_constructed', '/sample_values/constructed')
 
     # Add a renderer to return ExtJS store configuration objects
     config.add_renderer('json', JsonRenderer())

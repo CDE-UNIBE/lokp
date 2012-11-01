@@ -1,5 +1,8 @@
 import logging
 
+import uuid
+import simplejson as json
+
 from lmkp.models.database_objects import *
 from lmkp.views.protocol import *
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
@@ -8,8 +11,10 @@ from lmkp.views.translation import get_translated_status
 
 from geoalchemy import WKBSpatialElement
 from geoalchemy.functions import functions
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.i18n import get_localizer
 from pyramid.security import authenticated_userid
+from shapely.geometry import asShape
 from shapely.geometry.polygon import Polygon
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import asc
@@ -88,6 +93,44 @@ class ActivityProtocol3(Protocol):
 
     def __init__(self, Session):
         self.Session = Session
+
+    def create(self, request, data=None):
+        """
+        Create or update Activities
+        """
+
+        diff = request.json_body if data is None else data
+
+        user = self.Session.query(User).\
+            filter(User.username == authenticated_userid(request)).\
+            first()
+
+        # Changeset
+        changeset = Changeset()
+        changeset.user = user
+
+        # Check if the json body is a valid diff file
+        if 'activities' not in diff:
+            raise HTTPBadRequest(detail="Not a valid format")
+
+        # Get the current configuration file to validate key and value pairs
+        self.configuration = self._read_configuration(request, 'activity.yml')
+
+        # Return the IDs of the newly created Activities
+        ids = []
+        for activity in diff['activities']:
+            
+            a = self._handle_activity(request, activity, changeset)
+
+            # Add the newly created identifier to the diff
+            activity[unicode('id')] = unicode(a.activity_identifier)
+
+            ids.append(a)
+
+        # Save diff to changeset and handle UTF-8 of diff
+        changeset.diff = str(self._convert_utf8(diff))
+
+        return ids
 
     def read_one_active(self, request, uid):
 
@@ -1008,7 +1051,6 @@ class ActivityProtocol3(Protocol):
             profiles = self.Session.query(Profile).\
                 filter(Profile.users.any(username=userid))
             for p in profiles.all():
-                print p
                 profile_filters.append(functions.intersects(Activity.point,
                                        p.geometry))
                 if p.code == 'global':
@@ -1061,4 +1103,314 @@ class ActivityProtocol3(Protocol):
 
         return None
 
-    
+    def _handle_activity(self, request, activity_dict, changeset,
+        status='pending'):
+        """
+        Handles a single Activity and decides whether to create a new Activity
+        or update an existing one.
+        """
+
+        # Collect information about changing involvements
+        involvement_change = (activity_dict['stakeholders']
+            if 'stakeholders' in activity_dict
+            else None)
+        implicit_inv_change = (True
+            if involvement_change is not None
+            and 'implicit_involvement_update' in activity_dict
+            and activity_dict['implicit_involvement_update'] is True else False)
+
+        create_new = False
+
+        # If there is no id for the Activity in the diff, create a new Activity
+        if 'id' not in activity_dict:
+            create_new = True
+        else:
+            # If there is an ID in the diff, try to find the Activity based on
+            # the identifier and version
+            identifier = activity_dict['id']
+            old_version = (activity_dict['version']
+                if 'version' in activity_dict else None)
+            db_a = self.Session.query(Activity).\
+                filter(Activity.activity_identifier == identifier).\
+                filter(Activity.version == old_version).\
+                first()
+            if db_a is None:
+                # If no Activity was found, create a new one
+                create_new = True
+
+        if create_new is True:
+            # Create new Activity
+            new_activity = self._create_activity(request, activity_dict,
+                changeset, status=status)
+
+            # Handle also the involvements
+            self._handle_involvements(request, None, new_activity,
+                involvement_change, changeset, implicit_inv_change)
+
+            return new_activity
+        
+        else:
+            # Update existing Activity
+
+            #@TODO: Handle involvements after updating the Activity
+
+            return self._update_activity(request, db_a, activity_dict,
+                changeset)
+
+    def _create_activity(self, request, activity_dict, changeset, **kwargs):
+        """
+        Creates a new Activity and handles its involvements.
+        Allowed keyword arguments:
+        - 'status'
+        """
+
+        identifier = (activity_dict['id'] if 'id' in activity_dict and
+            activity_dict['id'] is not None
+            else uuid.uuid4())
+
+        # The initial version is 1
+        version = 1
+
+        # Try to get the geometry
+        if ('geometry' in activity_dict and activity_dict['geometry']
+            is not None):
+            geom = geojson.loads(json.dumps(activity_dict['geometry']),
+                                 object_hook=geojson.GeoJSON.to_instance)
+
+            # The geometry
+            shape = asShape(geom)
+            # Create a new activity and add representative point to the activity
+            new_activity = Activity(activity_identifier=identifier,
+                version=version, point=shape.representative_point().wkt)
+        else:
+            # If no geometry is submitted, create new activity without geometry
+            new_activity = Activity(activity_identifier=identifier,
+                version=version)
+
+        # Status (default: 'pending')
+        status = 'pending'
+        if 'status' in kwargs:
+            status = kwargs['status']
+        new_activity.status = self.Session.query(Status).\
+            filter(Status.name == status).\
+            first()
+
+        # Initialize Tag Groups
+        new_activity.tag_groups = []
+
+        # Append the Changeset
+        new_activity.changeset = changeset
+
+        # Add the Activity to the database
+        self.Session.add(new_activity)
+
+        # Populate the Tag Groups
+        for i, taggroup in enumerate(activity_dict['taggroups']):
+
+            db_tg = A_Tag_Group(i+1)
+            new_activity.tag_groups.append(db_tg)
+
+            # Main Tag: First reset it. Then try to get it (its key and value)
+            # from the dict.
+            # The Main Tag is not mandatory.
+            main_tag = None
+            main_tag_key = None
+            main_tag_value = None
+            try:
+                main_tag = taggroup['main_tag']
+                main_tag_key = main_tag['key']
+                main_tag_value = main_tag['value']
+            except KeyError:
+                pass
+
+            # Loop all tags within a tag group
+            for tag in taggroup['tags']:
+
+                # Add the tag only if the op property is set to add
+                if 'op' not in tag:
+                    continue
+                elif tag['op'] != 'add':
+                    continue
+
+                # Get the key and the value of the current tag
+                key = tag['key']
+                value = tag['value']
+
+                # Create the new tag
+                a_tag = self._create_tag(request, db_tg.tags, key, value, A_Tag,
+                    A_Key, A_Value)
+
+                # Check if the current tag is the main tag of this tag group. If
+                # yes, set the main_tag attribute to this tag
+                try:
+                    if (a_tag.key.key == main_tag_key
+                        and a_tag.value.value == main_tag_value):
+                        db_tg.main_tag = a_tag
+                except AttributeError:
+                    pass
+
+        return new_activity
+
+    def _update_activity(self, request, old_activity, activity_dict, changeset,
+        **kwargs):
+        """
+        Update an Activity. The basic idea is to deep copy the previous version
+        and decide for each tag if it is to be deleted or not. At the end, new
+        tags and new taggroups are added.
+        Allowed keyword arguments:
+        - 'status'
+        """
+
+        # Query latest version of current Activity (used to increase version)
+        latest_version = self.Session.query(Activity).\
+            filter(Activity.activity_identifier == old_activity.identifier).\
+            order_by(desc(Activity.version)).\
+            first()
+
+        # Geometry
+        new_geom = old_activity.point
+        if 'geometry' in activity_dict:
+            geojson_obj = geojson.loads(json.dumps(activity_dict['geometry']),
+                                        object_hook=geojson.GeoJSON.to_instance)
+            geojson_shape = asShape(geojson_obj)
+
+            new_geom = geojson_shape.representative_point().wkt
+
+        # Create new Activity
+        new_activity = Activity(activity_identifier=old_activity.identifier,
+            version=(latest_version.version+1), point=new_geom)
+
+        # Status (default: 'pending')
+        status = 'pending'
+        if 'status' in kwargs:
+            status = kwargs['status']
+        new_activity.status = self.Session.query(Status).\
+            filter(Status.name == status).\
+            first()
+
+        # Initialize Tag Groups
+        new_activity.tag_groups = []
+
+        # Append the Changeset
+        new_activity.changeset = changeset
+
+        # Add it to the database
+        self.Session.add(new_activity)
+
+        #@TODO: Handle taggroups correctly (see old AP)
+
+        return new_activity
+
+    def _handle_involvements(self, request, old_version, new_version,
+        inv_change, changeset, implicit=False):
+        """
+        Handle the involvements of an Activity.
+        - Activity update: copy old involvements
+        - Involvement added: copy old involvements, push Stakeholder to new
+            version, add new involvement
+        - Involvement deleted: copy old involvements (except the one to be
+            removed), push Stakeholder to new version
+        - Involvement modified (eg. its role): combination of deleting and
+            adding involvements
+        """
+
+        # It is important to keep track of all the Stakeholders where
+        # involvements were deleted because they need to be pushed to a new
+        # version as well
+        swdi_id = [] # = Stakeholders with deleted involvements
+        swdi_version = []
+        swdi_role = []
+        # Copy old involvements if existing
+        if old_version is not None:
+            for oi in old_version.involvements:
+                # Check if involvement is to be removed (op == delete), in which
+                # case do not copy it
+                remove = False
+                if inv_change is not None:
+                    for i in inv_change:
+                        if ('id' in i and str(i['id']) ==
+                            str(oi.stakeholder.stakeholder_identifier) and
+                            'op' in i and i['op'] == 'delete' and 'role' in i
+                            and i['role'] == oi.stakeholder_role.id):
+                            # Set flag to NOT copy this involvement
+                            remove = True
+                            # Add identifier and version of Stakeholder to list
+                            # with deleted involvements, add them only once
+                            if i['id'] not in swdi_id:
+                                swdi_id.append(i['id'])
+                                swdi_version.append(i['version'])
+                                swdi_role.append(i['role'])
+                # Also: only copy involvements if status of Stakeholder is
+                # 'pending' or 'active'
+                if remove is not True and oi.stakeholder.status.id < 3:
+                    sh_role = oi.stakeholder_role
+                    sh = oi.stakeholder
+                    # Copy involvement
+                    inv = Involvement()
+                    inv.stakeholder = sh
+                    inv.activity = new_version
+                    inv.stakeholder_role = sh_role
+                    self.Session.add(inv)
+        # Add new involvements
+        if inv_change is not None:
+            for i in inv_change:
+                if ('op' in i and i['op'] == 'add' and
+                    'id' in i and 'role' in i and 'version' in i):
+                    # Query database to find role and previous version of
+                    # Stakeholder
+                    role_db = self.Session.query(Stakeholder_Role).\
+                        get(i['role'])
+                    old_sh_db = self.Session.query(Stakeholder).\
+                        filter(Stakeholder.stakeholder_identifier == i['id']).\
+                        filter(Stakeholder.version == i['version']).\
+                        first()
+                    if old_sh_db is not None:
+                        # If the same Stakeholder also has some involvements
+                        # deleted, remove it from the list (do not push
+                        # Stakeholder twice)
+                        try:
+                            x = swdi_id.index(
+                                str(old_sh_db.stakeholder_identifier))
+                            swdi_id.pop(x)
+                            swdi_version.pop(x)
+                            swdi_role.pop(x)
+                        except ValueError:
+                            pass
+                        # Push Stakeholder to new version
+                        sp = StakeholderProtocol3(self.Session)
+                        # Simulate a dict
+                        sh_dict = {
+                            'id': old_sh_db.stakeholder_identifier,
+                            'version': old_sh_db.version
+                        }
+                        new_sh = sp._handle_stakeholder(request, sh_dict,
+                            changeset)
+                        # Create new inolvement
+                        inv = Involvement()
+                        inv.stakeholder = new_sh
+                        inv.activity = new_version
+                        inv.stakeholder_role = role_db
+                        self.Session.add(inv)
+        # Also push Stakeholders where involvements were deleted to new version
+        if implicit is not True:
+            for i, a in enumerate(swdi_id):
+                # Query database
+                old_sh_db = self.Session.query(Stakeholder).\
+                    filter(Stakeholder.stakeholder_identifier == a).\
+                    filter(Stakeholder.version == swdi_version[i]).\
+                    first()
+                # Push Stakeholder to new version
+                sp = StakeholderProtocol3(self.Session)
+                # Simulate a dict
+                sh_dict = {
+                    'id': old_sh_db.stakeholder_identifier,
+                    'version': old_sh_db.version,
+                    'activities': [{
+                        'op': 'delete',
+                        'id': old_version.activity_identifier,
+                        'version': swdi_version[i],
+                        'role': swdi_role[i]
+                    }],
+                    'implicit_involvement_update': True
+                }
+                new_sh = sp._handle_stakeholder(request, sh_dict, changeset)

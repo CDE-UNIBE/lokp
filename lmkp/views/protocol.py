@@ -1,3 +1,4 @@
+import uuid
 from lmkp.config import locale_profile_directory_path
 from lmkp.config import profile_directory_path
 from lmkp.models.database_objects import A_Key
@@ -20,6 +21,8 @@ from sqlalchemy.types import Float
 import datetime
 from sqlalchemy import func
 import yaml
+import collections
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.security import unauthenticated_userid
 from pyramid.security import effective_principals
 
@@ -728,6 +731,55 @@ class Protocol(object):
             pass
 
         return self.configuration
+
+    def _create_tag(self, request, parent, key, value, Tag_Item, Key_Item,
+        Value_Item):
+        """
+        Creates a new SQLAlchemy tag object and appends it to the parent list.
+        """
+
+        # Validate the key and value pair with the configuration file
+        if not self._key_value_is_valid(request, self.configuration, key,
+            value):
+            self.Session.rollback()
+            raise HTTPBadRequest("Key: %s or Value: %s is not valid." %
+                (key, value))
+
+        # The key has to be already in the database
+        k = self.Session.query(Key_Item).filter(Key_Item.key == key).first()
+
+        # If the value is not yet in the database, create a new value
+        v = self.Session.query(Value_Item).\
+            filter(Value_Item.value == unicode(value)).\
+            first()
+        if v is None:
+            v = Value_Item(value=value)
+            # @TODO: Really always use fk_language = 1 when inserting new value?
+            v.fk_language = 1
+
+        # Create a new tag with key and value and append it to the parent TG
+        t = Tag_Item()
+        parent.append(t)
+        t.key = k
+        t.value = v
+
+        # Return the newly created tag
+        return t
+
+    def _convert_utf8(self, data):
+        """
+        Converts python unicode strings so they can be stored in the database
+        without the u'
+        http://stackoverflow.com/questions/1254454
+        """
+        if isinstance(data, unicode):
+            return data.encode('utf-8')
+        elif isinstance(data, collections.Mapping):
+            return dict(map(self._convert_utf8, data.iteritems()))
+        elif isinstance(data, collections.Iterable):
+            return type(data)(map(self._convert_utf8, data))
+        else:
+            return data
 
 class Tag(object):
 

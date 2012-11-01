@@ -100,7 +100,7 @@ def create(request):
     if not isinstance(has_permission('edit', request.context, request), ACLAllowed):
         return HTTPForbidden()
 
-    ids = stakeholder_protocol.create(request)
+    ids = stakeholder_protocol3.create(request)
 
     response = {}
     response['data'] = [i.to_json() for i in ids]

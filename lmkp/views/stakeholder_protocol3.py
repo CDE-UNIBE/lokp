@@ -5,7 +5,9 @@ from lmkp.views.protocol import *
 from lmkp.views.translation import statusMap
 from lmkp.views.translation import get_translated_status
 
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.i18n import get_localizer
+from pyramid.security import authenticated_userid
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import asc
 from sqlalchemy.sql.expression import cast
@@ -18,6 +20,45 @@ class StakeholderProtocol3(Protocol):
 
     def __init__(self, Session):
         self.Session = Session
+
+    def create(self, request, data=None):
+        """
+        Create or update Stakeholders
+        """
+
+        diff = request.json_body if data is None else data
+
+        user = self.Session.query(User).\
+            filter(User.username == authenticated_userid(request)).\
+            first()
+
+        # Changeset
+        changeset = Changeset()
+        changeset.user = user
+
+        # Check if the json body is a valid diff file
+        if 'stakeholders' not in diff:
+            raise HTTPBadRequest(detail="Not a valid format")
+
+        # Get the current configuration file to validate key and value pairs
+        self.configuration = self._read_configuration(request,
+            'stakeholder.yml')
+
+        # Return the IDs of the newly created Stakeholders
+        ids = []
+        for stakeholder in diff['stakeholders']:
+
+            sh = self._handle_stakeholder(request, stakeholder, changeset)
+
+            # Add the newly created identifier to the diff
+            stakeholder[unicode('id')] = unicode(sh.stakeholder_identifier)
+
+            ids.append(sh)
+
+        # Save diff to changeset and handle UTF-8 of diff
+        changeset.diff = str(self._convert_utf8(diff))
+
+        return ids
 
     def read_one_active(self, request, uid):
 
@@ -922,3 +963,285 @@ class StakeholderProtocol3(Protocol):
                         )
 
         return stakeholders
+
+    def _handle_stakeholder(self, request, stakeholder_dict, changeset,
+        status='pending'):
+        """
+        Handles a single Stakeholder and decides whether to create a new
+        Stakeholder or update an existing one.
+        """
+
+        create_new = False
+
+        # If there is no id for the Stakeholder in the diff, create a new
+        # Stakeholder
+        if 'id' not in stakeholder_dict:
+            create_new = True
+        else:
+            # If there is an ID in the diff, try to find the Stakeholder based
+            # on the identifier and version
+            identifier = stakeholder_dict['id']
+            old_version = (stakeholder_dict['version'] if 'version' in
+                stakeholder_dict else None)
+            db_sh = self.Session.query(Stakeholder).\
+                filter(Stakeholder.stakeholder_identifier == identifier).\
+                filter(Stakeholder.version == old_version).\
+                first()
+            if db_sh is None:
+                # If no Stakeholder is found, create a new one
+                create_new = True
+
+        if create_new is True:
+            # Create new Stakeholder
+            new_stakeholder = self._create_stakeholder(request,
+                stakeholder_dict, changeset, status=status)
+
+            # Handle also the involvements
+            #@TODO !!!
+
+            return new_stakeholder
+
+        else:
+            # Update existing Stakeholder
+
+            #@TODO: Handle involvements after updating the Stakeholder
+
+            return self._update_stakeholder(request, db_sh, stakeholder_dict,
+            changeset)
+
+    def _create_stakeholder(self, request, stakeholder_dict, changeset,
+        **kwargs):
+        """
+        Creates a new Stakeholder. Allowed keyword arguments:
+        'identifier'
+        'status'
+        """
+
+        identifier = (stakeholder_dict['id'] if 'id' in stakeholder_dict and
+            stakeholder_dict['id'] is not None
+            else uuid.uuid4())
+
+        # The initial version is 1
+        version = 1
+
+        # Create a new stakeholder
+        new_stakeholder = Stakeholder(stakeholder_identifier=identifier,
+            version=version)
+
+        # Status (default: 'pending')
+        status = 'pending'
+        # Get the stakeholder status, default is pending
+        if 'status' in kwargs:
+            status = kwargs['status']
+        new_stakeholder.status = self.Session.query(Status).\
+            filter(Status.name == status).\
+            first()
+
+        # Initialize Tag Groups
+        new_stakeholder.tag_groups = []
+
+        # Append the Changeset
+        new_stakeholder.changeset = changeset
+
+        # Add the Stakeholder to the database
+        self.Session.add(new_stakeholder)
+
+        # Populate the Tag Groups
+        for i, taggroup in enumerate(stakeholder_dict['taggroups']):
+
+            db_tg = SH_Tag_Group(i+1)
+            new_stakeholder.tag_groups.append(db_tg)
+
+            # Main Tag: First reset it. Then try to get it (its key and value)
+            # from the dict.
+            # The Main Tag is not mandatory.
+            main_tag = None
+            main_tag_key = None
+            main_tag_value = None
+            try:
+                main_tag = taggroup['main_tag']
+                main_tag_key = main_tag['key']
+                main_tag_value = main_tag['value']
+            except KeyError:
+                pass
+
+            # Loop all tags within a tag group
+            for tag in taggroup['tags']:
+
+                # Add the tag only if the op property is set to add
+                if 'op' not in tag:
+                    continue
+                elif tag['op'] != 'add':
+                    continue
+
+                # Get the key and the value of the current tag
+                key = tag['key']
+                value = tag['value']
+
+                sh_tag = self._create_tag(request, db_tg.tags, key, value,
+                    SH_Tag, SH_Key, SH_Value)
+
+                # Check if the current tag is the main tag of this tag group. If
+                # yes, set the main_tag attribute to this tag
+                try:
+                    if (sh_tag.key.key == main_tag_key
+                        and sh_tag.value.value == main_tag_value):
+                        db_tg.main_tag = sh_tag
+                except AttributeError:
+                    pass
+
+        return new_stakeholder
+
+    def _update_stakeholder(self, request, old_stakeholder, stakeholder_dict,
+        changeset, **kwargs):
+        """
+        Update a Stakeholder. The basic idea is to deep copy the previous
+        version and decide for each tag if it is to be deleted or not. At the
+        end, new tags and new taggroups are added.
+        Allowed keyword arguments:
+        - 'status'
+        """
+
+        # Query latest version of current Stakeholder (used to increase version)
+        latest_version = self.Session.query(Stakeholder).\
+            filter(Stakeholder.stakeholder_identifier
+                == old_stakeholder.identifier).\
+            order_by(desc(Stakeholder.version)).\
+            first()
+
+        # Create new Stakeholder
+        new_stakeholder = Stakeholder(
+            stakeholder_identifier=old_stakeholder.identifier,
+            version=(latest_version.version+1))
+
+        # Status (default: 'pending')
+        status = 'pending'
+        if 'status' in kwargs:
+            status = kwargs['status']
+        new_stakeholder.status = self.Session.query(Status).\
+            filter(Status.name == status).\
+            first()
+
+        # Initialize Tag Groups
+        new_stakeholder.tag_groups = []
+
+        # Append the Changeset
+        new_stakeholder.changeset = changeset
+
+        # Add it to the database
+        self.Session.add(new_stakeholder)
+
+        #@TODO: Handle taggroups correctly (see old SP)
+
+        return new_stakeholder
+
+    def _handle_involvements(self, request, old_version, new_version,
+        inv_change, changeset, implicit=False):
+        """
+        Handle the involvements of a Stakeholder.
+        - Stakeholder update: copy old involvements
+        - Involvement added: copy old involvements, push Activity to new
+            version, add new involvement
+        - Involvement deleted: copy old involvements (except the one to be
+            removed), push Activity to new version
+        - Involvement modified (eg. its role): combination of deleting and
+            adding involvements
+        """
+        from lmkp.views.activity_protocol2 import ActivityProtocol3
+        # It is important to keep track of all the Activities where involvements
+        # were deleted because they need to be pushed to a new version as well
+        awdi_id = [] # = Activities with deleted involvements
+        awdi_version = []
+        awdi_role = []
+        # Copy old involvements if existing
+        if old_version is not None:
+            for oi in old_version.involvements:
+                # Check if involvement is to be removed (op == delete), in which
+                # case do not copy it
+                remove = False
+                if inv_change is not None:
+                    for i in inv_change:
+                        if ('id' in i and str(i['id']) ==
+                            str(oi.activity.activity_identifier) and
+                            'op' in i and i['op'] == 'delete' and 'role' in i
+                            and i['role'] == oi.stakeholder_role.id):
+                            # Set flag to NOT copy this involvement
+                            remove = True
+                            # Add identifier and version of Activity to list
+                            # with deleted involvements, add them only once
+                            if i['id'] not in awdi_id:
+                                awdi_id.append(i['id'])
+                                awdi_version.append(i['version'])
+                                awdi_role.append(i['role'])
+                # Also: only copy involvements if status of Activity is
+                # 'pending' or 'active'
+                if remove is not True and oi.activity.status.id < 3:
+                    sh_role = oi.stakeholder_role
+                    a = oi.activity
+                    # Copy involvement
+                    inv = Involvement()
+                    inv.stakeholder = new_version
+                    inv.activity = a
+                    inv.stakeholder_role = sh_role
+                    self.Session.add(inv)
+        # Add new involvements
+        if inv_change is not None:
+            for i in inv_change:
+                if ('op' in i and i['op'] == 'add' and
+                    'id' in i and 'role' in i and 'version' in i):
+                    # Query database to find role and previous version of
+                    # Activity
+                    role_db = self.Session.query(Stakeholder_Role).\
+                        get(i['role'])
+                    old_a_db = self.Session.query(Activity).\
+                        filter(Activity.activity_identifier == i['id']).\
+                        filter(Activity.version == i['version']).\
+                        first()
+                    if old_a_db is not None:
+                        # If the same Activity also has some involvements
+                        # deleted, remove it from the list (do not push Activity
+                        # twice)
+                        try:
+                            x = awdi_id.index(str(old_a_db.activity_identifier))
+                            awdi_id.pop(x)
+                            awdi_version.pop(x)
+                            awdi_role.pop(x)
+                        except ValueError:
+                            pass
+                        # Push Activity to new version
+                        sp = ActivityProtocol3(self.Session)
+                        # Simulate a dict
+                        a_dict = {
+                            'id': old_a_db.activity_identifier,
+                            'version': old_a_db.version
+                        }
+                        new_a = sp._handle_activity(request, a_dict, changeset)
+                        # Create new inolvement
+                        inv = Involvement()
+                        inv.stakeholder = new_version
+                        inv.activity = new_a
+                        inv.stakeholder_role = role_db
+                        self.Session.add(inv)
+        # Also push Activity where involvements were deleted to new version
+        if implicit is not True:
+            for i, a in enumerate(awdi_id):
+                # Query database
+                old_a_db = self.Session.query(Activity).\
+                    filter(Activity.activity_identifier == a).\
+                    filter(Activity.version == awdi_version[i]).\
+                    first()
+                # Push Activity to new version
+                sp = ActivityProtocol3(self.Session)
+                # Simulate a dict
+                a_dict = {
+                    'id': old_a_db.activity_identifier,
+                    'version': old_a_db.version,
+                    'stakeholders': [{
+                        'op': 'delete',
+                        'id': old_version.stakeholder_identifier,
+                        'version': awdi_version[i],
+                        'role': awdi_role[i]
+                    }],
+                    'implicit_involvement_update': True
+                }
+                new_a = sp._handle_activity(request, a_dict, changeset)
