@@ -225,14 +225,13 @@ def create(request):
 
     # Check if the user is logged in and he/she has sufficient user rights
     userid = authenticated_userid(request)
-    print effective_principals(request)
 
     if userid is None:
         raise HTTPForbidden()
     if not isinstance(has_permission('edit', request.context, request), ACLAllowed):
         raise HTTPForbidden()
 
-    ids = activity_protocol2.create(request)
+    ids = activity_protocol3.create(request)
 
     response = {}
     response['data'] = [i.to_json() for i in ids]

@@ -4,8 +4,8 @@ import random
 
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
-from lmkp.views.activity_protocol2 import ActivityProtocol2
-from lmkp.views.stakeholder_protocol import StakeholderProtocol
+from lmkp.views.activity_protocol3 import ActivityProtocol3
+from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.view import view_config
 import simplejson as json
@@ -22,48 +22,43 @@ def activity_wrapper(request, file, status='pending'):
     A small wrapper around the create method in the Activity Protocol
     """
     # Create a new activity protocol object
-    activity_protocol2 = ActivityProtocol2(Session)
+    activity_protocol = ActivityProtocol3(Session)
     # Read the data JSON file
     data_stream = open(file, 'r')
     data = json.loads(data_stream.read())
 
-    # Check if the json body is a valid diff file
-    if 'activities' not in data:
-        raise HTTPBadRequest(detail="Not a valid format")
-
-    activity_protocol2._read_configuration(request, 'activity.yml')
-
-    ids = []
-    for activity in data['activities']:
-        a = activity_protocol2._handle_activity(request, activity, status)
-        ids.append(a.id)
-    
-    return ids
+    return activity_protocol.create(request, data)
         
 def stakeholder_wrapper(request, file, status='pending'):
     """
     A small wrapper around the create method in the Activity Protocol
     """
-    # Create a new activity protocol object
-    stakeholder_protocol = StakeholderProtocol(Session)
+    # Create a new stakeholder protocol object
+    stakeholder_protocol = StakeholderProtocol3(Session)
     # Read the data JSON file
     data_stream = open(file, 'r')
     data = json.loads(data_stream.read())
 
-    # Check if the json body is a valid diff file
-    if 'stakeholders' not in data:
-        raise HTTPBadRequest(detail="Not a valid format")
+    return stakeholder_protocol.create(request, data)
 
-    stakeholder_protocol._read_configuration(request, 'stakeholder.yml')
+@view_config(route_name='sample_values_constructed', renderer='json')
+def sample_values_constructed(request):
+    """
+    Insert some constructed sample values to the database
+    """
+    rootdir = os.path.dirname(os.path.dirname(__file__))
 
-    ids = []
-    for stakeholder in data['stakeholders']:
-        s = stakeholder_protocol._handle_stakeholder(request, stakeholder, status)
-        ids.append(s.id)
+    a_path = 'documents/cambodia/constructed_data'
+    a_file = 'constructed_activities.json'
+    sh_path = 'documents/cambodia/constructed_data'
+    sh_file = 'constructed_stakeholders.json'
+
+    a = activity_wrapper(request, "%s/%s/%s" % (rootdir, a_path, a_file),
+        'active')
+    s = stakeholder_wrapper(request, "%s/%s/%s" % (rootdir, sh_path, sh_file),
+        'active')
+
     
-    return ids
-
-
 @view_config(route_name='sample_values', renderer='json')
 def insert_landmatrix(request):
     """

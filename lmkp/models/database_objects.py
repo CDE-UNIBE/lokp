@@ -374,10 +374,13 @@ class Activity(Base):
         self.comment_review = comment_review
 
     def __repr__(self):
-        if self.point == None:
+        """
+        if self.point is None:
             geom = '-'
         else:
             geom = wkb.loads(str(self.point.geom_wkb)).wkt
+        """
+        geom = '***'
         return (
             '<Activity> id [ %s ] | activity_identifier [ %s ] | ' +
             'fk_changeset [ %s ] | point [ %s ] | fk_status [ %s ] | ' +
@@ -445,9 +448,9 @@ class Stakeholder(Base):
     def identifier(self):
         return self.stakeholder_identifier
 
-    def __init__(self, activity_identifier, version, previous_version=None,
+    def __init__(self, stakeholder_identifier, version, previous_version=None,
         timestamp_review=None, comment_review=None):
-        self.activity_identifier = activity_identifier
+        self.stakeholder_identifier = stakeholder_identifier
         self.version = version
         self.previous_version = previous_version
         self.timestamp_review = timestamp_review
