@@ -373,43 +373,41 @@ class Protocol(object):
 
         a_filter_expr = []
         sh_filter_expr = []
-        if ('a__queryable' in request.params or 
-            'sh__queryable' in request.params):
-            for k in request.params:
-                # Collect filter expressions
-                if len(request.params[k]) <= 0 or '__' not in k:
-                    continue
-                try:
-                    prefix, col, op = k.split('__')
-                except ValueError:
-                    continue
-                # Several values can be queried for one attributes e.g.
-                # project_use equals pending and signed. Build the URL
-                # like: queryable=project_use&project_use__eq=pending,signed
-                # First: Activity attributes
-                if prefix == 'a' and col in request.params['a__queryable']:
-                    values = request.params[k].split(',')
-                    for v in values:
-                        q = self.Session.query(
-                                A_Tag.fk_a_tag_group.label('a_filter_tg_id')
-                            ).\
-                            join(A_Key).\
-                            join(A_Value).\
-                            filter(A_Key.key == col).\
-                            filter(__get_filter_expression(prefix, v, op))
-                        a_filter_expr.append(q)
-                # Second: Stakeholder attributes
-                elif prefix == 'sh' and col in request.params['sh__queryable']:
-                    values = request.params[k].split(',')
-                    for v in values:
-                        q = self.Session.query(
-                                SH_Tag.fk_sh_tag_group.label('sh_filter_tg_id')
-                            ).\
-                            join(SH_Key).\
-                            join(SH_Value).\
-                            filter(SH_Key.key == col).\
-                            filter(__get_filter_expression(prefix, v, op))
-                        sh_filter_expr.append(q)
+        for k in request.params:
+            # Collect filter expressions
+            if len(request.params[k]) <= 0 or '__' not in k:
+                continue
+            try:
+                prefix, col, op = k.split('__')
+            except ValueError:
+                continue
+            # Several values can be queried for one attributes e.g.
+            # project_use equals pending and signed. Build the URL
+            # like: queryable=project_use&project_use__eq=pending,signed
+            # First: Activity attributes
+            if prefix == 'a':
+                values = request.params[k].split(',')
+                for v in values:
+                    q = self.Session.query(
+                            A_Tag.fk_a_tag_group.label('a_filter_tg_id')
+                        ).\
+                        join(A_Key).\
+                        join(A_Value).\
+                        filter(A_Key.key == col).\
+                        filter(__get_filter_expression(prefix, v, op))
+                    a_filter_expr.append(q)
+            # Second: Stakeholder attributes
+            elif prefix == 'sh':
+                values = request.params[k].split(',')
+                for v in values:
+                    q = self.Session.query(
+                            SH_Tag.fk_sh_tag_group.label('sh_filter_tg_id')
+                        ).\
+                        join(SH_Key).\
+                        join(SH_Value).\
+                        filter(SH_Key.key == col).\
+                        filter(__get_filter_expression(prefix, v, op))
+                    sh_filter_expr.append(q)
 
         return (a_filter_expr, len(a_filter_expr),
             sh_filter_expr, len(sh_filter_expr))
@@ -782,7 +780,7 @@ class Tag(object):
 
 class TagGroup(object):
 
-    def __init__(self, id=None, main_tag_id=None):
+    def __init__(self, id=None, tg_id=None, main_tag_id=None):
         """
         Create a new TagGroup object with id and the main_tag_id
         """
@@ -791,6 +789,7 @@ class TagGroup(object):
         self._id = id
         # The id of the main tag (not the tag itself!)
         self._main_tag_id = main_tag_id
+        self._tg_id = tg_id
         # List to store the tags
         self._tags = []
         self._diffFlag = None
@@ -840,7 +839,12 @@ class TagGroup(object):
             if t.get_id() == self._main_tag_id:
                 main_tag = t.to_table()
 
-        return {'id': self._id, 'main_tag': main_tag, 'tags': tags}
+        return {
+            'id': self._id,
+            'tg_id': self._tg_id,
+            'main_tag': main_tag,
+            'tags': tags
+        }
 
 class Inv(object):
 

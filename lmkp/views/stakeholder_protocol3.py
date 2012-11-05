@@ -752,6 +752,7 @@ class StakeholderProtocol3(Protocol):
                 Status.name.label('status'),
                 Changeset.timestamp.label('timestamp'),
                 SH_Tag_Group.id.label('taggroup'),
+                SH_Tag_Group.tg_id.label('tg_id'),
                 SH_Tag_Group.fk_sh_tag.label('main_tag'),
                 SH_Tag.id.label('tag'),
                 SH_Key.key.label('key'),
@@ -861,7 +862,7 @@ class StakeholderProtocol3(Protocol):
             if stakeholder.find_taggroup_by_id(taggroup_id) is not None:
                 taggroup = stakeholder.find_taggroup_by_id(taggroup_id)
             else:
-                taggroup = TagGroup(taggroup_id, q.main_tag)
+                taggroup = TagGroup(taggroup_id, q.tg_id, q.main_tag)
                 stakeholder.add_taggroup(taggroup)
 
             # Because of Involvements, the same Tags appears for each
@@ -1223,7 +1224,13 @@ class StakeholderProtocol3(Protocol):
                 if (('id' not in taggroup_dict or ('id' in taggroup_dict and
                     taggroup_dict['id'] is None)) and
                     taggroup_dict['op'] == 'add'):
-                    new_taggroup = SH_Tag_Group()
+                    # Find next empty tg_id
+                    tg_id_q = self.Session.query(func.max(SH_Tag_Group.tg_id)).\
+                        join(Stakeholder).\
+                        filter(Stakeholder.stakeholder_identifier
+                            == new_stakeholder.stakeholder_identifier).\
+                        first()
+                    new_taggroup = SH_Tag_Group(tg_id_q[0] + 1)
                     new_stakeholder.tag_groups.append(new_taggroup)
                     for tag_dict in taggroup_dict['tags']:
                         new_tag = self._create_tag(

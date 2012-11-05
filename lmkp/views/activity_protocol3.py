@@ -847,6 +847,7 @@ class ActivityProtocol3(Protocol):
                 Status.name.label('status'),
                 Changeset.timestamp.label('timestamp'),
                 A_Tag_Group.id.label('taggroup'),
+                A_Tag_Group.tg_id.label('tg_id'),
                 A_Tag_Group.fk_a_tag.label('main_tag'),
                 A_Tag.id.label('tag'),
                 A_Key.key.label('key'),
@@ -982,7 +983,7 @@ class ActivityProtocol3(Protocol):
             if activity.find_taggroup_by_id(taggroup_id) is not None:
                 taggroup = activity.find_taggroup_by_id(taggroup_id)
             else:
-                taggroup = TagGroup(taggroup_id, q.main_tag)
+                taggroup = TagGroup(taggroup_id, q.tg_id, q.main_tag)
                 activity.add_taggroup(taggroup)
 
             # Because of Involvements, the same Tags appears for each
@@ -1467,7 +1468,13 @@ class ActivityProtocol3(Protocol):
                 if (('id' not in taggroup_dict or ('id' in taggroup_dict and
                     taggroup_dict['id'] is None))
                     and taggroup_dict['op'] == 'add'):
-                    new_taggroup = A_Tag_Group()
+                    # Find next empty tg_id
+                    tg_id_q = self.Session.query(func.max(A_Tag_Group.tg_id)).\
+                        join(Activity).\
+                        filter(Activity.activity_identifier
+                            == new_activity.activity_identifier).\
+                        first()
+                    new_taggroup = A_Tag_Group(tg_id_q[0] + 1)
                     new_activity.tag_groups.append(new_taggroup)
                     for tag_dict in taggroup_dict['tags']:
                         new_tag = self._create_tag(
