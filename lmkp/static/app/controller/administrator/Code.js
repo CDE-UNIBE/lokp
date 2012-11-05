@@ -39,6 +39,9 @@ Ext.define('Lmkp.controller.administrator.Code', {
                 }, {
                     name: 'item',
                     type: 'string'
+                }, {
+                    name: 'language',
+                    type: 'string'
                 }
             ]
         });
@@ -78,6 +81,10 @@ Ext.define('Lmkp.controller.administrator.Code', {
         if (value_type) {
             value_type.setValue(file.get('item'));
         }
+        var lang = Ext.ComponentQuery.query('combobox[itemId=language_cb]')[0];
+        if (lang) {
+            lang.setValue(file.get('language'));
+        }
     },
 
     onCodeSubmitButtonClick: function(button) {
@@ -101,11 +108,7 @@ Ext.define('Lmkp.controller.administrator.Code', {
         // Textfield
         var msg = [];
         for (var i in o.messages) {
-            if (o.messages[i].success == false) {
-                msg.push('<span class="red">' + o.messages[i].msg + '</span>');
-            } else {
-                msg.push(o.messages[i].msg);
-            }
+            msg.push(o.messages[i].msg);
         }
         var textfield = Ext.ComponentQuery.query('textarea[itemId=feedback_textarea]')[0];
         if (textfield) {
