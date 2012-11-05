@@ -111,7 +111,7 @@ Ext.define('Lmkp.controller.moderator.Main', {
             if(this.getPendingStakeholdersCheckbox()){
             	if (this.getPendingStakeholdersCheckbox().getValue()) {
             		// Reconfigure proxy to show pending stakeholders
-            		proxy.url = 'stakeholders';
+            		proxy.url = 'stakeholders/json';
             		proxy.setExtraParam('moderator', true);
             	}
             }

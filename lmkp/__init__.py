@@ -72,6 +72,7 @@ def main(global_config, ** settings):
     config.add_route('sample_values', '/sample_values/insert')
     config.add_route('delete_sample_values', '/sample_values/delete')
     config.add_route('test_sample_values', '/sample_values/test')
+    config.add_route('sample_values_constructed', '/sample_values/constructed')
 
     # Add a renderer to return ExtJS store configuration objects
     config.add_renderer('json', JsonRenderer())
@@ -79,38 +80,74 @@ def main(global_config, ** settings):
     # Add a renderer to return JavaScript files
     config.add_renderer('javascript', JavaScriptRenderer())
 
-    # Activities controllers with an api similar to Papyrus
+    """
+    Activities
+    """
+    # Activities controllers with an api once similar to Papyrus
     # Order matters!
-
-    config.add_route('activities_read_geojson', '/activities/geojson')
-
-    config.add_route('activities_read_pending', '/activities/pending')
-    # Reads one or many activities and returns GeoJSON Feature or FeatureCollection
-    config.add_route('activities_read_many', '/activities', request_method='GET')
-    config.add_route('activities_read_one', '/activities/{uid}', request_method='GET')
-
-    # Reviews a pending activity
-    config.add_route('activities_review', '/activities/review', request_method='POST')
 
     # Creates a new activity
     config.add_route('activities_create', '/activities', request_method='POST')
 
-    # Returns a JSON representation of comments to ...
+    # Reviews a pending activity
+    config.add_route('activities_review', '/activities/review', request_method='POST')
+
+    # Read one (special cases)
+    config.add_route('activities_read_one_active', '/activities/active/{output}/{uid}')
+    config.add_route('activities_read_one_public', '/activities/public/{output}/{uid}')
+
+    # By Stakeholder
+    config.add_route('activities_bystakeholder', '/activities/bystakeholder/{output}/{uid}')
+    config.add_route('activities_bystakeholder_public', '/activities/bystakeholder/public/{output}/{uid}')
+
+    # Read many
+    config.add_route('activities_public_read_many', '/activities/public/{output}')
+    config.add_route('activities_read_many', '/activities/{output}')
+
+    # Read one
+    config.add_route('activities_read_one', '/activities/{output}/{uid}')
+
+    #@TODO: Is this still needed?
+    config.add_route('activities_read_pending', '/activities/pending')
+    # Reads one or many activities and returns GeoJSON Feature or FeatureCollection
+
+    """
+    Stakeholders
+    """
+    # Stakeholders controllers, similar as Activities above
+    # Order matters!
+
+    # Creates a new stakeholder
+    config.add_route('stakeholders_create', '/stakeholders', request_method='POST')
+
+    # Reviews a pending stakeholder
+    config.add_route('stakeholders_review', '/stakeholders/review', request_method='POST')
+
+    # Read one (special cases)
+    config.add_route('stakeholders_read_one_active', '/stakeholders/active/{output}/{uid}')
+    config.add_route('stakeholders_read_one_public', '/stakeholders/public/{output}/{uid}')
+
+    # By Activity
+    config.add_route('stakeholders_byactivity', '/stakeholders/byactivity/{output}/{uid}')
+    config.add_route('stakeholders_byactivity_public', '/stakeholders/byactivity/public/{output}/{uid}')
+
+    # Read many
+    config.add_route('stakeholders_read_many', '/stakeholders/{output}')
+    config.add_route('stakeholders_read_many_public', '/stakeholders/public/{output}')
+
+    # Read one
+    config.add_route('stakeholders_read_one', '/stakeholders/{output}/{uid}')
+
+    """
+    Comments
+    """
+    # Returns a JSON representation of comments to an object
     config.add_route('comments_all', '/comments/{object}/{uid}')
     # Adds a comment
     config.add_route('comment_add', '/comments/add')
     # Deletes a comment
     config.add_route('comment_delete', '/comments/delete')
     
-    # Return the history of an activity
-    config.add_route('activities_history', '/activities/history/{uid}')
-
-    config.add_route('stakeholders_read_many', '/stakeholders', request_method='GET')
-    config.add_route('stakeholders_read_one', '/stakeholders/{uid}', request_method='GET')
-    config.add_route('stakeholders_review', '/stakeholders/review', request_method='POST')
-    config.add_route('stakeholders_create', '/stakeholders', request_method='POST')
-    config.add_route('stakeholders_history', '/stakeholders/history/{uid}')
-
     # A controller that returns the translation needed in the ExtJS user interface
     config.add_route('ui_translation', '/lang')
     # Return a json with all available languages from DB
