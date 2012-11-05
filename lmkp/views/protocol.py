@@ -581,8 +581,7 @@ class Protocol(object):
 
         return False
 
-    def _add_review(self, request, item, previous_item, Changeset_Item, Db_Item,
-        user):
+    def _add_review(self, request, item, previous_item, Db_Item, user):
         """
         Add a review decision
         """
@@ -598,25 +597,13 @@ class Protocol(object):
             'rejected',
             'edited'
         ]
-        # Same for review decisions
-        reviewdecisionArray = [
-            'approved',
-            'rejected',
-            'edited'
-        ]
 
         ret = {'success': False}
 
-        # @TODO: Fix review decision
-        # Temporarily aborting here because no Review Decisions in data model
-        # anymore. Fix this!
-        return False
-
         # Collect POST values
-        review_decision = self.Session.query(Review_Decision).\
-            get(request.POST['review_decision'])
+        review_decision = request.POST['review_decision']
         if review_decision is None:
-            ret['msg'] = 'Review decision not provided or not found.'
+            ret['msg'] = 'Review decision not provided.'
             return ret
 
         review_comment = None
@@ -624,7 +611,7 @@ class Protocol(object):
             request.POST['comment_textarea'] != ''):
             review_comment = request.POST['comment_textarea']
 
-        if review_decision.id == reviewdecisionArray.index('approved') + 1:
+        if review_decision == '1':
             # Approved
             if previous_item is not None:
                 # Set previous version to 'inactive' if it was active before
@@ -653,21 +640,15 @@ class Protocol(object):
                     update({Db_Item.fk_status: statusArray.index('inactive')+1})
                 item.fk_status = statusArray.index('active') + 1
 
-        elif review_decision.id == reviewdecisionArray.index('rejected') + 1:
+        elif review_decision == '2':
             # Rejected: Do not modify previous version and set new version to
             # 'rejected'
             item.fk_status = statusArray.index('rejected') + 1
 
-        elif review_decision.id == reviewdecisionArray.index('edited') + 1:
-            # Edited: Do not modify previous version and set new version to
-            # 'edited'
-            item.fk_status = statusArray.index('edited') + 1
-
-        # Add Changeset_Review
-        changeset_review = Changeset_Item(review_comment)
-        changeset_review.changeset = item.changesets[0]
-        changeset_review.user = user
-        changeset_review.review_decision = review_decision
+        # Add review stuff
+        item.user_review = user
+        item.timestamp_review = datetime.datetime.now()
+        item.comment_review = review_comment
 
         ret['success'] = True
         ret['msg'] = 'Review successful.'

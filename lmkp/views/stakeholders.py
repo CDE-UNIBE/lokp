@@ -5,6 +5,7 @@ from lmkp.views.config import get_mandatory_keys
 from lmkp.models.database_objects import *
 import logging
 from pyramid.httpexceptions import HTTPForbidden
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.i18n import TranslationStringFactory
 from pyramid.renderers import render_to_response
 from pyramid.security import ACLAllowed
@@ -139,7 +140,7 @@ def read_many(request):
 
     if output_format == 'json':
         stakeholders = stakeholder_protocol3.read_many(request, public=False)
-        return render_to_response(renderer, stakeholders, request)
+        return render_to_response('json', stakeholders, request)
     elif output_format == 'html':
         #@TODO
         return render_to_response('json', {'HTML': 'Coming soon'}, request)
@@ -189,7 +190,7 @@ def read_one(request):
     if output_format == 'json':
         stakeholders = stakeholder_protocol3.read_one(request, uid=uid,
             public=False)
-        return render_to_response(renderer, stakeholders, request)
+        return render_to_response('json', stakeholders, request)
     elif output_format == 'html':
         #@TODO
         return render_to_response('json', {'HTML': 'Coming soon'}, request)
@@ -215,7 +216,7 @@ def read_one_public(request):
     if output_format == 'json':
         stakeholders = stakeholder_protocol3.read_one(request, uid=uid,
             public=True)
-        return render_to_response(renderer, stakeholders, request)
+        return render_to_response('json', stakeholders, request)
     elif output_format == 'html':
         #@TODO
         return render_to_response('json', {'HTML': 'Coming soon'}, request)
@@ -233,7 +234,8 @@ def review(request):
     userid = authenticated_userid(request)
     if userid is None:
         return {'success': False, 'msg': 'User is not logged in.'}
-    if not isinstance(has_permission('moderate', request.context, request), ACLAllowed):
+    if not isinstance(has_permission('moderate', request.context, request),
+        ACLAllowed):
         return {'success': False, 'msg': 'User has no permissions to add a review.'}
     user = Session.query(User).\
             filter(User.username == authenticated_userid(request)).first()
@@ -273,14 +275,12 @@ def review(request):
     # Also query previous Stakeholder if available
     previous_stakeholder = Session.query(Stakeholder).\
         filter(Stakeholder.stakeholder_identifier == request.POST['identifier']).\
-        filter(Stakeholder.version == stakeholder.changesets[0].previous_version).\
+        filter(Stakeholder.version == stakeholder.previous_version).\
         first()
 
     # The user can add a review
     ret = stakeholder_protocol._add_review(
-        request, stakeholder, previous_stakeholder, SH_Changeset_Review,
-        Stakeholder, user
-    )
+        request, stakeholder, previous_stakeholder, Stakeholder, user)
 
     return ret
 
@@ -313,9 +313,3 @@ def create(request):
 
     request.response.status = 201
     return response
-
-@view_config(route_name='stakeholders_history', renderer='json')
-def stakeholders_history(request):
-    uid = request.matchdict.get('uid', None)
-
-    return stakeholder_protocol.history(request, uid=uid)

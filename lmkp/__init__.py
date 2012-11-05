@@ -86,6 +86,12 @@ def main(global_config, ** settings):
     # Activities controllers with an api once similar to Papyrus
     # Order matters!
 
+    # Creates a new activity
+    config.add_route('activities_create', '/activities', request_method='POST')
+
+    # Reviews a pending activity
+    config.add_route('activities_review', '/activities/review', request_method='POST')
+
     # Read one (special cases)
     config.add_route('activities_read_one_active', '/activities/active/{output}/{uid}')
     config.add_route('activities_read_one_public', '/activities/public/{output}/{uid}')
@@ -105,21 +111,17 @@ def main(global_config, ** settings):
     config.add_route('activities_read_pending', '/activities/pending')
     # Reads one or many activities and returns GeoJSON Feature or FeatureCollection
 
-    # Reviews a pending activity
-    config.add_route('activities_review', '/activities/review', request_method='POST')
-
-    # Creates a new activity
-    config.add_route('activities_create', '/activities', request_method='POST')
-
-    #@TODO: Probably not needed anymore
-    # Return the history of an activity
-    config.add_route('activities_history', '/activities/history/{uid}')
-
     """
     Stakeholders
     """
     # Stakeholders controllers, similar as Activities above
     # Order matters!
+
+    # Creates a new stakeholder
+    config.add_route('stakeholders_create', '/stakeholders', request_method='POST')
+
+    # Reviews a pending stakeholder
+    config.add_route('stakeholders_review', '/stakeholders/review', request_method='POST')
 
     # Read one (special cases)
     config.add_route('stakeholders_read_one_active', '/stakeholders/active/{output}/{uid}')
@@ -135,16 +137,6 @@ def main(global_config, ** settings):
 
     # Read one
     config.add_route('stakeholders_read_one', '/stakeholders/{output}/{uid}')
-
-    # Reviews a pending stakeholder
-    config.add_route('stakeholders_review', '/stakeholders/review', request_method='POST')
-
-    # Creates a new stakeholder
-    config.add_route('stakeholders_create', '/stakeholders', request_method='POST')
-
-    #@TODO: Probably not needed anymore
-    # Return the history of an activity
-    config.add_route('stakeholders_history', '/stakeholders/history/{uid}')
 
     """
     Comments
