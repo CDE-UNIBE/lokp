@@ -234,10 +234,9 @@ def review(request):
     userid = authenticated_userid(request)
     if userid is None:
         raise HTTPUnauthorized(_('User is not logged in.'))
-        #return {'success': False, 'msg': 'User is not logged in.'}
-    if not isinstance(has_permission('moderate', request.context, request), ACLAllowed):
+    if not isinstance(has_permission('moderate', request.context, request),
+        ACLAllowed):
         raise HTTPUnauthorized(_('User has no permissions to add a review.'))
-        #return {'success': False, 'msg': 'User has no permissions to add a review.'}
     user = Session.query(User).\
             filter(User.username == authenticated_userid(request)).first()
 
@@ -245,7 +244,6 @@ def review(request):
     profile_filters = activity_protocol2._create_bound_filter_by_user(request)
     if len(profile_filters) == 0:
         raise HTTPBadRequest(_('User has no profile attached'))
-        #return {'success': False, 'msg': 'User has no profile attached.'}
     activity = Session.query(Activity).\
         filter(Activity.activity_identifier == request.POST['identifier']).\
         filter(Activity.version == request.POST['version']).\
@@ -253,7 +251,6 @@ def review(request):
         first()
     if activity is None:
         raise HTTPUnauthorized(_('The Activity was not found or is not situated within the user\'s profiles'))
-        #return {'success': False, 'msg': 'The Activity was not found or is not situated within the user\'s profiles'}
 
     # If review decision is 'approved', make sure that all mandatory fields are 
     # there, except if it is to be deleted
@@ -282,12 +279,12 @@ def review(request):
     # Also query previous Activity if available
     previous_activity = Session.query(Activity).\
         filter(Activity.activity_identifier == request.POST['identifier']).\
-        filter(Activity.version == activity.changesets[0].previous_version).\
+        filter(Activity.version == activity.previous_version).\
         first()
 
     # The user can add a review
-    ret = activity_protocol2._add_review(
-        request, activity, previous_activity, A_Changeset_Review, Activity, user
+    ret = activity_protocol3._add_review(
+        request, activity, previous_activity, Activity, user
     )
 
     return ret
@@ -403,105 +400,6 @@ def model(request):
     object['fields'] = fields
 
     return "Ext.define('Lmkp.model.TagGroup', %s);" % object
-
-@view_config(route_name='activities_history', renderer='json')
-def activities_history(request):
-    uid = request.matchdict.get('uid', None)
-    
-    # Get the localizer from the request
-    localizer = get_localizer(request)
-    
-    activity = activity_protocol2.history(request, uid=uid)
-    return activity
-    
-    # TODO: ...
-
-    """
-    # The ActivityProtocol does not perform filter operations when UUID is passed as a parameter.
-    # As a workaround, UUID is passed as a filter.
-    overwrittenfilter = []
-    overwrittenfilter.append((Status.name == 'overwritten'))
-    overwrittenfilter.append((Activity.activity_identifier == uid))
-    deletedfilter = []
-    deletedfilter.append((Status.name == 'deleted'))
-    deletedfilter.append((Activity.activity_identifier == uid))
-    
-    # Query the active and overwritten activities based on the given UUID.
-    active = activity_protocol.read(request, filter=(Status.name == 'active'), uid=uid)
-    activeCount = 1
-    overwritten = activity_protocol.read(request, filter=and_(* overwrittenfilter))
-    deleted = activity_protocol.read(request, filter=and_(* deletedfilter))
-    
-    # If there is no active activity, the ActivityProtocol returns a HTTPNotFound object.
-    # This object cannot be processed by the json renderer because it has no ID (required to build name)
-    # Therefore, the object explicitly needs to be set to None.
-    if isinstance(active, HTTPNotFound):
-        active = None
-        activeCount = 0
-    else:
-        # append changeset details
-        active = _history_get_changeset_details(active)
-
-    # if there are no overwritten versions
-    if len(overwritten) == 0:
-        active = _check_difference(active, None, localizer)
-        
-    # Sort overwritten activities by their timestamp
-    try:
-        overwritten = sorted(overwritten, key=lambda overwritten:overwritten.timestamp, reverse=True)
-    except:
-        pass
-
-    # process overwritten versions
-    for i, o in enumerate(overwritten):
-        
-        # the first item (latest overwritten version)
-        if i == 0:
-            # compare with active
-            active = _check_difference(active, o)
-            # if the first item is not the last as well, ...
-            if len(overwritten) > 1:
-                # ... compare it with its previous version
-                o = _check_difference(o, overwritten[i+1])
-            # if the first item is also the last, ...
-            else:
-                # ... there is no previous version to compare it with
-                o = _check_difference(o, None)
-        
-        # the last item (the first version)
-        elif i == len(overwritten)-1:
-            # there is no previous version to compare it with
-            o = _check_difference(o, None)
-
-        # all other cases
-        else:
-            # compare it with its previous version
-            o = _check_difference(o, overwritten[i+1])
-
-        # append changeset details
-        o = _history_get_changeset_details(o)
-
-    # process deleted if available
-    if len(deleted) > 0:
-        deleted = deleted[0] # there should only be one
-        # append changeset details
-        deleted = _history_get_changeset_details(deleted)
-        deletedCount = 1
-    else:
-        deleted = None
-        deletedCount = 0
-
-    return {
-        'data': {
-            'active': active,
-            'overwritten': overwritten,
-            'deleted': deleted
-        },
-        'success': True,
-        'total': len(overwritten) + activeCount + deletedCount
-    }
-    """
-
 
 def _check_difference(new, old, localizer=None):
 
