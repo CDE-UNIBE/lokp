@@ -1,3 +1,4 @@
+import uuid
 from lmkp.config import locale_profile_directory_path
 from lmkp.config import profile_directory_path
 from lmkp.models.database_objects import A_Key
@@ -5,7 +6,6 @@ from lmkp.models.database_objects import A_Tag
 from lmkp.models.database_objects import A_Value
 from lmkp.models.database_objects import Group
 from lmkp.models.database_objects import Permission
-from lmkp.models.database_objects import Review_Decision
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Tag
 from lmkp.models.database_objects import SH_Value
@@ -21,7 +21,10 @@ from sqlalchemy.types import Float
 import datetime
 from sqlalchemy import func
 import yaml
+import collections
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.security import unauthenticated_userid
+from pyramid.security import effective_principals
 
 from lmkp.views.translation import statusMap
 from lmkp.views.translation import get_translated_status
@@ -115,15 +118,71 @@ class Protocol(object):
 
         return 0
 
+    def _get_user_status(self, principals=None):
+
+        if principals is not None:
+            return (
+                'system.Authenticated' in principals,
+                'group:moderators' in principals
+            )
+
+        return (
+            None,
+            None
+        )
+
+    def _get_status_detail(self, request, public_query):
+        """
+        For detail view.
+        Default values are 'active', 'inactive' and 'deleted', as well as
+        'pending' and 'edited' for moderators
+        Only moderators can query 'pending' and 'edited'.
+        """
+
+        statusParameter = request.params.get('status', None)
+
+        logged_in, is_moderator = self._get_user_status(
+            effective_principals(request))
+
+        try:
+            status = statusParameter.split(',')
+            arr = []
+            for s in status:
+                if s in statusMap:
+                    if s == 'pending' or s == 'edited':
+                        if logged_in and is_moderator:
+                            arr.append(Status.name == s)
+                    else:
+                        arr.append(Status.name == s)
+            if len(arr) > 0:
+                return arr
+        except AttributeError:
+            pass
+
+        ret = [
+            Status.name == 'active',
+            Status.name == 'inactive',
+            Status.name == 'deleted'
+        ]
+        if logged_in and is_moderator and not public_query:
+            ret.append(Status.name == 'pending')
+            ret.append(Status.name == 'edited')
+        return ret
+
+
     def _get_status(self, request, from_history=False):
         """
         Returns an ClauseElement array of requested activity status.
         Default value is active.
         It is possible to request activities with different status using
         status=active,pending
+        Only moderators can query 'pending' and 'edited'.
         """
 
         statusParameter = request.params.get('status', None)
+
+        logged_in, is_moderator = self._get_user_status(
+            effective_principals(request))
 
         try:
             status = statusParameter.split(',')
@@ -132,7 +191,11 @@ class Protocol(object):
             arr = []
             for s in status:
                 if s in statusMap:
-                    arr.append(Status.name == s)
+                    if s == 'pending' or s == 'edited':
+                        if logged_in and is_moderator:
+                            arr.append(Status.name == s)
+                    else:
+                        arr.append(Status.name == s)
 
             if len(arr) > 0:
                 return arr
@@ -144,6 +207,99 @@ class Protocol(object):
             return None
 
         return [Status.name == "active"]
+
+    def _get_involvement_status(self, request):
+        """
+        Returns a ClauseElement array of statuses used upon involvements.
+        Default value is active.
+        They are based on the following rules:
+        - If not logged in, only show 'active' involvements
+        """
+
+        logged_in, is_moderator = self._get_user_status(
+            effective_principals(request))
+
+        statuses = [
+            Status.name == 'active',
+            Status.name == 'inactive'
+        ]
+
+        if logged_in:
+            statuses.append(
+                Status.name == 'pending'
+            )
+
+        return statuses
+
+    def _flag_add_involvement(self, this_object, this_status_id,
+        other_status_id, other_identifier, other_version, other_user_id,
+        stakeholder_role, request_user_id, public_query, logged_in,
+        is_moderator):
+        """
+        Decide whether to attach an Involvement (to the _other_ object) to a
+        Feature (to _this_ object).
+        ''this_object'': The Feature object (activity / stakeholder) where the
+          Involvement is to be attachted
+        ''this_status_id'': The status id of the current Feature object
+        ''other_status_id'': The status id of the other Feature object
+        ''other_identifier'': The identifier of the other Feature object
+        ''other_version'': The version of the other Feature object
+        ''other_user_id'': The id of the user who submitted the other Feature
+          object
+        ''stakeholder_role'': The stakeholder role of the Involvement
+        ''request_user_id'': The id of the currently logged in user
+        ''public_query'': Boolean whether it is a public query (do not show
+          pending) or not
+        ''logged_in'': Boolean whether a user is logged in or not
+        ''is_moderator'': Boolean whether a user is moderator for the current
+          profile or not
+        """
+
+        # Flag indicating if Involvement to this Activity is not yet found
+        # ('none') or not to be added ('false')
+        inv = None
+
+        # If ''this_status'' is 'deleted', do not show any Involvements
+        if this_status_id == 4:
+            inv = False
+
+        # Involvements where Feature is 'pending' ...
+        if inv is None and other_status_id == 1:
+            # ... are never shown for public queries or if not logged in
+            if public_query is True or not logged_in:
+                inv = False
+            else:
+                # ... are only shown to moderators or to the user who submitted
+                # the 'pending' other Feature
+                if not is_moderator and other_user_id != request_user_id:
+                    inv = False
+
+        if inv is None:
+            # Check if an Involvement to this Feature already exists
+            inv = this_object.find_involvement_by_guid(other_identifier)
+            if inv is not None:
+                # Check if current Involvement has a different Role than the
+                # Involvement already existing
+                inv = this_object.find_involvement_by_role(other_identifier,
+                    stakeholder_role)
+                if inv is not None:
+                    # Check if current Involvement points to a different Feature
+                    # version than the Involvement already existing
+                    inv = this_object.find_involvement(other_identifier, 
+                        stakeholder_role, other_version)
+                    if inv is not None:
+                        # If the current Involvement is 'active' and the
+                        # previous Involvement was 'inactive', replace the
+                        # previous Involvement
+                        if (other_status_id == 2 and
+                            this_object.find_involvement_by_role(
+                                other_identifier, stakeholder_role).get_status()
+                                == 3):
+                            this_object.remove_involvement(
+                                this_object.find_involvement_by_role(
+                                    other_identifier, stakeholder_role))
+
+        return inv
 
     def _get_pending_by_user(self, request):
         """
@@ -217,43 +373,41 @@ class Protocol(object):
 
         a_filter_expr = []
         sh_filter_expr = []
-        if ('a__queryable' in request.params or 
-            'sh__queryable' in request.params):
-            for k in request.params:
-                # Collect filter expressions
-                if len(request.params[k]) <= 0 or '__' not in k:
-                    continue
-                try:
-                    prefix, col, op = k.split('__')
-                except ValueError:
-                    continue
-                # Several values can be queried for one attributes e.g.
-                # project_use equals pending and signed. Build the URL
-                # like: queryable=project_use&project_use__eq=pending,signed
-                # First: Activity attributes
-                if prefix == 'a' and col in request.params['a__queryable']:
-                    values = request.params[k].split(',')
-                    for v in values:
-                        q = self.Session.query(
-                                A_Tag.fk_a_tag_group.label('a_filter_tg_id')
-                            ).\
-                            join(A_Key).\
-                            join(A_Value).\
-                            filter(A_Key.key == col).\
-                            filter(__get_filter_expression(prefix, v, op))
-                        a_filter_expr.append(q)
-                # Second: Stakeholder attributes
-                elif prefix == 'sh' and col in request.params['sh__queryable']:
-                    values = request.params[k].split(',')
-                    for v in values:
-                        q = self.Session.query(
-                                SH_Tag.fk_sh_tag_group.label('sh_filter_tg_id')
-                            ).\
-                            join(SH_Key).\
-                            join(SH_Value).\
-                            filter(SH_Key.key == col).\
-                            filter(__get_filter_expression(prefix, v, op))
-                        sh_filter_expr.append(q)
+        for k in request.params:
+            # Collect filter expressions
+            if len(request.params[k]) <= 0 or '__' not in k:
+                continue
+            try:
+                prefix, col, op = k.split('__')
+            except ValueError:
+                continue
+            # Several values can be queried for one attributes e.g.
+            # project_use equals pending and signed. Build the URL
+            # like: queryable=project_use&project_use__eq=pending,signed
+            # First: Activity attributes
+            if prefix == 'a':
+                values = request.params[k].split(',')
+                for v in values:
+                    q = self.Session.query(
+                            A_Tag.fk_a_tag_group.label('a_filter_tg_id')
+                        ).\
+                        join(A_Key).\
+                        join(A_Value).\
+                        filter(A_Key.key == col).\
+                        filter(__get_filter_expression(prefix, v, op))
+                    a_filter_expr.append(q)
+            # Second: Stakeholder attributes
+            elif prefix == 'sh':
+                values = request.params[k].split(',')
+                for v in values:
+                    q = self.Session.query(
+                            SH_Tag.fk_sh_tag_group.label('sh_filter_tg_id')
+                        ).\
+                        join(SH_Key).\
+                        join(SH_Value).\
+                        filter(SH_Key.key == col).\
+                        filter(__get_filter_expression(prefix, v, op))
+                    sh_filter_expr.append(q)
 
         return (a_filter_expr, len(a_filter_expr),
             sh_filter_expr, len(sh_filter_expr))
@@ -287,8 +441,7 @@ class Protocol(object):
                      subquery()
         return key_query, value_query
 
-    def _get_order(self, request, Mapped_Class, Tag_Group, Tag, Key, Value,
-        Changeset):
+    def _get_order(self, request, Mapped_Class, Tag_Group, Tag, Key, Value):
         """
         Returns
         - a SubQuery with an ordered list of Activity IDs and
@@ -426,8 +579,7 @@ class Protocol(object):
 
         return False
 
-    def _add_review(self, request, item, previous_item, Changeset_Item, Db_Item,
-        user):
+    def _add_review(self, request, item, previous_item, Db_Item, user):
         """
         Add a review decision
         """
@@ -443,20 +595,13 @@ class Protocol(object):
             'rejected',
             'edited'
         ]
-        # Same for review decisions
-        reviewdecisionArray = [
-            'approved',
-            'rejected',
-            'edited'
-        ]
 
         ret = {'success': False}
 
         # Collect POST values
-        review_decision = self.Session.query(Review_Decision).\
-            get(request.POST['review_decision'])
+        review_decision = request.POST['review_decision']
         if review_decision is None:
-            ret['msg'] = 'Review decision not provided or not found.'
+            ret['msg'] = 'Review decision not provided.'
             return ret
 
         review_comment = None
@@ -464,7 +609,7 @@ class Protocol(object):
             request.POST['comment_textarea'] != ''):
             review_comment = request.POST['comment_textarea']
 
-        if review_decision.id == reviewdecisionArray.index('approved') + 1:
+        if review_decision == '1':
             # Approved
             if previous_item is not None:
                 # Set previous version to 'inactive' if it was active before
@@ -493,21 +638,15 @@ class Protocol(object):
                     update({Db_Item.fk_status: statusArray.index('inactive')+1})
                 item.fk_status = statusArray.index('active') + 1
 
-        elif review_decision.id == reviewdecisionArray.index('rejected') + 1:
+        elif review_decision == '2':
             # Rejected: Do not modify previous version and set new version to
             # 'rejected'
             item.fk_status = statusArray.index('rejected') + 1
 
-        elif review_decision.id == reviewdecisionArray.index('edited') + 1:
-            # Edited: Do not modify previous version and set new version to
-            # 'edited'
-            item.fk_status = statusArray.index('edited') + 1
-
-        # Add Changeset_Review
-        changeset_review = Changeset_Item(review_comment)
-        changeset_review.changeset = item.changesets[0]
-        changeset_review.user = user
-        changeset_review.review_decision = review_decision
+        # Add review stuff
+        item.user_review = user
+        item.timestamp_review = datetime.datetime.now()
+        item.comment_review = review_comment
 
         ret['success'] = True
         ret['msg'] = 'Review successful.'
@@ -571,6 +710,55 @@ class Protocol(object):
 
         return self.configuration
 
+    def _create_tag(self, request, parent, key, value, Tag_Item, Key_Item,
+        Value_Item):
+        """
+        Creates a new SQLAlchemy tag object and appends it to the parent list.
+        """
+
+        # Validate the key and value pair with the configuration file
+        if not self._key_value_is_valid(request, self.configuration, key,
+            value):
+            self.Session.rollback()
+            raise HTTPBadRequest("Key: %s or Value: %s is not valid." %
+                (key, value))
+
+        # The key has to be already in the database
+        k = self.Session.query(Key_Item).filter(Key_Item.key == key).first()
+
+        # If the value is not yet in the database, create a new value
+        v = self.Session.query(Value_Item).\
+            filter(Value_Item.value == unicode(value)).\
+            first()
+        if v is None:
+            v = Value_Item(value=value)
+            # @TODO: Really always use fk_language = 1 when inserting new value?
+            v.fk_language = 1
+
+        # Create a new tag with key and value and append it to the parent TG
+        t = Tag_Item()
+        parent.append(t)
+        t.key = k
+        t.value = v
+
+        # Return the newly created tag
+        return t
+
+    def _convert_utf8(self, data):
+        """
+        Converts python unicode strings so they can be stored in the database
+        without the u'
+        http://stackoverflow.com/questions/1254454
+        """
+        if isinstance(data, unicode):
+            return data.encode('utf-8')
+        elif isinstance(data, collections.Mapping):
+            return dict(map(self._convert_utf8, data.iteritems()))
+        elif isinstance(data, collections.Iterable):
+            return type(data)(map(self._convert_utf8, data))
+        else:
+            return data
+
 class Tag(object):
 
     def __init__(self, id, key, value):
@@ -592,7 +780,7 @@ class Tag(object):
 
 class TagGroup(object):
 
-    def __init__(self, id=None, main_tag_id=None):
+    def __init__(self, id=None, tg_id=None, main_tag_id=None):
         """
         Create a new TagGroup object with id and the main_tag_id
         """
@@ -601,6 +789,7 @@ class TagGroup(object):
         self._id = id
         # The id of the main tag (not the tag itself!)
         self._main_tag_id = main_tag_id
+        self._tg_id = tg_id
         # List to store the tags
         self._tags = []
         self._diffFlag = None
@@ -650,40 +839,60 @@ class TagGroup(object):
             if t.get_id() == self._main_tag_id:
                 main_tag = t.to_table()
 
-        return {'id': self._id, 'main_tag': main_tag, 'tags': tags}
+        return {
+            'id': self._id,
+            'tg_id': self._tg_id,
+            'main_tag': main_tag,
+            'tags': tags
+        }
 
 class Inv(object):
 
-    def __init__(self, guid, feature, role, role_id):
+    def __init__(self, guid, feature, role, role_id, version, status_id):
         self._guid = guid
         self._feature = feature
         self._role = role
         self._role_id = role_id
+        self._version = version
+        self._status_id = status_id
 
     def get_guid(self):
         return self._guid
 
     def get_role(self):
         return self._role
+    
+    def get_role_id(self):
+        return self._role_id
+
+    def get_version(self):
+        return self._version
+
+    def get_status(self):
+        return self._status_id
 
     def to_table(self, request):
         if self._feature is None:
             return {
                 'id': str(self._guid),
                 'role': self._role,
-                'role_id': self._role_id
+                'role_id': self._role_id,
+                'version': self._version,
+                'status_id': self._status_id
             }
         else:
             return {
                 'data': self._feature.to_table(request),
                 'role': self._role,
-                'role_id': self._role_id
+                'role_id': self._role_id,
+                'version': self._version,
+                'status_id': self._status_id
             }
 
 class Feature(object):
 
     def __init__(self, guid, order_value, version=None, status=None,
-        timestamp=None, diff_info=None, ** kwargs):
+        status_id=None, timestamp=None, diff_info=None, ** kwargs):
         self._taggroups = []
         self._involvements = []
         self._guid = guid
@@ -692,6 +901,7 @@ class Feature(object):
         self._timestamp = timestamp
         self._diff_info = diff_info
         self._status = status
+        self._status_id = status_id
         self._pending = []
         self._missing_keys = None
 
@@ -704,9 +914,25 @@ class Feature(object):
     def add_involvement(self, involvement):
         self._involvements.append(involvement)
 
-    def find_involvement(self, guid, role):
+    def remove_involvement(self, involvement):
+        self._involvements.remove(involvement)
+
+    def find_involvement_by_guid(self, guid):
         for i in self._involvements:
-            if i.get_guid() == guid and i.get_role() == role:
+            if (i.get_guid() == guid):
+                return i
+        return None
+
+    def find_involvement_by_role(self, guid, role):
+        for i in self._involvements:
+            if (i.get_guid() == guid and i.get_role() == role):
+                return i
+        return None
+
+    def find_involvement(self, guid, role, version):
+        for i in self._involvements:
+            if (i.get_guid() == guid and i.get_role() == role and
+                i.get_version() == version):
                 return i
         return None
 
@@ -730,6 +956,12 @@ class Feature(object):
 
     def get_status(self):
         return self._status
+
+    def get_status_id(self):
+        return self._status_id
+
+    def get_guid(self):
+        return self._guid
 
     def set_pending(self, pending):
         self._pending = pending
@@ -793,6 +1025,8 @@ class Feature(object):
             ret['timestamp'] = str(self._timestamp)
         if self._status is not None:
             ret['status'] = get_translated_status(request, self._status)
+        if self._status_id is not None:
+            ret['status_id'] = self._status_id
         if self._diff_info is not None:
             for k in self._diff_info:
                 # Try to translate status

@@ -23,7 +23,7 @@ Ext.define('Lmkp.view.stakeholders.Details',{
 
     initComponent: function(){
 
-        this.centerPanel = Ext.create('Ext.panel.Panel',{
+        this.centerPanel = Ext.create('Ext.panel.Panel', {
             autoScroll: true,
             layout: 'anchor',
             itemId: 'stakeholderDetailCenterPanel'
@@ -65,7 +65,7 @@ Ext.define('Lmkp.view.stakeholders.Details',{
                 sortParam: 'order_by',
                 startParam: 'offset',
                 type: 'ajax',
-                url: '/stakeholders/history/' + this.stakeholder.get('id')
+                url: '/stakeholders/json/' + this.stakeholder.get('id')
             },
             remoteSort: true
         });

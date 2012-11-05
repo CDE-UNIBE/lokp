@@ -41,7 +41,7 @@ Ext.define('Lmkp.store.ActivityGrid', {
     setInitialProxy: function() {
 
         // Update url
-        this.proxy.url = '/activities';
+        this.proxy.url = '/activities/json';
 
         // Delete any traces of stakeholders
         delete this.proxy.extraParams['sh_id'];
