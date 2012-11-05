@@ -73,7 +73,7 @@ Ext.define('Lmkp.view.activities.Details', {
                 sortParam: 'order_by',
                 startParam: 'offset',
                 type: 'ajax',
-                url: '/activities/history/' + activity_identifier
+                url: '/activities/json/' + activity_identifier
             },
             remoteSort: true
         });
