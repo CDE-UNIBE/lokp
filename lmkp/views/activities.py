@@ -7,10 +7,11 @@ import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPCreated
 from pyramid.httpexceptions import HTTPForbidden
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPUnauthorized
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
+from pyramid.renderers import render_to_response
 from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
 from pyramid.security import effective_principals
@@ -30,112 +31,223 @@ log = logging.getLogger(__name__)
 activity_protocol2 = ActivityProtocol2(Session)
 activity_protocol3 = ActivityProtocol3(Session)
 
-# TODO: quite possibly, this could be deleted ... Not sure though
-## Translatable hashmap with all possible activity status
-#statusMap = {
-#'active': _('Active Activities', default='Active Activities'),
-#'overwritten': _('Overwritten Activities', default='Overwritten Activities'),
-#'pending': _('Pending Activities', default='Pending Activities'),
-#'deleted': _('Deleted Activities', default='Deleted Activities'),
-#'rejected': _('Rejected Activities', default='Rejected Activities')
-#}
-#
-#def get_status(request):
-#    """
-#    Returns a list of requested and valid status
-#    """
-#
-#    # Set the default status
-#    defaultStatus = ['active']
-#
-#    # Get the status parameter if set, else active per default
-#    requestedStatus = request.params.get('status', defaultStatus)
-#    try:
-#        status = requestedStatus.split(',')
-#    except AttributeError:
-#        status = requestedStatus
-#
-#    # Make sure that all status elements are in the statusMap. If not, remove it
-#    for s in status:
-#        if s not in statusMap:
-#            status.remove(s)
-#
-#    # Make sure that not an empty status is returned
-#    if len(status) == 0:
-#        status = defaultStatus
-#
-#    # Return a list of valid status
-#    return status
-#
-#def get_status_filter(request):
-#    status = get_status(request)
-#    if len(status) == 0:
-#        return None
-#    elif len(status) == 1:
-#        return (Status.name == status[0])
-#    else:
-#        filters = []
-#        for s in status:
-#            filters.append((Status.name == s))
-#        return or_(* filters)
-
 def get_timestamp(request):
     """
     Gets the timestamp from the request url and returns it
     """
     pass
 
-
-@view_config(route_name='activities_read_one', renderer='geojson')
-def read_one(request):
-    """
-    Returns the feature with the requested id
-    """
-    uid = request.matchdict.get('uid', None)
-    return activity_protocol2.read(request, uid=uid)
-
-@view_config(route_name='blablaOneActive', renderer='json')
-def blablaOneActive(request):
-    uid = request.matchdict.get('uid', None)
-    return activity_protocol3.read_one_active(request, uid=uid)
-
-@view_config(route_name='blablaOnePublic', renderer='json')
-def blablaOnePublic(request):
-    uid = request.matchdict.get('uid', None)
-    return activity_protocol3.read_one(request, uid=uid, public=True)
-
-@view_config(route_name='blablaOneUser', renderer='json')
-def blablaOneUser(request):
-    uid = request.matchdict.get('uid', None)
-    return activity_protocol3.read_one(request, uid=uid, public=False)
-
-@view_config(route_name='activities_read_many', renderer='json')
+@view_config(route_name='activities_read_many')
 def read_many(request):
     """
-    Reads many active activities
+    Read many, returns also pending Activities by currently logged in user and
+    all pending Activities if logged in as moderator.
+    Default output format: JSON
     """
-    activities = activity_protocol2.read(request)
-    return activities
+    
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
 
-@view_config(route_name='blablabla', renderer='json')
-def blablabla(request):
-    return activity_protocol3.read_many(request, public=False)
+    if output_format == 'json':
+        renderer = 'json'
+    elif output_format == 'html':
+        #@TODO
+        renderer = 'json'
+    else:
+        renderer = None
 
-@view_config(route_name='blablabla_public', renderer='json')
-def blablabla_public(request):
-    return activity_protocol3.read_many(request, public=True)
+    if renderer is not None:
+        # Get the Activities and return them rendered
+        activities = activity_protocol3.read_many(request, public=False)
+        return render_to_response(renderer, activities, request)
 
-@view_config(route_name='blablablaManyBySHPublic', renderer='json')
-def blablablaManyBySHPublic(request):
-    uid = request.matchdict.get('uid', None)
-    return activity_protocol3.read_many_by_stakeholder(request, uid=uid,
-    public=True)
+    # If the output format was not found, raise 404 error
+    raise HTTPNotFound()
 
-@view_config(route_name='blablablaManyBySHUser', renderer='json')
-def blablablaManyBySHUser(request):
-    uid = request.matchdict.get('uid', None)
-    return activity_protocol3.read_many_by_stakeholder(request, uid=uid,
-    public=False)
+@view_config(route_name='activities_public_read_many')
+def read_many_public(request):
+    """
+    Read many, does not return any pending Activities.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        renderer = 'json'
+    elif output_format == 'html':
+        #@TODO
+        renderer = 'json'
+    else:
+        renderer = None
+
+    if renderer is not None:
+        # Get the Activities and return them rendered
+        activities = activity_protocol3.read_many(request, public=True)
+        return render_to_response(renderer, activities, request)
+
+    # If the output format was not found, raise 404 error
+    raise HTTPNotFound()
+
+@view_config(route_name='activities_bystakeholder')
+def by_stakeholder(request):
+    """
+    Read many Activities based on a Stakeholder ID. Also return pending
+    Activities by currently logged in user and all pending Activities if logged
+    in as moderator.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        renderer = 'json'
+    elif output_format == 'html':
+        #@TODO
+        renderer = 'json'
+    else:
+        renderer = None
+
+    if renderer is not None:
+        # Get the Activities and return them rendered
+        uid = request.matchdict.get('uid', None)
+        activities = activity_protocol3.read_many_by_stakeholder(request,
+            uid=uid, public=False)
+        return render_to_response(renderer, activities, request)
+
+    # If the output format was not found, raise 404 error
+    raise HTTPNotFound()
+
+@view_config(route_name='activities_bystakeholder_public')
+def by_stakeholder_public(request):
+    """
+    Read many Activities based on a Stakeholder ID. Do not return any pending
+    versions.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        renderer = 'json'
+    elif output_format == 'html':
+        #@TODO
+        renderer = 'json'
+    else:
+        renderer = None
+
+    if renderer is not None:
+        # Get the Activities and return them rendered
+        uid = request.matchdict.get('uid', None)
+        activities = activity_protocol3.read_many_by_stakeholder(request,
+            uid=uid, public=True)
+        return render_to_response(renderer, activities, request)
+
+    # If the output format was not found, raise 404 error
+    raise HTTPNotFound()
+
+@view_config(route_name='activities_read_one')
+def read_one(request):
+    """
+    Read one Activity based on ID and return all versions of this Activity. Also
+    return pending versions by currently logged in user and all pending versions
+    of this Activity if logged in as moderator.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        renderer = 'json'
+    elif output_format == 'html':
+        #@TODO
+        renderer = 'json'
+    else:
+        renderer = None
+
+    if renderer is not None:
+        # Get the Activities and return them rendered
+        uid = request.matchdict.get('uid', None)
+        activities = activity_protocol3.read_one(request, uid=uid, public=False)
+        return render_to_response(renderer, activities, request)
+
+    # If the output format was not found, raise 404 error
+    raise HTTPNotFound()
+
+@view_config(route_name='activities_read_one_public')
+def read_one_public(request):
+    """
+    Read one Activity based on ID and return all versions of this Activity. Do
+    not return any pending versions.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        renderer = 'json'
+    elif output_format == 'html':
+        #@TODO
+        renderer = 'json'
+    else:
+        renderer = None
+
+    if renderer is not None:
+        # Get the Activities and return them rendered
+        uid = request.matchdict.get('uid', None)
+        activities = activity_protocol3.read_one(request, uid=uid, public=True)
+        return render_to_response(renderer, activities, request)
+
+    # If the output format was not found, raise 404 error
+    raise HTTPNotFound()
+
+@view_config(route_name='activities_read_one_active')
+def read_one_active(request):
+    """
+    Read one Activity based on ID and return only the active version of the
+    Activity.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        renderer = 'json'
+    elif output_format == 'html':
+        #@TODO
+        renderer = 'json'
+    else:
+        renderer = None
+        
+    if renderer is not None:
+        # Get the Activities and return them rendered
+        uid = request.matchdict.get('uid', None)
+        activities = activity_protocol3.read_one_active(request, uid=uid)
+        return render_to_response(renderer, activities, request)
+
+    # If the output format was not found, raise 404 error
+    raise HTTPNotFound()
+
 
 @view_config(route_name='activities_read_pending', renderer='lmkp:templates/rss.mak')
 def read_pending(request):
@@ -473,17 +585,17 @@ def _check_difference(new, old, localizer=None):
         new.changes = changes
     return new
 
-def _history_get_changeset_details(object):
-    """
-    Appends details from Changeset of an ActivityProtocol object based on the ID of the activity
-    and returns this object. 
-    """
-    if object.id is not None:
-        changeset = Session.query(A_Changeset).filter(A_Changeset.fk_activity == object.id).first()
-        object.userid = changeset.user.id
-        object.username = changeset.user.username
-        object.source = changeset.source
-        return object
+#def _history_get_changeset_details(object):
+#    """
+#    Appends details from Changeset of an ActivityProtocol object based on the ID of the activity
+#    and returns this object.
+#    """
+#    if object.id is not None:
+#        changeset = Session.query(A_Changeset).filter(A_Changeset.fk_activity == object.id).first()
+#        object.userid = changeset.user.id
+#        object.username = changeset.user.username
+#        object.source = changeset.source
+#        return object
 
 
 def _get_extjs_config(name, config, language):
