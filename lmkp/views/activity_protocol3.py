@@ -168,6 +168,9 @@ class ActivityProtocol3(Protocol):
         query, count = self._query_many(request, relevant_activities,
             limit=limit, offset=offset, involvements=inv_details!='none')
 
+        # Order the Activity by version
+        query = query.order_by(desc(Activity.version))
+
         activities = self._query_to_activities(request, query,
             involvements=inv_details, public_query=public)
 
@@ -335,10 +338,6 @@ class ActivityProtocol3(Protocol):
             group_by(Activity.id, Activity.fk_status,
                 Activity.activity_identifier, order_query.c.value,
                 Activity.version)
-
-        # Order the Activity, default: by version
-        relevant_activities = relevant_activities.\
-            order_by(desc(Activity.version))
 
         return relevant_activities
 
@@ -1237,11 +1236,14 @@ class ActivityProtocol3(Protocol):
         
         else:
             # Update existing Activity
-
-            #@TODO: Handle involvements after updating the Activity
-
-            return self._update_activity(request, db_a, activity_dict,
+            updated_activity = self._update_activity(request, db_a, activity_dict,
                 changeset)
+
+            # Handle also the involvements
+            self._handle_involvements(request, db_a, updated_activity,
+                involvement_change, changeset, implicit_inv_change)
+
+            return updated_activity
 
     def _create_activity(self, request, activity_dict, changeset, **kwargs):
         """
@@ -1383,7 +1385,101 @@ class ActivityProtocol3(Protocol):
         # Add it to the database
         self.Session.add(new_activity)
 
-        #@TODO: Handle taggroups correctly (see old AP)
+        # Loop the tag groups from the previous version and copy it to the new
+        # version with its tags
+        for db_taggroup in self.Session.query(A_Tag_Group).\
+            filter(A_Tag_Group.fk_activity == old_activity.id):
+
+            # Create a new tag group but don't add it yet to the new activity
+            # version. Indicator (taggroupadded) is needed because the moment
+            # when to add a taggroup to database is a very delicate thing in
+            # SQLAlchemy.
+            taggroupadded = False
+            new_taggroup = A_Tag_Group(db_taggroup.tg_id)
+
+            # And loop the tags
+            for db_tag in db_taggroup.tags:
+
+                # Before copying the tag, make sure that it is not to delete
+                copy_tag = True
+                if 'taggroups' in activity_dict:
+                    for taggroup_dict in activity_dict['taggroups']:
+                        if ('id' in taggroup_dict and
+                            taggroup_dict['id'] == db_taggroup.id):
+                            # Check which tags we have to edit
+                            for tag_dict in taggroup_dict['tags']:
+                                if ('id' in tag_dict and
+                                    tag_dict['id'] == db_tag.id):
+                                    # Yes, it is THIS tag
+                                    if tag_dict['op'] == 'delete':
+                                        copy_tag = False
+
+                # Create and append the new tag only if requested
+                if copy_tag:
+                    # Get the key and value SQLAlchemy object
+                    k = self.Session.query(A_Key).get(db_tag.fk_key)
+                    v = self.Session.query(A_Value).get(db_tag.fk_value)
+                    new_tag = A_Tag()
+                    new_taggroup.tags.append(new_tag)
+                    new_tag.key = k
+                    new_tag.value = v
+
+                    # Set the main tag
+                    if db_taggroup.main_tag == db_tag:
+                        new_taggroup.main_tag = new_tag
+
+                    if taggroupadded is False:
+                        # It is necessary to add taggroup to database
+                        # immediately, otherwise SQLAlchemy tries to do this the
+                        # next time a tag is created and throws an error because
+                        # of assumingly null values
+                        new_activity.tag_groups.append(new_taggroup)
+                        taggroupadded = True
+
+            # Next step is to add new tags to this tag group without existing ids
+            if 'taggroups' in activity_dict:
+                for taggroup_dict in activity_dict['taggroups']:
+                    if ('id' in taggroup_dict and
+                        taggroup_dict['id'] == db_taggroup.id):
+                        for tag_dict in taggroup_dict['tags']:
+                            if 'id' not in tag_dict and tag_dict['op'] == 'add':
+                                new_tag = self._create_tag(
+                                    request, new_taggroup.tags, tag_dict['key'],
+                                    tag_dict['value'], A_Tag, A_Key, A_Value)
+                                # Set the main tag
+                                if 'main_tag' in taggroup_dict:
+                                    if (taggroup_dict['main_tag']['key'] ==
+                                        new_tag.key.key and
+                                        taggroup_dict['main_tag']['value'] ==
+                                        new_tag.value.value):
+                                        new_taggroup.main_tag = new_tag
+
+            # If taggroups were not added to database yet, then do it now. But
+            # only if add new tag groups to the new version if they have any
+            # tags in them (which is not the case if they were deleted).
+            if len(new_taggroup.tags) > 0 and taggroupadded is False:
+                new_activity.tag_groups.append(new_taggroup)
+
+        # Finally new tag groups (without id) needs to be added
+        # (and loop all again)
+        if 'taggroups' in activity_dict:
+            for taggroup_dict in activity_dict['taggroups']:
+                if (('id' not in taggroup_dict or ('id' in taggroup_dict and
+                    taggroup_dict['id'] is None))
+                    and taggroup_dict['op'] == 'add'):
+                    new_taggroup = A_Tag_Group()
+                    new_activity.tag_groups.append(new_taggroup)
+                    for tag_dict in taggroup_dict['tags']:
+                        new_tag = self._create_tag(
+                            request, new_taggroup.tags, tag_dict['key'],
+                            tag_dict['value'], A_Tag, A_Key, A_Value)
+                        # Set the main tag
+                        if 'main_tag' in taggroup_dict:
+                            if (taggroup_dict['main_tag']['key'] ==
+                                new_tag.key.key and
+                                taggroup_dict['main_tag']['value'] ==
+                                new_tag.value.value):
+                                new_taggroup.main_tag = new_tag
 
         return new_activity
 

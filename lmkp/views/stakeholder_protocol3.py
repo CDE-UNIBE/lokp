@@ -99,6 +99,9 @@ class StakeholderProtocol3(Protocol):
         query, count = self._query_many(request, relevant_stakeholders,
             limit=limit, offset=offset, involvements=inv_details!='none')
 
+        # Order the Stakeholder by version
+        query = query.order_by(desc(Stakeholder.version))
+
         stakeholders = self._query_to_stakeholders(request, query,
             involvements=inv_details, public_query = public)
 
@@ -124,9 +127,6 @@ class StakeholderProtocol3(Protocol):
         query, count = self._query_many(
             request, relevant_stakeholders, limit=limit, offset=offset,
             involvements=inv_details!='none')
-
-        print "***********************"
-        print query
 
         stakeholders = self._query_to_stakeholders(
             request, query, involvements=inv_details, public_query=public)
@@ -255,10 +255,6 @@ class StakeholderProtocol3(Protocol):
             group_by(Stakeholder.id, Stakeholder.fk_status,
                 Stakeholder.stakeholder_identifier, order_query.c.value,
                 Stakeholder.version)
-
-        # Order the Activity, default: by version
-        relevant_stakeholders = relevant_stakeholders.\
-            order_by(desc(Stakeholder.version))
 
         return relevant_stakeholders
 
@@ -971,6 +967,16 @@ class StakeholderProtocol3(Protocol):
         Stakeholder or update an existing one.
         """
 
+        # Collect information about changing involvements
+        involvement_change = (stakeholder_dict['activities']
+            if 'activities' in stakeholder_dict
+            else None)
+        implicit_inv_change = (True
+            if involvement_change is not None
+            and 'implicit_involvement_update' in stakeholder_dict
+            and stakeholder_dict['implicit_involvement_update'] is True
+            else False)
+
         create_new = False
 
         # If there is no id for the Stakeholder in the diff, create a new
@@ -997,17 +1003,21 @@ class StakeholderProtocol3(Protocol):
                 stakeholder_dict, changeset, status=status)
 
             # Handle also the involvements
-            #@TODO !!!
+            self._handle_involvements(request, None, new_stakeholder,
+                involvement_change, changeset, implicit_inv_change)
 
             return new_stakeholder
 
         else:
             # Update existing Stakeholder
+            updated_stakeholder = self._update_stakeholder(request, db_sh, 
+                stakeholder_dict, changeset)
 
-            #@TODO: Handle involvements after updating the Stakeholder
+            # Handle also the involvements
+            self._handle_involvements(request, db_sh, updated_stakeholder,
+                involvement_change, changeset, implicit_inv_change)
 
-            return self._update_stakeholder(request, db_sh, stakeholder_dict,
-            changeset)
+            return updated_stakeholder
 
     def _create_stakeholder(self, request, stakeholder_dict, changeset,
         **kwargs):
@@ -1131,7 +1141,101 @@ class StakeholderProtocol3(Protocol):
         # Add it to the database
         self.Session.add(new_stakeholder)
 
-        #@TODO: Handle taggroups correctly (see old SP)
+        # Loop the tag groups from the previous version and copy it to the new
+        # version with its tags
+        for db_taggroup in self.Session.query(SH_Tag_Group).\
+            filter(SH_Tag_Group.fk_stakeholder == old_stakeholder.id):
+
+            # Create a new tag group but don't add it yet to the new stakeholder
+            # version. Indicator (taggroupadded) is needed because the moment
+            # when to add a taggroup to database is a very delicate thing in
+            # SQLAlchemy.
+            taggroupadded = False
+            new_taggroup = SH_Tag_Group(db_taggroup.tg_id)
+
+            # And loop the tags
+            for db_tag in db_taggroup.tags:
+
+                # Before copying the tag, make sure that it is not to delete
+                copy_tag = True
+                if 'taggroups' in stakeholder_dict:
+                    for taggroup_dict in stakeholder_dict['taggroups']:
+                        if ('id' in taggroup_dict and
+                            taggroup_dict['id'] == db_taggroup.id):
+                            # Check which tags we have to edit
+                            for tag_dict in taggroup_dict['tags']:
+                                if ('id' in tag_dict and
+                                    tag_dict['id'] == db_tag.id):
+                                    # Yes, it is THIS tag
+                                    if tag_dict['op'] == 'delete':
+                                        copy_tag = False
+
+                # Create and append the new tag only if requested
+                if copy_tag:
+                    # Get the key and value SQLAlchemy object
+                    k = self.Session.query(SH_Key).get(db_tag.fk_key)
+                    v = self.Session.query(SH_Value).get(db_tag.fk_value)
+                    new_tag = SH_Tag()
+                    new_taggroup.tags.append(new_tag)
+                    new_tag.key = k
+                    new_tag.value = v
+
+                    # Set the main tag
+                    if db_taggroup.main_tag == db_tag:
+                        new_taggroup.main_tag = new_tag
+
+                    if taggroupadded is False:
+                        # It is necessary to add taggroup to database
+                        # immediately, otherwise SQLAlchemy tries to do this the
+                        # next time a tag is created and throws an error because
+                        # of assumingly null values
+                        new_stakeholder.tag_groups.append(new_taggroup)
+                        taggroupadded = True
+
+            # Next step is to add new tags to this tag group without existing ids
+            if 'taggroups' in stakeholder_dict:
+                for taggroup_dict in stakeholder_dict['taggroups']:
+                    if ('id' in taggroup_dict and
+                        taggroup_dict['id'] == db_taggroup.id):
+                        for tag_dict in taggroup_dict['tags']:
+                            if 'id' not in tag_dict and tag_dict['op'] == 'add':
+                                new_tag = self._create_tag(
+                                    request, new_taggroup.tags, tag_dict['key'],
+                                    tag_dict['value'], SH_Tag, SH_Key, SH_Value)
+                                # Set the main tag
+                                if 'main_tag' in taggroup_dict:
+                                    if (taggroup_dict['main_tag']['key'] ==
+                                        new_tag.key.key and
+                                        taggroup_dict['main_tag']['value'] ==
+                                        new_tag.value.value):
+                                        new_taggroup.main_tag = new_tag
+
+            # If taggroups were not added to database yet, then do it now. But
+            # only if add new tag groups to the new version if they have any
+            # tags in them (which is not the case if they were deleted).
+            if len(new_taggroup.tags) > 0 and taggroupadded is False:
+                new_stakeholder.tag_groups.append(new_taggroup)
+
+        # Finally new tag groups (without id) needs to be added
+        # (and loop all again)
+        if 'taggroups' in stakeholder_dict:
+            for taggroup_dict in stakeholder_dict['taggroups']:
+                if (('id' not in taggroup_dict or ('id' in taggroup_dict and
+                    taggroup_dict['id'] is None)) and
+                    taggroup_dict['op'] == 'add'):
+                    new_taggroup = SH_Tag_Group()
+                    new_stakeholder.tag_groups.append(new_taggroup)
+                    for tag_dict in taggroup_dict['tags']:
+                        new_tag = self._create_tag(
+                            request, new_taggroup.tags, tag_dict['key'],
+                            tag_dict['value'], SH_Tag, SH_Key, SH_Value)
+                        # Set the main tag
+                        if 'main_tag' in taggroup_dict:
+                            if (taggroup_dict['main_tag']['key'] ==
+                                new_tag.key.key and
+                                taggroup_dict['main_tag']['value'] ==
+                                new_tag.value.value):
+                                new_taggroup.main_tag = new_tag
 
         return new_stakeholder
 
@@ -1147,7 +1251,7 @@ class StakeholderProtocol3(Protocol):
         - Involvement modified (eg. its role): combination of deleting and
             adding involvements
         """
-        from lmkp.views.activity_protocol2 import ActivityProtocol3
+        from lmkp.views.activity_protocol3 import ActivityProtocol3
         # It is important to keep track of all the Activities where involvements
         # were deleted because they need to be pushed to a new version as well
         awdi_id = [] # = Activities with deleted involvements
