@@ -101,10 +101,6 @@ def main(global_config, ** settings):
     # Read one
     config.add_route('activities_read_one', '/activities/{output}/{uid}')
 
-    #@TODO: This route should be handled by 'activities_read_many' -> implement
-    # output renderer for GeoJSON
-    config.add_route('activities_read_geojson', '/activities/geojson')
-
     #@TODO: Is this still needed?
     config.add_route('activities_read_pending', '/activities/pending')
     # Reads one or many activities and returns GeoJSON Feature or FeatureCollection

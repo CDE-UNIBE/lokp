@@ -51,20 +51,17 @@ def read_many(request):
         output_format = 'json'
 
     if output_format == 'json':
-        renderer = 'json'
+        activities = activity_protocol3.read_many(request, public=False)
+        return render_to_response('json', activities, request)
     elif output_format == 'html':
         #@TODO
-        renderer = 'json'
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    elif output_format == 'geojson':
+        activities = activity_protocol3.read_many_geojson(request, public=False)
+        return render_to_response('json', activities, request)
     else:
-        renderer = None
-
-    if renderer is not None:
-        # Get the Activities and return them rendered
-        activities = activity_protocol3.read_many(request, public=False)
-        return render_to_response(renderer, activities, request)
-
-    # If the output format was not found, raise 404 error
-    raise HTTPNotFound()
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
 
 @view_config(route_name='activities_public_read_many')
 def read_many_public(request):
@@ -79,20 +76,17 @@ def read_many_public(request):
         output_format = 'json'
 
     if output_format == 'json':
-        renderer = 'json'
+        activities = activity_protocol3.read_many(request, public=True)
+        return render_to_response('json', activities, request)
     elif output_format == 'html':
         #@TODO
-        renderer = 'json'
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    elif output_format == 'geojson':
+        activities = activity_protocol3.read_many_geojson(request, public=True)
+        return render_to_response('json', activities, request)
     else:
-        renderer = None
-
-    if renderer is not None:
-        # Get the Activities and return them rendered
-        activities = activity_protocol3.read_many(request, public=True)
-        return render_to_response(renderer, activities, request)
-
-    # If the output format was not found, raise 404 error
-    raise HTTPNotFound()
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
 
 @view_config(route_name='activities_bystakeholder')
 def by_stakeholder(request):
@@ -108,23 +102,18 @@ def by_stakeholder(request):
     except KeyError:
         output_format = 'json'
 
-    if output_format == 'json':
-        renderer = 'json'
-    elif output_format == 'html':
-        #@TODO
-        renderer = 'json'
-    else:
-        renderer = None
+    uid = request.matchdict.get('uid', None)
 
-    if renderer is not None:
-        # Get the Activities and return them rendered
-        uid = request.matchdict.get('uid', None)
+    if output_format == 'json':
         activities = activity_protocol3.read_many_by_stakeholder(request,
             uid=uid, public=False)
-        return render_to_response(renderer, activities, request)
-
-    # If the output format was not found, raise 404 error
-    raise HTTPNotFound()
+        return render_to_response('json', activities, request)
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
 
 @view_config(route_name='activities_bystakeholder_public')
 def by_stakeholder_public(request):
@@ -139,23 +128,18 @@ def by_stakeholder_public(request):
     except KeyError:
         output_format = 'json'
 
-    if output_format == 'json':
-        renderer = 'json'
-    elif output_format == 'html':
-        #@TODO
-        renderer = 'json'
-    else:
-        renderer = None
+    uid = request.matchdict.get('uid', None)
 
-    if renderer is not None:
-        # Get the Activities and return them rendered
-        uid = request.matchdict.get('uid', None)
+    if output_format == 'json':
         activities = activity_protocol3.read_many_by_stakeholder(request,
             uid=uid, public=True)
-        return render_to_response(renderer, activities, request)
-
-    # If the output format was not found, raise 404 error
-    raise HTTPNotFound()
+        return render_to_response('json', activities, request)
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
 
 @view_config(route_name='activities_read_one')
 def read_one(request):
@@ -171,23 +155,18 @@ def read_one(request):
     except KeyError:
         output_format = 'json'
 
+    uid = request.matchdict.get('uid', None)
+
     if output_format == 'json':
-        renderer = 'json'
+        activities = activity_protocol3.read_one(request, uid=uid, public=False)
+        return render_to_response('json', activities, request)
     elif output_format == 'html':
         #@TODO
-        renderer = 'json'
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
     else:
-        renderer = None
-
-    if renderer is not None:
-        # Get the Activities and return them rendered
-        uid = request.matchdict.get('uid', None)
-        activities = activity_protocol3.read_one(request, uid=uid, public=False)
-        return render_to_response(renderer, activities, request)
-
-    # If the output format was not found, raise 404 error
-    raise HTTPNotFound()
-
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
+   
 @view_config(route_name='activities_read_one_public')
 def read_one_public(request):
     """
@@ -196,27 +175,22 @@ def read_one_public(request):
     Default output format: JSON
     """
 
+    uid = request.matchdict.get('uid', None)
+
     try:
         output_format = request.matchdict['output']
     except KeyError:
         output_format = 'json'
 
     if output_format == 'json':
-        renderer = 'json'
+        activities = activity_protocol3.read_one(request, uid=uid, public=True)
+        return render_to_response('json', activities, request)
     elif output_format == 'html':
         #@TODO
-        renderer = 'json'
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
     else:
-        renderer = None
-
-    if renderer is not None:
-        # Get the Activities and return them rendered
-        uid = request.matchdict.get('uid', None)
-        activities = activity_protocol3.read_one(request, uid=uid, public=True)
-        return render_to_response(renderer, activities, request)
-
-    # If the output format was not found, raise 404 error
-    raise HTTPNotFound()
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
 
 @view_config(route_name='activities_read_one_active')
 def read_one_active(request):
@@ -231,23 +205,17 @@ def read_one_active(request):
     except KeyError:
         output_format = 'json'
 
+    uid = request.matchdict.get('uid', None)
+
     if output_format == 'json':
-        renderer = 'json'
+        activities = activity_protocol3.read_one_active(request, uid=uid)
+        return render_to_response('json', activities, request)
     elif output_format == 'html':
         #@TODO
-        renderer = 'json'
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
     else:
-        renderer = None
-        
-    if renderer is not None:
-        # Get the Activities and return them rendered
-        uid = request.matchdict.get('uid', None)
-        activities = activity_protocol3.read_one_active(request, uid=uid)
-        return render_to_response(renderer, activities, request)
-
-    # If the output format was not found, raise 404 error
-    raise HTTPNotFound()
-
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
 
 @view_config(route_name='activities_read_pending', renderer='lmkp:templates/rss.mak')
 def read_pending(request):
@@ -658,7 +626,3 @@ def _get_config_fields():
     log.info(fields)
 
     return fields
-
-@view_config(route_name='activities_read_geojson', renderer='json')
-def activities_read_geojson(request):
-    return activity_protocol2.read_geojson(request)

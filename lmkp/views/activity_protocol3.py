@@ -228,6 +228,21 @@ class ActivityProtocol3(Protocol):
             'data': [a.to_table(request) for a in activities]
         }
 
+    def read_many_geojson(self, request, public=True):
+
+        relevant_activities = self._get_relevant_activities_many(
+            request, public_query=public)
+
+        # Get limit and offset from request.
+        # Defaults: limit = None / offset = 0
+        limit = self._get_limit(request)
+        offset = self._get_offset(request)
+
+        query = self._query_geojson(relevant_activities, limit=limit,
+            offset=offset)
+
+        return self._query_to_geojson(query)
+
     def _get_relevant_activities_one_active(self, uid):
 
         # Create relevant Activities
@@ -903,6 +918,30 @@ class ActivityProtocol3(Protocol):
         else:
             return query
 
+    def _query_geojson(self, relevant_activities, limit=None, offset=None):
+
+        # Apply limit and offset
+        if limit is not None:
+            relevant_activities = relevant_activities.limit(limit)
+        if offset is not None:
+            relevant_activities = relevant_activities.offset(offset)
+
+        # Create query
+        relevant_activities = relevant_activities.subquery()
+        query = self.Session.query(
+                Activity.id.label('id'),
+                Activity.point.label('geometry'),
+                Activity.activity_identifier.label('identifier'),
+                Activity.version.label('version'),
+                Status.id.label('status_id'),
+                Status.name.label('status_name')
+            ).\
+            join(relevant_activities,
+                relevant_activities.c.order_id == Activity.id).\
+            join(Status)
+
+        return query
+
     def _query_to_activities(self, request, query, involvements='none',
         public_query=False):
 
@@ -1039,6 +1078,53 @@ class ActivityProtocol3(Protocol):
                         )
 
         return activities
+
+    def _query_to_geojson(self, query):
+
+        def _create_feature(id, g, identifier, status_id, status_name, version):
+            """
+            Small helper function to create a new Feature
+            """
+            feature = {}
+
+            geom = wkb.loads(str(g.geom_wkb))
+            geometry = {}
+            geometry['type'] = 'Point'
+            geometry['coordinates'] = [geom.x, geom.y]
+            feature['geometry'] = geometry
+
+            properties = {
+                'status': status_name,
+                'status_id': status_id,
+                'activity_identifier': str(identifier),
+                'version': int(version)
+            }
+            feature['properties'] = properties
+
+            # Doppelt genaeht haelt besser
+            feature['fid'] = int(id)
+            feature['id'] = int(id)
+            feature['type'] = 'Feature'
+
+            return feature
+
+        featureCollection = {}
+        featureCollection['features'] = []
+        featureCollection['type'] = 'FeatureCollection'
+
+        for q in query.all():
+            featureCollection['features'].append(
+                _create_feature(
+                    q.id,
+                    q.geometry,
+                    q.identifier,
+                    q.status_id,
+                    q.status_name,
+                    q.version
+                )
+            )
+
+        return featureCollection
 
     def _get_spatial_moderator_filter(self, request):
         """

@@ -33,22 +33,17 @@ def read_one_active(request):
     except KeyError:
         output_format = 'json'
 
+    uid = request.matchdict.get('uid', None)
+
     if output_format == 'json':
-        renderer = 'json'
+        stakeholders = stakeholder_protocol3.read_one_active(request, uid=uid)
+        return render_to_response('json', stakeholders, request)
     elif output_format == 'html':
         #@TODO
-        renderer = 'json'
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
     else:
-        renderer = None
-
-    if renderer is not None:
-        # Get the Stakeholders and return them rendered
-        uid = request.matchdict.get('uid', None)
-        stakeholders = stakeholder_protocol3.read_one_active(request, uid=uid)
-        return render_to_response(renderer, stakeholders, request)
-
-    # If the output format was not found, raise 404 error
-    raise HTTPNotFound()
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
 
 @view_config(route_name='stakeholders_read_one_public')
 def read_one_public(request):
@@ -63,23 +58,18 @@ def read_one_public(request):
     except KeyError:
         output_format = 'json'
 
-    if output_format == 'json':
-        renderer = 'json'
-    elif output_format == 'html':
-        #@TODO
-        renderer = 'json'
-    else:
-        renderer = None
+    uid = request.matchdict.get('uid', None)
 
-    if renderer is not None:
-        # Get the Stakeholders and return them rendered
-        uid = request.matchdict.get('uid', None)
+    if output_format == 'json':
         stakeholders = stakeholder_protocol3.read_one(request, uid=uid,
             public=True)
-        return render_to_response(renderer, stakeholders, request)
-
-    # If the output format was not found, raise 404 error
-    raise HTTPNotFound()
+        return render_to_response('json', stakeholders, request)
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
 
 @view_config(route_name='stakeholders_byactivity')
 def by_activity(request):
@@ -95,23 +85,18 @@ def by_activity(request):
     except KeyError:
         output_format = 'json'
 
-    if output_format == 'json':
-        renderer = 'json'
-    elif output_format == 'html':
-        #@TODO
-        renderer = 'json'
-    else:
-        renderer = None
+    uid = request.matchdict.get('uid', None)
 
-    if renderer is not None:
-        # Get the Stakeholders and return them rendered
-        uid = request.matchdict.get('uid', None)
+    if output_format == 'json':
         stakeholders = stakeholder_protocol3.read_many_by_activity(request,
             uid=uid, public=False)
-        return render_to_response(renderer, stakeholders, request)
-
-    # If the output format was not found, raise 404 error
-    raise HTTPNotFound()
+        return render_to_response('json', stakeholders, request)
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
 
 @view_config(route_name='stakeholders_byactivity_public')
 def by_activity_public(request):
@@ -126,23 +111,18 @@ def by_activity_public(request):
     except KeyError:
         output_format = 'json'
 
-    if output_format == 'json':
-        renderer = 'json'
-    elif output_format == 'html':
-        #@TODO
-        renderer = 'json'
-    else:
-        renderer = None
+    uid = request.matchdict.get('uid', None)
 
-    if renderer is not None:
-        # Get the Stakeholders and return them rendered
-        uid = request.matchdict.get('uid', None)
+    if output_format == 'json':
         stakeholders = stakeholder_protocol3.read_many_by_activity(request,
             uid=uid, public=True)
-        return render_to_response(renderer, stakeholders, request)
-
-    # If the output format was not found, raise 404 error
-    raise HTTPNotFound()
+        return render_to_response('json', stakeholders, request)
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
 
 @view_config(route_name='stakeholders_read_many')
 def read_many(request):
@@ -158,20 +138,14 @@ def read_many(request):
         output_format = 'json'
 
     if output_format == 'json':
-        renderer = 'json'
-    elif output_format == 'html':
-        #@TODO
-        renderer = 'json'
-    else:
-        renderer = None
-
-    if renderer is not None:
-        # Get the Stakeholders and return them rendered
         stakeholders = stakeholder_protocol3.read_many(request, public=False)
         return render_to_response(renderer, stakeholders, request)
-
-    # If the output format was not found, raise 404 error
-    raise HTTPNotFound()
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
 
 @view_config(route_name='stakeholders_read_many_public')
 def read_many_public(request):
@@ -187,20 +161,14 @@ def read_many_public(request):
         output_format = 'json'
 
     if output_format == 'json':
-        renderer = 'json'
+        stakeholders = stakeholder_protocol3.read_many(request, public=True)
+        return render_to_response('json', stakeholders, request)
     elif output_format == 'html':
         #@TODO
-        renderer = 'json'
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
     else:
-        renderer = None
-
-    if renderer is not None:
-        # Get the Stakeholders and return them rendered
-        stakeholders = stakeholder_protocol3.read_many(request, public=True)
-        return render_to_response(renderer, stakeholders, request)
-
-    # If the output format was not found, raise 404 error
-    raise HTTPNotFound()
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
 
 @view_config(route_name='stakeholders_read_one')
 def read_one(request):
@@ -216,23 +184,18 @@ def read_one(request):
     except KeyError:
         output_format = 'json'
 
-    if output_format == 'json':
-        renderer = 'json'
-    elif output_format == 'html':
-        #@TODO
-        renderer = 'json'
-    else:
-        renderer = None
+    uid = request.matchdict.get('uid', None)
 
-    if renderer is not None:
-        # Get the Stakeholders and return them rendered
-        uid = request.matchdict.get('uid', None)
+    if output_format == 'json':
         stakeholders = stakeholder_protocol3.read_one(request, uid=uid,
             public=False)
         return render_to_response(renderer, stakeholders, request)
-
-    # If the output format was not found, raise 404 error
-    raise HTTPNotFound()
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
 
 @view_config(route_name='stakeholders_read_one_public')
 def read_one_public(request):
@@ -247,23 +210,18 @@ def read_one_public(request):
     except KeyError:
         output_format = 'json'
 
-    if output_format == 'json':
-        renderer = 'json'
-    elif output_format == 'html':
-        #@TODO
-        renderer = 'json'
-    else:
-        renderer = None
+    uid = request.matchdict.get('uid', None)
 
-    if renderer is not None:
-        # Get the Stakeholders and return them rendered
-        uid = request.matchdict.get('uid', None)
+    if output_format == 'json':
         stakeholders = stakeholder_protocol3.read_one(request, uid=uid,
             public=True)
         return render_to_response(renderer, stakeholders, request)
-
-    # If the output format was not found, raise 404 error
-    raise HTTPNotFound()
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
 
 @view_config(route_name='stakeholders_review', renderer='json')
 def review(request):
