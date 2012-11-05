@@ -6,6 +6,7 @@ from lmkp.models.database_objects import *
 import logging
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.i18n import TranslationStringFactory
+from pyramid.renderers import render_to_response
 from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
 from pyramid.security import effective_principals
@@ -18,6 +19,251 @@ _ = TranslationStringFactory('lmkp')
 
 stakeholder_protocol = StakeholderProtocol(Session)
 stakeholder_protocol3 = StakeholderProtocol3(Session)
+
+@view_config(route_name='stakeholders_read_one_active')
+def read_one_active(request):
+    """
+    Read one Stakeholder based on ID and return only the active version of the
+    Stakeholder.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        renderer = 'json'
+    elif output_format == 'html':
+        #@TODO
+        renderer = 'json'
+    else:
+        renderer = None
+
+    if renderer is not None:
+        # Get the Stakeholders and return them rendered
+        uid = request.matchdict.get('uid', None)
+        stakeholders = stakeholder_protocol3.read_one_active(request, uid=uid)
+        return render_to_response(renderer, stakeholders, request)
+
+    # If the output format was not found, raise 404 error
+    raise HTTPNotFound()
+
+@view_config(route_name='stakeholders_read_one_public')
+def read_one_public(request):
+    """
+    Read one Stakeholder based on ID and return all versions of this
+    Stakeholder. Do not return any pending versions.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        renderer = 'json'
+    elif output_format == 'html':
+        #@TODO
+        renderer = 'json'
+    else:
+        renderer = None
+
+    if renderer is not None:
+        # Get the Stakeholders and return them rendered
+        uid = request.matchdict.get('uid', None)
+        stakeholders = stakeholder_protocol3.read_one(request, uid=uid,
+            public=True)
+        return render_to_response(renderer, stakeholders, request)
+
+    # If the output format was not found, raise 404 error
+    raise HTTPNotFound()
+
+@view_config(route_name='stakeholders_byactivity')
+def by_activity(request):
+    """
+    Read many Stakeholders based on an Activity ID. Also return pending
+    Stakeholders by currently logged in user and all pending Stakeholders if
+    logged in as moderator.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        renderer = 'json'
+    elif output_format == 'html':
+        #@TODO
+        renderer = 'json'
+    else:
+        renderer = None
+
+    if renderer is not None:
+        # Get the Stakeholders and return them rendered
+        uid = request.matchdict.get('uid', None)
+        stakeholders = stakeholder_protocol3.read_many_by_activity(request,
+            uid=uid, public=False)
+        return render_to_response(renderer, stakeholders, request)
+
+    # If the output format was not found, raise 404 error
+    raise HTTPNotFound()
+
+@view_config(route_name='stakeholders_byactivity_public')
+def by_activity_public(request):
+    """
+    Read many Stakeholders based on an Activity ID. Do not return any pending
+    versions.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        renderer = 'json'
+    elif output_format == 'html':
+        #@TODO
+        renderer = 'json'
+    else:
+        renderer = None
+
+    if renderer is not None:
+        # Get the Stakeholders and return them rendered
+        uid = request.matchdict.get('uid', None)
+        stakeholders = stakeholder_protocol3.read_many_by_activity(request,
+            uid=uid, public=True)
+        return render_to_response(renderer, stakeholders, request)
+
+    # If the output format was not found, raise 404 error
+    raise HTTPNotFound()
+
+@view_config(route_name='stakeholders_read_many')
+def read_many(request):
+    """
+    Read many, returns also pending Stakeholders by currently logged in user and
+    all pending Stakeholders if logged in as moderator.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        renderer = 'json'
+    elif output_format == 'html':
+        #@TODO
+        renderer = 'json'
+    else:
+        renderer = None
+
+    if renderer is not None:
+        # Get the Stakeholders and return them rendered
+        stakeholders = stakeholder_protocol3.read_many(request, public=False)
+        return render_to_response(renderer, stakeholders, request)
+
+    # If the output format was not found, raise 404 error
+    raise HTTPNotFound()
+
+@view_config(route_name='stakeholders_read_many_public')
+def read_many_public(request):
+    """
+    Read many, returns also pending Stakeholders by currently logged in user and
+    all pending Stakeholders if logged in as moderator.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        renderer = 'json'
+    elif output_format == 'html':
+        #@TODO
+        renderer = 'json'
+    else:
+        renderer = None
+
+    if renderer is not None:
+        # Get the Stakeholders and return them rendered
+        stakeholders = stakeholder_protocol3.read_many(request, public=True)
+        return render_to_response(renderer, stakeholders, request)
+
+    # If the output format was not found, raise 404 error
+    raise HTTPNotFound()
+
+@view_config(route_name='stakeholders_read_one')
+def read_one(request):
+    """
+    Read one Stakeholder based on ID and return all versions of this
+    Stakeholder. Also return pending versions by currently logged in user and
+    all pending versions of this Stakeholder if logged in as moderator.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        renderer = 'json'
+    elif output_format == 'html':
+        #@TODO
+        renderer = 'json'
+    else:
+        renderer = None
+
+    if renderer is not None:
+        # Get the Stakeholders and return them rendered
+        uid = request.matchdict.get('uid', None)
+        stakeholders = stakeholder_protocol3.read_one(request, uid=uid,
+            public=False)
+        return render_to_response(renderer, stakeholders, request)
+
+    # If the output format was not found, raise 404 error
+    raise HTTPNotFound()
+
+@view_config(route_name='stakeholders_read_one_public')
+def read_one_public(request):
+    """
+    Read one Stakeholder based on ID and return all versions of this
+    Stakeholder. Do not return any pending versions.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        renderer = 'json'
+    elif output_format == 'html':
+        #@TODO
+        renderer = 'json'
+    else:
+        renderer = None
+
+    if renderer is not None:
+        # Get the Stakeholders and return them rendered
+        uid = request.matchdict.get('uid', None)
+        stakeholders = stakeholder_protocol3.read_one(request, uid=uid,
+            public=True)
+        return render_to_response(renderer, stakeholders, request)
+
+    # If the output format was not found, raise 404 error
+    raise HTTPNotFound()
 
 @view_config(route_name='stakeholders_review', renderer='json')
 def review(request):
@@ -97,7 +343,8 @@ def create(request):
 
     if userid is None:
         return HTTPForbidden()
-    if not isinstance(has_permission('edit', request.context, request), ACLAllowed):
+    if not isinstance(has_permission('edit', request.context, request),
+        ACLAllowed):
         return HTTPForbidden()
 
     ids = stakeholder_protocol3.create(request)
@@ -108,56 +355,6 @@ def create(request):
 
     request.response.status = 201
     return response
-
-@view_config(route_name='stakeholders_read_one', renderer='json')
-def read_one(request):
-    """
-    Returns the feature with the requested id
-    """
-    uid = request.matchdict.get('uid', None)
-    return stakeholder_protocol.read(request, uid=uid)
-
-@view_config(route_name='blablabla_SH_OneActive', renderer='json')
-def blablabla_SH_OneActive(request):
-    uid = request.matchdict.get('uid', None)
-    return stakeholder_protocol3.read_one_active(request, uid=uid)
-
-@view_config(route_name='blablabla_SH_OnePublic', renderer='json')
-def blablabla_SH_OnePublic(request):
-    uid = request.matchdict.get('uid', None)
-    return stakeholder_protocol3.read_one(request, uid=uid, public=True)
-
-@view_config(route_name='blablabla_SH_OneUser', renderer='json')
-def blablabla_SH_OneUser(request):
-    uid = request.matchdict.get('uid', None)
-    return stakeholder_protocol3.read_one(request, uid=uid, public=False)
-
-@view_config(route_name='stakeholders_read_many', renderer='json')
-def read_many(request):
-    """
-    Reads many active activities
-    """
-    return stakeholder_protocol.read(request)
-
-@view_config(route_name='blablabla_SH_user', renderer='json')
-def blablabla_SH_user(request):
-    return stakeholder_protocol3.read_many(request, public=False)
-
-@view_config(route_name='blablabla_SH_public', renderer='json')
-def blablabla_SH_public(request):
-    return stakeholder_protocol3.read_many(request, public=True)
-
-@view_config(route_name='blablabla_SH_ManyByAPublic', renderer='json')
-def blablabla_SH_ManyByAPublic(request):
-    uid = request.matchdict.get('uid', None)
-    return stakeholder_protocol3.read_many_by_activity(request, uid=uid,
-    public=True)
-
-@view_config(route_name='blablabla_SH_ManyByAUser', renderer='json')
-def blablabla_SH_ManyByAUser(request):
-    uid = request.matchdict.get('uid', None)
-    return stakeholder_protocol3.read_many_by_activity(request, uid=uid,
-    public=False)
 
 @view_config(route_name='stakeholders_history', renderer='json')
 def stakeholders_history(request):

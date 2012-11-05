@@ -125,6 +125,9 @@ class StakeholderProtocol3(Protocol):
             request, relevant_stakeholders, limit=limit, offset=offset,
             involvements=inv_details!='none')
 
+        print "***********************"
+        print query
+
         stakeholders = self._query_to_stakeholders(
             request, query, involvements=inv_details, public_query=public)
 
@@ -235,10 +238,10 @@ class StakeholderProtocol3(Protocol):
             )
 
             pending_stakeholders = pending_stakeholders.\
-                join(SH_Changeset).\
+                join(Changeset).\
                 filter(Stakeholder.stakeholder_identifier == uid).\
                 filter(Stakeholder.fk_status == 1).\
-                filter(SH_Changeset.fk_user == request_user_id)
+                filter(Changeset.fk_user == request_user_id)
 
             pending_stakeholders = pending_stakeholders.\
                 outerjoin(SH_Tag_Group).\
@@ -275,8 +278,7 @@ class StakeholderProtocol3(Protocol):
 
         # Prepare order: Get the order from request
         order_query, order_numbers = self._get_order(
-            request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value,
-            SH_Changeset
+            request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value
         )
 
         # Create relevant Stakeholders
@@ -398,8 +400,7 @@ class StakeholderProtocol3(Protocol):
 
         # Prepare order: Get the order from request
         order_query, order_numbers = self._get_order(
-            request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value,
-            SH_Changeset
+            request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value
         )
 
         # Create relevant Stakeholders
@@ -439,20 +440,20 @@ class StakeholderProtocol3(Protocol):
         # current user to selection. If moderator, add all pending versions.
         if logged_in and public_query is False:
 
-            # It is necessary to first find out, if there are Stakeholders
+            # It is necessary to first find out if there are Stakeholders
             # pending and if yes, which is the latest version
             latest_pending_stakeholders = self.Session.query(
                     Stakeholder.stakeholder_identifier,
                     func.max(Stakeholder.version).label('max_version')
                 ).\
-                join(SH_Changeset).\
+                join(Changeset).\
                 filter(Stakeholder.fk_status == 1)
 
             if not is_moderator:
                 # If current user is not a moderator, only show pending versions
                 # done by himself
                 latest_pending_stakeholders = latest_pending_stakeholders.\
-                    filter(SH_Changeset.fk_user == request.user.id)
+                    filter(Changeset.fk_user == request.user.id)
 
             latest_pending_stakeholders = latest_pending_stakeholders.\
                 group_by(Stakeholder.stakeholder_identifier).\
@@ -595,8 +596,7 @@ class StakeholderProtocol3(Protocol):
 
         # Prepare order: Get the order from request
         order_query, order_numbers = self._get_order(
-            request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value,
-            SH_Changeset
+            request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value
         )
 
         # Create relevant Stakeholders
@@ -631,14 +631,14 @@ class StakeholderProtocol3(Protocol):
                     Stakeholder.stakeholder_identifier,
                     func.max(Stakeholder.version).label('max_version')
                 ).\
-                join(SH_Changeset).\
+                join(Changeset).\
                 filter(Stakeholder.fk_status == 1)
 
             if not is_moderator:
                 # If current user is not a moderator, only show pending versions
                 # done by himself
                 latest_pending_stakeholders = latest_pending_stakeholders.\
-                    filter(SH_Changeset.fk_user == request.user.id)
+                    filter(Changeset.fk_user == request.user.id)
 
             latest_pending_stakeholders = latest_pending_stakeholders.\
                 group_by(Stakeholder.stakeholder_identifier).\
@@ -754,7 +754,7 @@ class StakeholderProtocol3(Protocol):
                 Stakeholder.version.label('version'),
                 Status.id.label('status_id'),
                 Status.name.label('status'),
-                SH_Changeset.timestamp.label('timestamp'),
+                Changeset.timestamp.label('timestamp'),
                 SH_Tag_Group.id.label('taggroup'),
                 SH_Tag_Group.fk_sh_tag.label('main_tag'),
                 SH_Tag.id.label('tag'),
@@ -767,7 +767,7 @@ class StakeholderProtocol3(Protocol):
             join(relevant_stakeholders,
                 relevant_stakeholders.c.order_id == Stakeholder.id).\
             join(Status).\
-            join(SH_Changeset).\
+            join(Changeset).\
             outerjoin(SH_Tag_Group).\
             outerjoin(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_sh_tag_group).\
             outerjoin(SH_Key).\
@@ -794,7 +794,7 @@ class StakeholderProtocol3(Protocol):
                     Involvement.fk_stakeholder.label('stakeholder_id'),
                     Stakeholder_Role.id.label('role_id'),
                     Stakeholder_Role.name.label('role_name'),
-                    A_Changeset.fk_user.label('activity_user_id'),
+                    Changeset.fk_user.label('activity_user_id'),
                     inv_status.c.activity_identifier.\
                         label('activity_identifier'),
                     inv_status.c.activity_status.label('activity_status'),
@@ -802,7 +802,7 @@ class StakeholderProtocol3(Protocol):
                 ).\
                 join(inv_status,
                     inv_status.c.activity_id == Involvement.fk_activity).\
-                join(A_Changeset).\
+                join(Changeset, Changeset.id == inv_status.c.activity_id).\
                 join(Stakeholder_Role).\
                 subquery()
 

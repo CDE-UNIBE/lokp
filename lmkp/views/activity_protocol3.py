@@ -304,10 +304,10 @@ class ActivityProtocol3(Protocol):
             )
 
             pending_activities = pending_activities.\
-                join(A_Changeset).\
+                join(Changeset).\
                 filter(Activity.activity_identifier == uid).\
                 filter(Activity.fk_status == 1).\
-                filter(A_Changeset.fk_user == request_user_id)
+                filter(Changeset.fk_user == request_user_id)
 
             pending_activities = pending_activities.\
                 outerjoin(A_Tag_Group).\
@@ -343,7 +343,7 @@ class ActivityProtocol3(Protocol):
         
         # Prepare order: Get the order from request
         order_query, order_numbers = self._get_order(
-            request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value, A_Changeset
+            request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value
         )
         
         # Create relevant Activities
@@ -465,7 +465,7 @@ class ActivityProtocol3(Protocol):
 
         # Prepare order: Get the order from request
         order_query, order_numbers = self._get_order(
-            request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value, A_Changeset
+            request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value
         )
 
         # Create relevant Activities
@@ -510,20 +510,20 @@ class ActivityProtocol3(Protocol):
         # which are within user's profile(s) and within spatial extent.
         if logged_in and public_query is False:
 
-            # It is necessary to first find out, if there are Activities pending
+            # It is necessary to first find out if there are Activities pending
             # and if yes, which is the latest version
             latest_pending_activities = self.Session.query(
                     Activity.activity_identifier,
                     func.max(Activity.version).label('max_version')
                 ).\
-                join(A_Changeset).\
+                join(Changeset).\
                 filter(Activity.fk_status == 1)
 
             if not is_moderator:
                 # If current user is not a moderator, only show pending versions
                 # done by himself
                 latest_pending_activities = latest_pending_activities.\
-                    filter(A_Changeset.fk_user == request.user.id)
+                    filter(Changeset.fk_user == request.user.id)
 
             latest_pending_activities = latest_pending_activities.\
                 group_by(Activity.activity_identifier).\
@@ -672,7 +672,7 @@ class ActivityProtocol3(Protocol):
 
         # Prepare order: Get the order from request
         order_query, order_numbers = self._get_order(
-            request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value, A_Changeset
+            request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value
         )
 
         # Create relevant Activities
@@ -707,14 +707,14 @@ class ActivityProtocol3(Protocol):
                     Activity.activity_identifier,
                     func.max(Activity.version).label('max_version')
                 ).\
-                join(A_Changeset).\
+                join(Changeset).\
                 filter(Activity.fk_status == 1)
             
             if not is_moderator:
                 # If current user is not a moderator, only show pending versions
                 # done by himself
                 latest_pending_activities = latest_pending_activities.\
-                    filter(A_Changeset.fk_user == request.user.id)
+                    filter(Changeset.fk_user == request.user.id)
                 
             latest_pending_activities = latest_pending_activities.\
                 group_by(Activity.activity_identifier).\
@@ -831,7 +831,7 @@ class ActivityProtocol3(Protocol):
                 Activity.version.label('version'),
                 Status.id.label('status_id'),
                 Status.name.label('status'),
-                A_Changeset.timestamp.label('timestamp'),
+                Changeset.timestamp.label('timestamp'),
                 A_Tag_Group.id.label('taggroup'),
                 A_Tag_Group.fk_a_tag.label('main_tag'),
                 A_Tag.id.label('tag'),
@@ -844,7 +844,7 @@ class ActivityProtocol3(Protocol):
             join(relevant_activities,
                 relevant_activities.c.order_id == Activity.id).\
             join(Status).\
-            join(A_Changeset).\
+            join(Changeset).\
             outerjoin(A_Tag_Group).\
             outerjoin(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
             outerjoin(A_Key).\
@@ -872,7 +872,7 @@ class ActivityProtocol3(Protocol):
                     Involvement.fk_activity.label('activity_id'),
                     Stakeholder_Role.id.label('role_id'),
                     Stakeholder_Role.name.label('role_name'),
-                    SH_Changeset.fk_user.label('stakeholder_user_id'),
+                    Changeset.fk_user.label('stakeholder_user_id'),
                     inv_status.c.stakeholder_identifier.\
                         label('stakeholder_identifier'),
                     inv_status.c.stakeholder_status.label('stakeholder_status'),
@@ -881,7 +881,7 @@ class ActivityProtocol3(Protocol):
                 ).\
                 join(inv_status,
                     inv_status.c.stakeholder_id == Involvement.fk_stakeholder).\
-                join(SH_Changeset).\
+                join(Changeset, Changeset.id == inv_status.c.stakeholder_id).\
                 join(Stakeholder_Role).\
                 subquery()
 

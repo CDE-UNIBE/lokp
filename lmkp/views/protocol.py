@@ -443,8 +443,7 @@ class Protocol(object):
                      subquery()
         return key_query, value_query
 
-    def _get_order(self, request, Mapped_Class, Tag_Group, Tag, Key, Value,
-        Changeset):
+    def _get_order(self, request, Mapped_Class, Tag_Group, Tag, Key, Value):
         """
         Returns
         - a SubQuery with an ordered list of Activity IDs and
