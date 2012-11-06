@@ -7,16 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2012-10-29 08:49+0100\n"
+"POT-Creation-Date: 2012-11-06 14:29+0100\n"
 "PO-Revision-Date: 2012-10-29 12:04+0100\n"
 "Last-Translator: Lukas Vonlanthen <lukas.vonlanthen@cde.unibe.ch>\n"
 "Language-Team: fr <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Poedit-Basepath: ../../../../\n"
 
 #. Default: Loading ...
 #: lmkp/templates/administration.mak:66 lmkp/templates/charts.mak:81
@@ -31,20 +31,22 @@ msgstr "Observatorio de Adquisiciones de Tierras"
 
 #: lmkp/templates/index.mak:63
 msgid ""
-"The Land Observatory will make information on large-scale land acquisition "
-"transparent and accessible through an interactive, map-based platform. We "
-"are piloting the project in five countries, with partners and governments "
-"who will work to open government data, crowdsource and help customize local "
-"observatories. Updated information on land will benefit citizens, but also "
-"governments and companies interested in sustainability."
+"The Land Observatory will make information on large-scale land "
+"acquisition transparent and accessible through an interactive, map-based "
+"platform. We are piloting the project in five countries, with partners "
+"and governments who will work to open government data, crowdsource and "
+"help customize local observatories. Updated information on land will "
+"benefit citizens, but also governments and companies interested in "
+"sustainability."
 msgstr ""
-"El Observatorio de Adquisiciones de Tierras (OLA) es un proyecto innovador "
-"dirigido a mejorar la calidad y la inclusión en el diálogo de políticas y la "
-"toma de decisiones sobre temas relativos a la tierra, tanto en el ámbito "
-"global como en países alrededor del mundo, haciendo que los datos sobre "
-"tierras, así como también la información sobre los actores y sus "
-"actividades, sean más accesibles y atractivos. Esta plataforma ofrecerá una "
-"visión global, regional y local del tema de las inversiones en las tierras."
+"El Observatorio de Adquisiciones de Tierras (OLA) es un proyecto "
+"innovador dirigido a mejorar la calidad y la inclusión en el diálogo de "
+"políticas y la toma de decisiones sobre temas relativos a la tierra, "
+"tanto en el ámbito global como en países alrededor del mundo, haciendo "
+"que los datos sobre tierras, así como también la información sobre los "
+"actores y sus actividades, sean más accesibles y atractivos. Esta "
+"plataforma ofrecerá una visión global, regional y local del tema de las "
+"inversiones en las tierras."
 
 #: lmkp/templates/index.mak:66
 msgid "The pilot project is coordinated by the"
@@ -74,26 +76,25 @@ msgstr "Agencia Suiza para el Desarrollo y la Cooperación (COSUDE)"
 msgid ", with co-funding from other ILC and CDE programs."
 msgstr ", con la cofinanciación de otros programas de ILC y CDE."
 
-#: lmkp/views/activities.py:156
+#: lmkp/views/activities.py:120
 msgid "User is not logged in."
 msgstr "El usuario no está conectado"
 
-#: lmkp/views/activities.py:159
+#: lmkp/views/activities.py:123
 msgid "User has no permissions to add a review."
 msgstr "Usuario no tiene permisos para añadir una revisión"
 
-#: lmkp/views/activities.py:167
+#: lmkp/views/activities.py:131
 msgid "User has no profile attached"
 msgstr "Usuario no tiene un perfil adjunto"
 
-#: lmkp/views/activities.py:175
-msgid ""
-"The Activity was not found or is not situated within the user's profiles"
+#: lmkp/views/activities.py:139
+msgid "The Activity was not found or is not situated within the user's profiles"
 msgstr ""
-"La actividad no se ha encontrado o no se encuentra dentro de los perfiles "
-"del usuario"
+"La actividad no se ha encontrado o no se encuentra dentro de los perfiles"
+" del usuario"
 
-#: lmkp/views/activities.py:200
+#: lmkp/views/activities.py:164
 msgid "Not all mandatory keys are provided"
 msgstr "No todas las teclas obligatorios se proporcionaron"
 
@@ -366,8 +367,8 @@ msgstr "Por favor, confirme"
 #: lmkp/views/translation.py:99
 msgid "gui_currently-seeing-pending-version"
 msgstr ""
-"Estás viendo una versión {0}, que debe ser revisado antes de que sea visible "
-"al público"
+"Estás viendo una versión {0}, que debe ser revisado antes de que sea "
+"visible al público"
 
 #. Default: You are seeing an {0} version, which was previously active and
 #. publicly
@@ -398,8 +399,8 @@ msgstr "Estás viendo una versión {0}, que nunca fue públicamente visible"
 #: lmkp/views/translation.py:103
 msgid "gui_currently-seeing-edited-version"
 msgstr ""
-"Estás viendo una versión {0}, que fue editado por un moderador y nunca fue "
-"públicamente visible"
+"Estás viendo una versión {0}, que fue editado por un moderador y nunca "
+"fue públicamente visible"
 
 #. Default: Date
 #: lmkp/views/translation.py:104
@@ -522,8 +523,8 @@ msgstr "Cambios de edición no pueden ser sometidos."
 #: lmkp/views/translation.py:130
 msgid "feedback_some-attributes-not-editable-because-of-profile"
 msgstr ""
-"Algunos de los atributos no se puede editar porque no son parte del perfil "
-"seleccionado actualmente."
+"Algunos de los atributos no se puede editar porque no son parte del "
+"perfil seleccionado actualmente."
 
 #. Default: Success
 #: lmkp/views/translation.py:131
@@ -555,8 +556,8 @@ msgstr "Paso 1: Por favor, seleccione un punto en el mapa."
 #: lmkp/views/translation.py:138
 msgid "activities_new-step-1-explanation"
 msgstr ""
-"Puede arrastrar y soltar el punto. Una vez que haya terminado, haga clic en "
-"\"Continuar\"."
+"Puede arrastrar y soltar el punto. Una vez que haya terminado, haga clic "
+"en \"Continuar\"."
 
 #. Default: New Activity
 #: lmkp/views/translation.py:139
@@ -626,8 +627,8 @@ msgstr "Filtrar los actores"
 msgid "stakeholders_no-associated-stakeholders-yet"
 msgstr ""
 "No hay actores ​​que se relacionan hasta ahora. Usted puede buscar y "
-"seleccionar un actor utilizando el campo de búsqueda. O bien, puede crear un "
-"nuevo actor haciendo clic en el botón de arriba."
+"seleccionar un actor utilizando el campo de búsqueda. O bien, puede crear"
+" un nuevo actor haciendo clic en el botón de arriba."
 
 #. Default: Displaying stakeholders {0} - {1} of {2}
 #: lmkp/views/translation.py:156
@@ -816,3 +817,4 @@ msgstr "Contraseña"
 #: lmkp/views/viewers.py:27
 msgid "Login"
 msgstr "Iniciar sesión"
+
