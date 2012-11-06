@@ -22,9 +22,9 @@ def view_toolbar_config(request):
 
     # Login form: Fields to enter username and password.
     str += "Lmkp.login_form = { border: false, xtype: 'toolbar', defaultType: 'textfield', items: [\n";
-    str += "{id: 'username', emptyText: '%s'},\n" % _('Username')
-    str += "{id: 'password', emptyText: '%s', inputType: 'password', enableKeyEvents: true},\n" % _('Password')
-    str += "{xtype: 'button', id:'login_submit', text: '%s'}]};\n" % _('Login')
+    str += "{id: 'username', emptyText: \"%s\"},\n" % _('Username')
+    str += "{id: 'password', emptyText: \"%s\", inputType: 'password', enableKeyEvents: true},\n" % _('Password')
+    str += "{xtype: 'button', id:'login_submit', text: \"%s\"}]};\n" % _('Login')
 
     # The current profile extent.
     str += "Lmkp.currentProfileExtent = %s" % _getCurrentProfileExtent(request)
