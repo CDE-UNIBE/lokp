@@ -3,7 +3,7 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholderSelection', {
 
     alias: ['widget.lo_newstakeholderselection'],
 
-    title: 'Add Stakeholders',
+    title: Lmkp.ts.msg('stakeholders_add-stakeholders'),
 
     layout: 'fit',
     defaults: {
@@ -24,7 +24,7 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholderSelection', {
                 {
                     itemId: 'addNewStakeholderButton',
                     scale: 'medium',
-                    text: 'Create new Stakeholder'
+                    text: Lmkp.ts.msg('stakeholders_create-new-stakeholder')
                 }
             ]
         });
@@ -43,7 +43,7 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholderSelection', {
     	var form = this.down('form');
     	
     	var fieldset = Ext.create('Ext.form.FieldSet', {
-    		title: 'Associated Stakeholders',
+    		title: Lmkp.ts.msg('stakeholders_associated-stakeholders'),
             itemId: 'selectStakeholderFieldSet',
             involvements: [] // keep track of all involvements
     	});
@@ -64,7 +64,7 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholderSelection', {
     		}
     	} else {
     		// If no stakeholders yet, show initial panel
-    		this._showInitialText();
+    		this._showInitialText(fieldset);
     	}
     	
         form.add(fieldset,
@@ -84,10 +84,7 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholderSelection', {
             fieldset.add({
                 xtype: 'container',
                 itemId: 'initialText',
-                html: 'No associated Stakeholders so far. You can search and '
-                        + 'select a Stakeholder using the Search field below. Or '
-                        + 'you can create a new Stakeholder by clicking on the '
-                        + 'button above.'
+                html: Lmkp.ts.msg('stakeholders_no-associated-stakeholders-yet')
             });
         }
     }

@@ -174,7 +174,7 @@ Ext.define('Lmkp.view.public.Map',{
             pressed: true,
             scale: 'medium',
             toggleGroup: 'map-controls',
-            tooltip: 'Pan'
+            tooltip: Lmkp.ts.msg('tooltip_map_pan')
         });
         var panButton = Ext.create('Ext.button.Button', panAction);
         this.tbar.add(panButton);
@@ -188,7 +188,7 @@ Ext.define('Lmkp.view.public.Map',{
             iconCls: 'zoom-in-button',
             scale: 'medium',
             toggleGroup: 'map-controls',
-            tooltip: 'Zoom in'
+            tooltip: Lmkp.ts.msg('tooltip_map_zoom-in')
         });
         this.tbar.add(Ext.create('Ext.button.Button', zoomBoxAction));
 
@@ -197,7 +197,7 @@ Ext.define('Lmkp.view.public.Map',{
             map: this.map,
             iconCls: 'zoom-out-button',
             scale: 'medium',
-            tooltip: 'Zoom out'
+            tooltip: Lmkp.ts.msg('tooltip_map_zoom-out')
         });
         this.tbar.add(Ext.create('Ext.button.Button', zoomOutAction));
 
@@ -206,7 +206,7 @@ Ext.define('Lmkp.view.public.Map',{
             itemId: 'zoomRegionButton',
             scale: 'medium',
             scope: this,
-            tooltip: 'Zoom to profile region'
+            tooltip: Lmkp.ts.msg('tooltip_map_zoom-to-profile-region')
         }));
 
         var selectAction = Ext.create('GeoExt.Action',{
@@ -216,7 +216,7 @@ Ext.define('Lmkp.view.public.Map',{
             map: this.map,
             scale: 'medium',
             toggleGroup: 'map-controls',
-            tooltip: "Identify feature"
+            tooltip: Lmkp.ts.msg('tooltip_map_identify-feature')
         });
         this.tbar.add(Ext.create('Ext.button.Button', selectAction));
 
@@ -229,7 +229,7 @@ Ext.define('Lmkp.view.public.Map',{
         });
         // And add it to the toolbar
         this.tbar.add({
-            text: Lmkp.ts.msg('Base Layers'),
+            text: Lmkp.ts.msg('button_map_base-layers'),
             menu: baseLayerMenu
         });
 
@@ -245,7 +245,7 @@ Ext.define('Lmkp.view.public.Map',{
         });
         // Add the context layers to the toolbar.
         this.tbar.add({
-            text: Lmkp.ts.msg("Context Layers"),
+            text: Lmkp.ts.msg('button_map_context-layers'),
             menu: contextLayersMenu
         });
 

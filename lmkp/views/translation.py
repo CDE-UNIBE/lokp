@@ -17,14 +17,20 @@ log = logging.getLogger(__name__)
 
 _ = TranslationStringFactory('lmkp')
 
-# Translatable hashmap with all possible status
+# Translatable hashmap with all possible statuses
 statusMap = {
-    'pending': _('pending', default='pending'),
-    'active': _('active', default='active'),
-    'inactive': _('inactive', default='inactive'),
-    'deleted': _('deleted', default='deleted'),
-    'rejected': _('rejected', default='rejected'),
-    'edited': _('edited', default='edited')
+    'pending': _('status_pending', default='pending'),
+    'active': _('status_active', default='active'),
+    'inactive': _('status_inactive', default='inactive'),
+    'deleted': _('status_deleted', default='deleted'),
+    'rejected': _('status_rejected', default='rejected'),
+    'edited': _('status_edited', default='edited')
+}
+
+# Translatable hashmap with all possible statuses
+reviewdecisionMap = {
+    'approved': _('reviewdecision_approved', default='approved'),
+    'rejected': _('reviewdecision_rejected', default='rejected')
 }
 
 @view_config(route_name='ui_translation', renderer='javascript')
@@ -34,109 +40,160 @@ def ui_messages(request):
     # user interface.
     # Add new messages to this dict!
     uiMap = {
-        # map functions
-        'zoom-button': _('zoom-button', default='Zoom'),
-        'pan-button': _('pan-button', default='Pan'),
-        # general GUI text
-        'file-menu': _('file-menu', default='File'),
-        'view-menu': _('view-menu', default='View'),
-        'date-label': _('date-label', default='Date'),
-        'profile-label': _('profile-label', default='Profile'),
-        'language-label': _('language-label', default='Language'),
-        'loading': _('loading', default='Loading ...'),
-        'unknown': _('unknown', default='Unknown'),
-        'unknown-name': _('unknown-name', default='Unknown name'),
-        'confirm-title': _('confirm-title', default='Please confirm'),
-        'success': _('success', default='Success'),
-        'failure': _('failure', default='Failure'),
-        'submit': _('submit', default='Submit'),
-        'id': _('id', default='ID'),
-        'edit': _('edit', default='edit'),
-        'details': _('details', default='details'),
-        'map-view': _('map-view', default='Map View'),
-        'version': _('version', default='Version'),
-        'yes': _('yes', default='Yes'),
-        'no': _('no', default='No'),
-        'ok': _('ok', default='OK'),
-        'cancel': _('cancel', default='Cancel'),
-        # activities / filtering
-        'activities-title': _('activities-title', default='Activities'),
-        'activities-table_view': _('activities-table_view', default='Activities Table View'),
-        'activities-add_further_information': _('activities-add_further_information', default='Submit further information to an existing activity'),
-        'addattributefilter-button': _('addattributefilter-button', default='Add attribute filter'),
-        'addattributefilter-tooltip': _('addattributefilter-tooltip', default='Add a filter based on attribute'),
-        'addtimefilter-button': _('addtimefilter-button', default='Add time filter'),
-        'addtimefilter-tooltip': _('addtimefilter-tooltip', default='Add a filter based on time'),
-        'deleteallfilter-button': _('deleteallfilter-button', default='Delete all filters'),
-        'deleteallfilter-tooltip': _('deleteallfilter-tooltip', default='Delete all attribute and temporal filters'),
-        'filter-activity_title': _('filter-title', default='Filter Activities'),
-        'filter-apply_spatial': _('filter-apply_spatial', default='Apply spatial filter'),
-        'filter-connect_to_activities': _('filter-connect_to_activities', default='Combine with filter on Activities'),
-        'filter-connect_to_stakeholders': _('filter-connect_to_stakeholders', default='Combine with filter on Stakeholders'),
-        'activitypaging-before': _('activitypaging-before', default='Page'),
-        'activitypaging-after': _('activitypaging-after', default='of {0}'),
-        'activitypaging-message': _('paging-message', default='Displaying activities {0} - {1} of {2}'),
-        'activitypaging-empty': _('activitypaging-empty', default='No activities found'),
-        'activity-select': _('activity-select', default='Select an activity to show its details'),
-        'activate-button': _('activate-button', default='Activate'),
-        'activate-tooltip': _('activate-tooltip', default='Click to activate this filter'),
-        'delete-button': _('delete-button', default='Delete'),
-        'deletefilter-tooltip': _('deletefilter-tooltip', default='Click to delete this filter'),
-        # stakeholders
-        'stakeholders-title': _('stakeholder-title', default='Stakeholders'),
-        'stakeholders-table_view': _('stakeholders-table_view', default='Stakeholders Table View'),
-        'stakeholder-name': _('stakholder-name', default='Name'),
-        'stakeholder-country': _('stakholder-country', default='Country'),
-        'filter-stakeholder_title': _('filter-stakeholder_title', default='Filter Stakeholders'),
-        'stakeholder-paging_message': _('stakeholder-paging_message', default='Displaying stakeholders {0} - {1} of {2}'),
-        'stakeholder-paging_empty': _('stakeholder-paging_empty', default='No stakeholders found'),
-        # involvements
-        'involvements-title': _('involvements-title', default='Involvement'),
-        'involvements-role': _('involvements-role', default='Role'),
-        # details
-        'details-toggle_all': _('details-toggle_all', default='Toggle all details'),
-        # status
-        # Maybe hashmap (see top) could be used? > Used by store/Status.js
-        'status-pending': _('status-pending', default='pending'),
-        'status-active': _('status-active', default='active'),
-        'status-inactive': _('status-inactive', default='inactive'),
-        'status-deleted': _('status-deleted', default='deleted'),
-        'status-rejected': _('status-rejected', default='rejected'),
-        'status-edited': _('status-edited', default='edited'),
-        # comments
-        'comment': _('comment', default='Comment'),
-        'comments': _('comments', default='Comments'),
-        'comments-empty': _('comments-empty', default='No comments yet.'),
-        'comments-by': _('comments-by', default='Comment by'),
-        'comments-leave': _('comments-leave', default='Leave a comment'),
-        'anonymous': _('anonymous', default='Anonymous'),
-        'confirm-delete-comment': _('confirm-delete-comment', default='Do you really want to delete this comment?'),
-        # reviews
-        'reviewpanel-empty_msg': _('reviewpanel-empty_msg', default='Select an item on the left.'),
-        'reviewpanel-multiple_changes': _('reviewpanel-multiple_changes', default='There are multiple changes pending! They may be conflicting.'),
-        'reviewpanel-not_active_changed': _('reviewpanel-not_active_changed', default='These changes are based on a version which is not the active version.'),
-        'reviewpanel-pending_title': _('reviewpanel-pending_title', default='Pending version'),
-        'reviewpanel-previous_title': _('reviewpanel-previous_title', default='Previous version'),
-        'review-diff_title': _('review-diff_title', default='Difference'),
-        'review-diff_inv_added': _('review-diff_inv_added', default='Involvement added'),
-        'review-diff_inv_deleted': _('review-diff_inv_deleted', default='Involvement deleted'),
-        'review-diff_attr_added': _('review-diff_attr_added', default='Attribute(s) added'),
-        'review-diff_attr_deleted': _('review-diff_attr_deleted', default='Attribute(s) deleted'),
-        'reviewdecision-approved': _('reviewdecision-approved', default='approved'),
-        'reviewdecision-rejected': _('reviewdecision-rejected', default='rejected'),
-        # filter operators
-        'filter-operator_is': _('filter-operator_is', default='is'),
-        'filter-operator_is-not': _('filter-operator_is-not', default='is not'),
-        'filter-operator_contains-case-sensitive': _('filter-operator_contains-case-sensitive', default='contains (case sensitive)'),
-        'filter-operator_contains-case-insensitive': _('filter-operator_contains-case-insensitive', default='contains (case insensitive)'),
-        'filter-operator_contains-not-case-sensitive': _('filter-operator_contains-not-case-sensitive', default='contains not (case sensitive)'),
-        'filter-operator_contains-not-case-insensitive': _('filter-operator_contains-not-case-insensitive', default='contains not (case insensitive)'),
-        'filter-operator_equals': _('filter-operator_equals', default='equals'),
-        'filter-operator_less-than': _('filter-operator_less-than', default='less than'),
-        'filter-operator_less-than-or-equal': _('filter-operator_less-than-or-equal', default='less than or equal'),
-        'filter-operator_greater-than-or-equal': _('filter-operator_greater-than-or-equal', default='greater than or equal'),
-        'filter-operator_greater-than': _('filter-operator_greater-than', default='greater than'),
-        'filter-operator_not-equals': _('filter-operator_not-equals', default='not equals')
+        # Status
+        'status_name': _('status_name', default='Status'),
+        'status_pending': statusMap['pending'],
+        'status_active': statusMap['active'],
+        'status_inactive': statusMap['inactive'],
+        'status_deleted': statusMap['deleted'],
+        'status_rejected': statusMap['rejected'],
+        'status_edited': statusMap['edited'],
+
+        # Review decision
+        'reviewdecision_approved': reviewdecisionMap['approved'],
+        'reviewdecision_rejected': reviewdecisionMap['rejected'],
+
+        # Buttons
+        'button_add-attribute-filter': _('button_add-attribute-filter', default='Add attribute filter'),
+        'button_add-new-tag': _('button_add-new-tag', default='Add more specific information'),
+        'button_add-new-taggroup': _('button_add-new-taggroup', default='Add further information'),
+        'button_add-time-filter': _('button_add-time-filter', default='Add time filter'),
+        'button_back': _('button_back', default='Back'),
+        'button_cancel': _('button_cancel', default='Cancel'),
+        'button_clear': _('button_clear', default='Clear'),
+        'button_close': _('button_close', default='Close'),
+        'button_continue': _('button_continue', default='Continue'),
+        'button_delete': _('button_delete', default='Delete'),
+        'button_edit': _('button_edit', default='Edit'),
+        'button_filter-activate': _('button_filter-activate', default='Activate'),
+        'button_filter-delete': _('button_filter-delete', default='Delete'),
+        'button_map_base-layers': _('button_map_base-layers', default='Base Layers'),
+        'button_map_context-layers': _('button_map_context-layers', default='Context Layers'),
+        'button_map_satellite-map': _('button_map_satellite-map', default='Satellite Imagery'),
+        'button_map_show-legend': _('button_map_show-legend', default='Show Legend'),
+        'button_map_street-map': _('button_map_street-map', default='Street Map'),
+        'button_map_terrain-map': _('button_map_terrain-map', default='Terrain Map'),
+        'button_next': _('button_next', default='Next'),
+        'button_no': _('button_no', default='No'),
+        'button_ok': _('button_ok', default='OK'),
+        'button_submit': _('button_submit', default='Submit'),
+        'button_yes': _('button_yes', default='Yes'),
+
+        # Tooltips
+        'tooltip_add-attribute-filter': _('tooltip_add-attribute-filter', default='Add a filter based on attribute'),
+        'tooltip_add-time-filter': _('tooltip_add-time-filter', default='Add a filter based on time'),
+        'tooltip_close-window': _('tooltip_close-window', default='Close Window'),
+        'tooltip_filter-activate': _('tooltip_filter-activate', default='Click to activate this filter'),
+        'tooltip_filter-delete': _('tooltip_filter-delete', default='Click to delete this filter'),
+        'tooltip_map_identify-feature': _('tooltip_map_identify-feature', default='Identify Feature'),
+        'tooltip_map_pan': _('tooltip_map_pan', default='Pan'),
+        'tooltip_map_zoom-in': _('tooltip_map_zoom-in', default='Zoom In'),
+        'tooltip_map_zoom-out': _('tooltip_map_zoom-out', default='Zoom Out'),
+        'tooltip_map_zoom-to-profile-region': _('tooltip_map_zoom-to-profile-region', default='Zoom to Profile Region'),
+        'tooltip_remove-stakeholder': _('tooltip_remove-stakeholder', default='Remove this stakeholder'),
+
+        # General GUI text
+        'gui_anonymous': _('gui_anonymous', default='Anonymous'),
+        'gui_clear-selection': _('gui_clear-selection', default='Clear Selection'),
+        'gui_confirm': _('gui_confirm', default='Please confirm'),
+        'gui_currently-seeing-pending-version': _('gui_currently-seeing-pending-version', default='You are seeing a {0} version, which needs to be reviewed before it is publicly visible'),
+        'gui_currently-seeing-inactive-version': _('gui_currently-seeing-inactive-version', default='You are seeing an {0} version, which was previously active and publicly visible.'),
+        'gui_currently-seeing-deleted-version': _('gui_currently-seeing-deleted-version', default='You are seeing a {0} version, which was previously active and publicly visible.'),
+        'gui_currently-seeing-rejected-version': _('gui_currently-seeing-rejected-version', default='You are seeing a {0} version, which was never publicly visible.'),
+        'gui_currently-seeing-edited-version': _('gui_currently-seeing-edited-version', default='You are seeing an {0} version, which was edited by a moderator and was never publicly visible.'),
+        'gui_date': _('gui_date', default='Date'),
+        'gui_delete-all-filters': _('gui_delete-all-filters', default='Delete all Filters'),
+        'gui_details': _('gui_details', default='Details'),
+        'gui_filter-count': _('gui_filter-count', default='Filter ({0} active)'),
+        'gui_history': _('gui_history', default='History'),
+        'gui_id': _('gui_id', default='ID'),
+        'gui_language': _('gui_language', default='Language'),
+        'gui_loading': _('gui_loading', default='Loading ...'),
+        'gui_no-attributes': _('gui_no-attributes', default='No attributes to show'),
+        'gui_paging-before': _('gui_paging-before', default='Page'),
+        'gui_paging-after': _('gui_paging-after', default='of {0}'),
+        'gui_previous-version': _('gui_previous-version', default='Previous Version'),
+        'gui_profile': _('gui_profile', default='Profile'),
+        'gui_search': _('gui_search', default='Search'),
+        'gui_show-details': _('gui_show-details', default='Show Details'),
+        'gui_timestamp': _('gui_timestamp', default='Timestamp'),
+        'gui_unknown': _('gui_unknown', default='Unknown'),
+        'gui_user': _('gui_user', default='User'),
+        'gui_version': _('gui_version', default='Version'),
+
+        # Feedback
+        'feedback_failure': _('feedback_failure', default='Failure'),
+        'feedback_new-activity-created': _('feedback_new-activity-created', default='The activity was successfully created. It will be reviewed shortly.'),
+        'feedback_new-activity-not-created': _('feedback_new-activity-not-created', default='The activity could not be created.'),
+        'feedback_pending-edit-submitted': _('feedback_pending-edit-submitted', default='Edited changes were successfully submitted'),
+        'feedback_pending-edit-not-submitted': _('feedback_pending-edit-not-submitted', default='Edited changes could not be submitted'),
+        'feedback_some-attributes-not-editable-because-of-profile': _('feedback_some-attributes-not-editable-because-of-profile', default='Some of the attributes cannot be edited because they are not part of the currently selected profile.'),
+        'feedback_success': _('feedback_success', default='Success'),
+
+        # Activities
+        'activities_add-new-activity': _('activities_add-new-activity', default='Add new Activity'),
+        'activities_details-title': _('activities_details-title', default='Details on Activity'),
+        'activities_filter-title': _('activities_filter-title', default='Filter Activities'),
+        'activities_new-step-1': _('activities_new-step-1', default='Step 1: Please select a point on the map.'),
+        'activities_new-step-1-explanation': _('activities_new-step-1-explanation', default='You can drag and drop the point. Once you are done, click "Continue".'),
+        'activities_new-title': _('activities_new-title', default='New Activity'),
+        'activities_paging-message': _('activities_paging-message', default='Displaying Activities {0} - {1} of {2}'),
+        'activities_paging-empty': _('activities_paging-empty', default='No Activities found'),
+        'activities_title': _('activities_title', default='Activities'),
+
+        # Involvements
+        'involvements_edit-involvement': _('involvements_edit-involvement', default='Edit this involvement'),
+        'involvements_stakeholder-role': _('involvements_stakeholder-role', default='Role'),
+        'involvements_title': _('involvements_title', default='Involvement'),
+
+        # Stakeholders
+        'stakeholders_add-stakeholders': _('stakeholders_add-stakeholders', default='Add Stakeholders'),
+        'stakeholders_associated-stakeholders': _('stakeholders_associated-stakeholders', default='Associated Stakeholders'),
+        'stakeholders_create-new-stakeholder': _('stakeholders_create-new-stakeholder', default='Create new Stakeholder'),
+        'stakeholders_details-title': _('stakeholders_details-title', default='Details on Stakeholder '),
+        'stakeholders_filter-title': _('stakeholders_filter-title', default='Filter Stakeholders'),
+        'stakeholders_no-associated-stakeholders-yet': _('stakeholders_no-associated-stakeholders-yet', default='No associated Stakeholders so far. You can search and select a Stakeholder using the Search field below. Or you can create a new Stakeholder by clicking on the button above.'),
+        'stakeholders_paging-message': _('stakeholders_paging-message', default='Displaying stakeholders {0} - {1} of {2}'),
+        'stakeholders_paging-empty': _('stakeholders_paging-empty', default='No stakeholders found'),
+        'stakeholders_search': _('stakeholders_search', default='Search Stakeholder'),
+        'stakeholders_select-stakeholder': _('stakeholders_select-stakeholder', default='Select Stakeholder'),
+        'stakeholders_title': _('stakeholder_title', default='Stakeholders'),
+
+        # Comments
+        'comments_comment-by': _('comments_comment-by', default='Comment by'),
+        'comments_confirm-delete-comment': _('comments_confirm-delete-comment', default='Do you really want to delete this comment?'),
+        'comments_empty': _('comments_empty', default='No comments yet.'),
+        'comments_leave-comment': _('comments_leave-comment', default='Leave a comment'),
+        'comments_singular': _('comments_singular', default='Comment'),
+        'comments_title': _('comments_title', default='Comments'),
+
+        # Moderator
+        'moderator_changes-not-based-on-active': _('moderator_changes-not-based-on-active', default='These changes are based on a version which is not the active version.'),
+        'moderator_multiple-changes-pending': _('moderator_multiple-changes-pending', default='There are multiple changes pending! They may be conflicting.'),
+        'moderator_pending-version-title': _('moderator_pending-version-title', default='Pending version'),
+        'moderator_review-comment': _('moderator_review-comment', default='Review Comment'),
+        'moderator_review-decision': _('moderator_review-decision', default='Review Decision'),
+        'moderator_review-pending-changes': _('moderator_review-pending-changes', default='Review pending changes'),
+        'moderator_show-pending-changes': _('moderator_show-pending-changes', default='Show pending changes'),
+
+        # Filter
+        'filter_logical-operator': _('filter_logical-operator', default='Logical Operator'),
+        'filter_logical-operator-and': _('filter_logical-operator-and', default='and'),
+        'filter_logical-operator-or': _('filter_logical-operator-or', default='or'),
+        'filter_operator-is': _('filter_operator-is', default='is'),
+        'filter_operator-is-not': _('filter_operator-is-not', default='is not'),
+        'filter_operator-contains-case-sensitive': _('filter_operator-contains-case-sensitive', default='contains (case sensitive)'),
+        'filter_operator-contains-case-insensitive': _('filter_operator-contains-case-insensitive', default='contains (case insensitive)'),
+        'filter_operator-contains-not-case-sensitive': _('filter_operator-contains-not-case-sensitive', default='contains not (case sensitive)'),
+        'filter_operator-contains-not-case-insensitive': _('filter_operator-contains-not-case-insensitive', default='contains not (case insensitive)'),
+        'filter_operator-equals': _('filter_operator-equals', default='equals'),
+        'filter_operator-less-than': _('filter_operator-less-than', default='less than'),
+        'filter_operator-less-than-or-equal': _('filter_operator-less-than-or-equal', default='less than or equal'),
+        'filter_operator-greater-than': _('filter_operator-greater-than', default='greater than'),
+        'filter_operator-greater-than-or-equal': _('filter_operator-greater-than-or-equal', default='greater than or equal'),
+        'filter_operator-not-equals': _('filter_operator-not-equals', default='not equals'),
+        'filter_specify-number-value': _('filter_specify-number-value', default='Specify number value'),
+        'filter_specify-text-value': _('filter_specify-text-value', default='Specify value'),
     }
 
     # Get the localizer
@@ -153,63 +210,104 @@ def ui_messages(request):
     uiMap['locale'] = db_lang.locale
     uiMap['locale_english-name'] = db_lang.english_name
     uiMap['locale_local-name'] = db_lang.local_name
+
+    """
+    For the table view of Activities and Stakeholders, Ext needs to know the key
+    from the database (for example to correctly address table columns). It is
+    also necessary to check if there are translations of these keys available.
+    However, where columns are to be sorted, the original data index needs to be
+    known as well.
+    See the first example for details how this is done.
+    """
+
+    # Activity key: Country
+    aKeyCountry = 'Country' # Must be exactly (!) as in global activity.yml
+
+    # Prepare a query for the original key (original == None)
+    original_query = Session.query(
+            A_Key.id,
+            A_Key.key
+        ).\
+        filter(A_Key.key == aKeyCountry).\
+        filter(A_Key.original == None)
+
+    # A subquery is needed to correctly join the translated query with the
+    # original key
+    original_subquery = original_query.subquery()
+
+    # Prepare a query for the translated key (original == original key from
+    # query above)
+    translation_query = Session.query(
+            A_Key.id,
+            A_Key.key
+        ).\
+        join(original_subquery, original_subquery.c.id == A_Key.fk_a_key).\
+        filter(A_Key.language == db_lang)
     
-    # TODO: is this still needed?
-    # Add translated name for key "Name of Investor" (needed by Ext as dataIndex when displaying the grid with activities).
-    aCountryKey = 'Country'
-    aCountryKeyEnglish = Session.query(A_Key).filter(A_Key.key == aCountryKey).filter(A_Key.original == None).first()
-    aCountryKeyLocale = Session.query(A_Key).filter(A_Key.original == aCountryKeyEnglish).filter(A_Key.language == db_lang).first()
-    if aCountryKeyLocale:
-        uiMap['activity-attr_country'] = aCountryKeyLocale.key
-    else:
-        uiMap['activity-attr_country'] = aCountryKey
-    
-    # Add translated name for key "Year of Investment" (needed by Ext as dataIndex when displaying the grid with activities).
-    yearofinvestmentKey = 'Year of agreement' # Must be exactly (!) as in global activity.yml
-    yearofinvestmentKeyEnglish = Session.query(A_Key).filter(A_Key.key == yearofinvestmentKey).filter(A_Key.original == None).first()
-    yearofinvestmentKeyLocale = Session.query(A_Key).filter(A_Key.original == yearofinvestmentKeyEnglish).filter(A_Key.language == db_lang).first()
-    if yearofinvestmentKeyLocale:
-        uiMap['activity-attr_yearofinvestment'] = yearofinvestmentKeyLocale.key
-    else:
-        uiMap['activity-attr_yearofinvestment'] = yearofinvestmentKey
+    # Also store the original of the key (needed for sorting)
+    uiMap['activity_db-key-country-original'] = aKeyCountry
 
-    # Add translated name for key "Size" (needed by Ext as dataIndex when displaying the grid with activities).
-    sizeKey = 'Contract area (ha)' # Must be exactly (!) as in global activity.yml
-    sizeKeyEnglish = Session.query(A_Key).filter(A_Key.key == sizeKey).filter(A_Key.original == None).first()
-    sizeKeyLocale = Session.query(A_Key).filter(A_Key.original == sizeKeyEnglish).filter(A_Key.language == db_lang).first()
-    if sizeKeyLocale:
-        uiMap['activity-attr_size'] = sizeKeyLocale.key
-    else:
-        uiMap['activity-attr_size'] = sizeKey
+    # Union and do a single query. The original is always the first, so if there is a 
+    # translated entry (2nd), simply overwrite the original.
+    uiMap['activity_db-key-country'] = aKeyCountry # Fallback
+    for k in original_query.union(translation_query).all():
+        uiMap['activity_db-key-country'] = k.key
 
-    # Add translated name for SH_Key "Name" (needed by Ext as dataIndex when displaying the grid with stakeholders)
-    shNameKeyEnglish = Session.query(SH_Key).filter(SH_Key.key == 'Name').filter(SH_Key.original == None).first()
-    shNameKeyLocale = Session.query(SH_Key).filter(SH_Key.original == shNameKeyEnglish).filter(SH_Key.language == db_lang).first()
-    uiMap['stakeholder-attr_name'] = (shNameKeyLocale.key 
-        if shNameKeyLocale is not None else 'Name')
-    
-    # Add translated name for SH_Key "Country" (needed by Ext as dataIndex when displaying the grid with stakeholders)
-    shNameKeyEnglish = Session.query(SH_Key).filter(SH_Key.key == 'Country').filter(SH_Key.original == None).first()
-    shNameKeyLocale = Session.query(SH_Key).filter(SH_Key.original == shNameKeyEnglish).filter(SH_Key.language == db_lang).first()
-    uiMap['stakeholder-attr_country'] = (shNameKeyLocale.key 
-        if shNameKeyLocale is not None else 'Country')
-        
-        
-    # Write the JavaScript and instantiate the global variable Lmkp.ts
-    #str = "Ext.namespace('Lmkp');\n"
-    #str += "Lmkp.ts = Ext.create('Ext.util.MixedCollection');\n" #,{\n"
+    # Activity key: Year of Agreement
+    aKeyYearofagreement = 'Year of agreement' # Must be exactly (!) as in global activity.yml
+    original_query = Session.query(A_Key.id, A_Key.key).\
+        filter(A_Key.key == aKeyYearofagreement).\
+        filter(A_Key.original == None)
+    original_subquery = original_query.subquery()
+    translation_query = Session.query(A_Key.id, A_Key.key).\
+        join(original_subquery, original_subquery.c.id == A_Key.fk_a_key).\
+        filter(A_Key.language == db_lang)
+    uiMap['activity_db-key-yearofagreement-original'] = aKeyYearofagreement
+    uiMap['activity_db-key-yearofagreement'] = aKeyYearofagreement
+    for k in original_query.union(translation_query).all():
+        uiMap['activity_db-key-yearofagreement'] = k.key
 
-    # Add a new method that returns the requested key instead of undefined
-    # if a key does not exist. Use this method in the ExtJS views.
-    #str += "Lmkp.ts.msg = function(key) {\n"
-    #str += "\treturn this.containsKey(key) ? this.get(key) : key;\n"
-    #str += "};\n"
+    # Activity key: Contract area
+    aKeyContractarea = 'Contract area (ha)' # Must be exactly (!) as in global activity.yml
+    original_query = Session.query(A_Key.id, A_Key.key).\
+        filter(A_Key.key == aKeyContractarea).\
+        filter(A_Key.original == None)
+    original_subquery = original_query.subquery()
+    translation_query = Session.query(A_Key.id, A_Key.key).\
+        join(original_subquery, original_subquery.c.id == A_Key.fk_a_key).\
+        filter(A_Key.language == db_lang)
+    uiMap['activity_db-key-contractarea-original'] = aKeyContractarea
+    uiMap['activity_db-key-contractarea'] = aKeyContractarea
+    for k in original_query.union(translation_query).all():
+        uiMap['activity_db-key-contractarea'] = k.key
 
-    # Add all translated keys and values to this MixedCollection
-    #str += "Lmkp.ts.addAll("
-    #json_ustr = json.dumps(uiMap, ensure_ascii=False, indent=8, sort_keys=True)
-    #str += json_ustr.encode('utf-8')
-    #str += ");\n"
+    # Stakeholder key: Name
+    shKeyName = 'Name' # Must be exactly (!) as in global stakeholder.yml
+    original_query = Session.query(SH_Key.id, SH_Key.key).\
+        filter(SH_Key.key == shKeyName).\
+        filter(SH_Key.original == None)
+    original_subquery = original_query.subquery()
+    translation_query = Session.query(SH_Key.id, SH_Key.key).\
+        join(original_subquery, original_subquery.c.id == SH_Key.fk_sh_key).\
+        filter(SH_Key.language == db_lang)
+    uiMap['stakeholder_db-key-name-original'] = shKeyName
+    uiMap['stakeholder_db-key-name'] = shKeyName
+    for k in original_query.union(translation_query).all():
+        uiMap['stakeholder_db-key-name'] = k.key
+
+    # Stakeholder key: Country
+    shKeyCountry = 'Country' # Must be exactly (!) as in global stakeholder.yml
+    original_query = Session.query(SH_Key.id, SH_Key.key).\
+        filter(SH_Key.key == shKeyCountry).\
+        filter(SH_Key.original == None)
+    original_subquery = original_query.subquery()
+    translation_query = Session.query(SH_Key.id, SH_Key.key).\
+        join(original_subquery, original_subquery.c.id == SH_Key.fk_sh_key).\
+        filter(SH_Key.language == db_lang)
+    uiMap['stakeholder_db-key-country-original'] = shKeyCountry
+    uiMap['stakeholder_db-key-country'] = shKeyCountry
+    for k in original_query.union(translation_query).all():
+        uiMap['stakeholder_db-key-country'] = k.key
 
     # Define Lmkp.ts as class with static objects
     str = "Ext.define('Lmkp.ts',{\n"
@@ -249,16 +347,22 @@ def edit_translation(request):
     success = False
     msg = 'Translation not successful'
     print request.params
-    if 'original' and 'translation' and 'language' and 'keyvalue' in request.params:
+    if 'original' and 'translation' and 'language' and 'keyvalue' and 'item_type' in request.params:
         # find language
         language = Session.query(Language).filter(Language.locale == request.params['language']).all()
         if language and len(language) == 1:
             if request.params['keyvalue'] == 'key':
+                # Activity or Stakeholder?
+                Key = None
+                if request.params['item_type'] == 'activity':
+                    Key = A_Key
+                elif request.params['item_type'] == 'stakeholder':
+                    Key = SH_Key
                 # find original (fk_a_key empty)
-                original = Session.query(A_Key).filter(A_Key.key == request.params['original']).filter(A_Key.fk_a_key == None).all()
+                original = Session.query(Key).filter(Key.key == request.params['original']).filter(Key.original == None).all()
                 if original and len(original) == 1:
                     # check if a translation of this key is already there
-                    oldTranslation = Session.query(A_Key).filter(A_Key.original == original[0]).filter(A_Key.language == language[0]).all()
+                    oldTranslation = Session.query(Key).filter(Key.original == original[0]).filter(Key.language == language[0]).all()
                     if oldTranslation and len(oldTranslation) == 1:
                         # translation found, just update it.
                         oldTranslation[0].key = request.params['translation']
@@ -266,7 +370,7 @@ def edit_translation(request):
                         msg = 'Updated translation (<b>%s</b> for key <b>%s</b>.' % (request.params['translation'], request.params['original'])
                     else:
                         # no translation available yet, add it to DB
-                        translation = A_Key(request.params['translation'])
+                        translation = Key(request.params['translation'])
                         translation.original = original[0]
                         translation.language = language[0]
                         Session.add(translation)
@@ -275,11 +379,17 @@ def edit_translation(request):
                 else:
                     msg = 'Original key not found' # should never happen
             if request.params['keyvalue'] == 'value':
+                # Activity or Stakeholder?
+                Value = None
+                if request.params['item_type'] == 'activity':
+                    Value = A_Value
+                elif request.params['item_type'] == 'stakeholder':
+                    Value = SH_Value
                 # find original (fk_a_value empty)
-                original = Session.query(A_Value).filter(A_Value.value == request.params['original']).filter(A_Value.fk_a_value == None).all()
+                original = Session.query(Value).filter(Value.value == request.params['original']).filter(Value.original == None).all()
                 if original and len(original) == 1:
                     # check if a translation of this value is already there
-                    oldTranslation = Session.query(A_Value).filter(A_Value.original == original[0]).filter(A_Value.language == language[0]).all()
+                    oldTranslation = Session.query(Value).filter(Value.original == original[0]).filter(Value.language == language[0]).all()
                     if oldTranslation and len(oldTranslation) == 1:
                         # translation found, just update it.
                         oldTranslation[0].value = request.params['translation']
@@ -287,7 +397,7 @@ def edit_translation(request):
                         msg = 'Updated translation (<b>%s</b>) for value <b>%s</b>.' % (request.params['translation'], request.params['original'])
                     else:
                         # no translation available yet, add it to DB
-                        translation = A_Value(request.params['translation'])
+                        translation = Value(request.params['translation'])
                         translation.original = original[0]
                         translation.language = language[0]
                         Session.add(translation)
@@ -302,3 +412,12 @@ def edit_translation(request):
         'success': success,
         'msg': msg
     }
+
+def get_translated_status(request, status):
+    """
+    Get the translated name of a status. A request is needed to know in which
+    language to translate
+    """
+    localizer = get_localizer(request)
+    if status in statusMap:
+        return localizer.translate(statusMap[status])

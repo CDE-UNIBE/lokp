@@ -18,10 +18,10 @@ Ext.define('Lmkp.view.stakeholders.StakeholderFieldContainer', {
         if(this.involvement){
 
             var name = this.involvement.stakeholder.getTagValues(
-                Lmkp.ts.msg("stakeholder-name")
+                Lmkp.ts.msg('stakeholder_db-key-name')
             ).join(", ");
             if (!name) {
-                name = Lmkp.ts.msg("unknown-name");
+                name = Lmkp.ts.msg('gui_unknown');
             }
 
             this.items.push({
@@ -33,7 +33,7 @@ Ext.define('Lmkp.view.stakeholders.StakeholderFieldContainer', {
             	xtype: 'button',
             	name: 'stakeholderRemoveButton',
             	text: '-',
-            	tooltip: 'Remove this stakeholder'
+            	tooltip: Lmkp.ts.msg('tooltip_remove-stakeholder')
             });
         }
 

@@ -77,20 +77,20 @@ Ext.define('Lmkp.view.stakeholders.Details',{
             columns: [{
                 dataIndex: 'version',
                 flex: 1,
-                text: 'Version'
+                text: Lmkp.ts.msg('gui_version')
             }, {
                 dataIndex: 'status',
                 flex: 1,
-                text: 'Status'
+                text: Lmkp.ts.msg('status_name')
             }, {
                 dataIndex: 'timestamp',
                 flex: 1,
-                text: 'Timestamp'
+                text: Lmkp.ts.msg('gui_timestamp')
             }],
             itemId: 'historyPanel',
             region: 'west',
             store: this.historyStore,
-            title: 'History',
+            title: Lmkp.ts.msg('gui_history'),
             width: 250
         });
 
@@ -101,12 +101,12 @@ Ext.define('Lmkp.view.stakeholders.Details',{
             itemId: 'stakeholderDetailWizardPanel',
             items: [ this.centerPanel ],
             region: 'center',
-            title: 'Details'
+            title: Lmkp.ts.msg('gui_details')
         },
         this.historyPanel
         ];
 
-        this.title = 'Details on Stakeholder ' + this.stakeholder.get('id');
+        this.title = Lmkp.ts.msg('stakeholders_details-title') + ' ' + this.stakeholder.get('id');
 
         this.callParent(arguments);
     }

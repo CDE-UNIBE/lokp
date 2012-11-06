@@ -144,11 +144,11 @@ Ext.define('Lmkp.controller.public.Main', {
         this._updateFilterCount();
 
         // If logged in, add a button to add new Activity
-        if (Lmkp.toolbar != false) {
+        if (Lmkp.editor) {
             var tb = this.getActivityGridTopToolbar();
             if (tb) {
                 tb.insert(0, {
-                    text: 'Add new Activity',
+                    text: Lmkp.ts.msg('activities_add-new-activity'),
                     itemId: 'newActivityButton'
                 });
             }
@@ -224,8 +224,8 @@ Ext.define('Lmkp.controller.public.Main', {
         var me = this;
         var infoWindow = Ext.create('Lmkp.utils.MessageBox');
         infoWindow.alert(
-            "New Activity",
-            "Step 1: Please select a point on the map.",
+            Lmkp.ts.msg('activities_new-title'),
+            Lmkp.ts.msg('activities_new-step-1'),
             function() {
                 var editorMapController = me.getController('editor.Map');
                 editorMapController.clickAddLocationButton();
@@ -237,7 +237,7 @@ Ext.define('Lmkp.controller.public.Main', {
      * Nicely render 'Country' column of Activity grid.
      */
     onActivityCountryColumnAfterrender: function(comp) {
-        this._renderColumnMultipleValues(comp, "activity-attr_country");
+        this._renderColumnMultipleValues(comp, 'activity_db-key-country');
     },
 
     /**
@@ -245,28 +245,28 @@ Ext.define('Lmkp.controller.public.Main', {
      * treated as null
      */
     onActivityYearColumnAfterrender: function(comp) {
-        this._renderColumnMultipleValues(comp, "activity-attr_yearofinvestment");
+        this._renderColumnMultipleValues(comp, 'activity_db-key-yearofagreement');
     },
     
     /**
      * Nicely render 'Size' column of Activity grid.
      */
     onActivitySizeColumnAfterrender: function(comp) {
-        this._renderColumnMultipleValues(comp, "activity-attr_size")
+        this._renderColumnMultipleValues(comp, 'activity_db-key-contractarea')
     },
 
     /**
      * Nicely render 'Name' column of Stakeholder grid.
      */
     onStakeholderNameColumnAfterrender: function(comp) {
-        this._renderColumnMultipleValues(comp, "stakeholder-attr_name");
+        this._renderColumnMultipleValues(comp, 'stakeholder_db-key-name');
     },
 
     /**
      * Nicely render 'Country' column of Stakeholder grid.
      */
     onStakeholderCountryColumnAfterrender: function(comp) {
-        this._renderColumnMultipleValues(comp, "stakeholder-attr_country");
+        this._renderColumnMultipleValues(comp, 'stakeholder_db-key-country');
     },
 
     onActivityFilterButtonClick: function() {
@@ -306,7 +306,7 @@ Ext.define('Lmkp.controller.public.Main', {
     },
 
     onActivityDeleteAllFiltersButtonClick: function() {
-        var q = Ext.ComponentQuery.query('lo_editoractivityfilterpanel');
+        var q = Ext.ComponentQuery.query('lo_activityfilterpanel');
         var filterPanel = q.length > 0 ? q[0] : null;
         if (filterPanel) {
             // Delete all filter items
@@ -322,7 +322,7 @@ Ext.define('Lmkp.controller.public.Main', {
     },
 
     onStakeholderDeleteAllFiltersButtonClick: function() {
-        var q = Ext.ComponentQuery.query('lo_editorstakeholderfilterpanel');
+        var q = Ext.ComponentQuery.query('lo_stakeholderfilterpanel');
         var filterPanel = q.length > 0 ? q[0] : null;
         if (filterPanel) {
             // Delete all filter items
@@ -360,7 +360,7 @@ Ext.define('Lmkp.controller.public.Main', {
             if (ret.length > 0) {
                 return ret.join(', ');
             } else {
-                return Lmkp.ts.msg("unknown");
+                return Lmkp.ts.msg('gui_unknown');
             }
         }
     },
@@ -404,7 +404,8 @@ Ext.define('Lmkp.controller.public.Main', {
             if (toolbar && count != null) {
                 // Create new button
                 var newbutton = Ext.create('Ext.button.Button', {
-                    text: 'Filter (' + count + ' active)',
+//                    text: 'Filter (' + count + ' active)',
+                    text: Lmkp.ts.msg('gui_filter-count').replace('{0}', count),
                     itemId: itemId + 'FilterButton'
                 });
                 toolbar.add(newbutton);

@@ -44,7 +44,7 @@ Ext.define('Lmkp.controller.moderator.Details', {
 
         store.on('load', function(store, records, successful){
 
-            if(store.first().get('status') == 'pending'){
+            if(store.first().get('status') == Lmkp.ts.msg('status_pending')){
 
                 var panel = Ext.create('Lmkp.view.moderator.Review',{
                     itemId: 'reviewPanel',
@@ -65,7 +65,7 @@ Ext.define('Lmkp.controller.moderator.Details', {
                         btn.setDisabled(!layout.getPrev());
                         nextButton.setDisabled(!layout.getNext());
                     },
-                    text: '&laquo; Back'
+                    text: '&laquo; ' + Lmkp.ts.msg('button_back')
                 });
 
                 var nextButton = Ext.create('Ext.button.Button',{
@@ -78,7 +78,7 @@ Ext.define('Lmkp.controller.moderator.Details', {
                         btn.setDisabled(!layout.getNext());
                         prevButton.setDisabled(!layout.getPrev());
                     },
-                    text: 'Review pending changes &raquo;'
+                    text: Lmkp.ts.msg('moderator_review-pending-changes') + ' &raquo;'
                 });
             
                 toolbar = Ext.create('Ext.toolbar.Toolbar',{
@@ -100,7 +100,7 @@ Ext.define('Lmkp.controller.moderator.Details', {
 
         store.on('load', function(store, records, successful){
 
-            if(store.first().get('status') == 'pending'){
+            if(store.first().get('status') == Lmkp.ts.msg('status_pending')){
 
                 var panel = Ext.create('Lmkp.view.moderator.Review',{
                     itemId: 'reviewPanel',
@@ -121,7 +121,7 @@ Ext.define('Lmkp.controller.moderator.Details', {
                         btn.setDisabled(!layout.getPrev());
                         nextButton.setDisabled(!layout.getNext());
                     },
-                    text: '&laquo; Back'
+                    text: '&laquo; ' + Lmkp.ts.msg('button_back')
                 });
 
                 var nextButton = Ext.create('Ext.button.Button',{
@@ -134,7 +134,7 @@ Ext.define('Lmkp.controller.moderator.Details', {
                         btn.setDisabled(!layout.getNext());
                         prevButton.setDisabled(!layout.getPrev());
                     },
-                    text: 'Review pending changes &raquo;'
+                    text: Lmkp.ts.msg('moderator_review-pending-changes') + ' &raquo;'
                 });
 
                 toolbar = Ext.create('Ext.toolbar.Toolbar',{

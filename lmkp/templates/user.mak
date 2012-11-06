@@ -6,7 +6,7 @@
     </head>
     <body>
         <div>
-            ${_(u"You are user")} ${request.user.username}
+            "You are user" ${request.user.username}
         </div>
     </body>
 </html>
