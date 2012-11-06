@@ -8,7 +8,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
     // Use captcha or not? Disable for example if no internet connection is
     // available. Also disable on server side (function comment_add in
     // views/comments.py)
-    USE_CAPTCHA: true,
+    USE_CAPTCHA: false,
 	
     collapsible: true,
     collapsed: true,
