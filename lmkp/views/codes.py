@@ -1,7 +1,9 @@
 from pyramid.view import view_config
 from lmkp.config import codes_directory_path
+from lmkp.models.database_objects import A_Key
 from lmkp.models.database_objects import A_Value
 from lmkp.models.database_objects import Language
+from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Value
 from lmkp.models.meta import DBSession as Session
 import csv
@@ -22,7 +24,8 @@ def codes_files(request):
         'delimiter': '',
         'item': '',
         'success': True,
-        'filename': '-'
+        'filename': '-',
+        'language': ''
     })
 
     dirList=os.listdir(codes_directory_path())
@@ -34,14 +37,29 @@ def codes_files(request):
             return ret
 
         csvReader = csv.reader(stream, delimiter=";")
-        line = csvReader.next()
-        if len(line) >= 3:
+
+        line = None
+
+        try:
+            line = csvReader.next()
+        except StopIteration:
+            # This happens if file is empty
+            pass
+
+        if line is None:
+            item = {
+                'description': 'Empty file',
+                'success': False,
+                'filename': filename + ' (seems to be empty)'
+            }
+        elif len(line) >= 3:
             item = {
                 'description': line[0],
                 'delimiter': line[1],
                 'item': line[2],
                 'success': True,
-                'filename': filename
+                'filename': filename,
+                'language': line[3]
             }
         else:
             item = {
@@ -62,8 +80,9 @@ def codes_add(request):
 
     filename = request.params.get('filename', None)
     delimiter = request.params.get('delimiter', None)
+    locale = request.params.get('locale', None)
 
-    if filename is None or delimiter is None:
+    if filename is None or delimiter is None or locale is None:
         ret['msg'] = 'Not all needed values provided.'
         return ret
 
@@ -72,16 +91,28 @@ def codes_add(request):
         return ret
 
     item_type = request.params.get('item_type', None)
-    if item_type == 'activity':
+    if item_type == 'A_Value':
         TableItem = A_Value
-    elif item_type == 'stakeholder':
+        isKey = False
+    elif item_type == 'A_Key':
+        TableItem = A_Key
+        isKey = True
+    elif item_type == 'SH_Value':
         TableItem = SH_Value
+        isKey = False
+    elif item_type == 'SH_Key':
+        TableItem = SH_Key
+        isKey = True
     else:
         ret['msg'] = 'Database item not found.'
         return ret
 
-    code_language = Session.query(Language).\
-        filter(Language.locale == 'code').\
+    if locale == 'en':
+        ret['msg'] = 'The language "English" cannot be selected!'
+        return ret
+
+    language = Session.query(Language).\
+        filter(Language.locale == locale).\
         first()
 
     try:
@@ -99,7 +130,8 @@ def codes_add(request):
         # Skip the first item
         if csvReader.line_num > 1:
             try:
-                inserted = _insert_code(row[1], row[0], TableItem, code_language)
+                inserted = _insert_code(row[1], row[0], TableItem, isKey,
+                language)
             except:
                 ret['msg'] = 'Wrong delimiter or wrong value type?'
                 return ret
@@ -120,15 +152,21 @@ def codes_add(request):
 
     return ret
 
-def _insert_code(value, code, TableItem, code_language):
+def _insert_code(value, code, TableItem, isKey, code_language):
 
-    # Query the database to find english entry of value
-    english_value_q = Session.query(TableItem).\
-        filter(TableItem.value == value).\
-        filter(TableItem.fk_value == None).\
-        filter(TableItem.fk_language == 1)
+    # Query the database to find english entry of key or value
+    if isKey:
+        eng_q = Session.query(TableItem).\
+            filter(TableItem.key == value).\
+            filter(TableItem.fk_key == None).\
+            filter(TableItem.fk_language == 1)
+    else:
+        eng_q = Session.query(TableItem).\
+            filter(TableItem.value == value).\
+            filter(TableItem.fk_value == None).\
+            filter(TableItem.fk_language == 1)
     try:
-        english_value = english_value_q.one()
+        eng = eng_q.one()
     except NoResultFound:
         return {'success': False, 'msg': 'No english value found for "%s", code "%s" not inserted.' % (value, code)}
     except MultipleResultsFound:
@@ -136,10 +174,16 @@ def _insert_code(value, code, TableItem, code_language):
         return {'success': False, 'msg': 'Multiple values found for "%s", code "%s" not inserted.' % (value, code)}
 
     # Check if code already exists for value
-    code_value_q = Session.query(TableItem).\
-        filter(TableItem.value == code).\
-        filter(TableItem.original == english_value).\
-        filter(TableItem.language == code_language)
+    if isKey:
+        code_value_q = Session.query(TableItem).\
+            filter(TableItem.key == code).\
+            filter(TableItem.original == eng).\
+            filter(TableItem.language == code_language)
+    else:
+        code_value_q = Session.query(TableItem).\
+            filter(TableItem.value == code).\
+            filter(TableItem.original == eng).\
+            filter(TableItem.language == code_language)
     code_value = None
     try:
         code_value = code_value_q.one()
@@ -147,7 +191,7 @@ def _insert_code(value, code, TableItem, code_language):
         # Code does not yet exist, insert it
         new_code = TableItem(code)
         new_code.language = code_language
-        new_code.original = english_value
+        new_code.original = eng
         Session.add(new_code)
         return {'success': True, 'msg': 'Code "%s" inserted for value "%s".' % (code, value)}
     except MultipleResultsFound:
