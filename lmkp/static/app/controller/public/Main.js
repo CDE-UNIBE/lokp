@@ -343,7 +343,14 @@ Ext.define('Lmkp.controller.public.Main', {
      */
     _renderColumnMultipleValues: function(comp, dataIndex, ignored) {
         var me = this;
+
+        comp.addCls("adi-dubeli-class");
+        console.log(comp);
+
         comp.renderer = function(value, p, record) {
+
+            console.log(record);
+
             // loop through all tags is needed
             var taggroupStore = record.taggroups();
             var ret = [];
@@ -358,7 +365,9 @@ Ext.define('Lmkp.controller.public.Main', {
                 });
             });
             if (ret.length > 0) {
-                return ret.join(', ');
+                var cell = "<span style=\"background-color: red;\">" + ret.join(', ') + "</span>";
+                //console.log(cell);
+                return cell;
             } else {
                 return Lmkp.ts.msg('gui_unknown');
             }
