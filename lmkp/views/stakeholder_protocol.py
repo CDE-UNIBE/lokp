@@ -303,7 +303,7 @@ class StakeholderProtocol(Protocol):
         # Query the database
         stakeholders, count = self._query(request, limit=self._get_limit(request), offset=self._get_offset(request), filter=filter, uid=uid)
 
-        return {'total': count, 'data': [sh.to_table() for sh in stakeholders]}
+        return {'total': count, 'data': [sh.to_table(request) for sh in stakeholders]}
 
     def _query(self, request, limit=None, offset=None, filter=None, uid=None, 
                involvements=None, only_guid=False, ap_query=None, 
@@ -808,7 +808,7 @@ class StakeholderProtocol(Protocol):
         stakeholders, count = self._history(request, uid, status_list, 
                                             versions=self._get_versions(request))
         
-        return {'total': count, 'data': [sh.to_table() for sh in stakeholders]}
+        return {'total': count, 'data': [sh.to_table(request) for sh in stakeholders]}
 
     def _history(self, request, uid, status_list=None, versions=None, 
                  involvements=None):
@@ -1010,19 +1010,19 @@ class StakeholderProtocol(Protocol):
         if versions is None:
             for a in data:
                 if a.get_previous_version() is None:
-                    a.create_diff()
+                    a.create_diff(request)
                 else:
                     for ov in data:
                         if ov.get_version() == a.get_previous_version():
-                            a.create_diff(ov)
+                            a.create_diff(request, ov)
                             break
         # If versions specified, use version order to create diffs
         else:
             for i, a in enumerate(data):
                 if i == 0:
-                    a.create_diff()
+                    a.create_diff(request)
                 else:
-                    a.create_diff(data[i-1])
+                    a.create_diff(request, data[i-1])
 
         # Mark records as complete if requested
         # TODO: This should go to pending protocol

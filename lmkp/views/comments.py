@@ -13,10 +13,13 @@ import uuid
 from recaptcha.client import captcha
 
 from pyramid.i18n import TranslationStringFactory
-_ = TranslationStringFactory('lmkp')
+#_ = TranslationStringFactory('lmkp')
 
 @view_config(route_name='comments_all', renderer='json')
 def comments_all(request):
+
+    _ = request.translate
+
     """
     Return a JSON representation of comments to a certain object 
     (activity / stakeholder / involvement), based on its id.
@@ -61,7 +64,7 @@ def comments_all(request):
         return ret
     
     else:
-        ret['message'] = 'Object not found.'
+        ret['message'] = _('Object not found.')
         return ret
     
     # check if user has permissions to delete comments
@@ -75,6 +78,9 @@ def comments_all(request):
 
 @view_config(route_name='comment_add', renderer='json')
 def comment_add(request):
+
+    _ = request.translate
+
     """
     Add a new comment
     """
@@ -125,7 +131,7 @@ def comment_add(request):
     
     if not response.is_valid:
         # captcha not correct
-        ret['message'] = _('Captcha not correct.', default='Captcha not correct.')
+        ret['message'] = _('Captcha not correct.')
         ret['captcha_reload'] = True
         return ret
     else:
@@ -145,7 +151,7 @@ def comment_add(request):
             
             # do the insert
             Session.add(comment)
-            ret['message'] = _('Comment successfully inserted.', default='Comment successfully inserted.')
+            ret['message'] = _('Comment successfully inserted.')
         
         elif request.POST['object'] == 'stakeholder':
             ret['message'] = 'Stakeholder comments are not yet implemented.'
@@ -156,7 +162,7 @@ def comment_add(request):
             return ret
         
         else:
-            ret['message'] = 'Object not found.'
+            ret['message'] = _('Object not found.')
             return ret
 
     # if we've come this far, set success to 'True'
@@ -166,6 +172,9 @@ def comment_add(request):
 
 @view_config(route_name='comment_delete', renderer='json')
 def comment_delete(request):
+
+    _ = request.translate
+
     """
     Delete an existing comment
     """
@@ -188,7 +197,7 @@ def comment_delete(request):
         return ret
     
     Session.delete(comment)
-    ret['message'] = _('Comment successfully deleted.', default='Comment successfully deleted.')
+    ret['message'] = _('Comment successfully deleted.')
     
     # if we've come this far, set success to 'True'
     ret['success'] = True

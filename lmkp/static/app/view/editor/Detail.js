@@ -60,6 +60,8 @@ Ext.define('Lmkp.view.editor.Detail', {
             if (data.raw.pending) {
                 // If the user has current versions pending
 
+                console.log("If you ever see this notice, remove this notice and make sure I do not get deleted. Greetings from file: static/app/view/editor/Detail.js");
+
                 // Show a notice
                 panel.add({
                     bodyPadding: 5,

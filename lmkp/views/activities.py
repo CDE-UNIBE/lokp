@@ -24,7 +24,7 @@ from lmkp.renderers.renderers import translate_key
 
 log = logging.getLogger(__name__)
 
-_ = TranslationStringFactory('lmkp')
+#_ = TranslationStringFactory('lmkp')
 
 activity_protocol2 = ActivityProtocol2(Session)
 
@@ -111,14 +111,16 @@ def review(request):
     """
     Insert a review decision for a pending Activity
     """
+
+    _ = request.translate
     
     # Check if the user is logged in and he/she has sufficient user rights
     userid = authenticated_userid(request)
     if userid is None:
-        raise HTTPUnauthorized('User is not logged in.')
+        raise HTTPUnauthorized(_('User is not logged in.'))
         #return {'success': False, 'msg': 'User is not logged in.'}
     if not isinstance(has_permission('moderate', request.context, request), ACLAllowed):
-        raise HTTPUnauthorized('User has no permissions to add a review.')
+        raise HTTPUnauthorized(_('User has no permissions to add a review.'))
         #return {'success': False, 'msg': 'User has no permissions to add a review.'}
     user = Session.query(User).\
             filter(User.username == authenticated_userid(request)).first()
@@ -126,7 +128,7 @@ def review(request):
     # Check for profile
     profile_filters = activity_protocol2._create_bound_filter_by_user(request)
     if len(profile_filters) == 0:
-        raise HTTPBadRequest('User has no profile attached')
+        raise HTTPBadRequest(_('User has no profile attached'))
         #return {'success': False, 'msg': 'User has no profile attached.'}
     activity = Session.query(Activity).\
         filter(Activity.activity_identifier == request.POST['identifier']).\
@@ -134,7 +136,7 @@ def review(request):
         filter(or_(* profile_filters)).\
         first()
     if activity is None:
-        raise HTTPUnauthorized('The Activity was not found or is not situated within the user\'s profiles')
+        raise HTTPUnauthorized(_('The Activity was not found or is not situated within the user\'s profiles'))
         #return {'success': False, 'msg': 'The Activity was not found or is not situated within the user\'s profiles'}
 
     # If review decision is 'approved', make sure that all mandatory fields are 
@@ -159,7 +161,7 @@ def review(request):
                 keys.append(k.key)
             for mk in mandatory_keys:
                 if mk not in keys:
-                    return {'success': False, 'msg': 'Not all mandatory keys are provided.'}
+                    raise HTTPBadRequest(_('Not all mandatory keys are provided'))
 
     # Also query previous Activity if available
     previous_activity = Session.query(Activity).\
