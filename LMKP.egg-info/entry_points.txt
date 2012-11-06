@@ -1,5 +1,5 @@
       [paste.app_factory]
       main = lmkp:main
       [console_scripts]
-      populate_LMKP = lmkp.scripts.populate:main
+      populate_lmkp = lmkp.scripts.populate:main
       
