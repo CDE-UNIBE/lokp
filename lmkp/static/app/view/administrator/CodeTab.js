@@ -84,11 +84,27 @@ Ext.define('Lmkp.view.administrator.CodeTab', {
                 }, {
                     xtype: 'combobox',
                     fieldLabel: 'Value type',
-                    store: ['activity', 'stakeholder'],
+                    store: [
+                        'A_Key',
+                        'A_Value',
+                        'SH_Key',
+                        'SH_Value'
+                    ],
                     itemId: 'value_type',
                     name: 'item_type',
                     anchor: '100%',
                     allowBlank: false
+                }, {
+                    xtype: 'combobox',
+                    fieldLabel: 'Language',
+                    store: 'Languages',
+                    displayField: 'local_name',
+                    valueField: 'locale',
+                    forceSelection: true,
+                    editable: false,
+                    itemId: 'language_cb',
+                    name: 'locale',
+                    anchor: '100%'
                 }
                 ]
             }, {

@@ -1,4 +1,4 @@
-ISO country codes for stakeholder;";";stakeholder
+﻿ISO country codes for stakeholder;";";SH_Value;code
 AFG;Afghanistan
 ALA;Åland
 ALB;Albania

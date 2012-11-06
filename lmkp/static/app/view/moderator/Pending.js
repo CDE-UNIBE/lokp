@@ -27,7 +27,7 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
             xtype: 'gridpanel',
             flex: 0.5,
             split: true,
-            title: Lmkp.ts.msg("activities-title"),
+            title: Lmkp.ts.msg("activities_title"),
             itemId: 'activityGrid',
             store: 'PendingActivityGrid',
             viewConfig: {
@@ -41,21 +41,21 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
                 flex: 0,
                 sortable: true
             }, {
-                header: Lmkp.ts.msg('date-label'),
+                header: Lmkp.ts.msg('gui_date'),
                 name: 'datecolumn',
                 dataIndex: 'timestamp',
                 flex: 0,
                 sortable: true
             }, {
-                header: Lmkp.ts.msg("activity-attr_country"),
+                header: Lmkp.ts.msg('activity_db-key-country'),
                 name: 'activityCountryColumn',
-                dataIndex: Lmkp.ts.msg("activity-attr_country"),
+                dataIndex: Lmkp.ts.msg('activity_db-key-country'),
                 flex: 1,
                 sortable: true
             }, {
-                header: Lmkp.ts.msg('activity-attr_yearofinvestment'),
+                header: Lmkp.ts.msg('activity_db-key-yearofagreement'),
                 name: 'yearofinvestmentcolumn',
-                dataIndex: Lmkp.ts.msg('activity-attr_yearofinvestment'),
+                dataIndex: Lmkp.ts.msg('activity_db-key-yearofagreement'),
                 flex: 0,
                 sortable: true
             }],
@@ -66,16 +66,16 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
                 dock: 'bottom',
                 enableOverflow: false,
                 displayInfo: true,
-                beforePageText: Lmkp.ts.msg("activitypaging-before"),
-                afterPageText: Lmkp.ts.msg("activitypaging-after"),
-                displayMsg: Lmkp.ts.msg("activitypaging-message"),
-                emptyMsg: '<b>' + Lmkp.ts.msg("activitypaging-empty") + '</b>'
+                beforePageText: Lmkp.ts.msg('gui_paging-before'),
+                afterPageText: Lmkp.ts.msg('gui_paging-after'),
+                displayMsg: Lmkp.ts.msg('activities_paging-message'),
+                emptyMsg: '<b>' + Lmkp.ts.msg('activities_paging-empty') + '</b>'
             }]
         }, {
             xtype: 'gridpanel',
             flex: 0.5,
             split: true,
-            title: Lmkp.ts.msg("stakeholders-title"),
+            title: Lmkp.ts.msg("stakeholders_title"),
             itemId: 'stakeholderGrid',
             store: 'PendingStakeholderGrid',
             viewConfig: {
@@ -90,21 +90,21 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
                 flex: 0,
                 sortable: true
             }, {
-                header: Lmkp.ts.msg('date-label'),
+                header: Lmkp.ts.msg('gui_date'),
                 name: 'datecolumn',
                 dataIndex: 'timestamp',
                 flex: 0,
                 sortable: true
             }, {
-                header: Lmkp.ts.msg("stakeholder-attr_name"),
+                header: Lmkp.ts.msg('stakeholder_db-key-name'),
                 name: 'stakeholdernamecolumn',
-                dataIndex: Lmkp.ts.msg("stakeholder-attr_name"),
+                dataIndex: Lmkp.ts.msg('stakeholder_db-key-name'),
                 flex: 1,
                 sortable: true
             }, {
-                header: Lmkp.ts.msg("stakeholder-attr_country"),
+                header: Lmkp.ts.msg('stakeholder_db-key-country'),
                 name: 'stakeholdercountrycolumn',
-                dataIndex: Lmkp.ts.msg("stakeholder-attr_country"),
+                dataIndex: Lmkp.ts.msg('stakeholder_db-key-country'),
                 flex: 0,
                 sortable: true
             }
@@ -117,10 +117,10 @@ Ext.define('Lmkp.view.moderator.Pending' ,{
                 dock: 'bottom',
                 enableOverflow: false,
                 displayInfo: true,
-                beforePageText: Lmkp.ts.msg("activitypaging-before"),
-                afterPageText: Lmkp.ts.msg("activitypaging-after"),
-                displayMsg: Lmkp.ts.msg("stakeholder-paging_message"),
-                emptyMsg: '<b>' + Lmkp.ts.msg("stakeholder-paging_empty") + '</b>'
+                beforePageText: Lmkp.ts.msg('gui_paging-before'),
+                afterPageText: Lmkp.ts.msg('gui_paging-after'),
+                displayMsg: Lmkp.ts.msg('stakeholders_paging-message'),
+                emptyMsg: '<b>' + Lmkp.ts.msg('stakeholders_paging-empty') + '</b>'
             }
             ]
         }],

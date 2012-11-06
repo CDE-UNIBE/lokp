@@ -24,8 +24,8 @@ Ext.define('Lmkp.view.items.FilterPanel', {
         }, {
             xtype: 'button',
             name: 'filterActivateButton',
-            text: Lmkp.ts.msg("activate-button"),
-            tooltip: Lmkp.ts.msg("activate-tooltip"),
+            text: Lmkp.ts.msg('button_filter-activate'),
+            tooltip: Lmkp.ts.msg('tooltip_filter-activate'),
             iconCls: 'toolbar-button-accept',
             enableToggle: true,
             flex: 0,
@@ -33,8 +33,8 @@ Ext.define('Lmkp.view.items.FilterPanel', {
         }, {
             xtype: 'button',
             name: 'deleteButton',
-            text: Lmkp.ts.msg("delete-button"),
-            tooltip: Lmkp.ts.msg("deletefilter-tooltip"),
+            text: Lmkp.ts.msg('button_filter-delete'),
+            tooltip: Lmkp.ts.msg('tooltip_filter-delete'),
             iconCls: 'toolbar-button-delete',
             enableToggle: false,
             flex: 0

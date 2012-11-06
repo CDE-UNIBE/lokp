@@ -29,16 +29,16 @@ Ext.define('Lmkp.view.public.NewActivityWindow', {
                 {
                     xtype: 'button',
                     itemId: 'submitButton',
-                    text: 'Submit',
+                    text: Lmkp.ts.msg('button_submit'),
                     disabled: !this.activityEdit
                 },
                 '->', {
                     id: 'card-prev',
-                    text: 'Previous',
+                    text: Lmkp.ts.msg('button_back'),
                     _dir: 'prev'
                 }, {
                     id: 'card-next',
-                    text: 'Next',
+                    text: Lmkp.ts.msg('button_next'),
                     _dir: 'next'
                 }
             ];

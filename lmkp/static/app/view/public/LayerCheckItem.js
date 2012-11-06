@@ -32,7 +32,7 @@ Ext.define('Lmkp.view.public.LayerCheckItem',{
                 this.fireEvent('showlegend', this, this.layer);
             },
             scope: this,
-            text: 'Show Legend',
+            text: Lmkp.ts.msg('button_map_show-legend'),
             width: 100,
             xtype: 'button'
         }];

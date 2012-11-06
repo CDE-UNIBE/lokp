@@ -113,7 +113,7 @@ Ext.define('Lmkp.controller.editor.Map', {
 
         var popup = Ext.create('GeoExt.window.Popup', {
             itemId: 'mappopup',
-            title: 'New Activity',
+            title: Lmkp.ts.msg('activities_new-title'),
             location: feature,
             unpinnable: false,
             draggable: true,
@@ -130,7 +130,7 @@ Ext.define('Lmkp.controller.editor.Map', {
                 items: [
                 {
                     xtype: 'container',
-                    html: '<p>You can drag and drop the point.</p><p>Once you are done, click "Continue".</p>'
+                    html: '<p>' + Lmkp.ts.msg('activities_new-step-1-explanation') + '</p>'
                 }, {
                     xtype: 'textfield',
                     value: 'Spatial Accuracy soon to come ...'
@@ -142,7 +142,7 @@ Ext.define('Lmkp.controller.editor.Map', {
             {
                 xtype: 'button',
                 itemId: 'mapPopupContinueButton',
-                text: 'Continue'
+                text: Lmkp.ts.msg('button_continue')
             }
             ]
         });
