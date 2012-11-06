@@ -25,12 +25,12 @@ Ext.define('Lmkp.view.administrator.Main', {
 
         var items = [
         {
-            postUrl: '/config/add/activities',
+            postUrl: '/config/add/activities', // Also used to decide if A or SH
             store: activityStore,
             title: 'Activities',
             xtype: 'lo_administratoryamlscanpanel'
         },{
-            postUrl: '/config/add/stakeholders',
+            postUrl: '/config/add/stakeholders', // Also used to decide if A or SH
             store: stakeholderStore,
             title: 'Stakeholders',
             xtype: 'lo_administratoryamlscanpanel'

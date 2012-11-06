@@ -47,6 +47,14 @@ Ext.define('Lmkp.controller.administrator.YamlScan', {
                 var button = panel.down('button[itemId=yaml-scan-button]');
             }
 
+            // Activity or Stakeholder?
+            var item_type = null;
+            if (panel.postUrl == '/config/add/activities') {
+                item_type = 'activity';
+            } else if (panel.postUrl == '/config/add/stakeholders') {
+                item_type = 'stakeholder';
+            }
+
             var win = Ext.create('Ext.window.Window', {
                 title: 'Translation',
                 layout: 'fit',
@@ -92,6 +100,11 @@ Ext.define('Lmkp.controller.administrator.YamlScan', {
                         name: 'keyvalue',
                         hidden: true,
                         value: record.get('keyvalue'),
+                        allowBlank: false
+                    }, {
+                        name: 'item_type',
+                        hidden: true,
+                        value: item_type,
                         allowBlank: false
                     }],
                     buttons: [{

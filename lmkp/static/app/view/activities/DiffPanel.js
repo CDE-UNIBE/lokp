@@ -1,3 +1,10 @@
+/*
+ * As far as I know, this panel is not used anymore. However, it (or parts of
+ * it) could be used again so I am not going to delete it yet.
+ * However, its translations are deleted. So if reactivating this panel, make
+ * sure to add the translations again (Lmkp.ts.msg('xxx')).
+ */
+
 Ext.define('Lmkp.view.activities.DiffPanel', {
     extend: 'Ext.form.Panel',
     alias: ['widget.lo_diffpanel'],

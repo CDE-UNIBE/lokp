@@ -47,16 +47,15 @@ Ext.define('Lmkp.view.moderator.Review', {
         // which is the active version
         var pending = [];
         var active_version = null;
-        //for (var i in data.data) {
         store.each(function(record){
-            if (record.get('status') == 'pending') {
+            if (record.get('status') == Lmkp.ts.msg('status_pending')) {
                 pending.push({
                     'current_version': record.get('version'),
                     'previous_version': record.get('previous_version'),
                     'missing_keys': record.get('missing_keys')
                 });
             }
-            if (record.get('status') == 'active') {
+            if (record.get('status') == Lmkp.ts.msg('status_active')) {
                 active_version = record.get('version');
             }
         }, this);
@@ -65,14 +64,13 @@ Ext.define('Lmkp.view.moderator.Review', {
         if (pending.length >= 2) {
             this.add({
                 bodyPadding: 5,
-                html: Lmkp.ts.msg('reviewpanel-multiple_changes'),
+                html: Lmkp.ts.msg('moderator_multiple-changes-pending'),
                 bodyCls: 'notice'
             });
         }
 
         // Show panels
         for (var j in pending) {
-            //for (var k in data.data) {
             store.each(function(record){
                 // First show panel with pending item
                 if (record.get('version') == pending[j].current_version) {
@@ -83,7 +81,7 @@ Ext.define('Lmkp.view.moderator.Review', {
                         noticepanel = {
                             xtype: 'panel',
                             bodyPadding: 5,
-                            html: Lmkp.ts.msg('reviewpanel-not_active_changed'),
+                            html: Lmkp.ts.msg('moderator_changes-not-based-on-active'),
                             bodyCls: 'notice'
                         }
                     }
@@ -103,7 +101,7 @@ Ext.define('Lmkp.view.moderator.Review', {
                         },
                         additionalPanelTop: noticepanel,
                         // Panel settings
-                        title: Lmkp.ts.msg('reviewpanel-pending_title'),
+                        title: Lmkp.ts.msg('moderator_pending-version-title'),
                         collapsible: true
                     });
                     // Show diff panel
@@ -133,7 +131,7 @@ Ext.define('Lmkp.view.moderator.Review', {
                             editable: false
                         },
                         // Panel settings
-                        title: Lmkp.ts.msg('reviewpanel-previous_title'),
+                        title: Lmkp.ts.msg('gui_previous-version'),
                         collapsible: true,
                         collapsed: true
                     });
@@ -151,7 +149,7 @@ Ext.define('Lmkp.view.moderator.Review', {
                     scale: 'medium',
                     scope: this,
                     store_type: type, // helper parameter
-                    text: 'Submit',
+                    text: Lmkp.ts.msg('button_submit'),
                     xtype: 'button'
                 }],
                 xtype: 'form',
@@ -164,7 +162,7 @@ Ext.define('Lmkp.view.moderator.Review', {
                     queryMode: 'local',
                     displayField: 'name',
                     valueField: 'id',
-                    fieldLabel: 'Review decision',
+                    fieldLabel: Lmkp.ts.msg('moderator_review-decision'),
                     allowBlank: false,
                     flex: 1,
                     margin: 3,
@@ -172,7 +170,7 @@ Ext.define('Lmkp.view.moderator.Review', {
                     width: 400,
                     xtype: 'combobox'
                 }, {
-                    fieldLabel: 'Review comment',
+                    fieldLabel: Lmkp.ts.msg('moderator_review-comment'),
                     margin: 3,
                     name: 'comment_textarea',
                     width: 400,
@@ -190,6 +188,7 @@ Ext.define('Lmkp.view.moderator.Review', {
 
             // Show notice and list with missing fields if not all mandatory
             // attributes are there.
+            // @TODO: Make this work again ...
             if (pending[j].missing_keys.length > 0) {
                 if (pending[j].missing_keys.length == 1 &&
                     pending[j].missing_keys[0] == 0) {

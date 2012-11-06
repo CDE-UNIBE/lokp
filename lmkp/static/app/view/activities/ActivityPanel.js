@@ -36,7 +36,7 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
             // Remove any existing panels
             this.removeAll();
 
-            var editable = this.editable && Lmkp.toolbar != false;
+            var editable = this.editable && Lmkp.editor;
 
             // If it is not an Activity Model ...
             if (!this.contentItem.isModel) {
@@ -57,16 +57,6 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
             }
 
             this._addStatusIndicator();
-
-            /*if (this.contentItem.get('status') == 'pending') {
-                this.add({
-                    bodyCls: 'notice',
-                    bodyPadding: 5,
-                    html: 'You are seeing a pending version, which needs to be \n\
-                        reviewed before it is publicly visible',
-                    margin: '3 3 0 3'
-                });
-            }*/
 
             // Get data and handle each TagGroup separately
             var taggroupStore = this.contentItem.taggroups();
@@ -110,7 +100,7 @@ Ext.define('Lmkp.view.activities.ActivityPanel', {
             }
 
         } else {
-            this.html = Lmkp.ts.msg('unknown');
+            this.html = Lmkp.ts.msg('gui_unknown');
         }
     },
 

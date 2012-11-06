@@ -350,12 +350,14 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 var dTags = [];
                 // Loop through each Tag of Taggroup
                 for (var t in cTaggroup.tags) {
-                    dTags.push({
-                        'key': cTaggroup.tags[t].get('key'),
-                        'value': cTaggroup.tags[t].get('value'),
-                        'id': cTaggroup.tags[t].get('id'),
-                        'op': 'delete'
-                    });
+                    if (cTaggroup.tags[t].modelName) {
+                        dTags.push({
+                            'key': cTaggroup.tags[t].get('key'),
+                            'value': cTaggroup.tags[t].get('value'),
+                            'id': cTaggroup.tags[t].get('id'),
+                            'op': 'delete'
+                        });
+                    }
                 }
                 deletedTaggroups.push({
                     'id': cTaggroup.id,

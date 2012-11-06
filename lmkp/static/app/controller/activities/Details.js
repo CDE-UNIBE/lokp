@@ -11,6 +11,9 @@ Ext.define('Lmkp.controller.activities.Details', {
 
     init: function() {
         this.control({
+            'lo_activitydetailwindow':{
+                render: this.onActivityDetailWindowRender
+            },
             'lo_activitydetailwindow gridpanel[itemId="historyPanel"]': {
                 select: this.onHistoryPanelSelect
             },
@@ -21,10 +24,26 @@ Ext.define('Lmkp.controller.activities.Details', {
                 click: this.onEditTaggroupButtonClick
             },
             'lo_activitydetailwindow lo_stakeholderpanel lo_taggrouppanel button[name=editTaggroup]': {
-            	click: this.onEditSHTaggroupButtonClick
+                click: this.onEditSHTaggroupButtonClick
             },
             'lo_involvementpanel button[name=editInvolvementButton]': {
-            	click: this.onEditInvolvementButtonClick
+                click: this.onEditInvolvementButtonClick
+            }
+        });
+    },
+
+    onActivityDetailWindowRender: function(comp){
+
+        // Reqeust the comments for this activity after opening the detail
+        // window.
+        Ext.Ajax.request({
+            url: '/comments/activity/' + comp.activity.get('id'),
+            method: 'GET',
+            success: function(response) {
+                // Set the comment for this activity to the detail window
+                comp.setItemComment(Ext.JSON.decode(response.responseText));
+                // Populate the comment in the activity
+                comp._populateComment(comp.activity);
             }
         });
     },
@@ -47,14 +66,14 @@ Ext.define('Lmkp.controller.activities.Details', {
         // Instead, wait for another function ('onEditSHTaggroupButtonClick' 
         // further down) to show correct window.
         if (!button.up('lo_involvementpanel')) {
-	        var activityPanel = button.up('lo_activitypanel');
-	        if (activityPanel && activityPanel.contentItem) {
-	            var newActivityController = this.getController('activities.NewActivity');
-	            newActivityController.showNewActivityWindow(
-	                // Provide current item
-	                activityPanel.contentItem
-	            );
-	        }
+            var activityPanel = button.up('lo_activitypanel');
+            if (activityPanel && activityPanel.contentItem) {
+                var newActivityController = this.getController('activities.NewActivity');
+                newActivityController.showNewActivityWindow(
+                    // Provide current item
+                    activityPanel.contentItem
+                    );
+            }
         }
     },
     
@@ -64,29 +83,29 @@ Ext.define('Lmkp.controller.activities.Details', {
      * form with the current values.
      */
     onEditSHTaggroupButtonClick: function(button) {
-    	// Make sure the button is inside an Involvement panel
-    	if (button.up('lo_involvementpanel')) {
-	    	var stakeholderPanel = button.up('lo_stakeholderpanel');
-	    	if (stakeholderPanel && stakeholderPanel.contentItem) {
-	    		var newActivityController = this.getController('activities.NewActivity');
-	    		newActivityController.showNewStakeholderWindow(
-	    			// Provide current item
-	    			stakeholderPanel.contentItem
-	    		);
-	    	}
-    	}
+        // Make sure the button is inside an Involvement panel
+        if (button.up('lo_involvementpanel')) {
+            var stakeholderPanel = button.up('lo_stakeholderpanel');
+            if (stakeholderPanel && stakeholderPanel.contentItem) {
+                var newActivityController = this.getController('activities.NewActivity');
+                newActivityController.showNewStakeholderWindow(
+                    // Provide current item
+                    stakeholderPanel.contentItem
+                    );
+            }
+        }
     },
     
     onEditInvolvementButtonClick: function(button) {
-    	var activityPanel = button.up('lo_activitypanel');
-    	if (activityPanel && activityPanel.contentItem) {
-    		var newActivityController = this.getController('activities.NewActivity');
+        var activityPanel = button.up('lo_activitypanel');
+        if (activityPanel && activityPanel.contentItem) {
+            var newActivityController = this.getController('activities.NewActivity');
             newActivityController.showNewActivityWindow(
                 // Provide current item
                 activityPanel.contentItem,
                 1 // 1: Involvements
-            );
-    	}
+                );
+        }
     }
 
 });

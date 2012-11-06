@@ -24,6 +24,7 @@ import yaml
 from pyramid.security import unauthenticated_userid
 
 from lmkp.views.translation import statusMap
+from lmkp.views.translation import get_translated_status
 
 class Protocol(object):
     """
@@ -665,7 +666,7 @@ class Inv(object):
     def get_role(self):
         return self._role
 
-    def to_table(self):
+    def to_table(self, request):
         if self._feature is None:
             return {
                 'id': str(self._guid),
@@ -674,7 +675,7 @@ class Inv(object):
             }
         else:
             return {
-                'data': self._feature.to_table(),
+                'data': self._feature.to_table(request),
                 'role': self._role,
                 'role_id': self._role_id
             }
@@ -763,7 +764,7 @@ class Feature(object):
 
         self._missing_keys = mk
 
-    def to_table(self):
+    def to_table(self, request):
         """
         Returns a JSON compatible representation of this object
         """
@@ -791,14 +792,18 @@ class Feature(object):
         if self._timestamp is not None:
             ret['timestamp'] = str(self._timestamp)
         if self._status is not None:
-            ret['status'] = self._status
+            ret['status'] = get_translated_status(request, self._status)
         if self._diff_info is not None:
             for k in self._diff_info:
-                ret[k] = self._diff_info[k]
+                # Try to translate status
+                if k == 'status':
+                    ret[k] = get_translated_status(request, self._diff_info[k])
+                else:
+                    ret[k] = self._diff_info[k]
         if len(self._pending) != 0:
             pending = []
             for p in self._pending:
-                pending.append(p.to_table())
+                pending.append(p.to_table(request))
             ret['pending'] = sorted(pending, key=lambda k: k['version'],
                 reverse=True)
         if self._missing_keys is not None:
@@ -808,12 +813,12 @@ class Feature(object):
         if len(self._involvements) != 0:
             sh = []
             for i in self._involvements:
-                sh.append(i.to_table())
+                sh.append(i.to_table(request))
             ret['involvements'] = sh
 
         return ret
 
-    def create_diff(self, previous=None):
+    def create_diff(self, request, previous=None):
         """
         Append a diff object. Try to find TagGroups and Tags of current version
         in previous version.
@@ -898,7 +903,7 @@ class Feature(object):
                         newinv_found = True
                         break
                 if newinv_found is not True:
-                    inv_new.append(invn.to_table())
+                    inv_new.append(invn.to_table(request))
 
             # Collect old Involvements (not there anymore)
             inv_old = []
@@ -911,7 +916,7 @@ class Feature(object):
                             oldinv_found = True
                             break
                 if oldinv_found is not True:
-                    inv_old.append(invo.to_table())
+                    inv_old.append(invo.to_table(request))
 
             # Put it all together
             diff_object = {}
