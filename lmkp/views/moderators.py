@@ -22,9 +22,9 @@ def moderator_toolbar_config(request):
 
     # Login form: Show current user and button to log out.
     str += "Lmkp.login_form = {\n\txtype: 'toolbar',\n\tborder: false,\n\titems: [\n";
-    str += "\t\t{xtype: 'label', text: '%s', border: 0, bodyCls: 'toolbar_username'},\n" % _('Logged in as:')
-    str += "\t\t{id: 'user_button', text: '%s', tooltip: '%s'},\n" % (request.user.username, _('Show user profile'))
-    str += "\t\t{id: 'logout_button', text: '%s'}\n\t]\n};\n" % _('Logout')
+    str += "\t\t{xtype: 'label', text: \"%s\", border: 0, bodyCls: 'toolbar_username'},\n" % _('Logged in as:')
+    str += "\t\t{id: 'user_button', text: \"%s\", tooltip: \"%s\"},\n" % (request.user.username, _('Show user profile'))
+    str += "\t\t{id: 'logout_button', text: \"%s\"}\n\t]\n};\n" % _('Logout')
 
     # Specific controllers for moderators. The ones for editors need to be
     # included as well.
