@@ -1,5 +1,5 @@
 ﻿Spanish translation of A_Values;";";A_Value;es
-Negociando;Under negotiation
+Negociación en curso;Under negotiation
 Acuerdo oral;Oral agreement
 Contrato firmado;Contract signed
 Negociaciones fracasados;Negotiations failed
@@ -13,9 +13,55 @@ Conservación;Conservation
 Energía renovable;Renewable energy
 Otro;Other
 Informe de medios;Media report
-Papel de investigación;Research paper
+Documento de investigación ;Research paper
 Fuentes del gobierno;Government sources
 Fuentes de la compañía;Company sources
 Contrato;Contract
 Información personal;Personal information
 Otro;Other
+Compra directa;Outright Purchase
+Contrato de arrendamiento;Lease
+Licencia de explotación;Exploitation License
+Acuicultura;Aquaculture
+Abejas;Bees
+Ganado;Cattle
+Cabras;Goats
+Maricultura;Mariculture
+Cerdo;Pork
+Aves de corral;Poultry
+Oveja;Sheep
+Uso doméstico;Domestic use
+Exportación;Export
+Agua subterránea;Ground water
+Río;River
+Lago;Lake
+Agrocombustibles;Agrofuels
+Cultivos alimentarios;Food crops
+Ganado;Livestock
+Productos agrícolas no alimentarios;Non-food agricultural commodities
+madera y fibra;wood and fibre
+Secuestro de carbono;carbon sequestration
+Proyecto no se ha iniciado;Project not started
+Fase de inicio;Startup phase
+En operación;In operation
+Proyecto abandonado;Project abandoned
+En el contrato de arrendamiento;On the lease
+Fuera del contrato de arrendamiento;Off the lease
+Salud;Health
+Educación;Education
+Infraestructura productiva;Productive infrastructure
+Carreteras;Roads
+Desarrollo de capacidades;Capacity building
+Apoyo financiero;Financial support
+Estado;State
+Privado;Private
+Comunidad;Community
+Agricultura comercial;Commercial agriculture
+Agricultura en pequeña escala;Smallholder agriculture
+Pastores;Pastoralists
+Silvicultura;Forestry
+Conservación;Conservation
+Tierras de cultivo;Cropland
+Terrenos forestales;Forest land
+Pradera;grassland
+Tierras marginales;Marginal land
