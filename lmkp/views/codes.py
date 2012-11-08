@@ -176,7 +176,7 @@ def _insert_code(value, code, TableItem, isKey, code_language):
         if isKey:
             code_value_q = Session.query(TableItem).\
                 filter(TableItem.key == code).\
-                filter(TableItem.original == eng).\
+                filter(TableItem.original == e).\
                 filter(TableItem.language == code_language)
         else:
             code_value_q = Session.query(TableItem).\
