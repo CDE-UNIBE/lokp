@@ -53,7 +53,18 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
 
         // Set initial key
         if (this.initial_key) {
-            this.getKeyField().setValue(this.initial_key);
+            // In order to set the right key, it is necessary to find it by
+            // looking through the fieldLabels
+            var r = this.main_store.findRecord('fieldLabel', this.initial_key);
+            if (r) {
+                this.getKeyField().setValue(r.get('name'));
+            } else {
+                // If not yet found, try to find it through 'regular' field
+                var r2 = this.main_store.findRecord('name', this.initial_key);
+                if (r2) {
+                    this.getKeyField().setValue(r2.get('name'));
+                }
+            }
         }
     },
 
@@ -121,7 +132,6 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
 
     // Replace value field based on selected attribute
     onKeyChanged: function(oldValue, newValue) {
-
         if (newValue) {
             // remove newly selected value from store
             var currentRecord = this.main_store.findRecord('name', newValue);
@@ -140,8 +150,18 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
 
                 var newField = this.getNewValueField(currentRecord);
                 if (this.initial_value && !this.initial_value_set) {
-                    // Set initial value (set it only once)
-                    newField.setValue(this.initial_value);
+                    // If it is a combobox and in order to set the right value,
+                    // it is necessary to find it by looking through field2
+                    if (newField.getXType() == 'combobox') {
+                        var r = newField.getStore().findRecord('field2',
+                            this.initial_value);
+                        if (r) {
+                            newField.setValue(r.get('field1'));
+                        }
+                    } else {
+                        newField.setValue(this.initial_value);
+                    }
+                    // Set it only once
                     this.initial_value_set = true;
                 }
                 this.insert(1, newField);
