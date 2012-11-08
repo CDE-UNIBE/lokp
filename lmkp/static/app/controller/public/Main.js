@@ -343,13 +343,14 @@ Ext.define('Lmkp.controller.public.Main', {
      */
     _renderColumnMultipleValues: function(comp, dataIndex, ignored) {
         var me = this;
+        
+        comp.renderer = function(value, metaData, record) {
 
-        comp.addCls("adi-dubeli-class");
-        console.log(comp);
-
-        comp.renderer = function(value, p, record) {
-
-            console.log(record);
+            // Check the current status of the record and add accordingly an
+            // additional class to the td element
+            if(record.get("status") == 'pending'){
+                metaData.tdCls = "status-pending";
+            }
 
             // loop through all tags is needed
             var taggroupStore = record.taggroups();
@@ -365,9 +366,7 @@ Ext.define('Lmkp.controller.public.Main', {
                 });
             });
             if (ret.length > 0) {
-                var cell = "<span style=\"background-color: red;\">" + ret.join(', ') + "</span>";
-                //console.log(cell);
-                return cell;
+                return ret.join(', ');
             } else {
                 return Lmkp.ts.msg('gui_unknown');
             }
@@ -413,7 +412,7 @@ Ext.define('Lmkp.controller.public.Main', {
             if (toolbar && count != null) {
                 // Create new button
                 var newbutton = Ext.create('Ext.button.Button', {
-//                    text: 'Filter (' + count + ' active)',
+                    //                    text: 'Filter (' + count + ' active)',
                     text: Lmkp.ts.msg('gui_filter-count').replace('{0}', count),
                     itemId: itemId + 'FilterButton'
                 });

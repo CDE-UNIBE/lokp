@@ -195,3 +195,9 @@ div.olLayerGooglePoweredBy
     width: 100px;
     margin-left: -200px;
 }
+
+td.status-pending {
+    /* Add a light-salmon background to pending versions in the activtiy grid */
+    background-color: #ffa07a !important;
+    font-style: italic !important;
+}

@@ -13,8 +13,10 @@ Ext.define('Lmkp.controller.public.Filter', {
     'StakeholderGrid'
     ],
 
-    refs: [
-    {
+    refs: [{
+        ref: 'mapPanel',
+        selector: 'lo_publicmappanel'
+    },{
         ref: 'activityTablePanel',
         selector: 'lo_publicactivitytablepanel'
     }, {
@@ -324,6 +326,11 @@ Ext.define('Lmkp.controller.public.Filter', {
                 otherstore.syncWithOther(store.getProxy().extraParams);
             }
         });
+
+        // Reload also the vector store on the map with the same parameters
+        var vectorStore = this.getMapPanel().activityFeatureStore;
+        vectorStore.getProxy().extraParams = extraParams;
+        vectorStore.load();
 
         // Fire event to update filter count (based on currently active window)
         if (activityFilterPanel &&
