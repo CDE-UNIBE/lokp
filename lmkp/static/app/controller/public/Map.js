@@ -15,6 +15,7 @@ Ext.define('Lmkp.controller.public.Map', {
 
     stores: [
     'ActivityGrid',
+    'ActivityVector',
     'Profiles',
     'StakeholderGrid'
     ],
@@ -77,6 +78,22 @@ Ext.define('Lmkp.controller.public.Map', {
 
         var ctrl = comp.getSelectCtrl();
         ctrl.events.register('featurehighlighted', this, this.openDetailWindow);
+
+        // Adds a beforeload action
+        var vectorStore = this.getMapPanel().activityFeatureStore;
+        vectorStore.on('beforeload', function(store){
+            // Get the store proxy
+            var proxy = store.getProxy();
+            // Get the map view.
+            var map = this.getMapPanel().getMap();
+            // Get the extent if the map is already initialized, else the
+            // map extent is still null
+            if(map.getExtent()){
+                // Set the bounding box as extra parameter
+                proxy.setExtraParam("bbox", map.getExtent().toBBOX());
+                proxy.setExtraParam("epsg", 900913);
+            }
+        }, this);
     },
     
     openDetailWindow: function(event){
@@ -130,6 +147,10 @@ Ext.define('Lmkp.controller.public.Map', {
         // Reload the ActivityGrid store. Also refresh StakeholderGrid.
         var aStore = this.getActivityGridStore();
         var shStore = this.getStakeholderGridStore();
+
+        // Reload the activities on the map
+        var vectorStore = this.getMapPanel().activityFeatureStore;
+        vectorStore.load();
 
         aStore.setInitialProxy();
         this.getActivityGridStore().loadPage(1, {
