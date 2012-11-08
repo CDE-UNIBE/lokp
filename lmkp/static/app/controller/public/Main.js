@@ -343,7 +343,15 @@ Ext.define('Lmkp.controller.public.Main', {
      */
     _renderColumnMultipleValues: function(comp, dataIndex, ignored) {
         var me = this;
-        comp.renderer = function(value, p, record) {
+        
+        comp.renderer = function(value, metaData, record) {
+
+            // Check the current status of the record and add accordingly an
+            // additional class to the td element
+            if(record.get("status") == 'pending'){
+                metaData.tdCls = "status-pending";
+            }
+
             // loop through all tags is needed
             var taggroupStore = record.taggroups();
             var ret = [];
@@ -404,7 +412,7 @@ Ext.define('Lmkp.controller.public.Main', {
             if (toolbar && count != null) {
                 // Create new button
                 var newbutton = Ext.create('Ext.button.Button', {
-//                    text: 'Filter (' + count + ' active)',
+                    //                    text: 'Filter (' + count + ' active)',
                     text: Lmkp.ts.msg('gui_filter-count').replace('{0}', count),
                     itemId: itemId + 'FilterButton'
                 });
