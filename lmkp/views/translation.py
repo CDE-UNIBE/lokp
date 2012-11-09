@@ -318,7 +318,7 @@ def ui_messages(request):
     str += ",\n"
 
     str += "\t\tmsg: function(key) {\n"
-    str += "\t\t\treturn this.strings[key] ? this.strings[key].replace(/\'/gi, 'asd') : key;\n"
+    str += "\t\t\treturn this.strings[key] ? this.strings[key] : key;\n"
     str += "\t\t}\n"
     str += "\t}\n"
 
