@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2012-10-29 08:49+0100\n"
+"POT-Creation-Date: 2012-11-06 14:29+0100\n"
 "PO-Revision-Date: 2012-04-02 14:56+0100\n"
 "Last-Translator: Adrian Weber <adrian.weber@cde.unibe.ch>\n"
 "Language-Team: de_CH <LL@li.org>\n"
@@ -16,6 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
+"X-Poedit-Basepath: ../../../../\n"
 
 #. Default: Loading ...
 #: lmkp/templates/administration.mak:66 lmkp/templates/charts.mak:81
@@ -67,23 +68,23 @@ msgstr ""
 msgid ", with co-funding from other ILC and CDE programs."
 msgstr ""
 
-#: lmkp/views/activities.py:156
+#: lmkp/views/activities.py:120
 msgid "User is not logged in."
 msgstr ""
 
-#: lmkp/views/activities.py:159
+#: lmkp/views/activities.py:123
 msgid "User has no permissions to add a review."
 msgstr ""
 
-#: lmkp/views/activities.py:167
+#: lmkp/views/activities.py:131
 msgid "User has no profile attached"
 msgstr ""
 
-#: lmkp/views/activities.py:175
+#: lmkp/views/activities.py:139
 msgid "The Activity was not found or is not situated within the user's profiles"
 msgstr ""
 
-#: lmkp/views/activities.py:200
+#: lmkp/views/activities.py:164
 msgid "Not all mandatory keys are provided"
 msgstr ""
 

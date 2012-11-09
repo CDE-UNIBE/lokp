@@ -90,7 +90,7 @@ def comment_add(request):
     """
     # Use captcha or not? Disable for example if no internet connection is
     # available. Also disable in JavaScript code (view.comments.CommentPanel)
-    USE_CAPTCHA = True
+    USE_CAPTCHA = False
 
     ret = {'success': False}
         
