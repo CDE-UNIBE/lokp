@@ -769,8 +769,11 @@ def _get_admin_scan(Key, Value, name, config, language, mandatory, local=False):
                 val['translation'] = x.translated
             value_store.append(val)
 
-            # Remove value from array with all possible values
-            all_vals.remove(x.original)
+            try:
+                # Remove value from array with all possible values
+                all_vals.remove(x.original)
+            except:
+                pass
 
     # Key is not yet in database
     try:
