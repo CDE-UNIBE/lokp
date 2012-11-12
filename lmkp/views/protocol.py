@@ -803,6 +803,9 @@ class TagGroup(object):
     def get_id(self):
         return self._id
 
+    def get_tg_id(self):
+        return self._tg_id
+
     def get_tag_by_key(self, key):
         """
         Returns a tag from this group if there is one with the requested key,
@@ -948,8 +951,17 @@ class Feature(object):
                 return t
         return None
 
+    def find_taggroup_by_tg_id(self, tg_id):
+        for t in self._taggroups:
+            if t.get_tg_id() == tg_id:
+                return t
+        return None
+
     def get_taggroups(self):
         return self._taggroups
+
+    def get_involvements(self):
+        return self._involvements
 
     def get_version(self):
         return self._version
