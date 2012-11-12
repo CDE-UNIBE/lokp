@@ -1,13 +1,15 @@
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol3 import ActivityProtocol3
+from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.view import view_config
 
 activity_protocol3 = ActivityProtocol3(Session)
+stakeholder_protocol3 = StakeholderProtocol3(Session)
 
-@view_config(route_name='compare_versions', renderer='lmkp:templates/compare_versions.mak')
-def compare_versions2(request):
+@view_config(route_name='activities_compare_versions', renderer='lmkp:templates/compare_versions.mak')
+def compare_activities(request):
 
     #uid = "d2a680ca-014b-4873-87f4-d588aa9fd839"
     uid = request.matchdict.get('uid', None)
@@ -25,6 +27,31 @@ def compare_versions2(request):
 
     new = activity_protocol3.read_one_by_version(request, uid, new_version)
 
+    return _compare_taggroups(old, new)
+
+@view_config(route_name='stakeholders_compare_versions', renderer='lmkp:templates/compare_versions.mak')
+def compare_stakeholders(request):
+    
+    #uid = "d2a680ca-014b-4873-87f4-d588aa9fd839"
+    uid = request.matchdict.get('uid', None)
+
+    #old_version = 1
+    old_version = request.matchdict.get('old_version', None)
+
+    # new_version = 3
+    new_version = request.matchdict.get('new_version', None)
+
+    if new_version <= old_version:
+        raise HTTPBadRequest()
+
+    old = stakeholder_protocol3.read_one_by_version(request, uid, old_version)
+
+    new = stakeholder_protocol3.read_one_by_version(request, uid, new_version)
+
+    return _compare_taggroups(old, new)
+
+def _compare_taggroups(old, new):
+
     table = []
 
     # First write the headers
@@ -40,6 +67,9 @@ def compare_versions2(request):
                       ]})
 
     table.append(header_row)
+
+    # TODO: Compare also the geometry!!
+
 
     # Loop the old and check for the same taggroup in the new one
     for old_taggroup in old.get_taggroups():
@@ -95,7 +125,7 @@ def compare_versions2(request):
                 new_tags.append({'key': t.get_key(),
                                 'value': t.get_value()})
             current_row.append({'class': new_tags_class, 'tags': new_tags})
-            
+
             table.append(current_row)
 
     # Search for new taggroups
@@ -113,196 +143,71 @@ def compare_versions2(request):
 
             table.append(current_row)
 
-      
-    return {'data': table}
-    
+    print "********************************************************************"
+    print old._involvements
+    print new._involvements
 
-#@view_config(route_name='merge_versions', renderer='json')
-def merge_versions(request):
+    # Finally compare also the involvments but NOT the tags of the involved stakeholders
+    for inv in old.get_involvements():
 
-    activities, count = activity_protocol2._history(request, 'af5de618-f9d1-4742-960e-a42708fda3ab',
-                                                    ['active', 'pending'], versions=activity_protocol2._get_versions(request))
-    
-    # Get the latest active version:
-    latest_active_version = None
-    for a in activities:
-        if a.get_status() == 'active' and latest_active_version is None:
-            latest_active_version = a
-        elif a.get_status() == 'active' and a.get_version() > latest_active_version.get_version():
-            latest_active_version = a
+        new_inv = new.find_involvement_by_guid(inv.get_guid())
 
-    pending_versions = []
-    for a in activities:
-        if a.get_status() == 'pending':
-            pending_versions.append(a)
+        # Involvement has been deleted
+        if new_inv == None:
+            current_row = []
 
-    table = []
+            # Write the old one
+            old_tags = []
+            old_tags.append({'key': 'role',
+                            'value': inv.get_role()})
+            old_tags.append({'key': 'guid',
+                            'value': inv.get_uid()})
+            current_row.append({'class': 'remove', 'tags': old_tags})
+            # Write the new one
+            current_row.append({'class': '', 'tags': []})
 
-    nbrColumns = len(pending_versions) + 1;
+            table.append(current_row)
 
-    # First write the headers
-    header_row = []
-    header_row.append({'class': 'title', 'tags': [
-                      {'key': 'version', 'value': latest_active_version.get_status()},
-                      {'key': 'version', 'value': latest_active_version.get_version()}
-                      ]})
+        # Role has changed
+        elif inv.get_role_id() != new_inv.get_role_id():
+            current_row = []
 
-    for pending in pending_versions:
-        header_row.append({'class': 'title', 'tags': [
-                          {'key': 'version', 'value': pending.get_status()},
-                          {'key': 'version', 'value': pending.get_version()}
-                          ]})
+            # Write the old one
+            old_tags = []
+            old_tags.append({'key': 'role',
+                            'value': inv.get_role()})
+            old_tags.append({'key': 'guid',
+                            'value': inv.get_uid()})
+            current_row.append({'class': 'remove', 'tags': old_tags})
+            # Write the new one
+            new_tags = []
+            new_tags.append({'key': 'role',
+                            'value': new_inv.get_role()})
+            new_tags.append({'key': 'guid',
+                            'value': new_inv.get_uid()})
+            current_row.append({'class': 'add', 'tags': new_tags})
 
-    table.append(header_row)
+            table.append(current_row)
 
-    for tg in latest_active_version.get_taggroups():
-        additional_rows = []
-        row = []
+    # Find new involvements:
+    for inv in new.get_involvements():
 
-        col = {}
-        for t in tg.get_tags():
-            col['tags'] = [{'key': t.get_key(), 'value': t.get_value()}]
-            col['class'] = ''
-        row.append(col)
+        old_inv = old.find_involvement_by_guid(inv.get_guid())
 
-        index = 0
-        for pending in pending_versions:
+        if old_inv is None:
+            current_row = []
 
-            col = {}
-            old_taggroup, new_taggroup = _find_old_diff(pending, tg.get_id())
-            if old_taggroup is not None:
-                #print "*****************************************************"
-                #print old_taggroup['tags']
-                col['tags'] = old_taggroup['tags']
-                col['class'] = 'remove'
-                row.append(col)
-            else:
-                row.append({'class': '', 'tags': []})
-                
-            if new_taggroup is not None:
+            # Write the old one
+            current_row.append({'class': '', 'tags': []})
+            # Write the new one
+            new_tags = []
+            new_tags.append({'key': 'role',
+                            'value': inv.get_role()})
+            new_tags.append({'key': 'guid',
+                            'value': inv.get_uid()})
+            current_row.append({'class': 'add', 'tags': new_tags})
 
-                additional_row = []
-
-                for i in range(0, index + 1):
-                    additional_row.append({'class': '', 'tags': []})
-
-                additional_cell = {}
-                additional_cell['tags'] = new_taggroup['tags']
-                additional_cell['class'] = 'add'
-                additional_row.append(additional_cell)
-
-                for j in range(index + 1, nbrColumns-1):
-                    additional_row.append({'class': '', 'tags': []})
-
-                additional_rows.append(additional_row)
-
-
-            index += 1
-
-        table.append(row)
-        for r in additional_rows:
-            table.append(r)
-
-    # Append all new taggroups at the end
-    index = 0
-    additional_rows = []
-    for pending in pending_versions:
-        new_taggroups = _find_new_taggroups(pending)
-
-        for new_taggroup in new_taggroups:
-
-            additional_row = []
-
-            for i in range(0, index + 1):
-                additional_row.append({'class': '', 'tags': []})
-
-            additional_cell = {}
-            additional_cell['tags'] = new_taggroup['tags']
-            additional_cell['class'] = 'add'
-            additional_row.append(additional_cell)
-
-            for j in range(index + 1, nbrColumns-1):
-                additional_row.append({'class': '', 'tags': []})
-
-            additional_rows.append(additional_row)
-
-        index += 1
-
-    for r in additional_rows:
-        table.append(r)
+            table.append(current_row)
 
 
     return {'data': table}
-
-def _find_old_diff(activity_feature, taggroup_id):
-    """
-    
-    """
-
-    diff = activity_feature._diff_info['diff']
-    try:
-        for old_taggroup in diff['old_attr']:
-            if old_taggroup['id'] == taggroup_id:
-
-                # Search the new tag / taggroup
-                for old_tag in old_taggroup['tags']:
-
-                    for new_taggroup in diff['new_attr']:
-                        for new_tag in new_taggroup['tags']:
-                            if new_tag['key'] == old_tag['key']:
-                                return old_taggroup, new_taggroup
-
-                return old_taggroup, None
-    except KeyError:
-        pass
-
-    return None, None
-
-def _find_new_taggroups(activity_feature):
-    """
-
-    """
-
-    diff = activity_feature._diff_info['diff']
-
-    new_taggroups = []
-
-    for new_taggroup in diff['new_attr']:
-
-        # Loop all tags and try to decide if there is no corresponding old one
-        # Start with testing the main tag:
-        main_tag = new_taggroup['main_tag']
-        if main_tag is not None:
-            try:
-                is_new_taggroup = True
-                for old_taggroup in diff['old_attr']:
-                    for old_tag in old_taggroup['tags']:
-                        if main_tag['key'] == old_tag['key']:
-                            is_new_taggroup = False
-
-                if is_new_taggroup:
-                    new_taggroups.append(new_taggroup)
-            except KeyError:
-                new_taggroups.append(new_taggroup)
-                break
-
-        # If the main tag is empty, we have to check each tag
-        else:
-
-            for new_tag in new_taggroup['tags']:
-
-                try:
-                    is_new_taggroup = True
-                    for old_taggroup in diff['old_attr']:
-                        for old_tag in old_taggroup['tags']:
-                            if new_tag['key'] == old_tag['key']:
-                                is_new_taggroup = False
-
-                    if is_new_taggroup:
-                        #new_taggroups.append(new_taggroup)
-                        pass
-                except KeyError:
-                    new_taggroups.append(new_taggroup)
-                    break
-
-    return new_taggroups

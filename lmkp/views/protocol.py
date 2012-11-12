@@ -960,6 +960,9 @@ class Feature(object):
     def get_taggroups(self):
         return self._taggroups
 
+    def get_involvements(self):
+        return self._involvements
+
     def get_version(self):
         return self._version
 
