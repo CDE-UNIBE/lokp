@@ -44,6 +44,9 @@ class ActivityFeature3(Feature):
         self._status_id = status_id
         self._timestamp = timestamp
 
+    def get_geometry(self):
+        return self._geometry
+
     def to_table(self, request):
         """
         Returns a JSON compatible representation of this object
@@ -151,6 +154,23 @@ class ActivityProtocol3(Protocol):
             'data': [a.to_table(request) for a in activities]
         }
 
+    def read_one_by_version(self, request, uid, version=None):
+
+        relevant_activities = self._get_relevant_activities_one_by_version(uid, version)
+
+        # Determine if and how detailed Involvements are to be displayed.
+        # Default is: 'full'
+        inv_details = 'full' #request.params.get('involvements', 'full')
+
+        query, count = self._query_many(request, relevant_activities,
+            involvements=True)
+
+        activities = self._query_to_activities(request, query,
+            involvements=inv_details, public_query=True)
+
+        return activities[0]
+
+
     def read_one(self, request, uid, public=True):
 
         relevant_activities = self._get_relevant_activities_one(request, uid,
@@ -245,6 +265,23 @@ class ActivityProtocol3(Protocol):
             offset=offset)
 
         return self._query_to_geojson(query)
+
+    def _get_relevant_activities_one_by_version(self, uid, version):
+        # Create relevant Activities
+        relevant_activities = self.Session.query(
+                Activity.id.label('order_id'),
+                func.char_length('').label('order_value'),
+                Activity.fk_status,
+                Activity.activity_identifier
+            ).\
+            outerjoin(A_Tag_Group).\
+            filter(Activity.activity_identifier == uid).\
+            filter(Activity.version == version).\
+            group_by(Activity.id, Activity.fk_status,
+                Activity.activity_identifier, func.char_length(''))
+
+        return relevant_activities
+
 
     def _get_relevant_activities_one_active(self, uid):
 
@@ -942,7 +979,7 @@ class ActivityProtocol3(Protocol):
 
         return query
 
-    def _query_to_activities(self, request, query, involvements='none',
+    def _query_to_activities(self, request, query, involvements='full',
         public_query=False):
 
         logged_in, is_moderator = self._get_user_status(
