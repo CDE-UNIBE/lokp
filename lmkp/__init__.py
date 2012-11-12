@@ -107,6 +107,8 @@ def main(global_config, ** settings):
     # Read one
     config.add_route('activities_read_one', '/activities/{output}/{uid}')
 
+    config.add_route('activities_compare_versions', '/activities/compare/{uid}/{old_version}/{new_version}')
+
     #@TODO: Is this still needed?
     config.add_route('activities_read_pending', '/activities/pending')
     # Reads one or many activities and returns GeoJSON Feature or FeatureCollection
@@ -137,6 +139,8 @@ def main(global_config, ** settings):
 
     # Read one
     config.add_route('stakeholders_read_one', '/stakeholders/{output}/{uid}')
+
+    config.add_route('stakeholders_compare_versions', '/stakeholders/compare/{uid}/{old_version}/{new_version}')
 
     """
     Comments
@@ -191,8 +195,6 @@ def main(global_config, ** settings):
 
     # Yet another test
     config.add_route('privileges_test', '/privileges')
-
-    config.add_route('compare_versions', '/compare/{uid}/{old_version}/{new_version}')
 
     config.add_route('lao_read_activities', '/read/lao/activities')
     config.add_route('lao_read_stakeholders', '/read/lao/stakeholders')

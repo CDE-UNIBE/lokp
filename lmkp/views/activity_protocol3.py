@@ -44,6 +44,9 @@ class ActivityFeature3(Feature):
         self._status_id = status_id
         self._timestamp = timestamp
 
+    def get_geometry(self):
+        return self._geometry
+
     def to_table(self, request):
         """
         Returns a JSON compatible representation of this object
@@ -157,10 +160,10 @@ class ActivityProtocol3(Protocol):
 
         # Determine if and how detailed Involvements are to be displayed.
         # Default is: 'full'
-        inv_details = request.params.get('involvements', 'full')
+        inv_details = 'full' #request.params.get('involvements', 'full')
 
         query, count = self._query_many(request, relevant_activities,
-            involvements=inv_details!='none')
+            involvements=True)
 
         activities = self._query_to_activities(request, query,
             involvements=inv_details, public_query=True)
@@ -976,7 +979,7 @@ class ActivityProtocol3(Protocol):
 
         return query
 
-    def _query_to_activities(self, request, query, involvements='none',
+    def _query_to_activities(self, request, query, involvements='full',
         public_query=False):
 
         logged_in, is_moderator = self._get_user_status(

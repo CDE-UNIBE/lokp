@@ -32,7 +32,7 @@
                 //  btn.dom.disabled = true;
 
                 // create the grid
-                var grid = Ext.create('Ext.ux.grid.TransformGrid', 'merge-table', {
+                var grid = Ext.create('Ext.ux.grid.TransformGrid', 'compare-table', {
                     stripeRows: true,
                     anchor: '100%',
                     sortable: false,
@@ -63,7 +63,7 @@
         </style>
     </head>
     <body>
-        <table id="merge-table" border="1">
+        <table id="compare-table">
             <thead>
                 <tr>
                     % for cell in data[0]:
