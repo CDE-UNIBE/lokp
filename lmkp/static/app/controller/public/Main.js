@@ -136,6 +136,9 @@ Ext.define('Lmkp.controller.public.Main', {
                 proxy.setExtraParam("bbox", map.getExtent().toBBOX());
             }
         }, this);
+
+        //this.getActivityGridStore().on('load', this._reloadStakeholderGridStore, this);
+
     },
 
     onStakeholderTablePanelRender: function(comp) {
@@ -153,7 +156,27 @@ Ext.define('Lmkp.controller.public.Main', {
                 });
             }
         }
+
+        //this.getStakeholderGridStore().on('load', this._reloadActivityGridStore, this);
     },
+
+    /**
+     *
+     *
+    _reloadStakeholderGridStore: function(store, records, successful, eOpts){
+        var extraParams = store.getProxy().extraParams;
+        this.getStakeholderGridStore().un('load', this._reloadActivityGridStore, this);
+        this.getStakeholderGridStore().syncWithActivities(extraParams);
+        this.getStakeholderGridStore().on('load', this._reloadActivityGridStore, this);
+    },
+
+    _reloadActivityGridStore: function(store, records, successful, eOpts){
+        var extraParams = store.getProxy().extraParams;
+        this.getActivityGridStore().un('load', this._reloadStakeholderGridStore, this);
+        this.getActivityGridStore().syncWithStakeholders(extraParams);
+        this.getActivityGridStore().on('load', this._reloadStakeholderGridStore, this);
+    },
+     */
 
     /**
      * Change selection in other grid when a row is selected. Also highlight

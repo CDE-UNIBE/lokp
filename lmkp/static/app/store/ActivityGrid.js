@@ -108,12 +108,10 @@ Ext.define('Lmkp.store.ActivityGrid', {
     syncByOtherId: function(identifier) {
     	
     	// Update url
-    	this.proxy.url = '/activities';
+    	this.proxy.url = '/activities/bystakeholder/json/' + identifier;
     	
     	// Update extraParams
-    	this.proxy.extraParams = {
-    		'sh_id': identifier
-    	};
+    	this.proxy.extraParams = {};
     	
     	// Reload store (load at page 1, otherwise entries may be hidden)
     	this.loadPage(1);
