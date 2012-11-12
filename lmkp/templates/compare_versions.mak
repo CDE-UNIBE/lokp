@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" xmlns:tal="http://xml.zope.org/namespaces/tal">
     <head>
-        <title>Merge</title>
+        <title>Compare</title>
         <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
         <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/lib/extjs-4.1.1/resources/css/ext-all.css')}"></link>
         <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/style.css')}"></link>
@@ -51,7 +51,7 @@
         </script>
         <style type="text/css">
             table{
-
+                border-width: thin;
                 width: 98%;
             }
             .remove {
@@ -63,7 +63,7 @@
         </style>
     </head>
     <body>
-        <table id="merge-table">
+        <table id="merge-table" border="1">
             <thead>
                 <tr>
                     % for cell in data[0]:

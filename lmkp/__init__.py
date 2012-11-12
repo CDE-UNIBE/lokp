@@ -192,7 +192,7 @@ def main(global_config, ** settings):
     # Yet another test
     config.add_route('privileges_test', '/privileges')
 
-    config.add_route('merge_versions', '/merge')
+    config.add_route('compare_versions', '/compare/{uid}/{old_version}/{new_version}')
 
     config.add_route('lao_read_activities', '/read/lao/activities')
     config.add_route('lao_read_stakeholders', '/read/lao/stakeholders')

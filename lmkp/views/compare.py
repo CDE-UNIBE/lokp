@@ -1,16 +1,128 @@
+from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
-from lmkp.views.activity_protocol2 import ActivityProtocol2
+from lmkp.views.activity_protocol3 import ActivityProtocol3
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.view import view_config
 
-activity_protocol2 = ActivityProtocol2(Session)
+activity_protocol3 = ActivityProtocol3(Session)
 
-@view_config(route_name='merge_versions', renderer='lmkp:templates/merge_versions.mak')
+@view_config(route_name='compare_versions', renderer='lmkp:templates/compare_versions.mak')
+def compare_versions2(request):
+
+    #uid = "d2a680ca-014b-4873-87f4-d588aa9fd839"
+    uid = request.matchdict.get('uid', None)
+
+    #old_version = 1
+    old_version = request.matchdict.get('old_version', None)
+
+    # new_version = 3
+    new_version = request.matchdict.get('new_version', None)
+
+    if new_version <= old_version:
+        raise HTTPBadRequest()
+
+    old = activity_protocol3.read_one_by_version(request, uid, old_version)
+
+    new = activity_protocol3.read_one_by_version(request, uid, new_version)
+
+    table = []
+
+    # First write the headers
+    header_row = []
+    header_row.append({'class': 'title', 'tags': [
+                      {'key': 'version', 'value': old.get_version()},
+                      {'key': 'status', 'value': old.get_status()}
+                      ]})
+
+    header_row.append({'class': 'title', 'tags': [
+                      {'key': 'version', 'value': new.get_version()},
+                      {'key': 'status', 'value': new.get_status()}
+                      ]})
+
+    table.append(header_row)
+
+    # Loop the old and check for the same taggroup in the new one
+    for old_taggroup in old.get_taggroups():
+        new_taggroup = new.find_taggroup_by_tg_id(old_taggroup.get_tg_id())
+
+        # The taggroup does not exist anymore:
+        if new_taggroup is None:
+            current_row = []
+            old_tags = []
+            for t in old_taggroup.get_tags():
+                old_tags.append({'key': t.get_key(),
+                                'value': t.get_value()})
+                current_row.append({'class': 'remove', 'tags': old_tags})
+                current_row.append({'class': '', 'tags': []})
+            table.append(current_row)
+
+        # The taggroup does still exist:
+        elif new_taggroup is not None:
+            # Compare the old taggroup with the new one
+            taggroup_has_changed = False
+
+            if new_taggroup is None:
+                taggroup_has_changed = True
+
+            old_tags = []
+            for t in old_taggroup.get_tags():
+
+                if new_taggroup.get_tag_by_key(t.get_key()) is None:
+                    taggroup_has_changed = True
+                elif new_taggroup.get_tag_by_key(t.get_key()).get_value() != t.get_value():
+                    taggroup_has_changed = True
+
+            # Test also the other way round
+            for t in new_taggroup.get_tags():
+                if old_taggroup.get_tag_by_key(t.get_key()) is None:
+                    taggroup_has_changed = True
+
+            current_row = []
+            old_tags_class = new_tags_class = ''
+            if taggroup_has_changed:
+                old_tags_class = 'remove'
+                new_tags_class = 'add'
+
+            # Write the old one
+            old_tags = []
+            for t in old_taggroup.get_tags():
+                old_tags.append({'key': t.get_key(),
+                                'value': t.get_value()})
+            current_row.append({'class': old_tags_class, 'tags': old_tags})
+            # Write the new one
+            new_tags = []
+            for t in new_taggroup.get_tags():
+                new_tags.append({'key': t.get_key(),
+                                'value': t.get_value()})
+            current_row.append({'class': new_tags_class, 'tags': new_tags})
+            
+            table.append(current_row)
+
+    # Search for new taggroups
+    for new_taggroup in new.get_taggroups():
+
+        if old.find_taggroup_by_tg_id(new_taggroup.get_tg_id()) is None:
+            current_row = []
+            current_row.append({'class': '', 'tags': []})
+            # Write the new one
+            new_tags = []
+            for t in new_taggroup.get_tags():
+                new_tags.append({'key': t.get_key(),
+                                'value': t.get_value()})
+            current_row.append({'class': 'add', 'tags': new_tags})
+
+            table.append(current_row)
+
+      
+    return {'data': table}
+    
+
 #@view_config(route_name='merge_versions', renderer='json')
 def merge_versions(request):
 
     activities, count = activity_protocol2._history(request, 'af5de618-f9d1-4742-960e-a42708fda3ab',
                                                     ['active', 'pending'], versions=activity_protocol2._get_versions(request))
-
+    
     # Get the latest active version:
     latest_active_version = None
     for a in activities:
