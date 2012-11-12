@@ -911,6 +911,9 @@ class ActivityProtocol3(Protocol):
                     Status.id
                 ).\
                 filter(or_(* self._get_involvement_status(request)))
+
+            log.debug("Involvement Status Filter:\n%s" % inv_status_filter)
+
             inv_status = self.Session.query(
                     Stakeholder.id.label('stakeholder_id'),
                     Stakeholder.stakeholder_identifier.\
@@ -936,6 +939,8 @@ class ActivityProtocol3(Protocol):
                 join(Changeset, Changeset.id == inv_status.c.stakeholder_id).\
                 join(Stakeholder_Role).\
                 subquery()
+
+            log.debug("Involvement Query:\n%s" % inv_query)
 
             query = query.\
                 add_columns(
@@ -1030,6 +1035,8 @@ class ActivityProtocol3(Protocol):
 
             # Involvements
             if involvements != 'none':
+
+                log.debug("Stakeholder identifier:\n%s" % q.stakeholder_identifier)
                 try:
                     if q.stakeholder_identifier is not None:
 

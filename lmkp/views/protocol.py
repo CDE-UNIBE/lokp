@@ -1,3 +1,4 @@
+import logging
 import uuid
 from lmkp.config import locale_profile_directory_path
 from lmkp.config import profile_directory_path
@@ -28,6 +29,8 @@ from pyramid.security import effective_principals
 
 from lmkp.views.translation import statusMap
 from lmkp.views.translation import get_translated_status
+
+log = logging.getLogger(__name__)
 
 class Protocol(object):
     """
@@ -228,6 +231,9 @@ class Protocol(object):
             statuses.append(
                 Status.name == 'pending'
             )
+
+
+        log.debug("Involvement statuses [array]:\n%s" % statuses)
 
         return statuses
 
