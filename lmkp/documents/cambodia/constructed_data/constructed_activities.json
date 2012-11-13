@@ -110,13 +110,13 @@
 				},
 				{
 					"main_tag": {
-						"value": "very accurate", 
+						"value": "better than 100m",
 						"key": "Spatial Accuracy"
 					}, 
 					"op": "add", 
 					"tags": [
 						{
-							"value": "very accurate", 
+							"value": "better than 100m",
 							"key": "Spatial Accuracy", 
 							"op": "add"
 						}
@@ -229,13 +229,13 @@
 				},
 				{
 					"main_tag": {
-						"value": "very accurate", 
+						"value": "better than 100m",
 						"key": "Spatial Accuracy"
 					}, 
 					"op": "add", 
 					"tags": [
 						{
-							"value": "very accurate", 
+							"value": "better than 100m",
 							"key": "Spatial Accuracy", 
 							"op": "add"
 						}
@@ -349,13 +349,13 @@
 				},
 				{
 					"main_tag": {
-						"value": "very accurate", 
+						"value": "better than 100m",
 						"key": "Spatial Accuracy"
 					}, 
 					"op": "add", 
 					"tags": [
 						{
-							"value": "very accurate", 
+							"value": "better than 100m",
 							"key": "Spatial Accuracy", 
 							"op": "add"
 						}
