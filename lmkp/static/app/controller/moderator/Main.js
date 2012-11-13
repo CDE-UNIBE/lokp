@@ -128,20 +128,22 @@ Ext.define('Lmkp.controller.moderator.Main', {
 
     onActivityDetailWindowBeforeShow: function(comp){
         var proxy = comp.getHistoryStore().getProxy();
-        this.getPendingActivitiesCheckbox().getValue?
+        /*this.getPendingActivitiesCheckbox().getValue?
         // Show all versions with any status
         proxy.setExtraParam('status', 'pending,active,inactive,deleted,rejected,edited') :
         // else show only active and inactive versions
-        proxy.setExtraParam('status', '');
+        proxy.setExtraParam('status', '');*/
     },
 
     onStakeholderDetailWindowBeforeShow: function(comp){
         var proxy = comp.getHistoryStore().getProxy();
+        /*
         this.getPendingStakeholdersCheckbox().getValue?
         // Show all versions with any status
         proxy.setExtraParam('status', 'pending,active,inactive,deleted,rejected,edited') :
         // else show only active and inactive versions
         proxy.setExtraParam('status', '');
+        */
     },
 
     /**
