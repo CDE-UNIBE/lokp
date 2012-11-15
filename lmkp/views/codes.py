@@ -165,41 +165,31 @@ def _insert_code(value, code, TableItem, isKey, code_language):
             filter(TableItem.value == value).\
             filter(TableItem.fk_value == None).\
             filter(TableItem.fk_language == 1)
-    try:
-        eng = eng_q.one()
-    except NoResultFound:
+
+    eng = eng_q.all()
+
+    if eng is None:
         return {'success': False, 'msg': 'No english value found for "%s", code "%s" not inserted.' % (value, code)}
-    except MultipleResultsFound:
-        # This should not happen (?)
-        return {'success': False, 'msg': 'Multiple values found for "%s", code "%s" not inserted.' % (value, code)}
 
-    # Check if code already exists for value
-    if isKey:
-        code_value_q = Session.query(TableItem).\
-            filter(TableItem.key == code).\
-            filter(TableItem.original == eng).\
-            filter(TableItem.language == code_language)
-    else:
-        code_value_q = Session.query(TableItem).\
-            filter(TableItem.value == code).\
-            filter(TableItem.original == eng).\
-            filter(TableItem.language == code_language)
-    code_value = None
-    try:
-        code_value = code_value_q.one()
-    except NoResultFound:
-        # Code does not yet exist, insert it
-        new_code = TableItem(code)
-        new_code.language = code_language
-        new_code.original = eng
-        Session.add(new_code)
-        return {'success': True, 'msg': 'Code "%s" inserted for value "%s".' % (code, value)}
-    except MultipleResultsFound:
-        # This should not happen
-        pass
+    for e in eng:
+        # Check if code already exists for value
+        if isKey:
+            code_value_q = Session.query(TableItem).\
+                filter(TableItem.key == code).\
+                filter(TableItem.original == e).\
+                filter(TableItem.language == code_language)
+        else:
+            code_value_q = Session.query(TableItem).\
+                filter(TableItem.value == code).\
+                filter(TableItem.original == e).\
+                filter(TableItem.language == code_language)
+        code_value = code_value_q.first()
+        if code_value is None:
+            # Insert it
+            new_code = TableItem(code)
+            new_code.language = code_language
+            new_code.original = e
+            Session.add(new_code)
 
-    if code_value is not None:
-        return {'success': None, 'msg': 'Code "%s" for value "%s" already exists.' % (code, value)}
-
-    return {'success': False, 'msg': 'Code "%s" for value "%s" not inserted.' % (code, value)}
+    return {'success': True, 'msg': 'Code "%s" inserted for value "%s".' % (code, value)}
 
