@@ -124,7 +124,8 @@ Ext.define('Lmkp.controller.public.Map', {
 
             // Finally show the window with details
             var w = Ext.create('Lmkp.view.activities.Details',{
-                activity_identifier: f.attributes.activity_identifier
+                activity_identifier: f.attributes.activity_identifier,
+                modelName: 'Lmkp.model.Activity'
             }).show()._collapseHistoryPanel();
         }
     },

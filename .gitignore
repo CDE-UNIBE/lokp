@@ -37,3 +37,5 @@ lmkp/static/lib.tar.gz
 # Ignore generate JSON files
 activities.json
 stakeholders.json
+# Ignore LMKP egg
+LMKP.egg-info/
