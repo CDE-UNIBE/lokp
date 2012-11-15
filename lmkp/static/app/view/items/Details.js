@@ -82,16 +82,14 @@ Ext.define('Lmkp.view.items.Details',{
                 hiddenOriginal: false,
                 xtype: this.centerPanelType
             });
-
-            this._populateComment(item);
-            
+            this._populateComment(item.get('identifier'), item.modelName);
         }
 
         return item;
 
     },
 
-    _populateComment: function(item){
+    _populateComment: function(identifier, modelName){
 
         // First check if there is already an existing comment panel and remove
         // it if yes.
@@ -105,9 +103,9 @@ Ext.define('Lmkp.view.items.Details',{
 
             // Activity or Stakeholder?
             var commentType;
-            if (item.modelName == 'Lmkp.model.Activity') {
+            if (modelName == 'Lmkp.model.Activity') {
                 commentType = 'activity';
-            } else if (item.modelName == 'Lmkp.model.Stakeholder') {
+            } else if (modelName == 'Lmkp.model.Stakeholder') {
                 commentType = 'stakeholder';
             }
 
@@ -115,7 +113,7 @@ Ext.define('Lmkp.view.items.Details',{
                 commentType: commentType,
                 commentsObject: this.itemComment,
                 itemId: 'commentPanel',
-                identifier: item.get('id'),
+                identifier: identifier,
                 margin: 3,
                 xtype: this.commentPanelType
             });
