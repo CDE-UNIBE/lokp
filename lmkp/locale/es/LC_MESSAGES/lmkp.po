@@ -1,80 +1,91 @@
-# French translations for PROJECT.
-# Copyright (C) 2012 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2012.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: PROJECT VERSION\n"
+"Project-Id-Version: LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2012-11-06 14:29+0100\n"
-"PO-Revision-Date: 2012-10-29 12:04+0100\n"
-"Last-Translator: Lukas Vonlanthen <lukas.vonlanthen@cde.unibe.ch>\n"
-"Language-Team: fr <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n > 1)\n"
+"POT-Creation-Date: 2012-11-15 14:13+0100\n"
+"PO-Revision-Date: 2012-11-15 14:20+0100\n"
+"Last-Translator: Adrian Weber <adrian.weber@cde.unibe.ch>\n"
+"Language-Team: es <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"X-Poedit-Basepath: ../../../../\n"
 
 #. Default: Loading ...
-#: lmkp/templates/administration.mak:66 lmkp/templates/charts.mak:81
-#: lmkp/templates/index.mak:83 lmkp/views/translation.py:111
+#: lmkp/templates/administration.mak:66
+#: lmkp/templates/charts.mak:52
+#: lmkp/templates/index.mak:55
+#: lmkp/views/translation.py:111
 msgid "gui_loading"
 msgstr "Cargando ..."
 
-#: lmkp/templates/index.mak:19 lmkp/templates/index.mak:60
-#: lmkp/templates/index.mak:77
+#: lmkp/templates/base.mak:12
+#: lmkp/templates/base.mak:29
+#: lmkp/templates/charts.mak:16
+#: lmkp/templates/index.mak:15
 msgid "Land Observatory"
 msgstr "Observatorio de Adquisiciones de Tierras"
 
-#: lmkp/templates/index.mak:63
-msgid ""
-"The Land Observatory will make information on large-scale land "
-"acquisition transparent and accessible through an interactive, map-based "
-"platform. We are piloting the project in five countries, with partners "
-"and governments who will work to open government data, crowdsource and "
-"help customize local observatories. Updated information on land will "
-"benefit citizens, but also governments and companies interested in "
-"sustainability."
-msgstr ""
-"El Observatorio de Adquisiciones de Tierras (OLA) es un proyecto "
-"innovador dirigido a mejorar la calidad y la inclusión en el diálogo de "
-"políticas y la toma de decisiones sobre temas relativos a la tierra, "
-"tanto en el ámbito global como en países alrededor del mundo, haciendo "
-"que los datos sobre tierras, así como también la información sobre los "
-"actores y sus actividades, sean más accesibles y atractivos. Esta "
-"plataforma ofrecerá una visión global, regional y local del tema de las "
-"inversiones en las tierras."
+#: lmkp/templates/base.mak:15
+msgid "The Land Observatory will make information on large-scale land acquisition transparent and accessible through an interactive, map-based platform. We are piloting the project in five countries, with partners and governments who will work to open government data, crowdsource and help customize local observatories. Updated information on land will benefit citizens, but also governments and companies interested in sustainability."
+msgstr "El Observatorio de Adquisiciones de Tierras (OLA) es un proyecto innovador dirigido a mejorar la calidad y la inclusión en el diálogo de políticas y la toma de decisiones sobre temas relativos a la tierra, tanto en el ámbito global como en países alrededor del mundo, haciendo que los datos sobre tierras, así como también la información sobre los actores y sus actividades, sean más accesibles y atractivos. Esta plataforma ofrecerá una visión global, regional y local del tema de las inversiones en las tierras."
 
-#: lmkp/templates/index.mak:66
+#: lmkp/templates/base.mak:18
 msgid "The pilot project is coordinated by the"
 msgstr "El proyecto es coordinado por la "
 
-#: lmkp/templates/index.mak:67
+#: lmkp/templates/base.mak:19
 msgid "International Land Coalition"
 msgstr "Coalición Internacional para el Acceso a la Tierra (ILC)"
 
-#: lmkp/templates/index.mak:68
+#: lmkp/templates/base.mak:20
 msgid "and the"
 msgstr " y por el "
 
-#: lmkp/templates/index.mak:69
+#: lmkp/templates/base.mak:21
 msgid "Centre for Development and Environment"
 msgstr "Centre for Development and the Environment (CDE) "
 
-#: lmkp/templates/index.mak:70
+#: lmkp/templates/base.mak:22
 msgid "at the University of Bern, Switzerland. It is funded by the"
 msgstr "en la universidad de Berna, Suiza. Es financiado por la"
 
-#: lmkp/templates/index.mak:71
+#: lmkp/templates/base.mak:23
 msgid "Swiss Agency for Development Cooperation"
 msgstr "Agencia Suiza para el Desarrollo y la Cooperación (COSUDE)"
 
-#: lmkp/templates/index.mak:72
+#: lmkp/templates/base.mak:24
 msgid ", with co-funding from other ILC and CDE programs."
 msgstr ", con la cofinanciación de otros programas de ILC y CDE."
+
+#: lmkp/templates/charts.mak:16
+msgid "Charts"
+msgstr "Diagramas"
+
+#: lmkp/templates/charts.mak:56
+msgid "Heat map for Cambodia and Laos"
+msgstr ""
+
+#: lmkp/templates/charts.mak:58
+msgid "Distribution of land related deals in Cambodia and for Champasak and Attapeu province in Laos."
+msgstr ""
+
+#: lmkp/templates/charts.mak:59
+msgid "Data for Cambodia are provided by the website"
+msgstr "Los datos para Camboya son proporcionados por el sitio web"
+
+#: lmkp/templates/charts.mak:61
+msgid "Data for Laos are based on the landconcessions database."
+msgstr ""
+
+#: lmkp/templates/charts.mak:66
+msgid "Distribution of activities worldwide"
+msgstr ""
+
+#: lmkp/templates/charts.mak:68
+msgid "Worldwide distribution of land related deals based on the Landmatrix database available at"
+msgstr ""
 
 #: lmkp/views/activities.py:120
 msgid "User is not logged in."
@@ -82,29 +93,28 @@ msgstr "El usuario no está conectado"
 
 #: lmkp/views/activities.py:123
 msgid "User has no permissions to add a review."
-msgstr "Usuario no tiene permisos para añadir una revisión"
+msgstr "El usuario no tiene permisos para añadir una revisión"
 
 #: lmkp/views/activities.py:131
 msgid "User has no profile attached"
-msgstr "Usuario no tiene un perfil adjunto"
+msgstr "El usuario no tiene un perfil registrado"
 
 #: lmkp/views/activities.py:139
 msgid "The Activity was not found or is not situated within the user's profiles"
-msgstr ""
-"La actividad no se ha encontrado o no se encuentra dentro de los perfiles"
-" del usuario"
+msgstr "La actividad no se ha encontrado o no se encuentra dentro de los perfiles del usuario"
 
 #: lmkp/views/activities.py:164
 msgid "Not all mandatory keys are provided"
-msgstr "No todas las teclas obligatorios se proporcionaron"
+msgstr "No se proporcionaron todos los elementos obligatorios"
 
-#: lmkp/views/comments.py:67 lmkp/views/comments.py:165
+#: lmkp/views/comments.py:67
+#: lmkp/views/comments.py:165
 msgid "Object not found."
 msgstr "Objeto no encontrado"
 
 #: lmkp/views/comments.py:134
 msgid "Captcha not correct."
-msgstr "Captcha no es correcto"
+msgstr "Captcha no correcto"
 
 #: lmkp/views/comments.py:154
 msgid "Comment successfully inserted."
@@ -114,17 +124,19 @@ msgstr "Comentario insertado correctamente"
 msgid "Comment successfully deleted."
 msgstr "Comentario eliminado correctamente"
 
-#: lmkp/views/editors.py:25 lmkp/views/moderators.py:25
+#: lmkp/views/editors.py:25
+#: lmkp/views/moderators.py:25
 msgid "Logged in as:"
 msgstr "Conectado como: "
 
-#: lmkp/views/editors.py:26 lmkp/views/moderators.py:26
-msgid "Show user profile"
-msgstr "Mostrar perfil de usuario"
-
-#: lmkp/views/editors.py:27 lmkp/views/moderators.py:27
+#: lmkp/views/editors.py:27
+#: lmkp/views/moderators.py:27
 msgid "Logout"
 msgstr "Cerrar sesión"
+
+#: lmkp/views/moderators.py:26
+msgid "Show user profile"
+msgstr "Mostrar perfil de usuario"
 
 #. Default: pending
 #: lmkp/views/translation.py:22
@@ -144,7 +156,7 @@ msgstr "inactiva"
 #. Default: deleted
 #: lmkp/views/translation.py:25
 msgid "status_deleted"
-msgstr "suprimida"
+msgstr "eliminada"
 
 #. Default: rejected
 #: lmkp/views/translation.py:26
@@ -189,7 +201,7 @@ msgstr "Añadir más información"
 #. Default: Add time filter
 #: lmkp/views/translation.py:60
 msgid "button_add-time-filter"
-msgstr "Añadir filtro de tiempo"
+msgstr "Añadir filtro temporal"
 
 #. Default: Back
 #: lmkp/views/translation.py:61
@@ -269,7 +281,7 @@ msgstr "Mapa del terreno"
 #. Default: Next
 #: lmkp/views/translation.py:76
 msgid "button_next"
-msgstr "Próximo"
+msgstr "Siguiente"
 
 #. Default: No
 #: lmkp/views/translation.py:77
@@ -284,7 +296,7 @@ msgstr "Aceptar"
 #. Default: Submit
 #: lmkp/views/translation.py:79
 msgid "button_submit"
-msgstr "Someter"
+msgstr "Enviar"
 
 #. Default: Yes
 #: lmkp/views/translation.py:80
@@ -299,7 +311,7 @@ msgstr "Agregar un filtro basado en un atributo"
 #. Default: Add a filter based on time
 #: lmkp/views/translation.py:84
 msgid "tooltip_add-time-filter"
-msgstr "Añadir un filtro basado en el tiempo"
+msgstr "Añadir un filtro temporal"
 
 #. Default: Close Window
 #: lmkp/views/translation.py:85
@@ -314,7 +326,7 @@ msgstr "Haga clic para activar este filtro"
 #. Default: Click to delete this filter
 #: lmkp/views/translation.py:87
 msgid "tooltip_filter-delete"
-msgstr "Haga clic para eliminar el filtro"
+msgstr "Haga clic para eliminar este filtro"
 
 #. Default: Identify Feature
 #: lmkp/views/translation.py:88
@@ -324,7 +336,7 @@ msgstr "Identificar las características"
 #. Default: Pan
 #: lmkp/views/translation.py:89
 msgid "tooltip_map_pan"
-msgstr "Mueva"
+msgstr "Mover"
 
 #. Default: Zoom In
 #: lmkp/views/translation.py:90
@@ -359,48 +371,40 @@ msgstr "Borrar selección"
 #. Default: Please confirm
 #: lmkp/views/translation.py:98
 msgid "gui_confirm"
-msgstr "Por favor, confirme"
+msgstr "Por favor, confirmar"
 
 #. Default: You are seeing a {0} version, which needs to be reviewed before it
 #. is
 #. publicly visible
 #: lmkp/views/translation.py:99
 msgid "gui_currently-seeing-pending-version"
-msgstr ""
-"Estás viendo una versión {0}, que debe ser revisado antes de que sea "
-"visible al público"
+msgstr "Está viendo una versión {0}, que debe ser revisada antes de que sea visible al público"
 
 #. Default: You are seeing an {0} version, which was previously active and
 #. publicly
 #. visible.
 #: lmkp/views/translation.py:100
 msgid "gui_currently-seeing-inactive-version"
-msgstr ""
-"Estás viendo una versión {0}, que anteriormente era activa y visible "
-"públicamente"
+msgstr "Está viendo una versión {0}, que anteriormente era activa y visible públicamente"
 
 #. Default: You are seeing a {0} version, which was previously active and
 #. publicly
 #. visible.
 #: lmkp/views/translation.py:101
 msgid "gui_currently-seeing-deleted-version"
-msgstr ""
-"Estás viendo una versión {0}, que anteriormente era activa y visible "
-"públicamente"
+msgstr "Está viendo una versión {0}, que anteriormente era activa y visible públicamente"
 
 #. Default: You are seeing a {0} version, which was never publicly visible.
 #: lmkp/views/translation.py:102
 msgid "gui_currently-seeing-rejected-version"
-msgstr "Estás viendo una versión {0}, que nunca fue públicamente visible"
+msgstr "Está viendo una versión {0}, que nunca fue públicamente visible"
 
 #. Default: You are seeing an {0} version, which was edited by a moderator and
 #. was
 #. never publicly visible.
 #: lmkp/views/translation.py:103
 msgid "gui_currently-seeing-edited-version"
-msgstr ""
-"Estás viendo una versión {0}, que fue editado por un moderador y nunca "
-"fue públicamente visible"
+msgstr "Está viendo una versión {0}, que fue editada por un moderador y nunca fue públicamente visible"
 
 #. Default: Date
 #: lmkp/views/translation.py:104
@@ -440,7 +444,7 @@ msgstr "Idioma"
 #. Default: No attributes to show
 #: lmkp/views/translation.py:112
 msgid "gui_no-attributes"
-msgstr "No hay atributos para demostrar"
+msgstr "No hay atributos a mostrar"
 
 #. Default: Page
 #: lmkp/views/translation.py:113
@@ -500,31 +504,29 @@ msgstr "Fracaso"
 #. Default: The activity was successfully created. It will be reviewed shortly.
 #: lmkp/views/translation.py:126
 msgid "feedback_new-activity-created"
-msgstr "La actividad fue creado correctamente. Será revisado pronto."
+msgstr "La actividad fue creada correctamente. Será revisada pronto."
 
 #. Default: The activity could not be created.
 #: lmkp/views/translation.py:127
 msgid "feedback_new-activity-not-created"
-msgstr "La actividad no se podría crear."
+msgstr "No pudo crearse la actividad."
 
 #. Default: Edited changes were successfully submitted
 #: lmkp/views/translation.py:128
 msgid "feedback_pending-edit-submitted"
-msgstr "Cambios de edición fueron sometidos correctamente."
+msgstr "Los cambios fueron enviados correctamente."
 
 #. Default: Edited changes could not be submitted
 #: lmkp/views/translation.py:129
 msgid "feedback_pending-edit-not-submitted"
-msgstr "Cambios de edición no pueden ser sometidos."
+msgstr "Los cambios no pueden ser enviados."
 
 #. Default: Some of the attributes cannot be edited because they are not part
 #. of
 #. the currently selected profile.
 #: lmkp/views/translation.py:130
 msgid "feedback_some-attributes-not-editable-because-of-profile"
-msgstr ""
-"Algunos de los atributos no se puede editar porque no son parte del "
-"perfil seleccionado actualmente."
+msgstr "Algunos de los atributos no se pueden editar porque no son parte del perfil seleccionado actualmente."
 
 #. Default: Success
 #: lmkp/views/translation.py:131
@@ -549,15 +551,13 @@ msgstr "Filtrar las actividades"
 #. Default: Step 1: Please select a point on the map.
 #: lmkp/views/translation.py:137
 msgid "activities_new-step-1"
-msgstr "Paso 1: Por favor, seleccione un punto en el mapa."
+msgstr "Paso 1: Por favor, seleccionar un punto en el mapa."
 
 #. Default: You can drag and drop the point. Once you are done, click
 #. "Continue".
 #: lmkp/views/translation.py:138
 msgid "activities_new-step-1-explanation"
-msgstr ""
-"Puede arrastrar y soltar el punto. Una vez que haya terminado, haga clic "
-"en \"Continuar\"."
+msgstr "Puede arrastrar y soltar el punto. Una vez que haya terminado, haga clic en \"Continuar\"."
 
 #. Default: New Activity
 #: lmkp/views/translation.py:139
@@ -625,10 +625,7 @@ msgstr "Filtrar los actores"
 #. clicking on the button above.
 #: lmkp/views/translation.py:155
 msgid "stakeholders_no-associated-stakeholders-yet"
-msgstr ""
-"No hay actores ​​que se relacionan hasta ahora. Usted puede buscar y "
-"seleccionar un actor utilizando el campo de búsqueda. O bien, puede crear"
-" un nuevo actor haciendo clic en el botón de arriba."
+msgstr "No hay actores ​​relacionados hasta ahora. Usted puede buscar y seleccionar un actor utilizando el campo de búsqueda. O bien, puede crear un nuevo actor haciendo clic en el botón de arriba."
 
 #. Default: Displaying stakeholders {0} - {1} of {2}
 #: lmkp/views/translation.py:156
@@ -663,7 +660,7 @@ msgstr "Comentario por"
 #. Default: Do you really want to delete this comment?
 #: lmkp/views/translation.py:164
 msgid "comments_confirm-delete-comment"
-msgstr "¿Estás seguro que quieres eliminar este comentario?"
+msgstr "¿Está seguro que quiere eliminar este comentario?"
 
 #. Default: No comments yet.
 #: lmkp/views/translation.py:165
@@ -694,7 +691,7 @@ msgstr "Estos cambios se basan en una versión que no es la versión activa."
 #. Default: There are multiple changes pending! They may be conflicting.
 #: lmkp/views/translation.py:172
 msgid "moderator_multiple-changes-pending"
-msgstr "Hay varios cambios pendientes! Ellos pueden estar en conflicto."
+msgstr "Hay varios cambios pendientes! Podrían ser en conflicto."
 
 #. Default: Pending version
 #: lmkp/views/translation.py:173
@@ -808,7 +805,7 @@ msgstr "Especifique un valor"
 
 #: lmkp/views/viewers.py:25
 msgid "Username"
-msgstr "Nombre de usuario"
+msgstr "Nombre del usuario"
 
 #: lmkp/views/viewers.py:26
 msgid "Password"
