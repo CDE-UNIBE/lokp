@@ -1,4 +1,4 @@
-﻿Translation of A_Key in Spanish;";";A_Key;es
+Spanish translation of A_Keys;";";A_Key;es
 Precisión espacial;Spatial Accuracy
 Estado de la negociación;Negotiation Status
 País;Country
@@ -6,3 +6,36 @@ País;Country
 Año del acuerdo;Year of agreement
 Intención de la inversión;Intention of Investment
 Fuente de los datos;Data source
+Nombre;Name
+Carácter del acuerdo;Nature of the deal
+Cultivo;Crop
+Animales;Animals
+Minerales;Mineral
+Uso de los productos;Use of produce
+Extracción de agua;Water extraction
+Cuánto los inversores pagan por el agua;How much do investors pay for water
+¿Cuánta agua se extrae? (m3/año);How much water is extracted (m3/year)
+Número de referencia original;Original reference number
+Agricultura;Agriculture
+Silvicultura;Forestry
+Área actual en funcionamiento (ha);Current area in operation (ha)
+Duración del Contrato (años);Duration of Agreement (years)
+Estado de aplicación;Implementation status
+Precio de la tierra;Land price
+Leasing cuota (por año);Leasing fee (per year)
+Agricultura por contrato;Contract farming
+Área (ha);Area (ha)
+Número de agricultores;Number of farmers
+Número previsto total de empleos;Planned total number of jobs
+Número total actual de puestos de trabajo;Current total number of jobs
+¿Cómo ha reaccionado la comunidad?;How did community react
+Consulta de las comunidades locales;Consultation of local community
+Compenstation prometida o recibida;Promised or received compenstation
+Beneficios para las comunidades locales;Benefits for local communities
+Número de personas desplazadas en realidad;Number of people actually displaced
+Ex propietario predominante de la tierra;Former predominant land owner
+Ex usuario predominante de la tierra;Former predominant land user
+Antiguo uso predominante de la tierra;Former predominant land use
+URL / Web;URL / Web
+Fecha;Date
+Observación;Remark

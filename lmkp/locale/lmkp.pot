@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LMKP 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2012-10-29 08:49+0100\n"
+"POT-Creation-Date: 2012-11-15 14:13+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,17 +18,17 @@ msgstr ""
 "Generated-By: Babel 0.9.6\n"
 
 #. Default: Loading ...
-#: lmkp/templates/administration.mak:66 lmkp/templates/charts.mak:81
-#: lmkp/templates/index.mak:83 lmkp/views/translation.py:111
+#: lmkp/templates/administration.mak:66 lmkp/templates/charts.mak:52
+#: lmkp/templates/index.mak:55 lmkp/views/translation.py:111
 msgid "gui_loading"
 msgstr ""
 
-#: lmkp/templates/index.mak:19 lmkp/templates/index.mak:60
-#: lmkp/templates/index.mak:77
+#: lmkp/templates/base.mak:12 lmkp/templates/base.mak:29
+#: lmkp/templates/charts.mak:16 lmkp/templates/index.mak:15
 msgid "Land Observatory"
 msgstr ""
 
-#: lmkp/templates/index.mak:63
+#: lmkp/templates/base.mak:15
 msgid ""
 "The Land Observatory will make information on large-scale land acquisition "
 "transparent and accessible through an interactive, map-based platform. We are"
@@ -38,51 +38,83 @@ msgid ""
 "governments and companies interested in sustainability."
 msgstr ""
 
-#: lmkp/templates/index.mak:66
+#: lmkp/templates/base.mak:18
 msgid "The pilot project is coordinated by the"
 msgstr ""
 
-#: lmkp/templates/index.mak:67
+#: lmkp/templates/base.mak:19
 msgid "International Land Coalition"
 msgstr ""
 
-#: lmkp/templates/index.mak:68
+#: lmkp/templates/base.mak:20
 msgid "and the"
 msgstr ""
 
-#: lmkp/templates/index.mak:69
+#: lmkp/templates/base.mak:21
 msgid "Centre for Development and Environment"
 msgstr ""
 
-#: lmkp/templates/index.mak:70
+#: lmkp/templates/base.mak:22
 msgid "at the University of Bern, Switzerland. It is funded by the"
 msgstr ""
 
-#: lmkp/templates/index.mak:71
+#: lmkp/templates/base.mak:23
 msgid "Swiss Agency for Development Cooperation"
 msgstr ""
 
-#: lmkp/templates/index.mak:72
+#: lmkp/templates/base.mak:24
 msgid ", with co-funding from other ILC and CDE programs."
 msgstr ""
 
-#: lmkp/views/activities.py:156
+#: lmkp/templates/charts.mak:16
+msgid "Charts"
+msgstr ""
+
+#: lmkp/templates/charts.mak:56
+msgid "Heat map for Cambodia and Laos"
+msgstr ""
+
+#: lmkp/templates/charts.mak:58
+msgid ""
+"Distribution of land related deals in Cambodia and for Champasak and Attapeu "
+"province in Laos."
+msgstr ""
+
+#: lmkp/templates/charts.mak:59
+msgid "Data for Cambodia are provided by the website"
+msgstr ""
+
+#: lmkp/templates/charts.mak:61
+msgid "Data for Laos are based on the landconcessions database."
+msgstr ""
+
+#: lmkp/templates/charts.mak:66
+msgid "Distribution of activities worldwide"
+msgstr ""
+
+#: lmkp/templates/charts.mak:68
+msgid ""
+"Worldwide distribution of land related deals based on the Landmatrix database"
+" available at"
+msgstr ""
+
+#: lmkp/views/activities.py:120
 msgid "User is not logged in."
 msgstr ""
 
-#: lmkp/views/activities.py:159
+#: lmkp/views/activities.py:123
 msgid "User has no permissions to add a review."
 msgstr ""
 
-#: lmkp/views/activities.py:167
+#: lmkp/views/activities.py:131
 msgid "User has no profile attached"
 msgstr ""
 
-#: lmkp/views/activities.py:175
+#: lmkp/views/activities.py:139
 msgid "The Activity was not found or is not situated within the user's profiles"
 msgstr ""
 
-#: lmkp/views/activities.py:200
+#: lmkp/views/activities.py:164
 msgid "Not all mandatory keys are provided"
 msgstr ""
 
@@ -106,12 +138,12 @@ msgstr ""
 msgid "Logged in as:"
 msgstr ""
 
-#: lmkp/views/editors.py:26 lmkp/views/moderators.py:26
-msgid "Show user profile"
-msgstr ""
-
 #: lmkp/views/editors.py:27 lmkp/views/moderators.py:27
 msgid "Logout"
+msgstr ""
+
+#: lmkp/views/moderators.py:26
+msgid "Show user profile"
 msgstr ""
 
 #. Default: pending
