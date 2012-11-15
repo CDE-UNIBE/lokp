@@ -7,11 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2012-10-29 08:49+0100\n"
-"PO-Revision-Date: 2012-10-29 11:59+0100\n"
-"Last-Translator: Lukas Vonlanthen <lukas.vonlanthen@cde.unibe.ch>\n"
+"POT-Creation-Date: 2012-11-15 14:13+0100\n"
+"PO-Revision-Date: 2012-11-15 14:19+0100\n"
+"Last-Translator: Adrian Weber <adrian.weber@cde.unibe.ch>\n"
 "Language-Team: fr <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,86 +19,103 @@ msgstr ""
 "X-Generator: Poedit 1.5.4\n"
 
 #. Default: Loading ...
-#: lmkp/templates/administration.mak:66 lmkp/templates/charts.mak:81
-#: lmkp/templates/index.mak:83 lmkp/views/translation.py:111
+#: lmkp/templates/administration.mak:66
+#: lmkp/templates/charts.mak:52
+#: lmkp/templates/index.mak:55
+#: lmkp/views/translation.py:111
 msgid "gui_loading"
 msgstr "Chargement ..."
 
-#: lmkp/templates/index.mak:19 lmkp/templates/index.mak:60
-#: lmkp/templates/index.mak:77
+#: lmkp/templates/base.mak:12
+#: lmkp/templates/base.mak:29
+#: lmkp/templates/charts.mak:16
+#: lmkp/templates/index.mak:15
 msgid "Land Observatory"
 msgstr "Observatoire de la Terre"
 
-#: lmkp/templates/index.mak:63
-msgid ""
-"The Land Observatory will make information on large-scale land acquisition "
-"transparent and accessible through an interactive, map-based platform. We "
-"are piloting the project in five countries, with partners and governments "
-"who will work to open government data, crowdsource and help customize local "
-"observatories. Updated information on land will benefit citizens, but also "
-"governments and companies interested in sustainability."
-msgstr ""
-"L'Observatoire de la Terre rendra l'information sur l'acquisition de terres "
-"à grande échelle transparente et accessible sous forme d'une plate-forme "
-"interactive et cartographique. Nous pilotons le projet dans cinq pays, avec "
-"des partenaires et des gouvernements qui vont travailler à l'ouverture des "
-"données publiques, crowdsource et aider à personnaliser les observatoires "
-"locaux. Des informations à jour sur la terre bénéficiera aux citoyens, mais "
-"aussi les gouvernements et les entreprises intéressées par la durabilité."
+#: lmkp/templates/base.mak:15
+msgid "The Land Observatory will make information on large-scale land acquisition transparent and accessible through an interactive, map-based platform. We are piloting the project in five countries, with partners and governments who will work to open government data, crowdsource and help customize local observatories. Updated information on land will benefit citizens, but also governments and companies interested in sustainability."
+msgstr "L'Observatoire de la Terre rendra l'information sur l'acquisition de terres à grande échelle transparente et accessible sous forme d'une plate-forme interactive et cartographique. Nous pilotons le projet dans cinq pays, avec des partenaires et des gouvernements qui vont travailler à l'ouverture des données publiques, crowdsource et aider à personnaliser les observatoires locaux. Des informations à jour sur la terre bénéficiera aux citoyens, mais aussi les gouvernements et les entreprises intéressées par la durabilité."
 
-#: lmkp/templates/index.mak:66
+#: lmkp/templates/base.mak:18
 msgid "The pilot project is coordinated by the"
 msgstr "Le projet pilote est coordonné par l'"
 
-#: lmkp/templates/index.mak:67
+#: lmkp/templates/base.mak:19
 msgid "International Land Coalition"
 msgstr "International Land Coalition (ILC)"
 
-#: lmkp/templates/index.mak:68
+#: lmkp/templates/base.mak:20
 msgid "and the"
 msgstr "et le"
 
-#: lmkp/templates/index.mak:69
+#: lmkp/templates/base.mak:21
 msgid "Centre for Development and Environment"
 msgstr "Centre for Development and Environment (CDE)"
 
-#: lmkp/templates/index.mak:70
+#: lmkp/templates/base.mak:22
 msgid "at the University of Bern, Switzerland. It is funded by the"
 msgstr "de l'Université de Berne, Suisse. Il est financé par la"
 
-#: lmkp/templates/index.mak:71
+#: lmkp/templates/base.mak:23
 msgid "Swiss Agency for Development Cooperation"
 msgstr "Direction du développement et de la coopération (DDC)"
 
-#: lmkp/templates/index.mak:72
+#: lmkp/templates/base.mak:24
 msgid ", with co-funding from other ILC and CDE programs."
 msgstr ", avec le co-financement d'autres programmes de la ILC et CDE."
 
-#: lmkp/views/activities.py:156
+#: lmkp/templates/charts.mak:16
+msgid "Charts"
+msgstr "Diagrammes"
+
+#: lmkp/templates/charts.mak:56
+msgid "Heat map for Cambodia and Laos"
+msgstr ""
+
+#: lmkp/templates/charts.mak:58
+msgid "Distribution of land related deals in Cambodia and for Champasak and Attapeu province in Laos."
+msgstr ""
+
+#: lmkp/templates/charts.mak:59
+msgid "Data for Cambodia are provided by the website"
+msgstr "Données pour le Cambodge sont fournis par le site web"
+
+#: lmkp/templates/charts.mak:61
+msgid "Data for Laos are based on the landconcessions database."
+msgstr ""
+
+#: lmkp/templates/charts.mak:66
+msgid "Distribution of activities worldwide"
+msgstr ""
+
+#: lmkp/templates/charts.mak:68
+msgid "Worldwide distribution of land related deals based on the Landmatrix database available at"
+msgstr ""
+
+#: lmkp/views/activities.py:120
 msgid "User is not logged in."
 msgstr "L'utilisateur n'est pas connecté."
 
-#: lmkp/views/activities.py:159
+#: lmkp/views/activities.py:123
 msgid "User has no permissions to add a review."
-msgstr ""
-"Utilisateur ne dispose pas des autorisations pour ajouter un commentaire."
+msgstr "Utilisateur ne dispose pas des autorisations pour ajouter un commentaire."
 
-#: lmkp/views/activities.py:167
+#: lmkp/views/activities.py:131
 msgid "User has no profile attached"
 msgstr "L'utilisateur n'a pas de profil attachée."
 
-#: lmkp/views/activities.py:175
-msgid ""
-"The Activity was not found or is not situated within the user's profiles"
-msgstr ""
-"L'activité n'a pas été trouvé ou ne se trouve pas dans les profils de "
-"l'utilisateur."
+#: lmkp/views/activities.py:139
+msgid "The Activity was not found or is not situated within the user's profiles"
+msgstr "L'activité n'a pas été trouvé ou ne se trouve pas dans les profils de l'utilisateur."
 
-#: lmkp/views/activities.py:200
+#: lmkp/views/activities.py:164
 msgid "Not all mandatory keys are provided"
 msgstr "Pas toutes les clés obligatoires sont fournis."
 
-#: lmkp/views/comments.py:67 lmkp/views/comments.py:165
+#: lmkp/views/comments.py:67
+#: lmkp/views/comments.py:165
+>>>>>>> hotfix/translationcharts
 msgid "Object not found."
 msgstr "Objet non trouvé."
 
@@ -114,17 +131,19 @@ msgstr "Commentaire inséré avec succès."
 msgid "Comment successfully deleted."
 msgstr "Commentaire supprimé avec succès."
 
-#: lmkp/views/editors.py:25 lmkp/views/moderators.py:25
+#: lmkp/views/editors.py:25
+#: lmkp/views/moderators.py:25
 msgid "Logged in as:"
 msgstr "Connecté en tant que:"
 
-#: lmkp/views/editors.py:26 lmkp/views/moderators.py:26
-msgid "Show user profile"
-msgstr "Afficher le profil de l'utilisateur"
-
-#: lmkp/views/editors.py:27 lmkp/views/moderators.py:27
+#: lmkp/views/editors.py:27
+#: lmkp/views/moderators.py:27
 msgid "Logout"
 msgstr "Déconnexion"
+
+#: lmkp/views/moderators.py:26
+msgid "Show user profile"
+msgstr "Afficher le profil de l\\'utilisateur"
 
 #. Default: pending
 #: lmkp/views/translation.py:22
@@ -366,27 +385,21 @@ msgstr "S'il vous plaît confirmer"
 #. publicly visible
 #: lmkp/views/translation.py:99
 msgid "gui_currently-seeing-pending-version"
-msgstr ""
-"Vous voyez une version {0}, qui doit être revu avant qu'il ne soit visible "
-"publiquement."
+msgstr "Vous voyez une version {0}, qui doit être revu avant qu'il ne soit visible publiquement."
 
 #. Default: You are seeing an {0} version, which was previously active and
 #. publicly
 #. visible.
 #: lmkp/views/translation.py:100
 msgid "gui_currently-seeing-inactive-version"
-msgstr ""
-"Vous voyez une version {0}, qui était auparavant actif et visible "
-"publiquement."
+msgstr "Vous voyez une version {0}, qui était auparavant actif et visible publiquement."
 
 #. Default: You are seeing a {0} version, which was previously active and
 #. publicly
 #. visible.
 #: lmkp/views/translation.py:101
 msgid "gui_currently-seeing-deleted-version"
-msgstr ""
-"Vous voyez une version {0}, qui était auparavant actif et visible "
-"publiquement."
+msgstr "Vous voyez une version {0}, qui était auparavant actif et visible publiquement."
 
 #. Default: You are seeing a {0} version, which was never publicly visible.
 #: lmkp/views/translation.py:102
@@ -398,9 +411,7 @@ msgstr "Vous voyez une version {0}, qui n'a jamais été visible publiquement."
 #. never publicly visible.
 #: lmkp/views/translation.py:103
 msgid "gui_currently-seeing-edited-version"
-msgstr ""
-"Vous voyez une version {0}, qui a été édité par un modérateur et n'a jamais "
-"été visible publiquement."
+msgstr "Vous voyez une version {0}, qui a été édité par un modérateur et n'a jamais été visible publiquement."
 
 #. Default: Date
 #: lmkp/views/translation.py:104
@@ -522,9 +533,7 @@ msgstr "Changements ne pouvaient pas être soumis"
 #. the currently selected profile.
 #: lmkp/views/translation.py:130
 msgid "feedback_some-attributes-not-editable-because-of-profile"
-msgstr ""
-"Certains de ces attributs ne peuvent pas être modifiées car elles ne font "
-"pas partie du profil sélectionné."
+msgstr "Certains de ces attributs ne peuvent pas être modifiées car elles ne font pas partie du profil sélectionné."
 
 #. Default: Success
 #: lmkp/views/translation.py:131
@@ -555,9 +564,7 @@ msgstr "Étape 1: S'il vous plaît sélectionner un point sur ​​la carte."
 #. "Continue".
 #: lmkp/views/translation.py:138
 msgid "activities_new-step-1-explanation"
-msgstr ""
-"Vous pouvez faire glisser et déposer le point. Une fois que vous avez "
-"terminé, cliquez sur \"Continuer\"."
+msgstr "Vous pouvez faire glisser et déposer le point. Une fois que vous avez terminé, cliquez sur \"Continuer\"."
 
 #. Default: New Activity
 #: lmkp/views/translation.py:139
@@ -625,11 +632,7 @@ msgstr "Filtrer les acteurs"
 #. clicking on the button above.
 #: lmkp/views/translation.py:155
 msgid "stakeholders_no-associated-stakeholders-yet"
-msgstr ""
-"Aucun acteurs sont associés à ce jour. Vous pouvez rechercher et "
-"sélectionner une des parties prenantes en utilisant le champ de recherche ci-"
-"dessous. Ou vous pouvez créer un nouvel acteur en cliquant sur le bouton ci-"
-"dessus."
+msgstr "Aucun acteurs sont associés à ce jour. Vous pouvez rechercher et sélectionner une des parties prenantes en utilisant le champ de recherche ci-dessous. Ou vous pouvez créer un nouvel acteur en cliquant sur le bouton ci-dessus."
 
 #. Default: Displaying stakeholders {0} - {1} of {2}
 #: lmkp/views/translation.py:156
@@ -690,14 +693,12 @@ msgstr "Commentaires"
 #. version.
 #: lmkp/views/translation.py:171
 msgid "moderator_changes-not-based-on-active"
-msgstr ""
-"Ces changements sont basés sur une version qui n'est pas la version active."
+msgstr "Ces changements sont basés sur une version qui n'est pas la version active."
 
 #. Default: There are multiple changes pending! They may be conflicting.
 #: lmkp/views/translation.py:172
 msgid "moderator_multiple-changes-pending"
-msgstr ""
-"Il ya de multiples changements en cours! Ils peuvent être contradictoires."
+msgstr "Il ya de multiples changements en cours! Ils peuvent être contradictoires."
 
 #. Default: Pending version
 #: lmkp/views/translation.py:173
