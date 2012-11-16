@@ -82,7 +82,14 @@ Ext.define('Lmkp.view.items.Details',{
                 hiddenOriginal: false,
                 xtype: this.centerPanelType
             });
-            this._populateComment(item.get('identifier'), item.modelName);
+            
+
+            var identifier = item.get('identifier');
+            if (!identifier) {
+                identifier = item.get('id');
+            }
+
+            this._populateComment(identifier, item.modelName);
         }
 
         return item;
