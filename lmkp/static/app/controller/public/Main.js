@@ -371,7 +371,7 @@ Ext.define('Lmkp.controller.public.Main', {
 
             // Check the current status of the record and add accordingly an
             // additional class to the td element
-            if(record.get("status") == 'pending'){
+            if(record.get("status") == Lmkp.ts.msg('status_pending')){
                 metaData.tdCls = "status-pending";
             }
 
