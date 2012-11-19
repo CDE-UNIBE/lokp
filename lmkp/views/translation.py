@@ -1,17 +1,15 @@
 import logging
+
+from lmkp.models.database_objects import A_Key
+from lmkp.models.database_objects import A_Value
+from lmkp.models.database_objects import Language
+from lmkp.models.database_objects import SH_Key
+from lmkp.models.database_objects import SH_Value
+from lmkp.models.meta import DBSession as Session
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
 from pyramid.view import view_config
 import simplejson as json
-
-from ..models.meta import DBSession as Session
-from ..models.database_objects import (
-    Language,
-    A_Key,
-    A_Value,
-    SH_Key,
-    SH_Value
-)
 
 log = logging.getLogger(__name__)
 
@@ -225,9 +223,9 @@ def ui_messages(request):
 
     # Prepare a query for the original key (original == None)
     original_query = Session.query(
-            A_Key.id,
-            A_Key.key
-        ).\
+                                   A_Key.id,
+                                   A_Key.key
+                                   ).\
         filter(A_Key.key == aKeyCountry).\
         filter(A_Key.original == None)
 
@@ -238,9 +236,9 @@ def ui_messages(request):
     # Prepare a query for the translated key (original == original key from
     # query above)
     translation_query = Session.query(
-            A_Key.id,
-            A_Key.key
-        ).\
+                                      A_Key.id,
+                                      A_Key.key
+                                      ).\
         join(original_subquery, original_subquery.c.id == A_Key.fk_a_key).\
         filter(A_Key.language == db_lang)
     
@@ -332,10 +330,10 @@ def language_store(request):
     langs = Session.query(Language).all()
     for l in langs:
         data.append({
-            'locale': l.locale, 
-            'english_name': l.english_name, 
-            'local_name': l.local_name
-        })
+                    'locale': l.locale,
+                    'english_name': l.english_name,
+                    'local_name': l.local_name
+                    })
     ret = {}
     ret['data'] = data
     ret['success'] = True

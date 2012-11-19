@@ -119,6 +119,7 @@ Ext.define('Lmkp.controller.login.Toolbar', {
 
     onLanguageSelect: function(combo, records, eOpts) {
         var form = Ext.create('Ext.form.Panel', {
+            method: 'GET',
             standardSubmit: true
         });
         form.submit({
