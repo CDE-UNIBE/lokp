@@ -93,9 +93,21 @@ Ext.onReady(function(){
                     region: 'north',
                     xtype: 'panel'
                 },grid,{
-                    items: ['->', Lmkp.continue_button],
+                    layout: {
+                        type: 'vbox',
+                        align: 'center'
+                    },
+                    height: 30,
+                    items: [{
+                        width: 315,
+                        contentEl: 'social-plugin',
+                        xtype: 'container'
+                    }],
                     region: 'south',
-                    xtype: 'toolbar'
+                    style: {
+                        'margin-left': '5px'
+                    },
+                    xtype: 'container'
                 }]
             });
         }
