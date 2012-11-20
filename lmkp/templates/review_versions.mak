@@ -13,7 +13,7 @@ else:
     use_js_builds = False
 
 %>
-<title>${_("Land Observatory")} - ${_("Compare")}</title>
+<title>${_("Land Observatory")} - ${_("Review")}</title>
 <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/lib/extjs-4.1.1/resources/css/ext-all.css')}"/>
 <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/style.css')}"/>
 <style type="text/css">
@@ -38,14 +38,17 @@ else:
         }
     });
     Ext.ns('Lmkp');
-    Lmkp.compare_url = "${compare_url}";
-    Lmkp.availableVersions = ${available_versions};
-    Lmkp.refVersion = ${ref_version};
-    Lmkp.newVersion = ${new_version};
+    Lmkp.continue_button = {
+        handler: function(button, event){
+          window.location.href = "${window_location}"
+        },
+        text: "${button_text}",
+        xtype: 'button'
+    }
 </script>
 <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
 <script type="text/javascript" src="${request.route_url('moderator_toolbar_config')}"></script>
-<script type="text/javascript" src="${request.static_url('lmkp:static/app/compare.js')}"></script>
+<script type="text/javascript" src="${request.static_url('lmkp:static/app/reviews.js')}"></script>
 </%def>
 
 <div id="loading-mask" style="width: 100%; height: 100%;">
