@@ -89,6 +89,10 @@ def main(global_config, ** settings):
     # Creates a new activity
     config.add_route('activities_create', '/activities', request_method='POST')
 
+    config.add_route('activities_review_versions', '/activities/review/{uid}')
+    config.add_route('activities_compare_versions', '/activities/compare/{uid}/{old}/{new}')
+    config.add_route('activities_compare', '/activities/compare/{uid}')
+
     # Reviews a pending activity
     config.add_route('activities_review', '/activities/review', request_method='POST')
 
@@ -107,8 +111,6 @@ def main(global_config, ** settings):
     # Read one
     config.add_route('activities_read_one', '/activities/{output}/{uid}')
 
-    config.add_route('activities_compare_versions', '/activities/compare/{uid}/{old_version}/{new_version}')
-
     #@TODO: Is this still needed?
     config.add_route('activities_read_pending', '/activities/pending')
     # Reads one or many activities and returns GeoJSON Feature or FeatureCollection
@@ -123,6 +125,9 @@ def main(global_config, ** settings):
     config.add_route('stakeholders_create', '/stakeholders', request_method='POST')
 
     # Reviews a pending stakeholder
+    config.add_route('stakeholders_review_versions', '/stakeholders/review/{uid}')
+    config.add_route('stakeholders_compare_versions', '/stakeholders/compare/{uid}/{old}/{new}')
+    config.add_route('stakeholders_compare', '/stakeholders/compare/{uid}')
     config.add_route('stakeholders_review', '/stakeholders/review', request_method='POST')
 
     # Read one (special cases)
@@ -139,8 +144,6 @@ def main(global_config, ** settings):
 
     # Read one
     config.add_route('stakeholders_read_one', '/stakeholders/{output}/{uid}')
-
-    config.add_route('stakeholders_compare_versions', '/stakeholders/compare/{uid}/{old_version}/{new_version}')
 
     """
     Comments
