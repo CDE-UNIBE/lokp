@@ -9,7 +9,7 @@ Ext.require('Ext.layout.container.Border');
 Ext.require('Ext.layout.container.Column');
 Ext.require('Ext.data.reader.Xml');
 Ext.require('Ext.layout.container.Anchor');
-Ext.require('Ext.ux.grid.TransformGrid');
+Ext.require('Lmkp.grid.TransformGrid');
 Ext.require('Lmkp.controller.login.Toolbar');
 Ext.require('Lmkp.view.login.Toolbar');
 
@@ -35,13 +35,108 @@ Ext.onReady(function(){
         launch: function() {
 
             // create the grid
-            var grid = Ext.create('Ext.ux.grid.TransformGrid', 'compare-table', {
+            var grid = Ext.create('Lmkp.grid.TransformGrid', 'compare-table', {
                 stripeRows: true,
                 anchor: '100%',
                 sortable: false,
                 resizable: true,
                 region: 'center',
                 margin: 5
+            });
+
+            /*var grid = Ext.create('Ext.panel.Panel',{
+                contentEl: 'compare-table',
+                region: 'center'
+            });*/
+
+            var rdStore = Ext.create('Lmkp.store.ReviewDecisions').load();
+
+            var type = Lmkp.type;
+
+            var submitButton = Ext.create('Ext.button.Button',{
+                iconCls: 'save-button',
+                itemId: 'reviewSubmitButton',
+                name: 'review_submit',
+                scale: 'medium',
+                store_type: type, // helper parameter
+                text: Lmkp.ts.msg('button_submit'),
+                xtype: 'button'
+            });
+
+            submitButton.on('click', function(button, event, eOpts){
+                form.submit({
+                    failure: function(form, response) {
+                        Ext.Msg.show({
+                            buttons: Ext.Msg.CANCEL,
+                            icon: Ext.Msg.ERROR,
+                            msg: response.response.responseText,
+                            scope: this,
+                            title: Lmkp.ts.msg('feedback_failure')
+                        });
+                    },
+                    success: function(form, response) {
+                        var returnJson = Ext.decode(response.response.responseText);
+                        if(returnJson.success){
+                            Ext.Msg.show({
+                                buttons: Ext.Msg.OK,
+                                fn: function(buttonId, text, opt){
+                                    window.location.href = Lmkp.next_url;
+                                },
+                                icon: Ext.Msg.INFO,
+                                msg: returnJson.msg,
+                                scope: this,
+                                title: Lmkp.ts.msg('feedback_success')
+                            });
+                        } else {
+                            Ext.Msg.show({
+                                buttons: Ext.Msg.CANCEL,
+                                icon: Ext.Msg.ERROR,
+                                msg: returnJson.msg,
+                                scope: this,
+                                title: Lmkp.ts.msg('feedback_failure')
+                            });
+                        }
+                    }
+                });
+            });
+
+            var form = Ext.create('Ext.form.Panel',{
+                buttons: [submitButton],
+                buttonAlign: 'right',
+                items: [{
+                    store: rdStore,
+                    name: 'review_decision',
+                    queryMode: 'local',
+                    displayField: 'name',
+                    valueField: 'id',
+                    fieldLabel: Lmkp.ts.msg('moderator_review-decision'),
+                    allowBlank: false,
+                    flex: 1,
+                    margin: 3,
+                    value: 1,
+                    width: 400,
+                    xtype: 'combobox'
+                }, {
+                    fieldLabel: Lmkp.ts.msg('moderator_review-comment'),
+                    margin: 3,
+                    name: 'comment_textarea',
+                    width: 400,
+                    xtype: 'textarea'
+                }, {
+                    xtype: 'hiddenfield',
+                    name: 'identifier',
+                    value: Lmkp.identifier
+                }, {
+                    xtype: 'hiddenfield',
+                    name: 'version',
+                    value: Lmkp.current_version
+                }],
+                region: 'south',
+                style: {
+                    margin: '0px 5px 5px'
+                },
+                url: '/' + type + '/review',
+                xtype: 'form'
             });
 
             Ext.create('Ext.container.Viewport', {
@@ -59,11 +154,7 @@ Ext.onReady(function(){
                     height: 105,
                     region: 'north',
                     xtype: 'panel'
-                },grid,{
-                    items: ['->', Lmkp.continue_button],
-                    region: 'south',
-                    xtype: 'toolbar'
-                }]
+                },grid,form]
             });
         }
     });

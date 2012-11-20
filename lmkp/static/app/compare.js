@@ -9,7 +9,7 @@ Ext.require('Ext.layout.container.Border');
 Ext.require('Ext.layout.container.Column');
 Ext.require('Ext.data.reader.Xml');
 Ext.require('Ext.layout.container.Anchor');
-Ext.require('Ext.ux.grid.TransformGrid');
+Ext.require('Lmkp.grid.TransformGrid');
 Ext.require('Lmkp.controller.login.Toolbar');
 Ext.require('Lmkp.view.login.Toolbar');
 
@@ -33,26 +33,24 @@ Ext.onReady(function(){
         ],
 
         launch: function() {
-
-
             
             var oldVersionCombo = Ext.create('Ext.form.field.ComboBox',{
                 fieldLabel: Lmkp.ts.msg('Reference Version:'),
                 labelWidth: 150,
                 queryMode: 'local',
-                store: Lmkp.availableVersions,
-                value: Lmkp.refVersion
+                store: Lmkp.available_versions,
+                value: Lmkp.ref_version
             });
 
             var newVersionCombo = Ext.create('Ext.form.field.ComboBox',{
                 fieldLabel: Lmkp.ts.msg('Comparison Version:'),
                 labelWidth: 150,
                 queryMode: 'local',
-                store: Lmkp.availableVersions,
+                store: Lmkp.available_versions,
                 style: {
                     'margin-left': '15px'
                 },
-                value: Lmkp.newVersion
+                value: Lmkp.new_version
             });
             
             var diffButton = Ext.create('Ext.button.Button',{
@@ -69,7 +67,7 @@ Ext.onReady(function(){
             });
 
             // create the grid
-            var grid = Ext.create('Ext.ux.grid.TransformGrid', 'compare-table', {
+            var grid = Ext.create('Lmkp.grid.TransformGrid', 'compare-table', {
                 stripeRows: true,
                 anchor: '100%',
                 sortable: false,
