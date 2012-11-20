@@ -154,7 +154,23 @@ Ext.onReady(function(){
                     height: 105,
                     region: 'north',
                     xtype: 'panel'
-                },grid,form]
+                },grid,form,{
+                    layout: {
+                        type: 'vbox',
+                        align: 'center'
+                    },
+                    height: 30,
+                    items: [{
+                        width: 315,
+                        contentEl: 'social-plugin',
+                        xtype: 'container'
+                    }],
+                    region: 'south',
+                    style: {
+                        'margin-left': '5px'
+                    },
+                    xtype: 'container'
+                }]
             });
         }
     });
