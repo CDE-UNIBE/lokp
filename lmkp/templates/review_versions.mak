@@ -13,7 +13,7 @@ else:
     use_js_builds = False
 
 %>
-<title>${_("Land Observatory")} - ${_("Compare")}</title>
+<title>${_("Land Observatory")} - ${_("Review")}</title>
 <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/lib/extjs-4.1.1/resources/css/ext-all.css')}"/>
 <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/style.css')}"/>
 <style type="text/css">
@@ -21,10 +21,10 @@ else:
         width: 98%;
     }
     .remove {
-        background-color: lightcoral !important;
+        background-color: lightcoral;
     }
     .add {
-        background-color: lightgreen !important;
+        background-color: lightgreen;
     }
 </style>
 <script type="text/javascript" src="${request.static_url('lmkp:static/lib/extjs-4.1.1/ext.js')}"></script>
@@ -38,14 +38,14 @@ else:
         }
     });
     Ext.ns('Lmkp');
-    Lmkp.compare_url = "${compare_url}";
-    Lmkp.available_versions = ${available_versions};
-    Lmkp.ref_version = ${ref_version};
-    Lmkp.new_version = ${new_version};
+    Lmkp.type = "${type}";
+    Lmkp.identifier = "${identifier}";
+    Lmkp.current_version = "${version}";
+    Lmkp.next_url = "${next_url}"
 </script>
 <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
 <script type="text/javascript" src="${request.route_url('moderator_toolbar_config')}"></script>
-<script type="text/javascript" src="${request.static_url('lmkp:static/app/compare.js')}"></script>
+<script type="text/javascript" src="${request.static_url('lmkp:static/app/reviews.js')}"></script>
 </%def>
 
 <div id="loading-mask" style="width: 100%; height: 100%;">
