@@ -38,13 +38,10 @@ else:
         }
     });
     Ext.ns('Lmkp');
-    Lmkp.continue_button = {
-        handler: function(button, event){
-          window.location.href = "${window_location}"
-        },
-        text: "${button_text}",
-        xtype: 'button'
-    }
+    Lmkp.type = "${type}";
+    Lmkp.identifier = "${identifier}";
+    Lmkp.current_version = "${version}";
+    Lmkp.next_url = "${next_url}"
 </script>
 <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
 <script type="text/javascript" src="${request.route_url('moderator_toolbar_config')}"></script>

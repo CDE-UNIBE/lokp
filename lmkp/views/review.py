@@ -1,113 +1,17 @@
-from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.views import BaseView
 import logging
-from pyramid.httpexceptions import HTTPBadRequest
-from pyramid.view import view_config
-from sqlalchemy.sql.functions import max
 
 log = logging.getLogger(__name__)
 
-class ReviewView(BaseView):
+class BaseReview(BaseView):
 
     def __init__(self, request):
         self.request = request
         self.activity_protocol3 = ActivityProtocol3(Session)
         self.stakeholder_protocol3 = StakeholderProtocol3(Session)
-
-    @view_config(route_name='activities_review_versions', renderer='lmkp:templates/review_versions.mak', permission='moderate')
-    def review_activities(self):
-        #uid = "d2a680ca-014b-4873-87f4-d588aa9fd839"
-        uid = self.request.matchdict.get('uid', None)
-
-        o = Session.query(Activity.version).filter(Activity.activity_identifier == uid).filter(Activity.fk_status == 2).first()
-        l = Session.query(max(Activity.version)).filter(Activity.activity_identifier == uid).first()
-        old_version = int(o[0])
-        new_version = old_version + 1
-        latest_version = int(l[0])
-
-        log.debug("active version: %s" % old_version)
-        log.debug("pending version: %s" % new_version)
-        log.debug("latest version: %s" % latest_version)
-        log.debug(new_version <= old_version)
-
-        if new_version < old_version:
-            raise HTTPBadRequest("Pending version must be newer than active version.")
-
-        old = self.activity_protocol3.read_one_by_version(self.request, uid, old_version)
-
-        new = self.activity_protocol3.read_one_by_version(self.request, uid, new_version)
-        
-        if latest_version > new_version:
-            new_window_location = "/activities/review/%s" % uid
-            button_text = "Review and continue"
-        else:
-            new_window_location = "/activities/html/%s" % uid
-            button_text = "Review and return"
-        return dict(self._compare_taggroups(old, new).items() + {'button_text': button_text, 'window_location': new_window_location}.items())
-
-    @view_config(route_name='activities_compare', renderer='lmkp:templates/compare_versions.mak', permission='moderate')
-    def compare_activities(self, uid=None):
-
-        uid = self.request.matchdict.get('uid', None)
-
-        return self.compare_activities_versions(uid, 1, 1)
-
-    @view_config(route_name='activities_compare_versions', renderer='lmkp:templates/compare_versions.mak', permission='moderate')
-    def compare_activities_versions(self, uid=None, old_version=None, new_version=None):
-
-        if uid is None:
-            uid = self.request.matchdict.get('uid', None)
-
-        if old_version is None:
-            old_version = self.request.matchdict.get('old', 1)
-
-        if new_version is None:
-            new_version = self.request.matchdict.get('new', 1)
-
-        if new_version < old_version:
-            raise HTTPBadRequest("Reference version %s is older than new version %s" % (old_version, new_version))
-
-        old = self.activity_protocol3.read_one_by_version(self.request, uid, old_version)
-
-        new = self.activity_protocol3.read_one_by_version(self.request, uid, new_version)
-
-        available_versions = []
-        for i in Session.query(Activity.version).filter(Activity.activity_identifier == uid):
-            available_versions.append(i[0])
-
-        compare_url = "/activities/compare/%s" % uid
-
-        add_ons = {
-        'available_versions': available_versions,
-        'compare_url': compare_url,
-        'ref_version': old_version,
-        'new_version': new_version
-        }
-        return dict(self._compare_taggroups(old, new).items() + add_ons.items())
-
-    @view_config(route_name='stakeholders_compare_versions', renderer='lmkp:templates/compare_versions.mak')
-    def compare_stakeholders(self):
-
-        #uid = "d2a680ca-014b-4873-87f4-d588aa9fd839"
-        uid = self.request.matchdict.get('uid', None)
-
-        #old_version = 1
-        old_version = self.request.matchdict.get('old_version', None)
-
-        # new_version = 3
-        new_version = self.request.matchdict.get('new_version', None)
-
-        if new_version <= old_version:
-            raise HTTPBadRequest()
-
-        old = self.stakeholder_protocol3.read_one_by_version(self.request, uid, old_version)
-
-        new = self.stakeholder_protocol3.read_one_by_version(self.request, uid, new_version)
-
-        return self._compare_taggroups(old, new)
 
     def _compare_taggroups(self, old, new):
 
@@ -264,6 +168,31 @@ class ReviewView(BaseView):
                 current_row.append({'class': 'add', 'tags': new_tags})
 
                 table.append(current_row)
+
+
+        return {'data': table}
+
+    def _review_one_version(self, obj, uid, version):
+
+        table = []
+
+        # First write the headers
+        header_row = []
+        header_row.append({'class': 'title', 'tags': [
+                          {'key': 'version', 'value': obj.get_version()},
+                          {'key': 'status', 'value': obj.get_status()}
+                          ]})
+
+        table.append(header_row)
+
+        for taggroup in obj.get_taggroups():
+
+            tags = []
+            
+            for t in taggroup.get_tags():
+                tags.append({'key': t.get_key(), 'value': t.get_value()})
+            table.append([{'class': '', 'tags': tags}])
+
 
 
         return {'data': table}

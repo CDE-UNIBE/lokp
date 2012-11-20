@@ -21,10 +21,10 @@ else:
         width: 98%;
     }
     .remove {
-        background-color: lightcoral;
+        background-color: lightcoral !important;
     }
     .add {
-        background-color: lightgreen;
+        background-color: lightgreen !important;
     }
 </style>
 <script type="text/javascript" src="${request.static_url('lmkp:static/lib/extjs-4.1.1/ext.js')}"></script>
@@ -39,9 +39,9 @@ else:
     });
     Ext.ns('Lmkp');
     Lmkp.compare_url = "${compare_url}";
-    Lmkp.availableVersions = ${available_versions};
-    Lmkp.refVersion = ${ref_version};
-    Lmkp.newVersion = ${new_version};
+    Lmkp.available_versions = ${available_versions};
+    Lmkp.ref_version = ${ref_version};
+    Lmkp.new_version = ${new_version};
 </script>
 <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
 <script type="text/javascript" src="${request.route_url('moderator_toolbar_config')}"></script>

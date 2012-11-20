@@ -125,6 +125,9 @@ def main(global_config, ** settings):
     config.add_route('stakeholders_create', '/stakeholders', request_method='POST')
 
     # Reviews a pending stakeholder
+    config.add_route('stakeholders_review_versions', '/stakeholders/review/{uid}')
+    config.add_route('stakeholders_compare_versions', '/stakeholders/compare/{uid}/{old}/{new}')
+    config.add_route('stakeholders_compare', '/stakeholders/compare/{uid}')
     config.add_route('stakeholders_review', '/stakeholders/review', request_method='POST')
 
     # Read one (special cases)
@@ -141,8 +144,6 @@ def main(global_config, ** settings):
 
     # Read one
     config.add_route('stakeholders_read_one', '/stakeholders/{output}/{uid}')
-
-    config.add_route('stakeholders_compare_versions', '/stakeholders/compare/{uid}/{old_version}/{new_version}')
 
     """
     Comments
