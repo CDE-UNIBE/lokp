@@ -26,6 +26,9 @@ else:
     .add {
         background-color: lightgreen !important;
     }
+    .involvement {
+        font-style: italic !important;
+    }
 </style>
 <script type="text/javascript" src="${request.static_url('lmkp:static/lib/extjs-4.1.1/ext.js')}"></script>
 <script type="text/javascript">
@@ -74,7 +77,11 @@ else:
             <td>
                 <div class="${cell['class']}">
                     % for tag in cell['tags']:
+                    % if tag['key'] == 'guid':
+                    <div>${tag['key']}: <a href="/${other_type}/compare/${tag['value']}">${tag['value']}</a></div>
+                    % else:
                     <div>${tag['key']}: ${tag['value']}</div>
+                    % endif
                     % endfor
                 </div>
             </td>

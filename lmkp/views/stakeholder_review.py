@@ -4,10 +4,13 @@ __date__ = "$Nov 20, 2012 4:05:40 PM$"
 from lmkp.models.database_objects import Stakeholder
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.review import BaseReview
+import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 from sqlalchemy.sql.functions import max
+
+log = logging.getLogger(__name__)
 
 class StakeholderReview(BaseReview):
 
@@ -54,7 +57,9 @@ class StakeholderReview(BaseReview):
         'available_versions': available_versions,
         'compare_url': compare_url,
         'ref_version': old_version,
-        'new_version': new_version
+        'new_version': new_version,
+        'type': 'stakeholders',
+        'other_type': 'activities'
         }
         return dict(self._compare_taggroups(old, new).items() + add_ons.items())
 
