@@ -7,6 +7,7 @@ from lmkp.views.review import BaseReview
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPFound
+from pyramid.renderers import render_to_response
 from pyramid.view import view_config
 from sqlalchemy.sql.functions import max
 
@@ -73,20 +74,38 @@ class ActivityReview(BaseReview):
         additional_vars['version'] = new_version
         return dict(self._compare_taggroups(old, new).items() + additional_vars.items())
 
-    @view_config(route_name='activities_compare', renderer='lmkp:templates/compare_versions.mak', permission='moderate')
-    #@view_config(route_name='activities_compare', renderer='json', permission='moderate')
+    #@view_config(route_name='activities_compare', renderer='lmkp:templates/compare_versions.mak', permission='moderate')
+    @view_config(route_name='activities_compare', renderer='json', permission='moderate')
     def compare_activity(self, uid=None):
 
         uid = self.request.matchdict.get('uid', None)
 
         return self.compare_activity_by_versions(uid, 1, 1)
 
-    @view_config(route_name='activities_compare_versions', renderer='lmkp:templates/compare_versions.mak', permission='moderate')
-    #@view_config(route_name='activities_compare_versions', renderer='json', permission='moderate')
+    #@view_config(route_name='activities_compare_versions', renderer='lmkp:templates/compare_versions.mak', permission='moderate')
+    @view_config(route_name='activities_compare_versions', renderer='json', permission='moderate')
     def compare_activity_by_versions(self, uid=None, old_version=None, new_version=None):
+
+        output = self.request.matchdict.get("output", "json")
 
         if uid is None:
             uid = self.request.matchdict.get('uid', None)
+
+        available_versions = []
+        for i in Session.query(Activity.version).filter(Activity.activity_identifier == uid):
+            available_versions.append(i[0])
+
+        if output not in ['html', 'json']:
+            raise HTTPBadRequest("Output format %s is invalid." % (output))
+
+        # If the requested format is HTML, render a Mako template
+        if output == "html":
+            return render_to_response('lmkp:templates/compare_versions.mak',
+                                      {'available_versions': available_versions},
+                                      self.request)
+
+        # else handle the JSON output:
+
 
         if old_version is None:
             old_version = int(self.request.matchdict.get('old', 1))
@@ -94,8 +113,8 @@ class ActivityReview(BaseReview):
         if new_version is None:
             new_version = int(self.request.matchdict.get('new', 1))
 
-        if new_version < old_version:
-            raise HTTPBadRequest("Reference version %s is older than new version %s" % (old_version, new_version))
+        #if new_version < old_version:
+        #    raise HTTPBadRequest("Reference version %s is older than new version %s" % (old_version, new_version))
 
         old = self.activity_protocol3.read_one_by_version(self.request, uid, old_version)
 
@@ -104,18 +123,22 @@ class ActivityReview(BaseReview):
         except IndexError:
             return HTTPFound(self.request.route_url('activities_compare_versions', uid=uid, old=old_version, new=str(new_version-1)))
 
-        available_versions = []
-        for i in Session.query(Activity.version).filter(Activity.activity_identifier == uid):
-            available_versions.append(i[0])
+
 
         compare_url = "/activities/compare/%s" % uid
 
         add_ons = {
-        'available_versions': available_versions,
-        'compare_url': compare_url,
-        'ref_version': old_version,
-        'new_version': new_version,
-        'type': 'activities',
-        'other_type': 'stakeholders'
+        'available_versions': available_versions
+        #'compare_url': compare_url,
+        #'ref_version': old_version,
+        #'new_version': new_version,
+        #'type': 'activities',
+        #'other_type': 'stakeholders'
         }
-        return dict(self._compare_taggroups(old, new).items() + add_ons.items())
+
+        result = dict(self._compare_taggroups(old, new).items() + add_ons.items())
+
+        print "**********************************"
+        print result
+
+        return result
