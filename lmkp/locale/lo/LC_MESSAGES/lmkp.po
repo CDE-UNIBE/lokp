@@ -7,21 +7,22 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2012-10-29 08:49+0100\n"
-"PO-Revision-Date: 2012-04-02 14:56+0100\n"
-"Last-Translator: Adrian Weber <adrian.weber@cde.unibe.ch>\n"
+"POT-Creation-Date: 2012-06-20 16:19+0200\n"
+"PO-Revision-Date: 2012-11-23 14:20+0700\n"
+"Last-Translator: Stefan\n"
 "Language-Team: lo_LA <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
+"X-Generator: Poedit 1.5.4\n"
 
 #. Default: Loading ...
 #: lmkp/templates/administration.mak:66 lmkp/templates/charts.mak:81
 #: lmkp/templates/index.mak:83 lmkp/views/translation.py:111
 msgid "gui_loading"
-msgstr ""
+msgstr "ຂໍ້ມູນກຳລັງໂລດ"
 
 #: lmkp/templates/index.mak:19 lmkp/templates/index.mak:60
 #: lmkp/templates/index.mak:77
@@ -91,39 +92,44 @@ msgstr ""
 msgid "Object not found."
 msgstr ""
 
+#. Default: Captcha not correct.
 #: lmkp/views/comments.py:134
 msgid "Captcha not correct."
-msgstr ""
+msgstr "ລະຫັດຜ່ານເພື່ອເຂົາສູ່ລະບົບ"
 
+#. Default: Comment successfully inserted.
 #: lmkp/views/comments.py:154
 msgid "Comment successfully inserted."
-msgstr ""
+msgstr "ຄຳຄິດເຫັນຂອງທ່ານໄດ້ຖືກປ້ອນເຂົ້າສຳເລັດແລ້ວ"
 
+#. Default: Comment successfully deleted.
 #: lmkp/views/comments.py:200
 msgid "Comment successfully deleted."
-msgstr ""
+msgstr "ຄຳຄິດເຫັນຂອງທ່ານໄດ້ຖືກລຶບຖີ້ມຮຽບຮ້ອຍແລ້ວ"
 
+#. Default: Logged in as:
 #: lmkp/views/editors.py:25 lmkp/views/moderators.py:25
 msgid "Logged in as:"
-msgstr ""
+msgstr "ເຂົ້າສູ່ລະບົບໃນນາມ"
 
+#. Default: Show user profile
 #: lmkp/views/editors.py:26 lmkp/views/moderators.py:26
 msgid "Show user profile"
-msgstr ""
+msgstr "ສະແດງຂໍ້ມູນສ່ວນຕົວຂອງຜູ້ນຳໃຊ້"
 
 #: lmkp/views/editors.py:27 lmkp/views/moderators.py:27
 msgid "Logout"
-msgstr ""
+msgstr "ອອກຈາກລະບົບ"
 
 #. Default: pending
 #: lmkp/views/translation.py:22
 msgid "status_pending"
-msgstr ""
+msgstr "ຍັງບໍ່ທັນຮັບຮອງ"
 
 #. Default: active
 #: lmkp/views/translation.py:23
 msgid "status_active"
-msgstr ""
+msgstr "ດຳເນີນປົກກະຕິ"
 
 #. Default: inactive
 #: lmkp/views/translation.py:24
@@ -133,12 +139,12 @@ msgstr ""
 #. Default: deleted
 #: lmkp/views/translation.py:25
 msgid "status_deleted"
-msgstr ""
+msgstr "ຖືກລຶບຖີ້ມແລ້ວ"
 
 #. Default: rejected
 #: lmkp/views/translation.py:26
 msgid "status_rejected"
-msgstr ""
+msgstr "ຖືກປະຕິເສດ"
 
 #. Default: edited
 #: lmkp/views/translation.py:27
@@ -163,7 +169,7 @@ msgstr ""
 #. Default: Add attribute filter
 #: lmkp/views/translation.py:57
 msgid "button_add-attribute-filter"
-msgstr ""
+msgstr "ເລືອກປະເພດຂໍ້ມູນ"
 
 #. Default: Add more specific information
 #: lmkp/views/translation.py:58
@@ -173,12 +179,12 @@ msgstr ""
 #. Default: Add further information
 #: lmkp/views/translation.py:59
 msgid "button_add-new-taggroup"
-msgstr ""
+msgstr "ປ້ອນຂໍ້ມູນເພີ່ມເຕີມ"
 
 #. Default: Add time filter
 #: lmkp/views/translation.py:60
 msgid "button_add-time-filter"
-msgstr ""
+msgstr "ເລືອກວັນເວລາ"
 
 #. Default: Back
 #: lmkp/views/translation.py:61
@@ -208,7 +214,7 @@ msgstr ""
 #. Default: Delete
 #: lmkp/views/translation.py:66
 msgid "button_delete"
-msgstr ""
+msgstr "ລຶບ"
 
 #. Default: Edit
 #: lmkp/views/translation.py:67
@@ -273,7 +279,7 @@ msgstr ""
 #. Default: Submit
 #: lmkp/views/translation.py:79
 msgid "button_submit"
-msgstr ""
+msgstr "ຕົກລົງ"
 
 #. Default: Yes
 #: lmkp/views/translation.py:80
@@ -303,7 +309,7 @@ msgstr ""
 #. Default: Click to delete this filter
 #: lmkp/views/translation.py:87
 msgid "tooltip_filter-delete"
-msgstr ""
+msgstr "ກົດປຸ່ມນີຖ້າຕ້ອງການລຶບ"
 
 #. Default: Identify Feature
 #: lmkp/views/translation.py:88
@@ -313,7 +319,7 @@ msgstr ""
 #. Default: Pan
 #: lmkp/views/translation.py:89
 msgid "tooltip_map_pan"
-msgstr ""
+msgstr "ເຄື່ອງມືດຶງລາກ"
 
 #. Default: Zoom In
 #: lmkp/views/translation.py:90
@@ -338,7 +344,7 @@ msgstr ""
 #. Default: Anonymous
 #: lmkp/views/translation.py:96
 msgid "gui_anonymous"
-msgstr ""
+msgstr "ບໍສະແດງຂໍ້ມູນສ່ວນຕົວ"
 
 #. Default: Clear Selection
 #: lmkp/views/translation.py:97
@@ -348,7 +354,7 @@ msgstr ""
 #. Default: Please confirm
 #: lmkp/views/translation.py:98
 msgid "gui_confirm"
-msgstr ""
+msgstr "ຢືນຢັນ"
 
 #. Default: You are seeing a {0} version, which needs to be reviewed before it
 #. is
@@ -386,7 +392,7 @@ msgstr ""
 #. Default: Date
 #: lmkp/views/translation.py:104
 msgid "gui_date"
-msgstr ""
+msgstr "ວັນທີ"
 
 #. Default: Delete all Filters
 #: lmkp/views/translation.py:105
@@ -416,7 +422,7 @@ msgstr ""
 #. Default: Language
 #: lmkp/views/translation.py:110
 msgid "gui_language"
-msgstr ""
+msgstr "ພາສາ"
 
 #. Default: No attributes to show
 #: lmkp/views/translation.py:112
@@ -441,7 +447,7 @@ msgstr ""
 #. Default: Profile
 #: lmkp/views/translation.py:116
 msgid "gui_profile"
-msgstr ""
+msgstr "ຂໍ້ມູນຂອງຜູ້ນຳໃຊ້"
 
 #. Default: Search
 #: lmkp/views/translation.py:117
@@ -461,7 +467,7 @@ msgstr ""
 #. Default: Unknown
 #: lmkp/views/translation.py:120
 msgid "gui_unknown"
-msgstr ""
+msgstr "ບໍ່ຮູ້"
 
 #. Default: User
 #: lmkp/views/translation.py:121
@@ -476,7 +482,7 @@ msgstr ""
 #. Default: Failure
 #: lmkp/views/translation.py:125
 msgid "feedback_failure"
-msgstr ""
+msgstr "ລົ້ມເລວ"
 
 #. Default: The activity was successfully created. It will be reviewed shortly.
 #: lmkp/views/translation.py:126
@@ -508,12 +514,12 @@ msgstr ""
 #. Default: Success
 #: lmkp/views/translation.py:131
 msgid "feedback_success"
-msgstr ""
+msgstr "ສຳເລັດ"
 
 #. Default: Add new Activity
 #: lmkp/views/translation.py:134
 msgid "activities_add-new-activity"
-msgstr ""
+msgstr "ປ້ອນຂໍ້ມູນສຳລັບໂຄງການໃໝ່"
 
 #. Default: Details on Activity
 #: lmkp/views/translation.py:135
@@ -554,7 +560,7 @@ msgstr ""
 #. Default: Activities
 #: lmkp/views/translation.py:142
 msgid "activities_title"
-msgstr ""
+msgstr "ໂຄງການ"
 
 #. Default: Edit this involvement
 #: lmkp/views/translation.py:145
@@ -632,32 +638,32 @@ msgstr ""
 #. Default: Comment by
 #: lmkp/views/translation.py:163
 msgid "comments_comment-by"
-msgstr ""
+msgstr "ຜູ້ປະກອບຄຳຄິດເຫັນ"
 
 #. Default: Do you really want to delete this comment?
 #: lmkp/views/translation.py:164
 msgid "comments_confirm-delete-comment"
-msgstr ""
+msgstr "ຢືນຢັນເພື່ອລຶບຄຳຄິດເຫັນ"
 
 #. Default: No comments yet.
 #: lmkp/views/translation.py:165
 msgid "comments_empty"
-msgstr ""
+msgstr "ບໍ່ມີຄຳຄິດເຫັນ"
 
 #. Default: Leave a comment
 #: lmkp/views/translation.py:166
 msgid "comments_leave-comment"
-msgstr ""
+msgstr "ຂຽນຄຳຄິດເຫັນ"
 
 #. Default: Comment
 #: lmkp/views/translation.py:167
 msgid "comments_singular"
-msgstr ""
+msgstr "ຄຳຄິດເຫັນ"
 
 #. Default: Comments
 #: lmkp/views/translation.py:168
 msgid "comments_title"
-msgstr ""
+msgstr "ຄຳຄິດເຫັນ"
 
 #. Default: These changes are based on a version which is not the active
 #. version.
@@ -780,15 +786,18 @@ msgstr ""
 msgid "filter_specify-text-value"
 msgstr ""
 
+#. Default: Username
 #: lmkp/views/viewers.py:25
 msgid "Username"
-msgstr ""
+msgstr "ຊື່ຜູ້ນຳໃຊ້"
 
+#. Default: Password
 #: lmkp/views/viewers.py:26
 msgid "Password"
-msgstr ""
+msgstr "ລະຫັດຜ່ານ"
 
+#. Default: Login
 #: lmkp/views/viewers.py:27
 msgid "Login"
-msgstr ""
+msgstr "ເຂົ້າສູ່ລະບົບ"
 
