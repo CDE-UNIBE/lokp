@@ -48,6 +48,7 @@ def main(global_config, ** settings):
 
     # Add papyrus includes
     config.include(papyrus.includeme)
+    config.include('pyramid_handlers')
     # Return a JavaScript model
     #config.add_route('taggroups_model', 'static/app/model/TagGroup.js')
     #config.add_renderer('geojson', GeoJSON())
@@ -90,8 +91,9 @@ def main(global_config, ** settings):
     config.add_route('activities_create', '/activities', request_method='POST')
 
     config.add_route('activities_review_versions', '/activities/review/{uid}')
-    config.add_route('activities_compare_versions', '/activities/compare/{output}/{uid}/{old}/{new}')
-    config.add_route('activities_compare', '/activities/compare/{output}/{uid}')
+    config.add_handler('activities_compare_versions',
+                       '/activities/compare/{action}/{uid}*versions',
+                       'lmkp.views.activity_review.ActivityReview')
 
     # Reviews a pending activity
     config.add_route('activities_review', '/activities/review', request_method='POST')
@@ -126,7 +128,9 @@ def main(global_config, ** settings):
 
     # Reviews a pending stakeholder
     config.add_route('stakeholders_review_versions', '/stakeholders/review/{uid}')
-    config.add_route('stakeholders_compare_versions', '/stakeholders/compare/{output}/{uid}/{old}/{new}')
+    config.add_handler('stakeholders_compare_versions',
+                       '/stakeholders/compare/{action}/{uid}*versions',
+                       'lmkp.views.stakeholder_review.StakeholderReview')
     config.add_route('stakeholders_compare', '/stakeholders/compare/{output}/{uid}')
     config.add_route('stakeholders_review', '/stakeholders/review', request_method='POST')
 

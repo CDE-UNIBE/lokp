@@ -2,14 +2,17 @@ __author__ = "Adrian Weber, Centre for Development and Environment, University o
 __date__ = "$Nov 20, 2012 4:05:32 PM$"
 
 from lmkp.models.database_objects import Activity
+from lmkp.models.database_objects import Changeset
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.review import BaseReview
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPSeeOther
 from pyramid.renderers import render_to_response
 from pyramid.view import view_config
 from sqlalchemy.sql.functions import max
+from pyramid_handlers import action
 
 log = logging.getLogger(__name__)
 
@@ -74,19 +77,10 @@ class ActivityReview(BaseReview):
         additional_vars['version'] = new_version
         return dict(self._compare_taggroups(old, new).items() + additional_vars.items())
 
-    #@view_config(route_name='activities_compare', renderer='lmkp:templates/compare_versions.mak', permission='moderate')
-    @view_config(route_name='activities_compare', renderer='json', permission='moderate')
-    def compare_activity(self, uid=None):
+    @action(name='html', renderer='lmkp:templates/compare_versions.mak', permission='moderate')
+    def compare_activity_html(self, uid=None):
 
         uid = self.request.matchdict.get('uid', None)
-
-        return self.compare_activity_by_versions(uid, 1, 1)
-
-    #@view_config(route_name='activities_compare_versions', renderer='lmkp:templates/compare_versions.mak', permission='moderate')
-    @view_config(route_name='activities_compare_versions', renderer='json', permission='moderate')
-    def compare_activity_by_versions(self, uid=None, old_version=None, new_version=None):
-
-        output = self.request.matchdict.get("output", "json")
 
         if uid is None:
             uid = self.request.matchdict.get('uid', None)
@@ -95,50 +89,43 @@ class ActivityReview(BaseReview):
         for i in Session.query(Activity.version).filter(Activity.activity_identifier == uid):
             available_versions.append(i[0])
 
-        if output not in ['html', 'json']:
-            raise HTTPBadRequest("Output format %s is invalid." % (output))
+        additional_params = {
+        'available_versions': available_versions
+        }
 
-        # If the requested format is HTML, render a Mako template
-        if output == "html":
-            return render_to_response('lmkp:templates/compare_versions.mak',
-                                      {'available_versions': available_versions},
-                                      self.request)
+        return additional_params
 
-        # else handle the JSON output:
+    @action(name='json', renderer='json', permission='moderate')
+    def compare_activity_by_versions_json(self):
 
+        uid = self.request.matchdict.get('uid', None)
 
-        if old_version is None:
-            old_version = int(self.request.matchdict.get('old', 1))
+        versions = self.request.matchdict.get('versions')
+        try:
+            old_version = int(versions[0])
+        except:
+            old_version = 1
 
-        if new_version is None:
-            new_version = int(self.request.matchdict.get('new', 1))
-
-        #if new_version < old_version:
-        #    raise HTTPBadRequest("Reference version %s is older than new version %s" % (old_version, new_version))
+        try:
+            new_version = int(versions[1])
+        except:
+            new_version = 1
 
         old = self.activity_protocol3.read_one_by_version(self.request, uid, old_version)
+
+        ref_timestamp = Session.query(Changeset.timestamp).join(Activity).filter(Activity.activity_identifier == uid).filter(Activity.version == old_version).first()
+        new_timestamp = Session.query(Changeset.timestamp).join(Activity).filter(Activity.activity_identifier == uid).filter(Activity.version == new_version).first()
+
+        additional_params = {
+        'ref_title': "Version %s as of %s" % (old_version, ref_timestamp[0].strftime('%H:%M, %d-%b-%Y')),
+        'new_title': "Version %s as of %s" % (new_version, new_timestamp[0].strftime('%H:%M, %d-%b-%Y'))
+        }
 
         try:
             new = self.activity_protocol3.read_one_by_version(self.request, uid, new_version)
         except IndexError:
-            return HTTPFound(self.request.route_url('activities_compare_versions', uid=uid, old=old_version, new=str(new_version-1)))
+            return HTTPSeeOther(self.request.route_url('activities_compare_versions', action='json', uid=uid, old=old_version, new=str(new_version-1)))
 
-
-
-        compare_url = "/activities/compare/%s" % uid
-
-        add_ons = {
-        'available_versions': available_versions
-        #'compare_url': compare_url,
-        #'ref_version': old_version,
-        #'new_version': new_version,
-        #'type': 'activities',
-        #'other_type': 'stakeholders'
-        }
-
-        result = dict(self._compare_taggroups(old, new).items() + add_ons.items())
-
-        print "**********************************"
-        print result
+        result = dict(self._compare_taggroups(old, new).items() + additional_params.items())
 
         return result
