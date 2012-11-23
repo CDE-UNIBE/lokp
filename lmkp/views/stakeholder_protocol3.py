@@ -1,9 +1,8 @@
-import logging
-
 from lmkp.models.database_objects import *
 from lmkp.views.protocol import *
 from lmkp.views.translation import get_translated_status
 from lmkp.views.translation import statusMap
+import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.i18n import get_localizer
 from pyramid.security import authenticated_userid
@@ -14,6 +13,27 @@ from sqlalchemy.sql.expression import desc
 from sqlalchemy.sql.expression import not_
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.expression import select
+
+
+class StakeholderFeature3(Feature):
+
+    def to_tags(self):
+
+        repr = []
+        c = []
+        n = []
+        for tg in self._taggroups:
+
+            for t in tg.get_tags():
+                if t.get_key() == 'Country':
+                    c.append(t.get_value())
+                if t.get_key() == 'Name':
+                    n.append(t.get_value())
+
+        repr.append({"key": "Country", 'value': ','.join(c)})
+        repr.append({"key": "Name", 'value': ','.join(n)})
+
+        return repr
 
 class StakeholderProtocol3(Protocol):
 
@@ -880,7 +900,7 @@ class StakeholderProtocol3(Protocol):
                         stakeholder = sh
 
             if stakeholder == None:
-                stakeholder = Feature(
+                stakeholder = StakeholderFeature3(
                                       identifier, q.order_value, version=q.version,
                                       timestamp=q.timestamp, status=q.status,
                                       status_id=q.status_id
