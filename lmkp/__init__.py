@@ -90,8 +90,8 @@ def main(global_config, ** settings):
     config.add_route('activities_create', '/activities', request_method='POST')
 
     config.add_route('activities_review_versions', '/activities/review/{uid}')
-    config.add_route('activities_compare_versions', '/activities/compare/{uid}/{old}/{new}')
-    config.add_route('activities_compare', '/activities/compare/{uid}')
+    config.add_route('activities_compare_versions', '/activities/compare/{output}/{uid}/{old}/{new}')
+    config.add_route('activities_compare', '/activities/compare/{output}/{uid}')
 
     # Reviews a pending activity
     config.add_route('activities_review', '/activities/review', request_method='POST')
@@ -126,8 +126,8 @@ def main(global_config, ** settings):
 
     # Reviews a pending stakeholder
     config.add_route('stakeholders_review_versions', '/stakeholders/review/{uid}')
-    config.add_route('stakeholders_compare_versions', '/stakeholders/compare/{uid}/{old}/{new}')
-    config.add_route('stakeholders_compare', '/stakeholders/compare/{uid}')
+    config.add_route('stakeholders_compare_versions', '/stakeholders/compare/{output}/{uid}/{old}/{new}')
+    config.add_route('stakeholders_compare', '/stakeholders/compare/{output}/{uid}')
     config.add_route('stakeholders_review', '/stakeholders/review', request_method='POST')
 
     # Read one (special cases)
