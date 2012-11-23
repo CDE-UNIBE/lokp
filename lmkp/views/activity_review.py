@@ -4,10 +4,13 @@ __date__ = "$Nov 20, 2012 4:05:32 PM$"
 from lmkp.models.database_objects import Activity
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.review import BaseReview
+import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 from sqlalchemy.sql.functions import max
+
+log = logging.getLogger(__name__)
 
 class ActivityReview(BaseReview):
 
@@ -71,6 +74,7 @@ class ActivityReview(BaseReview):
         return dict(self._compare_taggroups(old, new).items() + additional_vars.items())
 
     @view_config(route_name='activities_compare', renderer='lmkp:templates/compare_versions.mak', permission='moderate')
+    #@view_config(route_name='activities_compare', renderer='json', permission='moderate')
     def compare_activity(self, uid=None):
 
         uid = self.request.matchdict.get('uid', None)
@@ -78,6 +82,7 @@ class ActivityReview(BaseReview):
         return self.compare_activity_by_versions(uid, 1, 1)
 
     @view_config(route_name='activities_compare_versions', renderer='lmkp:templates/compare_versions.mak', permission='moderate')
+    #@view_config(route_name='activities_compare_versions', renderer='json', permission='moderate')
     def compare_activity_by_versions(self, uid=None, old_version=None, new_version=None):
 
         if uid is None:
@@ -109,6 +114,8 @@ class ActivityReview(BaseReview):
         'available_versions': available_versions,
         'compare_url': compare_url,
         'ref_version': old_version,
-        'new_version': new_version
+        'new_version': new_version,
+        'type': 'activities',
+        'other_type': 'stakeholders'
         }
         return dict(self._compare_taggroups(old, new).items() + add_ons.items())

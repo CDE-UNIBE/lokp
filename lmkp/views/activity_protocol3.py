@@ -1,28 +1,25 @@
-import logging
-
-import uuid
-import simplejson as json
-
+from geoalchemy import WKBSpatialElement
+from geoalchemy.functions import functions
 from lmkp.models.database_objects import *
 from lmkp.views.protocol import *
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
-from lmkp.views.translation import statusMap
 from lmkp.views.translation import get_translated_status
-
-from geoalchemy import WKBSpatialElement
-from geoalchemy.functions import functions
+from lmkp.views.translation import statusMap
+import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.i18n import get_localizer
 from pyramid.security import authenticated_userid
 from shapely.geometry import asShape
 from shapely.geometry.polygon import Polygon
+import simplejson as json
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import asc
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.sql.expression import desc
-from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.expression import not_
+from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.expression import select
+import uuid
 
 
 log = logging.getLogger(__name__)
@@ -33,7 +30,7 @@ class ActivityFeature3(Feature):
     """
 
     def __init__(self, guid, order_value, geometry=None, version=None,
-        status=None, status_id=None, timestamp=None):
+                 status=None, status_id=None, timestamp=None):
         self._taggroups = []
         self._involvements = []
         self._guid = guid
@@ -43,6 +40,28 @@ class ActivityFeature3(Feature):
         self._status = status
         self._status_id = status_id
         self._timestamp = timestamp
+
+    def to_tags(self):
+
+        repr = []
+        c = []
+        a = []
+        i = []
+        for tg in self._taggroups:
+
+            for t in tg.get_tags():
+                if t.get_key() == 'Country':
+                    c.append(t.get_value())
+                if t.get_key() == 'Contract area (ha)':
+                    a.append(t.get_value())
+                if t.get_key() == 'Intention of Investment':
+                    i.append(t.get_value())
+
+        repr.append({"key": "Country", 'value': ','.join(c)})
+        repr.append({"key": "Contract area (ha)", 'value': ','.join(a)})
+        repr.append({"key": "Intention of Investment", 'value': ','.join(i)})
+
+        return repr
 
     def get_geometry(self):
         return self._geometry
@@ -144,10 +163,10 @@ class ActivityProtocol3(Protocol):
         inv_details = request.params.get('involvements', 'full')
 
         query, count = self._query_many(request, relevant_activities,
-            involvements=inv_details!='none')
+                                        involvements=inv_details != 'none')
 
         activities = self._query_to_activities(request, query,
-            involvements=inv_details, public_query=True)
+                                               involvements=inv_details, public_query=True)
 
         return {
             'total': count,
@@ -163,10 +182,10 @@ class ActivityProtocol3(Protocol):
         inv_details = 'full' #request.params.get('involvements', 'full')
 
         query, count = self._query_many(request, relevant_activities,
-            involvements=True)
+                                        involvements=True)
 
         activities = self._query_to_activities(request, query,
-            involvements=inv_details, public_query=True)
+                                               involvements=inv_details, public_query=True)
 
         return activities[0]
 
@@ -174,7 +193,7 @@ class ActivityProtocol3(Protocol):
     def read_one(self, request, uid, public=True):
 
         relevant_activities = self._get_relevant_activities_one(request, uid,
-            public_query=public)
+                                                                public_query=public)
 
         # Determine if and how detailed Involvements are to be displayed.
         # Default is: 'full'
@@ -186,13 +205,13 @@ class ActivityProtocol3(Protocol):
         offset = self._get_offset(request)
 
         query, count = self._query_many(request, relevant_activities,
-            limit=limit, offset=offset, involvements=inv_details!='none')
+                                        limit=limit, offset=offset, involvements=inv_details != 'none')
 
         # Order the Activity by version
         query = query.order_by(desc(Activity.version))
 
         activities = self._query_to_activities(request, query,
-            involvements=inv_details, public_query=public)
+                                               involvements=inv_details, public_query=public)
 
         return {
             'total': count,
@@ -202,7 +221,7 @@ class ActivityProtocol3(Protocol):
     def read_many(self, request, public=True):
 
         relevant_activities = self._get_relevant_activities_many(
-            request, public_query=public)
+                                                                 request, public_query=public)
 
         # Determine if and how detailed Involvements are to be displayed.
         # Default is: 'full'
@@ -214,11 +233,11 @@ class ActivityProtocol3(Protocol):
         offset = self._get_offset(request)
 
         query, count = self._query_many(
-            request, relevant_activities, limit=limit, offset=offset,
-            involvements=inv_details!='none')
+                                        request, relevant_activities, limit=limit, offset=offset,
+                                        involvements=inv_details != 'none')
 
         activities = self._query_to_activities(
-            request, query, involvements=inv_details, public_query=public)
+                                               request, query, involvements=inv_details, public_query=public)
 
         return {
             'total': count,
@@ -228,7 +247,7 @@ class ActivityProtocol3(Protocol):
     def read_many_by_stakeholder(self, request, uid, public=True):
 
         relevant_activities = self._get_relevant_activities_by_stakeholder(
-            request, uid, public_query=public)
+                                                                           request, uid, public_query=public)
 
         # Determine if and how detailed Involvements are to be displayed.
         # Default is: 'full'
@@ -240,11 +259,11 @@ class ActivityProtocol3(Protocol):
         offset = self._get_offset(request)
 
         query, count = self._query_many(
-            request, relevant_activities, limit=limit, offset=offset,
-            involvements=inv_details!='none')
+                                        request, relevant_activities, limit=limit, offset=offset,
+                                        involvements=inv_details != 'none')
 
         activities = self._query_to_activities(
-            request, query, involvements=inv_details, public_query=public)
+                                               request, query, involvements=inv_details, public_query=public)
 
         return {
             'total': count,
@@ -254,7 +273,7 @@ class ActivityProtocol3(Protocol):
     def read_many_geojson(self, request, public=True):
 
         relevant_activities = self._get_relevant_activities_many(
-            request, public_query=public)
+                                                                 request, public_query=public)
 
         # Get limit and offset from request.
         # Defaults: limit = None / offset = 0
@@ -262,23 +281,23 @@ class ActivityProtocol3(Protocol):
         offset = self._get_offset(request)
 
         query = self._query_geojson(relevant_activities, limit=limit,
-            offset=offset)
+                                    offset=offset)
 
         return self._query_to_geojson(query)
 
     def _get_relevant_activities_one_by_version(self, uid, version):
         # Create relevant Activities
         relevant_activities = self.Session.query(
-                Activity.id.label('order_id'),
-                func.char_length('').label('order_value'),
-                Activity.fk_status,
-                Activity.activity_identifier
-            ).\
+                                                 Activity.id.label('order_id'),
+                                                 func.char_length('').label('order_value'),
+                                                 Activity.fk_status,
+                                                 Activity.activity_identifier
+                                                 ).\
             outerjoin(A_Tag_Group).\
             filter(Activity.activity_identifier == uid).\
             filter(Activity.version == version).\
             group_by(Activity.id, Activity.fk_status,
-                Activity.activity_identifier, func.char_length(''))
+                     Activity.activity_identifier, func.char_length(''))
 
         return relevant_activities
 
@@ -287,16 +306,16 @@ class ActivityProtocol3(Protocol):
 
         # Create relevant Activities
         relevant_activities = self.Session.query(
-                Activity.id.label('order_id'),
-                func.char_length('').label('order_value'),
-                Activity.fk_status,
-                Activity.activity_identifier
-            ).\
+                                                 Activity.id.label('order_id'),
+                                                 func.char_length('').label('order_value'),
+                                                 Activity.fk_status,
+                                                 Activity.activity_identifier
+                                                 ).\
             outerjoin(A_Tag_Group).\
             filter(Activity.activity_identifier == uid).\
             filter(Activity.fk_status == 2).\
             group_by(Activity.id, Activity.fk_status,
-                Activity.activity_identifier, func.char_length(''))
+                     Activity.activity_identifier, func.char_length(''))
 
         return relevant_activities
 
@@ -306,29 +325,29 @@ class ActivityProtocol3(Protocol):
         """
 
         logged_in, is_moderator = self._get_user_status(
-            effective_principals(request))
+                                                        effective_principals(request))
 
         # Prepare dummy order query
         order_query = self.Session.query(
-                Activity.id,
-                func.char_length('').label('value') # Dummy value
-            ).\
+                                         Activity.id,
+                                         func.char_length('').label('value') # Dummy value
+                                         ).\
             subquery()
 
         # Prepare status filter
         status_filter = self.Session.query(
-                Status.id
-            ).\
+                                           Status.id
+                                           ).\
             filter(or_(* self._get_status_detail(request, public_query)))
 
         # Create relevant Activities
         relevant_activities = self.Session.query(
-            Activity.id.label('order_id'),
-            order_query.c.value.label('order_value'),
-            Activity.fk_status,
-            Activity.activity_identifier,
-            Activity.version
-        )
+                                                 Activity.id.label('order_id'),
+                                                 order_query.c.value.label('order_value'),
+                                                 Activity.fk_status,
+                                                 Activity.activity_identifier,
+                                                 Activity.version
+                                                 )
 
         # Filter by UID
         relevant_activities = relevant_activities.\
@@ -348,15 +367,15 @@ class ActivityProtocol3(Protocol):
         if logged_in and public_query is False and not is_moderator:
 
             request_user_id = (request.user.id if request.user is not None
-                else None)
+                               else None)
 
             pending_activities = self.Session.query(
-                Activity.id.label('order_id'),
-                order_query.c.value.label('order_value'),
-                Activity.fk_status,
-                Activity.activity_identifier,
-                Activity.version
-            )
+                                                    Activity.id.label('order_id'),
+                                                    order_query.c.value.label('order_value'),
+                                                    Activity.fk_status,
+                                                    Activity.activity_identifier,
+                                                    Activity.version
+                                                    )
 
             pending_activities = pending_activities.\
                 join(Changeset).\
@@ -373,8 +392,8 @@ class ActivityProtocol3(Protocol):
         # Join Activities with Tag Groups and order_query, then group it
         relevant_activities = relevant_activities.\
             group_by(Activity.id, Activity.fk_status,
-                Activity.activity_identifier, order_query.c.value,
-                Activity.version)
+                     Activity.activity_identifier, order_query.c.value,
+                     Activity.version)
 
         return relevant_activities
 
@@ -388,22 +407,22 @@ class ActivityProtocol3(Protocol):
         dict_filter = []
         for d in dicts:
             dict_filter.append(and_(
-                Activity.activity_identifier == d['identifier'],
-                Activity.version == d['version']
-            ))
+                               Activity.activity_identifier == d['identifier'],
+                               Activity.version == d['version']
+                               ))
         
         # Prepare order: Get the order from request
         order_query, order_numbers = self._get_order(
-            request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value
-        )
+                                                     request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value
+                                                     )
         
         # Create relevant Activities
         relevant_activities = self.Session.query(
-            Activity.id.label('order_id'),
-            order_query.c.value.label('order_value'),
-            Activity.fk_status,
-            Activity.activity_identifier
-        )
+                                                 Activity.id.label('order_id'),
+                                                 order_query.c.value.label('order_value'),
+                                                 Activity.fk_status,
+                                                 Activity.activity_identifier
+                                                 )
 
         # Dict filter
         relevant_activities = relevant_activities.filter(or_(*dict_filter))
@@ -413,7 +432,7 @@ class ActivityProtocol3(Protocol):
             outerjoin(A_Tag_Group).\
             outerjoin(order_query, order_query.c.id == Activity.id).\
             group_by(Activity.id, order_query.c.value, Activity.fk_status,
-            Activity.activity_identifier)
+                     Activity.activity_identifier)
 
         # Do the ordering
         if order_numbers is not None:
@@ -422,26 +441,26 @@ class ActivityProtocol3(Protocol):
                 if order_numbers is True:
                     # Order by numbers: Cast values to float
                     relevant_activities = relevant_activities.order_by(
-                        desc(cast(order_query.c.value, Float)))
+                                                                       desc(cast(order_query.c.value, Float)))
                 else:
                     # Order alphabetically
                     relevant_activities = relevant_activities.order_by(
-                        desc(order_query.c.value))
+                                                                       desc(order_query.c.value))
             else:
                 # Ascending
                 if order_numbers is True:
                     # Order by numbers: Cast values to float
                     relevant_activities = relevant_activities.order_by(
-                        asc(cast(order_query.c.value, Float)))
+                                                                       asc(cast(order_query.c.value, Float)))
                 else:
                     # Order alphabetically
                     relevant_activities = relevant_activities.order_by(
-                        asc(order_query.c.value))
+                                                                       asc(order_query.c.value))
 
         return relevant_activities
 
     def _get_relevant_activities_many(self, request, filter=None,
-        public_query=False):
+                                      public_query=False):
         """
         ''filter'': An optional custom filter.
         ''public_query'': If set to true, no pending queries are made. Defaults
@@ -449,16 +468,16 @@ class ActivityProtocol3(Protocol):
         """
 
         logged_in, is_moderator = self._get_user_status(
-            effective_principals(request))
+                                                        effective_principals(request))
 
         # Filter: If no custom filter was provided, get filters from request
         if filter is None:
             status_filter = self.Session.query(
-                    Status.id
-                ).\
+                                               Status.id
+                                               ).\
                 filter(or_(* self._get_status(request)))
             (a_tag_filter, a_filter_length, sh_tag_filter, sh_filter_length
-            ) = self._filter(request)
+             ) = self._filter(request)
         else:
             status_filter = (filter['status_filter']
                              if 'status_filter' in filter else None)
@@ -483,11 +502,11 @@ class ActivityProtocol3(Protocol):
                 # Collect the Activity IDs for each filter
                 taggroups_sq = x.subquery()
                 single_subquery = self.Session.query(
-                        Activity.id.label('a_filter_id')
-                    ).\
+                                                     Activity.id.label('a_filter_id')
+                                                     ).\
                     join(A_Tag_Group).\
                     join(taggroups_sq,
-                        taggroups_sq.c.a_filter_tg_id == A_Tag_Group.id)
+                         taggroups_sq.c.a_filter_tg_id == A_Tag_Group.id)
                 all_subqueries.append(single_subquery)
             # Put all found Activity IDs together (UNION)
             filter_subqueries = all_subqueries[0].\
@@ -496,43 +515,43 @@ class ActivityProtocol3(Protocol):
         else:
             # AND
             filter_subqueries = self.Session.query(
-                Activity.id.label('a_filter_id')
-            )
+                                                   Activity.id.label('a_filter_id')
+                                                   )
             for x in a_tag_filter:
                 # Collect the Activity IDs for each filter
                 taggroups_sq = x.subquery()
                 single_subquery = self.Session.query(
-                        Activity.id.label('a_filter_id')
-                    ).\
+                                                     Activity.id.label('a_filter_id')
+                                                     ).\
                     join(A_Tag_Group).\
                     join(taggroups_sq,
-                        taggroups_sq.c.a_filter_tg_id == A_Tag_Group.id).\
+                         taggroups_sq.c.a_filter_tg_id == A_Tag_Group.id).\
                     subquery()
                 # Join each found Activity ID with previously found IDs
                 filter_subqueries = filter_subqueries.\
                     join(single_subquery,
-                        single_subquery.c.a_filter_id == Activity.id)
+                         single_subquery.c.a_filter_id == Activity.id)
             filter_subqueries = filter_subqueries.subquery()
 
         # Prepare order: Get the order from request
         order_query, order_numbers = self._get_order(
-            request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value
-        )
+                                                     request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value
+                                                     )
 
         # Create relevant Activities
         relevant_activities = self.Session.query(
-            Activity.id.label('order_id'),
-            order_query.c.value.label('order_value'),
-            Activity.fk_status,
-            Activity.activity_identifier
-        )
+                                                 Activity.id.label('order_id'),
+                                                 order_query.c.value.label('order_value'),
+                                                 Activity.fk_status,
+                                                 Activity.activity_identifier
+                                                 )
 
         # Join Activities with TagGroups
         if filter_subqueries is not None:
             # If a filter was provided, join with filtered subqueries
             relevant_activities = relevant_activities.\
                 join(filter_subqueries,
-                    filter_subqueries.c.a_filter_id == Activity.id)
+                     filter_subqueries.c.a_filter_id == Activity.id)
         else:
             # If no filter was provided, simply join with A_Tag_Group (outer
             # join to also capture empty Items)
@@ -564,9 +583,9 @@ class ActivityProtocol3(Protocol):
             # It is necessary to first find out if there are Activities pending
             # and if yes, which is the latest version
             latest_pending_activities = self.Session.query(
-                    Activity.activity_identifier,
-                    func.max(Activity.version).label('max_version')
-                ).\
+                                                           Activity.activity_identifier,
+                                                           func.max(Activity.version).label('max_version')
+                                                           ).\
                 join(Changeset).\
                 filter(Activity.fk_status == 1)
 
@@ -582,16 +601,16 @@ class ActivityProtocol3(Protocol):
 
             # Collect other information about pending Activities (order, ...)
             pending_activities = self.Session.query(
-                    Activity.id.label('order_id'),
-                    order_query.c.value.label('order_value'),
-                    Activity.fk_status,
-                    Activity.activity_identifier
-                ).\
+                                                    Activity.id.label('order_id'),
+                                                    order_query.c.value.label('order_value'),
+                                                    Activity.fk_status,
+                                                    Activity.activity_identifier
+                                                    ).\
                 join(latest_pending_activities, and_(
-                    latest_pending_activities.c.max_version == Activity.version,
-                    latest_pending_activities.c.activity_identifier
-                        == Activity.activity_identifier
-                ))
+                     latest_pending_activities.c.max_version == Activity.version,
+                     latest_pending_activities.c.activity_identifier
+                     == Activity.activity_identifier
+                     ))
 
             # Join pending Activities with TagGroups and filters to find out if
             # they are to be displayed at all
@@ -599,7 +618,7 @@ class ActivityProtocol3(Protocol):
                 # If a filter was provided, join with filtered subqueries
                 pending_activities = pending_activities.\
                     join(filter_subqueries,
-                        filter_subqueries.c.a_filter_id == Activity.id)
+                         filter_subqueries.c.a_filter_id == Activity.id)
             else:
                 # If no filter was provided, simply join with A_Tag_Group (outer
                 # join to also capture empty Items)
@@ -622,21 +641,21 @@ class ActivityProtocol3(Protocol):
             pending_activities = pending_activities.\
                 outerjoin(order_query, order_query.c.id == Activity.id).\
                 group_by(Activity.activity_identifier, Activity.id,
-                    order_query.c.value)
+                         order_query.c.value)
 
             # Filter out the active Activities if they have a pending version.
             # Then union with pending Activities.
             relevant_activities = relevant_activities.filter(
-                not_(Activity.activity_identifier.in_(
-                    select([pending_activities.\
-                        subquery().c.activity_identifier])
-                ))
-            )
+                                                             not_(Activity.activity_identifier.in_(
+                                                             select([pending_activities.\
+                                                             subquery().c.activity_identifier])
+                                                             ))
+                                                             )
             relevant_activities = pending_activities.union(relevant_activities)
 
         relevant_activities = relevant_activities.\
             group_by(Activity.id, order_query.c.value, Activity.fk_status,
-            Activity.activity_identifier)
+                     Activity.activity_identifier)
 
         # Filter based on Stakeholder attributes
         if sh_filter_length > 0:
@@ -649,22 +668,22 @@ class ActivityProtocol3(Protocol):
             # Use StakeholderProtocol to query id's of Stakeholders
             sp = StakeholderProtocol3(self.Session)
             rel_sh = sp._get_relevant_stakeholders_many(
-                request, filter=sh_filter_dict)
+                                                        request, filter=sh_filter_dict)
             sh_query = sp._query_only_id(rel_sh)
             sh_subquery = sh_query.subquery()
             if self._get_logical_operator(request) == 'or':
                 # OR: use 'union' to add id's to relevant_activities
                 relevant_activities = relevant_activities.\
                     union(self.Session.query(
-                            Activity.id.label('order_id'),
-                            func.char_length('').label('order_value'), # dummy
-                            Activity.fk_status,
-                            Activity.activity_identifier
-                        ).\
-                        join(Involvement).\
-                        join(sh_subquery, sh_subquery.c.id ==
-                            Involvement.fk_stakeholder).\
-                        group_by(Activity.id))
+                          Activity.id.label('order_id'),
+                          func.char_length('').label('order_value'), # dummy
+                          Activity.fk_status,
+                          Activity.activity_identifier
+                          ).\
+                          join(Involvement).\
+                          join(sh_subquery, sh_subquery.c.id ==
+                          Involvement.fk_stakeholder).\
+                          group_by(Activity.id))
             else:
                 # AND: filter id's of relevant_activities
                 relevant_activities = relevant_activities.\
@@ -680,35 +699,35 @@ class ActivityProtocol3(Protocol):
                 if order_numbers is True:
                     # Order by numbers: Cast values to float
                     relevant_activities = relevant_activities.order_by(
-                        desc(cast(order_query.c.value, Float)))
+                                                                       desc(cast(order_query.c.value, Float)))
                 else:
                     # Order alphabetically
                     relevant_activities = relevant_activities.order_by(
-                        desc(order_query.c.value))
+                                                                       desc(order_query.c.value))
             else:
                 # Ascending
                 if order_numbers is True:
                     # Order by numbers: Cast values to float
                     relevant_activities = relevant_activities.order_by(
-                        asc(cast(order_query.c.value, Float)))
+                                                                       asc(cast(order_query.c.value, Float)))
                 else:
                     # Order alphabetically
                     relevant_activities = relevant_activities.order_by(
-                        asc(order_query.c.value))
+                                                                       asc(order_query.c.value))
 
         return relevant_activities
 
     def _get_relevant_activities_by_stakeholder(self, request, uid,
-        public_query=False):
+                                                public_query=False):
 
         logged_in, is_moderator = self._get_user_status(
-            effective_principals(request))
+                                                        effective_principals(request))
 
         # Use StakeholderProtocol to query the Stakeholder versions
         # corresponding to given uid
         sp = StakeholderProtocol3(self.Session)
         relevant_stakeholders = sp._get_relevant_stakeholders_one(request,
-            uid=uid, public_query=public_query)
+                                                                  uid=uid, public_query=public_query)
 
         # Always take the latest one.
         relevant_stakeholders = relevant_stakeholders.\
@@ -717,30 +736,30 @@ class ActivityProtocol3(Protocol):
 
         # Prepare status filter
         status_filter = self.Session.query(
-                    Status.id
-                ).\
-                filter(or_(* self._get_status(request)))
+                                           Status.id
+                                           ).\
+            filter(or_(* self._get_status(request)))
 
         # Prepare order: Get the order from request
         order_query, order_numbers = self._get_order(
-            request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value
-        )
+                                                     request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value
+                                                     )
 
         # Create relevant Activities
         relevant_activities = self.Session.query(
-            Activity.id.label('order_id'),
-            order_query.c.value.label('order_value'),
-            Activity.fk_status,
-            Activity.activity_identifier
-        )
+                                                 Activity.id.label('order_id'),
+                                                 order_query.c.value.label('order_value'),
+                                                 Activity.fk_status,
+                                                 Activity.activity_identifier
+                                                 )
 
         # Filter trough Involvements to only take Activities involved with
         # relevant Stakeholder
         relevant_activities = relevant_activities.\
             join(Involvement).\
             filter(Involvement.fk_stakeholder.in_(
-                select([relevant_stakeholders.c.order_id])
-            ))
+                   select([relevant_stakeholders.c.order_id])
+                   ))
 
         # Join Activities with Tag Groups and order_query, then group it
         relevant_activities = relevant_activities.\
@@ -755,9 +774,9 @@ class ActivityProtocol3(Protocol):
             # It is necessary to first find out, if there are Activities
             # pending and if yes, which is the latest version
             latest_pending_activities = self.Session.query(
-                    Activity.activity_identifier,
-                    func.max(Activity.version).label('max_version')
-                ).\
+                                                           Activity.activity_identifier,
+                                                           func.max(Activity.version).label('max_version')
+                                                           ).\
                 join(Changeset).\
                 filter(Activity.fk_status == 1)
             
@@ -773,47 +792,47 @@ class ActivityProtocol3(Protocol):
 
             # Collect other information about pending Activities (order, ...)
             pending_activities = self.Session.query(
-                    Activity.id.label('order_id'),
-                    order_query.c.value.label('order_value'),
-                    Activity.fk_status,
-                    Activity.activity_identifier
-                ).\
+                                                    Activity.id.label('order_id'),
+                                                    order_query.c.value.label('order_value'),
+                                                    Activity.fk_status,
+                                                    Activity.activity_identifier
+                                                    ).\
                 join(latest_pending_activities, and_(
-                    latest_pending_activities.c.max_version
-                        == Activity.version,
-                    latest_pending_activities.c.activity_identifier
-                        == Activity.activity_identifier
-                ))
+                     latest_pending_activities.c.max_version
+                     == Activity.version,
+                     latest_pending_activities.c.activity_identifier
+                     == Activity.activity_identifier
+                     ))
 
             # Filter trough Involvements to only take Activities involved with
             # relevant Stakeholder
             pending_activities = pending_activities.\
                 join(Involvement).\
                 filter(Involvement.fk_stakeholder.in_(
-                    select([relevant_stakeholders.c.order_id])
-                ))
+                       select([relevant_stakeholders.c.order_id])
+                       ))
 
             # Join Activities with Tag Groups and order_query, then group it
             pending_activities = pending_activities.\
                 outerjoin(A_Tag_Group).\
                 outerjoin(order_query, order_query.c.id == Activity.id).\
                 group_by(Activity.activity_identifier, Activity.id,
-                    order_query.c.value)
+                         order_query.c.value)
 
             # Filter out the active Activities if they have a pending version.
             # Then union with pending Activities.
             relevant_activities = relevant_activities.filter(
-                not_(Activity.activity_identifier.in_(
-                    select([pending_activities.subquery().\
-                    c.activity_identifier])
-                ))
-            )
+                                                             not_(Activity.activity_identifier.in_(
+                                                             select([pending_activities.subquery().\
+                                                             c.activity_identifier])
+                                                             ))
+                                                             )
             relevant_activities = pending_activities.union(
-                relevant_activities)
+                                                           relevant_activities)
 
         relevant_activities = relevant_activities.\
             group_by(Activity.id, order_query.c.value, Activity.fk_status,
-            Activity.activity_identifier)
+                     Activity.activity_identifier)
 
         # Do the ordering
         if order_numbers is not None:
@@ -822,21 +841,21 @@ class ActivityProtocol3(Protocol):
                 if order_numbers is True:
                     # Order by numbers: Cast values to float
                     relevant_activities = relevant_activities.order_by(
-                        desc(cast(order_query.c.value, Float)))
+                                                                       desc(cast(order_query.c.value, Float)))
                 else:
                     # Order alphabetically
                     relevant_activities = relevant_activities.order_by(
-                        desc(order_query.c.value))
+                                                                       desc(order_query.c.value))
             else:
                 # Ascending
                 if order_numbers is True:
                     # Order by numbers: Cast values to float
                     relevant_activities = relevant_activities.order_by(
-                        asc(cast(order_query.c.value, Float)))
+                                                                       asc(cast(order_query.c.value, Float)))
                 else:
                     # Order alphabetically
                     relevant_activities = relevant_activities.order_by(
-                        asc(order_query.c.value))
+                                                                       asc(order_query.c.value))
 
         return relevant_activities
 
@@ -845,15 +864,15 @@ class ActivityProtocol3(Protocol):
         # Create query
         relevant_activities = relevant_activities.subquery()
         query = self.Session.query(
-                Stakeholder.id.label('id')
-            ).\
+                                   Stakeholder.id.label('id')
+                                   ).\
             join(relevant_activities,
-                relevant_activities.c.order_id == Stakeholder.id)
+                 relevant_activities.c.order_id == Stakeholder.id)
 
         return query
 
     def _query_many(self, request, relevant_activities, limit=None, offset=None,
-        involvements=False, return_count=True):
+                    involvements=False, return_count=True):
         # Prepare query to translate keys and values
         localizer = get_localizer(request)
         lang = None if localizer.locale_name == 'en' \
@@ -861,7 +880,7 @@ class ActivityProtocol3(Protocol):
                 filter(Language.locale == localizer.locale_name).\
                 first()
         key_translation, value_translation = self._get_translatedKV(lang, A_Key,
-            A_Value)
+                                                                    A_Value)
         
         # Count
         if return_count:
@@ -876,25 +895,25 @@ class ActivityProtocol3(Protocol):
         # Create query
         relevant_activities = relevant_activities.subquery()
         query = self.Session.query(
-                Activity.id.label('id'),
-                Activity.activity_identifier.label('identifier'),
-                Activity.point.label('geometry'),
-                Activity.version.label('version'),
-                Status.id.label('status_id'),
-                Status.name.label('status'),
-                Changeset.timestamp.label('timestamp'),
-                A_Tag_Group.id.label('taggroup'),
-                A_Tag_Group.tg_id.label('tg_id'),
-                A_Tag_Group.fk_a_tag.label('main_tag'),
-                A_Tag.id.label('tag'),
-                A_Key.key.label('key'),
-                A_Value.value.label('value'),
-                key_translation.c.key_translated.label('key_translated'),
-                value_translation.c.value_translated.label('value_translated'),
-                relevant_activities.c.order_value.label('order_value')
-            ).\
+                                   Activity.id.label('id'),
+                                   Activity.activity_identifier.label('identifier'),
+                                   Activity.point.label('geometry'),
+                                   Activity.version.label('version'),
+                                   Status.id.label('status_id'),
+                                   Status.name.label('status'),
+                                   Changeset.timestamp.label('timestamp'),
+                                   A_Tag_Group.id.label('taggroup'),
+                                   A_Tag_Group.tg_id.label('tg_id'),
+                                   A_Tag_Group.fk_a_tag.label('main_tag'),
+                                   A_Tag.id.label('tag'),
+                                   A_Key.key.label('key'),
+                                   A_Value.value.label('value'),
+                                   key_translation.c.key_translated.label('key_translated'),
+                                   value_translation.c.value_translated.label('value_translated'),
+                                   relevant_activities.c.order_value.label('order_value')
+                                   ).\
             join(relevant_activities,
-                relevant_activities.c.order_id == Activity.id).\
+                 relevant_activities.c.order_id == Activity.id).\
             join(Status).\
             join(Changeset).\
             outerjoin(A_Tag_Group).\
@@ -902,40 +921,40 @@ class ActivityProtocol3(Protocol):
             outerjoin(A_Key).\
             outerjoin(A_Value).\
             outerjoin(key_translation,
-                key_translation.c.key_original_id == A_Key.id).\
+                      key_translation.c.key_original_id == A_Key.id).\
             outerjoin(value_translation,
-                value_translation.c.value_original_id == A_Value.id)
+                      value_translation.c.value_original_id == A_Value.id)
 
         if involvements:
             inv_status_filter = self.Session.query(
-                    Status.id
-                ).\
+                                                   Status.id
+                                                   ).\
                 filter(or_(* self._get_involvement_status(request)))
 
             log.debug("Involvement Status Filter:\n%s" % inv_status_filter)
 
             inv_status = self.Session.query(
-                    Stakeholder.id.label('stakeholder_id'),
-                    Stakeholder.stakeholder_identifier.\
-                        label('stakeholder_identifier'),
-                    Stakeholder.fk_status.label('stakeholder_status'),
-                    Stakeholder.version.label('stakeholder_version')
-                ).\
+                                            Stakeholder.id.label('stakeholder_id'),
+                                            Stakeholder.stakeholder_identifier.\
+                                            label('stakeholder_identifier'),
+                                            Stakeholder.fk_status.label('stakeholder_status'),
+                                            Stakeholder.version.label('stakeholder_version')
+                                            ).\
                 filter(Stakeholder.fk_status.in_(inv_status_filter)).\
                 subquery()
             inv_query = self.Session.query(
-                    Involvement.fk_activity.label('activity_id'),
-                    Stakeholder_Role.id.label('role_id'),
-                    Stakeholder_Role.name.label('role_name'),
-                    Changeset.fk_user.label('stakeholder_user_id'),
-                    inv_status.c.stakeholder_identifier.\
-                        label('stakeholder_identifier'),
-                    inv_status.c.stakeholder_status.label('stakeholder_status'),
-                    inv_status.c.stakeholder_version.\
-                        label('stakeholder_version')
-                ).\
+                                           Involvement.fk_activity.label('activity_id'),
+                                           Stakeholder_Role.id.label('role_id'),
+                                           Stakeholder_Role.name.label('role_name'),
+                                           Changeset.fk_user.label('stakeholder_user_id'),
+                                           inv_status.c.stakeholder_identifier.\
+                                           label('stakeholder_identifier'),
+                                           inv_status.c.stakeholder_status.label('stakeholder_status'),
+                                           inv_status.c.stakeholder_version.\
+                                           label('stakeholder_version')
+                                           ).\
                 join(inv_status,
-                    inv_status.c.stakeholder_id == Involvement.fk_stakeholder).\
+                     inv_status.c.stakeholder_id == Involvement.fk_stakeholder).\
                 join(Changeset, Changeset.id == inv_status.c.stakeholder_id).\
                 join(Stakeholder_Role).\
                 subquery()
@@ -944,15 +963,15 @@ class ActivityProtocol3(Protocol):
 
             query = query.\
                 add_columns(
-                    inv_query.c.stakeholder_identifier.\
-                        label('stakeholder_identifier'),
-                    inv_query.c.role_name.label('stakeholder_role'),
-                    inv_query.c.role_id.label('stakeholder_role_id'),
-                    inv_query.c.stakeholder_status.label('stakeholder_status'),
-                    inv_query.c.stakeholder_version.\
-                        label('stakeholder_version'),
-                    inv_query.c.stakeholder_user_id.label('stakeholder_user_id')
-                ).\
+                            inv_query.c.stakeholder_identifier.\
+                            label('stakeholder_identifier'),
+                            inv_query.c.role_name.label('stakeholder_role'),
+                            inv_query.c.role_id.label('stakeholder_role_id'),
+                            inv_query.c.stakeholder_status.label('stakeholder_status'),
+                            inv_query.c.stakeholder_version.\
+                            label('stakeholder_version'),
+                            inv_query.c.stakeholder_user_id.label('stakeholder_user_id')
+                            ).\
                 outerjoin(inv_query, inv_query.c.activity_id == Activity.id)
 
         if return_count:
@@ -971,24 +990,24 @@ class ActivityProtocol3(Protocol):
         # Create query
         relevant_activities = relevant_activities.subquery()
         query = self.Session.query(
-                Activity.id.label('id'),
-                Activity.point.label('geometry'),
-                Activity.activity_identifier.label('identifier'),
-                Activity.version.label('version'),
-                Status.id.label('status_id'),
-                Status.name.label('status_name')
-            ).\
+                                   Activity.id.label('id'),
+                                   Activity.point.label('geometry'),
+                                   Activity.activity_identifier.label('identifier'),
+                                   Activity.version.label('version'),
+                                   Status.id.label('status_id'),
+                                   Status.name.label('status_name')
+                                   ).\
             join(relevant_activities,
-                relevant_activities.c.order_id == Activity.id).\
+                 relevant_activities.c.order_id == Activity.id).\
             join(Status)
 
         return query
 
     def _query_to_activities(self, request, query, involvements='full',
-        public_query=False):
+                             public_query=False):
 
         logged_in, is_moderator = self._get_user_status(
-            effective_principals(request))
+                                                        effective_principals(request))
 
         # Put the Activities together
         activities = []
@@ -999,7 +1018,7 @@ class ActivityProtocol3(Protocol):
             taggroup_id = int(q.taggroup) if q.taggroup is not None else None
             key = q.key_translated if q.key_translated is not None else q.key
             value = (q.value_translated if q.value_translated is not None else
-                q.value)
+                     q.value)
 
             # Use UID and version to find existing ActivityFeature or create a
             # new one
@@ -1014,10 +1033,10 @@ class ActivityProtocol3(Protocol):
 
             if activity == None:
                 activity = ActivityFeature3(
-                    identifier, q.order_value, geometry=q.geometry,
-                    version=q.version, status=q.status, status_id=q.status_id,
-                    timestamp=q.timestamp
-                )
+                                            identifier, q.order_value, geometry=q.geometry,
+                                            version=q.version, status=q.status, status_id=q.status_id,
+                                            timestamp=q.timestamp
+                                            )
                 activities.append(activity)
 
             # Check if current Tag Group is already present in the Activity
@@ -1041,36 +1060,36 @@ class ActivityProtocol3(Protocol):
                     if q.stakeholder_identifier is not None:
 
                         request_user_id = (request.user.id if request.user is
-                            not None else None)
+                                           not None else None)
 
                         # Flag indicating if Involvement to this Activity is not
                         # yet found ('none') or not to be added ('false')
                         inv = self._flag_add_involvement(
-                            activity,
-                            q.status_id,
-                            q.stakeholder_status,
-                            q.stakeholder_identifier,
-                            q.stakeholder_version,
-                            q.stakeholder_user_id,
-                            q.stakeholder_role,
-                            request_user_id,
-                            public_query,
-                            logged_in,
-                            is_moderator
-                        )
+                                                         activity,
+                                                         q.status_id,
+                                                         q.stakeholder_status,
+                                                         q.stakeholder_identifier,
+                                                         q.stakeholder_version,
+                                                         q.stakeholder_user_id,
+                                                         q.stakeholder_role,
+                                                         request_user_id,
+                                                         public_query,
+                                                         logged_in,
+                                                         is_moderator
+                                                         )
 
                         if inv is None:
                             # Create new Involvement and add it to Activity
                             # Default: only basic information about Involvement
                             activity.add_involvement(
-                                Inv(
-                                    q.stakeholder_identifier,
-                                    None,
-                                    q.stakeholder_role,
-                                    q.stakeholder_role_id,
-                                    q.stakeholder_version,
-                                    q.stakeholder_status
-                                ))
+                                                     Inv(
+                                                     q.stakeholder_identifier,
+                                                     None,
+                                                     q.stakeholder_role,
+                                                     q.stakeholder_role_id,
+                                                     q.stakeholder_version,
+                                                     q.stakeholder_status
+                                                     ))
                 except ValueError:
                     pass
 
@@ -1084,20 +1103,20 @@ class ActivityProtocol3(Protocol):
             inv_dicts = []
             for activity in activities:
                 for i in activity._involvements:
-                        inv_dicts.append({
-                            'identifier': i.get_guid(),
-                            'version': i.get_version()
-                        })
+                    inv_dicts.append({
+                                     'identifier': i.get_guid(),
+                                     'version': i.get_version()
+                                     })
 
             # Use StakeholderProtocol to query the details of the Activities
             sp = StakeholderProtocol3(self.Session)
             relevant_stakeholders = sp._get_relevant_stakeholders_dict(
-                request, inv_dicts)
+                                                                       request, inv_dicts)
 
             sh_query = sp._query_many(request, relevant_stakeholders,
-                involvements=False, return_count=False)
+                                      involvements=False, return_count=False)
             stakeholders = sp._query_to_stakeholders(request, sh_query,
-                involvements='none')
+                                                     involvements='none')
 
             # Loop through all existing Involvements
             for activity in activities:
@@ -1113,13 +1132,13 @@ class ActivityProtocol3(Protocol):
                         # If Activity was found, replace Involvement with full
                         # details
                         activity._involvements[index] = Inv(
-                            i.get_guid(),
-                            stakeholder,
-                            i.get_role(),
-                            i.get_role_id(),
-                            i.get_version(),
-                            i.get_status()
-                        )
+                                                            i.get_guid(),
+                                                            stakeholder,
+                                                            i.get_role(),
+                                                            i.get_role_id(),
+                                                            i.get_version(),
+                                                            i.get_status()
+                                                            )
 
         return activities
 
@@ -1158,15 +1177,15 @@ class ActivityProtocol3(Protocol):
 
         for q in query.all():
             featureCollection['features'].append(
-                _create_feature(
-                    q.id,
-                    q.geometry,
-                    q.identifier,
-                    q.status_id,
-                    q.status_name,
-                    q.version
-                )
-            )
+                                                 _create_feature(
+                                                 q.id,
+                                                 q.geometry,
+                                                 q.identifier,
+                                                 q.status_id,
+                                                 q.status_name,
+                                                 q.version
+                                                 )
+                                                 )
 
         return featureCollection
 
@@ -1226,15 +1245,15 @@ class ActivityProtocol3(Protocol):
 
                     # Return a subquery
                     return functions.intersects(
-                        Activity.point, functions.transform(
-                            wkb_geometry, activity_srid))
+                                                Activity.point, functions.transform(
+                                                wkb_geometry, activity_srid))
                 except ValueError:
                     pass
 
         return None
 
     def _handle_activity(self, request, activity_dict, changeset,
-        status='pending'):
+                         status='pending'):
         """
         Handles a single Activity and decides whether to create a new Activity
         or update an existing one.
@@ -1242,12 +1261,12 @@ class ActivityProtocol3(Protocol):
 
         # Collect information about changing involvements
         involvement_change = (activity_dict['stakeholders']
-            if 'stakeholders' in activity_dict
-            else None)
+                              if 'stakeholders' in activity_dict
+                              else None)
         implicit_inv_change = (True
-            if involvement_change is not None
-            and 'implicit_involvement_update' in activity_dict
-            and activity_dict['implicit_involvement_update'] is True else False)
+                               if involvement_change is not None
+                               and 'implicit_involvement_update' in activity_dict
+                               and activity_dict['implicit_involvement_update'] is True else False)
 
         create_new = False
 
@@ -1259,7 +1278,7 @@ class ActivityProtocol3(Protocol):
             # the identifier and version
             identifier = activity_dict['id']
             old_version = (activity_dict['version']
-                if 'version' in activity_dict else None)
+                           if 'version' in activity_dict else None)
             db_a = self.Session.query(Activity).\
                 filter(Activity.activity_identifier == identifier).\
                 filter(Activity.version == old_version).\
@@ -1271,26 +1290,26 @@ class ActivityProtocol3(Protocol):
         if create_new is True:
             # Create new Activity
             new_activity = self._create_activity(request, activity_dict,
-                changeset, status=status)
+                                                 changeset, status=status)
 
             # Handle also the involvements
             self._handle_involvements(request, None, new_activity,
-                involvement_change, changeset, implicit_inv_change)
+                                      involvement_change, changeset, implicit_inv_change)
 
             return new_activity
         
         else:
             # Update existing Activity
             updated_activity = self._update_activity(request, db_a, activity_dict,
-                changeset)
+                                                     changeset)
 
             # Handle also the involvements
             self._handle_involvements(request, db_a, updated_activity,
-                involvement_change, changeset, implicit_inv_change)
+                                      involvement_change, changeset, implicit_inv_change)
 
             return updated_activity
 
-    def _create_activity(self, request, activity_dict, changeset, **kwargs):
+    def _create_activity(self, request, activity_dict, changeset, ** kwargs):
         """
         Creates a new Activity and handles its involvements.
         Allowed keyword arguments:
@@ -1298,8 +1317,8 @@ class ActivityProtocol3(Protocol):
         """
 
         identifier = (activity_dict['id'] if 'id' in activity_dict and
-            activity_dict['id'] is not None
-            else uuid.uuid4())
+                      activity_dict['id'] is not None
+                      else uuid.uuid4())
 
         # The initial version is 1
         version = 1
@@ -1314,11 +1333,11 @@ class ActivityProtocol3(Protocol):
             shape = asShape(geom)
             # Create a new activity and add representative point to the activity
             new_activity = Activity(activity_identifier=identifier,
-                version=version, point=shape.representative_point().wkt)
+                                    version=version, point=shape.representative_point().wkt)
         else:
             # If no geometry is submitted, create new activity without geometry
             new_activity = Activity(activity_identifier=identifier,
-                version=version)
+                                    version=version)
 
         # Status (default: 'pending')
         status = 'pending'
@@ -1340,7 +1359,7 @@ class ActivityProtocol3(Protocol):
         # Populate the Tag Groups
         for i, taggroup in enumerate(activity_dict['taggroups']):
 
-            db_tg = A_Tag_Group(i+1)
+            db_tg = A_Tag_Group(i + 1)
             new_activity.tag_groups.append(db_tg)
 
             # Main Tag: First reset it. Then try to get it (its key and value)
@@ -1371,7 +1390,7 @@ class ActivityProtocol3(Protocol):
 
                 # Create the new tag
                 a_tag = self._create_tag(request, db_tg.tags, key, value, A_Tag,
-                    A_Key, A_Value)
+                                         A_Key, A_Value)
 
                 # Check if the current tag is the main tag of this tag group. If
                 # yes, set the main_tag attribute to this tag
@@ -1385,7 +1404,7 @@ class ActivityProtocol3(Protocol):
         return new_activity
 
     def _update_activity(self, request, old_activity, activity_dict, changeset,
-        **kwargs):
+                         ** kwargs):
         """
         Update an Activity. The basic idea is to deep copy the previous version
         and decide for each tag if it is to be deleted or not. At the end, new
@@ -1411,7 +1430,7 @@ class ActivityProtocol3(Protocol):
 
         # Create new Activity
         new_activity = Activity(activity_identifier=old_activity.identifier,
-            version=(latest_version.version+1), point=new_geom)
+                                version=(latest_version.version + 1), point=new_geom)
 
         # Status (default: 'pending')
         status = 'pending'
@@ -1489,8 +1508,8 @@ class ActivityProtocol3(Protocol):
                         for tag_dict in taggroup_dict['tags']:
                             if 'id' not in tag_dict and tag_dict['op'] == 'add':
                                 new_tag = self._create_tag(
-                                    request, new_taggroup.tags, tag_dict['key'],
-                                    tag_dict['value'], A_Tag, A_Key, A_Value)
+                                                           request, new_taggroup.tags, tag_dict['key'],
+                                                           tag_dict['value'], A_Tag, A_Key, A_Value)
                                 # Set the main tag
                                 if 'main_tag' in taggroup_dict:
                                     if (taggroup_dict['main_tag']['key'] ==
@@ -1516,14 +1535,14 @@ class ActivityProtocol3(Protocol):
                     tg_id_q = self.Session.query(func.max(A_Tag_Group.tg_id)).\
                         join(Activity).\
                         filter(Activity.activity_identifier
-                            == new_activity.activity_identifier).\
+                               == new_activity.activity_identifier).\
                         first()
                     new_taggroup = A_Tag_Group(tg_id_q[0] + 1)
                     new_activity.tag_groups.append(new_taggroup)
                     for tag_dict in taggroup_dict['tags']:
                         new_tag = self._create_tag(
-                            request, new_taggroup.tags, tag_dict['key'],
-                            tag_dict['value'], A_Tag, A_Key, A_Value)
+                                                   request, new_taggroup.tags, tag_dict['key'],
+                                                   tag_dict['value'], A_Tag, A_Key, A_Value)
                         # Set the main tag
                         if 'main_tag' in taggroup_dict:
                             if (taggroup_dict['main_tag']['key'] ==
@@ -1535,7 +1554,7 @@ class ActivityProtocol3(Protocol):
         return new_activity
 
     def _handle_involvements(self, request, old_version, new_version,
-        inv_change, changeset, implicit=False):
+                             inv_change, changeset, implicit=False):
         """
         Handle the involvements of an Activity.
         - Activity update: copy old involvements
@@ -1603,7 +1622,7 @@ class ActivityProtocol3(Protocol):
                         # Stakeholder twice)
                         try:
                             x = swdi_id.index(
-                                str(old_sh_db.stakeholder_identifier))
+                                              str(old_sh_db.stakeholder_identifier))
                             swdi_id.pop(x)
                             swdi_version.pop(x)
                             swdi_role.pop(x)
@@ -1617,7 +1636,7 @@ class ActivityProtocol3(Protocol):
                             'version': old_sh_db.version
                         }
                         new_sh = sp._handle_stakeholder(request, sh_dict,
-                            changeset)
+                                                        changeset)
                         # Create new inolvement
                         inv = Involvement()
                         inv.stakeholder = new_sh

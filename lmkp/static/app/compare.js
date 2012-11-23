@@ -33,13 +33,21 @@ Ext.onReady(function(){
         ],
 
         launch: function() {
+
+            var uidRegExp = /(activities|stakeholders)\/compare\/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\/[0-9]+\/[0-9]+/gi;
+
+            var urlParts = uidRegExp.exec(window.location.href)[0].split('/');
+
+            var uid = urlParts[2];
+            var ref_version = urlParts[3];
+            var new_version = urlParts[4];
             
             var oldVersionCombo = Ext.create('Ext.form.field.ComboBox',{
                 fieldLabel: Lmkp.ts.msg('Reference Version:'),
                 labelWidth: 150,
                 queryMode: 'local',
                 store: Lmkp.available_versions,
-                value: Lmkp.ref_version
+                value: ref_version
             });
 
             var newVersionCombo = Ext.create('Ext.form.field.ComboBox',{
@@ -50,7 +58,7 @@ Ext.onReady(function(){
                 style: {
                     'margin-left': '15px'
                 },
-                value: Lmkp.new_version
+                value: new_version
             });
             
             var diffButton = Ext.create('Ext.button.Button',{
@@ -93,16 +101,8 @@ Ext.onReady(function(){
                     region: 'north',
                     xtype: 'panel'
                 },grid,{
-                    layout: {
-                        type: 'vbox',
-                        align: 'center'
-                    },
                     height: 30,
-                    items: [{
-                        width: 315,
-                        contentEl: 'social-plugin',
-                        xtype: 'container'
-                    }],
+                    contentEl: 'social-plugin',
                     region: 'south',
                     style: {
                         'margin-left': '5px'

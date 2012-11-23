@@ -155,16 +155,8 @@ Ext.onReady(function(){
                     region: 'north',
                     xtype: 'panel'
                 },grid,form,{
-                    layout: {
-                        type: 'vbox',
-                        align: 'center'
-                    },
                     height: 30,
-                    items: [{
-                        width: 315,
-                        contentEl: 'social-plugin',
-                        xtype: 'container'
-                    }],
+                    contentEl: 'social-plugin',
                     region: 'south',
                     style: {
                         'margin-left': '5px'
