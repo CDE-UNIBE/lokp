@@ -18,18 +18,18 @@ class BaseReview(BaseView):
         table = []
 
         # First write the headers
-        header_row = []
-        header_row.append({'class': 'title', 'tags': [
-                          {'key': 'version', 'value': old.get_version()},
-                          {'key': 'status', 'value': old.get_status()}
-                          ]})
+        #header_row = {}
+        #['ref'] = {'class': 'title', 'tags': [
+        #                  {'key': 'version', 'value': old.get_version()},
+        #                  {'key': 'status', 'value': old.get_status()}
+        #                  ]}
 
-        header_row.append({'class': 'title', 'tags': [
-                          {'key': 'version', 'value': new.get_version()},
-                          {'key': 'status', 'value': new.get_status()}
-                          ]})
+        #header_row['new'] = {'class': 'title', 'tags': [
+        #                  {'key': 'version', 'value': new.get_version()},
+        #                  {'key': 'status', 'value': new.get_status()}
+        #                  ]}
 
-        table.append(header_row)
+        #table.append(header_row)
 
         # TODO: Compare also the geometry!!
 
@@ -39,13 +39,13 @@ class BaseReview(BaseView):
 
             # The taggroup does not exist anymore:
             if new_taggroup is None:
-                current_row = []
+                current_row = {}
                 old_tags = []
                 for t in old_taggroup.get_tags():
                     old_tags.append({'key': t.get_key(),
                                     'value': t.get_value()})
-                    current_row.append({'class': 'remove', 'tags': old_tags})
-                    current_row.append({'class': '', 'tags': []})
+                    current_row['ref'] = {'class': 'remove', 'tags': old_tags}
+                    current_row['new'] = {'class': '', 'tags': []}
                 table.append(current_row)
 
             # The taggroup does still exist:
@@ -69,7 +69,7 @@ class BaseReview(BaseView):
                     if old_taggroup.get_tag_by_key(t.get_key()) is None:
                         taggroup_has_changed = True
 
-                current_row = []
+                current_row = {}
                 old_tags_class = new_tags_class = ''
                 if taggroup_has_changed:
                     old_tags_class = 'remove'
@@ -80,13 +80,13 @@ class BaseReview(BaseView):
                 for t in old_taggroup.get_tags():
                     old_tags.append({'key': t.get_key(),
                                     'value': t.get_value()})
-                current_row.append({'class': old_tags_class, 'tags': old_tags})
+                current_row['ref'] = {'class': old_tags_class, 'tags': old_tags}
                 # Write the new one
                 new_tags = []
                 for t in new_taggroup.get_tags():
                     new_tags.append({'key': t.get_key(),
                                     'value': t.get_value()})
-                current_row.append({'class': new_tags_class, 'tags': new_tags})
+                current_row['new'] = {'class': new_tags_class, 'tags': new_tags}
 
                 table.append(current_row)
 
@@ -94,18 +94,20 @@ class BaseReview(BaseView):
         for new_taggroup in new.get_taggroups():
 
             if old.find_taggroup_by_tg_id(new_taggroup.get_tg_id()) is None:
-                current_row = []
-                current_row.append({'class': '', 'tags': []})
+                current_row = {}
+                current_row['ref'] = {'class': '', 'tags': []}
                 # Write the new one
                 new_tags = []
                 for t in new_taggroup.get_tags():
                     new_tags.append({'key': t.get_key(),
                                     'value': t.get_value()})
-                current_row.append({'class': 'add', 'tags': new_tags})
+                current_row['new'] = {'class': 'add', 'tags': new_tags}
 
                 table.append(current_row)
 
         # TODO Compare the involvements properly
+
+        involvements_table = []
 
         # Finally compare also the involvments but NOT the tags of the involved stakeholders
         for inv in old.get_involvements():
@@ -114,40 +116,51 @@ class BaseReview(BaseView):
 
             # Involvement has been deleted
             if new_inv == None:
-                current_row = []
+                current_row = {}
 
                 # Write the old one
                 old_tags = []
-                old_tags.append({'key': 'role',
-                                'value': inv.get_role()})
-                old_tags.append({'key': 'guid',
-                                'value': inv.get_uid()})
-                current_row.append({'class': 'remove', 'tags': old_tags})
+                for t in inv._feature.to_tags():
+                    old_tags.append(t)
+                current_row['ref'] = {'class': 'remove involvement', 'tags': old_tags}
                 # Write the new one
-                current_row.append({'class': '', 'tags': []})
+                current_row['new'] = {'class': 'involvement', 'tags': []}
 
-                table.append(current_row)
+                involvements_table.append(current_row)
 
             # Role has changed
             elif inv.get_role_id() != new_inv.get_role_id():
-                current_row = []
+                current_row = {}
 
                 # Write the old one
                 old_tags = []
-                old_tags.append({'key': 'role',
-                                'value': inv.get_role()})
-                old_tags.append({'key': 'guid',
-                                'value': inv.get_uid()})
-                current_row.append({'class': 'remove', 'tags': old_tags})
+                for t in inv._feature.to_tags():
+                    old_tags.append(t)
+                current_row['ref'] = {'class': 'remove involvement', 'tags': old_tags}
                 # Write the new one
                 new_tags = []
-                new_tags.append({'key': 'role',
-                                'value': new_inv.get_role()})
-                new_tags.append({'key': 'guid',
-                                'value': new_inv.get_uid()})
-                current_row.append({'class': 'add', 'tags': new_tags})
+                new_tags = []
+                for t in new_inv._feature.to_tags():
+                    new_tags.append(t)
+                current_row['new'] = {'class': 'add involvement', 'tags': new_tags}
 
-                table.append(current_row)
+                involvements_table.append(current_row)
+
+            else:
+                current_row = {}
+                # Write the old one
+                old_tags = []
+                for t in inv._feature.to_tags():
+                    old_tags.append(t)
+                current_row['ref'] = {'class': 'involvement', 'tags': old_tags}
+                # Write the new one
+                new_tags = []
+                for t in new_inv._feature.to_tags():
+                    new_tags.append(t)
+                current_row['new'] = {'class': 'involvement', 'tags': new_tags}
+
+                involvements_table.append(current_row)
+
 
         # Find new involvements:
         for inv in new.get_involvements():
@@ -155,22 +168,27 @@ class BaseReview(BaseView):
             old_inv = old.find_involvement_by_guid(inv.get_guid())
 
             if old_inv is None:
-                current_row = []
+
+                current_row = {}
 
                 # Write the old one
-                current_row.append({'class': '', 'tags': []})
+                current_row['ref'] = {'class': '', 'tags': []}
                 # Write the new one
                 new_tags = []
-                new_tags.append({'key': 'role',
-                                'value': inv.get_role()})
-                new_tags.append({'key': 'guid',
-                                'value': inv.get_uid()})
-                current_row.append({'class': 'add', 'tags': new_tags})
 
-                table.append(current_row)
+                for t in inv._feature.to_tags():
+                    new_tags.append(t)
+
+                #new_tags.append({'key': 'role',
+                #                'value': inv.get_role()})
+                #new_tags.append({'key': 'guid',
+                #                'value': inv._feature.to_tags()})
+                current_row['new'] = {'class': 'add involvement', 'tags': new_tags}
+
+                involvements_table.append(current_row)
 
 
-        return {'data': table}
+        return {'taggroups': table, 'involvements': involvements_table}
 
     def _review_one_version(self, obj, uid, version):
 
@@ -193,6 +211,4 @@ class BaseReview(BaseView):
                 tags.append({'key': t.get_key(), 'value': t.get_value()})
             table.append([{'class': '', 'tags': tags}])
 
-
-
-        return {'data': table}
+        return {'taggroups': table}
