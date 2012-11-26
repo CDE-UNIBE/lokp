@@ -90,7 +90,8 @@ def main(global_config, ** settings):
     # Creates a new activity
     config.add_route('activities_create', '/activities', request_method='POST')
 
-    config.add_route('activities_review_versions', '/activities/review/{uid}')
+    config.add_route('activities_review_versions_html', '/activities/review/html/{uid}')
+    config.add_route('activities_review_versions_json', '/activities/review/json/{uid}')
     config.add_handler('activities_compare_versions',
                        '/activities/compare/{action}/{uid}*versions',
                        'lmkp.views.activity_review.ActivityReview')

@@ -8,18 +8,38 @@ from lmkp.views.review import BaseReview
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPSeeOther
 from pyramid.renderers import render_to_response
 from pyramid.view import view_config
-from sqlalchemy.sql.functions import max
 from pyramid_handlers import action
+from sqlalchemy.sql.functions import max
+from sqlalchemy.sql.functions import min
 
 log = logging.getLogger(__name__)
 
 class ActivityReview(BaseReview):
 
-    @view_config(route_name='activities_review_versions', renderer='lmkp:templates/review_versions.mak', permission='moderate')
-    def review_activity(self):
+    @view_config(route_name='activities_review_versions_html', renderer='lmkp:templates/review_versions.mak', permission='moderate')
+    def review_activity_html(self):
+        """
+        Review to versions together
+        """
+
+        # Get the activity identifier
+        uid = self.request.matchdict.get('uid', None)
+
+        c = Session.query(Activity).filter(Activity.activity_identifier == uid).count()
+
+        if c == 0:
+            raise HTTPNotFound("Activity with identifier %s does not exist." % uid)
+
+        active_version, pending_version = self._get_active_pending_versions(uid)
+
+        return {'identifier': uid, 'version': pending_version}
+
+    @view_config(route_name='activities_review_versions_json', renderer='json', permission='moderate')
+    def review_activity_json(self):
         """
         Review to versions together
         """
@@ -29,53 +49,38 @@ class ActivityReview(BaseReview):
 
         additional_vars = {}
         additional_vars['identifier'] = uid
-        additional_vars['next_url'] = self.request.route_url('activities_review_versions', uid=uid)
+        additional_vars['next_url'] = self.request.route_url('activities_review_versions_html', uid=uid)
         additional_vars['type'] = 'activities'
 
-        # Get the current active version number
-        o = Session.query(Activity.version).filter(Activity.activity_identifier == uid).filter(Activity.fk_status == 2).first()
-
-        # If there is no active version yet, just show the first version
-        if o is None:
-
-            # Show the first version
-            version = 1
-
-            # Set the first version as version to review
-            additional_vars['version'] = version
-
-            activity = self.activity_protocol3.read_one_by_version(self.request, uid, version)
-
-            return dict(self._review_one_version(activity, uid, version).items() + additional_vars.items())
-
-        # Get the latest version number
-        l = Session.query(max(Activity.version)).filter(Activity.activity_identifier == uid).first()
-        old_version = int(o[0])
-        new_version = old_version + 1
-        latest_version = int(l[0])
-
-        # Some logging
-        log.debug("active version: %s" % old_version)
-        log.debug("pending version: %s" % new_version)
-        log.debug("latest version: %s" % latest_version)
+        active_version, pending_version = self._get_active_pending_versions(uid)
 
         # Raise an exception is new version number is less than the old version number
-        if new_version < old_version:
-            raise HTTPBadRequest("Pending version must be newer than active version.")
+        #if pending_version < active_version:
+        #    raise HTTPBadRequest("Pending version must be newer than active version.")
 
+
+        old = new = None
         # Get the old version
-        old = self.activity_protocol3.read_one_by_version(self.request, uid, old_version)
+        if active_version is not None:
+            old = self.activity_protocol3.read_one_by_version(self.request, uid, active_version)
 
-        # Get the new version
+        if pending_version is not None:
+            new = self.activity_protocol3.read_one_by_version(self.request, uid, pending_version)
+
+        active_timestamp = Session.query(Changeset.timestamp).join(Activity).filter(Activity.activity_identifier == uid).filter(Activity.version == active_version).first()
+        pending_timestamp = Session.query(Changeset.timestamp).join(Activity).filter(Activity.activity_identifier == uid).filter(Activity.version == pending_version).first()
+
         try:
-            new = self.activity_protocol3.read_one_by_version(self.request, uid, new_version)
-        # If there is no newer version, catch the exception and redirect the page
-        # to the standard html view
-        except IndexError as e:
-            return HTTPFound(self.request.route_url('activities_read_one_active', output='html', uid=uid))
+            additional_vars['ref_title'] = "Version %s as of %s" % (active_version, active_timestamp[0].strftime('%H:%M, %d-%b-%Y'));
+        except TypeError:
+            additional_vars['ref_title'] = ''
+        try:
+            additional_vars['new_title'] = "Version %s as of %s" % (pending_version, pending_timestamp[0].strftime('%H:%M, %d-%b-%Y'));
+        except TypeError:
+            additional_vars['new_title'] = ''
 
-        additional_vars['version'] = new_version
-        return dict(self._compare_taggroups(old, new).items() + additional_vars.items())
+        additional_vars['version'] = pending_version
+        return dict(self._compare_taggroups(old, new).items() + {'metadata': additional_vars}.items())
 
     @action(name='html', renderer='lmkp:templates/compare_versions.mak', permission='moderate')
     def compare_activity_html(self, uid=None):
@@ -129,3 +134,34 @@ class ActivityReview(BaseReview):
         result = dict(self._compare_taggroups(old, new).items() + additional_params.items())
 
         return result
+
+    def _get_active_pending_versions(self, uid):
+        """
+        Returns the current active version and the pending version to review
+        """
+
+        # Get the current active version number
+        av = Session.query(Activity.version).filter(Activity.activity_identifier == uid).filter(Activity.fk_status == 2).first()
+
+        try:
+            active_version = int(av[0])
+        except TypeError:
+            return None, 1
+
+        # Get the lowest pending version
+        pv = Session.query(min(Activity.version)).\
+            filter(Activity.activity_identifier == uid).\
+            filter(Activity.fk_status == 1).\
+            filter(Activity.version > active_version).\
+            first()
+
+        try:
+            pending_version = int(pv[0])
+        except TypeError:
+            pending_version = None
+
+        # Some logging
+        log.debug("active version: %s" % active_version)
+        log.debug("pending version: %s" % pending_version)
+
+        return active_version, pending_version

@@ -9,6 +9,7 @@
         <div class="error_div">
         	<h1>Not found</h1>
     		<p>The requested page was not found.</p>
+                <p>${reason}</p>
         </div>
     </body>
 </html>

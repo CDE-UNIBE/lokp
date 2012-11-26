@@ -17,19 +17,11 @@ class BaseReview(BaseView):
 
         table = []
 
-        # First write the headers
-        #header_row = {}
-        #['ref'] = {'class': 'title', 'tags': [
-        #                  {'key': 'version', 'value': old.get_version()},
-        #                  {'key': 'status', 'value': old.get_status()}
-        #                  ]}
+        if old is None and new is not None:
+            return self._write_new_taggroups(new)
 
-        #header_row['new'] = {'class': 'title', 'tags': [
-        #                  {'key': 'version', 'value': new.get_version()},
-        #                  {'key': 'status', 'value': new.get_status()}
-        #                  ]}
-
-        #table.append(header_row)
+        if old is not None and new is None:
+            return self._write_old_taggroups(old)
 
         # TODO: Compare also the geometry!!
 
@@ -212,3 +204,77 @@ class BaseReview(BaseView):
             table.append([{'class': '', 'tags': tags}])
 
         return {'taggroups': table}
+
+    def _write_old_taggroups(self, old):
+
+        table = []
+
+        # Search for new taggroups
+        for old_taggroup in old.get_taggroups():
+
+            current_row = {}
+            old_tags = []
+            for t in old_taggroup.get_tags():
+                old_tags.append({'key': t.get_key(),
+                                'value': t.get_value()})
+            current_row['ref'] = {'class': '', 'tags': old_tags}
+
+            current_row['new'] = {'class': '', 'tags': []}
+
+            table.append(current_row)
+
+        involvements_table = []
+
+        # Find new involvements:
+        for inv in old.get_involvements():
+
+            current_row = {}
+
+            old_inv_tags = []
+            for t in inv._feature.to_tags():
+                old_inv_tags.append(t)
+
+            # Write the old one
+            current_row['ref'] = {'class': '', 'tags': old_inv_tags}
+            # Write the new one
+
+            current_row['new'] = {'class': '', 'tags': []}
+
+            involvements_table.append(current_row)
+
+        return {'taggroups': table, 'involvements': involvements_table}
+
+    def _write_new_taggroups(self, new):
+
+        table = []
+
+        # Search for new taggroups
+        for new_taggroup in new.get_taggroups():
+
+            current_row = {}
+            current_row['ref'] = {'class': '', 'tags': []}
+            # Write the new one
+            new_tags = []
+            for t in new_taggroup.get_tags():
+                new_tags.append({'key': t.get_key(),
+                                'value': t.get_value()})
+            current_row['new'] = {'class': 'add', 'tags': new_tags}
+
+            table.append(current_row)
+
+        # Write involvements:
+        involvements_table = []
+        for inv in new.get_involvements():
+
+            current_row = {}
+
+            current_row['ref'] = {'class': '', 'tags': []}
+
+            new_inv_tags = []
+            for t in inv._feature.to_tags():
+                new_inv_tags.append(t)
+
+            current_row['new'] = {'class': '', 'tags': new_inv_tags}
+            involvements_table.append(current_row)
+
+        return {'taggroups': table, 'involvements': involvements_table}
