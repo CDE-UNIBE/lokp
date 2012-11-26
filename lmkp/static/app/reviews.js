@@ -65,12 +65,12 @@ Ext.onReady(function(){
 
                         var reconf = [{
                             flex: 1,
-                            text: data.metadata.ref_title,
+                            text: data.metadata.active_title,
                             dataIndex: 'ref',
                             renderer: taggroupRenderer
                         },{
                             flex: 1,
-                            text: data.metadata.new_title,
+                            text: data.metadata.pending_title,
                             dataIndex: 'new',
                             renderer: taggroupRenderer
                         }];
@@ -78,6 +78,10 @@ Ext.onReady(function(){
                         involvementGrid.reconfigure(null, reconf);
 
                         taggroupGrid.reconfigure(null, reconf);
+
+                        if(!data.metadata.version){
+                            form.disable();
+                        }
 
                     }
                 });
@@ -179,7 +183,19 @@ Ext.onReady(function(){
                 region: 'south',
                 split: true,
                 store: involvementStore,
-                title: Lmkp.ts.msg('Involvements')
+                title: Lmkp.ts.msg('involvements_title')
+            });
+
+            var refreshButton = Ext.create('Ext.button.Button',{
+                handler: function(button, event){
+                    reloadStores();
+                },
+                iconAlign: 'top',
+                iconCls: 'button-refresh',
+                scale: 'medium',
+                text: Lmkp.ts.msg('Refresh'),
+                tooltip: Lmkp.ts.msg('Refresh'),
+                xtype: 'button'
             });
 
             var centerContainer = Ext.create('Ext.panel.Panel',{
@@ -196,7 +212,8 @@ Ext.onReady(function(){
                 region: 'center',
                 style: {
                     margin: '5px'
-                }
+                },
+                tbar: ['->', refreshButton]
             });
 
             var rdStore = Ext.create('Lmkp.store.ReviewDecisions').load();

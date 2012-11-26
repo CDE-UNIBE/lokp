@@ -44,8 +44,7 @@ else:
         }
     });
     Ext.ns('Lmkp');
-    Lmkp.identifier = "${identifier}";
-    Lmkp.version = "${version}";
+    Lmkp.version = "${metadata['version']}";
 </script>
 <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
 <script type="text/javascript" src="${request.route_url('moderator_toolbar_config')}"></script>
