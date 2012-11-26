@@ -53,16 +53,15 @@ Ext.onReady(function(){
             var reloadStores = function() {
                 ref_version = oldVersionCombo.getValue();
                 new_version = newVersionCombo.getValue();
-                var url = urlTemplate.apply([type, format, uid, ref_version, new_version]);
 
                 // Update the permalink button URL
                 var aEl = Ext.query('#permalink-button a')[0];
-                aEl.href = url
+                aEl.href = urlTemplate.apply([type, 'html', uid, ref_version, new_version]);
 
                 taggroupGrid.setLoading(true);
                 involvementGrid.setLoading(true);
                 Ext.Ajax.request({
-                    url: url,
+                    url: urlTemplate.apply([type, 'json', uid, ref_version, new_version]),
                     success: function(response){
                         var text = response.responseText;
                         var data = Ext.decode(text);
@@ -71,12 +70,12 @@ Ext.onReady(function(){
 
                         var reconf = [{
                             flex: 1,
-                            text: data.ref_title,
+                            text: data.metadata.ref_title,
                             dataIndex: 'ref',
                             renderer: taggroupRenderer
                         },{
                             flex: 1,
-                            text: data.new_title,
+                            text: data.metadata.new_title,
                             dataIndex: 'new',
                             renderer: taggroupRenderer
                         }];
@@ -109,7 +108,7 @@ Ext.onReady(function(){
             
             var oldVersionCombo = Ext.create('Ext.form.field.ComboBox',{
                 editable: false,
-                fieldLabel: Lmkp.ts.msg('Version:'),
+                fieldLabel: Lmkp.ts.msg('gui_version') + ":",
                 //labelWidth: 150,
                 listeners: {
                     select: function(combo){
@@ -123,7 +122,7 @@ Ext.onReady(function(){
 
             var newVersionCombo = Ext.create('Ext.form.field.ComboBox',{
                 editable: false,
-                fieldLabel: Lmkp.ts.msg('Version:'),
+                fieldLabel: Lmkp.ts.msg('gui_version') + ":",
                 //labelWidth: 150,
                 listeners: {
                     select: function(combo){
@@ -140,9 +139,10 @@ Ext.onReady(function(){
                 handler: function(button, event){
                     reloadStores();
                 },
-                iconAlign: 'right',
+                iconAlign: 'top',
                 iconCls: 'button-refresh',
                 scale: 'medium',
+                text: Lmkp.ts.msg('Refresh'),
                 tooltip: Lmkp.ts.msg('Refresh'),
                 xtype: 'button'
             });
@@ -152,7 +152,9 @@ Ext.onReady(function(){
                 href: urlTemplate.apply([type, format, uid, oldVersionCombo.getValue(), newVersionCombo.getValue()]),
                 hrefTarget: '',
                 region: 'east',
+                iconAlign: 'top',
                 iconCls: 'button-link',
+                text: Lmkp.ts.msg("Link"),
                 tooltip: Lmkp.ts.msg("Permanent link to current view"),
                 scale: 'medium',
                 xtype: 'button'
@@ -236,7 +238,7 @@ Ext.onReady(function(){
                 region: 'south',
                 split: true,
                 store: involvementStore,
-                title: Lmkp.ts.msg('Involvements')
+                title: Lmkp.ts.msg('involvements_title')
             });
 
             var centerContainer = Ext.create('Ext.panel.Panel',{

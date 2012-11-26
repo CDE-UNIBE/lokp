@@ -128,7 +128,8 @@ def main(global_config, ** settings):
     config.add_route('stakeholders_create', '/stakeholders', request_method='POST')
 
     # Reviews a pending stakeholder
-    config.add_route('stakeholders_review_versions', '/stakeholders/review/{uid}')
+    config.add_route('stakeholders_review_versions_html', '/stakeholders/review/html/{uid}')
+    config.add_route('stakeholders_review_versions_json', '/stakeholders/review/json/{uid}')
     config.add_handler('stakeholders_compare_versions',
                        '/stakeholders/compare/{action}/{uid}*versions',
                        'lmkp.views.stakeholder_review.StakeholderReview')

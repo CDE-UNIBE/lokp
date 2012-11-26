@@ -1,17 +1,21 @@
+from lmkp.models.database_objects import Changeset
+from lmkp.models.database_objects import Status
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
+from lmkp.views.translation import statusMap
 from lmkp.views.views import BaseView
 import logging
+from sqlalchemy.sql.functions import min
+import string
 
 log = logging.getLogger(__name__)
 
 class BaseReview(BaseView):
 
     def __init__(self, request):
-        self.request = request
-        self.activity_protocol3 = ActivityProtocol3(Session)
-        self.stakeholder_protocol3 = StakeholderProtocol3(Session)
+        super(BaseReview, self).__init__(request)
+        self._handle_parameters()
 
     def _compare_taggroups(self, old, new):
 
@@ -171,10 +175,6 @@ class BaseReview(BaseView):
                 for t in inv._feature.to_tags():
                     new_tags.append(t)
 
-                #new_tags.append({'key': 'role',
-                #                'value': inv.get_role()})
-                #new_tags.append({'key': 'guid',
-                #                'value': inv._feature.to_tags()})
                 current_row['new'] = {'class': 'add involvement', 'tags': new_tags}
 
                 involvements_table.append(current_row)
@@ -278,3 +278,69 @@ class BaseReview(BaseView):
             involvements_table.append(current_row)
 
         return {'taggroups': table, 'involvements': involvements_table}
+
+    def _get_active_pending_versions(self, mappedClass, uid):
+        """
+        Returns the current active version and the pending version to review
+        """
+
+        # Get the current active version number
+        av = Session.query(mappedClass.version).filter(mappedClass.identifier == uid).filter(mappedClass.fk_status == 2).first()
+
+        try:
+            active_version = int(av[0])
+        except TypeError:
+            return None, 1
+
+        # Get the lowest pending version
+        pv = Session.query(min(mappedClass.version)).\
+            filter(mappedClass.identifier == uid).\
+            filter(mappedClass.fk_status == 1).\
+            filter(mappedClass.version > active_version).\
+            first()
+
+        try:
+            pending_version = int(pv[0])
+        except TypeError:
+            pending_version = None
+
+        # Some logging
+        log.debug("active version: %s" % active_version)
+        log.debug("pending version: %s" % pending_version)
+
+        return active_version, pending_version
+
+    def _get_active_pending_version_descriptions(self, mappedClass, uid, active_version, pending_version):
+
+        _ = self.request.translate
+
+        active_title = pending_title = ''
+        active_status = pending_status = None
+
+        try:
+            active_timestamp, active_status = Session.query(Changeset.timestamp, Status.name).\
+                join(mappedClass).\
+                join(Status).\
+                filter(mappedClass.identifier == uid).\
+                filter(mappedClass.version == active_version).first()
+        except TypeError:
+            pass
+        try:
+            pending_timestamp, pending_status = Session.query(Changeset.timestamp, Status.name).\
+                join(mappedClass).\
+                join(Status).\
+                filter(mappedClass.identifier == uid).\
+                filter(mappedClass.version == pending_version).first()
+        except TypeError:
+            pass
+
+        try:
+            active_title = "%s version %s as of %s" % (string.capitalize(_(statusMap[active_status])), active_version, active_timestamp.strftime('%H:%M, %d-%b-%Y'));
+        except:
+            pass
+        try:
+            pending_title = "%s version %s as of %s" % (string.capitalize(_(statusMap[pending_status])), pending_version, pending_timestamp.strftime('%H:%M, %d-%b-%Y'));
+        except:
+            pass
+
+        return active_title, pending_title
