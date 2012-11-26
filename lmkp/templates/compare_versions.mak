@@ -31,7 +31,7 @@ else:
     }
     .button-refresh {
         background-image: url('/static/img/view-refresh.png') !important;
-}
+    }
 </style>
 <script type="text/javascript" src="${request.static_url('lmkp:static/lib/extjs-4.1.1/ext.js')}"></script>
 <script type="text/javascript">

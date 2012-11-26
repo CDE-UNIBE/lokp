@@ -12,6 +12,8 @@ def forbidden_view(request):
     else:
         return render_to_response('lmkp:templates/login_form.mak', {'came_from': request.current_route_url()}, request)
 
-def notfound_view(request):
+def notfound_view(context, request):
+    print "*************************************************************"
+    print context
     request.response.status = 404
-    return render_to_response('lmkp:templates/errors/notfound.mak', {}, request)
+    return render_to_response('lmkp:templates/errors/notfound.mak', {'reason': context}, request)

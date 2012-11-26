@@ -53,10 +53,16 @@ Ext.onReady(function(){
             var reloadStores = function() {
                 ref_version = oldVersionCombo.getValue();
                 new_version = newVersionCombo.getValue();
+                var url = urlTemplate.apply([type, format, uid, ref_version, new_version]);
+
+                // Update the permalink button URL
+                var aEl = Ext.query('#permalink-button a')[0];
+                aEl.href = url
+
                 taggroupGrid.setLoading(true);
                 involvementGrid.setLoading(true);
                 Ext.Ajax.request({
-                    url: urlTemplate.apply([type, 'json', uid, ref_version, new_version]),
+                    url: url,
                     success: function(response){
                         var text = response.responseText;
                         var data = Ext.decode(text);
@@ -142,11 +148,9 @@ Ext.onReady(function(){
             });
 
             var permalinkButton = Ext.create('Ext.button.Button',{
-                handler: function(button, event){
-                    window.location.href = urlTemplate.apply([type, format, uid,
-                        oldVersionCombo.getValue(),
-                        newVersionCombo.getValue()])
-                },
+                id: 'permalink-button',
+                href: urlTemplate.apply([type, format, uid, oldVersionCombo.getValue(), newVersionCombo.getValue()]),
+                hrefTarget: '',
                 region: 'east',
                 iconCls: 'button-link',
                 tooltip: Lmkp.ts.msg("Permanent link to current view"),
@@ -209,7 +213,7 @@ Ext.onReady(function(){
                 },
                 region: 'center',
                 store: taggroupStore,
-                title: Lmkp.ts.msg('Taggroups'),
+                title: Lmkp.ts.msg('Taggroups')
             });
 
             var involvementGrid = Ext.create('Ext.grid.Panel', {
