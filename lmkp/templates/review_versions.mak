@@ -21,10 +21,16 @@ else:
         width: 98%;
     }
     .remove {
-        background-color: lightcoral;
+        background-color: lightcoral !important;
     }
     .add {
-        background-color: lightgreen;
+        background-color: lightgreen !important;
+    }
+    .button-link {
+        background-image: url('/static/img/link.png') !important;
+    }
+    .button-refresh {
+        background-image: url('/static/img/view-refresh.png') !important;
     }
 </style>
 <script type="text/javascript" src="${request.static_url('lmkp:static/lib/extjs-4.1.1/ext.js')}"></script>
@@ -38,10 +44,7 @@ else:
         }
     });
     Ext.ns('Lmkp');
-    Lmkp.type = "${type}";
-    Lmkp.identifier = "${identifier}";
-    Lmkp.current_version = "${version}";
-    Lmkp.next_url = "${next_url}"
+    Lmkp.version = "${metadata['version']}";
 </script>
 <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
 <script type="text/javascript" src="${request.route_url('moderator_toolbar_config')}"></script>
@@ -53,36 +56,6 @@ else:
         <img src="${request.static_url('lmkp:static/img/spinner.gif')}" alt="${_('gui_loading')} ..."/>
     </div>
 </div>
-<table id="compare-table">
-    <thead>
-        <tr>
-            % for cell in data[0]:
-            <th>
-                <div class="${cell['class']}">
-                    % for tag in cell['tags']:
-                    <div>${tag['key']}: ${tag['value']}</div>
-                    % endfor
-                </div>
-            </th>
-            % endfor
-        </tr>
-    </thead>
-    <tbody>
-        % for row in range(1,len(data)):
-        <tr>
-            % for cell in data[row]:
-            <td>
-                <div class="${cell['class']}">
-                    % for tag in cell['tags']:
-                    <div>${tag['key']}: ${tag['value']}</div>
-                    % endfor
-                </div>
-            </td>
-            % endfor
-        </tr>
-        % endfor
-    </tbody>
-</table>
 <!-- AddThis Button BEGIN -->
 <div id="social-plugin">
     <div class="addthis_toolbox addthis_default_style ">

@@ -142,7 +142,7 @@ def ui_messages(request):
         # Involvements
         'involvements_edit-involvement': _('involvements_edit-involvement', default='Edit this involvement'),
         'involvements_stakeholder-role': _('involvements_stakeholder-role', default='Role'),
-        'involvements_title': _('involvements_title', default='Involvement'),
+        'involvements_title': _('involvements_title', default='Involvements'),
 
         # Stakeholders
         'stakeholders_add-stakeholders': _('stakeholders_add-stakeholders', default='Add Stakeholders'),
