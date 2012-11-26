@@ -2,91 +2,33 @@ __author__ = "Adrian Weber, Centre for Development and Environment, University o
 __date__ = "$Nov 20, 2012 4:05:32 PM$"
 
 from lmkp.models.database_objects import Activity
-from lmkp.models.database_objects import Changeset
 from lmkp.models.meta import DBSession as Session
+from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.review import BaseReview
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPSeeOther
-from pyramid.renderers import render_to_response
 from pyramid.view import view_config
-from sqlalchemy.sql.functions import max
 from pyramid_handlers import action
 
 log = logging.getLogger(__name__)
 
 class ActivityReview(BaseReview):
 
-    @view_config(route_name='activities_review_versions', renderer='lmkp:templates/review_versions.mak', permission='moderate')
-    def review_activity(self):
-        """
-        Review to versions together
-        """
-
-        # Get the activity identifier
-        uid = self.request.matchdict.get('uid', None)
-
-        additional_vars = {}
-        additional_vars['identifier'] = uid
-        additional_vars['next_url'] = self.request.route_url('activities_review_versions', uid=uid)
-        additional_vars['type'] = 'activities'
-
-        # Get the current active version number
-        o = Session.query(Activity.version).filter(Activity.activity_identifier == uid).filter(Activity.fk_status == 2).first()
-
-        # If there is no active version yet, just show the first version
-        if o is None:
-
-            # Show the first version
-            version = 1
-
-            # Set the first version as version to review
-            additional_vars['version'] = version
-
-            activity = self.activity_protocol3.read_one_by_version(self.request, uid, version)
-
-            return dict(self._review_one_version(activity, uid, version).items() + additional_vars.items())
-
-        # Get the latest version number
-        l = Session.query(max(Activity.version)).filter(Activity.activity_identifier == uid).first()
-        old_version = int(o[0])
-        new_version = old_version + 1
-        latest_version = int(l[0])
-
-        # Some logging
-        log.debug("active version: %s" % old_version)
-        log.debug("pending version: %s" % new_version)
-        log.debug("latest version: %s" % latest_version)
-
-        # Raise an exception is new version number is less than the old version number
-        if new_version < old_version:
-            raise HTTPBadRequest("Pending version must be newer than active version.")
-
-        # Get the old version
-        old = self.activity_protocol3.read_one_by_version(self.request, uid, old_version)
-
-        # Get the new version
-        try:
-            new = self.activity_protocol3.read_one_by_version(self.request, uid, new_version)
-        # If there is no newer version, catch the exception and redirect the page
-        # to the standard html view
-        except IndexError as e:
-            return HTTPFound(self.request.route_url('activities_read_one_active', output='html', uid=uid))
-
-        additional_vars['version'] = new_version
-        return dict(self._compare_taggroups(old, new).items() + additional_vars.items())
-
+    def __init__(self, request):
+        super(ActivityReview, self).__init__(request)
+        self.activity_protocol3 = ActivityProtocol3(Session)
+        
     @action(name='html', renderer='lmkp:templates/compare_versions.mak', permission='moderate')
-    def compare_activity_html(self, uid=None):
+    def compare_html(self):
 
         uid = self.request.matchdict.get('uid', None)
-
-        if uid is None:
-            uid = self.request.matchdict.get('uid', None)
 
         available_versions = []
-        for i in Session.query(Activity.version).filter(Activity.activity_identifier == uid):
+        for i in Session.query(Activity.version).\
+            filter(Activity.activity_identifier == uid).\
+            order_by(Activity.version):
             available_versions.append(i[0])
 
         additional_params = {
@@ -96,36 +38,93 @@ class ActivityReview(BaseReview):
         return additional_params
 
     @action(name='json', renderer='json', permission='moderate')
-    def compare_activity_by_versions_json(self):
+    def compare_json(self):
 
+        # Get the uid from the request
         uid = self.request.matchdict.get('uid', None)
 
+        # Try to get the versions or set reference and new version to 1
         versions = self.request.matchdict.get('versions')
         try:
-            old_version = int(versions[0])
-        except:
-            old_version = 1
+            ref_version = int(versions[0])
+        except IndexError:
+            ref_version = 1
+        except ValueError as e:
+            raise HTTPBadRequest("ValueError: %s" % e)
 
         try:
             new_version = int(versions[1])
-        except:
+        except IndexError:
             new_version = 1
+        except ValueError as e:
+            raise HTTPBadRequest("ValueError: %s" % e)
 
-        old = self.activity_protocol3.read_one_by_version(self.request, uid, old_version)
+	# Get the old, reference Activity object
+	ref = self.activity_protocol3.read_one_by_version(self.request, uid, ref_version)
 
-        ref_timestamp = Session.query(Changeset.timestamp).join(Activity).filter(Activity.activity_identifier == uid).filter(Activity.version == old_version).first()
-        new_timestamp = Session.query(Changeset.timestamp).join(Activity).filter(Activity.activity_identifier == uid).filter(Activity.version == new_version).first()
-
-        additional_params = {
-        'ref_title': "Version %s as of %s" % (old_version, ref_timestamp[0].strftime('%H:%M, %d-%b-%Y')),
-        'new_title': "Version %s as of %s" % (new_version, new_timestamp[0].strftime('%H:%M, %d-%b-%Y'))
-        }
-
+        # Try to get the new activity object
         try:
             new = self.activity_protocol3.read_one_by_version(self.request, uid, new_version)
         except IndexError:
-            return HTTPSeeOther(self.request.route_url('activities_compare_versions', action='json', uid=uid, old=old_version, new=str(new_version-1)))
+            return HTTPSeeOther(self.request.route_url('activities_compare_versions', action='json', uid=uid, versions=(old_version, (new_version-1))))
 
-        result = dict(self._compare_taggroups(old, new).items() + additional_params.items())
+        # Request also the metadata
+        metadata = {}
+        metadata['ref_title'], metadata['new_title'] = \
+            self._get_active_pending_version_descriptions(Activity, uid, ref_version, new_version)
+
+        result = dict(self._compare_taggroups(ref, new).items() + {'metadata': metadata}.items())
 
         return result
+
+    @view_config(route_name='activities_review_versions_html', renderer='lmkp:templates/review_versions.mak', permission='moderate')
+    def review_activity_html(self):
+        """
+        Review active with oldest pending version
+        """
+
+        # Get the activity identifier
+        uid = self.request.matchdict.get('uid', None)
+
+        c = Session.query(Activity).filter(Activity.activity_identifier == uid).count()
+
+        if c == 0:
+            raise HTTPNotFound("Activity with identifier %s does not exist." % uid)
+
+        active_version, pending_version = self._get_active_pending_versions(Activity, uid)
+
+        return {'metadata': {'identifier': uid, 'version': pending_version}}
+
+    @view_config(route_name='activities_review_versions_json', renderer='json', permission='moderate')
+    def review_activity_json(self):
+        """
+        Review two activity versions together
+        """
+
+        # Get the activity identifier
+        uid = self.request.matchdict.get('uid', None)
+
+        additional_vars = {}
+        additional_vars['identifier'] = uid
+        additional_vars['next_url'] = self.request.route_url('activities_review_versions_html', uid=uid)
+        additional_vars['type'] = 'activities'
+
+        active_version, pending_version = self._get_active_pending_versions(Activity, uid)
+
+        # Some logging
+        log.debug("active version: %s" % active_version)
+        log.debug("pending version: %s" % pending_version)
+
+        active = pending = None
+        # Get the active version
+        if active_version is not None:
+            active = self.activity_protocol3.read_one_by_version(self.request, uid, active_version)
+
+        # Get the new version
+        if pending_version is not None:
+            pending = self.activity_protocol3.read_one_by_version(self.request, uid, pending_version)
+
+        additional_vars['active_title'], additional_vars['pending_title'] = \
+            self._get_active_pending_version_descriptions(Activity, uid, active_version, pending_version)
+        additional_vars['version'] = pending_version
+        return dict(self._compare_taggroups(active, pending).items() + {'metadata': additional_vars}.items())
