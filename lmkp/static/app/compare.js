@@ -12,6 +12,7 @@ Ext.require('Ext.layout.container.Border');
 Ext.require('Ext.layout.container.Column');
 Ext.require('Ext.panel.Table');
 Ext.require('Ext.selection.RowModel');
+Ext.require('Ext.util.*');
 Ext.require('Ext.view.Table');
 Ext.require('Lmkp.controller.login.Toolbar');
 Ext.require('Lmkp.view.login.Toolbar');

@@ -14,6 +14,7 @@ Ext.require('Ext.form.action.StandardSubmit');
 Ext.require('Ext.layout.container.Border');
 Ext.require('Ext.tab.Panel');
 Ext.require('Ext.form.field.ComboBox');
+Ext.require('Ext.util.*');
 Ext.require('Lmkp.controller.login.Toolbar');
 Ext.require('Lmkp.model.SectorAreaPerYear');
 Ext.require('Lmkp.view.login.Toolbar');
