@@ -46,13 +46,13 @@ Ext.define('Lmkp.controller.login.Toolbar', {
 
     onPanelRendered: function(comp) {
         // load Language store
-        this.getLanguagesStore().load();
-        // set current language as selected in combobox
+        /*this.getLanguagesStore().load();
+            // set current language as selected in combobox
         var lang_cb = Ext.ComponentQuery.query('combobox[id=language_combobox]')[0];
-        lang_cb.setValue(Lmkp.ts.msg("locale"));
+        lang_cb.setValue(Lmkp.ts.msg("locale"));*/
 
         // load profile store
-        this.getProfilesStore().load();
+        /*this.getProfilesStore().load();
         // get current profile (default: global)
         var profile = Ext.util.Cookies.get('_PROFILE_');
         if (!profile) {
@@ -60,7 +60,7 @@ Ext.define('Lmkp.controller.login.Toolbar', {
         }
         // set current profile as selected in combobox
         var profile_cb = Ext.ComponentQuery.query('combobox[id=profile_combobox]')[0];
-        profile_cb.setValue(profile);
+        profile_cb.setValue(profile);*/
     },
 
     onPasswordKeyPress: function(textfield, event, eOpts){

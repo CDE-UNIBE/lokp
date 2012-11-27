@@ -1,21 +1,7 @@
 <%inherit file="lmkp:templates/base.mak" />
 
 <%def name="head_tags()">
-<%
-
-from pyramid.security import ACLAllowed
-from pyramid.security import authenticated_userid
-from pyramid.security import has_permission
-
-if str(request.registry.settings['lmkp.use_js_builds']).lower() == "true":
-    use_js_builds = True
-else:
-    use_js_builds = False
-
-%>
 <title>${_("Land Observatory")} - ${_("Review")}</title>
-<link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/lib/extjs-4.1.1/resources/css/ext-all.css')}"/>
-<link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/style.css')}"/>
 <style type="text/css">
     table#compare-table{
         width: 98%;
@@ -33,16 +19,7 @@ else:
         background-image: url('/static/img/view-refresh.png') !important;
     }
 </style>
-<script type="text/javascript" src="${request.static_url('lmkp:static/lib/extjs-4.1.1/ext.js')}"></script>
 <script type="text/javascript">
-    Ext.Loader.setConfig({
-        enabled: true,
-        paths: {
-            'Ext': '/static/lib/extjs-4.1.1/src',
-            'Ext.ux': '/static/lib/extjs-4.1.1/examples/ux',
-            'Lmkp': '/static/app'
-        }
-    });
     Ext.ns('Lmkp');
     Lmkp.version = "${metadata['version']}";
 </script>

@@ -7,6 +7,10 @@ Ext.define('Lmkp.view.login.Toolbar' ,{
         xtype: 'combobox'
     },
 
+    requires: [
+        'Ext.util.*'
+    ],
+
     items: [{
         fieldLabel: Lmkp.ts.msg("gui_profile"),
         id: 'profile_combobox',
@@ -14,6 +18,7 @@ Ext.define('Lmkp.view.login.Toolbar' ,{
         queryMode: 'local',
         store: 'Profiles',
         displayField: 'name',
+        value: Ext.util.Cookies.get('_PROFILE_') ? Ext.util.Cookies.get('_PROFILE_') : 'global',
         valueField: 'profile',
         forceSelection: true,
         editable: false
@@ -23,6 +28,7 @@ Ext.define('Lmkp.view.login.Toolbar' ,{
         queryMode: 'local',
         store: 'Languages',
         displayField: 'local_name',
+        value: Lmkp.ts.msg("locale"),
         valueField: 'locale',
         forceSelection: true,
         editable: false

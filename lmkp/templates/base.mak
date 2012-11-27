@@ -1,8 +1,43 @@
+<%
+
+import json
+from lmkp.views.translation import language_store
+from lmkp.views.profile import profile_store
+
+available_languages = json.dumps(language_store(request), ensure_ascii=True)
+available_profiles = json.dumps(profile_store(request), ensure_ascii=True)
+
+if str(request.registry.settings['lmkp.use_js_builds']).lower() == "true":
+    use_js_builds = True
+else:
+    use_js_builds = False
+
+%>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/lib/extjs-4.1.1/resources/css/ext-all.css')}"></link>
+        <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/style.css')}"></link>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/lib/extjs-4.1.1/ext.js')}"></script>
+        <script type="text/javascript">
+            Ext.Loader.setConfig({
+                    % if use_js_builds:
+                    enabled: false
+                    % else:
+                    enabled: true,
+                paths: {
+                    'GeoExt': '/static/lib/geoext2/src/GeoExt',
+                    'Lmkp': '/static/app'
+                }
+                    % endif
+            });
+            Ext.ns('Lmkp');
+            Lmkp.available_languages = ${available_languages | n};
+            Lmkp.available_profiles = ${available_profiles | n};
+        </script>
         ${self.head_tags()}
     </head>
     <body>

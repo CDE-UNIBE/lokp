@@ -8,6 +8,7 @@ Ext.require('Ext.fx.*');
 Ext.require('Ext.grid.Panel');
 Ext.require('Ext.layout.container.Border');
 Ext.require('Ext.toolbar.Paging');
+Ext.require('Ext.util.*');
 Ext.require('Lmkp.controller.login.Toolbar');
 Ext.require('Lmkp.store.ReviewDecisions');
 Ext.require('Lmkp.view.login.Toolbar');
