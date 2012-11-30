@@ -1192,7 +1192,7 @@ class ActivityProtocol3(Protocol):
     def _get_spatial_moderator_filter(self, request):
         """
         """
-        userid = authenticated_userid(request)
+        userid = request.user.username #authenticated_userid(request)
 
         profile_filters = []
 

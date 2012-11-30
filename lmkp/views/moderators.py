@@ -5,32 +5,37 @@ from lmkp.views.profile import _getCurrentProfileExtent
 
 log = logging.getLogger(__name__)
 
-@view_config(route_name='moderator_toolbar_config', renderer='javascript', permission='moderate')
-def moderator_toolbar_config(request):
-    """
-    Returns an array of JavaScript objects for users with moderating permission.
-    """
+class ToolbarHandler(object):
 
-    _ = request.translate
+    def __init__(self, context, request):
+        self.request = request
 
-    # Write the JavaScript and instantiate the global variable Lmkp.ts
-    str = "Ext.namespace('Lmkp');\n"
+    @view_config(route_name='moderator_toolbar_config', renderer='javascript', permission='moderate')
+    def moderator_toolbar_config(self):
+        """
+        Returns an array of JavaScript objects for users with moderating permission.
+        """
 
-    # Flag if user is logged in (editor) or not. This determines if buttons to
-    # add or edit Activities or Stakeholders are shown.
-    str += "Lmkp.editor = true;\n"
+        _ = self.request.translate
 
-    # Login form: Show current user and button to log out.
-    str += "Lmkp.login_form = {\n\txtype: 'toolbar',\n\tborder: false,\n\titems: [\n";
-    str += "\t\t{xtype: 'label', text: \"%s\", border: 0, bodyCls: 'toolbar_username'},\n" % _('Logged in as:')
-    str += "\t\t{id: 'user_button', text: \"%s\", tooltip: \"%s\"},\n" % (request.user.username, _('Show user profile'))
-    str += "\t\t{id: 'logout_button', text: \"%s\"}\n\t]\n};\n" % _('Logout')
+        # Write the JavaScript and instantiate the global variable Lmkp.ts
+        str = "Ext.namespace('Lmkp');\n"
 
-    # Specific controllers for moderators. The ones for editors need to be
-    # included as well.
-    str += "Lmkp.moderatorControllers = ['moderator.Main', 'moderator.Details', 'activities.NewActivity', 'editor.Map', 'stakeholders.NewStakeholder'];\n"
+        # Flag if user is logged in (editor) or not. This determines if buttons to
+        # add or edit Activities or Stakeholders are shown.
+        str += "Lmkp.editor = true;\n"
 
-    # The current profile extent.
-    str += "Lmkp.currentProfileExtent = %s" % _getCurrentProfileExtent(request)
+        # Login form: Show current user and button to log out.
+        str += "Lmkp.login_form = {\n\txtype: 'toolbar',\n\tborder: false,\n\titems: [\n";
+        str += "\t\t{xtype: 'label', text: \"%s\", border: 0, bodyCls: 'toolbar_username'},\n" % _('Logged in as:')
+        str += "\t\t{id: 'user_button', text: \"%s\", tooltip: \"%s\"},\n" % (self.request.user.username, _('Show user profile'))
+        str += "\t\t{id: 'logout_button', text: \"%s\"}\n\t]\n};\n" % _('Logout')
 
-    return str
+        # Specific controllers for moderators. The ones for editors need to be
+        # included as well.
+        str += "Lmkp.moderatorControllers = ['moderator.Main', 'moderator.Details', 'activities.NewActivity', 'editor.Map', 'stakeholders.NewStakeholder'];\n"
+
+        # The current profile extent.
+        str += "Lmkp.currentProfileExtent = %s" % _getCurrentProfileExtent(self.request)
+
+        return str

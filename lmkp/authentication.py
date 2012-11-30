@@ -40,30 +40,31 @@ class CustomAuthenticationPolicy(AuthTktAuthenticationPolicy):
         return AuthTktAuthenticationPolicy.unauthenticated_userid(self, request)
 
     def effective_principals(self, request):
-        userid = self.authenticated_userid(request)
-        if userid is not None:
-            groups = group_finder(userid, request)
+        try:
+            userid = request.user.username
+        except AttributeError:
+            return AuthTktAuthenticationPolicy.effective_principals(self, request)
 
-            # If the user is a moderator check the selected profile
-            if groups is not None and groups[0] == 'group:moderators':
-                # Get the user
-                user = Session.query(User).filter(User.username == userid).first()
-                # and the current profile from the request
-                profile = get_current_profile(request)
-                # Check if the requested profile is assigned to this user
-                if profile in [p.code for p in user.profiles]:
-                    # If the set profile is assigned to the current moderator,
-                    # the usual principals are used
-                    return AuthTktAuthenticationPolicy.effective_principals(self, request)
-                else:
-                    # In other cases the moderator gets only editor rights:
-                    # Default principal is Everyone
-                    effective_principals = [Everyone]
-                    # Append the current user and the editor group to the principals
-                    effective_principals.append(Authenticated)
-                    effective_principals.append(userid)
-                    effective_principals.extend(['group:editors'])
-                    return effective_principals
+        groups = group_finder(userid, request)
+
+        # If the user is a moderator check the selected profile
+        if groups is not None and groups[0] == 'group:moderators':
+            # Get the current profile from the request
+            profile = get_current_profile(request)
+            # Check if the requested profile is assigned to this user
+            if profile in [p.code for p in request.user.profiles]:
+                # If the set profile is assigned to the current moderator,
+                # the usual principals are used
+                return AuthTktAuthenticationPolicy.effective_principals(self, request)
+            else:
+                # In other cases the moderator gets only editor rights:
+                # Default principal is Everyone
+                effective_principals = [Everyone]
+                # Append the current user and the editor group to the principals
+                effective_principals.append(Authenticated)
+                effective_principals.append(userid)
+                effective_principals.extend(['group:editors'])
+                return effective_principals
 
         # In all other cases use Pyramid's default authentication policy
         return AuthTktAuthenticationPolicy.effective_principals(self, request)
