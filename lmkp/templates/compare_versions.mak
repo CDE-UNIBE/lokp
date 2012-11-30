@@ -1,6 +1,13 @@
 <%inherit file="lmkp:templates/base.mak" />
 
 <%def name="head_tags()">
+<%
+
+from pyramid.security import ACLAllowed
+from pyramid.security import authenticated_userid
+from pyramid.security import has_permission
+
+%>
 <title>${_("Land Observatory")} - ${_("Compare")}</title>
 <style type="text/css">
     table#compare-table{
@@ -24,7 +31,15 @@
     Lmkp.available_versions = ${available_versions};
 </script>
 <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
+% if isinstance(has_permission('administer', request.context, request), ACLAllowed):
 <script type="text/javascript" src="${request.route_url('moderator_toolbar_config')}"></script>
+% elif isinstance(has_permission('moderate', request.context, request), ACLAllowed):
+<script type="text/javascript" src="${request.route_url('moderator_toolbar_config')}"></script>
+% elif isinstance(has_permission('edit', request.context, request), ACLAllowed):
+<script type="text/javascript" src="${request.route_url('edit_toolbar_config')}"></script>
+% else:
+<script type="text/javascript" src="${request.route_url('view_toolbar_config')}"></script>
+% endif
 <script type="text/javascript" src="${request.static_url('lmkp:static/app/compare.js')}"></script>
 </%def>
 

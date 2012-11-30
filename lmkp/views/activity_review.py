@@ -7,8 +7,8 @@ from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.review import BaseReview
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPNotFound
-from pyramid.httpexceptions import HTTPSeeOther
 from pyramid.view import view_config
 from pyramid_handlers import action
 
@@ -20,16 +20,16 @@ class ActivityReview(BaseReview):
         super(ActivityReview, self).__init__(request)
         self.activity_protocol3 = ActivityProtocol3(Session)
         
-    @action(name='html', renderer='lmkp:templates/compare_versions.mak', permission='moderate')
+    @action(name='html', renderer='lmkp:templates/compare_versions.mak')
     def compare_html(self):
 
         uid = self.request.matchdict.get('uid', None)
 
-        available_versions = []
-        for i in Session.query(Activity.version).\
-            filter(Activity.activity_identifier == uid).\
-            order_by(Activity.version):
-            available_versions.append(i[0])
+        available_versions = self._get_available_versions(Activity, uid)
+
+        if len(available_versions) == 0:
+            msg = "There is no Activity with identifier %s or you are not allowed to access it."
+            raise HTTPNotFound(msg % uid)
 
         additional_params = {
         'available_versions': available_versions
@@ -37,36 +37,19 @@ class ActivityReview(BaseReview):
 
         return additional_params
 
-    @action(name='json', renderer='json', permission='moderate')
+    @action(name='json', renderer='json')
     def compare_json(self):
 
         # Get the uid from the request
         uid = self.request.matchdict.get('uid', None)
 
-        # Try to get the versions or set reference and new version to 1
-        versions = self.request.matchdict.get('versions')
-        try:
-            ref_version = int(versions[0])
-        except IndexError:
-            ref_version = 1
-        except ValueError as e:
-            raise HTTPBadRequest("ValueError: %s" % e)
-
-        try:
-            new_version = int(versions[1])
-        except IndexError:
-            new_version = 1
-        except ValueError as e:
-            raise HTTPBadRequest("ValueError: %s" % e)
+        ref_version, new_version = self._get_valid_versions(Activity, uid)
 
 	# Get the old, reference Activity object
 	ref = self.activity_protocol3.read_one_by_version(self.request, uid, ref_version)
 
         # Try to get the new activity object
-        try:
-            new = self.activity_protocol3.read_one_by_version(self.request, uid, new_version)
-        except IndexError:
-            return HTTPSeeOther(self.request.route_url('activities_compare_versions', action='json', uid=uid, versions=(old_version, (new_version-1))))
+        new = self.activity_protocol3.read_one_by_version(self.request, uid, new_version)
 
         # Request also the metadata
         metadata = {}
