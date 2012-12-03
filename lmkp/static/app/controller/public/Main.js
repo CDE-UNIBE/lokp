@@ -122,8 +122,14 @@ Ext.define('Lmkp.controller.public.Main', {
      */
     onActivityTablePanelRender: function() {
 
+        var grid = this.getActivityTablePanel();
+        var store = this.getActivityGridStore();
+        
         // Adds a beforeload action
-        this.getActivityGridStore().on('beforeload', function(store){
+        store.on('beforeload', function(store){
+
+            // Loading mask
+            grid.setLoading({msg: Lmkp.ts.msg('gui_loading')});
 
             // Get the store proxy
             var proxy = store.getProxy();
@@ -137,11 +143,25 @@ Ext.define('Lmkp.controller.public.Main', {
             }
         }, this);
 
-        //this.getActivityGridStore().on('load', this._reloadStakeholderGridStore, this);
+        store.on('load', function() {
+            // Loading mask
+            grid.setLoading(false);
+        });
 
     },
 
     onStakeholderTablePanelRender: function(comp) {
+
+        var grid = this.getStakeholderTablePanel();
+        var store = this.getStakeholderGridStore();
+
+        // Loading mask
+        store.on('beforeload', function() {
+            grid.setLoading({msg: Lmkp.ts.msg('gui_loading')});
+        });
+        store.on('load', function() {
+            grid.setLoading(false);
+        });
 
         // Update filter count
         this._updateFilterCount();

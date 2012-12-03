@@ -16,7 +16,7 @@ Ext.define('Lmkp.store.StakeholderGrid', {
 
     proxy: {
         type: 'ajax',
-        url: '/stakeholders',
+        url: '/stakeholders/json',
         reader: {
             root: 'data',
             type: 'json',
