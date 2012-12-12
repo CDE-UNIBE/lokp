@@ -17,6 +17,12 @@ Ext.define('Lmkp.view.activities.ChangesetPanel', {
 
     initComponent: function() {
 
+        var username, userid = null;
+        if (this.user) {
+            username = this.user.username;
+            userid = this.user.id;
+        }
+
         this.items = [
             this.additionalPanelTop,
             {
@@ -34,7 +40,7 @@ Ext.define('Lmkp.view.activities.ChangesetPanel', {
                 fieldLabel: Lmkp.ts.msg('gui_user'),
                 value: this._valueOrUnknown(
                     this.stringFunctions._formatUsername(
-                        this.username, this.userid)
+                        username, userid)
                 )
             },
             this.additionalPanelBottom
