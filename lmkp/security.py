@@ -12,11 +12,14 @@ log = logging.getLogger(__name__)
 
 def group_finder(username, request):
     """
-    Finds and returns a user group for a certain user name.
-    This function implies that the usernames are unique! Not sure if this is
-    true for the data model
+    Finds and returns all user groups for a certain user name.
     """
-    q = Session.query(Group.name).join(users_groups).join(User).filter(User.username == username).limit(1)
-    group = q[0][0]
-    log.debug("Found group: %s" % group)
-    return ["group:%s" % group]
+    if username:
+        groupQuery = Session.query(
+                Group.name
+            ).\
+            join(users_groups).\
+            join(User).\
+            filter(User.username == username)
+        return ["group:%s" % group.name for group in groupQuery.all()]
+    return []

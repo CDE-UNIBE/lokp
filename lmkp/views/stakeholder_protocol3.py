@@ -631,9 +631,7 @@ class StakeholderProtocol3(Protocol):
         relevant_activities = ap._get_relevant_activities_one(request, uid=uid,
                                                               public_query=public_query)
 
-        # Always take the latest one.
         relevant_activities = relevant_activities.\
-            limit(1).\
             subquery()
 
         # Prepare status filter
