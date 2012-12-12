@@ -31,6 +31,13 @@ reviewdecisionMap = {
     'rejected': _('reviewdecision_rejected', default='rejected')
 }
 
+# Translatable hashmap with all possible user groups
+usergroupMap = {
+    'editors': _('usergroup_editors', default='Editors'),
+    'moderators': _('usergroup_moderators', default='Moderators'),
+    'administrators': _('usergroup_administrators', default='Administrators')
+}
+
 @view_config(route_name='ui_translation', renderer='javascript')
 def ui_messages(request):
 
@@ -50,6 +57,11 @@ def ui_messages(request):
         # Review decision
         'reviewdecision_approved': reviewdecisionMap['approved'],
         'reviewdecision_rejected': reviewdecisionMap['rejected'],
+
+        # User groups
+        'usergroup_editors': usergroupMap['editors'],
+        'usergroup_moderators': usergroupMap['moderators'],
+        'usergroup_administrators': usergroupMap['administrators'],
 
         # Buttons
         'button_add-attribute-filter': _('button_add-attribute-filter', default='Add attribute filter'),

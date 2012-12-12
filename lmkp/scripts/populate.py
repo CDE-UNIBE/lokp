@@ -116,7 +116,7 @@ def main(argv=sys.argv):
         admin_password = settings['lmkp.admin_password']
         admin_email = settings['lmkp.admin_email']
         user1 = _addIfNotExists_NoIDUnique(User(username='admin', password=admin_password, email=admin_email), User.username, 'admin')
-        user1.groups.append(group1)
+        user1.groups = [group1, group2, group3]
         # connected with profile1 (global)
         #user2 = _addIfNotExists_NoIDUnique(User(username='user2', password='pw', email='user2@cde.unibe.ch'), User.username, 'user2')
         #user2.groups.append(group2)
