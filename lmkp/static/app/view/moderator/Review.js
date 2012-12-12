@@ -91,8 +91,7 @@ Ext.define('Lmkp.view.moderator.Review', {
                         timestamp: record.get('timestamp'),
                         version: record.get('version'),
                         previous_version: record.get('previous_version'),
-                        username: record.get('username'),
-                        userid: record.get('userid'),
+                        user: record.get('user'),
                         additionalPanelBottom: {
                             xtype: xtype,
                             contentItem: record,
@@ -122,8 +121,7 @@ Ext.define('Lmkp.view.moderator.Review', {
                         timestamp: record.get('timestamp'),
                         version: record.get('version'),
                         previous_version: record.get('previous_version'),
-                        username: record.get('username'),
-                        userid: record.get('userid'),
+                        user: record.get('user'),
                         additionalPanelBottom: {
                             xtype: xtype,
                             contentItem: record,

@@ -831,14 +831,17 @@ class Institution(Base):
     name = Column(String(511), nullable = False)
     abbreviation = Column(String(255))
     url = Column(String(511))
+    logo_url = Column(String(511))
     description = Column(Text)
 
     users = relationship('User', backref='institution')
 
-    def __init__(self, name, abbreviation=None, url=None, description=None):
+    def __init__(self, name, abbreviation=None, url=None, logo_url=None,
+        description=None):
         self.name = name
         self.abbreviation = abbreviation
         self.url = url
+        self.logo_url = logo_url
         self.description = description
 
 class Institution_Type(Base):

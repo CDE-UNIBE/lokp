@@ -26,7 +26,12 @@ Ext.define('Lmkp.view.stakeholders.Details',{
         this.centerPanel = Ext.create('Ext.panel.Panel', {
             autoScroll: true,
             layout: 'anchor',
-            itemId: 'stakeholderDetailCenterPanel'
+            itemId: 'stakeholderDetailCenterPanel',
+            items: {
+                html: Lmkp.ts.msg('gui_loading'),
+                bodyPadding: 5,
+                border: 0
+            }
         });
 
         this.historyStore = Ext.create('Ext.data.Store', {

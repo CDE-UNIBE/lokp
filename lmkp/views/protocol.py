@@ -914,6 +914,17 @@ class Feature(object):
         self._pending = []
         self._missing_keys = None
 
+        self._user_privacy = kwargs.pop('user_privacy', None)
+        self._user_id = kwargs.pop('user_id', None)
+        self._user_name = kwargs.pop('user_name', None)
+        self._user_firstname = kwargs.pop('user_firstname', None)
+        self._user_lastname = kwargs.pop('user_lastname', None)
+
+        self._institution_id = kwargs.pop('institution_id', None)
+        self._institution_name = kwargs.pop('institution_name', None)
+        self._institution_url = kwargs.pop('institution_url', None)
+        self._institution_logo = kwargs.pop('institution_logo', None)
+
     def add_taggroup(self, taggroup):
         """
         Adds a new tag group to the internal tag group list
@@ -1067,6 +1078,34 @@ class Feature(object):
             for i in self._involvements:
                 sh.append(i.to_table(request))
             ret['involvements'] = sh
+
+        # User details
+        user = {}
+        if self._user_id is not None:
+            user['id'] = self._user_id
+        if self._user_name is not None:
+            user['username'] = self._user_name
+        # User details based on privacy settings
+        if self._user_privacy is not None and self._user_privacy > 0:
+            if self._user_firstname is not None:
+                user['firstname'] = self._user_firstname
+            if self._user_lastname is not None:
+                user['lastname'] = self._user_lastname
+        if user != {}:
+            ret['user'] = user
+
+        # Institutions
+        institution = {}
+        if self._institution_id is not None:
+            institution['id'] = self._institution_id
+        if self._institution_name is not None:
+            institution['name'] = self._institution_name
+        if self._institution_url is not None:
+            institution['url'] = self._institution_url
+        if self._institution_logo is not None:
+            institution['logo'] = self._institution_logo
+        if institution != {}:
+            ret['institution'] = institution
 
         return ret
 

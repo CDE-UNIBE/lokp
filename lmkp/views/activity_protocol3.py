@@ -31,7 +31,8 @@ class ActivityFeature3(Feature):
 
     def __init__(self, guid, order_value, geometry=None, version=None,
                  status=None, status_id=None, timestamp=None, user_privacy=None,
-                 institution_id=None, institution_name=None, user_id=None,
+                 institution_id=None, institution_name=None,
+                 institution_url=None, institution_logo=None, user_id=None,
                  user_name=None, user_firstname=None, user_lastname=None):
         self._taggroups = []
         self._involvements = []
@@ -45,6 +46,8 @@ class ActivityFeature3(Feature):
         self._user_privacy = user_privacy
         self._institution_id = institution_id
         self._institution_name = institution_name
+        self._institution_url = institution_url
+        self._institution_logo = institution_logo
         self._user_id = user_id
         self._user_name = user_name
         self._user_firstname = user_firstname
@@ -111,22 +114,31 @@ class ActivityFeature3(Feature):
         if self._timestamp is not None:
             ret['timestamp'] = str(self._timestamp)
 
+        institution = {}
         if self._institution_id is not None:
-            ret['institution_id'] = self._institution_id
+            institution['id'] = self._institution_id
         if self._institution_name is not None:
-            ret['institution_name'] = self._institution_name
+            institution['name'] = self._institution_name
+        if self._institution_url is not None:
+            institution['url'] = self._institution_url
+        if self._institution_logo is not None:
+            institution['logo'] = self._institution_logo
+        if institution != {}:
+            ret['institution'] = institution
 
+        user = {}
         if self._user_id is not None:
-            ret['user_id'] = self._user_id
+            user['id'] = self._user_id
         if self._user_name is not None:
-            ret['user_name'] = self._user_name
-
+            user['username'] = self._user_name
         # User details based on privacy settings
         if self._user_privacy is not None and self._user_privacy > 0:
             if self._user_firstname is not None:
-                ret['user_firstname'] = self._user_firstname
+                user['firstname'] = self._user_firstname
             if self._user_lastname is not None:
-                ret['user_lastname'] = self._user_lastname
+                user['lastname'] = self._user_lastname
+        if user != {}:
+            ret['user'] = user
 
         # Involvements
         if len(self._involvements) != 0:
@@ -231,7 +243,9 @@ class ActivityProtocol3(Protocol):
         offset = self._get_offset(request)
 
         query, count = self._query_many(request, relevant_activities,
-                                        limit=limit, offset=offset, involvements=inv_details != 'none')
+                                        limit=limit, offset=offset,
+                                        involvements=inv_details != 'none',
+                                        metadata=True)
 
         # Order the Activity by version
         query = query.order_by(desc(Activity.version))
@@ -898,7 +912,7 @@ class ActivityProtocol3(Protocol):
         return query
 
     def _query_many(self, request, relevant_activities, limit=None, offset=None,
-                    involvements=False, return_count=True):
+                    involvements=False, return_count=True, metadata=False):
         # Prepare query to translate keys and values
         localizer = get_localizer(request)
         lang = None if localizer.locale_name == 'en' \
@@ -928,13 +942,6 @@ class ActivityProtocol3(Protocol):
                                    Status.id.label('status_id'),
                                    Status.name.label('status'),
                                    Changeset.timestamp.label('timestamp'),
-                                   User.id.label('user_id'),
-                                   User.username.label('user_name'),
-                                   User.firstname.label('user_firstname'),
-                                   User.lastname.label('user_lastname'),
-                                   User.privacy.label('user_privacy'),
-                                   Institution.id.label('institution_id'),
-                                   Institution.name.label('institution_name'),
                                    A_Tag_Group.id.label('taggroup'),
                                    A_Tag_Group.tg_id.label('tg_id'),
                                    A_Tag_Group.fk_a_tag.label('main_tag'),
@@ -949,8 +956,6 @@ class ActivityProtocol3(Protocol):
                  relevant_activities.c.order_id == Activity.id).\
             join(Status).\
             join(Changeset).\
-            join(User).\
-            join(Institution).\
             outerjoin(A_Tag_Group).\
             outerjoin(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
             outerjoin(A_Key).\
@@ -959,6 +964,21 @@ class ActivityProtocol3(Protocol):
                       key_translation.c.key_original_id == A_Key.id).\
             outerjoin(value_translation,
                       value_translation.c.value_original_id == A_Value.id)
+
+        if metadata:
+            query = query.add_columns(
+                User.id.label('user_id'),
+                User.username.label('user_name'),
+                User.firstname.label('user_firstname'),
+                User.lastname.label('user_lastname'),
+                User.privacy.label('user_privacy'),
+                Institution.id.label('institution_id'),
+                Institution.name.label('institution_name'),
+                Institution.url.label('institution_url'),
+                Institution.logo_url.label('institution_logo'),
+            ).\
+            outerjoin(User, User.id == Changeset.fk_user).\
+            outerjoin(Institution)
 
         if involvements:
             inv_status_filter = self.Session.query(
@@ -1067,14 +1087,26 @@ class ActivityProtocol3(Protocol):
                         activity = a
 
             if activity == None:
+                # Handle optional metadata correctly
+                user_privacy = q.user_privacy if hasattr(q, 'user_privacy') else None
+                user_id = q.user_id if hasattr(q, 'user_id') else None
+                user_name = q.user_name if hasattr(q, 'user_name') else None
+                user_firstname = q.user_firstname if hasattr(q, 'user_firstname') else None
+                user_lastname = q.user_lastname if hasattr(q, 'user_lastname') else None
+                institution_id = q.institution_id if hasattr(q, 'institution_id') else None
+                institution_name = q.institution_name if hasattr(q, 'institution_name') else None
+                institution_url = q.institution_url if hasattr(q, 'institution_url') else None
+                institution_logo = q.institution_logo if hasattr(q, 'institution_logo') else None
+
                 activity = ActivityFeature3(
                                             identifier, q.order_value, geometry=q.geometry,
                                             version=q.version, status=q.status, status_id=q.status_id,
-                                            timestamp=q.timestamp, user_privacy=q.user_privacy,
-                                            institution_id=q.institution_id, institution_name=q.institution_name,
-                                            user_id=q.user_id, user_name=q.user_name,
-                                            user_firstname=q.user_firstname,
-                                            user_lastname=q.user_lastname
+                                            timestamp=q.timestamp, user_privacy=user_privacy,
+                                            institution_id=institution_id, institution_name=institution_name,
+                                            institution_url=institution_url, institution_logo=institution_logo,
+                                            user_id=user_id, user_name=user_name,
+                                            user_firstname=user_firstname,
+                                            user_lastname=user_lastname
                                             )
                 activities.append(activity)
 
