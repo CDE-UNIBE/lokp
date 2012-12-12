@@ -768,10 +768,7 @@ class ActivityProtocol3(Protocol):
         sp = StakeholderProtocol3(self.Session)
         relevant_stakeholders = sp._get_relevant_stakeholders_one(request,
                                                                   uid=uid, public_query=public_query)
-
-        # Always take the latest one.
         relevant_stakeholders = relevant_stakeholders.\
-            limit(1).\
             subquery()
 
         # Prepare status filter
@@ -986,7 +983,7 @@ class ActivityProtocol3(Protocol):
                                                    ).\
                 filter(or_(* self._get_involvement_status(request)))
 
-            log.debug("Involvement Status Filter:\n%s" % inv_status_filter)
+            #log.debug("Involvement Status Filter:\n%s" % inv_status_filter)
 
             inv_status = self.Session.query(
                                             Stakeholder.id.label('stakeholder_id'),
@@ -1014,7 +1011,7 @@ class ActivityProtocol3(Protocol):
                 join(Stakeholder_Role).\
                 subquery()
 
-            log.debug("Involvement Query:\n%s" % inv_query)
+            #log.debug("Involvement Query:\n%s" % inv_query)
 
             query = query.\
                 add_columns(
@@ -1126,7 +1123,7 @@ class ActivityProtocol3(Protocol):
             # Involvements
             if involvements != 'none':
 
-                log.debug("Stakeholder identifier:\n%s" % q.stakeholder_identifier)
+                #log.debug("Stakeholder identifier:\n%s" % q.stakeholder_identifier)
                 try:
                     if q.stakeholder_identifier is not None:
 

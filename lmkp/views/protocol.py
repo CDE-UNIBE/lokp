@@ -233,7 +233,7 @@ class Protocol(object):
             )
 
 
-        log.debug("Involvement statuses [array]:\n%s" % statuses)
+        #log.debug("Involvement statuses [array]:\n%s" % statuses)
 
         return statuses
 
