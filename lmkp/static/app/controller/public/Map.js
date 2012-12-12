@@ -80,8 +80,13 @@ Ext.define('Lmkp.controller.public.Map', {
         ctrl.events.register('featurehighlighted', this, this.openDetailWindow);
 
         // Adds a beforeload action
-        var vectorStore = this.getMapPanel().activityFeatureStore;
+        var mappanel = this.getMapPanel();
+        var vectorStore = mappanel.activityFeatureStore;
         vectorStore.on('beforeload', function(store){
+
+            // Loading mask
+            mappanel.setLoading({msg: Lmkp.ts.msg('gui_loading')});
+
             // Get the store proxy
             var proxy = store.getProxy();
             // Get the map view.
@@ -94,6 +99,10 @@ Ext.define('Lmkp.controller.public.Map', {
                 proxy.setExtraParam("epsg", 900913);
             }
         }, this);
+        vectorStore.on('load', function() {
+            // Loading mask
+            mappanel.setLoading(false);
+        });
     },
     
     openDetailWindow: function(event){
@@ -154,13 +163,10 @@ Ext.define('Lmkp.controller.public.Map', {
         vectorStore.load();
 
         aStore.setInitialProxy();
-        this.getActivityGridStore().loadPage(1, {
-            callback: function() {
-                // Update StakeholderGrid store to match ActivityGrid
-                shStore.syncWithActivities(this.getProxy().extraParams);
-                me.unselectAll();
-            }
-        });
+
+        aStore.loadPage(1);
+        shStore.loadPage(1);
+        me.unselectAll();
     },
 
     /**

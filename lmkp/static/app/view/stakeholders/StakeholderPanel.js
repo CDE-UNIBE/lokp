@@ -24,6 +24,7 @@ Ext.define('Lmkp.view.stakeholders.StakeholderPanel', {
         this.callParent(arguments);
 
         if (this.hiddenOriginal) {
+            console.log("If you ever see this, it means that this is still needed ...");
             this.hideDetails();
         } else {
             this.showDetails();

@@ -127,7 +127,9 @@ def main(argv=sys.argv):
         profile1 = _addIfNotExists_NoIDUnique(Profile(code='global', geometry=None), Profile.code, 'global')
         profile1.users = [user1] #, user2]
 
-        
+        # institution_types
+        it1 = _addIfNotExists_ID(Institution_Type(id=1, name='CSO'))
+        it2 = _addIfNotExists_ID(Institution_Type(id=2, name='Government'))
 
 def _addIfNotExists_ID(object):
     q = DBSession.query(object.__mapper__).get(object.id)

@@ -466,6 +466,18 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
      */
     showNewActivityWindow: function(item, showPage) {
         var me = this;
+
+        // Window to show that loading is in progress
+        var loadingwin = Ext.create('Ext.window.Window', {
+            title: Lmkp.ts.msg('gui_loading'),
+            items: {
+                html: Lmkp.ts.msg('gui_loading'),
+                border: 0,
+                bodyPadding: 5
+            }
+        });
+        loadingwin.show();
+
         // Create and load a store with all mandatory keys
         var mandatoryStore = Ext.create('Lmkp.store.ActivityConfig');
         mandatoryStore.filter('allowBlank', false);
@@ -524,6 +536,8 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                     activityEdit: activityEdit,
                     showPage: showPage
                 });
+                // Before showing the window, destroy loading window
+                loadingwin.destroy();
                 win.show();
                 // If a page was provided, try to jump there
                 if (showPage) {

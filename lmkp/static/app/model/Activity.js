@@ -22,22 +22,19 @@ Ext.define('Lmkp.model.Activity', {
         name: 'missing_keys',
         type: 'array'
     }, {
-    	name: 'username',
-    	type: 'string'
-    }, {
-    	name: 'userid',
-    	type: 'int'
+        name: 'user',
+        type: 'Lmkp.model.User'
     }, {
     	name: 'previous_version',
     	type: 'int'
     }],
-	
+
     hasMany: [{
-        model: 'Lmkp.model.TagGroup',
-        name: 'taggroups'
-    }, {
-        model: 'Lmkp.model.Involvement',
-        name: 'involvements'
+            model: 'Lmkp.model.TagGroup',
+            name: 'taggroups'
+        }, {
+            model: 'Lmkp.model.Involvement',
+            name: 'involvements'
     }],
 
     isEmpty: function() {
