@@ -131,7 +131,9 @@ class StakeholderProtocol3(Protocol):
         offset = self._get_offset(request)
 
         query, count = self._query_many(request, relevant_stakeholders,
-                                        limit=limit, offset=offset, involvements=inv_details != 'none')
+                                        limit=limit, offset=offset,
+                                        involvements=inv_details != 'none',
+                                        metadata=True)
 
         # Order the Stakeholder by version
         query = query.order_by(desc(Stakeholder.version))
@@ -772,7 +774,8 @@ class StakeholderProtocol3(Protocol):
         return query
 
     def _query_many(self, request, relevant_stakeholders, limit=None,
-                    offset=None, involvements=False, return_count=True):
+                    offset=None, involvements=False, return_count=True,
+                    metadata=False):
         # Prepare query to translate keys and values
         localizer = get_localizer(request)
         lang = None if localizer.locale_name == 'en' \
@@ -823,6 +826,21 @@ class StakeholderProtocol3(Protocol):
                       key_translation.c.key_original_id == SH_Key.id).\
             outerjoin(value_translation,
                       value_translation.c.value_original_id == SH_Value.id)
+
+        if metadata:
+            query = query.add_columns(
+                User.id.label('user_id'),
+                User.username.label('user_name'),
+                User.firstname.label('user_firstname'),
+                User.lastname.label('user_lastname'),
+                User.privacy.label('user_privacy'),
+                Institution.id.label('institution_id'),
+                Institution.name.label('institution_name'),
+                Institution.url.label('institution_url'),
+                Institution.logo_url.label('institution_logo'),
+            ).\
+            outerjoin(User, User.id == Changeset.fk_user).\
+            outerjoin(Institution)
 
         if involvements:
             inv_status_filter = self.Session.query(
@@ -900,10 +918,30 @@ class StakeholderProtocol3(Protocol):
                         stakeholder = sh
 
             if stakeholder == None:
+                # Handle optional metadata correctly
+                user_privacy = q.user_privacy if hasattr(q, 'user_privacy') else None
+                user_id = q.user_id if hasattr(q, 'user_id') else None
+                user_name = q.user_name if hasattr(q, 'user_name') else None
+                user_firstname = q.user_firstname if hasattr(q, 'user_firstname') else None
+                user_lastname = q.user_lastname if hasattr(q, 'user_lastname') else None
+                institution_id = q.institution_id if hasattr(q, 'institution_id') else None
+                institution_name = q.institution_name if hasattr(q, 'institution_name') else None
+                institution_url = q.institution_url if hasattr(q, 'institution_url') else None
+                institution_logo = q.institution_logo if hasattr(q, 'institution_logo') else None
+
                 stakeholder = StakeholderFeature3(
                                       identifier, q.order_value, version=q.version,
                                       timestamp=q.timestamp, status=q.status,
-                                      status_id=q.status_id
+                                      status_id=q.status_id,
+                                      user_privacy=user_privacy,
+                                      user_id=user_id,
+                                      user_name=user_name,
+                                      user_firstname=user_firstname,
+                                      user_lastname=user_lastname,
+                                      institution_id=institution_id,
+                                      institution_name=institution_name,
+                                      institution_url=institution_url,
+                                      institution_logo=institution_logo
                                       )
                 stakeholders.append(stakeholder)
 

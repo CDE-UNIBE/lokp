@@ -626,12 +626,17 @@ users_profiles = Table('users_profiles', Base.metadata,
 class User(Base):
     __tablename__ = 'users'
     __table_args__ = (
-            {'schema': 'data'}
-            )
+        ForeignKeyConstraint(['fk_institution'], ['data.institutions.id']),
+        {'schema': 'data'}
+    )
     id = Column(Integer, primary_key = True)
     uuid = Column(UUID, nullable = False, unique = True)
     username = Column(String(255), nullable = False, unique = True)
     email = Column(String(255), nullable = False, unique = True)
+    firstname = Column(String(255))
+    lastname = Column(String(255))
+    privacy = Column(Integer, nullable = False)
+    fk_institution = Column(Integer)
 
     changesets = relationship('Changeset', backref='user')
     groups = relationship('Group', secondary=users_groups,
@@ -669,11 +674,15 @@ class User(Base):
             return False
         return crypt.check(user.password, password)
 
-    def __init__(self, username, password, email):
+    def __init__(self, username, password, email, firstname=None, lastname=None,
+        privacy=None):
         self.uuid = uuid.uuid4()
         self.username = username
         self.password = password
         self.email = email
+        self.firstname = firstname
+        self.lastname = lastname
+        self.privacy = privacy if privacy is not None else 1
 
     def __repr__(self):
         return (
@@ -810,3 +819,41 @@ class Comment(Base):
                 one()
         except NoResultFound:
             return None
+
+class Institution(Base):
+    __tablename__ = 'institutions'
+    __table_args__ = (
+        ForeignKeyConstraint(['fk_type'], ['data.institution_types.id']),
+        {'schema': 'data'}
+    )
+    id = Column(Integer, primary_key = True)
+    fk_type = Column(Integer, nullable = False)
+    name = Column(String(511), nullable = False)
+    abbreviation = Column(String(255))
+    url = Column(String(511))
+    logo_url = Column(String(511))
+    description = Column(Text)
+
+    users = relationship('User', backref='institution')
+
+    def __init__(self, name, abbreviation=None, url=None, logo_url=None,
+        description=None):
+        self.name = name
+        self.abbreviation = abbreviation
+        self.url = url
+        self.logo_url = logo_url
+        self.description = description
+
+class Institution_Type(Base):
+    __tablename__ = 'institution_types'
+    __table_args__ = {'schema': 'data'}
+    id = Column(Integer, primary_key = True)
+    name = Column(String(255), nullable = False)
+    description = Column(Text)
+
+    institutions = relationship('Institution', backref='institution_type')
+
+    def __init__(self, id, name, description=None):
+        self.id = id
+        self.name = name
+        self.description = description
