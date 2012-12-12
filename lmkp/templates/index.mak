@@ -3,9 +3,8 @@
 <%def name="head_tags()">
 <%
 
-from pyramid.security import ACLAllowed
-from pyramid.security import authenticated_userid
-from pyramid.security import has_permission
+from pyramid.security import effective_principals
+principals = effective_principals(request)
 
 %>
 <title>${_("Land Observatory")}</title>
@@ -14,11 +13,9 @@ from pyramid.security import has_permission
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3&amp;sensor=false"></script>
 <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
 <script type="text/javascript" src="${request.route_url('context_layers')}"></script>
-% if isinstance(has_permission('administer', request.context, request), ACLAllowed):
+% if 'group:moderators' in principals:
 <script type="text/javascript" src="${request.route_url('moderator_toolbar_config')}"></script>
-% elif isinstance(has_permission('moderate', request.context, request), ACLAllowed):
-<script type="text/javascript" src="${request.route_url('moderator_toolbar_config')}"></script>
-% elif isinstance(has_permission('edit', request.context, request), ACLAllowed):
+% elif 'group:editors' in principals:
 <script type="text/javascript" src="${request.route_url('edit_toolbar_config')}"></script>
 % else:
 <script type="text/javascript" src="${request.route_url('view_toolbar_config')}"></script>
