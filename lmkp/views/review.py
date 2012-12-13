@@ -1,11 +1,17 @@
+from geoalchemy import functions
 from lmkp.models.database_objects import Changeset
+from lmkp.models.database_objects import Profile
 from lmkp.models.database_objects import Status
+from lmkp.models.database_objects import User
 from lmkp.models.meta import DBSession as Session
-from lmkp.views.activity_protocol3 import ActivityProtocol3
-from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
+from lmkp.views.config import get_mandatory_keys
 from lmkp.views.translation import statusMap
 from lmkp.views.views import BaseView
 import logging
+from pyramid.httpexceptions import HTTPForbidden
+from sqlalchemy.sql.expression import and_
+from sqlalchemy.sql.expression import not_
+from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.functions import min
 import string
 
@@ -284,6 +290,10 @@ class BaseReview(BaseView):
         Returns the current active version and the pending version to review
         """
 
+        def _check_mandatory_keys():
+            mandatory_keys = get_mandatory_keys(self.request, 'a')
+            log.debug(mandatory_keys)
+
         # Get the current active version number
         av = Session.query(mappedClass.version).filter(mappedClass.identifier == uid).filter(mappedClass.fk_status == 2).first()
 
@@ -344,3 +354,110 @@ class BaseReview(BaseView):
             pass
 
         return active_title, pending_title
+
+    def _get_available_versions(self, mappedClass, uid):
+        """
+        Returns an array with all versions that are available to the current
+        user. Moderators get all versions for Stakeholders and Activity if later
+        lies within the moderator's profile. Editors get all active and inactive
+        versions as well as their own edits. Public users only get inactive and
+        active versions.
+        """
+
+        def _get_query_for_editors():
+            """
+            Returns a query that selects versions available to editors.
+            """
+            active_versions = Session.query(mappedClass.version).\
+                filter(mappedClass.identifier == uid).\
+                filter(or_(mappedClass.fk_status == 2, mappedClass.fk_status == 3))
+
+            own_filters = and_(mappedClass.identifier == uid, \
+                               not_(mappedClass.fk_status == 2), \
+                               not_(mappedClass.fk_status == 3), \
+                               User.username == self.request.user.username)
+            own_versions = Session.query(mappedClass.version).\
+                join(Changeset).\
+                join(User).\
+                filter(*own_filters)
+            return active_versions.union(own_versions)
+
+
+        # Query that selects available versions
+        versions_query = None
+
+        log.debug("effective principals: %s" % self.request.effective_principals)
+
+        # An administrator sees in any cases all versions
+        if self.request.effective_principals is not None and 'group:administrators' in self.request.effective_principals:
+            versions_query = Session.query(mappedClass.version).filter(mappedClass.identifier == uid)
+
+        # An user with moderator privileges can see all versions within his profile
+        elif self.request.effective_principals is not None and 'group:moderators' in self.request.effective_principals:
+
+            # Try if mappedClass is an Activity and lies within the moderator's profile
+            try:
+                profile_filters = []
+                # Get all profiles for the current moderator
+                profiles = Session.query(Profile).filter(Profile.users.any(username=self.request.user.username))
+                for p in profiles.all():
+                    profile_filters.append(functions.intersects(mappedClass.point, p.geometry))
+
+                # Check if current Activity is within the moderator's profile
+                count = Session.query(mappedClass).filter(mappedClass.identifier == uid).filter(or_(*profile_filters)).count()
+                # Activity is within the moderator's profile, then show all versions
+                if count > 0:
+                    versions_query = Session.query(mappedClass.version).filter(mappedClass.identifier == uid)
+                # If not the moderator gets normal editor privileges
+                else:
+                    versions_query = _get_query_for_editors()
+            # In case mappedClass is a Stakeholder, show anyway all versions
+            except AttributeError:
+                versions_query = Session.query(mappedClass.version).filter(mappedClass.identifier == uid)
+
+        # An user with at least editor privileges can see all public versions_query
+        # and his own edits
+        elif self.request.effective_principals is not None and 'group:editors' in self.request.effective_principals:
+            versions_query = _get_query_for_editors()
+
+        # Public users i.e. not logged in users see only active and inactive versions
+        else:
+            versions_query = Session.query(mappedClass.version).\
+                filter(mappedClass.identifier == uid).\
+                filter(or_(mappedClass.fk_status == 2, mappedClass.fk_status == 3))
+
+        # Create a list of available versions
+        available_versions = []
+        for i in versions_query.order_by(mappedClass.version).all():
+            available_versions.append(i[0])
+
+        log.debug("Available Versions for object %s:\n%s" % (uid, available_versions))
+
+        return available_versions
+
+
+    def _get_valid_versions(self, mappedClass, uid):
+
+        # Try to get the versions or set reference and new version to 1
+        versions = self.request.matchdict.get('versions')
+        try:
+            ref_version = int(versions[0])
+        except IndexError:
+            ref_version = 1
+        except ValueError as e:
+            raise HTTPBadRequest("ValueError: %s" % e)
+
+        try:
+            new_version = int(versions[1])
+        except IndexError:
+            new_version = 1
+        except ValueError as e:
+            raise HTTPBadRequest("ValueError: %s" % e)
+
+        # Check permissions
+        available_versions = self._get_available_versions(mappedClass, uid)
+
+        if ref_version not in available_versions or new_version not in available_versions:
+            raise HTTPForbidden()
+
+        return ref_version, new_version

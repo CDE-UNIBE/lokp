@@ -20,16 +20,16 @@ class StakeholderReview(BaseReview):
         super(StakeholderReview, self).__init__(request)
         self.stakeholder_protocol3 = StakeholderProtocol3(Session)
 
-    @action(name='html', renderer='lmkp:templates/compare_versions.mak', permission='moderate')
+    @action(name='html', renderer='lmkp:templates/compare_versions.mak')
     def compare_html(self):
 
         uid = self.request.matchdict.get('uid', None)
 
-        available_versions = []
-        for i in Session.query(Stakeholder.version).\
-            filter(Stakeholder.stakeholder_identifier == uid).\
-            order_by(Stakeholder.version):
-            available_versions.append(i[0])
+        available_versions = self._get_available_versions(Stakeholder, uid)
+
+        if len(available_versions) == 0:
+            msg = "There is no Activity with identifier %s or you are not allowed to access it."
+            raise HTTPNotFound(msg % uid)
 
         additional_params = {
         'available_versions': available_versions
@@ -37,36 +37,19 @@ class StakeholderReview(BaseReview):
 
         return additional_params
 
-    @action(name='json', renderer='json', permission='moderate')
+    @action(name='json', renderer='json')
     def compare_json(self):
 
         # Get the uid from the request
         uid = self.request.matchdict.get('uid', None)
 
-        # Try to get the versions or set reference and new version to 1
-        versions = self.request.matchdict.get('versions')
-        try:
-            ref_version = int(versions[0])
-        except IndexError:
-            ref_version = 1
-        except ValueError as e:
-            raise HTTPBadRequest("ValueError: %s" % e)
-
-        try:
-            new_version = int(versions[1])
-        except IndexError:
-            new_version = 1
-        except ValueError as e:
-            raise HTTPBadRequest("ValueError: %s" % e)
+        ref_version, new_version = self._get_valid_versions(Stakeholder, uid)
 
         # Get the old, reference Stakeholder object
         ref = self.stakeholder_protocol3.read_one_by_version(self.request, uid, ref_version)
 
         # Try to get the new stakeholder object
-        try:
-            new = self.stakeholder_protocol3.read_one_by_version(self.request, uid, new_version)
-        except IndexError as e:
-            return HTTPSeeOther(self.request.route_url('stakeholders_compare_versions', action='json', uid=uid, versions=(old_version, (new_version-1))))
+        new = self.stakeholder_protocol3.read_one_by_version(self.request, uid, new_version)
 
         # Request also the metadata
         metadata = {}
