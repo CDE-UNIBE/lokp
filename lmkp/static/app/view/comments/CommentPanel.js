@@ -45,11 +45,10 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
     },
 	
     /**
-     * Loads ands adds all the content.
+     * Loads ands adds all the content. This is called after adding a new
+     * commment.
      */
     _loadContent: function() {
-
-        console.log("if you ever read this, don't delete this function! (_loadContent)")
 
         var me = this;
 
