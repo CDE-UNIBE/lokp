@@ -611,8 +611,7 @@ class Protocol(object):
             return ret
 
         review_comment = None
-        if ('comment_checkbox' in request.POST and
-            request.POST['comment_textarea'] != ''):
+        if (request.POST['comment_textarea'] != ''):
             review_comment = request.POST['comment_textarea']
 
         if review_decision == '1':
