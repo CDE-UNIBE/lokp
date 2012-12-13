@@ -21,7 +21,8 @@ from sqlalchemy import (
     String,
     DateTime,
     Unicode,
-    ForeignKey
+    ForeignKey,
+    Boolean
 )
 
 from sqlalchemy.orm import (
@@ -781,15 +782,17 @@ class Comment(Base):
         )
     id = Column(Integer, primary_key = True)
     comment = Column(Text, nullable = False)
+    approved = Column(Boolean, nullable = False)
     timestamp = Column(DateTime, nullable = False)
     fk_user = Column(Integer)
     activity_identifier = Column(UUID)
     stakeholder_identifier = Column(UUID)
 
-    def __init__(self, comment, activity_identifier = None,
+    def __init__(self, comment, approved = None, activity_identifier = None,
         stakeholder_identifier = None):
-        self.timestamp = datetime.datetime.now()
         self.comment = comment
+        self.approved = False if approved == None else self.approved
+        self.timestamp = datetime.datetime.now()
         self.activity_identifier = activity_identifier
         self.stakeholder_identifier = stakeholder_identifier
     
@@ -828,8 +831,8 @@ class Institution(Base):
     )
     id = Column(Integer, primary_key = True)
     fk_type = Column(Integer, nullable = False)
-    name = Column(String(511), nullable = False)
-    abbreviation = Column(String(255))
+    name = Column(Text, nullable = False)
+    abbreviation = Column(String(31))
     url = Column(String(511))
     logo_url = Column(String(511))
     description = Column(Text)
