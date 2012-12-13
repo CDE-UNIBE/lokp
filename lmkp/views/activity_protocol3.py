@@ -123,9 +123,10 @@ class ActivityProtocol3(Protocol):
 
         diff = request.json_body if data is None else data
 
-        user = self.Session.query(User).\
-            filter(User.username == authenticated_userid(request)).\
-            first()
+        #user = self.Session.query(User).\
+        #    filter(User.username == authenticated_userid(request)).\
+        #   first()
+        user = request.user
 
         # Changeset
         changeset = Changeset()

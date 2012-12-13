@@ -22,17 +22,20 @@ Ext.onReady(function(){
 
     Ext.application({
         name: 'Lmkp',
-        appFolder: '../../static/app',
+        appFolder: '/static/app',
 
         requires: [
         'Lmkp.view.login.Toolbar'
         ],
 
         controllers: [
+        'activities.NewActivity',
         'login.Toolbar'
         ],
 
         launch: function() {
+
+            var me = this;
 
             var uidRegExp = /(activities|stakeholders)\/review\/[a-zA-Z]+\/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}(\/[0-9]+\/[0-9]+)*/gi;
 
@@ -104,6 +107,37 @@ Ext.onReady(function(){
                 }
 
                 return html;
+            }
+
+            var editCurrentVersion = function(form, response){
+                Ext.Msg.show({
+                    buttons: Ext.Msg.CANCEL,
+                    icon: Ext.Msg.ERROR,
+                    msg: response.response.responseText,
+                    scope: this,
+                    title: Lmkp.ts.msg('feedback_failure')
+                });
+
+                var store = Ext.create('Ext.data.Store', {
+                    autoLoad: true,
+                    listeners: {
+                        'load': function(store, records, successful){
+                            var c = me.getController('activities.NewActivity');
+                            c.showNewActivityWindow(records[0]);
+                        }
+                    },
+                    model: 'Lmkp.model.Activity',
+                    proxy: {
+                        reader: {
+                            root: 'data',
+                            type: 'json'
+                        },
+                        type: 'ajax',
+                        url : '/' + type + '/json/' + uid
+                    }
+                });
+
+               
             }
 
             var taggroupStore = Ext.create('Ext.data.JsonStore', {
@@ -231,15 +265,7 @@ Ext.onReady(function(){
 
             submitButton.on('click', function(button, event, eOpts){
                 form.submit({
-                    failure: function(form, response) {
-                        Ext.Msg.show({
-                            buttons: Ext.Msg.CANCEL,
-                            icon: Ext.Msg.ERROR,
-                            msg: response.response.responseText,
-                            scope: this,
-                            title: Lmkp.ts.msg('feedback_failure')
-                        });
-                    },
+                    failure: editCurrentVersion,
                     success: function(form, response) {
                         var returnJson = Ext.decode(response.response.responseText);
                         if(returnJson.success){
@@ -331,5 +357,6 @@ Ext.onReady(function(){
                 }]
             });
         }
+        
     });
 });

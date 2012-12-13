@@ -237,8 +237,8 @@ def review(request):
     if not isinstance(has_permission('moderate', request.context, request),
         ACLAllowed):
         raise HTTPUnauthorized(_('User has no permissions to add a review.'))
-    user = Session.query(User).\
-            filter(User.username == authenticated_userid(request)).first()
+    #user = Session.query(User).filter(User.username == authenticated_userid(request)).first()
+    user = request.user
 
     # Check for profile
     profile_filters = activity_protocol2._create_bound_filter_by_user(request)
@@ -301,7 +301,7 @@ def create(request):
     """
 
     # Check if the user is logged in and he/she has sufficient user rights
-    userid = authenticated_userid(request)
+    userid = request.user.username #authenticated_userid(request)
 
     if userid is None:
         raise HTTPForbidden()

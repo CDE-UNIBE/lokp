@@ -1,9 +1,11 @@
-__author__ = "Adrian Weber, Centre for Development and Environment, University of Bern"
 __date__ = "$Nov 20, 2012 4:05:32 PM$"
 
+from geoalchemy import functions
 from lmkp.models.database_objects import Activity
+from lmkp.models.database_objects import Profile
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol3 import ActivityProtocol3
+from lmkp.views.config import get_mandatory_keys
 from lmkp.views.review import BaseReview
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
@@ -11,6 +13,7 @@ from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.view import view_config
 from pyramid_handlers import action
+from sqlalchemy.sql.expression import or_
 
 log = logging.getLogger(__name__)
 
@@ -71,6 +74,11 @@ class ActivityReview(BaseReview):
 
         c = Session.query(Activity).filter(Activity.activity_identifier == uid).count()
 
+        if not self._within_profile(uid):
+            raise HTTPForbidden("Activity %s is not within your profile." % uid)
+
+        log.debug(get_mandatory_keys(self.request, 'a'))
+
         if c == 0:
             raise HTTPNotFound("Activity with identifier %s does not exist." % uid)
 
@@ -86,6 +94,9 @@ class ActivityReview(BaseReview):
 
         # Get the activity identifier
         uid = self.request.matchdict.get('uid', None)
+
+        if not self._within_profile(uid):
+            raise HTTPForbidden("Activity %s is not within your profile." % uid)
 
         additional_vars = {}
         additional_vars['identifier'] = uid
@@ -111,3 +122,20 @@ class ActivityReview(BaseReview):
             self._get_active_pending_version_descriptions(Activity, uid, active_version, pending_version)
         additional_vars['version'] = pending_version
         return dict(self._compare_taggroups(active, pending).items() + {'metadata': additional_vars}.items())
+
+    def _within_profile(self, uid):
+        """
+        Checks if an Activity is within the current moderator's profile
+        """
+
+        profile_filters = []
+        # Get all profiles for the current moderator
+        profiles = Session.query(Profile).filter(Profile.users.any(username=self.request.user.username))
+        for p in profiles.all():
+            profile_filters.append(functions.intersects(Activity.point, p.geometry))
+
+        # Check if current Activity is within the moderator's profile
+        if Session.query(Activity).filter(Activity.identifier == uid).filter(or_(*profile_filters)).first() is not None:
+            return True
+
+        return False
