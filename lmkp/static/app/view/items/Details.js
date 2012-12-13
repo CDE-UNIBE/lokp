@@ -30,6 +30,7 @@ Ext.define('Lmkp.view.items.Details',{
          * A comment object for this item (activity resp. stakeholder). The object
          * is the result from a /comments/activity/{id} resp.
          * /comments/stakeholder/{id} request.
+         * It is set (so far only for Activities) when rendering the window.
          */
         itemComment: null
     },
@@ -82,7 +83,7 @@ Ext.define('Lmkp.view.items.Details',{
                 hiddenOriginal: false,
                 xtype: this.centerPanelType
             });
-            this._populateComment(item.get('identifier'), item.modelName);
+            this._populateComment(item.get('id'), item.modelName);
         }
 
         return item;
