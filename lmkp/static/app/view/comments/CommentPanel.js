@@ -49,6 +49,8 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
      */
     _loadContent: function() {
 
+        console.log("if you ever read this, don't delete this function! (_loadContent)")
+
         var me = this;
 
         // Remove any existing items (if reloaded)
@@ -57,7 +59,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
         }
 		
         if (this.identifier && this.commentType) {
-			
+
             Ext.Ajax.request({
                 url: '/comments/' + me.commentType + '/' + me.identifier,
                 method: 'GET',
@@ -214,7 +216,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                 // object (hidden)
                 xtype: 'hiddenfield',
                 name: 'object',
-                value: 'activity'
+                value: me.commentType
             }, {
                 // identifier (hidden)
                 xtype: 'hiddenfield',
