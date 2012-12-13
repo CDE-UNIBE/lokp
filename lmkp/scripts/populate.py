@@ -102,7 +102,6 @@ def main(argv=sys.argv):
         # groups (with permissions)
         group1 = _addIfNotExists_ID(Group(id=1, name='administrators'))
         group1.permissions.append(permission1)
-        group1.permissions.append(permission2)
         group1.permissions.append(permission3)
         group1.permissions.append(permission4)
         group2 = _addIfNotExists_ID(Group(id=2, name='moderators'))
