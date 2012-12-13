@@ -670,12 +670,10 @@ class ActivityProtocol3(Protocol):
                 filter(self._get_bbox_filter(request))
 
             # If moderator, also filter by his profile extents.
-            # @TODO: This also filters out pending versions done by himself
-            # which are not in his profiles but in the current view. This
-            # could/should be corrected.
             if is_moderator:
                 pending_activities = pending_activities.\
-                    filter(self._get_spatial_moderator_filter(request))
+                    filter(or_(self._get_spatial_moderator_filter(request),
+                        Changeset.fk_user == request.user.id))
 
             # Join pending Activities with order and group
             pending_activities = pending_activities.\
