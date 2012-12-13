@@ -4,6 +4,7 @@ from lmkp.models.database_objects import Profile
 from lmkp.models.database_objects import Status
 from lmkp.models.database_objects import User
 from lmkp.models.meta import DBSession as Session
+from lmkp.views.config import get_mandatory_keys
 from lmkp.views.translation import statusMap
 from lmkp.views.views import BaseView
 import logging
@@ -288,6 +289,10 @@ class BaseReview(BaseView):
         """
         Returns the current active version and the pending version to review
         """
+
+        def _check_mandatory_keys():
+            mandatory_keys = get_mandatory_keys(self.request, 'a')
+            log.debug(mandatory_keys)
 
         # Get the current active version number
         av = Session.query(mappedClass.version).filter(mappedClass.identifier == uid).filter(mappedClass.fk_status == 2).first()
