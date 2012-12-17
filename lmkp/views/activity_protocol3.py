@@ -628,7 +628,7 @@ class ActivityProtocol3(Protocol):
                                                            func.max(Activity.version).label('max_version')
                                                            ).\
                 join(Changeset).\
-                filter(Activity.fk_status == 1)
+                filter(or_(Activity.fk_status == 1, Activity.fk_status == 2))
 
             if not is_moderator:
                 # If current user is not a moderator, only show pending versions
@@ -814,7 +814,7 @@ class ActivityProtocol3(Protocol):
                                                            func.max(Activity.version).label('max_version')
                                                            ).\
                 join(Changeset).\
-                filter(Activity.fk_status == 1)
+                filter(or_(Activity.fk_status == 1, Activity.fk_status == 2))
             
             if not is_moderator:
                 # If current user is not a moderator, only show pending versions

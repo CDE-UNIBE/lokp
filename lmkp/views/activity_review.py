@@ -8,6 +8,7 @@ from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.config import get_mandatory_keys
 from lmkp.views.review import BaseReview
 import logging
+import json
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPNotFound
@@ -35,7 +36,7 @@ class ActivityReview(BaseReview):
             raise HTTPNotFound(msg % uid)
 
         additional_params = {
-        'available_versions': available_versions
+        'available_versions': json.dumps(available_versions)
         }
 
         return additional_params
@@ -58,6 +59,8 @@ class ActivityReview(BaseReview):
         metadata = {}
         metadata['ref_title'], metadata['new_title'] = \
             self._get_active_pending_version_descriptions(Activity, uid, ref_version, new_version)
+        metadata['ref_version'] = ref_version
+        metadata['new_version'] = new_version
 
         result = dict(self._compare_taggroups(ref, new).items() + {'metadata': metadata}.items())
 

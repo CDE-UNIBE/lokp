@@ -351,6 +351,7 @@ class Activity(Base):
         spatial_index = True))
     fk_status = Column(Integer, nullable = False)
     version = Column(Integer, nullable = False)
+    timestamp_entry = Column(DateTime)
     previous_version = Column(Integer)
     fk_user_review = Column(Integer)
     timestamp_review = Column(DateTime)
@@ -366,10 +367,13 @@ class Activity(Base):
         return self.activity_identifier
 
     def __init__(self, activity_identifier, version, previous_version=None, 
-        point=None, timestamp_review=None, comment_review=None):
+        timestamp_entry=None, point=None, timestamp_review=None,
+        comment_review=None):
         self.activity_identifier = activity_identifier
         self.version = version
         self.previous_version = previous_version
+        self.timestamp_entry = (datetime.datetime.now() if timestamp_entry is 
+            None else timestamp_entry)
         self.point = point
         self.timestamp_review = timestamp_review
         self.comment_review = comment_review
@@ -436,6 +440,7 @@ class Stakeholder(Base):
     fk_status = Column(Integer, nullable = False)
     version = Column(Integer, nullable = False)
     previous_version = Column(Integer)
+    timestamp_entry = Column(DateTime)
     fk_user_review = Column(Integer)
     timestamp_review = Column(DateTime)
     comment_review = Column(Text)
@@ -450,10 +455,12 @@ class Stakeholder(Base):
         return self.stakeholder_identifier
 
     def __init__(self, stakeholder_identifier, version, previous_version=None,
-        timestamp_review=None, comment_review=None):
+        timestamp_entry=None, timestamp_review=None, comment_review=None):
         self.stakeholder_identifier = stakeholder_identifier
         self.version = version
         self.previous_version = previous_version
+        self.timestamp_entry = (datetime.datetime.now() if timestamp_entry is
+            None else timestamp_entry)
         self.timestamp_review = timestamp_review
         self.comment_review = comment_review
 
