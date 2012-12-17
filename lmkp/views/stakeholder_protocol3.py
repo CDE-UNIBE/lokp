@@ -495,7 +495,7 @@ class StakeholderProtocol3(Protocol):
                                                              func.max(Stakeholder.version).label('max_version')
                                                              ).\
                 join(Changeset).\
-                filter(Stakeholder.fk_status == 1)
+                filter(or_(Stakeholder.fk_status == 1, Stakeholder.fk_status == 2))
 
             if not is_moderator:
                 # If current user is not a moderator, only show pending versions
@@ -678,7 +678,7 @@ class StakeholderProtocol3(Protocol):
                                                              func.max(Stakeholder.version).label('max_version')
                                                              ).\
                 join(Changeset).\
-                filter(Stakeholder.fk_status == 1)
+                filter(or_(Stakeholder.fk_status == 1, Stakeholder.fk_status == 2))
 
             if not is_moderator:
                 # If current user is not a moderator, only show pending versions

@@ -6,6 +6,7 @@ from lmkp.models.meta import DBSession as Session
 from lmkp.views.review import BaseReview
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 import logging
+import json
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPSeeOther
@@ -32,7 +33,7 @@ class StakeholderReview(BaseReview):
             raise HTTPNotFound(msg % uid)
 
         additional_params = {
-        'available_versions': available_versions
+        'available_versions': json.dumps(available_versions)
         }
 
         return additional_params
@@ -55,6 +56,8 @@ class StakeholderReview(BaseReview):
         metadata = {}
         metadata['ref_title'], metadata['new_title'] = \
             self._get_active_pending_version_descriptions(Stakeholder, uid, ref_version, new_version)
+        metadata['ref_version'] = ref_version
+        metadata['new_version'] = new_version
 
         result = dict(self._compare_taggroups(ref, new).items() + {'metadata': metadata}.items())
 

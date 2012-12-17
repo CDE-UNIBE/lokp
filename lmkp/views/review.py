@@ -368,7 +368,10 @@ class BaseReview(BaseView):
             """
             Returns a query that selects versions available to editors.
             """
-            active_versions = Session.query(mappedClass.version).\
+            active_versions = Session.query(
+                    mappedClass.version,
+                    mappedClass.fk_status
+                ).\
                 filter(mappedClass.identifier == uid).\
                 filter(or_(mappedClass.fk_status == 2, mappedClass.fk_status == 3))
 
@@ -376,7 +379,10 @@ class BaseReview(BaseView):
                                not_(mappedClass.fk_status == 2), \
                                not_(mappedClass.fk_status == 3), \
                                User.username == self.request.user.username)
-            own_versions = Session.query(mappedClass.version).\
+            own_versions = Session.query(
+                    mappedClass.version,
+                    mappedClass.fk_status
+                ).\
                 join(Changeset).\
                 join(User).\
                 filter(*own_filters)
@@ -390,7 +396,10 @@ class BaseReview(BaseView):
 
         # An administrator sees in any cases all versions
         if self.request.effective_principals is not None and 'group:administrators' in self.request.effective_principals:
-            versions_query = Session.query(mappedClass.version).filter(mappedClass.identifier == uid)
+            versions_query = Session.query(
+                    mappedClass.version,
+                    mappedClass.fk_status
+                ).filter(mappedClass.identifier == uid)
 
         # An user with moderator privileges can see all versions within his profile
         elif self.request.effective_principals is not None and 'group:moderators' in self.request.effective_principals:
@@ -407,13 +416,19 @@ class BaseReview(BaseView):
                 count = Session.query(mappedClass).filter(mappedClass.identifier == uid).filter(or_(*profile_filters)).count()
                 # Activity is within the moderator's profile, then show all versions
                 if count > 0:
-                    versions_query = Session.query(mappedClass.version).filter(mappedClass.identifier == uid)
+                    versions_query = Session.query(
+                            mappedClass.version,
+                            mappedClass.fk_status
+                        ).filter(mappedClass.identifier == uid)
                 # If not the moderator gets normal editor privileges
                 else:
                     versions_query = _get_query_for_editors()
             # In case mappedClass is a Stakeholder, show anyway all versions
             except AttributeError:
-                versions_query = Session.query(mappedClass.version).filter(mappedClass.identifier == uid)
+                versions_query = Session.query(
+                        mappedClass.version,
+                        mappedClass.fk_status
+                    ).filter(mappedClass.identifier == uid)
 
         # An user with at least editor privileges can see all public versions_query
         # and his own edits
@@ -422,14 +437,20 @@ class BaseReview(BaseView):
 
         # Public users i.e. not logged in users see only active and inactive versions
         else:
-            versions_query = Session.query(mappedClass.version).\
+            versions_query = Session.query(
+                    mappedClass.version,
+                    mappedClass.fk_status
+                ).\
                 filter(mappedClass.identifier == uid).\
                 filter(or_(mappedClass.fk_status == 2, mappedClass.fk_status == 3))
 
         # Create a list of available versions
         available_versions = []
         for i in versions_query.order_by(mappedClass.version).all():
-            available_versions.append(i[0])
+            available_versions.append({
+                'version': i[0],
+                'status': i[1]
+            })
 
         log.debug("Available Versions for object %s:\n%s" % (uid, available_versions))
 
@@ -438,26 +459,44 @@ class BaseReview(BaseView):
 
     def _get_valid_versions(self, mappedClass, uid):
 
-        # Try to get the versions or set reference and new version to 1
+        # Check permissions
+        available_versions = self._get_available_versions(mappedClass, uid)
+
+        # Find out available versions and if possible active and first pending
+        # version
+        v = []
+        active_version = pending_version = None
+        for av in available_versions:
+            v.append(av.get('version'))
+            if av.get('status') == 2:
+                active_version = av.get('version')
+            if av.get('status') == 1:
+                if pending_version is None or pending_version > av.get('version'):
+                    pending_version = av.get('version')
+
+        # Try to get the versions or set reference and new version
         versions = self.request.matchdict.get('versions')
         try:
             ref_version = int(versions[0])
         except IndexError:
-            ref_version = 1
+            #
+            ref_version = active_version if active_version is not None else 1
         except ValueError as e:
             raise HTTPBadRequest("ValueError: %s" % e)
 
         try:
             new_version = int(versions[1])
         except IndexError:
-            new_version = 1
+            if pending_version is not None:
+                new_version = pending_version
+            elif active_version is not None:
+                new_version = active_version
+            else:
+                new_version = 1
         except ValueError as e:
             raise HTTPBadRequest("ValueError: %s" % e)
 
-        # Check permissions
-        available_versions = self._get_available_versions(mappedClass, uid)
-
-        if ref_version not in available_versions or new_version not in available_versions:
+        if ref_version not in v or new_version not in v:
             raise HTTPForbidden()
 
         return ref_version, new_version
