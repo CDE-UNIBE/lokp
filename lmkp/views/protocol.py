@@ -5,6 +5,7 @@ from lmkp.config import profile_directory_path
 from lmkp.models.database_objects import A_Key
 from lmkp.models.database_objects import A_Tag
 from lmkp.models.database_objects import A_Value
+from lmkp.models.database_objects import Changeset
 from lmkp.models.database_objects import Group
 from lmkp.models.database_objects import Permission
 from lmkp.models.database_objects import SH_Key
@@ -26,6 +27,8 @@ import collections
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.security import unauthenticated_userid
 from pyramid.security import effective_principals
+from lmkp.views.review import recalculate_diffs
+import json
 
 from lmkp.views.translation import statusMap
 from lmkp.views.translation import get_translated_status
@@ -603,6 +606,7 @@ class Protocol(object):
         ]
 
         ret = {'success': False}
+        recalculated = False
 
         # Collect POST values
         review_decision = request.POST['review_decision']
@@ -617,6 +621,65 @@ class Protocol(object):
         if review_decision == '1':
             # Approved
             if previous_item is not None:
+                #@TODO: clean up ... (until asdf)
+                if previous_item.fk_status == statusArray.index('inactive')+1 and item.fk_status == statusArray.index('pending')+1:
+                    """
+                    If the approved pending version is based on a version which 
+                    is not active anymore, a recalculation of the pending 
+                    version is needed to include any changes already approved.
+                    This creates a new version which is automatically set 
+                    'active'. The approved pending version becomes 'edited' and
+                    the previously active version becomes 'inactive'.
+                    """
+
+                    # new diff
+                    nd_query = self.Session.query(Changeset.diff).\
+                        join(Db_Item).\
+                        filter(Db_Item.id == item.id).\
+                        first()
+                    nd = json.loads(nd_query.diff.replace('\'', '"'))
+
+                    # @TODO: handle version of old diff query correctly
+                    # old diff
+                    od_query = self.Session.query(Changeset.diff).\
+                        join(Db_Item).\
+                        filter(Db_Item.identifier == item.identifier).\
+                        filter(Db_Item.version == item.version - 1).\
+                        first()
+                    od = json.loads(od_query.diff.replace('\'', '"'))
+
+                    # First create relevant diff (keep only stuff relevant for
+                    # current item)
+                    diff = recalculate_diffs(Db_Item, item.identifier, od, None)
+                    diff2 = recalculate_diffs(Db_Item, item.identifier, nd, diff)
+
+                    print "**************************************"
+                    print "**************************************"
+                    print diff
+                    print "**************************************"
+                    print diff2
+
+                    recalculated = True
+                    self.configuration = self._read_configuration(request, 'activity.yml')
+
+                    # Previously active
+                    previously_active = self.Session.query(Db_Item).\
+                        filter(Db_Item.identifier == item.identifier).\
+                        filter(Db_Item.fk_status == statusArray.index('active')+1).\
+                        first()
+                    if previously_active:
+                        previously_active.fk_status = statusArray.index('inactive')+1
+
+                    item.fk_status = statusArray.index('edited')+1
+
+                    """
+                    changeset = Changeset()
+                    changeset.user = request.user
+                    changeset.diff = str({'activities': [self._convert_utf8(diff2)]})
+                    new_v = self._update_activity(request, previous_item, diff2, changeset, status='active')
+                    """
+                    asdf
+
                 # Set previous version to 'inactive' if it was active before
                 if previous_item.fk_status == statusArray.index('active') + 1:
                     previous_item.fk_status = statusArray.index('inactive') + 1
@@ -635,13 +698,14 @@ class Protocol(object):
                 # Set new version to 'deleted'
                 item.fk_status = statusArray.index('deleted') + 1
             else:
-                # Set new version to 'active'. But first make sure there is no
-                # other one active by setting any with 'active' to 'inactive'
-                self.Session.query(Db_Item).\
-                    filter(Db_Item.identifier == item.identifier).\
-                    filter(Db_Item.fk_status == statusArray.index('active')+1).\
-                    update({Db_Item.fk_status: statusArray.index('inactive')+1})
-                item.fk_status = statusArray.index('active') + 1
+                if not recalculated:
+                    # Set new version to 'active'. But first make sure there is no
+                    # other one active by setting any with 'active' to 'inactive'
+                    self.Session.query(Db_Item).\
+                        filter(Db_Item.identifier == item.identifier).\
+                        filter(Db_Item.fk_status == statusArray.index('active')+1).\
+                        update({Db_Item.fk_status: statusArray.index('inactive')+1})
+                    item.fk_status = statusArray.index('active') + 1
 
         elif review_decision == '2':
             # Rejected: Do not modify previous version and set new version to
@@ -805,6 +869,10 @@ class TagGroup(object):
         """
         self._tags.append(tag)
 
+    def remove_tag(self, tag):
+        if tag in self._tags:
+            self._tags.remove(tag)
+
     def get_id(self):
         return self._id
 
@@ -912,6 +980,8 @@ class Feature(object):
         self._status_id = status_id
         self._pending = []
         self._missing_keys = None
+
+        self._previous_version = kwargs.pop('previous_version', None)
 
         self._user_privacy = kwargs.pop('user_privacy', None)
         self._user_id = kwargs.pop('user_id', None)
@@ -1078,6 +1148,9 @@ class Feature(object):
                 sh.append(i.to_table(request))
             ret['involvements'] = sh
 
+        if self._previous_version is not None:
+            ret['previous_version'] = self._previous_version
+
         # User details
         user = {}
         if self._user_id is not None:
@@ -1230,4 +1303,4 @@ class Feature(object):
         return self._order_value
 
     def get_previous_version(self):
-        return self._diff_info['previous_version']
+        return self._previous_version

@@ -106,7 +106,7 @@ class StakeholderProtocol3(Protocol):
         inv_details = request.params.get('involvements', 'full')
 
         query, count = self._query_many(request, relevant_stakeholders,
-                                        involvements=inv_details)
+                                        involvements=inv_details, metadata=True)
 
         stakeholders = self._query_to_stakeholders(request, query,
                                                    involvements=inv_details, public_query=True)
@@ -827,6 +827,7 @@ class StakeholderProtocol3(Protocol):
 
         if metadata:
             query = query.add_columns(
+                Stakeholder.previous_version.label('previous_version'),
                 User.id.label('user_id'),
                 User.username.label('user_name'),
                 User.firstname.label('user_firstname'),
@@ -917,6 +918,7 @@ class StakeholderProtocol3(Protocol):
 
             if stakeholder == None:
                 # Handle optional metadata correctly
+                previous_version = q.previous_version if hasattr(q, 'previous_version') else None
                 user_privacy = q.user_privacy if hasattr(q, 'user_privacy') else None
                 user_id = q.user_id if hasattr(q, 'user_id') else None
                 user_name = q.user_name if hasattr(q, 'user_name') else None
@@ -939,7 +941,8 @@ class StakeholderProtocol3(Protocol):
                                       institution_id=institution_id,
                                       institution_name=institution_name,
                                       institution_url=institution_url,
-                                      institution_logo=institution_logo
+                                      institution_logo=institution_logo,
+                                      previous_version=previous_version
                                       )
                 stakeholders.append(stakeholder)
 
@@ -1209,7 +1212,8 @@ class StakeholderProtocol3(Protocol):
         # Create new Stakeholder
         new_stakeholder = Stakeholder(
                                       stakeholder_identifier=old_stakeholder.identifier,
-                                      version=(latest_version.version + 1))
+                                      version=(latest_version.version + 1),
+                                      previous_version=old_stakeholder.version)
 
         # Status (default: 'pending')
         status = 'pending'

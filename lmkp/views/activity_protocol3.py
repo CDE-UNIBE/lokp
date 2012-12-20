@@ -30,10 +30,7 @@ class ActivityFeature3(Feature):
     """
 
     def __init__(self, guid, order_value, geometry=None, version=None,
-                 status=None, status_id=None, timestamp=None, user_privacy=None,
-                 institution_id=None, institution_name=None,
-                 institution_url=None, institution_logo=None, user_id=None,
-                 user_name=None, user_firstname=None, user_lastname=None):
+                 status=None, status_id=None, timestamp=None, diff_info=None, ** kwargs):
         self._taggroups = []
         self._involvements = []
         self._guid = guid
@@ -43,15 +40,20 @@ class ActivityFeature3(Feature):
         self._status = status
         self._status_id = status_id
         self._timestamp = timestamp
-        self._user_privacy = user_privacy
-        self._institution_id = institution_id
-        self._institution_name = institution_name
-        self._institution_url = institution_url
-        self._institution_logo = institution_logo
-        self._user_id = user_id
-        self._user_name = user_name
-        self._user_firstname = user_firstname
-        self._user_lastname = user_lastname
+        self._diff_info = diff_info
+
+        self._previous_version = kwargs.pop('previous_version', None)
+
+        self._user_privacy = kwargs.pop('user_privacy', None)
+        self._user_id = kwargs.pop('user_id', None)
+        self._user_name = kwargs.pop('user_name', None)
+        self._user_firstname = kwargs.pop('user_firstname', None)
+        self._user_lastname = kwargs.pop('user_lastname', None)
+
+        self._institution_id = kwargs.pop('institution_id', None)
+        self._institution_name = kwargs.pop('institution_name', None)
+        self._institution_url = kwargs.pop('institution_url', None)
+        self._institution_logo = kwargs.pop('institution_logo', None)
 
     def to_tags(self):
 
@@ -113,6 +115,9 @@ class ActivityFeature3(Feature):
             ret['status_id'] = self._status_id
         if self._timestamp is not None:
             ret['timestamp'] = str(self._timestamp)
+
+        if self._previous_version is not None:
+            ret['previous_version'] = self._previous_version
 
         institution = {}
         if self._institution_id is not None:
@@ -218,10 +223,10 @@ class ActivityProtocol3(Protocol):
 
         # Determine if and how detailed Involvements are to be displayed.
         # Default is: 'full'
-        inv_details = 'full' #request.params.get('involvements', 'full')
+        inv_details = request.params.get('involvements', 'full')
 
         query, count = self._query_many(request, relevant_activities,
-                                        involvements=True)
+                                        involvements=inv_details, metadata=True)
 
         activities = self._query_to_activities(request, query,
                                                involvements=inv_details, public_query=True)
@@ -963,6 +968,7 @@ class ActivityProtocol3(Protocol):
 
         if metadata:
             query = query.add_columns(
+                Activity.previous_version.label('previous_version'),
                 User.id.label('user_id'),
                 User.username.label('user_name'),
                 User.firstname.label('user_firstname'),
@@ -1084,6 +1090,7 @@ class ActivityProtocol3(Protocol):
 
             if activity == None:
                 # Handle optional metadata correctly
+                previous_version = q.previous_version if hasattr(q, 'previous_version') else None
                 user_privacy = q.user_privacy if hasattr(q, 'user_privacy') else None
                 user_id = q.user_id if hasattr(q, 'user_id') else None
                 user_name = q.user_name if hasattr(q, 'user_name') else None
@@ -1102,7 +1109,7 @@ class ActivityProtocol3(Protocol):
                                             institution_url=institution_url, institution_logo=institution_logo,
                                             user_id=user_id, user_name=user_name,
                                             user_firstname=user_firstname,
-                                            user_lastname=user_lastname
+                                            user_lastname=user_lastname, previous_version=previous_version
                                             )
                 activities.append(activity)
 
@@ -1497,7 +1504,9 @@ class ActivityProtocol3(Protocol):
 
         # Create new Activity
         new_activity = Activity(activity_identifier=old_activity.identifier,
-                                version=(latest_version.version + 1), point=new_geom)
+                                version=(latest_version.version + 1),
+                                previous_version=old_activity.version,
+                                point=new_geom)
 
         # Status (default: 'pending')
         status = 'pending'
