@@ -53,7 +53,43 @@ class ActivityReview(BaseReview):
 	ref = self.activity_protocol3.read_one_by_version(self.request, uid, ref_version)
 
         # Try to get the new activity object
-        new = self.activity_protocol3.read_one_by_version(self.request, uid, new_version)
+        #new = self.activity_protocol3.read_one_by_version(self.request, uid, new_version)
+
+        ref_diff = self.get_diff(Activity, uid, new_version, ref_version)
+
+        if ref_diff is None:
+            # The easy case: new_version can be shown as it is in the database
+            new = self.activity_protocol3.read_one_by_version(self.request, uid, new_version)
+
+        else:
+            # RECALCULATE!!!
+            #@TODO: Clean up this whole function ...
+            from lmkp.models.database_objects import Changeset
+            # Find base of new_version to apply the CALCULATED diff on it
+            base_version = Session.query(
+                    Changeset.diff,
+                    Activity.previous_version).\
+                join(Activity).\
+                filter(Activity.identifier == uid).\
+                filter(Activity.version == new_version).\
+                first()
+
+            new = self.activity_protocol3.read_one_by_version(self.request, uid, base_version.previous_version)
+            new_diff = json.loads(base_version.diff.replace('\'', '"'))
+
+            print "*****"
+            print ref_diff
+            print "***"
+            print new_diff
+
+            from lmkp.views.review import recalculate_diffs
+            calculated_diff = recalculate_diffs(Activity, uid, new_diff, ref_diff)
+            print "---"
+            print calculated_diff
+
+            new = self.recalc(Activity, new, calculated_diff)
+
+#        new = self._recalculate_version(Activity, ref, new)
 
         # Request also the metadata
         metadata = {}
@@ -119,7 +155,12 @@ class ActivityReview(BaseReview):
 
         # Get the new version
         if pending_version is not None:
+            #@TODO: this should be exactly the same as in COMPARE
             pending = self.activity_protocol3.read_one_by_version(self.request, uid, pending_version)
+            diff = self.get_diff(Activity, uid, pending.get_version(), active.get_version())
+            if diff is not None:
+                pending = self.recalc(Activity, pending, diff)
+            #pending = self._recalculate_version(Activity, active, pending)
 
         additional_vars['active_title'], additional_vars['pending_title'] = \
             self._get_active_pending_version_descriptions(Activity, uid, active_version, pending_version)

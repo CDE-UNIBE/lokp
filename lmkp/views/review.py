@@ -1,6 +1,8 @@
 from geoalchemy import functions
+from lmkp.models.database_objects import Activity
 from lmkp.models.database_objects import Changeset
 from lmkp.models.database_objects import Profile
+from lmkp.models.database_objects import Stakeholder
 from lmkp.models.database_objects import Status
 from lmkp.models.database_objects import User
 from lmkp.models.meta import DBSession as Session
@@ -14,6 +16,7 @@ from sqlalchemy.sql.expression import not_
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.functions import min
 import string
+import json
 
 log = logging.getLogger(__name__)
 
@@ -500,3 +503,199 @@ class BaseReview(BaseView):
             raise HTTPForbidden()
 
         return ref_version, new_version
+
+    def _apply_diff(self, item, diff):
+        from lmkp.views.protocol import Tag
+
+        for tg in diff['taggroups']:
+
+            tg_id = tg['id'] if 'id' in tg else None
+            add_tags = []
+            delete_tags = []
+
+            for t in tg['tags']:
+                if t['op'] == 'add':
+                    add_tags.append(
+                        {'key': t['key'], 'value': t['value']}
+                    )
+                if t['op'] == 'delete':
+                    delete_tags.append(
+                        {'key': t['key'], 'value': t['value'], 'id': t['id']}
+                    )
+
+            print "*** add"
+            print len(add_tags)
+            print add_tags
+            print "*** delete"
+            print len(delete_tags)
+            print delete_tags
+
+            new_tg = item.find_taggroup_by_tg_id(tg_id)
+            if new_tg is not None:
+                # Delete tags
+                for dt in delete_tags:
+                    # Try to find the tag by its key. If found, remove it
+                    deleted_tag = new_tg.get_tag_by_key(dt['key'])
+                    if deleted_tag:
+                        print "---"
+                        new_tg.remove_tag(deleted_tag)
+                # Add tags
+                for at in add_tags:
+                    if new_tg.get_tag_by_key(at['key']) is None:
+                        new_tg.add_tag(Tag(None, at['key'], str(at['value'])))
+
+        return item
+
+    def _recalculate_version(self, mappedClass, ref, new):
+
+        ref_version = ref.get_version()
+        new_previousversion = new.get_previous_version()
+
+        if (new_previousversion is not None
+            and new_previousversion != ref_version):
+            # The new_version is not based on the ref_version, it is therefore
+            # necessary to get the changes made to ref_version and calculate
+            # them into new_version
+
+            diff_query = Session.query(Changeset.diff).\
+                join(mappedClass).\
+                filter(mappedClass.identifier == ref.get_guid()).\
+                filter(mappedClass.version == ref.get_version())
+
+            diff = diff_query.first()
+
+            diff_json = json.loads(diff.diff.replace('\'', '"'))
+
+            # @TODO: compare also involvements
+
+            if mappedClass == Activity:
+                diff_keyword = 'activities'
+            elif mappedClass == Stakeholder:
+                diff_keyword = 'stakeholders'
+            else:
+                diff_keyword = None
+            
+            d = None
+            if (diff_keyword is not None and diff_keyword in diff_json
+                and diff_json[diff_keyword] is not None):
+                activities = diff_json[diff_keyword]
+                for a in activities:
+                    if ('id' in a and a['id'] is not None
+                        and a['id'] == ref.get_guid()):
+                        d = a
+
+            if d is not None:
+                new = self._apply_diff(new, d)
+
+        return new
+
+    def recalc(self, mappedClass, item, diff):
+
+        if mappedClass == Activity:
+            diff_keyword = 'activities'
+        elif mappedClass == Stakeholder:
+            diff_keyword = 'stakeholders'
+        else:
+            diff_keyword = None
+
+        if (diff_keyword is not None and diff_keyword in diff
+            and diff[diff_keyword] is not None):
+            for x in diff[diff_keyword]:
+                if ('id' in x and x['id'] is not None
+                    and x['id'] == item.get_guid()):
+                    item = self._apply_diff(item, x)
+
+        return item
+
+
+
+    def get_diff(self, mappedClass, uid, new_version, old_version=None):
+        """
+        Returns a diff which can be used to recalculate the new version.
+        If no old_version was specified or no previous version was found, return
+        None.
+        If the new_version is based directly on the old_version, return None.
+        """
+
+        def _query_diff(mappedClass, uid, version):
+            q = Session.query(
+                    Changeset.diff,
+                    mappedClass.previous_version
+                ).\
+                join(mappedClass).\
+                filter(mappedClass.identifier == uid).\
+                filter(mappedClass.version == version)
+            return q.first()
+
+        # If no old version was provided, return empty
+        if old_version is None:
+            return None
+
+        # Query the diff and previous version of the new_version
+        new_base = _query_diff(mappedClass, uid, new_version)
+
+        # If no previous version was found, return empty
+        if new_base is None or new_base.previous_version is None:
+            return None
+
+        # If the new_version is based directly on the old version, return empty
+        # (no diff required to display new_version)
+        if new_base.previous_version == old_version:
+            return None
+        else:
+            # Return the diff of the old version
+            diff = _query_diff(mappedClass, uid, old_version)
+            return json.loads(diff.diff.replace('\'', '"'))
+
+        return None
+
+
+def recalculate_diffs(mappedClass, uid, new_diff, old_diff=None):
+
+    def _merge_tgs(diff_keyword, uid, old_diff, taggroup):
+
+        print "___"
+        print old_diff
+
+        if diff_keyword in old_diff and old_diff[diff_keyword] is not None:
+            for a in old_diff[diff_keyword]:
+                if 'id' in a and a['id'] == str(uid):
+
+                    for tg in a['taggroups']:
+                        if 'id' in tg and 'id' in taggroup and tg['id'] == taggroup['id']:
+                            # @TODO: Merge within taggroup
+                            pass
+                        else:
+                            # Append
+                            a['taggroups'].append(taggroup)
+
+        return old_diff
+
+    if mappedClass == Activity:
+        diff_keyword = 'activities'
+    elif mappedClass == Stakeholder:
+        diff_keyword = 'stakeholders'
+    else:
+        diff_keyword = None
+
+    ret = {}
+
+    if old_diff is None and diff_keyword is not None:
+        # Extract only interesting stuff out of new_diff
+        if diff_keyword in new_diff and new_diff[diff_keyword] is not None:
+            for a in new_diff[diff_keyword]:
+                if 'id' in a and a['id'] == str(uid):
+                    ret = a
+
+    elif old_diff is not None and diff_keyword is not None:
+        # Recalculate diff out of old and new diff
+        if diff_keyword in new_diff and new_diff[diff_keyword] is not None:
+            for a in new_diff[diff_keyword]:
+                if 'id' in a and a['id'] == str(uid):
+                    # Merge with existing
+                    for tg in a['taggroups']:
+                        old_diff = _merge_tgs(diff_keyword, uid, old_diff, tg)
+            ret = old_diff
+
+    return ret
+
