@@ -11,9 +11,9 @@ Ext.define('Lmkp.controller.activities.Details', {
 
     init: function() {
         this.control({
-            'lo_activitydetailwindow':{
-                render: this.onActivityDetailWindowRender
-            },
+            //'lo_activitydetailwindow':{
+            //    render: this.onActivityDetailWindowRender
+            //},
             'lo_activitydetailwindow gridpanel[itemId="historyPanel"]': {
                 select: this.onHistoryPanelSelect
             },
@@ -36,7 +36,7 @@ Ext.define('Lmkp.controller.activities.Details', {
      * When rendering the window, also query the comment items (specific for
      * activities) and add them to the comment panel (setItemComment)
      */
-    onActivityDetailWindowRender: function(comp){
+    /*onActivityDetailWindowRender: function(comp){
         var identifier;
         if (comp.activity) {
             // The item is known (for example when clicking on the details
@@ -59,7 +59,7 @@ Ext.define('Lmkp.controller.activities.Details', {
                 comp.setItemComment(Ext.JSON.decode(response.responseText));
             }
         });
-    },
+    },*/
     
     onHistoryPanelSelect: function(rowModel, record, index, eOpts){
         this.getActivityDetailWindow()._populateDetails(record);
