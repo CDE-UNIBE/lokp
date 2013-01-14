@@ -155,6 +155,7 @@ def main(global_config, ** settings):
     Comments
     """
     # Returns a JSON representation of comments to an object
+    config.add_route('comments_sitekey', '/comments/sitekey/{uid}')
     config.add_route('comments_all', '/comments/{object}/{uid}')
     # Adds a comment
     config.add_route('comment_add', '/comments/add')
