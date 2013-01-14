@@ -1,19 +1,24 @@
-from pyramid.view import view_config
-from pyramid.security import (
-    authenticated_userid,
-    has_permission,
-    ACLAllowed
-)
-
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
-
-import uuid
-
-from recaptcha.client import captcha
-
+from lmkp.views.config import get_activity_sitekey
+from lmkp.views.config import get_stakeholder_sitekey
 from pyramid.i18n import TranslationStringFactory
-#_ = TranslationStringFactory('lmkp')
+from pyramid.security import ACLAllowed
+from pyramid.security import authenticated_userid
+from pyramid.security import has_permission
+from pyramid.view import view_config
+from recaptcha.client import captcha
+import uuid
+_ = TranslationStringFactory('lmkp')
+
+@view_config(route_name='comments_sitekey', renderer='json')
+def comments_sitekey(request):
+    
+    uid = request.matchdict.get('uid', None)
+    if Session.query(Stakeholder).filter(Stakeholder.identifier == uid).count() > 0:
+        return {'site_key': get_stakeholder_sitekey(request)}
+
+    return {'site_key': get_activity_sitekey(request)}
 
 @view_config(route_name='comments_all', renderer='json')
 def comments_all(request):
@@ -47,12 +52,12 @@ def comments_all(request):
         ret['comments'] = []
         for c in comments:
             ret['comments'].append({
-                'id': c.id,
-                'comment': c.comment,
-                'timestamp': str(c.timestamp),
-                'userid': c.user.id if c.user is not None else None,
-                'username': c.user.username if c.user is not None else None
-            })
+                                   'id': c.id,
+                                   'comment': c.comment,
+                                   'timestamp': str(c.timestamp),
+                                   'userid': c.user.id if c.user is not None else None,
+                                   'username': c.user.username if c.user is not None else None
+                                   })
         ret['total'] = len(comments)
     
     elif object == 'stakeholder':
@@ -110,7 +115,7 @@ def comment_add(request):
         ret['message'] = 'No comment provided.'
         return ret
     
-     # check if identifier is available
+    # check if identifier is available
     if request.POST['identifier'] is None:
         ret['message'] = 'No identifier provided.'
         return ret
@@ -123,11 +128,11 @@ def comment_add(request):
         # check captcha
         private_key = '6LfqmNESAAAAAKM_cXox32Nnz0Zo7nlOeDPjgIoh'
         response = captcha.submit(
-            request.POST['recaptcha_challenge_field'],
-            request.POST['recaptcha_response_field'],
-            private_key,
-            request.referer
-        )
+                                  request.POST['recaptcha_challenge_field'],
+                                  request.POST['recaptcha_response_field'],
+                                  private_key,
+                                  request.referer
+                                  )
     
     if not response.is_valid:
         # captcha not correct
