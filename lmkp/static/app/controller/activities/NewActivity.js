@@ -24,6 +24,10 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
         selector: 'lo_stakeholderdetailwindow'
     }],
 
+    stores: [
+        'ActivityGrid'
+    ],
+
     views: [
     'public.NewActivityWindow',
     'activities.NewActivity',
@@ -445,6 +449,9 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                         mapPanel.getNewFeatureSelectCtrl().unselectAll();
                         // Remove all features from the helper vector layer
                         mapPanel.getVectorLayer().removeAllFeatures();
+
+                        // Reload also the activity grid store
+                        this.getActivityGridStore().reload();
                     } else {
                         Ext.Msg.alert('Failure', 'The activity could not be created.');
                     }
