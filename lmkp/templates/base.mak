@@ -12,6 +12,8 @@ if str(request.registry.settings['lmkp.use_js_builds']).lower() == "true":
 else:
     use_js_builds = False
 
+comments_url = request.registry.settings['lmkp.comments_url']
+
 %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
@@ -40,6 +42,7 @@ else:
             Ext.ns('Lmkp');
             Lmkp.available_languages = ${available_languages | n};
             Lmkp.available_profiles = ${available_profiles | n};
+            Lmkp.comments_url = "${comments_url}";
         </script>
         ${self.head_tags()}
     </head>

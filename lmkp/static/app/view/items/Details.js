@@ -110,7 +110,7 @@ Ext.define('Lmkp.view.items.Details',{
 
                 var commentPanel = this.centerPanel.add({
                     id: 'comment-panel',
-                    html: 'comments',
+                    html: 'Loading comments ...',
                     listeners: {
                         render: function(comp){
 
@@ -146,7 +146,7 @@ Ext.define('Lmkp.view.items.Details',{
                                 }
 
                                 var result =
-                                'http://localhost:3000/api/show_topic.js' +
+                                Lmkp.comments_url + 'api/show_topic.js' +
                                 '?_c=' + window._juviaRequestCounter +
                                 '&' + makeQueryString(options);
                                 window._juviaRequestCounter++;
