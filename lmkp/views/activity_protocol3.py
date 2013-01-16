@@ -225,14 +225,19 @@ class ActivityProtocol3(Protocol):
         # Default is: 'full'
         inv_details = request.params.get('involvements', 'full')
 
-        query, count = self._query_many(request, relevant_activities,
-                                        involvements=inv_details, metadata=True)
+        query, count = self._query_many(
+            request, relevant_activities, involvements=inv_details!='none',
+            metadata=True
+        )
 
-        activities = self._query_to_activities(request, query,
-                                               involvements=inv_details, public_query=True)
+        activities = self._query_to_activities(
+            request, query, involvements=inv_details, public_query=False
+        )
 
-        return activities[0]
-
+        if len(activities) == 0:
+            return None
+        else:
+            return activities[0]
 
     def read_one(self, request, uid, public=True):
 
