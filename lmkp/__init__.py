@@ -60,6 +60,10 @@ def main(global_config, ** settings):
     config.add_route('logout', '/logout')
     config.add_route('db_test', '/db_test')
 
+    # Embedded start page
+    config.add_route('embedded_index', '/embedded/{profile}')
+    config.add_route('enclosing_demo_site', '/enclosing_demo_site')
+
     # Returns configuration parameters as JSON objects
     config.add_route('yaml_translate_activities', '/config/scan/activities')
     config.add_route('yaml_add_activity_fields', '/config/add/activities')
