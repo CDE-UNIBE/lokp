@@ -29,6 +29,10 @@ class BaseReview(BaseView):
 
     def _compare_taggroups(self, old, new):
 
+        print "****"
+        print old
+        print new
+
         table = []
 
         if old is None and new is not None:
@@ -284,7 +288,7 @@ class BaseReview(BaseView):
             for t in inv._feature.to_tags():
                 new_inv_tags.append(t)
 
-            current_row['new'] = {'class': '', 'tags': new_inv_tags}
+            current_row['new'] = {'class': 'add involvement', 'tags': new_inv_tags}
             involvements_table.append(current_row)
 
         return {'taggroups': table, 'involvements': involvements_table}
@@ -511,7 +515,8 @@ class BaseReview(BaseView):
         except ValueError as e:
             raise HTTPBadRequest("ValueError: %s" % e)
 
-        if ref_version not in v or new_version not in v:
+        if ((ref_version == 0 and new_version not in v)
+            or (ref_version != 0 and ref_version not in v or new_version not in v)):
             raise HTTPForbidden()
 
         return ref_version, new_version
@@ -625,10 +630,15 @@ class BaseReview(BaseView):
         Function to do the actual comparison and return a json
         """
 
-        # Get the reference object
-	ref_object = self.protocol.read_one_by_version(
-            self.request, uid, ref_version_number
-        )
+        if (ref_version_number == 0
+            or (ref_version_number == new_version_number and ref_version_number == 1)):
+            ref_object = None
+            ref_version_number = None
+        else:
+            # Get the reference object
+            ref_object = self.protocol.read_one_by_version(
+                self.request, uid, ref_version_number
+            )
 
         # Check if a diff is needed to recalculate the new object
         ref_diff = self.get_diff(

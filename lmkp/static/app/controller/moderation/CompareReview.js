@@ -352,6 +352,10 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
             var url = type + '/' + action + '/json/' + uid;
             if (refVersion && newVersion) {
                 url += '/' + refVersion + '/' + newVersion;
+            } else if (!refVersion && newVersion) {
+                // Special case: Nothing is selected on the left side (brand new
+                // object with multiple pending versions)
+                url += '/0/' + newVersion;
             }
             return url;
         } else {

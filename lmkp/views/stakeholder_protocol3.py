@@ -105,13 +105,19 @@ class StakeholderProtocol3(Protocol):
         # Default is: 'full'
         inv_details = request.params.get('involvements', 'full')
 
-        query, count = self._query_many(request, relevant_stakeholders,
-                                        involvements=inv_details, metadata=True)
+        query, count = self._query_many(
+            request, relevant_stakeholders, involvements=inv_details!='none',
+            metadata=True
+        )
 
-        stakeholders = self._query_to_stakeholders(request, query,
-                                                   involvements=inv_details, public_query=True)
+        stakeholders = self._query_to_stakeholders(
+            request, query, involvements=inv_details, public_query=False
+        )
 
-        return stakeholders[0]
+        if len(stakeholders) == 0:
+            return None
+        else:
+            return stakeholders[0]
 
     def read_one(self, request, uid, public=True):
         """
