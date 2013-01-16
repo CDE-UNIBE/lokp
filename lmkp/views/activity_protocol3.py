@@ -1512,7 +1512,7 @@ class ActivityProtocol3(Protocol):
         
         else:
             # Update existing Activity
-            updated_activity = self._update_activity(request, db_a, activity_dict,
+            updated_activity = self._update_object(request, db_a, activity_dict,
                                                      changeset)
 
             # Handle also the involvements
@@ -1615,7 +1615,7 @@ class ActivityProtocol3(Protocol):
 
         return new_activity
 
-    def _update_activity(self, request, old_activity, activity_dict, changeset,
+    def _update_object(self, request, old_activity, activity_dict, changeset,
                          ** kwargs):
         """
         Update an Activity. The basic idea is to deep copy the previous version

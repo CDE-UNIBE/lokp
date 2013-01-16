@@ -1234,7 +1234,7 @@ class StakeholderProtocol3(Protocol):
 
         else:
             # Update existing Stakeholder
-            updated_stakeholder = self._update_stakeholder(request, db_sh, 
+            updated_stakeholder = self._update_object(request, db_sh,
                                                            stakeholder_dict, changeset)
 
             # Handle also the involvements
@@ -1326,7 +1326,7 @@ class StakeholderProtocol3(Protocol):
 
         return new_stakeholder
 
-    def _update_stakeholder(self, request, old_stakeholder, stakeholder_dict,
+    def _update_object(self, request, old_stakeholder, stakeholder_dict,
                             changeset, ** kwargs):
         """
         Update a Stakeholder. The basic idea is to deep copy the previous
