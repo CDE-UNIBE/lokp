@@ -19,7 +19,7 @@ class StakeholderReview(BaseReview):
 
     def __init__(self, request):
         super(StakeholderReview, self).__init__(request)
-        self.stakeholder_protocol3 = StakeholderProtocol3(Session)
+        self.protocol = StakeholderProtocol3(Session)
 
     @action(name='html', renderer='lmkp:templates/compare_versions.mak')
     def compare_html(self):
@@ -40,26 +40,20 @@ class StakeholderReview(BaseReview):
 
     @action(name='json', renderer='json')
     def compare_json(self):
+        """
+        Compare two objects (two versions): ref_object and new_object
+        """
 
         # Get the uid from the request
         uid = self.request.matchdict.get('uid', None)
 
-        ref_version, new_version = self._get_valid_versions(Stakeholder, uid)
+        ref_version_number, new_version_number = self._get_valid_versions(
+            Stakeholder, uid
+        )
 
-        # Get the old, reference Stakeholder object
-        ref = self.stakeholder_protocol3.read_one_by_version(self.request, uid, ref_version)
-
-        # Try to get the new stakeholder object
-        new = self.stakeholder_protocol3.read_one_by_version(self.request, uid, new_version)
-
-        # Request also the metadata
-        metadata = {}
-        metadata['ref_title'], metadata['new_title'] = \
-            self._get_active_pending_version_descriptions(Stakeholder, uid, ref_version, new_version)
-        metadata['ref_version'] = ref_version
-        metadata['new_version'] = new_version
-
-        result = dict(self._compare_taggroups(ref, new).items() + {'metadata': metadata}.items())
+        result = self.get_comparison(
+            Stakeholder, uid, ref_version_number, new_version_number
+        )
 
         return result
 
@@ -90,27 +84,16 @@ class StakeholderReview(BaseReview):
         # Get the activity identifier
         uid = self.request.matchdict.get('uid', None)
 
-        additional_vars = {}
-        additional_vars['identifier'] = uid
-        additional_vars['next_url'] = self.request.route_url('stakeholders_review_versions_html', uid=uid)
-        additional_vars['type'] = 'stakeholders'
-
-        active_version, pending_version = self._get_active_pending_versions(Stakeholder, uid)
+        active_version, pending_version = self._get_valid_versions(
+            Stakeholder, uid, review=True
+        )
 
         # Some logging
         log.debug("active version: %s" % active_version)
         log.debug("pending version: %s" % pending_version)
 
-        active = pending = None
-        # Get the active version
-        if active_version is not None:
-            active = self.stakeholder_protocol3.read_one_by_version(self.request, uid, active_version)
+        result = self.get_comparison(
+            Stakeholder, uid, active_version, pending_version, review=True
+        )
 
-        # Get the new version
-        if pending_version is not None:
-            pending = self.stakeholder_protocol3.read_one_by_version(self.request, uid, pending_version)
-
-        additional_vars['active_title'], additional_vars['pending_title'] = \
-            self._get_active_pending_version_descriptions(Stakeholder, uid, active_version, pending_version)
-        additional_vars['version'] = pending_version
-        return dict(self._compare_taggroups(active, pending).items() + {'metadata': additional_vars}.items())
+        return result
