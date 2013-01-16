@@ -11,6 +11,7 @@ from lmkp.views.translation import statusMap
 from lmkp.views.views import BaseView
 import logging
 from pyramid.httpexceptions import HTTPForbidden
+from pyramid.httpexceptions import HTTPBadRequest
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import not_
 from sqlalchemy.sql.expression import or_
@@ -309,7 +310,6 @@ class BaseReview(BaseView):
         pv = Session.query(min(mappedClass.version)).\
             filter(mappedClass.identifier == uid).\
             filter(mappedClass.fk_status == 1).\
-            filter(mappedClass.version > active_version).\
             first()
 
         try:
@@ -323,48 +323,51 @@ class BaseReview(BaseView):
 
         return active_version, pending_version
 
-    def _get_active_pending_version_descriptions(self, mappedClass, uid, active_version, pending_version):
+    def _get_metadata(self, mappedClass, uid, refVersion, newVersion):
 
-        _ = self.request.translate
+        refTimestamp = newTimestamp = None
 
-        active_title = pending_title = ''
-        active_status = pending_status = None
+        refQuery = Session.query(
+                Changeset.timestamp
+            ).\
+            join(mappedClass).\
+            filter(mappedClass.identifier == uid).\
+            filter(mappedClass.version == refVersion).\
+            first()
 
-        try:
-            active_timestamp, active_status = Session.query(Changeset.timestamp, Status.name).\
-                join(mappedClass).\
-                join(Status).\
-                filter(mappedClass.identifier == uid).\
-                filter(mappedClass.version == active_version).first()
-        except TypeError:
-            pass
-        try:
-            pending_timestamp, pending_status = Session.query(Changeset.timestamp, Status.name).\
-                join(mappedClass).\
-                join(Status).\
-                filter(mappedClass.identifier == uid).\
-                filter(mappedClass.version == pending_version).first()
-        except TypeError:
-            pass
+        if refQuery is not None:
+            refTimestamp = refQuery.timestamp
 
-        try:
-            active_title = "%s version %s as of %s" % (string.capitalize(_(statusMap[active_status])), active_version, active_timestamp.strftime('%H:%M, %d-%b-%Y'));
-        except:
-            pass
-        try:
-            pending_title = "%s version %s as of %s" % (string.capitalize(_(statusMap[pending_status])), pending_version, pending_timestamp.strftime('%H:%M, %d-%b-%Y'));
-        except:
-            pass
+        newQuery = Session.query(
+                Changeset.timestamp
+            ).\
+            join(mappedClass).\
+            filter(mappedClass.identifier == uid).\
+            filter(mappedClass.version == newVersion).\
+            first()
 
-        return active_title, pending_title
+        if newQuery is not None:
+            newTimestamp =  newQuery.timestamp
 
-    def _get_available_versions(self, mappedClass, uid):
+        metadata = {
+            'ref_version': refVersion,
+            'ref_timestamp': str(refTimestamp),
+            'new_version': newVersion,
+            'new_timestamp': str(newTimestamp),
+            'identifier': uid,
+            'type': mappedClass.__table__.name,
+        }
+
+        return metadata
+
+    def _get_available_versions(self, mappedClass, uid, review=False):
         """
         Returns an array with all versions that are available to the current
         user. Moderators get all versions for Stakeholders and Activity if later
         lies within the moderator's profile. Editors get all active and inactive
         versions as well as their own edits. Public users only get inactive and
         active versions.
+        If 'review' is true, only return the active and any pending versions.
         """
 
         def _get_query_for_editors():
@@ -450,20 +453,29 @@ class BaseReview(BaseView):
         # Create a list of available versions
         available_versions = []
         for i in versions_query.order_by(mappedClass.version).all():
-            available_versions.append({
-                'version': i[0],
-                'status': i[1]
-            })
+            if review is False or i[1] == 1 or i[1] == 2:
+                available_versions.append({
+                    'version': i[0],
+                    'status': i[1]
+                })
 
         log.debug("Available Versions for object %s:\n%s" % (uid, available_versions))
 
         return available_versions
 
-
-    def _get_valid_versions(self, mappedClass, uid):
+    def _get_valid_versions(self, mappedClass, uid, review=False):
+        """
+        Returns two version numbers:
+        - the base version number: if not indicated explicitely, the active
+          version is returned if available, else version 1
+        - the version number to compare with: if not indicated explicitely, the
+          first pending version is returned else version 1
+        """
 
         # Check permissions
-        available_versions = self._get_available_versions(mappedClass, uid)
+        available_versions = self._get_available_versions(
+            mappedClass, uid, review=review
+        )
 
         # Find out available versions and if possible active and first pending
         # version
@@ -523,12 +535,13 @@ class BaseReview(BaseView):
                         {'key': t['key'], 'value': t['value'], 'id': t['id']}
                     )
 
-            print "*** add"
-            print len(add_tags)
-            print add_tags
-            print "*** delete"
-            print len(delete_tags)
-            print delete_tags
+            #TODO: clean up ...
+#            print "*** add"
+#            print len(add_tags)
+#            print add_tags
+#            print "*** delete"
+#            print len(delete_tags)
+#            print delete_tags
 
             new_tg = item.find_taggroup_by_tg_id(tg_id)
             if new_tg is not None:
@@ -537,7 +550,6 @@ class BaseReview(BaseView):
                     # Try to find the tag by its key. If found, remove it
                     deleted_tag = new_tg.get_tag_by_key(dt['key'])
                     if deleted_tag:
-                        print "---"
                         new_tg.remove_tag(deleted_tag)
                 # Add tags
                 for at in add_tags:
@@ -566,7 +578,7 @@ class BaseReview(BaseView):
 
             diff_json = json.loads(diff.diff.replace('\'', '"'))
 
-            # @TODO: compare also involvements
+            # TODO: compare also involvements
 
             if mappedClass == Activity:
                 diff_keyword = 'activities'
@@ -607,7 +619,89 @@ class BaseReview(BaseView):
 
         return item
 
+    def get_comparison(self, mappedClass, uid, ref_version_number,
+        new_version_number, review=False):
+        """
+        Function to do the actual comparison and return a json
+        """
 
+        # Get the reference object
+	ref_object = self.protocol.read_one_by_version(
+            self.request, uid, ref_version_number
+        )
+
+        # Check if a diff is needed to recalculate the new object
+        ref_diff = self.get_diff(
+            mappedClass, uid, new_version_number, ref_version_number
+        )
+
+        if ref_diff is None:
+            # The easy case: the new object can be shown as it is in the
+            # database.
+            if new_version_number is not None:
+                new_object = self.protocol.read_one_by_version(
+                    self.request, uid, new_version_number
+                )
+            else:
+                new_object = None
+
+        else:
+            # The hard case: It is necessary to recalculate the new object so
+            # that it includes the same changes made to the reference object. To
+            # do this, the diff of the ref object and of the new object need to
+            # be merged.
+
+            # TODO: Check if this needs to be recursive ...
+
+            # Find the diff and the base version number of the new object
+            base_query = Session.query(
+                    Changeset.diff,
+                    mappedClass.previous_version).\
+                join(mappedClass).\
+                filter(mappedClass.identifier == uid).\
+                filter(mappedClass.version == new_version_number).\
+                first()
+
+            # Query the base object
+            base_object = self.protocol.read_one_by_version(
+                self.request, uid, base_query.previous_version
+            )
+            new_diff = json.loads(base_query.diff.replace('\'', '"'))
+
+
+            # Recalculate a new diff based on the new_diff and the ref_diff
+            calculated_diff = self.recalculate_diffs(
+                mappedClass, uid, new_diff, ref_diff
+            )
+
+            # TODO: clean up ...
+            print "-diff1-------------------------"
+            print new_diff
+            print "-diff2-------------------------"
+            print ref_diff
+            print "-calculated--------------------"
+            print calculated_diff
+
+            # Apply the diff to the base_object
+            new_object = self.recalc(mappedClass, base_object, calculated_diff)
+
+        # Request also the metadata
+        metadata = self._get_metadata(
+            mappedClass, uid, ref_version_number, new_version_number
+        )
+
+        # Add flag of recalculation to metadata
+        metadata['recalculated'] = True if ref_diff is not None else False
+
+        result = dict(
+            self._compare_taggroups(ref_object, new_object).items() +
+            {'metadata': metadata}.items() +
+            {'versions': self._get_available_versions(
+                mappedClass, uid, review=review)
+            }.items()
+        )
+
+        return result
 
     def get_diff(self, mappedClass, uid, new_version, old_version=None):
         """
@@ -650,52 +744,84 @@ class BaseReview(BaseView):
         return None
 
 
-def recalculate_diffs(mappedClass, uid, new_diff, old_diff=None):
+    def recalculate_diffs(self, mappedClass, uid, new_diff, old_diff=None):
 
-    def _merge_tgs(diff_keyword, uid, old_diff, taggroup):
+        #TODO: clean up ...
 
-        print "___"
-        print old_diff
+#        print "------------------------"
+#        print "new_diff: %s" % new_diff
+#        print "old_diff: %s" % old_diff
 
-        if diff_keyword in old_diff and old_diff[diff_keyword] is not None:
-            for a in old_diff[diff_keyword]:
-                if 'id' in a and a['id'] == str(uid):
+        def _merge_tgs(diff_keyword, uid, old_diff, taggroup):
+            """
+            Merge / Append a taggroup into a diff
+            """
 
-                    for tg in a['taggroups']:
-                        if 'id' in tg and 'id' in taggroup and tg['id'] == taggroup['id']:
-                            # @TODO: Merge within taggroup
-                            pass
-                        else:
-                            # Append
+#            print "** FUNCTION _merge_tgs"
+#            print "old_diff: %s" % old_diff
+            """
+            Approach: Loop through all taggroups in the old_diff and check if it
+            needs to be merged. If not found, append it to the diff.
+            """
+            if diff_keyword in old_diff and old_diff[diff_keyword] is not None:
+                for a in old_diff[diff_keyword]:
+
+#                    print "----loooppp------"
+
+                    if 'id' in a and a['id'] == str(uid):
+                        # It is the correct Activity / Stakeholder, loop through its taggroups
+                        tag_found = False
+                        for tg in a['taggroups']:
+#                            print "tg: %s" % tg
+#                            print "a[taggroups]: %s" % a['taggroups']
+                            if 'id' in tg and 'id' in taggroup and tg['id'] == taggroup['id']:
+                                # If the same taggroup has changes, the newer is
+                                # used and the old is replaced.
+#                                print "**** REPLACE ****"
+                                a['taggroups'].remove(tg)
+#                                print a['taggroups']
+                                a['taggroups'].append(taggroup)
+#                                print a['taggroups']
+                                tag_found = True
+
+                        if tag_found is False:
+                            # Not found, append
+#                            print "**** APPEND ****"
                             a['taggroups'].append(taggroup)
+#                            print a['taggroups']
 
-        return old_diff
+            return old_diff
 
-    if mappedClass == Activity:
-        diff_keyword = 'activities'
-    elif mappedClass == Stakeholder:
-        diff_keyword = 'stakeholders'
-    else:
-        diff_keyword = None
+        if mappedClass == Activity:
+            diff_keyword = 'activities'
+        elif mappedClass == Stakeholder:
+            diff_keyword = 'stakeholders'
+        else:
+            diff_keyword = None
 
-    ret = {}
+        ret = {}
 
-    if old_diff is None and diff_keyword is not None:
-        # Extract only interesting stuff out of new_diff
-        if diff_keyword in new_diff and new_diff[diff_keyword] is not None:
-            for a in new_diff[diff_keyword]:
-                if 'id' in a and a['id'] == str(uid):
-                    ret = a
+        if old_diff is None and diff_keyword is not None:
+            # Extract only interesting stuff out of new_diff
+            if diff_keyword in new_diff and new_diff[diff_keyword] is not None:
+                for a in new_diff[diff_keyword]:
+                    if 'id' in a and a['id'] == str(uid):
+                        ret = a
 
-    elif old_diff is not None and diff_keyword is not None:
-        # Recalculate diff out of old and new diff
-        if diff_keyword in new_diff and new_diff[diff_keyword] is not None:
-            for a in new_diff[diff_keyword]:
-                if 'id' in a and a['id'] == str(uid):
-                    # Merge with existing
-                    for tg in a['taggroups']:
-                        old_diff = _merge_tgs(diff_keyword, uid, old_diff, tg)
-            ret = old_diff
+        elif old_diff is not None and diff_keyword is not None:
+            # Recalculate diff out of old and new diff
+            if diff_keyword in new_diff and new_diff[diff_keyword] is not None:
+                """
+                Approach: Loop through taggroups of new diff and merge them into the old diff
+                """
+                for a in new_diff[diff_keyword]:
+                    if 'id' in a and a['id'] == str(uid):
+                        # Merge with existing
+#                        print "____M*EERERGE____"
+                        for tg in a['taggroups']:
+#                            print "____M*EERERGE____ tg: %s" %tg
+                            old_diff = _merge_tgs(diff_keyword, uid, old_diff, tg)
+                ret = old_diff
 
-    return ret
+        return ret
 
