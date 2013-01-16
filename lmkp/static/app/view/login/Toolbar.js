@@ -21,7 +21,9 @@ Ext.define('Lmkp.view.login.Toolbar' ,{
         value: Ext.util.Cookies.get('_PROFILE_') ? Ext.util.Cookies.get('_PROFILE_') : 'global',
         valueField: 'profile',
         forceSelection: true,
-        editable: false
+        editable: false,
+        // Hide this combobox if the application is embedded
+        hidden: Lmkp.is_embedded
     },{
         fieldLabel: Lmkp.ts.msg("gui_language"),
         id: 'language_combobox',
