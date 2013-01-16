@@ -301,7 +301,7 @@ def review(request):
         first()
 
     # The user can add a review
-    ret = stakeholder_protocol._add_review(
+    ret = stakeholder_protocol3._add_review(
         request, stakeholder, previous_stakeholder, Stakeholder, user)
 
     return ret

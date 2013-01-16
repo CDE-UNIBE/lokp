@@ -713,7 +713,8 @@ class Protocol(object):
                         changeset = Changeset()
                         changeset.user = request.user
                         changeset.diff = str(self._convert_utf8(calculated_diff))
-                        new_v = self._update_activity(
+
+                        new_v = self._update_object(
                             request, previous_item, relevant_diff, changeset,
                             status='active'
                         )
