@@ -178,6 +178,9 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                             // No (more) pending, disable review button
                             me.getReviewButton().disable();
                         }
+                        me.getRefVersionCombobox().bindStore(
+                            me.getCompareVersionsStore()
+                        );
                         me.getRefVersionCombobox().setReadOnly(false);
                     }
 
@@ -237,21 +240,43 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
     },
 
     onCompareColumnAfterRender: function(comp) {
+        var me = this;
         comp.renderer = function(value, metaData, record) {
-            metaData.tdCls = value.class;
+
+            metaData.tdCls = value['class'];
 
             var html = "";
             for(var i = 0; i < value.tags.length; i++){
                 var tag = value.tags[i];
                 var prefix = "";
-                if(value.class == 'add' || value.class == 'add involvement'){
+                if(value['class'] == 'add' || value['class'] == 'add involvement'){
                     prefix += "+ ";
-                } else if(value.class == 'remove' || value.class == 'remove involvement'){
+                } else if(value['class'] == 'remove' || value['class'] == 'remove involvement'){
                     prefix += "- ";
                 }
+
                 html += "<div>" + prefix + tag.key + ": " + tag.value + "</div>";
             }
 
+            if (me.getComparePanel() && me.getComparePanel().action == 'review') {
+                if ((value['class'] == 'add involvement'
+                        || value['class'] == 'remove involvement')
+                    && (value.reviewable != 0)) {
+                    if (value.reviewable == 1) {
+                        console.log("reviewable == 1");
+                        html += '<div>Reviewable: Item is brandnew and will be created.</div>';
+                    } else if (value.reviewable == 2) {
+                        console.log("reviewable == 2");
+                        html += '<div>Reviewable: Item is based on an active version.</div>';
+                    } else if (value.reviewable == 3) {
+                        console.log("reviewable == 3");
+                        html += '<div>Reviewable: Item is not based on an active version -> recalculation needed.</div>';
+                    }
+                } else if (value.reviewable == 0) {
+                    console.log("not reviewable");
+                    html += '<div>Not Reviewable: Item cannot be reviewed from here.</div>';
+                }   
+            }
             return html;
         }
     },

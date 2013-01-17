@@ -55,6 +55,9 @@ class ActivityFeature3(Feature):
         self._institution_url = kwargs.pop('institution_url', None)
         self._institution_logo = kwargs.pop('institution_logo', None)
 
+    def getMappedClass(self):
+        return Activity
+
     def to_tags(self):
 
         repr = []
@@ -217,7 +220,7 @@ class ActivityProtocol3(Protocol):
             'data': [a.to_table(request) for a in activities]
         }
 
-    def read_one_by_version(self, request, uid, version=None):
+    def read_one_by_version(self, request, uid, version):
 
         relevant_activities = self._get_relevant_activities_one_by_version(uid, version)
 
@@ -1137,7 +1140,8 @@ class ActivityProtocol3(Protocol):
                                             Stakeholder.stakeholder_identifier.\
                                             label('stakeholder_identifier'),
                                             Stakeholder.fk_status.label('stakeholder_status'),
-                                            Stakeholder.version.label('stakeholder_version')
+                                            Stakeholder.version.label('stakeholder_version'),
+                                            Stakeholder.fk_changeset.label('changeset_id')
                                             ).\
                 filter(Stakeholder.fk_status.in_(inv_status_filter)).\
                 subquery()
@@ -1154,7 +1158,7 @@ class ActivityProtocol3(Protocol):
                                            ).\
                 join(inv_status,
                      inv_status.c.stakeholder_id == Involvement.fk_stakeholder).\
-                join(Changeset, Changeset.id == inv_status.c.stakeholder_id).\
+                join(Changeset, Changeset.id == inv_status.c.changeset_id).\
                 join(Stakeholder_Role).\
                 subquery()
 
@@ -1202,7 +1206,7 @@ class ActivityProtocol3(Protocol):
 
         return query
 
-    def _query_to_activities(self, request, query, involvements='full',
+    def _query_to_activities(self, request, query, involvements='none',
                              public_query=False):
 
         logged_in, is_moderator = self._get_user_status(

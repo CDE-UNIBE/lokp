@@ -17,6 +17,9 @@ from sqlalchemy.sql.expression import select
 
 class StakeholderFeature3(Feature):
 
+    def getMappedClass(self):
+        return Stakeholder
+
     def to_tags(self):
 
         repr = []
@@ -990,7 +993,8 @@ class StakeholderProtocol3(Protocol):
                                             Activity.id.label('activity_id'),
                                             Activity.activity_identifier.label('activity_identifier'),
                                             Activity.fk_status.label('activity_status'),
-                                            Activity.version.label('activity_version')
+                                            Activity.version.label('activity_version'),
+                                            Activity.fk_changeset.label('changeset_id')
                                             ).\
                 filter(Activity.fk_status.in_(inv_status_filter)).\
                 subquery()
@@ -1006,7 +1010,7 @@ class StakeholderProtocol3(Protocol):
                                            ).\
                 join(inv_status,
                      inv_status.c.activity_id == Involvement.fk_activity).\
-                join(Changeset, Changeset.id == inv_status.c.activity_id).\
+                join(Changeset, Changeset.id == inv_status.c.changeset_id).\
                 join(Stakeholder_Role).\
                 subquery()
 
