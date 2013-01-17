@@ -623,6 +623,7 @@ class Protocol(object):
             if previous_item is not None:
                 # If there is a previous version, check if the newly approved
                 # version needs to be recalculated.
+                #TODO: == statusArray.index('inactive') or rather != statusArray.index('active') ??
                 if (previous_item.fk_status == statusArray.index('inactive')+1
                     and item.fk_status == statusArray.index('pending')+1):
                     """

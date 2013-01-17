@@ -12,6 +12,8 @@ from lmkp.views.views import BaseView
 import logging
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPBadRequest
+from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import not_
 from sqlalchemy.sql.expression import or_
@@ -28,10 +30,6 @@ class BaseReview(BaseView):
         self._handle_parameters()
 
     def _compare_taggroups(self, old, new):
-
-        print "****"
-        print old
-        print new
 
         table = []
 
@@ -189,12 +187,64 @@ class BaseReview(BaseView):
                 for t in inv._feature.to_tags():
                     new_tags.append(t)
 
-                current_row['new'] = {'class': 'add involvement', 'tags': new_tags}
+                reviewable = 0
+                reviewable = self._review_check_involvement(inv._feature)
+
+                current_row['new'] = {
+                    'class': 'add involvement',
+                    'tags': new_tags,
+                    'reviewable': reviewable
+                }
 
                 involvements_table.append(current_row)
 
 
         return {'taggroups': table, 'involvements': involvements_table}
+
+    def _review_check_involvement(self, feature):
+        """
+        Function to check if an involvement can be reviewed or not. It can be
+        reviewed if
+        [1]: it is brand new
+        [2]: it is based on an active version (set to active)
+        [3]: it is based on a version which is not active (recalculate new)
+        """
+
+        # Case 1: Feature is brand new
+        if feature.get_version() == 1:
+            return 1
+
+        mappedClass = feature.getMappedClass()
+        previous_version_query = Session.query(
+                mappedClass.previous_version
+            ).\
+            filter(mappedClass.identifier == feature.get_guid()).\
+            filter(mappedClass.version == feature.get_version()).\
+            subquery()
+
+        
+        previous_version_status = Session.query(
+                mappedClass.fk_status
+            ).\
+            join(previous_version_query,
+                previous_version_query.c.previous_version
+                == mappedClass.version).\
+            filter(mappedClass.identifier == feature.get_guid())
+
+        try:
+            status = previous_version_status.one()
+        except NoResultFound:
+            return 0
+        except MultipleResultsFound:
+            # This should never happen
+            return 0
+
+        if status.fk_status == 2:
+            # Case 2: Feature is based on an active version
+            return 2
+        else:
+            # Case 3: Feature is not based on an active version
+            return 3
 
     def _review_one_version(self, obj, uid, version):
 
@@ -288,7 +338,14 @@ class BaseReview(BaseView):
             for t in inv._feature.to_tags():
                 new_inv_tags.append(t)
 
-            current_row['new'] = {'class': 'add involvement', 'tags': new_inv_tags}
+            reviewable = 0
+            reviewable = self._review_check_involvement(inv._feature)
+
+            current_row['new'] = {
+                'class': 'add involvement',
+                'tags': new_inv_tags,
+                'reviewable': reviewable
+            }
             involvements_table.append(current_row)
 
         return {'taggroups': table, 'involvements': involvements_table}
@@ -524,42 +581,42 @@ class BaseReview(BaseView):
     def _apply_diff(self, item, diff):
         from lmkp.views.protocol import Tag
 
-        for tg in diff['taggroups']:
+        if 'taggroups' in diff:
+            for tg in diff['taggroups']:
+                tg_id = tg['id'] if 'id' in tg else None
+                add_tags = []
+                delete_tags = []
 
-            tg_id = tg['id'] if 'id' in tg else None
-            add_tags = []
-            delete_tags = []
+                for t in tg['tags']:
+                    if t['op'] == 'add':
+                        add_tags.append(
+                            {'key': t['key'], 'value': t['value']}
+                        )
+                    if t['op'] == 'delete':
+                        delete_tags.append(
+                            {'key': t['key'], 'value': t['value'], 'id': t['id']}
+                        )
 
-            for t in tg['tags']:
-                if t['op'] == 'add':
-                    add_tags.append(
-                        {'key': t['key'], 'value': t['value']}
-                    )
-                if t['op'] == 'delete':
-                    delete_tags.append(
-                        {'key': t['key'], 'value': t['value'], 'id': t['id']}
-                    )
+                #TODO: clean up ...
+    #            print "*** add"
+    #            print len(add_tags)
+    #            print add_tags
+    #            print "*** delete"
+    #            print len(delete_tags)
+    #            print delete_tags
 
-            #TODO: clean up ...
-#            print "*** add"
-#            print len(add_tags)
-#            print add_tags
-#            print "*** delete"
-#            print len(delete_tags)
-#            print delete_tags
-
-            new_tg = item.find_taggroup_by_tg_id(tg_id)
-            if new_tg is not None:
-                # Delete tags
-                for dt in delete_tags:
-                    # Try to find the tag by its key. If found, remove it
-                    deleted_tag = new_tg.get_tag_by_key(dt['key'])
-                    if deleted_tag:
-                        new_tg.remove_tag(deleted_tag)
-                # Add tags
-                for at in add_tags:
-                    if new_tg.get_tag_by_key(at['key']) is None:
-                        new_tg.add_tag(Tag(None, at['key'], str(at['value'])))
+                new_tg = item.find_taggroup_by_tg_id(tg_id)
+                if new_tg is not None:
+                    # Delete tags
+                    for dt in delete_tags:
+                        # Try to find the tag by its key. If found, remove it
+                        deleted_tag = new_tg.get_tag_by_key(dt['key'])
+                        if deleted_tag:
+                            new_tg.remove_tag(deleted_tag)
+                    # Add tags
+                    for at in add_tags:
+                        if new_tg.get_tag_by_key(at['key']) is None:
+                            new_tg.add_tag(Tag(None, at['key'], str(at['value'])))
 
         return item
 
@@ -631,7 +688,7 @@ class BaseReview(BaseView):
         """
 
         if (ref_version_number == 0
-            or (ref_version_number == new_version_number and ref_version_number == 1)):
+            or (new_version_number == 1 and ref_version_number == 1)):
             ref_object = None
             ref_version_number = None
         else:
@@ -673,7 +730,7 @@ class BaseReview(BaseView):
                 first()
 
             # Query the base object
-            base_object = self.protocol.read_one_by_version(
+            base_version = self.protocol.read_one_by_version(
                 self.request, uid, base_query.previous_version
             )
             new_diff = json.loads(base_query.diff.replace('\'', '"'))
@@ -693,7 +750,7 @@ class BaseReview(BaseView):
             print calculated_diff
 
             # Apply the diff to the base_object
-            new_object = self.recalc(mappedClass, base_object, calculated_diff)
+            new_object = self.recalc(mappedClass, base_version, calculated_diff)
 
         # Request also the metadata
         metadata = self._get_metadata(
@@ -701,7 +758,11 @@ class BaseReview(BaseView):
         )
 
         # Add flag of recalculation to metadata
-        metadata['recalculated'] = True if ref_diff is not None else False
+        recalculated = False
+        if ref_diff is not None and ref_version_number != new_version_number:
+            recalculated = True
+
+        metadata['recalculated'] = recalculated
 
         result = dict(
             self._compare_taggroups(ref_object, new_object).items() +
@@ -713,45 +774,55 @@ class BaseReview(BaseView):
 
         return result
 
-    def get_diff(self, mappedClass, uid, new_version, old_version=None):
+    def get_diff(self, mappedClass, uid, new_version_number,
+        ref_version_number=None):
         """
-        Returns a diff which can be used to recalculate the new version.
-        If no old_version was specified or no previous version was found, return
-        None.
-        If the new_version is based directly on the old_version, return None.
+        Returns the diff between the reference version item and its previous 
+        version. This diff can then be used to recalculate the new version item 
+        to include the changes made to the reference version item.
+
+        - If no ref_version_number was specified or no reference version item
+          was found, return None.
+        - If the new version item is based directly on the reference version
+          item, return None.
         """
 
+        def _query_previous_version(mappedClass, uid, version):
+            q = Session.query(mappedClass.previous_version).\
+                filter(mappedClass.identifier == uid).\
+                filter(mappedClass.version == version)
+            return q.first()
+
         def _query_diff(mappedClass, uid, version):
-            q = Session.query(
-                    Changeset.diff,
-                    mappedClass.previous_version
-                ).\
+            q = Session.query(Changeset.diff).\
                 join(mappedClass).\
                 filter(mappedClass.identifier == uid).\
                 filter(mappedClass.version == version)
             return q.first()
 
         # If no old version was provided, return empty
-        if old_version is None:
+        if ref_version_number is None:
             return None
 
-        # Query the diff and previous version of the new_version
-        new_base = _query_diff(mappedClass, uid, new_version)
+        # Query previous version of the new version item
+        previous_version_number = _query_previous_version(
+            mappedClass, uid, new_version_number
+        )
 
         # If no previous version was found, return empty
-        if new_base is None or new_base.previous_version is None:
+        if (previous_version_number is None
+            or previous_version_number.previous_version is None):
             return None
 
-        # If the new_version is based directly on the old version, return empty
-        # (no diff required to display new_version)
-        if new_base.previous_version == old_version:
+        # If the new version item is based directly on the reference version
+        # item, return empty
+        if previous_version_number.previous_version == ref_version_number:
             return None
         else:
-            # Return the diff of the old version
-            diff = _query_diff(mappedClass, uid, old_version)
+            # Return the diff between the reference version item and its
+            # previous version
+            diff = _query_diff(mappedClass, uid, ref_version_number)
             return json.loads(diff.diff.replace('\'', '"'))
-
-        return None
 
 
     def recalculate_diffs(self, mappedClass, uid, new_diff, old_diff=None):
@@ -828,9 +899,10 @@ class BaseReview(BaseView):
                     if 'id' in a and a['id'] == str(uid):
                         # Merge with existing
 #                        print "____M*EERERGE____"
-                        for tg in a['taggroups']:
-#                            print "____M*EERERGE____ tg: %s" %tg
-                            old_diff = _merge_tgs(diff_keyword, uid, old_diff, tg)
+                        if 'taggroups' in a:
+                            for tg in a['taggroups']:
+    #                            print "____M*EERERGE____ tg: %s" %tg
+                                old_diff = _merge_tgs(diff_keyword, uid, old_diff, tg)
                 ret = old_diff
 
         return ret
