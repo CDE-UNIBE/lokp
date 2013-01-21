@@ -2,8 +2,11 @@ from datetime import timedelta
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession
 import logging
+from pyramid.renderers import render
 from pyramid.response import Response
 from pyramid.view import view_config
+from pyramid_mailer import get_mailer
+from pyramid_mailer.message import Message
 
 log = logging.getLogger(__name__)
 
@@ -37,6 +40,15 @@ class BaseView(object):
                 # If no profile is set, set 'global' profile
                 response.set_cookie('_PROFILE_', 'global', timedelta(days=90))
 
+    def _send_email(self, recipients, subject, body):
+        """
+        Sends an email message to all recipients using the SMTP host and default
+        sender configured in the .ini file.
+        """
+
+        mailer = get_mailer(self.request)
+        message = Message(subject=subject, recipients=recipients, body=body)
+        mailer.send(message)
 
 class MainView(BaseView):
 
@@ -231,3 +243,17 @@ class MainView(BaseView):
         Simple view to output the current privileges
         """
         return {}
+
+    @view_config(route_name='sendmail_test', renderer='string')
+    def sendmail_test(self):
+        """
+        Dummy developing methods that need to be removed
+        """
+
+        email = 'adrian.weber@cde.unibe.ch'
+
+        self._send_email([email],
+                         "Hello World!",
+                         render('lmkp:templates/dummy_email.mak', {'user': email}, self.request))
+
+        return "Mail sent successfully"

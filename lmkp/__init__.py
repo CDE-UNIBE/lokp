@@ -46,6 +46,8 @@ def main(global_config, ** settings):
 
     config.add_subscriber(add_user, NewRequest)
 
+    config.include('pyramid_mailer')
+
     # Add papyrus includes
     config.include(papyrus.includeme)
     config.include('pyramid_handlers')
@@ -219,6 +221,8 @@ def main(global_config, ** settings):
 
     # A route that is not dedicated to the public
     config.add_route('request_test', '/_it6sahQuo1Th')
+
+    config.add_route('sendmail_test', '/ug6uWaef')
     
     # Error views
     config.add_forbidden_view(forbidden_view)
