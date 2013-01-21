@@ -581,14 +581,26 @@ class StakeholderProtocol3(Protocol):
                                                              Stakeholder.stakeholder_identifier,
                                                              func.max(Stakeholder.version).label('max_version')
                                                              ).\
-                join(Changeset).\
-                filter(or_(Stakeholder.fk_status == 1, Stakeholder.fk_status == 2))
+                join(Changeset)
 
-            if not is_moderator:
-                # If current user is not a moderator, only show pending versions
-                # done by himself
+            #TODO: could this be done easier? (max_version filter first?)
+            # Only show pending items if there isn't a more recent active version
+            if is_moderator:
                 latest_pending_stakeholders = latest_pending_stakeholders.\
-                    filter(Changeset.fk_user == request.user.id)
+                    filter(
+                        or_(Stakeholder.fk_status == 1, Stakeholder.fk_status == 2)
+                    )
+            else:
+                latest_pending_stakeholders = latest_pending_stakeholders.\
+                    filter(
+                        or_(
+                            and_(
+                                Stakeholder.fk_status == 1,
+                                Changeset.fk_user == request.user.id
+                            ),
+                            Stakeholder.fk_status == 2
+                        )
+                    )
 
             latest_pending_stakeholders = latest_pending_stakeholders.\
                 group_by(Stakeholder.stakeholder_identifier).\
@@ -1111,6 +1123,16 @@ class StakeholderProtocol3(Protocol):
                         request_user_id = (request.user.id if request.user is 
                                            not None else None)
 
+                        newer_pending_exists = False
+                        if q.activity_status == 1:
+                            for p_i in stakeholder._involvements:
+                                if (p_i.get_guid() == q.activity_identifier
+                                    and p_i.get_status() == 1):
+                                    if p_i.get_version() > q.activity_version:
+                                        newer_pending_exists = True
+                                    else:
+                                        stakeholder.remove_involvement(p_i)
+
                         # Flag indicating if Involvement to this Activity is not
                         # yet found ('none') or not to be added ('false')
                         inv = self._flag_add_involvement(
@@ -1127,7 +1149,7 @@ class StakeholderProtocol3(Protocol):
                                                          is_moderator
                                                          )
 
-                        if inv is None:
+                        if inv is None and newer_pending_exists is False:
                             # Create new Involvement and add it to Stakeholder
                             # Default: only basic information about Involvement
                             stakeholder.add_involvement(
@@ -1395,8 +1417,8 @@ class StakeholderProtocol3(Protocol):
                 copy_tag = True
                 if 'taggroups' in stakeholder_dict:
                     for taggroup_dict in stakeholder_dict['taggroups']:
-                        if ('id' in taggroup_dict and
-                            taggroup_dict['id'] == db_taggroup.id):
+                        if ('tg_id' in taggroup_dict and
+                            taggroup_dict['tg_id'] == db_taggroup.tg_id):
                             # Check which tags we have to edit
                             for tag_dict in taggroup_dict['tags']:
                                 if ('id' in tag_dict and
@@ -1430,8 +1452,8 @@ class StakeholderProtocol3(Protocol):
             # Next step is to add new tags to this tag group without existing ids
             if 'taggroups' in stakeholder_dict:
                 for taggroup_dict in stakeholder_dict['taggroups']:
-                    if ('id' in taggroup_dict and
-                        taggroup_dict['id'] == db_taggroup.id):
+                    if ('tg_id' in taggroup_dict and
+                        taggroup_dict['tg_id'] == db_taggroup.tg_id):
                         for tag_dict in taggroup_dict['tags']:
                             if 'id' not in tag_dict and tag_dict['op'] == 'add':
                                 new_tag = self._create_tag(
