@@ -220,8 +220,6 @@ def main(global_config, ** settings):
     config.add_route('cambodia_read_activities', '/read/cambodia/activities')
 
     # A route that is not dedicated to the public
-    config.add_route('request_test', '/_it6sahQuo1Th')
-
     config.add_route('sendmail_test', '/ug6uWaef')
     
     # Error views
