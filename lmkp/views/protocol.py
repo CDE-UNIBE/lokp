@@ -644,7 +644,7 @@ class Protocol(object):
 
                     review_object = BaseReview(request)
 
-                    ref_diff = review_object.get_diff(
+                    ref_diff, base_version_number = review_object.get_diff(
                         Db_Item, item.identifier, item.version,
                         ref_version_number.version
                     )

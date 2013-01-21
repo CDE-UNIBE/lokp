@@ -721,14 +721,26 @@ class ActivityProtocol3(Protocol):
                                                            Activity.activity_identifier,
                                                            func.max(Activity.version).label('max_version')
                                                            ).\
-                join(Changeset).\
-                filter(or_(Activity.fk_status == 1, Activity.fk_status == 2))
+                join(Changeset)
 
-            if not is_moderator:
-                # If current user is not a moderator, only show pending versions
-                # done by himself
+            #TODO: could this be done easier? (max_version filter first?)
+            # Only show pending items if there isn't a more recent active version
+            if is_moderator:
                 latest_pending_activities = latest_pending_activities.\
-                    filter(Changeset.fk_user == request.user.id)
+                    filter(
+                        or_(Activity.fk_status == 1, Activity.fk_status == 2)
+                    )
+            else:
+                latest_pending_activities = latest_pending_activities.\
+                    filter(
+                        or_(
+                            and_(
+                                Activity.fk_status == 1,
+                                Changeset.fk_user == request.user.id
+                            ),
+                            Activity.fk_status == 2
+                        )
+                    )
 
             latest_pending_activities = latest_pending_activities.\
                 group_by(Activity.activity_identifier).\
@@ -1282,6 +1294,22 @@ class ActivityProtocol3(Protocol):
                         request_user_id = (request.user.id if request.user is
                                            not None else None)
 
+
+                        # Only proceed if
+                        # If there are multiple pending versions of the same
+                        # Stakeholder, show only the latest one (highest
+                        # version)
+                        newer_pending_exists = False
+                        if q.stakeholder_status == 1:
+                            for p_i in activity._involvements:
+                                if (p_i.get_guid() == q.stakeholder_identifier
+                                    and p_i.get_status() == 1):
+                                    if p_i.get_version() > q.stakeholder_version:
+                                        newer_pending_exists = True
+                                    else:
+                                        activity.remove_involvement(p_i)
+
+
                         # Flag indicating if Involvement to this Activity is not
                         # yet found ('none') or not to be added ('false')
                         inv = self._flag_add_involvement(
@@ -1298,7 +1326,7 @@ class ActivityProtocol3(Protocol):
                                                          is_moderator
                                                          )
 
-                        if inv is None:
+                        if inv is None and newer_pending_exists is False:
                             # Create new Involvement and add it to Activity
                             # Default: only basic information about Involvement
                             activity.add_involvement(
@@ -1672,8 +1700,8 @@ class ActivityProtocol3(Protocol):
         # Add it to the database
         self.Session.add(new_activity)
 
-        # Loop the tag groups from the previous version and copy it to the new
-        # version with its tags
+        # Loop the tag groups from the previous version and copy them to the new
+        # version with their tags
         for db_taggroup in self.Session.query(A_Tag_Group).\
             filter(A_Tag_Group.fk_activity == old_activity.id):
 
@@ -1684,15 +1712,15 @@ class ActivityProtocol3(Protocol):
             taggroupadded = False
             new_taggroup = A_Tag_Group(db_taggroup.tg_id)
 
-            # And loop the tags
+            # Step 1: Loop the existing tags
             for db_tag in db_taggroup.tags:
 
                 # Before copying the tag, make sure that it is not to delete
                 copy_tag = True
                 if 'taggroups' in activity_dict:
                     for taggroup_dict in activity_dict['taggroups']:
-                        if ('id' in taggroup_dict and
-                            taggroup_dict['id'] == db_taggroup.id):
+                        if ('tg_id' in taggroup_dict and
+                            taggroup_dict['tg_id'] == db_taggroup.tg_id):
                             # Check which tags we have to edit
                             for tag_dict in taggroup_dict['tags']:
                                 if ('id' in tag_dict and
@@ -1723,16 +1751,17 @@ class ActivityProtocol3(Protocol):
                         new_activity.tag_groups.append(new_taggroup)
                         taggroupadded = True
 
-            # Next step is to add new tags to this tag group without existing ids
+            # Step 2: Add new tags (who don't have an ID yet) to this taggroup
             if 'taggroups' in activity_dict:
                 for taggroup_dict in activity_dict['taggroups']:
-                    if ('id' in taggroup_dict and
-                        taggroup_dict['id'] == db_taggroup.id):
+                    if ('tg_id' in taggroup_dict and
+                        taggroup_dict['tg_id'] == db_taggroup.tg_id):
                         for tag_dict in taggroup_dict['tags']:
                             if 'id' not in tag_dict and tag_dict['op'] == 'add':
                                 new_tag = self._create_tag(
-                                                           request, new_taggroup.tags, tag_dict['key'],
-                                                           tag_dict['value'], A_Tag, A_Key, A_Value)
+                                    request, new_taggroup.tags, tag_dict['key'],
+                                    tag_dict['value'], A_Tag, A_Key, A_Value
+                                )
                                 # Set the main tag
                                 if 'main_tag' in taggroup_dict:
                                     if (taggroup_dict['main_tag']['key'] ==

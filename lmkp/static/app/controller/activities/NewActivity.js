@@ -322,6 +322,9 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 if (taggroupfieldset.taggroupId) {
                     diffTaggroup.id = taggroupfieldset.taggroupId;
                 }
+                if (taggroupfieldset.taggroupHistoryId) {
+                    diffTaggroup.tg_id = taggroupfieldset.taggroupHistoryId
+                }
                 if (initiallyEmpty) {
                     diffTaggroup.op = 'add';
                 }
