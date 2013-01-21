@@ -42,6 +42,10 @@ def login(request):
 
     return HTTPFound(location=came_from, headers=headers)
 
+@view_config(route_name='login_form', renderer='lmkp:templates/login_form.mak')
+def login_form(request):
+    return {"came_from" : request.route_url('index')}
+
 @view_config(route_name='logout', renderer='lmkp:templates/index.pt')
 def logout(request):
     headers = forget(request)
