@@ -24,6 +24,9 @@ Ext.define('Lmkp.model.Stakeholder', {
     }, {
     	name: 'previous_version',
     	type: 'int'
+    }, {
+        name: 'pending_count',
+        type: 'int'
     }],
 
     hasMany: [{

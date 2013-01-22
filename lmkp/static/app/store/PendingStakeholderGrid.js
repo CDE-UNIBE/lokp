@@ -22,11 +22,7 @@ Ext.define('Lmkp.store.PendingStakeholderGrid', {
     
     proxy: {
         type: 'ajax',
-        url: '/stakeholders',
-        extraParams: {
-            status: 'pending',
-            mark_complete: 'true'
-        },
+        url: '/stakeholders/pending/json',
         reader: {
             root: 'data',
             type: 'json',

@@ -118,24 +118,24 @@ Ext.onReady(function(){
                     title: Lmkp.ts.msg('feedback_failure')
                 });
 
-                var store = Ext.create('Ext.data.Store', {
-                    autoLoad: true,
-                    listeners: {
-                        'load': function(store, records, successful){
-                            var c = me.getController('activities.NewActivity');
-                            c.showNewActivityWindow(records[0]);
-                        }
-                    },
-                    model: 'Lmkp.model.Activity',
-                    proxy: {
-                        reader: {
-                            root: 'data',
-                            type: 'json'
-                        },
-                        type: 'ajax',
-                        url : '/' + type + '/json/' + uid
-                    }
-                });
+//                var store = Ext.create('Ext.data.Store', {
+//                    autoLoad: true,
+//                    listeners: {
+//                        'load': function(store, records, successful){
+//                            var c = me.getController('activities.NewActivity');
+//                            c.showNewActivityWindow(records[0]);
+//                        }
+//                    },
+//                    model: 'Lmkp.model.Activity',
+//                    proxy: {
+//                        reader: {
+//                            root: 'data',
+//                            type: 'json'
+//                        },
+//                        type: 'ajax',
+//                        url : '/' + type + '/json/' + uid
+//                    }
+//                });
 
                
             }

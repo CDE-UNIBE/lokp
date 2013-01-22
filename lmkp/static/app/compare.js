@@ -16,6 +16,7 @@ Ext.require('Ext.selection.RowModel');
 Ext.require('Ext.view.Table');
 Ext.require('Lmkp.controller.login.Toolbar');
 Ext.require('Lmkp.view.login.Toolbar');
+Ext.require('Lmkp.store.Status');
 
 Ext.onReady(function(){
     var loadingMask = Ext.get('loading-mask');
@@ -45,27 +46,58 @@ Ext.onReady(function(){
             var type = urlParts[0];
             var format = urlParts[2];
             var uid = urlParts[3];
-            var ref_version = urlParts[4] ? urlParts[4] : 1;
-            var new_version = urlParts[5] ? urlParts[5] : 1;
+            var ref_version = urlParts[4] ? urlParts[4] : null;
+            var new_version = urlParts[5] ? urlParts[5] : null;
 
-            var urlTemplate = new Ext.Template("/{0}/compare/{1}/{2}/{3}/{4}");
-            urlTemplate.apply([type, format, uid, ref_version, new_version]);
+
+            var urlTemplate;
+            if (ref_version && new_version) {
+                urlTemplate = new Ext.Template("/{0}/compare/{1}/{2}/{3}/{4}");
+                urlTemplate.apply([type, format, uid, ref_version, new_version]);
+            } else {
+                urlTemplate = new Ext.Template("/{0}/compare/{1}/{2}");
+                urlTemplate.apply([type, format, uid]);
+            }
 
             var reloadStores = function() {
                 ref_version = oldVersionCombo.getValue();
                 new_version = newVersionCombo.getValue();
 
+                var htmlUrl, jsonUrl;
+
+                if (ref_version && new_version) {
+                    htmlUrl = urlTemplate.apply([type, 'html', uid, ref_version, new_version]);
+                    jsonUrl = urlTemplate.apply([type, 'json', uid, ref_version, new_version]);
+                } else {
+                    htmlUrl = urlTemplate.apply([type, 'html', uid]);
+                    jsonUrl = urlTemplate.apply([type, 'json', uid]);
+                }
+
                 // Update the permalink button URL
                 var aEl = Ext.query('#permalink-button a')[0];
-                aEl.href = urlTemplate.apply([type, 'html', uid, ref_version, new_version]);
+                aEl.href = htmlUrl
 
                 taggroupGrid.setLoading(true);
                 involvementGrid.setLoading(true);
                 Ext.Ajax.request({
-                    url: urlTemplate.apply([type, 'json', uid, ref_version, new_version]),
+                    url: jsonUrl,
                     success: function(response){
                         var text = response.responseText;
                         var data = Ext.decode(text);
+
+                        if (!ref_version && !new_version && 
+                            data.metadata.ref_version &&
+                            data.metadata.new_version) {
+                            ref_version = data.metadata.ref_version;
+                            new_version = data.metadata.new_version;
+                            // Set new URL
+                            var newUrlTemplate = new Ext.Template("/{0}/compare/{1}/{2}/{3}/{4}");
+                            aEl.href = newUrlTemplate.apply([type, 'html', uid, ref_version, new_version]);
+                            // Set versions to comboboxes
+                            oldVersionCombo.setValue(ref_version);
+                            newVersionCombo.setValue(new_version);
+                        }
+
                         taggroupStore.loadRawData(data);
                         involvementStore.loadRawData(data);
 
@@ -106,10 +138,30 @@ Ext.onReady(function(){
 
                 return html;
             }
+
+            // Stores for versions and statuses
+            var statusStore = Ext.create('Lmkp.store.Status');
+            Ext.define('AvailableVersions', {
+                extend: 'Ext.data.Model',
+                fields: [
+                    {name: 'version', type: 'int'},
+                    {name: 'status',  type: 'int'},
+                    {name: 'display', type: 'string', convert: function(v, r) {
+                        var statusName = statusStore.getAt(r.get('status')-1);
+                        if (statusName) {
+                            return r.get('version') + ' (' + statusName.get('display_name') + ')';
+                        }
+                    }}
+                ]
+            });
+            var versionStore = Ext.create('Ext.data.Store', {
+                data: Lmkp.available_versions,
+                model: 'AvailableVersions'
+            });
             
             var oldVersionCombo = Ext.create('Ext.form.field.ComboBox',{
                 editable: false,
-                fieldLabel: Lmkp.ts.msg('gui_version') + ":",
+                fieldLabel: Lmkp.ts.msg('gui_version'),
                 //labelWidth: 150,
                 listeners: {
                     select: function(combo){
@@ -117,13 +169,15 @@ Ext.onReady(function(){
                     }
                 },
                 queryMode: 'local',
-                store: Lmkp.available_versions,
+                store: versionStore,
+                displayField: 'display',
+                valueField: 'version',
                 value: ref_version
             });
 
             var newVersionCombo = Ext.create('Ext.form.field.ComboBox',{
                 editable: false,
-                fieldLabel: Lmkp.ts.msg('gui_version') + ":",
+                fieldLabel: Lmkp.ts.msg('gui_version'),
                 //labelWidth: 150,
                 listeners: {
                     select: function(combo){
@@ -132,7 +186,9 @@ Ext.onReady(function(){
                 },
                 region: 'center',
                 queryMode: 'local',
-                store: Lmkp.available_versions,
+                store: versionStore,
+                displayField: 'display',
+                valueField: 'version',
                 value: new_version
             });
             

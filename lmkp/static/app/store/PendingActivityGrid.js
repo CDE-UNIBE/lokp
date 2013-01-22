@@ -25,12 +25,7 @@ Ext.define('Lmkp.store.PendingActivityGrid', {
 
     proxy: {
         type: 'ajax',
-        url: '/activities',
-        extraParams: {
-            status: 'pending',
-            bounds: 'user',
-            mark_complete: 'true'
-        },
+        url: '/activities/pending/json',
         reader: {
             root: 'data',
             type: 'json',

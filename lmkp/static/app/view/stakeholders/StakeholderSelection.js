@@ -46,7 +46,7 @@
                     involvements: 'full'
                 },
                 type: 'ajax',
-                url: '/stakeholders/public/json',
+                url: '/stakeholders/json',
                 reader: {
                     root: 'data',
                     type: 'json',
