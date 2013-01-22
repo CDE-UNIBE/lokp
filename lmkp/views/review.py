@@ -245,7 +245,7 @@ class BaseReview(BaseView):
             filter(otherMappedClass.identifier == other_feature.get_guid()).\
             filter(otherMappedClass.version == other_feature.get_version()).\
             subquery()
-        
+
         previous_version_status = Session.query(
                 otherMappedClass.fk_status
             ).\
@@ -285,7 +285,7 @@ class BaseReview(BaseView):
         for taggroup in obj.get_taggroups():
 
             tags = []
-            
+
             for t in taggroup.get_tags():
                 tags.append({'key': t.get_key(), 'value': t.get_value()})
             table.append([{'class': '', 'tags': tags}])
@@ -606,10 +606,6 @@ class BaseReview(BaseView):
         Applies a diff to a given item.
         """
         from lmkp.views.protocol import Tag
-        
-        print "******************************************"
-        print item
-        print "******************************************"
 
         if 'taggroups' in diff:
             for tg in diff['taggroups']:
@@ -685,7 +681,7 @@ class BaseReview(BaseView):
                 diff_keyword = 'stakeholders'
             else:
                 diff_keyword = None
-            
+
             d = None
             if (diff_keyword is not None and diff_keyword in diff_json
                 and diff_json[diff_keyword] is not None):
@@ -716,12 +712,10 @@ class BaseReview(BaseView):
 
         if (diff_keyword is not None and diff_keyword in diff
             and diff[diff_keyword] is not None):
-            for x in diff[diff_keyword]:
-                print "_________________________________"
-                print x['id']
-                if ('id' in x and x['id'] is not None
-                    and x['id'] == item.get_guid()):
-                    item = self._apply_diff(item, x)
+            for item_diff in diff[diff_keyword]:
+                if ('id' in item_diff and item_diff['id'] is not None
+                    and item_diff['id'] == item.get_guid()):
+                    item = self._apply_diff(item, item_diff)
 
         return item
 
@@ -856,7 +850,7 @@ class BaseReview(BaseView):
             )
             ref_object = self.recalc(mappedClass, ref_object_query, ref_diff)
 
-            #asdf
+            asdf
 
             # Find the diff
             new_diff_query = Session.query(
@@ -874,7 +868,7 @@ class BaseReview(BaseView):
             print "-- calculated_diff"
             print calculated_diff
 
-            #asdf
+            asdf
 
             # Apply the diff to the base_object
             new_object_query = self.protocol.read_one_by_version(
@@ -911,8 +905,8 @@ class BaseReview(BaseView):
     def get_diff(self, mappedClass, uid, new_version_number,
         ref_version_number=None):
         """
-        Returns the diff between the reference version item and its previous 
-        version. This diff can then be used to recalculate the new version item 
+        Returns the diff between the reference version item and its previous
+        version. This diff can then be used to recalculate the new version item
         to include the changes made to the reference version item.
 
         - If no ref_version_number was specified or no reference version item
@@ -1000,17 +994,14 @@ class BaseReview(BaseView):
             temp_ref_version_number = ref_version_number
             temp_ref_previous_version = _query_previous_version(mappedClass, uid, ref_version_number)
 
-            print "*** temp_ref_previous_version: %s" % temp_ref_previous_version
-
             diff = None
-            if temp_ref_previous_version is not None and temp_ref_previous_version.previous_version is not None and temp_ref_previous_version.previous_version > common_version:
+            if temp_ref_previous_version is not None and temp_ref_previous_version.previous_version is not None:
                 # Only take a diff if it has a previous_version
                 temp_diff = _query_diff(mappedClass, uid, temp_ref_version_number)
                 diff = json.loads(temp_diff.diff.replace('\'', '"'))
                 print "*** first diff:"
                 print diff
-                print temp_ref_previous_version.previous_version
-                while temp_ref_previous_version.previous_version and temp_ref_previous_version.previous_version != common_version:
+                while temp_ref_previous_version.previous_version != common_version:
                     temp_ref_version_number = temp_ref_previous_version.previous_version
                     temp_ref_previous_version = _query_previous_version(mappedClass, uid, temp_ref_previous_version.previous_version)
 
@@ -1024,9 +1015,9 @@ class BaseReview(BaseView):
 
 
 
-            if diff is not None:
-                print "*** diff after mergin all diffs between ref version and common version:"
-                print diff
+
+            print "*** diff after mergin all diffs between ref version and common version:"
+            print diff
 
             """
             Merge all diffs between the previous_version of the new version item and the common version
@@ -1037,7 +1028,7 @@ class BaseReview(BaseView):
             temp_new_previous_version = _query_previous_version(mappedClass, uid, new_version_number)
 #            temp_new_previous_version = _query_previous_version(mappedClass, uid, temp_new_previous_version.previous_version)
 
-            while temp_new_previous_version.previous_version and temp_new_previous_version.previous_version != common_version:
+            while temp_new_previous_version.previous_version != common_version:
 
 
 
@@ -1053,11 +1044,13 @@ class BaseReview(BaseView):
 
 #                empty_diff = False
 
-            if diff is not None:
-                print "*** diff after mergin all diffs between new version and common version:"
-                print diff
+            print "*** diff after mergin all diffs between new version and common version:"
+            print diff
 
-        #asdf
+        asdf
+
+        if empty_diff is True:
+            return None, None
 
         return diff, common_version
 
@@ -1140,29 +1133,23 @@ class BaseReview(BaseView):
         """
 
     def recalculate_diffs(self, mappedClass, uid, new_diff, old_diff=None):
-        """
-        Always return whole diff: {activities: [...]}
-        """
-        
 
         #TODO: probably not needed anymore
         asdf
 
         #TODO: clean up ...
 
-        """
-        print "------------------------"
-        print "new_diff: %s" % new_diff
-        print "old_diff: %s" % old_diff
-        """
+#        print "------------------------"
+#        print "new_diff: %s" % new_diff
+#        print "old_diff: %s" % old_diff
 
         def _merge_tgs(diff_keyword, uid, old_diff, taggroup):
             """
             Merge / Append a taggroup into a diff
             """
 
-            #print "** FUNCTION _merge_tgs"
-            #print "old_diff: %s" % old_diff
+            print "** FUNCTION _merge_tgs"
+            print "old_diff: %s" % old_diff
             """
             Approach: Loop through all taggroups in the old_diff and check if it
             needs to be merged. If not found, append it to the diff.
@@ -1170,18 +1157,18 @@ class BaseReview(BaseView):
             if diff_keyword in old_diff and old_diff[diff_keyword] is not None:
                 for a in old_diff[diff_keyword]:
 
-                    #print "----loooppp------"
+                    print "----loooppp------"
 
                     if 'id' in a and a['id'] == str(uid):
                         # It is the correct Activity / Stakeholder, loop through its taggroups
                         tag_found = False
                         for tg in a['taggroups']:
-                            #print "tg: %s" % tg
-                            #print "a[taggroups]: %s" % a['taggroups']
+                            print "tg: %s" % tg
+                            print "a[taggroups]: %s" % a['taggroups']
                             if 'tg_id' in tg and 'tg_id' in taggroup and tg['tg_id'] == taggroup['tg_id']:
                                 # If the same taggroup has changes, the newer is
                                 # used and the old is replaced.
-                                #print "**** REPLACE ****"
+                                print "**** REPLACE ****"
                                 a['taggroups'].remove(tg)
 #                                print a['taggroups']
                                 a['taggroups'].append(taggroup)
@@ -1224,14 +1211,9 @@ class BaseReview(BaseView):
 #                        print "____M*EERERGE____"
                         if 'taggroups' in a:
                             for tg in a['taggroups']:
-                                #print "____M*EERERGE____ tg: %s" %tg
+                                print "____M*EERERGE____ tg: %s" %tg
                                 old_diff = _merge_tgs(diff_keyword, uid, old_diff, tg)
                 ret = old_diff
 
-        if diff_keyword not in ret:
-            return_diff = {diff_keyword: [ret]}
-        else:
-            return_diff = ret
-
-        return return_diff
+        return ret
 
