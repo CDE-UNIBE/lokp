@@ -20,11 +20,11 @@
                         }
 
                         Ext.fly("body").createChild({
-                            cls: 'login',
+                            cls: r.success ? 'login' : 'login login-warning',
                             html: r.msg,
                             id: 'reset-response-div',
                             tag: 'div'
-                        });
+                        }, Ext.fly('reset-form-div'));
                     },
                     url: '/reset'
                 });
