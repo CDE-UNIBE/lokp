@@ -253,17 +253,3 @@ class MainView(BaseView):
         Simple view to output the current privileges
         """
         return {}
-
-    @view_config(route_name='sendmail_test', renderer='string')
-    def sendmail_test(self):
-        """
-        Dummy developing methods that need to be removed
-        """
-
-        email = 'adrian.weber@cde.unibe.ch'
-
-        self._send_email([email],
-                         "Hello World!",
-                         render('lmkp:templates/dummy_email.mak', {'user': email}, self.request))
-
-        return "Mail sent successfully"

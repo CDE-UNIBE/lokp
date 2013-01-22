@@ -229,9 +229,6 @@ def main(global_config, ** settings):
 
     config.add_route('cambodia_read_stakeholders', '/read/cambodia/stakeholders')
     config.add_route('cambodia_read_activities', '/read/cambodia/activities')
-
-    # A route that is not dedicated to the public
-    config.add_route('sendmail_test', '/ug6uWaef')
     
     # Error views
     config.add_forbidden_view(forbidden_view)
