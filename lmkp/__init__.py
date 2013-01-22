@@ -58,7 +58,8 @@ def main(global_config, ** settings):
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('index', '/')
     config.add_route('administration', '/administration')
-    config.add_route('login', '/login')
+    config.add_route('login', '/login', request_method='POST')
+    config.add_route('login_form', '/login', request_method='GET')
     config.add_route('logout', '/logout')
     config.add_route('db_test', '/db_test')
 
