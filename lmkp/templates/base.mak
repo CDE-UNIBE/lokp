@@ -24,7 +24,6 @@ comments_url = request.registry.settings['lmkp.comments_url']
         <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/lib/extjs-4.1.1/resources/css/ext-all.css')}"></link>
         <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/style.css')}"></link>
         <script type="text/javascript" src="${request.static_url('lmkp:static/lib/extjs-4.1.1/ext.js')}"></script>
-        <script type="text/javascript" src="${request.static_url('lmkp:static/lib/extjs-4.1.1/ext.js')}"></script>
         <!-- Make sure Ext.util.Cookies is available -->
         <script type="text/javascript" src="${request.static_url('lmkp:static/lib/extjs-4.1.1/src/util/Cookies.js')}"></script>
         <script type="text/javascript">
