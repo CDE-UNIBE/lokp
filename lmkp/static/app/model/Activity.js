@@ -27,6 +27,9 @@ Ext.define('Lmkp.model.Activity', {
     }, {
     	name: 'previous_version',
     	type: 'int'
+    }, {
+        name: 'pending_count',
+        type: 'int'
     }],
 
     hasMany: [{

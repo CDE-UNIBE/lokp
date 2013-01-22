@@ -28,7 +28,7 @@ from pyramid.security import has_permission
 </style>
 <script type="text/javascript">
     Ext.ns('Lmkp');
-    Lmkp.available_versions = ${available_versions};
+    Lmkp.available_versions = ${available_versions | n}
 </script>
 <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
 % if isinstance(has_permission('administer', request.context, request), ACLAllowed):

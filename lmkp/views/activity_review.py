@@ -8,6 +8,7 @@ from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.config import get_mandatory_keys
 from lmkp.views.review import BaseReview
 import logging
+import json
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPNotFound
@@ -21,7 +22,7 @@ class ActivityReview(BaseReview):
 
     def __init__(self, request):
         super(ActivityReview, self).__init__(request)
-        self.activity_protocol3 = ActivityProtocol3(Session)
+        self.protocol = ActivityProtocol3(Session)
         
     @action(name='html', renderer='lmkp:templates/compare_versions.mak')
     def compare_html(self):
@@ -35,31 +36,27 @@ class ActivityReview(BaseReview):
             raise HTTPNotFound(msg % uid)
 
         additional_params = {
-        'available_versions': available_versions
+        'available_versions': json.dumps(available_versions)
         }
 
         return additional_params
 
     @action(name='json', renderer='json')
     def compare_json(self):
+        """
+        Compare two objects (two versions): ref_object and new_object
+        """
 
         # Get the uid from the request
         uid = self.request.matchdict.get('uid', None)
 
-        ref_version, new_version = self._get_valid_versions(Activity, uid)
+        ref_version_number, new_version_number = self._get_valid_versions(
+            Activity, uid
+        )
 
-	# Get the old, reference Activity object
-	ref = self.activity_protocol3.read_one_by_version(self.request, uid, ref_version)
-
-        # Try to get the new activity object
-        new = self.activity_protocol3.read_one_by_version(self.request, uid, new_version)
-
-        # Request also the metadata
-        metadata = {}
-        metadata['ref_title'], metadata['new_title'] = \
-            self._get_active_pending_version_descriptions(Activity, uid, ref_version, new_version)
-
-        result = dict(self._compare_taggroups(ref, new).items() + {'metadata': metadata}.items())
+        result = self.get_comparison(
+            Activity, uid, ref_version_number, new_version_number
+        )
 
         return result
 
@@ -89,7 +86,7 @@ class ActivityReview(BaseReview):
     @view_config(route_name='activities_review_versions_json', renderer='json', permission='moderate')
     def review_activity_json(self):
         """
-        Review two activity versions together
+        Review two activity versions together.
         """
 
         # Get the activity identifier
@@ -98,30 +95,19 @@ class ActivityReview(BaseReview):
         if not self._within_profile(uid):
             raise HTTPForbidden("Activity %s is not within your profile." % uid)
 
-        additional_vars = {}
-        additional_vars['identifier'] = uid
-        additional_vars['next_url'] = self.request.route_url('activities_review_versions_html', uid=uid)
-        additional_vars['type'] = 'activities'
-
-        active_version, pending_version = self._get_active_pending_versions(Activity, uid)
+        active_version, pending_version = self._get_valid_versions(
+            Activity, uid, review=True
+        )
 
         # Some logging
         log.debug("active version: %s" % active_version)
         log.debug("pending version: %s" % pending_version)
 
-        active = pending = None
-        # Get the active version
-        if active_version is not None:
-            active = self.activity_protocol3.read_one_by_version(self.request, uid, active_version)
+        result = self.get_comparison(
+            Activity, uid, active_version, pending_version, review=True
+        )
 
-        # Get the new version
-        if pending_version is not None:
-            pending = self.activity_protocol3.read_one_by_version(self.request, uid, pending_version)
-
-        additional_vars['active_title'], additional_vars['pending_title'] = \
-            self._get_active_pending_version_descriptions(Activity, uid, active_version, pending_version)
-        additional_vars['version'] = pending_version
-        return dict(self._compare_taggroups(active, pending).items() + {'metadata': additional_vars}.items())
+        return result
 
     def _within_profile(self, uid):
         """

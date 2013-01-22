@@ -159,7 +159,8 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
                 // Prepare fieldset
                 var fieldset = me._getFieldset(
                     tempTags.concat(tempMainTag),
-                    taggroup.get('id')
+                    taggroup.get('id'),
+                    taggroup.get('tg_id')
                 );
                 fieldset.add(formMainTag);
                 fieldset.add(formTags);
@@ -211,10 +212,11 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
      * Returns the basic fieldset (which is actually a 'form') to display the
      * form items of a Tag Group.
      */
-    _getFieldset: function(oldTags, taggroupId) {
+    _getFieldset: function(oldTags, taggroupId, taggroupHistoryId) {
         return Ext.create('Ext.form.Panel', {
             oldTags: oldTags,
             taggroupId: taggroupId,
+            taggroupHistoryId: taggroupHistoryId,
             name: 'taggroupfieldset',
             bodyPadding: 5,
             margin: '0 0 10 0',
