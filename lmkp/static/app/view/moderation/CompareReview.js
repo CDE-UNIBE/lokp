@@ -25,7 +25,7 @@ Ext.define('Lmkp.view.moderation.CompareReview', {
                 {
                     xtype: 'panel',
                     // TODO: text
-                    html: 'The version you are seeing on the right side has been recalculated (maybe use "SmartRecalc" or some other fancy word). Also show some more information about that, for example that approving this creates a new version.',
+                    html: 'Approving this version will create a new version. (+ additional information)',
                     bodyCls: 'notice',
                     bodyPadding: 5,
                     hidden: true,

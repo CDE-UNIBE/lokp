@@ -91,8 +91,7 @@ class A_Key(Base):
     
     def __repr__(self):
         return (
-            '<A_Key> id [ %s ] | fk_a_key [ %s ] | fk_language [ %s ] | ' +
-            'key [ %s ]' %
+            '<A_Key> id [ %s ] | fk_a_key [ %s ] | fk_language [ %s ] | key [ %s ]' %
             (self.id, self.fk_a_key, self.fk_language, self.key)
         )
 
@@ -122,8 +121,7 @@ class SH_Key(Base):
     
     def __repr__(self):
         return (
-            '<SH_Key> id [ %s ] | fk_sh_key [ %s ] | fk_language [ %s ] | ' +
-            'key [ %s ]' %
+            '<SH_Key> id [ %s ] | fk_sh_key [ %s ] | fk_language [ %s ] | key [ %s ]' %
             (self.id, self.fk_sh_key, self.fk_language, self.key)
         )
 
@@ -150,8 +148,7 @@ class A_Value(Base):
     
     def __repr__(self):
         return (
-            '<A_Value> id [ %s ] | fk_a_value [ %s ] | fk_language [ %s ] | ' +
-            'value [ %s ]' %
+            '<A_Value> id [ %s ] | fk_a_value [ %s ] | fk_language [ %s ] | value [ %s ]' %
             (self.id, self.fk_a_value, self.fk_language, self.value)
         )
 
@@ -178,8 +175,7 @@ class SH_Value(Base):
     
     def __repr__(self):
         return (
-            '<SH_Value> id [ %s ] | fk_sh_value [ %s ] | fk_language [ %s ] | '+
-            'value [ %s ]' %
+            '<SH_Value> id [ %s ] | fk_sh_value [ %s ] | fk_language [ %s ] | value [ %s ]' %
             (self.id, self.fk_sh_value, self.fk_language, self.value)
         )
 
@@ -205,8 +201,7 @@ class A_Tag(Base):
 
     def __repr__(self):
         return (
-            '<A_Tag> id [ %s ] | fk_a_tag_group [ %s ] | fk_a_key [ %s ] | ' +
-            'fk_a_value [ %s ]' %
+            '<A_Tag> id [ %s ] | fk_a_tag_group [ %s ] | fk_a_key [ %s ] | fk_a_value [ %s ]' %
             (self.id, self.fk_a_tag_group, self.fk_a_key, self.fk_a_value)
         )
 
@@ -235,8 +230,7 @@ class SH_Tag(Base):
 
     def __repr__(self):
         return (
-            '<SH_Tag> id [ %s ] | fk_sh_tag_group [ %s ] | fk_sh_key [ %s ] | '+
-            'fk_sh_value [ %s ]' %
+            '<SH_Tag> id [ %s ] | fk_sh_tag_group [ %s ] | fk_sh_key [ %s ] | fk_sh_value [ %s ]' %
             (self.id, self.fk_sh_tag_group, self.fk_sh_key, self.fk_sh_value)
         )
 
@@ -280,9 +274,7 @@ class A_Tag_Group(Base):
         else:
             geom = wkb.loads(str(self.geometry.geom_wkb)).wkt
         return (
-            '<A_Tag_Group> id [ %s ] | tg_id [%s] | fk_activity [ %s ] | ' +
-            'fk_a_tag [ %s ] | geometry [ %s ] | valid_from [ %s ] | ' +
-            'valid_to [ %s ]' %
+            '<A_Tag_Group> id [ %s ] | tg_id [%s] | fk_activity [ %s ] | fk_a_tag [ %s ] | geometry [ %s ] | valid_from [ %s ] | valid_to [ %s ]' %
             (self.id, self.tg_id, self.fk_activity, self.fk_a_tag, geom,
             self.valid_from, self.valid_to)
         )
@@ -327,8 +319,7 @@ class SH_Tag_Group(Base):
 
     def __repr__(self):
         return (
-            '<SH_Tag_Group> id [ %s ] | tg_id [%s] | fk_stakeholder [ %s ] | ' +
-            'fk_sh_tag [ %s ] | valid_from [ %s ] | valid_to [ %s ]' %
+            '<SH_Tag_Group> id [ %s ] | tg_id [%s] | fk_stakeholder [ %s ] | fk_sh_tag [ %s ] | valid_from [ %s ] | valid_to [ %s ]' %
             (self.id, self.tg_id, self.fk_stakeholder, self.fk_sh_tag,
             self.valid_from, self.valid_to)
         )
@@ -389,10 +380,7 @@ class Activity(Base):
         """
         geom = '***'
         return (
-            '<Activity> id [ %s ] | activity_identifier [ %s ] | ' +
-            'fk_changeset [ %s ] | point [ %s ] | fk_status [ %s ] | ' +
-            'version [ %s ] | previous_version [ %s ] | fk_user_review [ %s ] '+
-            '| timestamp_review [ %s ] | comment_review [ %s ]' %
+            '<Activity> id [ %s ] | activity_identifier [ %s ] | fk_changeset [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ] | previous_version [ %s ] | fk_user_review [ %s ] | timestamp_review [ %s ] | comment_review [ %s ]' %
             (self.id, self.activity_identifier, self.fk_changeset, geom,
             self.fk_status, self.version, self.previous_version,
             self.fk_user_review, self.timestamp_review, self.comment_review)
@@ -471,10 +459,7 @@ class Stakeholder(Base):
 
     def __repr__(self):
         return (
-            '<Activity> id [ %s ] | activity_identifier [ %s ] | ' +
-            'fk_changeset [ %s ] | fk_status [ %s ] | version [ %s ] | ' +
-            'previous_version [ %s ] | fk_user_review [ %s ] | '+
-            'timestamp_review [ %s ] | comment_review [ %s ]' %
+            '<Activity> id [ %s ] | activity_identifier [ %s ] | fk_changeset [ %s ] | fk_status [ %s ] | version [ %s ] | previous_version [ %s ] | fk_user_review [ %s ] | timestamp_review [ %s ] | comment_review [ %s ]' %
             (self.id, self.activity_identifier, self.fk_changeset,
             self.fk_status, self.version, self.previous_version,
             self.fk_user_review, self.timestamp_review, self.comment_review)
@@ -515,8 +500,7 @@ class Changeset(Base):
 
     def __repr__(self):
         return (
-            '<Changeset> id [ %s ] | fk_user [ %s ] | timestamp [ %s ] | ' +
-            'source [ %s ] | diff [ %s ]' %
+            '<Changeset> id [ %s ] | fk_user [ %s ] | timestamp [ %s ] | source [ %s ] | diff [ %s ]' %
             (self.id, self.fk_user, self.timestamp, self.source, self.diff)
         )
 
@@ -566,8 +550,7 @@ class Language(Base):
     
     def __repr__(self):
         return (
-            '<Language> id [ %s ] | english_name [ %s ] | local_name [ %s ] | '+
-            'locale [ %s ]' %
+            '<Language> id [ %s ] | english_name [ %s ] | local_name [ %s ] | locale [ %s ]' %
             (self.id, self.english_name, self.local_name, self.locale)
         )
 
@@ -590,8 +573,7 @@ class Involvement(Base):
 
     def __repr__(self):
         return (
-            '<Involvement> id [ %s ] | fk_activity [ %s ] | ' +
-            'fk_stakeholder [ %s ] | fk_stakeholder_role [ %s ]' %
+            '<Involvement> id [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ] | fk_stakeholder_role [ %s ]' %
             (self.id, self.fk_activity, self.fk_stakeholder,
             self.fk_stakeholder_role)
         )
@@ -699,8 +681,7 @@ class User(Base):
 
     def __repr__(self):
         return (
-            '<User> id [ %s ] | uuid [ %s ] | username [ %s ] | ' +
-            'password [ *** ] | email [ %s ]' %
+            '<User> id [ %s ] | uuid [ %s ] | username [ %s ] | password [ *** ] | email [ %s ]' %
             (self.id, self.uuid, self.username, self.email)
         )
 
@@ -810,8 +791,7 @@ class Comment(Base):
     
     def __repr__(self):
         return (
-            '<Comment> id [ %s ] | comment [ %s ] | timestamp [ %s ] | ' +
-            'fk_user [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ]' %
+            '<Comment> id [ %s ] | comment [ %s ] | timestamp [ %s ] | fk_user [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ]' %
             (self.id, self.comment, self.timestamp, self.fk_user,
             self.fk_activity, self.fk_stakeholder)
         )

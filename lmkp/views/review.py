@@ -602,6 +602,9 @@ class BaseReview(BaseView):
         return ref_version, new_version
 
     def _apply_diff(self, item, diff):
+        """
+        Applies a diff to a given item.
+        """
         from lmkp.views.protocol import Tag
 
         if 'taggroups' in diff:
@@ -649,7 +652,7 @@ class BaseReview(BaseView):
 
     def _recalculate_version(self, mappedClass, ref, new):
 
-        #TODO
+        #TODO: Probably not needed anymore.
         asdf
 
         ref_version = ref.get_version()
@@ -694,6 +697,11 @@ class BaseReview(BaseView):
         return new
 
     def recalc(self, mappedClass, item, diff):
+        """
+        Function to extract parts relevant to a given item out of a complete
+        changeset diff. It then applies this diff to the item and returns the
+        item
+        """
 
         if mappedClass == Activity:
             diff_keyword = 'activities'
@@ -704,10 +712,10 @@ class BaseReview(BaseView):
 
         if (diff_keyword is not None and diff_keyword in diff
             and diff[diff_keyword] is not None):
-            for x in diff[diff_keyword]:
-                if ('id' in x and x['id'] is not None
-                    and x['id'] == item.get_guid()):
-                    item = self._apply_diff(item, x)
+            for item_diff in diff[diff_keyword]:
+                if ('id' in item_diff and item_diff['id'] is not None
+                    and item_diff['id'] == item.get_guid()):
+                    item = self._apply_diff(item, item_diff)
 
         return item
 
@@ -715,6 +723,86 @@ class BaseReview(BaseView):
         new_version_number, review=False):
         """
         Function to do the actual comparison and return a json
+        """
+
+        recalculated = False
+
+        if (ref_version_number == 0
+            or (new_version_number == 1 and ref_version_number == 1)):
+            ref_object = None
+            ref_version_number = None
+        else:
+            # Get the reference object
+            ref_object = self.protocol.read_one_by_version(
+                self.request, uid, ref_version_number
+            )
+
+        # Check to see if the new version is based directly on the ref version
+        new_previous_version = Session.query(
+                mappedClass.previous_version
+            ).\
+            filter(mappedClass.identifier == uid).\
+            filter(mappedClass.version == new_version_number).\
+            first()
+
+        if (new_previous_version is not None
+            and new_previous_version.previous_version == ref_version_number):
+            # Show the new version as it is in the database
+            new_object = self.protocol.read_one_by_version(
+                self.request, uid, new_version_number
+            )
+        else:
+            # Query the diff of the new version to apply to the ref version
+            new_diff_query = Session.query(
+                    Changeset.diff
+                ).\
+                join(mappedClass).\
+                filter(mappedClass.identifier == uid).\
+                filter(mappedClass.version == new_version_number).\
+                first()
+            new_diff = json.loads(new_diff_query.diff.replace('\'', '"'))
+
+            # Get the reference object
+            new_object = self.protocol.read_one_by_version(
+                self.request, uid, ref_version_number
+            )
+
+            # Apply the diff to the ref_object
+            new_object = self.recalc(mappedClass, new_object, new_diff)
+
+            recalculated = True
+
+        # Request also the metadata
+        metadata = self._get_metadata(
+            mappedClass, uid, ref_version_number, new_version_number
+        )
+        metadata['recalculated'] = recalculated
+
+        result = dict(
+            self._compare_taggroups(ref_object, new_object).items() +
+            {'metadata': metadata}.items() +
+            {'versions': self._get_available_versions(
+                mappedClass, uid, review=review)
+            }.items()
+        )
+
+        return result
+
+
+        """
+        if diff_needed is False:
+            # The new object can be shown as it is in the database
+            if new_version_number is not None:
+                new_object = self.protocol.read_one_by_version(
+                    self.request, uid, new_version_number
+                )
+
+        else:
+        """
+
+
+
+
         """
 
         if (ref_version_number == 0
@@ -812,6 +900,7 @@ class BaseReview(BaseView):
         )
 
         return result
+        """
 
     def get_diff(self, mappedClass, uid, new_version_number,
         ref_version_number=None):
@@ -825,6 +914,9 @@ class BaseReview(BaseView):
         - If the new version item is based directly on the reference version
           item, return None.
         """
+
+        #TODO: probably not needed anymore.
+        asdf
 
         def _query_previous_version(mappedClass, uid, version):
             q = Session.query(mappedClass.previous_version).\
@@ -1041,6 +1133,9 @@ class BaseReview(BaseView):
         """
 
     def recalculate_diffs(self, mappedClass, uid, new_diff, old_diff=None):
+
+        #TODO: probably not needed anymore
+        asdf
 
         #TODO: clean up ...
 

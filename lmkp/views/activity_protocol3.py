@@ -1705,6 +1705,11 @@ class ActivityProtocol3(Protocol):
         for db_taggroup in self.Session.query(A_Tag_Group).\
             filter(A_Tag_Group.fk_activity == old_activity.id):
 
+            #TODO: clean up! Also make sure it works for all cases
+
+            print "********************************"
+            print "db_taggroup: %s" % db_taggroup
+
             # Create a new tag group but don't add it yet to the new activity
             # version. Indicator (taggroupadded) is needed because the moment
             # when to add a taggroup to database is a very delicate thing in
@@ -1715,6 +1720,9 @@ class ActivityProtocol3(Protocol):
             # Step 1: Loop the existing tags
             for db_tag in db_taggroup.tags:
 
+                print "------------------------------"
+                print "db_tag: %s" % db_tag
+
                 # Before copying the tag, make sure that it is not to delete
                 copy_tag = True
                 if 'taggroups' in activity_dict:
@@ -1723,14 +1731,19 @@ class ActivityProtocol3(Protocol):
                             taggroup_dict['tg_id'] == db_taggroup.tg_id):
                             # Check which tags we have to edit
                             for tag_dict in taggroup_dict['tags']:
-                                if ('id' in tag_dict and
-                                    tag_dict['id'] == db_tag.id):
+                                print "check tag_dict: %s" % tag_dict
+#                                if ('id' in tag_dict and
+#                                    tag_dict['id'] == db_tag.id):
+                                #TODO
+                                if 1 == 1:
+                                    print "check2"
                                     # Yes, it is THIS tag
                                     if tag_dict['op'] == 'delete':
                                         copy_tag = False
 
                 # Create and append the new tag only if requested
                 if copy_tag:
+                    print ".. copy_tag"
                     # Get the key and value SQLAlchemy object
                     k = self.Session.query(A_Key).get(db_tag.fk_key)
                     v = self.Session.query(A_Value).get(db_tag.fk_value)
