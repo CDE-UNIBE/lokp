@@ -188,7 +188,7 @@ class ActivityProtocol3(Protocol):
         # Return the IDs of the newly created Activities
         ids = []
         for activity in diff['activities']:
-            
+
             a = self._handle_activity(request, activity, changeset)
 
             # Add the newly created identifier to the diff
@@ -494,7 +494,7 @@ class ActivityProtocol3(Protocol):
 
     def _get_relevant_activities_dict(self, request, dicts):
         """
-        ''dicts'': Dicts containing the identifier and the version of the 
+        ''dicts'': Dicts containing the identifier and the version of the
           Activities to query
         """
 
@@ -505,12 +505,12 @@ class ActivityProtocol3(Protocol):
                                Activity.activity_identifier == d['identifier'],
                                Activity.version == d['version']
                                ))
-        
+
         # Prepare order: Get the order from request
         order_query, order_numbers = self._get_order(
                                                      request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value
                                                      )
-        
+
         # Create relevant Activities
         relevant_activities = self.Session.query(
                                                  Activity.id.label('order_id'),
@@ -908,11 +908,11 @@ class ActivityProtocol3(Protocol):
             outerjoin(A_Tag_Group).\
             outerjoin(order_query, order_query.c.id == Activity.id).\
             filter(Activity.fk_status.in_(status_filter))
-            
-        # If logged in and it is not a public query, add pending versions by 
+
+        # If logged in and it is not a public query, add pending versions by
         # current user to selection. If moderator, add all pending versions.
         if logged_in and public_query is False:
-            
+
             # It is necessary to first find out, if there are Activities
             # pending and if yes, which is the latest version
             latest_pending_activities = self.Session.query(
@@ -921,13 +921,13 @@ class ActivityProtocol3(Protocol):
                                                            ).\
                 join(Changeset).\
                 filter(or_(Activity.fk_status == 1, Activity.fk_status == 2))
-            
+
             if not is_moderator:
                 # If current user is not a moderator, only show pending versions
                 # done by himself
                 latest_pending_activities = latest_pending_activities.\
                     filter(Changeset.fk_user == request.user.id)
-                
+
             latest_pending_activities = latest_pending_activities.\
                 group_by(Activity.activity_identifier).\
                 subquery()
@@ -1079,7 +1079,7 @@ class ActivityProtocol3(Protocol):
                 first()
         key_translation, value_translation = self._get_translatedKV(lang, A_Key,
                                                                     A_Value)
-        
+
         # Count
         if return_count:
             count = relevant_activities.count()
@@ -1546,7 +1546,7 @@ class ActivityProtocol3(Protocol):
                                       involvement_change, changeset, implicit_inv_change)
 
             return new_activity
-        
+
         else:
             # Update existing Activity
             updated_activity = self._update_object(request, db_a, activity_dict,
