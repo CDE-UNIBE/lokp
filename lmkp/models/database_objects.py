@@ -81,14 +81,14 @@ class A_Key(Base):
     key = Column(String(255), nullable = False)
 
     fk_key = column_property(fk_a_key)
-    
+
     translations = relationship('A_Key', backref = backref('original',
         remote_side = [id]))
     tags = relationship('A_Tag', backref = 'key')
-    
+
     def __init__(self, key):
         self.key = key
-    
+
     def __repr__(self):
         return (
             '<A_Key> id [ %s ] | fk_a_key [ %s ] | fk_language [ %s ] | key [ %s ]' %
@@ -111,14 +111,14 @@ class SH_Key(Base):
     key = Column(String(255), nullable = False)
 
     fk_key = column_property(fk_sh_key)
-    
+
     translations = relationship('SH_Key', backref = backref('original',
         remote_side = [id]))
     tags = relationship('SH_Tag', backref = 'key')
-    
+
     def __init__(self, key):
         self.key = key
-    
+
     def __repr__(self):
         return (
             '<SH_Key> id [ %s ] | fk_sh_key [ %s ] | fk_language [ %s ] | key [ %s ]' %
@@ -138,14 +138,14 @@ class A_Value(Base):
     value = Column(Text, nullable = False)
 
     fk_value = column_property(fk_a_value)
-    
+
     translations = relationship('A_Value', backref = backref('original',
         remote_side = [id]))
     tags = relationship('A_Tag', backref = 'value')
-    
+
     def __init__(self, value):
         self.value = value
-    
+
     def __repr__(self):
         return (
             '<A_Value> id [ %s ] | fk_a_value [ %s ] | fk_language [ %s ] | value [ %s ]' %
@@ -165,14 +165,14 @@ class SH_Value(Base):
     value = Column(Text, nullable = False)
 
     fk_value = column_property(fk_sh_value)
-    
+
     translations = relationship('SH_Value', backref = backref('original',
         remote_side = [id]))
     tags = relationship('SH_Tag', backref = 'value')
-    
+
     def __init__(self, value):
         self.value = value
-    
+
     def __repr__(self):
         return (
             '<SH_Value> id [ %s ] | fk_sh_value [ %s ] | fk_language [ %s ] | value [ %s ]' %
@@ -267,7 +267,7 @@ class A_Tag_Group(Base):
         self.valid_from = (valid_from if valid_from is not None
             else datetime.datetime.now())
         self.valid_to = valid_to
-    
+
     def __repr__(self):
         if self.geometry == None:
             geom = '-'
@@ -303,7 +303,7 @@ class SH_Tag_Group(Base):
     fk_sh_tag = Column(Integer)
     valid_from = Column(DateTime)
     valid_to = Column(DateTime)
-    
+
     tags = relationship('SH_Tag', backref = backref('tag_group', order_by = id),
         primaryjoin = id==SH_Tag.fk_sh_tag_group)
     main_tag = relationship('SH_Tag', primaryjoin = fk_sh_tag==SH_Tag.id,
@@ -358,14 +358,14 @@ class Activity(Base):
     def identifier(self):
         return self.activity_identifier
 
-    def __init__(self, activity_identifier, version, previous_version=None, 
+    def __init__(self, activity_identifier, version, previous_version=None,
         reliability=None, timestamp_entry=None, point=None,
         timestamp_review=None, comment_review=None):
         self.activity_identifier = activity_identifier
         self.version = version
         self.previous_version = previous_version
         self.reliability = reliability
-        self.timestamp_entry = (datetime.datetime.now() if timestamp_entry is 
+        self.timestamp_entry = (datetime.datetime.now() if timestamp_entry is
             None else timestamp_entry)
         self.point = point
         self.timestamp_review = timestamp_review
@@ -385,7 +385,7 @@ class Activity(Base):
             self.fk_status, self.version, self.previous_version,
             self.fk_user_review, self.timestamp_review, self.comment_review)
         )
-    
+
     @property
     def __geo_interface__(self):
        id = self.id
@@ -536,18 +536,18 @@ class Language(Base):
     english_name = Column(String(255), nullable = False)
     local_name = Column(String(255), nullable = False)
     locale = Column(String(31), nullable = False)
-    
+
     a_keys = relationship('A_Key', backref='language')
     a_values = relationship('A_Value', backref='language')
     sh_keys = relationship('SH_Key', backref='language')
     sh_values = relationship('SH_Value', backref='language')
-    
+
     def __init__(self, id, english_name, local_name, locale):
         self.id = id
         self.english_name = english_name
         self.local_name = local_name
         self.locale = locale
-    
+
     def __repr__(self):
         return (
             '<Language> id [ %s ] | english_name [ %s ] | local_name [ %s ] | locale [ %s ]' %
@@ -644,10 +644,10 @@ class User(Base):
 
     # password encryption
     _password = Column('password', Unicode(64))
-    
+
     def _get_password(self):
         return self._password
-    
+
     def _set_password(self, password):
         self._password = hash_password(password)
 
@@ -701,10 +701,10 @@ class Group(Base):
     id = Column(Integer, primary_key = True)
     name = Column(String(255), nullable = False, unique = True)
     description = Column(Text)
-    
+
     permissions = relationship('Permission', secondary=groups_permissions,
         backref=backref('groups', order_by = id))
-    
+
     def __init__(self, id, name, description=None):
         self.id = id
         self.name = name
@@ -724,7 +724,7 @@ class Permission(Base):
     id = Column(Integer, primary_key = True)
     name = Column(String(255), nullable = False, unique = True)
     description = Column(Text)
-    
+
     def __init__(self, id, name, description=None):
         self.id = id
         self.name = name
@@ -747,7 +747,7 @@ class Profile(Base):
     def __init__(self, code, geometry):
         self.code = code
         self.geometry = geometry
-    
+
     def __repr__(self):
         if self.geometry == None:
             geom = '-'
@@ -766,7 +766,7 @@ class Profile(Base):
         return {'id': self.id, 'code': self.code, 'geometry': geometry}
 
 GeometryDDL(Profile.__table__)
-    
+
 class Comment(Base):
     __tablename__ = 'comments'
     __table_args__ = (
@@ -788,7 +788,7 @@ class Comment(Base):
         self.timestamp = datetime.datetime.now()
         self.activity_identifier = activity_identifier
         self.stakeholder_identifier = stakeholder_identifier
-    
+
     def __repr__(self):
         return (
             '<Comment> id [ %s ] | comment [ %s ] | timestamp [ %s ] | fk_user [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ]' %
@@ -804,7 +804,7 @@ class Comment(Base):
                 one()
         except NoResultFound:
             return None
-    
+
     def get_stakeholder(self):
         try:
             return DBSession.query(Stakeholder).\

@@ -43,15 +43,15 @@ class Protocol(object):
 
     def __init__(self):
         self.configuration = None
-    
+
     def _get_timestamp_filter(self, request, AorSH, Changeset):
         """
         Returns a filter of IDs of a given timestamp.
         """
-        
+
         # Item is now either still 'active' or it is 'inactive'
         status_list = ['active', 'inactive']
-        
+
         timestamp = request.params.get('timestamp', None)
         if timestamp is not None:
             # Check if timestamp is valid
@@ -59,7 +59,7 @@ class Protocol(object):
                 t = datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
             except ValueError:
                 return None
-            
+
             # Subquery to get latest version for each identifier at given time
             version_subquery = self.Session.query(
                     AorSH.identifier.label('timestamp_identifier'),
@@ -71,19 +71,19 @@ class Protocol(object):
                 filter(Status.name.in_(status_list)).\
                 group_by(AorSH.identifier).\
                 subquery()
-            
+
             # Join the latest version again with itself to get its ID
             timestamp_subquery = self.Session.query(
                     AorSH.id.label('timestamp_id')
                 ).\
                 join(version_subquery, and_(
-                    version_subquery.c.timestamp_identifier 
+                    version_subquery.c.timestamp_identifier
                         == AorSH.identifier,
                     version_subquery.c.timestamp_version == AorSH.version)).\
                 subquery()
-            
+
             return timestamp_subquery
-            
+
         return None
 
     def _get_versions(self, request):
@@ -93,7 +93,7 @@ class Protocol(object):
         versions = request.params.get('versions', None)
         if versions is None:
             return None
-        
+
         for v in versions.split(","):
             try:
                 int(v)
@@ -294,7 +294,7 @@ class Protocol(object):
                 if inv is not None:
                     # Check if current Involvement points to a different Feature
                     # version than the Involvement already existing
-                    inv = this_object.find_involvement(other_identifier, 
+                    inv = this_object.find_involvement(other_identifier,
                         stakeholder_role, other_version)
                     if inv is not None:
                         # If the current Involvement is 'active' and the
@@ -327,16 +327,16 @@ class Protocol(object):
     def _filter(self, request):
         """
         Returns
-        - a SubQuery of A_Tags containing a union of all Key/Value pairs which 
+        - a SubQuery of A_Tags containing a union of all Key/Value pairs which
           fulfill the filter condition(s) for Activity attributes
         - a count of the Activity filters
-        - a SubQuery of SH_Tags containing a union of all Key/Value pairs which 
+        - a SubQuery of SH_Tags containing a union of all Key/Value pairs which
           fulfill the filter condition(s) for Stakeholder attributes
         - a count of the Stakeholder filters
         """
 
         def __get_filter_expression(prefix, value, op):
-            
+
             # Use prefix to determine if A_Value or SH_Value
             if prefix == 'a':
                 v = A_Value
@@ -510,7 +510,7 @@ class Protocol(object):
         """
         Returns the filter for Stakeholder_Role(s) if set
         """
-        
+
         sh_role = request.params.get('sh_role', None)
         if sh_role is not None:
             roles = sh_role.split(',')
@@ -518,7 +518,7 @@ class Protocol(object):
             for r in roles:
                 filters.append(Stakeholder_Role.name.like(r))
             return filters
-        
+
         return None
 
     def _get_user_filter(self, request, Mapped_Class, Changeset_Class):
@@ -541,13 +541,13 @@ class Protocol(object):
         if ret is not None and ret.lower() == 'true':
             return True
         return False
-    
+
     def _get_return_activities(self, request):
         ret = request.params.get('return_a', None)
         if ret is not None and ret.lower() == 'true':
             return True
         return False
-    
+
     def _get_sh_id(self, request):
         return request.params.get('sh_id', None)
 
@@ -576,7 +576,7 @@ class Protocol(object):
 
         if unauthenticated_userid(request) is None:
             return False
-        
+
         moderator_rights = self.Session.query(Permission).\
             join(Permission.groups).\
             join(Group.users).\
@@ -966,7 +966,7 @@ class Inv(object):
 
     def get_role(self):
         return self._role
-    
+
     def get_role_id(self):
         return self._role_id
 
@@ -1112,7 +1112,7 @@ class Feature(object):
                     mk.remove(k)
                     break
 
-        # If all mandatory keys are still there, check if version is pending to 
+        # If all mandatory keys are still there, check if version is pending to
         # be deleted
         if len(mk) == len(mandatory_keys):
             if len(self.get_taggroups()) > 0:

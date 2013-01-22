@@ -751,22 +751,22 @@ class StakeholderProtocol3(Protocol):
                                                    Stakeholder.fk_status,
                                                    Stakeholder.stakeholder_identifier
                                                    )
-        
-        # Filter trough Involvements to only take Stakeholders involved with 
+
+        # Filter trough Involvements to only take Stakeholders involved with
         # relevant Activity
         relevant_stakeholders = relevant_stakeholders.\
             join(Involvement).\
             filter(Involvement.fk_activity.in_(
                    select([relevant_activities.c.order_id])
                    ))
-        
+
         # Join Stakeholders with Tag Groups and order_query, then group it
         relevant_stakeholders = relevant_stakeholders.\
             outerjoin(SH_Tag_Group).\
             outerjoin(order_query, order_query.c.id == Stakeholder.id).\
             filter(Stakeholder.fk_status.in_(status_filter))
-            
-        # If logged in and it is not a public query, add pending versions by 
+
+        # If logged in and it is not a public query, add pending versions by
         # current user to selection. If moderator, add all pending versions.
         if logged_in and public_query is False:
 
@@ -828,7 +828,7 @@ class StakeholderProtocol3(Protocol):
                                                                  )
             relevant_stakeholders = pending_stakeholders.union(
                                                                relevant_stakeholders)
-            
+
         relevant_stakeholders = relevant_stakeholders.\
             group_by(Stakeholder.id, order_query.c.value, Stakeholder.fk_status,
                      Stakeholder.stakeholder_identifier)
@@ -1120,7 +1120,7 @@ class StakeholderProtocol3(Protocol):
                 try:
                     if q.activity_identifier is not None:
 
-                        request_user_id = (request.user.id if request.user is 
+                        request_user_id = (request.user.id if request.user is
                                            not None else None)
 
                         newer_pending_exists = False

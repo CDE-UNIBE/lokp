@@ -139,7 +139,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                     me.getCompareTagGroupsStore().loadRawData(data);
                     me.getCompareInvolvementsStore().loadRawData(data);
                     me.getCompareVersionsStore().loadRawData(data);
-                    
+
                     // Clear any remaining filter on comboboxes
                     me.getCompareVersionsStore().clearFilter(true);
 
@@ -157,7 +157,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                         // clone the store of the comboboxes.
                         var originalStore = me.getNewVersionCombobox().getStore();
                         var copyStore = me.deepCloneStore(originalStore);
-                        
+
                         originalStore.filter('status', 1);
                         if (originalStore.getCount() == 0) {
                             // If there are no pending versions (all reviewed),
@@ -276,7 +276,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                 } else if (value.reviewable == 0) {
                     console.log("not reviewable");
                     html += '<div>Not Reviewable: Item cannot be reviewed from here.</div>';
-                }   
+                }
             }
             return html;
         }
