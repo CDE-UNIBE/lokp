@@ -588,7 +588,7 @@ class Protocol(object):
 
         return False
 
-    def _add_review(self, request, item, previous_item, Db_Item, user):
+    def _add_review(self, request, item, previous_item, mappedClass, user):
         """
         Add a review decision
         """
@@ -620,112 +620,101 @@ class Protocol(object):
 
         if review_decision == '1':
             # Approved
-            if previous_item is not None:
-                # If there is a previous version, check if the newly approved
-                # version needs to be recalculated.
-                #TODO: == statusArray.index('inactive') or rather != statusArray.index('active') ??
-                if (previous_item.fk_status == statusArray.index('inactive')+1
-                    and item.fk_status == statusArray.index('pending')+1):
-                    """
-                    If the approved pending version is based on a version which 
-                    is not active anymore, a recalculation of the pending 
-                    version is needed to include any changes already approved.
-                    This creates a new version which is automatically set 
-                    'active'. The approved pending version becomes 'edited' and
-                    the previously active version becomes 'inactive'.
-                    """
-                    
-                    # It is necessary to know the version number of the 
-                    # reference object which is the currently active one
-                    ref_version_number = self.Session.query(Db_Item.version).\
-                        filter(Db_Item.identifier == item.identifier).\
-                        filter(Db_Item.fk_status == statusArray.index('active')+1).\
+            if (previous_item is not None
+                and previous_item.fk_status != statusArray.index('active')+1
+                and item.fk_status == statusArray.index('pending')+1):
+                """
+                If the approved pending version is based on a version which
+                is not active anymore, a recalculation of the pending
+                version is needed to include any changes already approved.
+                This creates a new version which is automatically set
+                'active'. The approved pending version becomes 'edited' and
+                the previously active version becomes 'inactive'.
+                """
+
+                #TODO: Check out what the 'previous_item' and 'item' exactly
+                # are and if they are both needed. Also check if it is
+                # possible to delete a version.
+
+                # Review always happens against the active object. Query it
+                # to find out if the reviewed version is based directly onto
+                # it
+                ref_version = self.Session.query(
+                        mappedClass
+                    ).\
+                    filter(mappedClass.identifier == item.identifier).\
+                    filter(mappedClass.fk_status
+                        == statusArray.index('active')+1).\
+                    first()
+
+                if (ref_version is not None
+                    and ref_version.version != item.previous_version):
+
+                    new_diff_query = self.Session.query(
+                            Changeset.diff
+                        ).\
+                        join(mappedClass).\
+                        filter(mappedClass.identifier == item.identifier).\
+                        filter(mappedClass.version == item.version).\
                         first()
+                    new_diff = json.loads(new_diff_query.diff.replace('\'', '"'))
 
-                    review_object = BaseReview(request)
+                    # Activity or Stakeholder?
+                    diff_keyword = None
+                    config_yaml = None
+                    if mappedClass.__table__.name == 'activities':
+                        diff_keyword = 'activities'
+                        config_yaml = 'activity.yml'
+                    elif mappedClass.__table__.name == 'stakeholders':
+                        diff_keyword = 'stakeholders'
+                        config_yaml = 'stakeholder.yml'
 
-                    ref_diff, base_version_number = review_object.get_diff(
-                        Db_Item, item.identifier, item.version,
-                        ref_version_number.version
+                    self.configuration = self._read_configuration(
+                        request, config_yaml
                     )
 
-                    if ref_diff is not None:
-                        recalculated = True
+                    relevant_diff = None
+                    if (diff_keyword in new_diff and
+                        new_diff[diff_keyword] is not None):
+                        for a in new_diff[diff_keyword]:
+                            if 'id' in a and a['id'] == str(item.identifier):
+                                relevant_diff = a
 
-                        # Activity or Stakeholder?
-                        diff_keyword = None
-                        config_yaml = None
-                        if Db_Item.__table__.name == 'activities':
-                            diff_keyword = 'activities'
-                            config_yaml = 'activity.yml'
-                        elif Db_Item.__table__.name == 'stakeholders':
-                            diff_keyword = 'stakeholders'
-                            config_yaml = 'stakeholder.yml'
+                    ref_version.fk_status = statusArray.index('inactive')+1
+                    item.fk_status = statusArray.index('edited')+1
 
-                        # Query the diff of the new version
-                        new_diff_query = self.Session.query(Changeset.diff).\
-                            join(Db_Item).\
-                            filter(Db_Item.id == item.id).\
-                            first()
-                        new_diff = json.loads(new_diff_query.diff.replace('\'', '"'))
-                        
-                        # Calculate a new diff
-                        calculated_diff = review_object.recalculate_diffs(
-                            Db_Item, item.identifier, new_diff, ref_diff
-                        )
+                    changeset = Changeset()
+                    changeset.user = request.user
+                    changeset.diff = str(self._convert_utf8(new_diff))
 
-                        # Cut out relevant stuff (only the diff concerning the
-                        # current object)
-                        relevant_diff = None
-                        if (diff_keyword in calculated_diff and
-                            calculated_diff[diff_keyword] is not None):
-                            for a in calculated_diff[diff_keyword]:
-                                if 'id' in a and a['id'] == str(item.identifier):
-                                    relevant_diff = a
+                    new_v = self._update_object(
+                        request, ref_version, relevant_diff, changeset,
+                        status='active'
+                    )
 
-                        # TODO: clean up ...
-                        print "**************************************"
-                        print item.version
-                        print item.previous_version
-                        print previous_item.version
-                        print "**************************************"
-                        print "-diff1-------------------------"
-                        print new_diff
-                        print "-diff2-------------------------"
-                        print ref_diff
-                        print "-calculated--------------------"
-                        print calculated_diff
-                        print "-a_dict------------------------"
-                        print relevant_diff
+                    print new_v
 
-                        self.configuration = self._read_configuration(
-                            request, config_yaml
-                        )
+                    for tg in new_v.tag_groups:
+                        for t in tg.tags:
+                            print "%s: %s (%s)" % (t.key.key, str(t.value.value), tg.tg_id)
 
-                        # Previously active
-                        previously_active = self.Session.query(Db_Item).\
-                            filter(Db_Item.identifier == item.identifier).\
-                            filter(Db_Item.fk_status == statusArray.index('active')+1).\
-                            first()
-                        if previously_active:
-                            previously_active.fk_status = statusArray.index('inactive')+1
-                        item.fk_status = statusArray.index('edited')+1
+                    print "****"
+                    print item
+                    print "----"
+                    print previous_item
+                    print "****"
 
-                        changeset = Changeset()
-                        changeset.user = request.user
-                        changeset.diff = str(self._convert_utf8(calculated_diff))
+#                        asdfasdfasdfasdf
 
-                        new_v = self._update_object(
-                            request, previous_item, relevant_diff, changeset,
-                            status='active'
-                        )
+                    recalculated = True
 
-                # Set previous version to 'inactive' if it was active before
-                if previous_item.fk_status == statusArray.index('active') + 1:
-                    previous_item.fk_status = statusArray.index('inactive') + 1
-                # Set previous version to 'edited' if it was pending before
-                elif previous_item.fk_status == statusArray.index('pending') + 1:
-                    previous_item.fk_status = statusArray.index('edited') + 1
+                else:
+                    # Set previous version to 'inactive' if it was active before
+                    if previous_item.fk_status == statusArray.index('active') + 1:
+                        previous_item.fk_status = statusArray.index('inactive') + 1
+                    # Set previous version to 'edited' if it was pending before
+                    elif previous_item.fk_status == statusArray.index('pending') + 1:
+                        previous_item.fk_status = statusArray.index('edited') + 1
 
             # Check if Item was deleted (no more tags)
             empty_item = True
@@ -741,10 +730,10 @@ class Protocol(object):
                 if not recalculated:
                     # Set new version to 'active'. But first make sure there is no
                     # other one active by setting any with 'active' to 'inactive'
-                    self.Session.query(Db_Item).\
-                        filter(Db_Item.identifier == item.identifier).\
-                        filter(Db_Item.fk_status == statusArray.index('active')+1).\
-                        update({Db_Item.fk_status: statusArray.index('inactive')+1})
+                    self.Session.query(mappedClass).\
+                        filter(mappedClass.identifier == item.identifier).\
+                        filter(mappedClass.fk_status == statusArray.index('active')+1).\
+                        update({mappedClass.fk_status: statusArray.index('inactive')+1})
                     item.fk_status = statusArray.index('active') + 1
 
         elif review_decision == '2':

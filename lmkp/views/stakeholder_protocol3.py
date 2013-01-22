@@ -1421,8 +1421,9 @@ class StakeholderProtocol3(Protocol):
                             taggroup_dict['tg_id'] == db_taggroup.tg_id):
                             # Check which tags we have to edit
                             for tag_dict in taggroup_dict['tags']:
-                                if ('id' in tag_dict and
-                                    tag_dict['id'] == db_tag.id):
+#                                if ('id' in tag_dict and
+#                                    tag_dict['id'] == db_tag.id):
+                                if 1 == 1:
                                     # Yes, it is THIS tag
                                     if tag_dict['op'] == 'delete':
                                         copy_tag = False

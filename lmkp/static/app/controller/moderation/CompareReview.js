@@ -111,7 +111,8 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
             metaModelInstance.get('new_timestamp')
         ]));
 
-        if (metaModelInstance.get('recalculated')) {
+        if (metaModelInstance.get('recalculated')
+            && this.getComparePanel().action == 'review') {
             this.getRecalculationNotice().setVisible(true);
         } else {
             this.getRecalculationNotice().setVisible(false);
