@@ -1,0 +1,19 @@
+table#compare-table{
+    width: 98%;
+}
+.remove {
+    background-color: lightcoral !important;
+}
+.add {
+    background-color: lightgreen !important;
+}
+.button-link {
+    background-image: url('/static/img/link.png') !important;
+}
+.button-refresh {
+    background-image: url('/static/img/view-refresh.png') !important;
+}
+.notice {
+    background-color: #ffffcc;
+    border: 1px solid #808080;
+}

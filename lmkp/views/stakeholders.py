@@ -171,6 +171,28 @@ def read_many_public(request):
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
 
+@view_config(route_name='stakeholders_read_many_pending', permission='moderate')
+def read_many_pending(request):
+    """
+    Read many pending Stakeholders.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        stakeholders = stakeholder_protocol3.read_many_pending(request)
+        return render_to_response('json', stakeholders, request)
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
+
 @view_config(route_name='stakeholders_read_one')
 def read_one(request):
     """
@@ -279,7 +301,7 @@ def review(request):
         first()
 
     # The user can add a review
-    ret = stakeholder_protocol._add_review(
+    ret = stakeholder_protocol3._add_review(
         request, stakeholder, previous_stakeholder, Stakeholder, user)
 
     return ret

@@ -97,8 +97,8 @@ def main(global_config, ** settings):
     # Creates a new activity
     config.add_route('activities_create', '/activities', request_method='POST')
 
-    config.add_route('activities_review_versions_html', '/activities/review/html/{uid}')
-    config.add_route('activities_review_versions_json', '/activities/review/json/{uid}')
+    config.add_route('activities_review_versions_html', '/activities/review/html/{uid}*versions')
+    config.add_route('activities_review_versions_json', '/activities/review/json/{uid}*versions')
     config.add_handler('activities_compare_versions',
                        '/activities/compare/{action}/{uid}*versions',
                        'lmkp.views.activity_review.ActivityReview')
@@ -114,16 +114,15 @@ def main(global_config, ** settings):
     config.add_route('activities_bystakeholder', '/activities/bystakeholder/{output}/{uid}')
     config.add_route('activities_bystakeholder_public', '/activities/bystakeholder/public/{output}/{uid}')
 
+    # Read pending
+    config.add_route('activities_read_many_pending', '/activities/pending/{output}')
+
     # Read many
     config.add_route('activities_public_read_many', '/activities/public/{output}')
     config.add_route('activities_read_many', '/activities/{output}')
 
     # Read one
     config.add_route('activities_read_one', '/activities/{output}/{uid}')
-
-    #@TODO: Is this still needed?
-    config.add_route('activities_read_pending', '/activities/pending')
-    # Reads one or many activities and returns GeoJSON Feature or FeatureCollection
 
     """
     Stakeholders
@@ -135,8 +134,8 @@ def main(global_config, ** settings):
     config.add_route('stakeholders_create', '/stakeholders', request_method='POST')
 
     # Reviews a pending stakeholder
-    config.add_route('stakeholders_review_versions_html', '/stakeholders/review/html/{uid}')
-    config.add_route('stakeholders_review_versions_json', '/stakeholders/review/json/{uid}')
+    config.add_route('stakeholders_review_versions_html', '/stakeholders/review/html/{uid}*versions')
+    config.add_route('stakeholders_review_versions_json', '/stakeholders/review/json/{uid}*versions')
     config.add_handler('stakeholders_compare_versions',
                        '/stakeholders/compare/{action}/{uid}*versions',
                        'lmkp.views.stakeholder_review.StakeholderReview')
@@ -150,6 +149,9 @@ def main(global_config, ** settings):
     # By Activity
     config.add_route('stakeholders_byactivity', '/stakeholders/byactivity/{output}/{uid}')
     config.add_route('stakeholders_byactivity_public', '/stakeholders/byactivity/public/{output}/{uid}')
+
+    # Read pending
+    config.add_route('stakeholders_read_many_pending', '/stakeholders/pending/{output}')
 
     # Read many
     config.add_route('stakeholders_read_many', '/stakeholders/{output}')
@@ -168,7 +170,13 @@ def main(global_config, ** settings):
     config.add_route('comment_add', '/comments/add')
     # Deletes a comment
     config.add_route('comment_delete', '/comments/delete')
-    
+
+    """
+    Moderation
+    """
+    # Moderation overview
+    config.add_route('moderation_html', '/moderation')
+
     # A controller that returns the translation needed in the ExtJS user interface
     config.add_route('ui_translation', '/lang')
     # Return a json with all available languages from DB
