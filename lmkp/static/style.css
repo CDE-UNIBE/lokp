@@ -119,14 +119,19 @@ div.toolbar_username {
     font-size: 11px;
 }
 
-div.login_header {
+div.login {
     border: 1px solid silver;
     padding: 10px;
     width: 200px;
     margin: 0 auto;
     margin-bottom: 5px;
+    margin-top: 5px;
     font-family: Arial, sans-serif;
     font-size: 12px;
+}
+
+div.login-warning {
+    background-color: #F68E1D;
 }
 
 fieldset.simple_login {

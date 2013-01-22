@@ -6,10 +6,15 @@
         <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/style.css')}"></link>
     </head>
     <body>
-        <div class="login_header">
+        <div class="login">
             <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" alt="Land Observatory"/><br/>
             ${_(u"Login to the Land Observatory")}
         </div>
+        % if warning is not None:
+        <div class="login login-warning">
+            ${warning | n}
+        </div>
+        % endif
         <div>
             <form action="/login" method="POST">
                 <fieldset class="simple_login">
@@ -21,6 +26,9 @@
                     <input type="submit" name="form.submitted" value="Login"/>
                 </fieldset>
             </form>
+        </div>
+        <div class="login">
+            <a href="/reset">${_(u"Forgot Password?")}</a>
         </div>
     </body>
 </html>

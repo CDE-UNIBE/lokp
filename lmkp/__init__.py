@@ -60,6 +60,8 @@ def main(global_config, ** settings):
     config.add_route('administration', '/administration')
     config.add_route('login', '/login', request_method='POST')
     config.add_route('login_form', '/login', request_method='GET')
+    config.add_route('reset', '/reset', request_method='POST')
+    config.add_route('reset_form', '/reset', request_method='GET')
     config.add_route('logout', '/logout')
     config.add_route('db_test', '/db_test')
 
