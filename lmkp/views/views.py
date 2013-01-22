@@ -227,6 +227,16 @@ class MainView(BaseView):
 
         return Response(html, content_type='text/html', status_int=200)
 
+    @view_config(route_name='moderation_html', renderer='lmkp:templates/moderation.mak', permission='moderate')
+    def moderation_html(self):
+        """
+        Returns the moderation HTML page
+        """
+
+        self._handle_parameters()
+
+        return {}
+
     @view_config(route_name='administration', renderer='lmkp:templates/administration.mak', permission='administer')
     def administration(self):
         """

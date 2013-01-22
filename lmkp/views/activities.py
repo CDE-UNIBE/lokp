@@ -88,6 +88,28 @@ def read_many_public(request):
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
 
+@view_config(route_name='activities_read_many_pending', permission='moderate')
+def read_many_pending(request):
+    """
+    Read many pending Activities based on the profile attached to the moderator.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        activities = activity_protocol3.read_many_pending(request)
+        return render_to_response('json', activities, request)
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
+
 @view_config(route_name='activities_bystakeholder')
 def by_stakeholder(request):
     """
@@ -217,10 +239,10 @@ def read_one_active(request):
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
 
-@view_config(route_name='activities_read_pending', renderer='lmkp:templates/rss.mak')
-def read_pending(request):
-    activities = activity_protocol2.read(request) #, filter={'status_filter': (Status.id==2)})
-    return {'data': activities['data']}
+#@view_config(route_name='activities_read_pending', renderer='lmkp:templates/rss.mak')
+#def read_pending(request):
+#    activities = activity_protocol2.read(request) #, filter={'status_filter': (Status.id==2)})
+#    return {'data': activities['data']}
 
 @view_config(route_name='activities_review', renderer='json')
 def review(request):
@@ -241,13 +263,13 @@ def review(request):
     user = request.user
 
     # Check for profile
-    profile_filters = activity_protocol2._create_bound_filter_by_user(request)
-    if len(profile_filters) == 0:
+    profile_filters = activity_protocol3._get_spatial_moderator_filter(request)
+    if profile_filters is None:
         raise HTTPBadRequest(_('User has no profile attached'))
     activity = Session.query(Activity).\
         filter(Activity.activity_identifier == request.POST['identifier']).\
         filter(Activity.version == request.POST['version']).\
-        filter(or_(* profile_filters)).\
+        filter(profile_filters).\
         first()
     if activity is None:
         raise HTTPUnauthorized(_('The Activity was not found or is not situated within the user\'s profiles'))

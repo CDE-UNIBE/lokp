@@ -30,10 +30,7 @@ class ActivityFeature3(Feature):
     """
 
     def __init__(self, guid, order_value, geometry=None, version=None,
-                 status=None, status_id=None, timestamp=None, user_privacy=None,
-                 institution_id=None, institution_name=None,
-                 institution_url=None, institution_logo=None, user_id=None,
-                 user_name=None, user_firstname=None, user_lastname=None):
+                 status=None, status_id=None, timestamp=None, diff_info=None, ** kwargs):
         self._taggroups = []
         self._involvements = []
         self._guid = guid
@@ -43,15 +40,23 @@ class ActivityFeature3(Feature):
         self._status = status
         self._status_id = status_id
         self._timestamp = timestamp
-        self._user_privacy = user_privacy
-        self._institution_id = institution_id
-        self._institution_name = institution_name
-        self._institution_url = institution_url
-        self._institution_logo = institution_logo
-        self._user_id = user_id
-        self._user_name = user_name
-        self._user_firstname = user_firstname
-        self._user_lastname = user_lastname
+        self._diff_info = diff_info
+
+        self._previous_version = kwargs.pop('previous_version', None)
+
+        self._user_privacy = kwargs.pop('user_privacy', None)
+        self._user_id = kwargs.pop('user_id', None)
+        self._user_name = kwargs.pop('user_name', None)
+        self._user_firstname = kwargs.pop('user_firstname', None)
+        self._user_lastname = kwargs.pop('user_lastname', None)
+
+        self._institution_id = kwargs.pop('institution_id', None)
+        self._institution_name = kwargs.pop('institution_name', None)
+        self._institution_url = kwargs.pop('institution_url', None)
+        self._institution_logo = kwargs.pop('institution_logo', None)
+
+    def getMappedClass(self):
+        return Activity
 
     def to_tags(self):
 
@@ -113,6 +118,9 @@ class ActivityFeature3(Feature):
             ret['status_id'] = self._status_id
         if self._timestamp is not None:
             ret['timestamp'] = str(self._timestamp)
+
+        if self._previous_version is not None:
+            ret['previous_version'] = self._previous_version
 
         institution = {}
         if self._institution_id is not None:
@@ -212,22 +220,27 @@ class ActivityProtocol3(Protocol):
             'data': [a.to_table(request) for a in activities]
         }
 
-    def read_one_by_version(self, request, uid, version=None):
+    def read_one_by_version(self, request, uid, version):
 
         relevant_activities = self._get_relevant_activities_one_by_version(uid, version)
 
         # Determine if and how detailed Involvements are to be displayed.
         # Default is: 'full'
-        inv_details = 'full' #request.params.get('involvements', 'full')
+        inv_details = request.params.get('involvements', 'full')
 
-        query, count = self._query_many(request, relevant_activities,
-                                        involvements=True)
+        query, count = self._query_many(
+            request, relevant_activities, involvements=inv_details!='none',
+            metadata=True
+        )
 
-        activities = self._query_to_activities(request, query,
-                                               involvements=inv_details, public_query=True)
+        activities = self._query_to_activities(
+            request, query, involvements=inv_details, public_query=False
+        )
 
-        return activities[0]
-
+        if len(activities) == 0:
+            return None
+        else:
+            return activities[0]
 
     def read_one(self, request, uid, public=True):
 
@@ -284,6 +297,47 @@ class ActivityProtocol3(Protocol):
             'total': count,
             'data': [a.to_table(request) for a in activities]
         }
+
+    def read_many_pending(self, request):
+
+        relevant_activities = self._get_relevant_activities_pending(request)
+
+        # Get limit and offset from request.
+        # Defaults: limit = None / offset = 0
+        limit = self._get_limit(request)
+        offset = self._get_offset(request)
+
+        query, count = self._query_pending(
+            request, relevant_activities, limit=limit, offset=offset
+        )
+
+        activities = self._query_to_activities(
+            request, query, involvements='none'
+        )
+
+        data = []
+        for a in activities:
+
+            # For each activity, query how many pending there are
+            pending_count_query = self.Session.query(
+                    Activity.id
+                ).\
+                filter(Activity.identifier == a.get_guid()).\
+                filter(Activity.fk_status == 1)
+
+            pending_dict = {
+                'pending_count': pending_count_query.count()
+            }
+
+            data.append(
+                dict(a.to_table(request).items() + pending_dict.items())
+            )
+
+        return {
+            'total': count,
+            'data': data
+        }
+
 
     def read_many_by_stakeholder(self, request, uid, public=True):
 
@@ -500,6 +554,46 @@ class ActivityProtocol3(Protocol):
 
         return relevant_activities
 
+    def _get_relevant_activities_pending(self, request):
+        """
+        Always query the oldest pending version (minimum version number).
+        No filtering (neither by status, attributes). Spatial filtering only
+        through profile bounds
+        """
+
+        # Prepare order: Get the order from request
+        order_query, order_numbers = self._get_order(
+            request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value
+        )
+
+        # Prepare the query to find out the oldest pending version of each
+        oldest_pending_activities = self.Session.query(
+                Activity.activity_identifier,
+                func.min(Activity.version).label('min_version')
+            ).\
+            filter(Activity.fk_status == 1).\
+            group_by(Activity.activity_identifier).\
+            subquery()
+
+        # Create relevant Activities
+        relevant_activities = self.Session.query(
+                Activity.id.label('order_id'),
+                order_query.c.value.label('order_value'),
+                Activity.fk_status,
+                Activity.activity_identifier
+            ).\
+            join(oldest_pending_activities, and_(
+                oldest_pending_activities.c.min_version == Activity.version,
+                 oldest_pending_activities.c.activity_identifier
+                 == Activity.activity_identifier
+            )).\
+            outerjoin(A_Tag_Group).\
+            outerjoin(order_query, order_query.c.id == Activity.id).\
+            filter(self._get_spatial_moderator_filter(request)).\
+            group_by(Activity.id, order_query.c.value)
+
+        return relevant_activities
+
     def _get_relevant_activities_many(self, request, filter=None,
                                       public_query=False):
         """
@@ -627,14 +721,26 @@ class ActivityProtocol3(Protocol):
                                                            Activity.activity_identifier,
                                                            func.max(Activity.version).label('max_version')
                                                            ).\
-                join(Changeset).\
-                filter(Activity.fk_status == 1)
+                join(Changeset)
 
-            if not is_moderator:
-                # If current user is not a moderator, only show pending versions
-                # done by himself
+            #TODO: could this be done easier? (max_version filter first?)
+            # Only show pending items if there isn't a more recent active version
+            if is_moderator:
                 latest_pending_activities = latest_pending_activities.\
-                    filter(Changeset.fk_user == request.user.id)
+                    filter(
+                        or_(Activity.fk_status == 1, Activity.fk_status == 2)
+                    )
+            else:
+                latest_pending_activities = latest_pending_activities.\
+                    filter(
+                        or_(
+                            and_(
+                                Activity.fk_status == 1,
+                                Changeset.fk_user == request.user.id
+                            ),
+                            Activity.fk_status == 2
+                        )
+                    )
 
             latest_pending_activities = latest_pending_activities.\
                 group_by(Activity.activity_identifier).\
@@ -814,7 +920,7 @@ class ActivityProtocol3(Protocol):
                                                            func.max(Activity.version).label('max_version')
                                                            ).\
                 join(Changeset).\
-                filter(Activity.fk_status == 1)
+                filter(or_(Activity.fk_status == 1, Activity.fk_status == 2))
             
             if not is_moderator:
                 # If current user is not a moderator, only show pending versions
@@ -907,6 +1013,62 @@ class ActivityProtocol3(Protocol):
 
         return query
 
+    def _query_pending(self, request, relevant_activities, limit=None,
+        offset=None):
+
+        # Prepare query to translate keys and values
+        localizer = get_localizer(request)
+        lang = None if localizer.locale_name == 'en' \
+            else self.Session.query(Language).\
+                filter(Language.locale == localizer.locale_name).\
+                first()
+        key_translation, value_translation = self._get_translatedKV(
+            lang, A_Key, A_Value
+        )
+
+        count = relevant_activities.count()
+
+        # Apply limit and offset
+        if limit is not None:
+            relevant_activities = relevant_activities.limit(limit)
+        if offset is not None:
+            relevant_activities = relevant_activities.offset(offset)
+
+        # Create query
+        relevant_activities = relevant_activities.subquery()
+        query = self.Session.query(
+                                   Activity.id.label('id'),
+                                   Activity.activity_identifier.label('identifier'),
+                                   Activity.point.label('geometry'),
+                                   Activity.version.label('version'),
+                                   Status.id.label('status_id'),
+                                   Status.name.label('status'),
+                                   Changeset.timestamp.label('timestamp'),
+                                   A_Tag_Group.id.label('taggroup'),
+                                   A_Tag_Group.tg_id.label('tg_id'),
+                                   A_Tag_Group.fk_a_tag.label('main_tag'),
+                                   A_Tag.id.label('tag'),
+                                   A_Key.key.label('key'),
+                                   A_Value.value.label('value'),
+                                   key_translation.c.key_translated.label('key_translated'),
+                                   value_translation.c.value_translated.label('value_translated'),
+                                   relevant_activities.c.order_value.label('order_value')
+                                   ).\
+            join(relevant_activities,
+                 relevant_activities.c.order_id == Activity.id).\
+            join(Status).\
+            join(Changeset).\
+            outerjoin(A_Tag_Group).\
+            outerjoin(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
+            outerjoin(A_Key).\
+            outerjoin(A_Value).\
+            outerjoin(key_translation,
+                      key_translation.c.key_original_id == A_Key.id).\
+            outerjoin(value_translation,
+                      value_translation.c.value_original_id == A_Value.id)
+
+        return query, count
+
     def _query_many(self, request, relevant_activities, limit=None, offset=None,
                     involvements=False, return_count=True, metadata=False):
         # Prepare query to translate keys and values
@@ -963,6 +1125,7 @@ class ActivityProtocol3(Protocol):
 
         if metadata:
             query = query.add_columns(
+                Activity.previous_version.label('previous_version'),
                 User.id.label('user_id'),
                 User.username.label('user_name'),
                 User.firstname.label('user_firstname'),
@@ -989,7 +1152,8 @@ class ActivityProtocol3(Protocol):
                                             Stakeholder.stakeholder_identifier.\
                                             label('stakeholder_identifier'),
                                             Stakeholder.fk_status.label('stakeholder_status'),
-                                            Stakeholder.version.label('stakeholder_version')
+                                            Stakeholder.version.label('stakeholder_version'),
+                                            Stakeholder.fk_changeset.label('changeset_id')
                                             ).\
                 filter(Stakeholder.fk_status.in_(inv_status_filter)).\
                 subquery()
@@ -1006,7 +1170,7 @@ class ActivityProtocol3(Protocol):
                                            ).\
                 join(inv_status,
                      inv_status.c.stakeholder_id == Involvement.fk_stakeholder).\
-                join(Changeset, Changeset.id == inv_status.c.stakeholder_id).\
+                join(Changeset, Changeset.id == inv_status.c.changeset_id).\
                 join(Stakeholder_Role).\
                 subquery()
 
@@ -1054,7 +1218,7 @@ class ActivityProtocol3(Protocol):
 
         return query
 
-    def _query_to_activities(self, request, query, involvements='full',
+    def _query_to_activities(self, request, query, involvements='none',
                              public_query=False):
 
         logged_in, is_moderator = self._get_user_status(
@@ -1084,6 +1248,7 @@ class ActivityProtocol3(Protocol):
 
             if activity == None:
                 # Handle optional metadata correctly
+                previous_version = q.previous_version if hasattr(q, 'previous_version') else None
                 user_privacy = q.user_privacy if hasattr(q, 'user_privacy') else None
                 user_id = q.user_id if hasattr(q, 'user_id') else None
                 user_name = q.user_name if hasattr(q, 'user_name') else None
@@ -1102,7 +1267,7 @@ class ActivityProtocol3(Protocol):
                                             institution_url=institution_url, institution_logo=institution_logo,
                                             user_id=user_id, user_name=user_name,
                                             user_firstname=user_firstname,
-                                            user_lastname=user_lastname
+                                            user_lastname=user_lastname, previous_version=previous_version
                                             )
                 activities.append(activity)
 
@@ -1129,6 +1294,22 @@ class ActivityProtocol3(Protocol):
                         request_user_id = (request.user.id if request.user is
                                            not None else None)
 
+
+                        # Only proceed if
+                        # If there are multiple pending versions of the same
+                        # Stakeholder, show only the latest one (highest
+                        # version)
+                        newer_pending_exists = False
+                        if q.stakeholder_status == 1:
+                            for p_i in activity._involvements:
+                                if (p_i.get_guid() == q.stakeholder_identifier
+                                    and p_i.get_status() == 1):
+                                    if p_i.get_version() > q.stakeholder_version:
+                                        newer_pending_exists = True
+                                    else:
+                                        activity.remove_involvement(p_i)
+
+
                         # Flag indicating if Involvement to this Activity is not
                         # yet found ('none') or not to be added ('false')
                         inv = self._flag_add_involvement(
@@ -1145,7 +1326,7 @@ class ActivityProtocol3(Protocol):
                                                          is_moderator
                                                          )
 
-                        if inv is None:
+                        if inv is None and newer_pending_exists is False:
                             # Create new Involvement and add it to Activity
                             # Default: only basic information about Involvement
                             activity.add_involvement(
@@ -1258,6 +1439,7 @@ class ActivityProtocol3(Protocol):
 
     def _get_spatial_moderator_filter(self, request):
         """
+        Create an array of geometry filters based on the user's profile(s)
         """
         userid = request.user.username #authenticated_userid(request)
 
@@ -1367,7 +1549,7 @@ class ActivityProtocol3(Protocol):
         
         else:
             # Update existing Activity
-            updated_activity = self._update_activity(request, db_a, activity_dict,
+            updated_activity = self._update_object(request, db_a, activity_dict,
                                                      changeset)
 
             # Handle also the involvements
@@ -1470,7 +1652,7 @@ class ActivityProtocol3(Protocol):
 
         return new_activity
 
-    def _update_activity(self, request, old_activity, activity_dict, changeset,
+    def _update_object(self, request, old_activity, activity_dict, changeset,
                          ** kwargs):
         """
         Update an Activity. The basic idea is to deep copy the previous version
@@ -1497,7 +1679,9 @@ class ActivityProtocol3(Protocol):
 
         # Create new Activity
         new_activity = Activity(activity_identifier=old_activity.identifier,
-                                version=(latest_version.version + 1), point=new_geom)
+                                version=(latest_version.version + 1),
+                                previous_version=old_activity.version,
+                                point=new_geom)
 
         # Status (default: 'pending')
         status = 'pending'
@@ -1516,10 +1700,15 @@ class ActivityProtocol3(Protocol):
         # Add it to the database
         self.Session.add(new_activity)
 
-        # Loop the tag groups from the previous version and copy it to the new
-        # version with its tags
+        # Loop the tag groups from the previous version and copy them to the new
+        # version with their tags
         for db_taggroup in self.Session.query(A_Tag_Group).\
             filter(A_Tag_Group.fk_activity == old_activity.id):
+
+            #TODO: clean up! Also make sure it works for all cases
+
+            print "********************************"
+            print "db_taggroup: %s" % db_taggroup
 
             # Create a new tag group but don't add it yet to the new activity
             # version. Indicator (taggroupadded) is needed because the moment
@@ -1528,25 +1717,33 @@ class ActivityProtocol3(Protocol):
             taggroupadded = False
             new_taggroup = A_Tag_Group(db_taggroup.tg_id)
 
-            # And loop the tags
+            # Step 1: Loop the existing tags
             for db_tag in db_taggroup.tags:
+
+                print "------------------------------"
+                print "db_tag: %s" % db_tag
 
                 # Before copying the tag, make sure that it is not to delete
                 copy_tag = True
                 if 'taggroups' in activity_dict:
                     for taggroup_dict in activity_dict['taggroups']:
-                        if ('id' in taggroup_dict and
-                            taggroup_dict['id'] == db_taggroup.id):
+                        if ('tg_id' in taggroup_dict and
+                            taggroup_dict['tg_id'] == db_taggroup.tg_id):
                             # Check which tags we have to edit
                             for tag_dict in taggroup_dict['tags']:
-                                if ('id' in tag_dict and
-                                    tag_dict['id'] == db_tag.id):
+                                print "check tag_dict: %s" % tag_dict
+#                                if ('id' in tag_dict and
+#                                    tag_dict['id'] == db_tag.id):
+                                #TODO
+                                if 1 == 1:
+                                    print "check2"
                                     # Yes, it is THIS tag
                                     if tag_dict['op'] == 'delete':
                                         copy_tag = False
 
                 # Create and append the new tag only if requested
                 if copy_tag:
+                    print ".. copy_tag"
                     # Get the key and value SQLAlchemy object
                     k = self.Session.query(A_Key).get(db_tag.fk_key)
                     v = self.Session.query(A_Value).get(db_tag.fk_value)
@@ -1567,16 +1764,17 @@ class ActivityProtocol3(Protocol):
                         new_activity.tag_groups.append(new_taggroup)
                         taggroupadded = True
 
-            # Next step is to add new tags to this tag group without existing ids
+            # Step 2: Add new tags (who don't have an ID yet) to this taggroup
             if 'taggroups' in activity_dict:
                 for taggroup_dict in activity_dict['taggroups']:
-                    if ('id' in taggroup_dict and
-                        taggroup_dict['id'] == db_taggroup.id):
+                    if ('tg_id' in taggroup_dict and
+                        taggroup_dict['tg_id'] == db_taggroup.tg_id):
                         for tag_dict in taggroup_dict['tags']:
                             if 'id' not in tag_dict and tag_dict['op'] == 'add':
                                 new_tag = self._create_tag(
-                                                           request, new_taggroup.tags, tag_dict['key'],
-                                                           tag_dict['value'], A_Tag, A_Key, A_Value)
+                                    request, new_taggroup.tags, tag_dict['key'],
+                                    tag_dict['value'], A_Tag, A_Key, A_Value
+                                )
                                 # Set the main tag
                                 if 'main_tag' in taggroup_dict:
                                     if (taggroup_dict['main_tag']['key'] ==
