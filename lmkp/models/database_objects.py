@@ -459,8 +459,8 @@ class Stakeholder(Base):
 
     def __repr__(self):
         return (
-            '<Activity> id [ %s ] | activity_identifier [ %s ] | fk_changeset [ %s ] | fk_status [ %s ] | version [ %s ] | previous_version [ %s ] | fk_user_review [ %s ] | timestamp_review [ %s ] | comment_review [ %s ]' %
-            (self.id, self.activity_identifier, self.fk_changeset,
+            '<Stakeholder> id [ %s ] | stakeholder_identifier [ %s ] | fk_changeset [ %s ] | fk_status [ %s ] | version [ %s ] | previous_version [ %s ] | fk_user_review [ %s ] | timestamp_review [ %s ] | comment_review [ %s ]' %
+            (self.id, self.stakeholder_identifier, self.fk_changeset,
             self.fk_status, self.version, self.previous_version,
             self.fk_user_review, self.timestamp_review, self.comment_review)
         )

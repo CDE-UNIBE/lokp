@@ -368,6 +368,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 }
                 deletedTaggroups.push({
                     'id': cTaggroup.id,
+                    'tg_id': cTaggroup.tg_id,
                     'op': 'delete',
                     'tags': dTags
                 });

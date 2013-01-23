@@ -1700,123 +1700,17 @@ class ActivityProtocol3(Protocol):
         # Add it to the database
         self.Session.add(new_activity)
 
-        # Loop the tag groups from the previous version and copy them to the new
-        # version with their tags
-        for db_taggroup in self.Session.query(A_Tag_Group).\
-            filter(A_Tag_Group.fk_activity == old_activity.id):
+        a = self._apply_diff(
+            request,
+            Activity,
+            old_activity.identifier,
+            old_activity.version,
+            activity_dict,
+            new_activity,
+            db = True
+        )
 
-            #TODO: clean up! Also make sure it works for all cases
-
-            print "********************************"
-            print "db_taggroup: %s" % db_taggroup
-
-            # Create a new tag group but don't add it yet to the new activity
-            # version. Indicator (taggroupadded) is needed because the moment
-            # when to add a taggroup to database is a very delicate thing in
-            # SQLAlchemy.
-            taggroupadded = False
-            new_taggroup = A_Tag_Group(db_taggroup.tg_id)
-
-            # Step 1: Loop the existing tags
-            for db_tag in db_taggroup.tags:
-
-                print "------------------------------"
-                print "db_tag: %s" % db_tag
-
-                # Before copying the tag, make sure that it is not to delete
-                copy_tag = True
-                if 'taggroups' in activity_dict:
-                    for taggroup_dict in activity_dict['taggroups']:
-                        if ('tg_id' in taggroup_dict and
-                            taggroup_dict['tg_id'] == db_taggroup.tg_id):
-                            # Check which tags we have to edit
-                            for tag_dict in taggroup_dict['tags']:
-                                print "check tag_dict: %s" % tag_dict
-#                                if ('id' in tag_dict and
-#                                    tag_dict['id'] == db_tag.id):
-                                #TODO
-                                if 1 == 1:
-                                    print "check2"
-                                    # Yes, it is THIS tag
-                                    if tag_dict['op'] == 'delete':
-                                        copy_tag = False
-
-                # Create and append the new tag only if requested
-                if copy_tag:
-                    print ".. copy_tag"
-                    # Get the key and value SQLAlchemy object
-                    k = self.Session.query(A_Key).get(db_tag.fk_key)
-                    v = self.Session.query(A_Value).get(db_tag.fk_value)
-                    new_tag = A_Tag()
-                    new_taggroup.tags.append(new_tag)
-                    new_tag.key = k
-                    new_tag.value = v
-
-                    # Set the main tag
-                    if db_taggroup.main_tag == db_tag:
-                        new_taggroup.main_tag = new_tag
-
-                    if taggroupadded is False:
-                        # It is necessary to add taggroup to database
-                        # immediately, otherwise SQLAlchemy tries to do this the
-                        # next time a tag is created and throws an error because
-                        # of assumingly null values
-                        new_activity.tag_groups.append(new_taggroup)
-                        taggroupadded = True
-
-            # Step 2: Add new tags (who don't have an ID yet) to this taggroup
-            if 'taggroups' in activity_dict:
-                for taggroup_dict in activity_dict['taggroups']:
-                    if ('tg_id' in taggroup_dict and
-                        taggroup_dict['tg_id'] == db_taggroup.tg_id):
-                        for tag_dict in taggroup_dict['tags']:
-                            if 'id' not in tag_dict and tag_dict['op'] == 'add':
-                                new_tag = self._create_tag(
-                                    request, new_taggroup.tags, tag_dict['key'],
-                                    tag_dict['value'], A_Tag, A_Key, A_Value
-                                )
-                                # Set the main tag
-                                if 'main_tag' in taggroup_dict:
-                                    if (taggroup_dict['main_tag']['key'] ==
-                                        new_tag.key.key and
-                                        taggroup_dict['main_tag']['value'] ==
-                                        new_tag.value.value):
-                                        new_taggroup.main_tag = new_tag
-
-            # If taggroups were not added to database yet, then do it now. But
-            # only if add new tag groups to the new version if they have any
-            # tags in them (which is not the case if they were deleted).
-            if len(new_taggroup.tags) > 0 and taggroupadded is False:
-                new_activity.tag_groups.append(new_taggroup)
-
-        # Finally new tag groups (without id) needs to be added
-        # (and loop all again)
-        if 'taggroups' in activity_dict:
-            for taggroup_dict in activity_dict['taggroups']:
-                if (('id' not in taggroup_dict or ('id' in taggroup_dict and
-                    taggroup_dict['id'] is None))
-                    and taggroup_dict['op'] == 'add'):
-                    # Find next empty tg_id
-                    tg_id_q = self.Session.query(func.max(A_Tag_Group.tg_id)).\
-                        join(Activity).\
-                        filter(Activity.activity_identifier
-                               == new_activity.activity_identifier).\
-                        first()
-                    new_taggroup = A_Tag_Group(tg_id_q[0] + 1)
-                    new_activity.tag_groups.append(new_taggroup)
-                    for tag_dict in taggroup_dict['tags']:
-                        new_tag = self._create_tag(
-                                                   request, new_taggroup.tags, tag_dict['key'],
-                                                   tag_dict['value'], A_Tag, A_Key, A_Value)
-                        # Set the main tag
-                        if 'main_tag' in taggroup_dict:
-                            if (taggroup_dict['main_tag']['key'] ==
-                                new_tag.key.key and
-                                taggroup_dict['main_tag']['value'] ==
-                                new_tag.value.value):
-                                new_taggroup.main_tag = new_tag
-
-        return new_activity
+        return a
 
     def _handle_involvements(self, request, old_version, new_version,
                              inv_change, changeset, implicit=False):

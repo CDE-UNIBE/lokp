@@ -605,10 +605,21 @@ class BaseReview(BaseView):
         """
         Applies a diff to a given item.
         """
+
+        #TODO: probably not needed anymore
+        adsf
+
         from lmkp.views.protocol import Tag
+        from lmkp.views.protocol import TagGroup
+
+        print "------ FUNCTION _apply_diff ------"
+        print "input diff: %s" % diff
 
         if 'taggroups' in diff:
             for tg in diff['taggroups']:
+
+                print "----- diff[taggroup]: %s" % tg
+
                 tg_id = tg['tg_id'] if 'tg_id' in tg else None
                 add_tags = []
                 delete_tags = []
@@ -624,17 +635,40 @@ class BaseReview(BaseView):
                         )
 
                 #TODO: clean up ...
-                print "*** add"
-                print len(add_tags)
-                print add_tags
-                print "*** delete"
-                print len(delete_tags)
-                print delete_tags
+                print "*** add_tags: %s (%s)" % (add_tags, len(add_tags))
+#                print len(add_tags)
+#                print add_tags
+                print "*** delete_tags: %s (%s)" % (delete_tags, len(delete_tags))
+#                print len(delete_tags)
+#                print delete_tags
                 print "*** tg_id: %s" % tg_id
 
                 new_tg = item.find_taggroup_by_tg_id(tg_id)
                 print "*** new_tg: %s" % new_tg
-                if new_tg is not None:
+
+#                if tg_id is not None and new_tg is None:
+                if new_tg is None:
+                    # The diff contains a new taggroup which is not yet in the
+                    # database
+                    print "*** tag group not (yet) found"
+                    brandnew_tg = TagGroup(tg_id=tg_id)
+
+#                     If all the tags of this taggroup are to be deleted
+#                     anyways, then don't show it
+
+
+                    # Add tags (ignore delete tags since they are not there anyways)
+                    for at in add_tags:
+                        print "*** added tag with key: %s and value: %s" % (at['key'], str(at['value']))
+                        brandnew_tg.add_tag(Tag(None, at['key'], str(at['value'])))
+
+                    # Add taggroup to item if it has some content in it.
+                    if len(brandnew_tg.get_tags()) > 0:
+                        item.add_taggroup(brandnew_tg)
+
+                elif new_tg is not None:
+                    # The taggroup in the diff exists already in the database
+
                     # Delete tags
                     for dt in delete_tags:
                         # Try to find the tag by its key. If found, remove it
@@ -715,7 +749,16 @@ class BaseReview(BaseView):
             for item_diff in diff[diff_keyword]:
                 if ('id' in item_diff and item_diff['id'] is not None
                     and item_diff['id'] == item.get_guid()):
-                    item = self._apply_diff(item, item_diff)
+#                    item = self._apply_diff(item, item_diff)
+                    item = self.protocol._apply_diff(
+                        self.request,
+                        mappedClass,
+                        item.get_guid(),
+                        item.get_version(),
+                        item_diff,
+                        item,
+                        db = False
+                    )
 
         return item
 
@@ -745,8 +788,10 @@ class BaseReview(BaseView):
             filter(mappedClass.version == new_version_number).\
             first()
 
-        if (new_previous_version is not None
-            and new_previous_version.previous_version == ref_version_number):
+        if (new_version_number == 1 or
+            ref_version_number == new_version_number or
+            (new_previous_version is not None
+            and new_previous_version.previous_version == ref_version_number)):
             # Show the new version as it is in the database
             new_object = self.protocol.read_one_by_version(
                 self.request, uid, new_version_number
