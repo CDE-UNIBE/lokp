@@ -2,15 +2,19 @@ import logging
 import uuid
 from lmkp.config import locale_profile_directory_path
 from lmkp.config import profile_directory_path
+from lmkp.models.database_objects import Activity
 from lmkp.models.database_objects import A_Key
 from lmkp.models.database_objects import A_Tag
+from lmkp.models.database_objects import A_Tag_Group
 from lmkp.models.database_objects import A_Value
 from lmkp.models.database_objects import Changeset
 from lmkp.models.database_objects import Group
 from lmkp.models.database_objects import Permission
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Tag
+from lmkp.models.database_objects import SH_Tag_Group
 from lmkp.models.database_objects import SH_Value
+from lmkp.models.database_objects import Stakeholder
 from lmkp.models.database_objects import Stakeholder_Role
 from lmkp.models.database_objects import Status
 from lmkp.views.config import merge_profiles
@@ -749,6 +753,286 @@ class Protocol(object):
         ret['success'] = True
         ret['msg'] = 'Review successful.'
         return ret
+
+    def _apply_diff(self, request, mappedClass, uid, version, diff, item, db):
+
+        """
+        item is either a db item or an activity feature
+        diff: a diff concerning only a certain Activity or Stakeholder
+        db: boolean
+        """
+
+#        print "============================================="
+
+#        log.debug("diff:\n%s" % diff)
+
+        if mappedClass == Activity:
+            Db_Tag_Group = A_Tag_Group
+            Db_Tag = A_Tag
+            Db_Key = A_Key
+            Db_Value = A_Value
+        elif mappedClass == Stakeholder:
+            Db_Tag_Group = SH_Tag_Group
+            Db_Tag = SH_Tag
+            Db_Key = SH_Key
+            Db_Value = SH_Value
+        else:
+            return None
+
+
+        if db is False:
+            from lmkp.views.protocol import Tag
+            from lmkp.views.protocol import TagGroup
+
+            # Reset taggroups
+            item._taggroups = []
+
+
+        # Loop the tag groups from the previous version to check if they were
+        # modified
+        db_taggroup_query = self.Session.query(
+                Db_Tag_Group
+            ).\
+            join(mappedClass).\
+            filter(mappedClass.identifier == uid).\
+            filter(mappedClass.version == version).\
+            all()
+
+        # Collect all tg_ids while we are at it
+        tg_ids = []
+        for db_taggroup in db_taggroup_query:
+
+            tg_ids.append(db_taggroup.tg_id)
+
+            #TODO: clean up! Also make sure it works for all cases
+            #TODO: Handle translations correctly
+
+#            print "---------------------------------------------"
+#            log.debug(
+#                "Currently looking at db_taggroup with tg_id: %s"
+#                % db_taggroup.tg_id
+#            )
+
+            # Create a new tag group but don't add it yet to the new activity
+            # version. Indicator (taggroupadded) is needed for database items
+            # because the moment when to add a taggroup to database is a very
+            # delicate thing in SQLAlchemy.
+            taggroupadded = False
+            if db is True:
+                new_taggroup = Db_Tag_Group(db_taggroup.tg_id)
+            else:
+                new_taggroup = TagGroup(tg_id = db_taggroup.tg_id)
+
+            # Step 1: Loop the existing tags
+            for db_tag in db_taggroup.tags:
+
+#                log.debug(
+#                    "Currently looking at db_tag with key/value:\n%s | %s" %
+#                    (db_tag.key.key, db_tag.value.value)
+#                )
+
+                # Before copying the tag, make sure that it is not to delete
+                copy_tag = True
+                if 'taggroups' in diff:
+                    for taggroup_dict in diff['taggroups']:
+                        if ('tg_id' in taggroup_dict and
+                            taggroup_dict['tg_id'] == db_taggroup.tg_id):
+                            # Check which tags we have to edit
+                            for tag_dict in taggroup_dict['tags']:
+                                #TODO
+                                if 1 == 1:
+                                    # Yes, it is THIS tag
+                                    if tag_dict['op'] == 'delete':
+#                                        log.debug(
+#                                            "Tag is deleted (not copied) from taggroup."
+#                                        )
+                                        copy_tag = False
+
+                # Create and append the new tag only if requested
+                if copy_tag:
+                    # Get the key and value SQLAlchemy object
+                    k = self.Session.query(Db_Key).get(db_tag.fk_key)
+                    v = self.Session.query(Db_Value).get(db_tag.fk_value)
+
+                    if db is True:
+                        new_tag = Db_Tag()
+                        new_taggroup.tags.append(new_tag)
+                        new_tag.key = k
+                        new_tag.value = v
+                    else:
+                        new_tag = Tag(db_tag.id, k.key, v.value)
+                        new_taggroup.add_tag(new_tag)
+
+#                    log.debug(
+#                        "Tag was copied and added to taggroup."
+#                    )
+
+                    # Set the main tag
+                    if db_taggroup.main_tag == db_tag:
+                        if db is True:
+                            new_taggroup.main_tag = new_tag
+                        else:
+                            new_taggroup._main_tag = new_tag
+
+                    if taggroupadded is False:
+                        # It is necessary to add taggroup to database
+                        # immediately, otherwise SQLAlchemy tries to do this the
+                        # next time a tag is created and throws an error because
+                        # of assumingly null values
+                        if db is True:
+                            item.tag_groups.append(new_taggroup)
+                        else:
+                            if len(new_taggroup.get_tags()) > 0:
+                                item.add_taggroup(new_taggroup)
+
+#                        log.debug(
+#                            "Taggroup was added (copied) to item."
+#                        )
+
+                        taggroupadded = True
+
+            # Step 2: Add new tags (who don't have an ID yet) to this taggroup
+            if 'taggroups' in diff:
+                for taggroup_dict in diff['taggroups']:
+                    if ('tg_id' in taggroup_dict and
+                        taggroup_dict['tg_id'] == db_taggroup.tg_id):
+                        # Taggroup of dict is already in DB
+                        for tag_dict in taggroup_dict['tags']:
+                            if 'id' not in tag_dict and tag_dict['op'] == 'add':
+                                if db is True:
+                                    new_tag = self._create_tag(
+                                        request, new_taggroup.tags,
+                                        tag_dict['key'], tag_dict['value'],
+                                        Db_Tag, Db_Key, Db_Value
+                                    )
+                                else:
+                                    new_tag = Tag(
+                                        None, tag_dict['key'], tag_dict['value']
+                                    )
+                                    new_taggroup.add_tag(new_tag)
+
+#                                log.debug(
+#                                    "Tag (%s | %s) was created and added to taggroup."
+#                                    % (tag_dict['key'], tag_dict['value'])
+#                                )
+
+                                # Set the main tag
+                                if 'main_tag' in taggroup_dict:
+                                    if (db is True and
+                                        taggroup_dict['main_tag']['key'] ==
+                                            new_tag.key.key and
+                                        taggroup_dict['main_tag']['value'] ==
+                                            new_tag.value.value):
+                                        new_taggroup.main_tag = new_tag
+                                    elif (db is False and
+                                        taggroup_dict['main_tag']['key'] ==
+                                            new_tag.get_key() and
+                                        taggroup_dict['main_tag']['value'] ==
+                                            new_tag.get_value()):
+                                        new_taggroup._main_tag = new_tag
+
+            # If taggroups were not added to database yet, then do it now. But
+            # only if add new tag groups to the new version if they have any
+            # tags in them (which is not the case if they were deleted).
+            if (db is True and len(new_taggroup.tags) > 0
+                and taggroupadded is False):
+                item.tag_groups.append(new_taggroup)
+            elif (db is False and len(new_taggroup.get_tags()) > 0
+                and taggroupadded is False):
+                item.add_taggroup(new_taggroup)
+
+        # Finally new tag groups (without id) need to be added
+        # (and loop all again)
+        if 'taggroups' in diff:
+
+            for taggroup_dict in diff['taggroups']:
+
+                tg_id = None
+
+                if ('tg_id' in taggroup_dict and
+                    taggroup_dict['tg_id'] not in tg_ids and
+                    ('op' not in taggroup_dict or
+                    ('op' in taggroup_dict
+                    and taggroup_dict['op'] != 'delete'))):
+                    # Taggroup of dict has a tg_id, but does not yet exist for
+                    # the current version. It can be treated as if new but with
+                    # an existing tg_id
+                    tg_id = taggroup_dict['tg_id']
+
+#                    print "---------------------------------------------"
+#                    log.debug(
+#                        "Currently looking at a taggroup with tg_id %s which does not yet exist for the old version"
+#                        % (tg_id)
+#                    )
+
+                if (('tg_id' not in taggroup_dict
+                    or ('tg_id' in taggroup_dict and
+                    taggroup_dict['tg_id'] is None))
+                    and taggroup_dict['op'] == 'add'):
+                    # Taggroup of dict has no tg_id and does not yet exist at
+                    # all for the current item.
+
+                    # Find next empty tg_id (over all versions)
+                    tg_id_q = self.Session.query(func.max(Db_Tag_Group.tg_id)).\
+                        join(mappedClass).\
+                        filter(mappedClass.identifier
+                               == uid).\
+                        first()
+                    tg_id = tg_id_q[0] + 1
+
+#                    print "---------------------------------------------"
+#                    log.debug(
+#                        "Currently looking at a brand new taggroup with tg_id %s"
+#                        % (tg_id)
+#                    )
+
+                if (tg_id is not None):
+
+                    if db is True:
+                        new_taggroup = Db_Tag_Group(tg_id)
+                        item.tag_groups.append(new_taggroup)
+                    else:
+                        new_taggroup = TagGroup(tg_id = tg_id)
+                        item.add_taggroup(new_taggroup)
+                    for tag_dict in taggroup_dict['tags']:
+
+                        if 'id' not in tag_dict and tag_dict['op'] == 'add':
+
+                            if db is True:
+                                new_tag = self._create_tag(
+                                    request, new_taggroup.tags, tag_dict['key'],
+                                    tag_dict['value'], Db_Tag, Db_Key, Db_Value
+                                )
+                            else:
+                                new_tag = Tag(
+                                    None, tag_dict['key'], tag_dict['value']
+                                )
+                                new_taggroup.add_tag(new_tag)
+
+#                            log.debug(
+#                                "Tag (%s | %s) was created and added to taggroup."
+#                                % (tag_dict['key'], tag_dict['value'])
+#                            )
+
+                            # Set the main tag
+                            if 'main_tag' in taggroup_dict:
+                                if (db is True and
+                                    taggroup_dict['main_tag']['key'] ==
+                                        new_tag.key.key and
+                                    taggroup_dict['main_tag']['value'] ==
+                                        new_tag.value.value):
+                                    new_taggroup.main_tag = new_tag
+                                elif (db is False and
+                                    taggroup_dict['main_tag']['key'] ==
+                                        new_tag.get_key() and
+                                    taggroup_dict['main_tag']['value'] ==
+                                        new_tag.get_value()):
+                                    new_taggroup._main_tag = new_tag
+
+#        print "============================================="
+
+        return item
+
 
     def _key_value_is_valid(self, request, configuration, key, value):
         """
