@@ -9,6 +9,7 @@ from lmkp.models.database_objects import A_Tag_Group
 from lmkp.models.database_objects import A_Value
 from lmkp.models.database_objects import Changeset
 from lmkp.models.database_objects import Group
+from lmkp.models.database_objects import Involvement
 from lmkp.models.database_objects import Permission
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Tag
@@ -592,9 +593,12 @@ class Protocol(object):
 
         return False
 
-    def _add_review(self, request, item, previous_item, mappedClass, user):
+    def _add_review(self, request, item, previous_item, mappedClass, user,
+        implicit = False):
         """
         Add a review decision
+        item: {Database object} (Activity or Stakeholder)
+        implicit: {Boolean} To prevent circular reviewing
         """
 
         # Hard coded list of statii as in database. Needs to be in same order!
@@ -612,6 +616,22 @@ class Protocol(object):
         ret = {'success': False}
         recalculated = False
 
+        # Activity or Stakeholder?
+        diff_keyword = None
+        config_yaml = None
+        if mappedClass.__table__.name == 'activities':
+            diff_keyword = 'activities'
+            other_diff_keyword = 'stakeholders'
+            config_yaml = 'activity.yml'
+            from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
+            otherProtocol = StakeholderProtocol3(self.Session)
+        elif mappedClass.__table__.name == 'stakeholders':
+            diff_keyword = 'stakeholders'
+            other_diff_keyword = 'activities'
+            config_yaml = 'stakeholder.yml'
+            from lmkp.views.activity_protocol3 import ActivityProtocol3
+            otherProtocol = ActivityProtocol3(self.Session)
+
         # Collect POST values
         review_decision = request.POST['review_decision']
         if review_decision is None:
@@ -623,6 +643,183 @@ class Protocol(object):
             review_comment = request.POST['comment_textarea']
 
         if review_decision == '1':
+
+            if implicit is False:
+
+                # If possible, review also any affected involvement.
+                # The approach is to loop through all the involvements affected
+                # by the changeset under review and if possible review each of
+                # these involvements.
+
+                basereview = BaseReview(request)
+
+                itemFeature = self.read_one_by_version(
+                    request, item.identifier, item.version
+                )
+
+                otherMappedClass = itemFeature.getOtherMappedClass()
+
+                # Because it is possible that there are involvements to multiple
+                # versions of the other item, it is necessary to find out which
+                # version is actually affected by the changeset under review.
+                # To do this, the diff is looped to find the exact version of
+                # the affected involvement.
+
+                # Query the diff
+                diff_query = self.Session.query(
+                        Changeset.diff
+                    ).\
+                    join(mappedClass).\
+                    filter(mappedClass.identifier == item.identifier).\
+                    filter(mappedClass.version == item.version).\
+                    first()
+                json_diff = json.loads(diff_query.diff.replace('\'', '"'))
+
+                # Loop through the diff (based on the otherItems) to find and
+                # collect all the references to this Items.
+                affected_involvements = []
+                if other_diff_keyword in json_diff:
+                    for other_diff in json_diff[other_diff_keyword]:
+                        if (diff_keyword in other_diff
+                            and 'id' in other_diff):
+                            print "--a"
+                            for diff in other_diff[diff_keyword]:
+                                if ('id' in diff
+                                    and diff['id'] == str(item.identifier)):
+                                    version = (other_diff['version']
+                                        if 'version' in other_diff
+                                        else None)
+                                    affected_involvements.append({
+                                        'identifier': other_diff['id'],
+                                        'previous_version': version
+                                    })
+
+                log.debug('%s affected involvements found: %s'
+                    % (len(affected_involvements), affected_involvements))
+
+                # Loop these affected involvements to find out which are the new
+                # versions these changes created.
+                for ai in affected_involvements:
+
+                    # Query the exact database object
+                    ai_version_query = self.Session.query(
+                            otherMappedClass.version,
+                            otherMappedClass.id
+                        ).\
+                        join(Involvement).\
+                        join(mappedClass).\
+                        filter(otherMappedClass.identifier
+                            == ai['identifier']).\
+                        filter(otherMappedClass.previous_version
+                            == ai['previous_version']).\
+                        filter(mappedClass.identifier == item.identifier).\
+                        filter(mappedClass.version == item.version).\
+                        first()
+
+                    # Turn it into a feature
+                    otherFeature = otherProtocol.read_one_by_version(
+                        request, ai['identifier'], ai_version_query.version
+                    )
+
+                    # Check if a review of the involvement is possible
+                    reviewPossible = basereview._review_check_involvement(
+                        itemFeature, otherFeature
+                    )
+
+                    if reviewPossible == 1 or reviewPossible == 2:
+                        # The other version is either the first version (case 1)
+                        # or it is based on an active version. Either way it can
+                        # be set active as it is.
+
+                        log.debug('Reviewing involvement (case %s): %s with identifier %s and version %s'
+                            % (reviewPossible, otherMappedClass.__table__.name, otherFeature.get_guid(), otherFeature.get_version()))
+
+                        # Query the other item
+                        otherItem = self.Session.query(
+                                otherMappedClass
+                            ).\
+                            filter(otherMappedClass.identifier
+                                == otherFeature.get_guid()).\
+                            filter(otherMappedClass.version
+                                == otherFeature.get_version()).\
+                            first()
+
+                        # Do a review, but implicitely
+                        self._add_review(
+                            request,
+                            otherItem,
+                            None,
+                            otherMappedClass,
+                            user,
+                            implicit = True
+                        )
+
+                    elif reviewPossible == 3:
+                        # The other version already has an active version, do a
+                        # recalculation of the other version
+
+                        log.debug('Reviewing involvement (case %s): %s with identifier %s and version %s'
+                            % (reviewPossible, otherMappedClass.__table__.name, otherFeature.get_guid(), otherFeature.get_version()))
+
+                        # The active version of the other item is needed to do
+                        # the update upon.
+                        otherActiveItem = self.Session.query(
+                                otherMappedClass
+                            ).\
+                            filter(otherMappedClass.identifier
+                                == otherFeature.get_guid()).\
+                            filter(otherMappedClass.fk_status
+                                == statusArray.index('active')+1).\
+                            first()
+
+                        # Cut out the relevant stuff of the diff
+                        relevant_diff = None
+                        if (other_diff_keyword in json_diff and
+                            json_diff[other_diff_keyword] is not None):
+                            for a in json_diff[other_diff_keyword]:
+                                if ('id' in a and a['id']
+                                    == str(otherActiveItem.identifier)):
+                                    relevant_diff = a
+
+                        # Prepare a changeset
+                        changeset = Changeset()
+                        changeset.user = request.user
+                        changeset.diff = str(self._convert_utf8(json_diff))
+
+                        # Set the other active item to 'inactive'
+                        otherActiveItem.fk_status = statusArray.index('inactive')+1
+
+                        # Apply the changeset to the (previously) active object
+                        ai = otherProtocol._update_object(
+                            request,
+                            otherActiveItem,
+                            relevant_diff,
+                            changeset,
+                            status='active'
+                        )
+
+                        # Get the diff for the involvement
+                        involvement_diff = (relevant_diff[diff_keyword]
+                              if diff_keyword in relevant_diff
+                              else None)
+
+                        # Update the involvements (provide db_object to attach
+                        # them to.
+                        otherProtocol._handle_involvements(
+                            request,
+                            otherActiveItem,
+                            ai,
+                            involvement_diff,
+                            changeset,
+                            False,
+                            db_object = item
+                        )
+
+                        # Set updated other feature as 'edited'
+                        self.Session.query(otherMappedClass).\
+                            get(ai_version_query.id).\
+                            fk_status = statusArray.index('edited')+1
+
             # Approved
             if (previous_item is not None
                 and previous_item.fk_status != statusArray.index('active')+1
@@ -663,16 +860,6 @@ class Protocol(object):
                         first()
                     new_diff = json.loads(new_diff_query.diff.replace('\'', '"'))
 
-                    # Activity or Stakeholder?
-                    diff_keyword = None
-                    config_yaml = None
-                    if mappedClass.__table__.name == 'activities':
-                        diff_keyword = 'activities'
-                        config_yaml = 'activity.yml'
-                    elif mappedClass.__table__.name == 'stakeholders':
-                        diff_keyword = 'stakeholders'
-                        config_yaml = 'stakeholder.yml'
-
                     self.configuration = self._read_configuration(
                         request, config_yaml
                     )
@@ -696,19 +883,10 @@ class Protocol(object):
                         status='active'
                     )
 
-                    print new_v
-
                     for tg in new_v.tag_groups:
                         for t in tg.tags:
-                            print "%s: %s (%s)" % (t.key.key, str(t.value.value), tg.tg_id)
-
-                    print "****"
-                    print item
-                    print "----"
-                    print previous_item
-                    print "****"
-
-#                        asdfasdfasdfasdf
+                            log.debug("%s: %s (%s)"
+                                % (t.key.key, str(t.value.value), tg.tg_id))
 
                     recalculated = True
 
