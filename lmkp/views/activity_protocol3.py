@@ -58,6 +58,9 @@ class ActivityFeature3(Feature):
     def getMappedClass(self):
         return Activity
 
+    def getOtherMappedClass(self):
+        return Stakeholder
+
     def to_tags(self):
 
         repr = []
@@ -1145,7 +1148,13 @@ class ActivityProtocol3(Protocol):
                                                    ).\
                 filter(or_(* self._get_involvement_status(request)))
 
-            #log.debug("Involvement Status Filter:\n%s" % inv_status_filter)
+            # Additional filter to select only the latest (pending or not)
+            latest_filter = self.Session.query(
+                    Stakeholder.stakeholder_identifier,
+                    func.max(Stakeholder.version).label('max_version')
+                ).\
+                group_by(Stakeholder.stakeholder_identifier).\
+                subquery()
 
             inv_status = self.Session.query(
                                             Stakeholder.id.label('stakeholder_id'),
@@ -1156,6 +1165,11 @@ class ActivityProtocol3(Protocol):
                                             Stakeholder.fk_changeset.label('changeset_id')
                                             ).\
                 filter(Stakeholder.fk_status.in_(inv_status_filter)).\
+                join(latest_filter, and_(
+                    latest_filter.c.max_version == Stakeholder.version,
+                    latest_filter.c.stakeholder_identifier
+                        == Stakeholder.stakeholder_identifier
+                )).\
                 subquery()
             inv_query = self.Session.query(
                                            Involvement.fk_activity.label('activity_id'),
@@ -1713,7 +1727,7 @@ class ActivityProtocol3(Protocol):
         return a
 
     def _handle_involvements(self, request, old_version, new_version,
-                             inv_change, changeset, implicit=False):
+                             inv_change, changeset, implicit=False, **kwargs):
         """
         Handle the involvements of an Activity.
         - Activity update: copy old involvements
@@ -1724,6 +1738,11 @@ class ActivityProtocol3(Protocol):
         - Involvement modified (eg. its role): combination of deleting and
             adding involvements
         """
+
+        # db_object: Possibility to provide an existing database object to
+        # attach the updated involvements to. This is used when reviewing
+        # involvements.
+        db_object = kwargs.pop('db_object', None)
 
         # It is important to keep track of all the Stakeholders where
         # involvements were deleted because they need to be pushed to a new
@@ -1794,8 +1813,14 @@ class ActivityProtocol3(Protocol):
                             'id': old_sh_db.stakeholder_identifier,
                             'version': old_sh_db.version
                         }
-                        new_sh = sp._handle_stakeholder(request, sh_dict,
-                                                        changeset)
+
+                        if db_object is not None:
+                            new_sh = db_object
+                        else:
+                            new_sh = sp._handle_stakeholder(
+                                request, sh_dict, changeset
+                            )
+
                         # Create new inolvement
                         inv = Involvement()
                         inv.stakeholder = new_sh
@@ -1824,4 +1849,7 @@ class ActivityProtocol3(Protocol):
                     }],
                     'implicit_involvement_update': True
                 }
-                new_sh = sp._handle_stakeholder(request, sh_dict, changeset)
+                if db_object is not None:
+                    new_sh = db_object
+                else:
+                    new_sh = sp._handle_stakeholder(request, sh_dict, changeset)
