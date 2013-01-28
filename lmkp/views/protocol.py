@@ -601,6 +601,8 @@ class Protocol(object):
         implicit: {Boolean} To prevent circular reviewing
         """
 
+        reviewed_involvements = []
+
         # Hard coded list of statii as in database. Needs to be in same order!
         # Not very nice but efficient and more comprehensible than just using
         # the indices.
@@ -682,7 +684,6 @@ class Protocol(object):
                     for other_diff in json_diff[other_diff_keyword]:
                         if (diff_keyword in other_diff
                             and 'id' in other_diff):
-                            print "--a"
                             for diff in other_diff[diff_keyword]:
                                 if ('id' in diff
                                     and diff['id'] == str(item.identifier)):
@@ -693,6 +694,25 @@ class Protocol(object):
                                         'identifier': other_diff['id'],
                                         'previous_version': version
                                     })
+
+                # In some cases, it is this side of the involvement ...
+                # TODO
+                hasInvolvementsToReview = False
+                if len(affected_involvements) == 0:
+                    if diff_keyword in json_diff:
+                        for this_diff in json_diff[diff_keyword]:
+                            if ('id' in this_diff
+                                and this_diff['id'] == str(item.identifier)
+                                and other_diff_keyword in this_diff):
+                                for other_diff in this_diff[other_diff_keyword]:
+                                    version = (other_diff['version']
+                                        if 'version' in other_diff
+                                        else None)
+                                    affected_involvements.append({
+                                        'identifier': other_diff['id'],
+                                        'previous_version': version
+                                    })
+                                    hasInvolvementsToReview = True
 
                 log.debug('%s affected involvements found: %s'
                     % (len(affected_involvements), affected_involvements))
@@ -745,7 +765,7 @@ class Protocol(object):
                             first()
 
                         # Do a review, but implicitely
-                        self._add_review(
+                        reviewed_inv = self._add_review(
                             request,
                             otherItem,
                             None,
@@ -753,6 +773,9 @@ class Protocol(object):
                             user,
                             implicit = True
                         )
+
+                        if hasInvolvementsToReview is True:
+                            reviewed_involvements.append(reviewed_inv)
 
                     elif reviewPossible == 3:
                         # The other version already has an active version, do a
@@ -882,6 +905,30 @@ class Protocol(object):
                         request, ref_version, relevant_diff, changeset,
                         status='active'
                     )
+                    inv_diff = (relevant_diff[other_diff_keyword]
+                        if other_diff_keyword in relevant_diff
+                        else None)
+
+                    if hasInvolvementsToReview is True:
+                        for inv in reviewed_involvements:
+                            self._handle_involvements(
+                                request,
+                                ref_version,
+                                new_v,
+                                inv_diff,
+                                changeset,
+                                implicit = True,
+                                db_object = inv
+                            )
+                    else:
+                        self._handle_involvements(
+                            request,
+                            ref_version,
+                            new_v,
+                            inv_diff,
+                            changeset,
+                            implicit = True
+                        )
 
                     for tg in new_v.tag_groups:
                         for t in tg.tags:
@@ -927,6 +974,9 @@ class Protocol(object):
         item.user_review = user
         item.timestamp_review = datetime.datetime.now()
         item.comment_review = review_comment
+
+        if implicit is True:
+            return item
 
         ret['success'] = True
         ret['msg'] = 'Review successful.'

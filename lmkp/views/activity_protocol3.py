@@ -1744,6 +1744,13 @@ class ActivityProtocol3(Protocol):
         # involvements.
         db_object = kwargs.pop('db_object', None)
 
+        # db: Boolean to specify if the involvements are to be inserted into the
+        # database or just be attached to an Activity feature
+        db = kwargs.pop('db', True)
+
+        # Use the StakeholderProtocol to handle things
+        sp = StakeholderProtocol3(self.Session)
+
         # It is important to keep track of all the Stakeholders where
         # involvements were deleted because they need to be pushed to a new
         # version as well
@@ -1752,16 +1759,23 @@ class ActivityProtocol3(Protocol):
         swdi_role = []
         # Copy old involvements if existing
         if old_version is not None:
-            for oi in old_version.involvements:
+            old_involvements = (old_version.involvements if db is True
+                else old_version.get_involvements())
+            for oi in old_involvements:
                 # Check if involvement is to be removed (op == delete), in which
                 # case do not copy it
                 remove = False
                 if inv_change is not None:
                     for i in inv_change:
+                        oi_stakeholder_identifier = (
+                            str(oi.stakeholder.stakeholder_identifier)
+                            if db is True else oi._feature.get_guid())
+                        oi_role_id = (oi.stakeholder_role.id if db is True
+                            else oi.get_role_id())
                         if ('id' in i and str(i['id']) ==
-                            str(oi.stakeholder.stakeholder_identifier) and
+                            oi_stakeholder_identifier and
                             'op' in i and i['op'] == 'delete' and 'role' in i
-                            and i['role'] == oi.stakeholder_role.id):
+                            and i['role'] == oi_role_id):
                             # Set flag to NOT copy this involvement
                             remove = True
                             # Add identifier and version of Stakeholder to list
@@ -1772,15 +1786,23 @@ class ActivityProtocol3(Protocol):
                                 swdi_role.append(i['role'])
                 # Also: only copy involvements if status of Stakeholder is
                 # 'pending' or 'active'
-                if remove is not True and oi.stakeholder.status.id < 3:
-                    sh_role = oi.stakeholder_role
-                    sh = oi.stakeholder
+                oi_status_id = (oi.stakeholder.status.id if db is True
+                    else oi._feature.get_status_id())
+                if remove is not True and oi_status_id < 3:
                     # Copy involvement
-                    inv = Involvement()
-                    inv.stakeholder = sh
-                    inv.activity = new_version
-                    inv.stakeholder_role = sh_role
-                    self.Session.add(inv)
+                    if db is True:
+                        sh_role = oi.stakeholder_role
+                        sh = oi.stakeholder
+                        inv = Involvement()
+                        inv.stakeholder = sh
+                        inv.activity = new_version
+                        inv.stakeholder_role = sh_role
+                        self.Session.add(inv)
+                    else:
+                        # For comparison, it is not necessary to copy the
+                        # Stakeholder because it is already there.
+                        pass
+
         # Add new involvements
         if inv_change is not None:
             for i in inv_change:
@@ -1806,27 +1828,69 @@ class ActivityProtocol3(Protocol):
                             swdi_role.pop(x)
                         except ValueError:
                             pass
-                        # Push Stakeholder to new version
-                        sp = StakeholderProtocol3(self.Session)
-                        # Simulate a dict
-                        sh_dict = {
-                            'id': old_sh_db.stakeholder_identifier,
-                            'version': old_sh_db.version
-                        }
 
-                        if db_object is not None:
-                            new_sh = db_object
+                        if db is True:
+                            # Push Stakeholder to new version
+                            # Simulate a dict
+                            sh_dict = {
+                                'id': old_sh_db.stakeholder_identifier,
+                                'version': old_sh_db.version
+                            }
+
+                            if db_object is not None:
+                                new_sh = db_object
+                            else:
+                                new_sh = sp._handle_stakeholder(
+                                    request, sh_dict, changeset
+                                )
+
+                            # Create new inolvement
+                            inv = Involvement()
+                            inv.stakeholder = new_sh
+                            inv.activity = new_version
+                            inv.stakeholder_role = role_db
+                            self.Session.add(inv)
                         else:
-                            new_sh = sp._handle_stakeholder(
-                                request, sh_dict, changeset
-                            )
+                            # The 'new' Stakeholder exists already, query it.
+                            # The problem is that the known version here
+                            # (old_sh_db.version) is only the one the new
+                            # (involved) version is based upon. It is therefore
+                            # necessary to also find out the new version and
+                            # use a little trick by telling the stakeholder it
+                            # actually is this 'new' version.
 
-                        # Create new inolvement
-                        inv = Involvement()
-                        inv.stakeholder = new_sh
-                        inv.activity = new_version
-                        inv.stakeholder_role = role_db
-                        self.Session.add(inv)
+                            # Query the version this changeset created
+                            changeset_part = str(self._convert_utf8(inv_change))
+                            created_version = self.Session.query(
+                                    Stakeholder.version
+                                ).\
+                                join(Changeset).\
+                                filter(Stakeholder.identifier
+                                    == old_sh_db.stakeholder_identifier).\
+                                filter(Stakeholder.previous_version
+                                    == old_sh_db.version).\
+                                filter(Changeset.diff.contains(changeset_part)).\
+                                first()
+
+                            if created_version is not None:
+                                sh = sp.read_one_by_version(
+                                    request,
+                                    old_sh_db.stakeholder_identifier,
+                                    old_sh_db.version
+                                )
+
+                                # Nasty little hack
+                                sh._version = created_version.version
+
+                                new_version.add_involvement(Inv(
+                                    sh.get_guid(),
+                                    sh,
+                                    role_db.name,
+                                    role_db.id,
+                                    created_version.version,
+                                    sh.get_status_id()
+                                ))
+
         # Also push Stakeholders where involvements were deleted to new version
         if implicit is not True:
             for i, a in enumerate(swdi_id):
@@ -1835,21 +1899,24 @@ class ActivityProtocol3(Protocol):
                     filter(Stakeholder.stakeholder_identifier == a).\
                     filter(Stakeholder.version == swdi_version[i]).\
                     first()
-                # Push Stakeholder to new version
-                sp = StakeholderProtocol3(self.Session)
-                # Simulate a dict
-                sh_dict = {
-                    'id': old_sh_db.stakeholder_identifier,
-                    'version': old_sh_db.version,
-                    'activities': [{
-                        'op': 'delete',
-                        'id': old_version.activity_identifier,
-                        'version': swdi_version[i],
-                        'role': swdi_role[i]
-                    }],
-                    'implicit_involvement_update': True
-                }
-                if db_object is not None:
-                    new_sh = db_object
+                if db is True:
+                    # Push Stakeholder to new version
+                    # Simulate a dict
+                    sh_dict = {
+                        'id': old_sh_db.stakeholder_identifier,
+                        'version': old_sh_db.version,
+                        'activities': [{
+                            'op': 'delete',
+                            'id': old_version.activity_identifier,
+                            'version': swdi_version[i],
+                            'role': swdi_role[i]
+                        }],
+                        'implicit_involvement_update': True
+                    }
+                    if db_object is not None:
+                        new_sh = db_object
+                    else:
+                        new_sh = sp._handle_stakeholder(request, sh_dict, changeset)
                 else:
-                    new_sh = sp._handle_stakeholder(request, sh_dict, changeset)
+                    # TODO
+                    blablabaldfasdfsaf

@@ -795,8 +795,10 @@ class BaseReview(BaseView):
 
         if mappedClass == Activity:
             diff_keyword = 'activities'
+            other_diff_keyword = 'stakeholders'
         elif mappedClass == Stakeholder:
             diff_keyword = 'stakeholders'
+            other_diff_keyword = 'activities'
         else:
             diff_keyword = None
 
@@ -805,8 +807,9 @@ class BaseReview(BaseView):
             for item_diff in diff[diff_keyword]:
                 if ('id' in item_diff and item_diff['id'] is not None
                     and item_diff['id'] == item.get_guid()):
-#                    item = self._apply_diff(item, item_diff)
-                    item = self.protocol._apply_diff(
+
+                    # Apply the diff to show a preview of the new version
+                    new_item = self.protocol._apply_diff(
                         self.request,
                         mappedClass,
                         item.get_guid(),
@@ -816,7 +819,20 @@ class BaseReview(BaseView):
                         db = False
                     )
 
-        return item
+                    # Also handle involvements
+                    inv_diff = (item_diff[other_diff_keyword]
+                        if other_diff_keyword in item_diff
+                        else None)
+                    self.protocol._handle_involvements(
+                        self.request,
+                        item,
+                        new_item,
+                        inv_diff,
+                        None,
+                        db = False
+                    )
+
+        return new_item
 
     def get_comparison(self, mappedClass, uid, ref_version_number,
         new_version_number, review=False):
