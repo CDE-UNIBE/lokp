@@ -263,6 +263,22 @@ Ext.define('Lmkp.controller.stakeholders.NewStakeholder', {
                         // Close form window
                         form.up('window').close();
 
+                        // Reload also the activity grid store
+                        var shGridStore = Ext.data.StoreManager.lookup('StakeholderGrid');
+                        if (shGridStore) {
+                            shGridStore.load();
+                        }
+
+                        // If the edit came from the review, try to reload the
+                        // taggroup store
+                        var compareController = me.getController('moderation.CompareReview');
+                        if (compareController && compareController.getCompareWindow()) {
+                            compareController.reloadCompareTagGroupStore(
+                                'compare',
+                                'stakeholders',
+                                diffStakeholder.id
+                            );
+                        }
                     } else {
                         Ext.Msg.alert('Failure', 'The stakeholder could not be created.');
                     }

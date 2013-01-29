@@ -8,8 +8,6 @@ Ext.define('Lmkp.view.activities.NewActivity', {
     'Lmkp.view.activities.NewTaggroupPanel'
     ],
 	
-    title: Lmkp.ts.msg('activities_add-new-activity'),
-
     config: {
         newFeatureGeometry: null
     },
