@@ -807,14 +807,28 @@ def _get_admin_scan(Key, Value, name, config, language, mandatory, local=False):
 
 def get_activity_sitekey(request):
     # Read the profile activity configuration file
-    stream = open("%s/%s" % (locale_profile_directory_path(request), ACTIVITY_YAML), 'r')
+    try:
+        stream = open("%s/%s" % (locale_profile_directory_path(request), ACTIVITY_YAML), 'r')
+    except IOError:
+        return None
+
     config = yaml.load(stream)
 
-    return config['site_key']
+    if 'site_key' in config:
+        return config['site_key']
+    else:
+        return None
 
 def get_stakeholder_sitekey(request):
     # Read the profile stakeholder configuration file
-    stream = open("%s/%s" % (locale_profile_directory_path(request), STAKEHOLDER_YAML), 'r')
+    try:
+        stream = open("%s/%s" % (locale_profile_directory_path(request), STAKEHOLDER_YAML), 'r')
+    except IOError:
+        return None
+
     config = yaml.load(stream)
 
-    return config['site_key']
+    if 'site_key' in config:
+        return config['site_key']
+    else:
+        return None

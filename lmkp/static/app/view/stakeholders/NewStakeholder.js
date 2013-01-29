@@ -171,6 +171,7 @@ Ext.define('Lmkp.view.stakeholders.NewStakeholder', {
                 // Store visible Tag Group (needed for diff)
                 form.taggroups.push({
                     id: taggroup.get('id'),
+                    tg_id: taggroup.get('tg_id'),
                     tags: tempTags.concat(tempMainTag)
                 });
 
