@@ -74,6 +74,9 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
             },
             'lo_moderatorcomparereview button[itemId=reviewSubmitButton]': {
                 click: this.onReviewSubmitButtonClick
+            },
+            'lo_moderatorcomparereview button[itemId=editButton]': {
+                click: this.onEditButtonClick
             }
         });
     },
@@ -102,20 +105,25 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
             '<b>Timestamp</b>: {1}<br/>' +
             '<b>User</b>: TODO'
         );
-        this.getRefMetadataPanel().update(template.apply([
-            metaModelInstance.get('ref_version'),
-            metaModelInstance.get('ref_timestamp')
-        ]));
-        this.getNewMetadataPanel().update(template.apply([
-            metaModelInstance.get('new_version'),
-            metaModelInstance.get('new_timestamp')
-        ]));
+        var refPanel = this.getRefMetadataPanel();
+        var newPanel = this.getNewMetadataPanel();
+        if (refPanel && newPanel) {
+            refPanel.update(template.apply([
+                metaModelInstance.get('ref_version'),
+                metaModelInstance.get('ref_timestamp')
+            ]));
+            newPanel.update(template.apply([
+                metaModelInstance.get('new_version'),
+                metaModelInstance.get('new_timestamp')
+            ]));
+        }
 
+        var recalcNotice = this.getRecalculationNotice();
         if (metaModelInstance.get('recalculated')
-            && this.getComparePanel().action == 'review') {
-            this.getRecalculationNotice().setVisible(true);
-        } else {
-            this.getRecalculationNotice().setVisible(false);
+            && this.getComparePanel().action == 'review' && recalcNotice) {
+            recalcNotice.setVisible(true);
+        } else if (recalcNotice) {
+            recalcNotice.setVisible(false);
         }
     },
 
@@ -365,6 +373,67 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
             mData.get('identifier')
         );
 
+    },
+
+    onEditButtonClick: function() {
+
+        // Set a loading mask
+        var win = this.getCompareWindow();
+        win.setLoading(true);
+
+        // Collect needed values from metadata store
+        var mData = this.getCompareMetadataStore().first();
+        var type = mData.get('type');
+        var identifier = mData.get('identifier');
+        var version = mData.get('new_version');
+
+        // Activity or Stakeholder?
+        var model;
+        if (type == 'activities') {
+            model = 'Lmkp.model.Activity';
+        } else if (type == 'stakeholders') {
+            model = 'Lmkp.model.Stakeholder';
+        }
+
+        // Simulate a store to load the item to edit
+        var store;
+        if (type && identifier && version && model) {
+            var url = '/' + type + '/json/' + identifier;
+            store = Ext.create('Ext.data.Store', {
+                model: model,
+                proxy: {
+                    type: 'ajax',
+                    url: url,
+                    extraParams: {
+                        'involvements': 'full',
+                        'versions': version
+                    },
+                    reader: {
+                        type: 'json',
+                        root: 'data'
+                    }
+                }
+            });
+        }
+
+        // Use the controller to show the edit window
+        var controller = this.getController('activities.NewActivity');
+        if (store) {
+            store.load(function(records, operation, success) {
+                if (records.length == 1) {
+                    var record = records[0];
+
+                    if (type == 'activities') {
+                        controller.showNewActivityWindow(record);
+                    } else if (type == 'stakeholders') {
+                        controller.showNewStakeholderWindow(record);
+                    }
+                }
+                win.setLoading(false);
+            });
+        } else {
+            win.setLoading(false);
+        }
     },
 
     _createWindow: function(title) {

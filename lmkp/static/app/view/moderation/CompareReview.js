@@ -84,7 +84,7 @@ Ext.define('Lmkp.view.moderation.CompareReview', {
                         '->', {
                             xtype: 'button',
                             text: 'Edit',
-                            itemId: 'compareEditButton'
+                            itemId: 'editButton'
                         }
                     ]
                 }, {

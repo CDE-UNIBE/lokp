@@ -17,7 +17,9 @@ Ext.onReady(function() {
             'login.Toolbar',
             'moderation.Main',
             'moderation.Pending',
-            'moderation.CompareReview'
+            'moderation.CompareReview',
+            'activities.NewActivity',
+            'stakeholders.NewStakeholder'
         ],
 
         launch: function() {
