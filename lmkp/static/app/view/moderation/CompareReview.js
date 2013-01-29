@@ -79,6 +79,13 @@ Ext.define('Lmkp.view.moderation.CompareReview', {
                             flex: 1,
                             name: 'compareGridColumn'
                         }
+                    ],
+                    bbar: [
+                        '->', {
+                            xtype: 'button',
+                            text: 'Edit',
+                            itemId: 'compareEditButton'
+                        }
                     ]
                 }, {
                     xtype: 'grid',
@@ -95,9 +102,19 @@ Ext.define('Lmkp.view.moderation.CompareReview', {
                             flex: 1,
                             name: 'compareGridColumn'
                         }, {
+                            width: 24,
+                            xtype: 'templatecolumn',
+                            tpl: ''
+                        }, {
                             dataIndex: 'new',
                             flex: 1,
                             name: 'compareGridColumn'
+                        }, {
+                            xtype: 'templatecolumn',
+                            tpl: '<img src="/static/img/information.png" style="cursor:pointer;" title="Review involvement">',
+                            width: 24,
+                            align: 'center',
+                            name: 'compareGridButtonColumn'
                         }
                     ]
                 }

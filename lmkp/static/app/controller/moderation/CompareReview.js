@@ -382,7 +382,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
 
     _getUrl: function(action, type, uid, refVersion, newVersion) {
         if (action && type && uid) {
-            var url = type + '/' + action + '/json/' + uid;
+            var url = '/' + type + '/' + action + '/json/' + uid;
             if (refVersion && newVersion) {
                 url += '/' + refVersion + '/' + newVersion;
             } else if (!refVersion && newVersion) {

@@ -20,7 +20,8 @@ Ext.define('Lmkp.view.moderation.Main', {
                 xtype: 'lo_moderationoverviewtab'
         }, {
             title: 'Show Pending',
-            xtype: 'lo_moderationpendingtab'
+            xtype: 'lo_moderationpendingtab',
+            itemId: 'pendingtab'
         }
     ]
 

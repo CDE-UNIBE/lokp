@@ -25,24 +25,35 @@ Ext.define('Lmkp.controller.moderation.Pending', {
         });
     },
 
-    onCompareButtonClick: function(grid) {
+    onCompareButtonClick: function(item) {
         /**
          * Show an overlay window which allows to compare two versions of an
          * Activity or a Stakeholder
+         * Item is either a gridview item (when selecting an item on the grid)
+         * or a self constructed item (when loading directly a compare view).
+         * The latter must contain an 'id' (guid) and a 'type'
+         * (activities/stakeholders).
          */
 
-        var record = grid.getSelectionModel().getSelection()[0];
+        var id, type;
 
-        if (record) {
-
-            // Activity or Stakeholder?
-            var type;
-            if (record.modelName == 'Lmkp.model.Activity') {
-                type = 'activities';
-            } else if (record.modelName == 'Lmkp.model.Stakeholder') {
-                type = 'stakeholders';
+        if (item && item.xtype && item.xtype == 'gridview') {
+            var record = item.getSelectionModel().getSelection()[0];
+            if (record) {
+                id = record.get('id');
+                // Activity or Stakeholder?
+                if (record.modelName == 'Lmkp.model.Activity') {
+                    type = 'activities';
+                } else if (record.modelName == 'Lmkp.model.Stakeholder') {
+                    type = 'stakeholders';
+                }
             }
+        } else if (item && item.type && item.identifier) {
+            id = item.identifier;
+            type = item.type;
+        }
 
+        if (id && type) {
             var controller = this.application.getController('moderation.CompareReview');
 
             var win = controller._createWindow();
@@ -55,7 +66,7 @@ Ext.define('Lmkp.controller.moderation.Pending', {
             });
 
             controller.reloadCompareTagGroupStore(
-                'compare', type, record.get('id')
+                'compare', type, id
             );
         }
     }

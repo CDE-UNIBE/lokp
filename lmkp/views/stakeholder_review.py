@@ -7,6 +7,7 @@ from lmkp.views.review import BaseReview
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 import logging
 import json
+import re
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPSeeOther
@@ -21,8 +22,41 @@ class StakeholderReview(BaseReview):
         super(StakeholderReview, self).__init__(request)
         self.protocol = StakeholderProtocol3(Session)
 
+    @view_config(route_name='stakeholders_moderate_item', renderer='lmkp:templates/moderation.mak', permission='moderate')
+    def stakeholders_moderate_item(self):
+
+        self._handle_parameters()
+
+        # Get the uid from the request
+        uid = self.request.matchdict.get('uid', None)
+
+        # Check if uid is valid
+        uuid4hex = re.compile('[0-9a-f-]{36}\Z', re.I)
+        validUid = uuid4hex.match(uid) is not None
+
+        if validUid:
+            c = Session.query(Stakeholder).\
+                filter(Stakeholder.stakeholder_identifier == uid).\
+                count()
+        else:
+            c = 0
+
+        if c == 0:
+            return {
+                'openItem': 'true',
+                'type': '',
+                'identifier': ''
+            }
+
+        return {
+            'openItem': 'true',
+            'type': 'stakeholders',
+            'identifier': uid
+        }
+
     @action(name='html', renderer='lmkp:templates/compare_versions.mak')
     def compare_html(self):
+        # TODO: It is to be decided if this view is still needed or not.
 
         uid = self.request.matchdict.get('uid', None)
 
@@ -59,6 +93,7 @@ class StakeholderReview(BaseReview):
 
     @view_config(route_name='stakeholders_review_versions_html', renderer='lmkp:templates/review_versions.mak', permission='moderate')
     def review_stakeholder_html(self):
+        # TODO: It is to be decided if this view is still needed or not.
         """
         Review active with oldest pending version
         """
