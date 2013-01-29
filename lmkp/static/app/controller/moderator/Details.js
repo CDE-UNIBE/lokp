@@ -39,12 +39,13 @@ Ext.define('Lmkp.controller.moderator.Details', {
 
         var store = this.getActivityDetailWindow().getHistoryStore();
 
-        var toolbar = comp.down('toolbar[dock="bottom"]');
-        if (toolbar) {
-            comp.remove(toolbar);
-        }
-
         store.on('load', function(store, records, successful) {
+
+            var toolbar = comp.down('toolbar[dock="bottom"]');
+            if (toolbar) {
+                comp.removeDocked(toolbar);
+            }
+
             if (store.find('status', Lmkp.ts.msg('status_pending')) > -1) {
                 toolbar = Ext.create('Ext.toolbar.Toolbar',{
                     dock: 'bottom',
@@ -71,12 +72,13 @@ Ext.define('Lmkp.controller.moderator.Details', {
 
         var store = this.getStakeholderDetailWindow().getHistoryStore();
 
-        var toolbar = comp.down('toolbar[dock="bottom"]');
-        if (toolbar) {
-            comp.remove(toolbar);
-        }
-
         store.on('load', function(store, records, successful) {
+
+            var toolbar = comp.down('toolbar[dock="bottom"]');
+            if (toolbar) {
+                comp.removeDocked(toolbar);
+            }
+
             if (store.find('status', Lmkp.ts.msg('status_pending')) > -1) {
                 toolbar = Ext.create('Ext.toolbar.Toolbar',{
                     dock: 'bottom',
@@ -97,11 +99,5 @@ Ext.define('Lmkp.controller.moderator.Details', {
                 comp.addDocked(toolbar);
             }
         }, this);
-    },
-
-    onCardPreviousClick: function(button, event){
-        var layout = this.getActivityDetailWizardPanel().getLayout();
-        layout.setActiveItem(layout.getPrev());
-    }
-    
+    }    
 });

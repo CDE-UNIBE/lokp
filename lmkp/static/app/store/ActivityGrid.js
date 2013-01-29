@@ -27,7 +27,7 @@ Ext.define('Lmkp.store.ActivityGrid', {
             involvements: 'none'
         },
         type: 'ajax',
-        url: '/activities',
+        url: '/activities/json',
         reader: {
             root: 'data',
             type: 'json',
