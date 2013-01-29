@@ -22,6 +22,8 @@ Ext.define('Lmkp.view.moderator.Review', {
 
     initComponent: function() {
 
+        console.log("if you ever see this notice, don't delete this file!");
+
         // Call parents first
         this.callParent(arguments);
 
