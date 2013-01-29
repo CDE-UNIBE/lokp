@@ -15,6 +15,8 @@ from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 import transaction
 
+from lmkp.tests.moderation_activities import *
+
 log = logging.getLogger(__name__)
 
 def activity_wrapper(request, file, status='pending'):
@@ -1027,6 +1029,32 @@ def delete_sample_values(request):
     if len(stack) == 0:
         stack.append('Nothing was deleted.')
     return {'messagestack':stack}
+
+@view_config(route_name='moderation_tests', renderer='json', permission='moderate')
+def moderation_tests(request):
+
+    
+    
+    tests = []
+    tests.append(ModerationActivities1(request))
+
+    # Test the set up
+    validSetup = True
+    for test in tests:
+        validSetup = test.testSetUp() and validSetup
+
+    print "*****************"
+    print validSetup
+
+    # Do the tests
+    validTest = True
+    for test in tests:
+        validTest = test.doTest() and validTest
+
+    print "-----------------"
+    print validTest
+
+    return {}
 
 def _add_to_db(db_object, name):
     s = Session()
