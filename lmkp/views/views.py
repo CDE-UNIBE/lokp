@@ -235,7 +235,11 @@ class MainView(BaseView):
 
         self._handle_parameters()
 
-        return {}
+        return {
+            'openItem': '',
+            'type': '',
+            'identifier': ''
+        }
 
     @view_config(route_name='administration', renderer='lmkp:templates/administration.mak', permission='administer')
     def administration(self):
