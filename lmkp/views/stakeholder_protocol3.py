@@ -317,6 +317,12 @@ class StakeholderProtocol3(Protocol):
         relevant_stakeholders = relevant_stakeholders.\
             filter(Stakeholder.stakeholder_identifier == uid)
 
+        # Filter by version(s)
+        versions = self._get_versions(request)
+        if versions is not None:
+            relevant_stakeholders = relevant_stakeholders.\
+                filter(Stakeholder.version.in_(versions))
+
         # Status filter
         relevant_stakeholders = relevant_stakeholders.\
             filter(Stakeholder.fk_status.in_(status_filter))

@@ -451,6 +451,12 @@ class ActivityProtocol3(Protocol):
         relevant_activities = relevant_activities.\
             filter(Activity.activity_identifier == uid)
 
+        # Filter by version(s)
+        versions = self._get_versions(request)
+        if versions is not None:
+            relevant_activities = relevant_activities.\
+                filter(Activity.version.in_(versions))
+
         # Status filter
         relevant_activities = relevant_activities.\
             filter(Activity.fk_status.in_(status_filter))

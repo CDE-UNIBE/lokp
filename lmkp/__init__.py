@@ -179,6 +179,10 @@ def main(global_config, ** settings):
     # Moderation overview
     config.add_route('moderation_html', '/moderation')
 
+    # Directly jump to the moderation of a given object
+    config.add_route('activities_moderate_item', '/moderation/activities/{uid}')
+    config.add_route('stakeholders_moderate_item', '/moderation/stakeholders/{uid}')
+
     # A controller that returns the translation needed in the ExtJS user interface
     config.add_route('ui_translation', '/lang')
     # Return a json with all available languages from DB

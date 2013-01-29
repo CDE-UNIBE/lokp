@@ -9,6 +9,7 @@ from lmkp.views.config import get_mandatory_keys
 from lmkp.views.review import BaseReview
 import logging
 import json
+import re
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPNotFound
@@ -23,9 +24,42 @@ class ActivityReview(BaseReview):
     def __init__(self, request):
         super(ActivityReview, self).__init__(request)
         self.protocol = ActivityProtocol3(Session)
-        
+
+    @view_config(route_name='activities_moderate_item', renderer='lmkp:templates/moderation.mak', permission='moderate')
+    def activities_moderate_item(self):
+
+        self._handle_parameters()
+
+        # Get the uid from the request
+        uid = self.request.matchdict.get('uid', None)
+
+        # Check if uid is valid
+        uuid4hex = re.compile('[0-9a-f-]{36}\Z', re.I)
+        validUid = uuid4hex.match(uid) is not None
+
+        if validUid:
+            c = Session.query(Activity).\
+                filter(Activity.activity_identifier == uid).\
+                count()
+        else:
+            c = 0
+
+        if c == 0 or not self._within_profile(uid):
+            return {
+                'openItem': 'true',
+                'type': '',
+                'identifier': ''
+            }
+
+        return {
+            'openItem': 'true',
+            'type': 'activities',
+            'identifier': uid
+        }
+
     @action(name='html', renderer='lmkp:templates/compare_versions.mak')
     def compare_html(self):
+        # TODO: It is to be decided if this view is still needed or not.
 
         uid = self.request.matchdict.get('uid', None)
 
@@ -38,7 +72,7 @@ class ActivityReview(BaseReview):
         additional_params = {
         'available_versions': json.dumps(available_versions)
         }
-
+        
         return additional_params
 
     @action(name='json', renderer='json')
@@ -62,6 +96,7 @@ class ActivityReview(BaseReview):
 
     @view_config(route_name='activities_review_versions_html', renderer='lmkp:templates/review_versions.mak', permission='moderate')
     def review_activity_html(self):
+        # TODO: It is to be decided if this view is still needed or not.
         """
         Review active with oldest pending version
         """
