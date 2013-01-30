@@ -1690,7 +1690,7 @@ class ActivityProtocol3(Protocol):
         if old_activity.fk_status == 1:
             # Changes were made to a pending version
 
-            x = self.recalculate_diffs(
+            new_dict = self.recalculate_diffs(
                 request,
                 Activity,
                 old_activity.identifier,
@@ -1699,8 +1699,10 @@ class ActivityProtocol3(Protocol):
                 diff
             )
             print "-------------"
-            print x
+            print new_dict
             print "-------------"
+            
+            
 
 
 
@@ -1708,7 +1710,7 @@ class ActivityProtocol3(Protocol):
         print old_activity
         print activity_dict
 
-#        adsf
+        #adsf
 
         # Query latest version of current Activity (used to increase version)
         latest_version = self.Session.query(Activity).\
