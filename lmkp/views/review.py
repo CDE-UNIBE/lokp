@@ -189,7 +189,9 @@ class BaseReview(BaseView):
                     new_tags.append(t)
 
                 reviewable = 0
-                reviewable = self._review_check_involvement(new, inv._feature)
+                reviewable = self._review_check_involvement(
+                    inv._feature.get_guid()
+                )
 
                 current_row['new'] = {
                     'class': 'add involvement',
@@ -202,127 +204,36 @@ class BaseReview(BaseView):
 
         return {'taggroups': table, 'involvements': involvements_table}
 
-    def _review_check_involvement(self, this_feature, other_feature):
+    def _review_check_involvement(self, stakeholder_identifier):
         """
-        Function to check if an involvement (other feature) can be reviewed or
+        Function to check if Stakeholder can be reviewed through involvements or
         not.
-        Assumptions: Changes in attributes can only be made to one side of the
-        involvement at once. Involvements can only be reviewed from the side
-        where these other changes are seen.
+        Assumptions: Involvements can only be reviewed from Activity side.
 
-        Involvements CANNOT be reviewed if:
-        - [ 0] General failure (some famous unspecified error)
-        - [-1] The other feature has other changes (changes to attributes) which
-               require review.
-        - [-2] No specific error (did not match any condition to be reviewable)
+        The Stakeholder CANNOT be reviewed if:
+        [-1] The Stakeholder does not exist.
+        [-2] There is no active version of the Stakeholder.
 
-        Involvements CAN be reviewed if:
-        - [1] The other side is the very first version
-        - [2] The other feature is based directly on an active version
-        - [3] The other side has already an active version.
+        The Stakeholder CAN be reviewed if:
+        [1] There exists an active version of the Stakeholder.
         """
 
-        #TODO: Check if all these queries could be simplified.
-
-        thisMappedClass = this_feature.getMappedClass()
-        otherMappedClass = other_feature.getMappedClass()
-
-        # Activity or Stakeholder?
-        if thisMappedClass == Activity:
-            this_diff_keyword = 'activities'
-            other_diff_keyword = 'stakeholders'
-        elif thisMappedClass == Stakeholder:
-            this_diff_keyword = 'stakeholders'
-            other_diff_keyword = 'activities'
-        else:
-            return 0
-
-        # Count how many versions there are on the other side of the involvement
-        version_count = Session.query(
-                otherMappedClass.id
+        q = Session.query(
+                Stakeholder.fk_status
             ).\
-            filter(otherMappedClass.identifier == other_feature.get_guid()).\
-            count()
+            filter(Stakeholder.identifier == stakeholder_identifier).\
+            all()
 
-        # Case -1
-        # Check if the other feature has other changes (changed attributes)
-        changeset = Session.query(
-                Changeset.diff
-            ).\
-            join(thisMappedClass).\
-            filter(thisMappedClass.identifier == this_feature.get_guid()).\
-            filter(thisMappedClass.version == this_feature.get_version()).\
-            first()
-        if changeset is None:
-            return 0
-        diff_json = json.loads(changeset.diff.replace('\'', '"'))
-        if other_diff_keyword in diff_json:
-            for other_diff in diff_json[other_diff_keyword]:
-                if ('id' in other_diff
-                    and other_diff['id'] == other_feature.get_guid()):
+        if q is None:
+            # The Stakeholder does not exist
+            return -1
 
-                    # Make sure that this_feature actually is in the
-                    # involvements (it should be)
-                    inv_found = False
-                    if this_diff_keyword not in other_diff:
-                        return 0
-                    for this_diff in other_diff[this_diff_keyword]:
-                        if ('id' in this_diff
-                            and this_diff['id'] == this_feature.get_guid()):
-                            inv_found = True
-                            break;
-                    if inv_found is False:
-                        return 0
+        for s in q:
+            if s.fk_status == 2:
+                # There exists an active version of the Stakeholder.
+                return 1
 
-                    # Check if other_feature has other changes
-                    if 'taggroups' in other_diff:
-                        # Exception if the other side is the very first version
-                        if version_count != 1:
-                            return -1
-
-        # Other side has no other changes and can possibly be reviewed if ...
-
-        # Case 1
-        # ... other side is the first version
-        if version_count == 1:
-            return 1
-
-        # Case 2
-        # ... other side is based on an active version
-        previous_version_query = Session.query(
-                otherMappedClass.previous_version
-            ).\
-            filter(otherMappedClass.identifier == other_feature.get_guid()).\
-            filter(otherMappedClass.version == other_feature.get_version()).\
-            subquery()
-        previous_version_status = Session.query(
-                otherMappedClass.fk_status
-            ).\
-            join(previous_version_query,
-                previous_version_query.c.previous_version
-                == otherMappedClass.version).\
-            filter(otherMappedClass.identifier == other_feature.get_guid())
-        try:
-            status = previous_version_status.one()
-        except NoResultFound:
-            return 0
-        except MultipleResultsFound:
-            return 0
-        if status.fk_status == 2:
-            return 2
-
-        # Case 3
-        # ... other side has an active version
-        active_query = Session.query(
-                otherMappedClass.id
-            ).\
-            filter(otherMappedClass.identifier == other_feature.get_guid()).\
-            filter(otherMappedClass.fk_status == 2).\
-            first()
-
-        if active_query is not None:
-            return 3
-
+        # There is no active version of the Stakeholder.
         return -2
 
     def _write_old_taggroups(self, old):
@@ -395,7 +306,9 @@ class BaseReview(BaseView):
                 new_inv_tags.append(t)
 
             reviewable = 0
-            reviewable = self._review_check_involvement(new, inv._feature)
+            reviewable = self._review_check_involvement(
+                    inv._feature.get_guid()
+                )
 
             current_row['new'] = {
                 'class': 'add involvement',
@@ -594,7 +507,7 @@ class BaseReview(BaseView):
                     # attributes
                     stakeholderParamChanges = True
 
-            if ((review is False or i.version == 1 or i.fk_status == 2)
+            if ((review is False or i.fk_status == 1 or i.fk_status == 2)
                 and stakeholderParamChanges is True):
                 available_versions.append({
                     'version': i[0],
