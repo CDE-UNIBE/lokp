@@ -124,8 +124,8 @@ class StakeholderReview(BaseReview):
         )
 
         # Some logging
-        log.debug("active version: %s" % active_version)
-        log.debug("pending version: %s" % pending_version)
+#        log.debug("active version: %s" % active_version)
+#        log.debug("pending version: %s" % pending_version)
 
         result = self.get_comparison(
             Stakeholder, uid, active_version, pending_version, review=True

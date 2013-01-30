@@ -39,7 +39,7 @@ def add_localizer(event):
 
 def _get_user(request):
     userid = authenticated_userid(request)
-    log.debug("Found user: %s" % userid)
+#    log.debug("Found user: %s" % userid)
     if userid is not None:
         user = Session.query(User).filter(User.username == userid).first()
         return user

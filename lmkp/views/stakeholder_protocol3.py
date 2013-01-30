@@ -208,8 +208,10 @@ class StakeholderProtocol3(Protocol):
             pending_count_query = self.Session.query(
                     Stakeholder.id
                 ).\
+                join(Changeset).\
                 filter(Stakeholder.identifier == sh.get_guid()).\
-                filter(Stakeholder.fk_status == 1)
+                filter(Stakeholder.fk_status == 1).\
+                filter(Changeset.diff.like("{'stakeholders':%"))
 
             pending_dict = {
                 'pending_count': pending_count_query.count()
@@ -462,8 +464,10 @@ class StakeholderProtocol3(Protocol):
                 oldest_pending_stakeholder.c.stakeholder_identifier
                     == Stakeholder.stakeholder_identifier
             )).\
+            join(Changeset).\
             outerjoin(SH_Tag_Group).\
             outerjoin(order_query, order_query.c.id == Stakeholder.id).\
+            filter(Changeset.diff.like("{'stakeholders':%")).\
             group_by(Stakeholder.id, order_query.c.value)
 
         return relevant_stakeholders
