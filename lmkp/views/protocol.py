@@ -1158,8 +1158,55 @@ class Protocol(object):
         new_diff: only the relevant part of a diff
         """
 
+        def _merge_involvements(old_diff, new_inv):
+            
+            if 'stakeholders' in old_diff:
+                # Loop the involvements of the old diff to find if some of the
+                # changes to the new diff are made to involvements already
+                # modified by the old diff
+                new_involvements_processed = False
+                for old_inv in old_diff['stakeholders']:
+                    
+                    if ('id' in old_inv and 'id' in new_inv 
+                        and old_inv['id'] == new_inv['id']):
+                        
+                        # TODO: Is this simple replacement enough?
+                        if new_inv['op'] == 'delete' and old_inv['op'] == 'add':
+                            # Replace
+                            old_inv = new_inv
+                            
+                            log.debug('Replaced old involvement (%s) with new involvement (%s)' % (old_inv, new_inv))
+                                            
+                            new_involvements_processed = True
+                
+            
+                if new_involvements_processed is False:
+                    # New involvements did not affect any of the already 
+                    # modified involvements. It is assumed that it is brand new
+                    # and is added to the existing diff
+                    if 'stakeholders' in old_diff:
+                        old_diff['stakeholders'].append(new_inv)
+                    else:
+                        old_diff['stakeholders'] = new_inv
+            
+            else:
+                # If no involvements in old_diff, add the one from the new_inv
+                # as it is
+                old_diff['stakeholders'] = new_inv
+                
+                log.debug('Added new involvement diff: %s' % new_inv)
+                
+            return old_diff
+            
+            
+
         def _merge_taggroups(old_diff, new_tg):
+            
             if 'taggroups' in old_diff:
+                # Loop the taggroups of the old diff to find if some of the
+                # changes of the new diff are made to taggroups already modified
+                # by the old diff
+                new_taggroup_processed = False
                 for old_tg in old_diff['taggroups']:
                     if ('tg_id' in old_tg and 'tg_id' in new_tg
                         and old_tg['tg_id'] == new_tg['tg_id']):
@@ -1175,7 +1222,10 @@ class Protocol(object):
                                 # Loop through the tags of the new diff
 
                                 # If there is a tag previously added (old_t['op'] == 'add') and now to be deleted again (new_t['op'] == 'delete'), then remove it
-                                if (new_t['op'] == 'delete' and old_t['op'] == 'add' and new_t['key'] == old_t['key'] and new_t['value'] == str(old_t['value'])):
+                                if (new_t['op'] == 'delete' 
+                                    and old_t['op'] == 'add' 
+                                    and new_t['key'] == old_t['key'] 
+                                    and new_t['value'] == str(old_t['value'])):
                                     # Replace
                                     old_tg['tags'].remove(old_t)
 
@@ -1186,6 +1236,17 @@ class Protocol(object):
                                     old_tg['tags'].append(new_t)
 
                                     log.debug('Added new tag diff: %s' % new_t)
+
+                        new_taggroup_processed = True
+
+                if new_taggroup_processed is False or 'tg_id' not in new_tg:
+                    # New taggroup did not affect any of the already modified
+                    # taggroups or it has no tg_id. It is therefore assumed that
+                    # it is brand new and is added to the old diff.
+                    if 'taggroups' in old_diff:
+                        old_diff['taggroups'].append(new_tg)
+                    else:
+                        old_diff['taggroups'] = new_tg
 
             else:
                 # If no taggroups yet in old_diff, add the one from the new_tg
@@ -1257,6 +1318,18 @@ class Protocol(object):
                 rel_diff = _merge_taggroups(rel_diff, new_tg)
 
             log.debug('Diff after doing taggroup merges:\n%s' % rel_diff)
+
+        # Merge involvements (only for Stakeholders)
+        if mappedClass == Activity and 'stakeholders' in new_diff:
+            
+            log.debug('Diff before doing involvement merges:\n%s' % rel_diff)
+            
+            for new_inv in new_diff['stakeholders']:
+                rel_diff = _merge_involvements(rel_diff, new_inv)
+            
+            log.debug('Diff after doing involvement merges:\n%s' % rel_diff)
+            
+        log.debug('Diff after recalculation:\n%s' % rel_diff)
 
         return rel_diff
 
