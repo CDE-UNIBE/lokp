@@ -1153,6 +1153,113 @@ class Protocol(object):
         return item
 
 
+    def recalculate_diffs(self, request, mappedClass, uid, old_version, new_diff, old_diff):
+        """
+        new_diff: only the relevant part of a diff
+        """
+
+        def _merge_taggroups(old_diff, new_tg):
+            if 'taggroups' in old_diff:
+                for old_tg in old_diff['taggroups']:
+                    if ('tg_id' in old_tg and 'tg_id' in new_tg
+                        and old_tg['tg_id'] == new_tg['tg_id']):
+                        # An existing taggroup diff has further changes
+
+                        log.debug('Merging diff of taggroups. Old taggroup diff:\n%s\nNew taggroup diff:\n%s'
+                            % (old_tg, new_tg))
+
+                        for old_t in old_tg['tags']:
+                            # Loop through the tags of the old diff
+
+                            for new_t in new_tg['tags']:
+                                # Loop through the tags of the new diff
+
+                                # If there is a tag previously added (old_t['op'] == 'add') and now to be deleted again (new_t['op'] == 'delete'), then remove it
+                                if (new_t['op'] == 'delete' and old_t['op'] == 'add' and new_t['key'] == old_t['key'] and new_t['value'] == str(old_t['value'])):
+                                    # Replace
+                                    old_tg['tags'].remove(old_t)
+
+                                    log.debug('Removed old tag diff: %s' % old_t)
+
+                                else:
+                                    # Add new diff
+                                    old_tg['tags'].append(new_t)
+
+                                    log.debug('Added new tag diff: %s' % new_t)
+
+            else:
+                # If no taggroups yet in old_diff, add the one from the new_tg
+                # as it is
+                old_diff['taggroups'] = new_tg
+
+                log.debug('Added new taggroup diff: %s' % new_tg)
+
+            return old_diff
+
+        # Activity or Stakeholder?
+        if mappedClass == Activity:
+            diff_keyword = 'activities'
+        elif mappedClass == Stakeholder:
+            diff_keyword = 'stakeholders'
+        else:
+            return None
+
+        rel_diff = None
+        # Cut down old_diff to find the interesting stuff
+        if diff_keyword in old_diff and old_diff[diff_keyword] is not None:
+            for diff in old_diff[diff_keyword]:
+                if 'id' in diff and diff['id'] == str(uid):
+                    rel_diff = diff
+
+        if rel_diff is None:
+            return None
+
+        # The tg_id's are needed to make a meaningful merge of the diffs. If
+        # they are not known (eg. when looking at the diff of the very first
+        # version, try to add them by looking them up in the database.
+        if 'taggroups' in rel_diff:
+            feature = None
+            for rel_tg in rel_diff['taggroups']:
+                if 'tg_id' not in rel_tg:
+
+                    if feature is None:
+                        # Query the feature
+                        # TODO: Does this still work in different languages?
+                        feature = self.read_one_by_version(request, uid,
+                            old_version)
+
+                    # Try to find the tg_id of the rel_tg. All the tags of
+                    # rel_tg need to be found in the same taggroup of the
+                    # feature
+                    rel_tags = {}
+                    rel_keys = []
+                    # Have a look at each tag in rel_tg
+                    for rel_t in rel_tg['tags']:
+                        rel_tags[rel_t['key']] = rel_t['value']
+                        rel_keys.append(rel_t['key'])
+                    found_tg_id = None
+                    for f_tg in feature.get_taggroups():
+                        if found_tg_id is None:
+                            f_tags = {}
+                            for f_t in f_tg.get_tags():
+                                f_tags[f_t.get_key()] = f_t.get_value()
+                            if list(set(rel_tags) & set(f_tags)) == rel_keys:
+                                found_tg_id = f_tg.get_tg_id()
+                    if found_tg_id is not None:
+                        rel_tg['tg_id'] = found_tg_id
+
+        # Merge taggroups
+        if 'taggroups' in new_diff:
+
+            log.debug('Diff before doing taggroup merges:\n%s' % rel_diff)
+
+            for new_tg in new_diff['taggroups']:
+                rel_diff = _merge_taggroups(rel_diff, new_tg)
+
+            log.debug('Diff after doing taggroup merges:\n%s' % rel_diff)
+
+        return rel_diff
+
     def _key_value_is_valid(self, request, configuration, key, value):
         """
         Validate if key and value are in the current configuration

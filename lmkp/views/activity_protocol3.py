@@ -1682,6 +1682,34 @@ class ActivityProtocol3(Protocol):
         - 'status'
         """
 
+        # TODO: Continue work here ...
+        print "**************"
+        print activity_dict
+        diff = json.loads(old_activity.changeset.diff.replace('\'', '"'))
+
+        if old_activity.fk_status == 1:
+            # Changes were made to a pending version
+
+            x = self.recalculate_diffs(
+                request,
+                Activity,
+                old_activity.identifier,
+                old_activity.version,
+                activity_dict,
+                diff
+            )
+            print "-------------"
+            print x
+            print "-------------"
+
+
+
+        # Query the
+        print old_activity
+        print activity_dict
+
+#        adsf
+
         # Query latest version of current Activity (used to increase version)
         latest_version = self.Session.query(Activity).\
             filter(Activity.activity_identifier == old_activity.identifier).\
