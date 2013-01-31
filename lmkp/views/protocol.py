@@ -604,6 +604,8 @@ class Protocol(object):
         involvements
         """
 
+        #TODO: Add translation to server responses
+
         reviewed_involvements = []
 
         # Hard coded list of statii as in database. Needs to be in same order!

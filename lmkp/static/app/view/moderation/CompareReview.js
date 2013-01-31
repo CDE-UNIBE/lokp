@@ -104,17 +104,18 @@ Ext.define('Lmkp.view.moderation.CompareReview', {
                         }, {
                             width: 24,
                             xtype: 'templatecolumn',
-                            tpl: ''
+                            tpl: '',
+                            name: 'compareGridColumn'
                         }, {
                             dataIndex: 'new',
                             flex: 1,
                             name: 'compareGridColumn'
                         }, {
                             xtype: 'templatecolumn',
-                            tpl: '<img src="/static/img/information.png" style="cursor:pointer;" title="Review involvement">',
+                            tpl: '',
                             width: 24,
                             align: 'center',
-                            name: 'compareGridButtonColumn'
+                            itemId: 'compareGridReviewableColumn'
                         }
                     ]
                 }

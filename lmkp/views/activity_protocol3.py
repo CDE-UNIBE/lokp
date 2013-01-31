@@ -1156,10 +1156,14 @@ class ActivityProtocol3(Protocol):
                 filter(or_(* self._get_involvement_status(request)))
 
             # Additional filter to select only the latest (pending or not)
+            # Stakeholder involved with the relevant Activities
             latest_filter = self.Session.query(
                     Stakeholder.stakeholder_identifier,
                     func.max(Stakeholder.version).label('max_version')
                 ).\
+                join(Involvement).\
+                join(relevant_activities,
+                    relevant_activities.c.order_id == Involvement.fk_activity).\
                 group_by(Stakeholder.stakeholder_identifier).\
                 subquery()
 
