@@ -38,6 +38,13 @@ usergroupMap = {
     'administrators': _('usergroup_administrators', default='Administrators')
 }
 
+# Translatable hashmap with all possible user roles
+# TODO: Once the involvements attributes are properly solved using YAML or
+# something similar, the translation of the roles should not happen here anymore
+stakeholderroleMap = {
+    'Investor': _('stakeholderrole_investor', default='Investor')
+}
+
 @view_config(route_name='ui_translation', renderer='javascript')
 def ui_messages(request):
 
