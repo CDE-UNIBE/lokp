@@ -189,7 +189,9 @@ class BaseReview(BaseView):
                     new_tags.append(t)
 
                 reviewable = 0
-                reviewable = self._review_check_involvement(new, inv._feature)
+                reviewable = self._review_check_involvement(
+                    inv._feature.get_guid()
+                )
 
                 current_row['new'] = {
                     'class': 'add involvement',
@@ -202,151 +204,37 @@ class BaseReview(BaseView):
 
         return {'taggroups': table, 'involvements': involvements_table}
 
-    def _review_check_involvement(self, this_feature, other_feature):
+    def _review_check_involvement(self, stakeholder_identifier):
         """
-        Function to check if an involvement (other feature) can be reviewed or
+        Function to check if Stakeholder can be reviewed through involvements or
         not.
-        Assumptions: Changes in attributes can only be made to one side of the
-        involvement at once. Involvements can only be reviewed from the side
-        where these other changes are seen.
+        Assumptions: Involvements can only be reviewed from Activity side.
 
-        Involvements CANNOT be reviewed if:
-        - [ 0] General failure (some famous unspecified error)
-        - [-1] The other feature has other changes (changes to attributes) which
-               require review.
-        - [-2] No specific error (did not match any condition to be reviewable)
+        The Stakeholder CANNOT be reviewed if:
+        [-1] The Stakeholder does not exist.
+        [-2] There is no active version of the Stakeholder.
 
-        Involvements CAN be reviewed if:
-        - [1] The other side is the very first version
-        - [2] The other feature is based directly on an active version
-        - [3] The other side has already an active version.
+        The Stakeholder CAN be reviewed if:
+        [1] There exists an active version of the Stakeholder.
         """
 
-        #TODO: Check if all these queries could be simplified.
-
-        thisMappedClass = this_feature.getMappedClass()
-        otherMappedClass = other_feature.getMappedClass()
-
-        # Activity or Stakeholder?
-        if thisMappedClass == Activity:
-            this_diff_keyword = 'activities'
-            other_diff_keyword = 'stakeholders'
-        elif thisMappedClass == Stakeholder:
-            this_diff_keyword = 'stakeholders'
-            other_diff_keyword = 'activities'
-        else:
-            return 0
-
-        # Count how many versions there are on the other side of the involvement
-        version_count = Session.query(
-                otherMappedClass.id
+        q = Session.query(
+                Stakeholder.fk_status
             ).\
-            filter(otherMappedClass.identifier == other_feature.get_guid()).\
-            count()
+            filter(Stakeholder.identifier == stakeholder_identifier).\
+            all()
 
-        # Case -1
-        # Check if the other feature has other changes (changed attributes)
-        changeset = Session.query(
-                Changeset.diff
-            ).\
-            join(thisMappedClass).\
-            filter(thisMappedClass.identifier == this_feature.get_guid()).\
-            filter(thisMappedClass.version == this_feature.get_version()).\
-            first()
-        if changeset is None:
-            return 0
-        diff_json = json.loads(changeset.diff.replace('\'', '"'))
-        if other_diff_keyword in diff_json:
-            for other_diff in diff_json[other_diff_keyword]:
-                if ('id' in other_diff
-                    and other_diff['id'] == other_feature.get_guid()):
+        if q is None:
+            # The Stakeholder does not exist
+            return -1
 
-                    # Make sure that this_feature actually is in the
-                    # involvements (it should be)
-                    inv_found = False
-                    if this_diff_keyword not in other_diff:
-                        return 0
-                    for this_diff in other_diff[this_diff_keyword]:
-                        if ('id' in this_diff
-                            and this_diff['id'] == this_feature.get_guid()):
-                            inv_found = True
-                            break;
-                    if inv_found is False:
-                        return 0
+        for s in q:
+            if s.fk_status == 2:
+                # There exists an active version of the Stakeholder.
+                return 1
 
-                    # Check if other_feature has other changes
-                    if 'taggroups' in other_diff:
-                        # Exception if the other side is the very first version
-                        if version_count != 1:
-                            return -1
-
-        # Other side has no other changes and can possibly be reviewed if ...
-
-        # Case 1
-        # ... other side is the first version
-        if version_count == 1:
-            return 1
-
-        # Case 2
-        # ... other side is based on an active version
-        previous_version_query = Session.query(
-                otherMappedClass.previous_version
-            ).\
-            filter(otherMappedClass.identifier == other_feature.get_guid()).\
-            filter(otherMappedClass.version == other_feature.get_version()).\
-            subquery()
-        previous_version_status = Session.query(
-                otherMappedClass.fk_status
-            ).\
-            join(previous_version_query,
-                previous_version_query.c.previous_version
-                == otherMappedClass.version).\
-            filter(otherMappedClass.identifier == other_feature.get_guid())
-        try:
-            status = previous_version_status.one()
-        except NoResultFound:
-            return 0
-        except MultipleResultsFound:
-            return 0
-        if status.fk_status == 2:
-            return 2
-
-        # Case 3
-        # ... other side has an active version
-        active_query = Session.query(
-                otherMappedClass.id
-            ).\
-            filter(otherMappedClass.identifier == other_feature.get_guid()).\
-            filter(otherMappedClass.fk_status == 2).\
-            first()
-
-        if active_query is not None:
-            return 3
-
+        # There is no active version of the Stakeholder.
         return -2
-
-    def _review_one_version(self, obj, uid, version):
-
-        table = []
-
-        # First write the headers
-        header_row = []
-        header_row.append({'class': 'title', 'tags': [
-                          {'key': 'version', 'value': obj.get_version()},
-                          {'key': 'status', 'value': obj.get_status()}
-                          ]})
-
-        table.append(header_row)
-
-        for taggroup in obj.get_taggroups():
-
-            tags = []
-
-            for t in taggroup.get_tags():
-                tags.append({'key': t.get_key(), 'value': t.get_value()})
-            table.append([{'class': '', 'tags': tags}])
-
-        return {'taggroups': table}
 
     def _write_old_taggroups(self, old):
 
@@ -418,7 +306,9 @@ class BaseReview(BaseView):
                 new_inv_tags.append(t)
 
             reviewable = 0
-            reviewable = self._review_check_involvement(new, inv._feature)
+            reviewable = self._review_check_involvement(
+                    inv._feature.get_guid()
+                )
 
             current_row['new'] = {
                 'class': 'add involvement',
@@ -433,29 +323,27 @@ class BaseReview(BaseView):
         """
         Returns the current active version and the pending version to review
         """
+        # TODO: Is this still needed?
 
         def _check_mandatory_keys():
             mandatory_keys = get_mandatory_keys(self.request, 'a')
             log.debug(mandatory_keys)
 
         # Get the current active version number
-        av = Session.query(mappedClass.version).filter(mappedClass.identifier == uid).filter(mappedClass.fk_status == 2).first()
-
-        try:
-            active_version = int(av[0])
-        except TypeError:
-            return None, 1
+        av = Session.query(
+                mappedClass.version
+            ).\
+            filter(mappedClass.identifier == uid).\
+            filter(mappedClass.fk_status == 2).\
+            first()
+        active_version = av.version if av is not None else None
 
         # Get the lowest pending version
         pv = Session.query(min(mappedClass.version)).\
             filter(mappedClass.identifier == uid).\
             filter(mappedClass.fk_status == 1).\
             first()
-
-        try:
-            pending_version = int(pv[0])
-        except TypeError:
-            pending_version = None
+        pending_version = pv.version if pv is not None else None
 
         # Some logging
         log.debug("active version: %s" % active_version)
@@ -538,13 +426,14 @@ class BaseReview(BaseView):
         # Query that selects available versions
         versions_query = None
 
-        log.debug("effective principals: %s" % self.request.effective_principals)
+#        log.debug("effective principals: %s" % self.request.effective_principals)
 
         # An administrator sees in any cases all versions
         if self.request.effective_principals is not None and 'group:administrators' in self.request.effective_principals:
             versions_query = Session.query(
                     mappedClass.version,
-                    mappedClass.fk_status
+                    mappedClass.fk_status,
+                    mappedClass.id
                 ).filter(mappedClass.identifier == uid)
 
         # An user with moderator privileges can see all versions within his profile
@@ -564,7 +453,8 @@ class BaseReview(BaseView):
                 if count > 0:
                     versions_query = Session.query(
                             mappedClass.version,
-                            mappedClass.fk_status
+                            mappedClass.fk_status,
+                            mappedClass.id
                         ).filter(mappedClass.identifier == uid)
                 # If not the moderator gets normal editor privileges
                 else:
@@ -573,7 +463,8 @@ class BaseReview(BaseView):
             except AttributeError:
                 versions_query = Session.query(
                         mappedClass.version,
-                        mappedClass.fk_status
+                        mappedClass.fk_status,
+                        mappedClass.id
                     ).filter(mappedClass.identifier == uid)
 
         # An user with at least editor privileges can see all public versions_query
@@ -585,7 +476,8 @@ class BaseReview(BaseView):
         else:
             versions_query = Session.query(
                     mappedClass.version,
-                    mappedClass.fk_status
+                    mappedClass.fk_status,
+                    mappedClass.id
                 ).\
                 filter(mappedClass.identifier == uid).\
                 filter(or_(mappedClass.fk_status == 2, mappedClass.fk_status == 3))
@@ -593,13 +485,34 @@ class BaseReview(BaseView):
         # Create a list of available versions
         available_versions = []
         for i in versions_query.order_by(mappedClass.version).all():
-            if review is False or i[1] == 1 or i[1] == 2:
+
+            # When reviewing Stakeholders, an additional requirement is needed.
+            stakeholderParamChanges = True
+            if (review is True and mappedClass == Stakeholder
+                and i.fk_status == 1):
+                # Check if there are changes to Stakeholder's attributes or due
+                # to involvement changes.
+                stakeholderParamChanges = False
+                q = Session.query(
+                        Stakeholder.id
+                    ).\
+                    join(Changeset).\
+                    filter(Stakeholder.id == i.id).\
+                    filter(Changeset.diff.like("{'stakeholders':%")).\
+                    first()
+                if q is not None:
+                    # Add pending Stakeholders only if they have changed
+                    # attributes
+                    stakeholderParamChanges = True
+
+            if ((review is False or i.fk_status == 1 or i.fk_status == 2)
+                and stakeholderParamChanges is True):
                 available_versions.append({
-                    'version': i[0],
-                    'status': i[1]
+                    'version': i.version,
+                    'status': i.fk_status
                 })
 
-        log.debug("Available Versions for object %s:\n%s" % (uid, available_versions))
+#        log.debug("Available Versions for object %s:\n%s" % (uid, available_versions))
 
         return available_versions
 
@@ -635,7 +548,7 @@ class BaseReview(BaseView):
             ref_version = int(versions[0])
         except IndexError:
             #
-            ref_version = active_version if active_version is not None else 1
+            ref_version = active_version if active_version is not None else 0
         except ValueError as e:
             raise HTTPBadRequest("ValueError: %s" % e)
 
@@ -656,135 +569,6 @@ class BaseReview(BaseView):
             raise HTTPForbidden()
 
         return ref_version, new_version
-
-    def _apply_diff(self, item, diff):
-        """
-        Applies a diff to a given item.
-        """
-
-        #TODO: probably not needed anymore
-        adsf
-
-        from lmkp.views.protocol import Tag
-        from lmkp.views.protocol import TagGroup
-
-        print "------ FUNCTION _apply_diff ------"
-        print "input diff: %s" % diff
-
-        if 'taggroups' in diff:
-            for tg in diff['taggroups']:
-
-                print "----- diff[taggroup]: %s" % tg
-
-                tg_id = tg['tg_id'] if 'tg_id' in tg else None
-                add_tags = []
-                delete_tags = []
-
-                for t in tg['tags']:
-                    if t['op'] == 'add':
-                        add_tags.append(
-                            {'key': t['key'], 'value': t['value']}
-                        )
-                    if t['op'] == 'delete':
-                        delete_tags.append(
-                            {'key': t['key'], 'value': t['value'], 'id': t['id']}
-                        )
-
-                #TODO: clean up ...
-                print "*** add_tags: %s (%s)" % (add_tags, len(add_tags))
-#                print len(add_tags)
-#                print add_tags
-                print "*** delete_tags: %s (%s)" % (delete_tags, len(delete_tags))
-#                print len(delete_tags)
-#                print delete_tags
-                print "*** tg_id: %s" % tg_id
-
-                new_tg = item.find_taggroup_by_tg_id(tg_id)
-                print "*** new_tg: %s" % new_tg
-
-#                if tg_id is not None and new_tg is None:
-                if new_tg is None:
-                    # The diff contains a new taggroup which is not yet in the
-                    # database
-                    print "*** tag group not (yet) found"
-                    brandnew_tg = TagGroup(tg_id=tg_id)
-
-#                     If all the tags of this taggroup are to be deleted
-#                     anyways, then don't show it
-
-
-                    # Add tags (ignore delete tags since they are not there anyways)
-                    for at in add_tags:
-                        print "*** added tag with key: %s and value: %s" % (at['key'], str(at['value']))
-                        brandnew_tg.add_tag(Tag(None, at['key'], str(at['value'])))
-
-                    # Add taggroup to item if it has some content in it.
-                    if len(brandnew_tg.get_tags()) > 0:
-                        item.add_taggroup(brandnew_tg)
-
-                elif new_tg is not None:
-                    # The taggroup in the diff exists already in the database
-
-                    # Delete tags
-                    for dt in delete_tags:
-                        # Try to find the tag by its key. If found, remove it
-                        deleted_tag = new_tg.get_tag_by_key(dt['key'])
-                        if deleted_tag:
-                            print "*** removed tag with key: %s and value: %s" % (dt['key'], dt['value'])
-                            new_tg.remove_tag(deleted_tag)
-                    # Add tags
-                    for at in add_tags:
-                        if new_tg.get_tag_by_key(at['key']) is None:
-                            print "*** added tag with key: %s and value: %s" % (at['key'], str(at['value']))
-                            new_tg.add_tag(Tag(None, at['key'], str(at['value'])))
-
-        return item
-
-    def _recalculate_version(self, mappedClass, ref, new):
-
-        #TODO: Probably not needed anymore.
-        asdf
-
-        ref_version = ref.get_version()
-        new_previousversion = new.get_previous_version()
-
-        if (new_previousversion is not None
-            and new_previousversion != ref_version):
-            # The new_version is not based on the ref_version, it is therefore
-            # necessary to get the changes made to ref_version and calculate
-            # them into new_version
-
-            diff_query = Session.query(Changeset.diff).\
-                join(mappedClass).\
-                filter(mappedClass.identifier == ref.get_guid()).\
-                filter(mappedClass.version == ref.get_version())
-
-            diff = diff_query.first()
-
-            diff_json = json.loads(diff.diff.replace('\'', '"'))
-
-            # TODO: compare also involvements
-
-            if mappedClass == Activity:
-                diff_keyword = 'activities'
-            elif mappedClass == Stakeholder:
-                diff_keyword = 'stakeholders'
-            else:
-                diff_keyword = None
-
-            d = None
-            if (diff_keyword is not None and diff_keyword in diff_json
-                and diff_json[diff_keyword] is not None):
-                activities = diff_json[diff_keyword]
-                for a in activities:
-                    if ('id' in a and a['id'] is not None
-                        and a['id'] == ref.get_guid()):
-                        d = a
-
-            if d is not None:
-                new = self._apply_diff(new, d)
-
-        return new
 
     def recalc(self, mappedClass, item, diff):
         """
@@ -905,319 +689,3 @@ class BaseReview(BaseView):
         )
 
         return result
-
-    def get_diff(self, mappedClass, uid, new_version_number,
-        ref_version_number=None):
-        """
-        Returns the diff between the reference version item and its previous
-        version. This diff can then be used to recalculate the new version item
-        to include the changes made to the reference version item.
-
-        - If no ref_version_number was specified or no reference version item
-          was found, return None.
-        - If the new version item is based directly on the reference version
-          item, return None.
-        """
-
-        #TODO: probably not needed anymore.
-        asdf
-
-        def _query_previous_version(mappedClass, uid, version):
-            q = Session.query(mappedClass.previous_version).\
-                filter(mappedClass.identifier == uid).\
-                filter(mappedClass.version == version)
-            return q.first()
-
-        def _query_diff(mappedClass, uid, version):
-            q = Session.query(Changeset.diff).\
-                join(mappedClass).\
-                filter(mappedClass.identifier == uid).\
-                filter(mappedClass.version == version)
-            return q.first()
-
-        # If no old version was provided, return empty
-        if ref_version_number is None:
-            return None, None
-
-        # Query the previous version of the new version item
-        new_previous_version_number = _query_previous_version(
-            mappedClass, uid, new_version_number
-        )
-        # Query the previous version of the ref version item
-        ref_previous_version_number = _query_previous_version(
-            mappedClass, uid, ref_version_number
-        )
-        if ref_previous_version_number.previous_version is None:
-            # If the ref version is not based on a previous_version (brandnew),
-            # use the version itself
-            ref_previous_version_number.previous_version = ref_version_number
-
-        # If no previous version was found, return empty
-        if (new_previous_version_number is None
-            or new_previous_version_number.previous_version is None):
-            return None, None
-
-        # If the new version item is based directly on the reference version
-        # item, return empty
-        if new_previous_version_number.previous_version == ref_version_number:
-            return None, None
-
-
-        temp_new_version = new_version_number
-        new_version_list = [temp_new_version]
-        while (temp_new_version is not None):
-            temp_new_query = _query_previous_version(mappedClass, uid, temp_new_version)
-            temp_new_version = temp_new_query.previous_version
-            if temp_new_version is not None:
-                new_version_list.append(temp_new_version)
-
-        temp_ref_version = ref_version_number
-        ref_version_list = [temp_ref_version]
-        while (temp_ref_version is not None):
-            temp_ref_query = _query_previous_version(mappedClass, uid, temp_ref_version)
-            temp_ref_version = temp_ref_query.previous_version
-            if temp_ref_version is not None:
-                ref_version_list.append(temp_ref_version)
-
-        common_version = 0
-        for i in new_version_list:
-            if i in ref_version_list and common_version < i:
-                common_version = i
-        print "*** common_version ***: %s" % common_version
-
-        if common_version == 0:
-            # Could / should this ever happen? What to do if it does happen?
-            asdf
-        else:
-
-            print "--- starting to merge all diffs between ref version and common version"
-
-            """
-            Merge all diffs between the ref version item and the common version
-            """
-            temp_ref_version_number = ref_version_number
-            temp_ref_previous_version = _query_previous_version(mappedClass, uid, ref_version_number)
-
-            diff = None
-            if temp_ref_previous_version is not None and temp_ref_previous_version.previous_version is not None:
-                # Only take a diff if it has a previous_version
-                temp_diff = _query_diff(mappedClass, uid, temp_ref_version_number)
-                diff = json.loads(temp_diff.diff.replace('\'', '"'))
-                print "*** first diff:"
-                print diff
-                while temp_ref_previous_version.previous_version != common_version:
-                    temp_ref_version_number = temp_ref_previous_version.previous_version
-                    temp_ref_previous_version = _query_previous_version(mappedClass, uid, temp_ref_previous_version.previous_version)
-
-                    if temp_ref_previous_version is not None and temp_ref_previous_version.previous_version is not None:
-                        # Only take a diff if it has a previous_version
-                        print "*** added diff for version: %s" % temp_ref_version_number
-                        temp_diff = _query_diff(mappedClass, uid, temp_ref_version_number)
-                        temp_diff_json = json.loads(temp_diff.diff.replace('\'', '"'))
-                        diff = self.recalculate_diffs(mappedClass, uid, temp_diff_json, diff)
-
-
-
-
-
-            print "*** diff after mergin all diffs between ref version and common version:"
-            print diff
-
-            """
-            Merge all diffs between the previous_version of the new version item and the common version
-            """
-
-            print "--- starting to merge all diffs between the new version and common version"
-
-            temp_new_previous_version = _query_previous_version(mappedClass, uid, new_version_number)
-#            temp_new_previous_version = _query_previous_version(mappedClass, uid, temp_new_previous_version.previous_version)
-
-            while temp_new_previous_version.previous_version != common_version:
-
-
-
-                temp_diff = _query_diff(mappedClass, uid, temp_new_previous_version.previous_version)
-                temp_diff_json = json.loads(temp_diff.diff.replace('\'', '"'))
-                print "*** added diff for version: %s" % temp_new_previous_version.previous_version
-                print temp_diff_json
-                print "***"
-
-                diff = self.recalculate_diffs(mappedClass, uid, temp_diff_json, diff)
-
-                temp_new_previous_version = _query_previous_version(mappedClass, uid, temp_new_previous_version.previous_version)
-
-#                empty_diff = False
-
-            print "*** diff after mergin all diffs between new version and common version:"
-            print diff
-
-        asdf
-
-        if empty_diff is True:
-            return None, None
-
-        return diff, common_version
-
-        """
-#        else:
-        if (1 == 1):
-            If the new_version is based on the
-
-            # get_diff() returns the changes made to the ref version item
-
-            It returns the difference between the ref version item and the previous_version of the new version item.
-
-
-
-            # Approach: Add and merge all diffs from the previous_version of the
-            # new version item until the one that is based on the
-            # ref_version_number
-
-
-
-
-
-            # Starter: The previous_version of the new_version (do not merge this if it is the same the ref_version is based upon)
-
-
-
-
-            # Stopper: the previous_version of the ref version item (or the ref_version_numer if it is brand new and has no previous_version)
-
-            print "--- new_previous_version_number: %s" % new_previous_version_number.previous_version
-            # 1 | 2
-            print "--- ref_previous_version_number: %s" % ref_previous_version_number.previous_version
-            # 1 | 1 (None)
-
-            # Initial diff: the diff of the previous_version of the new version
-            # item.
-            ref_diff = _query_diff(mappedClass, uid, new_previous_version_number.previous_version)
-#            diff = _query_diff(mappedClass, uid, ref_version_number)
-
-            temp_previous_version_q = new_previous_version_number # 1 | 2
-            while (temp_previous_version_q.previous_version > ref_previous_version_number.previous_version):
-
-                x = _query_diff(mappedClass, uid, temp_previous_version_q.previous_version)
-                x2 = json.loads(x.diff.replace('\'', '"'))
-
-                ref_diff = self.recalculate_diffs(mappedClass, uid, x2, ref_diff)
-
-                print "**********************"
-                print "temp_previous_version_q: %s" % temp_previous_version_q
-                print ref_diff
-#                print x
-
-                temp_previous_version_q = _query_previous_version(mappedClass, uid, temp_previous_version_q.previous_version)
-#                x = x_q.previous_version
-
-
-#            if  == new_previous_version_number.previous_version:
-                # Return the diff between the reference version item and its
-                # previous version
-
-            print "......................"
-            print ref_diff
-            print "......................"
-            temp_diff = _query_diff(mappedClass, uid, ref_version_number)
-            temp_diff2 = json.loads(temp_diff.diff.replace('\'', '"'))
-            print "--2--"
-#            print temp_diff2
-#            temp_diff3 = {'activities': [temp_diff2]}
-            print "--3--"
-#            print temp_diff3
-            diff = self.recalculate_diffs(mappedClass, uid, temp_diff2, None)
-            print "-----------"
-            print diff
-
-            asdf
-            return json.loads(diff.diff.replace('\'', '"'))
-#            else:
-#                print "******************"
-#                asdf
-        """
-
-    def recalculate_diffs(self, mappedClass, uid, new_diff, old_diff=None):
-
-        #TODO: probably not needed anymore
-        asdf
-
-        #TODO: clean up ...
-
-#        print "------------------------"
-#        print "new_diff: %s" % new_diff
-#        print "old_diff: %s" % old_diff
-
-        def _merge_tgs(diff_keyword, uid, old_diff, taggroup):
-            """
-            Merge / Append a taggroup into a diff
-            """
-
-            print "** FUNCTION _merge_tgs"
-            print "old_diff: %s" % old_diff
-            """
-            Approach: Loop through all taggroups in the old_diff and check if it
-            needs to be merged. If not found, append it to the diff.
-            """
-            if diff_keyword in old_diff and old_diff[diff_keyword] is not None:
-                for a in old_diff[diff_keyword]:
-
-                    print "----loooppp------"
-
-                    if 'id' in a and a['id'] == str(uid):
-                        # It is the correct Activity / Stakeholder, loop through its taggroups
-                        tag_found = False
-                        for tg in a['taggroups']:
-                            print "tg: %s" % tg
-                            print "a[taggroups]: %s" % a['taggroups']
-                            if 'tg_id' in tg and 'tg_id' in taggroup and tg['tg_id'] == taggroup['tg_id']:
-                                # If the same taggroup has changes, the newer is
-                                # used and the old is replaced.
-                                print "**** REPLACE ****"
-                                a['taggroups'].remove(tg)
-#                                print a['taggroups']
-                                a['taggroups'].append(taggroup)
-#                                print a['taggroups']
-                                tag_found = True
-
-                        if tag_found is False:
-                            # Not found, append
-#                            print "**** APPEND ****"
-                            a['taggroups'].append(taggroup)
-#                            print a['taggroups']
-
-            return old_diff
-
-        if mappedClass == Activity:
-            diff_keyword = 'activities'
-        elif mappedClass == Stakeholder:
-            diff_keyword = 'stakeholders'
-        else:
-            diff_keyword = None
-
-        ret = {}
-
-        if old_diff is None and diff_keyword is not None:
-            # Extract only interesting stuff out of new_diff
-            if diff_keyword in new_diff and new_diff[diff_keyword] is not None:
-                for a in new_diff[diff_keyword]:
-                    if 'id' in a and a['id'] == str(uid):
-                        ret = a
-
-        elif old_diff is not None and diff_keyword is not None:
-            # Recalculate diff out of old and new diff
-            if diff_keyword in new_diff and new_diff[diff_keyword] is not None:
-                """
-                Approach: Loop through taggroups of new diff and merge them into the old diff
-                """
-                for a in new_diff[diff_keyword]:
-                    if 'id' in a and a['id'] == str(uid):
-                        # Merge with existing
-#                        print "____M*EERERGE____"
-                        if 'taggroups' in a:
-                            for tg in a['taggroups']:
-                                print "____M*EERERGE____ tg: %s" %tg
-                                old_diff = _merge_tgs(diff_keyword, uid, old_diff, tg)
-                ret = old_diff
-
-        return ret
-
