@@ -208,8 +208,10 @@ class StakeholderProtocol3(Protocol):
             pending_count_query = self.Session.query(
                     Stakeholder.id
                 ).\
+                join(Changeset).\
                 filter(Stakeholder.identifier == sh.get_guid()).\
-                filter(Stakeholder.fk_status == 1)
+                filter(Stakeholder.fk_status == 1).\
+                filter(Changeset.diff.like("{'stakeholders':%"))
 
             pending_dict = {
                 'pending_count': pending_count_query.count()
@@ -462,8 +464,10 @@ class StakeholderProtocol3(Protocol):
                 oldest_pending_stakeholder.c.stakeholder_identifier
                     == Stakeholder.stakeholder_identifier
             )).\
+            join(Changeset).\
             outerjoin(SH_Tag_Group).\
             outerjoin(order_query, order_query.c.id == Stakeholder.id).\
+            filter(Changeset.diff.like("{'stakeholders':%")).\
             group_by(Stakeholder.id, order_query.c.value)
 
         return relevant_stakeholders
@@ -1391,6 +1395,49 @@ class StakeholderProtocol3(Protocol):
         - 'status'
         """
 
+        if old_stakeholder.fk_status == 1:
+            # If changes were made to a pending version, this pending version is
+            # set to 'edited' and the newly created version contains also the
+            # changes of the edited version. To do this, a new diff is
+            # calculated which is then applied to the previous version of the
+            # edited pending version.
+
+            # Set the edited pending version to 'edited'
+            old_stakeholder.fk_status = 6
+
+            # Query the diff of the edited pending version and recalculate it
+            # with the recent changes to the pending version
+            diff = json.loads(old_stakeholder.changeset.diff.replace('\'', '"'))
+            stakeholder_dict = self.recalculate_diffs(
+                request,
+                Stakeholder,
+                old_stakeholder.identifier,
+                old_stakeholder.version,
+                stakeholder_dict,
+                diff
+            )
+
+            # Query the previous version of the edited pending version
+            ref_version = self.Session.query(
+                    Stakeholder
+                ).\
+                filter(Stakeholder.identifier == old_stakeholder.identifier).\
+                filter(Stakeholder.version == old_stakeholder.previous_version).\
+                first()
+
+            if ref_version is None:
+                # If there is no previous version, the edited pending version is
+                # brand new.
+                previous_version = None
+            else:
+                # Use the previous version of the edited pending version as base
+                # to apply the diff on
+                old_stakeholder = ref_version
+                previous_version = old_stakeholder.version
+
+        else:
+            previous_version = old_stakeholder.version
+
         # Query latest version of current Stakeholder (used to increase version)
         latest_version = self.Session.query(Stakeholder).\
             filter(Stakeholder.stakeholder_identifier
@@ -1400,9 +1447,10 @@ class StakeholderProtocol3(Protocol):
 
         # Create new Stakeholder
         new_stakeholder = Stakeholder(
-                                      stakeholder_identifier=old_stakeholder.identifier,
-                                      version=(latest_version.version + 1),
-                                      previous_version=old_stakeholder.version)
+            stakeholder_identifier=old_stakeholder.identifier,
+            version=(latest_version.version + 1),
+            previous_version=previous_version
+        )
 
         # Status (default: 'pending')
         status = 'pending'
@@ -1421,11 +1469,14 @@ class StakeholderProtocol3(Protocol):
         # Add it to the database
         self.Session.add(new_stakeholder)
 
+        log.debug('Applying diff:\n%s\nto version %s of stakeholder %s'
+            % (stakeholder_dict, previous_version, old_stakeholder.identifier))
+
         sh = self._apply_diff(
             request,
             Stakeholder,
             old_stakeholder.identifier,
-            old_stakeholder.version,
+            previous_version,
             stakeholder_dict,
             new_stakeholder,
             db = True

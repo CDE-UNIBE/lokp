@@ -593,12 +593,15 @@ class Protocol(object):
 
         return False
 
-    def _add_review(self, request, item, previous_item, mappedClass, user,
+    def _add_review(self, request, item, mappedClass, user,
         implicit = False):
         """
         Add a review decision
         item: {Database object} (Activity or Stakeholder)
-        implicit: {Boolean} To prevent circular reviewing
+        mappedClass: database_model object
+        user: {Database object}
+        implicit: {Boolean} To prevent circular reviewing when handling
+        involvements
         """
 
         reviewed_involvements = []
@@ -616,56 +619,43 @@ class Protocol(object):
         ]
 
         ret = {'success': False}
-        recalculated = False
 
         # Activity or Stakeholder?
         diff_keyword = None
         config_yaml = None
-        if mappedClass.__table__.name == 'activities':
+        if mappedClass == Activity:
             diff_keyword = 'activities'
             other_diff_keyword = 'stakeholders'
             config_yaml = 'activity.yml'
-            from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
-            otherProtocol = StakeholderProtocol3(self.Session)
-        elif mappedClass.__table__.name == 'stakeholders':
+        elif mappedClass == Stakeholder:
             diff_keyword = 'stakeholders'
             other_diff_keyword = 'activities'
             config_yaml = 'stakeholder.yml'
-            from lmkp.views.activity_protocol3 import ActivityProtocol3
-            otherProtocol = ActivityProtocol3(self.Session)
+        else:
+            ret['msg'] = 'Unknown object to review.'
+            return ret
 
         # Collect POST values
         review_decision = request.POST['review_decision']
         if review_decision is None:
             ret['msg'] = 'Review decision not provided.'
             return ret
-
+        try:
+            review_decision = int(review_decision)
+        except:
+            ret['msg'] = 'Unknown review decision'
+            return ret
         review_comment = None
         if (request.POST['comment_textarea'] != ''):
             review_comment = request.POST['comment_textarea']
 
-        if review_decision == '1':
+        # TODO: Also delegate involvement review if rejected (review_decision == 2)
+        if review_decision == 1:
+            # Approved
 
-            if implicit is False:
-
-                # If possible, review also any affected involvement.
-                # The approach is to loop through all the involvements affected
-                # by the changeset under review and if possible review each of
-                # these involvements.
-
-                basereview = BaseReview(request)
-
-                itemFeature = self.read_one_by_version(
-                    request, item.identifier, item.version
-                )
-
-                otherMappedClass = itemFeature.getOtherMappedClass()
-
-                # Because it is possible that there are involvements to multiple
-                # versions of the other item, it is necessary to find out which
-                # version is actually affected by the changeset under review.
-                # To do this, the diff is looped to find the exact version of
-                # the affected involvement.
+            # Try to also review any affected involvement.
+            if implicit is False and mappedClass == Activity:
+                # Involvements can only be reviewed from Activity side.
 
                 # Query the diff
                 diff_query = self.Session.query(
@@ -677,273 +667,68 @@ class Protocol(object):
                     first()
                 json_diff = json.loads(diff_query.diff.replace('\'', '"'))
 
-                # Loop through the diff (based on the otherItems) to find and
-                # collect all the references to this Items.
+                # Loop through the diff to find and collect all the affected Stakeholders and their version at the time of the changes
                 affected_involvements = []
-                if other_diff_keyword in json_diff:
-                    for other_diff in json_diff[other_diff_keyword]:
-                        if (diff_keyword in other_diff
-                            and 'id' in other_diff):
-                            for diff in other_diff[diff_keyword]:
-                                if ('id' in diff
-                                    and diff['id'] == str(item.identifier)):
-                                    version = (other_diff['version']
-                                        if 'version' in other_diff
+                if 'activities' in json_diff:
+                    for a_diff in json_diff['activities']:
+                        if 'id' in a_diff and a_diff['id'] == str(item.identifier) and 'stakeholders' in a_diff:
+                            for sh_diff in a_diff['stakeholders']:
+                                version = (sh_diff['version']
+                                        if 'version' in sh_diff
                                         else None)
-                                    affected_involvements.append({
-                                        'identifier': other_diff['id'],
-                                        'previous_version': version
-                                    })
-
-                # In some cases, it is this side of the involvement ...
-                # TODO
-                hasInvolvementsToReview = False
-                if len(affected_involvements) == 0:
-                    if diff_keyword in json_diff:
-                        for this_diff in json_diff[diff_keyword]:
-                            if ('id' in this_diff
-                                and this_diff['id'] == str(item.identifier)
-                                and other_diff_keyword in this_diff):
-                                for other_diff in this_diff[other_diff_keyword]:
-                                    version = (other_diff['version']
-                                        if 'version' in other_diff
-                                        else None)
-                                    affected_involvements.append({
-                                        'identifier': other_diff['id'],
-                                        'previous_version': version
-                                    })
-                                    hasInvolvementsToReview = True
+                                affected_involvements.append({
+                                    'identifier': sh_diff['id'],
+                                    'version': version
+                                })
 
                 log.debug('%s affected involvements found: %s'
                     % (len(affected_involvements), affected_involvements))
 
-                # Loop these affected involvements to find out which are the new
-                # versions these changes created.
+                basereview = BaseReview(request)
+
+                # First check if a review can be done for all the involvements
+                reviewPossible = True
+                for ai in affected_involvements:
+                    reviewPossible = (reviewPossible
+                        and basereview._review_check_involvement(
+                            ai['identifier']) > 0)
+
+                if reviewPossible is not True:
+                    ret['msg'] = 'At least one of the involved Stakeholders cannot be reviewed.'
+                    return ret
+
+                # Do a review for all the involvements
                 for ai in affected_involvements:
 
-                    # Query the exact database object
-                    ai_version_query = self.Session.query(
-                            otherMappedClass.version,
-                            otherMappedClass.id
+                    # Query the Stakeholder version that was created by the
+                    # involvement
+                    sh = self.Session.query(
+                            Stakeholder
                         ).\
                         join(Involvement).\
-                        join(mappedClass).\
-                        filter(otherMappedClass.identifier
-                            == ai['identifier']).\
-                        filter(otherMappedClass.previous_version
-                            == ai['previous_version']).\
-                        filter(mappedClass.identifier == item.identifier).\
-                        filter(mappedClass.version == item.version).\
+                        join(Activity).\
+                        filter(Stakeholder.identifier == ai['identifier']).\
+                        filter(Stakeholder.previous_version
+                            == ai['version']).\
+                        filter(Activity.identifier == item.identifier).\
+                        filter(Activity.version == item.version).\
                         first()
 
-                    # Turn it into a feature
-                    otherFeature = otherProtocol.read_one_by_version(
-                        request, ai['identifier'], ai_version_query.version
+                    log.debug('Reviewing involvement: Stakeholder with identifier %s, version %s and status %s'
+                            % (sh.identifier, sh.version, sh.fk_status))
+
+                    # Do a review, but implicitely
+                    reviewed_inv = self._add_review(
+                        request,
+                        sh,
+                        Stakeholder,
+                        user,
+                        implicit = True
                     )
 
-                    # Check if a review of the involvement is possible
-                    reviewPossible = basereview._review_check_involvement(
-                        itemFeature, otherFeature
-                    )
+                    reviewed_involvements.append(reviewed_inv)
 
-                    if reviewPossible == 1 or reviewPossible == 2:
-                        # The other version is either the first version (case 1)
-                        # or it is based on an active version. Either way it can
-                        # be set active as it is.
-
-                        log.debug('Reviewing involvement (case %s): %s with identifier %s and version %s'
-                            % (reviewPossible, otherMappedClass.__table__.name, otherFeature.get_guid(), otherFeature.get_version()))
-
-                        # Query the other item
-                        otherItem = self.Session.query(
-                                otherMappedClass
-                            ).\
-                            filter(otherMappedClass.identifier
-                                == otherFeature.get_guid()).\
-                            filter(otherMappedClass.version
-                                == otherFeature.get_version()).\
-                            first()
-
-                        # Do a review, but implicitely
-                        reviewed_inv = self._add_review(
-                            request,
-                            otherItem,
-                            None,
-                            otherMappedClass,
-                            user,
-                            implicit = True
-                        )
-
-                        if hasInvolvementsToReview is True:
-                            reviewed_involvements.append(reviewed_inv)
-
-                    elif reviewPossible == 3:
-                        # The other version already has an active version, do a
-                        # recalculation of the other version
-
-                        log.debug('Reviewing involvement (case %s): %s with identifier %s and version %s'
-                            % (reviewPossible, otherMappedClass.__table__.name, otherFeature.get_guid(), otherFeature.get_version()))
-
-                        # The active version of the other item is needed to do
-                        # the update upon.
-                        otherActiveItem = self.Session.query(
-                                otherMappedClass
-                            ).\
-                            filter(otherMappedClass.identifier
-                                == otherFeature.get_guid()).\
-                            filter(otherMappedClass.fk_status
-                                == statusArray.index('active')+1).\
-                            first()
-
-                        # Cut out the relevant stuff of the diff
-                        relevant_diff = None
-                        if (other_diff_keyword in json_diff and
-                            json_diff[other_diff_keyword] is not None):
-                            for a in json_diff[other_diff_keyword]:
-                                if ('id' in a and a['id']
-                                    == str(otherActiveItem.identifier)):
-                                    relevant_diff = a
-
-                        # Prepare a changeset
-                        changeset = Changeset()
-                        changeset.user = request.user
-                        changeset.diff = str(self._convert_utf8(json_diff))
-
-                        # Set the other active item to 'inactive'
-                        otherActiveItem.fk_status = statusArray.index('inactive')+1
-
-                        # Apply the changeset to the (previously) active object
-                        ai = otherProtocol._update_object(
-                            request,
-                            otherActiveItem,
-                            relevant_diff,
-                            changeset,
-                            status='active'
-                        )
-
-                        # Get the diff for the involvement
-                        involvement_diff = (relevant_diff[diff_keyword]
-                              if diff_keyword in relevant_diff
-                              else None)
-
-                        # Update the involvements (provide db_object to attach
-                        # them to.
-                        otherProtocol._handle_involvements(
-                            request,
-                            otherActiveItem,
-                            ai,
-                            involvement_diff,
-                            changeset,
-                            False,
-                            db_object = item
-                        )
-
-                        # Set updated other feature as 'edited'
-                        self.Session.query(otherMappedClass).\
-                            get(ai_version_query.id).\
-                            fk_status = statusArray.index('edited')+1
-
-            # Approved
-            if (previous_item is not None
-                and previous_item.fk_status != statusArray.index('active')+1
-                and item.fk_status == statusArray.index('pending')+1):
-                """
-                If the approved pending version is based on a version which
-                is not active anymore, a recalculation of the pending
-                version is needed to include any changes already approved.
-                This creates a new version which is automatically set
-                'active'. The approved pending version becomes 'edited' and
-                the previously active version becomes 'inactive'.
-                """
-
-                #TODO: Check out what the 'previous_item' and 'item' exactly
-                # are and if they are both needed. Also check if it is
-                # possible to delete a version.
-
-                # Review always happens against the active object. Query it
-                # to find out if the reviewed version is based directly onto
-                # it
-                ref_version = self.Session.query(
-                        mappedClass
-                    ).\
-                    filter(mappedClass.identifier == item.identifier).\
-                    filter(mappedClass.fk_status
-                        == statusArray.index('active')+1).\
-                    first()
-
-                if (ref_version is not None
-                    and ref_version.version != item.previous_version):
-
-                    new_diff_query = self.Session.query(
-                            Changeset.diff
-                        ).\
-                        join(mappedClass).\
-                        filter(mappedClass.identifier == item.identifier).\
-                        filter(mappedClass.version == item.version).\
-                        first()
-                    new_diff = json.loads(new_diff_query.diff.replace('\'', '"'))
-
-                    self.configuration = self._read_configuration(
-                        request, config_yaml
-                    )
-
-                    relevant_diff = None
-                    if (diff_keyword in new_diff and
-                        new_diff[diff_keyword] is not None):
-                        for a in new_diff[diff_keyword]:
-                            if 'id' in a and a['id'] == str(item.identifier):
-                                relevant_diff = a
-
-                    ref_version.fk_status = statusArray.index('inactive')+1
-                    item.fk_status = statusArray.index('edited')+1
-
-                    changeset = Changeset()
-                    changeset.user = request.user
-                    changeset.diff = str(self._convert_utf8(new_diff))
-
-                    new_v = self._update_object(
-                        request, ref_version, relevant_diff, changeset,
-                        status='active'
-                    )
-                    inv_diff = (relevant_diff[other_diff_keyword]
-                        if other_diff_keyword in relevant_diff
-                        else None)
-
-                    if hasInvolvementsToReview is True:
-                        for inv in reviewed_involvements:
-                            self._handle_involvements(
-                                request,
-                                ref_version,
-                                new_v,
-                                inv_diff,
-                                changeset,
-                                implicit = True,
-                                db_object = inv
-                            )
-                    else:
-                        self._handle_involvements(
-                            request,
-                            ref_version,
-                            new_v,
-                            inv_diff,
-                            changeset,
-                            implicit = True
-                        )
-
-                    for tg in new_v.tag_groups:
-                        for t in tg.tags:
-                            log.debug("%s: %s (%s)"
-                                % (t.key.key, str(t.value.value), tg.tg_id))
-
-                    recalculated = True
-
-                else:
-                    # Set previous version to 'inactive' if it was active before
-                    if previous_item.fk_status == statusArray.index('active') + 1:
-                        previous_item.fk_status = statusArray.index('inactive') + 1
-                    # Set previous version to 'edited' if it was pending before
-                    elif previous_item.fk_status == statusArray.index('pending') + 1:
-                        previous_item.fk_status = statusArray.index('edited') + 1
+            # Do the actual review of the current item
 
             # Check if Item was deleted (no more tags)
             empty_item = True
@@ -952,23 +737,129 @@ class Protocol(object):
                     empty_item = False
                     break
 
-            if empty_item is True:
-                # Set new version to 'deleted'
-                item.fk_status = statusArray.index('deleted') + 1
-            else:
-                if not recalculated:
-                    # Set new version to 'active'. But first make sure there is no
-                    # other one active by setting any with 'active' to 'inactive'
-                    self.Session.query(mappedClass).\
-                        filter(mappedClass.identifier == item.identifier).\
-                        filter(mappedClass.fk_status == statusArray.index('active')+1).\
-                        update({mappedClass.fk_status: statusArray.index('inactive')+1})
-                    item.fk_status = statusArray.index('active') + 1
+            # Query the previous version of the item
+            previous_version = self.Session.query(
+                    mappedClass
+                ).\
+                filter(mappedClass.identifier == item.identifier).\
+                filter(mappedClass.version == item.previous_version).\
+                first()
 
-        elif review_decision == '2':
+            if (empty_item is True or previous_version is None
+                or previous_version.fk_status == statusArray.index('active')+1):
+                # There is no previous version (the item is brand new) or it is
+                # based directly on the active version.
+                
+                # If there is a previous active version, set it to 'inactive'
+                if previous_version:
+                    previous_version.fk_status = statusArray.index('inactive')+1
+
+                if empty_item is True:
+                    # Set the status of the item to 'deleted'
+                    item.fk_status = statusArray.index('deleted') + 1
+
+                    log.debug('Set version %s of %s with identifier %s to "deleted"'
+                        % (item.version, mappedClass.__table__.name, item.identifier))
+
+                else:
+                    # Set the status of the item to 'active'
+                    item.fk_status = statusArray.index('active')+1
+
+                    log.debug('Set version %s of %s with identifier %s to "active"'
+                        % (item.version, mappedClass.__table__.name, item.identifier))
+
+            else:
+                # Recalculation of the item is needed.
+
+                # Query the active version of the item (review always happens
+                # against the active version)
+                ref_version = self.Session.query(
+                        mappedClass
+                    ).\
+                    filter(mappedClass.identifier == item.identifier).\
+                    filter(mappedClass.fk_status
+                        == statusArray.index('active')+1).\
+                    first()
+
+                if ref_version is None:
+                    ret['msg'] = 'No active version was found to base the review upon.'
+                    return ret
+
+                # Read the configuration
+                self.configuration = self._read_configuration(
+                    request, config_yaml
+                )
+
+                # Query the diff. If it is already available (queried while
+                # handling involvements earlier), no need to query it again
+                if not json_diff:
+                    # Query the diff
+                    diff_query = self.Session.query(
+                            Changeset.diff
+                        ).\
+                        join(mappedClass).\
+                        filter(mappedClass.identifier == item.identifier).\
+                        filter(mappedClass.version == item.version).\
+                        first()
+                    json_diff = json.loads(diff_query.diff.replace('\'', '"'))
+
+                # Cut to the part of the diff which is relevant for this item
+                relevant_diff = None
+                if (diff_keyword in json_diff and
+                    json_diff[diff_keyword] is not None):
+                    for diff in json_diff[diff_keyword]:
+                        if 'id' in diff and diff['id'] == str(item.identifier):
+                            relevant_diff = diff
+
+                if relevant_diff is None:
+                    ret['msg'] = 'The diff seems to be incorrect (identifier not found)'
+                    return ret
+
+                # Set the reference version to 'inactive'
+                ref_version.fk_status = statusArray.index('inactive')+1
+
+                # Set the pending version to 'edited'
+                item.fk_status = statusArray.index('edited')+1
+
+                # Prepare a changeset
+                changeset = Changeset()
+                changeset.user = request.user
+                # TODO: could/should this just be the relevant_diff?
+                changeset.diff = str(self._convert_utf8(json_diff))
+
+                # Create a new version of the object
+                new_version = self._update_object(
+                    request, ref_version, relevant_diff, changeset,
+                    status='active'
+                )
+
+                if len(reviewed_involvements) > 0:
+                    # Attach the involvements which were reviewed earlier
+                    inv_diff = (relevant_diff[other_diff_keyword]
+                        if other_diff_keyword in relevant_diff
+                        else None)
+                    for inv in reviewed_involvements:
+                        self._handle_involvements(
+                            request,
+                            ref_version,
+                            new_version,
+                            inv_diff,
+                            changeset,
+                            implicit = True,
+                            db_object = inv
+                        )
+
+                log.debug('Created new version out of version %s of %s with identifier %s'
+                        % (item.version, mappedClass.__table__.name, item.identifier))
+
+        elif review_decision == 2:
             # Rejected: Do not modify previous version and set new version to
             # 'rejected'
             item.fk_status = statusArray.index('rejected') + 1
+
+        else:
+            ret['msg'] = 'Unknown review decision'
+            return ret
 
         # Add review stuff
         item.user_review = user
@@ -1261,6 +1152,221 @@ class Protocol(object):
 
         return item
 
+
+    def recalculate_diffs(self, request, mappedClass, uid, old_version,
+        new_diff, old_diff):
+        """
+        request: The request
+        uid: The identifier of the object
+        old_version: The old version of the object
+        new_diff: A diff containing only the part which is relevant to the
+          object: 
+          {
+            'taggroups': [],
+            'version': '',
+            ...
+          }
+        old_diff: A whole changeset diff:
+          {
+            'activities': []
+          }
+          or
+          {
+            'stakeholders': []
+          }
+        """
+
+        def _merge_involvements(old_diff, new_inv):
+            """
+            Helper function to merge a new involvement diff (new_inv) into an
+            existing diff of an Activity.
+            """
+            
+            if 'stakeholders' in old_diff:
+                # Loop the involvements of the old diff to find if some of the
+                # changes to the new diff are made to involvements already
+                # modified by the old diff
+                new_involvements_processed = False
+                for old_inv in old_diff['stakeholders']:
+                    
+                    if ('id' in old_inv and 'id' in new_inv 
+                        and old_inv['id'] == new_inv['id']):
+                        
+                        # TODO: Is this simple replacement enough?
+                        if new_inv['op'] == 'delete' and old_inv['op'] == 'add':
+                            # Replace
+                            old_inv = new_inv
+                            
+#                            log.debug('Replaced old involvement (%s) with new involvement (%s)' % (old_inv, new_inv))
+                                            
+                            new_involvements_processed = True
+                
+            
+                if new_involvements_processed is False:
+                    # New involvements did not affect any of the already 
+                    # modified involvements. It is assumed that it is brand new
+                    # and is added to the existing diff
+                    if 'stakeholders' in old_diff:
+                        old_diff['stakeholders'].append(new_inv)
+                    else:
+                        old_diff['stakeholders'] = new_inv
+            
+            else:
+                # If no involvements in old_diff, add the one from the new_inv
+                # as it is
+                old_diff['stakeholders'] = new_inv
+                
+#                log.debug('Added new involvement diff: %s' % new_inv)
+                
+            return old_diff
+
+        def _merge_taggroups(old_diff, new_tg):
+            """
+            Helper function to merge a new taggroup diff (new_tg) into an
+            existing diff of an Activity or a Stakeholder.
+            """
+            
+            if 'taggroups' in old_diff:
+                # Loop the taggroups of the old diff to find if some of the
+                # changes of the new diff are made to taggroups already modified
+                # by the old diff
+                new_taggroup_processed = False
+                for old_tg in old_diff['taggroups']:
+                    if ('tg_id' in old_tg and 'tg_id' in new_tg
+                        and old_tg['tg_id'] == new_tg['tg_id']):
+                        # An existing taggroup diff has further changes
+
+#                        log.debug('Merging diff of taggroups. Old taggroup diff:\n%s\nNew taggroup diff:\n%s'
+#                            % (old_tg, new_tg))
+
+                        tags_to_delete = []
+                        tags_to_add = []
+
+                        for old_t in old_tg['tags']:
+                            # Loop through the tags of the old diff
+
+                            for new_t in new_tg['tags']:
+                                # Loop through the tags of the new diff
+
+                                # If there is a tag previously added (old_t['op'] == 'add') and now to be deleted again (new_t['op'] == 'delete'), then remove it
+                                if (new_t['op'] == 'delete' 
+                                    and old_t['op'] == 'add' 
+                                    and new_t['key'] == old_t['key'] 
+                                    and new_t['value'] == str(old_t['value'])):
+                                    # Remove
+                                    tags_to_delete.append(old_t)
+
+                                else:
+                                    # Add new diff
+                                    tags_to_add.append(new_t)
+
+                        for tdt in tags_to_delete:
+                            old_tg['tags'].remove(tdt)
+
+#                            log.debug('Removed old tag diff: %s' % tdt)
+
+                        for tda in tags_to_add:
+                            old_tg['tags'].append(tda)
+
+#                            log.debug('Added new tag diff: %s' % tda)
+
+                        new_taggroup_processed = True
+
+                if new_taggroup_processed is False or 'tg_id' not in new_tg:
+                    # New taggroup did not affect any of the already modified
+                    # taggroups or it has no tg_id. It is therefore assumed that
+                    # it is brand new and is added to the old diff.
+                    if 'taggroups' in old_diff:
+                        old_diff['taggroups'].append(new_tg)
+                    else:
+                        old_diff['taggroups'] = new_tg
+
+            else:
+                # If no taggroups yet in old_diff, add the one from the new_tg
+                # as it is
+                old_diff['taggroups'] = new_tg
+
+#                log.debug('Added new taggroup diff: %s' % new_tg)
+
+            return old_diff
+
+        # Activity or Stakeholder?
+        if mappedClass == Activity:
+            diff_keyword = 'activities'
+        elif mappedClass == Stakeholder:
+            diff_keyword = 'stakeholders'
+        else:
+            return None
+
+        rel_diff = None
+        # Cut down old_diff to find the interesting stuff
+        if diff_keyword in old_diff and old_diff[diff_keyword] is not None:
+            for diff in old_diff[diff_keyword]:
+                if 'id' in diff and diff['id'] == str(uid):
+                    rel_diff = diff
+
+        if rel_diff is None:
+            return None
+
+        log.debug('Diff before recalculation:\n%s' % rel_diff)
+
+        # The tg_id's are needed to make a meaningful merge of the diffs. If
+        # they are not known (eg. when looking at the diff of the very first
+        # version, try to add them by looking them up in the database.
+        if 'taggroups' in rel_diff:
+            feature = None
+            for rel_tg in rel_diff['taggroups']:
+                if 'tg_id' not in rel_tg:
+
+                    if feature is None:
+                        # Query the feature
+                        # TODO: Does this still work in different languages?
+                        feature = self.read_one_by_version(request, uid,
+                            old_version)
+
+                    # Try to find the tg_id of the rel_tg. All the tags of
+                    # rel_tg need to be found in the same taggroup of the
+                    # feature
+                    rel_tags = {}
+                    rel_keys = []
+                    # Have a look at each tag in rel_tg
+                    for rel_t in rel_tg['tags']:
+                        rel_tags[rel_t['key']] = rel_t['value']
+                        rel_keys.append(rel_t['key'])
+                    found_tg_id = None
+                    for f_tg in feature.get_taggroups():
+                        if found_tg_id is None:
+                            f_tags = {}
+                            for f_t in f_tg.get_tags():
+                                f_tags[f_t.get_key()] = f_t.get_value()
+                            if list(set(rel_tags) & set(f_tags)) == rel_keys:
+                                found_tg_id = f_tg.get_tg_id()
+                    if found_tg_id is not None:
+                        rel_tg['tg_id'] = found_tg_id
+
+        # Merge taggroups
+        if 'taggroups' in new_diff:
+
+#            log.debug('Diff before doing taggroup merges:\n%s' % rel_diff)
+
+            for new_tg in new_diff['taggroups']:
+                rel_diff = _merge_taggroups(rel_diff, new_tg)
+
+#            log.debug('Diff after doing taggroup merges:\n%s' % rel_diff)
+
+        # Merge involvements (only for Stakeholders)
+        if mappedClass == Activity and 'stakeholders' in new_diff:
+            
+#            log.debug('Diff before doing involvement merges:\n%s' % rel_diff)
+            
+            for new_inv in new_diff['stakeholders']:
+                rel_diff = _merge_involvements(rel_diff, new_inv)
+            
+#            log.debug('Diff after doing involvement merges:\n%s' % rel_diff)
+            
+        log.debug('Diff after recalculation:\n%s' % rel_diff)
+
+        return rel_diff
 
     def _key_value_is_valid(self, request, configuration, key, value):
         """

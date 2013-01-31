@@ -218,7 +218,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
 
         if (form && version && identifier && type) {
             form.submit({
-                url: type + '/review',
+                url: '/' + type + '/review',
                 params: {
                     version: version,
                     identifier: identifier
