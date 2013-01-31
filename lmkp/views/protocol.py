@@ -1153,12 +1153,34 @@ class Protocol(object):
         return item
 
 
-    def recalculate_diffs(self, request, mappedClass, uid, old_version, new_diff, old_diff):
+    def recalculate_diffs(self, request, mappedClass, uid, old_version,
+        new_diff, old_diff):
         """
-        new_diff: only the relevant part of a diff
+        request: The request
+        uid: The identifier of the object
+        old_version: The old version of the object
+        new_diff: A diff containing only the part which is relevant to the
+          object: 
+          {
+            'taggroups': [],
+            'version': '',
+            ...
+          }
+        old_diff: A whole changeset diff:
+          {
+            'activities': []
+          }
+          or
+          {
+            'stakeholders': []
+          }
         """
 
         def _merge_involvements(old_diff, new_inv):
+            """
+            Helper function to merge a new involvement diff (new_inv) into an
+            existing diff of an Activity.
+            """
             
             if 'stakeholders' in old_diff:
                 # Loop the involvements of the old diff to find if some of the
@@ -1175,7 +1197,7 @@ class Protocol(object):
                             # Replace
                             old_inv = new_inv
                             
-                            log.debug('Replaced old involvement (%s) with new involvement (%s)' % (old_inv, new_inv))
+#                            log.debug('Replaced old involvement (%s) with new involvement (%s)' % (old_inv, new_inv))
                                             
                             new_involvements_processed = True
                 
@@ -1194,13 +1216,15 @@ class Protocol(object):
                 # as it is
                 old_diff['stakeholders'] = new_inv
                 
-                log.debug('Added new involvement diff: %s' % new_inv)
+#                log.debug('Added new involvement diff: %s' % new_inv)
                 
             return old_diff
-            
-            
 
         def _merge_taggroups(old_diff, new_tg):
+            """
+            Helper function to merge a new taggroup diff (new_tg) into an
+            existing diff of an Activity or a Stakeholder.
+            """
             
             if 'taggroups' in old_diff:
                 # Loop the taggroups of the old diff to find if some of the
@@ -1212,8 +1236,11 @@ class Protocol(object):
                         and old_tg['tg_id'] == new_tg['tg_id']):
                         # An existing taggroup diff has further changes
 
-                        log.debug('Merging diff of taggroups. Old taggroup diff:\n%s\nNew taggroup diff:\n%s'
-                            % (old_tg, new_tg))
+#                        log.debug('Merging diff of taggroups. Old taggroup diff:\n%s\nNew taggroup diff:\n%s'
+#                            % (old_tg, new_tg))
+
+                        tags_to_delete = []
+                        tags_to_add = []
 
                         for old_t in old_tg['tags']:
                             # Loop through the tags of the old diff
@@ -1226,16 +1253,22 @@ class Protocol(object):
                                     and old_t['op'] == 'add' 
                                     and new_t['key'] == old_t['key'] 
                                     and new_t['value'] == str(old_t['value'])):
-                                    # Replace
-                                    old_tg['tags'].remove(old_t)
-
-                                    log.debug('Removed old tag diff: %s' % old_t)
+                                    # Remove
+                                    tags_to_delete.append(old_t)
 
                                 else:
                                     # Add new diff
-                                    old_tg['tags'].append(new_t)
+                                    tags_to_add.append(new_t)
 
-                                    log.debug('Added new tag diff: %s' % new_t)
+                        for tdt in tags_to_delete:
+                            old_tg['tags'].remove(tdt)
+
+#                            log.debug('Removed old tag diff: %s' % tdt)
+
+                        for tda in tags_to_add:
+                            old_tg['tags'].append(tda)
+
+#                            log.debug('Added new tag diff: %s' % tda)
 
                         new_taggroup_processed = True
 
@@ -1253,7 +1286,7 @@ class Protocol(object):
                 # as it is
                 old_diff['taggroups'] = new_tg
 
-                log.debug('Added new taggroup diff: %s' % new_tg)
+#                log.debug('Added new taggroup diff: %s' % new_tg)
 
             return old_diff
 
@@ -1274,6 +1307,8 @@ class Protocol(object):
 
         if rel_diff is None:
             return None
+
+        log.debug('Diff before recalculation:\n%s' % rel_diff)
 
         # The tg_id's are needed to make a meaningful merge of the diffs. If
         # they are not known (eg. when looking at the diff of the very first
@@ -1312,22 +1347,22 @@ class Protocol(object):
         # Merge taggroups
         if 'taggroups' in new_diff:
 
-            log.debug('Diff before doing taggroup merges:\n%s' % rel_diff)
+#            log.debug('Diff before doing taggroup merges:\n%s' % rel_diff)
 
             for new_tg in new_diff['taggroups']:
                 rel_diff = _merge_taggroups(rel_diff, new_tg)
 
-            log.debug('Diff after doing taggroup merges:\n%s' % rel_diff)
+#            log.debug('Diff after doing taggroup merges:\n%s' % rel_diff)
 
         # Merge involvements (only for Stakeholders)
         if mappedClass == Activity and 'stakeholders' in new_diff:
             
-            log.debug('Diff before doing involvement merges:\n%s' % rel_diff)
+#            log.debug('Diff before doing involvement merges:\n%s' % rel_diff)
             
             for new_inv in new_diff['stakeholders']:
                 rel_diff = _merge_involvements(rel_diff, new_inv)
             
-            log.debug('Diff after doing involvement merges:\n%s' % rel_diff)
+#            log.debug('Diff after doing involvement merges:\n%s' % rel_diff)
             
         log.debug('Diff after recalculation:\n%s' % rel_diff)
 

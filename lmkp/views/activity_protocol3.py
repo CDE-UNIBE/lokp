@@ -1682,15 +1682,20 @@ class ActivityProtocol3(Protocol):
         - 'status'
         """
 
-        # TODO: Continue work here ...
-        print "**************"
-        print activity_dict
-        diff = json.loads(old_activity.changeset.diff.replace('\'', '"'))
-
         if old_activity.fk_status == 1:
-            # Changes were made to a pending version
+            # If changes were made to a pending version, this pending version is
+            # set to 'edited' and the newly created version contains also the
+            # changes of the edited version. To do this, a new diff is
+            # calculated which is then applied to the previous version of the
+            # edited pending version.
 
-            new_dict = self.recalculate_diffs(
+            # Set the edited pending version to 'edited'
+            old_activity.fk_status = 6
+
+            # Query the diff of the edited pending version and recalculate it
+            # with the recent changes to the pending version
+            diff = json.loads(old_activity.changeset.diff.replace('\'', '"'))
+            activity_dict = self.recalculate_diffs(
                 request,
                 Activity,
                 old_activity.identifier,
@@ -1698,19 +1703,27 @@ class ActivityProtocol3(Protocol):
                 activity_dict,
                 diff
             )
-            print "-------------"
-            print new_dict
-            print "-------------"
-            
-            
 
+            # Query the previous version of the edited pending version
+            ref_version = self.Session.query(
+                    Activity
+                ).\
+                filter(Activity.identifier == old_activity.identifier).\
+                filter(Activity.version == old_activity.previous_version).\
+                first()
 
+            if ref_version is None:
+                # If there is no previous version, the edited pending version is
+                # brand new.
+                previous_version = None
+            else:
+                # Use the previous version of the edited pending version as base
+                # to apply the diff on
+                old_activity = ref_version
+                previous_version = old_activity.version
 
-        # Query the
-        print old_activity
-        print activity_dict
-
-        #adsf
+        else:
+            previous_version = old_activity.version
 
         # Query latest version of current Activity (used to increase version)
         latest_version = self.Session.query(Activity).\
@@ -1730,7 +1743,7 @@ class ActivityProtocol3(Protocol):
         # Create new Activity
         new_activity = Activity(activity_identifier=old_activity.identifier,
                                 version=(latest_version.version + 1),
-                                previous_version=old_activity.version,
+                                previous_version=previous_version,
                                 point=new_geom)
 
         # Status (default: 'pending')
@@ -1750,11 +1763,14 @@ class ActivityProtocol3(Protocol):
         # Add it to the database
         self.Session.add(new_activity)
 
+        log.debug('Applying diff:\n%s\nto version %s of activity %s'
+            % (activity_dict, previous_version, old_activity.identifier))
+
         a = self._apply_diff(
             request,
             Activity,
             old_activity.identifier,
-            old_activity.version,
+            previous_version,
             activity_dict,
             new_activity,
             db = True

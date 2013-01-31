@@ -702,6 +702,11 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
         });
         loadingwin.show();
 
+        // Make sure the item is an instance of model.Stakeholder
+        if (!item.modelName || item.modelName != 'Lmkp.model.Stakeholder') {
+            item = null;
+        }
+
         // Create and load a store with all mandatory keys
         var mandatoryStore = Ext.create('Lmkp.store.StakeholderConfig');
         mandatoryStore.filter('allowBlank', false);

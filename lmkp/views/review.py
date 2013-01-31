@@ -323,29 +323,27 @@ class BaseReview(BaseView):
         """
         Returns the current active version and the pending version to review
         """
+        # TODO: Is this still needed?
 
         def _check_mandatory_keys():
             mandatory_keys = get_mandatory_keys(self.request, 'a')
             log.debug(mandatory_keys)
 
         # Get the current active version number
-        av = Session.query(mappedClass.version).filter(mappedClass.identifier == uid).filter(mappedClass.fk_status == 2).first()
-
-        try:
-            active_version = int(av[0])
-        except TypeError:
-            return None, 1
+        av = Session.query(
+                mappedClass.version
+            ).\
+            filter(mappedClass.identifier == uid).\
+            filter(mappedClass.fk_status == 2).\
+            first()
+        active_version = av.version if av is not None else None
 
         # Get the lowest pending version
         pv = Session.query(min(mappedClass.version)).\
             filter(mappedClass.identifier == uid).\
             filter(mappedClass.fk_status == 1).\
             first()
-
-        try:
-            pending_version = int(pv[0])
-        except TypeError:
-            pending_version = None
+        pending_version = pv.version if pv is not None else None
 
         # Some logging
         log.debug("active version: %s" % active_version)
@@ -510,8 +508,8 @@ class BaseReview(BaseView):
             if ((review is False or i.fk_status == 1 or i.fk_status == 2)
                 and stakeholderParamChanges is True):
                 available_versions.append({
-                    'version': i[0],
-                    'status': i[1]
+                    'version': i.version,
+                    'status': i.fk_status
                 })
 
 #        log.debug("Available Versions for object %s:\n%s" % (uid, available_versions))
@@ -550,7 +548,7 @@ class BaseReview(BaseView):
             ref_version = int(versions[0])
         except IndexError:
             #
-            ref_version = active_version if active_version is not None else 1
+            ref_version = active_version if active_version is not None else 0
         except ValueError as e:
             raise HTTPBadRequest("ValueError: %s" % e)
 
