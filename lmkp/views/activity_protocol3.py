@@ -164,6 +164,7 @@ class ActivityProtocol3(Protocol):
 
     def __init__(self, Session):
         self.Session = Session
+        self.configuration = None
 
     def create(self, request, data=None):
         """
@@ -1765,6 +1766,12 @@ class ActivityProtocol3(Protocol):
 
         log.debug('Applying diff:\n%s\nto version %s of activity %s'
             % (activity_dict, previous_version, old_activity.identifier))
+
+        if self.configuration is None:
+            # Get the current configuration file to validate key and value pairs
+            self.configuration = self._read_configuration(
+                request, 'activity.yml'
+            )
 
         a = self._apply_diff(
             request,
