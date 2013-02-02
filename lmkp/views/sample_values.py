@@ -1065,10 +1065,10 @@ def moderation_tests(request):
         print ""
         validCreateSetup = True
         for test in createTests:
-            log.debug('Testing setup of test case %s' % test.testNumber)
+            log.debug('[Create] Testing setup of test case %s' % test.testNumber)
             success = test.testSetup()
             if not success:
-                log.debug('Setup of test case %s is not valid!' % test.testNumber)
+                log.debug('[Create] Setup of test case %s is not valid!' % test.testNumber)
             validCreateSetup = success and validCreateSetup
         
         # If the set up is ok, do the tests
@@ -1078,14 +1078,14 @@ def moderation_tests(request):
             print "-----------------   [Create] Running the tests   -------------------"
             print ""
             for test in createTests:
-                log.debug('Running test case %s' % test.testNumber)
+                log.debug('[Create] Running test case %s' % test.testNumber)
                 success = test.doTest()
                 if success is True:
                     testCount += len(test.results)
                 if not success:
                     for r in test.results:
                         if r.success is not True:
-                            errorMessage = ('A test of test case %s (%s) failed with message: %s'
+                            errorMessage = ('[Create] A test of test case %s (%s) failed with message: %s'
                                 % (test.testNumber, test.testDescription, r.msg))
                             log.debug(errorMessage)
                             errorStack.append(errorMessage)
@@ -1103,16 +1103,36 @@ def moderation_tests(request):
         print ""
         validModerationSetup = True
         for test in moderationTests:
-            log.debug('Testing setup of test case %s' % test.testNumber)
+            log.debug('[Moderation] Testing setup of test case %s' % test.testNumber)
             success = test.testSetup()
             if not success:
-                log.debug('Setup of test case %s is not valid!' % test.testNumber)
+                for r in test.results:
+                    if r.success is not True:
+                        errorMessage = ('[Moderation] Setup of test case %s is not valid: %s'
+                            % (test.testNumber, r.msg))
+                        log.debug(errorMessage)
+                        errorStack.append(errorMessage)
             validModerationSetup = success and validModerationSetup
     
         # If the set up is ok, do the tests
-        print ""
-        print "---------------   [Moderation] Testing the set up   ----------------"
-        print ""
+        if validModerationSetup is True:
+            log.debug('Test setup is valid!')
+            print ""
+            print "---------------   [Moderation] Running the tests   -----------------"
+            print ""
+            for test in moderationTests:
+                log.debug('[Moderation] Running test case %s' % test.testNumber)
+                success = test.doTest()
+                if success is True:
+                    testCount += len(test.results)
+                if not success:
+                    for r in test.results:
+                        if r.success is not True:
+                            errorMessage = ('[Moderation] A test of test case %s (%s) failed with message: %s'
+                                % (test.testNumber, test.testDescription, r.msg))
+                            log.debug(errorMessage)
+                            errorStack.append(errorMessage)
+
     
     print ""
     print "********************************************************************"
@@ -1124,16 +1144,16 @@ def moderation_tests(request):
     print ""
     if ((doCreateTests is True and validCreateSetup is True)
         or (doModerationTests is True and validModerationSetup is True)):
-        log.debug('[Create] Ran %s tests, %s of them failed.' % (testCount, len(errorStack)))
+        log.debug('Ran %s tests, %s of them failed.' % (testCount, len(errorStack)))
         
-        if len(errorStack) > 0:
-            print ""
-            print "*** ERRORS ***"
-            for e in errorStack:
-                print e
     else:
         log.debug('Test setup is not valid!')
-    
+
+    if len(errorStack) > 0:
+        print ""
+        print "*** ERRORS ***"
+        for e in errorStack:
+            print e
     
     
     

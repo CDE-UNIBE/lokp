@@ -22,34 +22,14 @@ class CreateActivities1(CreateBase):
         return self.countVersions(Activity, self.identifier1) == 0
         
     def doTest(self):
-        
-        diff = {}
-        activities = []
-        
-        activities.append(self.putItemDiffTogether(
-            taggroups = self.kvToTaggroups(self.getSomeActivityTags(1)),
-            id = self.identifier1,
-            version = 1
-        ))
-        
-        diff['activities'] = activities
-        
-        
-        x = self.createDiff('activities', [
-            self.createItemDiff(
-                self.identifier1,
-                1,
-                
-            )
-        ]) 
-        
-        
-        diff2 = self.createActivityDiff()
-        
-        print "****"
-        print diff
-        print "****"
-        print diff2
+
+        diff = self.getSomeWholeDiff(
+            'activities',
+            self.getSomeActivityTags(1),
+            self.identifier1,
+            1,
+            'add'
+        )
         
         # Create the Activitiy
         if (self.handleResult(
@@ -74,6 +54,5 @@ class CreateActivities1(CreateBase):
             'New Activity has not all taggroups.'
         )) is not True:
             return False
-        
         
         return True
