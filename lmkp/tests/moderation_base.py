@@ -1,38 +1,31 @@
 import requests
 import logging
 
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm.exc import MultipleResultsFound
+from lmkp.tests.test_base import Test_Base
 
 log = logging.getLogger(__name__)
 
-url = 'http://localhost:6543/activities/review'
+# Constants
+review_url = 'http://localhost:6543/activities/review'
+moderator_username = 'user2'
+moderator_password = 'asdf'
+moderator_profile = 'LA'
 
-class ModerationBase(object):
+class ModerationBase(Test_Base):
 
     def __init__(self):
         pass
 
-
-    def query0ne(self, query):
-        try:
-            result = query.one()
-        except NoResultFound:
-            return False
-        except MultipleResultsFound:
-            return False
-        return result
-
-    def doRequest(self, identifier, version, decision, comment=''):
+    def doReview(self, identifier, version, decision, comment=''):
 
         # Initialize Session
         session = requests.Session()
 
         # Authentification
-        session.auth = ('user2', 'asdf')
+        session.auth = (moderator_username, moderator_password)
 
         # Prepare cookies
-        cookies = dict(_PROFILE_='LA')
+        cookies = dict(_PROFILE_=moderator_profile)
 
         # Prepare payload
         payload = {
@@ -43,12 +36,13 @@ class ModerationBase(object):
         }
 
         # Do the post request
-        request = session.post(url, data=payload, cookies=cookies)
+        request = session.post(review_url, data=payload, cookies=cookies)
 
         json = request.json()
 
         return json['success']
 
+    """
     def findKeyValue(self, feature, key, value):
 
         found = 0
@@ -62,4 +56,5 @@ class ModerationBase(object):
                       (key, value, found))
 
         return found == 1
+    """
         
