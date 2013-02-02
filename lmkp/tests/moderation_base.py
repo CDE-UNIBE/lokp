@@ -38,23 +38,12 @@ class ModerationBase(Test_Base):
         # Do the post request
         request = session.post(review_url, data=payload, cookies=cookies)
 
-        json = request.json()
+        try:
+            json = request.json()
+            return json['success']
+        except:
+            print "*** Request failed with response: %s" % request
+            return False
 
-        return json['success']
 
-    """
-    def findKeyValue(self, feature, key, value):
-
-        found = 0
-        for taggroup in feature.get_taggroups():
-            tag = taggroup.get_tag_by_key(key)
-            if tag is not None and tag.get_value() == str(value):
-                found += 1
-
-        if found > 1:
-            log.debug('Key (%s) and value (%s) found more than once (%s times)' %
-                      (key, value, found))
-
-        return found == 1
-    """
         

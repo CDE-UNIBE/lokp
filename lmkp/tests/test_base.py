@@ -28,7 +28,20 @@ class Test_Base(object):
             ).\
             filter(mappedClass.identifier == identifier).\
             count()
-        
+
+    def getUser(self, userid):
+        if userid == 1:
+            username = 'user1'
+
+        if username is not None:
+            password = 'asdf'
+
+            return {
+                'username': username,
+                'password': password
+            }
+
+        return None
     
     def findKeyValue(self, feature, key, value):
 
