@@ -5,27 +5,28 @@ from lmkp.tests.test_base import Test_Base
 
 log = logging.getLogger(__name__)
 
-# Constants
-review_url = 'http://localhost:6543/activities/review'
-moderator_username = 'user2'
-moderator_password = 'asdf'
-moderator_profile = 'LA'
-
 class ModerationBase(Test_Base):
 
     def __init__(self):
         pass
 
-    def doReview(self, identifier, version, decision, comment=''):
+    def doReview(self, itemType, identifier, version, decision, comment=''):
+
+        """
+
+        """
+        moderator = self.getUser(2)
+        profile = 'LA'
+
 
         # Initialize Session
         session = requests.Session()
 
         # Authentification
-        session.auth = (moderator_username, moderator_password)
+        session.auth = (moderator['username'], moderator['password'])
 
         # Prepare cookies
-        cookies = dict(_PROFILE_=moderator_profile)
+        cookies = dict(_PROFILE_=profile)
 
         # Prepare payload
         payload = {
@@ -36,7 +37,8 @@ class ModerationBase(Test_Base):
         }
 
         # Do the post request
-        request = session.post(review_url, data=payload, cookies=cookies)
+        # TODO!!!
+        request = session.post(self.getReviewUrl(itemType), data=payload, cookies=cookies)
 
         try:
             json = request.json()
@@ -45,5 +47,10 @@ class ModerationBase(Test_Base):
             print "*** Request failed with response: %s" % request
             return False
 
-
-        
+    def getReviewUrl(self, itemType):
+        if itemType == 'activities':
+            return 'http://localhost:6543/activities/review'
+        elif itemType == 'stakeholders':
+            return 'http://localhost:6543/stakeholders/review'
+        else:
+            return None
