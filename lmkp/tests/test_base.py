@@ -32,6 +32,8 @@ class Test_Base(object):
     def getUser(self, userid):
         if userid == 1:
             username = 'user1'
+        elif userid == 2:
+            username = 'user2'
 
         if username is not None:
             password = 'asdf'
@@ -56,7 +58,16 @@ class Test_Base(object):
                       (key, value, found))
 
         return found == 1
-    
+
+    def findTgidByKeyValue(self, feature, key, value):
+
+        for taggroup in feature.get_taggroups():
+            tag = taggroup.get_tag_by_key(key)
+            if tag is not None and tag.get_value() == str(value):
+                return taggroup.get_tg_id()
+
+        return None
+
     def countTaggroups(self, feature):
         return len(feature.get_taggroups())
     

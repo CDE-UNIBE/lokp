@@ -1,13 +1,12 @@
 import logging
 import requests
 
-
 from lmkp.tests.test_base import Test_Base
 
 class CreateBase(Test_Base):
     
     def __init__(self):
-        pass
+        self.results = []
     
     def doCreate(self, url, diff, user, profile = 'LA'):
         
@@ -56,6 +55,57 @@ class CreateBase(Test_Base):
 
         return diff
 
+    def createAndCheckFirstItem(self, testObject, itemType, mappedClass, url,
+        tags, identifier, user, profile='LA'):
+        """
+        Wrapper to create a new item and check if it is there or not.
+        """
+
+        # Check that the item does not yet exist
+        if (testObject.handleResult(
+            self.countVersions(mappedClass, identifier) == 0,
+            'Item (%s) exists already.' % itemType
+        )) is not True:
+            return False
+
+        # Prepare a geometry if needed
+        geometry = (self.getSomeGeometryDiff(profile)
+            if itemType == 'activities' else None)
+
+        # Prepare a diff
+        diff = self.getSomeWholeDiff(
+            itemType,
+            tags,
+            identifier,
+            1,
+            'add',
+            geometry = geometry
+        )
+
+        # Create it
+        created = self.doCreate(url, diff, user)
+
+        # Check if it is there
+        item = testObject.protocol.read_one_by_version(
+            testObject.request, identifier, 1
+        )
+
+        # Check if it is there
+        if (testObject.handleResult(
+            (created is True and item is not None),
+            'Item (%s) exists already.' % itemType
+        )) is not True:
+            return False
+
+        # Make sure there is only one version
+        if (testObject.handleResult(
+            self.countVersions(mappedClass, identifier) == 1,
+            'There was more than one Item (%s) created.' % itemType
+        )) is not True:
+            return False
+
+        return item
+
     def getSomeWholeDiff(self, itemType, tags, identifier, version, op,
         geometry=None):
         """
@@ -91,24 +141,6 @@ class CreateBase(Test_Base):
             tags.append(tagDiff)
         return tags
         
-        
-    def putItemDiffTogether(self, **kwargs):
-        
-        diff = {}
-        
-        taggroups = kwargs.pop('taggroups', None)
-        if taggroups is not None:
-            diff['taggroups'] = taggroups
-        
-        id = kwargs.pop('id', None)
-        if id is not None:
-            diff['id'] = id
-        
-        version = kwargs.pop('version', None)
-        if version is not None:
-            diff['version'] = version
-        
-        return diff
 
     def getSomeGeometryDiff(self, profile):
 
@@ -145,7 +177,7 @@ class CreateBase(Test_Base):
             ]
         
         return []
-    
+
     def kvToTaggroups(self, kvArray):
         taggroups = []
         for kv in kvArray:
@@ -157,4 +189,10 @@ class CreateBase(Test_Base):
                 tags.append(tag)
             taggroups.append({'tags': tags})
         return taggroups
-        
+
+    def getCreateUrl(self, itemType):
+        if itemType == 'activities':
+            return 'http://localhost:6543/activities'
+        elif itemType == 'stakeholders':
+            return 'http://localhost:6543/stakeholders'
+        return None
