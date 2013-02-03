@@ -32,6 +32,9 @@ class BaseReview(BaseView):
 
     def _compare_taggroups(self, old, new):
 
+        print old.get_version()
+        print new.get_version()
+
         table = []
 
         if old is None and new is not None:
@@ -192,11 +195,12 @@ class BaseReview(BaseView):
                 reviewable = self._review_check_involvement(
                     inv._feature.get_guid()
                 )
+                current_row['reviewable'] = reviewable
 
                 current_row['new'] = {
                     'class': 'add involvement',
-                    'tags': new_tags,
-                    'reviewable': reviewable
+                    'identifier': inv._feature.get_guid(),
+                    'tags': new_tags
                 }
 
                 involvements_table.append(current_row)
@@ -309,11 +313,12 @@ class BaseReview(BaseView):
             reviewable = self._review_check_involvement(
                     inv._feature.get_guid()
                 )
+            current_row['reviewable'] = reviewable
 
             current_row['new'] = {
                 'class': 'add involvement',
-                'tags': new_inv_tags,
-                'reviewable': reviewable
+                'identifier': inv._feature.get_guid(),
+                'tags': new_inv_tags
             }
             involvements_table.append(current_row)
 

@@ -45,6 +45,7 @@ class StakeholderProtocol3(Protocol):
 
     def __init__(self, Session):
         self.Session = Session
+        self.configuration = None
 
     def create(self, request, data=None):
         """
@@ -1016,10 +1017,15 @@ class StakeholderProtocol3(Protocol):
                 filter(or_(* self._get_involvement_status(request)))
 
             # Additional filter to select only the latest (pending or not)
+            # Activity involved with the relevant Stakeholders
             latest_filter = self.Session.query(
                     Activity.activity_identifier,
                     func.max(Activity.version).label('max_version')
                 ).\
+                join(Involvement).\
+                join(relevant_stakeholders,
+                    relevant_stakeholders.c.order_id
+                        == Involvement.fk_stakeholder).\
                 group_by(Activity.activity_identifier).\
                 subquery()
 
@@ -1395,12 +1401,26 @@ class StakeholderProtocol3(Protocol):
         - 'status'
         """
 
-        if old_stakeholder.fk_status == 1:
+        # Query the previous version of the edited pending version
+        ref_version = self.Session.query(
+                Stakeholder
+            ).\
+            filter(Stakeholder.identifier == old_stakeholder.identifier).\
+            filter(Stakeholder.version == old_stakeholder.previous_version).\
+            first()
+
+        if (not (ref_version is None and 'stakeholders' not in stakeholder_dict)
+            and old_stakeholder.fk_status == 1):
             # If changes were made to a pending version, this pending version is
             # set to 'edited' and the newly created version contains also the
             # changes of the edited version. To do this, a new diff is
             # calculated which is then applied to the previous version of the
             # edited pending version.
+            
+            # However, if the Stakeholder has no reference version and is
+            # updated through an involvement, do not set the edited pending
+            # version to 'edited' because it would then not be reviewable
+            # anymore.
 
             # Set the edited pending version to 'edited'
             old_stakeholder.fk_status = 6
@@ -1416,14 +1436,6 @@ class StakeholderProtocol3(Protocol):
                 stakeholder_dict,
                 diff
             )
-
-            # Query the previous version of the edited pending version
-            ref_version = self.Session.query(
-                    Stakeholder
-                ).\
-                filter(Stakeholder.identifier == old_stakeholder.identifier).\
-                filter(Stakeholder.version == old_stakeholder.previous_version).\
-                first()
 
             if ref_version is None:
                 # If there is no previous version, the edited pending version is
@@ -1471,6 +1483,12 @@ class StakeholderProtocol3(Protocol):
 
         log.debug('Applying diff:\n%s\nto version %s of stakeholder %s'
             % (stakeholder_dict, previous_version, old_stakeholder.identifier))
+
+        if not self.configuration:
+            # Get the current configuration file to validate key and value pairs
+            self.configuration = self._read_configuration(
+                request, 'stakeholder.yml'
+            )
 
         sh = self._apply_diff(
             request,
