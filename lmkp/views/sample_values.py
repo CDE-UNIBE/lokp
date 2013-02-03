@@ -1115,7 +1115,8 @@ def moderation_tests(request):
         and len(doEditTests) > 0)):
 
         editTests = [
-            EditActivities1(request)
+            EditActivities1(request),
+            EditActivities2(request)
         ]
 
         # Test the setup
@@ -1232,7 +1233,8 @@ def moderation_tests(request):
     if ((doCreateTests is not False and validCreateSetup is True)
         or (doModerationTests is not False and validModerationSetup is True)
         or (doEditTests is not False and validEditSetup is True)):
-        log.debug('Ran %s tests, %s of them failed.' % (testCount, len(errorStack)))
+        log.debug('Ran a total of %s tests, %s of them failed.'
+            % (testCount, len(errorStack)))
     else:
         log.debug('Test setup is not valid!')
 
