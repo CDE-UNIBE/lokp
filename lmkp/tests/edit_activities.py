@@ -21,7 +21,7 @@ class EditActivities1(CreateBase):
         self.a1v2 = None
         self.moderationBase = ModerationBase()
 
-    def testSetup(self, verbose=True):
+    def testSetup(self, verbose=False):
 
         # Create and check a first Activity
         self.a1v1 = self.createAndCheckFirstItem(
@@ -147,7 +147,10 @@ class EditActivities1(CreateBase):
         )) is not True:
             return False
 
-        # Check that the old version is still active
+        # Check that the old version is still active (query it again)
+        self.a1v1 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 1
+        )
         if (self.handleResult(
             self.a1v1.get_status_id() == 2,
             'The old version of the Activity is not active anymore.'
@@ -156,3 +159,143 @@ class EditActivities1(CreateBase):
 
         return True
 
+class EditActivities2(CreateBase):
+
+    def __init__(self, request):
+        super(CreateBase, self).__init__()
+        self.request = request
+        self.protocol = ActivityProtocol3(Session)
+        self.testId = "EA2"
+        self.testDescription = 'Edit a first pending Activity'
+        self.identifier1 = '177b8a03-bd2d-49db-aea4-1f27d3912121'
+        self.a1v1 = None
+        self.a1v2 = None
+        self.moderationBase = ModerationBase()
+
+    def testSetup(self, verbose=False):
+
+        # Create and check a first Activity
+        self.a1v1 = self.createAndCheckFirstItem(
+            self,
+            'activities',
+            Activity,
+            self.getCreateUrl('activities'),
+            self.getSomeActivityTags(1),
+            self.identifier1,
+            self.getUser(1),
+            profile = 'LA'
+        )
+        if (self.handleResult(
+            self.a1v1 is not None and self.a1v1 is not False,
+            'Activity was not created.'
+        )) is not True:
+            return False
+
+        # Make sure the Activity is pending
+        if (self.handleResult(
+            self.a1v1.get_status_id() == 1,
+            'First Activity is not pending.'
+        )) is not True:
+            return False
+
+        return True
+
+    def doTest(self, verbose=False):
+
+        # Prepare the values
+        key = 'Contract area (ha)'
+        oldValue = 100
+        newValue = 50
+
+        # Check that the old value is there
+        # Check that the old value is there
+        if (self.handleResult(
+            (self.findKeyValue(self.a1v1, key, oldValue) is True and
+            self.findKeyValue(self.a1v1, key, newValue) is False),
+            'Initial values not correct'
+        )) is not True:
+            return False
+
+        # Find and check the tg_id
+        tg_id = self.findTgidByKeyValue(self.a1v1, key, oldValue)
+        if (self.handleResult(
+            tg_id is not None,
+            'The tg_id of taggroup to update was not found.'
+        )) is not True:
+            return False
+
+        # Prepare tags
+        oldTags = {key: oldValue}
+        deleteTags = self.getTagDiffsFromTags(oldTags, 'delete')
+        newTags = {key: newValue}
+        addTags = self.getTagDiffsFromTags(newTags, 'add')
+
+        # Prepare taggroup
+        taggroup = {
+            'tg_id': tg_id,
+            'tags': deleteTags + addTags
+        }
+
+        # Put together the diff
+        activityDiff = self.getItemDiff(
+            'activities',
+            id = self.identifier1,
+            version = 1,
+            taggroups = [taggroup]
+        )
+        diff = {'activities': [activityDiff]}
+
+        if verbose is True:
+            log.debug('Diff to update a1v1:\n%s' % diff)
+
+        # Update the Activity
+        if (self.handleResult(
+            self.doCreate(self.getCreateUrl('activities'), diff, self.getUser(1)),
+            'The Activity could not be updated.'
+        )) is not True:
+            return False
+
+        # Check that a new Activity was created
+        self.a1v2 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 2
+        )
+        if (self.handleResult(
+            (self.countVersions(Activity, self.identifier1)
+                and self.a1v2 is not None),
+            'Version 2 of the updated Activity was not found.'
+        )) is not True:
+            return False
+
+        # Check that the new Activity has the updated value
+        if (self.handleResult(
+            (self.findKeyValue(self.a1v2, key, newValue) is True and
+            self.findKeyValue(self.a1v2, key, oldValue) is False),
+            'Values were not updated correctly.'
+        )) is not True:
+            return False
+
+        # Check that no additional taggroup was created
+        if (self.handleResult(
+            self.countTaggroups(self.a1v2) == 7,
+            'New Activity has not all taggroups.'
+        )) is not True:
+            return False
+
+        # Check that the new version is pending
+        if (self.handleResult(
+            self.a1v2.get_status_id() == 1,
+            'The updated version of the Activity is not pending.'
+        )) is not True:
+            return False
+
+        # Check that the old version is set to 'edited' (query it again)
+        self.a1v1 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 1
+        )
+        if (self.handleResult(
+            self.a1v1.get_status_id() == 6,
+            'The old version of the Activity was not set to edited.'
+        )) is not True:
+            return False
+
+        return True

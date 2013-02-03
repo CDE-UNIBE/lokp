@@ -1227,7 +1227,7 @@ class Protocol(object):
             Helper function to merge a new taggroup diff (new_tg) into an
             existing diff of an Activity or a Stakeholder.
             """
-            
+
             if 'taggroups' in old_diff:
                 # Loop the taggroups of the old diff to find if some of the
                 # changes of the new diff are made to taggroups already modified
@@ -1254,7 +1254,8 @@ class Protocol(object):
                                 if (new_t['op'] == 'delete' 
                                     and old_t['op'] == 'add' 
                                     and new_t['key'] == old_t['key'] 
-                                    and new_t['value'] == str(old_t['value'])):
+                                    and str(new_t['value'])
+                                        == str(old_t['value'])):
                                     # Remove
                                     tags_to_delete.append(old_t)
 
