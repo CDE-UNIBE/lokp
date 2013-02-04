@@ -1034,10 +1034,11 @@ class ActivityProtocol3(Protocol):
 
         # Prepare query to translate keys and values
         localizer = get_localizer(request)
-        lang = None if localizer.locale_name == 'en' \
-            else self.Session.query(Language).\
-                filter(Language.locale == localizer.locale_name).\
-                first()
+        lang = self.Session.query(
+                Language
+            ).\
+            filter(Language.locale == localizer.locale_name).\
+            first()
         key_translation, value_translation = self._get_translatedKV(
             lang, A_Key, A_Value
         )
@@ -1093,12 +1094,14 @@ class ActivityProtocol3(Protocol):
                     involvements=False, return_count=True, metadata=False):
         # Prepare query to translate keys and values
         localizer = get_localizer(request)
-        lang = None if localizer.locale_name == 'en' \
-            else self.Session.query(Language).\
-                filter(Language.locale == localizer.locale_name).\
-                first()
-        key_translation, value_translation = self._get_translatedKV(lang, A_Key,
-                                                                    A_Value)
+        lang = self.Session.query(
+                Language
+            ).\
+            filter(Language.locale == localizer.locale_name).\
+            first()
+        key_translation, value_translation = self._get_translatedKV(
+            lang, A_Key, A_Value
+        )
 
         # Count
         if return_count:
