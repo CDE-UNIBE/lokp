@@ -10,6 +10,7 @@ from lmkp.models.database_objects import A_Value
 from lmkp.models.database_objects import Changeset
 from lmkp.models.database_objects import Group
 from lmkp.models.database_objects import Involvement
+from lmkp.models.database_objects import Language
 from lmkp.models.database_objects import Permission
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Tag
@@ -32,6 +33,7 @@ import collections
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.security import unauthenticated_userid
 from pyramid.security import effective_principals
+from pyramid.i18n import get_localizer
 from lmkp.views.review import BaseReview
 import json
 
@@ -1444,17 +1446,38 @@ class Protocol(object):
             raise HTTPBadRequest("Key: %s or Value: %s is not valid." %
                 (key, value))
 
-        # The key has to be already in the database
-        k = self.Session.query(Key_Item).filter(Key_Item.key == key).first()
+        # The key has to be already in the database. The key is supposed to be
+        # always in English.
+        k = self.Session.query(
+                Key_Item
+            ).\
+            filter(Key_Item.key == key).\
+            filter(Key_Item.fk_language == 1).\
+            first()
 
         # If the value is not yet in the database, create a new value
         v = self.Session.query(Value_Item).\
             filter(Value_Item.value == unicode(value)).\
+            filter(Value_Item.fk_language == 1).\
             first()
         if v is None:
+
+            try:
+                # For number values, set language 'English'
+                float(value)
+                lang_fk = 1
+            except:
+                # Add the currently set language to the key (fallback: English)
+                localizer = get_localizer(request)
+                language = self.Session.query(
+                        Language
+                    ).\
+                    filter(Language.locale == localizer.locale_name).\
+                    first()
+                lang_fk = language.id if language is not None else 1
+
             v = Value_Item(value=value)
-            # @TODO: Really always use fk_language = 1 when inserting new value?
-            v.fk_language = 1
+            v.fk_language = lang_fk
 
         # Create a new tag with key and value and append it to the parent TG
         t = Tag_Item()

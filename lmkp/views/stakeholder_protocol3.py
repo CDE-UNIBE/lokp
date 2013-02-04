@@ -895,10 +895,11 @@ class StakeholderProtocol3(Protocol):
 
         # Prepare query to translate keys and values
         localizer = get_localizer(request)
-        lang = None if localizer.locale_name == 'en' \
-            else self.Session.query(Language).\
-                filter(Language.locale == localizer.locale_name).\
-                first()
+        lang = self.Session.query(
+                Language
+            ).\
+            filter(Language.locale == localizer.locale_name).\
+            first()
         key_translation, value_translation = self._get_translatedKV(
             lang, SH_Key, SH_Value
         )
@@ -955,12 +956,14 @@ class StakeholderProtocol3(Protocol):
                     metadata=False):
         # Prepare query to translate keys and values
         localizer = get_localizer(request)
-        lang = None if localizer.locale_name == 'en' \
-            else self.Session.query(Language).\
-                filter(Language.locale == localizer.locale_name).\
-                first()
-        key_translation, value_translation = self._get_translatedKV(lang,
-                                                                    SH_Key, SH_Value)
+        lang = self.Session.query(
+                Language
+            ).\
+            filter(Language.locale == localizer.locale_name).\
+            first()
+        key_translation, value_translation = self._get_translatedKV(
+            lang, SH_Key, SH_Value
+        )
 
         # Count
         if return_count:
