@@ -32,9 +32,6 @@ class BaseReview(BaseView):
 
     def _compare_taggroups(self, old, new):
 
-        print old.get_version()
-        print new.get_version()
-
         table = []
 
         if old is None and new is not None:

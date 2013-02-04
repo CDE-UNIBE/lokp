@@ -1052,15 +1052,17 @@ class Protocol(object):
                                             new_tag.get_value()):
                                         new_taggroup._main_tag = new_tag
 
-            # If taggroups were not added to database yet, then do it now. But
-            # only if add new tag groups to the new version if they have any
-            # tags in them (which is not the case if they were deleted).
-            if (db is True and len(new_taggroup.tags) > 0
-                and taggroupadded is False):
-                item.tag_groups.append(new_taggroup)
-            elif (db is False and len(new_taggroup.get_tags()) > 0
-                and taggroupadded is False):
-                item.add_taggroup(new_taggroup)
+                            # If taggroups were not added to database yet, then
+                            # do it now. But only add new tag groups to the new
+                            # version if they have any tags in them (which is
+                            # not the case if they were deleted).
+                            if (db is True and len(new_taggroup.tags) > 0
+                                and taggroupadded is False):
+                                item.tag_groups.append(new_taggroup)
+                            elif (db is False
+                                and len(new_taggroup.get_tags()) > 0
+                                and taggroupadded is False):
+                                item.add_taggroup(new_taggroup)
 
         # Finally new tag groups (without id) need to be added
         # (and loop all again)
