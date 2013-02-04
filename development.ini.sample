@@ -17,6 +17,12 @@ lmkp.profiles_dir = /var/www/lmkp/profiles
 lmkp.admin_password = admin_password
 lmkp.admin_email = info@cde.unibe.ch
 lmkp.use_js_builds = false
+lmkp.comments_url = http://localhost:3000/
+
+; Specify the smtp server used to send mails.
+; See also http://packages.python.org/pyramid_mailer/ for more options
+mail.host = smtp.example.com
+mail.default_sender = info@example.com
 
 [server:main]
 use = egg:waitress#main

@@ -7,6 +7,7 @@ from pyramid.events import subscriber
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
 from pyramid.security import authenticated_userid
+from pyramid.security import effective_principals
 
 log = getLogger(__name__)
 
@@ -38,12 +39,16 @@ def add_localizer(event):
 
 def _get_user(request):
     userid = authenticated_userid(request)
-    log.debug(userid)
+#    log.debug("Found user: %s" % userid)
     if userid is not None:
         user = Session.query(User).filter(User.username == userid).first()
         return user
     
+def _get_principals(request):
+    return effective_principals(request)
+
 @subscriber(NewRequest)
 def add_user(event):
     request = event.request
+    request.set_property(_get_principals, 'effective_principals', reify=True)
     request.set_property(_get_user, 'user', reify=True)

@@ -2,11 +2,11 @@ Ext.define('Lmkp.store.StakeholderGrid', {
     extend: 'Ext.data.Store',
 
     requires: [
-        'Lmkp.model.Stakeholder',
-        'Lmkp.model.TagGroup',
-        'Lmkp.model.Tag',
-        'Lmkp.model.MainTag',
-        'Lmkp.model.Involvement'
+    'Lmkp.model.Stakeholder',
+    'Lmkp.model.TagGroup',
+    'Lmkp.model.Tag',
+    'Lmkp.model.MainTag',
+    'Lmkp.model.Involvement'
     ],
 
     model: 'Lmkp.model.Stakeholder',
@@ -16,7 +16,7 @@ Ext.define('Lmkp.store.StakeholderGrid', {
 
     proxy: {
         type: 'ajax',
-        url: '/stakeholders',
+        url: '/stakeholders/json',
         reader: {
             root: 'data',
             type: 'json',
@@ -45,7 +45,7 @@ Ext.define('Lmkp.store.StakeholderGrid', {
     },
     
     deleteFilters: function() {
-    	// Delete any filters
+        // Delete any filters
         var prefix_a = 'a__';
         var prefix_sh = 'sh__';
         for (var i in this.proxy.extraParams) {
@@ -61,6 +61,8 @@ Ext.define('Lmkp.store.StakeholderGrid', {
         // Do not directly use extraParams provided by other store (any changes
         // made on these params would also affect the other store). Instead,
         // create a copy of the parameters.
+
+        // (No longer sure what the bounds parameter was supposed to mean, Adrian)
         var ep = new Object();
         for (var e in extraParams) {
             // Do not copy parameter 'bounds''
@@ -69,17 +71,14 @@ Ext.define('Lmkp.store.StakeholderGrid', {
             }
         }
 
-    	// Update url
-    	this.proxy.url = '/activities';
+        // Update url
+        this.proxy.url = '/stakeholders/json';
     	
-    	// Update extraParams
-    	if (!ep['return_sh']) {
-    		ep['return_sh'] = true;
-       	}
-    	this.proxy.extraParams = ep;
+        // Update extraParams
+        this.proxy.extraParams = ep;
 
-		// (Re)load store (load at page 1, otherwise entries may be hidden)
-    	this.loadPage(1);
+        // (Re)load store (load at page 1, otherwise entries may be hidden)
+        this.loadPage(1);
     },
 
     syncWithOther: function(extraParams) {
@@ -87,17 +86,15 @@ Ext.define('Lmkp.store.StakeholderGrid', {
     },
     
     syncByOtherId: function(identifier) {
+
+        // Update url
+        this.proxy.url = '/stakeholders/byactivity/json/' + identifier;
+
+        // Update extraParams
+        this.proxy.extraParams = {};
     	
-    	// Update url
-    	this.proxy.url = '/stakeholders';
-    	
-    	// Update extraParams
-    	this.proxy.extraParams = {
-    		'a_id': identifier
-    	};
-    	
-    	// Reload store (load at page 1, otherwise entries may be hidden)
-    	this.loadPage(1);
+        // Reload store (load at page 1, otherwise entries may be hidden)
+        this.loadPage(1);
     },
 
     /**
@@ -106,22 +103,22 @@ Ext.define('Lmkp.store.StakeholderGrid', {
      * or it is unchecked, remove the parameter. 
      */
     getPendingCheckbox: function() {
-    	var checkbox;
+        var checkbox;
         
-    	// Try to find checkbox
-    	var checkbox_q = Ext.ComponentQuery.query('lo_publicstakeholdertablepanel checkbox[itemId="pendingStakeholdersCheckbox"]');
-    	if (checkbox_q && checkbox_q.length > 0) {
-    		checkbox = checkbox_q[0];
-    	}
+        // Try to find checkbox
+        var checkbox_q = Ext.ComponentQuery.query('lo_publicstakeholdertablepanel checkbox[itemId="pendingStakeholdersCheckbox"]');
+        if (checkbox_q && checkbox_q.length > 0) {
+            checkbox = checkbox_q[0];
+        }
         
         if (checkbox && checkbox.isChecked()) {
-        	this.proxy.url = 'stakeholders';
-        	this.proxy.setExtraParam('moderator', true);
+            this.proxy.url = 'stakeholders';
+            this.proxy.setExtraParam('moderator', true);
         } else {
-        	delete this.proxy.extraParams['moderator'];
-                // Let function to sync with Activities handle all other
-                // parameters
-                this.syncWithActivities(this.proxy.extraParams);
+            delete this.proxy.extraParams['moderator'];
+            // Let function to sync with Activities handle all other
+            // parameters
+            this.syncWithActivities(this.proxy.extraParams);
         }
     }
 });

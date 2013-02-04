@@ -26,12 +26,10 @@ Ext.define('Lmkp.controller.moderator.Main', {
 
         this.control({
             'lo_publicactivitytablepanel': {
-                beforerender: this.onActivityTablePanelBeforeRender,
-                render: this.onActivityTablePanelRender
+                //render: this.onActivityTablePanelRender
             },
             'lo_publicstakeholdertablepanel': {
-                beforerender: this.onStakeholderTablePanelBeforeRender,
-                render: this.onStakeholderTablePanelRender
+                //render: this.onStakeholderTablePanelRender
             },
             'lo_activitydetailwindow': {
                 beforeshow: this.onActivityDetailWindowBeforeShow
@@ -40,10 +38,10 @@ Ext.define('Lmkp.controller.moderator.Main', {
                 beforeshow: this.onStakeholderDetailWindowBeforeShow
             },
             'lo_publicstakeholdertablepanel checkbox[itemId="pendingStakeholdersCheckbox"]': {
-                change: this.onPendingStakeholdersCheckboxChange
+                //change: this.onPendingStakeholdersCheckboxChange
             },
             'lo_publicactivitytablepanel checkbox[itemId="pendingActivitiesCheckbox"]': {
-                change: this.onPendingActivitiesCheckboxChange
+                //change: this.onPendingActivitiesCheckboxChange
             },
             'lo_moderatorreviewpanel button[itemId="reviewSubmitButton"]': {
                 click: this.onReviewSubmitButton
@@ -53,7 +51,7 @@ Ext.define('Lmkp.controller.moderator.Main', {
 
     /**
      * Insert a checkbox to show pending Activity changes
-     */
+     *
     onActivityTablePanelBeforeRender: function(comp) {
         var pendingCheckbox = Ext.create('Ext.form.Checkbox',{
             checked: true,
@@ -66,11 +64,12 @@ Ext.define('Lmkp.controller.moderator.Main', {
         var tbar = comp.down('[id="activityGridTopToolbar"]');
         tbar.insert(1, ['-', pendingCheckbox, pendingLabel, '-']);
     },
+    */
 
     /**
      * Add a beforeload listener to the ActivityGrid store to check if
      * pending changes needs to be requested.
-     */
+     *
     onActivityTablePanelRender: function(comp) {
         // Adds a beforeload action
         this.getActivityGridStore().on('beforeload', function(store){
@@ -78,17 +77,21 @@ Ext.define('Lmkp.controller.moderator.Main', {
             var proxy = store.getProxy();
             // Check if pending changes are requested
             if (this.getPendingActivitiesCheckbox()) {
-            	if (this.getPendingActivitiesCheckbox().getValue()) {
-            		proxy.setExtraParam('moderator', true);
-                        proxy.setExtraParam('bounds', 'user');
-            	} else {
-            		delete proxy.extraParams.moderator;
-                        delete proxy.extraParams.bounds;
-            	}
+                if (this.getPendingActivitiesCheckbox().getValue()) {
+                    proxy.setExtraParam('moderator', true);
+                    proxy.setExtraParam('bounds', 'user');
+                } else {
+                    delete proxy.extraParams.moderator;
+                    delete proxy.extraParams.bounds;
+                }
             }
         }, this);
     },
+     */
 
+    /**
+     *
+     *
     onStakeholderTablePanelBeforeRender: function(comp) {
         var checkbox = Ext.create('Ext.form.Checkbox', {
             checked: true,
@@ -101,7 +104,11 @@ Ext.define('Lmkp.controller.moderator.Main', {
         var tbar = comp.down('[id="stakeholderGridTopToolbar"]');
         tbar.insert(1, ['-', checkbox, pendingLabel, '-']);
     },
+     */
 
+    /**
+     *
+     *
     onStakeholderTablePanelRender: function(comp) {
         // Adds a beforeload action
         this.getStakeholderGridStore().on('beforeload', function(store){
@@ -109,37 +116,42 @@ Ext.define('Lmkp.controller.moderator.Main', {
             var proxy = store.getProxy();
             // Check if pending changes are requested
             if(this.getPendingStakeholdersCheckbox()){
-            	if (this.getPendingStakeholdersCheckbox().getValue()) {
-            		// Reconfigure proxy to show pending stakeholders
-            		proxy.url = 'stakeholders';
-            		proxy.setExtraParam('moderator', true);
-            	}
+                if (this.getPendingStakeholdersCheckbox().getValue()) {
+                    // Reconfigure proxy to show pending stakeholders
+                    proxy.url = 'stakeholders/json';
+                    proxy.setExtraParam('moderator', true);
+                }
             }
         }, this);
     },
+     */
 
     onActivityDetailWindowBeforeShow: function(comp){
-        var proxy = comp.getHistoryStore().getProxy();
-        this.getPendingActivitiesCheckbox().getValue?
+//        console.log("don't delete me!");
+//        var proxy = comp.getHistoryStore().getProxy();
+        /*this.getPendingActivitiesCheckbox().getValue?
         // Show all versions with any status
         proxy.setExtraParam('status', 'pending,active,inactive,deleted,rejected,edited') :
         // else show only active and inactive versions
-        proxy.setExtraParam('status', '');
+        proxy.setExtraParam('status', '');*/
     },
 
     onStakeholderDetailWindowBeforeShow: function(comp){
-        var proxy = comp.getHistoryStore().getProxy();
+//        console.log("don't delete me!");
+//        var proxy = comp.getHistoryStore().getProxy();
+        /*
         this.getPendingStakeholdersCheckbox().getValue?
         // Show all versions with any status
         proxy.setExtraParam('status', 'pending,active,inactive,deleted,rejected,edited') :
         // else show only active and inactive versions
         proxy.setExtraParam('status', '');
+        */
     },
 
     /**
      * Reloads the Activities grid whenever the checkbox to show or hide activites
      * with pending changes is checked or unchecked.
-     */
+     *
     onPendingActivitiesCheckboxChange: function(field, newValue, oldValue){
         // Set initial proxy (this makes sure to delete all reference to 
         // stakeholders and adds/removes parameter to show/hide pending)
@@ -152,11 +164,12 @@ Ext.define('Lmkp.controller.moderator.Main', {
         cb.setValue(field.getValue());
         cb.on('load', this.onPendingStakeholdersCheckboxChange);
     },
+     */
 
     /**
      * Reloads the Stakeholders grid whenever the checkbox to show or hide activites
      * with pending changes is checked or unchecked.
-     */
+     *
     onPendingStakeholdersCheckboxChange: function(field, newValue, oldValue){
         // Set initial proxy (this makes sure to delete all reference to 
         // activities and adds/removes parameter to show/hide pending)
@@ -169,6 +182,7 @@ Ext.define('Lmkp.controller.moderator.Main', {
         cb.setValue(field.getValue());
         cb.on('load', this.onPendingActivitiesCheckboxChange);
     },
+     */
 
     onReviewSubmitButton: function(btn){
 

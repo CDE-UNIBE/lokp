@@ -1,11 +1,16 @@
 from base64 import standard_b64decode
-from lmkp.models.database_objects import User
+from lmkp.models.database_objects import (
+    Profile,
+    User,
+    users_profiles
+)
 from lmkp.models.meta import DBSession as Session
 from lmkp.security import group_finder
 from lmkp.views.profile import get_current_profile
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import Everyone
 from pyramid.security import Authenticated
+from sqlalchemy.orm.exc import NoResultFound
 
 class CustomAuthenticationPolicy(AuthTktAuthenticationPolicy):
     """
@@ -43,28 +48,28 @@ class CustomAuthenticationPolicy(AuthTktAuthenticationPolicy):
         userid = self.authenticated_userid(request)
         if userid is not None:
             groups = group_finder(userid, request)
-
-            # If the user is a moderator check the selected profile
-            if groups is not None and groups[0] == 'group:moderators':
-                # Get the user
-                user = Session.query(User).filter(User.username == userid).first()
-                # and the current profile from the request
+            # If the user is a moderator check the currently selected profile
+            if len(groups) > 0 and 'group:moderators' in groups:
                 profile = get_current_profile(request)
-                # Check if the requested profile is assigned to this user
-                if profile in [p.code for p in user.profiles]:
-                    # If the set profile is assigned to the current moderator,
-                    # the usual principals are used
-                    return AuthTktAuthenticationPolicy.effective_principals(self, request)
-                else:
-                    # In other cases the moderator gets only editor rights:
-                    # Default principal is Everyone
-                    effective_principals = [Everyone]
-                    # Append the current user and the editor group to the principals
-                    effective_principals.append(Authenticated)
-                    effective_principals.append(userid)
-                    effective_principals.extend(['group:editors'])
-                    return effective_principals
-
+                # Try to find the profile in the list of profiles associated to
+                # current user
+                profile_query = Session.query(
+                        Profile.code
+                    ).\
+                    join(users_profiles).\
+                    join(User).\
+                    filter(User.username == userid).\
+                    filter(Profile.code == profile)
+                try:
+                    profile_query.one()
+                except NoResultFound:
+                    # Profile not found: User is not moderator for current
+                    # profile, remove group 'moderator' from principals
+                    principals = AuthTktAuthenticationPolicy.\
+                        effective_principals(self, request)
+                    if 'group:moderators' in principals:
+                        principals.remove('group:moderators')
+                    return principals
         # In all other cases use Pyramid's default authentication policy
         return AuthTktAuthenticationPolicy.effective_principals(self, request)
 

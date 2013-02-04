@@ -30,10 +30,16 @@ Ext.define('Lmkp.view.activities.Details', {
 
         this.activity ? activity_identifier = this.activity.get('id') : activity_identifier = this.activity_identifier
 
+        // Center panel with initial Loading indicator
         this.centerPanel = Ext.create('Ext.panel.Panel',{
             autoScroll: true,
             layout: 'anchor',
-            itemId: 'activityDetailCenterPanel'
+            itemId: 'activityDetailCenterPanel',
+            items: {
+                html: Lmkp.ts.msg('gui_loading'),
+                bodyPadding: 5,
+                border: 0
+            }
         });
 
         this.historyStore = Ext.create('Ext.data.Store', {
@@ -73,7 +79,7 @@ Ext.define('Lmkp.view.activities.Details', {
                 sortParam: 'order_by',
                 startParam: 'offset',
                 type: 'ajax',
-                url: '/activities/history/' + activity_identifier
+                url: '/activities/json/' + activity_identifier
             },
             remoteSort: true
         });

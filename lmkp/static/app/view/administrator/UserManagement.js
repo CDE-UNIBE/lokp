@@ -64,16 +64,27 @@ Ext.define('Lmkp.view.administrator.UserManagement', {
         regex: /.+\@.+\..+$/,
         regexText: 'Invalid email address.'
     },{
-        allowBlank: false,
-        editable: false,
-        fieldLabel: Lmkp.ts.msg('User Group'),
-        name: 'group',
-        queryMode: 'local',
-        store: [['administrators', Lmkp.ts.msg('Administrator')],
-        ['moderators', Lmkp.ts.msg("Moderators")],
-        ['editors', Lmkp.ts.msg("Editors")]],
-        value: 'editors',
-        xtype: 'combo'
+        xtype: 'checkboxgroup',
+        fieldLabel: Lmkp.ts.msg('User Groups'),
+        columns: 1,
+        vertical: true,
+        items: [
+            {
+                boxLabel: Lmkp.ts.msg('usergroup_editors'),
+                inputValue: 'editors',
+                name: 'groups',
+                checked: true,
+                readOnly: true
+            }, {
+                boxLabel: Lmkp.ts.msg('usergroup_moderators'),
+                inputValue: 'moderators',
+                name: 'groups'
+            }, {
+                boxLabel: Lmkp.ts.msg('usergroup_administrators'),
+                inputValue: 'administrators',
+                name: 'groups'
+            }
+        ]
     }],
     layout: 'vbox',
     method: 'POST'

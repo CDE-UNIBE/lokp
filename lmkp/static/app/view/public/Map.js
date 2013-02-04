@@ -91,7 +91,7 @@ Ext.define('Lmkp.view.public.Map',{
             symbolizer: {
                 graphicName: "triangle",
                 pointRadius: 7,
-                fillColor: "#ff6100",
+                fillColor: "#ffa07a",
                 fillOpacity: fillOpacity,
                 strokeColor: "#ff6100",
                 strokeWidth: 1

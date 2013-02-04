@@ -32,11 +32,11 @@ Ext.define('Lmkp.controller.stakeholders.Details', {
         var stakeholderPanel = button.up('lo_stakeholderpanel');
         if (stakeholderPanel && stakeholderPanel.contentItem) {
             var newActivityController =
-                this.getController('activities.NewActivity');
+            this.getController('activities.NewActivity');
             newActivityController.showNewStakeholderWindow(
                 // Provide current item
                 stakeholderPanel.contentItem
-            );
+                );
         }
     }
     

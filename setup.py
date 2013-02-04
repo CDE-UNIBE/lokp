@@ -8,6 +8,8 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
     'pyramid==1.3',
+    'pyramid_handlers==0.5',
+    'pyramid_mailer==0.10',
     'SQLAlchemy==0.7.6',
     'GeoAlchemy==0.7.1',
     'transaction==1.2.0',
@@ -25,11 +27,12 @@ requires = [
     'psycopg2==2.4.5',
     'PyYAML==3.10',
     'Chameleon==2.8.5',
-    'recaptcha-client==1.0.6'
+    'recaptcha-client==1.0.6',
+    'requests==1.1.0'
     ]
 
 setup(name='LMKP',
-      version='0.1',
+      version='0.2',
       description='The Land Matrix Knowledge Platform',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[

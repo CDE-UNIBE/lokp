@@ -7,6 +7,8 @@ Ext.define('Lmkp.view.stakeholders.Details',{
 
     centerPanelType: 'lo_stakeholderpanel',
 
+    commentPanelType: 'lo_commentpanel',
+
     config: {
         centerPanel: null,
         historyPanel: null,
@@ -23,10 +25,15 @@ Ext.define('Lmkp.view.stakeholders.Details',{
 
     initComponent: function(){
 
-        this.centerPanel = Ext.create('Ext.panel.Panel',{
+        this.centerPanel = Ext.create('Ext.panel.Panel', {
             autoScroll: true,
             layout: 'anchor',
-            itemId: 'stakeholderDetailCenterPanel'
+            itemId: 'stakeholderDetailCenterPanel',
+            items: {
+                html: Lmkp.ts.msg('gui_loading'),
+                bodyPadding: 5,
+                border: 0
+            }
         });
 
         this.historyStore = Ext.create('Ext.data.Store', {
@@ -65,7 +72,7 @@ Ext.define('Lmkp.view.stakeholders.Details',{
                 sortParam: 'order_by',
                 startParam: 'offset',
                 type: 'ajax',
-                url: '/stakeholders/history/' + this.stakeholder.get('id')
+                url: '/stakeholders/json/' + this.stakeholder.get('id')
             },
             remoteSort: true
         });

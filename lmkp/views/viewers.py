@@ -1,9 +1,12 @@
 import logging
 from pyramid.view import view_config
+from pyramid.i18n import TranslationStringFactory
 
 from lmkp.views.profile import _getCurrentProfileExtent
 
 log = logging.getLogger(__name__)
+
+_ = TranslationStringFactory('lmkp')
 
 @view_config(route_name='view_toolbar_config', renderer='javascript', permission='view')
 def view_toolbar_config(request):
@@ -20,11 +23,9 @@ def view_toolbar_config(request):
     # add or edit Activities or Stakeholders are shown.
     str += "Lmkp.editor = false;\n"
 
-    # Login form: Fields to enter username and password.
-    str += "Lmkp.login_form = { border: false, xtype: 'toolbar', defaultType: 'textfield', items: [\n";
-    str += "{id: 'username', emptyText: \"%s\"},\n" % _('Username')
-    str += "{id: 'password', emptyText: \"%s\", inputType: 'password', enableKeyEvents: true},\n" % _('Password')
-    str += "{xtype: 'button', id:'login_submit', text: \"%s\"}]};\n" % _('Login')
+    # Link to login form
+    str += "Lmkp.login_form = { border: false, xtype: 'toolbar', items: [\n"
+    str += "{href: '/login', hrefTarget: '', text: '%s', xtype: 'button'}]};\n" % _(u"Login")
 
     # The current profile extent.
     str += "Lmkp.currentProfileExtent = %s" % _getCurrentProfileExtent(request)

@@ -27,7 +27,7 @@ Ext.define('Lmkp.store.ActivityGrid', {
             involvements: 'none'
         },
         type: 'ajax',
-        url: '/activities',
+        url: '/activities/json',
         reader: {
             root: 'data',
             type: 'json',
@@ -41,7 +41,7 @@ Ext.define('Lmkp.store.ActivityGrid', {
     setInitialProxy: function() {
 
         // Update url
-        this.proxy.url = '/activities';
+        this.proxy.url = '/activities/json';
 
         // Delete any traces of stakeholders
         delete this.proxy.extraParams['sh_id'];
@@ -108,12 +108,10 @@ Ext.define('Lmkp.store.ActivityGrid', {
     syncByOtherId: function(identifier) {
     	
     	// Update url
-    	this.proxy.url = '/activities';
+    	this.proxy.url = '/activities/bystakeholder/json/' + identifier;
     	
     	// Update extraParams
-    	this.proxy.extraParams = {
-    		'sh_id': identifier
-    	};
+    	this.proxy.extraParams = {};
     	
     	// Reload store (load at page 1, otherwise entries may be hidden)
     	this.loadPage(1);

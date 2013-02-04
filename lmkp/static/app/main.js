@@ -11,6 +11,7 @@ Ext.require('Ext.grid.Panel');
 Ext.require('Ext.layout.container.Border');
 Ext.require('Ext.layout.container.Card');
 Ext.require('Ext.tab.Panel');
+Ext.require('Ext.util.*');
 Ext.require('GeoExt.window.Popup');
 Ext.require('Lmkp.controller.activities.Details');
 Ext.require('Lmkp.controller.activities.NewActivity');
@@ -97,6 +98,8 @@ Ext.onReady(function(){
                     autoScroll: true,
                     contentEl: 'header-div',
                     height: 105,
+                    // Hide the header panel if the Land Observatory is embedded
+                    hidden: Lmkp.is_embedded,
                     region: 'north',
                     xtype: 'panel'
                 },{

@@ -10,14 +10,6 @@ Ext.define('Lmkp.model.Language', {
 	}, {
 		name: 'local_name',
 		type: 'string'
-	}],
-	
-	proxy: {
-		type: 'ajax',
-		url: '/lang/all',
-		reader: {
-			type: 'json',
-			root: 'data'
-		}
-	}
+	}]
+
 });

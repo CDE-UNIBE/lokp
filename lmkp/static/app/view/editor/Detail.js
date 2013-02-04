@@ -37,6 +37,7 @@ Ext.define('Lmkp.view.editor.Detail', {
 
     initComponent: function() {
         this.callParent(arguments);
+        console.log("If you ever see this notice, remove this notice and make sure I do not get deleted. Greetings from file: static/app/view/editor/Detail.js");
     },
 
     populateDetailsTab: function(panel, data) {

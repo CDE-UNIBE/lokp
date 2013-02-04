@@ -46,8 +46,11 @@ def main(global_config, ** settings):
 
     config.add_subscriber(add_user, NewRequest)
 
+    config.include('pyramid_mailer')
+
     # Add papyrus includes
     config.include(papyrus.includeme)
+    config.include('pyramid_handlers')
     # Return a JavaScript model
     #config.add_route('taggroups_model', 'static/app/model/TagGroup.js')
     #config.add_renderer('geojson', GeoJSON())
@@ -55,9 +58,16 @@ def main(global_config, ** settings):
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('index', '/')
     config.add_route('administration', '/administration')
-    config.add_route('login', '/login')
+    config.add_route('login', '/login', request_method='POST')
+    config.add_route('login_form', '/login', request_method='GET')
+    config.add_route('reset', '/reset', request_method='POST')
+    config.add_route('reset_form', '/reset', request_method='GET')
     config.add_route('logout', '/logout')
     config.add_route('db_test', '/db_test')
+
+    # Embedded start page
+    config.add_route('embedded_index', '/embedded/{profile}')
+    config.add_route('enclosing_demo_site', '/enclosing_demo_site')
 
     # Returns configuration parameters as JSON objects
     config.add_route('yaml_translate_activities', '/config/scan/activities')
@@ -72,6 +82,7 @@ def main(global_config, ** settings):
     config.add_route('sample_values', '/sample_values/insert')
     config.add_route('delete_sample_values', '/sample_values/delete')
     config.add_route('test_sample_values', '/sample_values/test')
+    config.add_route('sample_values_constructed', '/sample_values/constructed')
 
     # Add a renderer to return ExtJS store configuration objects
     config.add_renderer('json', JsonRenderer())
@@ -79,37 +90,101 @@ def main(global_config, ** settings):
     # Add a renderer to return JavaScript files
     config.add_renderer('javascript', JavaScriptRenderer())
 
-    # Activities controllers with an api similar to Papyrus
+    """
+    Activities
+    """
+    # Activities controllers with an api once similar to Papyrus
     # Order matters!
-
-    config.add_route('activities_read_geojson', '/activities/geojson')
-
-    config.add_route('activities_read_pending', '/activities/pending')
-    # Reads one or many activities and returns GeoJSON Feature or FeatureCollection
-    config.add_route('activities_read_many', '/activities', request_method='GET')
-    config.add_route('activities_read_one', '/activities/{uid}', request_method='GET')
-
-    # Reviews a pending activity
-    config.add_route('activities_review', '/activities/review', request_method='POST')
 
     # Creates a new activity
     config.add_route('activities_create', '/activities', request_method='POST')
 
-    # Returns a JSON representation of comments to ...
+    config.add_route('activities_review_versions_html', '/activities/review/html/{uid}*versions')
+    config.add_route('activities_review_versions_json', '/activities/review/json/{uid}*versions')
+    config.add_handler('activities_compare_versions',
+                       '/activities/compare/{action}/{uid}*versions',
+                       'lmkp.views.activity_review.ActivityReview')
+
+    # Reviews a pending activity
+    config.add_route('activities_review', '/activities/review', request_method='POST')
+
+    # Read one (special cases)
+    config.add_route('activities_read_one_active', '/activities/active/{output}/{uid}')
+    config.add_route('activities_read_one_public', '/activities/public/{output}/{uid}')
+
+    # By Stakeholder
+    config.add_route('activities_bystakeholder', '/activities/bystakeholder/{output}/{uid}')
+    config.add_route('activities_bystakeholder_public', '/activities/bystakeholder/public/{output}/{uid}')
+
+    # Read pending
+    config.add_route('activities_read_many_pending', '/activities/pending/{output}')
+
+    # Read many
+    config.add_route('activities_public_read_many', '/activities/public/{output}')
+    config.add_route('activities_read_many', '/activities/{output}')
+
+    # Read one
+    config.add_route('activities_read_one', '/activities/{output}/{uid}')
+
+    """
+    Stakeholders
+    """
+    # Stakeholders controllers, similar as Activities above
+    # Order matters!
+
+    # Creates a new stakeholder
+    config.add_route('stakeholders_create', '/stakeholders', request_method='POST')
+
+    # Reviews a pending stakeholder
+    config.add_route('stakeholders_review_versions_html', '/stakeholders/review/html/{uid}*versions')
+    config.add_route('stakeholders_review_versions_json', '/stakeholders/review/json/{uid}*versions')
+    config.add_handler('stakeholders_compare_versions',
+                       '/stakeholders/compare/{action}/{uid}*versions',
+                       'lmkp.views.stakeholder_review.StakeholderReview')
+    config.add_route('stakeholders_compare', '/stakeholders/compare/{output}/{uid}')
+    config.add_route('stakeholders_review', '/stakeholders/review', request_method='POST')
+
+    # Read one (special cases)
+    config.add_route('stakeholders_read_one_active', '/stakeholders/active/{output}/{uid}')
+    config.add_route('stakeholders_read_one_public', '/stakeholders/public/{output}/{uid}')
+
+    # By Activity
+    config.add_route('stakeholders_byactivity', '/stakeholders/byactivity/{output}/{uid}')
+    config.add_route('stakeholders_byactivity_public', '/stakeholders/byactivity/public/{output}/{uid}')
+
+    # Read pending
+    config.add_route('stakeholders_read_many_pending', '/stakeholders/pending/{output}')
+
+    # Read many
+    config.add_route('stakeholders_read_many', '/stakeholders/{output}')
+    config.add_route('stakeholders_read_many_public', '/stakeholders/public/{output}')
+
+    # Read one
+    config.add_route('stakeholders_read_one', '/stakeholders/{output}/{uid}')
+
+    """
+    Comments
+    """
+    # Returns a JSON representation of comments to an object
+    config.add_route('comments_sitekey', '/comments/sitekey/{uid}')
     config.add_route('comments_all', '/comments/{object}/{uid}')
     # Adds a comment
     config.add_route('comment_add', '/comments/add')
     # Deletes a comment
     config.add_route('comment_delete', '/comments/delete')
-    
-    # Return the history of an activity
-    config.add_route('activities_history', '/activities/history/{uid}')
 
-    config.add_route('stakeholders_read_many', '/stakeholders', request_method='GET')
-    config.add_route('stakeholders_read_one', '/stakeholders/{uid}', request_method='GET')
-    config.add_route('stakeholders_review', '/stakeholders/review', request_method='POST')
-    config.add_route('stakeholders_create', '/stakeholders', request_method='POST')
-    config.add_route('stakeholders_history', '/stakeholders/history/{uid}')
+    """
+    Moderation
+    """
+    # Moderation overview
+    config.add_route('moderation_html', '/moderation')
+
+    # Directly jump to the moderation of a given object
+    config.add_route('activities_moderate_item', '/moderation/activities/{uid}')
+    config.add_route('stakeholders_moderate_item', '/moderation/stakeholders/{uid}')
+
+    # Tests (not intended for public)
+    config.add_route('moderation_tests', '/moderation/ug6uWaef2')
 
     # A controller that returns the translation needed in the ExtJS user interface
     config.add_route('ui_translation', '/lang')

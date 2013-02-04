@@ -19,8 +19,8 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid.view import view_config
 import shapely
 import simplejson as json
-import yaml
 from sqlalchemy import func
+import yaml
 
 log = logging.getLogger(__name__)
 
@@ -91,17 +91,17 @@ def get_mandatory_keys(request, item, translated=False):
             # Translate before returning
             localizer = get_localizer(request)
             translatedKeys = Session.query(
-                    A_Key.fk_key.label('original_id'),
-                    A_Key.key.label('translation')
-                ).\
+                                           A_Key.fk_key.label('original_id'),
+                                           A_Key.key.label('translation')
+                                           ).\
                 join(Language).\
                 filter(Language.locale == localizer.locale_name).\
                 subquery()
 
             queryKeys = Session.query(
-                    A_Key.key.label('original'),
-                    translatedKeys.c.translation.label('translation')
-                ).\
+                                      A_Key.key.label('original'),
+                                      translatedKeys.c.translation.label('translation')
+                                      ).\
                 filter(A_Key.key.in_(keys)).\
                 filter(A_Key.original == None).\
                 outerjoin(translatedKeys, translatedKeys.c.original_id == A_Key.id)
@@ -311,7 +311,7 @@ def get_translated_keys(request, global_config, Key, Value):
     for (name, config) in fields['mandatory'].iteritems():
 
         currObject = _get_admin_scan(Key, Value, name, config, lang, True,
-            False)
+                                     False)
         extObject.append(currObject)
 
     # Then process the optional fields
@@ -378,7 +378,7 @@ def _handle_application_config(request):
         else:
             # Compare existing geometry with the one in config file
             geom_db = (shapely.wkb.loads(str(db_profile.geometry.geom_wkb))
-                if db_profile.geometry else None)
+                       if db_profile.geometry else None)
             if geom_db and geom_db.equals(yaml_geom_shape) is True:
                 return ("Geometry for profile '%s' did not change." 
                         % profile_name)
@@ -562,18 +562,18 @@ def _get_field_config(Key, Value, name, config, language, mandatory=False):
     else:
         # Not English: Prepare query to translated keys
         keyTranslated = Session.query(
-                Key.fk_key.label('original_id'),
-                Key.key.label('translated')
-            ).\
+                                      Key.fk_key.label('original_id'),
+                                      Key.key.label('translated')
+                                      ).\
             filter(Key.language == language).\
             subquery()
 
         keys = Session.query(
-                Key.key.label('original'),
-                keyTranslated.c.translated.label('translated'),
-                # Use column 'keyorvalue' to separate keys (0) from values (1)
-                func.char_length('').label('keyorvalue')
-            ).\
+                             Key.key.label('original'),
+                             keyTranslated.c.translated.label('translated'),
+                             # Use column 'keyorvalue' to separate keys (0) from values (1)
+                             func.char_length('').label('keyorvalue')
+                             ).\
             filter(Key.key == name).\
             filter(Key.original == None).\
             outerjoin(keyTranslated, keyTranslated.c.original_id == Key.id)
@@ -589,18 +589,18 @@ def _get_field_config(Key, Value, name, config, language, mandatory=False):
                 all_vals.append(val)
 
             valuesTranslated = Session.query(
-                    Value.fk_value.label('original_id'),
-                    Value.value.label('translated')
-                ).\
+                                             Value.fk_value.label('original_id'),
+                                             Value.value.label('translated')
+                                             ).\
                 filter(Value.language == language).\
                 subquery()
 
             values = Session.query(
-                    Value.value.label('original'),
-                    valuesTranslated.c.translated.label('translated'),
-                    # Use column 'keyorvalue' to separate keys (0) from values (1)
-                    func.char_length(' ').label('keyorvalue')
-                ).\
+                                   Value.value.label('original'),
+                                   valuesTranslated.c.translated.label('translated'),
+                                   # Use column 'keyorvalue' to separate keys (0) from values (1)
+                                   func.char_length(' ').label('keyorvalue')
+                                   ).\
                 filter(Value.value.in_(all_vals)).\
                 filter(Value.original == None).\
                 outerjoin(valuesTranslated, valuesTranslated.c.original_id == Value.id)
@@ -614,8 +614,8 @@ def _get_field_config(Key, Value, name, config, language, mandatory=False):
                 # Key
                 fieldName = x.original
                 fieldLabel = (x.translated
-                    if x.translated is not None
-                    else x.original)
+                              if x.translated is not None
+                              else x.original)
             elif x.keyorvalue == 1:
                 # Value: First value is internal (original) value, second is
                 # external (translated) value
@@ -669,19 +669,19 @@ def _get_admin_scan(Key, Value, name, config, language, mandatory, local=False):
 
     # Prepare subquery for translations
     keyTranslated = Session.query(
-            Key.fk_key.label('original_id'),
-            Key.key.label('translated')
-        ).\
+                                  Key.fk_key.label('original_id'),
+                                  Key.key.label('translated')
+                                  ).\
         filter(Key.language == language).\
         subquery()
 
     # Query keys
     keys = Session.query(
-            Key.key.label('original'),
-            keyTranslated.c.translated.label('translated'),
-            # Use column 'keyorvalue' to separate keys (0) from values (1)
-            func.char_length('').label('keyorvalue')
-        ).\
+                         Key.key.label('original'),
+                         keyTranslated.c.translated.label('translated'),
+                         # Use column 'keyorvalue' to separate keys (0) from values (1)
+                         func.char_length('').label('keyorvalue')
+                         ).\
         filter(Key.key == name).\
         filter(Key.original == None).\
         outerjoin(keyTranslated, keyTranslated.c.original_id == Key.id)
@@ -712,19 +712,19 @@ def _get_admin_scan(Key, Value, name, config, language, mandatory, local=False):
 
         # Prepare subquery for translations
         valuesTranslated = Session.query(
-                Value.fk_value.label('original_id'),
-                Value.value.label('translated')
-            ).\
+                                         Value.fk_value.label('original_id'),
+                                         Value.value.label('translated')
+                                         ).\
             filter(Value.language == language).\
             subquery()
 
         # Query values
         values = Session.query(
-                Value.value.label('original'),
-                valuesTranslated.c.translated.label('translated'),
-                # Use column 'keyorvalue' to separate keys (0) from values (1)
-                func.char_length(' ').label('keyorvalue')
-            ).\
+                               Value.value.label('original'),
+                               valuesTranslated.c.translated.label('translated'),
+                               # Use column 'keyorvalue' to separate keys (0) from values (1)
+                               func.char_length(' ').label('keyorvalue')
+                               ).\
             filter(Value.value.in_(all_vals)).\
             filter(Value.original == None).\
             outerjoin(valuesTranslated, valuesTranslated.c.original_id == Value.id)
@@ -804,3 +804,31 @@ def _get_admin_scan(Key, Value, name, config, language, mandatory, local=False):
         fieldConfig['leaf'] = True
 
     return fieldConfig
+
+def get_activity_sitekey(request):
+    # Read the profile activity configuration file
+    try:
+        stream = open("%s/%s" % (locale_profile_directory_path(request), ACTIVITY_YAML), 'r')
+    except IOError:
+        return None
+
+    config = yaml.load(stream)
+
+    if 'site_key' in config:
+        return config['site_key']
+    else:
+        return None
+
+def get_stakeholder_sitekey(request):
+    # Read the profile stakeholder configuration file
+    try:
+        stream = open("%s/%s" % (locale_profile_directory_path(request), STAKEHOLDER_YAML), 'r')
+    except IOError:
+        return None
+
+    config = yaml.load(stream)
+
+    if 'site_key' in config:
+        return config['site_key']
+    else:
+        return None

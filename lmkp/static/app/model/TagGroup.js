@@ -1,10 +1,15 @@
 Ext.define('Lmkp.model.TagGroup', {
 	extend: 'Ext.data.Model',
 	
-	fields: [{
+	fields: [
+            {
 		type: 'int',
 		name: 'id'
-	}],
+            }, {
+                type: 'int',
+                name: 'tg_id'
+            }
+        ],
 	
 	associations: [
             {

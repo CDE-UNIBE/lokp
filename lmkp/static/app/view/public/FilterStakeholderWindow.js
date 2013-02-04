@@ -12,7 +12,7 @@ Ext.define('Lmkp.view.public.FilterStakeholderWindow', {
     modal: true,
 
     title: Lmkp.ts.msg('stakeholders_filter-title'),
-    width: 550,
+    width: 570,
 
     items: [
         {

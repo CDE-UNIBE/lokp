@@ -11,9 +11,9 @@ Ext.define('Lmkp.controller.activities.Details', {
 
     init: function() {
         this.control({
-            'lo_activitydetailwindow':{
-                render: this.onActivityDetailWindowRender
-            },
+            //'lo_activitydetailwindow':{
+            //    render: this.onActivityDetailWindowRender
+            //},
             'lo_activitydetailwindow gridpanel[itemId="historyPanel"]': {
                 select: this.onHistoryPanelSelect
             },
@@ -32,20 +32,21 @@ Ext.define('Lmkp.controller.activities.Details', {
         });
     },
 
-    onActivityDetailWindowRender: function(comp){
-
-        var identifier, modelName;
+    /**
+     * When rendering the window, also query the comment items (specific for
+     * activities) and add them to the comment panel (setItemComment)
+     */
+    /*onActivityDetailWindowRender: function(comp){
+        var identifier;
         if (comp.activity) {
             // The item is known (for example when clicking on the details
             // button in the grid)
             identifier = comp.activity.get('id');
-            modelName = comp.activity.modelName;
         } else {
             // The Item is not directly known. This is the case when identifying
             // a feature on the map. In this case try to get the needed values
             // directly from the component.
             identifier = comp.activity_identifier;
-            modelName = comp.modelName;
         }
 
         // Reqeust the comments for this activity after opening the detail
@@ -56,11 +57,9 @@ Ext.define('Lmkp.controller.activities.Details', {
             success: function(response) {
                 // Set the comment for this activity to the detail window
                 comp.setItemComment(Ext.JSON.decode(response.responseText));
-                // Populate the comment in the activity
-                comp._populateComment(identifier, modelName);
             }
         });
-    },
+    },*/
     
     onHistoryPanelSelect: function(rowModel, record, index, eOpts){
         this.getActivityDetailWindow()._populateDetails(record);
