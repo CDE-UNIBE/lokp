@@ -12,26 +12,6 @@ from sqlalchemy.types import Float
 #@view_defaults(request_method='GET')
 class EvaluationView(BaseView):
 
-    # Check if language (_LOCALE_) is set
-    if request is not None and ('_LOCALE_' in request.params
-        or '_LOCALE_' in request.cookies):
-        response = request.response
-        response.set_cookie('_LOCALE_', request.params.get('_LOCALE_'), timedelta(days=90))
-
-    # Check if profile (_PROFILE_) is set
-    if request is not None:
-        response = request.response
-        if '_PROFILE_' in request.params:
-            response.set_cookie('_PROFILE_', request.params.get('_PROFILE_'), timedelta(days=90))
-        elif '_PROFILE_' in request.cookies:
-            # Profile already set, leave it
-            pass
-        else:
-            # If no profile is set, set 'global' profile
-            response.set_cookie('_PROFILE_', 'global', timedelta(days=90))
-
-    return {}
-
     @view_config(route_name='charts', renderer='lmkp:templates/charts.mak')
     def show_charts(self):
 
