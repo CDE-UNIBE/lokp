@@ -42,6 +42,18 @@ Ext.define('Lmkp.view.moderation.PendingTab', {
                 }
             ]
         }, {
+            xtype: 'pagingtoolbar',
+            id: 'pendingActivitiesGridPagingToolbar',
+            store: 'PendingActivityGrid',
+            dock: 'bottom',
+            flex: 0,
+            enableOverflow: false,
+            displayInfo: true,
+            beforePageText: Lmkp.ts.msg('gui_paging-before'),
+            afterPageText: Lmkp.ts.msg('gui_paging-after'),
+            displayMsg: 'Displaying pending Activities {0} - {1} of {2}', // TODO
+            emptyMsg: '<b>' + 'No pending Activities to display' + '</b>' // TODO
+        }, {
             title: 'Pending Stakeholders',
             xtype: 'gridpanel',
             itemId: 'pendingStakeholderGridPanel',
@@ -63,6 +75,18 @@ Ext.define('Lmkp.view.moderation.PendingTab', {
                     tpl: '[C]'
                 }
             ]
+         }, {
+            xtype: 'pagingtoolbar',
+            id: 'pendingStakeholdersGridPagingToolbar',
+            store: 'PendingStakeholderGrid',
+            dock: 'bottom',
+            flex: 0,
+            enableOverflow: false,
+            displayInfo: true,
+            beforePageText: Lmkp.ts.msg('gui_paging-before'),
+            afterPageText: Lmkp.ts.msg('gui_paging-after'),
+            displayMsg: 'Displaying pending Stakeholders {0} - {1} of {2}', // TODO
+            emptyMsg: '<b>' + 'No pending Stakeholders to display' + '</b>' // TODO
         }
     ]
 });

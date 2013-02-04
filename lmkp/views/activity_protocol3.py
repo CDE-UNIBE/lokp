@@ -571,10 +571,12 @@ class ActivityProtocol3(Protocol):
         through profile bounds
         """
 
-        # Prepare order: Get the order from request
-        order_query, order_numbers = self._get_order(
-            request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value
-        )
+        # TODO: So far, ordering only by timestamp (using dummy order_query)
+        order_query = self.Session.query(
+                Activity.id,
+                Activity.timestamp_entry.label('value') # Dummy value
+            ).\
+            subquery()
 
         # Prepare the query to find out the oldest pending version of each
         oldest_pending_activities = self.Session.query(
@@ -601,6 +603,10 @@ class ActivityProtocol3(Protocol):
             outerjoin(order_query, order_query.c.id == Activity.id).\
             filter(self._get_spatial_moderator_filter(request)).\
             group_by(Activity.id, order_query.c.value)
+
+        # TODO: Order only by timestamp
+        relevant_activities = relevant_activities.\
+            order_by(desc(Activity.timestamp_entry))
 
         return relevant_activities
 
@@ -1076,6 +1082,10 @@ class ActivityProtocol3(Protocol):
                       key_translation.c.key_original_id == A_Key.id).\
             outerjoin(value_translation,
                       value_translation.c.value_original_id == A_Value.id)
+
+        # TODO: So far, order only by timestamp.
+        query = query.\
+            order_by(desc(relevant_activities.c.order_value))
 
         return query, count
 
