@@ -119,6 +119,21 @@ div.toolbar_username {
     font-size: 11px;
 }
 
+div.login {
+    border: 1px solid silver;
+    padding: 10px;
+    width: 200px;
+    margin: 0 auto;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+}
+
+div.login-warning {
+    background-color: #F68E1D;
+}
+
 fieldset.simple_login {
     border: 1px solid silver;
     padding: 10px;
@@ -194,4 +209,10 @@ div.olLayerGooglePoweredBy
     float: right;
     width: 100px;
     margin-left: -200px;
+}
+
+td.status-pending {
+    /* Add a light-salmon background to pending versions in the activtiy grid */
+    background-color: #ffa07a !important;
+    font-style: italic !important;
 }

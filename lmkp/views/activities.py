@@ -1,15 +1,17 @@
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol2 import ActivityProtocol2
+from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.config import get_mandatory_keys
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPCreated
 from pyramid.httpexceptions import HTTPForbidden
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPUnauthorized
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
+from pyramid.renderers import render_to_response
 from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
 from pyramid.security import effective_principals
@@ -27,55 +29,7 @@ log = logging.getLogger(__name__)
 #_ = TranslationStringFactory('lmkp')
 
 activity_protocol2 = ActivityProtocol2(Session)
-
-# TODO: quite possibly, this could be deleted ... Not sure though
-## Translatable hashmap with all possible activity status
-#statusMap = {
-#'active': _('Active Activities', default='Active Activities'),
-#'overwritten': _('Overwritten Activities', default='Overwritten Activities'),
-#'pending': _('Pending Activities', default='Pending Activities'),
-#'deleted': _('Deleted Activities', default='Deleted Activities'),
-#'rejected': _('Rejected Activities', default='Rejected Activities')
-#}
-#
-#def get_status(request):
-#    """
-#    Returns a list of requested and valid status
-#    """
-#
-#    # Set the default status
-#    defaultStatus = ['active']
-#
-#    # Get the status parameter if set, else active per default
-#    requestedStatus = request.params.get('status', defaultStatus)
-#    try:
-#        status = requestedStatus.split(',')
-#    except AttributeError:
-#        status = requestedStatus
-#
-#    # Make sure that all status elements are in the statusMap. If not, remove it
-#    for s in status:
-#        if s not in statusMap:
-#            status.remove(s)
-#
-#    # Make sure that not an empty status is returned
-#    if len(status) == 0:
-#        status = defaultStatus
-#
-#    # Return a list of valid status
-#    return status
-#
-#def get_status_filter(request):
-#    status = get_status(request)
-#    if len(status) == 0:
-#        return None
-#    elif len(status) == 1:
-#        return (Status.name == status[0])
-#    else:
-#        filters = []
-#        for s in status:
-#            filters.append((Status.name == s))
-#        return or_(* filters)
+activity_protocol3 = ActivityProtocol3(Session)
 
 def get_timestamp(request):
     """
@@ -83,28 +37,212 @@ def get_timestamp(request):
     """
     pass
 
-
-@view_config(route_name='activities_read_one', renderer='geojson')
-def read_one(request):
-    """
-    Returns the feature with the requested id
-    """
-    uid = request.matchdict.get('uid', None)
-    return activity_protocol2.read(request, uid=uid)
-
-
-@view_config(route_name='activities_read_many', renderer='json')
+@view_config(route_name='activities_read_many')
 def read_many(request):
     """
-    Reads many active activities
+    Read many, returns also pending Activities by currently logged in user and
+    all pending Activities if logged in as moderator.
+    Default output format: JSON
     """
-    activities = activity_protocol2.read(request)
-    return activities
+    
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
 
-@view_config(route_name='activities_read_pending', renderer='lmkp:templates/rss.mak')
-def read_pending(request):
-    activities = activity_protocol2.read(request) #, filter={'status_filter': (Status.id==2)})
-    return {'data': activities['data']}
+    if output_format == 'json':
+        activities = activity_protocol3.read_many(request, public=False)
+        return render_to_response('json', activities, request)
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    elif output_format == 'geojson':
+        activities = activity_protocol3.read_many_geojson(request, public=False)
+        return render_to_response('json', activities, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
+
+@view_config(route_name='activities_public_read_many')
+def read_many_public(request):
+    """
+    Read many, does not return any pending Activities.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        activities = activity_protocol3.read_many(request, public=True)
+        return render_to_response('json', activities, request)
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    elif output_format == 'geojson':
+        activities = activity_protocol3.read_many_geojson(request, public=True)
+        return render_to_response('json', activities, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
+
+@view_config(route_name='activities_read_many_pending', permission='moderate')
+def read_many_pending(request):
+    """
+    Read many pending Activities based on the profile attached to the moderator.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        activities = activity_protocol3.read_many_pending(request)
+        return render_to_response('json', activities, request)
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
+
+@view_config(route_name='activities_bystakeholder')
+def by_stakeholder(request):
+    """
+    Read many Activities based on a Stakeholder ID. Also return pending
+    Activities by currently logged in user and all pending Activities if logged
+    in as moderator.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    uid = request.matchdict.get('uid', None)
+
+    if output_format == 'json':
+        activities = activity_protocol3.read_many_by_stakeholder(request,
+            uid=uid, public=False)
+        return render_to_response('json', activities, request)
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
+
+@view_config(route_name='activities_bystakeholder_public')
+def by_stakeholder_public(request):
+    """
+    Read many Activities based on a Stakeholder ID. Do not return any pending
+    versions.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    uid = request.matchdict.get('uid', None)
+
+    if output_format == 'json':
+        activities = activity_protocol3.read_many_by_stakeholder(request,
+            uid=uid, public=True)
+        return render_to_response('json', activities, request)
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
+
+@view_config(route_name='activities_read_one')
+def read_one(request):
+    """
+    Read one Activity based on ID and return all versions of this Activity. Also
+    return pending versions by currently logged in user and all pending versions
+    of this Activity if logged in as moderator.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    uid = request.matchdict.get('uid', None)
+
+    if output_format == 'json':
+        activities = activity_protocol3.read_one(request, uid=uid, public=False)
+        return render_to_response('json', activities, request)
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
+   
+@view_config(route_name='activities_read_one_public')
+def read_one_public(request):
+    """
+    Read one Activity based on ID and return all versions of this Activity. Do
+    not return any pending versions.
+    Default output format: JSON
+    """
+
+    uid = request.matchdict.get('uid', None)
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    if output_format == 'json':
+        activities = activity_protocol3.read_one(request, uid=uid, public=True)
+        return render_to_response('json', activities, request)
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
+
+@view_config(route_name='activities_read_one_active')
+def read_one_active(request):
+    """
+    Read one Activity based on ID and return only the active version of the
+    Activity.
+    Default output format: JSON
+    """
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+
+    uid = request.matchdict.get('uid', None)
+
+    if output_format == 'json':
+        activities = activity_protocol3.read_one_active(request, uid=uid)
+        return render_to_response('json', activities, request)
+    elif output_format == 'html':
+        #@TODO
+        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    else:
+        # If the output format was not found, raise 404 error
+        raise HTTPNotFound()
+
+#@view_config(route_name='activities_read_pending', renderer='lmkp:templates/rss.mak')
+#def read_pending(request):
+#    activities = activity_protocol2.read(request) #, filter={'status_filter': (Status.id==2)})
+#    return {'data': activities['data']}
 
 @view_config(route_name='activities_review', renderer='json')
 def review(request):
@@ -118,26 +256,23 @@ def review(request):
     userid = authenticated_userid(request)
     if userid is None:
         raise HTTPUnauthorized(_('User is not logged in.'))
-        #return {'success': False, 'msg': 'User is not logged in.'}
-    if not isinstance(has_permission('moderate', request.context, request), ACLAllowed):
+    if not isinstance(has_permission('moderate', request.context, request),
+        ACLAllowed):
         raise HTTPUnauthorized(_('User has no permissions to add a review.'))
-        #return {'success': False, 'msg': 'User has no permissions to add a review.'}
-    user = Session.query(User).\
-            filter(User.username == authenticated_userid(request)).first()
+    #user = Session.query(User).filter(User.username == authenticated_userid(request)).first()
+    user = request.user
 
     # Check for profile
-    profile_filters = activity_protocol2._create_bound_filter_by_user(request)
-    if len(profile_filters) == 0:
+    profile_filters = activity_protocol3._get_spatial_moderator_filter(request)
+    if profile_filters is None:
         raise HTTPBadRequest(_('User has no profile attached'))
-        #return {'success': False, 'msg': 'User has no profile attached.'}
     activity = Session.query(Activity).\
         filter(Activity.activity_identifier == request.POST['identifier']).\
         filter(Activity.version == request.POST['version']).\
-        filter(or_(* profile_filters)).\
+        filter(profile_filters).\
         first()
     if activity is None:
         raise HTTPUnauthorized(_('The Activity was not found or is not situated within the user\'s profiles'))
-        #return {'success': False, 'msg': 'The Activity was not found or is not situated within the user\'s profiles'}
 
     # If review decision is 'approved', make sure that all mandatory fields are 
     # there, except if it is to be deleted
@@ -163,15 +298,9 @@ def review(request):
                 if mk not in keys:
                     raise HTTPBadRequest(_('Not all mandatory keys are provided'))
 
-    # Also query previous Activity if available
-    previous_activity = Session.query(Activity).\
-        filter(Activity.activity_identifier == request.POST['identifier']).\
-        filter(Activity.version == activity.changesets[0].previous_version).\
-        first()
-
     # The user can add a review
-    ret = activity_protocol2._add_review(
-        request, activity, previous_activity, A_Changeset_Review, Activity, user
+    ret = activity_protocol3._add_review(
+        request, activity, Activity, user
     )
 
     return ret
@@ -188,15 +317,14 @@ def create(request):
     """
 
     # Check if the user is logged in and he/she has sufficient user rights
-    userid = authenticated_userid(request)
-    print effective_principals(request)
+    userid = request.user.username #authenticated_userid(request)
 
     if userid is None:
         raise HTTPForbidden()
     if not isinstance(has_permission('edit', request.context, request), ACLAllowed):
         raise HTTPForbidden()
 
-    ids = activity_protocol2.create(request)
+    ids = activity_protocol3.create(request)
 
     response = {}
     response['data'] = [i.to_json() for i in ids]
@@ -289,105 +417,6 @@ def model(request):
 
     return "Ext.define('Lmkp.model.TagGroup', %s);" % object
 
-@view_config(route_name='activities_history', renderer='json')
-def activities_history(request):
-    uid = request.matchdict.get('uid', None)
-    
-    # Get the localizer from the request
-    localizer = get_localizer(request)
-    
-    activity = activity_protocol2.history(request, uid=uid)
-    return activity
-    
-    # TODO: ...
-
-    """
-    # The ActivityProtocol does not perform filter operations when UUID is passed as a parameter.
-    # As a workaround, UUID is passed as a filter.
-    overwrittenfilter = []
-    overwrittenfilter.append((Status.name == 'overwritten'))
-    overwrittenfilter.append((Activity.activity_identifier == uid))
-    deletedfilter = []
-    deletedfilter.append((Status.name == 'deleted'))
-    deletedfilter.append((Activity.activity_identifier == uid))
-    
-    # Query the active and overwritten activities based on the given UUID.
-    active = activity_protocol.read(request, filter=(Status.name == 'active'), uid=uid)
-    activeCount = 1
-    overwritten = activity_protocol.read(request, filter=and_(* overwrittenfilter))
-    deleted = activity_protocol.read(request, filter=and_(* deletedfilter))
-    
-    # If there is no active activity, the ActivityProtocol returns a HTTPNotFound object.
-    # This object cannot be processed by the json renderer because it has no ID (required to build name)
-    # Therefore, the object explicitly needs to be set to None.
-    if isinstance(active, HTTPNotFound):
-        active = None
-        activeCount = 0
-    else:
-        # append changeset details
-        active = _history_get_changeset_details(active)
-
-    # if there are no overwritten versions
-    if len(overwritten) == 0:
-        active = _check_difference(active, None, localizer)
-        
-    # Sort overwritten activities by their timestamp
-    try:
-        overwritten = sorted(overwritten, key=lambda overwritten:overwritten.timestamp, reverse=True)
-    except:
-        pass
-
-    # process overwritten versions
-    for i, o in enumerate(overwritten):
-        
-        # the first item (latest overwritten version)
-        if i == 0:
-            # compare with active
-            active = _check_difference(active, o)
-            # if the first item is not the last as well, ...
-            if len(overwritten) > 1:
-                # ... compare it with its previous version
-                o = _check_difference(o, overwritten[i+1])
-            # if the first item is also the last, ...
-            else:
-                # ... there is no previous version to compare it with
-                o = _check_difference(o, None)
-        
-        # the last item (the first version)
-        elif i == len(overwritten)-1:
-            # there is no previous version to compare it with
-            o = _check_difference(o, None)
-
-        # all other cases
-        else:
-            # compare it with its previous version
-            o = _check_difference(o, overwritten[i+1])
-
-        # append changeset details
-        o = _history_get_changeset_details(o)
-
-    # process deleted if available
-    if len(deleted) > 0:
-        deleted = deleted[0] # there should only be one
-        # append changeset details
-        deleted = _history_get_changeset_details(deleted)
-        deletedCount = 1
-    else:
-        deleted = None
-        deletedCount = 0
-
-    return {
-        'data': {
-            'active': active,
-            'overwritten': overwritten,
-            'deleted': deleted
-        },
-        'success': True,
-        'total': len(overwritten) + activeCount + deletedCount
-    }
-    """
-
-
 def _check_difference(new, old, localizer=None):
 
     changes = {} # to collect the changes
@@ -438,17 +467,17 @@ def _check_difference(new, old, localizer=None):
         new.changes = changes
     return new
 
-def _history_get_changeset_details(object):
-    """
-    Appends details from Changeset of an ActivityProtocol object based on the ID of the activity
-    and returns this object. 
-    """
-    if object.id is not None:
-        changeset = Session.query(A_Changeset).filter(A_Changeset.fk_activity == object.id).first()
-        object.userid = changeset.user.id
-        object.username = changeset.user.username
-        object.source = changeset.source
-        return object
+#def _history_get_changeset_details(object):
+#    """
+#    Appends details from Changeset of an ActivityProtocol object based on the ID of the activity
+#    and returns this object.
+#    """
+#    if object.id is not None:
+#        changeset = Session.query(A_Changeset).filter(A_Changeset.fk_activity == object.id).first()
+#        object.userid = changeset.user.id
+#        object.username = changeset.user.username
+#        object.source = changeset.source
+#        return object
 
 
 def _get_extjs_config(name, config, language):
@@ -511,7 +540,3 @@ def _get_config_fields():
     log.info(fields)
 
     return fields
-
-@view_config(route_name='activities_read_geojson', renderer='json')
-def activities_read_geojson(request):
-    return activity_protocol2.read_geojson(request)

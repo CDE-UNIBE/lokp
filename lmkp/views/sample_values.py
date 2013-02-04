@@ -4,8 +4,8 @@ import random
 
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
-from lmkp.views.activity_protocol2 import ActivityProtocol2
-from lmkp.views.stakeholder_protocol import StakeholderProtocol
+from lmkp.views.activity_protocol3 import ActivityProtocol3
+from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.view import view_config
 import simplejson as json
@@ -15,6 +15,10 @@ from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 import transaction
 
+from lmkp.tests.moderation_activities import *
+from lmkp.tests.create_activities import *
+from lmkp.tests.edit_activities import *
+
 log = logging.getLogger(__name__)
 
 def activity_wrapper(request, file, status='pending'):
@@ -22,48 +26,43 @@ def activity_wrapper(request, file, status='pending'):
     A small wrapper around the create method in the Activity Protocol
     """
     # Create a new activity protocol object
-    activity_protocol2 = ActivityProtocol2(Session)
+    activity_protocol = ActivityProtocol3(Session)
     # Read the data JSON file
     data_stream = open(file, 'r')
     data = json.loads(data_stream.read())
 
-    # Check if the json body is a valid diff file
-    if 'activities' not in data:
-        raise HTTPBadRequest(detail="Not a valid format")
-
-    activity_protocol2._read_configuration(request, 'activity.yml')
-
-    ids = []
-    for activity in data['activities']:
-        a = activity_protocol2._handle_activity(request, activity, status)
-        ids.append(a.id)
-    
-    return ids
+    return activity_protocol.create(request, data)
         
 def stakeholder_wrapper(request, file, status='pending'):
     """
     A small wrapper around the create method in the Activity Protocol
     """
-    # Create a new activity protocol object
-    stakeholder_protocol = StakeholderProtocol(Session)
+    # Create a new stakeholder protocol object
+    stakeholder_protocol = StakeholderProtocol3(Session)
     # Read the data JSON file
     data_stream = open(file, 'r')
     data = json.loads(data_stream.read())
 
-    # Check if the json body is a valid diff file
-    if 'stakeholders' not in data:
-        raise HTTPBadRequest(detail="Not a valid format")
+    return stakeholder_protocol.create(request, data)
 
-    stakeholder_protocol._read_configuration(request, 'stakeholder.yml')
+@view_config(route_name='sample_values_constructed', renderer='json')
+def sample_values_constructed(request):
+    """
+    Insert some constructed sample values to the database
+    """
+    rootdir = os.path.dirname(os.path.dirname(__file__))
 
-    ids = []
-    for stakeholder in data['stakeholders']:
-        s = stakeholder_protocol._handle_stakeholder(request, stakeholder, status)
-        ids.append(s.id)
+    a_path = 'documents/cambodia/constructed_data'
+    a_file = 'constructed_activities.json'
+    sh_path = 'documents/cambodia/constructed_data'
+    sh_file = 'constructed_stakeholders.json'
+
+    a = activity_wrapper(request, "%s/%s/%s" % (rootdir, a_path, a_file),
+        'active')
+    s = stakeholder_wrapper(request, "%s/%s/%s" % (rootdir, sh_path, sh_file),
+        'active')
+
     
-    return ids
-
-
 @view_config(route_name='sample_values', renderer='json')
 def insert_landmatrix(request):
     """
@@ -1032,6 +1031,221 @@ def delete_sample_values(request):
     if len(stack) == 0:
         stack.append('Nothing was deleted.')
     return {'messagestack':stack}
+
+
+
+@view_config(route_name='moderation_tests', renderer='json', permission='moderate')
+def moderation_tests(request):
+    
+    doCreateTests = True
+    doEditTests = True
+    doModerationTests = True
+
+    verbose = True
+    
+    print ""
+    print ""
+    print ""
+    print ""
+    print ""    
+    print ""
+    print "********************************************************************"
+    print "********************   Starting test suite   ***********************"
+    print "********************************************************************"
+
+    testCount = 0
+    errorStack = []
+
+    """
+    Create
+    """
+    if (doCreateTests is True or (isinstance(doCreateTests, list)
+        and len(doCreateTests) > 0)):
+
+        createTests = [
+            CreateActivities1(request),
+            CreateActivities2(request)
+        ]
+        
+        # Test the setup
+        print ""
+        print "-----------------   [Create] Testing the setup   -------------------"
+        print ""
+        validCreateSetup = True
+        for test in createTests:
+
+            if (isinstance(doCreateTests, list)
+                and test.testId not in doCreateTests):
+                continue
+
+            log.debug('[Create] Testing setup of test case %s' % test.testId)
+            success = test.testSetup()
+            if not success:
+                log.debug('[Create] Setup of test case %s is not valid!' % test.testId)
+            validCreateSetup = success and validCreateSetup
+        
+        # If the setup is ok, do the tests
+        if validCreateSetup is True:
+            log.debug('Test setup is valid!')
+            print ""
+            print "-----------------   [Create] Running the tests   -------------------"
+            print ""
+            for test in createTests:
+
+                if (isinstance(doCreateTests, list)
+                    and test.testId not in doCreateTests):
+                    continue
+
+                log.debug('[Create] Running test case %s' % test.testId)
+                success = test.doTest(verbose)
+                if success is True:
+                    testCount += len(test.results)
+                if not success:
+                    for r in test.results:
+                        if r.success is not True:
+                            errorMessage = ('[Create] A test of test case %s (%s) failed with message: %s'
+                                % (test.testId, test.testDescription, r.msg))
+                            log.debug(errorMessage)
+                            errorStack.append(errorMessage)
+
+    """
+    Edit / Update
+    """
+    if (doEditTests is True or (isinstance(doEditTests, list)
+        and len(doEditTests) > 0)):
+
+        editTests = [
+            EditActivities1(request),
+            EditActivities2(request),
+            EditActivities3(request)
+        ]
+
+        # Test the setup
+        print ""
+        print "------------------   [Edit] Testing the setup   --------------------"
+        print ""
+        validEditSetup = True
+        for test in editTests:
+
+            if (isinstance(doEditTests, list)
+                and test.testId not in doEditTests):
+                continue
+
+            log.debug('[Edit] Testing setup of test case %s' % test.testId)
+            success = test.testSetup()
+            if not success:
+                for r in test.results:
+                    if r.success is not True:
+                        errorMessage = ('[Edit] Setup of test case %s is not valid: %s'
+                            % (test.testId, r.msg))
+                        log.debug(errorMessage)
+                        errorStack.append(errorMessage)
+            validEditSetup = success and validEditSetup
+
+        # If the setup is ok, do the tests
+        if validEditSetup is True:
+            log.debug('Test setup is valid!')
+            print ""
+            print "------------------   [Edit] Running the tests   --------------------"
+            print ""
+            for test in editTests:
+
+                if (isinstance(doEditTests, list)
+                and test.testId not in doEditTests):
+                    continue
+
+                log.debug('[Edit] Running test case %s' % test.testId)
+                success = test.doTest(verbose)
+                if success is True:
+                    testCount += len(test.results)
+                if not success:
+                    for r in test.results:
+                        if r.success is not True:
+                            errorMessage = ('[Edit] A test of test case %s (%s) failed with message: %s'
+                                % (test.testId, test.testDescription, r.msg))
+                            log.debug(errorMessage)
+                            errorStack.append(errorMessage)
+
+    """
+    Moderation / Review
+    """
+    if (doModerationTests is True or (isinstance(doModerationTests, list)
+        and len(doModerationTests) > 0)):
+
+        moderationTests = [
+            ModerationActivities1(request)
+        ]
+    
+        # Test the setup
+        print ""
+        print "---------------   [Moderation] Testing the setup   -----------------"
+        print ""
+        validModerationSetup = True
+        for test in moderationTests:
+
+            if (isinstance(doModerationTests, list)
+                and test.testId not in doModerationTests):
+                continue
+
+            log.debug('[Moderation] Testing setup of test case %s' % test.testId)
+            success = test.testSetup()
+            if not success:
+                for r in test.results:
+                    if r.success is not True:
+                        errorMessage = ('[Moderation] Setup of test case %s is not valid: %s'
+                            % (test.testId, r.msg))
+                        log.debug(errorMessage)
+                        errorStack.append(errorMessage)
+            validModerationSetup = success and validModerationSetup
+    
+        # If the setup is ok, do the tests
+        if validModerationSetup is True:
+            log.debug('Test setup is valid!')
+            print ""
+            print "---------------   [Moderation] Running the tests   -----------------"
+            print ""
+            for test in moderationTests:
+
+                if (isinstance(doModerationTests, list)
+                and test.testId not in doModerationTests):
+                    continue
+                
+                log.debug('[Moderation] Running test case %s' % test.testId)
+                success = test.doTest(verbose)
+                if success is True:
+                    testCount += len(test.results)
+                if not success:
+                    for r in test.results:
+                        if r.success is not True:
+                            errorMessage = ('[Moderation] A test of test case %s (%s) failed with message: %s'
+                                % (test.testId, test.testDescription, r.msg))
+                            log.debug(errorMessage)
+                            errorStack.append(errorMessage)
+
+    
+    print ""
+    print "********************************************************************"
+    print "*********************   End of test suite   ************************"
+    print "********************************************************************"
+    print ""
+        
+    print "------------------------   Test results   --------------------------"
+    print ""
+    if ((doCreateTests is not False and validCreateSetup is True)
+        or (doModerationTests is not False and validModerationSetup is True)
+        or (doEditTests is not False and validEditSetup is True)):
+        log.debug('Ran a total of %s tests, %s of them failed.'
+            % (testCount, len(errorStack)))
+    else:
+        log.debug('Test setup is not valid!')
+
+    if len(errorStack) > 0:
+        print ""
+        print "*** ERRORS ***"
+        for e in errorStack:
+            print e
+
+    return {}
 
 def _add_to_db(db_object, name):
     s = Session()

@@ -45,7 +45,8 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
     },
 	
     /**
-     * Loads ands adds all the content.
+     * Loads ands adds all the content. This is called after adding a new
+     * commment.
      */
     _loadContent: function() {
 
@@ -57,7 +58,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
         }
 		
         if (this.identifier && this.commentType) {
-			
+
             Ext.Ajax.request({
                 url: '/comments/' + me.commentType + '/' + me.identifier,
                 method: 'GET',
@@ -214,7 +215,7 @@ Ext.define('Lmkp.view.comments.CommentPanel', {
                 // object (hidden)
                 xtype: 'hiddenfield',
                 name: 'object',
-                value: 'activity'
+                value: me.commentType
             }, {
                 // identifier (hidden)
                 xtype: 'hiddenfield',

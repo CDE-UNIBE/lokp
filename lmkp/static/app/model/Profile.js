@@ -16,14 +16,6 @@ Ext.define('Lmkp.model.Profile', {
         defaultValue: false
     }],
 
-    idProperty: 'profile',
+    idProperty: 'profile'
 	
-    proxy: {
-        type: 'ajax',
-        url: '/profiles/all',
-        reader: {
-            type: 'json',
-            root: 'data'
-        }
-    }
 });

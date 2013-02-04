@@ -1082,7 +1082,7 @@ class ActivityProtocol2(Protocol):
             if activity == None:
                 activity = ActivityFeature2(uid, order_value, geometry=g,
                                             version=order_value, timestamp=timestamp,
-                                            diff_info=diff_info)
+                                            diff_info=diff_info, status=i.status)
                 data.append(activity)
 
             # Check if there is already this tag group present in the current

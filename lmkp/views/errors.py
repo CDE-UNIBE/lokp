@@ -1,5 +1,8 @@
 from pyramid.security import authenticated_userid
 from pyramid.renderers import render_to_response
+from pyramid.i18n import TranslationStringFactory
+
+_ = TranslationStringFactory('lmkp')
 
 def forbidden_view(request):
     
@@ -10,8 +13,11 @@ def forbidden_view(request):
     
     # user is not logged in: show login form
     else:
-        return render_to_response('lmkp:templates/login_form.mak', {'came_from': request.current_route_url()}, request)
+        came_from = request.current_route_url()
+        warning = _(u"Please login to access:")
+        warning += "<br/>%s" % came_from
+        return render_to_response('lmkp:templates/login_form.mak', {'came_from': came_from, 'warning': warning}, request)
 
-def notfound_view(request):
+def notfound_view(context, request):
     request.response.status = 404
-    return render_to_response('lmkp:templates/errors/notfound.mak', {}, request)
+    return render_to_response('lmkp:templates/errors/notfound.mak', {'reason': context}, request)

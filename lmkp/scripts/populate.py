@@ -88,11 +88,6 @@ def main(argv=sys.argv):
         status5 = _addIfNotExists_ID(Status(id=5, name='rejected', description='Reviewed and rejected. Never published.'))
         status6 = _addIfNotExists_ID(Status(id=6, name='edited', description='Edited. Previously pending.'))
         # stakeholder roles
-        sh_role1 = _addIfNotExists_ID(Stakeholder_Role(id=1, name='Donor'))
-        sh_role2 = _addIfNotExists_ID(Stakeholder_Role(id=2, name='Implementing agency'))
-        sh_role3 = _addIfNotExists_ID(Stakeholder_Role(id=3, name='Partner'))
-        sh_role4 = _addIfNotExists_ID(Stakeholder_Role(id=4, name='Beneficiary'))
-        sh_role5 = _addIfNotExists_ID(Stakeholder_Role(id=5, name='Informant'))
         sh_role6 = _addIfNotExists_ID(Stakeholder_Role(id=6, name='Investor'))
         # permissions
         permission1 = _addIfNotExists_ID(Permission(id=1, name='administer', description='Can add key/values and edit translations.'))
@@ -102,7 +97,6 @@ def main(argv=sys.argv):
         # groups (with permissions)
         group1 = _addIfNotExists_ID(Group(id=1, name='administrators'))
         group1.permissions.append(permission1)
-        group1.permissions.append(permission2)
         group1.permissions.append(permission3)
         group1.permissions.append(permission4)
         group2 = _addIfNotExists_ID(Group(id=2, name='moderators'))
@@ -112,15 +106,11 @@ def main(argv=sys.argv):
         group3 = _addIfNotExists_ID(Group(id=3, name='editors'))
         group3.permissions.append(permission3)
         group3.permissions.append(permission4)
-        # review decisions
-        reviewdecision1 = _addIfNotExists_ID(Review_Decision(id=1, name='approved', description='Information was approved.'))
-        reviewdecision1 = _addIfNotExists_ID(Review_Decision(id=2, name='rejected', description='Event or Involvement was rejected.'))
-        reviewdecision3 = _addIfNotExists_ID(Review_Decision(id=3, name='edited', description='Information was edited by a moderator'))
         # users (only 1 admin user)
         admin_password = settings['lmkp.admin_password']
         admin_email = settings['lmkp.admin_email']
         user1 = _addIfNotExists_NoIDUnique(User(username='admin', password=admin_password, email=admin_email), User.username, 'admin')
-        user1.groups.append(group1)
+        user1.groups = [group1, group2, group3]
         # connected with profile1 (global)
         #user2 = _addIfNotExists_NoIDUnique(User(username='user2', password='pw', email='user2@cde.unibe.ch'), User.username, 'user2')
         #user2.groups.append(group2)
@@ -131,7 +121,9 @@ def main(argv=sys.argv):
         profile1 = _addIfNotExists_NoIDUnique(Profile(code='global', geometry=None), Profile.code, 'global')
         profile1.users = [user1] #, user2]
 
-        
+        # institution_types
+        it1 = _addIfNotExists_ID(Institution_Type(id=1, name='CSO'))
+        it2 = _addIfNotExists_ID(Institution_Type(id=2, name='Government'))
 
 def _addIfNotExists_ID(object):
     q = DBSession.query(object.__mapper__).get(object.id)

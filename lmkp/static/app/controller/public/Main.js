@@ -122,8 +122,14 @@ Ext.define('Lmkp.controller.public.Main', {
      */
     onActivityTablePanelRender: function() {
 
+        var grid = this.getActivityTablePanel();
+        var store = this.getActivityGridStore();
+        
         // Adds a beforeload action
-        this.getActivityGridStore().on('beforeload', function(store){
+        store.on('beforeload', function(store){
+
+            // Loading mask
+            grid.setLoading({msg: Lmkp.ts.msg('gui_loading')});
 
             // Get the store proxy
             var proxy = store.getProxy();
@@ -136,9 +142,26 @@ Ext.define('Lmkp.controller.public.Main', {
                 proxy.setExtraParam("bbox", map.getExtent().toBBOX());
             }
         }, this);
+
+        store.on('load', function() {
+            // Loading mask
+            grid.setLoading(false);
+        });
+
     },
 
     onStakeholderTablePanelRender: function(comp) {
+
+        var grid = this.getStakeholderTablePanel();
+        var store = this.getStakeholderGridStore();
+
+        // Loading mask
+        store.on('beforeload', function() {
+            grid.setLoading({msg: Lmkp.ts.msg('gui_loading')});
+        });
+        store.on('load', function() {
+            grid.setLoading(false);
+        });
 
         // Update filter count
         this._updateFilterCount();
@@ -153,7 +176,27 @@ Ext.define('Lmkp.controller.public.Main', {
                 });
             }
         }
+
+        //this.getStakeholderGridStore().on('load', this._reloadActivityGridStore, this);
     },
+
+    /**
+     *
+     *
+    _reloadStakeholderGridStore: function(store, records, successful, eOpts){
+        var extraParams = store.getProxy().extraParams;
+        this.getStakeholderGridStore().un('load', this._reloadActivityGridStore, this);
+        this.getStakeholderGridStore().syncWithActivities(extraParams);
+        this.getStakeholderGridStore().on('load', this._reloadActivityGridStore, this);
+    },
+
+    _reloadActivityGridStore: function(store, records, successful, eOpts){
+        var extraParams = store.getProxy().extraParams;
+        this.getActivityGridStore().un('load', this._reloadStakeholderGridStore, this);
+        this.getActivityGridStore().syncWithStakeholders(extraParams);
+        this.getActivityGridStore().on('load', this._reloadStakeholderGridStore, this);
+    },
+     */
 
     /**
      * Change selection in other grid when a row is selected. Also highlight
@@ -343,7 +386,15 @@ Ext.define('Lmkp.controller.public.Main', {
      */
     _renderColumnMultipleValues: function(comp, dataIndex, ignored) {
         var me = this;
-        comp.renderer = function(value, p, record) {
+        
+        comp.renderer = function(value, metaData, record) {
+
+            // Check the current status of the record and add accordingly an
+            // additional class to the td element
+            if(record.get("status") == Lmkp.ts.msg('status_pending')){
+                metaData.tdCls = "status-pending";
+            }
+
             // loop through all tags is needed
             var taggroupStore = record.taggroups();
             var ret = [];
@@ -404,7 +455,7 @@ Ext.define('Lmkp.controller.public.Main', {
             if (toolbar && count != null) {
                 // Create new button
                 var newbutton = Ext.create('Ext.button.Button', {
-//                    text: 'Filter (' + count + ' active)',
+                    //                    text: 'Filter (' + count + ' active)',
                     text: Lmkp.ts.msg('gui_filter-count').replace('{0}', count),
                     itemId: itemId + 'FilterButton'
                 });

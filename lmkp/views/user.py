@@ -9,6 +9,7 @@ from pyramid.security import authenticated_userid
 from pyramid.security import has_permission
 from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
+from lmkp.views.translation import usergroupMap
 
 @view_config(route_name='user_profile_json', renderer='json')
 def user_profile_json(request):
@@ -99,8 +100,8 @@ def get_user_profile(request):
 
 @view_config(route_name='add_user', renderer='json', permission='administer')
 def add_user(request):
-    if 'group' in request.params:
-        requested_group = request.params['group']
+    if 'groups' in request.params:
+        requested_groups = request.POST.getall('groups')
     else:
         raise HTTPBadRequest("Missing group parameter")
 
@@ -119,14 +120,22 @@ def add_user(request):
     else:
         raise HTTPBadRequest("Missing password parameter")
 
+    # Check email
+    email_query = Session.query(User).filter(User.email == email)
     try:
-        group = Session.query(Group).filter(Group.name == requested_group).one()
+        email_query.one()
+        raise HTTPBadRequest('There already exists a user with this email address')
     except NoResultFound:
+        pass
+
+    # Check groups
+    groups = Session.query(Group).filter(Group.name.in_(requested_groups)).all()
+    if len(groups) == 0:
         raise HTTPBadRequest("Invalid group parameter")
 
     if not _user_exists(User.username, username):
         new_user = User(username=username, password=password, email=email)
-        new_user.groups.append(group)
+        new_user.groups = groups
         return {"success": True, "msg": "New user created successfully."}
     else:
         request.response.status= 400

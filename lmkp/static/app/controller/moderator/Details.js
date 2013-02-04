@@ -39,117 +39,65 @@ Ext.define('Lmkp.controller.moderator.Details', {
 
         var store = this.getActivityDetailWindow().getHistoryStore();
 
-        var toolbar = comp.down('toolbar[dock="bottom"]');
-        toolbar ? comp.remove(toolbar) : null;
+        store.on('load', function(store, records, successful) {
 
-        store.on('load', function(store, records, successful){
+            var toolbar = comp.down('toolbar[dock="bottom"]');
+            if (toolbar) {
+                comp.removeDocked(toolbar);
+            }
 
-            if(store.first().get('status') == Lmkp.ts.msg('status_pending')){
-
-                var panel = Ext.create('Lmkp.view.moderator.Review',{
-                    itemId: 'reviewPanel',
-                    store: store,
-                    type: 'activities'
-                });
-
-                comp.add(panel);
-            
-                var prevButton = Ext.create('Ext.button.Button',{
-                    disabled: true,
-                    itemId: 'card-prev',
-                    handler: function(btn) {
-                        var layout = comp.getLayout();
-                        if(layout.getPrev()){
-                            layout.setActiveItem(layout.getPrev());
-                        }
-                        btn.setDisabled(!layout.getPrev());
-                        nextButton.setDisabled(!layout.getNext());
-                    },
-                    text: '&laquo; ' + Lmkp.ts.msg('button_back')
-                });
-
-                var nextButton = Ext.create('Ext.button.Button',{
-                    itemId: 'card-next',
-                    handler: function(btn){
-                        var layout = comp.getLayout();
-                        if(layout.getNext()){
-                            layout.setActiveItem(layout.getNext());
-                        }
-                        btn.setDisabled(!layout.getNext());
-                        prevButton.setDisabled(!layout.getPrev());
-                    },
-                    text: Lmkp.ts.msg('moderator_review-pending-changes') + ' &raquo;'
-                });
-            
+            if (store.find('status', Lmkp.ts.msg('status_pending')) > -1) {
                 toolbar = Ext.create('Ext.toolbar.Toolbar',{
                     dock: 'bottom',
-                    items: [prevButton, '->', nextButton]
+                    items: [
+                        '->', {
+                            text: Lmkp.ts.msg('moderator_review-pending-changes'),
+                            tooltip: 'This item has pending changes. Click to review them in a popup window.',
+                            handler: function() {
+                                var record = store.first();
+                                if (record) {
+                                    var url = '/moderation/activities/' + record.get('id');
+                                    window.open(url, 'lo_compareview');
+                                }
+                            }
+                        }
+                    ]
                 });
                 comp.addDocked(toolbar);
             }
         }, this);
-
     },
 
     onStakeholderDetailCenterPanelRender: function(comp) {
 
         var store = this.getStakeholderDetailWindow().getHistoryStore();
 
-        var toolbar = comp.down('toolbar[dock="bottom"]');
-        toolbar ? comp.remove(toolbar) : null;
+        store.on('load', function(store, records, successful) {
 
-        store.on('load', function(store, records, successful){
+            var toolbar = comp.down('toolbar[dock="bottom"]');
+            if (toolbar) {
+                comp.removeDocked(toolbar);
+            }
 
-            if(store.first().get('status') == Lmkp.ts.msg('status_pending')){
-
-                var panel = Ext.create('Lmkp.view.moderator.Review',{
-                    itemId: 'reviewPanel',
-                    store: store,
-                    type: 'stakeholders'
-                });
-
-                comp.add(panel);
-
-                var prevButton = Ext.create('Ext.button.Button',{
-                    disabled: true,
-                    itemId: 'card-prev',
-                    handler: function(btn) {
-                        var layout = comp.getLayout();
-                        if(layout.getPrev()){
-                            layout.setActiveItem(layout.getPrev());
-                        }
-                        btn.setDisabled(!layout.getPrev());
-                        nextButton.setDisabled(!layout.getNext());
-                    },
-                    text: '&laquo; ' + Lmkp.ts.msg('button_back')
-                });
-
-                var nextButton = Ext.create('Ext.button.Button',{
-                    itemId: 'card-next',
-                    handler: function(btn){
-                        var layout = comp.getLayout();
-                        if(layout.getNext()){
-                            layout.setActiveItem(layout.getNext());
-                        }
-                        btn.setDisabled(!layout.getNext());
-                        prevButton.setDisabled(!layout.getPrev());
-                    },
-                    text: Lmkp.ts.msg('moderator_review-pending-changes') + ' &raquo;'
-                });
-
+            if (store.find('status', Lmkp.ts.msg('status_pending')) > -1) {
                 toolbar = Ext.create('Ext.toolbar.Toolbar',{
                     dock: 'bottom',
-                    items: [prevButton, '->', nextButton]
+                    items: [
+                        '->', {
+                            text: Lmkp.ts.msg('moderator_review-pending-changes'),
+                            tooltip: 'This item has pending changes. Click to review them in a popup window.',
+                            handler: function() {
+                                var record = store.first();
+                                if (record) {
+                                    var url = '/moderation/stakeholders/' + record.get('id');
+                                    window.open(url, 'lo_compareview');
+                                }
+                            }
+                        }
+                    ]
                 });
                 comp.addDocked(toolbar);
             }
         }, this);
-
-    },
-
-    onCardPreviousClick: function(button, event){
-        var layout = this.getActivityDetailWizardPanel().getLayout();
-        layout.setActiveItem(layout.getPrev());
-    }
-    
+    }    
 });

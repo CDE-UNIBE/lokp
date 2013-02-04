@@ -20,30 +20,33 @@ Ext.define('Lmkp.controller.login.Toolbar', {
 
     init: function() {
         this.control({
-            'lo_logintoolbar': {
+            /*'lo_logintoolbar': {
                 render: this.onPanelRendered
-            },
+            },*/
             'lo_logintoolbar combobox[id=language_combobox]': {
                 select: this.onLanguageSelect
             },
             'lo_logintoolbar combobox[id=profile_combobox]': {
                 select: this.onProfileSelect
             },
-            'lo_logintoolbar button[id=login_submit]': {
+            /*'lo_logintoolbar button[id=login_submit]': {
                 click: this.onLoginSubmit
-            },
+            },*/
             'lo_logintoolbar button[id=logout_button]': {
                 click: this.onLogout
             },
             'lo_logintoolbar button[id=user_button]': {
                 click: this.onUserButtonClick
-            },
-            'lo_logintoolbar textfield[id=password]': {
-                keypress: this.onPasswordKeyPress
             }
+            /*'lo_logintoolbar textfield[id=password]': {
+                keypress: this.onPasswordKeyPress
+            }*/
         });
     },
 
+    /**
+     * NO LONGER USED
+     *
     onPanelRendered: function(comp) {
         // load Language store
         this.getLanguagesStore().load();
@@ -62,13 +65,21 @@ Ext.define('Lmkp.controller.login.Toolbar', {
         var profile_cb = Ext.ComponentQuery.query('combobox[id=profile_combobox]')[0];
         profile_cb.setValue(profile);
     },
+    */
 
+    /**
+     * NO LONGER USED
+     *
     onPasswordKeyPress: function(textfield, event, eOpts){
         if(event.getKey() == event.ENTER){
             this.onLoginSubmit(textfield, event, eOpts);
         }
     },
+    */
 
+    /**
+     * NO LONGER USED
+     *
     onLoginSubmit: function(button, event, eOpts){
         var username = Ext.ComponentQuery.query('toolbar textfield[id=username]')[0];
         var pw = Ext.ComponentQuery.query('toolbar textfield[id=password]')[0];
@@ -86,6 +97,8 @@ Ext.define('Lmkp.controller.login.Toolbar', {
             });
         }
     },
+
+    */
 
     onLogout: function(button, event, eOpts){
         var form = Ext.create('Ext.form.Panel', {
@@ -119,6 +132,7 @@ Ext.define('Lmkp.controller.login.Toolbar', {
 
     onLanguageSelect: function(combo, records, eOpts) {
         var form = Ext.create('Ext.form.Panel', {
+            method: 'GET',
             standardSubmit: true
         });
         form.submit({
