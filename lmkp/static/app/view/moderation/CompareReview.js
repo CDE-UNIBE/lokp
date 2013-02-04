@@ -160,16 +160,16 @@ Ext.define('Lmkp.view.moderation.CompareReview', {
                         iconAlign: 'top',
                         scale: 'medium'
                     },
-                    items: [
+                    items: ['->',
                         {
-                            text: 'Skip',
-                            tooltip: 'Skip',
-                            iconCls: 'skip-button',
-                            itemId: 'skipReviewButton'
-                        }, {
+//                            text: 'Skip',
+//                            tooltip: 'Skip',
+//                            iconCls: 'skip-button',
+//                            itemId: 'skipReviewButton'
+//                        }, {
                             text: Lmkp.ts.msg('button_submit'),
                             tooltip: 'Submit review',
-                            iconCls: 'save-button',
+                            iconCls: 'button-save',
                             itemId: 'reviewSubmitButton'
                         }
                     ]

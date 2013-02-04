@@ -127,8 +127,8 @@ Ext.define('Lmkp.controller.moderator.Main', {
      */
 
     onActivityDetailWindowBeforeShow: function(comp){
-        console.log("don't delete me!");
-        var proxy = comp.getHistoryStore().getProxy();
+//        console.log("don't delete me!");
+//        var proxy = comp.getHistoryStore().getProxy();
         /*this.getPendingActivitiesCheckbox().getValue?
         // Show all versions with any status
         proxy.setExtraParam('status', 'pending,active,inactive,deleted,rejected,edited') :
@@ -137,8 +137,8 @@ Ext.define('Lmkp.controller.moderator.Main', {
     },
 
     onStakeholderDetailWindowBeforeShow: function(comp){
-        console.log("don't delete me!");
-        var proxy = comp.getHistoryStore().getProxy();
+//        console.log("don't delete me!");
+//        var proxy = comp.getHistoryStore().getProxy();
         /*
         this.getPendingStakeholdersCheckbox().getValue?
         // Show all versions with any status

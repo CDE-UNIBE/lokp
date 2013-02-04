@@ -81,12 +81,12 @@ class CreateActivities2(CreateBase):
 
     def testSetup(self):
 
-        print "**** TEST 2 ***"
+#        print "**** TEST 2 ***"
 
         return True
 
     def doTest(self, verbose=False):
 
-        print "*** TEST 2"
+#        print "*** TEST 2"
 
         return True

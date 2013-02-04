@@ -13,6 +13,15 @@ table#compare-table{
 .button-refresh {
     background-image: url('/static/img/view-refresh.png') !important;
 }
+.button-review {
+    background-image: url('/static/img/review.png') !important;
+}
+.button-save {
+    background-image: url('/static/img/save1.png') !important;
+}
+.button-compare {
+    background-image: url('/static/img/compare.png') !important;
+}
 .notice {
     background-color: #ffffcc;
     border: 1px solid #808080;

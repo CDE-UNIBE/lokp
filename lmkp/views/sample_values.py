@@ -1116,7 +1116,8 @@ def moderation_tests(request):
 
         editTests = [
             EditActivities1(request),
-            EditActivities2(request)
+            EditActivities2(request),
+            EditActivities3(request)
         ]
 
         # Test the setup
