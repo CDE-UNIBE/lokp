@@ -175,6 +175,26 @@ class CreateBase(Test_Base):
                     'Year of agreement': 2000
                 }
             ]
+        if switch == 2:
+            return [
+                {
+                    'Contract area (ha)': 200
+                }, {
+                    'Country': 'Laos'
+                }, {
+                    'Data source': 'Company sources'
+                }, {
+                    'Intention of Investment': 'Conservation',
+                    'Animals': 'Bees'
+                }, {
+                    'Negotiation Status': 'Oral agreement',
+                    'Current area in operation (ha)': 50
+                }, {
+                    'Spatial Accuracy': '1km to 10km'
+                }, {
+                    'Year of agreement': 2001
+                }
+            ]
         
         return []
 

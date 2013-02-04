@@ -439,10 +439,12 @@ class StakeholderProtocol3(Protocol):
         No filtering (neither by status, attributes).
         """
 
-        # Prepare order: Get the order from request
-        order_query, order_numbers = self._get_order(
-            request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value
-        )
+        # TODO: So far, ordering only by timestamp (using dummy order_query)
+        order_query = self.Session.query(
+                Stakeholder.id,
+                Stakeholder.timestamp_entry.label('value') # Dummy value
+            ).\
+            subquery()
 
         # Prepare the query to find out the oldest pending version of each
         oldest_pending_stakeholder = self.Session.query(
@@ -470,6 +472,10 @@ class StakeholderProtocol3(Protocol):
             outerjoin(order_query, order_query.c.id == Stakeholder.id).\
             filter(Changeset.diff.like("{'stakeholders':%")).\
             group_by(Stakeholder.id, order_query.c.value)
+
+        # TODO: Order only by timestamp
+        relevant_stakeholders = relevant_stakeholders.\
+            order_by(desc(Stakeholder.timestamp_entry))
 
         return relevant_stakeholders
 
@@ -889,10 +895,11 @@ class StakeholderProtocol3(Protocol):
 
         # Prepare query to translate keys and values
         localizer = get_localizer(request)
-        lang = None if localizer.locale_name == 'en' \
-            else self.Session.query(Language).\
-                filter(Language.locale == localizer.locale_name).\
-                first()
+        lang = self.Session.query(
+                Language
+            ).\
+            filter(Language.locale == localizer.locale_name).\
+            first()
         key_translation, value_translation = self._get_translatedKV(
             lang, SH_Key, SH_Value
         )
@@ -937,6 +944,10 @@ class StakeholderProtocol3(Protocol):
             outerjoin(value_translation,
                       value_translation.c.value_original_id == SH_Value.id)
 
+        # TODO: So far, order only by timestamp.
+        query = query.\
+            order_by(desc(relevant_stakeholders.c.order_value))
+
         return query, count
 
 
@@ -945,12 +956,14 @@ class StakeholderProtocol3(Protocol):
                     metadata=False):
         # Prepare query to translate keys and values
         localizer = get_localizer(request)
-        lang = None if localizer.locale_name == 'en' \
-            else self.Session.query(Language).\
-                filter(Language.locale == localizer.locale_name).\
-                first()
-        key_translation, value_translation = self._get_translatedKV(lang,
-                                                                    SH_Key, SH_Value)
+        lang = self.Session.query(
+                Language
+            ).\
+            filter(Language.locale == localizer.locale_name).\
+            first()
+        key_translation, value_translation = self._get_translatedKV(
+            lang, SH_Key, SH_Value
+        )
 
         # Count
         if return_count:
