@@ -38,7 +38,9 @@ Ext.define('Lmkp.view.moderation.PendingTab', {
                 }, {
                     xtype: 'templatecolumn',
                     name: 'compareButtonColumn',
-                    tpl: '[C]'
+                    flex: 0,
+                    width: 24,
+                    tpl: '<img src="/static/img/magnifier.png" style="cursor:pointer;" title="' + Lmkp.ts.msg('gui_show-details') + '">'
                 }
             ]
         }, {
@@ -72,7 +74,9 @@ Ext.define('Lmkp.view.moderation.PendingTab', {
                 }, {
                     xtype: 'templatecolumn',
                     name: 'compareButtonColumn',
-                    tpl: '[C]'
+                    flex: 0,
+                    width: 24,
+                    tpl: '<img src="/static/img/magnifier.png" style="cursor:pointer;" title="' + Lmkp.ts.msg('gui_show-details') + '">'
                 }
             ]
          }, {
