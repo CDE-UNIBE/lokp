@@ -1,4 +1,40 @@
 Ext.require('Ext.container.Viewport');
+Ext.require('Ext.form.action.Action');
+Ext.require('Ext.form.action.Load');
+Ext.require('Ext.form.action.Submit');
+Ext.require('Ext.form.field.ComboBox');
+Ext.require('Ext.form.field.Display');
+Ext.require('Ext.form.field.Number');
+Ext.require('Ext.form.field.Picker');
+Ext.require('Ext.form.field.TextArea');
+Ext.require('Ext.form.Basic');
+Ext.require('Ext.form.Panel');
+Ext.require('Ext.grid.column.Template');
+Ext.require('Ext.grid.Panel');
+Ext.require('Ext.layout.container.Anchor');
+Ext.require('Ext.layout.container.Border');
+Ext.require('Ext.layout.component.BoundList');
+Ext.require('Ext.layout.component.ProgressBar');
+Ext.require('Ext.layout.component.field.ComboBox');
+Ext.require('Ext.layout.component.field.TextArea');
+Ext.require('Ext.resizer.BorderSplitter');
+Ext.require('Ext.resizer.Splitter');
+Ext.require('Ext.resizer.SplitterTracker');
+Ext.require('Ext.ProgressBar');
+Ext.require('Ext.toolbar.Paging');
+Ext.require('Ext.view.BoundList');
+Ext.require('Ext.view.BoundListKeyNav');
+Ext.require('Ext.window.MessageBox');
+Ext.require('Lmkp.controller.activities.NewActivity');
+Ext.require('Lmkp.controller.login.Toolbar');
+Ext.require('Lmkp.controller.moderation.Main');
+Ext.require('Lmkp.controller.moderation.Pending');
+Ext.require('Lmkp.controller.moderation.CompareReview');
+Ext.require('Lmkp.controller.stakeholders.NewStakeholder');
+Ext.require('Lmkp.store.Status');
+Ext.require('Lmkp.utils.MessageBox');
+Ext.require('Lmkp.utils.PermalinkWindow');
+Ext.require('Lmkp.view.login.Toolbar');
 
 Ext.onReady(function() {
 
@@ -10,16 +46,16 @@ Ext.onReady(function() {
         appFolder: appFolder,
 
         requires: [
-            'Lmkp.view.login.Toolbar'
+        'Lmkp.view.login.Toolbar'
         ],
 
         controllers: [
-            'login.Toolbar',
-            'moderation.Main',
-            'moderation.Pending',
-            'moderation.CompareReview',
-            'activities.NewActivity',
-            'stakeholders.NewStakeholder'
+        'login.Toolbar',
+        'moderation.Main',
+        'moderation.Pending',
+        'moderation.CompareReview',
+        'activities.NewActivity',
+        'stakeholders.NewStakeholder'
         ],
 
         launch: function() {
