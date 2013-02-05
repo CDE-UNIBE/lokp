@@ -30,26 +30,41 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
             stripeRows: false
         },
         columns: [
-        {
-            header: Lmkp.ts.msg('stakeholder_db-key-name'),
-            name: 'stakeholdernamecolumn',
-            dataIndex: Lmkp.ts.msg('stakeholder_db-key-name'),
-            flex: 1,
-//            sortable: true
-        }, {
-            header: Lmkp.ts.msg('stakeholder_db-key-country'),
-            name: 'stakeholdercountrycolumn',
-            dataIndex: Lmkp.ts.msg('stakeholder_db-key-country'),
-            flex: 0,
-//            sortable: true
-        }, {
-            xtype: 'templatecolumn',
-            flex: 0,
-            name: 'showDetailsColumn',
-            width: 24,
-            align: 'center',
-            tpl: '<img src="static/img/information.png" style="cursor:pointer;" title="' + Lmkp.ts.msg('gui_show-details') + '">'
-        }],
+            {
+                header: Lmkp.ts.msg('gui_id'),
+                name: 'stakeholderIdentifierColumn',
+                dataIndex: 'id',
+                flex: 0,
+                sortable: false
+            }, {
+                header: Lmkp.ts.msg('gui_last-change'),
+                name: 'stakeholderLastChangeColumn',
+                dataIndex: 'timestamp',
+                flex: 0,
+                sortable: false,
+                hidden: true
+            }, {
+                header: Lmkp.ts.msg('stakeholder_db-key-name'),
+                name: 'stakeholderNameColumn',
+                dataIndex: Lmkp.ts.msg('stakeholder_db-key-name'),
+                flex: 1,
+                sortable: false // TODO!
+            }, {
+                header: Lmkp.ts.msg('stakeholder_db-key-countryoforigin'),
+                name: 'stakeholderCountryOfOriginColumn',
+                dataIndex: Lmkp.ts.msg('stakeholder_db-key-countryoforigin'),
+                flex: 0,
+                sortable: false // TODO!
+            }, {
+                xtype: 'templatecolumn',
+                flex: 0,
+                hideable: false,
+                name: 'showDetailsColumn',
+                width: 24,
+                align: 'center',
+                tpl: '<img src="static/img/information.png" style="cursor:pointer;" title="' + Lmkp.ts.msg('gui_show-details') + '">'
+            }
+        ],
         dockedItems: [
         {
             xtype: 'toolbar',

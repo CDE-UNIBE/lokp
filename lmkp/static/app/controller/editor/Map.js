@@ -128,13 +128,13 @@ Ext.define('Lmkp.controller.editor.Map', {
                     anchor: '100%'
                 },
                 items: [
-                {
-                    xtype: 'container',
-                    html: '<p>' + Lmkp.ts.msg('activities_new-step-1-explanation') + '</p>'
-                }, {
-                    xtype: 'textfield',
-                    value: 'Spatial Accuracy soon to come ...'
-                }
+                    {
+                        xtype: 'container',
+                        html: '<p>' + Lmkp.ts.msg('activities_new-step-1-explanation') + '</p>'
+//                    }, {
+//                        xtype: 'textfield',
+//                        value: 'Spatial Accuracy soon to come ...'
+                    }
                 ]
             }
             ],
