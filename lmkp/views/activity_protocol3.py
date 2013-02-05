@@ -73,13 +73,13 @@ class ActivityFeature3(Feature):
             for t in tg.get_tags():
                 if t.get_key() == 'Country':
                     c.append(t.get_value())
-                if t.get_key() == 'Contract area (ha)':
+                if t.get_key() == 'Intended area (ha)':
                     a.append(t.get_value())
                 if t.get_key() == 'Intention of Investment':
                     i.append(t.get_value())
 
         repr.append({"key": "Country", 'value': ','.join(c)})
-        repr.append({"key": "Contract area (ha)", 'value': ','.join(a)})
+        repr.append({"key": "Intended area (ha)", 'value': ','.join(a)})
         repr.append({"key": "Intention of Investment", 'value': ','.join(i)})
 
         return repr
