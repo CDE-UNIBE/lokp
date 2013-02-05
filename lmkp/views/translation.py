@@ -49,8 +49,6 @@ stakeholderroleMap = {
 @view_config(route_name='ui_translation', renderer='javascript')
 def ui_messages(request):
 
-    print "---------------------------------"
-
     # A dictionary that contains all messages that need to be translated in the
     # user interface.
     # Add new messages to this dict!
