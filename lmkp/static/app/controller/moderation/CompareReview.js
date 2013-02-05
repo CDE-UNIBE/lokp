@@ -253,7 +253,16 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                             );
                             // Also clear review comment
                             me.getReviewCommentTextarea().reset();
-                            // TODO: Also refresh the list with pending versions
+
+                            // Also refresh the list with pending versions
+                            var controller = me.getController('moderation.Pending');
+                            if (controller) {
+                                if (type == 'activities') {
+                                    controller.getPendingActivityGridStore().load();
+                                } else if (type == 'stakeholders') {
+                                    controller.getPendingStakeholderGridStore().load();
+                                }
+                            }
                         }
                     );
                 },
