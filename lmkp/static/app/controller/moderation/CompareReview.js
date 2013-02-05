@@ -147,61 +147,76 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                 success: function(response){
                     var data = Ext.JSON.decode(response.responseText);
 
-                    me.getCompareTagGroupsStore().loadRawData(data);
-                    me.getCompareInvolvementsStore().loadRawData(data);
-                    me.getCompareVersionsStore().loadRawData(data);
-
-                    // Clear any remaining filter on comboboxes
-                    me.getCompareVersionsStore().clearFilter(true);
-
-                    var mStore = me.getCompareMetadataStore();
-                    mStore.loadRawData(data);
-
-                    // Metadata
-                    var metadata = mStore.first();
-                    me.updateMetaPanels(metadata);
-
-                    if (action == 'review') {
-                        // For reviews, the left combobox always shows just the
-                        // active version while the left shows only pending
-                        // versions. To do this filtering, it is necessary to
-                        // clone the store of the comboboxes.
-                        var originalStore = me.getNewVersionCombobox().getStore();
-                        var copyStore = me.deepCloneStore(originalStore);
-
-                        originalStore.filter('status', 1);
-                        if (originalStore.getCount() == 0) {
-                            // If there are no pending versions (all reviewed),
-                            // switch back to compare view
-                            me.onCompareButtonClick();
-                        }
-
-                        copyStore.filter('status', 2);
-                        if (copyStore.getCount() > 0) {
-                            // There is no active version (for example when
-                            // reviewing first version). Use the same store for
-                            // both comboboxes
-                            me.getRefVersionCombobox().bindStore(copyStore);
-                        }
-
-                        me.getRefVersionCombobox().setReadOnly(true);
-                    } else if (action == 'compare') {
-                        if (me.getCompareVersionsStore().find('status', 1) == -1) {
-                            // No (more) pending, disable review button
-                            me.getReviewButton().disable();
-                        }
-                        me.getRefVersionCombobox().bindStore(
-                            me.getCompareVersionsStore()
+                    if (data.success == false) {
+                        // Intercept normal loading process if there is an error
+                        // message from the server.
+                        var infoWindow = Ext.create('Lmkp.utils.MessageBox');
+                        infoWindow.alert(
+                            'Information',
+                            data.msg
                         );
-                        me.getRefVersionCombobox().setReadOnly(false);
-                    }
 
-                    // Comboboxes
-                    me.getRefVersionCombobox().setValue(metadata.get('ref_version'));
-                    me.getNewVersionCombobox().setValue(metadata.get('new_version'));
+                        if (win) {
+                            win.close();
+                        }
 
-                    if (win) {
-                        win.setLoading(false);
+                    } else {
+                        me.getCompareTagGroupsStore().loadRawData(data);
+                        me.getCompareInvolvementsStore().loadRawData(data);
+                        me.getCompareVersionsStore().loadRawData(data);
+
+                        // Clear any remaining filter on comboboxes
+                        me.getCompareVersionsStore().clearFilter(true);
+
+                        var mStore = me.getCompareMetadataStore();
+                        mStore.loadRawData(data);
+
+                        // Metadata
+                        var metadata = mStore.first();
+                        me.updateMetaPanels(metadata);
+
+                        if (action == 'review') {
+                            // For reviews, the left combobox always shows just the
+                            // active version while the left shows only pending
+                            // versions. To do this filtering, it is necessary to
+                            // clone the store of the comboboxes.
+                            var originalStore = me.getNewVersionCombobox().getStore();
+                            var copyStore = me.deepCloneStore(originalStore);
+
+                            originalStore.filter('status', 1);
+                            if (originalStore.getCount() == 0) {
+                                // If there are no pending versions (all reviewed),
+                                // switch back to compare view
+                                me.onCompareButtonClick();
+                            }
+
+                            copyStore.filter('status', 2);
+                            if (copyStore.getCount() > 0) {
+                                // There is no active version (for example when
+                                // reviewing first version). Use the same store for
+                                // both comboboxes
+                                me.getRefVersionCombobox().bindStore(copyStore);
+                            }
+
+                            me.getRefVersionCombobox().setReadOnly(true);
+                        } else if (action == 'compare') {
+                            if (me.getCompareVersionsStore().find('status', 1) == -1) {
+                                // No (more) pending, disable review button
+                                me.getReviewButton().disable();
+                            }
+                            me.getRefVersionCombobox().bindStore(
+                                me.getCompareVersionsStore()
+                            );
+                            me.getRefVersionCombobox().setReadOnly(false);
+                        }
+
+                        // Comboboxes
+                        me.getRefVersionCombobox().setValue(metadata.get('ref_version'));
+                        me.getNewVersionCombobox().setValue(metadata.get('new_version'));
+
+                        if (win) {
+                            win.setLoading(false);
+                        }
                     }
                 }
             });
@@ -230,15 +245,17 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                     var result = Ext.JSON.decode(action.response.responseText);
                     infoWindow.alert(
                         Lmkp.ts.msg('feedback_success'),
-                        result.msg
+                        result.msg,
+                        function() {
+                            // Refresh the panel
+                            me.reloadCompareTagGroupStore(
+                                'review', type, identifier
+                            );
+                            // Also clear review comment
+                            me.getReviewCommentTextarea().reset();
+                            // TODO: Also refresh the list with pending versions
+                        }
                     );
-                    // Refresh the panel
-                    me.reloadCompareTagGroupStore(
-                        'review', type, identifier
-                    );
-                    // Also clear review comment
-                    me.getReviewCommentTextarea().reset();
-                    // TODO: Also refresh the list with pending versions
                 },
                 failure: function(form, action) {
                     var result = Ext.JSON.decode(action.response.responseText);
@@ -413,7 +430,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
             mData.get('identifier')
         );
 
-            
+
 
     },
 
