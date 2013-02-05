@@ -415,32 +415,75 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
     },
 
     onReviewButtonClick: function() {
+    	
+    	var me = this;
 
-        var win = this.getCompareWindow();
-        if (!win) {
-            win = this._createWindow();
-            win.show();
-        } else {
-            win.removeAll();
-        }
-
-        win.setLoading(true);
-        win.setTitle('Review');
-        win.add({
-            xtype: 'lo_moderatorcomparereview',
-            action: 'review'
-        });
-
+		// Special case: Stakeholders with pending involvement. These are 
+		// normally hidden but can be accessed directly from the 'normal' 
+		// interface by clicking the review button. If this is the case, show
+		// message to guide the user to the activity side where the involvement
+		// can be reviewed. 
+		var invStore = this.getCompareInvolvementsStore();
+		if (invStore) {
+			var inv = invStore.first();
+		}
+		
+		if (inv) {
+			var newInv = inv.get('new');
+			var identifier = newInv.identifier;
+			var reviewable = inv.get('reviewable');
+		}
+		
         var mData = this.getCompareMetadataStore().first();
-
-        this.reloadCompareTagGroupStore(
-            'review',
-            mData.get('type'),
-            mData.get('identifier')
-        );
-
-
-
+		var type = mData.get('type');
+		
+		if (reviewable == -2 && type == 'stakeholders' && identifier) {
+			var msgWin = Ext.create('Ext.window.Window', {
+                title: 'Review not possible',
+                bodyPadding: 10,
+                modal: true,
+                width: 300,
+                html: 'Involvements can only be reviewed through Activities. Please review the Activity to approve this involvement.',
+                buttons: [
+                    {
+                        text: 'OK',
+                        handler: function() {
+                            msgWin.close();
+                        }
+                    }, {
+                        text: 'Review Activity',
+                        handler: function() {
+                            // Refresh the panel
+                            me.reloadCompareTagGroupStore(
+                                'review', 'activities', identifier
+                            );
+                            msgWin.close();
+                        }
+                    }
+                ]
+            }).show();
+		} else {
+	        var win = this.getCompareWindow();
+	        if (!win) {
+	            win = this._createWindow();
+	            win.show();
+	        } else {
+	            win.removeAll();
+	        }
+	
+	        win.setLoading(true);
+	        win.setTitle('Review');
+	        win.add({
+	            xtype: 'lo_moderatorcomparereview',
+	            action: 'review'
+	        });
+	
+	        this.reloadCompareTagGroupStore(
+	            'review',
+	            mData.get('type'),
+	            mData.get('identifier')
+	        );
+		}
     },
 
     onEditButtonClick: function() {
