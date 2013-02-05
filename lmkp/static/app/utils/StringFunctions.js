@@ -18,13 +18,21 @@ Ext.define('Lmkp.utils.StringFunctions', {
     /**
      * Returns a nicely formated representation of the timestamp
      */
-    _formatTimestamp: function(timestamp) {
+    _formatTimestamp: function(timestamp, mode) {
         if (timestamp) {
-            return Ext.Date.format(
-                Ext.Date.parse(timestamp, "Y-m-d H:i:s.u"),
-                "Y/m/d H:i"
-            );
+            if (mode == 1) {
+                return Ext.Date.format(
+                    Ext.Date.parse(timestamp, "Y-m-d H:i:s.u"),
+                    "Y/m/d"
+                );
+            } else {
+                return Ext.Date.format(
+                    Ext.Date.parse(timestamp, "Y-m-d H:i:s.u"),
+                    "Y/m/d H:i"
+                );
+            }
         }
+        return Lmkp.ts.msg('gui_unknown');
     }
     
 });
