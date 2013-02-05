@@ -1,12 +1,23 @@
 Ext.require('Ext.container.Viewport');
+Ext.require('Ext.data.reader.Json');
 Ext.require('Ext.form.field.ComboBox');
+Ext.require('Ext.form.CheckboxGroup');
 Ext.require('Ext.form.FieldSet');
+Ext.require('Ext.form.Hidden');
 Ext.require('Ext.form.Label');
 Ext.require('Ext.fx.*');
 Ext.require('Ext.grid.column.Template');
+Ext.require('Ext.grid.Panel');
 Ext.require('Ext.layout.container.Border');
 Ext.require('Ext.layout.container.Column');
 Ext.require('Ext.util.*');
+Ext.require('Lmkp.controller.administrator.Code');
+Ext.require('Lmkp.controller.administrator.YamlScan');
+Ext.require('Lmkp.controller.login.Toolbar');
+Ext.require('Lmkp.store.ActivityChangesets');
+Ext.require('Lmkp.store.Status');
+Ext.require('Lmkp.view.login.Toolbar');
+Ext.require('Lmkp.view.users.UserWindow');
 
 Ext.onReady(function(){
     var loadingMask = Ext.get('loading-mask');
