@@ -31,12 +31,12 @@ class StakeholderFeature3(Feature):
         for tg in self._taggroups:
 
             for t in tg.get_tags():
-                if t.get_key() == 'Country':
+                if t.get_key() == 'Country of origin':
                     c.append(t.get_value())
                 if t.get_key() == 'Name':
                     n.append(t.get_value())
 
-        repr.append({"key": "Country", 'value': ','.join(c)})
+        repr.append({"key": "Country of origin", 'value': ','.join(c)})
         repr.append({"key": "Name", 'value': ','.join(n)})
 
         return repr
