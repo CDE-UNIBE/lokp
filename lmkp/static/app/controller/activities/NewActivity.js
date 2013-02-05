@@ -517,16 +517,10 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
             var completeStore = Ext.create('Lmkp.store.ActivityConfig');
             completeStore.load(function() {
                 // When loaded, create and load panel for Activities
-                var aPanel = Ext.create('Lmkp.view.activities.NewActivity', {
-                    height: 500,
-                    width: 400
-                });
+                var aPanel = Ext.create('Lmkp.view.activities.NewActivity');
                 aPanel.showForm(mandatoryStore, completeStore, item);
                 // Also create and load panel for Stakeholders
-                var shPanel = Ext.create('Lmkp.view.stakeholders.NewStakeholderSelection', {
-                    height: 500,
-                    width: 400
-                });
+                var shPanel = Ext.create('Lmkp.view.stakeholders.NewStakeholderSelection');
 
                 var involvedStakeholders = [];
                 if (item) {
@@ -559,17 +553,31 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 }
 
                 shPanel.showForm(involvedStakeholders);
-                // Put everything in a window and show it.
+
+                // Window parameters
+                var buffer = 50; // Minimal blank space at the sides of the window
+                var defaultHeight = 550; // Default height of the window
+                var defaultWidth = 450; // Default width of the window
+
+                // Prepare some values before showing the window
+                var viewSize = Ext.getBody().getViewSize();
+                var height = (viewSize.height > defaultHeight + buffer)
+                    ? defaultHeight : viewSize.height - buffer;
+                var width = (viewSize.width > defaultWidth + buffer)
+                    ? defaultWidth : viewSize.width - buffer;
                 var title = item ? Lmkp.ts.msg('activities_edit-activity')
                     .replace('{0}', item.get('version')) :
                     Lmkp.ts.msg('activities_add-new-activity');
                 var activityEdit = (item != null);
+                // Put everything in a window and show it.
                 var win = Ext.create('Lmkp.view.public.NewActivityWindow', {
                     aPanel: aPanel,
                     shPanel: shPanel,
                     activityEdit: activityEdit,
                     showPage: showPage,
-                    title: title
+                    title: title,
+                    height: height,
+                    width: width
                 });
                 // Before showing the window, destroy loading window
                 loadingwin.destroy();

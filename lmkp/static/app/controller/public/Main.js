@@ -241,12 +241,25 @@ Ext.define('Lmkp.controller.public.Main', {
                 type = 'activity';
             }
 
-            var w;
+            // Window parameters
+            var buffer = 50; // Minimal blank space at the sides of the window
+            var defaultHeight = 700; // Default height of the window
+            var defaultWidth = 700; // Default width of the window
 
+            // Prepare some values before showing the window
+            var viewSize = Ext.getBody().getViewSize();
+            var height = (viewSize.height > defaultHeight + buffer)
+                ? defaultHeight : viewSize.height - buffer;
+            var width = (viewSize.width > defaultWidth + buffer)
+                ? defaultWidth : viewSize.width - buffer;
+
+            var w;
             if (type == 'activity') {
                 // Show details window
                 w = Ext.create('Lmkp.view.activities.Details',{
-                    activity: record
+                    activity: record,
+                    width: width,
+                    height: height
                 }).show();
                 w._collapseHistoryPanel();
 
@@ -256,7 +269,9 @@ Ext.define('Lmkp.controller.public.Main', {
             } else if (type == 'stakeholder') {
                 // Show details window
                 w = Ext.create('Lmkp.view.stakeholders.Details',{
-                    stakeholder: record
+                    stakeholder: record,
+                    width: width,
+                    height: height
                 }).show();
                 w._collapseHistoryPanel();
             }
