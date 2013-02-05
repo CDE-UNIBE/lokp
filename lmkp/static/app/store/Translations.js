@@ -3,8 +3,6 @@ Ext.define('Lmkp.store.Translations',{
 
     alias: ["store.translations"],
 
-    autoLoad: true,
-
     model: 'Lmkp.model.MessageString',
 
     proxy: {

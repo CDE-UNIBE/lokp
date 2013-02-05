@@ -10,6 +10,7 @@ from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
 from pyramid.view import view_config
 import simplejson as json
+from sqlalchemy.orm import aliased
 
 log = logging.getLogger(__name__)
 
@@ -47,6 +48,8 @@ stakeholderroleMap = {
 
 @view_config(route_name='ui_translation', renderer='javascript')
 def ui_messages(request):
+
+    print "---------------------------------"
 
     # A dictionary that contains all messages that need to be translated in the
     # user interface.
@@ -119,6 +122,7 @@ def ui_messages(request):
         'gui_currently-seeing-rejected-version': _('gui_currently-seeing-rejected-version', default='You are seeing a {0} version, which was never publicly visible.'),
         'gui_currently-seeing-edited-version': _('gui_currently-seeing-edited-version', default='You are seeing an {0} version, which was edited by a moderator and was never publicly visible.'),
         'gui_date': _('gui_date', default='Date'),
+        'gui_last-change': _('gui_last-change', default='Last change'),
         'gui_delete-all-filters': _('gui_delete-all-filters', default='Delete all Filters'),
         'gui_details': _('gui_details', default='Details'),
         'gui_filter-count': _('gui_filter-count', default='Filter ({0} active)'),
@@ -236,97 +240,66 @@ def ui_messages(request):
     also necessary to check if there are translations of these keys available.
     However, where columns are to be sorted, the original data index needs to be
     known as well.
-    See the first example for details how this is done.
     """
 
-    # Activity key: Country
-    aKeyCountry = 'Country' # Must be exactly (!) as in global activity.yml
+    # Activity keys: Must be exactly (!) the same as in global activity.yml
+    # If you change anything here, make sure to check the copying to the uiMap
+    # further below!
+    aKeys = [
+        'Spatial Accuracy',         # 0
+        'Negotiation Status',       # 1
+        'Country',                  # 2
+        'Intended area (ha)',       # 3
+        'Intention of Investment',  # 4
+        'Data source'               # 5
+    ]
+    aKeysTranslateQuery = get_translated_db_keys(A_Key, aKeys, db_lang)
+    aKeysTranslated = []
+    for k in aKeys:
+        translation = k
+        for tk in aKeysTranslateQuery:
+            if tk.original == k:
+                translation = tk.translation
+        aKeysTranslated.append(translation)
 
-    # Prepare a query for the original key (original == None)
-    original_query = Session.query(
-                                   A_Key.id,
-                                   A_Key.key
-                                   ).\
-        filter(A_Key.key == aKeyCountry).\
-        filter(A_Key.original == None)
+    # Store the keys to the uiMap: Store original (needed for sorting) as well
+    # as the translation
+    uiMap['activity_db-key-spatialaccuracy-original'] = aKeys[0]
+    uiMap['activity_db-key-spatialaccuracy'] = aKeysTranslated[0]
+    uiMap['activity_db-key-negotiationstatus-original'] = aKeys[1]
+    uiMap['activity_db-key-negotiationstatus'] = aKeysTranslated[1]
+    uiMap['activity_db-key-country-original'] = aKeys[2]
+    uiMap['activity_db-key-country'] = aKeysTranslated[2]
+    uiMap['activity_db-key-intendedarea-original'] = aKeys[3]
+    uiMap['activity_db-key-intendedarea'] = aKeysTranslated[3]
+    uiMap['activity_db-key-intentionofinvestment-original'] = aKeys[4]
+    uiMap['activity_db-key-intentionofinvestment'] = aKeysTranslated[4]
+    uiMap['activity_db-key-datasource-original'] = aKeys[5]
+    uiMap['activity_db-key-datasource'] = aKeysTranslated[5]
 
-    # A subquery is needed to correctly join the translated query with the
-    # original key
-    original_subquery = original_query.subquery()
+    # Stakeholder keys: Must be exactly (!) the same as in global
+    # stakeholder.yml
+    # If you change anything here, make sure to check the copying to the uiMap
+    # further below!
+    shKeys = [
+        'Name',                 # 0
+        'Country of origin'     # 1
+    ]
+    shKeysTranslateQuery = get_translated_db_keys(SH_Key, shKeys, db_lang)
+    shKeysTranslated = []
+    for k in shKeys:
+        translation = k
+        for tk in shKeysTranslateQuery:
+            if tk.original == k:
+                translation = tk.translation
+        shKeysTranslated.append(translation)
 
-    # Prepare a query for the translated key (original == original key from
-    # query above)
-    translation_query = Session.query(
-                                      A_Key.id,
-                                      A_Key.key
-                                      ).\
-        join(original_subquery, original_subquery.c.id == A_Key.fk_a_key).\
-        filter(A_Key.language == db_lang)
-    
-    # Also store the original of the key (needed for sorting)
-    uiMap['activity_db-key-country-original'] = aKeyCountry
-
-    # Union and do a single query. The original is always the first, so if there is a 
-    # translated entry (2nd), simply overwrite the original.
-    uiMap['activity_db-key-country'] = aKeyCountry # Fallback
-    for k in original_query.union(translation_query).all():
-        uiMap['activity_db-key-country'] = k.key
-
-    # Activity key: Year of Agreement
-    aKeyYearofagreement = 'Year of agreement' # Must be exactly (!) as in global activity.yml
-    original_query = Session.query(A_Key.id, A_Key.key).\
-        filter(A_Key.key == aKeyYearofagreement).\
-        filter(A_Key.original == None)
-    original_subquery = original_query.subquery()
-    translation_query = Session.query(A_Key.id, A_Key.key).\
-        join(original_subquery, original_subquery.c.id == A_Key.fk_a_key).\
-        filter(A_Key.language == db_lang)
-    uiMap['activity_db-key-yearofagreement-original'] = aKeyYearofagreement
-    uiMap['activity_db-key-yearofagreement'] = aKeyYearofagreement
-    for k in original_query.union(translation_query).all():
-        uiMap['activity_db-key-yearofagreement'] = k.key
-
-    # Activity key: Contract area
-    aKeyContractarea = 'Contract area (ha)' # Must be exactly (!) as in global activity.yml
-    original_query = Session.query(A_Key.id, A_Key.key).\
-        filter(A_Key.key == aKeyContractarea).\
-        filter(A_Key.original == None)
-    original_subquery = original_query.subquery()
-    translation_query = Session.query(A_Key.id, A_Key.key).\
-        join(original_subquery, original_subquery.c.id == A_Key.fk_a_key).\
-        filter(A_Key.language == db_lang)
-    uiMap['activity_db-key-contractarea-original'] = aKeyContractarea
-    uiMap['activity_db-key-contractarea'] = aKeyContractarea
-    for k in original_query.union(translation_query).all():
-        uiMap['activity_db-key-contractarea'] = k.key
-
-    # Stakeholder key: Name
-    shKeyName = 'Name' # Must be exactly (!) as in global stakeholder.yml
-    original_query = Session.query(SH_Key.id, SH_Key.key).\
-        filter(SH_Key.key == shKeyName).\
-        filter(SH_Key.original == None)
-    original_subquery = original_query.subquery()
-    translation_query = Session.query(SH_Key.id, SH_Key.key).\
-        join(original_subquery, original_subquery.c.id == SH_Key.fk_sh_key).\
-        filter(SH_Key.language == db_lang)
-    uiMap['stakeholder_db-key-name-original'] = shKeyName
-    uiMap['stakeholder_db-key-name'] = shKeyName
-    for k in original_query.union(translation_query).all():
-        uiMap['stakeholder_db-key-name'] = k.key
-
-    # Stakeholder key: Country
-    shKeyCountry = 'Country' # Must be exactly (!) as in global stakeholder.yml
-    original_query = Session.query(SH_Key.id, SH_Key.key).\
-        filter(SH_Key.key == shKeyCountry).\
-        filter(SH_Key.original == None)
-    original_subquery = original_query.subquery()
-    translation_query = Session.query(SH_Key.id, SH_Key.key).\
-        join(original_subquery, original_subquery.c.id == SH_Key.fk_sh_key).\
-        filter(SH_Key.language == db_lang)
-    uiMap['stakeholder_db-key-country-original'] = shKeyCountry
-    uiMap['stakeholder_db-key-country'] = shKeyCountry
-    for k in original_query.union(translation_query).all():
-        uiMap['stakeholder_db-key-country'] = k.key
+    # Store the keys to the uiMap: Store original (needed for sorting) as well
+    # as the translation
+    uiMap['stakeholder_db-key-name-original'] = shKeys[0]
+    uiMap['stakeholder_db-key-name'] = shKeysTranslated[0]
+    uiMap['stakeholder_db-key-countryoforigin-original'] = shKeys[1]
+    uiMap['stakeholder_db-key-countryoforigin'] = shKeysTranslated[1]
 
     # Define Lmkp.ts as class with static objects
     str = "Ext.define('Lmkp.ts',{\n"
@@ -440,3 +413,25 @@ def get_translated_status(request, status):
     localizer = get_localizer(request)
     if status in statusMap:
         return localizer.translate(statusMap[status])
+
+def get_translated_db_keys(mappedClass, db_keys, db_lang):
+    """
+    Returns a query array with original and translated keys from the database.
+    """
+    translation = aliased(mappedClass)
+
+    q = Session.query(
+            mappedClass.key.label('original'),
+            translation.key.label('translation')
+        ).\
+        join(translation, mappedClass.translations).\
+        filter(mappedClass.key.in_(db_keys)).\
+        filter(mappedClass.original == None).\
+        filter(translation.language == db_lang).\
+        all()
+
+    if q is not None:
+        return q
+
+    # If nothing found, return None
+    return None

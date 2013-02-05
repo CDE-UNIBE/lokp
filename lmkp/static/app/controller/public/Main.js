@@ -37,12 +37,16 @@ Ext.define('Lmkp.controller.public.Main', {
     // Make the public.Map controller available in the whole instance
     mapController: null,
 
+    // String functions
+    stringFunctions: null,
+
     init: function() {
         // Get the config stores and load them
         this.getActivityConfigStore().load();
         this.getStakeholderConfigStore().load();
 
         this.mapController = this.getController('public.Map');
+        this.stringFunctions = Ext.create('Lmkp.utils.StringFunctions');
 
         this.control({
             'lo_publicactivitytablepanel': {
@@ -96,20 +100,41 @@ Ext.define('Lmkp.controller.public.Main', {
             'lo_publicstakeholdertablepanel button[itemId=stakeholderDeleteAllFiltersButton]': {
                 click: this.onStakeholderDeleteAllFiltersButtonClick
             },
-            'gridpanel[itemId=activityGrid] gridcolumn[name=yearofinvestmentcolumn]': {
-                afterrender: this.onActivityYearColumnAfterrender
+            'gridpanel[itemId=activityGrid] gridcolumn[name=activityIdentifierColumn]': {
+                afterrender: this.onIdentifierColumnAfterrender
+            },
+            'gridpanel[itemId=activityGrid] gridcolumn[name=activityLastChangeColumn]': {
+                afterrender: this.onLastChangeColumnAfterrender
+            },
+            'gridpanel[itemId=activityGrid] gridcolumn[name=activitySpatialAccuracyColumn]': {
+                afterrender: this.onActivitySpatialAccuracyColumnAfterrender
+            },
+            'gridpanel[itemId=activityGrid] gridcolumn[name=activityNegotiationStatusColumn]': {
+                afterrender: this.onActivityNegotiationStatusColumnAfterrender
             },
             'gridpanel[itemId=activityGrid] gridcolumn[name=activityCountryColumn]': {
                 afterrender: this.onActivityCountryColumnAfterrender
             },
-            'gridpanel[itemId=activityGrid] gridcolumn[name=activitySizeColumn]': {
-                afterrender: this.onActivitySizeColumnAfterrender
+            'gridpanel[itemId=activityGrid] gridcolumn[name=activityIntendedAreaColumn]': {
+                afterrender: this.onActivityIndendedAreaColumnAfterrender
             },
-            'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdernamecolumn]': {
+            'gridpanel[itemId=activityGrid] gridcolumn[name=activityIntentionOfInvestmentColumn]': {
+                afterrender: this.onActivityIntentionOfInvestmentColumnAfterrender
+            },
+            'gridpanel[itemId=activityGrid] gridcolumn[name=activityDataSourceColumn]': {
+                afterrender: this.onActivityDataSourceColumnAfterrender
+            },
+            'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholderIdentifierColumn]': {
+                afterrender: this.onIdentifierColumnAfterrender
+            },
+            'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholderLastChangeColumn]': {
+                afterrender: this.onLastChangeColumnAfterrender
+            },
+            'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholderNameColumn]': {
                 afterrender: this.onStakeholderNameColumnAfterrender
             },
-            'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholdercountrycolumn]': {
-                afterrender: this.onStakeholderCountryColumnAfterrender
+            'gridpanel[itemId=stakeholderGrid] gridcolumn[name=stakeholderCountryOfOriginColumn]': {
+                afterrender: this.onStakeholderCountryOfOriginColumnAfterrender
             }
         });
     },
@@ -292,6 +317,61 @@ Ext.define('Lmkp.controller.public.Main', {
     },
 
     /**
+     * Nicely render 'identifier' column of Activity and Stakeholder grid.
+     */
+    onIdentifierColumnAfterrender: function(comp) {
+        comp.renderer = function(value, metaData, record) {
+
+            // Check the current status of the record and add accordingly an
+            // additional class to the td element
+            if(record.get("status") == Lmkp.ts.msg('status_pending')){
+                metaData.tdCls = "status-pending";
+            }
+            
+            if (value) {
+                return value.slice(value.length - 6);
+            } else {
+                return Lmkp.ts.msg('gui_unknown');
+            }
+        }
+    },
+
+    /**
+     * Nicely render 'Last change' column of Activity and Stakeholder grid.
+     */
+    onLastChangeColumnAfterrender: function(comp) {
+        var me = this;
+        comp.renderer = function(value, metaData, record) {
+
+            // Check the current status of the record and add accordingly an
+            // additional class to the td element
+            if(record.get("status") == Lmkp.ts.msg('status_pending')){
+                metaData.tdCls = "status-pending";
+            }
+
+            if (value) {
+                return me.stringFunctions._formatTimestamp(value, 1);
+            } else {
+                return Lmkp.ts.msg('gui_unknown');
+            }
+        }
+    },
+
+    /**
+     * Nicely render 'Spatial Accuracy' column of Activity grid.
+     */
+    onActivitySpatialAccuracyColumnAfterrender: function(comp) {
+        this._renderColumnMultipleValues(comp, 'activity_db-key-spatialaccuracy');
+    },
+
+    /**
+     * Nicely render 'Negotiation Status' column of Activity grid.
+     */
+    onActivityNegotiationStatusColumnAfterrender: function(comp) {
+        this._renderColumnMultipleValues(comp, 'activity_db-key-negotiationstatus');
+    },
+
+    /**
      * Nicely render 'Country' column of Activity grid.
      */
     onActivityCountryColumnAfterrender: function(comp) {
@@ -299,18 +379,24 @@ Ext.define('Lmkp.controller.public.Main', {
     },
 
     /**
-     * Nicely render 'Year of Investment' column of Activity grid. Value '0' is
-     * treated as null
+     * Nicely render 'Intended Area' column of Activity grid.
      */
-    onActivityYearColumnAfterrender: function(comp) {
-        this._renderColumnMultipleValues(comp, 'activity_db-key-yearofagreement');
+    onActivityIndendedAreaColumnAfterrender: function(comp) {
+        this._renderColumnMultipleValues(comp, 'activity_db-key-intendedarea');
     },
-    
+
     /**
-     * Nicely render 'Size' column of Activity grid.
+     * Nicely render 'Intention of Investment' column of Activity grid.
      */
-    onActivitySizeColumnAfterrender: function(comp) {
-        this._renderColumnMultipleValues(comp, 'activity_db-key-contractarea')
+    onActivityIntentionOfInvestmentColumnAfterrender: function(comp) {
+        this._renderColumnMultipleValues(comp, 'activity_db-key-intentionofinvestment');
+    },
+
+    /**
+     * Nicely render 'Data Source' column of Activity grid.
+     */
+    onActivityDataSourceColumnAfterrender: function(comp) {
+        this._renderColumnMultipleValues(comp, 'activity_db-key-datasource');
     },
 
     /**
@@ -321,10 +407,10 @@ Ext.define('Lmkp.controller.public.Main', {
     },
 
     /**
-     * Nicely render 'Country' column of Stakeholder grid.
+     * Nicely render 'Country of origin' column of Stakeholder grid.
      */
-    onStakeholderCountryColumnAfterrender: function(comp) {
-        this._renderColumnMultipleValues(comp, 'stakeholder_db-key-country');
+    onStakeholderCountryOfOriginColumnAfterrender: function(comp) {
+        this._renderColumnMultipleValues(comp, 'stakeholder_db-key-countryoforigin');
     },
 
     onActivityFilterButtonClick: function() {
