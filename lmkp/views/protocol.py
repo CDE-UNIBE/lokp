@@ -654,41 +654,43 @@ class Protocol(object):
             review_comment = request.POST['comment_textarea']
 
         # TODO: Also delegate involvement review if rejected (review_decision == 2)
-        if review_decision == 1:
-            # Approved
+        
 
-            # Try to also review any affected involvement.
-            if implicit is False and mappedClass == Activity:
-                # Involvements can only be reviewed from Activity side.
+        # Try to also review any affected involvement.
+        if implicit is False and mappedClass == Activity:
+            # Involvements can only be reviewed from Activity side.
 
-                # Query the diff
-                diff_query = self.Session.query(
-                        Changeset.diff
-                    ).\
-                    join(mappedClass).\
-                    filter(mappedClass.identifier == item.identifier).\
-                    filter(mappedClass.version == item.version).\
-                    first()
-                json_diff = json.loads(diff_query.diff.replace('\'', '"'))
+            # Query the diff
+            diff_query = self.Session.query(
+                    Changeset.diff
+                ).\
+                join(mappedClass).\
+                filter(mappedClass.identifier == item.identifier).\
+                filter(mappedClass.version == item.version).\
+                first()
+            json_diff = json.loads(diff_query.diff.replace('\'', '"'))
 
-                # Loop through the diff to find and collect all the affected Stakeholders and their version at the time of the changes
-                affected_involvements = []
-                if 'activities' in json_diff:
-                    for a_diff in json_diff['activities']:
-                        if 'id' in a_diff and a_diff['id'] == str(item.identifier) and 'stakeholders' in a_diff:
-                            for sh_diff in a_diff['stakeholders']:
-                                version = (sh_diff['version']
-                                        if 'version' in sh_diff
-                                        else None)
-                                affected_involvements.append({
-                                    'identifier': sh_diff['id'],
-                                    'version': version
-                                })
+            # Loop through the diff to find and collect all the affected Stakeholders and their version at the time of the changes
+            affected_involvements = []
+            if 'activities' in json_diff:
+                for a_diff in json_diff['activities']:
+                    if 'id' in a_diff and a_diff['id'] == str(item.identifier) and 'stakeholders' in a_diff:
+                        for sh_diff in a_diff['stakeholders']:
+                            version = (sh_diff['version']
+                                    if 'version' in sh_diff
+                                    else None)
+                            affected_involvements.append({
+                                'identifier': sh_diff['id'],
+                                'version': version
+                            })
 
-                log.debug('%s affected involvements found: %s'
-                    % (len(affected_involvements), affected_involvements))
+            log.debug('%s affected involvements found: %s'
+                % (len(affected_involvements), affected_involvements))
 
-                basereview = BaseReview(request)
+            basereview = BaseReview(request)
+
+            if review_decision == 1:
+                # Approved
 
                 # First check if a review can be done for all the involvements
                 reviewPossible = True
@@ -696,43 +698,46 @@ class Protocol(object):
                     reviewPossible = (reviewPossible
                         and basereview._review_check_involvement(
                             ai['identifier']) > 0)
-
+    
                 if reviewPossible is not True:
                     ret['msg'] = 'At least one of the involved Stakeholders cannot be reviewed.'
                     return ret
 
-                # Do a review for all the involvements
-                for ai in affected_involvements:
+            
+            # Do a review for all the involvements
+            for ai in affected_involvements:
 
-                    # Query the Stakeholder version that was created by the
-                    # involvement
-                    sh = self.Session.query(
-                            Stakeholder
-                        ).\
-                        join(Involvement).\
-                        join(Activity).\
-                        filter(Stakeholder.identifier == ai['identifier']).\
-                        filter(Stakeholder.previous_version
-                            == ai['version']).\
-                        filter(Activity.identifier == item.identifier).\
-                        filter(Activity.version == item.version).\
-                        first()
+                # Query the Stakeholder version that was created by the
+                # involvement
+                sh = self.Session.query(
+                        Stakeholder
+                    ).\
+                    join(Involvement).\
+                    join(Activity).\
+                    filter(Stakeholder.identifier == ai['identifier']).\
+                    filter(Stakeholder.previous_version
+                        == ai['version']).\
+                    filter(Activity.identifier == item.identifier).\
+                    filter(Activity.version == item.version).\
+                    first()
 
-                    log.debug('Reviewing involvement: Stakeholder with identifier %s, version %s and status %s'
-                            % (sh.identifier, sh.version, sh.fk_status))
+                log.debug('Reviewing involvement: Stakeholder with identifier %s, version %s and status %s'
+                        % (sh.identifier, sh.version, sh.fk_status))
 
-                    # Do a review, but implicitely
-                    reviewed_inv = self._add_review(
-                        request,
-                        sh,
-                        Stakeholder,
-                        user,
-                        implicit = True
-                    )
+                # Do a review, but implicitely
+                reviewed_inv = self._add_review(
+                    request,
+                    sh,
+                    Stakeholder,
+                    user,
+                    implicit = True
+                )
 
-                    reviewed_involvements.append(reviewed_inv)
+                reviewed_involvements.append(reviewed_inv)
 
-            # Do the actual review of the current item
+        # Do the actual review of the current item
+        if review_decision == 1:
+            # Approved
 
             # Check if Item was deleted (no more tags)
             empty_item = True
