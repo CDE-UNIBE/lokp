@@ -1,6 +1,7 @@
 from geoalchemy import WKBSpatialElement
 from geoalchemy.functions import functions
 from lmkp.models.database_objects import *
+from lmkp.views.profile import get_current_profile
 from lmkp.views.protocol import *
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.translation import get_translated_status
@@ -1642,6 +1643,16 @@ class ActivityProtocol3(Protocol):
 
         # Add the Activity to the database
         self.Session.add(new_activity)
+
+        # Store the current profile when creating a new Activity
+        profile_code = get_current_profile(request)
+        profile = self.Session.query(
+                Profile
+            ).\
+            filter(Profile.code == profile_code).\
+            first()
+
+        new_activity.profile = profile
 
         # Populate the Tag Groups
         for i, taggroup in enumerate(activity_dict['taggroups']):

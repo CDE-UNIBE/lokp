@@ -301,6 +301,7 @@ class Activity(Base):
             ForeignKeyConstraint(['fk_status'], ['data.status.id']),
             ForeignKeyConstraint(['fk_changeset'], ['data.changesets.id']),
             ForeignKeyConstraint(['fk_user_review'], ['data.users.id']),
+            ForeignKeyConstraint(['fk_profile'], ['data.profiles.id']),
             {'schema': 'data'}
             )
     id = Column(Integer, primary_key = True)
@@ -316,6 +317,7 @@ class Activity(Base):
     fk_user_review = Column(Integer)
     timestamp_review = Column(DateTime)
     comment_review = Column(Text)
+    fk_profile = Column(Integer)
 
     tag_groups = relationship('A_Tag_Group', backref=backref('activity',
                               order_by=id))
@@ -348,10 +350,11 @@ class Activity(Base):
         """
         geom = '***'
         return (
-            '<Activity> id [ %s ] | activity_identifier [ %s ] | fk_changeset [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ] | previous_version [ %s ] | fk_user_review [ %s ] | timestamp_review [ %s ] | comment_review [ %s ]' %
+            '<Activity> id [ %s ] | activity_identifier [ %s ] | fk_changeset [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ] | previous_version [ %s ] | fk_user_review [ %s ] | timestamp_review [ %s ] | comment_review [ %s ] | fk_profile [ %s ]' %
             (self.id, self.activity_identifier, self.fk_changeset, geom,
             self.fk_status, self.version, self.previous_version,
-            self.fk_user_review, self.timestamp_review, self.comment_review)
+            self.fk_user_review, self.timestamp_review, self.comment_review,
+            self.fk_profile)
         )
 
     @property
@@ -725,8 +728,11 @@ class Profile(Base):
     __table_args__ = {'schema': 'data'}
     id = Column(Integer, primary_key=True)
     code = Column(String(255), nullable=False, unique=True)
-    geometry = GeometryColumn('polygon',
-                              Polygon(dimension=2, srid=4326, spatial_index=True))
+    geometry = GeometryColumn(
+        'polygon', Polygon(dimension=2, srid=4326, spatial_index=True)
+    )
+
+    activities = relationship('Activity', backref='profile')
 
     def __init__(self, code, geometry):
         self.code = code

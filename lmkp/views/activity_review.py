@@ -72,7 +72,7 @@ class ActivityReview(BaseReview):
         additional_params = {
         'available_versions': json.dumps(available_versions)
         }
-        
+
         return additional_params
 
     @action(name='json', renderer='json')
@@ -130,9 +130,15 @@ class ActivityReview(BaseReview):
         if not self._within_profile(uid):
             raise HTTPForbidden("Activity %s is not within your profile." % uid)
 
-        active_version, pending_version = self._get_valid_versions(
-            Activity, uid, review=True
-        )
+        try:
+            active_version, pending_version = self._get_valid_versions(
+                Activity, uid, review=True
+            )
+        except HTTPForbidden:
+            return {
+                'success': False,
+                'msg': 'This item has no reviewable pending version.'
+            }
 
         # Some logging
 #        log.debug("active version: %s" % active_version)
