@@ -14,6 +14,12 @@ Ext.define('Lmkp.view.users.UserWindow', {
         var me = this;
 		
         if (me.username) {
+
+            /**
+             * TODO: Revamp this entire page. The changesets may concern both
+             * Activities and Stakeholders (which are not shown at all for the
+             * time being). Think of a nice way to represent the changesets
+             */
 			
             var activityChangesetStore = Ext.create('Lmkp.store.ActivityChangesets');
             // load only changeset from current user, initial status: active
@@ -31,7 +37,8 @@ Ext.define('Lmkp.view.users.UserWindow', {
                 xtype: 'tabpanel',
                 activeItem: 0,
                 defaults: {
-                    border: 0
+                    border: 0,
+                    bodyPadding: 5
                 },
                 items: [{
                     title: 'Overview',
@@ -134,47 +141,50 @@ Ext.define('Lmkp.view.users.UserWindow', {
                 }, {
                     title: 'Reported Activities',
                     items: [{
-                        xtype: 'combobox',
-                        store: statusStore,
-                        valueField: 'db_name',
-                        displayField: 'display_name',
-                        fieldLabel: 'Filter by status',
-                        queryMode: 'local',
-                        value: statusStore.findRecord('db_name', 'active'), // initial status: active
-                        listeners: {
-                            select: function(combo, records, eOpts) {
-                                // update status parameter of changeset store and reload it
-                                activityChangesetStore.getProxy().extraParams = {
-                                    'user': me.username,
-                                    'status': records[0].get('db_name')
-                                };
-                                activityChangesetStore.load();
-                            }
-                        }
-                    }, {
-                        xtype: 'gridpanel',
-                        store: activityChangesetStore,
-                        columns: [{
-                            // TODO: add name of activity to changeset
-                            /**
-                             * It would be much nicer to show the name of an activity rather
-                             * than its UUID. But for the moment being, the changeset protocol
-                             * does not provide the name of an activity.
-                             */
-                            header: 'Activity',
-                            dataIndex: 'activity',
-                            flex: 1
-                        }, {
-                            header: 'Status',
-                            dataIndex: 'status'
-                        }],
-                        dockedItems: [{
-                            xtype: 'pagingtoolbar',
-                            store: activityChangesetStore,
-                            dock: 'bottom',
-                            enableOverflow: false,
-                            displayInfo: true
-                        }]
+                            xtype: 'panel',
+                            html: 'Here, you will soon find an overview of all the Activities (and Stakeholders) you have created or edited.',
+                            border: 0
+//                        xtype: 'combobox',
+//                        store: statusStore,
+//                        valueField: 'db_name',
+//                        displayField: 'display_name',
+//                        fieldLabel: 'Filter by status',
+//                        queryMode: 'local',
+//                        value: statusStore.findRecord('db_name', 'active'), // initial status: active
+//                        listeners: {
+//                            select: function(combo, records, eOpts) {
+//                                // update status parameter of changeset store and reload it
+//                                activityChangesetStore.getProxy().extraParams = {
+//                                    'user': me.username,
+//                                    'status': records[0].get('db_name')
+//                                };
+//                                activityChangesetStore.load();
+//                            }
+//                        }
+//                    }, {
+//                        xtype: 'gridpanel',
+//                        store: activityChangesetStore,
+//                        columns: [{
+//                            // TODO: add name of activity to changeset
+//                            /**
+//                             * It would be much nicer to show the name of an activity rather
+//                             * than its UUID. But for the moment being, the changeset protocol
+//                             * does not provide the name of an activity.
+//                             */
+//                            header: 'Activity',
+//                            dataIndex: 'activity',
+//                            flex: 1
+//                        }, {
+//                            header: 'Status',
+//                            dataIndex: 'status'
+//                        }],
+//                        dockedItems: [{
+//                            xtype: 'pagingtoolbar',
+//                            store: activityChangesetStore,
+//                            dock: 'bottom',
+//                            enableOverflow: false,
+//                            displayInfo: true
+//                        }]
                     }]
                 }]
             }]
