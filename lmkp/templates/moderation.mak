@@ -5,6 +5,13 @@
 <title>${_("Land Observatory")} - ${_("Moderation")}</title>
 <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
 <script type="text/javascript" src="${request.static_url('lmkp:static/app/moderate.js')}"></script>
+
+<script type="text/javascript">
+    var openItem = "${openItem}";
+    var type = "${type}";
+    var identifier = "${identifier}";
+</script>
+
 <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/moderation.css')}"></link>
 </%def>
 

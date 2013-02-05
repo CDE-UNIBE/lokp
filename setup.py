@@ -27,7 +27,8 @@ requires = [
     'psycopg2==2.4.5',
     'PyYAML==3.10',
     'Chameleon==2.8.5',
-    'recaptcha-client==1.0.6'
+    'recaptcha-client==1.0.6',
+    'requests==1.1.0'
     ]
 
 setup(name='LMKP',

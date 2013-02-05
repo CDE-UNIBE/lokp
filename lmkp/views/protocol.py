@@ -2,15 +2,21 @@ import logging
 import uuid
 from lmkp.config import locale_profile_directory_path
 from lmkp.config import profile_directory_path
+from lmkp.models.database_objects import Activity
 from lmkp.models.database_objects import A_Key
 from lmkp.models.database_objects import A_Tag
+from lmkp.models.database_objects import A_Tag_Group
 from lmkp.models.database_objects import A_Value
 from lmkp.models.database_objects import Changeset
 from lmkp.models.database_objects import Group
+from lmkp.models.database_objects import Involvement
+from lmkp.models.database_objects import Language
 from lmkp.models.database_objects import Permission
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Tag
+from lmkp.models.database_objects import SH_Tag_Group
 from lmkp.models.database_objects import SH_Value
+from lmkp.models.database_objects import Stakeholder
 from lmkp.models.database_objects import Stakeholder_Role
 from lmkp.models.database_objects import Status
 from lmkp.views.config import merge_profiles
@@ -27,6 +33,7 @@ import collections
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.security import unauthenticated_userid
 from pyramid.security import effective_principals
+from pyramid.i18n import get_localizer
 from lmkp.views.review import BaseReview
 import json
 
@@ -588,10 +595,20 @@ class Protocol(object):
 
         return False
 
-    def _add_review(self, request, item, previous_item, mappedClass, user):
+    def _add_review(self, request, item, mappedClass, user,
+        implicit = False):
         """
         Add a review decision
+        item: {Database object} (Activity or Stakeholder)
+        mappedClass: database_model object
+        user: {Database object}
+        implicit: {Boolean} To prevent circular reviewing when handling
+        involvements
         """
+
+        #TODO: Add translation to server responses
+
+        reviewed_involvements = []
 
         # Hard coded list of statii as in database. Needs to be in same order!
         # Not very nice but efficient and more comprehensible than just using
@@ -606,115 +623,116 @@ class Protocol(object):
         ]
 
         ret = {'success': False}
-        recalculated = False
+
+        # Activity or Stakeholder?
+        diff_keyword = None
+        config_yaml = None
+        if mappedClass == Activity:
+            diff_keyword = 'activities'
+            other_diff_keyword = 'stakeholders'
+            config_yaml = 'activity.yml'
+        elif mappedClass == Stakeholder:
+            diff_keyword = 'stakeholders'
+            other_diff_keyword = 'activities'
+            config_yaml = 'stakeholder.yml'
+        else:
+            ret['msg'] = 'Unknown object to review.'
+            return ret
 
         # Collect POST values
         review_decision = request.POST['review_decision']
         if review_decision is None:
             ret['msg'] = 'Review decision not provided.'
             return ret
-
+        try:
+            review_decision = int(review_decision)
+        except:
+            ret['msg'] = 'Unknown review decision'
+            return ret
         review_comment = None
         if (request.POST['comment_textarea'] != ''):
             review_comment = request.POST['comment_textarea']
 
-        if review_decision == '1':
+        # TODO: Also delegate involvement review if rejected (review_decision == 2)
+        if review_decision == 1:
             # Approved
-            if (previous_item is not None
-                and previous_item.fk_status != statusArray.index('active')+1
-                and item.fk_status == statusArray.index('pending')+1):
-                """
-                If the approved pending version is based on a version which
-                is not active anymore, a recalculation of the pending
-                version is needed to include any changes already approved.
-                This creates a new version which is automatically set
-                'active'. The approved pending version becomes 'edited' and
-                the previously active version becomes 'inactive'.
-                """
 
-                #TODO: Check out what the 'previous_item' and 'item' exactly
-                # are and if they are both needed. Also check if it is
-                # possible to delete a version.
+            # Try to also review any affected involvement.
+            if implicit is False and mappedClass == Activity:
+                # Involvements can only be reviewed from Activity side.
 
-                # Review always happens against the active object. Query it
-                # to find out if the reviewed version is based directly onto
-                # it
-                ref_version = self.Session.query(
-                        mappedClass
+                # Query the diff
+                diff_query = self.Session.query(
+                        Changeset.diff
                     ).\
+                    join(mappedClass).\
                     filter(mappedClass.identifier == item.identifier).\
-                    filter(mappedClass.fk_status
-                        == statusArray.index('active')+1).\
+                    filter(mappedClass.version == item.version).\
                     first()
+                json_diff = json.loads(diff_query.diff.replace('\'', '"'))
 
-                if (ref_version is not None
-                    and ref_version.version != item.previous_version):
+                # Loop through the diff to find and collect all the affected Stakeholders and their version at the time of the changes
+                affected_involvements = []
+                if 'activities' in json_diff:
+                    for a_diff in json_diff['activities']:
+                        if 'id' in a_diff and a_diff['id'] == str(item.identifier) and 'stakeholders' in a_diff:
+                            for sh_diff in a_diff['stakeholders']:
+                                version = (sh_diff['version']
+                                        if 'version' in sh_diff
+                                        else None)
+                                affected_involvements.append({
+                                    'identifier': sh_diff['id'],
+                                    'version': version
+                                })
 
-                    new_diff_query = self.Session.query(
-                            Changeset.diff
+                log.debug('%s affected involvements found: %s'
+                    % (len(affected_involvements), affected_involvements))
+
+                basereview = BaseReview(request)
+
+                # First check if a review can be done for all the involvements
+                reviewPossible = True
+                for ai in affected_involvements:
+                    reviewPossible = (reviewPossible
+                        and basereview._review_check_involvement(
+                            ai['identifier']) > 0)
+
+                if reviewPossible is not True:
+                    ret['msg'] = 'At least one of the involved Stakeholders cannot be reviewed.'
+                    return ret
+
+                # Do a review for all the involvements
+                for ai in affected_involvements:
+
+                    # Query the Stakeholder version that was created by the
+                    # involvement
+                    sh = self.Session.query(
+                            Stakeholder
                         ).\
-                        join(mappedClass).\
-                        filter(mappedClass.identifier == item.identifier).\
-                        filter(mappedClass.version == item.version).\
+                        join(Involvement).\
+                        join(Activity).\
+                        filter(Stakeholder.identifier == ai['identifier']).\
+                        filter(Stakeholder.previous_version
+                            == ai['version']).\
+                        filter(Activity.identifier == item.identifier).\
+                        filter(Activity.version == item.version).\
                         first()
-                    new_diff = json.loads(new_diff_query.diff.replace('\'', '"'))
 
-                    # Activity or Stakeholder?
-                    diff_keyword = None
-                    config_yaml = None
-                    if mappedClass.__table__.name == 'activities':
-                        diff_keyword = 'activities'
-                        config_yaml = 'activity.yml'
-                    elif mappedClass.__table__.name == 'stakeholders':
-                        diff_keyword = 'stakeholders'
-                        config_yaml = 'stakeholder.yml'
+                    log.debug('Reviewing involvement: Stakeholder with identifier %s, version %s and status %s'
+                            % (sh.identifier, sh.version, sh.fk_status))
 
-                    self.configuration = self._read_configuration(
-                        request, config_yaml
+                    # Do a review, but implicitely
+                    reviewed_inv = self._add_review(
+                        request,
+                        sh,
+                        Stakeholder,
+                        user,
+                        implicit = True
                     )
 
-                    relevant_diff = None
-                    if (diff_keyword in new_diff and
-                        new_diff[diff_keyword] is not None):
-                        for a in new_diff[diff_keyword]:
-                            if 'id' in a and a['id'] == str(item.identifier):
-                                relevant_diff = a
+                    reviewed_involvements.append(reviewed_inv)
 
-                    ref_version.fk_status = statusArray.index('inactive')+1
-                    item.fk_status = statusArray.index('edited')+1
-
-                    changeset = Changeset()
-                    changeset.user = request.user
-                    changeset.diff = str(self._convert_utf8(new_diff))
-
-                    new_v = self._update_object(
-                        request, ref_version, relevant_diff, changeset,
-                        status='active'
-                    )
-
-                    print new_v
-
-                    for tg in new_v.tag_groups:
-                        for t in tg.tags:
-                            print "%s: %s (%s)" % (t.key.key, str(t.value.value), tg.tg_id)
-
-                    print "****"
-                    print item
-                    print "----"
-                    print previous_item
-                    print "****"
-
-#                        asdfasdfasdfasdf
-
-                    recalculated = True
-
-                else:
-                    # Set previous version to 'inactive' if it was active before
-                    if previous_item.fk_status == statusArray.index('active') + 1:
-                        previous_item.fk_status = statusArray.index('inactive') + 1
-                    # Set previous version to 'edited' if it was pending before
-                    elif previous_item.fk_status == statusArray.index('pending') + 1:
-                        previous_item.fk_status = statusArray.index('edited') + 1
+            # Do the actual review of the current item
 
             # Check if Item was deleted (no more tags)
             empty_item = True
@@ -723,32 +741,639 @@ class Protocol(object):
                     empty_item = False
                     break
 
-            if empty_item is True:
-                # Set new version to 'deleted'
-                item.fk_status = statusArray.index('deleted') + 1
-            else:
-                if not recalculated:
-                    # Set new version to 'active'. But first make sure there is no
-                    # other one active by setting any with 'active' to 'inactive'
-                    self.Session.query(mappedClass).\
-                        filter(mappedClass.identifier == item.identifier).\
-                        filter(mappedClass.fk_status == statusArray.index('active')+1).\
-                        update({mappedClass.fk_status: statusArray.index('inactive')+1})
-                    item.fk_status = statusArray.index('active') + 1
+            # Query the previous version of the item
+            previous_version = self.Session.query(
+                    mappedClass
+                ).\
+                filter(mappedClass.identifier == item.identifier).\
+                filter(mappedClass.version == item.previous_version).\
+                first()
 
-        elif review_decision == '2':
+            if (empty_item is True or previous_version is None
+                or previous_version.fk_status == statusArray.index('active')+1):
+                # There is no previous version (the item is brand new) or it is
+                # based directly on the active version.
+                
+                # If there is a previous active version, set it to 'inactive'
+                if previous_version:
+                    previous_version.fk_status = statusArray.index('inactive')+1
+
+                if empty_item is True:
+                    # Set the status of the item to 'deleted'
+                    item.fk_status = statusArray.index('deleted') + 1
+
+                    log.debug('Set version %s of %s with identifier %s to "deleted"'
+                        % (item.version, mappedClass.__table__.name, item.identifier))
+
+                else:
+                    # Set the status of the item to 'active'
+                    item.fk_status = statusArray.index('active')+1
+
+                    log.debug('Set version %s of %s with identifier %s to "active"'
+                        % (item.version, mappedClass.__table__.name, item.identifier))
+
+            else:
+                # Recalculation of the item is needed.
+
+                # Query the active version of the item (review always happens
+                # against the active version)
+                ref_version = self.Session.query(
+                        mappedClass
+                    ).\
+                    filter(mappedClass.identifier == item.identifier).\
+                    filter(mappedClass.fk_status
+                        == statusArray.index('active')+1).\
+                    first()
+
+                if ref_version is None:
+                    ret['msg'] = 'No active version was found to base the review upon.'
+                    return ret
+
+                # Read the configuration
+                self.configuration = self._read_configuration(
+                    request, config_yaml
+                )
+
+                # Query the diff. If it is already available (queried while
+                # handling involvements earlier), no need to query it again
+                if not json_diff:
+                    # Query the diff
+                    diff_query = self.Session.query(
+                            Changeset.diff
+                        ).\
+                        join(mappedClass).\
+                        filter(mappedClass.identifier == item.identifier).\
+                        filter(mappedClass.version == item.version).\
+                        first()
+                    json_diff = json.loads(diff_query.diff.replace('\'', '"'))
+
+                # Cut to the part of the diff which is relevant for this item
+                relevant_diff = None
+                if (diff_keyword in json_diff and
+                    json_diff[diff_keyword] is not None):
+                    for diff in json_diff[diff_keyword]:
+                        if 'id' in diff and diff['id'] == str(item.identifier):
+                            relevant_diff = diff
+
+                if relevant_diff is None:
+                    ret['msg'] = 'The diff seems to be incorrect (identifier not found)'
+                    return ret
+
+                # Set the reference version to 'inactive'
+                ref_version.fk_status = statusArray.index('inactive')+1
+
+                # Set the pending version to 'edited'
+                item.fk_status = statusArray.index('edited')+1
+
+                # Prepare a changeset
+                changeset = Changeset()
+                changeset.user = request.user
+                # TODO: could/should this just be the relevant_diff?
+                changeset.diff = str(self._convert_utf8(json_diff))
+
+                # Create a new version of the object
+                new_version = self._update_object(
+                    request, ref_version, relevant_diff, changeset,
+                    status='active'
+                )
+
+                if len(reviewed_involvements) > 0:
+                    # Attach the involvements which were reviewed earlier
+                    inv_diff = (relevant_diff[other_diff_keyword]
+                        if other_diff_keyword in relevant_diff
+                        else None)
+                    for inv in reviewed_involvements:
+                        self._handle_involvements(
+                            request,
+                            ref_version,
+                            new_version,
+                            inv_diff,
+                            changeset,
+                            implicit = True,
+                            db_object = inv
+                        )
+
+                log.debug('Created new version out of version %s of %s with identifier %s'
+                        % (item.version, mappedClass.__table__.name, item.identifier))
+
+        elif review_decision == 2:
             # Rejected: Do not modify previous version and set new version to
             # 'rejected'
             item.fk_status = statusArray.index('rejected') + 1
+
+        else:
+            ret['msg'] = 'Unknown review decision'
+            return ret
 
         # Add review stuff
         item.user_review = user
         item.timestamp_review = datetime.datetime.now()
         item.comment_review = review_comment
 
+        if implicit is True:
+            return item
+
         ret['success'] = True
         ret['msg'] = 'Review successful.'
         return ret
+
+    def _apply_diff(self, request, mappedClass, uid, version, diff, item, db):
+
+        """
+        item is either a db item or an activity feature
+        diff: a diff concerning only a certain Activity or Stakeholder
+        db: boolean
+        """
+
+#        print "============================================="
+
+#        log.debug("diff:\n%s" % diff)
+
+        if mappedClass == Activity:
+            Db_Tag_Group = A_Tag_Group
+            Db_Tag = A_Tag
+            Db_Key = A_Key
+            Db_Value = A_Value
+        elif mappedClass == Stakeholder:
+            Db_Tag_Group = SH_Tag_Group
+            Db_Tag = SH_Tag
+            Db_Key = SH_Key
+            Db_Value = SH_Value
+        else:
+            return None
+
+
+        if db is False:
+            from lmkp.views.protocol import Tag
+            from lmkp.views.protocol import TagGroup
+
+            # Reset taggroups
+            item._taggroups = []
+
+
+        # Loop the tag groups from the previous version to check if they were
+        # modified
+        db_taggroup_query = self.Session.query(
+                Db_Tag_Group
+            ).\
+            join(mappedClass).\
+            filter(mappedClass.identifier == uid).\
+            filter(mappedClass.version == version).\
+            all()
+
+        # Collect all tg_ids while we are at it
+        tg_ids = []
+        for db_taggroup in db_taggroup_query:
+
+            tg_ids.append(db_taggroup.tg_id)
+
+            #TODO: clean up! Also make sure it works for all cases
+            #TODO: Handle translations correctly
+
+#            print "---------------------------------------------"
+#            log.debug(
+#                "Currently looking at db_taggroup with tg_id: %s"
+#                % db_taggroup.tg_id
+#            )
+
+            # Create a new tag group but don't add it yet to the new activity
+            # version. Indicator (taggroupadded) is needed for database items
+            # because the moment when to add a taggroup to database is a very
+            # delicate thing in SQLAlchemy.
+            taggroupadded = False
+            if db is True:
+                new_taggroup = Db_Tag_Group(db_taggroup.tg_id)
+            else:
+                new_taggroup = TagGroup(tg_id = db_taggroup.tg_id)
+
+            # Step 1: Loop the existing tags
+            for db_tag in db_taggroup.tags:
+
+#                log.debug(
+#                    "Currently looking at db_tag with key/value:\n%s | %s" %
+#                    (db_tag.key.key, db_tag.value.value)
+#                )
+
+                # Before copying the tag, make sure that it is not to delete
+                copy_tag = True
+                if 'taggroups' in diff:
+                    for taggroup_dict in diff['taggroups']:
+                        if ('tg_id' in taggroup_dict and
+                            taggroup_dict['tg_id'] == db_taggroup.tg_id):
+                            # Check which tags we have to edit
+                            for tag_dict in taggroup_dict['tags']:
+                                #TODO
+                                if 1 == 1:
+                                    # Yes, it is THIS tag
+                                    if tag_dict['op'] == 'delete':
+#                                        log.debug(
+#                                            "Tag is deleted (not copied) from taggroup."
+#                                        )
+                                        copy_tag = False
+
+                # Create and append the new tag only if requested
+                if copy_tag:
+                    # Get the key and value SQLAlchemy object
+                    k = self.Session.query(Db_Key).get(db_tag.fk_key)
+                    v = self.Session.query(Db_Value).get(db_tag.fk_value)
+
+                    if db is True:
+                        new_tag = Db_Tag()
+                        new_taggroup.tags.append(new_tag)
+                        new_tag.key = k
+                        new_tag.value = v
+                    else:
+                        new_tag = Tag(db_tag.id, k.key, v.value)
+                        new_taggroup.add_tag(new_tag)
+
+#                    log.debug(
+#                        "Tag was copied and added to taggroup."
+#                    )
+
+                    # Set the main tag
+                    if db_taggroup.main_tag == db_tag:
+                        if db is True:
+                            new_taggroup.main_tag = new_tag
+                        else:
+                            new_taggroup._main_tag = new_tag
+
+                    if taggroupadded is False:
+                        # It is necessary to add taggroup to database
+                        # immediately, otherwise SQLAlchemy tries to do this the
+                        # next time a tag is created and throws an error because
+                        # of assumingly null values
+                        if db is True:
+                            item.tag_groups.append(new_taggroup)
+                        else:
+                            if len(new_taggroup.get_tags()) > 0:
+                                item.add_taggroup(new_taggroup)
+
+#                        log.debug(
+#                            "Taggroup was added (copied) to item."
+#                        )
+
+                        taggroupadded = True
+
+            # Step 2: Add new tags (who don't have an ID yet) to this taggroup
+            if 'taggroups' in diff:
+                for taggroup_dict in diff['taggroups']:
+                    if ('tg_id' in taggroup_dict and
+                        taggroup_dict['tg_id'] == db_taggroup.tg_id):
+                        # Taggroup of dict is already in DB
+                        for tag_dict in taggroup_dict['tags']:
+                            if 'id' not in tag_dict and tag_dict['op'] == 'add':
+                                if db is True:
+                                    new_tag = self._create_tag(
+                                        request, new_taggroup.tags,
+                                        tag_dict['key'], tag_dict['value'],
+                                        Db_Tag, Db_Key, Db_Value
+                                    )
+                                else:
+                                    new_tag = Tag(
+                                        None, tag_dict['key'], tag_dict['value']
+                                    )
+                                    new_taggroup.add_tag(new_tag)
+
+#                                log.debug(
+#                                    "Tag (%s | %s) was created and added to taggroup."
+#                                    % (tag_dict['key'], tag_dict['value'])
+#                                )
+
+                                # Set the main tag
+                                if 'main_tag' in taggroup_dict:
+                                    if (db is True and
+                                        taggroup_dict['main_tag']['key'] ==
+                                            new_tag.key.key and
+                                        taggroup_dict['main_tag']['value'] ==
+                                            new_tag.value.value):
+                                        new_taggroup.main_tag = new_tag
+                                    elif (db is False and
+                                        taggroup_dict['main_tag']['key'] ==
+                                            new_tag.get_key() and
+                                        taggroup_dict['main_tag']['value'] ==
+                                            new_tag.get_value()):
+                                        new_taggroup._main_tag = new_tag
+
+                            # If taggroups were not added to database yet, then
+                            # do it now. But only add new tag groups to the new
+                            # version if they have any tags in them (which is
+                            # not the case if they were deleted).
+                            if (db is True and len(new_taggroup.tags) > 0
+                                and taggroupadded is False):
+                                item.tag_groups.append(new_taggroup)
+                            elif (db is False
+                                and len(new_taggroup.get_tags()) > 0
+                                and taggroupadded is False):
+                                item.add_taggroup(new_taggroup)
+
+        # Finally new tag groups (without id) need to be added
+        # (and loop all again)
+        if 'taggroups' in diff:
+
+            for taggroup_dict in diff['taggroups']:
+
+                tg_id = None
+
+                if ('tg_id' in taggroup_dict and
+                    taggroup_dict['tg_id'] not in tg_ids and
+                    ('op' not in taggroup_dict or
+                    ('op' in taggroup_dict
+                    and taggroup_dict['op'] != 'delete'))):
+                    # Taggroup of dict has a tg_id, but does not yet exist for
+                    # the current version. It can be treated as if new but with
+                    # an existing tg_id
+                    tg_id = taggroup_dict['tg_id']
+
+#                    print "---------------------------------------------"
+#                    log.debug(
+#                        "Currently looking at a taggroup with tg_id %s which does not yet exist for the old version"
+#                        % (tg_id)
+#                    )
+
+                if (('tg_id' not in taggroup_dict
+                    or ('tg_id' in taggroup_dict and
+                    taggroup_dict['tg_id'] is None))
+                    and taggroup_dict['op'] == 'add'):
+                    # Taggroup of dict has no tg_id and does not yet exist at
+                    # all for the current item.
+
+                    # Find next empty tg_id (over all versions)
+                    tg_id_q = self.Session.query(func.max(Db_Tag_Group.tg_id)).\
+                        join(mappedClass).\
+                        filter(mappedClass.identifier
+                               == uid).\
+                        first()
+                    tg_id = tg_id_q[0] + 1
+
+#                    print "---------------------------------------------"
+#                    log.debug(
+#                        "Currently looking at a brand new taggroup with tg_id %s"
+#                        % (tg_id)
+#                    )
+
+                if (tg_id is not None):
+
+                    if db is True:
+                        new_taggroup = Db_Tag_Group(tg_id)
+                        item.tag_groups.append(new_taggroup)
+                    else:
+                        new_taggroup = TagGroup(tg_id = tg_id)
+                        item.add_taggroup(new_taggroup)
+                    for tag_dict in taggroup_dict['tags']:
+
+                        if 'id' not in tag_dict and tag_dict['op'] == 'add':
+
+                            if db is True:
+                                new_tag = self._create_tag(
+                                    request, new_taggroup.tags, tag_dict['key'],
+                                    tag_dict['value'], Db_Tag, Db_Key, Db_Value
+                                )
+                            else:
+                                new_tag = Tag(
+                                    None, tag_dict['key'], tag_dict['value']
+                                )
+                                new_taggroup.add_tag(new_tag)
+
+#                            log.debug(
+#                                "Tag (%s | %s) was created and added to taggroup."
+#                                % (tag_dict['key'], tag_dict['value'])
+#                            )
+
+                            # Set the main tag
+                            if 'main_tag' in taggroup_dict:
+                                if (db is True and
+                                    taggroup_dict['main_tag']['key'] ==
+                                        new_tag.key.key and
+                                    taggroup_dict['main_tag']['value'] ==
+                                        new_tag.value.value):
+                                    new_taggroup.main_tag = new_tag
+                                elif (db is False and
+                                    taggroup_dict['main_tag']['key'] ==
+                                        new_tag.get_key() and
+                                    taggroup_dict['main_tag']['value'] ==
+                                        new_tag.get_value()):
+                                    new_taggroup._main_tag = new_tag
+
+#        print "============================================="
+
+        return item
+
+
+    def recalculate_diffs(self, request, mappedClass, uid, old_version,
+        new_diff, old_diff):
+        """
+        request: The request
+        uid: The identifier of the object
+        old_version: The old version of the object
+        new_diff: A diff containing only the part which is relevant to the
+          object: 
+          {
+            'taggroups': [],
+            'version': '',
+            ...
+          }
+        old_diff: A whole changeset diff:
+          {
+            'activities': []
+          }
+          or
+          {
+            'stakeholders': []
+          }
+        """
+
+        def _merge_involvements(old_diff, new_inv):
+            """
+            Helper function to merge a new involvement diff (new_inv) into an
+            existing diff of an Activity.
+            """
+            
+            if 'stakeholders' in old_diff:
+                # Loop the involvements of the old diff to find if some of the
+                # changes to the new diff are made to involvements already
+                # modified by the old diff
+                new_involvements_processed = False
+                for old_inv in old_diff['stakeholders']:
+                    
+                    if ('id' in old_inv and 'id' in new_inv 
+                        and old_inv['id'] == new_inv['id']):
+                        
+                        # TODO: Is this simple replacement enough?
+                        if new_inv['op'] == 'delete' and old_inv['op'] == 'add':
+                            # Replace
+                            old_inv = new_inv
+                            
+#                            log.debug('Replaced old involvement (%s) with new involvement (%s)' % (old_inv, new_inv))
+                                            
+                            new_involvements_processed = True
+                
+            
+                if new_involvements_processed is False:
+                    # New involvements did not affect any of the already 
+                    # modified involvements. It is assumed that it is brand new
+                    # and is added to the existing diff
+                    if 'stakeholders' in old_diff:
+                        old_diff['stakeholders'].append(new_inv)
+                    else:
+                        old_diff['stakeholders'] = new_inv
+            
+            else:
+                # If no involvements in old_diff, add the one from the new_inv
+                # as it is
+                old_diff['stakeholders'] = new_inv
+                
+#                log.debug('Added new involvement diff: %s' % new_inv)
+                
+            return old_diff
+
+        def _merge_taggroups(old_diff, new_tg):
+            """
+            Helper function to merge a new taggroup diff (new_tg) into an
+            existing diff of an Activity or a Stakeholder.
+            """
+
+            if 'taggroups' in old_diff:
+                # Loop the taggroups of the old diff to find if some of the
+                # changes of the new diff are made to taggroups already modified
+                # by the old diff
+                new_taggroup_processed = False
+                for old_tg in old_diff['taggroups']:
+                    if ('tg_id' in old_tg and 'tg_id' in new_tg
+                        and old_tg['tg_id'] == new_tg['tg_id']):
+                        # An existing taggroup diff has further changes
+
+#                        log.debug('Merging diff of taggroups. Old taggroup diff:\n%s\nNew taggroup diff:\n%s'
+#                            % (old_tg, new_tg))
+
+                        tags_to_delete = []
+                        tags_to_add = []
+
+                        for old_t in old_tg['tags']:
+                            # Loop through the tags of the old diff
+
+                            for new_t in new_tg['tags']:
+                                # Loop through the tags of the new diff
+
+                                # If there is a tag previously added (old_t['op'] == 'add') and now to be deleted again (new_t['op'] == 'delete'), then remove it
+                                if (new_t['op'] == 'delete' 
+                                    and old_t['op'] == 'add' 
+                                    and new_t['key'] == old_t['key'] 
+                                    and str(new_t['value'])
+                                        == str(old_t['value'])):
+                                    # Remove
+                                    tags_to_delete.append(old_t)
+
+                                else:
+                                    # Add new diff
+                                    tags_to_add.append(new_t)
+
+                        for tdt in tags_to_delete:
+                            old_tg['tags'].remove(tdt)
+
+#                            log.debug('Removed old tag diff: %s' % tdt)
+
+                        for tda in tags_to_add:
+                            old_tg['tags'].append(tda)
+
+#                            log.debug('Added new tag diff: %s' % tda)
+
+                        new_taggroup_processed = True
+
+                if new_taggroup_processed is False or 'tg_id' not in new_tg:
+                    # New taggroup did not affect any of the already modified
+                    # taggroups or it has no tg_id. It is therefore assumed that
+                    # it is brand new and is added to the old diff.
+                    if 'taggroups' in old_diff:
+                        old_diff['taggroups'].append(new_tg)
+                    else:
+                        old_diff['taggroups'] = new_tg
+
+            else:
+                # If no taggroups yet in old_diff, add the one from the new_tg
+                # as it is
+                old_diff['taggroups'] = new_tg
+
+#                log.debug('Added new taggroup diff: %s' % new_tg)
+
+            return old_diff
+
+        # Activity or Stakeholder?
+        if mappedClass == Activity:
+            diff_keyword = 'activities'
+        elif mappedClass == Stakeholder:
+            diff_keyword = 'stakeholders'
+        else:
+            return None
+
+        rel_diff = None
+        # Cut down old_diff to find the interesting stuff
+        if diff_keyword in old_diff and old_diff[diff_keyword] is not None:
+            for diff in old_diff[diff_keyword]:
+                if 'id' in diff and diff['id'] == str(uid):
+                    rel_diff = diff
+
+        if rel_diff is None:
+            return None
+
+        log.debug('Diff before recalculation:\n%s' % rel_diff)
+
+        # The tg_id's are needed to make a meaningful merge of the diffs. If
+        # they are not known (eg. when looking at the diff of the very first
+        # version, try to add them by looking them up in the database.
+        if 'taggroups' in rel_diff:
+            feature = None
+            for rel_tg in rel_diff['taggroups']:
+                if 'tg_id' not in rel_tg:
+
+                    if feature is None:
+                        # Query the feature
+                        # TODO: Does this still work in different languages?
+                        feature = self.read_one_by_version(request, uid,
+                            old_version)
+
+                    # Try to find the tg_id of the rel_tg. All the tags of
+                    # rel_tg need to be found in the same taggroup of the
+                    # feature
+                    rel_tags = {}
+                    rel_keys = []
+                    # Have a look at each tag in rel_tg
+                    for rel_t in rel_tg['tags']:
+                        rel_tags[rel_t['key']] = rel_t['value']
+                        rel_keys.append(rel_t['key'])
+                    found_tg_id = None
+                    for f_tg in feature.get_taggroups():
+                        if found_tg_id is None:
+                            f_tags = {}
+                            for f_t in f_tg.get_tags():
+                                f_tags[f_t.get_key()] = f_t.get_value()
+                            if list(set(rel_tags) & set(f_tags)) == rel_keys:
+                                found_tg_id = f_tg.get_tg_id()
+                    if found_tg_id is not None:
+                        rel_tg['tg_id'] = found_tg_id
+
+        # Merge taggroups
+        if 'taggroups' in new_diff:
+
+#            log.debug('Diff before doing taggroup merges:\n%s' % rel_diff)
+
+            for new_tg in new_diff['taggroups']:
+                rel_diff = _merge_taggroups(rel_diff, new_tg)
+
+#            log.debug('Diff after doing taggroup merges:\n%s' % rel_diff)
+
+        # Merge involvements (only for Stakeholders)
+        if mappedClass == Activity and 'stakeholders' in new_diff:
+            
+#            log.debug('Diff before doing involvement merges:\n%s' % rel_diff)
+            
+            for new_inv in new_diff['stakeholders']:
+                rel_diff = _merge_involvements(rel_diff, new_inv)
+            
+#            log.debug('Diff after doing involvement merges:\n%s' % rel_diff)
+            
+        log.debug('Diff after recalculation:\n%s' % rel_diff)
+
+        return rel_diff
 
     def _key_value_is_valid(self, request, configuration, key, value):
         """
@@ -821,17 +1446,38 @@ class Protocol(object):
             raise HTTPBadRequest("Key: %s or Value: %s is not valid." %
                 (key, value))
 
-        # The key has to be already in the database
-        k = self.Session.query(Key_Item).filter(Key_Item.key == key).first()
+        # The key has to be already in the database. The key is supposed to be
+        # always in English.
+        k = self.Session.query(
+                Key_Item
+            ).\
+            filter(Key_Item.key == key).\
+            filter(Key_Item.fk_language == 1).\
+            first()
 
         # If the value is not yet in the database, create a new value
         v = self.Session.query(Value_Item).\
             filter(Value_Item.value == unicode(value)).\
+            filter(Value_Item.fk_language == 1).\
             first()
         if v is None:
+
+            try:
+                # For number values, set language 'English'
+                float(value)
+                lang_fk = 1
+            except:
+                # Add the currently set language to the key (fallback: English)
+                localizer = get_localizer(request)
+                language = self.Session.query(
+                        Language
+                    ).\
+                    filter(Language.locale == localizer.locale_name).\
+                    first()
+                lang_fk = language.id if language is not None else 1
+
             v = Value_Item(value=value)
-            # @TODO: Really always use fk_language = 1 when inserting new value?
-            v.fk_language = 1
+            v.fk_language = lang_fk
 
         # Create a new tag with key and value and append it to the parent TG
         t = Tag_Item()

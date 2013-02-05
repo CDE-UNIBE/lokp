@@ -74,6 +74,12 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
             },
             'lo_moderatorcomparereview button[itemId=reviewSubmitButton]': {
                 click: this.onReviewSubmitButtonClick
+            },
+            'lo_moderatorcomparereview button[itemId=editButton]': {
+                click: this.onEditButtonClick
+            },
+            'lo_moderatorcomparereview gridpanel templatecolumn[itemId=compareGridReviewableColumn]': {
+                afterrender: this.onCompareGridReviewableColumnAfterRender
             }
         });
     },
@@ -102,20 +108,25 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
             '<b>Timestamp</b>: {1}<br/>' +
             '<b>User</b>: TODO'
         );
-        this.getRefMetadataPanel().update(template.apply([
-            metaModelInstance.get('ref_version'),
-            metaModelInstance.get('ref_timestamp')
-        ]));
-        this.getNewMetadataPanel().update(template.apply([
-            metaModelInstance.get('new_version'),
-            metaModelInstance.get('new_timestamp')
-        ]));
+        var refPanel = this.getRefMetadataPanel();
+        var newPanel = this.getNewMetadataPanel();
+        if (refPanel && newPanel) {
+            refPanel.update(template.apply([
+                metaModelInstance.get('ref_version'),
+                metaModelInstance.get('ref_timestamp')
+            ]));
+            newPanel.update(template.apply([
+                metaModelInstance.get('new_version'),
+                metaModelInstance.get('new_timestamp')
+            ]));
+        }
 
+        var recalcNotice = this.getRecalculationNotice();
         if (metaModelInstance.get('recalculated')
-            && this.getComparePanel().action == 'review') {
-            this.getRecalculationNotice().setVisible(true);
-        } else {
-            this.getRecalculationNotice().setVisible(false);
+            && this.getComparePanel().action == 'review' && recalcNotice) {
+            recalcNotice.setVisible(true);
+        } else if (recalcNotice) {
+            recalcNotice.setVisible(false);
         }
     },
 
@@ -210,7 +221,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
 
         if (form && version && identifier && type) {
             form.submit({
-                url: type + '/review',
+                url: '/' + type + '/review',
                 params: {
                     version: version,
                     identifier: identifier
@@ -240,45 +251,89 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         }
     },
 
-    onCompareColumnAfterRender: function(comp) {
+    onCompareGridReviewableColumnAfterRender: function(comp) {
         var me = this;
+        var review = this.getComparePanel()
+            && this.getComparePanel().action == 'review';
         comp.renderer = function(value, metaData, record) {
-
-            metaData.tdCls = value['class'];
-
-            var html = "";
-            for(var i = 0; i < value.tags.length; i++){
-                var tag = value.tags[i];
-                var prefix = "";
-                if(value['class'] == 'add' || value['class'] == 'add involvement'){
-                    prefix += "+ ";
-                } else if(value['class'] == 'remove' || value['class'] == 'remove involvement'){
-                    prefix += "- ";
+            if (review) {
+                var reviewable = record.get('reviewable');
+                if (reviewable == -1) {
+                    // Stakeholder was not found
+                    return '<img src="/static/img/exclamation.png" style="cursor:pointer;" title="Involvement can not be reviewed. Click for more information.">';
+                } else if (reviewable == -2) {
+                    // Stakeholder has no active version
+                    return '<img src="/static/img/exclamation.png" style="cursor:pointer;" title="Involvement can not be reviewed. Click for more information.">';
+                } else if (reviewable > 0) {
+                    // Involvement can be reviewed
+                    return '<img src="/static/img/accept.png" title="Involvement can be reviewed">';
                 }
-
-                html += "<div>" + prefix + tag.key + ": " + tag.value + "</div>";
+            } else {
+                var data = record.get('new');
+                if (data && data['class']) {
+                    metaData.tdCls = data['class'];
+                }
             }
+            return '';
+        }
 
-            if (me.getComparePanel() && me.getComparePanel().action == 'review') {
-                if ((value['class'] == 'add involvement'
-                        || value['class'] == 'remove involvement')
-                    && (value.reviewable != 0)) {
-                    if (value.reviewable == 1) {
-                        console.log("reviewable == 1");
-                        html += '<div>Reviewable: Item is brandnew and will be created.</div>';
-                    } else if (value.reviewable == 2) {
-                        console.log("reviewable == 2");
-                        html += '<div>Reviewable: Item is based on an active version.</div>';
-                    } else if (value.reviewable == 3) {
-                        console.log("reviewable == 3");
-                        html += '<div>Reviewable: Item is not based on an active version -> recalculation needed.</div>';
+        if (review) {
+            comp.addListener('click', function(a, b, c, d, e, f) {
+                var record = f;
+                if (record && record.get('reviewable') == -2) {
+                    var data = record.get('new');
+                    if (data && data.identifier) {
+                        var win = Ext.create('Ext.window.Window', {
+                            title: 'Review not possible',
+                            bodyPadding: 10,
+                            modal: true,
+                            width: 300,
+                            html: 'The Stakeholder of this involvement has no active version and cannot be set active. Please review the Stakeholder first.',
+                            buttons: [
+                                {
+                                    text: 'OK',
+                                    handler: function() {
+                                        win.close();
+                                    }
+                                }, {
+                                    text: 'Review Stakeholder',
+                                    handler: function() {
+                                        // Refresh the panel
+                                        me.reloadCompareTagGroupStore(
+                                            'review', 'stakeholders', data.identifier
+                                        );
+                                        win.close();
+                                    }
+                                }
+                            ]
+                        }).show();
                     }
-                } else if (value.reviewable == 0) {
-                    console.log("not reviewable");
-                    html += '<div>Not Reviewable: Item cannot be reviewed from here.</div>';
                 }
+            });
+        }
+    },
+
+    onCompareColumnAfterRender: function(comp) {
+        comp.renderer = function(value, metaData, record) {
+            if (value) {
+                metaData.tdCls = value['class'];
+                var html = "";
+                for(var i = 0; i < value.tags.length; i++){
+                    var tag = value.tags[i];
+                    var prefix = "";
+                    if(value['class'] == 'add' || value['class'] == 'add involvement'){
+                        prefix += "+ ";
+                    } else if(value['class'] == 'remove' || value['class'] == 'remove involvement'){
+                        prefix += "- ";
+                    }
+                    html += "<div>" + prefix + tag.key + ": " + tag.value + "</div>";
+                }
+                if (value['class'] == 'add involvement'
+                    || value['class'] == 'remove involvement') {
+                    metaData.tdAttr = 'data-qtip="' + 'It is possible that not all attributes are shown here!' + '"';
+                }
+                return html;
             }
-            return html;
         }
     },
 
@@ -358,6 +413,69 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
             mData.get('identifier')
         );
 
+            
+
+    },
+
+    onEditButtonClick: function() {
+
+        // Set a loading mask
+        var win = this.getCompareWindow();
+        win.setLoading(true);
+
+        // Collect needed values from metadata store
+        var mData = this.getCompareMetadataStore().first();
+        var type = mData.get('type');
+        var identifier = mData.get('identifier');
+        var version = mData.get('new_version');
+
+        // Activity or Stakeholder?
+        var model;
+        if (type == 'activities') {
+            model = 'Lmkp.model.Activity';
+        } else if (type == 'stakeholders') {
+            model = 'Lmkp.model.Stakeholder';
+        }
+
+        // Simulate a store to load the item to edit
+        var store;
+        if (type && identifier && version && model) {
+            var url = '/' + type + '/json/' + identifier;
+            store = Ext.create('Ext.data.Store', {
+                model: model,
+                proxy: {
+                    type: 'ajax',
+                    url: url,
+                    extraParams: {
+                        'involvements': 'full',
+                        'versions': version
+                    },
+                    reader: {
+                        type: 'json',
+                        root: 'data'
+                    }
+                }
+            });
+        }
+
+        // Use the controller to show the edit window
+        var controller = this.getController('activities.NewActivity');
+        if (store) {
+            store.load(function(records, operation, success) {
+                if (records.length == 1) {
+                    var record = records[0];
+
+                    if (type == 'activities') {
+                        controller.showNewActivityWindow(record);
+                    } else if (type == 'stakeholders') {
+                        controller.showNewStakeholderWindow(record);
+                    }
+                }
+                win.setLoading(false);
+            });
+        } else {
+            win.setLoading(false);
+        }
     },
 
     _createWindow: function(title) {
@@ -375,7 +493,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
 
     _getUrl: function(action, type, uid, refVersion, newVersion) {
         if (action && type && uid) {
-            var url = type + '/' + action + '/json/' + uid;
+            var url = '/' + type + '/' + action + '/json/' + uid;
             if (refVersion && newVersion) {
                 url += '/' + refVersion + '/' + newVersion;
             } else if (!refVersion && newVersion) {

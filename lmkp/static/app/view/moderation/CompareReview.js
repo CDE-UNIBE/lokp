@@ -79,6 +79,13 @@ Ext.define('Lmkp.view.moderation.CompareReview', {
                             flex: 1,
                             name: 'compareGridColumn'
                         }
+                    ],
+                    bbar: [
+                        '->', {
+                            xtype: 'button',
+                            text: 'Edit',
+                            itemId: 'editButton'
+                        }
                     ]
                 }, {
                     xtype: 'grid',
@@ -95,9 +102,20 @@ Ext.define('Lmkp.view.moderation.CompareReview', {
                             flex: 1,
                             name: 'compareGridColumn'
                         }, {
+                            width: 24,
+                            xtype: 'templatecolumn',
+                            tpl: '',
+                            name: 'compareGridColumn'
+                        }, {
                             dataIndex: 'new',
                             flex: 1,
                             name: 'compareGridColumn'
+                        }, {
+                            xtype: 'templatecolumn',
+                            tpl: '',
+                            width: 24,
+                            align: 'center',
+                            itemId: 'compareGridReviewableColumn'
                         }
                     ]
                 }
@@ -142,16 +160,16 @@ Ext.define('Lmkp.view.moderation.CompareReview', {
                         iconAlign: 'top',
                         scale: 'medium'
                     },
-                    items: [
+                    items: ['->',
                         {
-                            text: 'Skip',
-                            tooltip: 'Skip',
-                            iconCls: 'skip-button',
-                            itemId: 'skipReviewButton'
-                        }, {
+//                            text: 'Skip',
+//                            tooltip: 'Skip',
+//                            iconCls: 'skip-button',
+//                            itemId: 'skipReviewButton'
+//                        }, {
                             text: Lmkp.ts.msg('button_submit'),
                             tooltip: 'Submit review',
-                            iconCls: 'save-button',
+                            iconCls: 'button-save',
                             itemId: 'reviewSubmitButton'
                         }
                     ]

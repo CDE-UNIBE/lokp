@@ -8,8 +8,6 @@ Ext.define('Lmkp.view.activities.NewActivity', {
     'Lmkp.view.activities.NewTaggroupPanel'
     ],
 	
-    title: Lmkp.ts.msg('activities_add-new-activity'),
-
     config: {
         newFeatureGeometry: null
     },
@@ -162,6 +160,7 @@ Ext.define('Lmkp.view.activities.NewActivity', {
                 // Store visible Tag Group (needed for diff)
                 form.taggroups.push({
                     id: taggroup.get('id'),
+                    tg_id: taggroup.get('tg_id'),
                     tags: tempTags.concat(tempMainTag)
                 });
 
