@@ -294,15 +294,9 @@ def review(request):
                 if mk not in keys:
                     return {'success': False, 'msg': 'Not all mandatory keys are provided.'}
 
-    # Also query previous Stakeholder if available
-    previous_stakeholder = Session.query(Stakeholder).\
-        filter(Stakeholder.stakeholder_identifier == request.POST['identifier']).\
-        filter(Stakeholder.version == stakeholder.previous_version).\
-        first()
-
     # The user can add a review
     ret = stakeholder_protocol3._add_review(
-        request, stakeholder, previous_stakeholder, Stakeholder, user)
+        request, stakeholder, Stakeholder, user)
 
     return ret
 

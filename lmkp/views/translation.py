@@ -38,6 +38,13 @@ usergroupMap = {
     'administrators': _('usergroup_administrators', default='Administrators')
 }
 
+# Translatable hashmap with all possible user roles
+# TODO: Once the involvements attributes are properly solved using YAML or
+# something similar, the translation of the roles should not happen here anymore
+stakeholderroleMap = {
+    'Investor': _('stakeholderrole_investor', default='Investor')
+}
+
 @view_config(route_name='ui_translation', renderer='javascript')
 def ui_messages(request):
 
@@ -142,6 +149,7 @@ def ui_messages(request):
 
         # Activities
         'activities_add-new-activity': _('activities_add-new-activity', default='Add new Activity'),
+        'activities_edit-activity': _('activities_edit-activity', default='Edit Activity (version {0})'),
         'activities_details-title': _('activities_details-title', default='Details on Activity'),
         'activities_filter-title': _('activities_filter-title', default='Filter Activities'),
         'activities_new-step-1': _('activities_new-step-1', default='Step 1: Please select a point on the map.'),
@@ -160,6 +168,7 @@ def ui_messages(request):
         'stakeholders_add-stakeholders': _('stakeholders_add-stakeholders', default='Add Stakeholders'),
         'stakeholders_associated-stakeholders': _('stakeholders_associated-stakeholders', default='Associated Stakeholders'),
         'stakeholders_create-new-stakeholder': _('stakeholders_create-new-stakeholder', default='Create new Stakeholder'),
+        'stakeholders_edit-stakeholder': _('stakeholders_edit-stakeholder', default='Edit Stakeholder (version {0})'),
         'stakeholders_details-title': _('stakeholders_details-title', default='Details on Stakeholder '),
         'stakeholders_filter-title': _('stakeholders_filter-title', default='Filter Stakeholders'),
         'stakeholders_no-associated-stakeholders-yet': _('stakeholders_no-associated-stakeholders-yet', default='No associated Stakeholders so far. You can search and select a Stakeholder using the Search field below. Or you can create a new Stakeholder by clicking on the button above.'),

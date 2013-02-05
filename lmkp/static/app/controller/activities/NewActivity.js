@@ -152,12 +152,14 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
 
         // Get the geometry
         var geometry = null;
-        var geojson = new OpenLayers.Format.GeoJSON();
-        if (this.getMapPanel().getNewFeatureGeometry()) {
-            var editorMapController = this.getController('editor.Map');
-            geometry = Ext.decode(geojson.write(
-                editorMapController.getActivityGeometryFromMap(true)
+        if (this.getMapPanel()) {
+            var geojson = new OpenLayers.Format.GeoJSON();
+            if (this.getMapPanel().getNewFeatureGeometry()) {
+                var editorMapController = this.getController('editor.Map');
+                geometry = Ext.decode(geojson.write(
+                    editorMapController.getActivityGeometryFromMap(true)
                 ));
+            }
         }
 
         // Collect Stakeholder (involvement) information
@@ -368,6 +370,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 }
                 deletedTaggroups.push({
                     'id': cTaggroup.id,
+                    'tg_id': cTaggroup.tg_id,
                     'op': 'delete',
                     'tags': dTags
                 });
@@ -415,9 +418,12 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 callback: function(options, success, response) {
                     if (success) {
                         Ext.Msg.alert('Success', 'The activity was successfully created. It will be reviewed shortly.');
-	
+
+                        var mapPanel = me.getMapPanel();
                         // Reset geometry of map panel
-                        me.getMapPanel().setNewFeatureGeometry(null);
+                        if (mapPanel) {
+                            mapPanel.setNewFeatureGeometry(null);
+                        }
 	
                         // If mappopup still there, remove it
                         var popup = (
@@ -445,16 +451,31 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                         }
 	
                         // Refresh the map with the new activities
-                        var mapPanel = this.getMapPanel();
-                        // Reload the vector store
-                        mapPanel.getActivityFeatureStore().load();
-                        // Unselect all features on the helper vector layer
-                        mapPanel.getNewFeatureSelectCtrl().unselectAll();
-                        // Remove all features from the helper vector layer
-                        mapPanel.getVectorLayer().removeAllFeatures();
+                        if (mapPanel) {
+                            // Reload the vector store
+                            mapPanel.getActivityFeatureStore().load();
+                            // Unselect all features on the helper vector layer
+                            mapPanel.getNewFeatureSelectCtrl().unselectAll();
+                            // Remove all features from the helper vector layer
+                            mapPanel.getVectorLayer().removeAllFeatures();
+                        }
 
                         // Reload also the activity grid store
-                        this.getActivityGridStore().reload();
+                        var aGridStore = me.getActivityGridStore();
+                        if (aGridStore) {
+                            aGridStore.load();
+                        }
+
+                        // If the edit came from the review, try to reload the
+                        // taggroup store
+                        var compareController = me.getController('moderation.CompareReview');
+                        if (compareController && compareController.getCompareWindow()) {
+                            compareController.reloadCompareTagGroupStore(
+                                'compare',
+                                'activities',
+                                diffActivity.id
+                            );
+                        }
                     } else {
                         Ext.Msg.alert('Failure', 'The activity could not be created.');
                     }
@@ -539,12 +560,16 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
 
                 shPanel.showForm(involvedStakeholders);
                 // Put everything in a window and show it.
+                var title = item ? Lmkp.ts.msg('activities_edit-activity')
+                    .replace('{0}', item.get('version')) :
+                    Lmkp.ts.msg('activities_add-new-activity');
                 var activityEdit = (item != null);
                 var win = Ext.create('Lmkp.view.public.NewActivityWindow', {
                     aPanel: aPanel,
                     shPanel: shPanel,
                     activityEdit: activityEdit,
-                    showPage: showPage
+                    showPage: showPage,
+                    title: title
                 });
                 // Before showing the window, destroy loading window
                 loadingwin.destroy();
@@ -666,6 +691,22 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
      */
     showNewStakeholderWindow: function(item) {
 
+        // Window to show that loading is in progress
+        var loadingwin = Ext.create('Ext.window.Window', {
+            title: Lmkp.ts.msg('gui_loading'),
+            items: {
+                html: Lmkp.ts.msg('gui_loading'),
+                border: 0,
+                bodyPadding: 5
+            }
+        });
+        loadingwin.show();
+
+        // Make sure the item is an instance of model.Stakeholder
+        if (!item.modelName || item.modelName != 'Lmkp.model.Stakeholder') {
+            item = null;
+        }
+
         // Create and load a store with all mandatory keys
         var mandatoryStore = Ext.create('Lmkp.store.StakeholderConfig');
         mandatoryStore.filter('allowBlank', false);
@@ -680,13 +721,19 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 });
                 shPanel.showForm(mandatoryStore, completeStore, item);
                 // Put everything in a window and show it
+                var title = item ?
+                    Lmkp.ts.msg('stakeholders_edit-stakeholder').replace(
+                        '{0}', item.get('version')) :
+                    Lmkp.ts.msg('stakeholders_create-new-stakeholder');
                 var win = Ext.create('Ext.window.Window', {
-                    title: 'Create new Stakeholder',
+                    title: title,
                     autoScroll: true,
                     border: 0,
                     layout: 'fit',
                     items: shPanel
                 });
+                // Before showing the window, destroy loading window
+                loadingwin.destroy();
                 win.show();
             });
         });

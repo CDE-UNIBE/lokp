@@ -38,9 +38,23 @@ Ext.define('Lmkp.view.moderation.PendingTab', {
                 }, {
                     xtype: 'templatecolumn',
                     name: 'compareButtonColumn',
-                    tpl: '[C]'
+                    flex: 0,
+                    width: 24,
+                    tpl: '<img src="/static/img/magnifier.png" style="cursor:pointer;" title="' + Lmkp.ts.msg('gui_show-details') + '">'
                 }
             ]
+        }, {
+            xtype: 'pagingtoolbar',
+            id: 'pendingActivitiesGridPagingToolbar',
+            store: 'PendingActivityGrid',
+            dock: 'bottom',
+            flex: 0,
+            enableOverflow: false,
+            displayInfo: true,
+            beforePageText: Lmkp.ts.msg('gui_paging-before'),
+            afterPageText: Lmkp.ts.msg('gui_paging-after'),
+            displayMsg: 'Displaying pending Activities {0} - {1} of {2}', // TODO
+            emptyMsg: '<b>' + 'No pending Activities to display' + '</b>' // TODO
         }, {
             title: 'Pending Stakeholders',
             xtype: 'gridpanel',
@@ -60,9 +74,23 @@ Ext.define('Lmkp.view.moderation.PendingTab', {
                 }, {
                     xtype: 'templatecolumn',
                     name: 'compareButtonColumn',
-                    tpl: '[C]'
+                    flex: 0,
+                    width: 24,
+                    tpl: '<img src="/static/img/magnifier.png" style="cursor:pointer;" title="' + Lmkp.ts.msg('gui_show-details') + '">'
                 }
             ]
+         }, {
+            xtype: 'pagingtoolbar',
+            id: 'pendingStakeholdersGridPagingToolbar',
+            store: 'PendingStakeholderGrid',
+            dock: 'bottom',
+            flex: 0,
+            enableOverflow: false,
+            displayInfo: true,
+            beforePageText: Lmkp.ts.msg('gui_paging-before'),
+            afterPageText: Lmkp.ts.msg('gui_paging-after'),
+            displayMsg: 'Displaying pending Stakeholders {0} - {1} of {2}', // TODO
+            emptyMsg: '<b>' + 'No pending Stakeholders to display' + '</b>' // TODO
         }
     ]
 });

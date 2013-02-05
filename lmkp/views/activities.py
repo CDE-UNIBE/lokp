@@ -298,15 +298,9 @@ def review(request):
                 if mk not in keys:
                     raise HTTPBadRequest(_('Not all mandatory keys are provided'))
 
-    # Also query previous Activity if available
-    previous_activity = Session.query(Activity).\
-        filter(Activity.activity_identifier == request.POST['identifier']).\
-        filter(Activity.version == activity.previous_version).\
-        first()
-
     # The user can add a review
     ret = activity_protocol3._add_review(
-        request, activity, previous_activity, Activity, user
+        request, activity, Activity, user
     )
 
     return ret
