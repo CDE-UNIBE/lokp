@@ -7,6 +7,9 @@ table#compare-table{
 .add {
     background-color: lightgreen !important;
 }
+.missing {
+	background-color: lightyellow !important;
+}
 .button-link {
     background-image: url('/static/img/link.png') !important;
 }
