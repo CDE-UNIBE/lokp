@@ -329,7 +329,7 @@ Ext.define('Lmkp.controller.public.Main', {
             }
             
             if (value) {
-                return value.slice(value.length - 6);
+                return value.substr(0, 6);
             } else {
                 return Lmkp.ts.msg('gui_unknown');
             }

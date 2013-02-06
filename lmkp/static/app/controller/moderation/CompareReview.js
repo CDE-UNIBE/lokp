@@ -9,6 +9,8 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         'ReviewDecisions'
     ],
 
+    stringFunctions: null,
+
     refs: [
         {
             ref: 'compareWindow',
@@ -82,6 +84,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                 afterrender: this.onCompareGridReviewableColumnAfterRender
             }
         });
+        this.stringFunctions = Ext.create('Lmkp.utils.StringFunctions');
     },
 
     onCompareViewRender: function() {
@@ -106,18 +109,20 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         var template = new Ext.Template(
             '<b>Version</b>: {0}<br/>' +
             '<b>Timestamp</b>: {1}<br/>' +
-            '<b>User</b>: TODO'
+            '<b>User</b>: {2}'
         );
         var refPanel = this.getRefMetadataPanel();
         var newPanel = this.getNewMetadataPanel();
         if (refPanel && newPanel) {
             refPanel.update(template.apply([
                 metaModelInstance.get('ref_version'),
-                metaModelInstance.get('ref_timestamp')
+                this.stringFunctions._formatTimestamp(metaModelInstance.get('ref_timestamp')),
+                metaModelInstance.get('ref_username')
             ]));
             newPanel.update(template.apply([
                 metaModelInstance.get('new_version'),
-                metaModelInstance.get('new_timestamp')
+                this.stringFunctions._formatTimestamp(metaModelInstance.get('new_timestamp')),
+                metaModelInstance.get('new_username')
             ]));
         }
 
@@ -548,13 +553,25 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
     },
 
     _createWindow: function(title) {
+
+        // Window parameters
+        var buffer = 50; // Minimal blank space at the sides of the window
+        var defaultHeight = 700; // Default height of the window
+        var defaultWidth = 700; // Default width of the window
+
+        var viewSize = Ext.getBody().getViewSize();
+        var height = (viewSize.height > defaultHeight + buffer)
+            ? defaultHeight : viewSize.height - buffer;
+        var width = (viewSize.width > defaultWidth + buffer)
+            ? defaultWidth : viewSize.width - buffer;
+
         var win = Ext.create('Ext.window.Window', {
             name: 'compareWindow',
             title: title,
             layout: 'fit',
             border: false,
-            height: 700,
-            width: 700,
+            height: height,
+            width: width,
             modal: true
         });
         return win;
