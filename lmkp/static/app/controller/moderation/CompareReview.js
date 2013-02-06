@@ -295,6 +295,9 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                 } else if (reviewable == -2) {
                     // Stakeholder has no active version
                     return '<img src="/static/img/exclamation.png" style="cursor:pointer;" title="Involvement can not be reviewed. Click for more information.">';
+                } else if (reviewable == -3) {
+                    // Activities cannot be reviewed from Stakeholder's side
+                    return '<img src="/static/img/exclamation.png" style="cursor:pointer;" title="Involvement can not be reviewed. Click for more information.">';
                 } else if (reviewable > 0) {
                     // Involvement can be reviewed
                     return '<img src="/static/img/accept.png" title="Involvement can be reviewed">';
@@ -311,34 +314,59 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         if (review) {
             comp.addListener('click', function(a, b, c, d, e, f) {
                 var record = f;
-                if (record && record.get('reviewable') == -2) {
-                    var data = record.get('new');
-                    if (data && data.identifier) {
-                        var win = Ext.create('Ext.window.Window', {
-                            title: 'Review not possible',
-                            bodyPadding: 10,
-                            modal: true,
-                            width: 300,
-                            html: 'The Stakeholder of this involvement has no active version and cannot be set active. Please review the Stakeholder first.',
-                            buttons: [
-                                {
-                                    text: 'OK',
-                                    handler: function() {
-                                        win.close();
-                                    }
-                                }, {
-                                    text: 'Review Stakeholder',
-                                    handler: function() {
-                                        // Refresh the panel
-                                        me.reloadCompareTagGroupStore(
-                                            'review', 'stakeholders', data.identifier
-                                        );
-                                        win.close();
-                                    }
+                var data = record.get('new');
+                if (record && record.get('reviewable') == -2
+                    && data && data.identifier) {
+                    var winError2 = Ext.create('Ext.window.Window', {
+                        title: 'Review not possible',
+                        bodyPadding: 10,
+                        modal: true,
+                        width: 300,
+                        html: 'The Stakeholder of this involvement has no active version and cannot be set active. Please review the Stakeholder first.',
+                        buttons: [
+                            {
+                                text: 'OK',
+                                handler: function() {
+                                    winError2.close();
                                 }
-                            ]
-                        }).show();
-                    }
+                            }, {
+                                text: 'Review Stakeholder',
+                                handler: function() {
+                                    // Refresh the panel
+                                    me.reloadCompareTagGroupStore(
+                                        'review', 'stakeholders', data.identifier
+                                    );
+                                    winError2.close();
+                                }
+                            }
+                        ]
+                    }).show();
+                } else if (record && record.get('reviewable') == -3
+                    && data && data.identifier) {
+                    var winError3 = Ext.create('Ext.window.Window', {
+                        title: 'Review not possible',
+                        bodyPadding: 10,
+                        modal: true,
+                        width: 300,
+                        html: 'The Activity of this involvement cannot be reviewed from the Stakeholder\'s side. Please review the Activity to approve or reject this involvement.',
+                        buttons: [
+                            {
+                                text: 'OK',
+                                handler: function() {
+                                    winError3.close();
+                                }
+                            }, {
+                                text: 'Review Activity',
+                                handler: function() {
+                                    // Refresh the panel
+                                    me.reloadCompareTagGroupStore(
+                                        'review', 'activities', data.identifier
+                                    );
+                                    winError3.close();
+                                }
+                            }
+                        ]
+                    }).show();
                 }
             });
         }
@@ -420,75 +448,27 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
     },
 
     onReviewButtonClick: function() {
-    	
-    	var me = this;
-
-		// Special case: Stakeholders with pending involvement. These are 
-		// normally hidden but can be accessed directly from the 'normal' 
-		// interface by clicking the review button. If this is the case, show
-		// message to guide the user to the activity side where the involvement
-		// can be reviewed. 
-		var invStore = this.getCompareInvolvementsStore();
-		if (invStore) {
-			var inv = invStore.first();
-		}
-		
-		if (inv) {
-			var newInv = inv.get('new');
-			var identifier = newInv.identifier;
-			var reviewable = inv.get('reviewable');
-		}
-		
         var mData = this.getCompareMetadataStore().first();
-		var type = mData.get('type');
-		
-		if (reviewable == -2 && type == 'stakeholders' && identifier) {
-			var msgWin = Ext.create('Ext.window.Window', {
-                title: 'Review not possible',
-                bodyPadding: 10,
-                modal: true,
-                width: 300,
-                html: 'Involvements can only be reviewed through Activities. Please review the Activity to approve this involvement.',
-                buttons: [
-                    {
-                        text: 'OK',
-                        handler: function() {
-                            msgWin.close();
-                        }
-                    }, {
-                        text: 'Review Activity',
-                        handler: function() {
-                            // Refresh the panel
-                            me.reloadCompareTagGroupStore(
-                                'review', 'activities', identifier
-                            );
-                            msgWin.close();
-                        }
-                    }
-                ]
-            }).show();
-		} else {
-	        var win = this.getCompareWindow();
-	        if (!win) {
-	            win = this._createWindow();
-	            win.show();
-	        } else {
-	            win.removeAll();
-	        }
-	
-	        win.setLoading(true);
-	        win.setTitle('Review');
-	        win.add({
-	            xtype: 'lo_moderatorcomparereview',
-	            action: 'review'
-	        });
-	
-	        this.reloadCompareTagGroupStore(
-	            'review',
-	            mData.get('type'),
-	            mData.get('identifier')
-	        );
-		}
+        var win = this.getCompareWindow();
+        if (!win) {
+            win = this._createWindow();
+            win.show();
+        } else {
+            win.removeAll();
+        }
+
+        win.setLoading(true);
+        win.setTitle('Review');
+        win.add({
+            xtype: 'lo_moderatorcomparereview',
+            action: 'review'
+        });
+
+        this.reloadCompareTagGroupStore(
+            'review',
+            mData.get('type'),
+            mData.get('identifier')
+        );
     },
 
     onEditButtonClick: function() {
