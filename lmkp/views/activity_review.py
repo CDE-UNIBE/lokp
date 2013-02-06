@@ -140,13 +140,19 @@ class ActivityReview(BaseReview):
                 'msg': 'This item has no reviewable pending version.'
             }
 
-        # Some logging
-#        log.debug("active version: %s" % active_version)
-#        log.debug("pending version: %s" % pending_version)
-
         result = self.get_comparison(
             Activity, uid, active_version, pending_version, review=True
         )
+        
+        # Check if all mandatory keys are there and if not which are missing
+        pending_feature = self.protocol.read_one_by_version(
+            self.request, uid, pending_version
+        )
+        pending_feature.mark_complete(get_mandatory_keys(self.request, 'a'))
+        missing_keys = pending_feature._missing_keys
+        
+        if len(missing_keys) > 0:
+            result['missing_keys'] = missing_keys
 
         return result
 
