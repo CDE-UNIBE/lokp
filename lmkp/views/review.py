@@ -190,7 +190,9 @@ class BaseReview(BaseView):
 
                 reviewable = 0
                 reviewable = self._review_check_involvement(
-                    inv._feature.get_guid()
+                    inv._feature.getMappedClass(),
+                    inv._feature.get_guid(),
+                    inv._feature.get_version()
                 )
                 current_row['reviewable'] = reviewable
 
@@ -205,37 +207,54 @@ class BaseReview(BaseView):
 
         return {'taggroups': table, 'involvements': involvements_table}
 
-    def _review_check_involvement(self, stakeholder_identifier):
+    def _review_check_involvement(self, mappedClass, identifier, version):
         """
-        Function to check if Stakeholder can be reviewed through involvements or
+        Function to check if an item can be reviewed through involvements or
         not.
         Assumptions: Involvements can only be reviewed from Activity side.
 
-        The Stakeholder CANNOT be reviewed if:
-        [-1] The Stakeholder does not exist.
-        [-2] There is no active version of the Stakeholder.
-
-        The Stakeholder CAN be reviewed if:
-        [1] There exists an active version of the Stakeholder.
+        mappedClass: The class where a review of the version is to be made
+          through the involvement
+        identifier: The identifier of the item to review through the involvement
+        version: The version of the item to review through the involvement
         """
 
-        q = Session.query(
-                Stakeholder.fk_status
-            ).\
-            filter(Stakeholder.identifier == stakeholder_identifier).\
-            all()
+        if mappedClass == Stakeholder:
+            """
+            The Stakeholder CANNOT be reviewed if:
+            [-1] The Stakeholder does not exist.
+            [-2] There is no active version of the Stakeholder.
 
-        if q is None:
-            # The Stakeholder does not exist
-            return -1
+            The Stakeholder CAN be reviewed if:
+            [1] There exists an active version of the Stakeholder.
+            """
 
-        for s in q:
-            if s.fk_status == 2:
-                # There exists an active version of the Stakeholder.
-                return 1
+            q = Session.query(
+                    Stakeholder.fk_status
+                ).\
+                filter(Stakeholder.identifier == identifier).\
+                all()
 
-        # There is no active version of the Stakeholder.
-        return -2
+            if q is None:
+                # The Stakeholder does not exist
+                return -1
+
+            for s in q:
+                if s.fk_status == 2:
+                    # There exists an active version of the Stakeholder.
+                    return 1
+
+            # There is no active version of the Stakeholder.
+            return -2
+
+        elif mappedClass == Activity:
+            """
+            The Activity cannot be reviewed from Stakeholder side
+            """
+
+            return -3
+
+        return 0
 
     def _write_old_taggroups(self, old):
 
@@ -308,7 +327,9 @@ class BaseReview(BaseView):
 
             reviewable = 0
             reviewable = self._review_check_involvement(
-                    inv._feature.get_guid()
+                    inv._feature.getMappedClass(),
+                    inv._feature.get_guid(),
+                    inv._feature.get_version()
                 )
             current_row['reviewable'] = reviewable
 
@@ -503,28 +524,7 @@ class BaseReview(BaseView):
         # Create a list of available versions
         available_versions = []
         for i in versions_query.order_by(mappedClass.version).all():
-
-            # When reviewing Stakeholders, an additional requirement is needed.
-            stakeholderParamChanges = True
-            if (review is True and mappedClass == Stakeholder
-                and i.fk_status == 1):
-                # Check if there are changes to Stakeholder's attributes or due
-                # to involvement changes.
-                stakeholderParamChanges = False
-                q = Session.query(
-                        Stakeholder.id
-                    ).\
-                    join(Changeset).\
-                    filter(Stakeholder.id == i.id).\
-                    filter(Changeset.diff.like("{'stakeholders':%")).\
-                    first()
-                if q is not None:
-                    # Add pending Stakeholders only if they have changed
-                    # attributes
-                    stakeholderParamChanges = True
-
-            if ((review is False or i.fk_status == 1 or i.fk_status == 2)
-                and stakeholderParamChanges is True):
+            if review is False or i.fk_status == 1 or i.fk_status == 2:
                 available_versions.append({
                     'version': i.version,
                     'status': i.fk_status
