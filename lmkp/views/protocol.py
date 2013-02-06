@@ -609,6 +609,7 @@ class Protocol(object):
         #TODO: Add translation to server responses
 
         reviewed_involvements = []
+        json_diff = None
 
         # Hard coded list of statii as in database. Needs to be in same order!
         # Not very nice but efficient and more comprehensible than just using
@@ -670,18 +671,21 @@ class Protocol(object):
                 first()
             json_diff = json.loads(diff_query.diff.replace('\'', '"'))
 
-            # Loop through the diff to find and collect all the affected Stakeholders and their version at the time of the changes
+            # Loop through the diff to find and collect all the affected
+            # Stakeholders and their version at the time of the changes
             affected_involvements = []
             if 'activities' in json_diff:
                 for a_diff in json_diff['activities']:
-                    if 'id' in a_diff and a_diff['id'] == str(item.identifier) and 'stakeholders' in a_diff:
+                    if ('id' in a_diff and a_diff['id'] == str(item.identifier)
+                        and 'stakeholders' in a_diff):
                         for sh_diff in a_diff['stakeholders']:
                             version = (sh_diff['version']
                                     if 'version' in sh_diff
                                     else None)
                             affected_involvements.append({
                                 'identifier': sh_diff['id'],
-                                'version': version
+                                'version': version,
+                                'op': sh_diff['op']
                             })
 
             log.debug('%s affected involvements found: %s'
@@ -709,17 +713,36 @@ class Protocol(object):
 
                 # Query the Stakeholder version that was created by the
                 # involvement
-                sh = self.Session.query(
-                        Stakeholder
-                    ).\
-                    join(Involvement).\
-                    join(Activity).\
-                    filter(Stakeholder.identifier == ai['identifier']).\
-                    filter(Stakeholder.previous_version
-                        == ai['version']).\
-                    filter(Activity.identifier == item.identifier).\
-                    filter(Activity.version == item.version).\
-                    first()
+                if ai['op'] == 'add':
+                    # If a new involvement was added, it is possible to find the
+                    # exact version through the involvement.
+                    sh = self.Session.query(
+                            Stakeholder
+                        ).\
+                        join(Involvement).\
+                        join(Activity).\
+                        filter(Stakeholder.identifier == ai['identifier']).\
+                        filter(Stakeholder.previous_version == ai['version']).\
+                        filter(Activity.identifier == item.identifier).\
+                        filter(Activity.version == item.version).\
+                        first()
+                elif ai['op'] == 'delete':
+                    # If an involvement was deleted, it is obviously not
+                    # possible to find the version through the involvement.
+                    # Instead, we must try to find it through its identifier and
+                    # version ...
+                    # TODO: Is this enough to find the version or do we need
+                    # additional indicators (changeset.diff?)
+                    sh = self.Session.query(
+                            Stakeholder
+                        ).\
+                        filter(Stakeholder.identifier == ai['identifier']).\
+                        filter(Stakeholder.previous_version == ai['version']).\
+                        first()
+
+                if sh is None:
+                    ret['msg'] = 'One of the Stakeholders to review was not found.'
+                    return ret
 
                 log.debug('Reviewing involvement: Stakeholder with identifier %s, version %s and status %s'
                         % (sh.identifier, sh.version, sh.fk_status))
@@ -801,7 +824,7 @@ class Protocol(object):
 
                 # Query the diff. If it is already available (queried while
                 # handling involvements earlier), no need to query it again
-                if not json_diff:
+                if json_diff is None:
                     # Query the diff
                     diff_query = self.Session.query(
                             Changeset.diff
@@ -837,10 +860,12 @@ class Protocol(object):
                 changeset.diff = str(self._convert_utf8(json_diff))
 
                 # Create a new version of the object
-                new_version = self._update_object(
+                new_version, ret_diff = self._update_object(
                     request, ref_version, relevant_diff, changeset,
                     status='active'
                 )
+
+                #TODO: handle returned diff correctly
 
                 if len(reviewed_involvements) > 0:
                     # Attach the involvements which were reviewed earlier
@@ -1291,12 +1316,12 @@ class Protocol(object):
                     if 'taggroups' in old_diff:
                         old_diff['taggroups'].append(new_tg)
                     else:
-                        old_diff['taggroups'] = new_tg
+                        old_diff['taggroups'] = [new_tg]
 
             else:
                 # If no taggroups yet in old_diff, add the one from the new_tg
                 # as it is
-                old_diff['taggroups'] = new_tg
+                old_diff['taggroups'] = [new_tg]
 
 #                log.debug('Added new taggroup diff: %s' % new_tg)
 
