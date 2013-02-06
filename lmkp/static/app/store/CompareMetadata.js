@@ -8,8 +8,12 @@ Ext.define('Lmkp.store.CompareMetadata', {
     fields: [
         'ref_version',
         'ref_timestamp',
+        'ref_userid',
+        'ref_username',
         'new_version',
         'new_timestamp',
+        'new_userid',
+        'new_username',
         'identifier',
         'type',
         'recalculated'

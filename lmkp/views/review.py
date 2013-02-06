@@ -356,34 +356,50 @@ class BaseReview(BaseView):
     def _get_metadata(self, mappedClass, uid, refVersion, newVersion):
 
         refTimestamp = newTimestamp = None
+        refUserid = newUserid = None
+        refUsername = newUsername = None
 
         refQuery = Session.query(
-                Changeset.timestamp
+                Changeset.timestamp,
+                User.id.label('userid'),
+                User.username
             ).\
             join(mappedClass).\
+            join(User, Changeset.fk_user == User.id).\
             filter(mappedClass.identifier == uid).\
             filter(mappedClass.version == refVersion).\
             first()
 
         if refQuery is not None:
             refTimestamp = refQuery.timestamp
+            refUserid = refQuery.userid
+            refUsername = refQuery.username
 
         newQuery = Session.query(
-                Changeset.timestamp
+                Changeset.timestamp,
+                User.id.label('userid'),
+                User.username
             ).\
             join(mappedClass).\
+            join(User, Changeset.fk_user == User.id).\
             filter(mappedClass.identifier == uid).\
             filter(mappedClass.version == newVersion).\
             first()
 
         if newQuery is not None:
-            newTimestamp =  newQuery.timestamp
+            newTimestamp = newQuery.timestamp
+            newUserid = newQuery.userid
+            newUsername = newQuery.username
 
         metadata = {
             'ref_version': refVersion,
             'ref_timestamp': str(refTimestamp),
+            'ref_userid': refUserid,
+            'ref_username': refUsername,
             'new_version': newVersion,
             'new_timestamp': str(newTimestamp),
+            'new_userid': newUserid,
+            'new_username': newUsername,
             'identifier': uid,
             'type': mappedClass.__table__.name,
         }
