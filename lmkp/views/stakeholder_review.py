@@ -5,6 +5,7 @@ from lmkp.models.database_objects import Stakeholder
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.review import BaseReview
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
+from lmkp.views.config import get_mandatory_keys
 import logging
 import json
 import re
@@ -123,12 +124,18 @@ class StakeholderReview(BaseReview):
             Stakeholder, uid, review=True
         )
 
-        # Some logging
-#        log.debug("active version: %s" % active_version)
-#        log.debug("pending version: %s" % pending_version)
-
         result = self.get_comparison(
             Stakeholder, uid, active_version, pending_version, review=True
         )
+        
+        # Check if all mandatory keys are there and if not which are missing
+        pending_feature = self.protocol.read_one_by_version(
+            self.request, uid, pending_version
+        )
+        pending_feature.mark_complete(get_mandatory_keys(self.request, 'sh'))
+        missing_keys = pending_feature._missing_keys
+        
+        if len(missing_keys) > 0:
+            result['missing_keys'] = missing_keys
 
         return result

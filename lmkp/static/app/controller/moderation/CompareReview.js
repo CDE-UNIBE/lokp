@@ -10,6 +10,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
     ],
 
     stringFunctions: null,
+    missingKeys: null,
 
     refs: [
         {
@@ -45,6 +46,9 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         }, {
             ref: 'reviewCommentTextarea',
             selector: 'lo_moderatorcomparereview textarea[itemId=reviewCommentTextarea]'
+        }, {
+        	ref: 'reviewDecisionCombobox',
+        	selector: 'lo_moderatorcomparereview combobox[name=review_decision]'
         }
     ],
 
@@ -138,6 +142,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
     reloadCompareTagGroupStore: function(action, type, uid, refVersion, newVersion) {
 
         var me = this;
+        me.missingKeys = null;
         var win = this.getCompareWindow();
 
         if (win) {
@@ -202,6 +207,24 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                                 // both comboboxes
                                 me.getRefVersionCombobox().bindStore(copyStore);
                             }
+                            
+                            // Add missing keys
+                            if (data['missing_keys']) {
+                            	var mk = data['missing_keys'];
+                            	me.missingKeys = mk;
+                            	var tgStore = me.getCompareTagGroupsStore();
+                            	for (var k=0; k<mk.length; k++) {
+	                            	tgStore.add({
+	                            		'new': {
+	                            			'class': 'missing',
+	                            			'tags': [{
+	                            				'key': mk[k],
+	                            				'value': 'Unknown'
+	                            			}]
+	                            		}
+	                            	});
+                            	}
+                            }
 
                             me.getRefVersionCombobox().setReadOnly(true);
                         } else if (action == 'compare') {
@@ -238,8 +261,26 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         var mData = this.getCompareMetadataStore().first();
         var identifier = mData.get('identifier');
         var type = mData.get('type');
-
-        if (form && version && identifier && type) {
+        
+        // Missing keys
+        var reviewCombobox = this.getReviewDecisionCombobox();
+        if (this.missingKeys && reviewCombobox && reviewCombobox.getValue() == 1) {
+        	var winMissingKeys = Ext.create('Ext.window.Window', {
+                title: 'Review not possible',
+                bodyPadding: 10,
+                modal: true,
+                width: 300,
+                html: 'There are some mandatory keys missing. The item cannot be approved without these keys. Please click the "edit" button to add the missing keys.',
+                buttons: [
+                    {
+                        text: 'OK',
+                        handler: function() {
+                            winMissingKeys.close();
+                        }
+                    }
+                ]
+            }).show();
+        } else if (form && version && identifier && type) {
             form.submit({
                 url: '/' + type + '/review',
                 params: {
@@ -374,7 +415,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
 
     onCompareColumnAfterRender: function(comp) {
         comp.renderer = function(value, metaData, record) {
-            if (value) {
+            if (value && value.tags) {
                 metaData.tdCls = value['class'];
                 var html = "";
                 for(var i = 0; i < value.tags.length; i++){
@@ -382,8 +423,11 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                     var prefix = "";
                     if(value['class'] == 'add' || value['class'] == 'add involvement'){
                         prefix += "+ ";
-                    } else if(value['class'] == 'remove' || value['class'] == 'remove involvement'){
+                    } else if (value['class'] == 'remove' || value['class'] == 'remove involvement'){
                         prefix += "- ";
+                    } else if (value['class'] == 'missing') {
+                    	prefix += '? ';
+                    	metaData.tdAttr = 'data-qtip="' + 'Missing mandatory key!' + '"';
                     }
                     html += "<div>" + prefix + tag.key + ": " + tag.value + "</div>";
                 }
