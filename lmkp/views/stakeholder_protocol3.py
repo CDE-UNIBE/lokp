@@ -1655,7 +1655,7 @@ class StakeholderProtocol3(Protocol):
                             if db_object is not None:
                                 new_a = db_object
                             else:
-                                new_a = ap._handle_activity(
+                                new_a, new_diff = ap._handle_activity(
                                     request, a_dict, changeset
                                 )
 
@@ -1731,7 +1731,7 @@ class StakeholderProtocol3(Protocol):
                     if db_object is not None:
                         new_a = db_object
                     else:
-                        new_a = ap._handle_activity(request, a_dict, changeset)
+                        new_a, new_diff = ap._handle_activity(request, a_dict, changeset)
                 else:
                     # TODO
                     blablablablalba
