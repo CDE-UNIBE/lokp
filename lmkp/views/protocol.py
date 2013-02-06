@@ -674,7 +674,8 @@ class Protocol(object):
             affected_involvements = []
             if 'activities' in json_diff:
                 for a_diff in json_diff['activities']:
-                    if 'id' in a_diff and a_diff['id'] == str(item.identifier) and 'stakeholders' in a_diff:
+                    if ('id' in a_diff and a_diff['id'] == str(item.identifier)
+                        and 'stakeholders' in a_diff):
                         for sh_diff in a_diff['stakeholders']:
                             version = (sh_diff['version']
                                     if 'version' in sh_diff
@@ -837,10 +838,12 @@ class Protocol(object):
                 changeset.diff = str(self._convert_utf8(json_diff))
 
                 # Create a new version of the object
-                new_version = self._update_object(
+                new_version, ret_diff = self._update_object(
                     request, ref_version, relevant_diff, changeset,
                     status='active'
                 )
+
+                #TODO: handle returned diff correctly
 
                 if len(reviewed_involvements) > 0:
                     # Attach the involvements which were reviewed earlier
@@ -1291,12 +1294,12 @@ class Protocol(object):
                     if 'taggroups' in old_diff:
                         old_diff['taggroups'].append(new_tg)
                     else:
-                        old_diff['taggroups'] = new_tg
+                        old_diff['taggroups'] = [new_tg]
 
             else:
                 # If no taggroups yet in old_diff, add the one from the new_tg
                 # as it is
-                old_diff['taggroups'] = new_tg
+                old_diff['taggroups'] = [new_tg]
 
 #                log.debug('Added new taggroup diff: %s' % new_tg)
 
