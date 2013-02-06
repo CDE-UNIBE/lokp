@@ -192,17 +192,37 @@ class ActivityProtocol3(Protocol):
 
         # Return the IDs of the newly created Activities
         ids = []
+        # Also collect the diffs again because they may have changed (due to
+        # recalculation)
+        activity_diffs = []
+        new_diffs = False
         for activity in diff['activities']:
 
-            a = self._handle_activity(request, activity, changeset)
+            a, ret_diff = self._handle_activity(request, activity, changeset)
 
-            # Add the newly created identifier to the diff
+            if ret_diff is not None:
+                # If a new diff came back, use this to replace the old one
+                new_diffs = True
+                activity = ret_diff
+
+            # Add the newly created identifier to the diff (this is important if
+            # the item had no identifier before
             activity[unicode('id')] = unicode(a.activity_identifier)
 
             ids.append(a)
 
-        # Save diff to changeset and handle UTF-8 of diff
-        changeset.diff = str(self._convert_utf8(diff))
+            # Append the diffs
+            if ret_diff is None:
+                activity_diffs.append(self._convert_utf8(activity))
+            else:
+                activity_diffs.append(activity)
+
+        changeset_diff = {'activities': activity_diffs}
+
+        if new_diffs is True:
+            changeset_diff = json.dumps(changeset_diff).replace('"', '\'')
+
+        changeset.diff = str(changeset_diff)
 
         return ids
 
@@ -1584,18 +1604,19 @@ class ActivityProtocol3(Protocol):
             self._handle_involvements(request, None, new_activity,
                                       involvement_change, changeset, implicit_inv_change)
 
-            return new_activity
+            return new_activity, None
 
         else:
             # Update existing Activity
-            updated_activity = self._update_object(request, db_a, activity_dict,
-                                                     changeset)
+            updated_activity, return_diff = self._update_object(
+                request, db_a, activity_dict, changeset
+            )
 
             # Handle also the involvements
             self._handle_involvements(request, db_a, updated_activity,
                                       involvement_change, changeset, implicit_inv_change)
 
-            return updated_activity
+            return updated_activity, return_diff
 
     def _create_activity(self, request, activity_dict, changeset, ** kwargs):
         """
@@ -1711,6 +1732,8 @@ class ActivityProtocol3(Protocol):
         - 'status'
         """
 
+        return_diff = None
+
         if old_activity.fk_status == 1:
             # If changes were made to a pending version, this pending version is
             # set to 'edited' and the newly created version contains also the
@@ -1732,6 +1755,8 @@ class ActivityProtocol3(Protocol):
                 activity_dict,
                 diff
             )
+            # Also store and return the newly calculated diff
+            return_diff = activity_dict
 
             # Query the previous version of the edited pending version
             ref_version = self.Session.query(
@@ -1811,7 +1836,7 @@ class ActivityProtocol3(Protocol):
             db = True
         )
 
-        return a
+        return a, return_diff
 
     def _handle_involvements(self, request, old_version, new_version,
                              inv_change, changeset, implicit=False, **kwargs):

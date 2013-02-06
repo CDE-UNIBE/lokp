@@ -72,17 +72,39 @@ class StakeholderProtocol3(Protocol):
 
         # Return the IDs of the newly created Stakeholders
         ids = []
+        # Also collect the diffs again because they may have changed (due to
+        # recalculation)
+        stakeholder_diffs = []
+        new_diffs = False
         for stakeholder in diff['stakeholders']:
 
-            sh = self._handle_stakeholder(request, stakeholder, changeset)
+            sh, ret_diff = self._handle_stakeholder(
+                request, stakeholder, changeset
+            )
 
-            # Add the newly created identifier to the diff
+            if ret_diff is not None:
+                # If a new diff came back, use this to replace the old one
+                new_diffs = True
+                stakeholder = ret_diff
+
+            # Add the newly created identifier to the diff (this is important if
+            # the item had no identifier before
             stakeholder[unicode('id')] = unicode(sh.stakeholder_identifier)
 
             ids.append(sh)
 
-        # Save diff to changeset and handle UTF-8 of diff
-        changeset.diff = str(self._convert_utf8(diff))
+            # Append the diffs
+            if ret_diff is None:
+                stakeholder_diffs.append(self._convert_utf8(stakeholder))
+            else:
+                stakeholder_diffs.append(stakeholder)
+
+        changeset_diff = {'stakeholders': stakeholder_diffs}
+
+        if new_diffs is True:
+            changeset_diff = json.dumps(changeset_diff).replace('"', '\'')
+
+        changeset.diff = str(changeset_diff)
 
         return ids
 
@@ -1308,18 +1330,19 @@ class StakeholderProtocol3(Protocol):
             self._handle_involvements(request, None, new_stakeholder,
                                       involvement_change, changeset, implicit_inv_change)
 
-            return new_stakeholder
+            return new_stakeholder, None
 
         else:
             # Update existing Stakeholder
-            updated_stakeholder = self._update_object(request, db_sh,
-                                                           stakeholder_dict, changeset)
+            updated_stakeholder, return_diff = self._update_object(
+                request, db_sh, stakeholder_dict, changeset
+            )
 
             # Handle also the involvements
             self._handle_involvements(request, db_sh, updated_stakeholder,
                                       involvement_change, changeset, implicit_inv_change)
 
-            return updated_stakeholder
+            return updated_stakeholder, return_diff
 
     def _create_stakeholder(self, request, stakeholder_dict, changeset,
                             ** kwargs):
@@ -1414,6 +1437,8 @@ class StakeholderProtocol3(Protocol):
         - 'status'
         """
 
+        return_diff = None
+
         # Query the previous version of the edited pending version
         ref_version = self.Session.query(
                 Stakeholder
@@ -1449,6 +1474,8 @@ class StakeholderProtocol3(Protocol):
                 stakeholder_dict,
                 diff
             )
+            # Also store and return the newly calculated diff
+            return_diff = stakeholder_dict
 
             if ref_version is None:
                 # If there is no previous version, the edited pending version is
@@ -1513,7 +1540,7 @@ class StakeholderProtocol3(Protocol):
             db = True
         )
 
-        return sh
+        return sh, return_diff
 
     def _handle_involvements(self, request, old_version, new_version,
                              inv_change, changeset, implicit=False, **kwargs):
