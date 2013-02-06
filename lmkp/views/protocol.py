@@ -632,10 +632,12 @@ class Protocol(object):
             diff_keyword = 'activities'
             other_diff_keyword = 'stakeholders'
             config_yaml = 'activity.yml'
+            otherMappedClass = Stakeholder
         elif mappedClass == Stakeholder:
             diff_keyword = 'stakeholders'
             other_diff_keyword = 'activities'
             config_yaml = 'stakeholder.yml'
+            otherMappedClass = Activity
         else:
             ret['msg'] = 'Unknown object to review.'
             return ret
@@ -658,8 +660,7 @@ class Protocol(object):
         
 
         # Try to also review any affected involvement.
-        if implicit is False and mappedClass == Activity:
-            # Involvements can only be reviewed from Activity side.
+        if implicit is False:
 
             # Query the diff
             diff_query = self.Session.query(
@@ -674,7 +675,7 @@ class Protocol(object):
             # Loop through the diff to find and collect all the affected
             # Stakeholders and their version at the time of the changes
             affected_involvements = []
-            if 'activities' in json_diff:
+            if mappedClass == Activity and 'activities' in json_diff:
                 for a_diff in json_diff['activities']:
                     if ('id' in a_diff and a_diff['id'] == str(item.identifier)
                         and 'stakeholders' in a_diff):
@@ -687,27 +688,45 @@ class Protocol(object):
                                 'version': version,
                                 'op': sh_diff['op']
                             })
+            elif mappedClass == Stakeholder and 'activities' in json_diff:
+                for a_diff in json_diff['activities']:
+                    if 'id' in a_diff and 'stakeholders' in a_diff:
+                        version = (a_diff['version'] if 'version' in a_diff else None)
+                        for sh_diff in a_diff['stakeholders']:
+                            if 'id' in sh_diff and sh_diff['id'] == str(item.identifier):
+                                affected_involvements.append({
+                                    'identifier': a_diff['id'],
+                                    'version': version,
+                                    'op': sh_diff['op']
+                                })
 
             log.debug('%s affected involvements found: %s'
                 % (len(affected_involvements), affected_involvements))
 
             basereview = BaseReview(request)
 
-            if review_decision == 1:
-                # Approved
+            if review_decision == 1 or mappedClass == Stakeholder:
+                # Approved. Normally check reviewable only for approval.
+                # Exception for Stakeholders: Activiites through involvements
+                # can always only be reviewed from Activity side.
 
                 # First check if a review can be done for all the involvements
                 reviewPossible = True
                 for ai in affected_involvements:
-                    reviewPossible = (reviewPossible
-                        and basereview._review_check_involvement(
-                            ai['identifier']) > 0)
+                    reviewable = basereview._review_check_involvement(
+                            otherMappedClass, ai['identifier'], ai['version']
+                        )
+                    if reviewPossible is True and reviewable > 0:
+                        continue
+                    reviewPossible = reviewable
     
                 if reviewPossible is not True:
-                    ret['msg'] = 'At least one of the involved Stakeholders cannot be reviewed.'
+                    if reviewPossible == -2:
+                        ret['msg'] = 'At least one of the involved Stakeholders cannot be reviewed. Click on the icon next to the involvement for further details.'
+                    elif reviewPossible == -3:
+                        ret['msg'] = 'At least one of the involved Activities cannot be reviewed. Click on the icon next to the involvement for further details.'
                     return ret
 
-            
             # Do a review for all the involvements
             for ai in affected_involvements:
 
@@ -814,7 +833,7 @@ class Protocol(object):
                     first()
 
                 if ref_version is None:
-                    ret['msg'] = 'No active version was found to base the review upon.'
+                    ret['msg'] = 'No active version was found to base the review upon. Try to review an earlier version first.'
                     return ret
 
                 # Read the configuration
