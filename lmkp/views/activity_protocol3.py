@@ -1952,7 +1952,7 @@ class ActivityProtocol3(Protocol):
                             if db_object is not None:
                                 new_sh = db_object
                             else:
-                                new_sh = sp._handle_stakeholder(
+                                new_sh, new_diff = sp._handle_stakeholder(
                                     request, sh_dict, changeset
                                 )
 
@@ -2028,7 +2028,9 @@ class ActivityProtocol3(Protocol):
                     if db_object is not None:
                         new_sh = db_object
                     else:
-                        new_sh = sp._handle_stakeholder(request, sh_dict, changeset)
+                        new_sh, new_diff = sp._handle_stakeholder(
+                            request, sh_dict, changeset
+                        )
                 else:
                     # TODO
                     blablabaldfasdfsaf
