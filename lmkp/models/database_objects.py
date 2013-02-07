@@ -598,7 +598,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     uuid = Column(UUID, nullable=False, unique=True)
     username = Column(String(255), nullable=False, unique=True)
-    email = Column(String(255), nullable=False, unique=True)
+    email = Column(String(255), nullable=False)
     firstname = Column(String(255))
     lastname = Column(String(255))
     privacy = Column(Integer, nullable=False)
