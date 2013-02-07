@@ -416,75 +416,93 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 },
                 jsonData: diffObject,
                 callback: function(options, success, response) {
+                    
                     if (success) {
-                        Ext.Msg.alert('Success', 'The activity was successfully created. It will be reviewed shortly.');
+                        var r = Ext.JSON.decode(response.responseText);
+                        if (r.created) {
+                            Ext.create('Lmkp.utils.MessageBox').alert(
+                                Lmkp.ts.msg('feedback_success'),
+                                Lmkp.ts.msg('feedback_new-activity-created')
+                            );
 
-                        var mapPanel = me.getMapPanel();
-                        // Reset geometry of map panel
-                        if (mapPanel) {
-                            mapPanel.setNewFeatureGeometry(null);
-                        }
-	
-                        // If mappopup still there, remove it
-                        var popup = (
-                            Ext.ComponentQuery.query('window[itemId=mappopup]').length > 0)
-                        ? Ext.ComponentQuery.query('window[itemId=mappopup]')[0]
-                        : null;
-                        if (popup) popup.destroy();
-	
-                        // Close form window
-                        var win = form.up('window');
-                        win.destroy();
-	
-                        var fieldContainers = form.query('lo_stakeholderfieldcontainer');
-                        for(var i = 0; i < fieldContainers.length; i++){
-                            this.getSelectStakeholderFieldSet().remove(fieldContainers[i]);
-                        }
-	                    
-                        // Refresh the detail window
-                        var detailWindow = this.getActivityDetailWindow();
-                        if (detailWindow) {
-                            var historyStore = detailWindow.getHistoryStore();
-                            if (historyStore) {
-                                historyStore.load();
+                            var mapPanel = me.getMapPanel();
+                            // Reset geometry of map panel
+                            if (mapPanel) {
+                                mapPanel.setNewFeatureGeometry(null);
                             }
-                        }
-	
-                        // Refresh the map with the new activities
-                        if (mapPanel) {
-                            // Reload the vector store
-                            mapPanel.getActivityFeatureStore().load();
-                            // Unselect all features on the helper vector layer
-                            mapPanel.getNewFeatureSelectCtrl().unselectAll();
-                            // Remove all features from the helper vector layer
-                            mapPanel.getVectorLayer().removeAllFeatures();
-                        }
 
-                        // Reload also the activity grid store
-                        var aGridStore = me.getActivityGridStore();
-                        if (aGridStore) {
-                            aGridStore.load();
-                        }
+                            // If mappopup still there, remove it
+                            var popup = (
+                                Ext.ComponentQuery.query('window[itemId=mappopup]').length > 0)
+                            ? Ext.ComponentQuery.query('window[itemId=mappopup]')[0]
+                            : null;
+                            if (popup) popup.destroy();
 
-                        // If the edit came from the review, try to reload the
-                        // taggroup store
-                        var compareController = me.getController('moderation.CompareReview');
-                        if (compareController && compareController.getCompareWindow()) {
-                            compareController.reloadCompareTagGroupStore(
-                                'compare',
-                                'activities',
-                                diffActivity.id
+                            // Close form window
+                            var win = form.up('window');
+                            win.destroy();
+
+                            var fieldContainers = form.query('lo_stakeholderfieldcontainer');
+                            for(var i = 0; i < fieldContainers.length; i++){
+                                this.getSelectStakeholderFieldSet().remove(fieldContainers[i]);
+                            }
+
+                            // Refresh the detail window
+                            var detailWindow = this.getActivityDetailWindow();
+                            if (detailWindow) {
+                                var historyStore = detailWindow.getHistoryStore();
+                                if (historyStore) {
+                                    historyStore.load();
+                                }
+                            }
+
+                            // Refresh the map with the new activities
+                            if (mapPanel) {
+                                // Reload the vector store
+                                mapPanel.getActivityFeatureStore().load();
+                                // Unselect all features on the helper vector layer
+                                mapPanel.getNewFeatureSelectCtrl().unselectAll();
+                                // Remove all features from the helper vector layer
+                                mapPanel.getVectorLayer().removeAllFeatures();
+                            }
+
+                            // Reload also the activity grid store
+                            var aGridStore = me.getActivityGridStore();
+                            if (aGridStore) {
+                                aGridStore.load();
+                            }
+
+                            // If the edit came from the review, try to reload the
+                            // taggroup store
+                            var compareController = me.getController('moderation.CompareReview');
+                            if (compareController && compareController.getCompareWindow()) {
+                                compareController.reloadCompareTagGroupStore(
+                                    'compare',
+                                    'activities',
+                                    diffActivity.id
+                                );
+                            }
+                        } else {
+                            Ext.create('Lmkp.utils.MessageBox').alert(
+                                Lmkp.ts.msg('feedback_failure'),
+                                r.msg
                             );
                         }
                     } else {
-                        Ext.Msg.alert('Failure', 'The activity could not be created.');
+                        Ext.create('Lmkp.utils.MessageBox').alert(
+                            Lmkp.ts.msg('feedback_failure'),
+                            Lmkp.ts.msg('feedback_new-activity-not-created')
+                        );
                     }
                 },
                 scope: this
             });
         } else {
             // Nothing was changed, do nothing
-            Ext.Msg.alert('No changes made', 'You did not make any changes.');
+            Ext.create('Lmkp.utils.MessageBox').alert(
+                Lmkp.ts.msg('feedback_no-changes-made'),
+                Lmkp.ts.msg('feedback_no-changes-made-explanation')
+            );
         }
     },
 

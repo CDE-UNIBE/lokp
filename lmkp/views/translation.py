@@ -144,10 +144,14 @@ def ui_messages(request):
         'feedback_failure': _('feedback_failure', default='Failure'),
         'feedback_new-activity-created': _('feedback_new-activity-created', default='The deal was successfully created. It will be reviewed shortly.'),
         'feedback_new-activity-not-created': _('feedback_new-activity-not-created', default='The deal could not be created.'),
+        'feedback_new-stakeholder-created': _('feedback_new-stakeholder-created', default='The Stakeholder was successfully created. It will be reviewed shortly'),
+        'feedback_new-stakeholder-not-created': _('feedback_new-stakeholder-not-created', default='The Stakeholder could not be created.'),
         'feedback_pending-edit-submitted': _('feedback_pending-edit-submitted', default='Edited changes were successfully submitted'),
         'feedback_pending-edit-not-submitted': _('feedback_pending-edit-not-submitted', default='Edited changes could not be submitted'),
         'feedback_some-attributes-not-editable-because-of-profile': _('feedback_some-attributes-not-editable-because-of-profile', default='Some of the attributes cannot be edited because they are not part of the currently selected profile.'),
         'feedback_success': _('feedback_success', default='Success'),
+        'feedback_no-changes-made': _('feedback_no-changes-made', default='No changes made'),
+        'feedback_no-changes-made-explanation': _('feedback_no-changes-made-explanation', default='You did not make any changes.'),
 
         # Activities
         'activities_add-new-activity': _('activities_add-new-activity', default='Add new Deal'),

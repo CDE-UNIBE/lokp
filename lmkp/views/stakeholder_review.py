@@ -12,6 +12,7 @@ import re
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPSeeOther
+from pyramid.httpexceptions import HTTPForbidden
 from pyramid.view import view_config
 from pyramid_handlers import action
 
@@ -120,22 +121,29 @@ class StakeholderReview(BaseReview):
         # Get the activity identifier
         uid = self.request.matchdict.get('uid', None)
 
-        active_version, pending_version = self._get_valid_versions(
-            Stakeholder, uid, review=True
-        )
+        try:
+            active_version, pending_version = self._get_valid_versions(
+                Stakeholder, uid, review=True
+            )
+        except HTTPForbidden:
+            return {
+                'success': False,
+                'msg': 'This Stakeholder has no reviewable pending version.'
+            }
 
         result = self.get_comparison(
             Stakeholder, uid, active_version, pending_version, review=True
         )
-        
-        # Check if all mandatory keys are there and if not which are missing
-        pending_feature = self.protocol.read_one_by_version(
-            self.request, uid, pending_version
-        )
-        pending_feature.mark_complete(get_mandatory_keys(self.request, 'sh'))
-        missing_keys = pending_feature._missing_keys
-        
-        if len(missing_keys) > 0:
-            result['missing_keys'] = missing_keys
+
+        if 'to_delete' not in result or result['to_delete'] is not True:
+            # Check if all mandatory keys are there and if not which are missing
+            pending_feature = self.protocol.read_one_by_version(
+                self.request, uid, pending_version
+            )
+            pending_feature.mark_complete(get_mandatory_keys(self.request, 'sh'))
+            missing_keys = pending_feature._missing_keys
+
+            if len(missing_keys) > 0:
+                result['missing_keys'] = missing_keys
 
         return result
