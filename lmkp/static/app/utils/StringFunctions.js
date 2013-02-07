@@ -33,6 +33,15 @@ Ext.define('Lmkp.utils.StringFunctions', {
             }
         }
         return Lmkp.ts.msg('gui_unknown');
+    },
+
+    /**
+     * Returns a shortened version of the identifier
+     */
+    _shortenIdentifier: function(identifier) {
+        if (identifier) {
+            return identifier.substr(0, 6);
+        }
+        return Lmkp.ts.msg('gui_unknown');
     }
-    
 });
