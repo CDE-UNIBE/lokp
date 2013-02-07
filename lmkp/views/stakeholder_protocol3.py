@@ -82,31 +82,38 @@ class StakeholderProtocol3(Protocol):
                 request, stakeholder, changeset
             )
 
-            if ret_diff is not None:
-                # If a new diff came back, use this to replace the old one
-                new_diffs = True
-                stakeholder = ret_diff
+            if sh is not None:
+                if ret_diff is not None:
+                    # If a new diff came back, use this to replace the old one
+                    new_diffs = True
+                    stakeholder = ret_diff
 
-            # Add the newly created identifier to the diff (this is important if
-            # the item had no identifier before
-            stakeholder[unicode('id')] = unicode(sh.stakeholder_identifier)
+                # Add the newly created identifier to the diff (this is
+                # important if the item had no identifier before
+                stakeholder[unicode('id')] = unicode(sh.stakeholder_identifier)
 
-            ids.append(sh)
+                ids.append(sh)
 
-            # Append the diffs
-            if ret_diff is None:
-                stakeholder_diffs.append(self._convert_utf8(stakeholder))
-            else:
-                stakeholder_diffs.append(stakeholder)
+                # Append the diffs
+                if ret_diff is None:
+                    stakeholder_diffs.append(self._convert_utf8(stakeholder))
+                else:
+                    stakeholder_diffs.append(stakeholder)
 
-        changeset_diff = {'stakeholders': stakeholder_diffs}
+        if len(ids) > 0:
+            # At least one Stakeholder was created
+            changeset_diff = {'stakeholders': stakeholder_diffs}
 
-        if new_diffs is True:
-            changeset_diff = json.dumps(changeset_diff).replace('"', '\'')
+            if new_diffs is True:
+                changeset_diff = json.dumps(changeset_diff).replace('"', '\'')
 
-        changeset.diff = str(changeset_diff)
+            changeset.diff = str(changeset_diff)
 
-        return ids
+            return ids
+
+        else:
+            # No Stakeholder was created
+            return None
 
     def read_one_active(self, request, uid):
 
@@ -1323,12 +1330,16 @@ class StakeholderProtocol3(Protocol):
 
         if create_new is True:
             # Create new Stakeholder
-            new_stakeholder = self._create_stakeholder(request,
-                                                       stakeholder_dict, changeset, status=status)
+            new_stakeholder = self._create_stakeholder(
+                request, stakeholder_dict, changeset, status=status
+            )
 
-            # Handle also the involvements
-            self._handle_involvements(request, None, new_stakeholder,
-                                      involvement_change, changeset, implicit_inv_change)
+            if new_stakeholder is not None:
+                # Handle also the involvements
+                self._handle_involvements(
+                    request, None, new_stakeholder, involvement_change,
+                    changeset, implicit_inv_change
+                )
 
             return new_stakeholder, None
 
@@ -1351,6 +1362,11 @@ class StakeholderProtocol3(Protocol):
         'identifier'
         'status'
         """
+
+        # First check if all the needed values are in the stakeholder_dict:
+        # At least one taggroup needs to be in the diff.
+        if 'taggroups' not in stakeholder_dict:
+            return None
 
         identifier = (stakeholder_dict['id'] if 'id' in stakeholder_dict and
                       stakeholder_dict['id'] is not None
