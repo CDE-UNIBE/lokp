@@ -927,6 +927,9 @@ Ext.define('Lmkp.controller.editor.Overview', {
     },
 
     onSubmitButtonClick: function(button, event){
+
+        console.log("onSubmitButtonClick");
+
         var me = this;
         var formpanel = button.up('form');
         var theform = formpanel.getForm();
