@@ -200,31 +200,38 @@ class ActivityProtocol3(Protocol):
 
             a, ret_diff = self._handle_activity(request, activity, changeset)
 
-            if ret_diff is not None:
-                # If a new diff came back, use this to replace the old one
-                new_diffs = True
-                activity = ret_diff
+            if a is not None:
+                if ret_diff is not None:
+                    # If a new diff came back, use this to replace the old one
+                    new_diffs = True
+                    activity = ret_diff
 
-            # Add the newly created identifier to the diff (this is important if
-            # the item had no identifier before
-            activity[unicode('id')] = unicode(a.activity_identifier)
+                # Add the newly created identifier to the diff (this is
+                # important if the item had no identifier before
+                activity[unicode('id')] = unicode(a.activity_identifier)
 
-            ids.append(a)
+                ids.append(a)
 
-            # Append the diffs
-            if ret_diff is None:
-                activity_diffs.append(self._convert_utf8(activity))
-            else:
-                activity_diffs.append(activity)
+                # Append the diffs
+                if ret_diff is None:
+                    activity_diffs.append(self._convert_utf8(activity))
+                else:
+                    activity_diffs.append(activity)
 
-        changeset_diff = {'activities': activity_diffs}
+        if len(ids) > 0:
+            # At least one Activity was created
+            changeset_diff = {'activities': activity_diffs}
 
-        if new_diffs is True:
-            changeset_diff = json.dumps(changeset_diff).replace('"', '\'')
+            if new_diffs is True:
+                changeset_diff = json.dumps(changeset_diff).replace('"', '\'')
 
-        changeset.diff = str(changeset_diff)
+            changeset.diff = str(changeset_diff)
 
-        return ids
+            return ids
+
+        else:
+            # No Activity was created
+            return None
 
     def read_one_active(self, request, uid):
 
@@ -1597,12 +1604,16 @@ class ActivityProtocol3(Protocol):
 
         if create_new is True:
             # Create new Activity
-            new_activity = self._create_activity(request, activity_dict,
-                                                 changeset, status=status)
+            new_activity = self._create_activity(
+                request, activity_dict, changeset, status=status
+            )
 
-            # Handle also the involvements
-            self._handle_involvements(request, None, new_activity,
-                                      involvement_change, changeset, implicit_inv_change)
+            if new_activity is not None:
+                # Handle also the involvements
+                self._handle_involvements(
+                    request, None, new_activity, involvement_change, changeset,
+                    implicit_inv_change
+                )
 
             return new_activity, None
 
@@ -1624,6 +1635,11 @@ class ActivityProtocol3(Protocol):
         Allowed keyword arguments:
         - 'status'
         """
+
+        # First check if all the needed values are in the activity_dict:
+        # At least one taggroup needs to be in the diff.
+        if 'taggroups' not in activity_dict:
+            return None
 
         identifier = (activity_dict['id'] if 'id' in activity_dict and
                       activity_dict['id'] is not None

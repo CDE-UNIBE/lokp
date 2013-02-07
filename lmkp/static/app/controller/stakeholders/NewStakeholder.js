@@ -234,60 +234,78 @@ Ext.define('Lmkp.controller.stakeholders.NewStakeholder', {
                 },
                 jsonData: diffObject,
                 callback: function(options, success, response) {
+
                     if (success) {
-                        Ext.Msg.alert('Success', 'The stakeholder was successfully created. It will be reviewed shortly.');
+                        var r = Ext.JSON.decode(response.responseText);
+                        if (r.created) {
+                            Ext.create('Lmkp.utils.MessageBox').alert(
+                                Lmkp.ts.msg('feedback_success'),
+                                Lmkp.ts.msg('feedback_new-stakeholder-created')
+                            );
 
-                        // Put newly created Stakeholder into a store.
-                        var store = Ext.create('Ext.data.Store', {
-                            autoLoad: true,
-                            model: 'Lmkp.model.Stakeholder',
-                            data : Ext.decode(response.responseText),
-                            proxy: {
-                                type: 'memory',
-                                reader: {
-                                    root: 'data',
-                                    type: 'json',
-                                    totalProperty: 'total'
+                            // Put newly created Stakeholder into a store.
+                            var store = Ext.create('Ext.data.Store', {
+                                autoLoad: true,
+                                model: 'Lmkp.model.Stakeholder',
+                                data : Ext.decode(response.responseText),
+                                proxy: {
+                                    type: 'memory',
+                                    reader: {
+                                        root: 'data',
+                                        type: 'json',
+                                        totalProperty: 'total'
+                                    }
                                 }
+                            });
+
+                            // Add newly created Stakeholder to fieldset in other
+                            // window
+                            var newActivityController =
+                                me.getController('activities.NewActivity');
+                            newActivityController._onNewStakeholderCreated(
+                                store.getAt(0)
+                            );
+
+                            // Close form window
+                            form.up('window').close();
+
+                            // Reload also the activity grid store
+                            var shGridStore = Ext.data.StoreManager.lookup('StakeholderGrid');
+                            if (shGridStore) {
+                                shGridStore.load();
                             }
-                        });
 
-                        // Add newly created Stakeholder to fieldset in other
-                        // window
-                        var newActivityController =
-                            me.getController('activities.NewActivity');
-                        newActivityController._onNewStakeholderCreated(
-                            store.getAt(0)
-                        );
-
-                        // Close form window
-                        form.up('window').close();
-
-                        // Reload also the activity grid store
-                        var shGridStore = Ext.data.StoreManager.lookup('StakeholderGrid');
-                        if (shGridStore) {
-                            shGridStore.load();
-                        }
-
-                        // If the edit came from the review, try to reload the
-                        // taggroup store
-                        var compareController = me.getController('moderation.CompareReview');
-                        if (compareController && compareController.getCompareWindow()) {
-                            compareController.reloadCompareTagGroupStore(
-                                'compare',
-                                'stakeholders',
-                                diffStakeholder.id
+                            // If the edit came from the review, try to reload the
+                            // taggroup store
+                            var compareController = me.getController('moderation.CompareReview');
+                            if (compareController && compareController.getCompareWindow()) {
+                                compareController.reloadCompareTagGroupStore(
+                                    'compare',
+                                    'stakeholders',
+                                    diffStakeholder.id
+                                );
+                            }
+                        } else {
+                            Ext.create('Lmkp.utils.MessageBox').alert(
+                                Lmkp.ts.msg('feedback_failure'),
+                                r.msg
                             );
                         }
                     } else {
-                        Ext.Msg.alert('Failure', 'The stakeholder could not be created.');
+                        Ext.create('Lmkp.utils.MessageBox').alert(
+                            Lmkp.ts.msg('feedback_failure'),
+                            Lmkp.ts.msg('feedback_new-stakeholder-not-created')
+                        );
                     }
                 },
                 scope: this
             });
         } else {
             // Nothing has changed, do nothing
-            Ext.Msg.alert('No changes made', 'You did not make any changes.');
+            Ext.create('Lmkp.utils.MessageBox').alert(
+                Lmkp.ts.msg('feedback_no-changes-made'),
+                Lmkp.ts.msg('feedback_no-changes-made-explanation')
+            );
         }
     },
 
