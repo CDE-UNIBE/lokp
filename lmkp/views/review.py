@@ -100,19 +100,24 @@ class BaseReview(BaseView):
                 table.append(current_row)
 
         # Search for new taggroups
+        toDelete = True
         for new_taggroup in new.get_taggroups():
-
             if old.find_taggroup_by_tg_id(new_taggroup.get_tg_id()) is None:
                 current_row = {}
-                current_row['ref'] = {'class': '', 'tags': []}
                 # Write the new one
                 new_tags = []
                 for t in new_taggroup.get_tags():
-                    new_tags.append({'key': t.get_key(),
-                                    'value': t.get_value()})
-                current_row['new'] = {'class': 'add', 'tags': new_tags}
-
-                table.append(current_row)
+                    if t.get_key() is not None and t.get_value() is not None:
+                        # Only add tag if it is not empty (happens when item is
+                        # deleted.
+                        new_tags.append({'key': t.get_key(),
+                                        'value': t.get_value()})
+                        toDelete = False
+                if len(new_tags) > 0:
+                    # Only add tags if there is some content in them
+                    current_row['new'] = {'class': 'add', 'tags': new_tags}
+                    current_row['ref'] = {'class': '', 'tags': []}
+                    table.append(current_row)
 
         # TODO Compare the involvements properly
 
@@ -204,8 +209,11 @@ class BaseReview(BaseView):
 
                 involvements_table.append(current_row)
 
-
-        return {'taggroups': table, 'involvements': involvements_table}
+        return {
+            'taggroups': table,
+            'involvements': involvements_table,
+            'to_delete': toDelete
+        }
 
     def _review_check_involvement(self, mappedClass, identifier, version):
         """

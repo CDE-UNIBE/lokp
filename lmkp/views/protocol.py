@@ -796,6 +796,15 @@ class Protocol(object):
                 filter(mappedClass.version == item.previous_version).\
                 first()
 
+            # Query the active version of the item (review always happens
+            # against the active version)
+            ref_version = self.Session.query(
+                    mappedClass
+                ).\
+                filter(mappedClass.identifier == item.identifier).\
+                filter(mappedClass.fk_status == statusArray.index('active')+1).\
+                first()
+
             if (empty_item is True or previous_version is None
                 or previous_version.fk_status == statusArray.index('active')+1):
                 # There is no previous version (the item is brand new) or it is
@@ -819,18 +828,30 @@ class Protocol(object):
                     log.debug('Set version %s of %s with identifier %s to "active"'
                         % (item.version, mappedClass.__table__.name, item.identifier))
 
+            elif ref_version is None and mappedClass == Stakeholder:
+                # For stakeholders, editing a pending version not always sets
+                # the older version to 'edited'. This can lead to the situation
+                # that the version to accept is based on another version.
+                # Normally, this version should be recalculated but there exists
+                # no active version yet.
+                # In this case just set the version to review to 'active'.
+
+                if empty_item is True:
+                    # Set the status of the item to 'deleted'
+                    item.fk_status = statusArray.index('deleted') + 1
+
+                    log.debug('Set version %s of %s with identifier %s to "deleted"'
+                        % (item.version, mappedClass.__table__.name, item.identifier))
+
+                else:
+                    # Set the status of the item to 'active'
+                    item.fk_status = statusArray.index('active')+1
+
+                    log.debug('Set version %s of %s with identifier %s to "active"'
+                        % (item.version, mappedClass.__table__.name, item.identifier))
+
             else:
                 # Recalculation of the item is needed.
-
-                # Query the active version of the item (review always happens
-                # against the active version)
-                ref_version = self.Session.query(
-                        mappedClass
-                    ).\
-                    filter(mappedClass.identifier == item.identifier).\
-                    filter(mappedClass.fk_status
-                        == statusArray.index('active')+1).\
-                    first()
 
                 if ref_version is None:
                     ret['msg'] = 'No active version was found to base the review upon. Try to review an earlier version first.'
