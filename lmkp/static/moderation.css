@@ -8,7 +8,7 @@ table#compare-table{
     background-color: lightgreen !important;
 }
 .missing {
-	background-color: lightyellow !important;
+    background-color: lightyellow !important;
 }
 .button-link {
     background-image: url('/static/img/link.png') !important;
@@ -24,6 +24,9 @@ table#compare-table{
 }
 .button-compare {
     background-image: url('/static/img/compare.png') !important;
+}
+.button-close {
+    background-image: url("/static/img/process-stop.png") !important;
 }
 .notice {
     background-color: #ffffcc;

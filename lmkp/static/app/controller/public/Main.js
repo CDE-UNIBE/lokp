@@ -320,6 +320,7 @@ Ext.define('Lmkp.controller.public.Main', {
      * Nicely render 'identifier' column of Activity and Stakeholder grid.
      */
     onIdentifierColumnAfterrender: function(comp) {
+        var me = this;
         comp.renderer = function(value, metaData, record) {
 
             // Check the current status of the record and add accordingly an
@@ -329,7 +330,7 @@ Ext.define('Lmkp.controller.public.Main', {
             }
             
             if (value) {
-                return value.substr(0, 6);
+                return me.stringFunctions._shortenIdentifier(value);
             } else {
                 return Lmkp.ts.msg('gui_unknown');
             }
