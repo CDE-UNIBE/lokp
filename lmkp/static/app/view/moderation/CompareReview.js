@@ -217,12 +217,17 @@ Ext.define('Lmkp.view.moderation.CompareReview', {
             },
             items: [
                 {
-                    text: Lmkp.ts.msg('Refresh'),
+                    text: Lmkp.ts.msg('button_close'),
+                    tooltip: Lmkp.ts.msg('tooltip_close-window'),
+                    iconCls: 'button-close',
+                    itemId: 'windowCloseButton'
+                }, {
+                    text: Lmkp.ts.msg('button_refresh'),
                     tooltip: Lmkp.ts.msg('Refresh'),
                     iconCls: 'button-refresh',
                     itemId: 'compareRefreshButton'
                 }, {
-                    text: Lmkp.ts.msg('Link'),
+                    text: Lmkp.ts.msg('button_link'),
                     tooltip: Lmkp.ts.msg("Permanent link to current view"),
                     iconCls: 'button-link',
                     itemId: 'compareLinkButton'

@@ -10,10 +10,14 @@ Ext.define('Lmkp.controller.moderation.Pending', {
         'moderation.CompareReview'
     ],
 
+    stringFunctions: null,
+
     init: function() {
         // Load the stores
         this.getPendingActivityGridStore().load();
         this.getPendingStakeholderGridStore().load();
+
+        this.stringFunctions = Ext.create('Lmkp.utils.StringFunctions');
 
         this.control({
             'gridpanel[itemId=pendingActivityGridPanel] templatecolumn[name=compareButtonColumn]': {
@@ -56,10 +60,16 @@ Ext.define('Lmkp.controller.moderation.Pending', {
         if (id && type) {
             var controller = this.application.getController('moderation.CompareReview');
 
-            var win = controller._createWindow();
+            var title = 'Compare versions';
+            if (type == 'activities') {
+                title += ' of Activity ' + this.stringFunctions._shortenIdentifier(id);
+            } else if (type == 'stakeholders') {
+                title += ' of Stakeholder ' + this.stringFunctions._shortenIdentifier(id);
+            }
+
+            var win = controller._createWindow(title);
             win.show();
             win.setLoading(true);
-            win.setTitle('Compare');
             win.add({
                 xtype: 'lo_moderatorcomparereview',
                 action: 'compare'
