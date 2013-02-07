@@ -84,6 +84,9 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
             'lo_moderatorcomparereview button[itemId=editButton]': {
                 click: this.onEditButtonClick
             },
+            'lo_moderatorcomparereview button[itemId=windowCloseButton]': {
+                click: this.onWindowCloseButtonClick
+            },
             'lo_moderatorcomparereview gridpanel templatecolumn[itemId=compareGridReviewableColumn]': {
                 afterrender: this.onCompareGridReviewableColumnAfterRender
             }
@@ -149,7 +152,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
             win.setLoading(true);
         }
 
-        var url = this._getUrl(action, type, uid, refVersion, newVersion);
+        var url = this._getUrl('json', action, type, uid, refVersion, newVersion);
 
         if (url) {
             Ext.Ajax.request({
@@ -454,6 +457,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
     onCompareLinkButtonClick: function() {
         var mData = this.getCompareMetadataStore().first();
         var url = this._getUrl(
+            'html',
             this.getComparePanel().action,
             mData.get('type'),
             mData.get('identifier'),
@@ -475,19 +479,28 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
             win.removeAll();
         }
 
+        var mData = this.getCompareMetadataStore().first();
+        var type = mData.get('type');
+        var identifier = mData.get('identifier');
+
+        var title = 'Compare versions';
+        if (type == 'activities') {
+            title += ' of Activity ' + this.stringFunctions._shortenIdentifier(identifier);
+        } else if (type == 'stakeholders') {
+            title += ' of Stakeholder ' + this.stringFunctions._shortenIdentifier(identifier);
+        }
+
         win.setLoading(true);
-        win.setTitle('Compare');
+        win.setTitle(title);
         win.add({
             xtype: 'lo_moderatorcomparereview',
             action: 'compare'
         });
 
-        var mData = this.getCompareMetadataStore().first();
-
         this.reloadCompareTagGroupStore(
             'compare',
-            mData.get('type'),
-            mData.get('identifier')
+            type,
+            identifier
         );
     },
 
@@ -501,8 +514,18 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
             win.removeAll();
         }
 
+        var type = mData.get('type');
+        var identifier = mData.get('identifier');
+
+        var title = 'Review versions';
+        if (type == 'activities') {
+            title += ' of Activity ' + this.stringFunctions._shortenIdentifier(identifier);
+        } else if (type == 'stakeholders') {
+            title += ' of Stakeholder ' + this.stringFunctions._shortenIdentifier(identifier);
+        }
+
         win.setLoading(true);
-        win.setTitle('Review');
+        win.setTitle(title);
         win.add({
             xtype: 'lo_moderatorcomparereview',
             action: 'review'
@@ -510,8 +533,8 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
 
         this.reloadCompareTagGroupStore(
             'review',
-            mData.get('type'),
-            mData.get('identifier')
+            type,
+            identifier
         );
     },
 
@@ -576,6 +599,11 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         }
     },
 
+    onWindowCloseButtonClick: function() {
+        var win = this.getCompareWindow();
+        win.close();
+    },
+
     _createWindow: function(title) {
 
         // Window parameters
@@ -601,12 +629,17 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         return win;
     },
 
-    _getUrl: function(action, type, uid, refVersion, newVersion) {
-        if (action && type && uid) {
-            var url = '/' + type + '/' + action + '/json/' + uid;
-            if (refVersion && newVersion) {
+    _getUrl: function(output, action, type, uid, refVersion, newVersion) {
+        if (output && action && type && uid) {
+            var url;
+            if (output == 'json') {
+                url = '/' + type + '/' + action + '/json/' + uid;
+            } else if (output == 'html') {
+                url = '/moderation/' + type + '/' + uid
+            }
+            if (refVersion && newVersion && output == 'json') {
                 url += '/' + refVersion + '/' + newVersion;
-            } else if (!refVersion && newVersion) {
+            } else if (!refVersion && newVersion && output == 'json') {
                 // Special case: Nothing is selected on the left side (brand new
                 // object with multiple pending versions)
                 url += '/0/' + newVersion;
