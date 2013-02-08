@@ -34,6 +34,7 @@ Ext.require('Lmkp.controller.stakeholders.NewStakeholder');
 Ext.require('Lmkp.store.Status');
 Ext.require('Lmkp.utils.MessageBox');
 Ext.require('Lmkp.utils.PermalinkWindow');
+Ext.require('Lmkp.utils.StringFunctions');
 Ext.require('Lmkp.view.login.Toolbar');
 
 Ext.onReady(function() {
