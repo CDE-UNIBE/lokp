@@ -72,7 +72,7 @@ class ActivityReview(BaseReview):
         additional_params = {
         'available_versions': json.dumps(available_versions)
         }
-        
+
         return additional_params
 
     @action(name='json', renderer='json')
@@ -130,17 +130,30 @@ class ActivityReview(BaseReview):
         if not self._within_profile(uid):
             raise HTTPForbidden("Activity %s is not within your profile." % uid)
 
-        active_version, pending_version = self._get_valid_versions(
-            Activity, uid, review=True
-        )
-
-        # Some logging
-#        log.debug("active version: %s" % active_version)
-#        log.debug("pending version: %s" % pending_version)
+        try:
+            active_version, pending_version = self._get_valid_versions(
+                Activity, uid, review=True
+            )
+        except HTTPForbidden:
+            return {
+                'success': False,
+                'msg': 'This Activity has no reviewable pending version.'
+            }
 
         result = self.get_comparison(
             Activity, uid, active_version, pending_version, review=True
         )
+
+        if 'to_delete' not in result or result['to_delete'] is not True:
+            # Check if all mandatory keys are there and if not which are missing
+            pending_feature = self.protocol.read_one_by_version(
+                self.request, uid, pending_version
+            )
+            pending_feature.mark_complete(get_mandatory_keys(self.request, 'a'))
+            missing_keys = pending_feature._missing_keys
+
+            if len(missing_keys) > 0:
+                result['missing_keys'] = missing_keys
 
         return result
 

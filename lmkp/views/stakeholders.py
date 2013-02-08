@@ -311,6 +311,8 @@ def create(request):
 
     """
 
+    _ = request.translate
+
     # Check if the user is logged in and he/she has sufficient user rights
     userid = authenticated_userid(request)
     print effective_principals(request)
@@ -323,9 +325,19 @@ def create(request):
 
     ids = stakeholder_protocol3.create(request)
 
-    response = {}
-    response['data'] = [i.to_json() for i in ids]
-    response['total'] = len(response['data'])
+    # TODO: complete translation here. Also: All server responses in Ext?
 
-    request.response.status = 201
+    response = {}
+
+    if ids is not None:
+        response['data'] = [i.to_json() for i in ids]
+        response['total'] = len(response['data'])
+        response['created'] = True
+        response['msg'] = 'Success message'
+        request.response.status = 201
+    else:
+        response['created'] = False
+        response['msg'] = _('No Stakeholder was created.')
+        request.response.status = 200
+
     return response

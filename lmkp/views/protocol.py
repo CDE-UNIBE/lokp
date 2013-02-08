@@ -609,6 +609,7 @@ class Protocol(object):
         #TODO: Add translation to server responses
 
         reviewed_involvements = []
+        json_diff = None
 
         # Hard coded list of statii as in database. Needs to be in same order!
         # Not very nice but efficient and more comprehensible than just using
@@ -631,10 +632,12 @@ class Protocol(object):
             diff_keyword = 'activities'
             other_diff_keyword = 'stakeholders'
             config_yaml = 'activity.yml'
+            otherMappedClass = Stakeholder
         elif mappedClass == Stakeholder:
             diff_keyword = 'stakeholders'
             other_diff_keyword = 'activities'
             config_yaml = 'stakeholder.yml'
+            otherMappedClass = Activity
         else:
             ret['msg'] = 'Unknown object to review.'
             return ret
@@ -654,85 +657,129 @@ class Protocol(object):
             review_comment = request.POST['comment_textarea']
 
         # TODO: Also delegate involvement review if rejected (review_decision == 2)
-        if review_decision == 1:
-            # Approved
+        
 
-            # Try to also review any affected involvement.
-            if implicit is False and mappedClass == Activity:
-                # Involvements can only be reviewed from Activity side.
+        # Try to also review any affected involvement.
+        if implicit is False:
 
-                # Query the diff
-                diff_query = self.Session.query(
-                        Changeset.diff
-                    ).\
-                    join(mappedClass).\
-                    filter(mappedClass.identifier == item.identifier).\
-                    filter(mappedClass.version == item.version).\
-                    first()
-                json_diff = json.loads(diff_query.diff.replace('\'', '"'))
+            # Query the diff
+            diff_query = self.Session.query(
+                    Changeset.diff
+                ).\
+                join(mappedClass).\
+                filter(mappedClass.identifier == item.identifier).\
+                filter(mappedClass.version == item.version).\
+                first()
+            json_diff = json.loads(diff_query.diff.replace('\'', '"'))
 
-                # Loop through the diff to find and collect all the affected Stakeholders and their version at the time of the changes
-                affected_involvements = []
-                if 'activities' in json_diff:
-                    for a_diff in json_diff['activities']:
-                        if 'id' in a_diff and a_diff['id'] == str(item.identifier) and 'stakeholders' in a_diff:
-                            for sh_diff in a_diff['stakeholders']:
-                                version = (sh_diff['version']
-                                        if 'version' in sh_diff
-                                        else None)
+            # Loop through the diff to find and collect all the affected
+            # Stakeholders and their version at the time of the changes
+            affected_involvements = []
+            if mappedClass == Activity and 'activities' in json_diff:
+                for a_diff in json_diff['activities']:
+                    if ('id' in a_diff and a_diff['id'] == str(item.identifier)
+                        and 'stakeholders' in a_diff):
+                        for sh_diff in a_diff['stakeholders']:
+                            version = (sh_diff['version']
+                                    if 'version' in sh_diff
+                                    else None)
+                            affected_involvements.append({
+                                'identifier': sh_diff['id'],
+                                'version': version,
+                                'op': sh_diff['op']
+                            })
+            elif mappedClass == Stakeholder and 'activities' in json_diff:
+                for a_diff in json_diff['activities']:
+                    if 'id' in a_diff and 'stakeholders' in a_diff:
+                        version = (a_diff['version'] if 'version' in a_diff else None)
+                        for sh_diff in a_diff['stakeholders']:
+                            if 'id' in sh_diff and sh_diff['id'] == str(item.identifier):
                                 affected_involvements.append({
-                                    'identifier': sh_diff['id'],
-                                    'version': version
+                                    'identifier': a_diff['id'],
+                                    'version': version,
+                                    'op': sh_diff['op']
                                 })
 
-                log.debug('%s affected involvements found: %s'
-                    % (len(affected_involvements), affected_involvements))
+            log.debug('%s affected involvements found: %s'
+                % (len(affected_involvements), affected_involvements))
 
-                basereview = BaseReview(request)
+            basereview = BaseReview(request)
+
+            if review_decision == 1 or mappedClass == Stakeholder:
+                # Approved. Normally check reviewable only for approval.
+                # Exception for Stakeholders: Activiites through involvements
+                # can always only be reviewed from Activity side.
 
                 # First check if a review can be done for all the involvements
                 reviewPossible = True
                 for ai in affected_involvements:
-                    reviewPossible = (reviewPossible
-                        and basereview._review_check_involvement(
-                            ai['identifier']) > 0)
-
+                    reviewable = basereview._review_check_involvement(
+                            otherMappedClass, ai['identifier'], ai['version']
+                        )
+                    if reviewPossible is True and reviewable > 0:
+                        continue
+                    reviewPossible = reviewable
+    
                 if reviewPossible is not True:
-                    ret['msg'] = 'At least one of the involved Stakeholders cannot be reviewed.'
+                    if reviewPossible == -2:
+                        ret['msg'] = 'At least one of the involved Stakeholders cannot be reviewed. Click on the icon next to the involvement for further details.'
+                    elif reviewPossible == -3:
+                        ret['msg'] = 'At least one of the involved Activities cannot be reviewed. Click on the icon next to the involvement for further details.'
                     return ret
 
-                # Do a review for all the involvements
-                for ai in affected_involvements:
+            # Do a review for all the involvements
+            for ai in affected_involvements:
 
-                    # Query the Stakeholder version that was created by the
-                    # involvement
+                # Query the Stakeholder version that was created by the
+                # involvement
+                if ai['op'] == 'add':
+                    # If a new involvement was added, it is possible to find the
+                    # exact version through the involvement.
                     sh = self.Session.query(
                             Stakeholder
                         ).\
                         join(Involvement).\
                         join(Activity).\
                         filter(Stakeholder.identifier == ai['identifier']).\
-                        filter(Stakeholder.previous_version
-                            == ai['version']).\
+                        filter(Stakeholder.previous_version == ai['version']).\
                         filter(Activity.identifier == item.identifier).\
                         filter(Activity.version == item.version).\
                         first()
+                elif ai['op'] == 'delete':
+                    # If an involvement was deleted, it is obviously not
+                    # possible to find the version through the involvement.
+                    # Instead, we must try to find it through its identifier and
+                    # version ...
+                    # TODO: Is this enough to find the version or do we need
+                    # additional indicators (changeset.diff?)
+                    sh = self.Session.query(
+                            Stakeholder
+                        ).\
+                        filter(Stakeholder.identifier == ai['identifier']).\
+                        filter(Stakeholder.previous_version == ai['version']).\
+                        first()
 
-                    log.debug('Reviewing involvement: Stakeholder with identifier %s, version %s and status %s'
-                            % (sh.identifier, sh.version, sh.fk_status))
+                if sh is None:
+                    ret['msg'] = 'One of the Stakeholders to review was not found.'
+                    return ret
 
-                    # Do a review, but implicitely
-                    reviewed_inv = self._add_review(
-                        request,
-                        sh,
-                        Stakeholder,
-                        user,
-                        implicit = True
-                    )
+                log.debug('Reviewing involvement: Stakeholder with identifier %s, version %s and status %s'
+                        % (sh.identifier, sh.version, sh.fk_status))
 
-                    reviewed_involvements.append(reviewed_inv)
+                # Do a review, but implicitely
+                reviewed_inv = self._add_review(
+                    request,
+                    sh,
+                    Stakeholder,
+                    user,
+                    implicit = True
+                )
 
-            # Do the actual review of the current item
+                reviewed_involvements.append(reviewed_inv)
+
+        # Do the actual review of the current item
+        if review_decision == 1:
+            # Approved
 
             # Check if Item was deleted (no more tags)
             empty_item = True
@@ -747,6 +794,15 @@ class Protocol(object):
                 ).\
                 filter(mappedClass.identifier == item.identifier).\
                 filter(mappedClass.version == item.previous_version).\
+                first()
+
+            # Query the active version of the item (review always happens
+            # against the active version)
+            ref_version = self.Session.query(
+                    mappedClass
+                ).\
+                filter(mappedClass.identifier == item.identifier).\
+                filter(mappedClass.fk_status == statusArray.index('active')+1).\
                 first()
 
             if (empty_item is True or previous_version is None
@@ -772,21 +828,33 @@ class Protocol(object):
                     log.debug('Set version %s of %s with identifier %s to "active"'
                         % (item.version, mappedClass.__table__.name, item.identifier))
 
+            elif ref_version is None and mappedClass == Stakeholder:
+                # For stakeholders, editing a pending version not always sets
+                # the older version to 'edited'. This can lead to the situation
+                # that the version to accept is based on another version.
+                # Normally, this version should be recalculated but there exists
+                # no active version yet.
+                # In this case just set the version to review to 'active'.
+
+                if empty_item is True:
+                    # Set the status of the item to 'deleted'
+                    item.fk_status = statusArray.index('deleted') + 1
+
+                    log.debug('Set version %s of %s with identifier %s to "deleted"'
+                        % (item.version, mappedClass.__table__.name, item.identifier))
+
+                else:
+                    # Set the status of the item to 'active'
+                    item.fk_status = statusArray.index('active')+1
+
+                    log.debug('Set version %s of %s with identifier %s to "active"'
+                        % (item.version, mappedClass.__table__.name, item.identifier))
+
             else:
                 # Recalculation of the item is needed.
 
-                # Query the active version of the item (review always happens
-                # against the active version)
-                ref_version = self.Session.query(
-                        mappedClass
-                    ).\
-                    filter(mappedClass.identifier == item.identifier).\
-                    filter(mappedClass.fk_status
-                        == statusArray.index('active')+1).\
-                    first()
-
                 if ref_version is None:
-                    ret['msg'] = 'No active version was found to base the review upon.'
+                    ret['msg'] = 'No active version was found to base the review upon. Try to review an earlier version first.'
                     return ret
 
                 # Read the configuration
@@ -796,7 +864,7 @@ class Protocol(object):
 
                 # Query the diff. If it is already available (queried while
                 # handling involvements earlier), no need to query it again
-                if not json_diff:
+                if json_diff is None:
                     # Query the diff
                     diff_query = self.Session.query(
                             Changeset.diff
@@ -832,10 +900,12 @@ class Protocol(object):
                 changeset.diff = str(self._convert_utf8(json_diff))
 
                 # Create a new version of the object
-                new_version = self._update_object(
+                new_version, ret_diff = self._update_object(
                     request, ref_version, relevant_diff, changeset,
                     status='active'
                 )
+
+                #TODO: handle returned diff correctly
 
                 if len(reviewed_involvements) > 0:
                     # Attach the involvements which were reviewed earlier
@@ -1286,12 +1356,12 @@ class Protocol(object):
                     if 'taggroups' in old_diff:
                         old_diff['taggroups'].append(new_tg)
                     else:
-                        old_diff['taggroups'] = new_tg
+                        old_diff['taggroups'] = [new_tg]
 
             else:
                 # If no taggroups yet in old_diff, add the one from the new_tg
                 # as it is
-                old_diff['taggroups'] = new_tg
+                old_diff['taggroups'] = [new_tg]
 
 #                log.debug('Added new taggroup diff: %s' % new_tg)
 
