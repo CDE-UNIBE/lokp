@@ -7,6 +7,11 @@ from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
 from pyramid.security import has_permission
 
+if str(request.registry.settings['lmkp.use_js_builds']).lower() == "true":
+    use_js_builds = True
+else:
+    use_js_builds = False
+
 %>
 <title>${_("Land Observatory")} - ${_("Charts")}</title>
 <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>

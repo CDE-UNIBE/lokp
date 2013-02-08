@@ -19,7 +19,12 @@ Ext.define('Lmkp.view.stakeholders.StakeholderFieldContainer', {
 
             var name = this.involvement.stakeholder.getTagValues(
                 Lmkp.ts.msg('stakeholder_db-key-name')
-            ).join(", ");
+                ).join(", ");
+            if(!name) {
+                name = this.involvement.stakeholder.getTagValues(
+                    Lmkp.ts.msg('stakeholder_db-key-name-original')
+                    ).join(", ");
+            }
             if (!name) {
                 name = Lmkp.ts.msg('gui_unknown');
             }
@@ -30,10 +35,10 @@ Ext.define('Lmkp.view.stakeholders.StakeholderFieldContainer', {
                 value: name,
                 xtype: 'displayfield'
             }, {
-            	xtype: 'button',
-            	name: 'stakeholderRemoveButton',
-            	text: '-',
-            	tooltip: Lmkp.ts.msg('tooltip_remove-stakeholder')
+                xtype: 'button',
+                name: 'stakeholderRemoveButton',
+                text: '-',
+                tooltip: Lmkp.ts.msg('tooltip_remove-stakeholder')
             });
         }
 

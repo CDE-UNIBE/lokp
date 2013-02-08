@@ -112,7 +112,8 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
 
     getValueValue: function() {
         var value = this.getValueField();
-        if (value) {
+        // Treat empty string as null value
+        if (value && value.getValue() != '') {
             return value.getValue();
         }
         return null;
