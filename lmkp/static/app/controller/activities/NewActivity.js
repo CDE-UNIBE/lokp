@@ -416,75 +416,93 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 },
                 jsonData: diffObject,
                 callback: function(options, success, response) {
+                    
                     if (success) {
-                        Ext.Msg.alert('Success', 'The activity was successfully created. It will be reviewed shortly.');
+                        var r = Ext.JSON.decode(response.responseText);
+                        if (r.created) {
+                            Ext.create('Lmkp.utils.MessageBox').alert(
+                                Lmkp.ts.msg('feedback_success'),
+                                Lmkp.ts.msg('feedback_new-activity-created')
+                            );
 
-                        var mapPanel = me.getMapPanel();
-                        // Reset geometry of map panel
-                        if (mapPanel) {
-                            mapPanel.setNewFeatureGeometry(null);
-                        }
-	
-                        // If mappopup still there, remove it
-                        var popup = (
-                            Ext.ComponentQuery.query('window[itemId=mappopup]').length > 0)
-                        ? Ext.ComponentQuery.query('window[itemId=mappopup]')[0]
-                        : null;
-                        if (popup) popup.destroy();
-	
-                        // Close form window
-                        var win = form.up('window');
-                        win.destroy();
-	
-                        var fieldContainers = form.query('lo_stakeholderfieldcontainer');
-                        for(var i = 0; i < fieldContainers.length; i++){
-                            this.getSelectStakeholderFieldSet().remove(fieldContainers[i]);
-                        }
-	                    
-                        // Refresh the detail window
-                        var detailWindow = this.getActivityDetailWindow();
-                        if (detailWindow) {
-                            var historyStore = detailWindow.getHistoryStore();
-                            if (historyStore) {
-                                historyStore.load();
+                            var mapPanel = me.getMapPanel();
+                            // Reset geometry of map panel
+                            if (mapPanel) {
+                                mapPanel.setNewFeatureGeometry(null);
                             }
-                        }
-	
-                        // Refresh the map with the new activities
-                        if (mapPanel) {
-                            // Reload the vector store
-                            mapPanel.getActivityFeatureStore().load();
-                            // Unselect all features on the helper vector layer
-                            mapPanel.getNewFeatureSelectCtrl().unselectAll();
-                            // Remove all features from the helper vector layer
-                            mapPanel.getVectorLayer().removeAllFeatures();
-                        }
 
-                        // Reload also the activity grid store
-                        var aGridStore = me.getActivityGridStore();
-                        if (aGridStore) {
-                            aGridStore.load();
-                        }
+                            // If mappopup still there, remove it
+                            var popup = (
+                                Ext.ComponentQuery.query('window[itemId=mappopup]').length > 0)
+                            ? Ext.ComponentQuery.query('window[itemId=mappopup]')[0]
+                            : null;
+                            if (popup) popup.destroy();
 
-                        // If the edit came from the review, try to reload the
-                        // taggroup store
-                        var compareController = me.getController('moderation.CompareReview');
-                        if (compareController && compareController.getCompareWindow()) {
-                            compareController.reloadCompareTagGroupStore(
-                                'compare',
-                                'activities',
-                                diffActivity.id
+                            // Close form window
+                            var win = form.up('window');
+                            win.destroy();
+
+                            var fieldContainers = form.query('lo_stakeholderfieldcontainer');
+                            for(var i = 0; i < fieldContainers.length; i++){
+                                this.getSelectStakeholderFieldSet().remove(fieldContainers[i]);
+                            }
+
+                            // Refresh the detail window
+                            var detailWindow = this.getActivityDetailWindow();
+                            if (detailWindow) {
+                                var historyStore = detailWindow.getHistoryStore();
+                                if (historyStore) {
+                                    historyStore.load();
+                                }
+                            }
+
+                            // Refresh the map with the new activities
+                            if (mapPanel) {
+                                // Reload the vector store
+                                mapPanel.getActivityFeatureStore().load();
+                                // Unselect all features on the helper vector layer
+                                mapPanel.getNewFeatureSelectCtrl().unselectAll();
+                                // Remove all features from the helper vector layer
+                                mapPanel.getVectorLayer().removeAllFeatures();
+                            }
+
+                            // Reload also the activity grid store
+                            var aGridStore = me.getActivityGridStore();
+                            if (aGridStore) {
+                                aGridStore.load();
+                            }
+
+                            // If the edit came from the review, try to reload the
+                            // taggroup store
+                            var compareController = me.getController('moderation.CompareReview');
+                            if (compareController && compareController.getCompareWindow()) {
+                                compareController.reloadCompareTagGroupStore(
+                                    'compare',
+                                    'activities',
+                                    diffActivity.id
+                                );
+                            }
+                        } else {
+                            Ext.create('Lmkp.utils.MessageBox').alert(
+                                Lmkp.ts.msg('feedback_failure'),
+                                r.msg
                             );
                         }
                     } else {
-                        Ext.Msg.alert('Failure', 'The activity could not be created.');
+                        Ext.create('Lmkp.utils.MessageBox').alert(
+                            Lmkp.ts.msg('feedback_failure'),
+                            Lmkp.ts.msg('feedback_new-activity-not-created')
+                        );
                     }
                 },
                 scope: this
             });
         } else {
             // Nothing was changed, do nothing
-            Ext.Msg.alert('No changes made', 'You did not make any changes.');
+            Ext.create('Lmkp.utils.MessageBox').alert(
+                Lmkp.ts.msg('feedback_no-changes-made'),
+                Lmkp.ts.msg('feedback_no-changes-made-explanation')
+            );
         }
     },
 
@@ -517,16 +535,10 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
             var completeStore = Ext.create('Lmkp.store.ActivityConfig');
             completeStore.load(function() {
                 // When loaded, create and load panel for Activities
-                var aPanel = Ext.create('Lmkp.view.activities.NewActivity', {
-                    height: 500,
-                    width: 400
-                });
+                var aPanel = Ext.create('Lmkp.view.activities.NewActivity');
                 aPanel.showForm(mandatoryStore, completeStore, item);
                 // Also create and load panel for Stakeholders
-                var shPanel = Ext.create('Lmkp.view.stakeholders.NewStakeholderSelection', {
-                    height: 500,
-                    width: 400
-                });
+                var shPanel = Ext.create('Lmkp.view.stakeholders.NewStakeholderSelection');
 
                 var involvedStakeholders = [];
                 if (item) {
@@ -559,17 +571,31 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 }
 
                 shPanel.showForm(involvedStakeholders);
-                // Put everything in a window and show it.
+
+                // Window parameters
+                var buffer = 50; // Minimal blank space at the sides of the window
+                var defaultHeight = 550; // Default height of the window
+                var defaultWidth = 450; // Default width of the window
+
+                // Prepare some values before showing the window
+                var viewSize = Ext.getBody().getViewSize();
+                var height = (viewSize.height > defaultHeight + buffer)
+                    ? defaultHeight : viewSize.height - buffer;
+                var width = (viewSize.width > defaultWidth + buffer)
+                    ? defaultWidth : viewSize.width - buffer;
                 var title = item ? Lmkp.ts.msg('activities_edit-activity')
                     .replace('{0}', item.get('version')) :
                     Lmkp.ts.msg('activities_add-new-activity');
                 var activityEdit = (item != null);
+                // Put everything in a window and show it.
                 var win = Ext.create('Lmkp.view.public.NewActivityWindow', {
                     aPanel: aPanel,
                     shPanel: shPanel,
                     activityEdit: activityEdit,
                     showPage: showPage,
-                    title: title
+                    title: title,
+                    height: height,
+                    width: width
                 });
                 // Before showing the window, destroy loading window
                 loadingwin.destroy();

@@ -6,6 +6,11 @@
 from pyramid.security import effective_principals
 principals = effective_principals(request)
 
+if str(request.registry.settings['lmkp.use_js_builds']).lower() == "true":
+    use_js_builds = True
+else:
+    use_js_builds = False
+
 %>
 <title>${_("Land Observatory")}</title>
 <script type="text/javascript" src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>

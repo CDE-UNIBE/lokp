@@ -24,6 +24,7 @@ Ext.require('Lmkp.controller.public.ContextLayers');
 Ext.require('Lmkp.controller.public.Filter');
 Ext.require('Lmkp.controller.public.Main');
 Ext.require('Lmkp.controller.public.Map');
+Ext.require('Lmkp.controller.moderation.CompareReview');
 Ext.require('Lmkp.controller.stakeholders.Details');
 Ext.require('Lmkp.controller.stakeholders.NewStakeholder');
 Ext.require('Lmkp.store.ActivityChangesets');

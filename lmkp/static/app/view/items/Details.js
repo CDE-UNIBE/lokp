@@ -40,13 +40,8 @@ Ext.define('Lmkp.view.items.Details',{
         anchor: '100%'
     },
 
-    height: 500,
-
     layout: 'border',
-
     modal: true,
-
-    width: 700,
 
     /**
      * Ext has some serious issues with panels collapsed on start. Instead, this
@@ -83,7 +78,12 @@ Ext.define('Lmkp.view.items.Details',{
                 hiddenOriginal: false,
                 xtype: this.centerPanelType
             });
-            this._populateComment(item.get('id'), item.modelName);
+
+            var identifier = item.get('identifier');
+            if (!identifier) {
+                identifier = item.get('id');
+            }
+            this._populateComment(identifier, item.modelName);
         }
 
         return item;
