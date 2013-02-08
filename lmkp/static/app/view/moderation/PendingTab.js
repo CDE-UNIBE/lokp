@@ -28,7 +28,8 @@ Ext.define('Lmkp.view.moderation.PendingTab', {
                 {
                     header: 'ID',
                     dataIndex: 'id',
-                    flex: 1
+                    flex: 1,
+                    name: 'identifierColumn'
                 }, {
                     header: 'Latest edit',
                     dataIndex: 'timestamp'
@@ -64,7 +65,8 @@ Ext.define('Lmkp.view.moderation.PendingTab', {
                 {
                     header: 'ID',
                     dataIndex: 'id',
-                    flex: 1
+                    flex: 1,
+                    name: 'identifierColumn'
                 }, {
                     header: 'Latest edit',
                     dataIndex: 'timestamp'

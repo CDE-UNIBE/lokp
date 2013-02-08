@@ -25,6 +25,9 @@ Ext.define('Lmkp.controller.moderation.Pending', {
             },
             'gridpanel[itemId=pendingStakeholderGridPanel] templatecolumn[name=compareButtonColumn]': {
                 click: this.onCompareButtonClick
+            },
+            'gridcolumn[name=identifierColumn]': {
+                afterrender: this.onIdentifierColumnAfterrender
             }
         });
     },
@@ -78,6 +81,20 @@ Ext.define('Lmkp.controller.moderation.Pending', {
             controller.reloadCompareTagGroupStore(
                 'compare', type, id
             );
+        }
+    },
+
+    /**
+     * Nicely render 'identifier' column of Activity and Stakeholder grid.
+     */
+    onIdentifierColumnAfterrender: function(comp) {
+        var me = this;
+        comp.renderer = function(value, metaData, record) {
+            if (value) {
+                return me.stringFunctions._shortenIdentifier(value);
+            } else {
+                return Lmkp.ts.msg('gui_unknown');
+            }
         }
     }
 });
