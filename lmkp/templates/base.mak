@@ -48,6 +48,9 @@ comments_url = request.registry.settings['lmkp.comments_url']
     <body>
         <div id="header-div">
             <div id="title-div">
+                <div id="logo-div">
+                    <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" height="100" width="100" alt="${_('Land Observatory')}"/>
+                </div>
                 <h1>
                     ${_("Land Observatory")}
                 </h1>
@@ -63,11 +66,6 @@ comments_url = request.registry.settings['lmkp.comments_url']
                     <a href="http://www.sdc.admin.ch/">${_("Swiss Agency for Development Cooperation")}</a>
                     ${_(", with co-funding from other ILC and CDE programs.")}
                 </p>
-            </div>
-            <div id="logo-div">
-                <a href="http://www.landportal.info/observatory">
-                    <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" height="100" width="100" alt="${_('Land Observatory')}"/>
-                </a>
             </div>
         </div>
         ${self.body()}

@@ -1,3 +1,5 @@
+// TODO: Clean up here ...
+
 Ext.define('Lmkp.store.StakeholderGrid', {
     extend: 'Ext.data.Store',
 
@@ -29,6 +31,14 @@ Ext.define('Lmkp.store.StakeholderGrid', {
             // Do not load involvements in grid for faster loading
             involvements: 'none'
         }
+    },
+
+    doCustomSort: function(dataIndex, direction) {
+        // Do the sort
+        this.sort({
+            property: dataIndex,
+            direction: direction
+        });
     },
 
     setInitialProxy: function() {

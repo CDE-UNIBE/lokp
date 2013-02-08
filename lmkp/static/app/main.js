@@ -98,7 +98,7 @@ Ext.onReady(function(){
                 },{
                     autoScroll: true,
                     contentEl: 'header-div',
-                    height: 105,
+                    height: 102, // 100 + 2x border
                     // Hide the header panel if the Land Observatory is embedded
                     hidden: Lmkp.is_embedded,
                     region: 'north',
