@@ -40,13 +40,8 @@ Ext.define('Lmkp.view.items.Details',{
         anchor: '100%'
     },
 
-    height: 500,
-
     layout: 'border',
-
     modal: true,
-
-    width: 700,
 
     /**
      * Ext has some serious issues with panels collapsed on start. Instead, this

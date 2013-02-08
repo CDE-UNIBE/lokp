@@ -9,6 +9,9 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         'ReviewDecisions'
     ],
 
+    stringFunctions: null,
+    missingKeys: null,
+
     refs: [
         {
             ref: 'compareWindow',
@@ -43,6 +46,9 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         }, {
             ref: 'reviewCommentTextarea',
             selector: 'lo_moderatorcomparereview textarea[itemId=reviewCommentTextarea]'
+        }, {
+        	ref: 'reviewDecisionCombobox',
+        	selector: 'lo_moderatorcomparereview combobox[name=review_decision]'
         }
     ],
 
@@ -78,10 +84,14 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
             'lo_moderatorcomparereview button[itemId=editButton]': {
                 click: this.onEditButtonClick
             },
+            'lo_moderatorcomparereview button[itemId=windowCloseButton]': {
+                click: this.onWindowCloseButtonClick
+            },
             'lo_moderatorcomparereview gridpanel templatecolumn[itemId=compareGridReviewableColumn]': {
                 afterrender: this.onCompareGridReviewableColumnAfterRender
             }
         });
+        this.stringFunctions = Ext.create('Lmkp.utils.StringFunctions');
     },
 
     onCompareViewRender: function() {
@@ -106,18 +116,20 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         var template = new Ext.Template(
             '<b>Version</b>: {0}<br/>' +
             '<b>Timestamp</b>: {1}<br/>' +
-            '<b>User</b>: TODO'
+            '<b>User</b>: {2}'
         );
         var refPanel = this.getRefMetadataPanel();
         var newPanel = this.getNewMetadataPanel();
         if (refPanel && newPanel) {
             refPanel.update(template.apply([
                 metaModelInstance.get('ref_version'),
-                metaModelInstance.get('ref_timestamp')
+                this.stringFunctions._formatTimestamp(metaModelInstance.get('ref_timestamp')),
+                metaModelInstance.get('ref_username')
             ]));
             newPanel.update(template.apply([
                 metaModelInstance.get('new_version'),
-                metaModelInstance.get('new_timestamp')
+                this.stringFunctions._formatTimestamp(metaModelInstance.get('new_timestamp')),
+                metaModelInstance.get('new_username')
             ]));
         }
 
@@ -133,13 +145,14 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
     reloadCompareTagGroupStore: function(action, type, uid, refVersion, newVersion) {
 
         var me = this;
+        me.missingKeys = null;
         var win = this.getCompareWindow();
 
         if (win) {
             win.setLoading(true);
         }
 
-        var url = this._getUrl(action, type, uid, refVersion, newVersion);
+        var url = this._getUrl('json', action, type, uid, refVersion, newVersion);
 
         if (url) {
             Ext.Ajax.request({
@@ -147,61 +160,94 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                 success: function(response){
                     var data = Ext.JSON.decode(response.responseText);
 
-                    me.getCompareTagGroupsStore().loadRawData(data);
-                    me.getCompareInvolvementsStore().loadRawData(data);
-                    me.getCompareVersionsStore().loadRawData(data);
-
-                    // Clear any remaining filter on comboboxes
-                    me.getCompareVersionsStore().clearFilter(true);
-
-                    var mStore = me.getCompareMetadataStore();
-                    mStore.loadRawData(data);
-
-                    // Metadata
-                    var metadata = mStore.first();
-                    me.updateMetaPanels(metadata);
-
-                    if (action == 'review') {
-                        // For reviews, the left combobox always shows just the
-                        // active version while the left shows only pending
-                        // versions. To do this filtering, it is necessary to
-                        // clone the store of the comboboxes.
-                        var originalStore = me.getNewVersionCombobox().getStore();
-                        var copyStore = me.deepCloneStore(originalStore);
-
-                        originalStore.filter('status', 1);
-                        if (originalStore.getCount() == 0) {
-                            // If there are no pending versions (all reviewed),
-                            // switch back to compare view
-                            me.onCompareButtonClick();
-                        }
-
-                        copyStore.filter('status', 2);
-                        if (copyStore.getCount() > 0) {
-                            // There is no active version (for example when
-                            // reviewing first version). Use the same store for
-                            // both comboboxes
-                            me.getRefVersionCombobox().bindStore(copyStore);
-                        }
-
-                        me.getRefVersionCombobox().setReadOnly(true);
-                    } else if (action == 'compare') {
-                        if (me.getCompareVersionsStore().find('status', 1) == -1) {
-                            // No (more) pending, disable review button
-                            me.getReviewButton().disable();
-                        }
-                        me.getRefVersionCombobox().bindStore(
-                            me.getCompareVersionsStore()
+                    if (data.success == false) {
+                        // Intercept normal loading process if there is an error
+                        // message from the server.
+                        var infoWindow = Ext.create('Lmkp.utils.MessageBox');
+                        infoWindow.alert(
+                            'Information',
+                            data.msg
                         );
-                        me.getRefVersionCombobox().setReadOnly(false);
-                    }
 
-                    // Comboboxes
-                    me.getRefVersionCombobox().setValue(metadata.get('ref_version'));
-                    me.getNewVersionCombobox().setValue(metadata.get('new_version'));
+                        if (win) {
+                            win.close();
+                        }
 
-                    if (win) {
-                        win.setLoading(false);
+                    } else {
+                        me.getCompareTagGroupsStore().loadRawData(data);
+                        me.getCompareInvolvementsStore().loadRawData(data);
+                        me.getCompareVersionsStore().loadRawData(data);
+
+                        // Clear any remaining filter on comboboxes
+                        me.getCompareVersionsStore().clearFilter(true);
+
+                        var mStore = me.getCompareMetadataStore();
+                        mStore.loadRawData(data);
+
+                        // Metadata
+                        var metadata = mStore.first();
+                        me.updateMetaPanels(metadata);
+
+                        if (action == 'review') {
+                            // For reviews, the left combobox always shows just the
+                            // active version while the left shows only pending
+                            // versions. To do this filtering, it is necessary to
+                            // clone the store of the comboboxes.
+                            var originalStore = me.getNewVersionCombobox().getStore();
+                            var copyStore = me.deepCloneStore(originalStore);
+
+                            originalStore.filter('status', 1);
+                            if (originalStore.getCount() == 0) {
+                                // If there are no pending versions (all reviewed),
+                                // switch back to compare view
+                                me.onCompareButtonClick();
+                            }
+
+                            copyStore.filter('status', 2);
+                            if (copyStore.getCount() > 0) {
+                                // There is no active version (for example when
+                                // reviewing first version). Use the same store for
+                                // both comboboxes
+                                me.getRefVersionCombobox().bindStore(copyStore);
+                            }
+                            
+                            // Add missing keys
+                            if (data['missing_keys']) {
+                            	var mk = data['missing_keys'];
+                            	me.missingKeys = mk;
+                            	var tgStore = me.getCompareTagGroupsStore();
+                            	for (var k=0; k<mk.length; k++) {
+	                            	tgStore.add({
+	                            		'new': {
+	                            			'class': 'missing',
+	                            			'tags': [{
+	                            				'key': mk[k],
+	                            				'value': 'Unknown'
+	                            			}]
+	                            		}
+	                            	});
+                            	}
+                            }
+
+                            me.getRefVersionCombobox().setReadOnly(true);
+                        } else if (action == 'compare') {
+                            if (me.getCompareVersionsStore().find('status', 1) == -1) {
+                                // No (more) pending, disable review button
+                                me.getReviewButton().disable();
+                            }
+                            me.getRefVersionCombobox().bindStore(
+                                me.getCompareVersionsStore()
+                            );
+                            me.getRefVersionCombobox().setReadOnly(false);
+                        }
+
+                        // Comboboxes
+                        me.getRefVersionCombobox().setValue(metadata.get('ref_version'));
+                        me.getNewVersionCombobox().setValue(metadata.get('new_version'));
+
+                        if (win) {
+                            win.setLoading(false);
+                        }
                     }
                 }
             });
@@ -218,8 +264,26 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         var mData = this.getCompareMetadataStore().first();
         var identifier = mData.get('identifier');
         var type = mData.get('type');
-
-        if (form && version && identifier && type) {
+        
+        // Missing keys
+        var reviewCombobox = this.getReviewDecisionCombobox();
+        if (this.missingKeys && reviewCombobox && reviewCombobox.getValue() == 1) {
+        	var winMissingKeys = Ext.create('Ext.window.Window', {
+                title: 'Review not possible',
+                bodyPadding: 10,
+                modal: true,
+                width: 300,
+                html: 'There are some mandatory keys missing. The item cannot be approved without these keys. Please click the "edit" button to add the missing keys.',
+                buttons: [
+                    {
+                        text: 'OK',
+                        handler: function() {
+                            winMissingKeys.close();
+                        }
+                    }
+                ]
+            }).show();
+        } else if (form && version && identifier && type) {
             form.submit({
                 url: '/' + type + '/review',
                 params: {
@@ -230,15 +294,26 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                     var result = Ext.JSON.decode(action.response.responseText);
                     infoWindow.alert(
                         Lmkp.ts.msg('feedback_success'),
-                        result.msg
+                        result.msg,
+                        function() {
+                            // Refresh the panel
+                            me.reloadCompareTagGroupStore(
+                                'review', type, identifier
+                            );
+                            // Also clear review comment
+                            me.getReviewCommentTextarea().reset();
+
+                            // Also refresh the list with pending versions
+                            var controller = me.getController('moderation.Pending');
+                            if (controller) {
+                                if (type == 'activities') {
+                                    controller.getPendingActivityGridStore().load();
+                                } else if (type == 'stakeholders') {
+                                    controller.getPendingStakeholderGridStore().load();
+                                }
+                            }
+                        }
                     );
-                    // Refresh the panel
-                    me.reloadCompareTagGroupStore(
-                        'review', type, identifier
-                    );
-                    // Also clear review comment
-                    me.getReviewCommentTextarea().reset();
-                    // TODO: Also refresh the list with pending versions
                 },
                 failure: function(form, action) {
                     var result = Ext.JSON.decode(action.response.responseText);
@@ -264,6 +339,9 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                 } else if (reviewable == -2) {
                     // Stakeholder has no active version
                     return '<img src="/static/img/exclamation.png" style="cursor:pointer;" title="Involvement can not be reviewed. Click for more information.">';
+                } else if (reviewable == -3) {
+                    // Activities cannot be reviewed from Stakeholder's side
+                    return '<img src="/static/img/exclamation.png" style="cursor:pointer;" title="Involvement can not be reviewed. Click for more information.">';
                 } else if (reviewable > 0) {
                     // Involvement can be reviewed
                     return '<img src="/static/img/accept.png" title="Involvement can be reviewed">';
@@ -280,34 +358,59 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         if (review) {
             comp.addListener('click', function(a, b, c, d, e, f) {
                 var record = f;
-                if (record && record.get('reviewable') == -2) {
-                    var data = record.get('new');
-                    if (data && data.identifier) {
-                        var win = Ext.create('Ext.window.Window', {
-                            title: 'Review not possible',
-                            bodyPadding: 10,
-                            modal: true,
-                            width: 300,
-                            html: 'The Stakeholder of this involvement has no active version and cannot be set active. Please review the Stakeholder first.',
-                            buttons: [
-                                {
-                                    text: 'OK',
-                                    handler: function() {
-                                        win.close();
-                                    }
-                                }, {
-                                    text: 'Review Stakeholder',
-                                    handler: function() {
-                                        // Refresh the panel
-                                        me.reloadCompareTagGroupStore(
-                                            'review', 'stakeholders', data.identifier
-                                        );
-                                        win.close();
-                                    }
+                var data = record.get('new');
+                if (record && record.get('reviewable') == -2
+                    && data && data.identifier) {
+                    var winError2 = Ext.create('Ext.window.Window', {
+                        title: 'Review not possible',
+                        bodyPadding: 10,
+                        modal: true,
+                        width: 300,
+                        html: 'The Stakeholder of this involvement has no active version and cannot be set active. Please review the Stakeholder first.',
+                        buttons: [
+                            {
+                                text: 'OK',
+                                handler: function() {
+                                    winError2.close();
                                 }
-                            ]
-                        }).show();
-                    }
+                            }, {
+                                text: 'Review Stakeholder',
+                                handler: function() {
+                                    // Refresh the panel
+                                    me.reloadCompareTagGroupStore(
+                                        'review', 'stakeholders', data.identifier
+                                    );
+                                    winError2.close();
+                                }
+                            }
+                        ]
+                    }).show();
+                } else if (record && record.get('reviewable') == -3
+                    && data && data.identifier) {
+                    var winError3 = Ext.create('Ext.window.Window', {
+                        title: 'Review not possible',
+                        bodyPadding: 10,
+                        modal: true,
+                        width: 300,
+                        html: 'The Activity of this involvement cannot be reviewed from the Stakeholder\'s side. Please review the Activity to approve or reject this involvement.',
+                        buttons: [
+                            {
+                                text: 'OK',
+                                handler: function() {
+                                    winError3.close();
+                                }
+                            }, {
+                                text: 'Review Activity',
+                                handler: function() {
+                                    // Refresh the panel
+                                    me.reloadCompareTagGroupStore(
+                                        'review', 'activities', data.identifier
+                                    );
+                                    winError3.close();
+                                }
+                            }
+                        ]
+                    }).show();
                 }
             });
         }
@@ -315,7 +418,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
 
     onCompareColumnAfterRender: function(comp) {
         comp.renderer = function(value, metaData, record) {
-            if (value) {
+            if (value && value.tags) {
                 metaData.tdCls = value['class'];
                 var html = "";
                 for(var i = 0; i < value.tags.length; i++){
@@ -323,8 +426,11 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                     var prefix = "";
                     if(value['class'] == 'add' || value['class'] == 'add involvement'){
                         prefix += "+ ";
-                    } else if(value['class'] == 'remove' || value['class'] == 'remove involvement'){
+                    } else if (value['class'] == 'remove' || value['class'] == 'remove involvement'){
                         prefix += "- ";
+                    } else if (value['class'] == 'missing') {
+                    	prefix += '? ';
+                    	metaData.tdAttr = 'data-qtip="' + 'Missing mandatory key!' + '"';
                     }
                     html += "<div>" + prefix + tag.key + ": " + tag.value + "</div>";
                 }
@@ -351,6 +457,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
     onCompareLinkButtonClick: function() {
         var mData = this.getCompareMetadataStore().first();
         var url = this._getUrl(
+            'html',
             this.getComparePanel().action,
             mData.get('type'),
             mData.get('identifier'),
@@ -372,24 +479,33 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
             win.removeAll();
         }
 
+        var mData = this.getCompareMetadataStore().first();
+        var type = mData.get('type');
+        var identifier = mData.get('identifier');
+
+        var title = 'Compare versions';
+        if (type == 'activities') {
+            title += ' of Activity ' + this.stringFunctions._shortenIdentifier(identifier);
+        } else if (type == 'stakeholders') {
+            title += ' of Stakeholder ' + this.stringFunctions._shortenIdentifier(identifier);
+        }
+
         win.setLoading(true);
-        win.setTitle('Compare');
+        win.setTitle(title);
         win.add({
             xtype: 'lo_moderatorcomparereview',
             action: 'compare'
         });
 
-        var mData = this.getCompareMetadataStore().first();
-
         this.reloadCompareTagGroupStore(
             'compare',
-            mData.get('type'),
-            mData.get('identifier')
+            type,
+            identifier
         );
     },
 
     onReviewButtonClick: function() {
-
+        var mData = this.getCompareMetadataStore().first();
         var win = this.getCompareWindow();
         if (!win) {
             win = this._createWindow();
@@ -398,23 +514,28 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
             win.removeAll();
         }
 
+        var type = mData.get('type');
+        var identifier = mData.get('identifier');
+
+        var title = 'Review versions';
+        if (type == 'activities') {
+            title += ' of Activity ' + this.stringFunctions._shortenIdentifier(identifier);
+        } else if (type == 'stakeholders') {
+            title += ' of Stakeholder ' + this.stringFunctions._shortenIdentifier(identifier);
+        }
+
         win.setLoading(true);
-        win.setTitle('Review');
+        win.setTitle(title);
         win.add({
             xtype: 'lo_moderatorcomparereview',
             action: 'review'
         });
 
-        var mData = this.getCompareMetadataStore().first();
-
         this.reloadCompareTagGroupStore(
             'review',
-            mData.get('type'),
-            mData.get('identifier')
+            type,
+            identifier
         );
-
-            
-
     },
 
     onEditButtonClick: function() {
@@ -478,25 +599,47 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         }
     },
 
+    onWindowCloseButtonClick: function() {
+        var win = this.getCompareWindow();
+        win.close();
+    },
+
     _createWindow: function(title) {
+
+        // Window parameters
+        var buffer = 50; // Minimal blank space at the sides of the window
+        var defaultHeight = 700; // Default height of the window
+        var defaultWidth = 700; // Default width of the window
+
+        var viewSize = Ext.getBody().getViewSize();
+        var height = (viewSize.height > defaultHeight + buffer)
+            ? defaultHeight : viewSize.height - buffer;
+        var width = (viewSize.width > defaultWidth + buffer)
+            ? defaultWidth : viewSize.width - buffer;
+
         var win = Ext.create('Ext.window.Window', {
             name: 'compareWindow',
             title: title,
             layout: 'fit',
             border: false,
-            height: 700,
-            width: 700,
+            height: height,
+            width: width,
             modal: true
         });
         return win;
     },
 
-    _getUrl: function(action, type, uid, refVersion, newVersion) {
-        if (action && type && uid) {
-            var url = '/' + type + '/' + action + '/json/' + uid;
-            if (refVersion && newVersion) {
+    _getUrl: function(output, action, type, uid, refVersion, newVersion) {
+        if (output && action && type && uid) {
+            var url;
+            if (output == 'json') {
+                url = '/' + type + '/' + action + '/json/' + uid;
+            } else if (output == 'html') {
+                url = '/moderation/' + type + '/' + uid
+            }
+            if (refVersion && newVersion && output == 'json') {
                 url += '/' + refVersion + '/' + newVersion;
-            } else if (!refVersion && newVersion) {
+            } else if (!refVersion && newVersion && output == 'json') {
                 // Special case: Nothing is selected on the left side (brand new
                 // object with multiple pending versions)
                 url += '/0/' + newVersion;

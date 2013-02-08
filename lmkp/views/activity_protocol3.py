@@ -1,6 +1,7 @@
 from geoalchemy import WKBSpatialElement
 from geoalchemy.functions import functions
 from lmkp.models.database_objects import *
+from lmkp.views.profile import get_current_profile
 from lmkp.views.protocol import *
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.translation import get_translated_status
@@ -72,13 +73,13 @@ class ActivityFeature3(Feature):
             for t in tg.get_tags():
                 if t.get_key() == 'Country':
                     c.append(t.get_value())
-                if t.get_key() == 'Contract area (ha)':
+                if t.get_key() == 'Intended area (ha)':
                     a.append(t.get_value())
                 if t.get_key() == 'Intention of Investment':
                     i.append(t.get_value())
 
         repr.append({"key": "Country", 'value': ','.join(c)})
-        repr.append({"key": "Contract area (ha)", 'value': ','.join(a)})
+        repr.append({"key": "Intended area (ha)", 'value': ','.join(a)})
         repr.append({"key": "Intention of Investment", 'value': ','.join(i)})
 
         return repr
@@ -191,19 +192,46 @@ class ActivityProtocol3(Protocol):
 
         # Return the IDs of the newly created Activities
         ids = []
+        # Also collect the diffs again because they may have changed (due to
+        # recalculation)
+        activity_diffs = []
+        new_diffs = False
         for activity in diff['activities']:
 
-            a = self._handle_activity(request, activity, changeset)
+            a, ret_diff = self._handle_activity(request, activity, changeset)
 
-            # Add the newly created identifier to the diff
-            activity[unicode('id')] = unicode(a.activity_identifier)
+            if a is not None:
+                if ret_diff is not None:
+                    # If a new diff came back, use this to replace the old one
+                    new_diffs = True
+                    activity = ret_diff
 
-            ids.append(a)
+                # Add the newly created identifier to the diff (this is
+                # important if the item had no identifier before
+                activity[unicode('id')] = unicode(a.activity_identifier)
 
-        # Save diff to changeset and handle UTF-8 of diff
-        changeset.diff = str(self._convert_utf8(diff))
+                ids.append(a)
 
-        return ids
+                # Append the diffs
+                if ret_diff is None:
+                    activity_diffs.append(self._convert_utf8(activity))
+                else:
+                    activity_diffs.append(activity)
+
+        if len(ids) > 0:
+            # At least one Activity was created
+            changeset_diff = {'activities': activity_diffs}
+
+            if new_diffs is True:
+                changeset_diff = json.dumps(changeset_diff).replace('"', '\'')
+
+            changeset.diff = str(changeset_diff)
+
+            return ids
+
+        else:
+            # No Activity was created
+            return None
 
     def read_one_active(self, request, uid):
 
@@ -1576,25 +1604,30 @@ class ActivityProtocol3(Protocol):
 
         if create_new is True:
             # Create new Activity
-            new_activity = self._create_activity(request, activity_dict,
-                                                 changeset, status=status)
+            new_activity = self._create_activity(
+                request, activity_dict, changeset, status=status
+            )
 
-            # Handle also the involvements
-            self._handle_involvements(request, None, new_activity,
-                                      involvement_change, changeset, implicit_inv_change)
+            if new_activity is not None:
+                # Handle also the involvements
+                self._handle_involvements(
+                    request, None, new_activity, involvement_change, changeset,
+                    implicit_inv_change
+                )
 
-            return new_activity
+            return new_activity, None
 
         else:
             # Update existing Activity
-            updated_activity = self._update_object(request, db_a, activity_dict,
-                                                     changeset)
+            updated_activity, return_diff = self._update_object(
+                request, db_a, activity_dict, changeset
+            )
 
             # Handle also the involvements
             self._handle_involvements(request, db_a, updated_activity,
                                       involvement_change, changeset, implicit_inv_change)
 
-            return updated_activity
+            return updated_activity, return_diff
 
     def _create_activity(self, request, activity_dict, changeset, ** kwargs):
         """
@@ -1602,6 +1635,11 @@ class ActivityProtocol3(Protocol):
         Allowed keyword arguments:
         - 'status'
         """
+
+        # First check if all the needed values are in the activity_dict:
+        # At least one taggroup needs to be in the diff.
+        if 'taggroups' not in activity_dict:
+            return None
 
         identifier = (activity_dict['id'] if 'id' in activity_dict and
                       activity_dict['id'] is not None
@@ -1642,6 +1680,16 @@ class ActivityProtocol3(Protocol):
 
         # Add the Activity to the database
         self.Session.add(new_activity)
+
+        # Store the current profile when creating a new Activity
+        profile_code = get_current_profile(request)
+        profile = self.Session.query(
+                Profile
+            ).\
+            filter(Profile.code == profile_code).\
+            first()
+
+        new_activity.profile = profile
 
         # Populate the Tag Groups
         for i, taggroup in enumerate(activity_dict['taggroups']):
@@ -1700,6 +1748,8 @@ class ActivityProtocol3(Protocol):
         - 'status'
         """
 
+        return_diff = None
+
         if old_activity.fk_status == 1:
             # If changes were made to a pending version, this pending version is
             # set to 'edited' and the newly created version contains also the
@@ -1721,6 +1771,8 @@ class ActivityProtocol3(Protocol):
                 activity_dict,
                 diff
             )
+            # Also store and return the newly calculated diff
+            return_diff = activity_dict
 
             # Query the previous version of the edited pending version
             ref_version = self.Session.query(
@@ -1800,7 +1852,7 @@ class ActivityProtocol3(Protocol):
             db = True
         )
 
-        return a
+        return a, return_diff
 
     def _handle_involvements(self, request, old_version, new_version,
                              inv_change, changeset, implicit=False, **kwargs):
@@ -1916,7 +1968,7 @@ class ActivityProtocol3(Protocol):
                             if db_object is not None:
                                 new_sh = db_object
                             else:
-                                new_sh = sp._handle_stakeholder(
+                                new_sh, new_diff = sp._handle_stakeholder(
                                     request, sh_dict, changeset
                                 )
 
@@ -1992,7 +2044,9 @@ class ActivityProtocol3(Protocol):
                     if db_object is not None:
                         new_sh = db_object
                     else:
-                        new_sh = sp._handle_stakeholder(request, sh_dict, changeset)
+                        new_sh, new_diff = sp._handle_stakeholder(
+                            request, sh_dict, changeset
+                        )
                 else:
                     # TODO
                     blablabaldfasdfsaf

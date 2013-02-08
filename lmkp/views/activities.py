@@ -316,6 +316,8 @@ def create(request):
 
     """
 
+    _ = request.translate
+
     # Check if the user is logged in and he/she has sufficient user rights
     userid = request.user.username #authenticated_userid(request)
 
@@ -327,10 +329,20 @@ def create(request):
     ids = activity_protocol3.create(request)
 
     response = {}
-    response['data'] = [i.to_json() for i in ids]
-    response['total'] = len(response['data'])
 
-    request.response.status = 201
+    # TODO: complete translation here. Also: All server responses in Ext?
+
+    if ids is not None:
+        response['data'] = [i.to_json() for i in ids]
+        response['total'] = len(response['data'])
+        response['created'] = True
+        response['msg'] = 'Success message'
+        request.response.status = 201
+    else:
+        response['created'] = False
+        response['msg'] = _('No Activity was created.')
+        request.response.status = 200
+        
     return response
 
 #@view_config(route_name='taggroups_model', renderer='string')
