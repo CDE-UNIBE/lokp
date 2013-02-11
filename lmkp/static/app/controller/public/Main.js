@@ -383,7 +383,7 @@ Ext.define('Lmkp.controller.public.Main', {
      * Nicely render 'Intended Area' column of Activity grid.
      */
     onActivityIndendedAreaColumnAfterrender: function(comp) {
-        this._renderColumnMultipleValues(comp, 'activity_db-key-intendedarea');
+        this._renderColumnMultipleValues(comp, 'activity_db-key-intendedarea', null, 2);
     },
 
     /**
@@ -485,8 +485,10 @@ Ext.define('Lmkp.controller.public.Main', {
     /**
      * Helper function to find values inside Tags and TagGroups.
      * 'ignored': Optionally provide an array of (dummy) values to be ignored.
+     * 'digits': Optionally provide an integer to round a number to that many
+     * digits
      */
-    _renderColumnMultipleValues: function(comp, dataIndex, ignored) {
+    _renderColumnMultipleValues: function(comp, dataIndex, ignored, digits) {
         var me = this;
         
         comp.renderer = function(value, metaData, record) {
@@ -505,7 +507,17 @@ Ext.define('Lmkp.controller.public.Main', {
                 tagStore.each(function(tag) {
                     if (tag.get('key') == Lmkp.ts.msg(dataIndex)) {
                         if (!ignored || !me._isInArray(ignored, tag.get('value'))) {
-                            ret.push(Ext.String.format('{0}', tag.get('value')));
+                            if (digits && parseInt(digits)) {
+                                var v = tag.get('value');
+                                var numberV = parseFloat(v);
+                                if (numberV) {
+                                    ret.push(Ext.String.format('{0}', numberV.toFixed(2)));
+                                } else {
+                                    ret.push(Ext.String.format('{0}', tag.get('value')));
+                                }
+                            } else {
+                                ret.push(Ext.String.format('{0}', tag.get('value')));
+                            }
                         }
                     }
                 });
