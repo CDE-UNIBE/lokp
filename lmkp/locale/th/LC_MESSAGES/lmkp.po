@@ -1,0 +1,933 @@
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: POEditor.com\n"
+"Project-Id-Version: LOKP\n"
+"Language: th\n"
+
+#: Default: Loading ...
+#: lmkp/templates/administration.mak:19 lmkp/templates/charts.mak:35
+#: lmkp/templates/compare_versions.mak:48 lmkp/templates/embedded.mak:35
+#: lmkp/templates/index.mak:36 lmkp/templates/moderation.mak:31
+#: lmkp/templates/review_versions.mak:33 lmkp/views/translation.py:132
+msgid "gui_loading"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/administration.mak:11 lmkp/templates/base.mak:52
+#: lmkp/templates/base.mak:55 lmkp/templates/charts.mak:16
+#: lmkp/templates/compare_versions.mak:11 lmkp/templates/embedded.mak:10
+#: lmkp/templates/index.mak:15 lmkp/templates/login_form.mak:5
+#: lmkp/templates/moderation.mak:13 lmkp/templates/reset_form.mak:5
+#: lmkp/templates/review_versions.mak:4
+msgid "Land Observatory"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/base.mak:58
+msgid "The Land Observatory will make information on large-scale land acquisition transparent and accessible through an interactive, map-based platform. We are piloting the project in five countries, with partners and governments who will work to open government data, crowdsource and help customize local observatories. Updated information on land will benefit citizens, but also governments and companies interested in sustainability."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/base.mak:61
+msgid "The pilot project is coordinated by the"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/base.mak:62
+msgid "International Land Coalition"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/base.mak:63
+msgid "and the"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/base.mak:64
+msgid "Centre for Development and Environment"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/base.mak:65
+msgid "at the University of Bern, Switzerland. It is funded by the"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/base.mak:66
+msgid "Swiss Agency for Development Cooperation"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/base.mak:67
+msgid ", with co-funding from other ILC and CDE programs."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/activities.py:258
+msgid "User is not logged in."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/activities.py:261
+msgid "User has no permissions to add a review."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/activities.py:268
+msgid "User has no profile attached"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/activities.py:275
+msgid "The Activity was not found or is not situated within the user's profiles"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/activities.py:299
+msgid "Not all mandatory keys are provided"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/comments.py:72 lmkp/views/comments.py:170
+msgid "Object not found."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/comments.py:139
+msgid "Captcha not correct."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/comments.py:159
+msgid "Comment successfully inserted."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/comments.py:205
+msgid "Comment successfully deleted."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/editors.py:25 lmkp/views/moderators.py:30
+msgid "Logged in as:"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/moderators.py:31
+msgid "Show user profile"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/editors.py:27 lmkp/views/moderators.py:32
+msgid "Logout"
+msgstr "这仅仅是一个测试。"
+
+#: Default: pending
+#: lmkp/views/translation.py:21
+msgid "status_pending"
+msgstr "这仅仅是一个测试。"
+
+#: Default: active
+#: lmkp/views/translation.py:22
+msgid "status_active"
+msgstr "这仅仅是一个测试。"
+
+#: Default: inactive
+#: lmkp/views/translation.py:23
+msgid "status_inactive"
+msgstr "这仅仅是一个测试。"
+
+#: Default: deleted
+#: lmkp/views/translation.py:24
+msgid "status_deleted"
+msgstr "这仅仅是一个测试。"
+
+#: Default: rejected
+#: lmkp/views/translation.py:25
+msgid "status_rejected"
+msgstr "这仅仅是一个测试。"
+
+#: Default: edited
+#: lmkp/views/translation.py:26
+msgid "status_edited"
+msgstr "这仅仅是一个测试。"
+
+#: Default: approved
+#: lmkp/views/translation.py:31
+msgid "reviewdecision_approved"
+msgstr "这仅仅是一个测试。"
+
+#: Default: rejected
+#: lmkp/views/translation.py:32
+msgid "reviewdecision_rejected"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Status
+#: lmkp/views/translation.py:57
+msgid "status_name"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Add attribute filter
+#: lmkp/views/translation.py:75
+msgid "button_add-attribute-filter"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Add more specific information
+#: lmkp/views/translation.py:76
+msgid "button_add-new-tag"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Add further information
+#: lmkp/views/translation.py:77
+msgid "button_add-new-taggroup"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Add time filter
+#: lmkp/views/translation.py:78
+msgid "button_add-time-filter"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Back
+#: lmkp/views/translation.py:79
+msgid "button_back"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Cancel
+#: lmkp/views/translation.py:80
+msgid "button_cancel"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Clear
+#: lmkp/views/translation.py:81
+msgid "button_clear"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Close
+#: lmkp/views/translation.py:82
+msgid "button_close"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Continue
+#: lmkp/views/translation.py:83
+msgid "button_continue"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Delete
+#: lmkp/views/translation.py:84
+msgid "button_delete"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Edit
+#: lmkp/views/translation.py:85
+msgid "button_edit"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Activate
+#: lmkp/views/translation.py:86
+msgid "button_filter-activate"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Delete
+#: lmkp/views/translation.py:87
+msgid "button_filter-delete"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Base Layers
+#: lmkp/views/translation.py:89
+msgid "button_map_base-layers"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Context Layers
+#: lmkp/views/translation.py:90
+msgid "button_map_context-layers"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Satellite Imagery
+#: lmkp/views/translation.py:91
+msgid "button_map_satellite-map"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Show Legend
+#: lmkp/views/translation.py:92
+msgid "button_map_show-legend"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Street Map
+#: lmkp/views/translation.py:93
+msgid "button_map_street-map"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Terrain Map
+#: lmkp/views/translation.py:94
+msgid "button_map_terrain-map"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Next
+#: lmkp/views/translation.py:95
+msgid "button_next"
+msgstr "这仅仅是一个测试。"
+
+#: Default: No
+#: lmkp/views/translation.py:96
+msgid "button_no"
+msgstr "这仅仅是一个测试。"
+
+#: Default: OK
+#: lmkp/views/translation.py:97
+msgid "button_ok"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Submit
+#: lmkp/views/translation.py:99
+msgid "button_submit"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Yes
+#: lmkp/views/translation.py:100
+msgid "button_yes"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Add a filter based on attribute
+#: lmkp/views/translation.py:103
+msgid "tooltip_add-attribute-filter"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Add a filter based on time
+#: lmkp/views/translation.py:104
+msgid "tooltip_add-time-filter"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Close Window
+#: lmkp/views/translation.py:105
+msgid "tooltip_close-window"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Click to activate this filter
+#: lmkp/views/translation.py:106
+msgid "tooltip_filter-activate"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Click to delete this filter
+#: lmkp/views/translation.py:107
+msgid "tooltip_filter-delete"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Identify Feature
+#: lmkp/views/translation.py:108
+msgid "tooltip_map_identify-feature"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Pan
+#: lmkp/views/translation.py:109
+msgid "tooltip_map_pan"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Zoom In
+#: lmkp/views/translation.py:110
+msgid "tooltip_map_zoom-in"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Zoom Out
+#: lmkp/views/translation.py:111
+msgid "tooltip_map_zoom-out"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Zoom to Profile Region
+#: lmkp/views/translation.py:112
+msgid "tooltip_map_zoom-to-profile-region"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Remove this stakeholder
+#: lmkp/views/translation.py:113
+msgid "tooltip_remove-stakeholder"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Anonymous
+#: lmkp/views/translation.py:116
+msgid "gui_anonymous"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Clear Selection
+#: lmkp/views/translation.py:117
+msgid "gui_clear-selection"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Please confirm
+#: lmkp/views/translation.py:118
+msgid "gui_confirm"
+msgstr "这仅仅是一个测试。"
+
+#: Default: You are seeing a {0} version, which needs to be reviewed before it is
+#: publicly visible
+#: lmkp/views/translation.py:119
+msgid "gui_currently-seeing-pending-version"
+msgstr "这仅仅是一个测试。"
+
+#: Default: You are seeing an {0} version, which was previously active and publicly
+#: visible.
+#: lmkp/views/translation.py:120
+msgid "gui_currently-seeing-inactive-version"
+msgstr "这仅仅是一个测试。"
+
+#: Default: You are seeing a {0} version, which was previously active and publicly
+#: visible.
+#: lmkp/views/translation.py:121
+msgid "gui_currently-seeing-deleted-version"
+msgstr "这仅仅是一个测试。"
+
+#: Default: You are seeing a {0} version, which was never publicly visible.
+#: lmkp/views/translation.py:122
+msgid "gui_currently-seeing-rejected-version"
+msgstr "这仅仅是一个测试。"
+
+#: Default: You are seeing an {0} version, which was edited by a moderator and was
+#: never publicly visible.
+#: lmkp/views/translation.py:123
+msgid "gui_currently-seeing-edited-version"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Date
+#: lmkp/views/translation.py:124
+msgid "gui_date"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Delete all Filters
+#: lmkp/views/translation.py:126
+msgid "gui_delete-all-filters"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Details
+#: lmkp/views/translation.py:127
+msgid "gui_details"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Filter ({0} active)
+#: lmkp/views/translation.py:128
+msgid "gui_filter-count"
+msgstr "这仅仅是一个测试。"
+
+#: Default: History
+#: lmkp/views/translation.py:129
+msgid "gui_history"
+msgstr "这仅仅是一个测试。"
+
+#: Default: ID
+#: lmkp/views/translation.py:130
+msgid "gui_id"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Language
+#: lmkp/views/translation.py:131
+msgid "gui_language"
+msgstr "这仅仅是一个测试。"
+
+#: Default: No attributes to show
+#: lmkp/views/translation.py:133
+msgid "gui_no-attributes"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Page
+#: lmkp/views/translation.py:134
+msgid "gui_paging-before"
+msgstr "这仅仅是一个测试。"
+
+#: Default: of {0}
+#: lmkp/views/translation.py:135
+msgid "gui_paging-after"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Previous Version
+#: lmkp/views/translation.py:136
+msgid "gui_previous-version"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Profile
+#: lmkp/views/translation.py:137
+msgid "gui_profile"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Search
+#: lmkp/views/translation.py:138
+msgid "gui_search"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Show Details
+#: lmkp/views/translation.py:139
+msgid "gui_show-details"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Timestamp
+#: lmkp/views/translation.py:140
+msgid "gui_timestamp"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Unknown
+#: lmkp/views/translation.py:141
+msgid "gui_unknown"
+msgstr "这仅仅是一个测试。"
+
+#: Default: User
+#: lmkp/views/translation.py:142
+msgid "gui_user"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Version
+#: lmkp/views/translation.py:143
+msgid "gui_version"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Failure
+#: lmkp/views/translation.py:146
+msgid "feedback_failure"
+msgstr "这仅仅是一个测试。"
+
+#: Default: The deal was successfully created. It will be reviewed shortly.
+#: lmkp/views/translation.py:147
+msgid "feedback_new-activity-created"
+msgstr "这仅仅是一个测试。"
+
+#: Default: The deal could not be created.
+#: lmkp/views/translation.py:148
+msgid "feedback_new-activity-not-created"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Edited changes were successfully submitted
+#: lmkp/views/translation.py:153
+msgid "feedback_pending-edit-submitted"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Edited changes could not be submitted
+#: lmkp/views/translation.py:154
+msgid "feedback_pending-edit-not-submitted"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Some of the attributes cannot be edited because they are not part of
+#: the currently selected profile.
+#: lmkp/views/translation.py:155
+msgid "feedback_some-attributes-not-editable-because-of-profile"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Success
+#: lmkp/views/translation.py:156
+msgid "feedback_success"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Add new Deal
+#: lmkp/views/translation.py:159
+msgid "activities_add-new-activity"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Details on Deal
+#: lmkp/views/translation.py:161
+msgid "activities_details-title"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Filter Deal
+#: lmkp/views/translation.py:162
+msgid "activities_filter-title"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Step 1: Please select a point on the map.
+#: lmkp/views/translation.py:163
+msgid "activities_new-step-1"
+msgstr "这仅仅是一个测试。"
+
+#: Default: You can drag and drop the point. Once you are done, click "Continue".
+#: lmkp/views/translation.py:164
+msgid "activities_new-step-1-explanation"
+msgstr "这仅仅是一个测试。"
+
+#: Default: New Deal
+#: lmkp/views/translation.py:165
+msgid "activities_new-title"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Displaying Deals {0} - {1} of {2}
+#: lmkp/views/translation.py:166
+msgid "activities_paging-message"
+msgstr "这仅仅是一个测试。"
+
+#: Default: No Deals found
+#: lmkp/views/translation.py:167
+msgid "activities_paging-empty"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Deals
+#: lmkp/views/translation.py:168
+msgid "activities_title"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Edit this involvement
+#: lmkp/views/translation.py:171
+msgid "involvements_edit-involvement"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Role
+#: lmkp/views/translation.py:172
+msgid "involvements_stakeholder-role"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Involvements
+#: lmkp/views/translation.py:173
+msgid "involvements_title"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Add Stakeholders
+#: lmkp/views/translation.py:176
+msgid "stakeholders_add-stakeholders"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Associated Stakeholders
+#: lmkp/views/translation.py:177
+msgid "stakeholders_associated-stakeholders"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Create new Stakeholder
+#: lmkp/views/translation.py:178
+msgid "stakeholders_create-new-stakeholder"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Details on Stakeholder
+#: lmkp/views/translation.py:180
+msgid "stakeholders_details-title"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Filter Stakeholders
+#: lmkp/views/translation.py:181
+msgid "stakeholders_filter-title"
+msgstr "这仅仅是一个测试。"
+
+#: Default: No associated Stakeholders so far. You can search and select a
+#: Stakeholder using the Search field below. Or you can create a new Stakeholder by
+#: clicking on the button above.
+#: lmkp/views/translation.py:182
+msgid "stakeholders_no-associated-stakeholders-yet"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Displaying stakeholders {0} - {1} of {2}
+#: lmkp/views/translation.py:183
+msgid "stakeholders_paging-message"
+msgstr "这仅仅是一个测试。"
+
+#: Default: No stakeholders found
+#: lmkp/views/translation.py:184
+msgid "stakeholders_paging-empty"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Search Stakeholder
+#: lmkp/views/translation.py:185
+msgid "stakeholders_search"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Select Stakeholder
+#: lmkp/views/translation.py:186
+msgid "stakeholders_select-stakeholder"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Stakeholders
+#: lmkp/views/translation.py:187
+msgid "stakeholder_title"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Comment by
+#: lmkp/views/translation.py:190
+msgid "comments_comment-by"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Do you really want to delete this comment?
+#: lmkp/views/translation.py:191
+msgid "comments_confirm-delete-comment"
+msgstr "这仅仅是一个测试。"
+
+#: Default: No comments yet.
+#: lmkp/views/translation.py:192
+msgid "comments_empty"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Leave a comment
+#: lmkp/views/translation.py:193
+msgid "comments_leave-comment"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Comment
+#: lmkp/views/translation.py:194
+msgid "comments_singular"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Comments
+#: lmkp/views/translation.py:195
+msgid "comments_title"
+msgstr "这仅仅是一个测试。"
+
+#: Default: These changes are based on a version which is not the active version.
+#: lmkp/views/translation.py:198
+msgid "moderator_changes-not-based-on-active"
+msgstr "这仅仅是一个测试。"
+
+#: Default: There are multiple changes pending! They may be conflicting.
+#: lmkp/views/translation.py:199
+msgid "moderator_multiple-changes-pending"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Pending version
+#: lmkp/views/translation.py:200
+msgid "moderator_pending-version-title"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Review Comment
+#: lmkp/views/translation.py:201
+msgid "moderator_review-comment"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Review Decision
+#: lmkp/views/translation.py:202
+msgid "moderator_review-decision"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Review pending changes
+#: lmkp/views/translation.py:203
+msgid "moderator_review-pending-changes"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Show pending changes
+#: lmkp/views/translation.py:204
+msgid "moderator_show-pending-changes"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Logical Operator
+#: lmkp/views/translation.py:207
+msgid "filter_logical-operator"
+msgstr "这仅仅是一个测试。"
+
+#: Default: and
+#: lmkp/views/translation.py:208
+msgid "filter_logical-operator-and"
+msgstr "这仅仅是一个测试。"
+
+#: Default: or
+#: lmkp/views/translation.py:209
+msgid "filter_logical-operator-or"
+msgstr "这仅仅是一个测试。"
+
+#: Default: is
+#: lmkp/views/translation.py:210
+msgid "filter_operator-is"
+msgstr "这仅仅是一个测试。"
+
+#: Default: is not
+#: lmkp/views/translation.py:211
+msgid "filter_operator-is-not"
+msgstr "这仅仅是一个测试。"
+
+#: Default: contains (case sensitive)
+#: lmkp/views/translation.py:212
+msgid "filter_operator-contains-case-sensitive"
+msgstr "这仅仅是一个测试。"
+
+#: Default: contains (case insensitive)
+#: lmkp/views/translation.py:213
+msgid "filter_operator-contains-case-insensitive"
+msgstr "这仅仅是一个测试。"
+
+#: Default: contains not (case sensitive)
+#: lmkp/views/translation.py:214
+msgid "filter_operator-contains-not-case-sensitive"
+msgstr "这仅仅是一个测试。"
+
+#: Default: contains not (case insensitive)
+#: lmkp/views/translation.py:215
+msgid "filter_operator-contains-not-case-insensitive"
+msgstr "这仅仅是一个测试。"
+
+#: Default: equals
+#: lmkp/views/translation.py:216
+msgid "filter_operator-equals"
+msgstr "这仅仅是一个测试。"
+
+#: Default: less than
+#: lmkp/views/translation.py:217
+msgid "filter_operator-less-than"
+msgstr "这仅仅是一个测试。"
+
+#: Default: less than or equal
+#: lmkp/views/translation.py:218
+msgid "filter_operator-less-than-or-equal"
+msgstr "这仅仅是一个测试。"
+
+#: Default: greater than
+#: lmkp/views/translation.py:219
+msgid "filter_operator-greater-than"
+msgstr "这仅仅是一个测试。"
+
+#: Default: greater than or equal
+#: lmkp/views/translation.py:220
+msgid "filter_operator-greater-than-or-equal"
+msgstr "这仅仅是一个测试。"
+
+#: Default: not equals
+#: lmkp/views/translation.py:221
+msgid "filter_operator-not-equals"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Specify number value
+#: lmkp/views/translation.py:222
+msgid "filter_specify-number-value"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Specify value
+#: lmkp/views/translation.py:223
+msgid "filter_specify-text-value"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:21
+msgid "Username"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:23
+msgid "Password"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:5 lmkp/templates/reset_form.mak:5
+#: lmkp/views/viewers.py:28
+msgid "Login"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/administration.mak:11
+msgid "Administration"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/charts.mak:16
+msgid "Charts"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/charts.mak:39
+msgid "Heat map for Cambodia and Laos"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/charts.mak:41
+msgid "Distribution of land related deals in Cambodia and for Champasak and Attapeu province in Laos."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/charts.mak:42
+msgid "Data for Cambodia are provided by the website"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/charts.mak:44
+msgid "Data for Laos are based on the landconcessions database."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/charts.mak:49
+msgid "Distribution of activities worldwide"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/charts.mak:51
+msgid "Worldwide distribution of land related deals based on the Landmatrix database available at"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/compare_versions.mak:11
+msgid "Compare"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:11
+msgid "Login to the Land Observatory"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:31
+msgid "Forgot Password?"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/moderation.mak:13
+msgid "Moderation"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/reset_form.mak:37
+msgid "Reset password"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/reset_form.mak:42
+msgid "Email Address"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/review_versions.mak:4
+msgid "Review"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/activities.py:343
+msgid "No Activity was created."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/errors.py:17
+msgid "Please login to access:"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/login.py:56
+msgid "Login failed! Please try again."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/login.py:99
+msgid "No registered user found with this email address."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/login.py:105
+msgid "Land Observatory - Password reset"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/login.py:107
+msgid "Password reset was successful. An email containing the new password has been sent to your email address."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/login.py:109
+msgid "Proceed to the login page"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/stakeholders.py:340
+msgid "No Stakeholder was created."
+msgstr "这仅仅是一个测试。"
+
+#: Default: Editors
+#: lmkp/views/translation.py:37
+msgid "usergroup_editors"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Moderators
+#: lmkp/views/translation.py:38
+msgid "usergroup_moderators"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Administrators
+#: lmkp/views/translation.py:39
+msgid "usergroup_administrators"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Investor
+#: lmkp/views/translation.py:46
+msgid "stakeholderrole_investor"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Link
+#: lmkp/views/translation.py:88
+msgid "button_link"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Refresh
+#: lmkp/views/translation.py:98
+msgid "button_refresh"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Last change
+#: lmkp/views/translation.py:125
+msgid "gui_last-change"
+msgstr "这仅仅是一个测试。"
+
+#: Default: The Stakeholder was successfully created. It will be reviewed shortly
+#: lmkp/views/translation.py:149
+msgid "feedback_new-stakeholder-created"
+msgstr "这仅仅是一个测试。"
+
+#: Default: The Stakeholder could not be created.
+#: lmkp/views/translation.py:150
+msgid "feedback_new-stakeholder-not-created"
+msgstr "这仅仅是一个测试。"
+
+#: Default: No changes made
+#: lmkp/views/translation.py:151
+msgid "feedback_no-changes-made"
+msgstr "这仅仅是一个测试。"
+
+#: Default: You did not make any changes.
+#: lmkp/views/translation.py:152
+msgid "feedback_no-changes-made-explanation"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Edit Deal (version {0})
+#: lmkp/views/translation.py:160
+msgid "activities_edit-activity"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Edit Stakeholder (version {0})
+#: lmkp/views/translation.py:179
+msgid "stakeholders_edit-stakeholder"
+msgstr "这仅仅是一个测试。"
+
