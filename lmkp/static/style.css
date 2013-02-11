@@ -198,10 +198,13 @@ div.olLayerGooglePoweredBy
 }
 /* Style for the main html page */
 #header-div {
-    width: 100%;
-}
-#title-div {
     float: left;
+    width: 100%;
+    padding: 5px;
+}
+#header-div h1 {
+    font-family: "Myriad Pro","Myriad Web Pro Regular","Lucida Grande",Geneva,Trebuchet MS,sans-serif;
+    font-size: 16px;
 }
 #logo-div {
     float: right;
