@@ -71,7 +71,6 @@ Ext.onReady(function() {
                 },{
                     autoScroll: true,
                     contentEl: 'header-div',
-                    height: 112, // 100 + 2x border + 10px padding
                     region: 'north',
                     xtype: 'panel'
                 },{
