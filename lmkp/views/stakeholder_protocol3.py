@@ -615,89 +615,67 @@ class StakeholderProtocol3(Protocol):
         # @TODO: do it!
         timestamp_filter = None
 
+        # TODO: Status filter?
+        """
         # Apply status filter (only if timestamp filter is not set)
         if status_filter is not None and timestamp_filter is None:
             relevant_stakeholders = relevant_stakeholders.\
                 filter(Stakeholder.fk_status.in_(status_filter))
+        """
+        
+        # Decide which version a user can see.
+        # - Public (not logged in) always see active versions.
+        # - Logged in users see their own pending versions, as long as they are
+        #   newer than the active version.
+        # - Moderators see all pending versions, as long as they are newer than the active
+        #   version.
 
-        # If logged in and it is not a public query, add pending versions by
-        # current user to selection. If moderator, add all pending versions.
         if logged_in and public_query is False:
+            # Logged in
 
-            # It is necessary to first find out if there are Stakeholders
-            # pending and if yes, which is the latest version
-            latest_pending_stakeholders = self.Session.query(
-                                                             Stakeholder.stakeholder_identifier,
-                                                             func.max(Stakeholder.version).label('max_version')
-                                                             ).\
+            # Find the latest version for each Stakeholder, which is either ...
+            latest_visible_version = self.Session.query(
+                    Stakeholder.stakeholder_identifier.label('identifier'),
+                    func.max(Stakeholder.version).label('max_version')
+                ).\
                 join(Changeset)
 
-            #TODO: could this be done easier? (max_version filter first?)
-            # Only show pending items if there isn't a more recent active version
-            if is_moderator:
-                latest_pending_stakeholders = latest_pending_stakeholders.\
-                    filter(
-                        or_(Stakeholder.fk_status == 1, Stakeholder.fk_status == 2)
-                    )
-            else:
-                latest_pending_stakeholders = latest_pending_stakeholders.\
-                    filter(
-                        or_(
-                            and_(
-                                Stakeholder.fk_status == 1,
-                                Changeset.fk_user == request.user.id
-                            ),
-                            Stakeholder.fk_status == 2
-                        )
-                    )
+            # ... active
+            # ... or is pending and has changes by the current user
 
-            latest_pending_stakeholders = latest_pending_stakeholders.\
-                group_by(Stakeholder.stakeholder_identifier).\
+            visible_version_filters = [
+                Stakeholder.fk_status == 2
+            ]
+
+            if is_moderator:
+                visible_version_filters.append(
+                    Stakeholder.fk_status == 1
+                )
+            else:
+                visible_version_filters.append(
+                    and_(
+                        Stakeholder.fk_status == 1,
+                        Changeset.fk_user == request.user.id
+                    )
+                )
+
+            latest_visible_version = latest_visible_version.\
+                filter(or_(* visible_version_filters)).\
+                group_by(Stakeholder.identifier).\
                 subquery()
 
-            # Collect other information about pending Stakeholders (order, ...)
-            pending_stakeholders = self.Session.query(
-                                                      Stakeholder.id.label('order_id'),
-                                                      order_query.c.value.label('order_value'),
-                                                      Stakeholder.fk_status,
-                                                      Stakeholder.stakeholder_identifier
-                                                      ).\
-                join(latest_pending_stakeholders, and_(
-                     latest_pending_stakeholders.c.max_version
-                     == Stakeholder.version,
-                     latest_pending_stakeholders.c.stakeholder_identifier
-                     == Stakeholder.stakeholder_identifier
-                     ))
+            relevant_stakeholders = relevant_stakeholders.\
+                join(latest_visible_version, and_(
+                    latest_visible_version.c.identifier
+                        == Stakeholder.identifier,
+                    latest_visible_version.c.max_version == Stakeholder.version
+                ))
 
-            # Join pending Stakeholders with TagGroups and filters to find out
-            # if they are to be displayed at all
-            if filter_subqueries is not None:
-                # If a filter was provided, join with filtered subqueries
-                pending_stakeholders = pending_stakeholders.\
-                    join(filter_subqueries,
-                         filter_subqueries.c.sh_filter_id == Stakeholder.id)
-            else:
-                # If no filter was provided, simply join with SH_Tag_Group
-                # (outer join to also capture empty Items)
-                pending_stakeholders = pending_stakeholders.\
-                    outerjoin(SH_Tag_Group)
-
-            # Join pending Stakeholders with order and group
-            pending_stakeholders = pending_stakeholders.\
-                outerjoin(order_query, order_query.c.id == Stakeholder.id).\
-                group_by(Stakeholder.stakeholder_identifier, Stakeholder.id,
-                         order_query.c.value)
-
-            # Filter out the active Stakeholders if they have a pending version.
-            # Then union with pending Stakeholders.
-            relevant_stakeholders = relevant_stakeholders.filter(
-                                                                 not_(Stakeholder.stakeholder_identifier.in_(
-                                                                 select([pending_stakeholders.subquery().\
-                                                                 c.stakeholder_identifier])
-                                                                 ))
-                                                                 )
-            relevant_stakeholders = pending_stakeholders.union(
-                                                               relevant_stakeholders)
+        else:
+            # Public (not logged in): show only active
+            # TODO: make this more dynamic?
+            relevant_stakeholders = relevant_stakeholders.\
+                filter(Stakeholder.fk_status == 2)
 
         relevant_stakeholders = relevant_stakeholders.\
             group_by(Stakeholder.id, order_query.c.value, Stakeholder.fk_status,
@@ -1035,6 +1013,18 @@ class StakeholderProtocol3(Protocol):
                       key_translation.c.key_original_id == SH_Key.id).\
             outerjoin(value_translation,
                       value_translation.c.value_original_id == SH_Value.id)
+
+        # Do the ordering again: A first ordering was done when creating the
+        # relevant stakeholders. However, it is necessary to restore this
+        # ordering after all the additional data was added through this query.
+        order_query, order_numbers = self._get_order(
+            request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value
+        )
+        if order_query is not None:
+            if self._get_order_direction(request) == 'DESC':
+                query = query.order_by(desc(relevant_stakeholders.c.order_value))
+            else:
+                query = query.order_by(asc(relevant_stakeholders.c.order_value))
 
         if metadata:
             query = query.add_columns(
