@@ -267,6 +267,7 @@ Ext.define('Lmkp.controller.public.Main', {
             }
 
             // Window parameters
+            // Also in controller.public.Map : openDetailWindow
             var buffer = 50; // Minimal blank space at the sides of the window
             var defaultHeight = 700; // Default height of the window
             var defaultWidth = 700; // Default width of the window
