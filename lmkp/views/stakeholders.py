@@ -251,14 +251,16 @@ def review(request):
     """
     Insert a review decision for a pending Stakeholder
     """
+    
+    _ = request.translate
 
     # Check if the user is logged in and he/she has sufficient user rights
     userid = authenticated_userid(request)
     if userid is None:
-        return {'success': False, 'msg': 'User is not logged in.'}
+        raise HTTPUnauthorized(_('User is not logged in.'))
     if not isinstance(has_permission('moderate', request.context, request),
         ACLAllowed):
-        return {'success': False, 'msg': 'User has no permissions to add a review.'}
+        raise HTTPUnauthorized(_('User has no permissions to add a review.'))
     user = Session.query(User).\
             filter(User.username == authenticated_userid(request)).first()
 
@@ -268,7 +270,7 @@ def review(request):
         filter(Stakeholder.version == request.POST['version']).\
         first()
     if stakeholder is None:
-        return {'success': False, 'msg': 'The Stakeholder was not found'}
+        raise HTTPUnauthorized(_('The Deal was not found'))
 
     # If review decision is 'approved', make sure that all mandatory fields are
     # there, except if it is to be deleted
@@ -292,7 +294,7 @@ def review(request):
                 keys.append(k.key)
             for mk in mandatory_keys:
                 if mk not in keys:
-                    return {'success': False, 'msg': 'Not all mandatory keys are provided.'}
+                    raise HTTPBadRequest(_('Not all mandatory keys are provided'))
 
     # The user can add a review
     ret = stakeholder_protocol3._add_review(
@@ -333,7 +335,7 @@ def create(request):
         response['data'] = [i.to_json() for i in ids]
         response['total'] = len(response['data'])
         response['created'] = True
-        response['msg'] = 'Success message'
+        response['msg'] = _('The Stakeholder was successfully created.')
         request.response.status = 201
     else:
         response['created'] = False
