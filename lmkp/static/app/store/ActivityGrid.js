@@ -1,3 +1,5 @@
+// TODO: Clean up here ...
+
 Ext.define('Lmkp.store.ActivityGrid', {
     extend: 'Ext.data.Store',
     

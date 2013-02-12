@@ -8,9 +8,18 @@ if str(request.registry.settings['lmkp.use_js_builds']).lower() == "true":
 else:
     use_js_builds = False
 
+mode = None
+if 'lmkp.mode' in request.registry.settings:
+    if str(request.registry.settings['lmkp.mode']).lower() == 'demo':
+        mode = 'demo'
 %>
 
-<title>${_("Land Observatory")} - ${_("Moderation")}</title>
+<title>
+    % if mode == 'demo':
+        [Demo]
+    % endif
+    ${_("Land Observatory")} - ${_("Moderation")}
+</title>
 <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
 % if use_js_builds:
 <script type="text/javascript" src="${request.static_url('lmkp:static/moderation-ext-all.js')}"></script>

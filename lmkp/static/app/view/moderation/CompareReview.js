@@ -24,8 +24,7 @@ Ext.define('Lmkp.view.moderation.CompareReview', {
             items: [
                 {
                     xtype: 'panel',
-                    // TODO: text
-                    html: 'Approving this version will create a new version. (+ additional information)',
+                    html: Lmkp.ts.msg('moderator_approving-creates-new-version'),
                     bodyCls: 'notice',
                     bodyPadding: 5,
                     hidden: true,
@@ -65,7 +64,7 @@ Ext.define('Lmkp.view.moderation.CompareReview', {
                     xtype: 'grid',
                     flex: 1,
                     region: 'center',
-                    title: Lmkp.ts.msg('Taggroups'),
+                    title: Lmkp.ts.msg('gui_taggroups'),
                     hideHeaders: true,
                     disableSelection: true,
                     store: 'CompareTagGroups',
@@ -83,7 +82,7 @@ Ext.define('Lmkp.view.moderation.CompareReview', {
                     bbar: [
                         '->', {
                             xtype: 'button',
-                            text: 'Edit',
+                            text: Lmkp.ts.msg('button_edit'),
                             itemId: 'editButton'
                         }
                     ]
@@ -168,7 +167,7 @@ Ext.define('Lmkp.view.moderation.CompareReview', {
 //                            itemId: 'skipReviewButton'
 //                        }, {
                             text: Lmkp.ts.msg('button_submit'),
-                            tooltip: 'Submit review',
+                            tooltip: Lmkp.ts.msg('tooltip_submit-review'),
                             iconCls: 'button-save',
                             itemId: 'reviewSubmitButton'
                         }
@@ -223,23 +222,23 @@ Ext.define('Lmkp.view.moderation.CompareReview', {
                     itemId: 'windowCloseButton'
                 }, {
                     text: Lmkp.ts.msg('button_refresh'),
-                    tooltip: Lmkp.ts.msg('Refresh'),
+                    tooltip: Lmkp.ts.msg('tooltip_refresh'),
                     iconCls: 'button-refresh',
                     itemId: 'compareRefreshButton'
                 }, {
                     text: Lmkp.ts.msg('button_link'),
-                    tooltip: Lmkp.ts.msg("Permanent link to current view"),
+                    tooltip: Lmkp.ts.msg('tooltip_link'),
                     iconCls: 'button-link',
                     itemId: 'compareLinkButton'
                 }, '->', {
-                    text: 'Review',
-                    tooltip: 'Review',
+                    text: Lmkp.ts.msg('button_review'),
+                    tooltip: Lmkp.ts.msg('tooltip_review'),
                     iconCls: 'button-review',
                     itemId: 'reviewButton'
                 }, {
-                    text: 'Compare',
+                    text: Lmkp.ts.msg('button_compare'),
+                    tooltip: Lmkp.ts.msg('tooltip_compare'),
                     hidden: true,
-                    tooltip: 'Compare',
                     iconCls: 'button-compare',
                     itemId: 'compareButton'
                 }

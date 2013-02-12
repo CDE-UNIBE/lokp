@@ -48,13 +48,29 @@ Ext.define('Lmkp.view.public.StakeholderTable', {
                 name: 'stakeholderNameColumn',
                 dataIndex: Lmkp.ts.msg('stakeholder_db-key-name'),
                 flex: 1,
-                sortable: false // TODO!
+                doSort: function(state) {
+                    var store = this.up('tablepanel').store;
+                    if (store) {
+                        store.doCustomSort(
+                            Lmkp.ts.msg('stakeholder_db-key-name-original'),
+                            state
+                        );
+                    }
+                }
             }, {
                 header: Lmkp.ts.msg('stakeholder_db-key-countryoforigin'),
                 name: 'stakeholderCountryOfOriginColumn',
                 dataIndex: Lmkp.ts.msg('stakeholder_db-key-countryoforigin'),
                 flex: 0,
-                sortable: false // TODO!
+                doSort: function(state) {
+                    var store = this.up('tablepanel').store;
+                    if (store) {
+                        store.doCustomSort(
+                            Lmkp.ts.msg('stakeholder_db-key-countryoforigin-original'),
+                            state
+                        );
+                    }
+                }
             }, {
                 xtype: 'templatecolumn',
                 flex: 0,
