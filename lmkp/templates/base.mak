@@ -14,6 +14,10 @@ else:
 
 comments_url = request.registry.settings['lmkp.comments_url']
 
+mode = None
+if 'lmkp.mode' in request.registry.settings:
+    if str(request.registry.settings['lmkp.mode']).lower() == 'demo':
+        mode = 'demo'
 %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
@@ -51,6 +55,9 @@ comments_url = request.registry.settings['lmkp.comments_url']
                 <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" height="100" width="100" alt="${_('Land Observatory')}"/>
             </div>
             <h1>
+                % if mode == 'demo':
+                [Demo]
+                % endif
                 ${_("Land Observatory")}
             </h1>
             <p>
@@ -62,8 +69,10 @@ comments_url = request.registry.settings['lmkp.comments_url']
                 ${_("and the")}
                 <a href="http://www.cde.unibe.ch/">${_("Centre for Development and Environment")}</a>
                 ${_("at the University of Bern, Switzerland. It is funded by the")}
-                <a href="http://www.sdc.admin.ch/">${_("Swiss Agency for Development Cooperation")}</a>
-                ${_(", with co-funding from other ILC and CDE programs.")}
+                <a href="http://www.sdc.admin.ch/">${_("Swiss Agency for Development Cooperation")}</a>${_(", with co-funding from other ILC and CDE programs.")}
+            </p>
+            <p>
+                ${_("Please send your questions and feedback on the Observatory to: ")}<a href="mailto:info_landobservatory@cde.unibe.ch">info_landobservatory@cde.unibe.ch</a>
             </p>
         </div>
         ${self.body()}

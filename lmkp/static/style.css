@@ -128,10 +128,27 @@ div.login {
     margin-top: 5px;
     font-family: Arial, sans-serif;
     font-size: 12px;
+    text-align: center;
 }
 
 div.login-warning {
     background-color: #F68E1D;
+}
+
+div.demo-instructions {
+    border: 1px solid #495968;
+    padding: 10px;
+    width: 600px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    margin-top: 25px;
+    background-color: #ECEFF2;
+    color: #495968;
+}
+div.demo-instructions h3 {
+    margin-top: 0;
+    font-family: "Myriad Pro","Myriad Web Pro Regular","Lucida Grande",Geneva,Trebuchet MS,sans-serif;
 }
 
 fieldset.simple_login {
@@ -201,6 +218,7 @@ div.olLayerGooglePoweredBy
     float: left;
     width: 100%;
     padding: 5px;
+    color: #495968;
 }
 #header-div h1 {
     font-family: "Myriad Pro","Myriad Web Pro Regular","Lucida Grande",Geneva,Trebuchet MS,sans-serif;
