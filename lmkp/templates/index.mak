@@ -11,8 +11,17 @@ if str(request.registry.settings['lmkp.use_js_builds']).lower() == "true":
 else:
     use_js_builds = False
 
+mode = None
+if 'lmkp.mode' in request.registry.settings:
+    if str(request.registry.settings['lmkp.mode']).lower() == 'demo':
+        mode = 'demo'
 %>
-<title>${_("Land Observatory")}</title>
+<title>
+    % if mode == 'demo':
+        [Demo]
+    % endif
+    ${_("Land Observatory")}
+</title>
 <script type="text/javascript" src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>
 <script type="text/javascript" src="${request.static_url('lmkp:static/lib/OpenLayers-2.11/OpenLayers.js')}"></script>
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3&amp;sensor=false"></script>

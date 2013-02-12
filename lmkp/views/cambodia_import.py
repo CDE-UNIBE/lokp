@@ -16,7 +16,7 @@ def cambodia_read_stakeholders2(request):
     # optional fields
     attributeMap = {
         10: 'Name',
-        8: 'Country',
+        8: 'Country of origin',
         3: 'Address'
     }
 
@@ -78,7 +78,7 @@ def cambodia_read_stakeholders2(request):
                     value = regex_name(value)
                     stakeholderName = value
 
-                if attributeMap[i] == 'Country':
+                if attributeMap[i] == 'Country of origin':
                     value = countriesMap[value]
 
                 tagGroup['tags'].append({"key": attributeMap[i], "value": value, "op": "add"})
@@ -102,9 +102,9 @@ def cambodia_read_activities2(request):
     # This dictionary maps the attribute in the Shapefile to the mandatory and
     # optional fields
     attributeMap = {
-        0: 'Contract area (ha)',
+        0: 'Intended area (ha)',
         5: 'Intention of Investment',
-        7: 'Year of agreement',
+#        7: 'Year of agreement',
         10: 'Investor',
         13: 'Negotiation Status',
     }
@@ -146,14 +146,14 @@ def cambodia_read_activities2(request):
                 activityObject['taggroups'].append(taggroup)
 
 
-            elif type(record.record[k]) == type(list()):
-                if k == 7:
-                    taggroup = {}
-                    taggroup['tags'] = []
-                    taggroup['op'] = "add"
-                    taggroup['tags'].append({'key': attributeMap[k], 'op': "add", 'value': record.record[k][0]})
-                    taggroup['main_tag'] = {'key': attributeMap[k], 'value': record.record[k][0]}
-                    activityObject['taggroups'].append(taggroup)
+#            elif type(record.record[k]) == type(list()):
+#                if k == 7:
+#                    taggroup = {}
+#                    taggroup['tags'] = []
+#                    taggroup['op'] = "add"
+#                    taggroup['tags'].append({'key': attributeMap[k], 'op': "add", 'value': record.record[k][0]})
+#                    taggroup['main_tag'] = {'key': attributeMap[k], 'value': record.record[k][0]}
+#                    activityObject['taggroups'].append(taggroup)
 
 
             # Write all attributes that are not empty or None.
@@ -171,13 +171,13 @@ def cambodia_read_activities2(request):
                     taggroup['main_tag'] = {'key': attributeMap[k], 'value': value}
                     activityObject['taggroups'].append(taggroup)
 
-                if k == 7:
-                    taggroup = {}
-                    taggroup['tags'] = []
-                    taggroup['op'] = "add"
-                    taggroup['tags'].append({'key': attributeMap[k], 'op': "add", 'value': int(record.record[k].split('/')[0])})
-                    taggroup['main_tag'] = {'key': attributeMap[k], 'value': int(record.record[k].split('/')[0])}
-                    activityObject['taggroups'].append(taggroup)
+#                if k == 7:
+#                    taggroup = {}
+#                    taggroup['tags'] = []
+#                    taggroup['op'] = "add"
+#                    taggroup['tags'].append({'key': attributeMap[k], 'op': "add", 'value': int(record.record[k].split('/')[0])})
+#                    taggroup['main_tag'] = {'key': attributeMap[k], 'value': int(record.record[k].split('/')[0])}
+#                    activityObject['taggroups'].append(taggroup)
 
                 if k == 10:
                     investor_name = regex_name(record.record[k])
@@ -190,9 +190,13 @@ def cambodia_read_activities2(request):
                     if sh is not None:
                         previous_version = usedStakeholders.count(str(sh.stakeholder_identifier))
 
-                        stakeholdersObject.append({"id": str(sh.stakeholder_identifier), "op": "add", "role": 6, "version": (previous_version + 1)})
+                        # TODO: For the moment, add the same stakeholder only
+                        # once because it crashes otherwise (Changeset issue).
+                        if previous_version == 0:
 
-                        usedStakeholders.append(str(sh.stakeholder_identifier))
+                            stakeholdersObject.append({"id": str(sh.stakeholder_identifier), "op": "add", "role": 6, "version": (previous_version + 1)})
+
+                            usedStakeholders.append(str(sh.stakeholder_identifier))
 
 
             elif isinstance(record.record[k], Number):

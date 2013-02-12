@@ -12,8 +12,17 @@ if str(request.registry.settings['lmkp.use_js_builds']).lower() == "true":
 else:
     use_js_builds = False
 
+mode = None
+if 'lmkp.mode' in request.registry.settings:
+    if str(request.registry.settings['lmkp.mode']).lower() == 'demo':
+        mode = 'demo'
 %>
-<title>${_("Land Observatory")} - ${_("Administration")}</title>
+<title>
+    % if mode == 'demo':
+        [Demo]
+    % endif
+    ${_("Land Observatory")} - ${_("Administration")}
+</title>
 <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
 <script type="text/javascript" src="${request.route_url('moderator_toolbar_config')}"></script>
 % if use_js_builds:
