@@ -28,9 +28,6 @@ lmkp/static/lib.tar.gz
 .pydevproject
 .project
 
-# Ignore compiled translation files
-*.mo
-
 # Ignore configuration files
 *.ini
 
