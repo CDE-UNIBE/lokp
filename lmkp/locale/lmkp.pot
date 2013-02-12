@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LMKP 0.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-02-12 09:48+0100\n"
+"POT-Creation-Date: 2013-02-12 11:00+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -149,11 +149,11 @@ msgstr ""
 msgid "Review"
 msgstr ""
 
-#: lmkp/views/activities.py:258
+#: lmkp/views/activities.py:258 lmkp/views/stakeholders.py:260
 msgid "User is not logged in."
 msgstr ""
 
-#: lmkp/views/activities.py:261
+#: lmkp/views/activities.py:261 lmkp/views/stakeholders.py:263
 msgid "User has no permissions to add a review."
 msgstr ""
 
@@ -162,15 +162,19 @@ msgid "User has no profile attached"
 msgstr ""
 
 #: lmkp/views/activities.py:275
-msgid "The Activity was not found or is not situated within the user's profiles"
+msgid "The Deal was not found or is not situated within the user's profiles"
 msgstr ""
 
-#: lmkp/views/activities.py:299
+#: lmkp/views/activities.py:299 lmkp/views/stakeholders.py:297
 msgid "Not all mandatory keys are provided"
 msgstr ""
 
+#: lmkp/views/activities.py:339
+msgid "The Deal was successfully created."
+msgstr ""
+
 #: lmkp/views/activities.py:343
-msgid "No Activity was created."
+msgid "No Deal was created."
 msgstr ""
 
 #: lmkp/views/comments.py:72 lmkp/views/comments.py:170
@@ -227,7 +231,57 @@ msgstr ""
 msgid "Show user profile"
 msgstr ""
 
-#: lmkp/views/stakeholders.py:340
+#: lmkp/views/protocol.py:642
+msgid "Unknown object to review."
+msgstr ""
+
+#: lmkp/views/protocol.py:648
+msgid "Review decision not provided."
+msgstr ""
+
+#: lmkp/views/protocol.py:653 lmkp/views/protocol.py:935
+msgid "Unknown review decision"
+msgstr ""
+
+#: lmkp/views/protocol.py:725
+msgid ""
+"At least one of the involved Stakeholders cannot be reviewed. Click on the "
+"icon next to the involvement for further details."
+msgstr ""
+
+#: lmkp/views/protocol.py:727
+msgid ""
+"At least one of the involved Activities cannot be reviewed. Click on the icon"
+" next to the involvement for further details."
+msgstr ""
+
+#: lmkp/views/protocol.py:763
+msgid "One of the Stakeholders to review was not found."
+msgstr ""
+
+#: lmkp/views/protocol.py:857
+msgid ""
+"No active version was found to base the review upon. Try to review an earlier"
+" version first."
+msgstr ""
+
+#: lmkp/views/protocol.py:887
+msgid "The diff seems to be incorrect (identifier not found)"
+msgstr ""
+
+#: lmkp/views/protocol.py:947
+msgid "Review successful."
+msgstr ""
+
+#: lmkp/views/stakeholders.py:273
+msgid "The Deal was not found"
+msgstr ""
+
+#: lmkp/views/stakeholders.py:338
+msgid "The Stakeholder was successfully created."
+msgstr ""
+
+#: lmkp/views/stakeholders.py:342
 msgid "No Stakeholder was created."
 msgstr ""
 

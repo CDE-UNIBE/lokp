@@ -1101,3 +1101,7 @@ msgstr "这仅仅是一个测试。"
 msgid "moderator_stakeholder-has-no-active-version"
 msgstr "这仅仅是一个测试。"
 
+#: lmkp/views/protocol.py:645
+msgid "Unknown object to review."
+msgstr "这仅仅是一个测试。"
+
