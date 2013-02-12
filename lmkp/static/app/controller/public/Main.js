@@ -314,7 +314,7 @@ Ext.define('Lmkp.controller.public.Main', {
                 var editorMapController = me.getController('editor.Map');
                 editorMapController.clickAddLocationButton();
             }
-            );
+        );
     },
 
     /**
