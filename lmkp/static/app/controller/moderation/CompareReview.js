@@ -47,8 +47,8 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
             ref: 'reviewCommentTextarea',
             selector: 'lo_moderatorcomparereview textarea[itemId=reviewCommentTextarea]'
         }, {
-        	ref: 'reviewDecisionCombobox',
-        	selector: 'lo_moderatorcomparereview combobox[name=review_decision]'
+            ref: 'reviewDecisionCombobox',
+            selector: 'lo_moderatorcomparereview combobox[name=review_decision]'
         }
     ],
 
@@ -114,9 +114,9 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
 
     updateMetaPanels: function(metaModelInstance) {
         var template = new Ext.Template(
-            '<b>Version</b>: {0}<br/>' +
-            '<b>Timestamp</b>: {1}<br/>' +
-            '<b>User</b>: {2}'
+            '<b>' + Lmkp.ts.msg('gui_version') + '</b>: {0}<br/>' +
+            '<b>' + Lmkp.ts.msg('gui_timestamp') + '</b>: {1}<br/>' +
+            '<b>' + Lmkp.ts.msg('gui_user') + '</b>: {2}'
         );
         var refPanel = this.getRefMetadataPanel();
         var newPanel = this.getNewMetadataPanel();
@@ -165,7 +165,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                         // message from the server.
                         var infoWindow = Ext.create('Lmkp.utils.MessageBox');
                         infoWindow.alert(
-                            'Information',
+                            Lmkp.ts.msg('feedback_information'),
                             data.msg
                         );
 
@@ -217,15 +217,15 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                             	me.missingKeys = mk;
                             	var tgStore = me.getCompareTagGroupsStore();
                             	for (var k=0; k<mk.length; k++) {
-	                            	tgStore.add({
-	                            		'new': {
-	                            			'class': 'missing',
-	                            			'tags': [{
-	                            				'key': mk[k],
-	                            				'value': 'Unknown'
-	                            			}]
-	                            		}
-	                            	});
+                                    tgStore.add({
+                                        'new': {
+                                            'class': 'missing',
+                                            'tags': [{
+                                                'key': mk[k],
+                                                'value': Lmkp.ts.msg('gui_unknown')
+                                            }]
+                                        }
+                                    });
                             	}
                             }
 
@@ -269,14 +269,14 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         var reviewCombobox = this.getReviewDecisionCombobox();
         if (this.missingKeys && reviewCombobox && reviewCombobox.getValue() == 1) {
         	var winMissingKeys = Ext.create('Ext.window.Window', {
-                title: 'Review not possible',
+                title: Lmkp.ts.msg('moderator_review-not-possible'),
                 bodyPadding: 10,
                 modal: true,
                 width: 300,
-                html: 'There are some mandatory keys missing. The item cannot be approved without these keys. Please click the "edit" button to add the missing keys.',
+                html: Lmkp.ts.msg('moderator_missing-mandatory-keys'),
                 buttons: [
                     {
-                        text: 'OK',
+                        text: Lmkp.ts.msg('button_ok'),
                         handler: function() {
                             winMissingKeys.close();
                         }
@@ -335,16 +335,16 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                 var reviewable = record.get('reviewable');
                 if (reviewable == -1) {
                     // Stakeholder was not found
-                    return '<img src="/static/img/exclamation.png" style="cursor:pointer;" title="Involvement can not be reviewed. Click for more information.">';
+                    return '<img src="/static/img/exclamation.png" style="cursor:pointer;" title="' + Lmkp.ts.msg('tooltip_review-involvement-not-possible') + '">';
                 } else if (reviewable == -2) {
                     // Stakeholder has no active version
-                    return '<img src="/static/img/exclamation.png" style="cursor:pointer;" title="Involvement can not be reviewed. Click for more information.">';
+                    return '<img src="/static/img/exclamation.png" style="cursor:pointer;" title="' + Lmkp.ts.msg('tooltip_review-involvement-not-possible') + '">';
                 } else if (reviewable == -3) {
                     // Activities cannot be reviewed from Stakeholder's side
-                    return '<img src="/static/img/exclamation.png" style="cursor:pointer;" title="Involvement can not be reviewed. Click for more information.">';
+                    return '<img src="/static/img/exclamation.png" style="cursor:pointer;" title="' + Lmkp.ts.msg('tooltip_review-involvement-not-possible') + '">';
                 } else if (reviewable > 0) {
                     // Involvement can be reviewed
-                    return '<img src="/static/img/accept.png" title="Involvement can be reviewed">';
+                    return '<img src="/static/img/accept.png" title="' + Lmkp.ts.msg('tooltip_review-involvement-possible') + '">';
                 }
             } else {
                 var data = record.get('new');
@@ -362,19 +362,19 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                 if (record && record.get('reviewable') == -2
                     && data && data.identifier) {
                     var winError2 = Ext.create('Ext.window.Window', {
-                        title: 'Review not possible',
+                        title: Lmkp.ts.msg('moderator_review-not-possible'),
                         bodyPadding: 10,
                         modal: true,
                         width: 300,
-                        html: 'The Stakeholder of this involvement has no active version and cannot be set active. Please review the Stakeholder first.',
+                        html: Lmkp.ts.msg('moderator_stakeholder-has-no-active-version'),
                         buttons: [
                             {
-                                text: 'OK',
+                                text: Lmkp.ts.msg('button_ok'),
                                 handler: function() {
                                     winError2.close();
                                 }
                             }, {
-                                text: 'Review Stakeholder',
+                                text: Lmkp.ts.msg('moderator_review-stakeholder'),
                                 handler: function() {
                                     // Refresh the panel
                                     me.reloadCompareTagGroupStore(
@@ -388,19 +388,19 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                 } else if (record && record.get('reviewable') == -3
                     && data && data.identifier) {
                     var winError3 = Ext.create('Ext.window.Window', {
-                        title: 'Review not possible',
+                        title: Lmkp.ts.msg('moderator_review-not-possible'),
                         bodyPadding: 10,
                         modal: true,
                         width: 300,
-                        html: 'The Activity of this involvement cannot be reviewed from the Stakeholder\'s side. Please review the Activity to approve or reject this involvement.',
+                        html: Lmkp.ts.msg('moderator_review-activity-side-of-involvement-first'),
                         buttons: [
                             {
-                                text: 'OK',
+                                text: Lmkp.ts.msg('button_ok'),
                                 handler: function() {
                                     winError3.close();
                                 }
                             }, {
-                                text: 'Review Activity',
+                                text: Lmkp.ts.msg('moderator_review-activity'),
                                 handler: function() {
                                     // Refresh the panel
                                     me.reloadCompareTagGroupStore(
@@ -430,13 +430,13 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                         prefix += "- ";
                     } else if (value['class'] == 'missing') {
                     	prefix += '? ';
-                    	metaData.tdAttr = 'data-qtip="' + 'Missing mandatory key!' + '"';
+                    	metaData.tdAttr = 'data-qtip="' + Lmkp.ts.msg('tooltip_missing-mandatory-key') + '"';
                     }
                     html += "<div>" + prefix + tag.key + ": " + tag.value + "</div>";
                 }
                 if (value['class'] == 'add involvement'
                     || value['class'] == 'remove involvement') {
-                    metaData.tdAttr = 'data-qtip="' + 'It is possible that not all attributes are shown here!' + '"';
+                    metaData.tdAttr = 'data-qtip="' + Lmkp.ts.msg('tooltip_not-all-attributes-shown') + '"';
                 }
                 return html;
             }
@@ -483,11 +483,11 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         var type = mData.get('type');
         var identifier = mData.get('identifier');
 
-        var title = 'Compare versions';
+        var title = '';
         if (type == 'activities') {
-            title += ' of Activity ' + this.stringFunctions._shortenIdentifier(identifier);
+            title = Lmkp.ts.msg('activities_compare-versions').replace('{0}', this.stringFunctions._shortenIdentifier(identifier));
         } else if (type == 'stakeholders') {
-            title += ' of Stakeholder ' + this.stringFunctions._shortenIdentifier(identifier);
+            title = Lmkp.ts.msg('stakeholders_compare-versions').replace('{0}', this.stringFunctions._shortenIdentifier(identifier));
         }
 
         win.setLoading(true);
@@ -517,11 +517,11 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         var type = mData.get('type');
         var identifier = mData.get('identifier');
 
-        var title = 'Review versions';
+        var title = '';
         if (type == 'activities') {
-            title += ' of Activity ' + this.stringFunctions._shortenIdentifier(identifier);
+            title = Lmkp.ts.msg('activities_review-versions').replace('{0}', this.stringFunctions._shortenIdentifier(identifier));
         } else if (type == 'stakeholders') {
-            title += ' of Stakeholder ' + this.stringFunctions._shortenIdentifier(identifier);
+            title = Lmkp.ts.msg('stakeholders_review-versions').replace('{0}', this.stringFunctions._shortenIdentifier(identifier));
         }
 
         win.setLoading(true);

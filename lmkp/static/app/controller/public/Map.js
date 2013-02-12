@@ -131,10 +131,25 @@ Ext.define('Lmkp.controller.public.Map', {
                 this.getStakeholderGridStore().syncByOtherId(f.attributes.activity_identifier);
             }
 
+            // Window parameters
+            // Also in controller.public.Main : onShowDetailsColumnClick
+            var buffer = 50; // Minimal blank space at the sides of the window
+            var defaultHeight = 700; // Default height of the window
+            var defaultWidth = 700; // Default width of the window
+
+            // Prepare some values before showing the window
+            var viewSize = Ext.getBody().getViewSize();
+            var height = (viewSize.height > defaultHeight + buffer)
+                ? defaultHeight : viewSize.height - buffer;
+            var width = (viewSize.width > defaultWidth + buffer)
+                ? defaultWidth : viewSize.width - buffer;
+
             // Finally show the window with details
             var w = Ext.create('Lmkp.view.activities.Details',{
                 activity_identifier: f.attributes.activity_identifier,
-                modelName: 'Lmkp.model.Activity'
+                modelName: 'Lmkp.model.Activity',
+                width: width,
+                height: height
             }).show()._collapseHistoryPanel();
         }
     },
