@@ -130,18 +130,22 @@ def codes_add(request):
         # Skip the first item
         if csvReader.line_num > 1:
             try:
-                inserted = _insert_code(row[1], row[0], TableItem, isKey,
-                language)
+                if row[0] != '' and row[1] != '':
+                    inserted = _insert_code(row[1], row[0], TableItem, isKey,
+                    language)
+                else:
+                    inserted = None
             except:
                 ret['msg'] = 'Wrong delimiter or wrong value type?'
                 return ret
-            msgStack.append(inserted)
-            if inserted['success'] is True:
-                insertCount += 1
-            elif inserted['success'] is None:
-                pass
-            else:
-                errorCount += 1
+            if inserted is not None:
+                msgStack.append(inserted)
+                if inserted['success'] is True:
+                    insertCount += 1
+                elif inserted['success'] is None:
+                    pass
+                else:
+                    errorCount += 1
 
     if errorCount == 0:
         ret['success'] = True
