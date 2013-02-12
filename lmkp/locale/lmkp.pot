@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: LMKP 0.1\n"
+"Project-Id-Version: LMKP 0.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-02-04 14:12+0100\n"
+"POT-Creation-Date: 2013-02-12 11:00+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,11 +17,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
 
-#: lmkp/templates/administration.mak:11 lmkp/templates/base.mak:52
-#: lmkp/templates/base.mak:69 lmkp/templates/charts.mak:11
+#: lmkp/templates/administration.mak:11 lmkp/templates/base.mak:51
+#: lmkp/templates/base.mak:54 lmkp/templates/charts.mak:16
 #: lmkp/templates/compare_versions.mak:11 lmkp/templates/embedded.mak:10
-#: lmkp/templates/index.mak:10 lmkp/templates/login_form.mak:5
-#: lmkp/templates/moderation.mak:5 lmkp/templates/reset_form.mak:5
+#: lmkp/templates/index.mak:15 lmkp/templates/login_form.mak:5
+#: lmkp/templates/moderation.mak:13 lmkp/templates/reset_form.mak:5
 #: lmkp/templates/review_versions.mak:4
 msgid "Land Observatory"
 msgstr ""
@@ -31,14 +31,14 @@ msgid "Administration"
 msgstr ""
 
 #. Default: Loading ...
-#: lmkp/templates/administration.mak:19 lmkp/templates/charts.mak:30
+#: lmkp/templates/administration.mak:19 lmkp/templates/charts.mak:35
 #: lmkp/templates/compare_versions.mak:48 lmkp/templates/embedded.mak:35
-#: lmkp/templates/index.mak:31 lmkp/templates/moderation.mak:20
-#: lmkp/templates/review_versions.mak:33 lmkp/views/translation.py:128
+#: lmkp/templates/index.mak:36 lmkp/templates/moderation.mak:31
+#: lmkp/templates/review_versions.mak:33 lmkp/views/translation.py:143
 msgid "gui_loading"
 msgstr ""
 
-#: lmkp/templates/base.mak:55
+#: lmkp/templates/base.mak:57
 msgid ""
 "The Land Observatory will make information on large-scale land acquisition "
 "transparent and accessible through an interactive, map-based platform. We are"
@@ -48,61 +48,61 @@ msgid ""
 "governments and companies interested in sustainability."
 msgstr ""
 
-#: lmkp/templates/base.mak:58
+#: lmkp/templates/base.mak:60
 msgid "The pilot project is coordinated by the"
 msgstr ""
 
-#: lmkp/templates/base.mak:59
+#: lmkp/templates/base.mak:61
 msgid "International Land Coalition"
 msgstr ""
 
-#: lmkp/templates/base.mak:60
+#: lmkp/templates/base.mak:62
 msgid "and the"
 msgstr ""
 
-#: lmkp/templates/base.mak:61
+#: lmkp/templates/base.mak:63
 msgid "Centre for Development and Environment"
 msgstr ""
 
-#: lmkp/templates/base.mak:62
+#: lmkp/templates/base.mak:64
 msgid "at the University of Bern, Switzerland. It is funded by the"
 msgstr ""
 
-#: lmkp/templates/base.mak:63
+#: lmkp/templates/base.mak:65
 msgid "Swiss Agency for Development Cooperation"
 msgstr ""
 
-#: lmkp/templates/base.mak:64
+#: lmkp/templates/base.mak:66
 msgid ", with co-funding from other ILC and CDE programs."
 msgstr ""
 
-#: lmkp/templates/charts.mak:11
+#: lmkp/templates/charts.mak:16
 msgid "Charts"
 msgstr ""
 
-#: lmkp/templates/charts.mak:34
+#: lmkp/templates/charts.mak:39
 msgid "Heat map for Cambodia and Laos"
 msgstr ""
 
-#: lmkp/templates/charts.mak:36
+#: lmkp/templates/charts.mak:41
 msgid ""
 "Distribution of land related deals in Cambodia and for Champasak and Attapeu "
 "province in Laos."
 msgstr ""
 
-#: lmkp/templates/charts.mak:37
+#: lmkp/templates/charts.mak:42
 msgid "Data for Cambodia are provided by the website"
 msgstr ""
 
-#: lmkp/templates/charts.mak:39
+#: lmkp/templates/charts.mak:44
 msgid "Data for Laos are based on the landconcessions database."
 msgstr ""
 
-#: lmkp/templates/charts.mak:44
+#: lmkp/templates/charts.mak:49
 msgid "Distribution of activities worldwide"
 msgstr ""
 
-#: lmkp/templates/charts.mak:46
+#: lmkp/templates/charts.mak:51
 msgid ""
 "Worldwide distribution of land related deals based on the Landmatrix database"
 " available at"
@@ -133,7 +133,7 @@ msgstr ""
 msgid "Forgot Password?"
 msgstr ""
 
-#: lmkp/templates/moderation.mak:5
+#: lmkp/templates/moderation.mak:13
 msgid "Moderation"
 msgstr ""
 
@@ -149,11 +149,11 @@ msgstr ""
 msgid "Review"
 msgstr ""
 
-#: lmkp/views/activities.py:258
+#: lmkp/views/activities.py:258 lmkp/views/stakeholders.py:260
 msgid "User is not logged in."
 msgstr ""
 
-#: lmkp/views/activities.py:261
+#: lmkp/views/activities.py:261 lmkp/views/stakeholders.py:263
 msgid "User has no permissions to add a review."
 msgstr ""
 
@@ -162,11 +162,19 @@ msgid "User has no profile attached"
 msgstr ""
 
 #: lmkp/views/activities.py:275
-msgid "The Activity was not found or is not situated within the user's profiles"
+msgid "The Deal was not found or is not situated within the user's profiles"
 msgstr ""
 
-#: lmkp/views/activities.py:299
+#: lmkp/views/activities.py:299 lmkp/views/stakeholders.py:297
 msgid "Not all mandatory keys are provided"
+msgstr ""
+
+#: lmkp/views/activities.py:339
+msgid "The Deal was successfully created."
+msgstr ""
+
+#: lmkp/views/activities.py:343
+msgid "No Deal was created."
 msgstr ""
 
 #: lmkp/views/comments.py:72 lmkp/views/comments.py:170
@@ -223,690 +231,949 @@ msgstr ""
 msgid "Show user profile"
 msgstr ""
 
+#: lmkp/views/protocol.py:642
+msgid "Unknown object to review."
+msgstr ""
+
+#: lmkp/views/protocol.py:648
+msgid "Review decision not provided."
+msgstr ""
+
+#: lmkp/views/protocol.py:653 lmkp/views/protocol.py:935
+msgid "Unknown review decision"
+msgstr ""
+
+#: lmkp/views/protocol.py:725
+msgid ""
+"At least one of the involved Stakeholders cannot be reviewed. Click on the "
+"icon next to the involvement for further details."
+msgstr ""
+
+#: lmkp/views/protocol.py:727
+msgid ""
+"At least one of the involved Activities cannot be reviewed. Click on the icon"
+" next to the involvement for further details."
+msgstr ""
+
+#: lmkp/views/protocol.py:763
+msgid "One of the Stakeholders to review was not found."
+msgstr ""
+
+#: lmkp/views/protocol.py:857
+msgid ""
+"No active version was found to base the review upon. Try to review an earlier"
+" version first."
+msgstr ""
+
+#: lmkp/views/protocol.py:887
+msgid "The diff seems to be incorrect (identifier not found)"
+msgstr ""
+
+#: lmkp/views/protocol.py:947
+msgid "Review successful."
+msgstr ""
+
+#: lmkp/views/stakeholders.py:273
+msgid "The Deal was not found"
+msgstr ""
+
+#: lmkp/views/stakeholders.py:338
+msgid "The Stakeholder was successfully created."
+msgstr ""
+
+#: lmkp/views/stakeholders.py:342
+msgid "No Stakeholder was created."
+msgstr ""
+
 #. Default: pending
-#: lmkp/views/translation.py:20
+#: lmkp/views/translation.py:21
 msgid "status_pending"
 msgstr ""
 
 #. Default: active
-#: lmkp/views/translation.py:21
+#: lmkp/views/translation.py:22
 msgid "status_active"
 msgstr ""
 
 #. Default: inactive
-#: lmkp/views/translation.py:22
+#: lmkp/views/translation.py:23
 msgid "status_inactive"
 msgstr ""
 
 #. Default: deleted
-#: lmkp/views/translation.py:23
+#: lmkp/views/translation.py:24
 msgid "status_deleted"
 msgstr ""
 
 #. Default: rejected
-#: lmkp/views/translation.py:24
+#: lmkp/views/translation.py:25
 msgid "status_rejected"
 msgstr ""
 
 #. Default: edited
-#: lmkp/views/translation.py:25
+#: lmkp/views/translation.py:26
 msgid "status_edited"
 msgstr ""
 
 #. Default: approved
-#: lmkp/views/translation.py:30
+#: lmkp/views/translation.py:31
 msgid "reviewdecision_approved"
 msgstr ""
 
 #. Default: rejected
-#: lmkp/views/translation.py:31
+#: lmkp/views/translation.py:32
 msgid "reviewdecision_rejected"
 msgstr ""
 
 #. Default: Editors
-#: lmkp/views/translation.py:36
+#: lmkp/views/translation.py:37
 msgid "usergroup_editors"
 msgstr ""
 
 #. Default: Moderators
-#: lmkp/views/translation.py:37
+#: lmkp/views/translation.py:38
 msgid "usergroup_moderators"
 msgstr ""
 
 #. Default: Administrators
-#: lmkp/views/translation.py:38
+#: lmkp/views/translation.py:39
 msgid "usergroup_administrators"
 msgstr ""
 
 #. Default: Investor
-#: lmkp/views/translation.py:45
+#: lmkp/views/translation.py:46
 msgid "stakeholderrole_investor"
 msgstr ""
 
 #. Default: Status
-#: lmkp/views/translation.py:56
+#: lmkp/views/translation.py:57
 msgid "status_name"
 msgstr ""
 
 #. Default: Add attribute filter
-#: lmkp/views/translation.py:74
+#: lmkp/views/translation.py:75
 msgid "button_add-attribute-filter"
 msgstr ""
 
 #. Default: Add more specific information
-#: lmkp/views/translation.py:75
+#: lmkp/views/translation.py:76
 msgid "button_add-new-tag"
 msgstr ""
 
 #. Default: Add further information
-#: lmkp/views/translation.py:76
+#: lmkp/views/translation.py:77
 msgid "button_add-new-taggroup"
 msgstr ""
 
 #. Default: Add time filter
-#: lmkp/views/translation.py:77
+#: lmkp/views/translation.py:78
 msgid "button_add-time-filter"
 msgstr ""
 
 #. Default: Back
-#: lmkp/views/translation.py:78
+#: lmkp/views/translation.py:79
 msgid "button_back"
 msgstr ""
 
 #. Default: Cancel
-#: lmkp/views/translation.py:79
+#: lmkp/views/translation.py:80
 msgid "button_cancel"
 msgstr ""
 
 #. Default: Clear
-#: lmkp/views/translation.py:80
+#: lmkp/views/translation.py:81
 msgid "button_clear"
 msgstr ""
 
 #. Default: Close
-#: lmkp/views/translation.py:81
+#: lmkp/views/translation.py:82
 msgid "button_close"
 msgstr ""
 
+#. Default: Compare
+#: lmkp/views/translation.py:83
+msgid "button_compare"
+msgstr ""
+
 #. Default: Continue
-#: lmkp/views/translation.py:82
+#: lmkp/views/translation.py:84
 msgid "button_continue"
 msgstr ""
 
 #. Default: Delete
-#: lmkp/views/translation.py:83
+#: lmkp/views/translation.py:85
 msgid "button_delete"
 msgstr ""
 
 #. Default: Edit
-#: lmkp/views/translation.py:84
+#: lmkp/views/translation.py:86
 msgid "button_edit"
 msgstr ""
 
 #. Default: Activate
-#: lmkp/views/translation.py:85
+#: lmkp/views/translation.py:87
 msgid "button_filter-activate"
 msgstr ""
 
 #. Default: Delete
-#: lmkp/views/translation.py:86
+#: lmkp/views/translation.py:88
 msgid "button_filter-delete"
 msgstr ""
 
+#. Default: Link
+#: lmkp/views/translation.py:89
+msgid "button_link"
+msgstr ""
+
 #. Default: Base Layers
-#: lmkp/views/translation.py:87
+#: lmkp/views/translation.py:90
 msgid "button_map_base-layers"
 msgstr ""
 
 #. Default: Context Layers
-#: lmkp/views/translation.py:88
+#: lmkp/views/translation.py:91
 msgid "button_map_context-layers"
 msgstr ""
 
 #. Default: Satellite Imagery
-#: lmkp/views/translation.py:89
+#: lmkp/views/translation.py:92
 msgid "button_map_satellite-map"
 msgstr ""
 
 #. Default: Show Legend
-#: lmkp/views/translation.py:90
+#: lmkp/views/translation.py:93
 msgid "button_map_show-legend"
 msgstr ""
 
 #. Default: Street Map
-#: lmkp/views/translation.py:91
+#: lmkp/views/translation.py:94
 msgid "button_map_street-map"
 msgstr ""
 
 #. Default: Terrain Map
-#: lmkp/views/translation.py:92
+#: lmkp/views/translation.py:95
 msgid "button_map_terrain-map"
 msgstr ""
 
 #. Default: Next
-#: lmkp/views/translation.py:93
+#: lmkp/views/translation.py:96
 msgid "button_next"
 msgstr ""
 
 #. Default: No
-#: lmkp/views/translation.py:94
+#: lmkp/views/translation.py:97
 msgid "button_no"
 msgstr ""
 
 #. Default: OK
-#: lmkp/views/translation.py:95
+#: lmkp/views/translation.py:98
 msgid "button_ok"
 msgstr ""
 
+#. Default: Refresh
+#: lmkp/views/translation.py:99
+msgid "button_refresh"
+msgstr ""
+
+#. Default: Review
+#: lmkp/views/translation.py:100
+msgid "button_review"
+msgstr ""
+
 #. Default: Submit
-#: lmkp/views/translation.py:96
+#: lmkp/views/translation.py:101
 msgid "button_submit"
 msgstr ""
 
 #. Default: Yes
-#: lmkp/views/translation.py:97
+#: lmkp/views/translation.py:102
 msgid "button_yes"
 msgstr ""
 
 #. Default: Add a filter based on attribute
-#: lmkp/views/translation.py:100
+#: lmkp/views/translation.py:105
 msgid "tooltip_add-attribute-filter"
 msgstr ""
 
 #. Default: Add a filter based on time
-#: lmkp/views/translation.py:101
+#: lmkp/views/translation.py:106
 msgid "tooltip_add-time-filter"
 msgstr ""
 
+#. Default: Compare
+#: lmkp/views/translation.py:107
+msgid "tooltip_compare"
+msgstr ""
+
 #. Default: Close Window
-#: lmkp/views/translation.py:102
+#: lmkp/views/translation.py:108
 msgid "tooltip_close-window"
 msgstr ""
 
 #. Default: Click to activate this filter
-#: lmkp/views/translation.py:103
+#: lmkp/views/translation.py:109
 msgid "tooltip_filter-activate"
 msgstr ""
 
 #. Default: Click to delete this filter
-#: lmkp/views/translation.py:104
+#: lmkp/views/translation.py:110
 msgid "tooltip_filter-delete"
 msgstr ""
 
+#. Default: Permament link to current view
+#: lmkp/views/translation.py:111
+msgid "tooltip_link"
+msgstr ""
+
 #. Default: Identify Feature
-#: lmkp/views/translation.py:105
+#: lmkp/views/translation.py:112
 msgid "tooltip_map_identify-feature"
 msgstr ""
 
 #. Default: Pan
-#: lmkp/views/translation.py:106
+#: lmkp/views/translation.py:113
 msgid "tooltip_map_pan"
 msgstr ""
 
 #. Default: Zoom In
-#: lmkp/views/translation.py:107
+#: lmkp/views/translation.py:114
 msgid "tooltip_map_zoom-in"
 msgstr ""
 
 #. Default: Zoom Out
-#: lmkp/views/translation.py:108
+#: lmkp/views/translation.py:115
 msgid "tooltip_map_zoom-out"
 msgstr ""
 
 #. Default: Zoom to Profile Region
-#: lmkp/views/translation.py:109
+#: lmkp/views/translation.py:116
 msgid "tooltip_map_zoom-to-profile-region"
 msgstr ""
 
+#. Default: Missing mandatory key!
+#: lmkp/views/translation.py:117
+msgid "tooltip_missing-mandatory-key"
+msgstr ""
+
+#. Default: It is possible that not all attributes are shown here!
+#: lmkp/views/translation.py:118
+msgid "tooltip_not-all-attributes-shown"
+msgstr ""
+
+#. Default: Refresh
+#: lmkp/views/translation.py:119
+msgid "tooltip_refresh"
+msgstr ""
+
 #. Default: Remove this stakeholder
-#: lmkp/views/translation.py:110
+#: lmkp/views/translation.py:120
 msgid "tooltip_remove-stakeholder"
 msgstr ""
 
+#. Default: Review
+#: lmkp/views/translation.py:121
+msgid "tooltip_review"
+msgstr ""
+
+#. Default: Involvement can not be reviewed. Click for more information.
+#: lmkp/views/translation.py:122
+msgid "tooltip_review-involvement-not-possible"
+msgstr ""
+
+#. Default: Involvement can be reviewed
+#: lmkp/views/translation.py:123
+msgid "tooltip_review-involvement-possible"
+msgstr ""
+
+#. Default: Submit Review
+#: lmkp/views/translation.py:124
+msgid "tooltip_submit-review"
+msgstr ""
+
 #. Default: Anonymous
-#: lmkp/views/translation.py:113
+#: lmkp/views/translation.py:127
 msgid "gui_anonymous"
 msgstr ""
 
 #. Default: Clear Selection
-#: lmkp/views/translation.py:114
+#: lmkp/views/translation.py:128
 msgid "gui_clear-selection"
 msgstr ""
 
 #. Default: Please confirm
-#: lmkp/views/translation.py:115
+#: lmkp/views/translation.py:129
 msgid "gui_confirm"
 msgstr ""
 
 #. Default: You are seeing a {0} version, which needs to be reviewed before it is
 #. publicly visible
-#: lmkp/views/translation.py:116
+#: lmkp/views/translation.py:130
 msgid "gui_currently-seeing-pending-version"
 msgstr ""
 
 #. Default: You are seeing an {0} version, which was previously active and publicly
 #. visible.
-#: lmkp/views/translation.py:117
+#: lmkp/views/translation.py:131
 msgid "gui_currently-seeing-inactive-version"
 msgstr ""
 
 #. Default: You are seeing a {0} version, which was previously active and publicly
 #. visible.
-#: lmkp/views/translation.py:118
+#: lmkp/views/translation.py:132
 msgid "gui_currently-seeing-deleted-version"
 msgstr ""
 
 #. Default: You are seeing a {0} version, which was never publicly visible.
-#: lmkp/views/translation.py:119
+#: lmkp/views/translation.py:133
 msgid "gui_currently-seeing-rejected-version"
 msgstr ""
 
 #. Default: You are seeing an {0} version, which was edited by a moderator and was
 #. never publicly visible.
-#: lmkp/views/translation.py:120
+#: lmkp/views/translation.py:134
 msgid "gui_currently-seeing-edited-version"
 msgstr ""
 
 #. Default: Date
-#: lmkp/views/translation.py:121
+#: lmkp/views/translation.py:135
 msgid "gui_date"
 msgstr ""
 
+#. Default: Last change
+#: lmkp/views/translation.py:136
+msgid "gui_last-change"
+msgstr ""
+
 #. Default: Delete all Filters
-#: lmkp/views/translation.py:122
+#: lmkp/views/translation.py:137
 msgid "gui_delete-all-filters"
 msgstr ""
 
 #. Default: Details
-#: lmkp/views/translation.py:123
+#: lmkp/views/translation.py:138
 msgid "gui_details"
 msgstr ""
 
 #. Default: Filter ({0} active)
-#: lmkp/views/translation.py:124
+#: lmkp/views/translation.py:139
 msgid "gui_filter-count"
 msgstr ""
 
 #. Default: History
-#: lmkp/views/translation.py:125
+#: lmkp/views/translation.py:140
 msgid "gui_history"
 msgstr ""
 
 #. Default: ID
-#: lmkp/views/translation.py:126
+#: lmkp/views/translation.py:141
 msgid "gui_id"
 msgstr ""
 
 #. Default: Language
-#: lmkp/views/translation.py:127
+#: lmkp/views/translation.py:142
 msgid "gui_language"
 msgstr ""
 
 #. Default: No attributes to show
-#: lmkp/views/translation.py:129
+#: lmkp/views/translation.py:144
 msgid "gui_no-attributes"
 msgstr ""
 
+#. Default: Overview
+#: lmkp/views/translation.py:145
+msgid "gui_overview"
+msgstr ""
+
 #. Default: Page
-#: lmkp/views/translation.py:130
+#: lmkp/views/translation.py:146
 msgid "gui_paging-before"
 msgstr ""
 
 #. Default: of {0}
-#: lmkp/views/translation.py:131
+#: lmkp/views/translation.py:147
 msgid "gui_paging-after"
 msgstr ""
 
 #. Default: Previous Version
-#: lmkp/views/translation.py:132
+#: lmkp/views/translation.py:148
 msgid "gui_previous-version"
 msgstr ""
 
 #. Default: Profile
-#: lmkp/views/translation.py:133
+#: lmkp/views/translation.py:149
 msgid "gui_profile"
 msgstr ""
 
 #. Default: Search
-#: lmkp/views/translation.py:134
+#: lmkp/views/translation.py:150
 msgid "gui_search"
 msgstr ""
 
 #. Default: Show Details
-#: lmkp/views/translation.py:135
+#: lmkp/views/translation.py:151
 msgid "gui_show-details"
 msgstr ""
 
+#. Default: Show pending versions
+#: lmkp/views/translation.py:152
+msgid "gui_show-pending-versions"
+msgstr ""
+
+#. Default: Taggroups
+#: lmkp/views/translation.py:153
+msgid "gui_taggroups"
+msgstr ""
+
 #. Default: Timestamp
-#: lmkp/views/translation.py:136
+#: lmkp/views/translation.py:154
 msgid "gui_timestamp"
 msgstr ""
 
 #. Default: Unknown
-#: lmkp/views/translation.py:137
+#: lmkp/views/translation.py:155
 msgid "gui_unknown"
 msgstr ""
 
 #. Default: User
-#: lmkp/views/translation.py:138
+#: lmkp/views/translation.py:156
 msgid "gui_user"
 msgstr ""
 
 #. Default: Version
-#: lmkp/views/translation.py:139
+#: lmkp/views/translation.py:157
 msgid "gui_version"
 msgstr ""
 
+#. Default: Versions pending
+#: lmkp/views/translation.py:158
+msgid "gui_versions-pending"
+msgstr ""
+
 #. Default: Failure
-#: lmkp/views/translation.py:142
+#: lmkp/views/translation.py:161
 msgid "feedback_failure"
 msgstr ""
 
-#. Default: The activity was successfully created. It will be reviewed shortly.
-#: lmkp/views/translation.py:143
+#. Default: Information
+#: lmkp/views/translation.py:162
+msgid "feedback_information"
+msgstr ""
+
+#. Default: The deal was successfully created. It will be reviewed shortly.
+#: lmkp/views/translation.py:163
 msgid "feedback_new-activity-created"
 msgstr ""
 
-#. Default: The activity could not be created.
-#: lmkp/views/translation.py:144
+#. Default: The deal could not be created.
+#: lmkp/views/translation.py:164
 msgid "feedback_new-activity-not-created"
 msgstr ""
 
+#. Default: The Stakeholder was successfully created. It will be reviewed shortly
+#: lmkp/views/translation.py:165
+msgid "feedback_new-stakeholder-created"
+msgstr ""
+
+#. Default: The Stakeholder could not be created.
+#: lmkp/views/translation.py:166
+msgid "feedback_new-stakeholder-not-created"
+msgstr ""
+
+#. Default: No changes made
+#: lmkp/views/translation.py:167
+msgid "feedback_no-changes-made"
+msgstr ""
+
+#. Default: You did not make any changes.
+#: lmkp/views/translation.py:168
+msgid "feedback_no-changes-made-explanation"
+msgstr ""
+
 #. Default: Edited changes were successfully submitted
-#: lmkp/views/translation.py:145
+#: lmkp/views/translation.py:169
 msgid "feedback_pending-edit-submitted"
 msgstr ""
 
 #. Default: Edited changes could not be submitted
-#: lmkp/views/translation.py:146
+#: lmkp/views/translation.py:170
 msgid "feedback_pending-edit-not-submitted"
 msgstr ""
 
 #. Default: Some of the attributes cannot be edited because they are not part of
 #. the currently selected profile.
-#: lmkp/views/translation.py:147
+#: lmkp/views/translation.py:171
 msgid "feedback_some-attributes-not-editable-because-of-profile"
 msgstr ""
 
 #. Default: Success
-#: lmkp/views/translation.py:148
+#: lmkp/views/translation.py:172
 msgid "feedback_success"
 msgstr ""
 
-#. Default: Add new Activity
-#: lmkp/views/translation.py:151
+#. Default: Add new Deal
+#: lmkp/views/translation.py:175
 msgid "activities_add-new-activity"
 msgstr ""
 
-#. Default: Edit Activity (version {0})
-#: lmkp/views/translation.py:152
+#. Default: Compare versions of Deal {0}
+#: lmkp/views/translation.py:176
+msgid "activities_compare-versions"
+msgstr ""
+
+#. Default: Edit Deal (version {0})
+#: lmkp/views/translation.py:177
 msgid "activities_edit-activity"
 msgstr ""
 
-#. Default: Details on Activity
-#: lmkp/views/translation.py:153
+#. Default: Details on Deal
+#: lmkp/views/translation.py:178
 msgid "activities_details-title"
 msgstr ""
 
-#. Default: Filter Activities
-#: lmkp/views/translation.py:154
+#. Default: Filter Deal
+#: lmkp/views/translation.py:179
 msgid "activities_filter-title"
 msgstr ""
 
 #. Default: Step 1: Please select a point on the map.
-#: lmkp/views/translation.py:155
+#: lmkp/views/translation.py:180
 msgid "activities_new-step-1"
 msgstr ""
 
 #. Default: You can drag and drop the point. Once you are done, click "Continue".
-#: lmkp/views/translation.py:156
+#: lmkp/views/translation.py:181
 msgid "activities_new-step-1-explanation"
 msgstr ""
 
-#. Default: New Activity
-#: lmkp/views/translation.py:157
+#. Default: New Deal
+#: lmkp/views/translation.py:182
 msgid "activities_new-title"
 msgstr ""
 
-#. Default: Displaying Activities {0} - {1} of {2}
-#: lmkp/views/translation.py:158
+#. Default: Displaying Deals {0} - {1} of {2}
+#: lmkp/views/translation.py:183
 msgid "activities_paging-message"
 msgstr ""
 
-#. Default: No Activities found
-#: lmkp/views/translation.py:159
+#. Default: No Deals found
+#: lmkp/views/translation.py:184
 msgid "activities_paging-empty"
 msgstr ""
 
-#. Default: Activities
-#: lmkp/views/translation.py:160
+#. Default: Pending versions of Deals
+#: lmkp/views/translation.py:185
+msgid "activities_pending-versions"
+msgstr ""
+
+#. Default: Displaying pending Deals {0} - {1} of {2}
+#: lmkp/views/translation.py:186
+msgid "activities_pending-paging-message"
+msgstr ""
+
+#. Default: No pending Deals to display
+#: lmkp/views/translation.py:187
+msgid "activities_pending-paging-empty"
+msgstr ""
+
+#. Default: Review versions of Deal {0}
+#: lmkp/views/translation.py:188
+msgid "activities_review-versions"
+msgstr ""
+
+#. Default: Deals
+#: lmkp/views/translation.py:189
 msgid "activities_title"
 msgstr ""
 
 #. Default: Edit this involvement
-#: lmkp/views/translation.py:163
+#: lmkp/views/translation.py:192
 msgid "involvements_edit-involvement"
 msgstr ""
 
 #. Default: Role
-#: lmkp/views/translation.py:164
+#: lmkp/views/translation.py:193
 msgid "involvements_stakeholder-role"
 msgstr ""
 
 #. Default: Involvements
-#: lmkp/views/translation.py:165
+#: lmkp/views/translation.py:194
 msgid "involvements_title"
 msgstr ""
 
 #. Default: Add Stakeholders
-#: lmkp/views/translation.py:168
+#: lmkp/views/translation.py:197
 msgid "stakeholders_add-stakeholders"
 msgstr ""
 
 #. Default: Associated Stakeholders
-#: lmkp/views/translation.py:169
+#: lmkp/views/translation.py:198
 msgid "stakeholders_associated-stakeholders"
 msgstr ""
 
+#. Default: Compare versions of Stakeholder {0}
+#: lmkp/views/translation.py:199
+msgid "stakeholders_compare-versions"
+msgstr ""
+
 #. Default: Create new Stakeholder
-#: lmkp/views/translation.py:170
+#: lmkp/views/translation.py:200
 msgid "stakeholders_create-new-stakeholder"
 msgstr ""
 
 #. Default: Edit Stakeholder (version {0})
-#: lmkp/views/translation.py:171
+#: lmkp/views/translation.py:201
 msgid "stakeholders_edit-stakeholder"
 msgstr ""
 
 #. Default: Details on Stakeholder
-#: lmkp/views/translation.py:172
+#: lmkp/views/translation.py:202
 msgid "stakeholders_details-title"
 msgstr ""
 
 #. Default: Filter Stakeholders
-#: lmkp/views/translation.py:173
+#: lmkp/views/translation.py:203
 msgid "stakeholders_filter-title"
 msgstr ""
 
 #. Default: No associated Stakeholders so far. You can search and select a
 #. Stakeholder using the Search field below. Or you can create a new Stakeholder by
 #. clicking on the button above.
-#: lmkp/views/translation.py:174
+#: lmkp/views/translation.py:204
 msgid "stakeholders_no-associated-stakeholders-yet"
 msgstr ""
 
-#. Default: Displaying stakeholders {0} - {1} of {2}
-#: lmkp/views/translation.py:175
+#. Default: Displaying Stakeholders {0} - {1} of {2}
+#: lmkp/views/translation.py:205
 msgid "stakeholders_paging-message"
 msgstr ""
 
-#. Default: No stakeholders found
-#: lmkp/views/translation.py:176
+#. Default: No Stakeholders found
+#: lmkp/views/translation.py:206
 msgid "stakeholders_paging-empty"
 msgstr ""
 
+#. Default: Pending versions of Stakeholders
+#: lmkp/views/translation.py:207
+msgid "stakeholders_pending-versions"
+msgstr ""
+
+#. Default: Displaying pending Stakeholders {0} - {1} of {2}
+#: lmkp/views/translation.py:208
+msgid "stakeholders_pending-paging-message"
+msgstr ""
+
+#. Default: No pending Stakeholders to display
+#: lmkp/views/translation.py:209
+msgid "stakeholders_pending-paging-empty"
+msgstr ""
+
+#. Default: Review versions of Stakeholder {0}
+#: lmkp/views/translation.py:210
+msgid "stakeholders_review-versions"
+msgstr ""
+
 #. Default: Search Stakeholder
-#: lmkp/views/translation.py:177
+#: lmkp/views/translation.py:211
 msgid "stakeholders_search"
 msgstr ""
 
 #. Default: Select Stakeholder
-#: lmkp/views/translation.py:178
+#: lmkp/views/translation.py:212
 msgid "stakeholders_select-stakeholder"
 msgstr ""
 
 #. Default: Stakeholders
-#: lmkp/views/translation.py:179
+#: lmkp/views/translation.py:213
 msgid "stakeholder_title"
 msgstr ""
 
 #. Default: Comment by
-#: lmkp/views/translation.py:182
+#: lmkp/views/translation.py:216
 msgid "comments_comment-by"
 msgstr ""
 
 #. Default: Do you really want to delete this comment?
-#: lmkp/views/translation.py:183
+#: lmkp/views/translation.py:217
 msgid "comments_confirm-delete-comment"
 msgstr ""
 
 #. Default: No comments yet.
-#: lmkp/views/translation.py:184
+#: lmkp/views/translation.py:218
 msgid "comments_empty"
 msgstr ""
 
 #. Default: Leave a comment
-#: lmkp/views/translation.py:185
+#: lmkp/views/translation.py:219
 msgid "comments_leave-comment"
 msgstr ""
 
 #. Default: Comment
-#: lmkp/views/translation.py:186
+#: lmkp/views/translation.py:220
 msgid "comments_singular"
 msgstr ""
 
 #. Default: Comments
-#: lmkp/views/translation.py:187
+#: lmkp/views/translation.py:221
 msgid "comments_title"
 msgstr ""
 
+#. Default: Approving this version will create a new version. (further additional
+#. information to come)
+#: lmkp/views/translation.py:224
+msgid "moderator_approving-creates-new-version"
+msgstr ""
+
 #. Default: These changes are based on a version which is not the active version.
-#: lmkp/views/translation.py:190
+#: lmkp/views/translation.py:225
 msgid "moderator_changes-not-based-on-active"
 msgstr ""
 
+#. Default: There are some mandatory keys missing. The item cannot be approved
+#. without these keys. Please click the "edit" button to add the missing keys.
+#: lmkp/views/translation.py:226
+msgid "moderator_missing-mandatory-keys"
+msgstr ""
+
 #. Default: There are multiple changes pending! They may be conflicting.
-#: lmkp/views/translation.py:191
+#: lmkp/views/translation.py:227
 msgid "moderator_multiple-changes-pending"
 msgstr ""
 
 #. Default: Pending version
-#: lmkp/views/translation.py:192
+#: lmkp/views/translation.py:228
 msgid "moderator_pending-version-title"
 msgstr ""
 
+#. Default: Review Activity
+#: lmkp/views/translation.py:229
+msgid "moderator_review-activity"
+msgstr ""
+
+#. Default: The Activity of this involvement cannot be reviewed from the
+#. Stakeholder's side. Please review the Activity to approve or reject this
+#. involvement.
+#: lmkp/views/translation.py:230
+msgid "moderator_review-activity-side-of-involvement-first"
+msgstr ""
+
 #. Default: Review Comment
-#: lmkp/views/translation.py:193
+#: lmkp/views/translation.py:231
 msgid "moderator_review-comment"
 msgstr ""
 
 #. Default: Review Decision
-#: lmkp/views/translation.py:194
+#: lmkp/views/translation.py:232
 msgid "moderator_review-decision"
 msgstr ""
 
+#. Default: Review not possible
+#: lmkp/views/translation.py:233
+msgid "moderator_review-not-possible"
+msgstr ""
+
 #. Default: Review pending changes
-#: lmkp/views/translation.py:195
+#: lmkp/views/translation.py:234
 msgid "moderator_review-pending-changes"
 msgstr ""
 
+#. Default: Review Stakeholder
+#: lmkp/views/translation.py:235
+msgid "moderator_review-stakeholder"
+msgstr ""
+
 #. Default: Show pending changes
-#: lmkp/views/translation.py:196
+#: lmkp/views/translation.py:236
 msgid "moderator_show-pending-changes"
 msgstr ""
 
+#. Default: The Stakeholder of this involvement has no active version and cannot be
+#. set active. Please review the Stakeholder first.
+#: lmkp/views/translation.py:237
+msgid "moderator_stakeholder-has-no-active-version"
+msgstr ""
+
 #. Default: Logical Operator
-#: lmkp/views/translation.py:199
+#: lmkp/views/translation.py:240
 msgid "filter_logical-operator"
 msgstr ""
 
 #. Default: and
-#: lmkp/views/translation.py:200
+#: lmkp/views/translation.py:241
 msgid "filter_logical-operator-and"
 msgstr ""
 
 #. Default: or
-#: lmkp/views/translation.py:201
+#: lmkp/views/translation.py:242
 msgid "filter_logical-operator-or"
 msgstr ""
 
 #. Default: is
-#: lmkp/views/translation.py:202
+#: lmkp/views/translation.py:243
 msgid "filter_operator-is"
 msgstr ""
 
 #. Default: is not
-#: lmkp/views/translation.py:203
+#: lmkp/views/translation.py:244
 msgid "filter_operator-is-not"
 msgstr ""
 
 #. Default: contains (case sensitive)
-#: lmkp/views/translation.py:204
+#: lmkp/views/translation.py:245
 msgid "filter_operator-contains-case-sensitive"
 msgstr ""
 
 #. Default: contains (case insensitive)
-#: lmkp/views/translation.py:205
+#: lmkp/views/translation.py:246
 msgid "filter_operator-contains-case-insensitive"
 msgstr ""
 
 #. Default: contains not (case sensitive)
-#: lmkp/views/translation.py:206
+#: lmkp/views/translation.py:247
 msgid "filter_operator-contains-not-case-sensitive"
 msgstr ""
 
 #. Default: contains not (case insensitive)
-#: lmkp/views/translation.py:207
+#: lmkp/views/translation.py:248
 msgid "filter_operator-contains-not-case-insensitive"
 msgstr ""
 
 #. Default: equals
-#: lmkp/views/translation.py:208
+#: lmkp/views/translation.py:249
 msgid "filter_operator-equals"
 msgstr ""
 
 #. Default: less than
-#: lmkp/views/translation.py:209
+#: lmkp/views/translation.py:250
 msgid "filter_operator-less-than"
 msgstr ""
 
 #. Default: less than or equal
-#: lmkp/views/translation.py:210
+#: lmkp/views/translation.py:251
 msgid "filter_operator-less-than-or-equal"
 msgstr ""
 
 #. Default: greater than
-#: lmkp/views/translation.py:211
+#: lmkp/views/translation.py:252
 msgid "filter_operator-greater-than"
 msgstr ""
 
 #. Default: greater than or equal
-#: lmkp/views/translation.py:212
+#: lmkp/views/translation.py:253
 msgid "filter_operator-greater-than-or-equal"
 msgstr ""
 
 #. Default: not equals
-#: lmkp/views/translation.py:213
+#: lmkp/views/translation.py:254
 msgid "filter_operator-not-equals"
 msgstr ""
 
 #. Default: Specify number value
-#: lmkp/views/translation.py:214
+#: lmkp/views/translation.py:255
 msgid "filter_specify-number-value"
 msgstr ""
 
 #. Default: Specify value
-#: lmkp/views/translation.py:215
+#: lmkp/views/translation.py:256
 msgid "filter_specify-text-value"
 msgstr ""
 

@@ -25,6 +25,9 @@ Ext.define('Lmkp.controller.moderation.Pending', {
             },
             'gridpanel[itemId=pendingStakeholderGridPanel] templatecolumn[name=compareButtonColumn]': {
                 click: this.onCompareButtonClick
+            },
+            'gridcolumn[name=identifierColumn]': {
+                afterrender: this.onIdentifierColumnAfterrender
             }
         });
     },
@@ -60,11 +63,11 @@ Ext.define('Lmkp.controller.moderation.Pending', {
         if (id && type) {
             var controller = this.application.getController('moderation.CompareReview');
 
-            var title = 'Compare versions';
+            var title = '';
             if (type == 'activities') {
-                title += ' of Activity ' + this.stringFunctions._shortenIdentifier(id);
+                title = Lmkp.ts.msg('activities_compare-versions').replace('{0}', this.stringFunctions._shortenIdentifier(id));
             } else if (type == 'stakeholders') {
-                title += ' of Stakeholder ' + this.stringFunctions._shortenIdentifier(id);
+                title = Lmkp.ts.msg('stakeholders_compare-versions').replace('{0}', this.stringFunctions._shortenIdentifier(id));
             }
 
             var win = controller._createWindow(title);
@@ -78,6 +81,20 @@ Ext.define('Lmkp.controller.moderation.Pending', {
             controller.reloadCompareTagGroupStore(
                 'compare', type, id
             );
+        }
+    },
+
+    /**
+     * Nicely render 'identifier' column of Activity and Stakeholder grid.
+     */
+    onIdentifierColumnAfterrender: function(comp) {
+        var me = this;
+        comp.renderer = function(value, metaData, record) {
+            if (value) {
+                return me.stringFunctions._shortenIdentifier(value);
+            } else {
+                return Lmkp.ts.msg('gui_unknown');
+            }
         }
     }
 });
