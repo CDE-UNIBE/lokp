@@ -14,7 +14,8 @@ class CreateBase(Test_Base):
         
         session = requests.Session()
         
-        session.auth = (user['username'], user['password'])
+        if user is not None:
+            session.auth = (user['username'], user['password'])
         
         cookies = dict(_PROFILE_=profile)
         headers = {'content-type': 'application/json'}
@@ -158,6 +159,7 @@ class CreateBase(Test_Base):
     def getSomeActivityTags(self, switch):
         
         if switch == 1:
+            # Very simple, all mandatory keys there. One Tag per Taggroup.
             return [
                 {
                     'Intended area (ha)': 100
@@ -174,6 +176,7 @@ class CreateBase(Test_Base):
                 }
             ]
         if switch == 2:
+            # All mandatory keys there, sometimes 2 Tags in a Taggroup.
             return [
                 {
                     'Intended area (ha)': 200
@@ -189,6 +192,20 @@ class CreateBase(Test_Base):
                     'Current area in operation (ha)': 50
                 }, {
                     'Spatial Accuracy': '1km to 10km'
+                }
+            ]
+        if switch == 3:
+            # Not all mandatory keys there. 
+            # Missing are 'Data source' and 'Intention of Investment'
+            return [
+                {
+                    'Intended area (ha)': 100
+                }, {
+                    'Country': 'Laos'
+                }, {
+                    'Negotiation Status': 'Contract signed'
+                }, {
+                    'Spatial Accuracy': '100m to 1km'
                 }
             ]
         

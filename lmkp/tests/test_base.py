@@ -30,6 +30,8 @@ class Test_Base(object):
             count()
 
     def getUser(self, userid):
+        if userid == 0:
+            return None
         if userid == 1:
             username = 'user1'
         elif userid == 2:
@@ -44,6 +46,20 @@ class Test_Base(object):
             }
 
         return None
+    
+    def findKey(self, feature, key):
+        
+        found = 0
+        for taggroup in feature.get_taggroups():
+            tag = taggroup.get_tag_by_key(key)
+            if tag is not None:
+                found += 1
+        
+        if found > 1:
+            log.debug('Key (%s) found more than once (%s times)' %
+                      (key, found))
+
+        return found == 1
     
     def findKeyValue(self, feature, key, value):
 
@@ -82,3 +98,28 @@ class Test_Result(object):
     def __init__(self, success, msg):
         self.success = success
         self.msg = msg
+
+
+# Some sample for Activity Tests
+"""
+
+class TestName00(TheBase):
+    
+    # TheBase: CreateBase / EditBase / ModerationBase
+    
+    def __init__(self, request):
+        super(TheBase, self).__init__()
+        self.request = request
+        self.protocol = ActivityProtocol3(Session)
+        self.testId = "XX00"
+        self.testDescription = 'DESCRIPTION'
+        self.identifier1 = 'IDENTIFIER'
+        self.a1v1 = None
+
+    def testSetup(self):
+        return True
+    
+    def doTest(self, verbose=False):
+        return True
+
+"""
