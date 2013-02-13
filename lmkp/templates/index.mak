@@ -17,10 +17,10 @@ if 'lmkp.mode' in request.registry.settings:
         mode = 'demo'
 %>
 <title>
-    % if mode == 'demo':
-        [Demo]
-    % endif
     ${_("Land Observatory")}
+    % if mode == 'demo':
+        ${_("[Demo]")}
+    % endif
 </title>
 <script type="text/javascript" src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>
 <script type="text/javascript" src="${request.static_url('lmkp:static/lib/OpenLayers-2.11/OpenLayers.js')}"></script>
