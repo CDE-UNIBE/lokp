@@ -63,7 +63,8 @@ def main(global_config, ** settings):
     config.add_route('reset', '/reset', request_method='POST')
     config.add_route('reset_form', '/reset', request_method='GET')
     config.add_route('logout', '/logout')
-    config.add_route('db_test', '/db_test')
+
+    config.add_route('translation', '/translation')
 
     # Embedded start page
     config.add_route('embedded_index', '/embedded/{profile}')

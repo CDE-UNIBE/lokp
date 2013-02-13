@@ -36,7 +36,8 @@ reviewdecisionMap = {
 usergroupMap = {
     'editors': _('usergroup_editors', default='Editors'),
     'moderators': _('usergroup_moderators', default='Moderators'),
-    'administrators': _('usergroup_administrators', default='Administrators')
+    'administrators': _('usergroup_administrators', default='Administrators'),
+    'translators': _('usergroup_translators', default='Translators')
 }
 
 # Translatable hashmap with all possible user roles
@@ -70,6 +71,7 @@ def ui_messages(request):
         'usergroup_editors': usergroupMap['editors'],
         'usergroup_moderators': usergroupMap['moderators'],
         'usergroup_administrators': usergroupMap['administrators'],
+        'usergroup_translators': usergroupMap['translators'],
 
         # Buttons
         'button_add-attribute-filter': _('button_add-attribute-filter', default='Add attribute filter'),
