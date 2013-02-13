@@ -55,10 +55,10 @@ if 'lmkp.mode' in request.registry.settings:
                 <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" height="100" width="100" alt="${_('Land Observatory')}"/>
             </div>
             <h1>
-                % if mode == 'demo':
-                [Demo]
-                % endif
                 ${_("Land Observatory")}
+                % if mode == 'demo':
+                    ${_("[Demo]")}
+                % endif
             </h1>
             <p>
                 ${_("The Land Observatory will make information on large-scale land acquisition transparent and accessible through an interactive, map-based platform. We are piloting the project in five countries, with partners and governments who will work to open government data, crowdsource and help customize local observatories. Updated information on land will benefit citizens, but also governments and companies interested in sustainability.")}

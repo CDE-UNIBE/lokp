@@ -10,16 +10,18 @@ if 'lmkp.mode' in request.registry.settings:
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <title>
-            % if mode == 'demo':
-                [Demo]
-            % endif
             ${_("Land Observatory")} - ${_(u"Login")}
+            % if mode == 'demo':
+                ${_("[Demo]")}
+            % endif
         </title>
         <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/style.css')}"></link>
     </head>
     <body>
         <div class="login">
-            <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" alt="${_(u'Land Observatory')}"/><br/>
+            <a href="/">
+                <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" alt="${_(u'Land Observatory')}"/>
+            </a><br/>
             ${_(u"Login to the Land Observatory")}
         </div>
         % if warning is not None:
