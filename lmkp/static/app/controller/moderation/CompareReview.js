@@ -6,7 +6,9 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         'CompareTagGroups',
         'CompareVersions',
         'CompareMetadata',
-        'ReviewDecisions'
+        'ReviewDecisions',
+        'ActivityConfig',
+        'StakeholderConfig'
     ],
 
     stringFunctions: null,
