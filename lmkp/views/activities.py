@@ -319,7 +319,7 @@ def create(request):
     _ = request.translate
 
     # Check if the user is logged in and he/she has sufficient user rights
-    userid = request.user.username #authenticated_userid(request)
+    userid = request.user.username if request.user is not None else None
 
     if userid is None:
         raise HTTPForbidden()

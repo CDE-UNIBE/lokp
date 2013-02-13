@@ -1037,14 +1037,14 @@ def delete_sample_values(request):
 @view_config(route_name='moderation_tests', renderer='json', permission='administer')
 def moderation_tests(request):
     
-    # [CA01] / [CS01] / True / False
-    doCreateTests = False
-    # [EA01] / [ES01] / True / False
-    doEditTests = False
-    # [MA01] / [MS01] / True / False
-    doModerationTests = False
+    # ['CA01'] / ['CS01'] / True / False
+    doCreateTests = True
+    # ['EA01'] / ['ES01'] / True / False
+    doEditTests = True
+    # ['MA01'] / ['MS01'] / True / False
+    doModerationTests = True
 
-    verbose = True
+    verbose = False
     
     print ""
     print ""
@@ -1067,7 +1067,11 @@ def moderation_tests(request):
 
         createTests = [
             CreateActivities01(request),
-            CreateActivities02(request)
+            CreateActivities02(request),
+            CreateActivities03(request),
+            CreateActivities04(request),
+            CreateActivities05(request),
+            CreateActivities06(request)
         ]
         
         # Test the setup
