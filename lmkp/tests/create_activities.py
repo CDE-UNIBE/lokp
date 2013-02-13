@@ -7,13 +7,13 @@ from lmkp.views.activity_protocol3 import ActivityProtocol3
 import logging
 log = logging.getLogger(__name__)
 
-class CreateActivities1(CreateBase):
+class CreateActivities01(CreateBase):
     
     def __init__(self, request):
         super(CreateBase, self).__init__()
         self.request = request
         self.protocol = ActivityProtocol3(Session)
-        self.testId = "CA1"
+        self.testId = "CA01"
         self.testDescription = 'Create new Activity with mandatory keys'
         self.identifier1 = '58be3840-6bda-11e2-bcfd-0800200c9a61'
         self.a1v1 = None
@@ -60,7 +60,7 @@ class CreateActivities1(CreateBase):
         
         # Make sure the Activity has all the taggroups (7)
         if (self.handleResult(
-            self.countTaggroups(self.a1v1) == 7,
+            self.countTaggroups(self.a1v1) == 6,
             'New Activity has not all taggroups.'
         )) is not True:
             return False
@@ -68,13 +68,13 @@ class CreateActivities1(CreateBase):
         return True
 
 #TODO: Temporary
-class CreateActivities2(CreateBase):
+class CreateActivities02(CreateBase):
 
     def __init__(self, request):
         super(CreateBase, self).__init__()
         self.request = request
         self.protocol = ActivityProtocol3(Session)
-        self.testId = "CA2"
+        self.testId = "CA02"
         self.testDescription = 'Create new Activity with all mandatory keys'
         self.identifier1 = '2a889f80-e571-471a-82b7-e1a2eac47a16'
         self.a1v1 = None

@@ -8,13 +8,13 @@ from lmkp.views.activity_protocol3 import ActivityProtocol3
 import logging
 log = logging.getLogger(__name__)
 
-class EditActivities1(CreateBase):
+class EditActivities01(CreateBase):
 
     def __init__(self, request):
         super(CreateBase, self).__init__()
         self.request = request
         self.protocol = ActivityProtocol3(Session)
-        self.testId = "EA1"
+        self.testId = "EA01"
         self.testDescription = 'Edit an active Activity'
         self.identifier1 = 'cbe22b14-525a-4578-aa80-df961aa0b747'
         self.a1v1 = None
@@ -32,7 +32,7 @@ class EditActivities1(CreateBase):
             self.getSomeActivityTags(1),
             self.identifier1,
             self.getUser(1),
-            profile = 'LA'
+            profile = 'Laos'
         )
 
         if (self.handleResult(
@@ -63,7 +63,7 @@ class EditActivities1(CreateBase):
     def doTest(self, verbose=False):
 
         # Prepare the values
-        key = 'Contract area (ha)'
+        key = 'Intended area (ha)'
         oldValue = 100
         newValue = 50
 
@@ -135,7 +135,7 @@ class EditActivities1(CreateBase):
 
         # Check that no additional taggroup was created
         if (self.handleResult(
-            self.countTaggroups(self.a1v2) == 7,
+            self.countTaggroups(self.a1v2) == 6,
             'New Activity has not all taggroups.'
         )) is not True:
             return False
@@ -159,13 +159,13 @@ class EditActivities1(CreateBase):
 
         return True
 
-class EditActivities2(CreateBase):
+class EditActivities02(CreateBase):
 
     def __init__(self, request):
         super(CreateBase, self).__init__()
         self.request = request
         self.protocol = ActivityProtocol3(Session)
-        self.testId = "EA2"
+        self.testId = "EA02"
         self.testDescription = 'Edit a first pending Activity'
         self.identifier1 = '177b8a03-bd2d-49db-aea4-1f27d3912121'
         self.a1v1 = None
@@ -183,7 +183,7 @@ class EditActivities2(CreateBase):
             self.getSomeActivityTags(1),
             self.identifier1,
             self.getUser(1),
-            profile = 'LA'
+            profile = 'Laos'
         )
         if (self.handleResult(
             self.a1v1 is not None and self.a1v1 is not False,
@@ -203,7 +203,7 @@ class EditActivities2(CreateBase):
     def doTest(self, verbose=False):
 
         # Prepare the values
-        key = 'Contract area (ha)'
+        key = 'Intended area (ha)'
         oldValue = 100
         newValue = 50
 
@@ -276,7 +276,7 @@ class EditActivities2(CreateBase):
 
         # Check that no additional taggroup was created
         if (self.handleResult(
-            self.countTaggroups(self.a1v2) == 7,
+            self.countTaggroups(self.a1v2) == 6,
             'New Activity has not all taggroups.'
         )) is not True:
             return False
@@ -300,13 +300,13 @@ class EditActivities2(CreateBase):
 
         return True
 
-class EditActivities3(CreateBase):
+class EditActivities03(CreateBase):
 
     def __init__(self, request):
         super(CreateBase, self).__init__()
         self.request = request
         self.protocol = ActivityProtocol3(Session)
-        self.testId = "EA3"
+        self.testId = "EA03"
         self.testDescription = 'Edit two tags of a taggroup of an active Activity'
         self.identifier1 = '5dd1e511-5d33-4cb5-95a1-1a5ada35352b'
         self.a1v1 = None
@@ -324,7 +324,7 @@ class EditActivities3(CreateBase):
             self.getSomeActivityTags(2),
             self.identifier1,
             self.getUser(1),
-            profile = 'LA'
+            profile = 'Laos'
         )
 
         if (self.handleResult(
@@ -450,7 +450,7 @@ class EditActivities3(CreateBase):
 
         # Check that no additional taggroup was created
         if (self.handleResult(
-            self.countTaggroups(self.a1v2) == 7,
+            self.countTaggroups(self.a1v2) == 6,
             'New Activity has not all taggroups.'
         )) is not True:
             return False

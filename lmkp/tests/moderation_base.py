@@ -15,8 +15,8 @@ class ModerationBase(Test_Base):
         """
 
         """
-        moderator = self.getUser(2)
-        profile = 'LA'
+        moderator = self.getUser(1)
+        profile = 'Laos'
 
 
         # Initialize Session

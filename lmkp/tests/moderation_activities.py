@@ -5,13 +5,13 @@ from lmkp.models.meta import DBSession as Session
 from lmkp.models.database_objects import *
 from lmkp.views.activity_protocol3 import ActivityProtocol3
 
-class ModerationActivities1(ModerationBase):
+class ModerationActivities01(ModerationBase):
     
     def __init__(self, request):
         super(ModerationBase, self).__init__()
         self.request = request
         self.protocol = ActivityProtocol3(Session)
-        self.testId = "MA1"
+        self.testId = "MA01"
         self.testDescription = 'Moderate a new Activity with mandatory keys'
         self.identifier1 = '93c040ff-229a-461b-85b2-ad5da0db56e1'
         self.a1v1 = None
@@ -28,7 +28,7 @@ class ModerationActivities1(ModerationBase):
             self.createBase.getSomeActivityTags(1),
             self.identifier1,
             self.getUser(1),
-            profile = 'LA'
+            profile = 'Laos'
         )
 
         if (self.handleResult(
@@ -74,13 +74,13 @@ class ModerationActivities1(ModerationBase):
 
         return True
 
-class ModerationActivities2(ModerationBase):
+class ModerationActivities02(ModerationBase):
 
     def __init__(self, request):
         super(ModerationBase, self).__init__()
         self.request = request
         self.protocol = ActivityProtocol3(Session)
-        self.testId = "MA2"
+        self.testId = "MA02"
         self.testDescription = 'Moderate a new Activity with mandatory keys'
         self.identifier1 = 'a00b0732-96b4-499d-9e0e-6e393e668c70'
         self.a1v1 = None

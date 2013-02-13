@@ -1034,12 +1034,15 @@ def delete_sample_values(request):
 
 
 
-@view_config(route_name='moderation_tests', renderer='json', permission='moderate')
+@view_config(route_name='moderation_tests', renderer='json', permission='administer')
 def moderation_tests(request):
     
-    doCreateTests = True
-    doEditTests = True
-    doModerationTests = True
+    # [CA01] / [CS01] / True / False
+    doCreateTests = False
+    # [EA01] / [ES01] / True / False
+    doEditTests = False
+    # [MA01] / [MS01] / True / False
+    doModerationTests = False
 
     verbose = True
     
@@ -1063,8 +1066,8 @@ def moderation_tests(request):
         and len(doCreateTests) > 0)):
 
         createTests = [
-            CreateActivities1(request),
-            CreateActivities2(request)
+            CreateActivities01(request),
+            CreateActivities02(request)
         ]
         
         # Test the setup
@@ -1115,9 +1118,9 @@ def moderation_tests(request):
         and len(doEditTests) > 0)):
 
         editTests = [
-            EditActivities1(request),
-            EditActivities2(request),
-            EditActivities3(request)
+            EditActivities01(request),
+            EditActivities02(request),
+            EditActivities03(request)
         ]
 
         # Test the setup
@@ -1173,7 +1176,7 @@ def moderation_tests(request):
         and len(doModerationTests) > 0)):
 
         moderationTests = [
-            ModerationActivities1(request)
+            ModerationActivities01(request)
         ]
     
         # Test the setup
