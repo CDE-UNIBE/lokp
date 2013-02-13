@@ -56,7 +56,7 @@ class CreateBase(Test_Base):
         return diff
 
     def createAndCheckFirstItem(self, testObject, itemType, mappedClass, url,
-        tags, identifier, user, profile='LA'):
+        tags, identifier, user, profile='Laos'):
         """
         Wrapper to create a new item and check if it is there or not.
         """
@@ -144,7 +144,7 @@ class CreateBase(Test_Base):
 
     def getSomeGeometryDiff(self, profile):
 
-        if profile == 'LA':
+        if profile == 'Laos':
             return {
                 'type': 'Point',
                 'coordinates': [
@@ -160,7 +160,7 @@ class CreateBase(Test_Base):
         if switch == 1:
             return [
                 {
-                    'Contract area (ha)': 100
+                    'Intended area (ha)': 100
                 }, {
                     'Country': 'Laos'
                 }, {
@@ -171,14 +171,12 @@ class CreateBase(Test_Base):
                     'Negotiation Status': 'Contract signed'
                 }, {
                     'Spatial Accuracy': '100m to 1km'
-                }, {
-                    'Year of agreement': 2000
                 }
             ]
         if switch == 2:
             return [
                 {
-                    'Contract area (ha)': 200
+                    'Intended area (ha)': 200
                 }, {
                     'Country': 'Laos'
                 }, {
@@ -191,8 +189,6 @@ class CreateBase(Test_Base):
                     'Current area in operation (ha)': 50
                 }, {
                     'Spatial Accuracy': '1km to 10km'
-                }, {
-                    'Year of agreement': 2001
                 }
             ]
         
