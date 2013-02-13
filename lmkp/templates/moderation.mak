@@ -15,10 +15,10 @@ if 'lmkp.mode' in request.registry.settings:
 %>
 
 <title>
-    % if mode == 'demo':
-        [Demo]
-    % endif
     ${_("Land Observatory")} - ${_("Moderation")}
+    % if mode == 'demo':
+        ${_("[Demo]")}
+    % endif
 </title>
 <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
 % if use_js_builds:
