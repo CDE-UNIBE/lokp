@@ -90,10 +90,11 @@ def main(argv=sys.argv):
         # stakeholder roles
         sh_role6 = _addIfNotExists_ID(Stakeholder_Role(id=6, name='Investor'))
         # permissions
-        permission1 = _addIfNotExists_ID(Permission(id=1, name='administer', description='Can add key/values and edit translations.'))
+        permission1 = _addIfNotExists_ID(Permission(id=1, name='administer', description='Can add key/values and do batch translations.'))
         permission2 = _addIfNotExists_ID(Permission(id=2, name='moderate', description='Can make review decisions on reported information.'))
         permission3 = _addIfNotExists_ID(Permission(id=3, name='edit', description='Can report information.'))
         permission4 = _addIfNotExists_ID(Permission(id=4, name='view', description='Can see information. (basic permission - granted to everyone)'))
+        permission5 = _addIfNotExists_ID(Permission(id=5, name='translate', description='Can add and modify translations.'))
         # groups (with permissions)
         group1 = _addIfNotExists_ID(Group(id=1, name='administrators'))
         group1.permissions.append(permission1)
@@ -106,11 +107,13 @@ def main(argv=sys.argv):
         group3 = _addIfNotExists_ID(Group(id=3, name='editors'))
         group3.permissions.append(permission3)
         group3.permissions.append(permission4)
+        group4 = _addIfNotExists_ID(Group(id=4, name='translators'))
+        group4.permissions.append(permission5)
         # users (only 1 admin user)
         admin_password = settings['lmkp.admin_password']
         admin_email = settings['lmkp.admin_email']
         user1 = _addIfNotExists_NoIDUnique(User(username='admin', password=admin_password, email=admin_email), User.username, 'admin')
-        user1.groups = [group1, group2, group3]
+        user1.groups = [group1, group2, group3, group4]
         # connected with profile1 (global)
         #user2 = _addIfNotExists_NoIDUnique(User(username='user2', password='pw', email='user2@cde.unibe.ch'), User.username, 'user2')
         #user2.groups.append(group2)

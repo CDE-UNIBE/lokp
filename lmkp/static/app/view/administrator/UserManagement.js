@@ -83,6 +83,10 @@ Ext.define('Lmkp.view.administrator.UserManagement', {
                 boxLabel: Lmkp.ts.msg('usergroup_administrators'),
                 inputValue: 'administrators',
                 name: 'groups'
+            }, {
+                boxLabel: Lmkp.ts.msg('usergroup_translators'),
+                inputValue: 'translators',
+                name: 'groups'
             }
         ]
     }],
