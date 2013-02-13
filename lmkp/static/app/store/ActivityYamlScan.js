@@ -11,7 +11,6 @@ Ext.define('Lmkp.store.ActivityYamlScan', {
         direction: 'ASC'
     },
 
-    // TODO: Also check the model
     proxy: {
         type: 'ajax',
         url: '/config/scan/activities',

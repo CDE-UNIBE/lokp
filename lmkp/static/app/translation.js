@@ -8,12 +8,12 @@ Ext.onReady(function() {
         appFolder: 'static/app',
 
         requires: [
-            'Lmkp.view.login.Toolbar'
+            'Lmkp.view.login.Toolbar',
+            'Lmkp.view.translation.Main'
         ],
 
         controllers: [
-            'login.Toolbar',
-            'translation.Main'
+            'login.Toolbar'
         ],
 
         launch: function() {

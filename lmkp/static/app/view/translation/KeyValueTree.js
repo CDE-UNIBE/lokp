@@ -16,14 +16,9 @@ Ext.define('Lmkp.view.translation.KeyValueTree', {
         items: [{
             itemId: 'yaml-scan-button',
             text: 'Refresh'
-        }, {
-            itemId: 'yaml-add-button',
-            text: 'Add all to DB'
         }],
         xtype: 'toolbar'
     }],
-
-//    store: null,
 
     viewConfig: {
         loadMask: true
@@ -69,22 +64,6 @@ Ext.define('Lmkp.view.translation.KeyValueTree', {
                     return 'yes';
                 } else {
                     return 'no';
-                }
-            }
-        })
-    }, {
-        xtype: 'templatecolumn',
-        text: 'In DB',
-        flex: 1,
-        sortable: true,
-        dataIndex: 'exists',
-        align: 'center',
-        tpl: Ext.create('Ext.XTemplate', '{[this.isInDB(values.exists)]}', {
-            isInDB: function(e) {
-                if (e) {
-                    return 'yes';
-                } else {
-                    return '<b>no</b>';
                 }
             }
         })
