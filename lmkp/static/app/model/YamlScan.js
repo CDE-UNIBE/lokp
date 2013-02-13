@@ -19,15 +19,5 @@ Ext.define('Lmkp.model.YamlScan', {
 	}, {
 		name: 'local',
 		type: 'boolean'
-	}],
-
-        // TODO
-//	proxy: {
-//		type: 'ajax',
-//		url: '/config/scan/activities',
-//		reader: {
-//			type: 'json'
-//		},
-//		folderSort: true
-//	}
+	}]
 });
