@@ -2,6 +2,7 @@ Ext.require('Ext.container.Viewport');
 Ext.require('Ext.form.action.Action');
 Ext.require('Ext.form.action.Load');
 Ext.require('Ext.form.action.Submit');
+Ext.require('Ext.form.FieldSet');
 Ext.require('Ext.form.field.ComboBox');
 Ext.require('Ext.form.field.Display');
 Ext.require('Ext.form.field.Number');
@@ -36,6 +37,7 @@ Ext.require('Lmkp.utils.MessageBox');
 Ext.require('Lmkp.utils.PermalinkWindow');
 Ext.require('Lmkp.utils.StringFunctions');
 Ext.require('Lmkp.view.login.Toolbar');
+Ext.require('Lmkp.view.stakeholders.NewStakeholderSelection');
 
 Ext.onReady(function() {
 
