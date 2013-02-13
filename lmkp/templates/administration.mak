@@ -18,10 +18,10 @@ if 'lmkp.mode' in request.registry.settings:
         mode = 'demo'
 %>
 <title>
-    % if mode == 'demo':
-        [Demo]
-    % endif
     ${_("Land Observatory")} - ${_("Administration")}
+    % if mode == 'demo':
+        ${_("[Demo]")}
+    % endif
 </title>
 <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
 <script type="text/javascript" src="${request.route_url('moderator_toolbar_config')}"></script>
