@@ -15,13 +15,6 @@ Ext.define('Lmkp.controller.administrator.YamlScan', {
     'Profiles'
     ],
 	
-    refs: [
-        {
-            ref: 'profileCombobox',
-            selector: 'lo_administratoryamlscanpanel combobox[itemId=yamlScanProfileCombobox]'
-        }
-    ],
-	
     init: function() {
         // Make use of some functions already defined in the translation controller
         var translationController = this.getController('translation.KeyValues');
@@ -53,9 +46,9 @@ Ext.define('Lmkp.controller.administrator.YamlScan', {
      */
     onAddButtonClick: function(button) {
         
-        var profileCb = this.getProfileCombobox();
-        var profile = profileCb && profileCb.getValue() ? profileCb.getValue() : 'global';
         var treepanel = button.up('panel');
+        var profileCb = treepanel.down('combobox[itemId=yamlScanProfileCombobox]');
+        var profile = profileCb && profileCb.getValue() ? profileCb.getValue() : 'global';
 
         // Activity or Stakeholder?
         var url;
@@ -102,7 +95,7 @@ Ext.define('Lmkp.controller.administrator.YamlScan', {
         var treepanel = comp.up('panel');
         treepanel.setLoading(true);
 
-        var profileCb = this.getProfileCombobox();
+        var profileCb = treepanel.down('combobox[itemId=yamlScanProfileCombobox]');
         var profile = profileCb && profileCb.getValue() ? profileCb.getValue() : 'global';
 
         var store = treepanel.getStore();

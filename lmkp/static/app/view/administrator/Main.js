@@ -38,12 +38,18 @@ Ext.define('Lmkp.view.administrator.Main', {
                 type: 'stakeholder',
                 store: stakeholderStore
             }, {
+                title: Lmkp.ts.msg('administration_languages'),
+                xtype: 'panel',
+                bodyPadding: 5,
+                html: 'Coming soon ... List of all languages, posibility to add (remove?) new ones.'
+            }, {
                 title: Lmkp.ts.msg('administration_batch-translation'),
                 xtype: 'lo_administratorcodetab'
             }, {
                 title: Lmkp.ts.msg('administration_profiles'),
                 xtype: 'panel',
-                html: 'Add (remove?) profiles'
+                bodyPadding: 5,
+                html: 'Coming soon ... List of all profiles, possibility to add (remove?) new ones. Maybe even possibility to edit geometry?'
             }, {
                 title: Lmkp.ts.msg('administration_user-management'),
                 xtype: 'lo_usermanagementpanel'

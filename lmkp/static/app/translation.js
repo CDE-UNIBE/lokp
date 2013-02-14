@@ -1,5 +1,15 @@
 Ext.require('Ext.container.Viewport');
-
+Ext.require('Ext.form.field.ComboBox');
+Ext.require('Ext.form.Panel');
+Ext.require('Ext.grid.column.Template');
+Ext.require('Ext.layout.container.Border');
+Ext.require('Ext.layout.component.field.ComboBox');
+Ext.require('Lmkp.controller.login.Toolbar');
+Ext.require('Lmkp.controller.translation.KeyValues');
+Ext.require('Lmkp.store.ActivityYamlScan');
+Ext.require('Lmkp.store.StakeholderYamlScan');
+Ext.require('Lmkp.utils.MessageBox');
+Ext.require('Lmkp.view.translation.Main');
 
 Ext.onReady(function() {
     // Initialize and launch application

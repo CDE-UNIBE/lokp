@@ -1,17 +1,6 @@
 Ext.define('Lmkp.controller.translation.KeyValues', {
     extend: 'Ext.app.Controller',
 
-    refs: [
-        {
-            ref: 'profileCombobox',
-            selector: 'lo_translationkeyvaluetree combobox[itemId=keyvalueProfileCombobox]'
-        }, {
-            ref: 'languageCombobox',
-            selector: 'lo_translationkeyvaluetree combobox[itemId=keyvalueLanguageCombobox]'
-        }
-
-    ],
-
     init: function() {
         this.control({
             'lo_translationkeyvaluetree templatecolumn[name=mandatory]': {
@@ -124,6 +113,9 @@ Ext.define('Lmkp.controller.translation.KeyValues', {
                 oldTranslation = record.get('translation');
             }
 
+            var languageCb = panel.down('combobox[itemId=keyvalueLanguageCombobox]');
+            var locale = languageCb && languageCb.getValue() ? languageCb.getValue() : 'en';
+
             var win = Ext.create('Ext.window.Window', {
                 title: Lmkp.ts.msg('translation_translation'),
                 layout: 'fit',
@@ -168,7 +160,7 @@ Ext.define('Lmkp.controller.translation.KeyValues', {
                                             // Add additional parameters to POST
                                             params: {
                                                 'original': record.get('value'),
-                                                'language': Lmkp.ts.msg('locale'),
+                                                'language': locale,
                                                 'keyvalue': record.get('keyvalue'),
                                                 'item_type': panel.type
                                             },
@@ -223,10 +215,10 @@ Ext.define('Lmkp.controller.translation.KeyValues', {
         var treepanel = comp.up('panel');
         treepanel.setLoading(true);
 
-        var profileCb = this.getProfileCombobox();
+        var profileCb = treepanel.down('combobox[itemId=keyvalueProfileCombobox]');
         var profile = profileCb && profileCb.getValue() ? profileCb.getValue() : 'global';
 
-        var languageCb = this.getLanguageCombobox();
+        var languageCb = treepanel.down('combobox[itemId=keyvalueLanguageCombobox]');
         var locale = languageCb && languageCb.getValue() ? languageCb.getValue() : 'en';
 
         var store = treepanel.getStore();

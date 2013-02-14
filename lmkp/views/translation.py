@@ -273,6 +273,7 @@ def ui_messages(request):
         'administration_add-all-to-database': _('administration_add-all-to-database', default='Add all to Database'),
         'administration_batch-translation': _('administration_batch-translation', default='Batch translation'),
         'administration_is-in-database': _('administration_is-in-database', default='Is in Database'),
+        'administration_languages': _('administration_languages', default='Languages'),
         'administration_profiles': _('administration_profiles', default='Profiles'),
         'administration_user-management': _('administration_user-management', default='User management')
     }
