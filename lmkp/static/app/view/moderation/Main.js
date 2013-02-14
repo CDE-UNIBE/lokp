@@ -11,8 +11,7 @@ Ext.define('Lmkp.view.moderation.Main', {
     border: 0,
     defaults: {
         border: 0,
-        frame: false,
-        bodyPadding: 5
+        frame: false
     },
     items: [
         {
