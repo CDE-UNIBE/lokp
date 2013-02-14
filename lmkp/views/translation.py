@@ -175,6 +175,7 @@ def ui_messages(request):
 
         # Activities
         'activities_add-new-activity': _('activities_add-new-activity', default='Add new Deal'),
+        'activities_attributes': _('activities_attributes', default='Deal Attributes'),
         'activities_compare-versions': _('activities_compare-versions', default='Compare versions of Deal {0}'),
         'activities_edit-activity': _('activities_edit-activity', default='Edit Deal (version {0})'),
         'activities_details-title': _('activities_details-title', default='Details on Deal'),
@@ -197,6 +198,7 @@ def ui_messages(request):
 
         # Stakeholders
         'stakeholders_add-stakeholders': _('stakeholders_add-stakeholders', default='Add Stakeholders'),
+        'stakeholders_attributes': _('stakeholders_attributes', default='Stakeholder Attributes'),
         'stakeholders_associated-stakeholders': _('stakeholders_associated-stakeholders', default='Associated Stakeholders'),
         'stakeholders_compare-versions': _('stakeholders_compare-versions', default='Compare versions of Stakeholder {0}'),
         'stakeholders_create-new-stakeholder': _('stakeholders_create-new-stakeholder', default='Create new Stakeholder'),
@@ -256,6 +258,16 @@ def ui_messages(request):
         'filter_operator-not-equals': _('filter_operator-not-equals', default='not equals'),
         'filter_specify-number-value': _('filter_specify-number-value', default='Specify number value'),
         'filter_specify-text-value': _('filter_specify-text-value', default='Specify value'),
+
+        # Translation
+        'translation_add-translation': _('translation_add-translation', default='Add translation'),
+        'translation_edit-translation': _('translation_edit-translation', default='Edit translation'),
+        'translation_global-attribute': _('translation_global-attribute', default='Global attribute'),
+        'translation_key-or-value': _('translation_key-or-value', default='Key or Value'),
+        'translation_mandatory': _('translation_mandatory', default='Mandatory'),
+        'translation_original': _('translation_original', default='Original'),
+        'translation_original-already-in-english': _('translation_original-already-in-english', default='Original is already in English'),
+        'translation_translation': _('translation_translation', default='Translation')
     }
 
     # Get the localizer
@@ -375,9 +387,11 @@ def language_store(request):
 
 @view_config(route_name='edit_translation', renderer='json', permission='administer')
 def edit_translation(request):
+
+    _ = request.translate
+
     success = False
-    msg = 'Translation not successful'
-    print request.params
+    msg = _('Translation not successful')
     if 'original' and 'translation' and 'language' and 'keyvalue' and 'item_type' in request.params:
         # find language
         language = Session.query(Language).filter(Language.locale == request.params['language']).all()
@@ -398,7 +412,7 @@ def edit_translation(request):
                         # translation found, just update it.
                         oldTranslation[0].key = request.params['translation']
                         success = True
-                        msg = 'Updated translation (<b>%s</b> for key <b>%s</b>.' % (request.params['translation'], request.params['original'])
+                        msg = _('Updated translation')
                     else:
                         # no translation available yet, add it to DB
                         translation = Key(request.params['translation'])
@@ -406,7 +420,7 @@ def edit_translation(request):
                         translation.language = language[0]
                         Session.add(translation)
                         success = True
-                        msg = 'Added translation (<b>%s</b>) for key <b>%s</b>.' % (request.params['translation'], request.params['original'])
+                        msg = _('Added translation')
                 else:
                     msg = 'Original key not found' # should never happen
             if request.params['keyvalue'] == 'value':
@@ -425,7 +439,7 @@ def edit_translation(request):
                         # translation found, just update it.
                         oldTranslation[0].value = request.params['translation']
                         success = True
-                        msg = 'Updated translation (<b>%s</b>) for value <b>%s</b>.' % (request.params['translation'], request.params['original'])
+                        msg = _('Updated translation')
                     else:
                         # no translation available yet, add it to DB
                         translation = Value(request.params['translation'])
@@ -433,7 +447,7 @@ def edit_translation(request):
                         translation.language = language[0]
                         Session.add(translation)
                         success = True
-                        msg = 'Added translation (<b>%s</b>) for value <b>%s</b>.' % (request.params['translation'], request.params['original'])
+                        msg = _('Added translation')
                 else:
                     msg = 'Original value not found' # should never happen
         else:

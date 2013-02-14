@@ -13,7 +13,8 @@ Ext.onReady(function() {
         ],
 
         controllers: [
-            'login.Toolbar'
+            'login.Toolbar',
+            'translation.KeyValues'
         ],
 
         launch: function() {
@@ -26,7 +27,8 @@ Ext.onReady(function() {
                 items: [
                     {
                         region: 'north',
-                        xtype: 'lo_logintoolbar'
+                        xtype: 'lo_logintoolbar',
+                        hideProfileSelection: true
                     }, {
                         autoScroll: true,
                         contentEl: 'header-div',

@@ -10,99 +10,95 @@ Ext.define('Lmkp.view.translation.KeyValueTree', {
         postUrl: ''
     },
 
-    layout: 'fit',
-
-    dockedItems: [{
-        items: [{
-            itemId: 'yaml-scan-button',
-            text: 'Refresh'
-        }],
-        xtype: 'toolbar'
-    }],
-
+    // Little hack to fix issue with scrollbar
+    // http://stackoverflow.com/questions/6745395/scrollbar-in-extjs-tree-panel-does-not-work
+    scroll: false,
     viewConfig: {
-        loadMask: true
+        style: {
+            overflow: 'auto',
+            overflowX: 'hidden'
+        }
     },
 
+    layout: 'fit',
+
+    dockedItems: [
+        {
+            defaults: {
+                iconAlign: 'top',
+                scale: 'medium'
+            },
+            items: [
+                {
+                    itemId: 'keyvalueRefreshButton',
+                    text: Lmkp.ts.msg('button_refresh'),
+                    tooltip: Lmkp.ts.msg('tooltip_refresh'),
+                    iconCls: 'button-refresh'
+                }, '->', {
+                    xtype: 'combobox',
+                    itemId: 'keyvalueProfileCombobox',
+                    fieldLabel: Lmkp.ts.msg('gui_profile'),
+                    labelAlign: 'right',
+                    queryMode: 'local',
+                    store: 'Profiles',
+                    displayField: 'name',
+                    valueField: 'profile',
+                    value: Ext.util.Cookies.get('_PROFILE_') ? Ext.util.Cookies.get('_PROFILE_') : 'global'
+                }, {
+                    xtype: 'combobox',
+                    itemId: 'keyvalueLanguageCombobox',
+                    fieldLabel: Lmkp.ts.msg('gui_language'),
+                    labelAlign: 'right',
+                    queryMode: 'local',
+                    store: 'Languages',
+                    displayField: 'local_name',
+                    valueField: 'locale',
+                    value: Lmkp.ts.msg("locale"),
+                    margin: '0 10 0 0'
+                }
+            ],
+            xtype: 'toolbar'
+        }
+    ],
+
     rootVisible: false,
-    // TODO: autoScroll not yet working properly. Although scroll bar appears, it does so too late.
-    autoScroll: true,
     columns: [{
         xtype: 'treecolumn',
-        header: 'Original',
+        header: Lmkp.ts.msg('translation_original'),
         flex: 1,
         dataIndex: 'value',
         sortable: true
     },{
         xtype: 'templatecolumn',
         name: 'mandatory',
-        text: 'Mandatory',
-        flex: 1,
+        text: Lmkp.ts.msg('translation_mandatory'),
+        flex: 0,
         sortable: true,
         dataIndex: 'mandatory',
         align: 'center',
-        tpl: Ext.create('Ext.XTemplate', '{[this.isMandatory(values.mandatory)]}', {
-            isMandatory: function(m) {
-                if (m) {
-                    return 'yes';
-                } else {
-                    return '<i>no</i>';
-                }
-            }
-        })
+        tpl: ''
     }, {
         xtype: 'templatecolumn',
         name: 'local',
-        text: 'Local YAML',
-        flex: 1,
+        text: Lmkp.ts.msg('translation_global-attribute'),
+        flex: 0,
         sortable: true,
         dataIndex: 'local',
         align: 'center',
-        tpl: Ext.create('Ext.XTemplate', '{[this.isLocal(values.local)]}', {
-            isLocal: function(l) {
-                if (l) {
-                    return 'yes';
-                } else {
-                    return 'no';
-                }
-            }
-        })
+        tpl: ''
     }, {
         xtype: 'templatecolumn',
-        header: 'Translation',
+        header: Lmkp.ts.msg('translation_translation'),
+        name: 'translation',
         flex: 1,
         dataIndex: 'translation',
         sortable: true,
-        tpl: Ext.create('Ext.XTemplate', '{[this.showTranslation(values.translation)]}', {
-            showTranslation: function(t) {
-                if (t == 1) {			// not yet translated
-                    return '-';
-                } else if (t == 0) {	// already in english
-                    return '[already translated]';
-                } else {				// show translation
-                    return t;
-                }
-            }
-        })
+        tpl: ''
     }, {
         xtype: 'templatecolumn',
         name: 'editColumn',
-        width: 25,
+        width: 50,
         align: 'center',
-        tpl: Ext.create('Ext.XTemplate', '{[this.showTranslationButton(values.exists, values.translation)]}', {
-            showTranslationButton: function(e, t) {
-                if (e) {		// only show buttons when original in database
-                    if (t == 1) {			// not yet translated
-                        return '<img src="static/img/application_form_add.png" title="add translation" alt="add translation"/>';
-                    } else if (t == 0) {	// already in english
-                        return '';
-                    } else {				// show translation
-                        return '<img src="static/img/application_form_edit.png" title="edit translation" alt="edit translation"/>';
-                    }
-                } else {
-                    return '';
-                }
-            }
-        })
+        tpl: ''
     }]
 });

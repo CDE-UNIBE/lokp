@@ -28,6 +28,7 @@ if 'lmkp.mode' in request.registry.settings:
 <script type="text/javascript" src="${request.static_url('lmkp:static/translation-ext-all.js')}"></script>
 % endif
 <script type="text/javascript" src="${request.static_url('lmkp:static/app/translation.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/translation.css')}"></link>
 </%def>
 
 <div id="loading-mask" style="width: 100%; height: 100%;">
