@@ -4,17 +4,7 @@ Ext.define('Lmkp.view.translation.KeyValueTree', {
     alias: 'widget.lo_translationkeyvaluetree',
 
     border: 0,
-
-    // Little hack to fix issue with scrollbar
-    // http://stackoverflow.com/questions/6745395/scrollbar-in-extjs-tree-panel-does-not-work
-    scroll: false,
-    viewConfig: {
-        style: {
-            overflow: 'auto',
-            overflowX: 'hidden'
-        }
-    },
-
+    autoScroll: true,
     layout: 'fit',
 
     dockedItems: [

@@ -34,6 +34,10 @@ Ext.define('Lmkp.view.administrator.UserManagement', {
     defaultType: 'textfield',
     formBind: true,
     items: [{
+        xtype: 'panel',
+        html: 'Coming soon ... Possibility to manage existing users and their privileges. Connect users with profiles.',
+        bodyPadding: 5
+    }, {
         allowBlank: false,
         fieldLabel: 'Username',
         name: 'username',

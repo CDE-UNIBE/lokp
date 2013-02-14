@@ -14,6 +14,7 @@ Ext.require('Ext.util.*');
 Ext.require('Lmkp.controller.administrator.Code');
 Ext.require('Lmkp.controller.administrator.YamlScan');
 Ext.require('Lmkp.controller.login.Toolbar');
+Ext.require('Lmkp.controller.translation.KeyValues');
 Ext.require('Lmkp.store.ActivityChangesets');
 Ext.require('Lmkp.store.Status');
 Ext.require('Lmkp.view.login.Toolbar');
