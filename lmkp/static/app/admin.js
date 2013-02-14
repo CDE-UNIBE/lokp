@@ -20,12 +20,7 @@ Ext.require('Lmkp.view.login.Toolbar');
 Ext.require('Lmkp.view.users.UserWindow');
 
 Ext.onReady(function(){
-    var loadingMask = Ext.get('loading-mask');
-    loadingMask.fadeOut({
-        duration: 1000,
-        remove: true
-    });
-
+    // Initialize and launch application
     Ext.application({
         name: 'Lmkp',
         appFolder: 'static/app',
@@ -49,7 +44,8 @@ Ext.onReady(function(){
                 },
                 items: [{
                     region: 'north',
-                    xtype: 'lo_logintoolbar'
+                    xtype: 'lo_logintoolbar',
+                    hideProfileSelection: true
                 },{
                     autoScroll: true,
                     contentEl: 'header-div',
@@ -59,6 +55,13 @@ Ext.onReady(function(){
                     region: 'center',
                     xtype: 'lo_administratorpanel'
                 }]
+            });
+
+            // Remove loading mask
+            var loadingMask = Ext.get('loading-mask');
+            loadingMask.fadeOut({
+                duration: 1000,
+                remove: true
             });
         }
     });

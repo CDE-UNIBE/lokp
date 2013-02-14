@@ -1,0 +1,6 @@
+.button-refresh {
+    background-image: url('/static/img/view-refresh.png') !important;
+}
+.button-add {
+    background-image: url('/static/img/list-add.png') !important;
+}

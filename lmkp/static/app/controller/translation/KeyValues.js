@@ -3,9 +3,6 @@ Ext.define('Lmkp.controller.translation.KeyValues', {
 
     refs: [
         {
-            ref: 'keyvalueTree',
-            selector: 'lo_translationkeyvaluetree'
-        }, {
             ref: 'profileCombobox',
             selector: 'lo_translationkeyvaluetree combobox[itemId=keyvalueProfileCombobox]'
         }, {
@@ -44,6 +41,7 @@ Ext.define('Lmkp.controller.translation.KeyValues', {
 
     /**
      * Nicely render the column showing whether a key/value is mandatory or not.
+     * Also used by: controller.administrator.YamlScan
      * comp: grid cell
      */
     onMandatoryColumnAfterrender: function(comp) {
@@ -58,6 +56,7 @@ Ext.define('Lmkp.controller.translation.KeyValues', {
 
     /**
      * Nicely render the column showing whether a key/value is global or not.
+     * Also used by: controller.administrator.YamlScan
      * comp: grid cell
      */
     onLocalColumnAfterrender: function(comp) {

@@ -40,12 +40,7 @@ Ext.require('Lmkp.view.stakeholders.NewStakeholderSelection');
 Ext.require('Lmkp.utils.MessageBox');
 
 Ext.onReady(function(){
-    var loadingMask = Ext.get('loading-mask');
-    loadingMask.fadeOut({
-        duration: 1000,
-        remove: true
-    });
-    
+        
     // Collect additional controllers (based on login permissions, eg. see 
     // function 'edit_toolbar_config' in 'views/editors.py')
     var additionalControllers = [];
@@ -106,6 +101,13 @@ Ext.onReady(function(){
                     region: 'center',
                     xtype: 'lo_publicmainpanel'
                 }]
+            });
+
+            // Remove loading mask
+            var loadingMask = Ext.get('loading-mask');
+            loadingMask.fadeOut({
+                duration: 1000,
+                remove: true
             });
         }
     });

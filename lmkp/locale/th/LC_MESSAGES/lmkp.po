@@ -8,7 +8,7 @@ msgstr ""
 "Language: th\n"
 
 #: Default: Loading ...
-#: lmkp/templates/administration.mak:36 lmkp/templates/charts.mak:35
+#: lmkp/templates/administration.mak:37 lmkp/templates/charts.mak:35
 #: lmkp/templates/compare_versions.mak:48 lmkp/templates/embedded.mak:35
 #: lmkp/templates/index.mak:45 lmkp/templates/moderation.mak:40
 #: lmkp/templates/review_versions.mak:33 lmkp/templates/translation.mak:36
@@ -1258,15 +1258,35 @@ msgstr "这仅仅是一个测试。"
 msgid "translation_translation"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:394
+#: lmkp/views/translation.py:400
 msgid "Translation not successful"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:416 lmkp/views/translation.py:443
+#: lmkp/views/translation.py:421 lmkp/views/translation.py:448
 msgid "Updated translation"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:424 lmkp/views/translation.py:451
+#: lmkp/views/translation.py:429 lmkp/views/translation.py:456
 msgid "Added translation"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Add all to Database
+#: lmkp/views/translation.py:273
+msgid "administration_add-all-to-database"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Is in Database
+#: lmkp/views/translation.py:274
+msgid "administration_is-in-database"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Batch translation
+#: lmkp/views/translation.py:275
+msgid "administration_batch-translation"
+msgstr "这仅仅是一个测试。"
+
+#: Default: User management
+#: lmkp/views/translation.py:276
+msgid "administration_user-management"
 msgstr "这仅仅是一个测试。"
 
