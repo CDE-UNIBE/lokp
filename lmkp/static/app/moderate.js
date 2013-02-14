@@ -28,7 +28,6 @@ Ext.require('Ext.view.BoundListKeyNav');
 Ext.require('Ext.window.MessageBox');
 Ext.require('Lmkp.controller.activities.NewActivity');
 Ext.require('Lmkp.controller.login.Toolbar');
-Ext.require('Lmkp.controller.moderation.Main');
 Ext.require('Lmkp.controller.moderation.Pending');
 Ext.require('Lmkp.controller.moderation.CompareReview');
 Ext.require('Lmkp.controller.stakeholders.NewStakeholder');
@@ -49,12 +48,12 @@ Ext.onReady(function() {
         appFolder: appFolder,
 
         requires: [
-        'Lmkp.view.login.Toolbar'
+            'Lmkp.view.login.Toolbar',
+            'Lmkp.view.moderation.Main'
         ],
 
         controllers: [
         'login.Toolbar',
-        'moderation.Main',
         'moderation.Pending',
         'moderation.CompareReview',
         'activities.NewActivity',
