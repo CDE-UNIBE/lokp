@@ -11,8 +11,7 @@ Ext.define('Lmkp.view.translation.Main', {
     border: 0,
     defaults: {
         border: 0,
-        frame: false,
-        bodyPadding: 5
+        frame: false
     },
 
     initComponent: function() {

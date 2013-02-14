@@ -267,7 +267,14 @@ def ui_messages(request):
         'translation_mandatory': _('translation_mandatory', default='Mandatory'),
         'translation_original': _('translation_original', default='Original'),
         'translation_original-already-in-english': _('translation_original-already-in-english', default='Original is already in English'),
-        'translation_translation': _('translation_translation', default='Translation')
+        'translation_translation': _('translation_translation', default='Translation'),
+
+        # Administration
+        'administration_add-all-to-database': _('administration_add-all-to-database', default='Add all to Database'),
+        'administration_batch-translation': _('administration_batch-translation', default='Batch translation'),
+        'administration_is-in-database': _('administration_is-in-database', default='Is in Database'),
+        'administration_profiles': _('administration_profiles', default='Profiles'),
+        'administration_user-management': _('administration_user-management', default='User management')
     }
 
     # Get the localizer
@@ -385,7 +392,7 @@ def language_store(request):
     ret['total'] = len(langs)
     return ret
 
-@view_config(route_name='edit_translation', renderer='json', permission='administer')
+@view_config(route_name='edit_translation', renderer='json', permission='translate')
 def edit_translation(request):
 
     _ = request.translate

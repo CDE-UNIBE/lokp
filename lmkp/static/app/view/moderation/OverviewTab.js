@@ -2,6 +2,8 @@ Ext.define('Lmkp.view.moderation.OverviewTab', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.lo_moderationoverviewtab',
 
+    bodyPadding: 10,
+
     title: Lmkp.ts.msg('gui_overview'),
 
     // TODO

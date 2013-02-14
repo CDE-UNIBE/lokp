@@ -5,11 +5,6 @@ Ext.define('Lmkp.view.translation.KeyValueTree', {
 
     border: 0,
 
-    config: {
-        store: null,
-        postUrl: ''
-    },
-
     // Little hack to fix issue with scrollbar
     // http://stackoverflow.com/questions/6745395/scrollbar-in-extjs-tree-panel-does-not-work
     scroll: false,
@@ -24,6 +19,7 @@ Ext.define('Lmkp.view.translation.KeyValueTree', {
 
     dockedItems: [
         {
+            xtype: 'toolbar',
             defaults: {
                 iconAlign: 'top',
                 scale: 'medium'
@@ -56,8 +52,7 @@ Ext.define('Lmkp.view.translation.KeyValueTree', {
                     value: Lmkp.ts.msg("locale"),
                     margin: '0 10 0 0'
                 }
-            ],
-            xtype: 'toolbar'
+            ]
         }
     ],
 

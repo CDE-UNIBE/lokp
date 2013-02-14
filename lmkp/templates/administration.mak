@@ -29,6 +29,7 @@ if 'lmkp.mode' in request.registry.settings:
 <script type="text/javascript" src="${request.static_url('lmkp:static/administration-ext-all.js')}"></script>
 % endif
 <script type="text/javascript" src="${request.static_url('lmkp:static/app/admin.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/administration.css')}"></link>
 </%def>
 
 <div id="loading-mask" style="width: 100%; height: 100%;">

@@ -2,6 +2,8 @@ Ext.define('Lmkp.view.translation.OverviewTab', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.lo_translationoverviewtab',
 
+    bodyPadding: 10,
+
     title: Lmkp.ts.msg('gui_overview'),
 
     // TODO
