@@ -26,14 +26,14 @@ Ext.define('Lmkp.view.translation.Main', {
                 xtype: 'lo_translationoverviewtab'
             }, {
                 xtype: 'lo_translationkeyvaluetree',
-                title: 'Activities',
+                title: Lmkp.ts.msg('activities_attributes'),
                 store: aStore,
-                postUrl: '/config/add/activities'
+                type: 'activity'
             }, {
                 xtype: 'lo_translationkeyvaluetree',
-                title: 'Stakeholders',
+                title: Lmkp.ts.msg('stakeholders_attributes'),
                 store: shStore,
-                postUrl: '/config/add/stakeholders'
+                type: 'stakeholder'
             }
         ];
 
