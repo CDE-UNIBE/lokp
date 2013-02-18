@@ -84,7 +84,7 @@ def cambodia_read_stakeholders2(request):
                 tagGroup['tags'].append({"key": attributeMap[i], "value": value, "op": "add"})
                 tagGroup['op'] = 'add'
                 tagGroup['main_tag'] = {"key": attributeMap[i], "value": value}
-                
+
                 stakeholderObject['taggroups'].append(tagGroup)
 
 
@@ -160,7 +160,7 @@ def cambodia_read_activities2(request):
             # It is necessary to add the op property!
             # Each attribute is written to a separate taggroup
             elif isinstance(record.record[k], basestring) and record.record[k].strip() != '':
-                
+
 
                 if k == 5:
                     taggroup = {}
@@ -223,6 +223,9 @@ def cambodia_read_activities2(request):
         taggroup['main_tag'] = {'key': 'Data source', 'value': 'Government sources'}
         activityObject['taggroups'].append(taggroup)
 
+        # Add the missing mandatory key: Spatial accuracy
+        activityObject['taggroups'].append(create_taggroup_dict('Spatial Accuracy', '100m to 1km'))
+
         # Add the geometry
 
         activityObject['geometry'] = {'coordinates': [record.shape.points[0][0], record.shape.points[0][1]], 'type': 'Point'}
@@ -232,6 +235,14 @@ def cambodia_read_activities2(request):
         activityDiffObject['activities'].append(activityObject)
 
     return activityDiffObject
+
+def create_taggroup_dict(key, value):
+    taggroup = {}
+    taggroup['op'] = 'add'
+    taggroup['tags'] = []
+    taggroup['tags'].append({"key": key, "value": value, "op": "add"})
+    taggroup['main_tag'] = {"key": key, "value": value}
+    return taggroup
 
 def regex_name(value):
     value = re.sub(r'\ \(Region [IV]*\)$', '', value)
