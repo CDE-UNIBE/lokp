@@ -5,10 +5,12 @@ Ext.require('Ext.form.action.Submit');
 Ext.require('Ext.form.FieldSet');
 Ext.require('Ext.form.field.ComboBox');
 Ext.require('Ext.form.field.Display');
+Ext.require('Ext.form.field.Hidden');
 Ext.require('Ext.form.field.Number');
 Ext.require('Ext.form.field.Picker');
 Ext.require('Ext.form.field.TextArea');
 Ext.require('Ext.form.Basic');
+Ext.require('Ext.form.Label');
 Ext.require('Ext.form.Panel');
 Ext.require('Ext.grid.column.Template');
 Ext.require('Ext.grid.Panel');
@@ -31,12 +33,16 @@ Ext.require('Lmkp.controller.login.Toolbar');
 Ext.require('Lmkp.controller.moderation.Pending');
 Ext.require('Lmkp.controller.moderation.CompareReview');
 Ext.require('Lmkp.controller.stakeholders.NewStakeholder');
+Ext.require('Lmkp.store.ActivityChangesets');
 Ext.require('Lmkp.store.Status');
 Ext.require('Lmkp.utils.MessageBox');
 Ext.require('Lmkp.utils.PermalinkWindow');
 Ext.require('Lmkp.utils.StringFunctions');
 Ext.require('Lmkp.view.login.Toolbar');
+Ext.require('Lmkp.view.moderation.Main');
 Ext.require('Lmkp.view.stakeholders.NewStakeholderSelection');
+Ext.require('Lmkp.view.users.ChangePasswordWindow');
+Ext.require('Lmkp.view.users.UserWindow');
 
 Ext.onReady(function() {
 
