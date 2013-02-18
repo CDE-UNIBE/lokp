@@ -18,6 +18,7 @@ Ext.require('Lmkp.controller.translation.KeyValues');
 Ext.require('Lmkp.store.ActivityChangesets');
 Ext.require('Lmkp.store.Status');
 Ext.require('Lmkp.view.login.Toolbar');
+Ext.require('Lmkp.view.users.ChangePasswordWindow');
 Ext.require('Lmkp.view.users.UserWindow');
 
 Ext.onReady(function(){
