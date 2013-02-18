@@ -9,26 +9,27 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
         
         var me = this;
 
-        this.add({
-            xtype: 'combobox',
+        var keyCb = Ext.create('Ext.form.field.ComboBox', {
             name: 'newtaggrouppanel_key',
             store: this.main_store,
             valueField: 'name',
             displayField: 'fieldLabel',
             queryMode: 'local',
-            readOnly: this.is_mandatory,
-            editable: false,
-//            typeAhead: true,
+            typeAhead: true,
+            currentKey: this.initial_key,
             forceSelection: true,
             flex: 1,
             allowBlank: false,
             margin: '0 5 5 0',
             listeners: {
-                change: function(combo, newValue, oldValue, eOpts) {
-                    me.onKeyChanged(oldValue, newValue);
+                select: function(combo, records) {
+                    var newValue = records[0].get('name');
+                    me.onKeyChanged(combo, newValue);
                 }
             }
-        }, {
+        });
+
+        this.add(keyCb, {
             // Initial dummy TextField
             xtype: 'textfield',
             name: 'newtaggrouppanel_value',
@@ -58,11 +59,17 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
             var r = this.main_store.findRecord('fieldLabel', this.initial_key);
             if (r) {
                 this.getKeyField().setValue(r.get('name'));
+                // The function setValue() does not trigger the 'select' event,
+                // we need to fire it manually.
+                keyCb.fireEvent('select', keyCb, [r]);
             } else {
                 // If not yet found, try to find it through 'regular' field
                 var r2 = this.main_store.findRecord('name', this.initial_key);
                 if (r2) {
                     this.getKeyField().setValue(r2.get('name'));
+                    // The function setValue() does not trigger the 'select'
+                    // event, we need to fire it manually.
+                    keyCb.fireEvent('select', keyCb, [r2]);
                 }
             }
         }
@@ -131,20 +138,29 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
         return this.is_maintag;
     },
 
-    // Replace value field based on selected attribute
-    onKeyChanged: function(oldValue, newValue) {
-        if (newValue) {
-            // remove newly selected value from store
+    onKeyChanged: function(combobox, newValue) {
+        if (combobox && newValue) {
+            // Remove existing filters on combobox (by type-ahead)
+            var store = combobox.getStore();
+            if (store) {
+                store.clearFilter();
+            }
+            // Remove newly selected value from store
             var currentRecord = this.main_store.findRecord('name', newValue);
             if (currentRecord) {
                 this.main_store.remove(currentRecord);
-
-                // add previously selected (now deselected) value to store again
-                var previousRecord = this.complete_store.findRecord('name', oldValue);
-                if (previousRecord) {
-                    this.main_store.add(previousRecord);
+                if (combobox.currentKey != newValue) {
+                    // Add previously selected (now deselected) value to store again
+                    var previousRecord = this.complete_store.findRecord(
+                        'name', combobox.currentKey);
+                    if (previousRecord) {
+                        this.main_store.add(previousRecord.copy());
+                        this.main_store.sort('fieldLabel', 'ASC');
+                    }
+                    // Store value to combobox
+                    combobox.currentKey = newValue;
                 }
-                // replace the value field
+                // Replace the value field
                 this.items.getAt(
                     this.items.findIndex('name', 'newtaggrouppanel_value')
                 ).destroy();
