@@ -4,6 +4,7 @@ Ext.require('Ext.form.action.Load');
 Ext.require('Ext.form.action.Submit');
 Ext.require('Ext.form.FieldSet');
 Ext.require('Ext.form.field.ComboBox');
+Ext.require('Ext.form.field.Date');
 Ext.require('Ext.form.field.Display');
 Ext.require('Ext.form.field.Hidden');
 Ext.require('Ext.form.field.Number');

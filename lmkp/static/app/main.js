@@ -1,6 +1,7 @@
 Ext.require('Ext.container.Viewport');
 Ext.require('Ext.form.action.StandardSubmit');
 Ext.require('Ext.form.FieldSet');
+Ext.require('Ext.form.field.Date');
 Ext.require('Ext.form.field.Checkbox');
 Ext.require('Ext.form.field.ComboBox');
 Ext.require('Ext.form.field.Hidden');

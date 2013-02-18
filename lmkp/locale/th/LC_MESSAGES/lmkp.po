@@ -10,8 +10,8 @@ msgstr ""
 #: Default: Loading ...
 #: lmkp/templates/administration.mak:37 lmkp/templates/charts.mak:35
 #: lmkp/templates/compare_versions.mak:48 lmkp/templates/embedded.mak:35
-#: lmkp/templates/index.mak:45 lmkp/templates/moderation.mak:40
-#: lmkp/templates/review_versions.mak:33 lmkp/templates/translation.mak:36
+#: lmkp/templates/index.mak:45 lmkp/templates/moderation.mak:41
+#: lmkp/templates/review_versions.mak:33 lmkp/templates/translation.mak:37
 #: lmkp/views/translation.py:145
 msgid "gui_loading"
 msgstr "这仅仅是一个测试。"
@@ -1258,15 +1258,15 @@ msgstr "这仅仅是一个测试。"
 msgid "translation_translation"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:400
+#: lmkp/views/translation.py:410
 msgid "Translation not successful"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:421 lmkp/views/translation.py:448
+#: lmkp/views/translation.py:431 lmkp/views/translation.py:458
 msgid "Updated translation"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:429 lmkp/views/translation.py:456
+#: lmkp/views/translation.py:439 lmkp/views/translation.py:466
 msgid "Added translation"
 msgstr "这仅仅是一个测试。"
 
@@ -1276,17 +1276,52 @@ msgid "administration_add-all-to-database"
 msgstr "这仅仅是一个测试。"
 
 #: Default: Is in Database
-#: lmkp/views/translation.py:274
+#: lmkp/views/translation.py:275
 msgid "administration_is-in-database"
 msgstr "这仅仅是一个测试。"
 
 #: Default: Batch translation
-#: lmkp/views/translation.py:275
+#: lmkp/views/translation.py:274
 msgid "administration_batch-translation"
 msgstr "这仅仅是一个测试。"
 
 #: Default: User management
-#: lmkp/views/translation.py:276
+#: lmkp/views/translation.py:278
 msgid "administration_user-management"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Languages
+#: lmkp/views/translation.py:276
+msgid "administration_languages"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Profiles
+#: lmkp/views/translation.py:277
+msgid "administration_profiles"
+msgstr "这仅仅是一个测试。"
+
+#: Default: The year must be a number value between 1900 and 2100
+#: lmkp/views/translation.py:286
+msgid "input-validation_year"
+msgstr "这仅仅是一个测试。"
+
+#: Default: Percentage must be between 0 and 100
+#: lmkp/views/translation.py:285
+msgid "input-validation_percentage"
+msgstr "这仅仅是一个测试。"
+
+#: Default: dd.mm.YYYY
+#: lmkp/views/translation.py:282
+msgid "input-validation_date-format"
+msgstr "这仅仅是一个测试。"
+
+#: Default: {0} is not a valid date - it must be in the format {1}
+#: lmkp/views/translation.py:283
+msgid "input-validation_invalid-date"
+msgstr "{0} 这仅仅是一个测试。{1}"
+
+#: Default: This number must be greater than 0
+#: lmkp/views/translation.py:284
+msgid "input-validation_number-greater-than-0"
 msgstr "这仅仅是一个测试。"
 

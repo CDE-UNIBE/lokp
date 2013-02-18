@@ -405,7 +405,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 'activities': [diffActivity]
             }
         }
-        
+
         if (diffObject) {
             // Send the diff JSON through AJAX request
             Ext.Ajax.request({
@@ -416,7 +416,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 },
                 jsonData: diffObject,
                 callback: function(options, success, response) {
-                    
+
                     if (success) {
                         var r = Ext.JSON.decode(response.responseText);
                         if (r.created) {
