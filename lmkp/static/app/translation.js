@@ -1,5 +1,7 @@
 Ext.require('Ext.container.Viewport');
 Ext.require('Ext.form.field.ComboBox');
+Ext.require('Ext.form.field.Hidden');
+Ext.require('Ext.form.Label');
 Ext.require('Ext.form.Panel');
 Ext.require('Ext.grid.column.Template');
 Ext.require('Ext.layout.container.Border');
@@ -7,9 +9,13 @@ Ext.require('Ext.layout.component.field.ComboBox');
 Ext.require('Lmkp.controller.login.Toolbar');
 Ext.require('Lmkp.controller.translation.KeyValues');
 Ext.require('Lmkp.store.ActivityYamlScan');
+Ext.require('Lmkp.store.ActivityChangesets');
 Ext.require('Lmkp.store.StakeholderYamlScan');
+Ext.require('Lmkp.store.Status');
 Ext.require('Lmkp.utils.MessageBox');
 Ext.require('Lmkp.view.translation.Main');
+Ext.require('Lmkp.view.users.ChangePasswordWindow');
+Ext.require('Lmkp.view.users.UserWindow');
 
 Ext.onReady(function() {
     // Initialize and launch application

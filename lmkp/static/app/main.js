@@ -35,6 +35,7 @@ Ext.require('Lmkp.view.activities.Details');
 Ext.require('Lmkp.view.comments.ReCaptcha');
 Ext.require('Lmkp.view.login.Toolbar');
 Ext.require('Lmkp.view.public.Main');
+Ext.require('Lmkp.view.users.ChangePasswordWindow');
 Ext.require('Lmkp.view.users.UserWindow');
 Ext.require('Lmkp.view.stakeholders.NewStakeholderSelection');
 Ext.require('Lmkp.utils.MessageBox');
