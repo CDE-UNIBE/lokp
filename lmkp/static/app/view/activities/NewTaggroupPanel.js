@@ -100,7 +100,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
     getKeyValue: function() {
         var value = this.getKeyField();
         if (value) {
-            return value.getValue();
+            return value.getSubmitValue();
         }
         return null;
     },
@@ -121,7 +121,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
         var value = this.getValueField();
         // Treat empty string as null value
         if (value && value.getValue() != '') {
-            return value.getValue();
+            return value.getSubmitValue();
         }
         return null;
     },
@@ -207,6 +207,19 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
                         margin: '0 5 0 0'
                     });
                     // add validation if available
+                    if (record.get('validator')) {
+                        valueField.validator = new Function('value', record.get('validator'));
+                    }
+                    break;
+                case "datefield":
+                    var valueField = Ext.create('Ext.form.field.Date', {
+                        name: 'newtaggrouppanel_value',
+                        margin: '0 5 0 0',
+                        format: 'd.m.Y',
+                        emptyText: Lmkp.ts.msg('input-validation_date-format'),
+                        invalidText: Lmkp.ts.msg('input-validation_invalid-date')
+                    });
+                    // Add validation if available
                     if (record.get('validator')) {
                         valueField.validator = new Function('value', record.get('validator'));
                     }

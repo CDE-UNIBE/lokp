@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LMKP 0.31\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-02-14 15:09+0100\n"
+"POT-Creation-Date: 2013-02-18 16:54+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,8 +40,8 @@ msgstr ""
 #. Default: Loading ...
 #: lmkp/templates/administration.mak:37 lmkp/templates/charts.mak:35
 #: lmkp/templates/compare_versions.mak:48 lmkp/templates/embedded.mak:35
-#: lmkp/templates/index.mak:45 lmkp/templates/moderation.mak:40
-#: lmkp/templates/review_versions.mak:33 lmkp/templates/translation.mak:36
+#: lmkp/templates/index.mak:45 lmkp/templates/moderation.mak:41
+#: lmkp/templates/review_versions.mak:33 lmkp/templates/translation.mak:37
 #: lmkp/views/translation.py:145
 msgid "gui_loading"
 msgstr ""
@@ -1295,30 +1295,65 @@ msgstr ""
 msgid "administration_add-all-to-database"
 msgstr ""
 
-#. Default: Is in Database
-#: lmkp/views/translation.py:274
-msgid "administration_is-in-database"
-msgstr ""
-
 #. Default: Batch translation
-#: lmkp/views/translation.py:275
+#: lmkp/views/translation.py:274
 msgid "administration_batch-translation"
 msgstr ""
 
-#. Default: User management
+#. Default: Is in Database
+#: lmkp/views/translation.py:275
+msgid "administration_is-in-database"
+msgstr ""
+
+#. Default: Languages
 #: lmkp/views/translation.py:276
+msgid "administration_languages"
+msgstr ""
+
+#. Default: Profiles
+#: lmkp/views/translation.py:277
+msgid "administration_profiles"
+msgstr ""
+
+#. Default: User management
+#: lmkp/views/translation.py:278
 msgid "administration_user-management"
 msgstr ""
 
-#: lmkp/views/translation.py:400
+#. Default: dd.mm.YYYY
+#: lmkp/views/translation.py:282
+msgid "input-validation_date-format"
+msgstr ""
+
+#. Default: {0} is not a valid date - it must be in the format {1}
+#: lmkp/views/translation.py:283
+msgid "input-validation_invalid-date"
+msgstr ""
+
+#. Default: This number must be greater than 0
+#: lmkp/views/translation.py:284
+msgid "input-validation_number-greater-than-0"
+msgstr ""
+
+#. Default: Percentage must be between 0 and 100
+#: lmkp/views/translation.py:285
+msgid "input-validation_percentage"
+msgstr ""
+
+#. Default: The year must be a number value between 1900 and 2100
+#: lmkp/views/translation.py:286
+msgid "input-validation_year"
+msgstr ""
+
+#: lmkp/views/translation.py:410
 msgid "Translation not successful"
 msgstr ""
 
-#: lmkp/views/translation.py:421 lmkp/views/translation.py:448
+#: lmkp/views/translation.py:431 lmkp/views/translation.py:458
 msgid "Updated translation"
 msgstr ""
 
-#: lmkp/views/translation.py:429 lmkp/views/translation.py:456
+#: lmkp/views/translation.py:439 lmkp/views/translation.py:466
 msgid "Added translation"
 msgstr ""
 

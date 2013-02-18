@@ -275,7 +275,15 @@ def ui_messages(request):
         'administration_is-in-database': _('administration_is-in-database', default='Is in Database'),
         'administration_languages': _('administration_languages', default='Languages'),
         'administration_profiles': _('administration_profiles', default='Profiles'),
-        'administration_user-management': _('administration_user-management', default='User management')
+        'administration_user-management': _('administration_user-management', default='User management'),
+
+        # Input validations. These validations are defined in the YAML. In order
+        # for them to be translateable, they need to appear here.
+        'input-validation_date-format': _('input-validation_date-format', default='dd.mm.YYYY'),
+        'input-validation_invalid-date': _('input-validation_invalid-date', default='{0} is not a valid date - it must be in the format {1}'),
+        'input-validation_number-greater-than-0': _('input-validation_number-greater-than-0', default='This number must be greater than 0'),
+        'input-validation_percentage': _('input-validation_percentage', default='Percentage must be between 0 and 100'),
+        'input-validation_year': _('input-validation_year', default='The year must be a number value between 1900 and 2100'),
     }
 
     # Get the localizer

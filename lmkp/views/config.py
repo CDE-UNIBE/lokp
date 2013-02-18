@@ -533,8 +533,7 @@ def _get_field_config(Key, Value, name, config, language, mandatory=False):
         if config['type'] == 'Number':
             xtype = 'numberfield'
         elif config['type'] == 'Date':
-            #xtype = 'datefield'
-            xtype = 'numberfield'
+            xtype = 'datefield'
         elif 'predefined' in config:
             xtype = 'combobox'
             predefined = config['predefined']
