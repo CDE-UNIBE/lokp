@@ -149,7 +149,7 @@ class MainView(BaseView):
 
         return {}
 
-    @view_config(route_name='administration', renderer='lmkp:templates/administration.mak', permission='administer')
+    @view_config(route_name='administration', renderer='lmkp:templates/administration.mak')
     def administration(self):
         """
         Returns the administration HTML page
