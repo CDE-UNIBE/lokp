@@ -172,11 +172,11 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
         var newStakeholders = [];
         var deletedStakeholders = [];
 
-        // Get the stakeholders of the form 
+        // Get the stakeholders of the form
         var shComps = shFieldset.query('lo_stakeholderfieldcontainer');
         for (var j = 0; j < shComps.length; j++ ) {
             var fieldContainer = shComps[j];
-            
+
             // Try to find Involvement in list with existing Involvements
             var oldInvFound = false;
             for (var oiv in oldInvolvements) {
@@ -192,7 +192,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                     oldInvFound = true;
                 }
             }
-            
+
             if (oldInvFound == false) {
                 // Involvement was not found in list with existing Involvements,
                 // it must be a new one
@@ -204,8 +204,8 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 });
             }
         }
-        
-        // Any remaining Involvements in the list with existing Involvements has 
+
+        // Any remaining Involvements in the list with existing Involvements has
         // been deleted since it is not in the fieldContainer anymore
         for (var roi in oldInvolvements) {
             var croi = oldInvolvements[roi];
@@ -216,7 +216,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 'op': 'delete'
             });
         }
-        
+
         // Put new and deleted together for diff
         var stakeholders = newStakeholders.concat(deletedStakeholders);
 
@@ -255,12 +255,12 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 if (c.getKeyValue() != null && c.getValueValue() != null) {
 
                     // Check if Tag has changed
-                    if (c.getInitialValue() == c.getValueValue() 
+                    if (c.getInitialValue() == c.getValueValue()
                         && c.getInitialKey() == c.getKeyValue()) {
-                        // Tag has not changed. Find it in list with all old 
+                        // Tag has not changed. Find it in list with all old
                         // Tags and remove it from there
                         for (var findUnchangedTag in oldTags) {
-                            if (oldTags[findUnchangedTag] 
+                            if (oldTags[findUnchangedTag]
                                 && oldTags[findUnchangedTag].id
                                 == c.getInitialTagId()) {
                                 oldTags.splice(findUnchangedTag, 1);
@@ -291,7 +291,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                             // Delete it from list with the old tags
                             for (var findChangedTag in oldTags) {
                                 if (oldTags[findChangedTag]
-                                    && oldTags[findChangedTag].id 
+                                    && oldTags[findChangedTag].id
                                     == c.getInitialTagId()) {
                                     oldTags.splice(findChangedTag, 1);
                                 }
@@ -574,8 +574,8 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
 
                 // Window parameters
                 var buffer = 50; // Minimal blank space at the sides of the window
-                var defaultHeight = 550; // Default height of the window
-                var defaultWidth = 450; // Default width of the window
+                var defaultHeight = 700; // Default height of the window
+                var defaultWidth = 700; // Default width of the window
 
                 // Prepare some values before showing the window
                 var viewSize = Ext.getBody().getViewSize();
@@ -618,16 +618,16 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
      * Switch between the cards (wizard-mode) of the form to add a new Activity.
      */
     onCardButtonClick: function(button) {
-        
+
         var panel = button.up('panel');
         var layout = panel.getLayout();
 
         // Move to card
         layout[button._dir]();
-        
+
         this._checkCardButtons(layout, panel.activityEdit);
     },
-    
+
     /**
      * If a Stakeholder is selected in the search-combobox, show its details in
      * a panel below.
@@ -686,12 +686,12 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
 
         if (shpanel) {
             var fieldset = this.getSelectStakeholderFieldSet();
-            
+
             // If initial panel in fieldset still exists, remove it first
             if (fieldset.down('[itemId=initialText]')) {
                 fieldset.remove(fieldset.down('[itemId=initialText]'));
             }
-        	
+
             // Insert stakeholder into fieldset above
             fieldset.insert(0, {
                 involvement: {
@@ -764,9 +764,9 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
             });
         });
     },
-    
+
     /**
-     * Remove a Stakeholder from the fieldset containing all the associated 
+     * Remove a Stakeholder from the fieldset containing all the associated
      * Stakeholders
      */
     onStakeholderRemoveButtonClick: function(button) {
@@ -784,7 +784,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
     },
 
     /**
-     * If Stakeholder was newly created (this happens in separate window), 
+     * If Stakeholder was newly created (this happens in separate window),
      * append it to fieldset with involved Stakeholders.
      * {stakeholder}: Instance of model.Stakeholder
      */
@@ -794,7 +794,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
         // panel
         var sel = this.getStakeholderSelection();
         if (sel) {
-        	
+
             // Add new stakeholder to fieldset
             var form = sel.down('form');
 
@@ -804,7 +804,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 if (fieldset.down('[itemId=initialText]')) {
                     fieldset.remove(fieldset.down('[itemId=initialText]'));
                 }
-            	
+
                 // Insert stakeholder into fieldset above
                 fieldset.insert(0, {
                     involvement: {
@@ -826,7 +826,7 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
                 sel.confirmButton.disable();
             }
         }
-        
+
         // Check if Stakeholder was created / edited from detail window.
         var detailWindow = this.getStakeholderDetailWindow();
         if (detailWindow) {
@@ -837,12 +837,12 @@ Ext.define('Lmkp.controller.activities.NewActivity', {
             }
         }
     },
-    
+
     _checkCardButtons: function(layout, activityEdit) {
         // Disable buttons if no other cards next to it
         Ext.getCmp('card-prev').setDisabled(!layout.getPrev());
         Ext.getCmp('card-next').setDisabled(!layout.getNext());
-        
+
         // Enable the submit button if the last card is shown or if an Activity
         // is edited
         var submitbutton_q = Ext.ComponentQuery.query('button[itemId=submitButton]');

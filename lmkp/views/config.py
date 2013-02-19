@@ -259,7 +259,7 @@ def yaml_translate_activities(request):
     except IOError:
         # No localized configuration file found!
         pass
-    
+
     return get_translated_keys(request, global_config, A_Key, A_Value)
 
 @view_config(route_name='yaml_translate_stakeholders', renderer='json', permission='administer')
@@ -301,12 +301,12 @@ def get_translated_keys(request, global_config, Key, Value):
     fields = global_config['fields']
 
     localizer = get_localizer(request)
-    
+
     lang = Session.query(Language).filter(Language.locale == localizer.locale_name).first()
-    
+
     if lang is None:
         lang = Language(1, 'English', 'English', 'en')
-    
+
     # First process the mandatory fields
     for (name, config) in fields['mandatory'].iteritems():
 
@@ -316,7 +316,7 @@ def get_translated_keys(request, global_config, Key, Value):
 
     # Then process the optional fields
     for (name, config) in fields['optional'].iteritems():
-        
+
         # check if the field stems from global or local yaml
         local = False
         try:
@@ -327,13 +327,13 @@ def get_translated_keys(request, global_config, Key, Value):
 
         currObject = _get_admin_scan(Key, Value, name, config, lang, False, local)
         extObject.append(currObject)
-      
+
     ret = {}
     ret['success'] = True
     ret['children'] = extObject
     return ret
 
-# @todo: change template used for yaml_add_db (possibly create own) 
+# @todo: change template used for yaml_add_db (possibly create own)
 @view_config(route_name='yaml_add_activity_fields', renderer='lmkp:templates/sample_values.pt', permission='administer')
 def yaml_add_activity_fields(request):
 
@@ -354,12 +354,12 @@ def yaml_add_activity_fields(request):
         pass
 
     ret = _add_to_db(global_config, A_Key, A_Value)
-    
+
     # Also scan application YAML (geometry etc.)
     app_scan = _handle_application_config(request)
     if app_scan is not None:
         ret['messagestack'] += app_scan
-    
+
     return ret
 
 def _handle_application_config(request):
@@ -380,26 +380,26 @@ def _handle_application_config(request):
             geom_db = (shapely.wkb.loads(str(db_profile.geometry.geom_wkb))
                        if db_profile.geometry else None)
             if geom_db and geom_db.equals(yaml_geom_shape) is True:
-                return ("Geometry for profile '%s' did not change." 
+                return ("Geometry for profile '%s' did not change."
                         % profile_name)
             else:
                 # Update geometry from global profile
                 db_profile.geometry = yaml_geom_shape.wkt
                 return "Geometry for profile '%s' updated." % profile_name
-    
+
     msg = []
-    
+
     # First check global application configuration
-    app_stream = open("%s/%s" % 
+    app_stream = open("%s/%s" %
                       (profile_directory_path(request), APPLICATION_YAML), 'r')
     app_config = yaml.load(app_stream)
-    
-    if ('application' in app_config and 
+
+    if ('application' in app_config and
         'geometry' in app_config['application']):
 
-        msg.append(__check_geometry(app_config['application']['geometry'], 
+        msg.append(__check_geometry(app_config['application']['geometry'],
                    'global'))
-    
+
     # Then check local application configuration if available
     # Try to find the profile in parameters
     locale_code = get_current_profile(request)
@@ -407,16 +407,16 @@ def _handle_application_config(request):
     # Only continue if a profile was found
     if locale_code is not None:
         try:
-            locale_app_stream = open("%s/%s" % 
+            locale_app_stream = open("%s/%s" %
                                      (locale_profile_directory_path(request), APPLICATION_YAML), 'r')
             locale_app_config = yaml.load(locale_app_stream)
-            
+
             if ('application' in locale_app_config and
                 'geometry' in locale_app_config['application']):
 
                 msg.append(__check_geometry(
                            locale_app_config['application']['geometry'], locale_code))
-            
+
         except IOError:
             # No localized application configuration file found
             pass
@@ -443,12 +443,12 @@ def yaml_add_stakeholder_fields(request):
         pass
 
     ret = _add_to_db(global_config, SH_Key, SH_Value)
-    
+
     # Also scan application YAML (geometry etc.)
     app_scan = _handle_application_config(request)
     if app_scan is not None:
         ret['messagestack'] += app_scan
-    
+
     return ret
 
 def _add_to_db(config, Key, Value):
@@ -534,6 +534,8 @@ def _get_field_config(Key, Value, name, config, language, mandatory=False):
             xtype = 'numberfield'
         elif config['type'] == 'Date':
             xtype = 'datefield'
+        elif config['type'] == 'File':
+            xtype = 'filefield'
         elif 'predefined' in config:
             xtype = 'combobox'
             predefined = config['predefined']
