@@ -10,6 +10,7 @@ Ext.require('Ext.fx.*');
 Ext.require('Ext.grid.Panel');
 Ext.require('Ext.layout.container.Border');
 Ext.require('Ext.layout.container.Card');
+Ext.require('Ext.Shadow');
 Ext.require('Ext.tab.Panel');
 Ext.require('Ext.util.*');
 Ext.require('GeoExt.window.Popup');
