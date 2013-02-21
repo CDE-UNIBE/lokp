@@ -85,7 +85,6 @@ Ext.define('Lmkp.utils.FileUpload', {
 
         var v = value.split(',');
         for (var i in v) {
-//            console.log(v[i]);
             me.insert(0, {
             xtype: 'panel',
                 border: 0,
@@ -178,6 +177,7 @@ Ext.define('Lmkp.utils.FileUpload', {
 
         var win = Ext.create('Ext.window.Window', {
             title: 'Upload new file',
+            modal: true,
             layout: 'fit',
             items: [
                 {
@@ -191,23 +191,36 @@ Ext.define('Lmkp.utils.FileUpload', {
                     },
                     items: [
                         {
-                            xtype: 'textfield',
-                            fieldLabel: 'Name'
-                        }, {
                             xtype: 'filefield',
                             emptyText: 'Select a file',
                             fieldLabel: 'File',
-                            name: 'file-path',
-                            buttonText: 'Browse'
+                            name: 'file',
+                            buttonText: 'Browse',
+                            regex: /(.)+((\.gif)|(\.jpeg)|(\.jpg)|(\.png))$/i
                         }
                     ],
                     buttons: [
                         {
-                            text: 'Save',
+                            text: 'Upload',
                             handler: function() {
                                 var form = this.up('form').getForm();
                                 if (form.isValid()) {
-                                    console.log('submit');
+                                    form.submit({
+                                        url: '/files/upload',
+                                        waitMsg: 'Uploading ...',
+                                        success: function(form, action) {
+                                            console.log("success");
+                                            console.log(form);
+                                            console.log(action);
+                                            console.log(action.result.msg);
+                                        },
+                                        failure: function(form, action) {
+                                            console.log("failure");
+                                            console.log(form);
+                                            console.log(action);
+                                            console.log(action.result.msg);
+                                        }
+                                    });
                                 }
                             },
                             margin: 5

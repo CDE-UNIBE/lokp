@@ -187,6 +187,12 @@ def main(global_config, ** settings):
     # Tests (not intended for public)
     config.add_route('moderation_tests', '/moderation/ug6uWaef2')
 
+    """
+    Files
+    """
+    # Upload a file
+    config.add_route('file_upload', '/files/upload', request_method='POST')
+
     # A controller that returns the translation needed in the ExtJS user interface
     config.add_route('ui_translation', '/lang')
     # Return a json with all available languages from DB
