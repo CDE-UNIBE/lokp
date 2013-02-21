@@ -35,3 +35,11 @@ def codes_directory_path():
     translation
     """
     return "%s/documents/codes" % os.path.dirname(__file__)
+
+def upload_directory_path(request):
+    """
+    Returns the absolute path to the directory used for file uploads
+    """
+    if 'lmkp.upload_dir' in request.registry.settings:
+        return request.registry.settings['lmkp.upload_dir']
+    return None
