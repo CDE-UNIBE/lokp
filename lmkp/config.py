@@ -3,6 +3,7 @@
 
 import os.path
 from os import sep as separator
+import re
 
 def locale_profile_directory_path(request):
     """
@@ -43,3 +44,10 @@ def upload_directory_path(request):
     if 'lmkp.upload_dir' in request.registry.settings:
         return request.registry.settings['lmkp.upload_dir']
     return None
+
+def check_valid_uuid(uuid):
+    """
+    Check if a given uuid is valid
+    """
+    uuid4hex = re.compile('[0-9a-f-]{36}\Z', re.I)
+    return uuid4hex.match(uuid) is not None
