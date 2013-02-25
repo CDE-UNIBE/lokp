@@ -108,6 +108,7 @@ def ui_messages(request):
         'tooltip_add-time-filter': _('tooltip_add-time-filter', default='Add a filter based on time'),
         'tooltip_compare': _('tooltip_compare', default='Compare'),
         'tooltip_close-window': _('tooltip_close-window', default='Close Window'),
+        'tooltip_download-file': _('tooltip_download-file', default='Download file'),
         'tooltip_filter-activate': _('tooltip_filter-activate', default='Click to activate this filter'),
         'tooltip_filter-delete': _('tooltip_filter-delete', default='Click to delete this filter'),
         'tooltip_link': _('tooltip_link', default='Permament link to current view'),
@@ -124,6 +125,7 @@ def ui_messages(request):
         'tooltip_review-involvement-not-possible': _('tooltip_review-involvement-not-possible', default='Involvement can not be reviewed. Click for more information.'),
         'tooltip_review-involvement-possible': _('tooltip_review-involvement-possible', default='Involvement can be reviewed'),
         'tooltip_submit-review': _('tooltip_submit-review', default='Submit Review'),
+        'tooltip_view-file': _('tooltip_view-file', default='View file'),
 
         # General GUI text
         'gui_anonymous': _('gui_anonymous', default='Anonymous'),
@@ -318,7 +320,9 @@ def ui_messages(request):
         'Country',                  # 2
         'Intended area (ha)',       # 3
         'Intention of Investment',  # 4
-        'Data source'               # 5
+        'Data source',              # 5
+        # Not needed for table but for special rendering of files tags
+        'Files'                     # 6
     ]
     aKeysTranslateQuery = get_translated_db_keys(A_Key, aKeys, db_lang)
     aKeysTranslated = []
@@ -343,6 +347,8 @@ def ui_messages(request):
     uiMap['activity_db-key-intentionofinvestment'] = aKeysTranslated[4]
     uiMap['activity_db-key-datasource-original'] = aKeys[5]
     uiMap['activity_db-key-datasource'] = aKeysTranslated[5]
+    # For 'files', only the translated db-key is needed
+    uiMap['activity_db-key-files'] = aKeys[6]
 
     # Stakeholder keys: Must be exactly (!) the same as in global
     # stakeholder.yml

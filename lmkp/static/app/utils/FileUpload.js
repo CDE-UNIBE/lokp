@@ -8,16 +8,6 @@ Ext.define('Lmkp.utils.FileUpload', {
 
     initComponent: function() {
 
-        // It is necessary to know the identifier of the current item. To do
-        // this, try to query the form to edit the item.
-        // So far, this only works for Activities.
-        var form;
-        var fQuery = Ext.ComponentQuery.query('form[itemId=newActivityForm]');
-        if (fQuery.length > 0) {
-            form = fQuery[0];
-        }
-        this.item_identifier = form.activity_identifier;
-
         var me = this;
         this.items = [
             {
@@ -36,7 +26,8 @@ Ext.define('Lmkp.utils.FileUpload', {
                         items: [
                             {
                                 xtype: 'button',
-                                text: 'n',
+                                iconCls: 'button-add-file',
+                                // TODO
                                 tooltip: 'new',
                                 handler: function() {
                                     var win = me.createUploadWindow();
@@ -84,40 +75,34 @@ Ext.define('Lmkp.utils.FileUpload', {
                     flex: 1
                 }, {
                     xtype: 'container',
+                    defaults: {
+                        margin: '0 0 2 2'
+                    },
                     items: [
                         {
                             xtype: 'button',
-                            text: 's',
+                            iconCls: 'button-view-file',
+                            // TODO
                             tooltip: 'show',
                             fileIdentifier: fileIdentifier,
                             handler: function() {
-                                var url = '/files/show/';
-                                if (me.item_identifier) {
-                                    url += me.item_identifier;
-                                } else {
-                                    url += 'temp';
-                                }
-                                url += '/' + this.fileIdentifier;
+                                var url = '/files/show/' + this.fileIdentifier;
                                 window.open(url, 'lo_fileview');
                             }
                         }, {
                             xtype: 'button',
-                            text: 'd',
+                            iconCls: 'button-download-file',
+                            // TODO
                             tooltip: 'download',
                             fileIdentifier: fileIdentifier,
                             handler: function() {
-                                var url = '/files/download/';
-                                if (me.item_identifier) {
-                                    url += me.item_identifier;
-                                } else {
-                                    url += 'temp';
-                                }
-                                url += '/' + this.fileIdentifier;
+                                var url = '/files/download/' + this.fileIdentifier;
                                 window.open(url, 'lo_fileview');
                             }
                         }, {
                             xtype: 'button',
-                            text: 'e',
+                            iconCls: 'button-edit-file',
+                            // TODO
                             tooltip: 'edit',
                             fileIdentifier: fileIdentifier,
                             fileName: fileName,
@@ -127,7 +112,8 @@ Ext.define('Lmkp.utils.FileUpload', {
                             }
                         }, {
                             xtype: 'button',
-                            text: 'd',
+                            iconCls: 'button-delete-file',
+                            // TODO
                             tooltip: 'delete',
                             fileIdentifier: fileIdentifier,
                             fileName: fileName,
@@ -155,6 +141,7 @@ Ext.define('Lmkp.utils.FileUpload', {
     editUploadWindow: function(oldFile) {
 
         var win = Ext.create('Ext.window.Window', {
+            // TODO
             title: 'Edit existing file',
             layout: 'fit',
             items: [
@@ -198,6 +185,7 @@ Ext.define('Lmkp.utils.FileUpload', {
     createUploadWindow: function() {
         var me = this;
         var win = Ext.create('Ext.window.Window', {
+            // TODO
             title: 'Upload new file',
             modal: true,
             layout: 'fit',
@@ -214,6 +202,7 @@ Ext.define('Lmkp.utils.FileUpload', {
                     items: [
                         {
                             xtype: 'filefield',
+                            // TODO
                             emptyText: 'Select a file',
                             fieldLabel: 'File',
                             name: 'file',
@@ -226,24 +215,25 @@ Ext.define('Lmkp.utils.FileUpload', {
                                 maxFileSize: '5MB'
                             },
                             border: 0,
+                            // TODO
                             tpl: 'Maximum file size: {maxFileSize}<br/>'
                                 + 'Valid file extensions: {fileExtensions}'
                         }
                     ],
                     buttons: [
                         {
+                            // TODO
                             text: 'Close'
                         }, '->', {
+                            // TODO
                             text: 'Upload',
                             handler: function() {
                                 var form = this.up('form').getForm();
                                 if (form.isValid()) {
                                     form.submit({
                                         url: '/files/upload',
+                                        // TODO
                                         waitMsg: 'Uploading ...',
-                                        params: {
-                                            identifier: me.item_identifier
-                                        },
                                         success: function(form, action) {
                                             var result = action.result;
                                             me.addSingleFilePanel(
@@ -262,6 +252,7 @@ Ext.define('Lmkp.utils.FileUpload', {
                                                 Lmkp.ts.msg('feedback_failure'),
                                                 result.msg
                                             );
+                                            win.close();
                                         }
                                     });
                                 }

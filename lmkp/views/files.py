@@ -31,7 +31,9 @@ def file_upload(request):
     http://code.google.com/p/file-uploader/
     """
 
-    TEMP_DIRECTORY_NAME = 'temp'
+    # TODO: Add translation of server response
+
+    # TODO: Move this to some ini file
     MAX_FILE_SIZE = 5000000 # bytes
 
     ret = {'success': False}
@@ -43,9 +45,6 @@ def file_upload(request):
         filename = request.POST['file'].filename
         file = request.POST['file'].file
         filetype = request.POST['file'].type
-        # Important: The identifier is submitted as '' even if not set
-        identifier = (request.POST['identifier']
-            if 'identifier' in request.POST else None)
     except:
         ret['msg'] = 'Post values not found'
 
@@ -58,10 +57,6 @@ def file_upload(request):
             if upload_path is None or not os.path.exists(upload_path):
                 validFile = False
                 ret['msg'] = 'Upload directory not specified or not found.'
-            else:
-                # Create a temporary directory if it does not yet exist.
-                if not os.path.exists(os.path.join(upload_path, TEMP_DIRECTORY_NAME)):
-                    os.makedirs(os.path.join(upload_path, TEMP_DIRECTORY_NAME))
 
         # Check filetype
         if validFile is True:
@@ -99,42 +94,15 @@ def file_upload(request):
             file_identifier = uuid.uuid4()
             new_filename = '%s.%s' % (file_identifier, fileextension)
 
-            # If there is already a file with this name, add a number to the
-            # filename
-#            if os.path.exists('%s/%s/%s' % (upload_path, TEMP_DIRECTORY_NAME, temp_filename)):
-#                temp_fn = temp_filename.split('.')
-#                filecount = 1
-#                while os.path.exists('%s/%s/%s'
-#                    % (upload_path, TEMP_DIRECTORY_NAME,
-#                        '%s_%s.%s' % (temp_fn[0], filecount, temp_fn[1]))):
-#                    filecount += 1
-#                temp_filename = '%s_%s.%s' % (temp_fn[0], filecount, temp_fn[1])
+            folder1, folder2 = get_folders_from_identifier(str(file_identifier))
 
-            if identifier is not None and identifier != '':
-                # Use the directory of the item to upload the file to
-                if not os.path.exists(os.path.join(upload_path, identifier)):
-                    # Create the directory if it does not yet exist
-                    os.makedirs(os.path.join(upload_path, identifier))
-                folder_name = identifier
-            else:
-                # No identifier provided, item does not yet exist. Use the
-                # temporary directory to upload the file to
-                folder_name = TEMP_DIRECTORY_NAME
+            # Check if the directories already exist. If not, create them.
+            if not os.path.exists(os.path.join(upload_path, folder1, folder2)):
+                os.makedirs(os.path.join(upload_path, folder1, folder2))
 
-#            # Make sure there is no file with the same clean_filename in the folder
-#            if os.path.exists('%s/%s/%s' % (upload_path, folder_name, new_filename)):
-#                temp_filename = new_filename.split('.')[:-1]
-#                print "***"
-#                print temp_filename
-#                filecount = 1
-#                while os.path.exists('%s/%s/%s'
-#                    % (upload_path, folder_name,
-#                        '%s_%s.%s' % (temp_filename[0], filecount, fileextension))):
-#                    filecount += 1
-#                # Create new filename
-#                new_filename = '%s_%s.%s' % (temp_filename[0], filecount, fileextension)
-
-            new_filepath = os.path.join(upload_path, folder_name, new_filename)
+            new_filepath = os.path.join(
+                upload_path, folder1, folder2, new_filename
+            )
 
             # Open the new file for writing
             f = open(new_filepath, 'wb', 10000)
@@ -149,17 +117,6 @@ def file_upload(request):
 
             # Open the file again to get the hash
             hash = get_file_hash(new_filepath)
-
-#            # Rename the file
-#            new_filename = '%s.%s' % (hash, fileextension)
-#            new_filepath = '%s/%s/%s' % (upload_path, TEMP_DIRECTORY_NAME, new_filename)
-#            if os.path.exists(new_filepath):
-#                # If a file with the new filename exists already, it must be the
-#                # same file because the filename is based on the file hash.
-#                # Still remove the existing file before renaming the file.
-#                log.debug('Replaced an existing file with the same filename (and hash)')
-#                os.remove(new_filepath)
-#            os.rename(temp_filepath, new_filepath)
 
             # Database values
             db_file = File(
@@ -180,23 +137,24 @@ def file_upload(request):
             ret['msg'] = 'File was successfully uploaded'
             ret['success'] = True
 
-    print ret
-
     # Send the response with content-type 'text/html'
     return Response(content_type='text/html', body=json.dumps(ret))
 
-@view_config(route_name='file_show')
-def file_show(request):
+@view_config(route_name='file_view')
+def file_view(request):
     """
     Show an uploaded file.
-    .../{action}/{folder}/{identifier}
+    .../{action}/{identifier}
     """
 
     try:
         action = request.matchdict['action']
-        folder = request.matchdict['folder']
         identifier = request.matchdict['identifier']
     except KeyError:
+        raise HTTPNotFound()
+
+    # Check if the action is valid
+    if action != 'view' or action != 'download':
         raise HTTPNotFound()
 
     # Check if the identifier is valid
@@ -229,7 +187,8 @@ def file_show(request):
 
     # Try to find the file on disk
     upload_path = upload_directory_path(request)
-    filepath = os.path.join(upload_path, folder, filename)
+    folder1, folder2 = get_folders_from_identifier(str(identifier))
+    filepath = os.path.join(upload_path, folder1, folder2, filename)
 
     # Check that the file is on the disk
     if not os.path.exists(filepath):
@@ -287,6 +246,14 @@ def get_valid_file_extension(mimetype):
         return 'gif'
     else:
         return None
+
+def get_folders_from_identifier(identifier):
+    """
+    Return the folder structure based on an identifier.
+    Folder 1: the first two digits of the identifier
+    Folder 2: the third digit of the identifier
+    """
+    return identifier[:2], identifier[2:3]
 
 def _file_buffer(f, chunk_size=10000):
     """
