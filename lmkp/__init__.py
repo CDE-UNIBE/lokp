@@ -193,8 +193,11 @@ def main(global_config, ** settings):
     # Upload a file
     config.add_route('file_upload', '/files/upload', request_method='POST')
     # Show or download a file
-    config.add_route('file_show', '/files/{action}/{folder}/{identifier}')
+    config.add_route('file_view', '/files/{action}/{identifier}')
 
+    """
+    Translation
+    """
     # A controller that returns the translation needed in the ExtJS user interface
     config.add_route('ui_translation', '/lang')
     # Return a json with all available languages from DB

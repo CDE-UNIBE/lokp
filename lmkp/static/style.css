@@ -237,3 +237,50 @@ td.status-pending {
     background-color: #ffa07a !important;
     font-style: italic !important;
 }
+
+a.file-view-button {
+    width: 16px !important;
+    height: 16px;
+    background-image: url("/static/img/eye.png") !important;
+    text-decoration: none;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+a.file-download-button {
+    width: 16px !important;
+    height: 16px;
+    background-image: url("/static/img/disk.png") !important;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.button-view-file {
+    width: 16px !important;
+    height: 16px !important;
+    background-image: url("/static/img/eye.png") !important;
+}
+
+.button-download-file {
+    width: 16px !important;
+    height: 16px !important;
+    background-image: url("/static/img/disk.png") !important;
+}
+
+.button-edit-file {
+    width: 16px !important;
+    height: 16px !important;
+    background-image: url("/static/img/pencil.png") !important;
+}
+
+.button-delete-file {
+    width: 16px !important;
+    height: 16px !important;
+    background-image: url("/static/img/cancel.png") !important;
+}
+
+.button-add-file {
+    width: 16px !important;
+    height: 16px !important;
+    background-image: url("/static/img/add.png") !important;
+}
