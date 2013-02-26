@@ -78,20 +78,25 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
         // FILES
         // Tags with key == 'Files' need to be rendered separately
         if (Lmkp.ts.msg('activity_db-key-files') == key) {
-            var values = Ext.JSON.decode(value);
+            var values = value.split(',');
             value = '';
             for (var v in values) {
-                // Show the filename
-                value += values[v].name;
-                // Show a link to view the file
-                var view_url = '/files/view/' + values[v].identifier;
-                var view_title = Lmkp.ts.msg('tooltip_view-file');
-                value += '&nbsp;<a class="file-view-button" title="' + view_title + '" href="' + view_url + '" target="_blank">&nbsp;</a>'
-                // Show a link to download the file
-                var download_url = 'files/download/' + values[v].identifier;
-                var download_title = Lmkp.ts.msg('tooltip_download-file');
-                value += '&nbsp;<a class="file-download-button" title="' + download_title + '" href="' + download_url + '" target="_blank">&nbsp;</a>'
-                value += '</br>';
+                var cv = values[v].split('|');
+                if (cv.length == 2) {
+                    var filename = cv[0];
+                    var identifier = cv[1];
+                    // Show the filename
+                    value += filename;
+                    // Show a link to view the file
+                    var view_url = '/files/view/' + identifier;
+                    var view_title = Lmkp.ts.msg('tooltip_view-file');
+                    value += '&nbsp;<a class="file-view-button" title="' + view_title + '" href="' + view_url + '" target="_blank">&nbsp;</a>'
+                    // Show a link to download the file
+                    var download_url = 'files/download/' + identifier;
+                    var download_title = Lmkp.ts.msg('tooltip_download-file');
+                    value += '&nbsp;<a class="file-download-button" title="' + download_title + '" href="' + download_url + '" target="_blank">&nbsp;</a>'
+                    value += '</br>';
+                }
             }
         }
 
