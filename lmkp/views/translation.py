@@ -197,6 +197,7 @@ def ui_messages(request):
         'activities_pending-versions': _('activities_pending-versions', default='Pending versions of Deals'),
         'activities_pending-paging-message': _('activities_pending-paging-message', default='Displaying pending Deals {0} - {1} of {2}'),
         'activities_pending-paging-empty': _('activities_pending-paging-empty', default='No pending Deals to display'),
+        'activities_review-pending-versions': _('activities_review-pending-versions', default='This deal has pending changes. Click to review them in a popup window.'),
         'activities_review-versions': _('activities_review-versions', default='Review versions of Deal {0}'),
         'activities_title': _('activities_title', default='Deals'),
 
@@ -220,6 +221,7 @@ def ui_messages(request):
         'stakeholders_pending-versions': _('stakeholders_pending-versions', default='Pending versions of Stakeholders'),
         'stakeholders_pending-paging-message': _('stakeholders_pending-paging-message', default='Displaying pending Stakeholders {0} - {1} of {2}'),
         'stakeholders_pending-paging-empty': _('stakeholders_pending-paging-empty', default='No pending Stakeholders to display'),
+        'stakeholders_review-pending-versions': _('stakeholders_review-pending-versions', default='This stakeholder has pending changes. Click to review them in a popup window.'),
         'stakeholders_review-versions': _('stakeholders_review-versions', default='Review versions of Stakeholder {0}'),
         'stakeholders_search': _('stakeholders_search', default='Search Stakeholder'),
         'stakeholders_select-stakeholder': _('stakeholders_select-stakeholder', default='Select Stakeholder'),

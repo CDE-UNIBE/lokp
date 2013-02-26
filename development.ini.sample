@@ -19,6 +19,9 @@ lmkp.admin_email = info@cde.unibe.ch
 lmkp.use_js_builds = false
 lmkp.comments_url = http://localhost:3000/
 
+lmkp.file_upload_dir = /files
+lmkp.file_upload_max_size = 5000000 ; (bytes)
+
 ; Specify the smtp server used to send mails.
 ; See also http://packages.python.org/pyramid_mailer/ for more options
 mail.host = smtp.example.com
