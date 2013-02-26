@@ -20,6 +20,7 @@ from lmkp.models.database_objects import Stakeholder
 from lmkp.models.database_objects import Stakeholder_Role
 from lmkp.models.database_objects import Status
 from lmkp.views.config import merge_profiles
+from lmkp.views.files import check_file_location_name
 from lmkp.models.database_objects import User
 from shapely import wkb
 from sqlalchemy.sql.expression import cast
@@ -1545,6 +1546,12 @@ class Protocol(object):
                     filter(Language.locale == localizer.locale_name).\
                     first()
                 lang_fk = language.id if language is not None else 1
+
+            # FILES!
+            # Check if the files need to be moved (from temporary directory) or
+            # renamed
+            if key == 'Files':
+                check_file_location_name(request, value)
 
             v = Value_Item(value=value)
             v.fk_language = lang_fk
