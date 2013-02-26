@@ -10,6 +10,8 @@ from lmkp.config import check_valid_uuid
 from lmkp.models.database_objects import File
 from lmkp.models.meta import DBSession as Session
 
+from pyramid.i18n import TranslationStringFactory
+from pyramid.i18n import get_localizer
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.response import Response
 from pyramid.view import view_config
@@ -18,6 +20,8 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.exc import MultipleResultsFound
 
 log = logging.getLogger(__name__)
+
+_ = TranslationStringFactory('lmkp')
 
 @view_config(route_name='file_upload', permission='edit')
 def file_upload(request):
@@ -31,13 +35,12 @@ def file_upload(request):
     http://code.google.com/p/file-uploader/
     """
 
-    # TODO: Add translation of server response
-
     # TODO: Move this to some ini file
     MAX_FILE_SIZE = 5000000 # bytes
     TEMP_FOLDER_NAME = 'temp'
 
     ret = {'success': False}
+    valid = True
 
     filename = None
     filetype = None
@@ -47,33 +50,38 @@ def file_upload(request):
         file = request.POST['file'].file
         filetype = request.POST['file'].type
     except:
-        ret['msg'] = 'Post values not found'
+        ret['msg'] = _('server-error_not-all-post-values',
+            default='Not all necessary values were provided.')
+        valid = False
 
-    if filename is not None and file is not None and filetype is not None:
-        validFile = True
-
+    if (filename is not None and file is not None and filetype is not None
+        and valid is True):
+        
         # Check upload directory
-        if validFile is True:
+        if valid is True:
             upload_path = upload_directory_path(request)
             if upload_path is None or not os.path.exists(upload_path):
-                validFile = False
-                ret['msg'] = 'Upload directory not specified or not found.'
+                valid = False
+                ret['msg'] = _('server-error_files-no-upload-directory',
+                    default='Upload directory not specified or not found.')
 
         # Check filetype
-        if validFile is True:
+        if valid is True:
             fileextension = get_valid_file_extension(filetype)
             if fileextension is None:
-                validFile = False
-                ret['msg'] = 'File type is not valid.'
+                valid = False
+                ret['msg'] = _('server-error_invalid-file-type',
+                    default='File type is not valid.')
 
         # Check filesize
-        if validFile is True:
+        if valid is True:
             size = get_file_size(file)
             if size > MAX_FILE_SIZE:
-                validFile = False
-                ret['msg'] = 'File is too big.'
+                valid = False
+                ret['msg'] = _('server-error_uploaded-file-too-big',
+                    default='File is too big.')
 
-        if validFile is True:
+        if valid is True:
             # Do the actual file processing
 
             # Strip leading path from file name to avoid directory traversal
@@ -137,8 +145,12 @@ def file_upload(request):
             ret['filename'] = clean_filename
             ret['fileidentifier'] = str(file_identifier)
             
-            ret['msg'] = 'File was successfully uploaded'
+            ret['msg'] = _('server-success_files-upload-successful',
+                default='File was successfully uploaded')
             ret['success'] = True
+
+    localizer = get_localizer(request)
+    ret['msg'] = localizer.translate(ret['msg'])
 
     # Send the response with content-type 'text/html'
     return Response(content_type='text/html', body=json.dumps(ret))
