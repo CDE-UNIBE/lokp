@@ -48,13 +48,42 @@ Ext.define('Lmkp.utils.FileUpload', {
      * files (in comma-separated string) to the panel.
      */
     setValue: function(value) {
-        var values = Ext.JSON.decode(value);
+        var values = value.split(',');
         for (var v in values) {
-            var cv = values[v];
-            if (cv.name && cv.identifier) {
-                this.addSingleFilePanel(cv.name, cv.identifier);
+            var cv = values[v].split('|');
+            if (cv.length == 2) {
+                this.addSingleFilePanel(cv[0], cv[1]);
             }
         }
+    },
+
+    /**
+     * Custom function to return the submit value when putting together the
+     * form.
+     */
+    getSubmitValue: function() {
+        // First, collect all values as objects in an array
+        var fileObjects = [];
+        var filepanels = this.query('panel[name=filepanelwithcontent]');
+        for (var fp in filepanels) {
+            fileObjects.push({
+                name: filepanels[fp].fileName,
+                identifier: filepanels[fp].fileIdentifier
+            });
+        }
+
+        // Sort the objects by identifier
+        fileObjects.sort(this.sort_by(
+            'identifier', false, function(a){return a.toUpperCase()})
+        );
+
+        // Form an array-string out of the objects
+        var ret = [];
+        for (var i in fileObjects) {
+            ret.push(fileObjects[i].name + '|' + fileObjects[i].identifier);
+        }
+
+        return ret.join(',');
     },
 
     /**
@@ -64,6 +93,11 @@ Ext.define('Lmkp.utils.FileUpload', {
         var me = this;
         me.insert(0, {
             xtype: 'panel',
+            name: 'filepanelwithcontent',
+            // Store the values to the top panel as well to make them accessible
+            // more easily
+            fileName: fileName,
+            fileIdentifier: fileIdentifier,
             border: 0,
             layout: {
                 type: 'hbox'
@@ -71,6 +105,7 @@ Ext.define('Lmkp.utils.FileUpload', {
             items: [
                 {
                     xtype: 'container',
+                    name: 'filepanel_filename',
                     html: fileName,
                     flex: 1
                 }, {
@@ -83,42 +118,48 @@ Ext.define('Lmkp.utils.FileUpload', {
                             xtype: 'button',
                             iconCls: 'button-view-file',
                             // TODO
-                            tooltip: 'show',
-                            fileIdentifier: fileIdentifier,
+                            tooltip: 'view',
                             handler: function() {
-                                var url = '/files/show/' + this.fileIdentifier;
-                                window.open(url, 'lo_fileview');
+                                var fp = this.up('panel[name=filepanelwithcontent]');
+                                if (fp && fp.fileIdentifier) {
+                                    var url = '/files/view/' + fp.fileIdentifier;
+                                    window.open(url, 'lo_fileview');
+                                }
                             }
                         }, {
                             xtype: 'button',
                             iconCls: 'button-download-file',
                             // TODO
                             tooltip: 'download',
-                            fileIdentifier: fileIdentifier,
                             handler: function() {
-                                var url = '/files/download/' + this.fileIdentifier;
-                                window.open(url, 'lo_fileview');
+                                var fp = this.up('panel[name=filepanelwithcontent]');
+                                if (fp && fp.fileIdentifier) {
+                                    var url = '/files/download/' + fp.fileIdentifier;
+                                    window.open(url, 'lo_fileview');
+                                }
                             }
                         }, {
                             xtype: 'button',
                             iconCls: 'button-edit-file',
                             // TODO
                             tooltip: 'edit',
-                            fileIdentifier: fileIdentifier,
-                            fileName: fileName,
                             handler: function() {
-                                var win = me.editUploadWindow(this.fileName);
-                                win.show();
+                                var fp = this.up('panel[name=filepanelwithcontent]');
+                                if (fp && fp.fileIdentifier && fp.fileName) {
+                                    var win = me.editUploadWindow(fp.fileName, fp.fileIdentifier);
+                                    win.show();
+                                }
                             }
                         }, {
                             xtype: 'button',
                             iconCls: 'button-delete-file',
                             // TODO
                             tooltip: 'delete',
-                            fileIdentifier: fileIdentifier,
-                            fileName: fileName,
                             handler: function() {
-                                console.log("coming soon: function to delete file " + this.fileName);
+                                var fp = this.up('panel[name=filepanelwithcontent]');
+                                if (fp && fp.fileIdentifier && fp.fileName) {
+                                    console.log("coming soon: function to delete file " + fp.fileName);
+                                }
                             }
                         }
                     ]
@@ -128,18 +169,28 @@ Ext.define('Lmkp.utils.FileUpload', {
     },
 
     /**
-     * Custom function to return the submit value when putting together the
-     * form.
+     * Function to replace the values of a file panel, for example after the
+     * filename was edited.
      */
-    getSubmitValue: function() {
-        return 'blabla';
+    replaceSingleFilePanel: function(fileName, fileIdentifier) {
+        // Try to find the filepanel
+        var filepanels = this.query('panel[name=filepanelwithcontent]');
+        for (var fp in filepanels) {
+            if (filepanels[fp].fileIdentifier == fileIdentifier) {
+                filepanels[fp].fileName = fileName;
+                var x =filepanels[fp].down('container[name=filepanel_filename]');
+                if (x) {
+                    x.update(fileName);
+                }
+            }
+        }
     },
 
     /**
      * Show a window to edit a file, (so far) only filename can be edited.
      */
-    editUploadWindow: function(oldFile) {
-
+    editUploadWindow: function(fileName, fileIdentifier) {
+        var me = this;
         var win = Ext.create('Ext.window.Window', {
             // TODO
             title: 'Edit existing file',
@@ -157,17 +208,33 @@ Ext.define('Lmkp.utils.FileUpload', {
                     items: [
                         {
                             xtype: 'textfield',
+                            name: 'filename',
                             fieldLabel: 'Name',
-                            value: oldFile
+                            value: fileName,
+                            maxLength: 500
                         }
                     ],
                     buttons: [
                         {
-                            text: 'Upload',
+                            // TODO
+                            text: 'Close',
+                            handler: function() {
+                                win.close();
+                            }
+                        }, '->', {
+                            // TODO
+                            text: 'Save',
                             handler: function() {
                                 var form = this.up('form').getForm();
                                 if (form.isValid()) {
-                                    console.log('submit');
+                                    // Get the new filename and replace it in
+                                    // the filepanel
+                                    var values = form.getValues();
+                                    me.replaceSingleFilePanel(
+                                        values.filename,
+                                        fileIdentifier
+                                    );
+                                    win.close();
                                 }
                             },
                             margin: 5
@@ -223,7 +290,10 @@ Ext.define('Lmkp.utils.FileUpload', {
                     buttons: [
                         {
                             // TODO
-                            text: 'Close'
+                            text: 'Close',
+                            handler: function() {
+                                win.close();
+                            }
                         }, '->', {
                             // TODO
                             text: 'Upload',
@@ -264,5 +334,17 @@ Ext.define('Lmkp.utils.FileUpload', {
             ]
         });
         return win;
+    },
+
+    /**
+     * Helper function to sort an array of json objects
+     * http://stackoverflow.com/a/979325
+     */
+    sort_by: function(field, reverse, primer){
+        var key = function (x) {return primer ? primer(x[field]) : x[field]};
+        return function (a,b) {
+            var A = key(a), B = key(b);
+            return (A < B ? -1 : (A > B ? 1 : 0)) * [1,-1][+!!reverse];
+        }
     }
 });

@@ -87,6 +87,10 @@ def file_upload(request):
             clean_filename = '.'.join(old_filename.split('.')[:-1])
             clean_filename = _clean_filename(clean_filename)
 
+            # Make sure the filename is not too long
+            if len(clean_filename) > 500:
+                clean_filename = clean_filename[:500]
+
             # Append the predefined file extension
             clean_filename = '%s.%s' % (clean_filename, fileextension)
 
@@ -154,7 +158,7 @@ def file_view(request):
         raise HTTPNotFound()
 
     # Check if the action is valid
-    if action != 'view' or action != 'download':
+    if not (action == 'view' or action == 'download'):
         raise HTTPNotFound()
 
     # Check if the identifier is valid
