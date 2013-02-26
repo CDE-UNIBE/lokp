@@ -35,6 +35,7 @@ def file_upload(request):
 
     # TODO: Move this to some ini file
     MAX_FILE_SIZE = 5000000 # bytes
+    TEMP_FOLDER_NAME = 'temp'
 
     ret = {'success': False}
 
@@ -98,14 +99,12 @@ def file_upload(request):
             file_identifier = uuid.uuid4()
             new_filename = '%s.%s' % (file_identifier, fileextension)
 
-            folder1, folder2 = get_folders_from_identifier(str(file_identifier))
-
             # Check if the directories already exist. If not, create them.
-            if not os.path.exists(os.path.join(upload_path, folder1, folder2)):
-                os.makedirs(os.path.join(upload_path, folder1, folder2))
+            if not os.path.exists(os.path.join(upload_path, TEMP_FOLDER_NAME)):
+                os.makedirs(os.path.join(upload_path, TEMP_FOLDER_NAME))
 
             new_filepath = os.path.join(
-                upload_path, folder1, folder2, new_filename
+                upload_path, TEMP_FOLDER_NAME, new_filename
             )
 
             # Open the new file for writing
@@ -150,6 +149,9 @@ def file_view(request):
     Show an uploaded file.
     .../{action}/{identifier}
     """
+
+    # TODO: Move this to some ini file
+    TEMP_FOLDER_NAME = 'temp'
 
     try:
         action = request.matchdict['action']
@@ -196,7 +198,12 @@ def file_view(request):
 
     # Check that the file is on the disk
     if not os.path.exists(filepath):
-        raise HTTPNotFound()
+        # If the file was not found in its proper directory, try to find it in
+        # the temporary upload directory
+        filepath = os.path.join(upload_path, TEMP_FOLDER_NAME, filename)
+        if not os.path.exists(filepath):
+            # If it is still not found, raise error
+            raise HTTPNotFound()
 
     # Open the file
     file = open(filepath, 'rb').read()
@@ -211,6 +218,94 @@ def file_view(request):
 
     return response
 
+def check_file_location_name(request, filevaluestring):
+    """
+    Check if the files in a filevaluestring of the format 
+      cleanfilename|fileidentifier,cleanfilename|fileidentifier
+    are still in the temporary upload directory (meaning that they were just 
+    recently uploaded). If so, move them to their proper directory (create it if
+    necessary).
+    (Also check if the file was renamed. In this case, update the database
+    entry.) - see comments below
+    """
+
+    # TODO: Move this to some ini file
+    TEMP_FOLDER_NAME = 'temp'
+
+    # A database query is needed to find out the mime-type (for the file
+    # extension) and the name of the file.
+
+    fileidentifiers = []
+    filenames = []
+
+    fileobjects = filevaluestring.split(',')
+    for file in fileobjects:
+        # Collect all fileidentifiers to query the database only once
+        f = file.split('|')
+        if len(f) != 2:
+            # Something is wrong with the filevaluestring: skip it
+            continue
+        fileidentifiers.append(f[1])
+        filenames.append(f[0])
+
+    files_query = Session.query(File).\
+        filter(File.identifier.in_(fileidentifiers)).\
+        all()
+
+    for i, fileidentifier in enumerate(fileidentifiers):
+        # Loop all the file identifiers
+        for f_db in files_query:
+            # For each file identifier, try to find it in the database query
+            if str(f_db.identifier) != fileidentifier:
+                continue
+
+            # Check if the file needs to be moved. This is the case if the file
+            # is found in the temporary upload directory.
+
+            extension = get_valid_file_extension(f_db.mime)
+            if extension is None:
+                # This should also never happen because files without valid mime
+                # type should not have been uploaded in the first place
+                continue
+
+            # Put together the filename
+            filename = '%s.%s' % (fileidentifier, extension)
+
+            # Try to find the file in the temporary directory
+            upload_path = upload_directory_path(request)
+            filepath = os.path.join(upload_path, TEMP_FOLDER_NAME, filename)
+
+            if os.path.exists(filepath):
+                # If the file is still in the temporary directory, move it
+                folder1, folder2 = get_folders_from_identifier(fileidentifier)
+                new_location = os.path.join(upload_path, folder1, folder2)
+
+                # If the directory does not yet exist, create it
+                if not os.path.exists(new_location):
+                    os.makedirs(new_location)
+
+                # Rename works to move the file
+                os.rename(filepath, os.path.join(new_location, filename))
+
+                log.debug('Moved file %s from temporary folder to new location at %s.'
+                    % (f_db.name, new_location))
+
+            # TODO
+            # Maybe renaming a file in the database should only happen after
+            # review. Maybe it is not necessary at all because the filename to
+            # display always comes from 'value' of tag.
+            """
+            # Check if the file was renamed
+            if f_db.name != filenames[i]:
+
+                # Update the filename
+                Session.query(File).\
+                    filter(File.identifier == fileidentifier).\
+                    update({'name': filenames[i]})
+
+                log.debug('Renamed file to %s' % filenames[i])
+            """
+                
 def get_file_hash(filepath, hexdigest=True):
     """
     Calculate the hash digest of a file.

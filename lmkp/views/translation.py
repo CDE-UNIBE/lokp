@@ -322,6 +322,7 @@ def ui_messages(request):
         'Intention of Investment',  # 4
         'Data source',              # 5
         # Not needed for table but for special rendering of files tags
+        # The files also appear in protocol.py around line 1548 ...
         'Files'                     # 6
     ]
     aKeysTranslateQuery = get_translated_db_keys(A_Key, aKeys, db_lang)
