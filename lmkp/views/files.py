@@ -5,8 +5,9 @@ import simplejson as json
 import string
 import uuid
 
-from lmkp.config import upload_directory_path
 from lmkp.config import check_valid_uuid
+from lmkp.config import upload_directory_path
+from lmkp.config import upload_max_file_size
 from lmkp.models.database_objects import File
 from lmkp.models.meta import DBSession as Session
 
@@ -35,8 +36,6 @@ def file_upload(request):
     http://code.google.com/p/file-uploader/
     """
 
-    # TODO: Move this to some ini file
-    MAX_FILE_SIZE = 5000000 # bytes
     TEMP_FOLDER_NAME = 'temp'
 
     ret = {'success': False}
@@ -76,7 +75,7 @@ def file_upload(request):
         # Check filesize
         if valid is True:
             size = get_file_size(file)
-            if size > MAX_FILE_SIZE:
+            if size > upload_max_file_size(request):
                 valid = False
                 ret['msg'] = _('server-error_uploaded-file-too-big',
                     default='File is too big.')
@@ -162,7 +161,6 @@ def file_view(request):
     .../{action}/{identifier}
     """
 
-    # TODO: Move this to some ini file
     TEMP_FOLDER_NAME = 'temp'
 
     try:
@@ -241,7 +239,6 @@ def check_file_location_name(request, filevaluestring):
     entry.) - see comments below
     """
 
-    # TODO: Move this to some ini file
     TEMP_FOLDER_NAME = 'temp'
 
     # A database query is needed to find out the mime-type (for the file

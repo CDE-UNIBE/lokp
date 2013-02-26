@@ -41,9 +41,21 @@ def upload_directory_path(request):
     """
     Returns the absolute path to the directory used for file uploads
     """
-    if 'lmkp.upload_dir' in request.registry.settings:
-        return request.registry.settings['lmkp.upload_dir']
+    if 'lmkp.file_upload_dir' in request.registry.settings:
+        return request.registry.settings['lmkp.file_upload_dir']
     return None
+
+def upload_max_file_size(request):
+    """
+    Returns the maximum file size (in bytes) for uploads.
+    Default: 5000000 (5MB)
+    """
+    if 'lmkp.file_upload_max_size' in request.registry.settings:
+        try:
+            return int(request.registry.settings['lmkp.file_upload_max_size'])
+        except ValueError:
+            pass
+    return 5000000
 
 def check_valid_uuid(uuid):
     """
