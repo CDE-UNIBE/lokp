@@ -4,6 +4,7 @@ Ext.require('Ext.form.FieldSet');
 Ext.require('Ext.form.field.Date');
 Ext.require('Ext.form.field.Checkbox');
 Ext.require('Ext.form.field.ComboBox');
+Ext.require('Ext.form.field.File');
 Ext.require('Ext.form.field.Hidden');
 Ext.require('Ext.form.Label');
 Ext.require('Ext.form.Panel');
@@ -31,6 +32,8 @@ Ext.require('Lmkp.controller.stakeholders.NewStakeholder');
 Ext.require('Lmkp.store.ActivityChangesets');
 Ext.require('Lmkp.store.ReviewDecisions');
 Ext.require('Lmkp.store.Status');
+Ext.require('Lmkp.utils.FileUpload');
+Ext.require('Lmkp.utils.MessageBox');
 Ext.require('Lmkp.utils.StringFunctions');
 Ext.require('Lmkp.view.activities.Details');
 Ext.require('Lmkp.view.comments.ReCaptcha');
@@ -39,7 +42,6 @@ Ext.require('Lmkp.view.public.Main');
 Ext.require('Lmkp.view.users.ChangePasswordWindow');
 Ext.require('Lmkp.view.users.UserWindow');
 Ext.require('Lmkp.view.stakeholders.NewStakeholderSelection');
-Ext.require('Lmkp.utils.MessageBox');
 
 Ext.onReady(function(){
         
