@@ -8,6 +8,7 @@ import uuid
 from lmkp.config import check_valid_uuid
 from lmkp.config import upload_directory_path
 from lmkp.config import upload_max_file_size
+from lmkp.config import valid_mime_extensions
 from lmkp.models.database_objects import File
 from lmkp.models.meta import DBSession as Session
 
@@ -38,7 +39,10 @@ def file_upload(request):
 
     TEMP_FOLDER_NAME = 'temp'
 
-    ret = {'success': False}
+    ret = {
+        'success': False,
+        'msg': ''
+    }
     valid = True
 
     filename = None
@@ -55,7 +59,7 @@ def file_upload(request):
 
     if (filename is not None and file is not None and filetype is not None
         and valid is True):
-        
+
         # Check upload directory
         if valid is True:
             upload_path = upload_directory_path(request)
@@ -66,7 +70,7 @@ def file_upload(request):
 
         # Check filetype
         if valid is True:
-            fileextension = get_valid_file_extension(filetype)
+            fileextension = get_valid_file_extension(request, filetype)
             if fileextension is None:
                 valid = False
                 ret['msg'] = _('server-error_invalid-file-type',
@@ -100,11 +104,11 @@ def file_upload(request):
                 clean_filename = clean_filename[:500]
 
             # Append the predefined file extension
-            clean_filename = '%s.%s' % (clean_filename, fileextension)
+            clean_filename = '%s%s' % (clean_filename, fileextension)
 
             # Use a randomly generated UUID as filename
             file_identifier = uuid.uuid4()
-            new_filename = '%s.%s' % (file_identifier, fileextension)
+            new_filename = '%s%s' % (file_identifier, fileextension)
 
             # Check if the directories already exist. If not, create them.
             if not os.path.exists(os.path.join(upload_path, TEMP_FOLDER_NAME)):
@@ -192,14 +196,14 @@ def file_view(request):
         raise HTTPNotFound()
 
     # Get file extension
-    extension = get_valid_file_extension(db_file.mime)
+    extension = get_valid_file_extension(request, db_file.mime)
     if extension is None:
         # This should also never happen because files without valid mime type
         # should not have been uploaded in the first place
         raise HTTPNotFound()
 
     # Put together the filename
-    filename = '%s.%s' % (identifier, extension)
+    filename = '%s%s' % (identifier, extension)
 
     # Try to find the file on disk
     upload_path = upload_directory_path(request)
@@ -337,22 +341,15 @@ def get_file_size(file):
     file.seek(0) # Reset the file position to the beginning
     return size
 
-def get_valid_file_extension(mimetype):
+def get_valid_file_extension(request, mimetype):
     """
-    Helper function to return a standard file extension for a given mimetype.
+    Helper function to return the predefined file extension for a mimetype.
     Also used to check valid file types (return None if not supported)
-    Many thanks to Internet Explorer for treating everything a little different
-    once again.
-    (http://msdn.microsoft.com/en-us/library/ms775147%28v=vs.85%29.aspx#_replace)
     """
-    if mimetype == 'image/jpeg' or mimetype == 'image/pjpeg':
-        # for .jpeg and .jpg return .jpg
-        return 'jpg'
-    elif mimetype == 'image/png' or mimetype == 'image/x-png':
-        return 'png'
-    elif mimetype == 'image/gif':
-        return 'gif'
-    else:
+    vme = valid_mime_extensions(request)
+    try:
+        return vme[mimetype]
+    except KeyError:
         return None
 
 def get_folders_from_identifier(identifier):

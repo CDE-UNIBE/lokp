@@ -3,6 +3,7 @@
 
 import os.path
 from os import sep as separator
+import mimetypes
 import re
 
 def locale_profile_directory_path(request):
@@ -56,6 +57,42 @@ def upload_max_file_size(request):
         except ValueError:
             pass
     return 5000000
+
+def valid_mime_extensions(request):
+    """
+    Returns the valid mime-types as well as the file extension for each.
+    """
+    if 'lmkp.file_mime_extensions' in request.registry.settings:
+        fme = request.registry.settings['lmkp.file_mime_extensions']
+
+        # Create a new dict which contains only the entries recognized as valid
+        # mime types by python's own mimetypes module.
+        vfme = {}
+        for mt in fme:
+            # Make sure that the mime type defined in the ini is valid.
+            try:
+                mimetypes.types_map[fme[mt]]
+            except KeyError:
+                continue
+
+            # Make sure that the extension defined in the ini is valid for its
+            # mime type
+            if fme[mt] not in mimetypes.guess_all_extensions(mt):
+                continue
+
+            # Copy it
+            vfme[mt] = fme[mt]
+
+        # Add special types by Internet Explorer
+        # http://msdn.microsoft.com/en-us/library/ms775147%28v=vs.85%29.aspx#_replace
+        if 'image/jpeg' in vfme:
+            vfme['image/pjpeg'] = '.jpg'
+        if 'image/png' in vfme:
+            vfme['image/x-png'] = '.png'
+
+        return vfme
+    
+    return {}
 
 def check_valid_uuid(uuid):
     """

@@ -257,6 +257,25 @@ Ext.define('Lmkp.utils.FileUpload', {
      * Show a window to upload a new file.
      */
     createUploadWindow: function() {
+        
+        var file_extensions = Lmkp.ts.msg('files_valid-extensions-list');
+
+        // Prepare a regex expression to check for valid files on client side
+        // based on file extensions
+        var regexarray = [];
+        for (var i in file_extensions) {
+            regexarray[i] = '(\.' + file_extensions[i] + ')';
+        }
+        var file_extension_regex = new RegExp(
+            '(.)+(' + regexarray.join("|") + ')$', "i");
+
+        // Use the same extensions to show to the user as a hint (strip the
+        // first character - the point)
+        var extensions_hint = [];
+        for (var j in file_extensions) {
+            extensions_hint[j] = file_extensions[j].substring(1);
+        }
+
         var me = this;
         var win = Ext.create('Ext.window.Window', {
             title: Lmkp.ts.msg('files_upload-new-file'),
@@ -279,12 +298,12 @@ Ext.define('Lmkp.utils.FileUpload', {
                             fieldLabel: Lmkp.ts.msg('files_file'),
                             name: 'file',
                             buttonText: Lmkp.ts.msg('button_browse'),
-                            regex: /(.)+((\.gif)|(\.jpeg)|(\.jpg)|(\.png))$/i
+                            regex: file_extension_regex
                         }, {
                             xtype: 'panel',
                             data: {
-                                fileExtensions: 'gif, jpeg, jpg, png',
-                                maxFileSize: '5MB'
+                                fileExtensions: extensions_hint.join(', '),
+                                maxFileSize: Lmkp.ts.msg('files_maximum-size')
                             },
                             border: 0,
                             tpl: Lmkp.ts.msg('files_maximum-file-size')
