@@ -20,6 +20,7 @@ from lmkp.models.database_objects import Stakeholder
 from lmkp.models.database_objects import Stakeholder_Role
 from lmkp.models.database_objects import Status
 from lmkp.views.config import merge_profiles
+from lmkp.views.files import check_file_location_name
 from lmkp.models.database_objects import User
 from shapely import wkb
 from sqlalchemy.sql.expression import cast
@@ -1032,14 +1033,17 @@ class Protocol(object):
                             taggroup_dict['tg_id'] == db_taggroup.tg_id):
                             # Check which tags we have to edit
                             for tag_dict in taggroup_dict['tags']:
-                                #TODO
-                                if 1 == 1:
-                                    # Yes, it is THIS tag
-                                    if tag_dict['op'] == 'delete':
-#                                        log.debug(
-#                                            "Tag is deleted (not copied) from taggroup."
-#                                        )
-                                        copy_tag = False
+                                # Make sure it is exactly this tag (same key)
+                                # and it is to be deleted.
+                                if (tag_dict['op'] == 'delete'
+                                    and db_tag.key.key and tag_dict['key']
+                                    and db_tag.key.key == tag_dict['key']):
+                                    
+#                                    log.debug(
+#                                        "Tag is deleted (not copied) from taggroup."
+#                                    )
+
+                                    copy_tag = False
 
                 # Create and append the new tag only if requested
                 if copy_tag:
@@ -1545,6 +1549,12 @@ class Protocol(object):
                     filter(Language.locale == localizer.locale_name).\
                     first()
                 lang_fk = language.id if language is not None else 1
+
+            # FILES!
+            # Check if the files need to be moved (from temporary directory) or
+            # renamed
+            if key == 'Files':
+                check_file_location_name(request, value)
 
             v = Value_Item(value=value)
             v.fk_language = lang_fk
