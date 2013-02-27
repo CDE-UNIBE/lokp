@@ -6,9 +6,9 @@ Ext.define('Lmkp.view.items.ItemPanel', {
     extend: 'Ext.panel.Panel',
 
     _addStatusIndicator: function(){
-        var status = this.contentItem.get('status');
+        var status = this.contentItem.get('status_id');
         switch(status){
-            case Lmkp.ts.msg('status_pending'):
+            case 1:
                 this.add({
                     bodyCls: 'notice',
                     bodyPadding: 5,
@@ -22,7 +22,7 @@ Ext.define('Lmkp.view.items.ItemPanel', {
                     margin: '3 3 0 3'
                 });
                 break;
-            case Lmkp.ts.msg('status_inactive'):
+            case 3:
                 this.add({
                     bodyCls: 'notice',
                     bodyPadding: 5,
@@ -37,7 +37,7 @@ Ext.define('Lmkp.view.items.ItemPanel', {
 
                 });
                 break;
-            case Lmkp.ts.msg('status_deleted'):
+            case 4:
                 this.add({
                     bodyCls: 'warning',
                     bodyPadding: 5,
@@ -52,7 +52,7 @@ Ext.define('Lmkp.view.items.ItemPanel', {
 
                 });
                 break;
-            case Lmkp.ts.msg('status_rejected'):
+            case 5:
                 this.add({
                     bodyCls: 'warning',
                     bodyPadding: 5,
@@ -67,7 +67,7 @@ Ext.define('Lmkp.view.items.ItemPanel', {
 
                 });
                 break;
-            case Lmkp.ts.msg('status_edited'):
+            case 6:
                 this.add({
                     bodyCls: 'notice',
                     bodyPadding: 5,

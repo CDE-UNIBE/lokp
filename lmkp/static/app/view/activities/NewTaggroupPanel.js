@@ -6,7 +6,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
 
     initComponent: function() {
         this.callParent(arguments);
-        
+
         var me = this;
 
         var keyCb = Ext.create('Ext.form.field.ComboBox', {
@@ -100,11 +100,11 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
     getKeyValue: function() {
         var value = this.getKeyField();
         if (value) {
-            return value.getValue();
+            return value.getSubmitValue();
         }
         return null;
     },
-    
+
     getInitialKey: function() {
         return this.initial_key;
     },
@@ -120,8 +120,8 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
     getValueValue: function() {
         var value = this.getValueField();
         // Treat empty string as null value
-        if (value && value.getValue() != '') {
-            return value.getValue();
+        if (value && value.getSubmitValue() != '') {
+            return value.getSubmitValue();
         }
         return null;
     },
@@ -187,11 +187,12 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
     },
 
     getNewValueField: function(record) {
+        var valueField;
 
         // try to find categories
         var selectionValues = record.get('store');
         if (selectionValues) {      // categories of possible values available, create ComboBox
-            var valueField = Ext.create('Ext.form.field.ComboBox', {
+            valueField = Ext.create('Ext.form.field.ComboBox', {
                 name: 'newtaggrouppanel_value',
                 store: selectionValues,
                 queryMode: 'local',
@@ -202,7 +203,7 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
         } else {                    // no categories available, create field based on xtype
             switch (record.get('xtype')) {
                 case "numberfield":
-                    var valueField = Ext.create('Ext.form.field.Number', {
+                    valueField = Ext.create('Ext.form.field.Number', {
                         name: 'newtaggrouppanel_value',
                         margin: '0 5 0 0'
                     });
@@ -211,8 +212,27 @@ Ext.define('Lmkp.view.activities.NewTaggroupPanel', {
                         valueField.validator = new Function('value', record.get('validator'));
                     }
                     break;
+                case "datefield":
+                    valueField = Ext.create('Ext.form.field.Date', {
+                        name: 'newtaggrouppanel_value',
+                        margin: '0 5 0 0',
+                        format: 'd.m.Y',
+                        emptyText: Lmkp.ts.msg('input-validation_date-format'),
+                        invalidText: Lmkp.ts.msg('input-validation_invalid-date')
+                    });
+                    // Add validation if available
+                    if (record.get('validator')) {
+                        valueField.validator = new Function('value', record.get('validator'));
+                    }
+                    break;
+                case "filefield":
+                    valueField = Ext.create('Lmkp.utils.FileUpload', {
+                        name: 'newtaggrouppanel_value',
+                        margin: '0 5 0 0'
+                    });
+                    break;
                 default:
-                    var valueField = Ext.create('Ext.form.field.Text', {
+                    valueField = Ext.create('Ext.form.field.Text', {
                         name: 'newtaggrouppanel_value',
                         margin: '0 5 0 0'
                     });

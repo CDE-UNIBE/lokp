@@ -3,6 +3,8 @@
 
 import os.path
 from os import sep as separator
+import mimetypes
+import re
 
 def locale_profile_directory_path(request):
     """
@@ -35,3 +37,66 @@ def codes_directory_path():
     translation
     """
     return "%s/documents/codes" % os.path.dirname(__file__)
+
+def upload_directory_path(request):
+    """
+    Returns the absolute path to the directory used for file uploads
+    """
+    if 'lmkp.file_upload_dir' in request.registry.settings:
+        return request.registry.settings['lmkp.file_upload_dir']
+    return None
+
+def upload_max_file_size(request):
+    """
+    Returns the maximum file size (in bytes) for uploads.
+    Default: 5000000 (5MB)
+    """
+    if 'lmkp.file_upload_max_size' in request.registry.settings:
+        try:
+            return int(request.registry.settings['lmkp.file_upload_max_size'])
+        except ValueError:
+            pass
+    return 5000000
+
+def valid_mime_extensions(request):
+    """
+    Returns the valid mime-types as well as the file extension for each.
+    """
+    if 'lmkp.file_mime_extensions' in request.registry.settings:
+        fme = request.registry.settings['lmkp.file_mime_extensions']
+
+        # Create a new dict which contains only the entries recognized as valid
+        # mime types by python's own mimetypes module.
+        vfme = {}
+        for mt in fme:
+            # Make sure that the mime type defined in the ini is valid.
+            try:
+                mimetypes.types_map[fme[mt]]
+            except KeyError:
+                continue
+
+            # Make sure that the extension defined in the ini is valid for its
+            # mime type
+            if fme[mt] not in mimetypes.guess_all_extensions(mt):
+                continue
+
+            # Copy it
+            vfme[mt] = fme[mt]
+
+        # Add special types by Internet Explorer
+        # http://msdn.microsoft.com/en-us/library/ms775147%28v=vs.85%29.aspx#_replace
+        if 'image/jpeg' in vfme:
+            vfme['image/pjpeg'] = '.jpg'
+        if 'image/png' in vfme:
+            vfme['image/x-png'] = '.png'
+
+        return vfme
+    
+    return {}
+
+def check_valid_uuid(uuid):
+    """
+    Check if a given uuid is valid
+    """
+    uuid4hex = re.compile('[0-9a-f-]{36}\Z', re.I)
+    return uuid4hex.match(uuid) is not None

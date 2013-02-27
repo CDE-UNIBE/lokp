@@ -1,5 +1,8 @@
 import logging
+import mimetypes
 
+from lmkp.config import upload_max_file_size
+from lmkp.config import valid_mime_extensions
 from lmkp.models.database_objects import A_Key
 from lmkp.models.database_objects import A_Value
 from lmkp.models.database_objects import Language
@@ -79,6 +82,7 @@ def ui_messages(request):
         'button_add-new-taggroup': _('button_add-new-taggroup', default='Add further information'),
         'button_add-time-filter': _('button_add-time-filter', default='Add time filter'),
         'button_back': _('button_back', default='Back'),
+        'button_browse': _('button_browse', default='Browse'),
         'button_cancel': _('button_cancel', default='Cancel'),
         'button_clear': _('button_clear', default='Clear'),
         'button_close': _('button_close', default='Close'),
@@ -100,7 +104,9 @@ def ui_messages(request):
         'button_ok': _('button_ok', default='OK'),
         'button_refresh': _('button_refresh', default='Refresh'),
         'button_review': _('button_review', default='Review'),
+        'button_save': _('button_save', default='Save'),
         'button_submit': _('button_submit', default='Submit'),
+        'button_upload': _('button_upload', default='Upload'),
         'button_yes': _('button_yes', default='Yes'),
 
         # Tooltips
@@ -108,6 +114,9 @@ def ui_messages(request):
         'tooltip_add-time-filter': _('tooltip_add-time-filter', default='Add a filter based on time'),
         'tooltip_compare': _('tooltip_compare', default='Compare'),
         'tooltip_close-window': _('tooltip_close-window', default='Close Window'),
+        'tooltip_delete-file': _('tooltip_delete-file', default='Delete file'),
+        'tooltip_download-file': _('tooltip_download-file', default='Download file'),
+        'tooltip_edit-file': _('tooltip_edit-file', default='Edit file'),
         'tooltip_filter-activate': _('tooltip_filter-activate', default='Click to activate this filter'),
         'tooltip_filter-delete': _('tooltip_filter-delete', default='Click to delete this filter'),
         'tooltip_link': _('tooltip_link', default='Permament link to current view'),
@@ -124,6 +133,8 @@ def ui_messages(request):
         'tooltip_review-involvement-not-possible': _('tooltip_review-involvement-not-possible', default='Involvement can not be reviewed. Click for more information.'),
         'tooltip_review-involvement-possible': _('tooltip_review-involvement-possible', default='Involvement can be reviewed'),
         'tooltip_submit-review': _('tooltip_submit-review', default='Submit Review'),
+        'tooltip_upload-new-file': _('tooltip_upload-new-file', default='Upload a new file'),
+        'tooltip_view-file': _('tooltip_view-file', default='View file'),
 
         # General GUI text
         'gui_anonymous': _('gui_anonymous', default='Anonymous'),
@@ -147,6 +158,7 @@ def ui_messages(request):
         'gui_overview': _('gui_overview', default='Overview'),
         'gui_paging-before': _('gui_paging-before', default='Page'),
         'gui_paging-after': _('gui_paging-after', default='of {0}'),
+        'gui_please-confirm': _('gui_please-confirm', default='Please confirm'),
         'gui_previous-version': _('gui_previous-version', default='Previous Version'),
         'gui_profile': _('gui_profile', default='Profile'),
         'gui_search': _('gui_search', default='Search'),
@@ -188,6 +200,7 @@ def ui_messages(request):
         'activities_pending-versions': _('activities_pending-versions', default='Pending versions of Deals'),
         'activities_pending-paging-message': _('activities_pending-paging-message', default='Displaying pending Deals {0} - {1} of {2}'),
         'activities_pending-paging-empty': _('activities_pending-paging-empty', default='No pending Deals to display'),
+        'activities_review-pending-versions': _('activities_review-pending-versions', default='This deal has pending changes. Click to review them in a popup window.'),
         'activities_review-versions': _('activities_review-versions', default='Review versions of Deal {0}'),
         'activities_title': _('activities_title', default='Deals'),
 
@@ -211,6 +224,7 @@ def ui_messages(request):
         'stakeholders_pending-versions': _('stakeholders_pending-versions', default='Pending versions of Stakeholders'),
         'stakeholders_pending-paging-message': _('stakeholders_pending-paging-message', default='Displaying pending Stakeholders {0} - {1} of {2}'),
         'stakeholders_pending-paging-empty': _('stakeholders_pending-paging-empty', default='No pending Stakeholders to display'),
+        'stakeholders_review-pending-versions': _('stakeholders_review-pending-versions', default='This stakeholder has pending changes. Click to review them in a popup window.'),
         'stakeholders_review-versions': _('stakeholders_review-versions', default='Review versions of Stakeholder {0}'),
         'stakeholders_search': _('stakeholders_search', default='Search Stakeholder'),
         'stakeholders_select-stakeholder': _('stakeholders_select-stakeholder', default='Select Stakeholder'),
@@ -223,6 +237,17 @@ def ui_messages(request):
         'comments_leave-comment': _('comments_leave-comment', default='Leave a comment'),
         'comments_singular': _('comments_singular', default='Comment'),
         'comments_title': _('comments_title', default='Comments'),
+
+        # Files
+        'files_confirm-delete': _('files_confirm-delete', default='Are your sure you want to delete the file {0}?'),
+        'files_edit-existing-file': _('files_edit-existing-file', default='Edit existing file'),
+        'files_file': _('files_file', default='File'),
+        'files_maximum-file-size': _('files_maximum-file-size', default='Maximum file size'),
+        'files_name': _('files_name', default='Name'),
+        'files_select-file': _('files_select-file', default='Select a file'),
+        'files_upload-new-file': _('files_upload-new-file', default='Upload a new file'),
+        'files_uploading': _('files_uploading', default='Uploading ...'),
+        'files_valid-extensions': _('files_valid-extensions', default='Valid file extensions'),
 
         # Moderator
         'moderator_approving-creates-new-version': _('moderator_approving-creates-new-version', default='Approving this version will create a new version. (further additional information to come)'),
@@ -275,7 +300,15 @@ def ui_messages(request):
         'administration_is-in-database': _('administration_is-in-database', default='Is in Database'),
         'administration_languages': _('administration_languages', default='Languages'),
         'administration_profiles': _('administration_profiles', default='Profiles'),
-        'administration_user-management': _('administration_user-management', default='User management')
+        'administration_user-management': _('administration_user-management', default='User management'),
+
+        # Input validations. These validations are defined in the YAML. In order
+        # for them to be translateable, they need to appear here.
+        'input-validation_date-format': _('input-validation_date-format', default='dd.mm.YYYY'),
+        'input-validation_invalid-date': _('input-validation_invalid-date', default='{0} is not a valid date - it must be in the format {1}'),
+        'input-validation_number-greater-than-0': _('input-validation_number-greater-than-0', default='This number must be greater than 0'),
+        'input-validation_percentage': _('input-validation_percentage', default='Percentage must be between 0 and 100'),
+        'input-validation_year': _('input-validation_year', default='The year must be a number value between 1900 and 2100'),
     }
 
     # Get the localizer
@@ -310,7 +343,10 @@ def ui_messages(request):
         'Country',                  # 2
         'Intended area (ha)',       # 3
         'Intention of Investment',  # 4
-        'Data source'               # 5
+        'Data source',              # 5
+        # Not needed for table but for special rendering of files tags
+        # The files also appear in protocol.py around line 1548 ...
+        'Files'                     # 6
     ]
     aKeysTranslateQuery = get_translated_db_keys(A_Key, aKeys, db_lang)
     aKeysTranslated = []
@@ -335,6 +371,8 @@ def ui_messages(request):
     uiMap['activity_db-key-intentionofinvestment'] = aKeysTranslated[4]
     uiMap['activity_db-key-datasource-original'] = aKeys[5]
     uiMap['activity_db-key-datasource'] = aKeysTranslated[5]
+    # For 'files', only the translated db-key is needed
+    uiMap['activity_db-key-files'] = aKeys[6]
 
     # Stakeholder keys: Must be exactly (!) the same as in global
     # stakeholder.yml
@@ -359,6 +397,24 @@ def ui_messages(request):
     uiMap['stakeholder_db-key-name'] = shKeysTranslated[0]
     uiMap['stakeholder_db-key-countryoforigin-original'] = shKeys[1]
     uiMap['stakeholder_db-key-countryoforigin'] = shKeysTranslated[1]
+
+    # Add known file extensions based on valid file types (defined in ini) to
+    # the translation JavaScript file so Ext can use them to build a regex
+    # expression to check file input on client side.
+    extensions = []
+    vme = valid_mime_extensions(request)
+    for fme in vme:
+        for known_extension in mimetypes.guess_all_extensions(fme):
+            if known_extension not in extensions: extensions.append(known_extension)
+    uiMap['files_valid-extensions-list'] = sorted(extensions)
+
+    # Also make the maximum file size available
+    maxfilesize = upload_max_file_size(request)
+    if maxfilesize < (1000*1000):
+        maxfilesize = '%s KB' % (maxfilesize / 1000)
+    else:
+        maxfilesize = '%s MB' % (maxfilesize / (1000*1000))
+    uiMap['files_maximum-size'] = maxfilesize
 
     # Define Lmkp.ts as class with static objects
     str = "Ext.define('Lmkp.ts',{\n"

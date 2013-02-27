@@ -32,6 +32,7 @@ Ext.define('Lmkp.controller.public.Main', {
     'ActivityConfig',
     'StakeholderGrid',
     'StakeholderConfig',
+    'Status'
     ],
 
     // Make the public.Map controller available in the whole instance
@@ -44,6 +45,11 @@ Ext.define('Lmkp.controller.public.Main', {
         // Get the config stores and load them
         this.getActivityConfigStore().load();
         this.getStakeholderConfigStore().load();
+
+        // When rendering the grid with A and SH, it is necessary to know the ID
+        // of the status 'pending'.
+        var statusStore = this.getStatusStore();
+        this.pendingStatusId = statusStore.find('db_name', 'pending') + 1;
 
         this.mapController = this.getController('public.Map');
         this.stringFunctions = Ext.create('Lmkp.utils.StringFunctions');
@@ -149,7 +155,7 @@ Ext.define('Lmkp.controller.public.Main', {
 
         var grid = this.getActivityTablePanel();
         var store = this.getActivityGridStore();
-        
+
         // Adds a beforeload action
         store.on('beforeload', function(store){
 
@@ -228,10 +234,10 @@ Ext.define('Lmkp.controller.public.Main', {
      * feature on map (only for Activities?)
      */
     onTableSelectionChange: function(model, selected) {
-    	
+
         if (selected && selected.length > 0) {
             var sel = selected[0];
-    		
+
             // Activity or Stakeholder?
             var otherStore = null;
             if (sel.modelName == 'Lmkp.model.Stakeholder') {
@@ -239,7 +245,7 @@ Ext.define('Lmkp.controller.public.Main', {
             } else if (sel.modelName == 'Lmkp.model.Activity') {
                 otherStore = this.getStakeholderGridStore();
             }
-            
+
             if (otherStore) {
                 // Update other grid panel
                 otherStore.syncByOtherId(sel.get('id'));
@@ -291,7 +297,7 @@ Ext.define('Lmkp.controller.public.Main', {
 
                 // Show Feature on the map
                 this.mapController.selectActivity(record);
-                
+
             } else if (type == 'stakeholder') {
                 // Show details window
                 w = Ext.create('Lmkp.view.stakeholders.Details',{
@@ -303,7 +309,7 @@ Ext.define('Lmkp.controller.public.Main', {
             }
         }
     },
-    
+
     onNewActivityButtonClick: function() {
         var me = this;
         var infoWindow = Ext.create('Lmkp.utils.MessageBox');
@@ -326,10 +332,10 @@ Ext.define('Lmkp.controller.public.Main', {
 
             // Check the current status of the record and add accordingly an
             // additional class to the td element
-            if(record.get("status") == Lmkp.ts.msg('status_pending')){
+            if(record.get("status_id") == me.pendingStatusId){
                 metaData.tdCls = "status-pending";
             }
-            
+
             if (value) {
                 return me.stringFunctions._shortenIdentifier(value);
             } else {
@@ -347,7 +353,7 @@ Ext.define('Lmkp.controller.public.Main', {
 
             // Check the current status of the record and add accordingly an
             // additional class to the td element
-            if(record.get("status") == Lmkp.ts.msg('status_pending')){
+            if(record.get("status_id") == me.pendingStatusId){
                 metaData.tdCls = "status-pending";
             }
 
@@ -491,12 +497,12 @@ Ext.define('Lmkp.controller.public.Main', {
      */
     _renderColumnMultipleValues: function(comp, dataIndex, ignored, digits) {
         var me = this;
-        
+
         comp.renderer = function(value, metaData, record) {
 
             // Check the current status of the record and add accordingly an
             // additional class to the td element
-            if(record.get("status") == Lmkp.ts.msg('status_pending')){
+            if(record.get("status_id") == me.pendingStatusId){
                 metaData.tdCls = "status-pending";
             }
 
