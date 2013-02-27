@@ -20,7 +20,12 @@ lmkp.use_js_builds = false
 lmkp.comments_url = http://localhost:3000/
 
 lmkp.file_upload_dir = /files
-lmkp.file_upload_max_size = 5000000 ; (bytes)
+lmkp.file_upload_max_size = 5000000 ; (in bytes)
+lmkp.file_mime_extensions = {
+    image/jpeg .jpg
+    image/png .png
+    image/gif .gif
+    }
 
 ; Specify the smtp server used to send mails.
 ; See also http://packages.python.org/pyramid_mailer/ for more options

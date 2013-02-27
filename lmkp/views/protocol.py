@@ -1033,14 +1033,17 @@ class Protocol(object):
                             taggroup_dict['tg_id'] == db_taggroup.tg_id):
                             # Check which tags we have to edit
                             for tag_dict in taggroup_dict['tags']:
-                                #TODO
-                                if 1 == 1:
-                                    # Yes, it is THIS tag
-                                    if tag_dict['op'] == 'delete':
-#                                        log.debug(
-#                                            "Tag is deleted (not copied) from taggroup."
-#                                        )
-                                        copy_tag = False
+                                # Make sure it is exactly this tag (same key)
+                                # and it is to be deleted.
+                                if (tag_dict['op'] == 'delete'
+                                    and db_tag.key.key and tag_dict['key']
+                                    and db_tag.key.key == tag_dict['key']):
+                                    
+#                                    log.debug(
+#                                        "Tag is deleted (not copied) from taggroup."
+#                                    )
+
+                                    copy_tag = False
 
                 # Create and append the new tag only if requested
                 if copy_tag:

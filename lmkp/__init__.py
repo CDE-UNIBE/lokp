@@ -16,6 +16,7 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.events import BeforeRender
 from pyramid.events import NewRequest
+from pyramid.settings import aslist
 from sqlalchemy import engine_from_config
 import transaction
 
@@ -24,6 +25,17 @@ def main(global_config, ** settings):
     """
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
+
+    # Transform the list of valid file mime extensions from the ini file into a
+    # python dict.
+    # http://pyramid.readthedocs.org/en/latest/narr/environment.html#adding-a-custom-setting
+    file_mime_extensions = {}
+    for fme in aslist(settings.get('lmkp.file_mime_extensions', {}), False):
+        fme_entry = fme.split(' ')
+        if len(fme_entry) != 2:
+            continue
+        file_mime_extensions[fme_entry[0]] = fme_entry[1]
+    settings['lmkp.file_mime_extensions'] = file_mime_extensions
 
     _update_admin_user(DBSession, settings)
 
