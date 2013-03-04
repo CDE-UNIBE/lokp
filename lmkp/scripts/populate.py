@@ -4,6 +4,7 @@ import transaction
 
 from sqlalchemy import engine_from_config
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import MultipleResultsFound
 
 from pyramid.paster import (
     get_appsettings,
@@ -113,7 +114,8 @@ def main(argv=sys.argv):
         admin_password = settings['lmkp.admin_password']
         admin_email = settings['lmkp.admin_email']
         user1 = _addIfNotExists_NoIDUnique(User(username='admin', password=admin_password, email=admin_email), User.username, 'admin')
-        user1.groups = [group1, group2, group3, group4]
+        if user1 is not None:
+            user1.groups = [group1, group2, group3, group4]
         # connected with profile1 (global)
         #user2 = _addIfNotExists_NoIDUnique(User(username='user2', password='pw', email='user2@cde.unibe.ch'), User.username, 'user2')
         #user2.groups.append(group2)
@@ -122,7 +124,8 @@ def main(argv=sys.argv):
         #user3.groups.append(group3)
         # Profile
         profile1 = _addIfNotExists_NoIDUnique(Profile(code='global', geometry=None), Profile.code, 'global')
-        profile1.users = [user1] #, user2]
+        if profile1 is not None:
+            profile1.users = [user1] #, user2]
 
         # institution_types
         it1 = _addIfNotExists_ID(Institution_Type(id=1, name='CSO'))
@@ -143,3 +146,5 @@ def _addIfNotExists_NoIDUnique(object, filterColumn, filterAttr):
         return q
     except NoResultFound:
         return object
+    except MultipleResultsFound:
+        return None
