@@ -275,7 +275,7 @@ def check_file_location_name(request, filevaluestring):
             # Check if the file needs to be moved. This is the case if the file
             # is found in the temporary upload directory.
 
-            extension = get_valid_file_extension(f_db.mime)
+            extension = get_valid_file_extension(request, f_db.mime)
             if extension is None:
                 # This should also never happen because files without valid mime
                 # type should not have been uploaded in the first place
@@ -302,22 +302,6 @@ def check_file_location_name(request, filevaluestring):
 
                 log.debug('Moved file %s from temporary folder to new location at %s.'
                     % (f_db.name, new_location))
-
-            # TODO
-            # Maybe renaming a file in the database should only happen after
-            # review. Maybe it is not necessary at all because the filename to
-            # display always comes from 'value' of tag.
-            """
-            # Check if the file was renamed
-            if f_db.name != filenames[i]:
-
-                # Update the filename
-                Session.query(File).\
-                    filter(File.identifier == fileidentifier).\
-                    update({'name': filenames[i]})
-
-                log.debug('Renamed file to %s' % filenames[i])
-            """
                 
 def get_file_hash(filepath, hexdigest=True):
     """

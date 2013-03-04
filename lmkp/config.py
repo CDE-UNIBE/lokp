@@ -48,15 +48,15 @@ def upload_directory_path(request):
 
 def upload_max_file_size(request):
     """
-    Returns the maximum file size (in bytes) for uploads.
-    Default: 5000000 (5MB)
+    Returns the maximum file size (in kilobytes) for uploads.
+    Default: 5120 (5MB)
     """
     if 'lmkp.file_upload_max_size' in request.registry.settings:
         try:
-            return int(request.registry.settings['lmkp.file_upload_max_size'])
+            return int(request.registry.settings['lmkp.file_upload_max_size'])*1024
         except ValueError:
             pass
-    return 5000000
+    return 5120*1024
 
 def valid_mime_extensions(request):
     """
