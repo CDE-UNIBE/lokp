@@ -410,10 +410,10 @@ def ui_messages(request):
 
     # Also make the maximum file size available
     maxfilesize = upload_max_file_size(request)
-    if maxfilesize < (1000*1000):
-        maxfilesize = '%s KB' % (maxfilesize / 1000)
+    if maxfilesize < (1024*1024):
+        maxfilesize = '%s KB' % (maxfilesize / 1024)
     else:
-        maxfilesize = '%s MB' % (maxfilesize / (1000*1000))
+        maxfilesize = '%s MB' % round(maxfilesize / (1024*1024.0), 1)
     uiMap['files_maximum-size'] = maxfilesize
 
     # Define Lmkp.ts as class with static objects

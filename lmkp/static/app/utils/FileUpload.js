@@ -62,10 +62,14 @@ Ext.define('Lmkp.utils.FileUpload', {
         var fileObjects = [];
         var filepanels = this.query('panel[name=filepanelwithcontent]');
         for (var fp in filepanels) {
-            fileObjects.push({
-                name: filepanels[fp].fileName,
-                identifier: filepanels[fp].fileIdentifier
-            });
+            var filenamefield = filepanels[fp].down('textfield[name=filepanel_filename]');
+            var filename = filenamefield ? filenamefield.getSubmitValue() : null;
+            if (filename != null) {
+                fileObjects.push({
+                    name: filename,
+                    identifier: filepanels[fp].fileIdentifier
+                });
+            }
         }
 
         // Sort the objects by identifier
@@ -83,7 +87,7 @@ Ext.define('Lmkp.utils.FileUpload', {
     },
 
     /**
-     * Function to add a single file panel
+     * Function to add a single file panel with an existing file
      */
     addSingleFilePanel: function(fileName, fileIdentifier) {
         var me = this;
@@ -92,7 +96,6 @@ Ext.define('Lmkp.utils.FileUpload', {
             name: 'filepanelwithcontent',
             // Store the values to the top panel as well to make them accessible
             // more easily
-            fileName: fileName,
             fileIdentifier: fileIdentifier,
             border: 0,
             layout: {
@@ -100,10 +103,10 @@ Ext.define('Lmkp.utils.FileUpload', {
             },
             items: [
                 {
-                    xtype: 'container',
-                    name: 'filepanel_filename',
-                    html: fileName,
-                    flex: 1
+                    xtype: 'textfield',
+                    flex: 1,
+                    value: fileName,
+                    name: 'filepanel_filename'
                 }, {
                     xtype: 'container',
                     defaults: {
@@ -134,28 +137,18 @@ Ext.define('Lmkp.utils.FileUpload', {
                             }
                         }, {
                             xtype: 'button',
-                            iconCls: 'button-edit-file',
-                            tooltip: Lmkp.ts.msg('tooltip_edit-file'),
-                            handler: function() {
-                                var fp = this.up('panel[name=filepanelwithcontent]');
-                                if (fp && fp.fileIdentifier && fp.fileName) {
-                                    var win = me.editUploadWindow(
-                                        fp.fileName, fp.fileIdentifier
-                                    );
-                                    win.show();
-                                }
-                            }
-                        }, {
-                            xtype: 'button',
                             iconCls: 'button-delete-file',
                             tooltip: Lmkp.ts.msg('tooltip_delete-file'),
+                            fileName: fileName,
                             handler: function() {
                                 var fp = this.up('panel[name=filepanelwithcontent]');
-                                if (fp && fp.fileIdentifier && fp.fileName) {
+                                var filenamefield = fp.down('textfield[name=filepanel_filename]');
+                                var filename = filenamefield ? filenamefield.getSubmitValue() : null;
+                                if (fp && fp.fileIdentifier && filename) {
                                     Ext.create('Lmkp.utils.MessageBox').confirm(
                                         Lmkp.ts.msg('gui_please-confirm'),
                                         Lmkp.ts.msg('files_confirm-delete')
-                                            .replace('{0}', '<b>'+fp.fileName+'</b>'),
+                                            .replace('{0}', '<b>'+filename+'</b>'),
                                         function(btn) {
                                             if (btn === 'yes') {
                                                 me.removeSingleFilePanel(fp.fileIdentifier);
@@ -179,78 +172,6 @@ Ext.define('Lmkp.utils.FileUpload', {
         if (filepanel) {
             this.remove(filepanel);
         }
-    },
-
-    /**
-     * Function to replace the values of a file panel, for example after the
-     * filename was edited.
-     */
-    updateSingleFilePanel: function(fileName, fileIdentifier) {
-        var filepanel = this._getFilePanelByIdentifier(fileIdentifier);
-        if (filepanel) {
-            filepanel.fileName = fileName;
-            var displayField = filepanel.down('container[name=filepanel_filename]');
-            if (displayField) {
-                displayField.update(fileName);
-            }
-        }
-    },
-
-    /**
-     * Show a window to edit a file, (so far) only filename can be edited.
-     */
-    editUploadWindow: function(fileName, fileIdentifier) {
-        var me = this;
-        var win = Ext.create('Ext.window.Window', {
-            title: Lmkp.ts.msg('files_edit-existing-file'),
-            layout: 'fit',
-            items: [
-                {
-                    xtype: 'form',
-                    bodyPadding: 10,
-                    border: false,
-                    modal: true,
-                    defaults: {
-                        anchor: '100%',
-                        allowBlank: false
-                    },
-                    items: [
-                        {
-                            xtype: 'textfield',
-                            name: 'filename',
-                            fieldLabel: Lmkp.ts.msg('files_name'),
-                            value: fileName,
-                            maxLength: 500
-                        }
-                    ],
-                    buttons: [
-                        {
-                            text: Lmkp.ts.msg('button_close'),
-                            handler: function() {
-                                win.close();
-                            }
-                        }, '->', {
-                            text: Lmkp.ts.msg('button_save'),
-                            handler: function() {
-                                var form = this.up('form').getForm();
-                                if (form.isValid()) {
-                                    // Get the new filename and replace it in
-                                    // the filepanel
-                                    var values = form.getValues();
-                                    me.updateSingleFilePanel(
-                                        values.filename,
-                                        fileIdentifier
-                                    );
-                                    win.close();
-                                }
-                            },
-                            margin: 5
-                        }
-                    ]
-                }
-            ]
-        });
-        return win;
     },
 
     /**
