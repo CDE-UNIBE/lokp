@@ -32,7 +32,7 @@ principals = effective_principals(request)
 
 <div id="loading-mask" style="width: 100%; height: 100%;">
     <div style="position: absolute; top: 50%; right: 50%">
-        <img src="${request.static_url('lmkp:static/img/spinner.gif')}" alt="${_('gui_loading')}"/>
+        <img src="${request.static_url('lmkp:static/img/spinner.gif')}" alt="${_('Loading ...')}"/>
     </div>
 </div>
 <div id="main-div"></div>
