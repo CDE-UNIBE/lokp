@@ -53,8 +53,7 @@ def file_upload(request):
         file = request.POST['file'].file
         filetype = request.POST['file'].type
     except:
-        ret['msg'] = _('server-error_not-all-post-values',
-            default='Not all necessary values were provided.')
+        ret['msg'] = _('Not all necessary values were provided.')
         valid = False
 
     if (filename is not None and file is not None and filetype is not None
@@ -65,24 +64,21 @@ def file_upload(request):
             upload_path = upload_directory_path(request)
             if upload_path is None or not os.path.exists(upload_path):
                 valid = False
-                ret['msg'] = _('server-error_files-no-upload-directory',
-                    default='Upload directory not specified or not found.')
+                ret['msg'] = _('Upload directory not specified or not found.')
 
         # Check filetype
         if valid is True:
             fileextension = get_valid_file_extension(request, filetype)
             if fileextension is None:
                 valid = False
-                ret['msg'] = _('server-error_invalid-file-type',
-                    default='File type is not valid.')
+                ret['msg'] = _('File type is not valid.')
 
         # Check filesize
         if valid is True:
             size = get_file_size(file)
             if size > upload_max_file_size(request):
                 valid = False
-                ret['msg'] = _('server-error_uploaded-file-too-big',
-                    default='File is too big.')
+                ret['msg'] = _('File is too big.')
 
         if valid is True:
             # Do the actual file processing
@@ -148,8 +144,7 @@ def file_upload(request):
             ret['filename'] = clean_filename
             ret['fileidentifier'] = str(file_identifier)
             
-            ret['msg'] = _('server-success_files-upload-successful',
-                default='File was successfully uploaded')
+            ret['msg'] = _('File was successfully uploaded')
             ret['success'] = True
 
     localizer = get_localizer(request)
