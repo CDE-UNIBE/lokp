@@ -375,7 +375,6 @@ def language_store(request):
 def edit_translation(request):
     success = False
     msg = 'Translation not successful'
-    print request.params
     if 'original' and 'translation' and 'language' and 'keyvalue' and 'item_type' in request.params:
         # find language
         language = Session.query(Language).filter(Language.locale == request.params['language']).all()
