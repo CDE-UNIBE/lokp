@@ -11,15 +11,12 @@ Ext.define('Lmkp.view.moderation.Main', {
     border: 0,
     defaults: {
         border: 0,
-        frame: false,
-        bodyPadding: 5
+        frame: false
     },
     items: [
         {
-            title: 'Overview',
-                xtype: 'lo_moderationoverviewtab'
+            xtype: 'lo_moderationoverviewtab'
         }, {
-            title: 'Show Pending',
             xtype: 'lo_moderationpendingtab',
             itemId: 'pendingtab'
         }

@@ -128,10 +128,27 @@ div.login {
     margin-top: 5px;
     font-family: Arial, sans-serif;
     font-size: 12px;
+    text-align: center;
 }
 
 div.login-warning {
     background-color: #F68E1D;
+}
+
+div.demo-instructions {
+    border: 1px solid #495968;
+    padding: 10px;
+    width: 600px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    margin-top: 25px;
+    background-color: #ECEFF2;
+    color: #495968;
+}
+div.demo-instructions h3 {
+    margin-top: 0;
+    font-family: "Myriad Pro","Myriad Web Pro Regular","Lucida Grande",Geneva,Trebuchet MS,sans-serif;
 }
 
 fieldset.simple_login {
@@ -200,19 +217,70 @@ div.olLayerGooglePoweredBy
 #header-div {
     float: left;
     width: 100%;
+    padding: 10px;
+    color: #495968;
 }
-#title-div {
-    float: left;
-    margin-right: 200px;
+#header-div h1 {
+    font-family: "Myriad Pro","Myriad Web Pro Regular","Lucida Grande",Geneva,Trebuchet MS,sans-serif;
+    font-size: 16px;
 }
 #logo-div {
     float: right;
     width: 100px;
-    margin-left: -200px;
+    height: 100px;
+    margin-left: 10px;
+    overflow: hidden;
 }
 
 td.status-pending {
     /* Add a light-salmon background to pending versions in the activtiy grid */
     background-color: #ffa07a !important;
     font-style: italic !important;
+}
+
+a.file-view-button {
+    width: 16px !important;
+    height: 16px;
+    background-image: url("/static/img/eye.png") !important;
+    text-decoration: none;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+a.file-download-button {
+    width: 16px !important;
+    height: 16px;
+    background-image: url("/static/img/disk.png") !important;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.button-view-file {
+    width: 16px !important;
+    height: 16px !important;
+    background-image: url("/static/img/eye.png") !important;
+}
+
+.button-download-file {
+    width: 16px !important;
+    height: 16px !important;
+    background-image: url("/static/img/disk.png") !important;
+}
+
+.button-edit-file {
+    width: 16px !important;
+    height: 16px !important;
+    background-image: url("/static/img/pencil.png") !important;
+}
+
+.button-delete-file {
+    width: 16px !important;
+    height: 16px !important;
+    background-image: url("/static/img/cancel.png") !important;
+}
+
+.button-add-file {
+    width: 16px !important;
+    height: 16px !important;
+    background-image: url("/static/img/add.png") !important;
 }

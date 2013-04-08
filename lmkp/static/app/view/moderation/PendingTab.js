@@ -17,23 +17,26 @@ Ext.define('Lmkp.view.moderation.PendingTab', {
         flex: 0.5,
         border: 0
     },
+
+    title: Lmkp.ts.msg('gui_show-pending-versions'),
     
     items: [
         {
-            title: 'Pending Activities',
+            title: Lmkp.ts.msg('activities_pending-versions'),
             xtype: 'gridpanel',
             itemId: 'pendingActivityGridPanel',
             store: 'PendingActivityGrid',
             columns: [
                 {
-                    header: 'ID',
+                    header: Lmkp.ts.msg('gui_id'),
                     dataIndex: 'id',
-                    flex: 1
+                    flex: 1,
+                    name: 'identifierColumn'
                 }, {
-                    header: 'Latest edit',
+                    header: Lmkp.ts.msg('gui_last-change'),
                     dataIndex: 'timestamp'
                 }, {
-                    header: 'Versions pending',
+                    header: Lmkp.ts.msg('gui_versions-pending'),
                     dataIndex: 'pending_count'
                 }, {
                     xtype: 'templatecolumn',
@@ -53,23 +56,24 @@ Ext.define('Lmkp.view.moderation.PendingTab', {
             displayInfo: true,
             beforePageText: Lmkp.ts.msg('gui_paging-before'),
             afterPageText: Lmkp.ts.msg('gui_paging-after'),
-            displayMsg: 'Displaying pending Activities {0} - {1} of {2}', // TODO
-            emptyMsg: '<b>' + 'No pending Activities to display' + '</b>' // TODO
+            displayMsg: Lmkp.ts.msg('activities_pending-paging-message'),
+            emptyMsg: '<b>' + Lmkp.ts.msg('activities_pending-paging-empty') + '</b>'
         }, {
-            title: 'Pending Stakeholders',
+            title: Lmkp.ts.msg('stakeholders_pending-versions'),
             xtype: 'gridpanel',
             itemId: 'pendingStakeholderGridPanel',
             store: 'PendingStakeholderGrid',
             columns: [
                 {
-                    header: 'ID',
+                    header: Lmkp.ts.msg('gui_id'),
                     dataIndex: 'id',
-                    flex: 1
+                    flex: 1,
+                    name: 'identifierColumn'
                 }, {
-                    header: 'Latest edit',
+                    header: Lmkp.ts.msg('gui_last-change'),
                     dataIndex: 'timestamp'
                 }, {
-                    header: 'Versions pending',
+                    header: Lmkp.ts.msg('gui_versions-pending'),
                     dataIndex: 'pending_count'
                 }, {
                     xtype: 'templatecolumn',
@@ -89,8 +93,8 @@ Ext.define('Lmkp.view.moderation.PendingTab', {
             displayInfo: true,
             beforePageText: Lmkp.ts.msg('gui_paging-before'),
             afterPageText: Lmkp.ts.msg('gui_paging-after'),
-            displayMsg: 'Displaying pending Stakeholders {0} - {1} of {2}', // TODO
-            emptyMsg: '<b>' + 'No pending Stakeholders to display' + '</b>' // TODO
+            displayMsg: Lmkp.ts.msg('stakeholders_pending-paging-message'),
+            emptyMsg: '<b>' + Lmkp.ts.msg('stakeholders_pending-paging-empty') + '</b>'
         }
     ]
 });

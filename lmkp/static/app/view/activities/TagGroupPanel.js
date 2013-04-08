@@ -49,17 +49,17 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
 
                 // Add buttons to edit TagGroup
                 if (this.editable) {
-                	me.addDocked({
-                		dock: 'top',
-                		xtype: 'toolbar',
-                		items: ['->',
-                			{
-		                        name: 'editTaggroup',
-		                        text: Lmkp.ts.msg('button_edit'),
-		                        selected_taggroup: this.taggroup
-                			}
-                		]
-                	});
+                    me.addDocked({
+                        dock: 'top',
+                        xtype: 'toolbar',
+                        items: ['->',
+                            {
+                            name: 'editTaggroup',
+                            text: Lmkp.ts.msg('button_edit'),
+                            selected_taggroup: this.taggroup
+                            }
+                        ]
+                    });
                 }
                 
             } else {
@@ -74,6 +74,32 @@ Ext.define('Lmkp.view.activities.TagGroupPanel', {
     },
 
     _getTagPanel: function(key, value, is_main_tag) {
+                
+        // FILES
+        // Tags with key == 'Files' need to be rendered separately
+        if (Lmkp.ts.msg('activity_db-key-files') == key) {
+            var values = value.split(',');
+            value = '';
+            for (var v in values) {
+                var cv = values[v].split('|');
+                if (cv.length == 2) {
+                    var filename = cv[0];
+                    var identifier = cv[1];
+                    // Show the filename
+                    value += filename;
+                    // Show a link to view the file
+                    var view_url = '/files/view/' + identifier;
+                    var view_title = Lmkp.ts.msg('tooltip_view-file');
+                    value += '&nbsp;<a class="file-view-button" title="' + view_title + '" href="' + view_url + '" target="_blank">&nbsp;</a>'
+                    // Show a link to download the file
+                    var download_url = 'files/download/' + identifier;
+                    var download_title = Lmkp.ts.msg('tooltip_download-file');
+                    value += '&nbsp;<a class="file-download-button" title="' + download_title + '" href="' + download_url + '" target="_blank">&nbsp;</a>'
+                    value += '</br>';
+                }
+            }
+        }
+
         return {
             name: is_main_tag ? 'main_tag_panel' : 'tag_panel',
             xtype: 'displayfield',

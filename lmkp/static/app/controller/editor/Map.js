@@ -118,6 +118,7 @@ Ext.define('Lmkp.controller.editor.Map', {
             unpinnable: false,
             draggable: true,
             layout: 'fit',
+            width: 300,
             items: [
             {
                 xtype: 'form',

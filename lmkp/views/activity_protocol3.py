@@ -749,98 +749,68 @@ class ActivityProtocol3(Protocol):
         # @TODO: do it!
         timestamp_filter = None
 
+        # TODO: Status filter ?
+        """
         # Apply status filter (only if timestamp filter is not set)
         if status_filter is not None and timestamp_filter is None:
             relevant_activities = relevant_activities.\
                 filter(Activity.fk_status.in_(status_filter))
+        """
 
-        # If logged in and it is not a public query, add pending versions by
-        # current user to selection. If moderator, add all pending versions
-        # which are within user's profile(s) and within spatial extent.
+        # Decide which version a user can see.
+        # - Public (not logged in) always see active versions.
+        # - Logged in users see their own pending versions, as long as they are
+        #   newer than the active version.
+        # - Moderators see their own and other pending versions if they are
+        #   within their profile, as long as they are newer than the active
+        #   version.
+
         if logged_in and public_query is False:
+            # Logged in
 
-            # It is necessary to first find out if there are Activities pending
-            # and if yes, which is the latest version
-            latest_pending_activities = self.Session.query(
-                                                           Activity.activity_identifier,
-                                                           func.max(Activity.version).label('max_version')
-                                                           ).\
+            # Find the latest version for each Activity, which is either ...
+            latest_visible_version = self.Session.query(
+                    Activity.activity_identifier.label('identifier'),
+                    func.max(Activity.version).label('max_version')
+                ).\
                 join(Changeset)
 
-            #TODO: could this be done easier? (max_version filter first?)
-            # Only show pending items if there isn't a more recent active version
-            if is_moderator:
-                latest_pending_activities = latest_pending_activities.\
-                    filter(
-                        or_(Activity.fk_status == 1, Activity.fk_status == 2)
-                    )
-            else:
-                latest_pending_activities = latest_pending_activities.\
-                    filter(
-                        or_(
-                            and_(
-                                Activity.fk_status == 1,
-                                Changeset.fk_user == request.user.id
-                            ),
-                            Activity.fk_status == 2
-                        )
-                    )
+            # ... active
+            # ... or is pending and has changes by the current user
+            visible_version_filters = [
+                Activity.fk_status == 2,
+                and_(
+                    Activity.fk_status == 1,
+                    Changeset.fk_user == request.user.id
+                )
+            ]
 
-            latest_pending_activities = latest_pending_activities.\
-                group_by(Activity.activity_identifier).\
+            # ... or (for moderators only) ...
+            if is_moderator:
+                # ... is pending and lies within the profile
+                visible_version_filters.append(
+                    and_(
+                        Activity.fk_status == 1,
+                        self._get_spatial_moderator_filter(request)
+                    )
+                )
+
+            latest_visible_version = latest_visible_version.\
+                filter(or_(* visible_version_filters)).\
+                group_by(Activity.identifier).\
                 subquery()
 
-            # Collect other information about pending Activities (order, ...)
-            pending_activities = self.Session.query(
-                                                    Activity.id.label('order_id'),
-                                                    order_query.c.value.label('order_value'),
-                                                    Activity.fk_status,
-                                                    Activity.activity_identifier
-                                                    ).\
-                join(latest_pending_activities, and_(
-                     latest_pending_activities.c.max_version == Activity.version,
-                     latest_pending_activities.c.activity_identifier
-                     == Activity.activity_identifier
-                     ))
+            relevant_activities = relevant_activities.\
+                join(latest_visible_version, and_(
+                    latest_visible_version.c.identifier == Activity.identifier,
+                    latest_visible_version.c.max_version == Activity.version
+                ))
 
-            # Join pending Activities with TagGroups and filters to find out if
-            # they are to be displayed at all
-            if filter_subqueries is not None:
-                # If a filter was provided, join with filtered subqueries
-                pending_activities = pending_activities.\
-                    join(filter_subqueries,
-                         filter_subqueries.c.a_filter_id == Activity.id)
-            else:
-                # If no filter was provided, simply join with A_Tag_Group (outer
-                # join to also capture empty Items)
-                pending_activities = pending_activities.\
-                    outerjoin(A_Tag_Group)
-
-            # Filter spatially
-            pending_activities = pending_activities.\
-                filter(self._get_bbox_filter(request))
-
-            # If moderator, also filter by his profile extents.
-            if is_moderator:
-                pending_activities = pending_activities.\
-                    filter(or_(self._get_spatial_moderator_filter(request),
-                        Changeset.fk_user == request.user.id))
-
-            # Join pending Activities with order and group
-            pending_activities = pending_activities.\
-                outerjoin(order_query, order_query.c.id == Activity.id).\
-                group_by(Activity.activity_identifier, Activity.id,
-                         order_query.c.value)
-
-            # Filter out the active Activities if they have a pending version.
-            # Then union with pending Activities.
-            relevant_activities = relevant_activities.filter(
-                                                             not_(Activity.activity_identifier.in_(
-                                                             select([pending_activities.\
-                                                             subquery().c.activity_identifier])
-                                                             ))
-                                                             )
-            relevant_activities = pending_activities.union(relevant_activities)
+        else:
+            # Public (not logged in): show only active
+            # TODO: make this more dynamic?
+            relevant_activities = relevant_activities.\
+                filter(Activity.fk_status == 2)
 
         relevant_activities = relevant_activities.\
             group_by(Activity.id, order_query.c.value, Activity.fk_status,
@@ -1173,6 +1143,18 @@ class ActivityProtocol3(Protocol):
                       key_translation.c.key_original_id == A_Key.id).\
             outerjoin(value_translation,
                       value_translation.c.value_original_id == A_Value.id)
+
+        # Do the ordering again: A first ordering was done when creating the
+        # relevant activities. However, it is necessary to restore this ordering
+        # after all the additional data was added through this query.
+        order_query, order_numbers = self._get_order(
+            request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value
+        )
+        if order_query is not None:
+            if self._get_order_direction(request) == 'DESC':
+                query = query.order_by(desc(relevant_activities.c.order_value))
+            else:
+                query = query.order_by(asc(relevant_activities.c.order_value))
 
         if metadata:
             query = query.add_columns(

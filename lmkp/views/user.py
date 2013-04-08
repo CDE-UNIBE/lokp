@@ -48,17 +48,33 @@ def user_profile_json(request):
 @view_config(route_name='user_update', renderer='json')
 def user_update(request):
     """
-    This function updates user information and sends back a JSON with 'success' (true/false) and 'msg'
-    User must be logged in, information can only be changed by the user himself.
+    This function updates user information and sends back a JSON with 'success'
+    (true/false) and 'msg'
+    User must be logged in, information can only be changed by the user himself
+    and if application is not running in demo mode and username is in ignored.
     """
     ret = {'success': False}
-    
+
+    # List of usernames which cannot be changed when in demo mode
+    ignored_demo_usernames = ['editor', 'moderator']
+    mode = None
+    if 'lmkp.mode' in request.registry.settings:
+        if str(request.registry.settings['lmkp.mode']).lower() == 'demo':
+            mode = 'demo'
+
     username = request.POST['username'] if 'username' in request.POST else None
     email = request.POST['email']  if 'email' in request.POST else None
     new_password = request.POST['new_password1'] if 'new_password1' in request.POST else None
     old_password = request.POST['old_password'] if 'old_password' in request.POST else None
     
     if username and (email or (new_password and old_password)):
+
+        # Return error message if in demo mode and username one of the ignored
+        if (mode is not None and mode == 'demo'
+            and username in ignored_demo_usernames):
+            ret['msg'] = 'You are not allowed to change this user in demo mode.'
+            return ret
+
         # try to find requested user
         try:
             user = Session.query(User).filter(User.username == username).one()
