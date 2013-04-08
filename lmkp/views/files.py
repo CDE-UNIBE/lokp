@@ -277,7 +277,7 @@ def check_file_location_name(request, filevaluestring):
                 continue
 
             # Put together the filename
-            filename = '%s.%s' % (fileidentifier, extension)
+            filename = '%s%s' % (fileidentifier, extension)
 
             # Try to find the file in the temporary directory
             upload_path = upload_directory_path(request)
