@@ -13,6 +13,9 @@ Ext.define('Lmkp.model.Stakeholder', {
         name: 'status',
         type: 'string'
     }, {
+        name: 'status_id',
+        type: 'int'
+    }, {
         name: 'timestamp',
         type: 'string'
     }, {

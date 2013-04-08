@@ -13,7 +13,7 @@ def forbidden_view(request):
     
     # user is not logged in: show login form
     else:
-        came_from = request.current_route_url()
+        came_from = request.path
         warning = _(u"Please login to access:")
         warning += "<br/>%s" % came_from
         return render_to_response('lmkp:templates/login_form.mak', {'came_from': came_from, 'warning': warning}, request)

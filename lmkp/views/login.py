@@ -33,7 +33,7 @@ class LoginView(BaseView):
         Login controller
         """
         login_url = self.request.route_url('login')
-        referrer = self.request.url
+        referrer = self.request.path
         if referrer == login_url:
             # never use the login form itself as came_from
             referrer = '/'

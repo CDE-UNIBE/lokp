@@ -272,7 +272,7 @@ def review(request):
         filter(profile_filters).\
         first()
     if activity is None:
-        raise HTTPUnauthorized(_('The Activity was not found or is not situated within the user\'s profiles'))
+        raise HTTPUnauthorized(_('The Deal was not found or is not situated within the user\'s profiles'))
 
     # If review decision is 'approved', make sure that all mandatory fields are 
     # there, except if it is to be deleted
@@ -336,17 +336,18 @@ def create(request):
         response['data'] = [i.to_json() for i in ids]
         response['total'] = len(response['data'])
         response['created'] = True
-        response['msg'] = 'Success message'
+        response['msg'] = _('The Deal was successfully created.')
         request.response.status = 201
     else:
         response['created'] = False
-        response['msg'] = _('No Activity was created.')
+        response['msg'] = _('No Deal was created.')
         request.response.status = 200
         
     return response
 
 #@view_config(route_name='taggroups_model', renderer='string')
 def model(request):
+    # TODO: This is probably not needed anymore.
     """
     Controller that returns a dynamically generated JavaScript that builds the
     client-side TagGroup model, which is related (belongsTo / hasMany) to the 

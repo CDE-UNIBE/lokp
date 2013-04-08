@@ -20,6 +20,7 @@ from lmkp.models.database_objects import Stakeholder
 from lmkp.models.database_objects import Stakeholder_Role
 from lmkp.models.database_objects import Status
 from lmkp.views.config import merge_profiles
+from lmkp.views.files import check_file_location_name
 from lmkp.models.database_objects import User
 from shapely import wkb
 from sqlalchemy.sql.expression import cast
@@ -606,7 +607,7 @@ class Protocol(object):
         involvements
         """
 
-        #TODO: Add translation to server responses
+        _ = request.translate
 
         reviewed_involvements = []
         json_diff = None
@@ -639,18 +640,18 @@ class Protocol(object):
             config_yaml = 'stakeholder.yml'
             otherMappedClass = Activity
         else:
-            ret['msg'] = 'Unknown object to review.'
+            ret['msg'] = _('Unknown object to review.')
             return ret
 
         # Collect POST values
         review_decision = request.POST['review_decision']
         if review_decision is None:
-            ret['msg'] = 'Review decision not provided.'
+            ret['msg'] = _('Review decision not provided.')
             return ret
         try:
             review_decision = int(review_decision)
         except:
-            ret['msg'] = 'Unknown review decision'
+            ret['msg'] = _('Unknown review decision')
             return ret
         review_comment = None
         if (request.POST['comment_textarea'] != ''):
@@ -722,9 +723,9 @@ class Protocol(object):
     
                 if reviewPossible is not True:
                     if reviewPossible == -2:
-                        ret['msg'] = 'At least one of the involved Stakeholders cannot be reviewed. Click on the icon next to the involvement for further details.'
+                        ret['msg'] = _('At least one of the involved Stakeholders cannot be reviewed. Click on the icon next to the involvement for further details.')
                     elif reviewPossible == -3:
-                        ret['msg'] = 'At least one of the involved Activities cannot be reviewed. Click on the icon next to the involvement for further details.'
+                        ret['msg'] = _('At least one of the involved Activities cannot be reviewed. Click on the icon next to the involvement for further details.')
                     return ret
 
             # Do a review for all the involvements
@@ -760,7 +761,7 @@ class Protocol(object):
                         first()
 
                 if sh is None:
-                    ret['msg'] = 'One of the Stakeholders to review was not found.'
+                    ret['msg'] = _('One of the Stakeholders to review was not found.')
                     return ret
 
                 log.debug('Reviewing involvement: Stakeholder with identifier %s, version %s and status %s'
@@ -854,7 +855,7 @@ class Protocol(object):
                 # Recalculation of the item is needed.
 
                 if ref_version is None:
-                    ret['msg'] = 'No active version was found to base the review upon. Try to review an earlier version first.'
+                    ret['msg'] = _('No active version was found to base the review upon. Try to review an earlier version first.')
                     return ret
 
                 # Read the configuration
@@ -884,7 +885,7 @@ class Protocol(object):
                             relevant_diff = diff
 
                 if relevant_diff is None:
-                    ret['msg'] = 'The diff seems to be incorrect (identifier not found)'
+                    ret['msg'] = _('The diff seems to be incorrect (identifier not found)')
                     return ret
 
                 # Set the reference version to 'inactive'
@@ -932,7 +933,7 @@ class Protocol(object):
             item.fk_status = statusArray.index('rejected') + 1
 
         else:
-            ret['msg'] = 'Unknown review decision'
+            ret['msg'] = _('Unknown review decision')
             return ret
 
         # Add review stuff
@@ -944,7 +945,7 @@ class Protocol(object):
             return item
 
         ret['success'] = True
-        ret['msg'] = 'Review successful.'
+        ret['msg'] = _('Review successful.')
         return ret
 
     def _apply_diff(self, request, mappedClass, uid, version, diff, item, db):
@@ -1032,14 +1033,17 @@ class Protocol(object):
                             taggroup_dict['tg_id'] == db_taggroup.tg_id):
                             # Check which tags we have to edit
                             for tag_dict in taggroup_dict['tags']:
-                                #TODO
-                                if 1 == 1:
-                                    # Yes, it is THIS tag
-                                    if tag_dict['op'] == 'delete':
-#                                        log.debug(
-#                                            "Tag is deleted (not copied) from taggroup."
-#                                        )
-                                        copy_tag = False
+                                # Make sure it is exactly this tag (same key)
+                                # and it is to be deleted.
+                                if (tag_dict['op'] == 'delete'
+                                    and db_tag.key.key and tag_dict['key']
+                                    and db_tag.key.key == tag_dict['key']):
+                                    
+#                                    log.debug(
+#                                        "Tag is deleted (not copied) from taggroup."
+#                                    )
+
+                                    copy_tag = False
 
                 # Create and append the new tag only if requested
                 if copy_tag:
@@ -1545,6 +1549,12 @@ class Protocol(object):
                     filter(Language.locale == localizer.locale_name).\
                     first()
                 lang_fk = language.id if language is not None else 1
+
+            # FILES!
+            # Check if the files need to be moved (from temporary directory) or
+            # renamed
+            if key == 'Files':
+                check_file_location_name(request, value)
 
             v = Value_Item(value=value)
             v.fk_language = lang_fk

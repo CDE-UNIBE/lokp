@@ -16,7 +16,7 @@ def lao_read_stakeholders2(request):
     # optional fields
     attributeMap = {
         2: 'Name',
-        3: 'Country'
+        3: 'Country of origin'
     }
 
     # Map the country names from the input file to the defined countries in the
@@ -99,9 +99,9 @@ def lao_read_activities2(request):
     # optional fields
     attributeMap = {
         2: 'Name', # name_of_co
-        59: 'Year of agreement', # Date_Sign
+#        59: 'Year of agreement', # Date_Sign
         117: 'Negotiation Status', # txt_status
-        127: 'Contract area (ha)', # Area_F
+        127: 'Intended area (ha)', # Area_F
         135: 'Intention of Investment' # Subsector1
     }
 
@@ -141,26 +141,32 @@ def lao_read_activities2(request):
                     join(SH_Key).\
                     join(SH_Value).filter(and_(SH_Key.key == 'Name', SH_Value.value == investor_name)).first()
 
-                # Version:
-                version = usedStakeholders.count(str(sh.stakeholder_identifier))
-                usedStakeholders.append(str(sh.stakeholder_identifier))
+                if sh is not None:
 
-                stakeholdersObject.append({"id": str(sh.stakeholder_identifier), "op": "add", "role": 6, "version": (version + 1)})
-                activityObject['stakeholders'] = stakeholdersObject
+                    # Version:
+                    version = usedStakeholders.count(str(sh.stakeholder_identifier))
+
+                    # TODO: For the moment, add the same stakeholder only once
+                    # because it crashes otherwise (Changeset issue).
+                    if version == 0:
+                        usedStakeholders.append(str(sh.stakeholder_identifier))
+
+                        stakeholdersObject.append({"id": str(sh.stakeholder_identifier), "op": "add", "role": 6, "version": (version + 1)})
+                        activityObject['stakeholders'] = stakeholdersObject
 
                 
 
-            if k == 59:
-                year = 0
-                dates = record.record[k].split('/')
-                if len(dates) == 3:
-                    lastdigits = int(dates[-1])
-                    if lastdigits > 20:
-                        year = 1900 + lastdigits
-                    else:
-                        year = 2000 + lastdigits
-
-                activityObject['taggroups'].append(create_taggroup_dict(attributeMap[k], year))
+#            if k == 59:
+#                year = 0
+#                dates = record.record[k].split('/')
+#                if len(dates) == 3:
+#                    lastdigits = int(dates[-1])
+#                    if lastdigits > 20:
+#                        year = 1900 + lastdigits
+#                    else:
+#                        year = 2000 + lastdigits
+#
+#                activityObject['taggroups'].append(create_taggroup_dict(attributeMap[k], year))
 
             if k == 117:
                 if record.record[k].strip() != '' and statusMap[record.record[k]] is not None:
@@ -179,7 +185,7 @@ def lao_read_activities2(request):
         activityObject['taggroups'].append(create_taggroup_dict('Country', 'Laos'))
         # Not sure about these sources
         activityObject['taggroups'].append(create_taggroup_dict('Data source', 'Government sources'))
-        activityObject['taggroups'].append(create_taggroup_dict('Spatial Accuracy', 'very accurate'))
+        activityObject['taggroups'].append(create_taggroup_dict('Spatial Accuracy', 'better than 100m'))
 
         # Add geometry to activity
         activityObject['geometry'] = {'coordinates': [record.shape.points[0][0], record.shape.points[0][1]], 'type': 'Point'}

@@ -842,3 +842,20 @@ class Institution_Type(Base):
         self.id = id
         self.name = name
         self.description = description
+
+class File(Base):
+    __tablename__ = 'files'
+    __table_args__ = {'schema': 'data'}
+    id = Column(Integer, primary_key=True)
+    identifier = Column(UUID, nullable=False)
+    name = Column(String(511), nullable=False)
+    mime = Column(String(255), nullable=False)
+    size = Column(Integer)
+    hash = Column(String(255))
+
+    def __init__(self, identifier, name, mime, size=0, hash=None):
+        self.identifier = identifier
+        self.name = name
+        self.mime = mime
+        self.size = size
+        self.hash = hash

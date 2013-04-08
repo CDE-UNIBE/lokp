@@ -1,0 +1,9 @@
+.button-close {
+    background-image: url("/static/img/process-stop.png") !important;
+}
+.button-refresh {
+    background-image: url('/static/img/view-refresh.png') !important;
+}
+.button-save {
+    background-image: url('/static/img/save1.png') !important;
+}

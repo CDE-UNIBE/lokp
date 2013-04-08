@@ -4,126 +4,75 @@ Ext.define('Lmkp.view.administrator.YamlScan', {
     alias: ['widget.lo_administratoryamlscanpanel'],
     
     border: 0,
-
-    config: {
-        store: null,
-        postUrl: ""
-    },
-
+    autoScroll: true,
     layout: 'fit',
 
-    dockedItems: [{
-        items: [{
-            itemId: 'yaml-scan-button',
-            text: 'Refresh'
-        }, {
-            itemId: 'yaml-add-button',
-            text: 'Add all to DB'
-        }],
-        xtype: 'toolbar'
-    }],
-
-    store: this.store,
-
-    viewConfig: {
-        loadMask: true
-    },
+    dockedItems: [
+        {
+            xtype: 'toolbar',
+            defaults: {
+                iconAlign: 'top',
+                scale: 'medium'
+            },
+            items: [
+                {
+                    itemId: 'yaml-scan-button',
+                    text: Lmkp.ts.msg('button_refresh'),
+                    tooltip: Lmkp.ts.msg('tooltip_refresh'),
+                    iconCls: 'button-refresh'
+                }, {
+                    itemId: 'yaml-add-button',
+                    text: Lmkp.ts.msg('administration_add-all-to-database'),
+                    iconCls: 'button-add'
+                }, '->', {
+                    xtype: 'combobox',
+                    itemId: 'yamlScanProfileCombobox',
+                    fieldLabel: Lmkp.ts.msg('gui_profile'),
+                    labelAlign: 'right',
+                    queryMode: 'local',
+                    store: 'Profiles',
+                    displayField: 'name',
+                    valueField: 'profile',
+                    value: Ext.util.Cookies.get('_PROFILE_') ? Ext.util.Cookies.get('_PROFILE_') : 'global',
+                    margin: '0 10 0 0'
+                }
+            ]
+        }
+    ],
 
     rootVisible: false,
-    // TODO: autoScroll not yet working properly. Although scroll bar appears, it does so too late.
-    autoScroll: true,
     columns: [{
         xtype: 'treecolumn',
-        header: 'Original',
+        header: Lmkp.ts.msg('translation_original'),
         flex: 1,
         dataIndex: 'value',
         sortable: true
     },{
         xtype: 'templatecolumn',
         name: 'mandatory',
-        text: 'Mandatory',
-        flex: 1,
+        text: Lmkp.ts.msg('translation_mandatory'),
+        flex: 0,
         sortable: true,
         dataIndex: 'mandatory',
         align: 'center',
-        tpl: Ext.create('Ext.XTemplate', '{[this.isMandatory(values.mandatory)]}', {
-            isMandatory: function(m) {
-                if (m) {
-                    return 'yes';
-                } else {
-                    return '<i>no</i>';
-                }
-            }
-        })
+        tpl: ''
     }, {
         xtype: 'templatecolumn',
         name: 'local',
-        text: 'Local YAML',
-        flex: 1,
+        text: Lmkp.ts.msg('translation_global-attribute'),
+        flex: 0,
         sortable: true,
         dataIndex: 'local',
         align: 'center',
-        tpl: Ext.create('Ext.XTemplate', '{[this.isLocal(values.local)]}', {
-            isLocal: function(l) {
-                if (l) {
-                    return 'yes';
-                } else {
-                    return 'no';
-                }
-            }
-        })
+        tpl: ''
     }, {
         xtype: 'templatecolumn',
-        text: 'In DB',
-        flex: 1,
+        name: 'exists',
+        text: Lmkp.ts.msg('administration_is-in-database'),
+        flex: 0,
         sortable: true,
         dataIndex: 'exists',
         align: 'center',
-        tpl: Ext.create('Ext.XTemplate', '{[this.isInDB(values.exists)]}', {
-            isInDB: function(e) {
-                if (e) {
-                    return 'yes';
-                } else {
-                    return '<b>no</b>';
-                }
-            }
-        })
-    }, {
-        xtype: 'templatecolumn',
-        header: 'Translation',
-        flex: 1,
-        dataIndex: 'translation',
-        sortable: true,
-        tpl: Ext.create('Ext.XTemplate', '{[this.showTranslation(values.translation)]}', {
-            showTranslation: function(t) {
-                if (t == 1) {			// not yet translated
-                    return '-';
-                } else if (t == 0) {	// already in english
-                    return '[already translated]';
-                } else {				// show translation
-                    return t;
-                }
-            }
-        })
-    }, {
-        xtype: 'templatecolumn',
-        name: 'editColumn',
-        width: 25,
-        align: 'center',
-        tpl: Ext.create('Ext.XTemplate', '{[this.showTranslationButton(values.exists, values.translation)]}', {
-            showTranslationButton: function(e, t) {
-                if (e) {		// only show buttons when original in database
-                    if (t == 1) {			// not yet translated
-                        return '<img src="static/img/application_form_add.png" title="add translation" alt="add translation"/>';
-                    } else if (t == 0) {	// already in english
-                        return '';
-                    } else {				// show translation
-                        return '<img src="static/img/application_form_edit.png" title="edit translation" alt="edit translation"/>';
-                    }
-                } else {
-                    return '';
-                }
-            }
-        })
+        tpl: ''
     }]
 })

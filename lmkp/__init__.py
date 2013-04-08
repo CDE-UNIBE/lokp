@@ -16,6 +16,7 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.events import BeforeRender
 from pyramid.events import NewRequest
+from pyramid.settings import aslist
 from sqlalchemy import engine_from_config
 import transaction
 
@@ -24,6 +25,17 @@ def main(global_config, ** settings):
     """
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
+
+    # Transform the list of valid file mime extensions from the ini file into a
+    # python dict.
+    # http://pyramid.readthedocs.org/en/latest/narr/environment.html#adding-a-custom-setting
+    file_mime_extensions = {}
+    for fme in aslist(settings.get('lmkp.file_mime_extensions', {}), False):
+        fme_entry = fme.split(' ')
+        if len(fme_entry) != 2:
+            continue
+        file_mime_extensions[fme_entry[0]] = fme_entry[1]
+    settings['lmkp.file_mime_extensions'] = file_mime_extensions
 
     _update_admin_user(DBSession, settings)
 
@@ -63,7 +75,8 @@ def main(global_config, ** settings):
     config.add_route('reset', '/reset', request_method='POST')
     config.add_route('reset_form', '/reset', request_method='GET')
     config.add_route('logout', '/logout')
-    config.add_route('db_test', '/db_test')
+
+    config.add_route('translation', '/translation')
 
     # Embedded start page
     config.add_route('embedded_index', '/embedded/{profile}')
@@ -186,6 +199,17 @@ def main(global_config, ** settings):
     # Tests (not intended for public)
     config.add_route('moderation_tests', '/moderation/ug6uWaef2')
 
+    """
+    Files
+    """
+    # Upload a file
+    config.add_route('file_upload', '/files/upload', request_method='POST')
+    # Show or download a file
+    config.add_route('file_view', '/files/{action}/{identifier}')
+
+    """
+    Translation
+    """
     # A controller that returns the translation needed in the ExtJS user interface
     config.add_route('ui_translation', '/lang')
     # Return a json with all available languages from DB
