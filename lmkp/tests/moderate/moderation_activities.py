@@ -1,5 +1,5 @@
-from lmkp.tests.moderation_base import ModerationBase
-from lmkp.tests.create_base import CreateBase
+from lmkp.tests.moderate.moderation_base import ModerationBase
+from lmkp.tests.create.create_base import CreateBase
 
 from lmkp.models.meta import DBSession as Session
 from lmkp.models.database_objects import *

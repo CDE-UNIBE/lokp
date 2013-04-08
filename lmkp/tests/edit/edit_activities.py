@@ -1,4 +1,4 @@
-from lmkp.tests.create_base import CreateBase
+from lmkp.tests.create.create_base import CreateBase
 from lmkp.tests.moderation_base import ModerationBase
 
 from lmkp.models.meta import DBSession as Session
