@@ -317,7 +317,6 @@ def create(request):
 
     # Check if the user is logged in and he/she has sufficient user rights
     userid = authenticated_userid(request)
-    print effective_principals(request)
 
     if userid is None:
         return HTTPForbidden()

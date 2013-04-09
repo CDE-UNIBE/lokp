@@ -1,5 +1,7 @@
 import logging
 import requests
+import random
+import decimal
 
 from lmkp.tests.test_base import Test_Base
 
@@ -8,7 +10,7 @@ class CreateBase(Test_Base):
     def __init__(self):
         self.results = []
     
-    def doCreate(self, url, diff, user, profile = 'LA'):
+    def doCreate(self, url, diff, user, profile = 'Laos'):
         
         import json
         
@@ -45,22 +47,24 @@ class CreateBase(Test_Base):
             if geometry is not None:
                 diff['geometry'] = geometry
 
-            involvements = kwargs.pop('stakeholders', None)
+            involvements = kwargs.pop('involvements', None)
             if involvements is not None:
-                diff['activities'] = involvements
+                diff['stakeholders'] = involvements
 
         elif itemType == 'stakeholders':
-            involvements = kwargs.pop('activities', None)
+            involvements = kwargs.pop('involvements', None)
             if involvements is not None:
                 diff['activities'] = involvements
 
         return diff
 
     def createAndCheckFirstItem(self, testObject, itemType, mappedClass, url,
-        tags, identifier, user, profile='Laos'):
+        tags, identifier, user, profile='Laos', **kwargs):
         """
         Wrapper to create a new item and check if it is there or not.
         """
+
+        protocol = kwargs.pop('protocol', testObject.protocol);
 
         # Check that the item does not yet exist
         if (testObject.handleResult(
@@ -87,7 +91,7 @@ class CreateBase(Test_Base):
         created = self.doCreate(url, diff, user)
 
         # Check if it is there
-        item = testObject.protocol.read_one_by_version(
+        item = protocol.read_one_by_version(
             testObject.request, identifier, 1
         )
 
@@ -108,18 +112,31 @@ class CreateBase(Test_Base):
         return item
 
     def getSomeWholeDiff(self, itemType, tags, identifier, version, op,
-        geometry=None):
+        geometry=None, **kwargs):
         """
         Wrapper to get the diff for an item. All the stuff from the diff has the
         same 'op'. Can be used to create an Activity or a Stakeholder.
         """
 
+        involvements = kwargs.pop('involvements', None)
+
         # Get the tag diffs and put them into taggroups
         taggroups = []
         for t in tags:
+
+            # Set the first tag of each taggroup as main tag
+            maintag = None
+            for k, v in t.iteritems():
+                if maintag is None:
+                    maintag = {
+                        'key': k,
+                        'value': v
+                    }
+
             taggroups.append({
                 'op': op,
-                'tags': self.getTagDiffsFromTags(t, op)
+                'tags': self.getTagDiffsFromTags(t, op),
+                'main_tag': maintag
             })
 
         singleItemDiff = self.getItemDiff(
@@ -127,7 +144,8 @@ class CreateBase(Test_Base):
             id = identifier,
             version = version,
             taggroups = taggroups,
-            geometry = geometry
+            geometry = geometry,
+            involvements = involvements
         )
 
         return {itemType: [singleItemDiff]}
@@ -141,7 +159,7 @@ class CreateBase(Test_Base):
             tagDiff['op'] = op
             tags.append(tagDiff)
         return tags
-        
+
 
     def getSomeGeometryDiff(self, profile):
 
@@ -149,12 +167,25 @@ class CreateBase(Test_Base):
             return {
                 'type': 'Point',
                 'coordinates': [
-                    102.43437290193, 20.163276384469
+                    float(102 + decimal.Decimal(str(random.random()))),
+                    float(19 + decimal.Decimal(str(random.random())))
                 ]
             }
 
         return {}
 
+    def getSomeStakeholderTags(self, switch):
+
+        if switch == 1:
+            # Very simple, all mandatory keys there. One Tag per Taggroup
+            return [
+                {
+                    'Name': 'Stakeholder A'
+                }, {
+                    'Country of origin': 'China'
+                }
+            ]
+        return []
 
     def getSomeActivityTags(self, switch):
         
