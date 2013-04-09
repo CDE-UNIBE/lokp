@@ -1634,6 +1634,9 @@ class TagGroup(object):
     def get_tg_id(self):
         return self._tg_id
 
+    def get_maintag_id(self):
+        return self._main_tag_id
+
     def get_tag_by_key(self, key):
         """
         Returns a tag from this group if there is one with the requested key,
@@ -1763,19 +1766,19 @@ class Feature(object):
 
     def find_involvement_by_guid(self, guid):
         for i in self._involvements:
-            if (i.get_guid() == guid):
+            if (str(i.get_guid()) == guid):
                 return i
         return None
 
     def find_involvement_by_role(self, guid, role):
         for i in self._involvements:
-            if (i.get_guid() == guid and i.get_role() == role):
+            if (str(i.get_guid()) == guid and i.get_role() == role):
                 return i
         return None
 
     def find_involvement(self, guid, role, version):
         for i in self._involvements:
-            if (i.get_guid() == guid and i.get_role() == role and
+            if (str(i.get_guid()) == guid and i.get_role() == role and
                 i.get_version() == version):
                 return i
         return None

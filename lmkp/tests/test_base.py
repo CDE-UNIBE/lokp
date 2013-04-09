@@ -4,6 +4,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.exc import MultipleResultsFound
 
 from lmkp.models.meta import DBSession as Session
+from lmkp.models.database_objects import Stakeholder_Role
 
 log = logging.getLogger(__name__)
 
@@ -46,7 +47,16 @@ class Test_Base(object):
             }
 
         return None
-    
+
+    def getStakeholderRole(self, id):
+        q = Session.query(Stakeholder_Role).get(id)
+        if q is not None:
+            return {
+                'id': q.id,
+                'name': q.name
+            }
+        return None
+
     def findKey(self, feature, key):
         
         found = 0
@@ -86,6 +96,12 @@ class Test_Base(object):
 
     def countTaggroups(self, feature):
         return len(feature.get_taggroups())
+
+    def countTags(self, feature):
+        count = 0
+        for taggroup in feature.get_taggroups():
+            count += len(taggroup.get_tags())
+        return count
     
     def handleResult(self, success, msg):
         self.results.append(Test_Result(success, msg))

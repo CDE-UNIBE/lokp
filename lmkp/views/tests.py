@@ -1,5 +1,6 @@
 from lmkp.tests.moderation_activities import *
 from lmkp.tests.create.create_activities import *
+from lmkp.tests.create.create_stakeholders import *
 from lmkp.tests.edit_activities import *
 
 from pyramid.view import view_config
@@ -41,7 +42,13 @@ def moderation_tests(request):
             CreateActivities03(request),
             CreateActivities04(request),
             CreateActivities05(request),
-            CreateActivities06(request)
+            CreateActivities06(request),
+            CreateActivities07(request),
+            CreateActivities08(request),
+            CreateActivities09(request),
+            CreateActivities10(request),
+            CreateActivities11(request),
+            CreateStakeholders01(request)
         ]
 
         # Test the setup
