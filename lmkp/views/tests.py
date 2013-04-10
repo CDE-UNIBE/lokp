@@ -9,11 +9,11 @@ from pyramid.view import view_config
 def moderation_tests(request):
 
     # ['CA01'] / ['CS01'] / True / False
-    doCreateTests = True
+    doCreateTests = False
     # ['EA01'] / ['ES01'] / True / False
-    doEditTests = True
+    doEditTests = False
     # ['MA01'] / ['MS01'] / True / False
-    doModerationTests = True
+    doModerationTests = False
 
     verbose = False
 
@@ -48,6 +48,9 @@ def moderation_tests(request):
             CreateActivities09(request),
             CreateActivities10(request),
             CreateActivities11(request),
+            CreateActivities12(request),
+            CreateActivities13(request),
+            CreateActivities14(request),
             CreateStakeholders01(request)
         ]
 
@@ -87,7 +90,7 @@ def moderation_tests(request):
                 if not success:
                     for r in test.results:
                         if r.success is not True:
-                            errorMessage = ('[Create] A test of test case %s (%s) failed with message: %s'
+                            errorMessage = ('[Create] A test of test case %s (%s) failed with message: \n%s'
                                 % (test.testId, test.testDescription, r.msg))
                             log.debug(errorMessage)
                             errorStack.append(errorMessage)
@@ -145,7 +148,7 @@ def moderation_tests(request):
                 if not success:
                     for r in test.results:
                         if r.success is not True:
-                            errorMessage = ('[Edit] A test of test case %s (%s) failed with message: %s'
+                            errorMessage = ('[Edit] A test of test case %s (%s) failed with message: \n%s'
                                 % (test.testId, test.testDescription, r.msg))
                             log.debug(errorMessage)
                             errorStack.append(errorMessage)
@@ -201,7 +204,7 @@ def moderation_tests(request):
                 if not success:
                     for r in test.results:
                         if r.success is not True:
-                            errorMessage = ('[Moderation] A test of test case %s (%s) failed with message: %s'
+                            errorMessage = ('[Moderation] A test of test case %s (%s) failed with message: \n%s'
                                 % (test.testId, test.testDescription, r.msg))
                             log.debug(errorMessage)
                             errorStack.append(errorMessage)

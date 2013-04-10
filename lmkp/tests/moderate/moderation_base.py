@@ -15,6 +15,7 @@ class ModerationBase(Test_Base):
         """
 
         """
+        print "---"
         moderator = self.getUser(1)
         profile = 'Laos'
 
@@ -38,7 +39,11 @@ class ModerationBase(Test_Base):
 
         # Do the post request
         # TODO!!!
-        request = session.post(self.getReviewUrl(itemType), data=payload, cookies=cookies)
+        request = session.post(
+            self.getReviewUrl(itemType),
+            data=payload,
+            cookies=cookies
+        )
 
         try:
             json = request.json()
