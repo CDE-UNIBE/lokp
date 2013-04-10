@@ -37,6 +37,12 @@ class Test_Base(object):
             username = 'user1'
         elif userid == 2:
             username = 'user2'
+        elif userid == 3:
+            username = 'user3'
+        elif userid == 4:
+            username = 'user4'
+        else:
+            return None
 
         if username is not None:
             password = 'asdf'
@@ -108,7 +114,45 @@ class Test_Base(object):
         if success is not True:
             return False
         return True
+
+    def getDetailsUrl(self, type, uid, **kwargs):
+        url = None
+        if type == 'activities':
+            url = 'http://localhost:6543/activities/'
+        elif type == 'stakeholders':
+            url = 'http://localhost:6543/stakeholders/'
+
+        if url is None:
+            return None
+
+        if kwargs.pop('public', False) is True:
+            url += 'public/'
     
+        return url + 'json/' + uid
+
+    def getFilterUrl(self, type, filterColumns, filterValues, **kwargs):
+
+        url = ''
+
+        if type == 'activities':
+            url += 'http://localhost:6543/activities/'
+            prefix = 'a'
+
+        elif type == 'stakeholders':
+            url += 'http://localhost:6543/stakeholders/'
+            prefix = 'sh'
+
+        if kwargs.pop('public', False) is True:
+            url += 'public/'
+
+        url += 'json?'
+
+        filters = []
+        for i, c in enumerate(filterColumns):
+            filters.append('%s__%s__like=%s' % (prefix, c, filterValues[i]))
+
+        return url + '&'.join(filters)
+
 class Test_Result(object):
     
     def __init__(self, success, msg):

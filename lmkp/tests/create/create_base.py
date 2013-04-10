@@ -4,6 +4,7 @@ import random
 import decimal
 
 from lmkp.tests.test_base import Test_Base
+from lmkp.tests.moderation_base import ModerationBase
 
 class CreateBase(Test_Base):
     
@@ -58,6 +59,49 @@ class CreateBase(Test_Base):
 
         return diff
 
+    def createModerateCheckFirstItem(self, testObject, itemType, mappedClass,
+        url, tags, identifier, user, profile='Laos', **kwargs):
+        """
+        Wrapper to create a new item, review it (set active) and check if it is
+        there or not.
+        """
+
+        protocol = kwargs.get('protocol', testObject.protocol);
+
+        # Create the item
+        o = self.createAndCheckFirstItem(testObject, itemType, mappedClass, url,
+            tags, identifier, user, profile, **kwargs)
+
+        if (testObject.handleResult(
+            o is not None and o is not False,
+            'The item could not be created.'
+        )) is not True:
+            return False
+
+        # Moderate the item
+        mb = ModerationBase()
+
+        # Try to review the item
+        if (testObject.handleResult(
+            mb.doReview(itemType, identifier, o.get_version(), 1) is True,
+            'The item could not be reviewed.'
+        )) is not True:
+            return False
+
+        # Query the reviewed item
+        reviewed_o = protocol.read_one_by_version(
+            testObject.request, identifier, 1
+        )
+
+        # Make sure it is active
+        if (testObject.handleResult(
+            reviewed_o.get_status_id() == 2,
+            'The item was not set to active during review.'
+        )) is not True:
+            return False
+
+        return reviewed_o
+
     def createAndCheckFirstItem(self, testObject, itemType, mappedClass, url,
         tags, identifier, user, profile='Laos', **kwargs):
         """
@@ -98,7 +142,7 @@ class CreateBase(Test_Base):
         # Check if it is there
         if (testObject.handleResult(
             (created is True and item is not None),
-            'Item (%s) exists already.' % itemType
+            'Item (%s) was not really created.' % itemType
         )) is not True:
             return False
 
@@ -174,7 +218,7 @@ class CreateBase(Test_Base):
 
         return {}
 
-    def getSomeStakeholderTags(self, switch):
+    def getSomeStakeholderTags(self, switch, **kwargs):
 
         if switch == 1:
             # Very simple, all mandatory keys there. One Tag per Taggroup
@@ -185,9 +229,23 @@ class CreateBase(Test_Base):
                     'Country of origin': 'China'
                 }
             ]
+        if switch == 4:
+            # Basically the simple keys as above but with additional taggroup
+            # containing "Address: [UUID]" allowing to find this specific
+            # Stakeholder through filters
+            uid = kwargs.pop('uid', '-')
+            return [
+                {
+                    'Name': 'Stakeholder A'
+                }, {
+                    'Country of origin': 'China'
+                }, {
+                    'Address': uid
+                }
+            ]
         return []
 
-    def getSomeActivityTags(self, switch):
+    def getSomeActivityTags(self, switch, **kwargs):
         
         if switch == 1:
             # Very simple, all mandatory keys there. One Tag per Taggroup.
@@ -239,7 +297,29 @@ class CreateBase(Test_Base):
                     'Spatial Accuracy': '100m to 1km'
                 }
             ]
-        
+        if switch == 4:
+            # Basically the simple keys as above but with additional taggroup
+            # containing "Remark: [UUID]" allowing to find this specific 
+            # Activity through filters
+            uid = kwargs.pop('uid', '-')
+            return [
+                {
+                    'Intended area (ha)': 100
+                }, {
+                    'Country': 'Laos'
+                }, {
+                    'Data source': 'Contract'
+                }, {
+                    'Intention of Investment': 'Agriculture'
+                }, {
+                    'Negotiation Status': 'Contract signed'
+                }, {
+                    'Spatial Accuracy': '100m to 1km'
+                }, {
+                    'Remark': uid
+                }
+            ]
+
         return []
 
     def kvToTaggroups(self, kvArray):
