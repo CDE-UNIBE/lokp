@@ -229,6 +229,25 @@ class CreateBase(Test_Base):
                     'Country of origin': 'China'
                 }
             ]
+        if switch == 2:
+            # All mandatory keys there, with 2 Tags in a Taggroup.
+            return [
+                {
+                    'Name': 'Stakeholder X',
+                    'Website': 'http://url.com'
+                }, {
+                    'Country of origin': 'Vietnam',
+                    'Economic Sector': 'Mining'
+                }
+            ]
+        if switch == 3:
+            # Not all mandatory keys there.
+            # Missing is 'Country of origin'
+            return [
+                {
+                    'Name': 'Stakeholder B'
+                }
+            ]
         if switch == 4:
             # Basically the simple keys as above but with additional taggroup
             # containing "Address: [UUID]" allowing to find this specific
