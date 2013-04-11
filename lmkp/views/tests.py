@@ -51,7 +51,19 @@ def moderation_tests(request):
             CreateActivities12(request),
             CreateActivities13(request),
             CreateActivities14(request),
-            CreateStakeholders01(request)
+            CreateStakeholders01(request),
+            CreateStakeholders02(request),
+            CreateStakeholders03(request),
+            CreateStakeholders04(request),
+            CreateStakeholders05(request),
+            CreateStakeholders06(request),
+            CreateStakeholders07(request),
+            CreateStakeholders08(request),
+            CreateStakeholders09(request),
+            CreateStakeholders10(request),
+            CreateStakeholders11(request),
+            CreateStakeholders12(request),
+            CreateStakeholders13(request)
         ]
 
         # Test the setup

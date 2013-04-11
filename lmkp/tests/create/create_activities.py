@@ -117,7 +117,8 @@ class CreateActivities02(CreateBase):
             self.getSomeActivityTags(1),
             self.identifier1,
             1,
-            'add'
+            'add',
+            self.getSomeGeometryDiff('Laos')
         )
 
         if verbose is True:
@@ -127,6 +128,7 @@ class CreateActivities02(CreateBase):
         import requests
         import json
         session = requests.Session()
+        session.auth = ()
         
         cookies = dict(_PROFILE_='Laos')
         headers = {'content-type': 'application/json'}
@@ -217,7 +219,7 @@ class CreateActivities03(CreateBase):
         
         # Make sure the Activity has all the taggroups (7)
         if (self.handleResult(
-            self.countTaggroups(self.a1v1) == 6,
+            self.countTaggroups(self.a1v1) == len(self.getSomeActivityTags(1)),
             'New Activity has not all taggroups.'
         )) is not True:
             return False
@@ -1537,7 +1539,7 @@ class CreateActivities13(CreateBase):
         )
         if (self.handleResult(
             self.a1v2 is not None,
-            'New Stakeholder (through involvement) was created but not found.'
+            'New Activity (through involvement) was created but not found.'
         )) is not True:
             return False
 
@@ -1683,7 +1685,7 @@ class CreateActivities13(CreateBase):
             self.getDetailsUrl('stakeholders', self.identifier2),
             headers=headers
         )
-        # Make sure a request to get the details of the Activity can be made
+        # Make sure a request to get the details of the Stakeholder can be made
         if (self.handleResult(
             request.status_code == 200,
             'The request to get details of an Stakeholder failed'
@@ -1836,7 +1838,7 @@ class CreateActivities13(CreateBase):
         )) is not True:
             return False
 
-        # User3 should only see the active Activity when using the public query
+        # User3 should only see the active Stakeholder when using the public query
         # SH, explicit, public
         session = requests.Session()
         user = self.getUser(3)

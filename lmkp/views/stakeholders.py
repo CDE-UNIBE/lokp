@@ -319,10 +319,10 @@ def create(request):
     userid = authenticated_userid(request)
 
     if userid is None:
-        return HTTPForbidden()
+        raise HTTPForbidden()
     if not isinstance(has_permission('edit', request.context, request),
         ACLAllowed):
-        return HTTPForbidden()
+        raise HTTPForbidden()
 
     ids = stakeholder_protocol3.create(request)
 
