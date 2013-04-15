@@ -2,6 +2,7 @@ from lmkp.tests.moderation_activities import *
 from lmkp.tests.create.create_activities import *
 from lmkp.tests.create.create_stakeholders import *
 from lmkp.tests.edit.edit_activities import *
+from lmkp.tests.edit.edit_stakeholders import *
 
 from datetime import datetime
 from pyramid.view import view_config
@@ -129,7 +130,20 @@ def moderation_tests(request):
             EditActivities11(request),
             EditActivities12(request),
             EditActivities13(request),
-            EditActivities14(request)
+            EditActivities14(request),
+            EditStakeholders01(request),
+            EditStakeholders02(request),
+            EditStakeholders03(request),
+            EditStakeholders04(request),
+            EditStakeholders05(request),
+            EditStakeholders06(request),
+            EditStakeholders07(request),
+            EditStakeholders08(request),
+            EditStakeholders09(request),
+            EditStakeholders10(request),
+            EditStakeholders11(request),
+            EditStakeholders12(request),
+            EditStakeholders13(request)
         ]
 
         # Test the setup
