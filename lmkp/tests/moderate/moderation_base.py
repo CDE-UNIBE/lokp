@@ -15,7 +15,7 @@ class ModerationBase(Test_Base):
         """
 
         """
-        print "---"
+
         moderator = self.getUser(1)
         profile = 'Laos'
 

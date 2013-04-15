@@ -996,6 +996,10 @@ class Protocol(object):
         tg_ids = []
         for db_taggroup in db_taggroup_query:
 
+            # Remember if the main tag of a taggroup was deleted. In this case
+            # we will set it again at the end
+            maintag_deleted = False
+
             tg_ids.append(db_taggroup.tg_id)
 
             #TODO: clean up! Also make sure it works for all cases
@@ -1042,6 +1046,9 @@ class Protocol(object):
 #                                    log.debug(
 #                                        "Tag is deleted (not copied) from taggroup."
 #                                    )
+
+                                    if db_taggroup.main_tag == db_tag:
+                                        maintag_deleted = True
 
                                     copy_tag = False
 
@@ -1140,6 +1147,13 @@ class Protocol(object):
                                 and taggroupadded is False):
                                 item.add_taggroup(new_taggroup)
 
+            # If the main tag was deleted and no new one was set, we will simply
+            # use the first tag as a new main tag.
+            if (maintag_deleted is True and new_taggroup.main_tag is None
+                and len(new_taggroup.tags) > 0):
+                new_taggroup.main_tag = new_taggroup.tags[0]
+
+
         # Finally new tag groups (without id) need to be added
         # (and loop all again)
         if 'taggroups' in diff:
@@ -1229,7 +1243,7 @@ class Protocol(object):
                                     new_taggroup._main_tag = new_tag
 
 #        print "============================================="
-
+            
         return item
 
 

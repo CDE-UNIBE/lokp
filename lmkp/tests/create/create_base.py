@@ -163,25 +163,34 @@ class CreateBase(Test_Base):
         """
 
         involvements = kwargs.pop('involvements', None)
+        setMaintags = kwargs.get('setMaintags', True)
+        addTgids = kwargs.get('addTgids', False)
 
         # Get the tag diffs and put them into taggroups
         taggroups = []
-        for t in tags:
+        for i, t in enumerate(tags):
 
-            # Set the first tag of each taggroup as main tag
-            maintag = None
-            for k, v in t.iteritems():
-                if maintag is None:
-                    maintag = {
-                        'key': k,
-                        'value': v
-                    }
-
-            taggroups.append({
+            tag = {
                 'op': op,
-                'tags': self.getTagDiffsFromTags(t, op),
-                'main_tag': maintag
-            })
+                'tags': self.getTagDiffsFromTags(t, op)
+            }
+
+            if setMaintags is True:
+                # Set the first tag of each taggroup as main tag
+                maintag = None
+                for k, v in t.iteritems():
+                    if maintag is None:
+                        maintag = {
+                            'key': k,
+                            'value': v
+                        }
+                tag['main_tag'] = maintag
+
+            if addTgids is True:
+                # Add the tg_ids
+                tag['tg_id'] = i + 1
+
+            taggroups.append(tag)
 
         singleItemDiff = self.getItemDiff(
             itemType,

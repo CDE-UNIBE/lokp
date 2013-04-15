@@ -1,19 +1,20 @@
 from lmkp.tests.moderation_activities import *
 from lmkp.tests.create.create_activities import *
 from lmkp.tests.create.create_stakeholders import *
-from lmkp.tests.edit_activities import *
+from lmkp.tests.edit.edit_activities import *
 
+from datetime import datetime
 from pyramid.view import view_config
 
 @view_config(route_name='moderation_tests', renderer='json', permission='administer')
 def moderation_tests(request):
 
     # ['CA01'] / ['CS01'] / True / False
-    doCreateTests = False
+    doCreateTests = True
     # ['EA01'] / ['ES01'] / True / False
-    doEditTests = False
+    doEditTests = True
     # ['MA01'] / ['MS01'] / True / False
-    doModerationTests = False
+    doModerationTests = True
 
     verbose = False
 
@@ -29,6 +30,7 @@ def moderation_tests(request):
 
     testCount = 0
     errorStack = []
+    startTime = datetime.now()
 
     """
     Create
@@ -116,7 +118,18 @@ def moderation_tests(request):
         editTests = [
             EditActivities01(request),
             EditActivities02(request),
-            EditActivities03(request)
+            EditActivities03(request),
+            EditActivities04(request),
+            EditActivities05(request),
+            EditActivities06(request),
+            EditActivities07(request),
+            EditActivities08(request),
+            EditActivities09(request),
+            EditActivities10(request),
+            EditActivities11(request),
+            EditActivities12(request),
+            EditActivities13(request),
+            EditActivities14(request)
         ]
 
         # Test the setup
@@ -133,12 +146,7 @@ def moderation_tests(request):
             log.debug('[Edit] Testing setup of test case %s' % test.testId)
             success = test.testSetup()
             if not success:
-                for r in test.results:
-                    if r.success is not True:
-                        errorMessage = ('[Edit] Setup of test case %s is not valid: %s'
-                            % (test.testId, r.msg))
-                        log.debug(errorMessage)
-                        errorStack.append(errorMessage)
+                log.debug('[Edit] Setup of test case %s is not valid!' % test.testId)
             validEditSetup = success and validEditSetup
 
         # If the setup is ok, do the tests
@@ -228,13 +236,16 @@ def moderation_tests(request):
     print "********************************************************************"
     print ""
 
+    timeDelta = datetime.now() - startTime
+    timeElapsed = '%s minutes and %s seconds' % (timeDelta.seconds / 60, timeDelta.seconds % 60)
+
     print "------------------------   Test results   --------------------------"
     print ""
     if ((doCreateTests is not False and validCreateSetup is True)
         or (doModerationTests is not False and validModerationSetup is True)
         or (doEditTests is not False and validEditSetup is True)):
-        log.debug('Ran a total of %s tests, %s of them failed.'
-            % (testCount, len(errorStack)))
+        log.debug('Ran a total of %s tests, %s of them failed. Elapsed time: %s'
+            % (testCount, len(errorStack), timeElapsed))
     else:
         log.debug('Test setup is not valid!')
 
@@ -247,5 +258,6 @@ def moderation_tests(request):
     return {
         'tests': testCount,
         'errors': len(errorStack),
-        'info': 'See log for details'
+        'info': 'See log for details',
+        'duration': timeElapsed
     }
