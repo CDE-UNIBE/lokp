@@ -442,7 +442,6 @@ class EditActivities04(CreateBase):
         self.identifier1 = '5dd1e511-5d33-4cb5-95a1-1a5ada35352b'
         self.a1v1 = None
         self.a1v2 = None
-        self.moderationBase = ModerationBase()
 
     def testSetup(self, verbose=False):
 
@@ -571,7 +570,7 @@ class EditActivities04(CreateBase):
 
         # Check that no additional taggroup was created
         if (self.handleResult(
-            self.countTaggroups(self.a1v2) == len(self.getSomeActivityTags(1)),
+            self.countTaggroups(self.a1v2) == len(self.getSomeActivityTags(2)),
             'New Activity has not all taggroups.'
         )) is not True:
             return False
@@ -1131,8 +1130,6 @@ class EditActivities09(CreateBase):
         self.invRole1 = self.getStakeholderRole(6)
 
     def testSetup(self, verbose=False):
-
-        self.a1v1 = self.protocol.read_one_by_version(self.request, self.identifier1, 1)
 
         # Make sure the Activity does not yet exist
         if (self.handleResult(
