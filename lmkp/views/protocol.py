@@ -1780,19 +1780,19 @@ class Feature(object):
 
     def find_involvement_by_guid(self, guid):
         for i in self._involvements:
-            if (str(i.get_guid()) == guid):
+            if (str(i.get_guid()) == str(guid)):
                 return i
         return None
 
     def find_involvement_by_role(self, guid, role):
         for i in self._involvements:
-            if (str(i.get_guid()) == guid and i.get_role() == role):
+            if (str(i.get_guid()) == str(guid) and i.get_role() == role):
                 return i
         return None
 
     def find_involvement(self, guid, role, version):
         for i in self._involvements:
-            if (str(i.get_guid()) == guid and i.get_role() == role and
+            if (str(i.get_guid()) == str(guid) and i.get_role() == role and
                 i.get_version() == version):
                 return i
         return None

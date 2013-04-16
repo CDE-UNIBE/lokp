@@ -49,7 +49,7 @@ class ModerationBase(Test_Base):
             json = request.json()
             return json['success']
         except:
-            print "*** Request failed with response: %s" % request
+            print "*** Request failed with code %s and response %s" % (request.status_code, request.content)
             return False
 
     def getReviewUrl(self, itemType):

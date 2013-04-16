@@ -1835,3 +1835,403 @@ class EditStakeholders13(CreateBase):
             return False
 
         return True
+
+"""
+ES 14
+"""
+class EditStakeholders14(CreateBase):
+
+    def __init__(self, request):
+        super(CreateBase, self).__init__()
+        self.request = request
+        self.protocol = StakeholderProtocol3(Session)
+        self.testId = 'ES14'
+        self.testDescription = 'Edit a own pending Stakeholder sets it to "edited"'
+        self.identifier1 = '4a2d0520-6281-4cd7-a875-da58091c30d1'
+        self.s1v1 = None
+        self.s1v2 = None
+        self.s1v3 = None
+
+    def testSetup(self, vebose=False):
+
+        # Make sure the Stakeholder does not yet exist
+        if (self.handleResult(
+            self.countVersions(Stakeholder, self.identifier1) == 0,
+            'Stakeholder exists already'
+        )) is not True:
+            return False
+
+        # Create, moderate and check Stakeholder
+        self.s1v1 = self.createModerateCheckFirstItem(
+            self,
+            'stakeholders',
+            Stakeholder,
+            self.getCreateUrl('stakeholders'),
+            self.getSomeStakeholderTags(4, uid=self.identifier1),
+            self.identifier1,
+            self.getUser(1)
+        )
+
+        if (self.handleResult(
+            self.s1v1 is not None and self.s1v1 is not False,
+            'Stakeholder was not created or reviewed.'
+        )) is not True:
+            return False
+
+        return True
+
+    def doTest(self, verbose=False):
+
+        # The values to change
+        key1 = 'Name'
+        oldValue1 = 'Stakeholder A'
+        newValue1 = 'Stakeholder B'
+
+        key2 = 'Country of origin'
+        oldValue2 = 'China'
+        newValue2 = 'Vietnam'
+
+        """
+        v2
+        """
+        # Find and check the tg_id where the values are in
+        tg_id = self.findTgidByKeyValue(self.s1v1, key1, oldValue1)
+        if (self.handleResult(
+            tg_id is not None,
+            'The tg_id of taggroup to change was not found.'
+        )) is not True:
+            return False
+
+        # Prepare the diff
+        deleteTags = self.getTagDiffsFromTags({key1: oldValue1}, 'delete')
+        addTags = self.getTagDiffsFromTags({key1: newValue1}, 'add')
+        taggroup = {
+            'tg_id': tg_id,
+            'tags': deleteTags + addTags
+        }
+        diff = {'stakeholders': [self.getItemDiff(
+            'stakeholders',
+            id = self.identifier1,
+            version = 1,
+            taggroups = [taggroup]
+        )]}
+
+        if verbose is True:
+            log.debug('Diff to update s1v1:\n%s' % diff)
+
+        # Update the Stakeholder
+        if (self.handleResult(
+            self.doCreate(self.getCreateUrl('stakeholders'), diff, self.getUser(1)),
+            'The Stakeholder could not be updated.'
+        )) is not True:
+            return False
+
+        # Check that a new Stakeholder was created
+        self.s1v2 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 2
+        )
+        if (self.handleResult(
+            (self.countVersions(Stakeholder, self.identifier1)
+                and self.s1v2 is not None),
+            'Version 2 of the updated Stakeholder was not found.'
+        )) is not True:
+            return False
+
+        """
+        v3
+        """
+        # Find and check the tg_id where the values are in
+        tg_id = self.findTgidByKeyValue(self.s1v2, key2, oldValue2)
+        if (self.handleResult(
+            tg_id is not None,
+            'The tg_id of taggroup to change was not found.'
+        )) is not True:
+            return False
+
+        # Prepare the diff
+        deleteTags = self.getTagDiffsFromTags({key2: oldValue2}, 'delete')
+        addTags = self.getTagDiffsFromTags({key2: newValue2}, 'add')
+        taggroup = {
+            'tg_id': tg_id,
+            'tags': deleteTags + addTags
+        }
+        diff = {'stakeholders': [self.getItemDiff(
+            'stakeholders',
+            id = self.identifier1,
+            version = 2,
+            taggroups = [taggroup]
+        )]}
+
+        if verbose is True:
+            log.debug('Diff to update s1v2:\n%s' % diff)
+
+        # Update the Stakeholder
+        if (self.handleResult(
+            self.doCreate(self.getCreateUrl('stakeholders'), diff, self.getUser(1)),
+            'The Stakeholder could not be updated.'
+        )) is not True:
+            return False
+
+        # Check that a new Stakeholder was created
+        self.s1v3 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 3
+        )
+        if (self.handleResult(
+            (self.countVersions(Stakeholder, self.identifier1)
+                and self.s1v3 is not None),
+            'Version 3 of the updated Stakeholder was not found.'
+        )) is not True:
+            return False
+
+        # Re-query v2
+        self.s1v2 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 2
+        )
+
+        # Check that the status of v2 is not 'edited'
+        if (self.handleResult(
+            self.s1v2.get_status_id() == 6,
+            'The status of version 2 is not "edited"'
+        )) is not True:
+            return False
+
+        # Check that the status of v3 is 'pending'
+        if (self.handleResult(
+            self.s1v3.get_status_id() == 1,
+            'The status of version 3 is not "pending"'
+        )) is not True:
+            return False
+
+        # Check that v2 does contain the first change
+        if (self.handleResult(
+            (self.findKeyValue(self.s1v2, key1, oldValue1) is False and
+                self.findKeyValue(self.s1v2, key1, newValue1) is True),
+            'The new value of v2 was not correctly set'
+        )) is not True:
+            return False
+
+        # Check that v2 does not contain the second change
+        if (self.handleResult(
+            (self.findKeyValue(self.s1v2, key2, oldValue2) is True and
+                self.findKeyValue(self.s1v2, key2, newValue2) is False),
+            'Version 2 also contains the second change'
+        )) is not True:
+            return False
+
+        # Check that v3 contains both changes
+        if (self.handleResult(
+            (self.findKeyValue(self.s1v3, key1, oldValue1) is False and
+                self.findKeyValue(self.s1v3, key1, newValue1) is True),
+            'Version 3 does not contain the changes made to version 2'
+        )) is not True:
+            return False
+
+        # Check that v3 contains both changes
+        if (self.handleResult(
+            (self.findKeyValue(self.s1v3, key2, oldValue2) is False and
+                self.findKeyValue(self.s1v3, key2, newValue2) is True),
+            'Version 3 does not contain the changes made to version 3'
+        )) is not True:
+            return False
+
+        return True
+
+"""
+ES 15
+"""
+class EditStakeholders15(CreateBase):
+
+    def __init__(self, request):
+        super(CreateBase, self).__init__()
+        self.request = request
+        self.protocol = StakeholderProtocol3(Session)
+        self.testId = 'ES15'
+        self.testDescription = 'Edits by different users are based on the active version'
+        self.identifier1 = 'efef905d-b047-48b9-8a13-3908a586b902'
+        self.s1v1 = None
+        self.s1v2 = None
+        self.s1v3 = None
+
+    def testSetup(self, vebose=False):
+
+        # Make sure the Stakeholder does not yet exist
+        if (self.handleResult(
+            self.countVersions(Stakeholder, self.identifier1) == 0,
+            'Stakeholder exists already'
+        )) is not True:
+            return False
+
+        # Create, moderate and check Stakeholder
+        self.s1v1 = self.createModerateCheckFirstItem(
+            self,
+            'stakeholders',
+            Stakeholder,
+            self.getCreateUrl('stakeholders'),
+            self.getSomeStakeholderTags(4, uid=self.identifier1),
+            self.identifier1,
+            self.getUser(1)
+        )
+
+        if (self.handleResult(
+            self.s1v1 is not None and self.s1v1 is not False,
+            'Stakeholder was not created or reviewed.'
+        )) is not True:
+            return False
+
+        return True
+
+    def doTest(self, verbose=False):
+
+        # The values to change
+        key1 = 'Name'
+        oldValue1 = 'Stakeholder A'
+        newValue1 = 'Stakeholder B'
+
+        key2 = 'Country of origin'
+        oldValue2 = 'China'
+        newValue2 = 'Vietnam'
+
+        """
+        v2 (by user2 > based on v1)
+        """
+        # Find and check the tg_id where the values are in
+        tg_id = self.findTgidByKeyValue(self.s1v1, key1, oldValue1)
+        if (self.handleResult(
+            tg_id is not None,
+            'The tg_id of taggroup to change was not found.'
+        )) is not True:
+            return False
+
+        # Prepare the diff
+        deleteTags = self.getTagDiffsFromTags({key1: oldValue1}, 'delete')
+        addTags = self.getTagDiffsFromTags({key1: newValue1}, 'add')
+        taggroup = {
+            'tg_id': tg_id,
+            'tags': deleteTags + addTags
+        }
+        diff = {'stakeholders': [self.getItemDiff(
+            'stakeholders',
+            id = self.identifier1,
+            version = 1,
+            taggroups = [taggroup]
+        )]}
+
+        if verbose is True:
+            log.debug('Diff to update s1v1:\n%s' % diff)
+
+        # Update the Stakeholder
+        if (self.handleResult(
+            self.doCreate(self.getCreateUrl('stakeholders'), diff, self.getUser(2)),
+            'The Stakeholder could not be updated.'
+        )) is not True:
+            return False
+
+        # Check that a new Stakeholder was created
+        self.s1v2 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 2
+        )
+        if (self.handleResult(
+            (self.countVersions(Stakeholder, self.identifier1)
+                and self.s1v2 is not None),
+            'Version 2 of the updated Stakeholder was not found.'
+        )) is not True:
+            return False
+
+        """
+        v3 (by user 3 > based on v1)
+        """
+        # Find and check the tg_id where the values are in
+        tg_id = self.findTgidByKeyValue(self.s1v1, key2, oldValue2)
+        if (self.handleResult(
+            tg_id is not None,
+            'The tg_id of taggroup to change was not found.'
+        )) is not True:
+            return False
+
+        # Prepare the diff
+        deleteTags = self.getTagDiffsFromTags({key2: oldValue2}, 'delete')
+        addTags = self.getTagDiffsFromTags({key2: newValue2}, 'add')
+        taggroup = {
+            'tg_id': tg_id,
+            'tags': deleteTags + addTags
+        }
+        diff = {'stakeholders': [self.getItemDiff(
+            'stakeholders',
+            id = self.identifier1,
+            version = 1,
+            taggroups = [taggroup]
+        )]}
+
+        if verbose is True:
+            log.debug('Diff to update s1v2:\n%s' % diff)
+
+        # Update the Stakeholder
+        if (self.handleResult(
+            self.doCreate(self.getCreateUrl('stakeholders'), diff, self.getUser(3)),
+            'The Stakeholder could not be updated.'
+        )) is not True:
+            return False
+
+        # Check that a new Stakeholder was created
+        self.s1v3 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 3
+        )
+        if (self.handleResult(
+            (self.countVersions(Stakeholder, self.identifier1)
+                and self.s1v3 is not None),
+            'Version 3 of the updated Stakeholder was not found.'
+        )) is not True:
+            return False
+
+        # Re-query v2
+        self.s1v2 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 2
+        )
+
+        # Check that the status of v2 is  'pending'
+        if (self.handleResult(
+            self.s1v2.get_status_id() == 1,
+            'The status of version 2 is not "pending"'
+        )) is not True:
+            return False
+
+        # Check that the status of v3 is 'pending'
+        if (self.handleResult(
+            self.s1v3.get_status_id() == 1,
+            'The status of version 3 is not "pending"'
+        )) is not True:
+            return False
+
+        # Check that v2 does contain the first change
+        if (self.handleResult(
+            (self.findKeyValue(self.s1v2, key1, oldValue1) is False and
+                self.findKeyValue(self.s1v2, key1, newValue1) is True),
+            'Version 2 does not contain the changes made by user 2'
+        )) is not True:
+            return False
+
+        # Check that v2 does not contain the second change
+        if (self.handleResult(
+            (self.findKeyValue(self.s1v2, key2, oldValue2) is True and
+                self.findKeyValue(self.s1v2, key2, newValue2) is False),
+            'Version 2 also contains the second change'
+        )) is not True:
+            return False
+
+        # Check that v3 contains both changes
+        if (self.handleResult(
+            (self.findKeyValue(self.s1v3, key1, oldValue1) is True and
+                self.findKeyValue(self.s1v3, key1, newValue1) is False),
+            'Version 3 does not contain the changes made by user 2'
+        )) is not True:
+            return False
+
+        # Check that v3 contains both changes
+        if (self.handleResult(
+            (self.findKeyValue(self.s1v3, key2, oldValue2) is False and
+                self.findKeyValue(self.s1v3, key2, newValue2) is True),
+            'Version 3 does not contain the changes made by user 3'
+        )) is not True:
+            return False
+
+        return True

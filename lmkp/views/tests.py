@@ -1,4 +1,4 @@
-from lmkp.tests.moderation_activities import *
+from lmkp.tests.moderate.moderation_activities import *
 from lmkp.tests.create.create_activities import *
 from lmkp.tests.create.create_stakeholders import *
 from lmkp.tests.edit.edit_activities import *
@@ -11,11 +11,11 @@ from pyramid.view import view_config
 def moderation_tests(request):
 
     # ['CA01'] / ['CS01'] / True / False
-    doCreateTests = True
+    doCreateTests = False
     # ['EA01'] / ['ES01'] / True / False
-    doEditTests = True
+    doEditTests = False
     # ['MA01'] / ['MS01'] / True / False
-    doModerationTests = True
+    doModerationTests = False
 
     verbose = False
 
@@ -131,6 +131,8 @@ def moderation_tests(request):
             EditActivities12(request),
             EditActivities13(request),
             EditActivities14(request),
+            EditActivities15(request),
+            EditActivities16(request),
             EditStakeholders01(request),
             EditStakeholders02(request),
             EditStakeholders03(request),
@@ -143,7 +145,9 @@ def moderation_tests(request):
             EditStakeholders10(request),
             EditStakeholders11(request),
             EditStakeholders12(request),
-            EditStakeholders13(request)
+            EditStakeholders13(request),
+            EditStakeholders14(request),
+            EditStakeholders15(request)
         ]
 
         # Test the setup
@@ -194,7 +198,15 @@ def moderation_tests(request):
         and len(doModerationTests) > 0)):
 
         moderationTests = [
-            ModerationActivities01(request)
+            ModerationActivities01(request),
+            ModerationActivities02(request),
+            ModerationActivities03(request),
+            ModerationActivities04(request),
+            ModerationActivities05(request),
+            ModerationActivities06(request),
+            ModerationActivities07(request),
+            ModerationActivities08(request),
+            ModerationActivities09(request)
         ]
 
         # Test the setup

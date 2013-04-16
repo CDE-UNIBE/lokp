@@ -1941,3 +1941,405 @@ class EditActivities14(CreateBase):
             return False
 
         return True
+
+"""
+EA 15
+"""
+class EditActivities15(CreateBase):
+
+    def __init__(self, request):
+        super(CreateBase, self).__init__()
+        self.request = request
+        self.protocol = ActivityProtocol3(Session)
+        self.testId = 'EA15'
+        self.testDescription = 'Edit a own pending Activity sets it to "edited"'
+        self.identifier1 = '473e58b4-3b36-4e81-ad48-e213738def98'
+        self.a1v1 = None
+        self.a1v2 = None
+        self.a1v3 = None
+
+    def testSetup(self, vebose=False):
+
+        # Make sure the Activity does not yet exist
+        if (self.handleResult(
+            self.countVersions(Activity, self.identifier1) == 0,
+            'Activity exists already'
+        )) is not True:
+            return False
+
+        # Create, moderate and check Activity
+        self.a1v1 = self.createModerateCheckFirstItem(
+            self,
+            'activities',
+            Activity,
+            self.getCreateUrl('activities'),
+            self.getSomeActivityTags(4, uid=self.identifier1),
+            self.identifier1,
+            self.getUser(1),
+            profile = 'Laos'
+        )
+
+        if (self.handleResult(
+            self.a1v1 is not None and self.a1v1 is not False,
+            'Activity was not created or reviewed.'
+        )) is not True:
+            return False
+
+        return True
+
+    def doTest(self, verbose=False):
+
+        # The values to change
+        key1 = 'Intention of Investment'
+        oldValue1 = 'Agriculture'
+        newValue1 = 'Mining'
+
+        key2 = 'Intended area (ha)'
+        oldValue2 = 100
+        newValue2 = 50
+
+        """
+        v2
+        """
+        # Find and check the tg_id where the values are in
+        tg_id = self.findTgidByKeyValue(self.a1v1, key1, oldValue1)
+        if (self.handleResult(
+            tg_id is not None,
+            'The tg_id of taggroup to change was not found.'
+        )) is not True:
+            return False
+
+        # Prepare the diff
+        deleteTags = self.getTagDiffsFromTags({key1: oldValue1}, 'delete')
+        addTags = self.getTagDiffsFromTags({key1: newValue1}, 'add')
+        taggroup = {
+            'tg_id': tg_id,
+            'tags': deleteTags + addTags
+        }
+        diff = {'activities': [self.getItemDiff(
+            'activities',
+            id = self.identifier1,
+            version = 1,
+            taggroups = [taggroup]
+        )]}
+
+        if verbose is True:
+            log.debug('Diff to update a1v1:\n%s' % diff)
+
+        # Update the Activity
+        if (self.handleResult(
+            self.doCreate(self.getCreateUrl('activities'), diff, self.getUser(1)),
+            'The Activity could not be updated.'
+        )) is not True:
+            return False
+
+        # Check that a new Activity was created
+        self.a1v2 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 2
+        )
+        if (self.handleResult(
+            (self.countVersions(Activity, self.identifier1)
+                and self.a1v2 is not None),
+            'Version 2 of the updated Activity was not found.'
+        )) is not True:
+            return False
+
+        """
+        v3
+        """
+        # Find and check the tg_id where the values are in
+        tg_id = self.findTgidByKeyValue(self.a1v2, key2, oldValue2)
+        if (self.handleResult(
+            tg_id is not None,
+            'The tg_id of taggroup to change was not found.'
+        )) is not True:
+            return False
+
+        # Prepare the diff
+        deleteTags = self.getTagDiffsFromTags({key2: oldValue2}, 'delete')
+        addTags = self.getTagDiffsFromTags({key2: newValue2}, 'add')
+        taggroup = {
+            'tg_id': tg_id,
+            'tags': deleteTags + addTags
+        }
+        diff = {'activities': [self.getItemDiff(
+            'activities',
+            id = self.identifier1,
+            version = 2,
+            taggroups = [taggroup]
+        )]}
+
+        if verbose is True:
+            log.debug('Diff to update a1v2:\n%s' % diff)
+
+        # Update the Activity
+        if (self.handleResult(
+            self.doCreate(self.getCreateUrl('activities'), diff, self.getUser(1)),
+            'The Activity could not be updated.'
+        )) is not True:
+            return False
+
+        # Check that a new Activity was created
+        self.a1v3 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 3
+        )
+        if (self.handleResult(
+            (self.countVersions(Activity, self.identifier1)
+                and self.a1v3 is not None),
+            'Version 3 of the updated Activity was not found.'
+        )) is not True:
+            return False
+
+        # Re-query v2
+        self.a1v2 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 2
+        )
+
+        # Check that the status of v2 is not 'edited'
+        if (self.handleResult(
+            self.a1v2.get_status_id() == 6,
+            'The status of version 2 is not "edited"'
+        )) is not True:
+            return False
+
+        # Check that the status of v3 is 'pending'
+        if (self.handleResult(
+            self.a1v3.get_status_id() == 1,
+            'The status of version 3 is not "pending"'
+        )) is not True:
+            return False
+
+        # Check that v2 does contain the first change
+        if (self.handleResult(
+            (self.findKeyValue(self.a1v2, key1, oldValue1) is False and
+                self.findKeyValue(self.a1v2, key1, newValue1) is True),
+            'The new value of v2 was not correctly set'
+        )) is not True:
+            return False
+
+        # Check that v2 does not contain the second change
+        if (self.handleResult(
+            (self.findKeyValue(self.a1v2, key2, oldValue2) is True and
+                self.findKeyValue(self.a1v2, key2, newValue2) is False),
+            'Version 2 also contains the second change'
+        )) is not True:
+            return False
+
+        # Check that v3 contains both changes
+        if (self.handleResult(
+            (self.findKeyValue(self.a1v3, key1, oldValue1) is False and
+                self.findKeyValue(self.a1v3, key1, newValue1) is True),
+            'Version 3 does not contain the changes made to version 2'
+        )) is not True:
+            return False
+
+        # Check that v3 contains both changes
+        if (self.handleResult(
+            (self.findKeyValue(self.a1v3, key2, oldValue2) is False and
+                self.findKeyValue(self.a1v3, key2, newValue2) is True),
+            'Version 3 does not contain the changes made to version 3'
+        )) is not True:
+            return False
+
+        return True
+
+"""
+EA 16
+"""
+class EditActivities16(CreateBase):
+
+    def __init__(self, request):
+        super(CreateBase, self).__init__()
+        self.request = request
+        self.protocol = ActivityProtocol3(Session)
+        self.testId = 'EA16'
+        self.testDescription = 'Edits by different users are based on the active version'
+        self.identifier1 = '73011e3b-39b5-490f-a4fa-f8ca7f073f82'
+        self.a1v1 = None
+        self.a1v2 = None
+        self.a1v3 = None
+
+    def testSetup(self, vebose=False):
+
+        # Make sure the Activity does not yet exist
+        if (self.handleResult(
+            self.countVersions(Activity, self.identifier1) == 0,
+            'Activity exists already'
+        )) is not True:
+            return False
+
+        # Create, moderate and check Activity
+        self.a1v1 = self.createModerateCheckFirstItem(
+            self,
+            'activities',
+            Activity,
+            self.getCreateUrl('activities'),
+            self.getSomeActivityTags(4, uid=self.identifier1),
+            self.identifier1,
+            self.getUser(1),
+            profile = 'Laos'
+        )
+
+        if (self.handleResult(
+            self.a1v1 is not None and self.a1v1 is not False,
+            'Activity was not created or reviewed.'
+        )) is not True:
+            return False
+
+        return True
+
+    def doTest(self, verbose=False):
+
+        # The values to change
+        key1 = 'Intention of Investment'
+        oldValue1 = 'Agriculture'
+        newValue1 = 'Mining'
+
+        key2 = 'Intended area (ha)'
+        oldValue2 = 100
+        newValue2 = 50
+
+        """
+        v2 (by user 2 > based on v1)
+        """
+        # Find and check the tg_id where the values are in
+        tg_id = self.findTgidByKeyValue(self.a1v1, key1, oldValue1)
+        if (self.handleResult(
+            tg_id is not None,
+            'The tg_id of taggroup to change was not found.'
+        )) is not True:
+            return False
+
+        # Prepare the diff
+        deleteTags = self.getTagDiffsFromTags({key1: oldValue1}, 'delete')
+        addTags = self.getTagDiffsFromTags({key1: newValue1}, 'add')
+        taggroup = {
+            'tg_id': tg_id,
+            'tags': deleteTags + addTags
+        }
+        diff = {'activities': [self.getItemDiff(
+            'activities',
+            id = self.identifier1,
+            version = 1,
+            taggroups = [taggroup]
+        )]}
+
+        if verbose is True:
+            log.debug('Diff to update a1v1:\n%s' % diff)
+
+        # Update the Activity
+        if (self.handleResult(
+            self.doCreate(self.getCreateUrl('activities'), diff, self.getUser(2)),
+            'The Activity could not be updated.'
+        )) is not True:
+            return False
+
+        # Check that a new Activity was created
+        self.a1v2 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 2
+        )
+        if (self.handleResult(
+            (self.countVersions(Activity, self.identifier1)
+                and self.a1v2 is not None),
+            'Version 2 of the updated Activity was not found.'
+        )) is not True:
+            return False
+
+        """
+        v3 (by user 3 > based on v1)
+        """
+        # Find and check the tg_id where the values are in
+        tg_id = self.findTgidByKeyValue(self.a1v1, key2, oldValue2)
+        if (self.handleResult(
+            tg_id is not None,
+            'The tg_id of taggroup to change was not found.'
+        )) is not True:
+            return False
+
+        # Prepare the diff
+        deleteTags = self.getTagDiffsFromTags({key2: oldValue2}, 'delete')
+        addTags = self.getTagDiffsFromTags({key2: newValue2}, 'add')
+        taggroup = {
+            'tg_id': tg_id,
+            'tags': deleteTags + addTags
+        }
+        diff = {'activities': [self.getItemDiff(
+            'activities',
+            id = self.identifier1,
+            version = 1,
+            taggroups = [taggroup]
+        )]}
+
+        if verbose is True:
+            log.debug('Diff to update a1v2:\n%s' % diff)
+
+        # Update the Activity
+        if (self.handleResult(
+            self.doCreate(self.getCreateUrl('activities'), diff, self.getUser(3)),
+            'The Activity could not be updated.'
+        )) is not True:
+            return False
+
+        # Check that a new Activity was created
+        self.a1v3 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 3
+        )
+        if (self.handleResult(
+            (self.countVersions(Activity, self.identifier1)
+                and self.a1v3 is not None),
+            'Version 3 of the updated Activity was not found.'
+        )) is not True:
+            return False
+
+        # Re-query v2
+        self.a1v2 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 2
+        )
+
+        # Check that the status of v2 is 'pending'
+        if (self.handleResult(
+            self.a1v2.get_status_id() == 1,
+            'The status of version 2 is not "pending"'
+        )) is not True:
+            return False
+
+        # Check that the status of v3 is 'pending'
+        if (self.handleResult(
+            self.a1v3.get_status_id() == 1,
+            'The status of version 3 is not "pending"'
+        )) is not True:
+            return False
+
+        # Check that v2 does contain only the first change
+        if (self.handleResult(
+            (self.findKeyValue(self.a1v2, key1, oldValue1) is False and
+                self.findKeyValue(self.a1v2, key1, newValue1) is True),
+            'Version 2 does not contain the changes made by user 2'
+        )) is not True:
+            return False
+
+        # Check that v2 does not contain the second change
+        if (self.handleResult(
+            (self.findKeyValue(self.a1v2, key2, oldValue2) is True and
+                self.findKeyValue(self.a1v2, key2, newValue2) is False),
+            'Version 2 also contains the second change'
+        )) is not True:
+            return False
+
+        # Check that v3 does contain only the second change
+        if (self.handleResult(
+            (self.findKeyValue(self.a1v3, key1, oldValue1) is True and
+                self.findKeyValue(self.a1v3, key1, newValue1) is False),
+            'Version 3 also contains the changes made by user 2'
+        )) is not True:
+            return False
+
+        # Check that v3 contains both changes
+        if (self.handleResult(
+            (self.findKeyValue(self.a1v3, key2, oldValue2) is False and
+                self.findKeyValue(self.a1v3, key2, newValue2) is True),
+            'Version 3 does not contain the changes made by user 3'
+        )) is not True:
+            return False
+
+        return True
