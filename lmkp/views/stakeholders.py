@@ -5,6 +5,8 @@ from lmkp.views.config import get_mandatory_keys
 from lmkp.models.database_objects import *
 import logging
 from pyramid.httpexceptions import HTTPForbidden
+from pyramid.httpexceptions import HTTPUnauthorized
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.i18n import TranslationStringFactory
 from pyramid.renderers import render_to_response

@@ -1,4 +1,5 @@
 from lmkp.tests.moderate.moderation_activities import *
+from lmkp.tests.moderate.moderation_stakeholders import *
 from lmkp.tests.create.create_activities import *
 from lmkp.tests.create.create_stakeholders import *
 from lmkp.tests.edit.edit_activities import *
@@ -206,7 +207,15 @@ def moderation_tests(request):
             ModerationActivities06(request),
             ModerationActivities07(request),
             ModerationActivities08(request),
-            ModerationActivities09(request)
+            ModerationActivities09(request),
+            ModerationStakeholders01(request),
+            ModerationStakeholders02(request),
+            ModerationStakeholders03(request),
+            ModerationStakeholders04(request),
+            ModerationStakeholders05(request),
+            ModerationStakeholders06(request),
+            ModerationStakeholders07(request),
+            ModerationStakeholders08(request)
         ]
 
         # Test the setup
