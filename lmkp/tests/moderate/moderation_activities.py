@@ -1418,7 +1418,7 @@ class ModerationActivities07(ModerationBase):
         self.request = request
         self.protocol = ActivityProtocol3(Session)
         self.testId = 'MA07'
-        self.testDescription = 'Versions do not have to be reviewed chronologically'
+        self.testDescription = 'A version without all mandatory keys cannot be set to "active"'
         self.identifier1 = '55ea5176-5e81-434d-820b-31e2fb0ee417'
         self.a1v1 = None
         self.createBase = CreateBase()
