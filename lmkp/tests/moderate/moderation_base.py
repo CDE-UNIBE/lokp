@@ -15,8 +15,9 @@ class ModerationBase(Test_Base):
         """
 
         """
-        moderator = self.getUser(2)
-        profile = 'LA'
+
+        moderator = self.getUser(1)
+        profile = 'Laos'
 
 
         # Initialize Session
@@ -38,13 +39,17 @@ class ModerationBase(Test_Base):
 
         # Do the post request
         # TODO!!!
-        request = session.post(self.getReviewUrl(itemType), data=payload, cookies=cookies)
+        request = session.post(
+            self.getReviewUrl(itemType),
+            data=payload,
+            cookies=cookies
+        )
 
         try:
             json = request.json()
             return json['success']
         except:
-            print "*** Request failed with response: %s" % request
+            print "*** Request failed with code %s and response %s" % (request.status_code, request.content)
             return False
 
     def getReviewUrl(self, itemType):
