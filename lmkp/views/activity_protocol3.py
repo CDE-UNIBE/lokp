@@ -496,7 +496,7 @@ class ActivityProtocol3(Protocol):
 
         # If logged in and it is not a public query, add pending versions by
         # current user to selection. This is not necessary for moderators
-        # because they already see all pending versions
+        # because they already see all pending versions (see * below)
         if logged_in and public_query is False and not is_moderator:
 
             request_user_id = (request.user.id if request.user is not None
@@ -521,6 +521,19 @@ class ActivityProtocol3(Protocol):
                 outerjoin(order_query, order_query.c.id == Activity.id)
 
             relevant_activities = pending_activities.union(relevant_activities)
+
+        if is_moderator:
+            # * For moderators, it is important to filter out pending Activities
+            # based on the spatial extent of the moderator's profile. Otherwise,
+            # moderators could see pending Activities in another profile.
+            relevant_activities = relevant_activities.\
+                filter(or_(
+                    not_(Activity.fk_status == 1),
+                    and_(
+                        Activity.fk_status == 1,
+                        self._get_spatial_moderator_filter(request)
+                    )
+                ))
 
         # Join Activities with Tag Groups and order_query, then group it
         relevant_activities = relevant_activities.\
@@ -1634,17 +1647,25 @@ class ActivityProtocol3(Protocol):
         if ('geometry' in activity_dict and activity_dict['geometry']
             is not None):
             geom = geojson.loads(json.dumps(activity_dict['geometry']),
-                                 object_hook=geojson.GeoJSON.to_instance)
+                             object_hook=geojson.GeoJSON.to_instance)
 
             # The geometry
             shape = asShape(geom)
+
+            try:
+                geometrytype = shape.geom_type
+            except:
+                raise HTTPBadRequest(detail="Invalid geometry type, needs to be a point")
+
+#            if geometrytype != 'Point':
+#                raise HTTPBadRequest(detail="Wrong geometry type, needs to be a point")
+
             # Create a new activity and add representative point to the activity
             new_activity = Activity(activity_identifier=identifier,
                                     version=version, point=shape.representative_point().wkt)
         else:
-            # If no geometry is submitted, create new activity without geometry
-            new_activity = Activity(activity_identifier=identifier,
-                                    version=version)
+            # Activities cannot be created if they do not have a geometry
+            raise HTTPBadRequest(detail="No geometry provided!")
 
         # Status (default: 'pending')
         status = 'pending'
@@ -1713,7 +1734,7 @@ class ActivityProtocol3(Protocol):
                 # yes, set the main_tag attribute to this tag
                 try:
                     if (a_tag.key.key == main_tag_key
-                        and a_tag.value.value == main_tag_value):
+                        and a_tag.value.value == str(main_tag_value)):
                         db_tg.main_tag = a_tag
                 except AttributeError:
                     pass

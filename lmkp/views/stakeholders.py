@@ -5,6 +5,8 @@ from lmkp.views.config import get_mandatory_keys
 from lmkp.models.database_objects import *
 import logging
 from pyramid.httpexceptions import HTTPForbidden
+from pyramid.httpexceptions import HTTPUnauthorized
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.i18n import TranslationStringFactory
 from pyramid.renderers import render_to_response
@@ -317,13 +319,12 @@ def create(request):
 
     # Check if the user is logged in and he/she has sufficient user rights
     userid = authenticated_userid(request)
-    print effective_principals(request)
 
     if userid is None:
-        return HTTPForbidden()
+        raise HTTPForbidden()
     if not isinstance(has_permission('edit', request.context, request),
         ACLAllowed):
-        return HTTPForbidden()
+        raise HTTPForbidden()
 
     ids = stakeholder_protocol3.create(request)
 

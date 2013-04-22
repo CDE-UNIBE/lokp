@@ -996,6 +996,10 @@ class Protocol(object):
         tg_ids = []
         for db_taggroup in db_taggroup_query:
 
+            # Remember if the main tag of a taggroup was deleted. In this case
+            # we will set it again at the end
+            maintag_deleted = False
+
             tg_ids.append(db_taggroup.tg_id)
 
             #TODO: clean up! Also make sure it works for all cases
@@ -1042,6 +1046,9 @@ class Protocol(object):
 #                                    log.debug(
 #                                        "Tag is deleted (not copied) from taggroup."
 #                                    )
+
+                                    if db_taggroup.main_tag == db_tag:
+                                        maintag_deleted = True
 
                                     copy_tag = False
 
@@ -1140,6 +1147,13 @@ class Protocol(object):
                                 and taggroupadded is False):
                                 item.add_taggroup(new_taggroup)
 
+            # If the main tag was deleted and no new one was set, we will simply
+            # use the first tag as a new main tag.
+            if (maintag_deleted is True and new_taggroup.main_tag is None
+                and len(new_taggroup.tags) > 0):
+                new_taggroup.main_tag = new_taggroup.tags[0]
+
+
         # Finally new tag groups (without id) need to be added
         # (and loop all again)
         if 'taggroups' in diff:
@@ -1229,7 +1243,7 @@ class Protocol(object):
                                     new_taggroup._main_tag = new_tag
 
 #        print "============================================="
-
+            
         return item
 
 
@@ -1634,6 +1648,9 @@ class TagGroup(object):
     def get_tg_id(self):
         return self._tg_id
 
+    def get_maintag_id(self):
+        return self._main_tag_id
+
     def get_tag_by_key(self, key):
         """
         Returns a tag from this group if there is one with the requested key,
@@ -1763,19 +1780,19 @@ class Feature(object):
 
     def find_involvement_by_guid(self, guid):
         for i in self._involvements:
-            if (i.get_guid() == guid):
+            if (str(i.get_guid()) == str(guid)):
                 return i
         return None
 
     def find_involvement_by_role(self, guid, role):
         for i in self._involvements:
-            if (i.get_guid() == guid and i.get_role() == role):
+            if (str(i.get_guid()) == str(guid) and i.get_role() == role):
                 return i
         return None
 
     def find_involvement(self, guid, role, version):
         for i in self._involvements:
-            if (i.get_guid() == guid and i.get_role() == role and
+            if (str(i.get_guid()) == str(guid) and i.get_role() == role and
                 i.get_version() == version):
                 return i
         return None
