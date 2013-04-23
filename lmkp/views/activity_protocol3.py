@@ -1745,13 +1745,16 @@ class ActivityProtocol3(Protocol):
                 tg_geom = geojson.loads(json.dumps(tg_geom_diff),
                              object_hook=geojson.GeoJSON.to_instance)
                 # The geometry
-                tg_shape = asShape(tg_geom)
                 try:
+                    tg_shape = asShape(tg_geom)
                     geometrytype = tg_shape.geom_type
                 except:
                     raise HTTPBadRequest(detail="Invalid geometry type of taggroup")
-                # Store it
-                db_tg.geometry = tg_shape.wkt
+                # Store the geometry only if it is a polygon or multipolygon
+                if geometrytype == 'Polygon' or geometrytype == 'MultiPolygon':
+                    db_tg.geometry = tg_shape.wkt
+                else:
+                    raise HTTPBadRequest(detail="Invalid geometry type of taggroup: Only Polygon or MultiPolygon is supported.")
             except KeyError:
                 pass
 
