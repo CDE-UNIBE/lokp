@@ -2389,6 +2389,19 @@ class EditActivities17(CreateBase):
         self.oldValue5 = 'Agriculture'
         self.newValue5 = 'Forestry'
 
+        self.geom6 = {
+            "type": "Point",
+            "coordinates": [
+                102.0, 19.4
+            ]
+        }
+        self.geom7 = {
+            "type": "Rhombus",
+            "coordinates": [
+                [1, 2], [3, 4], [5, 6]
+            ]
+        }
+
     def testSetup(self, verbose=False):
 
         # Make sure the Activity does not yet exist
@@ -3215,6 +3228,125 @@ class EditActivities17(CreateBase):
         if (self.handleResult(
             q[0].geometry == None,
             'The taggroup (v6) still has a geometry'
+        )) is not True:
+            return False
+
+        # Review and accept version 6
+        if (self.handleResult(
+            self.moderationBase.doReview('activities', self.identifier1, 6, 1) is True,
+            'Activity (v6) could not be reviewed.'
+        )) is not True:
+            return False
+
+        self.a1v6 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 6
+        )
+        if (self.handleResult(
+            self.a1v6 is not None,
+            'Activity v6 was not found after reviewing it'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            self.a1v6.get_status_id() == 2,
+            'Activity v6 is not active after approving.'
+        )) is not True:
+            return False
+
+        """
+        Case 6: Try to set a point geometry
+        """
+        versionCount = self.countVersions(Activity, self.identifier1)
+        # Create a diff to update the geometry of the taggroup
+        diff6 = {
+            'activities': [
+                {
+                    'taggroups': [
+                        {
+                            'tg_id': 3,
+                            'tags': [],
+                            'geometry': self.geom6
+                        }
+                    ],
+                    'version': 6,
+                    'id': self.identifier1
+                }
+            ]
+        }
+
+        if verbose is True:
+            log.debug('Diff (diff6) to update a1v6:\n%s' % diff6)
+
+        session = requests.Session()
+
+        user = self.getUser(1)
+        session.auth = (user['username'], user['password'])
+
+        headers = {'content-type': 'application/json'}
+
+        request = session.post(
+            self.getCreateUrl('activities'),
+            data=json.dumps(diff6),
+            headers=headers
+        )
+
+        if (self.handleResult(
+            request.status_code == 400,
+            'The request to create a new version 7 with point geometry was successful'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            self.countVersions(Activity, self.identifier1) == versionCount,
+            'There was a version of the Activity with point geometry created'
+        )) is not True:
+            return False
+
+        """
+        Case 7: Try to set an invalid geometry
+        """
+        # Create a diff to update the geometry of the taggroup
+        diff7 = {
+            'activities': [
+                {
+                    'taggroups': [
+                        {
+                            'tg_id': 3,
+                            'tags': [],
+                            'geometry': self.geom7
+                        }
+                    ],
+                    'version': 6,
+                    'id': self.identifier1
+                }
+            ]
+        }
+
+        if verbose is True:
+            log.debug('Diff (diff7) to update a1v6:\n%s' % diff7)
+
+        session = requests.Session()
+
+        user = self.getUser(1)
+        session.auth = (user['username'], user['password'])
+
+        headers = {'content-type': 'application/json'}
+
+        request = session.post(
+            self.getCreateUrl('activities'),
+            data=json.dumps(diff7),
+            headers=headers
+        )
+
+        if (self.handleResult(
+            request.status_code == 400,
+            'The request to create a new version 7 with invalid geometry was successful'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            self.countVersions(Activity, self.identifier1) == versionCount,
+            'There was a version of the Activity with invalid geometry created'
         )) is not True:
             return False
 

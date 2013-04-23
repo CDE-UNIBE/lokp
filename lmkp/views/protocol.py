@@ -959,7 +959,6 @@ class Protocol(object):
         """
 
 #        print "============================================="
-
 #        log.debug("diff:\n%s" % diff)
 
         if mappedClass == Activity:
@@ -1052,13 +1051,19 @@ class Protocol(object):
                                 else:
                                     tg_geom = geojson.loads(json.dumps(tg_geom_diff),
                                         object_hook = geojson.GeoJSON.to_instance)
-                                    tg_shape = asShape(tg_geom)
                                     try:
                                         # Make sure it is a valid type
+                                        tg_shape = asShape(tg_geom)
                                         geometrytype = tg_shape.geom_type
                                     except:
                                         raise HTTPBadRequest(detail="Invalid geometry type of taggroup")
-                                    new_taggroup.geometry = tg_shape.wkt
+                                    # Store the geometry only if it is a polygon
+                                    # or multipolygon
+                                    if (geometrytype == 'Polygon'
+                                        or geometrytype == 'MultiPolygon'):
+                                        new_taggroup.geometry = tg_shape.wkt
+                                    else:
+                                        raise HTTPBadRequest(detail='Invalid geometry type of taggroup: Only Polygon or MultiPolygon is supported.')
 
                             # Check which tags we have to edit
                             for tag_dict in taggroup_dict['tags']:
