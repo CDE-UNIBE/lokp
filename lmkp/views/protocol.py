@@ -37,6 +37,8 @@ from pyramid.security import effective_principals
 from pyramid.i18n import get_localizer
 from lmkp.views.review import BaseReview
 import json
+import geojson
+from shapely.geometry import asShape
 
 from lmkp.views.translation import statusMap
 from lmkp.views.translation import get_translated_status
@@ -1018,6 +1020,9 @@ class Protocol(object):
             taggroupadded = False
             if db is True:
                 new_taggroup = Db_Tag_Group(db_taggroup.tg_id)
+                if mappedClass == Activity:
+                    # Copy the old geometry of the taggroup (even if 'none')
+                    new_taggroup.geometry = db_taggroup.geometry
             else:
                 new_taggroup = TagGroup(tg_id = db_taggroup.tg_id)
 
@@ -1035,6 +1040,26 @@ class Protocol(object):
                     for taggroup_dict in diff['taggroups']:
                         if ('tg_id' in taggroup_dict and
                             taggroup_dict['tg_id'] == db_taggroup.tg_id):
+
+                            # Overwrite the geometry of the taggroup if it is
+                            # set
+                            if ('geometry' in taggroup_dict
+                                and mappedClass == Activity and db is True):
+                                tg_geom_diff = taggroup_dict['geometry']
+                                if tg_geom_diff == {}:
+                                    # Empty geometry: Set it to 'none'
+                                    new_taggroup.geometry = None
+                                else:
+                                    tg_geom = geojson.loads(json.dumps(tg_geom_diff),
+                                        object_hook = geojson.GeoJSON.to_instance)
+                                    tg_shape = asShape(tg_geom)
+                                    try:
+                                        # Make sure it is a valid type
+                                        geometrytype = tg_shape.geom_type
+                                    except:
+                                        raise HTTPBadRequest(detail="Invalid geometry type of taggroup")
+                                    new_taggroup.geometry = tg_shape.wkt
+
                             # Check which tags we have to edit
                             for tag_dict in taggroup_dict['tags']:
                                 # Make sure it is exactly this tag (same key)
@@ -1243,7 +1268,7 @@ class Protocol(object):
                                     new_taggroup._main_tag = new_tag
 
 #        print "============================================="
-            
+
         return item
 
 

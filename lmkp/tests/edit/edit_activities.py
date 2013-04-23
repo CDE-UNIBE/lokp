@@ -2343,3 +2343,879 @@ class EditActivities16(CreateBase):
             return False
 
         return True
+
+"""
+EA 17
+"""
+class EditActivities17(CreateBase):
+
+    def __init__(self, request):
+        super(CreateBase, self).__init__()
+        self.request = request
+        self.protocol = ActivityProtocol3(Session)
+        self.testId = 'EA17'
+        self.testDescription = 'Edit the geometry of a Taggroup'
+        self.identifier1 = '877cb800-ab4f-11e2-9e96-0800200c9ad2'
+        self.a1v1 = None
+        self.a1v2 = None
+        self.a1v3 = None
+        self.a1v4 = None
+        self.a1v5 = None
+        self.a1v6 = None
+
+        self.moderationBase = ModerationBase()
+        self.coords1 = [
+            [102.0, 19.4], [102.1, 19.4], [102.1, 19.5], [102.0, 19.5], [102.0, 19.4]
+        ]
+        self.geom1 = None
+        self.coords2 = [
+            [102.2, 19.6], [102.3, 19.6], [102.3, 19.7], [102.2, 19.7], [102.2, 19.6]
+        ]
+        self.geom2 = None
+
+        self.coords3 = [
+            [102.4, 19.8], [102.5, 19.8], [102.5, 19.9], [102.4, 19.9], [102.4, 19.8]
+        ]
+        self.key3 = 'Intended area (ha)'
+        self.oldValue3 = 100
+        self.newValue3 = 200
+        self.geom3 = None
+
+        self.key4 = 'Intended area (ha)'
+        self.oldValue4 = 200
+        self.newValue4 = 300
+
+        self.key5 = 'Intention of Investment'
+        self.oldValue5 = 'Agriculture'
+        self.newValue5 = 'Forestry'
+
+    def testSetup(self, verbose=False):
+
+        # Make sure the Activity does not yet exist
+        if (self.handleResult(
+            self.countVersions(Activity, self.identifier1) == 0,
+            'Activity exists already'
+        )) is not True:
+            return False
+
+        # Create, moderate and check a first Activity with a geometry in
+        # taggroup with tg_id = 3
+        diff = {
+            'activities': [
+                {
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [102.0598997729745, 19.421453614541]
+                    },
+                    'taggroups': [
+                        {
+                            'main_tag': {
+                                'value': 'Laos',
+                                'key': 'Country'
+                            },
+                            'tags': [
+                                {
+                                    'value': 'Laos',
+                                    'key': 'Country',
+                                    'op': 'add'
+                                }
+                            ],
+                            'op': 'add'
+                        }, {
+                            'main_tag': {
+                                'value': 'Contract',
+                                'key': 'Data source'
+                            },
+                            'tags': [
+                                {
+                                    'value': 'Contract',
+                                    'key': 'Data source',
+                                    'op': 'add'
+                                }
+                            ],
+                            'op': 'add'
+                        }, {
+                            'main_tag': {
+                                'value': 100,
+                                'key': 'Intended area (ha)'
+                            },
+                            'tags': [
+                                {
+                                    'value': 100,
+                                    'key': 'Intended area (ha)',
+                                    'op': 'add'
+                                }
+                            ],
+                            'op': 'add',
+                            'geometry': {
+                                'type': 'Polygon',
+                                'coordinates': [
+                                    self.coords1
+                                ]
+                            }
+                        }, {
+                            'main_tag': {
+                                'value': 'Agriculture',
+                                'key': 'Intention of Investment'
+                            },
+                            'tags': [
+                                {
+                                    'value': 'Agriculture',
+                                    'key': 'Intention of Investment',
+                                    'op': 'add'
+                                }
+                            ],
+                            'op': 'add'
+                        }, {
+                            'main_tag': {
+                                'value': 'Contract signed',
+                                'key': 'Negotiation Status'
+                            },
+                            'tags': [
+                                {
+                                    'value': 'Contract signed',
+                                    'key': 'Negotiation Status',
+                                    'op': 'add'
+                                }
+                            ],
+                            'op': 'add'
+                        }, {
+                            'main_tag': {
+                                'value': '100m to 1km',
+                                'key': 'Spatial Accuracy'
+                            },
+                            'tags': [
+                                {
+                                    'value': '100m to 1km',
+                                    'key': 'Spatial Accuracy',
+                                    'op': 'add'
+                                }
+                            ],
+                            'op': 'add'
+                        }
+                    ],
+                    'version': 1,
+                    'id': self.identifier1
+                }
+            ]
+        }
+
+        if verbose is True:
+            log.debug('Diff to create a1v1:\n%s' % diff)
+
+        import requests
+        import json
+        session = requests.Session()
+
+        user = self.getUser(1)
+        session.auth = (user['username'], user['password'])
+
+        cookies = dict(_LOCALE_='fr')
+        headers = {'content-type': 'application/json'}
+
+        request = session.post(
+            self.getCreateUrl('activities'),
+            data=json.dumps(diff),
+            headers=headers,
+            cookies=cookies
+        )
+
+        if (self.handleResult(
+            request.status_code == 201,
+            'The new Activity could not be created.'
+        )) is not True:
+            return False
+
+        json = request.json()
+
+        if (self.handleResult(
+            'created' in json and json['created'] is True,
+            'Server response ("created") after creating new Activity is not correct.'
+        )) is not True:
+            return False
+
+        # Review and accept version 1
+        if (self.handleResult(
+            self.moderationBase.doReview('activities', self.identifier1, 1, 1) is True,
+            'Activity could not be reviewed.'
+        )) is not True:
+            return False
+
+        self.a1v1 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 1
+        )
+        if (self.handleResult(
+            self.a1v1 is not None,
+            'New Activity was created and reviewed but not found.'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            self.a1v1.get_status_id() == 2,
+            'Activity is not active after approving.'
+        )) is not True:
+            return False
+
+        # Make sure the geometry is in taggroup with tg_id = 3
+        q = Session.query(A_Tag_Group).\
+            join(Activity).\
+            filter(Activity.identifier == self.identifier1).\
+            filter(Activity.version == 1).\
+            filter(A_Tag_Group.tg_id == 3).\
+            all()
+
+        if (self.handleResult(
+            len(q) == 1,
+            'The taggroup with a geometry was not found at all'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            q[0].geometry != None,
+            'The taggroup does not contain a geometry'
+        )) is not True:
+            return False
+
+        # Store the geometry
+        self.geom1 = q[0].geometry
+
+        return True
+
+    def doTest(self, verbose=False):
+
+        """
+        Case 1: Change only the geometry of a taggroup (diff1)
+        """
+
+        # Create a diff to update the geometry of the taggroup
+        diff1 = {
+            'activities': [
+                {
+                    'taggroups': [
+                        {
+                            'tg_id': 3,
+                            'tags': [],
+                            'geometry': {
+                                'type': 'Polygon',
+                                'coordinates': [
+                                    self.coords2
+                                ]
+                            }
+                        }
+                    ],
+                    'version': 1,
+                    'id': self.identifier1
+                }
+            ]
+        }
+
+        if verbose is True:
+            log.debug('Diff (diff1) to update a1v1:\n%s' % diff1)
+
+        import requests
+        import json
+        session = requests.Session()
+
+        user = self.getUser(1)
+        session.auth = (user['username'], user['password'])
+
+        headers = {'content-type': 'application/json'}
+
+        request = session.post(
+            self.getCreateUrl('activities'),
+            data=json.dumps(diff1),
+            headers=headers
+        )
+
+        if (self.handleResult(
+            request.status_code == 201,
+            'The new Activity could not be created.'
+        )) is not True:
+            return False
+
+        jsonresponse = request.json()
+
+        if (self.handleResult(
+            'created' in jsonresponse and jsonresponse['created'] is True,
+            'Server response ("created") after updating new Activity is not correct.'
+        )) is not True:
+            return False
+
+        self.a1v2 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 2
+        )
+        if (self.handleResult(
+            self.a1v2 is not None,
+            'Updated Activity was created but not found.'
+        )) is not True:
+            return False
+
+        # Make sure it is pending
+        if (self.handleResult(
+            self.a1v2.get_status_id() == 1,
+            'Updated Activity is not pending.'
+        )) is not True:
+            return False
+
+        # Make sure it has a geometry
+        q = Session.query(A_Tag_Group).\
+            join(Activity).\
+            filter(Activity.identifier == self.identifier1).\
+            filter(Activity.version == 2).\
+            filter(A_Tag_Group.tg_id == 3).\
+            all()
+
+        if (self.handleResult(
+            len(q) == 1,
+            'The taggroup with a geometry was not found at all'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            q[0].geometry != None,
+            'The taggroup does not contain a geometry'
+        )) is not True:
+            return False
+
+        # Store the geometry
+        self.geom2 = q[0].geometry
+
+        from shapely import wkb
+        g1 = wkb.loads(str(self.geom1.geom_wkb))
+        g2 = wkb.loads(str(self.geom2.geom_wkb))
+
+        # Make sure it is not the same geometry anymore
+        if (self.handleResult(
+            g1.equals(g2) is not True,
+            'The updated Activity has the same geometry as the old one'
+        )) is not True:
+            return False
+
+        # Review and accept version 2
+        if (self.handleResult(
+            self.moderationBase.doReview('activities', self.identifier1, 2, 1) is True,
+            'Activity (v2) could not be reviewed.'
+        )) is not True:
+            return False
+
+        self.a1v2 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 2
+        )
+        if (self.handleResult(
+            self.a1v2 is not None,
+            'Activity v2 was not found after reviewing it'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            self.a1v2.get_status_id() == 2,
+            'Activity v2 is not active after approving.'
+        )) is not True:
+            return False
+
+        """
+        Case 2: Change the geometry as well as the tag of a taggroup
+        """
+
+        # Create a diff to update the geometry of the taggroup
+        diff2 = {
+            'activities': [
+                {
+                    'taggroups': [
+                        {
+                            'tg_id': 3,
+                            'tags': [
+                                {
+                                    'op': 'delete',
+                                    'key': self.key3,
+                                    'value': self.oldValue3
+                                }, {
+                                    'op': 'add',
+                                    'key': self.key3,
+                                    'value': self.newValue3
+                                }
+                            ],
+                            'geometry': {
+                                'type': 'Polygon',
+                                'coordinates': [
+                                    self.coords3
+                                ]
+                            }
+                        }
+                    ],
+                    'version': 2,
+                    'id': self.identifier1
+                }
+            ]
+        }
+
+        if verbose is True:
+            log.debug('Diff (diff2) to update a1v2:\n%s' % diff2)
+
+        session = requests.Session()
+
+        user = self.getUser(1)
+        session.auth = (user['username'], user['password'])
+
+        headers = {'content-type': 'application/json'}
+
+        request = session.post(
+            self.getCreateUrl('activities'),
+            data=json.dumps(diff2),
+            headers=headers
+        )
+
+        if (self.handleResult(
+            request.status_code == 201,
+            'The new Activity could not be created.'
+        )) is not True:
+            return False
+
+        jsonresponse = request.json()
+
+        if (self.handleResult(
+            'created' in jsonresponse and jsonresponse['created'] is True,
+            'Server response ("created") after updating new Activity (v3) is not correct.'
+        )) is not True:
+            return False
+
+        self.a1v3 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 3
+        )
+        if (self.handleResult(
+            self.a1v3 is not None,
+            'Updated Activity (v3) was created but not found.'
+        )) is not True:
+            return False
+
+        # Make sure it is pending
+        if (self.handleResult(
+            self.a1v3.get_status_id() == 1,
+            'Updated Activity (v3) is not pending.'
+        )) is not True:
+            return False
+
+        # Make sure it has a geometry
+        q = Session.query(A_Tag_Group).\
+            join(Activity).\
+            filter(Activity.identifier == self.identifier1).\
+            filter(Activity.version == 3).\
+            filter(A_Tag_Group.tg_id == 3).\
+            all()
+
+        if (self.handleResult(
+            len(q) == 1,
+            'The taggroup with a geometry was not found at all'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            q[0].geometry != None,
+            'The taggroup does not contain a geometry'
+        )) is not True:
+            return False
+
+        # Store the geometry
+        self.geom3 = q[0].geometry
+        g3 = wkb.loads(str(self.geom3.geom_wkb))
+
+        # Make sure it is not the same geometry anymore
+        if (self.handleResult(
+            g2.equals(g3) is not True,
+            'The updated Activity (v3) has the same geometry as the old one'
+        )) is not True:
+            return False
+
+        # Make sure it also has the new tag
+        # Check that the new Activity has the updated value
+        if (self.handleResult(
+            (self.findKeyValue(self.a1v3, self.key3, self.newValue3) is True and
+            self.findKeyValue(self.a1v3, self.key3, self.oldValue3) is False),
+            'Values of v3 were not updated correctly.'
+        )) is not True:
+            return False
+
+        # Review and accept version 3
+        if (self.handleResult(
+            self.moderationBase.doReview('activities', self.identifier1, 3, 1) is True,
+            'Activity (v3) could not be reviewed.'
+        )) is not True:
+            return False
+
+        self.a1v3 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 3
+        )
+        if (self.handleResult(
+            self.a1v3 is not None,
+            'Activity v3 was not found after reviewing it'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            self.a1v3.get_status_id() == 2,
+            'Activity v3 is not active after approving.'
+        )) is not True:
+            return False
+
+        """
+        Case 3: Change the geometry as well as the tag of a taggroup
+        """
+
+        # Create a diff to update the geometry of the taggroup
+        diff3 = {
+            'activities': [
+                {
+                    'taggroups': [
+                        {
+                            'tg_id': 3,
+                            'tags': [
+                                {
+                                    'op': 'delete',
+                                    'key': self.key4,
+                                    'value': self.oldValue4
+                                }, {
+                                    'op': 'add',
+                                    'key': self.key4,
+                                    'value': self.newValue4
+                                }
+                            ]
+                        }
+                    ],
+                    'version': 3,
+                    'id': self.identifier1
+                }
+            ]
+        }
+
+        if verbose is True:
+            log.debug('Diff (diff3) to update a1v3:\n%s' % diff3)
+
+        session = requests.Session()
+
+        user = self.getUser(1)
+        session.auth = (user['username'], user['password'])
+
+        headers = {'content-type': 'application/json'}
+
+        request = session.post(
+            self.getCreateUrl('activities'),
+            data=json.dumps(diff3),
+            headers=headers
+        )
+
+        if (self.handleResult(
+            request.status_code == 201,
+            'The new Activity (v4) could not be created.'
+        )) is not True:
+            return False
+
+        jsonresponse = request.json()
+
+        if (self.handleResult(
+            'created' in jsonresponse and jsonresponse['created'] is True,
+            'Server response ("created") after updating new Activity (v4) is not correct.'
+        )) is not True:
+            return False
+
+        self.a1v4 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 4
+        )
+        if (self.handleResult(
+            self.a1v4 is not None,
+            'Updated Activity (v4) was created but not found.'
+        )) is not True:
+            return False
+
+        # Make sure it is pending
+        if (self.handleResult(
+            self.a1v4.get_status_id() == 1,
+            'Updated Activity (v4) is not pending.'
+        )) is not True:
+            return False
+
+        # Make sure it has a geometry
+        q = Session.query(A_Tag_Group).\
+            join(Activity).\
+            filter(Activity.identifier == self.identifier1).\
+            filter(Activity.version == 4).\
+            filter(A_Tag_Group.tg_id == 3).\
+            all()
+
+        if (self.handleResult(
+            len(q) == 1,
+            'The taggroup with a geometry was not found at all'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            q[0].geometry != None,
+            'The taggroup does not contain a geometry'
+        )) is not True:
+            return False
+
+        # Store the geometry
+        g4 = wkb.loads(str(q[0].geometry.geom_wkb))
+
+        # Make sure it is still the same as in v3
+        if (self.handleResult(
+            g3.equals(g4) is True,
+            'The updated Activity (v4) does not have the same geometry as v3'
+        )) is not True:
+            return False
+
+        # Make sure it also has the new tag
+        # Check that the new Activity has the updated value
+        if (self.handleResult(
+            (self.findKeyValue(self.a1v4, self.key4, self.newValue4) is True and
+            self.findKeyValue(self.a1v4, self.key4, self.oldValue4) is False),
+            'Values of v4 were not updated correctly.'
+        )) is not True:
+            return False
+
+        # Review and accept version 4
+        if (self.handleResult(
+            self.moderationBase.doReview('activities', self.identifier1, 4, 1) is True,
+            'Activity (v4) could not be reviewed.'
+        )) is not True:
+            return False
+
+        self.a1v4 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 4
+        )
+        if (self.handleResult(
+            self.a1v4 is not None,
+            'Activity v4 was not found after reviewing it'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            self.a1v4.get_status_id() == 2,
+            'Activity v4 is not active after approving.'
+        )) is not True:
+            return False
+
+        """
+        Case 4: Change a tag of another taggroup
+        """
+
+        # Create a diff to update the geometry of the taggroup
+        diff4 = {
+            'activities': [
+                {
+                    'taggroups': [
+                        {
+                            'tg_id': 4,
+                            'tags': [
+                                {
+                                    'op': 'delete',
+                                    'key': self.key5,
+                                    'value': self.oldValue5
+                                }, {
+                                    'op': 'add',
+                                    'key': self.key5,
+                                    'value': self.newValue5
+                                }
+                            ]
+                        }
+                    ],
+                    'version': 4,
+                    'id': self.identifier1
+                }
+            ]
+        }
+
+        if verbose is True:
+            log.debug('Diff (diff4) to update a1v4:\n%s' % diff4)
+
+        session = requests.Session()
+
+        user = self.getUser(1)
+        session.auth = (user['username'], user['password'])
+
+        headers = {'content-type': 'application/json'}
+
+        request = session.post(
+            self.getCreateUrl('activities'),
+            data=json.dumps(diff4),
+            headers=headers
+        )
+
+        if (self.handleResult(
+            request.status_code == 201,
+            'The new Activity (v5) could not be created.'
+        )) is not True:
+            return False
+
+        jsonresponse = request.json()
+
+        if (self.handleResult(
+            'created' in jsonresponse and jsonresponse['created'] is True,
+            'Server response ("created") after updating new Activity (v5) is not correct.'
+        )) is not True:
+            return False
+
+        self.a1v5 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 5
+        )
+        if (self.handleResult(
+            self.a1v5 is not None,
+            'Updated Activity (v5) was created but not found.'
+        )) is not True:
+            return False
+
+        # Make sure it is pending
+        if (self.handleResult(
+            self.a1v5.get_status_id() == 1,
+            'Updated Activity (v5) is not pending.'
+        )) is not True:
+            return False
+
+        # Make sure it has a geometry
+        q = Session.query(A_Tag_Group).\
+            join(Activity).\
+            filter(Activity.identifier == self.identifier1).\
+            filter(Activity.version == 5).\
+            filter(A_Tag_Group.tg_id == 3).\
+            all()
+
+        if (self.handleResult(
+            len(q) == 1,
+            'The taggroup with a geometry was not found at all'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            q[0].geometry != None,
+            'The taggroup does not contain a geometry'
+        )) is not True:
+            return False
+
+        # Store the geometry
+        g5 = wkb.loads(str(q[0].geometry.geom_wkb))
+
+        # Make sure it is still the same as in v3
+        if (self.handleResult(
+            g3.equals(g5) is True,
+            'The updated Activity (v5) does not have the same geometry as v3'
+        )) is not True:
+            return False
+
+        # Make sure it also has the new tag
+        # Check that the new Activity has the updated value
+        if (self.handleResult(
+            (self.findKeyValue(self.a1v5, self.key5, self.newValue5) is True and
+            self.findKeyValue(self.a1v5, self.key5, self.oldValue5) is False),
+            'Values of v4 were not updated correctly.'
+        )) is not True:
+            return False
+
+        # Review and accept version 5
+        if (self.handleResult(
+            self.moderationBase.doReview('activities', self.identifier1, 5, 1) is True,
+            'Activity (v5) could not be reviewed.'
+        )) is not True:
+            return False
+
+        self.a1v5 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 5
+        )
+        if (self.handleResult(
+            self.a1v5 is not None,
+            'Activity v5 was not found after reviewing it'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            self.a1v5.get_status_id() == 2,
+            'Activity v5 is not active after approving.'
+        )) is not True:
+            return False
+
+        """
+        Case 5: Set the geometry to none
+        """
+
+        # Create a diff to update the geometry of the taggroup
+        diff5 = {
+            'activities': [
+                {
+                    'taggroups': [
+                        {
+                            'tg_id': 3,
+                            'tags': [],
+                            'geometry': {}
+                        }
+                    ],
+                    'version': 5,
+                    'id': self.identifier1
+                }
+            ]
+        }
+
+        if verbose is True:
+            log.debug('Diff (diff5) to update a1v5:\n%s' % diff5)
+
+        session = requests.Session()
+
+        user = self.getUser(1)
+        session.auth = (user['username'], user['password'])
+
+        headers = {'content-type': 'application/json'}
+
+        request = session.post(
+            self.getCreateUrl('activities'),
+            data=json.dumps(diff5),
+            headers=headers
+        )
+
+        if (self.handleResult(
+            request.status_code == 201,
+            'The new Activity (v6) could not be created.'
+        )) is not True:
+            return False
+
+        jsonresponse = request.json()
+
+        if (self.handleResult(
+            'created' in jsonresponse and jsonresponse['created'] is True,
+            'Server response ("created") after updating new Activity (v6) is not correct.'
+        )) is not True:
+            return False
+
+        self.a1v6 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 6
+        )
+        if (self.handleResult(
+            self.a1v6 is not None,
+            'Updated Activity (v6) was created but not found.'
+        )) is not True:
+            return False
+
+        # Make sure it is pending
+        if (self.handleResult(
+            self.a1v6.get_status_id() == 1,
+            'Updated Activity (v6) is not pending.'
+        )) is not True:
+            return False
+
+        # Make sure it does not have a geometry
+        q = Session.query(A_Tag_Group).\
+            join(Activity).\
+            filter(Activity.identifier == self.identifier1).\
+            filter(Activity.version == 6).\
+            filter(A_Tag_Group.tg_id == 3).\
+            all()
+
+        if (self.handleResult(
+            len(q) == 1,
+            'The taggroup was not found at all'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            q[0].geometry == None,
+            'The taggroup (v6) still has a geometry'
+        )) is not True:
+            return False
+
+        return True

@@ -1739,6 +1739,22 @@ class ActivityProtocol3(Protocol):
                 except AttributeError:
                     pass
 
+            # If available, try to handle the geometry of a taggroup
+            try:
+                tg_geom_diff = taggroup['geometry']
+                tg_geom = geojson.loads(json.dumps(tg_geom_diff),
+                             object_hook=geojson.GeoJSON.to_instance)
+                # The geometry
+                tg_shape = asShape(tg_geom)
+                try:
+                    geometrytype = tg_shape.geom_type
+                except:
+                    raise HTTPBadRequest(detail="Invalid geometry type of taggroup")
+                # Store it
+                db_tg.geometry = tg_shape.wkt
+            except KeyError:
+                pass
+
         return new_activity
 
     def _update_object(self, request, old_activity, activity_dict, changeset,
