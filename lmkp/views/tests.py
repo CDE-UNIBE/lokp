@@ -37,6 +37,7 @@ def moderation_tests(request):
     """
     Create
     """
+    validCreateSetup = True
     if (doCreateTests is True or (isinstance(doCreateTests, list)
         and len(doCreateTests) > 0)):
 
@@ -55,6 +56,7 @@ def moderation_tests(request):
             CreateActivities12(request),
             CreateActivities13(request),
             CreateActivities14(request),
+            CreateActivities15(request),
             CreateStakeholders01(request),
             CreateStakeholders02(request),
             CreateStakeholders03(request),
@@ -74,7 +76,7 @@ def moderation_tests(request):
         print ""
         print "-----------------   [Create] Testing the setup   -------------------"
         print ""
-        validCreateSetup = True
+
         for test in createTests:
 
             if (isinstance(doCreateTests, list)
@@ -114,8 +116,9 @@ def moderation_tests(request):
     """
     Edit / Update
     """
-    if (doEditTests is True or (isinstance(doEditTests, list)
-        and len(doEditTests) > 0)):
+    validEditSetup = True
+    if (validCreateSetup is True and doEditTests is True
+        or (isinstance(doEditTests, list) and len(doEditTests) > 0)):
 
         editTests = [
             EditActivities01(request),
@@ -134,6 +137,7 @@ def moderation_tests(request):
             EditActivities14(request),
             EditActivities15(request),
             EditActivities16(request),
+            EditActivities17(request),
             EditStakeholders01(request),
             EditStakeholders02(request),
             EditStakeholders03(request),
@@ -155,7 +159,7 @@ def moderation_tests(request):
         print ""
         print "------------------   [Edit] Testing the setup   --------------------"
         print ""
-        validEditSetup = True
+        
         for test in editTests:
 
             if (isinstance(doEditTests, list)
@@ -195,7 +199,9 @@ def moderation_tests(request):
     """
     Moderation / Review
     """
-    if (doModerationTests is True or (isinstance(doModerationTests, list)
+    validModerationSetup = True
+    if (validCreateSetup is True and validEditSetup is True
+        and doModerationTests is True or (isinstance(doModerationTests, list)
         and len(doModerationTests) > 0)):
 
         moderationTests = [
@@ -222,7 +228,7 @@ def moderation_tests(request):
         print ""
         print "---------------   [Moderation] Testing the setup   -----------------"
         print ""
-        validModerationSetup = True
+        
         for test in moderationTests:
 
             if (isinstance(doModerationTests, list)

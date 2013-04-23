@@ -2177,3 +2177,131 @@ class CreateActivities14(CreateBase):
             return False
 
         return True
+
+"""
+CA 15
+"""
+class CreateActivities15(CreateBase):
+
+    def __init__(self, request):
+        super(CreateBase, self).__init__()
+        self.request = request
+        self.protocol = ActivityProtocol3(Session)
+        self.testId = "CA15"
+        self.testDescription = 'Activities can be created with geometries in their taggroups'
+        self.identifier1 = '715bba1a-bc28-42ab-adc3-a39cb31689b1'
+        self.a1v1 = None
+
+    def testSetup(self):
+        # Make sure the item does not yet exist
+        if (self.handleResult(
+            self.countVersions(Activity, self.identifier1) == 0,
+            'Activity exists already'
+        )) is not True:
+            return False
+
+        return True
+
+    def doTest(self, verbose=False):
+
+        # Prepare a special diff with only one taggroup containing a geometry
+        diff = {
+            'activities': [
+                {
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [102.0598997729745, 19.421453614541]
+                    },
+                    'taggroups': [
+                        {
+                            'main_tag': {
+                                'value': 100,
+                                'key': 'Intended area (ha)'
+                            },
+                            'tags': [
+                                {
+                                    'value': 100,
+                                    'key': 'Intended area (ha)',
+                                    'op': 'add'
+                                }
+                            ],
+                            'op': 'add',
+                            'geometry': {
+                                'type': 'Polygon',
+                                'coordinates': [
+                                    [
+                                        [102.0, 19.4], [102.1, 19.4], [102.1, 19.5], [102.0, 19.5], [102.0, 19.4]
+                                    ]
+                                ]
+                            }
+                        }
+                    ],
+                    'version': 1,
+                    'id': self.identifier1
+                }
+            ]
+        }
+
+        if verbose is True:
+            log.debug('Diff to create a1v1:\n%s' % diff)
+
+        import requests
+        import json
+        session = requests.Session()
+
+        user = self.getUser(1)
+        session.auth = (user['username'], user['password'])
+
+        headers = {'content-type': 'application/json'}
+
+        request = session.post(
+            self.getCreateUrl('activities'),
+            data=json.dumps(diff),
+            headers=headers
+        )
+
+        if (self.handleResult(
+            request.status_code == 201,
+            'The new Activity could not be created.'
+        )) is not True:
+            return False
+
+        json = request.json()
+
+        if (self.handleResult(
+            'created' in json and json['created'] is True,
+            'Server response ("created") after creating new Activity is not correct.'
+        )) is not True:
+            return False
+
+        self.a1v1 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 1
+        )
+        if (self.handleResult(
+            self.a1v1 is not None,
+            'New Activity was created but not found.'
+        )) is not True:
+            return False
+
+        # Test that the geometry of the taggroup was set with an sql query
+        # (no service yet)
+        q = Session.query(A_Tag_Group).\
+            join(Activity).\
+            filter(Activity.identifier == self.identifier1).\
+            filter(Activity.version == 1).\
+            filter(A_Tag_Group.tg_id == 1).\
+            all()
+
+        if (self.handleResult(
+            len(q) == 1,
+            'The taggroup with a geometry was not found at all'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            q[0].geometry != None,
+            'The taggroup does not contain a geometry'
+        )) is not True:
+            return False
+
+        return True
