@@ -249,9 +249,9 @@ class A_Tag_Group(Base):
 
     def to_json(self):
         geometry = None
-        if self.geometry is not None:
-            shape = wkb.loads(str(self.geometry.geom_wkb))
-            geometry = from_wkt(shape.wkt)
+#        if self.geometry is not None:
+#            shape = wkb.loads(str(self.geometry.geom_wkb))
+#            geometry = from_wkt(shape.wkt)
         return {'id': self.id, 'geometry': geometry, 'tags': [t.to_json() for t
             in self.tags]}
 

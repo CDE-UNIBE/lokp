@@ -2177,3 +2177,509 @@ class CreateActivities14(CreateBase):
             return False
 
         return True
+
+"""
+CA 15
+"""
+class CreateActivities15(CreateBase):
+
+    def __init__(self, request):
+        super(CreateBase, self).__init__()
+        self.request = request
+        self.protocol = ActivityProtocol3(Session)
+        self.testId = "CA15"
+        self.testDescription = 'Activities can be created with geometries in their taggroups'
+        self.identifier1 = '715bba1a-bc28-42ab-adc3-a39cb31689ad'
+        self.identifier2 = 'abf88f8a-7520-455f-9911-22830076f8ad'
+        self.identifier3 = '5da3a2d7-c69c-46b4-9dad-12238909bdad'
+        self.identifier4 = '03a91847-4814-4f61-93b8-f3577ba776ad'
+        self.identifier5 = '83f615f5-0c9d-4b8e-a8e4-64b44af2d7ad'
+        self.a1v1 = None
+        self.geom1 = {
+            'type': 'Polygon',
+            'coordinates': [
+                [
+                    [102.0, 19.4], [102.1, 19.4], [102.1, 19.5], [102.0, 19.5], [102.0, 19.4]
+                ]
+            ]
+        }
+        self.a2v1 = None
+        self.geom2 = {
+            "type": "MultiPolygon",
+            "coordinates": [
+		[
+                    [
+                        [102.0, 19.4], [102.1, 19.4], [102.1, 19.5], [102.0, 19.5], [102.0, 19.4]
+                    ]
+		],
+		[
+                    [
+                        [102.2, 19.6], [102.3, 19.6], [102.3, 19.7], [102.2, 19.7], [102.2, 19.6]
+                    ],
+                    [
+                        [102.4, 19.8], [102.5, 19.8], [102.5, 19.9], [102.4, 19.9], [102.4, 19.8]
+                    ]
+		]
+            ]
+        }
+        self.a3v1 = None
+        self.geom3 = {
+            "type": "Point",
+            "coordinates": [
+                102.0, 19.4
+            ]
+        }
+        self.a4v1 = None
+        self.geom4 = {
+            "type": "LineString",
+            "coordinates": [
+                [102.0, 19.4], [102.1, 19.4]
+            ]
+        }
+        self.a5v1 = None
+        self.geom5 = {
+            "type": "Rhombus",
+            "coordinates": [
+                [1, 2], [3, 4], [5, 6]
+            ]
+        }
+
+    def testSetup(self):
+        # Make sure the item does not yet exist
+        if (self.handleResult(
+            self.countVersions(Activity, self.identifier1) == 0,
+            'Activity 1 exists already'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            self.countVersions(Activity, self.identifier2) == 0,
+            'Activity 2 exists already'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            self.countVersions(Activity, self.identifier3) == 0,
+            'Activity 3 exists already'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            self.countVersions(Activity, self.identifier4) == 0,
+            'Activity 4 exists already'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            self.countVersions(Activity, self.identifier5) == 0,
+            'Activity 5 exists already'
+        )) is not True:
+            return False
+
+        return True
+
+    def doTest(self, verbose=False):
+
+        """
+        A1v1: Taggroup with polygon geometry
+        """
+        diff1 = {
+            'activities': [
+                {
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [102.0598997729745, 19.421453614541]
+                    },
+                    'taggroups': [
+                        {
+                            'main_tag': {
+                                'value': 100,
+                                'key': 'Intended area (ha)'
+                            },
+                            'tags': [
+                                {
+                                    'value': 100,
+                                    'key': 'Intended area (ha)',
+                                    'op': 'add'
+                                }
+                            ],
+                            'op': 'add',
+                            'geometry': self.geom1
+                        }
+                    ],
+                    'version': 1,
+                    'id': self.identifier1
+                }
+            ]
+        }
+
+        if verbose is True:
+            log.debug('Diff to create a1v1:\n%s' % diff1)
+
+        import requests
+        import json
+        session = requests.Session()
+
+        user = self.getUser(1)
+        session.auth = (user['username'], user['password'])
+
+        headers = {'content-type': 'application/json'}
+
+        request = session.post(
+            self.getCreateUrl('activities'),
+            data=json.dumps(diff1),
+            headers=headers
+        )
+
+        if (self.handleResult(
+            request.status_code == 201,
+            'The new Activity 1 could not be created.'
+        )) is not True:
+            return False
+
+        responsejson = request.json()
+
+        if (self.handleResult(
+            'created' in responsejson and responsejson['created'] is True,
+            'Server response ("created") after creating new Activity 1 is not correct.'
+        )) is not True:
+            return False
+
+        self.a1v1 = self.protocol.read_one_by_version(
+            self.request, self.identifier1, 1
+        )
+        if (self.handleResult(
+            self.a1v1 is not None,
+            'New Activity 1 was created but not found.'
+        )) is not True:
+            return False
+
+        # Test that the geometry of the taggroup was set with an sql query
+        # (no service yet)
+        q = Session.query(A_Tag_Group).\
+            join(Activity).\
+            filter(Activity.identifier == self.identifier1).\
+            filter(Activity.version == 1).\
+            filter(A_Tag_Group.tg_id == 1).\
+            all()
+
+        if (self.handleResult(
+            len(q) == 1,
+            'A1: The taggroup with a geometry was not found at all'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            q[0].geometry != None,
+            'A1: The taggroup does not contain a geometry'
+        )) is not True:
+            return False
+
+        # With a normal 'Read One' query, the geometry is not visible
+        request = session.get(
+            self.getDetailsUrl('activities', self.identifier1),
+            headers=headers
+        )
+        responsejson = request.json()
+        if (self.handleResult(
+            responsejson['total'] == 1,
+            'The request to read the Activity without geometry did not return correct number of versions'
+        )) is not True:
+            return False
+        a = responsejson['data'][0]
+        tg = a['taggroups'][0]
+        if (self.handleResult(
+            'geometry' not in tg,
+            'The request to read an Activity showed a geometry when it should not'
+        )) is not True:
+            return False
+
+        # Use the 'Read One' query with the geometry flag to show the geometry
+        request = session.get(
+            self.getDetailsUrl('activities', self.identifier1) + '?geometry=full',
+            headers=headers
+        )
+        responsejson = request.json()
+        if (self.handleResult(
+            responsejson['total'] == 1,
+            'The request to read the Activity with the geometry did not return correct number of versions'
+        )) is not True:
+            return False
+        a = responsejson['data'][0]
+        tg = a['taggroups'][0]
+        if (self.handleResult(
+            'geometry' in tg,
+            'The request to read an Activity showed a geometry when it should not'
+        )) is not True:
+            return False
+
+        # Make sure it is the same geometry as used to create it
+        if (self.handleResult(
+            tg['geometry'] == self.geom1,
+            'The queried geometry of the taggroup is not the same that was created'
+        )) is not True:
+            return False
+
+        """
+        A2v1: Taggroup with multipolygon geometry
+        """
+        diff2 = {
+            'activities': [
+                {
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [102.0598997729745, 19.421453614541]
+                    },
+                    'taggroups': [
+                        {
+                            'main_tag': {
+                                'value': 100,
+                                'key': 'Intended area (ha)'
+                            },
+                            'tags': [
+                                {
+                                    'value': 100,
+                                    'key': 'Intended area (ha)',
+                                    'op': 'add'
+                                }
+                            ],
+                            'op': 'add',
+                            'geometry': self.geom2
+                        }
+                    ],
+                    'version': 1,
+                    'id': self.identifier2
+                }
+            ]
+        }
+
+        if verbose is True:
+            log.debug('Diff to create a2v1:\n%s' % diff2)
+
+        session = requests.Session()
+        session.auth = (user['username'], user['password'])
+        headers = {'content-type': 'application/json'}
+
+        request = session.post(
+            self.getCreateUrl('activities'),
+            data=json.dumps(diff2),
+            headers=headers
+        )
+
+        if (self.handleResult(
+            request.status_code == 201,
+            'The new Activity 2 could not be created.'
+        )) is not True:
+            return False
+        responsejson = request.json()
+        if (self.handleResult(
+            'created' in responsejson and responsejson['created'] is True,
+            'Server response ("created") after creating new Activity 2 is not correct.'
+        )) is not True:
+            return False
+
+        self.a2v1 = self.protocol.read_one_by_version(
+            self.request, self.identifier2, 1
+        )
+        if (self.handleResult(
+            self.a2v1 is not None,
+            'New Activity 2 was created but not found.'
+        )) is not True:
+            return False
+
+        # Test that the geometry of the taggroup was set with an sql query
+        # (no service yet)
+        q = Session.query(A_Tag_Group).\
+            join(Activity).\
+            filter(Activity.identifier == self.identifier2).\
+            filter(Activity.version == 1).\
+            filter(A_Tag_Group.tg_id == 1).\
+            all()
+
+        if (self.handleResult(
+            len(q) == 1,
+            'A2: The taggroup with a geometry was not found at all'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            q[0].geometry != None,
+            'A2: The taggroup does not contain a geometry'
+        )) is not True:
+            return False
+
+        """
+        A3v1: Taggroup with point geometry
+        """
+        diff3 = {
+            'activities': [
+                {
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [102.0598997729745, 19.421453614541]
+                    },
+                    'taggroups': [
+                        {
+                            'main_tag': {
+                                'value': 100,
+                                'key': 'Intended area (ha)'
+                            },
+                            'tags': [
+                                {
+                                    'value': 100,
+                                    'key': 'Intended area (ha)',
+                                    'op': 'add'
+                                }
+                            ],
+                            'op': 'add',
+                            'geometry': self.geom3
+                        }
+                    ],
+                    'version': 1,
+                    'id': self.identifier3
+                }
+            ]
+        }
+
+        if verbose is True:
+            log.debug('Diff to create a3v1:\n%s' % diff3)
+
+        session = requests.Session()
+        session.auth = (user['username'], user['password'])
+        headers = {'content-type': 'application/json'}
+
+        request = session.post(
+            self.getCreateUrl('activities'),
+            data=json.dumps(diff3),
+            headers=headers
+        )
+
+        if (self.handleResult(
+            request.status_code == 400,
+            'The request to create a new Activity 3 with point geometry was successful'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            self.countVersions(Activity, self.identifier3) == 0,
+            'There was a version of the Activity 3 with point geometry created'
+        )) is not True:
+            return False
+
+        """
+        A4v1: Taggroup with linestring geometry
+        """
+        diff4 = {
+            'activities': [
+                {
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [102.0598997729745, 19.421453614541]
+                    },
+                    'taggroups': [
+                        {
+                            'main_tag': {
+                                'value': 100,
+                                'key': 'Intended area (ha)'
+                            },
+                            'tags': [
+                                {
+                                    'value': 100,
+                                    'key': 'Intended area (ha)',
+                                    'op': 'add'
+                                }
+                            ],
+                            'op': 'add',
+                            'geometry': self.geom4
+                        }
+                    ],
+                    'version': 1,
+                    'id': self.identifier4
+                }
+            ]
+        }
+
+        if verbose is True:
+            log.debug('Diff to create a4v1:\n%s' % diff4)
+
+        session = requests.Session()
+        session.auth = (user['username'], user['password'])
+        headers = {'content-type': 'application/json'}
+
+        request = session.post(
+            self.getCreateUrl('activities'),
+            data=json.dumps(diff4),
+            headers=headers
+        )
+
+        if (self.handleResult(
+            request.status_code == 400,
+            'The request to create a new Activity 4 with linestring geometry was successful'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            self.countVersions(Activity, self.identifier4) == 0,
+            'There was a version of the Activity 4 with linestring geometry created'
+        )) is not True:
+            return False
+
+        """
+        A5v1: Taggroup with invalid geometry
+        """
+        diff5 = {
+            'activities': [
+                {
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [102.0598997729745, 19.421453614541]
+                    },
+                    'taggroups': [
+                        {
+                            'main_tag': {
+                                'value': 100,
+                                'key': 'Intended area (ha)'
+                            },
+                            'tags': [
+                                {
+                                    'value': 100,
+                                    'key': 'Intended area (ha)',
+                                    'op': 'add'
+                                }
+                            ],
+                            'op': 'add',
+                            'geometry': self.geom5
+                        }
+                    ],
+                    'version': 1,
+                    'id': self.identifier5
+                }
+            ]
+        }
+
+        if verbose is True:
+            log.debug('Diff to create a5v1:\n%s' % diff5)
+
+        session = requests.Session()
+        session.auth = (user['username'], user['password'])
+        headers = {'content-type': 'application/json'}
+
+        request = session.post(
+            self.getCreateUrl('activities'),
+            data=json.dumps(diff5),
+            headers=headers
+        )
+
+        if (self.handleResult(
+            request.status_code == 400,
+            'The request to create a new Activity 5 with linestring geometry was successful'
+        )) is not True:
+            return False
+
+        if (self.handleResult(
+            self.countVersions(Activity, self.identifier5) == 0,
+            'There was a version of the Activity 5 with linestring geometry created'
+        )) is not True:
+            return False
+
+        return True

@@ -296,8 +296,15 @@ class ActivityProtocol3(Protocol):
         # Order the Activity by version
         query = query.order_by(desc(Activity.version))
 
-        activities = self._query_to_activities(request, query,
-                                               involvements=inv_details, public_query=public)
+        # Taggroup geometry
+        full_geometry = request.params.get('geometry', False)
+        if full_geometry is not False:
+            full_geometry = full_geometry.lower() == 'full'
+
+        activities = self._query_to_activities(
+            request, query, involvements=inv_details, public_query=public,
+            geom=full_geometry
+        )
 
         return {
             'total': count,
@@ -1280,7 +1287,13 @@ class ActivityProtocol3(Protocol):
         return query
 
     def _query_to_activities(self, request, query, involvements='none',
-                             public_query=False):
+                             public_query=False, **kwargs):
+
+        geom = kwargs.get('geom', False)
+        if geom is True:
+            query = query.add_columns(
+                A_Tag_Group.geometry.label('tg_geometry')
+            )
 
         logged_in, is_moderator = self._get_user_status(
                                                         effective_principals(request))
@@ -1338,6 +1351,9 @@ class ActivityProtocol3(Protocol):
                 taggroup = activity.find_taggroup_by_id(taggroup_id)
             else:
                 taggroup = TagGroup(taggroup_id, q.tg_id, q.main_tag)
+                # Set the taggroup geometry if available
+                if geom is True and q.tg_geometry is not None:
+                    taggroup.set_geometry(q.tg_geometry)
                 activity.add_taggroup(taggroup)
 
             # Because of Involvements, the same Tags appears for each
@@ -1738,6 +1754,25 @@ class ActivityProtocol3(Protocol):
                         db_tg.main_tag = a_tag
                 except AttributeError:
                     pass
+
+            # If available, try to handle the geometry of a taggroup
+            try:
+                tg_geom_diff = taggroup['geometry']
+                tg_geom = geojson.loads(json.dumps(tg_geom_diff),
+                             object_hook=geojson.GeoJSON.to_instance)
+                # The geometry
+                try:
+                    tg_shape = asShape(tg_geom)
+                    geometrytype = tg_shape.geom_type
+                except:
+                    raise HTTPBadRequest(detail="Invalid geometry type of taggroup")
+                # Store the geometry only if it is a polygon or multipolygon
+                if geometrytype == 'Polygon' or geometrytype == 'MultiPolygon':
+                    db_tg.geometry = tg_shape.wkt
+                else:
+                    raise HTTPBadRequest(detail="Invalid geometry type of taggroup: Only Polygon or MultiPolygon is supported.")
+            except KeyError:
+                pass
 
         return new_activity
 
