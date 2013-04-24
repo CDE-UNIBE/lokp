@@ -23,6 +23,7 @@ from lmkp.views.config import merge_profiles
 from lmkp.views.files import check_file_location_name
 from lmkp.models.database_objects import User
 from shapely import wkb
+from shapely.geometry import mapping as asGeoJSON
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import between
@@ -37,6 +38,8 @@ from pyramid.security import effective_principals
 from pyramid.i18n import get_localizer
 from lmkp.views.review import BaseReview
 import json
+import geojson
+from shapely.geometry import asShape
 
 from lmkp.views.translation import statusMap
 from lmkp.views.translation import get_translated_status
@@ -957,7 +960,6 @@ class Protocol(object):
         """
 
 #        print "============================================="
-
 #        log.debug("diff:\n%s" % diff)
 
         if mappedClass == Activity:
@@ -1018,6 +1020,9 @@ class Protocol(object):
             taggroupadded = False
             if db is True:
                 new_taggroup = Db_Tag_Group(db_taggroup.tg_id)
+                if mappedClass == Activity:
+                    # Copy the old geometry of the taggroup (even if 'none')
+                    new_taggroup.geometry = db_taggroup.geometry
             else:
                 new_taggroup = TagGroup(tg_id = db_taggroup.tg_id)
 
@@ -1035,6 +1040,32 @@ class Protocol(object):
                     for taggroup_dict in diff['taggroups']:
                         if ('tg_id' in taggroup_dict and
                             taggroup_dict['tg_id'] == db_taggroup.tg_id):
+
+                            # Overwrite the geometry of the taggroup if it is
+                            # set
+                            if ('geometry' in taggroup_dict
+                                and mappedClass == Activity and db is True):
+                                tg_geom_diff = taggroup_dict['geometry']
+                                if tg_geom_diff == {}:
+                                    # Empty geometry: Set it to 'none'
+                                    new_taggroup.geometry = None
+                                else:
+                                    tg_geom = geojson.loads(json.dumps(tg_geom_diff),
+                                        object_hook = geojson.GeoJSON.to_instance)
+                                    try:
+                                        # Make sure it is a valid type
+                                        tg_shape = asShape(tg_geom)
+                                        geometrytype = tg_shape.geom_type
+                                    except:
+                                        raise HTTPBadRequest(detail="Invalid geometry type of taggroup")
+                                    # Store the geometry only if it is a polygon
+                                    # or multipolygon
+                                    if (geometrytype == 'Polygon'
+                                        or geometrytype == 'MultiPolygon'):
+                                        new_taggroup.geometry = tg_shape.wkt
+                                    else:
+                                        raise HTTPBadRequest(detail='Invalid geometry type of taggroup: Only Polygon or MultiPolygon is supported.')
+
                             # Check which tags we have to edit
                             for tag_dict in taggroup_dict['tags']:
                                 # Make sure it is exactly this tag (same key)
@@ -1243,7 +1274,7 @@ class Protocol(object):
                                     new_taggroup._main_tag = new_tag
 
 #        print "============================================="
-            
+
         return item
 
 
@@ -1631,6 +1662,8 @@ class TagGroup(object):
         # List to store the tags
         self._tags = []
         self._diffFlag = None
+        # Geometry (only used for Activity TagGroups)
+        self._geometry = None
 
     def add_tag(self, tag):
         """
@@ -1676,6 +1709,9 @@ class TagGroup(object):
     def getDiffFlag(self):
         return self._diffFlag
 
+    def set_geometry(self, geometry):
+        self._geometry = geometry
+
     def to_table(self):
         """
         Returns a JSON compatible representation of this object
@@ -1687,12 +1723,22 @@ class TagGroup(object):
             if t.get_id() == self._main_tag_id:
                 main_tag = t.to_table()
 
-        return {
+        ret = {
             'id': self._id,
             'tg_id': self._tg_id,
             'main_tag': main_tag,
             'tags': tags
         }
+
+        # Geometry
+        if self._geometry is not None:
+            try:
+                geom = wkb.loads(str(self._geometry.geom_wkb))
+                ret['geometry'] = asGeoJSON(geom)
+            except:
+                pass
+
+        return ret
 
 class Inv(object):
 

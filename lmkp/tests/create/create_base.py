@@ -4,7 +4,7 @@ import random
 import decimal
 
 from lmkp.tests.test_base import Test_Base
-from lmkp.tests.moderation_base import ModerationBase
+from lmkp.tests.moderate.moderation_base import ModerationBase
 
 class CreateBase(Test_Base):
     
