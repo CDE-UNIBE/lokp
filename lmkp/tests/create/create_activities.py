@@ -2375,6 +2375,51 @@ class CreateActivities15(CreateBase):
         )) is not True:
             return False
 
+        # With a normal 'Read One' query, the geometry is not visible
+        request = session.get(
+            self.getDetailsUrl('activities', self.identifier1),
+            headers=headers
+        )
+        responsejson = request.json()
+        if (self.handleResult(
+            responsejson['total'] == 1,
+            'The request to read the Activity without geometry did not return correct number of versions'
+        )) is not True:
+            return False
+        a = responsejson['data'][0]
+        tg = a['taggroups'][0]
+        if (self.handleResult(
+            'geometry' not in tg,
+            'The request to read an Activity showed a geometry when it should not'
+        )) is not True:
+            return False
+
+        # Use the 'Read One' query with the geometry flag to show the geometry
+        request = session.get(
+            self.getDetailsUrl('activities', self.identifier1) + '?geometry=full',
+            headers=headers
+        )
+        responsejson = request.json()
+        if (self.handleResult(
+            responsejson['total'] == 1,
+            'The request to read the Activity with the geometry did not return correct number of versions'
+        )) is not True:
+            return False
+        a = responsejson['data'][0]
+        tg = a['taggroups'][0]
+        if (self.handleResult(
+            'geometry' in tg,
+            'The request to read an Activity showed a geometry when it should not'
+        )) is not True:
+            return False
+
+        # Make sure it is the same geometry as used to create it
+        if (self.handleResult(
+            tg['geometry'] == self.geom1,
+            'The queried geometry of the taggroup is not the same that was created'
+        )) is not True:
+            return False
+
         """
         A2v1: Taggroup with multipolygon geometry
         """
@@ -2426,7 +2471,7 @@ class CreateActivities15(CreateBase):
             'The new Activity 2 could not be created.'
         )) is not True:
             return False
-
+        responsejson = request.json()
         if (self.handleResult(
             'created' in responsejson and responsejson['created'] is True,
             'Server response ("created") after creating new Activity 2 is not correct.'

@@ -23,6 +23,7 @@ from lmkp.views.config import merge_profiles
 from lmkp.views.files import check_file_location_name
 from lmkp.models.database_objects import User
 from shapely import wkb
+from shapely.geometry import mapping as asGeoJSON
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import between
@@ -1661,6 +1662,8 @@ class TagGroup(object):
         # List to store the tags
         self._tags = []
         self._diffFlag = None
+        # Geometry (only used for Activity TagGroups)
+        self._geometry = None
 
     def add_tag(self, tag):
         """
@@ -1706,6 +1709,9 @@ class TagGroup(object):
     def getDiffFlag(self):
         return self._diffFlag
 
+    def set_geometry(self, geometry):
+        self._geometry = geometry
+
     def to_table(self):
         """
         Returns a JSON compatible representation of this object
@@ -1717,12 +1723,22 @@ class TagGroup(object):
             if t.get_id() == self._main_tag_id:
                 main_tag = t.to_table()
 
-        return {
+        ret = {
             'id': self._id,
             'tg_id': self._tg_id,
             'main_tag': main_tag,
             'tags': tags
         }
+
+        # Geometry
+        if self._geometry is not None:
+            try:
+                geom = wkb.loads(str(self._geometry.geom_wkb))
+                ret['geometry'] = asGeoJSON(geom)
+            except:
+                pass
+
+        return ret
 
 class Inv(object):
 
