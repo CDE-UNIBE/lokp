@@ -1,0 +1,20 @@
+/*li>label.desc {
+    color: red;
+}*/
+
+/* THEMATIC GROUP */
+legend {
+    color: darkGreen;
+}
+form>fieldset>ul>li>fieldset>ul>li>fieldset {
+    border: 1px solid darkGreen !important;
+}
+
+
+/* CATEGORY */
+form>fieldset>ul>li>fieldset>legend {
+    color: red;
+}
+form>fieldset>ul>li>fieldset {
+    border: 1px solid red !important;
+}

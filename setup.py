@@ -28,7 +28,8 @@ requires = [
     'PyYAML==3.10',
     'Chameleon==2.8.5',
     'recaptcha-client==1.0.6',
-    'requests==1.1.0'
+    'requests==1.1.0',
+    'deform'
     ]
 
 setup(name='LMKP',
