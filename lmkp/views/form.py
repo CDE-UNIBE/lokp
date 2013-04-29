@@ -3,10 +3,13 @@ import deform
 import copy
 import yaml
 import csv
+import logging
 
 from lmkp.config import profile_directory_path
 
 from pyramid.view import view_config
+
+log = logging.getLogger(__name__)
 
 class ConfigThematicgroupList(object):
 
@@ -53,11 +56,11 @@ class ConfigThematicgroup(object):
             name=self.getName()
         )
 
-        for i, tg in enumerate(self.getTaggroups()):
+        for tg in self.getTaggroups():
             # Get the Form for each Taggroup
             tg_form = tg.getForm()
 
-            name = 'taggroup_%s' % (i+1)
+            name = str(tg.getId())
 
             if tg.getRepeatable() is False:
                 tg_form.missing = colander.null
@@ -95,10 +98,14 @@ class ConfigTaggroupList(object):
 
 class ConfigTaggroup(object):
 
-    def __init__(self):
+    def __init__(self, id):
+        self.id = id
         self.maintag = None
         self.tags = []
         self.repeatable = False
+    
+    def getId(self):
+        return self.id
 
     def setMaintag(self, tag):
         if isinstance(tag, ConfigTag):
@@ -120,6 +127,12 @@ class ConfigTaggroup(object):
     def getRepeatable(self):
         return self.repeatable
 
+    def hasKey(self, key):
+        for t in self.getTags():
+            if t.getKey().getName() == key:
+                return True
+        return False
+
     def getForm(self):
 
         tg_form = colander.SchemaNode(colander.Mapping())
@@ -138,6 +151,14 @@ class ConfigTaggroup(object):
             # Get the Form for each tag
             tg_form.add(t.getForm())
 
+        # Add a hidden field for the tg_id
+        tg_form.add(colander.SchemaNode(
+            colander.Int(),
+            widget=deform.widget.HiddenWidget(),
+            name='tg_id',
+            missing = colander.null
+        ))
+
         tg_form.validator = self.maintag_validator
 
         return tg_form
@@ -151,7 +172,7 @@ class ConfigTaggroup(object):
             # ... check if one of the other values is set
             otherValueSet = False
             for (k, v) in value.iteritems():
-                if k != mainkey and v != colander.null:
+                if k != mainkey and v != colander.null and k != 'tg_id':
                     otherValueSet = True
 
             if otherValueSet:
@@ -326,6 +347,14 @@ class ConfigCategoryList(object):
                         keys.append(t.getKey().getName())
         return keys
 
+    def findCategoryThematicgroupTaggroupByMainkey(self, mainkey):
+        for c in self.categories:
+            for thg in c.getThematicgroups():
+                for tg in thg.getTaggroups():
+                    if tg.getMaintag().getKey().getName() == mainkey:
+                        return c.getId(), thg.getId(), tg
+        return None, None, None
+
 class ConfigKey(object):
 
     def __init__(self, id, name, type, helptext, validator):
@@ -420,6 +449,543 @@ class ConfigCategory(object):
 @view_config(route_name='form_tests', renderer='lmkp:templates/form_test.pt')
 def form_tests(request):
 
+    categorylist = getCategoryList(request)
+    
+    # Collect the forms for each category
+    cat_forms = []
+    for cat in categorylist.getCategories():
+        cat_forms.append(cat.getForm())
+
+    # Put together all categories to one Schema
+    schema = colander.SchemaNode(colander.Mapping())
+    for cat_form in cat_forms:
+        schema.add(cat_form)
+
+    # Add hidden fields for the identifier and the version
+    schema.add(colander.SchemaNode(
+        colander.String(),
+        widget=deform.widget.HiddenWidget(),
+        name='id',
+        missing = colander.null
+    ))
+    schema.add(colander.SchemaNode(
+        colander.Int(),
+        widget=deform.widget.HiddenWidget(),
+        name='version',
+        missing = colander.null
+    ))
+
+    form = deform.Form(schema, buttons=('submit',))
+
+    # JS and CSS requirements (for widgets)
+    resources = form.get_widget_resources()
+
+    captured = None
+    success = None
+
+    # TODO: Get json by version and identifier if needed.
+    itemjson = {
+        "status": "active",
+        "previous_version": 1,
+        "status_id": 2,
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                102.44012553528,
+                19.472002471451
+            ]
+        },
+        "taggroups": [
+            {
+                "tg_id": 1,
+                "main_tag": {
+                    "value": 50,
+                    "id": 560,
+                    "key": "Current area in operation (ha)"
+                },
+                "id": 536,
+                "tags": [
+                    {
+                        "value": 50,
+                        "id": 560,
+                        "key": "Current area in operation (ha)"
+                    }, {
+                        "value": 2010,
+                        "key": "Year"
+                    }
+                ]
+            },
+            {
+                "tg_id": 2,
+                "main_tag": {
+                    "value": 100,
+                    "id": 562,
+                    "key": "Intended area (ha)"
+                },
+                "id": 538,
+                "tags": [
+                    {
+                        "value": 100,
+                        "id": 562,
+                        "key": "Intended area (ha)"
+                    }
+                ]
+            },
+            {
+                "tg_id": 3,
+                "main_tag": {
+                    "value": "blabla",
+                    "id": 559,
+                    "key": "How much do investors pay for water"
+                },
+                "id": 535,
+                "tags": [
+                    {
+                        "value": "blabla",
+                        "id": 559,
+                        "key": "How much do investors pay for water"
+                    }
+                ]
+            },
+            {
+                "tg_id": 4,
+                "main_tag": {
+                    "value": 150,
+                    "id": 560,
+                    "key": "Current area in operation (ha)"
+                },
+                "id": 536,
+                "tags": [
+                    {
+                        "value": 150,
+                        "id": 560,
+                        "key": "Current area in operation (ha)"
+                    }, {
+                        "key": "This key",
+                        "value": "does not exist"
+                    }
+                ]
+            },
+        ],
+        "version": 2,
+        "user": {
+            "username": "user2",
+            "id": 3
+        },
+        "timestamp": "2013-04-23 14:40:37.099000",
+        "id": "d0f5b496-edcd-458c-84a9-72ca4e1135f5"
+    }
+    data = jsonToForm(request, itemjson)
+
+#    data = {}
+
+    if 'submit' in request.POST:
+        # the request represents a form submission
+        try:
+            # try to validate the submitted values
+            controls = request.POST.items()
+            captured = form.validate(controls)
+            if success:
+                response = success()
+                if response is not None:
+                    return response
+
+            print "---------"
+            print "CAPTURED: %s" % captured
+
+            diff = formToDiff(request, captured)
+
+            print "---------"
+            print "DIFF: %s" % diff
+
+            html = form.render(captured)
+        except deform.ValidationFailure as e:
+            # the submitted values could not be validated
+            html = e.render()
+
+    else:
+        html = form.render(data)
+
+
+    return {
+        'form': html,
+        'css_links': resources['css'],
+        'js_links': resources['js']
+    }
+
+def jsonToForm(request, itemjson):
+
+    categorylist = getCategoryList(request)
+
+    taggroups = itemjson['taggroups']
+
+    data = {
+        'id': itemjson['id'],
+        'version': itemjson['version']
+    }
+
+    for taggroup in taggroups:
+
+        # Get the category and thematic group based on the maintag
+        maintag = taggroup['main_tag']
+
+        cat, thmg, tg = categorylist.findCategoryThematicgroupTaggroupByMainkey(maintag['key'])
+
+        tgid = str(tg.getId())
+
+        # Prepare the data of the tags
+        tagsdata = {'tg_id': taggroup['tg_id']}
+        for t in taggroup['tags']:
+            # Add the tag only if the key exists in this taggroup
+            if tg.hasKey(t['key']):
+                tagsdata[t['key']] = t['value']
+
+        if tg.getRepeatable():
+            tagsdata = [tagsdata]
+
+        if cat in data:
+            # Category already exists, check thematic group
+            if thmg in data[cat]:
+                # Thematic group already exists, check taggroup
+                if tgid in data[cat][thmg]:
+                    # Taggroup already exists. This should only happen if
+                    # taggroup is reapeatable. In this case add taggroup to the
+                    # array of taggroups
+                    if tg.getRepeatable():
+                        data[cat][thmg][tgid].append(tagsdata[0])
+                    else:
+                        log.debug('DUPLICATE TAGGROUP: Taggroup %s in thematic group %s and category %s appears twice although it is not repeatable!' % (cat, thmg, tg))
+                else:
+                    # Taggroup does not exist yet, tags can be added
+                    data[cat][thmg][tgid] = tagsdata
+            else:
+                # Thematic group does not exist yet, taggroup and tags can be
+                # added
+                data[cat][thmg] = {tgid: tagsdata}
+        else:
+            # Category does not exist yet, thematic group and taggroup and tags
+            # can be added
+            data[cat] = {thmg: {tgid: tagsdata}}
+
+    print "---------"
+    print "FORM CREATED BY JSON: %s" % data
+    
+    return data
+
+def formToDiff(request, newform):
+
+    def findRemoveTgByCategoryThematicgroupTgid(form, category, thematicgroup, tg_id):
+
+        # Loop the categories of the form
+        for (cat, thmgrps) in form.iteritems():
+
+            if cat == category:
+
+                # Loop the thematic groups of the category
+                for (thmgrp, tgroups) in thmgrps.iteritems():
+
+                    if thmgrp == thematicgroup:
+
+                        # Loop the taggroups of the thematic group
+                        for (tgroup, tags) in tgroups.iteritems():
+                            if not isinstance(tags, list):
+                                tags = [tags]
+                            # Look at each taggroup and check the tg_id
+                            for t in tags:
+                                
+                                if t['tg_id'] == tg_id:
+                                    ret = {}
+                                    for (k, v) in t.iteritems():
+                                        ret[k] = v
+                                        t[k] = colander.null
+
+                                    return form, ret
+        return form, None
+
+    identifier = colander.null
+    version = colander.null
+    oldform = {}
+
+    if 'id' in newform:
+        identifier = newform['id']
+        del newform['id']
+
+    if 'version' in newform:
+        version = newform['version']
+        del newform['version']
+
+    if identifier != colander.null and version != colander.null:
+
+        # TODO: Find old item by identifier and version
+        olditemjson = {
+            "status": "active",
+            "previous_version": 1,
+            "status_id": 2,
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    102.44012553528,
+                    19.472002471451
+                ]
+            },
+            "taggroups": [
+                {
+                    "tg_id": 1,
+                    "main_tag": {
+                        "value": 50,
+                        "id": 560,
+                        "key": "Current area in operation (ha)"
+                    },
+                    "id": 536,
+                    "tags": [
+                        {
+                            "value": 50,
+                            "id": 560,
+                            "key": "Current area in operation (ha)"
+                        }, {
+                            "value": 2010,
+                            "key": "Year"
+                        }
+                    ]
+                },
+                {
+                    "tg_id": 2,
+                    "main_tag": {
+                        "value": 100,
+                        "id": 562,
+                        "key": "Intended area (ha)"
+                    },
+                    "id": 538,
+                    "tags": [
+                        {
+                            "value": 100,
+                            "id": 562,
+                            "key": "Intended area (ha)"
+                        }
+                    ]
+                },
+                {
+                    "tg_id": 3,
+                    "main_tag": {
+                        "value": "blabla",
+                        "id": 559,
+                        "key": "How much do investors pay for water"
+                    },
+                    "id": 535,
+                    "tags": [
+                        {
+                            "value": "blabla",
+                            "id": 559,
+                            "key": "How much do investors pay for water"
+                        }
+                    ]
+                },
+                {
+                    "tg_id": 4,
+                    "main_tag": {
+                        "value": 150,
+                        "id": 560,
+                        "key": "Current area in operation (ha)"
+                    },
+                    "id": 536,
+                    "tags": [
+                        {
+                            "value": 150,
+                            "id": 560,
+                            "key": "Current area in operation (ha)"
+                        }, {
+                            "key": "This key",
+                            "value": "does not exist"
+                        }
+                    ]
+                },
+            ],
+            "version": 2,
+            "user": {
+                "username": "user2",
+                "id": 3
+            },
+            "timestamp": "2013-04-23 14:40:37.099000",
+            "id": "d0f5b496-edcd-458c-84a9-72ca4e1135f5"
+        }
+
+        # Look only at the values transmitted to the form
+        oldform = jsonToForm(request, olditemjson)
+        if 'id' in oldform:
+            del oldform['id']
+        if 'version' in oldform:
+            del oldform['version']
+
+   
+    """
+    Approach: Loop all items of the newform and check if they are new or changed
+    compared to the oldform. If so, add them to diff and remove (set them null)
+    them from oldform. Any remaining items of oldform were deleted and need to
+    be added to diff as well.
+    """
+
+    taggroupdiffs = []
+    # Loop the categories of the form
+    for (cat, thmgrps) in newform.iteritems():
+
+        # Special case: id and version
+
+
+        # Loop the thematic groups of the category
+        for (thmgrp, tgroups) in thmgrps.iteritems():
+
+            # Loop the tags of each taggroup
+            for (tgroup, tags) in tgroups.iteritems():
+
+                # Transform all to list so they can be treated all the same
+                if not isinstance(tags, list):
+                    tags = [tags]
+
+                for t in tags:
+
+                    if t['tg_id'] != colander.null:
+                        # Taggroup was there before because it contains a tg_id.
+                        # Check if it contains changed values.
+
+                        # Try to find the taggroup by its tg_id in the oldform
+                        oldform, oldtaggroup = findRemoveTgByCategoryThematicgroupTgid(oldform, cat, thmgrp, t['tg_id'])
+
+                        if oldtaggroup is None:
+                            continue
+
+                        deletedtags = []
+                        addedtags = []
+
+                        for (k, v) in t.iteritems():
+
+                            if (k != 'tg_id'):
+
+                                if k in oldtaggroup and v != oldtaggroup[k] and v != colander.null:
+                                    print "aaa"
+                                    deletedtags.append({
+                                        'key': k,
+                                        'value': oldtaggroup[k]
+                                    })
+                                    addedtags.append({
+                                        'key': k,
+                                        'value': v
+                                    })
+
+                                elif k not in oldtaggroup and v != colander.null:
+                                    print "bbb"
+                                    addedtags.append({
+                                        'key': k,
+                                        'value': v
+                                    })
+
+                                elif k in oldtaggroup and v != oldtaggroup[k] and v == colander.null:
+                                    deletedtags.append({
+                                        'key': k,
+                                        'value': oldtaggroup[k]
+                                    })
+                                
+                        # Put together diff for taggroup
+                        if len(deletedtags) > 0 or len(addedtags) > 0:
+                            tagdiffs = []
+                            for dt in deletedtags:
+                                tagdiffs.append({
+                                    'key': dt['key'],
+                                    'value': dt['value'],
+                                    'op': 'delete'
+                                })
+                            for at in addedtags:
+                                tagdiffs.append({
+                                    'key': at['key'],
+                                    'value': at['value'],
+                                    'op': 'add'
+                                })
+
+                            taggroupdiffs.append({
+                                'tg_id': t['tg_id'],
+                                'tags': tagdiffs
+                            })
+
+                    else:
+                        # Taggroup may be new, check if it contains values
+                        addedtags = []
+                        for (k, v) in t.iteritems():
+                            if (k != 'tg_id' and v != colander.null):
+                                addedtags.append({
+                                    'key': k,
+                                    'value': v
+                                })
+
+
+                        # Put together diff for taggroup
+                        if len(addedtags) > 0:
+                            tagdiffs = []
+                            for at in addedtags:
+                                tagdiffs.append({
+                                    'key': at['key'],
+                                    'value': at['value'],
+                                    'op': 'add'
+                                })
+                            taggroupdiffs.append({
+                                'op': 'add',
+                                'tags': tagdiffs
+                            })
+
+    # Loop the oldform to check if any tags still remain (meaning that they were
+    # deleted)
+
+    # Loop the categories of the form
+    for (cat, thmgrps) in oldform.iteritems():
+        # Loop the thematic groups of the category
+        for (thmgrp, tgroups) in thmgrps.iteritems():
+            # Loop the tags of each taggroup
+            for (tgroup, tags) in tgroups.iteritems():
+                # Transform all to list so they can be treated all the same
+                if not isinstance(tags, list):
+                    tags = [tags]
+
+                for t in tags:
+                    if 'tg_id' in t and t['tg_id'] != colander.null:
+                        deletedtags = []
+                        for (k, v) in t.iteritems():
+                            if (k != 'tg_id' and v != colander.null):
+                                deletedtags.append({
+                                    'key': k,
+                                    'value': v
+                                })
+
+                        if len(deletedtags) > 0:
+                            tagdiffs = []
+                            for dt in deletedtags:
+                                tagdiffs.append({
+                                    'key': dt['key'],
+                                    'value': dt['value'],
+                                    'op': 'delete'
+                                })
+                            taggroupdiffs.append({
+                                'op': 'delete',
+                                'tg_id': t['tg_id'],
+                                'tags': tagdiffs
+                            })
+
+    ret = None
+
+    if len(taggroupdiffs) > 0:
+        activitydiff = {
+            'taggroups': taggroupdiffs
+        }
+        activitydiff['version'] = version if version is not colander.null else 1
+        if identifier is not colander.null:
+            activitydiff['id'] = identifier
+
+        ret = {
+            'activities': [activitydiff]
+        }
+
+    return ret
+
+
+
+def getConfigKeyList(request):
     # Read and collect all Keys based on CSV list
     configKeys = ConfigKeyList()
     keys_stream = open('%s/%s' % (profile_directory_path(request), 'akeys.csv'), 'rb')
@@ -428,7 +994,9 @@ def form_tests(request):
         # Skip the first row
         if keys_csv.line_num > 1:
             configKeys.addKey(ConfigKey(*row))
+    return configKeys
 
+def getConfigValueList(request):
     # Read and collect all Values based on CSV list
     configValues = ConfigValueList()
     values_stream = open('%s/%s' % (profile_directory_path(request), 'avalues.csv'), 'rb')
@@ -437,7 +1005,9 @@ def form_tests(request):
         # Skip the first row
         if values_csv.line_num > 1:
             configValues.addValue(ConfigValue(*row))
+    return configValues
 
+def getConfigCategoryList(request):
     # Read and collect all Categories based on CSV list
     configCategories = ConfigCategoryList()
     categories_stream = open('%s/%s' % (profile_directory_path(request), 'categories.csv'), 'rb')
@@ -446,7 +1016,13 @@ def form_tests(request):
         # Skip the first row
         if categories_csv.line_num > 1:
             configCategories.addCategory(ConfigCategory(*row))
+    return configCategories
 
+def getCategoryList(request):
+
+    configKeys = getConfigKeyList(request)
+    configValues = getConfigValueList(request)
+    configCategories = getConfigCategoryList(request)
 
     yaml_stream = open("%s/%s" % (profile_directory_path(request), 'test3.yml'), 'r')
     yaml_config = yaml.load(yaml_stream)
@@ -482,9 +1058,9 @@ def form_tests(request):
             )
 
             # Loop the taggroups of the thematic group
-            for tags in taggroups:
+            for (tgroup, tags) in taggroups.iteritems():
 
-                taggroup = ConfigTaggroup()
+                taggroup = ConfigTaggroup(tgroup)
 
                 # Loop the keys of the taggroup
                 for (key, key_config) in tags.iteritems():
@@ -565,346 +1141,4 @@ def form_tests(request):
         # TODO: Error handling
         raise NameError('Duplicated mainkey(s): %s' % ', '.duplicates)
 
-
-#    duplicates = [x for x, y in collections.Counter(a).items() if y > 1]
-#    if len(duplicates) > 0:
-#        # TODO: Error handling
-#        raise NameError('Duplicated mainkey(s): %s' % duplicates)
-
-    # Collect the forms for each category
-    cat_forms = []
-    for cat in categorylist.getCategories():
-        cat_forms.append(cat.getForm())
-
-    # Put together all categories to one Schema
-    schema = colander.SchemaNode(colander.Mapping())
-    for cat_form in cat_forms:
-        schema.add(cat_form)
-
-    form = deform.Form(schema, buttons=('submit',))
-
-    # JS and CSS requirements (for widgets)
-    resources = form.get_widget_resources()
-
-    captured = None
-    success = None
-
-
-    data = {
-      '2': {
-        '13': {
-          'taggroup_1': {
-            'How much do investors pay for water': 'blabla'
-          }
-        },
-        '12': {
-          'taggroup_2': [
-            {
-              'Contract area (ha)': 200,
-              'Year': 2000
-            }
-          ]
-        }
-      }
-    }
-
-    if 'submit' in request.POST:
-        # the request represents a form submission
-        try:
-            # try to validate the submitted values
-            controls = request.POST.items()
-            captured = form.validate(controls)
-            if success:
-                response = success()
-                if response is not None:
-                    return response
-
-            print "---------"
-            print captured
-
-#            formToDiff(captured)
-
-            html = form.render(captured)
-        except deform.ValidationFailure as e:
-            # the submitted values could not be validated
-            html = e.render()
-
-    else:
-        html = form.render(data)
-
-    jsonToForm('bla')
-
-    return {
-        'form': html,
-        'css_links': resources['css'],
-        'js_links': resources['js']
-    }
-
-def jsonToForm(json):
-
-#    json = {
-#        "total": 1,
-#        "data": [
-#            {
-#                "status": "active",
-#                "previous_version": 1,
-#                "status_id": 2,
-#                "geometry": {
-#                    "type": "Point",
-#                    "coordinates": [
-#                        102.44012553528,
-#                        19.472002471451
-#                    ]
-#                },
-#                "taggroups": [
-#                    {
-#                        "tg_id": 2,
-#                        "main_tag": {
-#                            "value": "Laos",
-#                            "id": 560,
-#                            "key": "Country"
-#                        },
-#                        "id": 536,
-#                        "tags": [
-#                            {
-#                                "value": "Laos",
-#                                "id": 560,
-#                                "key": "Country"
-#                            }
-#                        ]
-#                    },
-#                    {
-#                        "tg_id": 4,
-#                        "main_tag": {
-#                            "value": "Mining",
-#                            "id": 562,
-#                            "key": "Intention of Investment"
-#                        },
-#                        "id": 538,
-#                        "tags": [
-#                            {
-#                                "value": "Mining",
-#                                "id": 562,
-#                                "key": "Intention of Investment"
-#                            }
-#                        ]
-#                    },
-#                    {
-#                        "tg_id": 1,
-#                        "main_tag": {
-#                            "value": "100",
-#                            "id": 559,
-#                            "key": "Intended area (ha)"
-#                        },
-#                        "id": 535,
-#                        "tags": [
-#                            {
-#                                "value": "100",
-#                                "id": 559,
-#                                "key": "Intended area (ha)"
-#                            }
-#                        ]
-#                    },
-#                    {
-#                        "tg_id": 6,
-#                        "main_tag": {
-#                            "value": "100m to 1km",
-#                            "id": 564,
-#                            "key": "Spatial Accuracy"
-#                        },
-#                        "id": 540,
-#                        "tags": [
-#                            {
-#                                "value": "100m to 1km",
-#                                "id": 564,
-#                                "key": "Spatial Accuracy"
-#                            }
-#                        ]
-#                    },
-#                    {
-#                        "tg_id": 3,
-#                        "main_tag": {
-#                            "value": "Contract",
-#                            "id": 561,
-#                            "key": "Data source"
-#                        },
-#                        "id": 537,
-#                        "tags": [
-#                            {
-#                                "value": "Contract",
-#                                "id": 561,
-#                                "key": "Data source"
-#                            }
-#                        ]
-#                    },
-#                    {
-#                        "tg_id": 7,
-#                        "main_tag": {
-#                            "value": "d0f5b496-edcd-458c-84a9-72ca4e1135f5",
-#                            "id": 565,
-#                            "key": "Remark"
-#                        },
-#                        "id": 541,
-#                        "tags": [
-#                            {
-#                                "value": "d0f5b496-edcd-458c-84a9-72ca4e1135f5",
-#                                "id": 565,
-#                                "key": "Remark"
-#                            }
-#                        ]
-#                    },
-#                    {
-#                        "tg_id": 5,
-#                        "main_tag": {
-#                            "value": "Contract signed",
-#                            "id": 563,
-#                            "key": "Negotiation Status"
-#                        },
-#                        "id": 539,
-#                        "tags": [
-#                            {
-#                                "value": "Contract signed",
-#                                "id": 563,
-#                                "key": "Negotiation Status"
-#                            }
-#                        ]
-#                    }
-#                ],
-#                "version": 2,
-#                "user": {
-#                    "username": "user2",
-#                    "id": 3
-#                },
-#                "timestamp": "2013-04-23 14:40:37.099000",
-#                "id": "d0f5b496-edcd-458c-84a9-72ca4e1135f5"
-#            }
-#        ]
-#    }
-
-    json = {
-        "total": 1,
-        "data": [
-            {
-                "status": "active",
-                "previous_version": 1,
-                "status_id": 2,
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [
-                        102.44012553528,
-                        19.472002471451
-                    ]
-                },
-                "taggroups": [
-                    {
-                        "tg_id": 1,
-                        "main_tag": {
-                            "value": 50,
-                            "id": 560,
-                            "key": "Current Area In Operation (Ha)"
-                        },
-                        "id": 536,
-                        "tags": [
-                            {
-                                "value": 50,
-                                "id": 560,
-                                "key": "Current Area In Operation (Ha)"
-                            }
-                        ]
-                    },
-                    {
-                        "tg_id": 2,
-                        "main_tag": {
-                            "value": 100,
-                            "id": 562,
-                            "key": "Intended Area (Ha)"
-                        },
-                        "id": 538,
-                        "tags": [
-                            {
-                                "value": 100,
-                                "id": 562,
-                                "key": "Intended Area (Ha)"
-                            }
-                        ]
-                    },
-                    {
-                        "tg_id": 3,
-                        "main_tag": {
-                            "value": "blabla",
-                            "id": 559,
-                            "key": "How Much Do Investors Pay For Water"
-                        },
-                        "id": 535,
-                        "tags": [
-                            {
-                                "value": "blabla",
-                                "id": 559,
-                                "key": "How Much Do Investors Pay For Water"
-                            }
-                        ]
-                    }
-                ],
-                "version": 2,
-                "user": {
-                    "username": "user2",
-                    "id": 3
-                },
-                "timestamp": "2013-04-23 14:40:37.099000",
-                "id": "d0f5b496-edcd-458c-84a9-72ca4e1135f5"
-            }
-        ]
-    }
-
-#    print json
-
-
-    activity = json['data'][0]
-
-    taggroups = activity['taggroups']
-
-    for tg in taggroups:
-        print "---"
-        print tg
-
-        # Get the category and thematic group based on the maintag
-        maintag = tg['main_tag']
-
-        print maintag
-
-
-
-def formToDiff(form):
-
-    print "****"
-
-    diff = {}
-
-    # Loop the categories of the form
-    for (cat, thmgrps) in form.iteritems():
-
-        # Loop the thematic groups of the category
-        for (thmgrp, tgroups) in thmgrps.iteritems():
-
-            # Loop the tags of each taggroup
-            for (tgroup, tags) in tgroups.iteritems():
-
-
-
-#                print tgroup
-#                print tags
-
-                # Transform all to list so they can be treated all the same
-                if not isinstance(tags, list):
-                    tags = [tags]
-
-                for t in tags:
-#                    print t
-                    print "---"
-
-                    for (k, v) in t.iteritems():
-                        print "%s: %s" % (k, v)
-
-
-        
-
+    return categorylist
