@@ -1,455 +1,24 @@
 import colander
 import deform
-import copy
-import yaml
-import csv
 import logging
 
-from lmkp.config import profile_directory_path
+
+from lmkp.views.form_config import *
 
 from pyramid.view import view_config
 
 log = logging.getLogger(__name__)
 
-class ConfigThematicgroupList(object):
-
-    def __init__(self):
-        self.thematicgroups = []
-
-    def addThematicgroup(self, thematicgroup):
-        if isinstance(thematicgroup, ConfigThematicgroup) and thematicgroup not in self.thematicgroups:
-            self.thematicgroups.append(thematicgroup)
-
-    def getThematicgroups(self):
-        return self.thematicgroups
-
-
-class ConfigThematicgroup(object):
-
-    def __init__(self, id, name):
-        self.id = id
-        self.name = name
-        self.taggroups = []
-
-    def getId(self):
-        return self.id
-
-    def addTaggroup(self, taggroup):
-        if isinstance(taggroup, ConfigTaggroup) and taggroup not in self.taggroups:
-            self.taggroups.append(taggroup)
-
-    def getTaggroups(self):
-        return self.taggroups
-
-    def findTaggroupByKey(self, key):
-        if isinstance(key, ConfigKey):
-            for tg in self.getTaggroups():
-                pass
-
-    def getName(self):
-        return self.name
-
-    def getForm(self):
-
-        thg_form = colander.SchemaNode(
-            colander.Mapping(), 
-            name=self.getName()
-        )
-
-        for tg in self.getTaggroups():
-            # Get the Form for each Taggroup
-            tg_form = tg.getForm()
-
-            name = str(tg.getId())
-
-            if tg.getRepeatable() is False:
-                tg_form.missing = colander.null
-                tg_form.name = name
-                thg_form.add(tg_form)
-            else:
-                thg_form.add(colander.SchemaNode(
-                    colander.Sequence(),
-                    tg_form,
-                    missing=colander.null,
-                    widget=deform.widget.SequenceWidget(min_len=1),
-                    name=name,
-                    title=''
-                ))
-
-        return thg_form
-
-class ConfigTaggroupList(object):
-
-    def __init__(self):
-        self.taggroups = []
-
-    def addTaggroup(self, taggroup):
-        if isinstance(taggroup, ConfigTaggroup) and taggroup not in self.taggroups:
-            self.taggroups.append(taggroup)
-
-    def getTaggroups(self):
-        return self.taggroups
-
-    def findTaggroupByKey(self, key):
-        if isinstance(key, ConfigKey):
-            for tg in self.getTaggroups():
-                pass
-
-
-class ConfigTaggroup(object):
-
-    def __init__(self, id):
-        self.id = id
-        self.maintag = None
-        self.tags = []
-        self.repeatable = False
-    
-    def getId(self):
-        return self.id
-
-    def setMaintag(self, tag):
-        if isinstance(tag, ConfigTag):
-            self.maintag = tag
-
-    def getMaintag(self):
-        return self.maintag
-
-    def addTag(self, tag):
-        if isinstance(tag, ConfigTag) and tag not in self.tags:
-            self.tags.append(tag)
-
-    def getTags(self):
-        return self.tags
-
-    def setRepeatable(self, repeatable):
-        self.repeatable = repeatable
-
-    def getRepeatable(self):
-        return self.repeatable
-
-    def hasKey(self, key):
-        for t in self.getTags():
-            if t.getKey().getName() == key:
-                return True
-        return False
-
-    def getForm(self):
-
-        tg_form = colander.SchemaNode(colander.Mapping())
-
-        maintag = self.getMaintag()
-
-        # First add the maintag
-        if maintag is not None:
-            tg_form.add(maintag.getForm())
-
-        # Remove the maintag from the list and get the form of the remaining
-        # tags
-        if maintag in self.getTags():
-            self.getTags().remove(maintag)
-        for t in self.getTags():
-            # Get the Form for each tag
-            tg_form.add(t.getForm())
-
-        # Add a hidden field for the tg_id
-        tg_form.add(colander.SchemaNode(
-            colander.Int(),
-            widget=deform.widget.HiddenWidget(),
-            name='tg_id',
-            missing = colander.null
-        ))
-
-        tg_form.validator = self.maintag_validator
-
-        return tg_form
-
-    def maintag_validator(self, form, value):
-
-        mainkey = self.getMaintag().getKey().getName()
-
-        # If the maintag is empty, ...
-        if value[mainkey] == colander.null:
-            # ... check if one of the other values is set
-            otherValueSet = False
-            for (k, v) in value.iteritems():
-                if k != mainkey and v != colander.null and k != 'tg_id':
-                    otherValueSet = True
-
-            if otherValueSet:
-                exc = colander.Invalid(form, 'The maintag (%s) cannot be empty!' % mainkey)
-                raise exc
-
-
-class ConfigTag(object):
-
-    def __init__(self):
-        self.key = None
-        self.values = []
-        self.mandatory = False
-
-    def setKey(self, key):
-        if isinstance(key, ConfigKey):
-            self.key = key
-
-    def getKey(self):
-        return self.key
-
-    def addValue(self, value):
-        if isinstance(value, ConfigValue) and value not in self.values:
-            self.values.append(value)
-
-    def getValues(self):
-        return self.values
-
-    def setMandatory(self, mandatory):
-        self.mandatory = mandatory
-
-    def getMandatory(self):
-        return self.mandatory is True
-
-    def getForm(self):
-
-        # Prepare the choices for keys with predefined values
-        valuechoices = tuple((x.getName(), x.getName()) for x in self.getValues())
-        selectchoice = ('', '- Select -')
-        choices = (selectchoice,) + valuechoices
-
-        # Get name and type of key
-        name = self.getKey().getName()
-        type = self.getKey().getType()
-
-        if type.lower() == 'predefined' and len(self.getValues()) > 0:
-            # Dropdown
-            form = colander.SchemaNode(
-                colander.String(),
-                validator=colander.OneOf([x[0] for x in choices]),
-                widget=deform.widget.SelectWidget(values=choices),
-                name=name
-            )
-        elif type.lower() == 'number':
-            # Number field
-            form = colander.SchemaNode(
-                colander.Int(),
-                name=name
-            )
-
-        elif type.lower() == 'text':
-            # Textarea
-            form = colander.SchemaNode(
-                colander.String(),
-                widget=deform.widget.TextAreaWidget(rows=10, cols=60),
-                name=name
-            )
-
-        elif type.lower() == 'date':
-            # Date
-            form = colander.SchemaNode(
-                colander.Date(),
-                widget=deform.widget.DateInputWidget(),
-                name=name,
-            )
-
-        else:
-            # Default: Textfield
-            form = colander.SchemaNode(
-                colander.String(),
-                widget=deform.widget.TextInputWidget(size=50),
-                name=name
-            )
-
-        if self.getMandatory() is False:
-            form.missing = colander.null
-
-        if self.getKey().getValidator() is not None:
-            form.validator = eval(self.getKey().getValidator())
-
-        return form
-#        # Radio
-#        return colander.SchemaNode(
-#            colander.String(),
-#            validator=colander.OneOf([x[0] for x in choices]),
-#            widget=deform.widget.RadioChoiceWidget(values=choices),
-#            name=self.getKey().getName()
-#        )
-
-
-class ConfigKeyList(object):
-
-    def __init__(self):
-        self.keys = []
-
-    def addKey(self, key):
-        if isinstance(key, ConfigKey) and self.findKeyById(key.getId()) is None:
-            self.keys.append(key)
-
-    def findKeyById(self, id):
-        # TODO: Try to speed up (?) by looking directly using the index
-        for k in self.keys:
-            if k.getId() == str(id):
-                return k
-        return None
-
-    def getKeys(self):
-        return self.keys
-
-class ConfigValueList(object):
-
-    def __init__(self):
-        self.values = []
-
-    def addValue(self, value):
-        if isinstance(value, ConfigValue) and self.findValueById(value.getId()) is None:
-            self.values.append(value)
-
-    def findValueById(self, id):
-        # TODO: Try to speed up (?) by looking directly using the index
-        for v in self.values:
-            if v.getId() == str(id):
-                return v
-        return None
-
-    def getValues(self):
-        return self.values
-
-class ConfigCategoryList(object):
-
-    def __init__(self):
-        self.categories = []
-
-    def addCategory(self, category):
-        if isinstance(category, ConfigCategory) and category not in self.categories:
-            self.categories.append(category)
-
-    def getCategories(self):
-        return self.categories
-
-    def findCategoryById(self, id):
-        # TODO: Try to speed up (?) by looking directly using the index
-        for c in self.categories:
-            if c.getId() == str(id):
-                return c
-        return None
-
-    def getAllMainkeys(self):
-        mainkeys = []
-        for cat in self.getCategories():
-            for thg in cat.getThematicgroups():
-                for tg in thg.getTaggroups():
-                    mainkeys.append(tg.getMaintag().getKey().getName())
-        return mainkeys
-
-    def getAllKeys(self):
-        keys = []
-        for cat in self.getCategories():
-            for thg in cat.getThematicgroups():
-                for tg in thg.getTaggroups():
-                    for t in tg.getTags():
-                        keys.append(t.getKey().getName())
-        return keys
-
-    def findCategoryThematicgroupTaggroupByMainkey(self, mainkey):
-        for c in self.categories:
-            for thg in c.getThematicgroups():
-                for tg in thg.getTaggroups():
-                    if tg.getMaintag().getKey().getName() == mainkey:
-                        return c.getId(), thg.getId(), tg
-        return None, None, None
-
-class ConfigKey(object):
-
-    def __init__(self, id, name, type, helptext, validator):
-        self.id = id
-        self.name = name
-        self.type = type
-        self.helptext = helptext
-        self.validator = validator if validator != '' else None
-
-    def getId(self):
-        return self.id
-
-    def getName(self):
-        return self.name
-
-    def getType(self):
-        return self.type
-
-    def setValidator(self, validator):
-        self.validator = validator
-
-    def getValidator(self):
-        return self.validator
-
-class ConfigValue(object):
-
-    def __init__(self, id, name, fk_key, order):
-        self.id = id
-        self.name = name
-        self.fk_key = fk_key
-        self.order = order
-
-        self.key = None
-
-    def getId(self):
-        return self.id
-
-    def getName(self):
-        return self.name
-
-    def getFkKey(self):
-        return self.fk_key
-
-    def getOrder(self):
-        return self.order
-
-class ConfigCategory(object):
-
-    def __init__(self, id, name, level, fk_category):
-        self.id = id
-        self.name = name
-        self.level = level
-        self.fk_category = fk_category
-
-        self.thematicgroups = []
-
-    def getId(self):
-        return self.id
-
-    def setName(self, name):
-        self.name = name
-
-    def getName(self):
-        return self.name
-
-    def addThematicgroup(self, thematicgroup):
-        if isinstance(thematicgroup, ConfigThematicgroup) and thematicgroup not in self.thematicgroups:
-            self.thematicgroups.append(thematicgroup)
-
-    def getThematicgroups(self):
-        return self.thematicgroups
-
-    def getForm(self):
-
-        cat_form = colander.SchemaNode(
-            colander.Mapping(),
-            name=self.getId(),
-            title=self.getName()
-        )
-
-        for thg in self.getThematicgroups():
-            # Get the Form for each Thematicgroup
-            thg_form = thg.getForm()
-
-            thg_form.missing = colander.null
-            thg_form.name = thg.getId()
-            cat_form.add(thg_form)
-
-        return cat_form
-
-
 @view_config(route_name='form_tests', renderer='lmkp:templates/form_test.pt')
 def form_tests(request):
 
-    categorylist = getCategoryList(request)
+    # TODO: Get this from request or somehow
+    itemType = 'activities'
+    # TODO: Get version and identifier from request or somehow.
+    version = None
+    identifier = None
+
+    categorylist = getCategoryList(request, itemType)
     
     # Collect the forms for each category
     cat_forms = []
@@ -475,114 +44,43 @@ def form_tests(request):
         missing = colander.null
     ))
 
+    # Prepare the form
     form = deform.Form(schema, buttons=('submit',))
 
-    # JS and CSS requirements (for widgets)
+    # Add JS and CSS requirements (for widgets)
     resources = form.get_widget_resources()
 
     captured = None
     success = None
 
-    # TODO: Get json by version and identifier if needed.
-    itemjson = {
-        "status": "active",
-        "previous_version": 1,
-        "status_id": 2,
-        "geometry": {
-            "type": "Point",
-            "coordinates": [
-                102.44012553528,
-                19.472002471451
-            ]
-        },
-        "taggroups": [
-            {
-                "tg_id": 1,
-                "main_tag": {
-                    "value": 50,
-                    "id": 560,
-                    "key": "Current area in operation (ha)"
-                },
-                "id": 536,
-                "tags": [
-                    {
-                        "value": 50,
-                        "id": 560,
-                        "key": "Current area in operation (ha)"
-                    }, {
-                        "value": 2010,
-                        "key": "Year"
-                    }
-                ]
-            },
-            {
-                "tg_id": 2,
-                "main_tag": {
-                    "value": 100,
-                    "id": 562,
-                    "key": "Intended area (ha)"
-                },
-                "id": 538,
-                "tags": [
-                    {
-                        "value": 100,
-                        "id": 562,
-                        "key": "Intended area (ha)"
-                    }
-                ]
-            },
-            {
-                "tg_id": 3,
-                "main_tag": {
-                    "value": "blabla",
-                    "id": 559,
-                    "key": "How much do investors pay for water"
-                },
-                "id": 535,
-                "tags": [
-                    {
-                        "value": "blabla",
-                        "id": 559,
-                        "key": "How much do investors pay for water"
-                    }
-                ]
-            },
-            {
-                "tg_id": 4,
-                "main_tag": {
-                    "value": 150,
-                    "id": 560,
-                    "key": "Current area in operation (ha)"
-                },
-                "id": 536,
-                "tags": [
-                    {
-                        "value": 150,
-                        "id": 560,
-                        "key": "Current area in operation (ha)"
-                    }, {
-                        "key": "This key",
-                        "value": "does not exist"
-                    }
-                ]
-            },
-        ],
-        "version": 2,
-        "user": {
-            "username": "user2",
-            "id": 3
-        },
-        "timestamp": "2013-04-23 14:40:37.099000",
-        "id": "d0f5b496-edcd-458c-84a9-72ca4e1135f5"
-    }
-    data = jsonToForm(request, itemjson)
+    version = 2
+    identifier = 'd0f5b496-edcd-458c-84a9-72ca4e1135f5'
 
-#    data = {}
+    if version is not None and identifier is not None:
+        # If there is an existing item, use the protocol to find the values to
+        # display in the form.
+        if itemType == 'stakeholders':
+            # TODO: Make this work for stakeholders as well.
+            print "**STAKEHOLDERS NOT YET IMPLEMENTED**"
+        else:
+            from lmkp.views.activity_protocol3 import ActivityProtocol3
+            from lmkp.models.meta import DBSession as Session
+            protocol = ActivityProtocol3(Session)
+
+        item = protocol.read_one_by_version(
+            request, identifier, version
+        )
+        itemjson = item.to_table(request)
+        data = getFormdataFromItemjson(request, itemjson, itemType)
+
+    else:
+        # If there is no existing item, show the form with empty data
+        data = {}
 
     if 'submit' in request.POST:
-        # the request represents a form submission
+        # The request contains the data of a form submission.
         try:
-            # try to validate the submitted values
+            # Try to validate the submitted values
             controls = request.POST.items()
             captured = form.validate(controls)
             if success:
@@ -590,22 +88,22 @@ def form_tests(request):
                 if response is not None:
                     return response
 
-            print "---------"
-            print "CAPTURED: %s" % captured
+            log.debug('Captured data by form: %s' % captured)
 
-            diff = formToDiff(request, captured)
+            diff = formdataToDiff(request, captured, itemType)
 
-            print "---------"
-            print "DIFF: %s" % diff
+            log.debug('Diff of object: %s' % diff)
 
             html = form.render(captured)
+
         except deform.ValidationFailure as e:
-            # the submitted values could not be validated
+            # The submitted values could not be validated, show the form again
+            # but with error messages
             html = e.render()
 
     else:
+        # No data submitted, show the form.
         html = form.render(data)
-
 
     return {
         'form': html,
@@ -613,15 +111,28 @@ def form_tests(request):
         'js_links': resources['js']
     }
 
-def jsonToForm(request, itemjson):
+def getFormdataFromItemjson(request, itemJson, itemType):
+    """
+    Use the JSON representation of a feature (Activity or Stakeholder) to get
+    the values in a way the form can handle to display it. This can be used to
+    display a form with some values already filled out to edit an existing
+    Activity or Stakeholder.
+    The values of the form depend on the configuration yaml. If a Tag is not
+    found there, it is ignored and not returned by this function.
+    - itemjson: The JSON representation of an object. This should only be
+      exactly 1 version of an item (starting with {'activities': {...}} or
+      {'stakeholders': {...}}
+    - itemType: activities / stakeholders
+    """
 
-    categorylist = getCategoryList(request)
+    # Get the list of categories (needed to validate the tags)
+    categorylist = getCategoryList(request, itemType)
 
-    taggroups = itemjson['taggroups']
+    taggroups = itemJson['taggroups']
 
     data = {
-        'id': itemjson['id'],
-        'version': itemjson['version']
+        'id': itemJson['id'],
+        'version': itemJson['version']
     }
 
     for taggroup in taggroups:
@@ -629,7 +140,13 @@ def jsonToForm(request, itemjson):
         # Get the category and thematic group based on the maintag
         maintag = taggroup['main_tag']
 
-        cat, thmg, tg = categorylist.findCategoryThematicgroupTaggroupByMainkey(maintag['key'])
+        cat, thmg, tg = categorylist.findCategoryThematicgroupTaggroupByMainkey(
+            maintag['key'])
+
+        if tg is None:
+            # If the Form Taggroup for this maintag was not found, move on and
+            # do not add it to form
+            continue
 
         tgid = str(tg.getId())
 
@@ -667,38 +184,52 @@ def jsonToForm(request, itemjson):
             # can be added
             data[cat] = {thmg: {tgid: tagsdata}}
 
-    print "---------"
-    print "FORM CREATED BY JSON: %s" % data
+    log.debug('Formdata created by ItemJSON: %s' % data)
     
     return data
 
-def formToDiff(request, newform):
+def formdataToDiff(request, newform, itemType):
+    """
+    Use the formdata captured on submission of the form and compare it with the
+    old version of an object to create a diff which allows to create/update the
+    object.
+    Approach: Loop all items of the newform and check if they are new or changed
+    compared to the oldform. If so, add them to diff and set their values to
+    null in the oldform. Any remaining items (with non-null values) of oldform
+    were deleted and need to be added to diff as well.
+    - newform: The form data captured on submission
+    - itemType: activities / stakeholders
+    """
 
-    def findRemoveTgByCategoryThematicgroupTgid(form, category, thematicgroup, tg_id):
-
-        # Loop the categories of the form
+    def findRemoveTgByCategoryThematicgroupTgid(form, category, thematicgroup,
+        tg_id):
+        """
+        Helper function to find a taggroup by its category, thematic group and
+        tg_id. If it was found, its values in the form are set to null and the
+        tags are returned.
+        """
+        # Loop the categories of the form to find the one with the given id.
         for (cat, thmgrps) in form.iteritems():
-
             if cat == category:
-
-                # Loop the thematic groups of the category
+                # Loop the thematic groups of the category to find the one with
+                # the given id.
                 for (thmgrp, tgroups) in thmgrps.iteritems():
-
                     if thmgrp == thematicgroup:
-
                         # Loop the taggroups of the thematic group
                         for (tgroup, tags) in tgroups.iteritems():
+                            # Transform them all to lists to handle them all the
+                            # same.
                             if not isinstance(tags, list):
                                 tags = [tags]
                             # Look at each taggroup and check the tg_id
                             for t in tags:
-                                
                                 if t['tg_id'] == tg_id:
                                     ret = {}
                                     for (k, v) in t.iteritems():
+                                        # Copy the keys and values
                                         ret[k] = v
+                                        # Set the values to null
                                         t[k] = colander.null
-
                                     return form, ret
         return form, None
 
@@ -707,133 +238,47 @@ def formToDiff(request, newform):
     oldform = {}
 
     if 'id' in newform:
+        # If the form contains an identifier, it is an edit of an existing item
         identifier = newform['id']
         del newform['id']
 
     if 'version' in newform:
+        # If the form contains an identifier, it should also have a version
         version = newform['version']
         del newform['version']
 
     if identifier != colander.null and version != colander.null:
 
-        # TODO: Find old item by identifier and version
-        olditemjson = {
-            "status": "active",
-            "previous_version": 1,
-            "status_id": 2,
-            "geometry": {
-                "type": "Point",
-                "coordinates": [
-                    102.44012553528,
-                    19.472002471451
-                ]
-            },
-            "taggroups": [
-                {
-                    "tg_id": 1,
-                    "main_tag": {
-                        "value": 50,
-                        "id": 560,
-                        "key": "Current area in operation (ha)"
-                    },
-                    "id": 536,
-                    "tags": [
-                        {
-                            "value": 50,
-                            "id": 560,
-                            "key": "Current area in operation (ha)"
-                        }, {
-                            "value": 2010,
-                            "key": "Year"
-                        }
-                    ]
-                },
-                {
-                    "tg_id": 2,
-                    "main_tag": {
-                        "value": 100,
-                        "id": 562,
-                        "key": "Intended area (ha)"
-                    },
-                    "id": 538,
-                    "tags": [
-                        {
-                            "value": 100,
-                            "id": 562,
-                            "key": "Intended area (ha)"
-                        }
-                    ]
-                },
-                {
-                    "tg_id": 3,
-                    "main_tag": {
-                        "value": "blabla",
-                        "id": 559,
-                        "key": "How much do investors pay for water"
-                    },
-                    "id": 535,
-                    "tags": [
-                        {
-                            "value": "blabla",
-                            "id": 559,
-                            "key": "How much do investors pay for water"
-                        }
-                    ]
-                },
-                {
-                    "tg_id": 4,
-                    "main_tag": {
-                        "value": 150,
-                        "id": 560,
-                        "key": "Current area in operation (ha)"
-                    },
-                    "id": 536,
-                    "tags": [
-                        {
-                            "value": 150,
-                            "id": 560,
-                            "key": "Current area in operation (ha)"
-                        }, {
-                            "key": "This key",
-                            "value": "does not exist"
-                        }
-                    ]
-                },
-            ],
-            "version": 2,
-            "user": {
-                "username": "user2",
-                "id": 3
-            },
-            "timestamp": "2013-04-23 14:40:37.099000",
-            "id": "d0f5b496-edcd-458c-84a9-72ca4e1135f5"
-        }
+        # Use the protocol to query the values of the version which was edited
+        if itemType == 'stakeholders':
+            # TODO: Make this work for stakeholders as well.
+            print "**STAKEHOLDERS NOT YET IMPLEMENTED**"
+        else:
+            from lmkp.views.activity_protocol3 import ActivityProtocol3
+            from lmkp.models.meta import DBSession as Session
+            protocol = ActivityProtocol3(Session)
 
-        # Look only at the values transmitted to the form
-        oldform = jsonToForm(request, olditemjson)
+        item = protocol.read_one_by_version(
+            request, identifier, version
+        )
+        olditemjson = item.to_table(request)
+
+        # Look only at the values transmitted to the form and therefore visible
+        # to the editor.
+        oldform = getFormdataFromItemjson(request, olditemjson, itemType)
         if 'id' in oldform:
             del oldform['id']
         if 'version' in oldform:
             del oldform['version']
 
-   
-    """
-    Approach: Loop all items of the newform and check if they are new or changed
-    compared to the oldform. If so, add them to diff and remove (set them null)
-    them from oldform. Any remaining items of oldform were deleted and need to
-    be added to diff as well.
-    """
-
     taggroupdiffs = []
+
+    # Loop the newform to check if there are taggroups which changed or are new
+
     # Loop the categories of the form
     for (cat, thmgrps) in newform.iteritems():
-
-        # Special case: id and version
-
-
         # Loop the thematic groups of the category
         for (thmgrp, tgroups) in thmgrps.iteritems():
-
             # Loop the tags of each taggroup
             for (tgroup, tags) in tgroups.iteritems():
 
@@ -842,15 +287,17 @@ def formToDiff(request, newform):
                     tags = [tags]
 
                 for t in tags:
-
                     if t['tg_id'] != colander.null:
                         # Taggroup was there before because it contains a tg_id.
                         # Check if it contains changed values.
 
                         # Try to find the taggroup by its tg_id in the oldform
-                        oldform, oldtaggroup = findRemoveTgByCategoryThematicgroupTgid(oldform, cat, thmgrp, t['tg_id'])
+                        oldform, oldtaggroup = findRemoveTgByCategoryThematicgroupTgid(
+                            oldform, cat, thmgrp, t['tg_id'])
 
                         if oldtaggroup is None:
+                            # This should never happen since all tg_ids should
+                            # be known.
                             continue
 
                         deletedtags = []
@@ -859,9 +306,12 @@ def formToDiff(request, newform):
                         for (k, v) in t.iteritems():
 
                             if (k != 'tg_id'):
-
-                                if k in oldtaggroup and v != oldtaggroup[k] and v != colander.null:
-                                    print "aaa"
+                                if (k in oldtaggroup
+                                    and str(v) != oldtaggroup[k]
+                                    and v != colander.null):
+                                    # If a key is there in both forms but its
+                                    # value changed, add it once as deleted and
+                                    # once as added.
                                     deletedtags.append({
                                         'key': k,
                                         'value': oldtaggroup[k]
@@ -870,21 +320,24 @@ def formToDiff(request, newform):
                                         'key': k,
                                         'value': v
                                     })
-
-                                elif k not in oldtaggroup and v != colander.null:
-                                    print "bbb"
+                                elif (k not in oldtaggroup
+                                    and v != colander.null):
+                                    # If a key was not there in the oldform, add
+                                    # it as added.
                                     addedtags.append({
                                         'key': k,
                                         'value': v
                                     })
-
-                                elif k in oldtaggroup and v != oldtaggroup[k] and v == colander.null:
+                                elif (k in oldtaggroup and v != oldtaggroup[k]
+                                    and v == colander.null):
+                                    # If a key was in the oldform but not in the
+                                    # new one anymore, add it as deleted.
                                     deletedtags.append({
                                         'key': k,
                                         'value': oldtaggroup[k]
                                     })
                                 
-                        # Put together diff for taggroup
+                        # Put together diff for the taggroup
                         if len(deletedtags) > 0 or len(addedtags) > 0:
                             tagdiffs = []
                             for dt in deletedtags:
@@ -899,14 +352,14 @@ def formToDiff(request, newform):
                                     'value': at['value'],
                                     'op': 'add'
                                 })
-
                             taggroupdiffs.append({
                                 'tg_id': t['tg_id'],
                                 'tags': tagdiffs
                             })
 
                     else:
-                        # Taggroup may be new, check if it contains values
+                        # Taggroup has no tg_id. If it contains values, it is a
+                        # new taggroup to be added.
                         addedtags = []
                         for (k, v) in t.iteritems():
                             if (k != 'tg_id' and v != colander.null):
@@ -914,7 +367,6 @@ def formToDiff(request, newform):
                                     'key': k,
                                     'value': v
                                 })
-
 
                         # Put together diff for taggroup
                         if len(addedtags) > 0:
@@ -930,8 +382,9 @@ def formToDiff(request, newform):
                                 'tags': tagdiffs
                             })
 
-    # Loop the oldform to check if any tags still remain (meaning that they were
-    # deleted)
+    # Loop the oldform to check if there are any tags remaining which have
+    # values in them, meaning that they are not in the newform anymore and are
+    # therefore to be deleted.
 
     # Loop the categories of the form
     for (cat, thmgrps) in oldform.iteritems():
@@ -970,175 +423,15 @@ def formToDiff(request, newform):
     ret = None
 
     if len(taggroupdiffs) > 0:
-        activitydiff = {
+        itemdiff = {
             'taggroups': taggroupdiffs
         }
-        activitydiff['version'] = version if version is not colander.null else 1
+        itemdiff['version'] = version if version is not colander.null else 1
         if identifier is not colander.null:
-            activitydiff['id'] = identifier
+            itemdiff['id'] = identifier
 
-        ret = {
-            'activities': [activitydiff]
-        }
+        ret = {}
+        ret[itemType] = [itemdiff]
 
     return ret
 
-
-
-def getConfigKeyList(request):
-    # Read and collect all Keys based on CSV list
-    configKeys = ConfigKeyList()
-    keys_stream = open('%s/%s' % (profile_directory_path(request), 'akeys.csv'), 'rb')
-    keys_csv = csv.reader(keys_stream, delimiter=';')
-    for row in keys_csv:
-        # Skip the first row
-        if keys_csv.line_num > 1:
-            configKeys.addKey(ConfigKey(*row))
-    return configKeys
-
-def getConfigValueList(request):
-    # Read and collect all Values based on CSV list
-    configValues = ConfigValueList()
-    values_stream = open('%s/%s' % (profile_directory_path(request), 'avalues.csv'), 'rb')
-    values_csv = csv.reader(values_stream, delimiter=';')
-    for row in values_csv:
-        # Skip the first row
-        if values_csv.line_num > 1:
-            configValues.addValue(ConfigValue(*row))
-    return configValues
-
-def getConfigCategoryList(request):
-    # Read and collect all Categories based on CSV list
-    configCategories = ConfigCategoryList()
-    categories_stream = open('%s/%s' % (profile_directory_path(request), 'categories.csv'), 'rb')
-    categories_csv = csv.reader(categories_stream, delimiter=';')
-    for row in categories_csv:
-        # Skip the first row
-        if categories_csv.line_num > 1:
-            configCategories.addCategory(ConfigCategory(*row))
-    return configCategories
-
-def getCategoryList(request):
-
-    configKeys = getConfigKeyList(request)
-    configValues = getConfigValueList(request)
-    configCategories = getConfigCategoryList(request)
-
-    yaml_stream = open("%s/%s" % (profile_directory_path(request), 'test3.yml'), 'r')
-    yaml_config = yaml.load(yaml_stream)
-
-    categorylist = ConfigCategoryList()
-
-    emptymaintag = []
-    unknownkeys = []
-
-
-    # Loop the categories of the yaml config file
-    for (cat, thmgrps) in yaml_config['fields'].iteritems():
-
-        # Find the category in the list of csv categories
-        category = configCategories.findCategoryById(cat)
-
-        if category is None:
-            continue
-
-        # Loop the thematic groups of the category
-        for (thmgrp, taggroups) in thmgrps.iteritems():
-
-            # The name of the thematic group also stands in the categories csv.
-            # So it is necessary to find the category there
-            thematicCategory = configCategories.findCategoryById(thmgrp)
-
-            if thematicCategory is None:
-                continue
-
-            # Create a thematicgroup out of it
-            thematicgroup = ConfigThematicgroup(
-                thematicCategory.getId(), thematicCategory.getName()
-            )
-
-            # Loop the taggroups of the thematic group
-            for (tgroup, tags) in taggroups.iteritems():
-
-                taggroup = ConfigTaggroup(tgroup)
-
-                # Loop the keys of the taggroup
-                for (key, key_config) in tags.iteritems():
-
-                    try:
-                        int(key)
-
-                        # Definition of tag and its values
-                        tag = ConfigTag()
-
-                        configKey = configKeys.findKeyById(key)
-
-                        if configKey is None:
-                            unknownkeys.append(str(key))
-
-                        # We need to make a copy of the original object.
-                        # Otherwise we are not able to add a custom validator
-                        # only for one key.
-                        tag.setKey(copy.copy(configKey))
-
-                        if key_config is not None:
-
-                            if 'values' in key_config:
-                                # If available, loop the values of the key
-                                for v in key_config['values']:
-                                    tag.addValue(configValues.findValueById(v))
-
-                            if 'mandatory' in key_config and key_config['mandatory'] is True:
-                                tag.setMandatory(True)
-
-                            if 'validator' in key_config:
-                                tag.getKey().setValidator(key_config['validator'])
-
-                            if 'maintag' in key_config:
-                                taggroup.setMaintag(tag)
-
-                        taggroup.addTag(tag)
-
-                    except ValueError:
-                        # Configuration of taggroup
-                        if key == 'repeat' and key_config is True:
-                            taggroup.setRepeatable(True)
-
-                if taggroup.getMaintag() is None:
-                    emptymaintag.append(taggroup)
-                else:
-                    thematicgroup.addTaggroup(taggroup)
-
-            category.addThematicgroup(thematicgroup)
-
-        categorylist.addCategory(category)
-
-    # Keys not found
-    if len(unknownkeys) > 0:
-        raise NameError('One or more keys were not found in CSV file: %s' % ', '.join(unknownkeys))
-
-    # Tags where the maintag is not found
-    if len(emptymaintag) > 0:
-        # Collect the names of the tags in the taggroup to give nicer feedback
-        emptystack = []
-        for e in emptymaintag:
-            tags = []
-            for t in e.getTags():
-                tags.append('%s [%s]' % (t.getKey().getName(), t.getKey().getId()))
-            emptystack.append('Taggroup [%s]' % ', '.join(tags))
-        raise NameError('One or more Taggroups do not have a maintag: %s' % ', '.join(emptystack))
-
-    # Check that each mainkey is unique (is only set once throughout all keys)
-    allkeys = categorylist.getAllKeys()
-    allmainkeys = categorylist.getAllMainkeys()
-    duplicates = []
-    for mainkey in allmainkeys:
-        if allkeys.count(mainkey) > 1:
-            if mainkey not in duplicates:
-                duplicates.append(mainkey)
-
-    if len(duplicates) > 0:
-        # TODO: Error handling
-        raise NameError('Duplicated mainkey(s): %s' % ', '.duplicates)
-
-    return categorylist
