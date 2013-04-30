@@ -416,10 +416,35 @@ class ConfigTag(object):
                 widget=deform.widget.SelectWidget(values=choices),
                 name=name
             )
-        elif type.lower() == 'number':
-            # Number field
+        elif type.lower() == 'number' or type.lower() == 'integer':
+            # Number or Integer field
+            deform.widget.default_resource_registry.set_js_resources(
+                'jqueryspinner', None, '../static/jquery-ui-1.9.2.custom.min.js')
+            min = None
+            max = None
+            val = self.getKey().getValidator()
+            if isinstance(val, list):
+                try:
+                    min = val[0]
+                    max = val[1]
+                except IndexError:
+                    pass
+            options = {}
+            if min is not None:
+                options['min'] = min
+            if max is not None:
+                options['max'] = max
+            if type.lower() == 'number':
+                # Specific options for 'number'
+                options['step'] = 0.01
+                options['numberFormat'] = 'n'
+                colanderType = colander.Float()
+            else:
+                # Specific options for 'integer'
+                colanderType = colander.Int()
             form = colander.SchemaNode(
-                colander.Int(),
+                colanderType,
+                widget=NumberSpinnerWidget(options=options),
                 name=name
             )
         elif type.lower() == 'text':
@@ -448,7 +473,9 @@ class ConfigTag(object):
             form.missing = colander.null
         # Add a validator for this key if there is one
         if self.getKey().getValidator() is not None:
-            form.validator = eval(self.getKey().getValidator())
+            val = self.getKey().getValidator()
+            if isinstance(val, list):
+                form.validator = colander.Range(*val)
         return form
 
 class ConfigKeyList(object):
@@ -521,9 +548,29 @@ class ConfigKey(object):
 
     def getValidator(self):
         """
-        Return the validator of this key.
+        Return the validator of this key. So far, only ranges as arrays are
+        valid.
         """
-        return self.validator
+        if self.validator is None:
+            # If there is no validator, do not try to parse it or anything.
+            return None
+        if isinstance(self.validator, list):
+            # If it is already a list, return it as it is
+            return self.validator
+        # Try to parse the string to a list
+        if self.validator[:1] == '[' and self.validator[-1:] == ']':
+            arr = self.validator[1:-1].split(',')
+            for i, a in enumerate(arr):
+                try:
+                    if self.getType().lower() == 'integer':
+                        arr[i] = int(a)
+                    elif self.getType().lower() == 'number':
+                        arr[i] = float(a)
+                except ValueError:
+                    pass
+            if len(arr) > 0 and len(arr) <= 2:
+                return arr
+        return None
 
 class ConfigValueList(object):
     """
@@ -796,3 +843,34 @@ def getCategoryList(request, itemType):
         raise NameError('Duplicated mainkey(s): %s' % ', '.duplicates)
 
     return categorylist
+
+class NumberSpinnerWidget(deform.widget.Widget):
+    """
+    Custom Deform widget. Adds a spinner to a input field using the jQuery UI
+    library.
+    """
+    template = 'lmkp:templates/form/numberspinner_template'
+    readonly_template = 'readonly/textinput'
+    type_name = 'number'
+    size = None
+    style = None
+    requirements = ( ('jqueryui', None), ('jqueryspinner', None), )
+    default_options = ()
+
+    def __init__(self, *args, **kwargs):
+        self.options = dict(self.default_options)
+        deform.widget.Widget.__init__(self, *args, **kwargs)
+
+    def serialize(self, field, cstruct, **kw):
+        if cstruct in (colander.null, None):
+            cstruct = ''
+        readonly = kw.get('readonly', self.readonly)
+        template = readonly and self.readonly_template or self.template
+        kw.setdefault('options', self.options)
+        values = self.get_template_values(field, cstruct, kw)
+        return field.renderer(template, **values)
+
+    def deserialize(self, field, pstruct):
+        if pstruct in ('', colander.null):
+            return colander.null
+        return pstruct
