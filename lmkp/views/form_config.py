@@ -62,6 +62,19 @@ class ConfigCategoryList(object):
                         keys.append(t.getKey().getName())
         return keys
 
+    def getMainkeyWithGeometry(self):
+        """
+        Return a list with the names of all main keys of taggroups which can
+        have a geometry
+        """
+        mainkeys = []
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                for tg in thg.getTaggroups():
+                    if tg.getGeometry() is True:
+                        mainkeys.append(tg.getMaintag().getKey().getName())
+        return mainkeys
+
     def findCategoryThematicgroupTaggroupByMainkey(self, mainkey):
         """
         Find and return
@@ -243,6 +256,7 @@ class ConfigTaggroup(object):
         self.maintag = None
         self.tags = []
         self.repeatable = False
+        self.geometry = False
 
     def getId(self):
         """
@@ -286,7 +300,19 @@ class ConfigTaggroup(object):
         """
         Return a boolean whether this taggroup is repeatable or not.
         """
-        return self.repeatable
+        return self.repeatable is True
+
+    def setGeometry(self, geometry):
+        """
+        Set if this taggroup can have a geometry or not.
+        """
+        self.geometry = geometry
+
+    def getGeometry(self):
+        """
+        Return a boolean whether this taggroup can have a geometry or not.
+        """
+        return self.geometry is True
 
     def hasKey(self, key):
         """
@@ -801,6 +827,9 @@ def getCategoryList(request, itemType):
                         # Configuration of taggroup
                         if key_id == 'repeat' and key_config is True:
                             taggroup.setRepeatable(True)
+
+                        if key_id == 'geometry' and key_config is True:
+                            taggroup.setGeometry(True)
 
                 if taggroup.getMaintag() is None:
                     emptymaintag.append(taggroup)

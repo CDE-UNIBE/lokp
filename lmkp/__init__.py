@@ -90,6 +90,7 @@ def main(global_config, ** settings):
     config.add_route('yaml_add_stakeholder_fields', '/config/add/stakeholders')
 
     config.add_route('config', '/config/form/{parameter}')
+    config.add_route('config_geomtaggroups', '/config/geometrytaggroups')
 
     # Manage sample values and tests
     config.add_route('sample_values', '/sample_values/insert')
