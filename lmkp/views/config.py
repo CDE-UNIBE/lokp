@@ -31,6 +31,25 @@ APPLICATION_YAML = 'application.yml'
 ACTIVITY_YAML = 'activity.yml'
 STAKEHOLDER_YAML = 'stakeholder.yml'
 
+from lmkp.views.form_config import getCategoryList
+
+@view_config(route_name='config_geomtaggroups', renderer='json')
+def form_geomtaggroups(request):
+    """
+    Simple service to return all the mainkeys of taggroups which can have
+    geometries as defined in the configuration yaml.
+    """
+
+    # TODO: Remove this once the config yaml is completely replaced!
+#    categorylist = getCategoryList(request, 'activities')
+#    mainkeys = categorylist.getMainkeyWithGeometry()
+    mainkeys = [
+        'Contract area (ha)',
+        'Current area in operation (ha)'
+    ]
+
+    return {'mainkeys': mainkeys}
+
 def merge_profiles(global_config, locale_config):
     """
     Wrapper to merge a global and local configuration dictionary

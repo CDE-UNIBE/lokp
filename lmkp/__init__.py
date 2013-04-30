@@ -90,6 +90,7 @@ def main(global_config, ** settings):
     config.add_route('yaml_add_stakeholder_fields', '/config/add/stakeholders')
 
     config.add_route('config', '/config/form/{parameter}')
+    config.add_route('config_geomtaggroups', '/config/geometrytaggroups')
 
     # Manage sample values and tests
     config.add_route('sample_values', '/sample_values/insert')
@@ -260,7 +261,10 @@ def main(global_config, ** settings):
 
     config.add_route('cambodia_read_stakeholders', '/read/cambodia/stakeholders')
     config.add_route('cambodia_read_activities', '/read/cambodia/activities')
-    
+
+    config.add_route('form_tests', '/blabla')
+    config.add_static_view('formstatic', 'deform:static')
+
     # Error views
     config.add_forbidden_view(forbidden_view)
     config.add_notfound_view(notfound_view)
