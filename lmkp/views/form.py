@@ -17,8 +17,9 @@ def form_tests(request):
     # TODO: Get version and identifier from request or somehow.
     version = None
     identifier = None
+    lang = 'fr' # So far, it doesn't matter what stands here
 
-    categorylist = getCategoryList(request, itemType)
+    categorylist = getCategoryList(request, itemType, lang)
     
     # Collect the forms for each category
     cat_forms = []

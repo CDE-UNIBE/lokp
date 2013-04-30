@@ -101,6 +101,7 @@ class ConfigCategory(object):
     def __init__(self, id, name, level, fk_category):
         self.id = id
         self.name = name
+        self.translation = None
         self.level = level
         self.fk_category = fk_category
         self.thematicgroups = []
@@ -116,6 +117,18 @@ class ConfigCategory(object):
         Return the name (as defined in the configuration file) of the category.
         """
         return self.name
+
+    def setTranslation(self, translation):
+        """
+        Set the translation of this category.
+        """
+        self.translation = translation
+
+    def getTranslation(self):
+        """
+        Return the translation of this category.
+        """
+        return self.translation
 
     def addThematicgroup(self, thematicgroup):
         """
@@ -136,10 +149,12 @@ class ConfigCategory(object):
         Prepare the form node for this category, append the forms of its
         thematic groups and return it.
         """
+        title = (self.getTranslation() if self.getTranslation() is not None
+            else self.getName())
         cat_form = colander.SchemaNode(
             colander.Mapping(),
             name=self.getId(),
-            title=self.getName()
+            title=title
         )
         for thg in self.getThematicgroups():
             # Get the Form for each Thematicgroup
@@ -157,9 +172,10 @@ class ConfigThematicgroup(object):
     Information'. It contains Form Taggroups as the next lower form structure.
     """
 
-    def __init__(self, id, name):
+    def __init__(self, id, name, translation):
         self.id = id
         self.name = name
+        self.translation = translation
         self.taggroups = []
 
     def getId(self):
@@ -190,14 +206,22 @@ class ConfigThematicgroup(object):
         """
         return self.name
 
+    def getTranslation(self):
+        """
+        Return the translation of this thematic group.
+        """
+        return self.translation
+
     def getForm(self):
         """
         Prepare the form node for this thematic group, append the forms of its
         taggroups and return it.
         """
+        title = (self.getTranslation() if self.getTranslation() is not None
+            else self.getName())
         thg_form = colander.SchemaNode(
             colander.Mapping(),
-            name=self.getName()
+            title=title
         )
         for tg in self.getTaggroups():
             # Get the Form for each Taggroup
@@ -427,12 +451,15 @@ class ConfigTag(object):
         """
         # Get name and type of key
         name = self.getKey().getName()
+        title = (self.getKey().getTranslation()
+            if self.getKey().getTranslation() is not None
+            else self.getKey().getName())
         type = self.getKey().getType()
         # Decide which type of form to add
         if type.lower() == 'predefined' and len(self.getValues()) > 0:
             # Dropdown
             # Prepare the choices for keys with predefined values
-            valuechoices = tuple((x.getName(), x.getName())
+            valuechoices = tuple((x.getName(), x.getTranslation())
                 for x in self.getValues())
             selectchoice = ('', '- Select -')
             choices = (selectchoice,) + valuechoices
@@ -440,12 +467,13 @@ class ConfigTag(object):
                 colander.String(),
                 validator=colander.OneOf([x[0] for x in choices]),
                 widget=deform.widget.SelectWidget(values=choices),
-                name=name
+                name=name,
+                title=title
             )
         elif type.lower() == 'number' or type.lower() == 'integer':
             # Number or Integer field
             deform.widget.default_resource_registry.set_js_resources(
-                'jqueryspinner', None, '../static/jquery-ui-1.9.2.custom.min.js')
+                'jqueryspinner',None,'../static/jquery-ui-1.9.2.custom.min.js')
             min = None
             max = None
             val = self.getKey().getValidator()
@@ -471,14 +499,16 @@ class ConfigTag(object):
             form = colander.SchemaNode(
                 colanderType,
                 widget=NumberSpinnerWidget(options=options),
-                name=name
+                name=name,
+                title=title
             )
         elif type.lower() == 'text':
             # Textarea
             form = colander.SchemaNode(
                 colander.String(),
                 widget=deform.widget.TextAreaWidget(rows=10, cols=60),
-                name=name
+                name=name,
+                title=title
             )
         elif type.lower() == 'date':
             # Date
@@ -486,13 +516,15 @@ class ConfigTag(object):
                 colander.Date(),
                 widget=deform.widget.DateInputWidget(),
                 name=name,
+                title=title
             )
         else:
             # Default: Textfield
             form = colander.SchemaNode(
                 colander.String(),
                 widget=deform.widget.TextInputWidget(size=50),
-                name=name
+                name=name,
+                title=title
             )
         # Is this tag mandatory?
         if self.getMandatory() is False:
@@ -544,6 +576,7 @@ class ConfigKey(object):
     def __init__(self, id, name, type, helptext, validator):
         self.id = id
         self.name = name
+        self.translation = None
         self.type = type
         self.helptext = helptext
         self.validator = validator if validator != '' else None
@@ -559,6 +592,18 @@ class ConfigKey(object):
         Return the name (as defined in the configuration file) of the category.
         """
         return self.name
+
+    def setTranslation(self, translation):
+        """
+        Set the translation of this key.
+        """
+        self.translation = translation
+
+    def getTranslation(self):
+        """
+        Return the translation of this key.
+        """
+        return self.translation
 
     def getType(self):
         """
@@ -630,6 +675,15 @@ class ConfigValueList(object):
                 return v
         return None
 
+    def findValuesByFkkey(self, fk_key):
+        """
+        Find and return a list of values by a fk_key.
+        """
+        values = []
+        for v in self.getValues():
+            if v.getFkkey() == str(fk_key):
+                values.append(v)
+        return values
 
 class ConfigValue(object):
     """
@@ -640,10 +694,10 @@ class ConfigValue(object):
     def __init__(self, id, name, fk_key, order):
         self.id = id
         self.name = name
+        # The initial value of the translation is set to be the same as the name
+        self.translation = name
         self.fk_key = fk_key
         self.order = order
-
-        self.key = None
 
     def getId(self):
         """
@@ -653,9 +707,27 @@ class ConfigValue(object):
 
     def getName(self):
         """
-        Return the name (as defined in the configuration file) of the category.
+        Return the name (as defined in the configuration file) of the value.
         """
         return self.name
+
+    def setTranslation(self, translation):
+        """
+        Set the translation of this value.
+        """
+        self.translation = translation
+
+    def getTranslation(self):
+        """
+        Return the translation of this value.
+        """
+        return self.translation
+
+    def getFkkey(self):
+        """
+        Return the fk_key (as defined in the configuration file) of the value.
+        """
+        return self.fk_key
 
     def getOrder(self):
         """
@@ -664,7 +736,7 @@ class ConfigValue(object):
         return self.order
 
 
-def getConfigKeyList(request, itemType):
+def getConfigKeyList(request, itemType, lang=None):
     """
     Function to collect and return all the keys from the configuration file
     (csv).
@@ -683,9 +755,23 @@ def getConfigKeyList(request, itemType):
         # Skip the first row
         if keys_csv.line_num > 1:
             configKeys.addKey(ConfigKey(*row))
+    # Translation
+    if lang is not None:
+        # TODO
+        t_filename = 'akeys_translated.csv'
+
+        translationStream = open('%s/%s'
+            % (profile_directory_path(request), t_filename), 'rb')
+        translationCsv = csv.reader(translationStream, delimiter=';')
+        for row in translationCsv:
+            # Skip the first row
+            if translationCsv.line_num > 1 and len(row) == 2:
+                k = configKeys.findKeyById(row[0])
+                if k is not None:
+                    k.setTranslation(row[1])
     return configKeys
 
-def getConfigValueList(request, itemType):
+def getConfigValueList(request, itemType, lang=None):
     """
     Function to collect and return all the values from the configuration file
     (csv).
@@ -704,9 +790,24 @@ def getConfigValueList(request, itemType):
         # Skip the first row
         if values_csv.line_num > 1:
             configValues.addValue(ConfigValue(*row))
+    # Translation
+    if lang is not None:
+        # TODO
+        t_filename = 'avalues_translated.csv'
+
+        translationStream = open('%s/%s'
+            % (profile_directory_path(request), t_filename), 'rb')
+        translationCsv = csv.reader(translationStream, delimiter=';')
+        for row in translationCsv:
+            # Skip the first row
+            if translationCsv.line_num > 1 and len(row) == 2:
+                v = configValues.findValueById(row[0])
+                if v is not None:
+                    v.setTranslation(row[1])
+
     return configValues
 
-def getConfigCategoryList(request, itemType):
+def getConfigCategoryList(request, itemType, lang=None):
     """
     Function to collect and return all the categories from the configuration
     file (csv). Both categories and thematic groups are treated as the same type
@@ -726,18 +827,32 @@ def getConfigCategoryList(request, itemType):
         # Skip the first row
         if categories_csv.line_num > 1:
             configCategories.addCategory(ConfigCategory(*row))
+    # Translation
+    if lang is not None:
+        # TODO
+        t_filename = 'acategories_translated.csv'
+
+        translationStream = open('%s/%s'
+            % (profile_directory_path(request), t_filename), 'rb')
+        translationCsv = csv.reader(translationStream, delimiter=';')
+        for row in translationCsv:
+            # Skip the first row
+            if translationCsv.line_num > 1 and len(row) == 2:
+                c = configCategories.findCategoryById(row[0])
+                if c is not None:
+                    c.setTranslation(row[1])
     return configCategories
 
-def getCategoryList(request, itemType):
+def getCategoryList(request, itemType, lang=None):
     """
     Function to scan through the configuration yaml and put together the list of
     categories which can be used to create the form.
     itemType: activities / stakeholders
     """
     # Scan the configuration files for keys, values and categories
-    configKeys = getConfigKeyList(request, itemType)
-    configValues = getConfigValueList(request, itemType)
-    configCategories = getConfigCategoryList(request, itemType)
+    configKeys = getConfigKeyList(request, itemType, lang)
+    configValues = getConfigValueList(request, itemType, lang)
+    configCategories = getConfigCategoryList(request, itemType, lang)
     # Load the yaml
     if itemType == 'stakeholders':
         # TODO
@@ -775,7 +890,9 @@ def getCategoryList(request, itemType):
 
             # Create a thematicgroup out of it
             thematicgroup = ConfigThematicgroup(
-                thematicCategory.getId(), thematicCategory.getName()
+                thematicCategory.getId(),
+                thematicCategory.getName(),
+                thematicCategory.getTranslation()
             )
 
             # Loop the taggroups of the thematic group
@@ -797,6 +914,7 @@ def getCategoryList(request, itemType):
                         if configKey is None:
                             # Error handling if key is not found
                             unknownkeys.append(str(key_id))
+                            continue
 
                         # We need to make a copy of the original object.
                         # Otherwise we are not able to add a custom validator
@@ -806,7 +924,9 @@ def getCategoryList(request, itemType):
                         if key_config is not None:
 
                             if 'values' in key_config:
-                                # If available, loop the values of the key
+                                # If there are values available in the YAML,
+                                # then use these. Else use the ones defined in
+                                # the values config csv.
                                 for v in key_config['values']:
                                     tag.addValue(configValues.findValueById(v))
 
@@ -820,6 +940,14 @@ def getCategoryList(request, itemType):
 
                             if 'maintag' in key_config:
                                 taggroup.setMaintag(tag)
+
+                            # If the values are predefined and they are not set
+                            # already (defined explicitly in YAML), then get the
+                            # values from the value config csv.
+                            if configKey.getType().lower() == 'predefined':
+                                for v in configValues.\
+                                    findValuesByFkkey(configKey.getId()):
+                                    tag.addValue(v)
 
                         taggroup.addTag(tag)
 
