@@ -20,7 +20,7 @@ def form_tests(request):
     lang = 'fr' # So far, it doesn't matter what stands here
 
     categorylist = getCategoryList(request, itemType, lang)
-    
+
     # Collect the forms for each category
     cat_forms = []
     for cat in categorylist.getCategories():
@@ -54,7 +54,10 @@ def form_tests(request):
     captured = None
     success = None
 
-    version = 2
+#    version = 2
+#    identifier = 'd0f5b496-edcd-458c-84a9-72ca4e1135f5'
+
+    version = 3
     identifier = 'd0f5b496-edcd-458c-84a9-72ca4e1135f5'
 
     if version is not None and identifier is not None:
@@ -139,10 +142,9 @@ def getFormdataFromItemjson(request, itemJson, itemType):
     for taggroup in taggroups:
 
         # Get the category and thematic group based on the maintag
-        maintag = taggroup['main_tag']
-
+        mt = taggroup['main_tag']
         cat, thmg, tg = categorylist.findCategoryThematicgroupTaggroupByMainkey(
-            maintag['key'])
+            mt['key'])
 
         if tg is None:
             # If the Form Taggroup for this maintag was not found, move on and
@@ -150,13 +152,23 @@ def getFormdataFromItemjson(request, itemJson, itemType):
             continue
 
         tgid = str(tg.getId())
+        maintag = tg.getMaintag()
 
-        # Prepare the data of the tags
-        tagsdata = {'tg_id': taggroup['tg_id']}
+        if maintag.getKey().getType().lower() == 'checkbox':
+            # Checkboxes are represented as a list of tuples containing their
+            # names and tg_id's.
+            tagsdata = {}
+        else:
+            # Prepare the data of the tags
+            tagsdata = {'tg_id': taggroup['tg_id']}
         for t in taggroup['tags']:
             # Add the tag only if the key exists in this taggroup
             if tg.hasKey(t['key']):
-                tagsdata[t['key']] = t['value']
+                if maintag.getKey().getType().lower() == 'checkbox':
+                    # Checkboxes: List of tuples with name and tg_id
+                    tagsdata[t['key']] = [(t['value'], taggroup['tg_id'])]
+                else:
+                    tagsdata[t['key']] = t['value']
 
         if tg.getRepeatable():
             tagsdata = [tagsdata]
@@ -167,10 +179,17 @@ def getFormdataFromItemjson(request, itemJson, itemType):
                 # Thematic group already exists, check taggroup
                 if tgid in data[cat][thmg]:
                     # Taggroup already exists. This should only happen if
-                    # taggroup is reapeatable. In this case add taggroup to the
-                    # array of taggroups
+                    # taggroup is reapeatable or if the tags are checkboxes.
+                    # In this case add taggroup to the array of taggroups
                     if tg.getRepeatable():
+                        # Repeatable: Add the data to the list of taggroups
                         data[cat][thmg][tgid].append(tagsdata[0])
+                    elif (maintag.getKey().getType().lower() == 'checkbox'
+                        and t['key'] in data[cat][thmg][tgid]):
+                        # Checkboxes: Add the data to the list of tuples
+                        data[cat][thmg][tgid][t['key']].append(
+                            (t['value'], taggroup['tg_id'])
+                        )
                     else:
                         log.debug('DUPLICATE TAGGROUP: Taggroup %s in thematic group %s and category %s appears twice although it is not repeatable!' % (cat, thmg, tg))
                 else:
@@ -203,7 +222,7 @@ def formdataToDiff(request, newform, itemType):
     """
 
     def findRemoveTgByCategoryThematicgroupTgid(form, category, thematicgroup,
-        tg_id):
+        tg_id, checkbox=False):
         """
         Helper function to find a taggroup by its category, thematic group and
         tg_id. If it was found, its values in the form are set to null and the
@@ -224,7 +243,7 @@ def formdataToDiff(request, newform, itemType):
                                 tags = [tags]
                             # Look at each taggroup and check the tg_id
                             for t in tags:
-                                if t['tg_id'] == tg_id:
+                                if 'tg_id' in t and t['tg_id'] == tg_id:
                                     ret = {}
                                     for (k, v) in t.iteritems():
                                         # Copy the keys and values
@@ -232,6 +251,23 @@ def formdataToDiff(request, newform, itemType):
                                         # Set the values to null
                                         t[k] = colander.null
                                     return form, ret
+                                elif checkbox is True and 'tg_id' not in t:
+                                    # Checkboxes: The actual taggroups are in a
+                                    # list one level further down
+                                    for (k, v) in t.iteritems():
+                                        if not isinstance(v, list):
+                                            continue
+                                        for (value, taggroupid) in v:
+                                            if str(taggroupid) == tg_id:
+                                                # If the taggroup was found,
+                                                # remove it from the list.
+                                                v.remove((value, taggroupid))
+                                                if len(v) == 0:
+                                                    # If there is no further
+                                                    # taggroup in the lits, set
+                                                    # value of key to null.
+                                                    t[k] = colander.null
+                                    return form, True
         return form, None
 
     identifier = colander.null
@@ -310,6 +346,15 @@ def formdataToDiff(request, newform, itemType):
                                 if (k in oldtaggroup
                                     and str(v) != oldtaggroup[k]
                                     and v != colander.null):
+                                    # Because the form renders values as floats,
+                                    # it is important to compare them correctly
+                                    # with an integer value
+                                    try:
+                                        if float(oldtaggroup[k]) == float(v):
+                                            continue
+                                    except ValueError:
+                                        pass
+
                                     # If a key is there in both forms but its
                                     # value changed, add it once as deleted and
                                     # once as added.
@@ -359,18 +404,55 @@ def formdataToDiff(request, newform, itemType):
                             })
 
                     else:
-                        # Taggroup has no tg_id. If it contains values, it is a
-                        # new taggroup to be added.
+                        # Taggroup has no tg_id. It is either a new taggroup to
+                        # be added (if it contains values) or it may be a group
+                        # of checkboxes (with tg_ids a level lower)
+                        # For Checkboxes: Values cannot really change, they can
+                        # only be added (if another checkbox is selected, a new
+                        # taggroup is created). If a checkbox was submitted with
+                        # a tg_id, it was there before already.
                         addedtags = []
+                        addedtaggroups = []
                         for (k, v) in t.iteritems():
                             if (k != 'tg_id' and v != colander.null):
-                                addedtags.append({
-                                    'key': k,
-                                    'value': v
-                                })
+                                if isinstance(v, set):
+                                    # If the value is a set, the form displayed
+                                    # a group of checkboxes. Each of the values
+                                    # is treated as a separate taggroup.
+                                    for (value, tg_id) in v:
+                                        if tg_id is None:
+                                            # No tg_id, treat it as a new
+                                            # taggroup
+                                            addedtaggroups.append({
+                                                'op': 'add',
+                                                'tags': [{
+                                                    'key': k,
+                                                    'value': value,
+                                                    'op': 'add'
+                                                }]
+                                            })
+                                        else:
+                                            # Try to find and remove the
+                                            # taggroup in the old form
+                                            oldform, oldtaggroup = findRemoveTgByCategoryThematicgroupTgid(
+                                                oldform, cat, thmgrp, tg_id, True)
+                                            if oldtaggroup is not True:
+                                                # This basically should not happen because the tg_id always should be found.
+                                                log.debug('TG_ID NOT FOUND: When trying to find and remove taggroup by tg_id (%s), the taggroup was not found in the old form.' % tg_id)
+                                else:
+                                    # No checkbox, simply a new tag
+                                    addedtags.append({
+                                        'key': k,
+                                        'value': v
+                                    })
+
+                        # For checkboxes, the diff is already a taggroup.
+                        if len(addedtaggroups) > 0:
+                            for tg in addedtaggroups:
+                                taggroupdiffs.append(tg)
 
                         # Put together diff for taggroup
-                        if len(addedtags) > 0:
+                        elif len(addedtags) > 0:
                             tagdiffs = []
                             for at in addedtags:
                                 tagdiffs.append({
@@ -420,6 +502,21 @@ def formdataToDiff(request, newform, itemType):
                                 'tg_id': t['tg_id'],
                                 'tags': tagdiffs
                             })
+                    else:
+                        # Checkbox: Look one level deeper
+                        for (k, v) in t.iteritems():
+                            if not isinstance(v, list):
+                                continue
+                            for (value, taggroupid) in v:
+                                # Add it directly to taggroups
+                                taggroupdiffs.append({
+                                    'op': 'delete',
+                                    'tg_id': taggroupid,
+                                    'tags': [{
+                                        'key': k,
+                                        'value': value
+                                    }]
+                                })
 
     ret = None
 
