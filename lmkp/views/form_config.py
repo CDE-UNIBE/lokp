@@ -456,7 +456,7 @@ class ConfigTag(object):
             else self.getKey().getName())
         type = self.getKey().getType()
         # Decide which type of form to add
-        if type.lower() == 'predefined' and len(self.getValues()) > 0:
+        if type.lower() == 'dropdown' and len(self.getValues()) > 0:
             # Dropdown
             # Prepare the choices for keys with predefined values
             valuechoices = tuple((x.getName(), x.getTranslation())
@@ -467,6 +467,19 @@ class ConfigTag(object):
                 colander.String(),
                 validator=colander.OneOf([x[0] for x in choices]),
                 widget=deform.widget.SelectWidget(values=choices),
+                name=name,
+                title=title
+            )
+        elif type.lower() == 'checkbox' and len(self.getValues()) > 0:
+            # Checkbox
+            # Prepare the choices for keys with predefined values
+            choices = []
+            for v in self.getValues():
+                choices.append((v.getName(), v.getTranslation()))
+
+            form = colander.SchemaNode(
+                colander.Set(),
+                widget=CBWidget(values=tuple(choices)),
                 name=name,
                 title=title
             )
@@ -506,7 +519,7 @@ class ConfigTag(object):
             # Textarea
             form = colander.SchemaNode(
                 colander.String(),
-                widget=deform.widget.TextAreaWidget(rows=10, cols=60),
+                widget=deform.widget.TextAreaWidget(rows=5, cols=60),
                 name=name,
                 title=title
             )
@@ -843,6 +856,20 @@ def getConfigCategoryList(request, itemType, lang=None):
                     c.setTranslation(row[1])
     return configCategories
 
+def getValidKeyTypes():
+    """
+    Function to return all valid key types that can be set in the config yaml.
+    """
+    return [
+        'dropdown',
+        'checkbox',
+        'number',
+        'integer',
+        'text',
+        'date',
+        'string'
+    ]
+
 def getCategoryList(request, itemType, lang=None):
     """
     Function to scan through the configuration yaml and put together the list of
@@ -853,6 +880,18 @@ def getCategoryList(request, itemType, lang=None):
     configKeys = getConfigKeyList(request, itemType, lang)
     configValues = getConfigValueList(request, itemType, lang)
     configCategories = getConfigCategoryList(request, itemType, lang)
+
+    # Do some first test on the keys: Check that each type is defined correctly
+    unknowntypes = []
+    knowntypes = getValidKeyTypes()
+    for k in configKeys.getKeys():
+        if k.getType().lower() not in knowntypes:
+            unknowntypes.append(k.getName())
+
+    if len(unknowntypes) > 0:
+        raise NameError('One or more keys have unknown types: %s'
+            % ', '.join(unknowntypes))
+
     # Load the yaml
     if itemType == 'stakeholders':
         # TODO
@@ -944,7 +983,8 @@ def getCategoryList(request, itemType, lang=None):
                             # If the values are predefined and they are not set
                             # already (defined explicitly in YAML), then get the
                             # values from the value config csv.
-                            if configKey.getType().lower() == 'predefined':
+                            if (configKey.getType().lower() == 'dropdown'
+                                or configKey.getType().lower() == 'checkbox'):
                                 for v in configValues.\
                                     findValuesByFkkey(configKey.getId()):
                                     tag.addValue(v)
@@ -1031,3 +1071,73 @@ class NumberSpinnerWidget(deform.widget.Widget):
         if pstruct in ('', colander.null):
             return colander.null
         return pstruct
+
+
+class CBWidget(deform.widget.Widget):
+    """
+    Custom Deform widget. Based very much on the default checkbox choice widget.
+    It allows to save a tg_id to the value before showing the checkboxes and
+    extracts this value again after submission.
+    """
+    template = 'lmkp:templates/form/checkbox_template'
+    readonly_template = 'readonly/checkbox_choice'
+    values = ()
+    separator = '|'
+
+    def serialize(self, field, cstruct, **kw):
+        if cstruct in (colander.null, None):
+            cstruct = ()
+        readonly = kw.get('readonly', self.readonly)
+        values = kw.get('values', self.values)
+
+        template = readonly and self.readonly_template or self.template
+
+        # The data needs to be prepared before showing in the form. Because a
+        # checkbox can contain only one real value, the tg_id needs to be stored
+        # in the inner (submit) value of the checkbox.
+        formdata = []
+        for c in cstruct:
+            # Transform tuples to list to access them more easily
+            valuelist = list(values)
+            for i, (name, title) in enumerate(valuelist):
+                if name == c[0]:
+                    # Update the (internal) name of the values
+                    newname = '%s%s%s' % (c[1], self.separator, name)
+                    valuelist[i] = (newname, title)
+
+            # Transform the list back to tuples
+            values = tuple(valuelist)
+            formdata.append(newname)
+
+        kw['values'] = values
+
+        tmpl_values = self.get_template_values(field, formdata, kw)
+
+        return field.renderer(template, **tmpl_values)
+
+    def deserialize(self, field, pstruct):
+        if pstruct is colander.null:
+            return colander.null
+        if isinstance(pstruct, deform.compat.string_types):
+            return (pstruct,)
+
+        # When submitted, additional data provided by the checkbox (old tg_id)
+        # needs to be extracted and stored.
+        ret = []
+        for p in pstruct:
+            # Default values (if no tg_id set)
+            old_tg_id = None
+            n = p
+
+            if self.separator in p:
+                # If a tg_id is set, separate it from the name and store it
+                separatorposition = p.find(self.separator)
+                n = p[separatorposition+1:]
+                old_tg_id = p[:separatorposition]
+
+            for (name, title) in self.values:
+                # Look for the name and set the old tg_id if available.
+                if name == n:
+                    ret.append((n, old_tg_id))
+
+        return tuple(ret)
