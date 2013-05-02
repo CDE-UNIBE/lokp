@@ -10,6 +10,7 @@ Ext.require('Ext.grid.column.Template');
 Ext.require('Ext.grid.Panel');
 Ext.require('Ext.layout.container.Border');
 Ext.require('Ext.layout.container.Column');
+Ext.require('Ext.Shadow');
 Ext.require('Ext.util.*');
 Ext.require('Lmkp.controller.administrator.Code');
 Ext.require('Lmkp.controller.administrator.YamlScan');

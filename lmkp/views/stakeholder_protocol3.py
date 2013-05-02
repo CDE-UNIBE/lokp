@@ -103,11 +103,7 @@ class StakeholderProtocol3(Protocol):
         if len(ids) > 0:
             # At least one Stakeholder was created
             changeset_diff = {'stakeholders': stakeholder_diffs}
-
-            if new_diffs is True:
-                changeset_diff = json.dumps(changeset_diff).replace('"', '\'')
-
-            changeset.diff = str(changeset_diff)
+            changeset.diff = json.dumps(changeset_diff)
 
             return ids
 
