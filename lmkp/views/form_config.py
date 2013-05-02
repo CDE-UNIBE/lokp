@@ -104,6 +104,7 @@ class ConfigCategory(object):
         self.translation = None
         self.level = level
         self.fk_category = fk_category
+        self.order = 9999
         self.thematicgroups = []
 
     def getId(self):
@@ -144,6 +145,18 @@ class ConfigCategory(object):
         """
         return self.thematicgroups
 
+    def setOrder(self, order):
+        """
+        Set the order of this category.
+        """
+        self.order = order
+
+    def getOrder(self):
+        """
+        Return the order of this category.
+        """
+        return self.order
+
     def getForm(self):
         """
         Prepare the form node for this category, append the forms of its
@@ -156,7 +169,7 @@ class ConfigCategory(object):
             name=self.getId(),
             title=title
         )
-        for thg in self.getThematicgroups():
+        for thg in sorted(self.getThematicgroups(), key=lambda thmg: thmg.order):
             # Get the Form for each Thematicgroup
             thg_form = thg.getForm()
             thg_form.missing = colander.null
@@ -176,6 +189,7 @@ class ConfigThematicgroup(object):
         self.id = id
         self.name = name
         self.translation = translation
+        self.order = 9999
         self.taggroups = []
 
     def getId(self):
@@ -211,6 +225,18 @@ class ConfigThematicgroup(object):
         Return the translation of this thematic group.
         """
         return self.translation
+
+    def setOrder(self, order):
+        """
+        Set the order of this thematic group.
+        """
+        self.order = order
+
+    def getOrder(self):
+        """
+        Return the order of this thematic group.
+        """
+        return self.order
 
     def getForm(self):
         """
@@ -919,6 +945,10 @@ def getCategoryList(request, itemType, lang=None):
         # Loop the thematic groups of the category
         for (thmgrp_id, taggroups) in thmgrps.iteritems():
 
+            if thmgrp_id == 'order':
+                category.setOrder(taggroups)
+                continue
+
             # The name of the thematic group also stands in the categories csv.
             # So it is necessary to find the category there
             thematicCategory = configCategories.findCategoryById(thmgrp_id)
@@ -936,6 +966,10 @@ def getCategoryList(request, itemType, lang=None):
 
             # Loop the taggroups of the thematic group
             for (tgroup_id, tags) in taggroups.iteritems():
+
+                if tgroup_id == 'order':
+                    thematicgroup.setOrder(tags)
+                    continue
 
                 # Create a taggroup out of it
                 taggroup = ConfigTaggroup(tgroup_id)
