@@ -23,7 +23,7 @@ def form_tests(request):
 
     # Collect the forms for each category
     cat_forms = []
-    for cat in categorylist.getCategories():
+    for cat in sorted(categorylist.getCategories(), key=lambda cat: cat.order):
         cat_forms.append(cat.getForm())
 
     # Put together all categories to one Schema
