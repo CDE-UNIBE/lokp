@@ -674,7 +674,7 @@ class Protocol(object):
                 filter(mappedClass.identifier == item.identifier).\
                 filter(mappedClass.version == item.version).\
                 first()
-            json_diff = json.loads(diff_query.diff.replace('\'', '"'))
+            json_diff = json.loads(diff_query.diff)
 
             # Loop through the diff to find and collect all the affected
             # Stakeholders and their version at the time of the changes
