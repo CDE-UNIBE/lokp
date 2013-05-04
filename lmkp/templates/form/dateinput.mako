@@ -17,6 +17,10 @@
         id="${field.oid}"
 />
 
+% if helptext:
+    <span class="form_helptext">${helptext}</span>
+% endif
+
 <script type="text/javascript">
     deform.addCallback(
         '${field.oid}',

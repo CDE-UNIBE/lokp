@@ -32,6 +32,10 @@
     % endfor
 </select>
 
+% if helptext:
+    <span class="form_helptext">${helptext}</span>
+% endif
+
 % if field.widget.multiple:
     <input type="hidden"
            name="__end__"

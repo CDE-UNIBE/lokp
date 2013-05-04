@@ -21,11 +21,20 @@ form>fieldset>ul>li>fieldset {
 
 .form_helptext {
     border: 1px solid #660000;
-    float: left;
     font-size: 0.8em;
     padding: 2px;
     background-color: lightgray;
     margin: 10px 0;
+}
+
+div.form_helptext {
+    float: left;
+    margin: 2px 5px;
+}
+
+.form_helptext.form_checkbox {
+    float: left;
+    margin-bottom: 7px;
 }
 
 /* NUMBER SPINNER */
