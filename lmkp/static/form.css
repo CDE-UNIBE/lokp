@@ -19,6 +19,14 @@ form>fieldset>ul>li>fieldset {
     border: 1px solid red !important;
 }
 
+.form_helptext {
+    border: 1px solid #660000;
+    float: left;
+    font-size: 0.8em;
+    padding: 2px;
+    background-color: lightgray;
+    margin: 10px 0;
+}
 
 /* NUMBER SPINNER */
 .ui-spinner {

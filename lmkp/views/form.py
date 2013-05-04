@@ -1,11 +1,13 @@
 import colander
 import deform
 import logging
-
+from mako.template import Template
 
 from lmkp.views.form_config import *
 
+from pyramid.path import AssetResolver
 from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPNotFound
 
 log = logging.getLogger(__name__)
 
@@ -32,33 +34,40 @@ def form_tests(request):
         schema.add(cat_form)
 
     # Add hidden fields for the identifier and the version
+    # For some reason, the deform.widget.HiddenWidget() does not seem to work.
+    # Instead, the TextInputWidget is used with the hidden template.
     schema.add(colander.SchemaNode(
         colander.String(),
-        widget=deform.widget.HiddenWidget(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
         name='id',
+        title='',
         missing = colander.null
     ))
     schema.add(colander.SchemaNode(
         colander.Int(),
-        widget=deform.widget.HiddenWidget(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
         name='version',
+        title='',
         missing = colander.null
     ))
 
+    # Use a different template rendering engine (mako instead of chameleon)
+    deform.Form.set_default_renderer(mako_renderer)
+
     # Prepare the form
     form = deform.Form(schema, buttons=('submit',))
-
+    
     # Add JS and CSS requirements (for widgets)
     resources = form.get_widget_resources()
 
     captured = None
     success = None
 
-#    version = 2
-#    identifier = 'd0f5b496-edcd-458c-84a9-72ca4e1135f5'
-
-    version = 3
+    version = 2
     identifier = 'd0f5b496-edcd-458c-84a9-72ca4e1135f5'
+
+#    version = 3
+#    identifier = 'd0f5b496-edcd-458c-84a9-72ca4e1135f5'
 
     if version is not None and identifier is not None:
         # If there is an existing item, use the protocol to find the values to
@@ -74,6 +83,9 @@ def form_tests(request):
         item = protocol.read_one_by_version(
             request, identifier, version
         )
+        if item is None:
+            raise HTTPNotFound
+
         itemjson = item.to_table(request)
         data = getFormdataFromItemjson(request, itemjson, itemType)
 
@@ -533,3 +545,12 @@ def formdataToDiff(request, newform, itemType):
 
     return ret
 
+def mako_renderer(tmpl_name, **kw):
+    """
+    A helper function to use the mako rendering engine.
+    It is necessary to locate the templates by using the asset resolver.
+    """
+    lmkp = AssetResolver('lmkp')
+    resolver = lmkp.resolve('templates/form/%s.mako' % tmpl_name)
+    template = Template(filename=resolver.abspath())
+    return template.render(**kw)

@@ -264,7 +264,11 @@ class ConfigThematicgroup(object):
                     colander.Sequence(),
                     tg_form,
                     missing=colander.null,
-                    widget=deform.widget.SequenceWidget(min_len=1),
+                    widget=deform.widget.SequenceWidget(
+                        min_len=1,
+                        # TODO: Translation
+                        add_subitem_text_template='Add'
+                    ),
                     name=name,
                     title=''
                 ))
@@ -390,11 +394,14 @@ class ConfigTaggroup(object):
         for t in self.getTags():
             # Get the Form for each tag
             tg_form.add(t.getForm())
-        # Add a hidden field for the tg_id
+        # Add a hidden field for the tg_id. As when adding the version and
+        # identifier, the deform.widget.HiddenWidget() does not seem to work
+        # here. Instead, user TextInputWidget with hidden template
         tg_form.add(colander.SchemaNode(
             colander.Int(),
-            widget=deform.widget.HiddenWidget(),
+            widget=deform.widget.TextInputWidget(template='hidden'),
             name='tg_id',
+            title='',
             missing = colander.null
         ))
         tg_form.validator = self.maintag_validator
@@ -485,10 +492,12 @@ class ConfigTag(object):
         if type.lower() == 'dropdown' and len(self.getValues()) > 0:
             # Dropdown
             # Prepare the choices for keys with predefined values
-            valuechoices = tuple((x.getName(), x.getTranslation())
-                for x in self.getValues())
-            selectchoice = ('', '- Select -')
-            choices = (selectchoice,) + valuechoices
+            # TODO: Translation
+            choiceslist = [('', '- Select -')]
+            for v in sorted(self.getValues(),
+                key=lambda val: val.getOrderValue()):
+                choiceslist.append((v.getName(), v.getTranslation()))
+            choices = tuple(choiceslist)
             form = colander.SchemaNode(
                 colander.String(),
                 validator=colander.OneOf([x[0] for x in choices]),
@@ -500,12 +509,15 @@ class ConfigTag(object):
             # Checkbox
             # Prepare the choices for keys with predefined values
             choices = []
-            for v in self.getValues():
+            for v in sorted(self.getValues(),
+                key=lambda val: val.getOrderValue()):
                 choices.append((v.getName(), v.getTranslation()))
-
             form = colander.SchemaNode(
                 colander.Set(),
-                widget=CBWidget(values=tuple(choices)),
+                widget=CustomCheckboxWidget(
+                    values=tuple(choices),
+                    helptext=self.getKey().getHelptext()
+                ),
                 name=name,
                 title=title
             )
@@ -537,7 +549,10 @@ class ConfigTag(object):
                 colanderType = colander.Int()
             form = colander.SchemaNode(
                 colanderType,
-                widget=NumberSpinnerWidget(options=options),
+                widget=NumberSpinnerWidget(
+                    options=options,
+#                    helptext=self.getKey().getHelptext()
+                ),
                 name=name,
                 title=title
             )
@@ -649,6 +664,12 @@ class ConfigKey(object):
         Return the type of this key.
         """
         return self.type
+
+    def getHelptext(self):
+        """
+        Return the helptext for this tag
+        """
+        return self.helptext
 
     def setValidator(self, validator):
         """
@@ -774,6 +795,13 @@ class ConfigValue(object):
         """
         return self.order
 
+    def getOrderValue(self):
+        """
+        Returns the order value if one is set else the name of the value
+        """
+        if self.getOrder() != '':
+            return self.getOrder()
+        return self.getName()
 
 def getConfigKeyList(request, itemType, lang=None):
     """
@@ -1071,7 +1099,7 @@ def getCategoryList(request, itemType, lang=None):
 
     if len(duplicates) > 0:
         # TODO: Error handling
-        raise NameError('Duplicated mainkey(s): %s' % ', '.duplicates)
+        raise NameError('Duplicated mainkey(s): %s' % ', '.join(duplicates))
 
     return categorylist
 
@@ -1080,7 +1108,7 @@ class NumberSpinnerWidget(deform.widget.Widget):
     Custom Deform widget. Adds a spinner to a input field using the jQuery UI
     library.
     """
-    template = 'lmkp:templates/form/numberspinner_template'
+    template = 'numberspinner'
     readonly_template = 'readonly/textinput'
     type_name = 'number'
     size = None
@@ -1107,15 +1135,16 @@ class NumberSpinnerWidget(deform.widget.Widget):
         return pstruct
 
 
-class CBWidget(deform.widget.Widget):
+class CustomCheckboxWidget(deform.widget.Widget):
     """
     Custom Deform widget. Based very much on the default checkbox choice widget.
     It allows to save a tg_id to the value before showing the checkboxes and
     extracts this value again after submission.
     """
-    template = 'lmkp:templates/form/checkbox_template'
+    template = 'checkbox'
     readonly_template = 'readonly/checkbox_choice'
     values = ()
+    helptext = ''
     separator = '|'
 
     def serialize(self, field, cstruct, **kw):
@@ -1144,6 +1173,7 @@ class CBWidget(deform.widget.Widget):
             formdata.append(newname)
 
         kw['values'] = values
+        kw['helptext'] = kw.get('helptext', self.helptext)
 
         tmpl_values = self.get_template_values(field, formdata, kw)
 
