@@ -482,12 +482,14 @@ class ConfigTag(object):
         Prepare the form node for this tag, append the nodes of its keys
         (depending on its type) and return it.
         """
+        key = self.getKey()
         # Get name and type of key
-        name = self.getKey().getName()
-        title = (self.getKey().getTranslation()
-            if self.getKey().getTranslation() is not None
-            else self.getKey().getName())
-        type = self.getKey().getType()
+        name = key.getName()
+        title = (key.getTranslatedName() if key.getTranslatedName() != ''
+            else key.getName())
+        type = key.getType()
+        helptext = (key.getTranslatedHelptext() 
+            if key.getTranslatedHelptext() != '' else key.getHelptext())
         # Decide which type of form to add
         if type.lower() == 'dropdown' and len(self.getValues()) > 0:
             # Dropdown
@@ -501,7 +503,10 @@ class ConfigTag(object):
             form = colander.SchemaNode(
                 colander.String(),
                 validator=colander.OneOf([x[0] for x in choices]),
-                widget=deform.widget.SelectWidget(values=choices),
+                widget=CustomSelectWidget(
+                    values=choices,
+                    helptext=helptext
+                ),
                 name=name,
                 title=title
             )
@@ -516,7 +521,7 @@ class ConfigTag(object):
                 colander.Set(),
                 widget=CustomCheckboxWidget(
                     values=tuple(choices),
-                    helptext=self.getKey().getHelptext()
+                    helptext=helptext
                 ),
                 name=name,
                 title=title
@@ -551,7 +556,7 @@ class ConfigTag(object):
                 colanderType,
                 widget=NumberSpinnerWidget(
                     options=options,
-#                    helptext=self.getKey().getHelptext()
+                    helptext=helptext
                 ),
                 name=name,
                 title=title
@@ -560,7 +565,12 @@ class ConfigTag(object):
             # Textarea
             form = colander.SchemaNode(
                 colander.String(),
-                widget=deform.widget.TextAreaWidget(rows=5, cols=60),
+                widget=CustomTextAreaWidget(
+                    rows=5,
+                    cols=60,
+                    style='float:left;',
+                    helptext=helptext
+                ),
                 name=name,
                 title=title
             )
@@ -568,7 +578,9 @@ class ConfigTag(object):
             # Date
             form = colander.SchemaNode(
                 colander.Date(),
-                widget=deform.widget.DateInputWidget(),
+                widget=CustomDateInputWidget(
+                    helptext=helptext
+                ),
                 name=name,
                 title=title
             )
@@ -576,7 +588,10 @@ class ConfigTag(object):
             # Default: Textfield
             form = colander.SchemaNode(
                 colander.String(),
-                widget=deform.widget.TextInputWidget(size=50),
+                widget=CustomTextInputWidget(
+                    size=50,
+                    helptext=helptext
+                ),
                 name=name,
                 title=title
             )
@@ -630,10 +645,11 @@ class ConfigKey(object):
     def __init__(self, id, name, type, helptext, validator):
         self.id = id
         self.name = name
-        self.translation = None
         self.type = type
         self.helptext = helptext
         self.validator = validator if validator != '' else None
+        self.translated_name = None
+        self.translated_helptext = None
 
     def getId(self):
         """
@@ -647,17 +663,24 @@ class ConfigKey(object):
         """
         return self.name
 
-    def setTranslation(self, translation):
+    def setTranslation(self, name, helptext):
         """
         Set the translation of this key.
         """
-        self.translation = translation
+        self.translated_name = name
+        self.translated_helptext = helptext
 
-    def getTranslation(self):
+    def getTranslatedName(self):
         """
-        Return the translation of this key.
+        Return the translated name of this key.
         """
-        return self.translation
+        return self.translated_name
+
+    def getTranslatedHelptext(self):
+        """
+        Return the translated helptext of this key
+        """
+        return self.translated_helptext
 
     def getType(self):
         """
@@ -832,10 +855,10 @@ def getConfigKeyList(request, itemType, lang=None):
         translationCsv = csv.reader(translationStream, delimiter=';')
         for row in translationCsv:
             # Skip the first row
-            if translationCsv.line_num > 1 and len(row) == 2:
+            if translationCsv.line_num > 1 and len(row) == 3:
                 k = configKeys.findKeyById(row[0])
                 if k is not None:
-                    k.setTranslation(row[1])
+                    k.setTranslation(row[1], row[2])
     return configKeys
 
 def getConfigValueList(request, itemType, lang=None):
@@ -1103,7 +1126,61 @@ def getCategoryList(request, itemType, lang=None):
 
     return categorylist
 
-class NumberSpinnerWidget(deform.widget.Widget):
+
+class CustomWidget(deform.widget.Widget):
+    """
+    Overwrite the function get_template_values() with a custom one to add more
+    values to the template.
+    """
+    def get_template_values(self, field, cstruct, kw):
+        return custom_get_template_values(self, field, cstruct, kw)
+
+class CustomSelectWidget(deform.widget.SelectWidget):
+    """
+    Overwrite the function get_template_values() with a custom one to add more
+    values to the template.
+    """
+    def get_template_values(self, field, cstruct, kw):
+        return custom_get_template_values(self, field, cstruct, kw)
+
+class CustomTextAreaWidget(deform.widget.TextAreaWidget):
+    """
+    Overwrite the function get_template_values() with a custom one to add more
+    values to the template.
+    """
+    def get_template_values(self, field, cstruct, kw):
+        return custom_get_template_values(self, field, cstruct, kw)
+
+class CustomDateInputWidget(deform.widget.DateInputWidget):
+    """
+    Overwrite the function get_template_values() with a custom one to add more
+    values to the template.
+    """
+    def get_template_values(self, field, cstruct, kw):
+        return custom_get_template_values(self, field, cstruct, kw)
+
+class CustomTextInputWidget(deform.widget.TextInputWidget):
+    """
+    Overwrite the function get_template_values() with a custom one to add more
+    values to the template.
+    """
+    def get_template_values(self, field, cstruct, kw):
+        return custom_get_template_values(self, field, cstruct, kw)
+
+def custom_get_template_values(self, field, cstruct, kw):
+    """
+    This is a modification of the function get_template_values() called by
+    deform.widget.Widget and its subclasses.
+    It appends the keyword 'helptext' to the template values if available.
+    """
+    values = {'cstruct':cstruct, 'field':field}
+    values.update(kw)
+    values.pop('template', None)
+    if 'helptext' in self.__dict__:
+        values['helptext'] = self.__dict__['helptext']
+    return values
+
+class NumberSpinnerWidget(CustomWidget):
     """
     Custom Deform widget. Adds a spinner to a input field using the jQuery UI
     library.
@@ -1134,8 +1211,7 @@ class NumberSpinnerWidget(deform.widget.Widget):
             return colander.null
         return pstruct
 
-
-class CustomCheckboxWidget(deform.widget.Widget):
+class CustomCheckboxWidget(CustomWidget):
     """
     Custom Deform widget. Based very much on the default checkbox choice widget.
     It allows to save a tg_id to the value before showing the checkboxes and
@@ -1144,7 +1220,6 @@ class CustomCheckboxWidget(deform.widget.Widget):
     template = 'checkbox'
     readonly_template = 'readonly/checkbox_choice'
     values = ()
-    helptext = ''
     separator = '|'
 
     def serialize(self, field, cstruct, **kw):
@@ -1173,8 +1248,6 @@ class CustomCheckboxWidget(deform.widget.Widget):
             formdata.append(newname)
 
         kw['values'] = values
-        kw['helptext'] = kw.get('helptext', self.helptext)
-
         tmpl_values = self.get_template_values(field, formdata, kw)
 
         return field.renderer(template, **tmpl_values)

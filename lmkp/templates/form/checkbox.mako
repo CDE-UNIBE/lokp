@@ -1,5 +1,9 @@
 ${field.start_sequence()}
 
+% if helptext:
+    <span class="form_helptext form_checkbox">${helptext}</span>
+% endif
+
 <ul class="deformSet">
     % for index, choice in enumerate(values):
         <li class="deformSet-item">

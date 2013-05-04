@@ -15,6 +15,10 @@
 
 	id="${field.oid}"
 />
+
+% if helptext:
+    <span class="form_helptext">${helptext}</span>
+% endif
            
 % if field.widget.mask:
     <script type="text/javascript">

@@ -18,3 +18,7 @@
 
           name="${field.name}"
 >${cstruct}</textarea>
+
+% if helptext:
+    <div class="form_helptext">${helptext}</div>
+% endif
