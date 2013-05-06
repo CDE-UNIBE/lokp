@@ -50,7 +50,11 @@ def main(global_config, ** settings):
     config.set_authorization_policy(authzPolicy)
 
     # Add the directory that includes the translations
-    config.add_translation_dirs('lmkp:locale/')
+    config.add_translation_dirs(
+        'lmkp:locale/',
+        'colander:locale',
+        'deform:locale'
+    )
 
     # Add event subscribers
     config.add_subscriber(add_renderer_globals, BeforeRender)
