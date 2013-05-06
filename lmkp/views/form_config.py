@@ -157,7 +157,7 @@ class ConfigCategory(object):
         """
         return self.order
 
-    def getForm(self):
+    def getForm(self, request):
         """
         Prepare the form node for this category, append the forms of its
         thematic groups and return it.
@@ -171,7 +171,7 @@ class ConfigCategory(object):
         )
         for thg in sorted(self.getThematicgroups(), key=lambda thmg: thmg.order):
             # Get the Form for each Thematicgroup
-            thg_form = thg.getForm()
+            thg_form = thg.getForm(request)
             thg_form.missing = colander.null
             thg_form.name = thg.getId()
             cat_form.add(thg_form)
@@ -238,11 +238,12 @@ class ConfigThematicgroup(object):
         """
         return self.order
 
-    def getForm(self):
+    def getForm(self, request):
         """
         Prepare the form node for this thematic group, append the forms of its
         taggroups and return it.
         """
+        _ = request.translate
         title = (self.getTranslation() if self.getTranslation() is not None
             else self.getName())
         thg_form = colander.SchemaNode(
@@ -267,7 +268,7 @@ class ConfigThematicgroup(object):
                     widget=deform.widget.SequenceWidget(
                         min_len=1,
                         # TODO: Translation
-                        add_subitem_text_template='Add'
+                        add_subitem_text_template=_('Add')
                     ),
                     name=name,
                     title=''

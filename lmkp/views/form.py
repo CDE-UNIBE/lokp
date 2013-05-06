@@ -11,8 +11,9 @@ from pyramid.httpexceptions import HTTPNotFound
 
 log = logging.getLogger(__name__)
 
-@view_config(route_name='form_tests', renderer='lmkp:templates/form_test.pt')
+@view_config(route_name='form_tests', renderer='lmkp:templates/form_test.mak')
 def form_tests(request):
+    _ = request.translate
 
     # TODO: Get this from request or somehow
     itemType = 'activities'
@@ -26,7 +27,7 @@ def form_tests(request):
     # Collect the forms for each category
     cat_forms = []
     for cat in sorted(categorylist.getCategories(), key=lambda cat: cat.order):
-        cat_forms.append(cat.getForm())
+        cat_forms.append(cat.getForm(request))
 
     # Put together all categories to one Schema
     schema = colander.SchemaNode(colander.Mapping())
@@ -55,7 +56,7 @@ def form_tests(request):
     deform.Form.set_default_renderer(mako_renderer)
 
     # Prepare the form
-    form = deform.Form(schema, buttons=('submit',))
+    form = deform.Form(schema, buttons=[deform.Button('submit', _('Submit'))])
     
     # Add JS and CSS requirements (for widgets)
     resources = form.get_widget_resources()
@@ -551,6 +552,6 @@ def mako_renderer(tmpl_name, **kw):
     It is necessary to locate the templates by using the asset resolver.
     """
     lmkp = AssetResolver('lmkp')
-    resolver = lmkp.resolve('templates/form/%s.mako' % tmpl_name)
+    resolver = lmkp.resolve('templates/form/%s.mak' % tmpl_name)
     template = Template(filename=resolver.abspath())
     return template.render(**kw)

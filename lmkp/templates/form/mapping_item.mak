@@ -29,11 +29,14 @@
 
     ${field.serialize(cstruct)}
 
-    % if field.error:
+    % if field.error and field.typ.__class__.__name__ != 'Mapping':
         <%
             errstr = 'error-%s' % field.oid
         %>
         % for msg in field.error.messages():
+            <%
+                errormessage = field.error.asdict()[field.error._keyname()]
+            %>
             <p
                 % if msg.index==0:
                     id="${errstr}"
@@ -42,7 +45,9 @@
                 % endif
                 class="${field.widget.error_class}"
                 i18n:translate=""
-            >${msg}</p>
+            >
+            ${errormessage}
+            </p>
         % endfor
     % endif
 

@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>FORM TEST</title>
+        <title>${_(FORM TEST)}</title>
         <!-- Meta Tags -->
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <!-- CSS -->
