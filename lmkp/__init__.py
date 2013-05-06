@@ -72,6 +72,7 @@ def main(global_config, ** settings):
     #config.add_renderer('geojson', GeoJSON())
     config.add_renderer('geojson', GeoJsonRenderer())
     config.add_static_view('static', 'static', cache_max_age=3600)
+    config.add_static_view('formstatic', 'deform:static')
     config.add_route('index', '/')
     config.add_route('administration', '/administration')
     config.add_route('login', '/login', request_method='POST')
@@ -265,10 +266,7 @@ def main(global_config, ** settings):
 
     config.add_route('cambodia_read_stakeholders', '/read/cambodia/stakeholders')
     config.add_route('cambodia_read_activities', '/read/cambodia/activities')
-
-    config.add_route('form_tests', '/blabla')
-    config.add_static_view('formstatic', 'deform:static')
-
+    
     # Error views
     config.add_forbidden_view(forbidden_view)
     config.add_notfound_view(notfound_view)
