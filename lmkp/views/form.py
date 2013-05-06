@@ -6,20 +6,13 @@ from mako.template import Template
 from lmkp.views.form_config import *
 
 from pyramid.path import AssetResolver
-from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPNotFound
 
 log = logging.getLogger(__name__)
 
-@view_config(route_name='form_tests', renderer='lmkp:templates/form_test.mak')
-def form_tests(request):
+def render_form(request, itemType, itemJson=None):
     _ = request.translate
 
     # TODO: Get this from request or somehow
-    itemType = 'activities'
-    # TODO: Get version and identifier from request or somehow.
-    version = None
-    identifier = None
     lang = 'fr' # So far, it doesn't matter what stands here
 
     categorylist = getCategoryList(request, itemType, lang)
@@ -57,38 +50,16 @@ def form_tests(request):
 
     # Prepare the form
     form = deform.Form(schema, buttons=[deform.Button('submit', _('Submit'))])
-    
+
     # Add JS and CSS requirements (for widgets)
     resources = form.get_widget_resources()
 
     captured = None
     success = None
 
-    version = 2
-    identifier = 'd0f5b496-edcd-458c-84a9-72ca4e1135f5'
-
-#    version = 3
-#    identifier = 'd0f5b496-edcd-458c-84a9-72ca4e1135f5'
-
-    if version is not None and identifier is not None:
-        # If there is an existing item, use the protocol to find the values to
-        # display in the form.
-        if itemType == 'stakeholders':
-            # TODO: Make this work for stakeholders as well.
-            print "**STAKEHOLDERS NOT YET IMPLEMENTED**"
-        else:
-            from lmkp.views.activity_protocol3 import ActivityProtocol3
-            from lmkp.models.meta import DBSession as Session
-            protocol = ActivityProtocol3(Session)
-
-        item = protocol.read_one_by_version(
-            request, identifier, version
-        )
-        if item is None:
-            raise HTTPNotFound
-
-        itemjson = item.to_table(request)
-        data = getFormdataFromItemjson(request, itemjson, itemType)
+    # Get the data to populate the form
+    if itemJson is not None:
+        data = getFormdataFromItemjson(request, itemJson, itemType)
 
     else:
         # If there is no existing item, show the form with empty data
