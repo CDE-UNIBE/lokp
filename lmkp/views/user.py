@@ -1,15 +1,120 @@
+import colander
+import deform
 from lmkp.models.database_objects import Group
+from lmkp.models.database_objects import Profile
 from lmkp.models.database_objects import User
 from lmkp.models.meta import DBSession as Session
+from lmkp.views.profile import _processProfile
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPForbidden
-from pyramid.renderers import render_to_response
+from pyramid.response import Response
 from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
 from pyramid.security import has_permission
 from pyramid.view import view_config
+import re
 from sqlalchemy.orm.exc import NoResultFound
-from lmkp.views.translation import usergroupMap
+
+@view_config(route_name='user_self_registration', renderer='lmkp:templates/form.mak')
+def user_self_registration(request):
+
+
+    # Get a list of available profiles
+    available_profiles = []
+
+    profiles_db = Session.query(Profile)
+    for p in profiles_db.all():
+
+        if p.code == 'global':
+            # Always insert global on top
+            profile = _processProfile(request, p, True)
+            if profile is not None:
+                available_profiles.insert(0, (profile['profile'], profile['name']))
+        else:
+            profile = _processProfile(request, p)
+            if profile is not None:
+                available_profiles.append((profile['profile'], profile['name']))
+
+    # Define a colander Schema for the self registration
+    class Schema(colander.Schema):
+        profile = colander.SchemaNode(colander.String(),
+                                      widget=deform.widget.SelectWidget(values=available_profiles))
+        username = colander.SchemaNode(
+                                       colander.String(),
+                                       default='',
+                                       description='User name')
+        firstname = colander.SchemaNode(
+                                        colander.String(),
+                                        default='',
+                                        missing=unicode(u''),
+                                        description='First name')
+        lastname = colander.SchemaNode(
+                                       colander.String(),
+                                       default='',
+                                       missing=unicode(u''),
+                                       description='Last name')
+        email = colander.SchemaNode(
+                                    colander.String(),
+                                    default='',
+                                    description="Valid email",
+                                    validator=_is_valid_email)
+    schema = Schema()
+    form = deform.Form(schema, buttons=('submit', ), use_ajax=True)
+
+    def succeed():
+        """
+        """
+
+        return Response('<div id="thanks">Thanks!</div>')
+
+    return render_form(request, form, success=succeed)
+
+def _is_valid_email(node, value):
+    """
+    Validates if the user input email address seems to be valid.
+    """
+
+    email_pattern = re.compile("[a-zA-Z0-9\.\-]*@[a-zA-Z0-9\-\.]*\.[a-zA-Z0-9]*")
+
+    if email_pattern.search(value) is None:
+        raise colander.Invalid(node, "%s is not a valid email address" % value)
+
+    return None
+
+
+def render_form(request, form, appstruct=colander.null, submitted='submit', success=None, readonly=False):
+    captured = None
+
+    if submitted in request.POST:
+        # the request represents a form submission
+        try:
+            # try to validate the submitted values
+            controls = request.POST.items()
+            captured = form.validate(controls)
+            if success:
+                response = success()
+                if response is not None:
+                    return response
+            html = form.render(captured)
+        except deform.ValidationFailure as e:
+            # the submitted values could not be validated
+            html = e.render()
+
+    else:
+        # the request requires a simple form rendering
+        html = form.render(appstruct, readonly=readonly)
+
+    if request.is_xhr:
+        return Response(html)
+
+    reqts = form.get_widget_resources()
+
+    # values passed to template for rendering
+    return {
+        'form':html,
+        'css_links':reqts['css'],
+        'js_links':reqts['js'],
+        }
 
 @view_config(route_name='user_profile_json', renderer='json')
 def user_profile_json(request):
@@ -154,7 +259,7 @@ def add_user(request):
         new_user.groups = groups
         return {"success": True, "msg": "New user created successfully."}
     else:
-        request.response.status= 400
+        request.response.status = 400
         return {"success": False, "msg": "User exists."}
 
 def _user_exists(filterColumn, filterAttr):
