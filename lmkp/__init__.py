@@ -248,6 +248,8 @@ def main(global_config, ** settings):
     # Add a new user
     config.add_route('add_user', '/users/add', request_method='POST')
 
+    config.add_route('user_self_registration', '/users/register')
+
     # Codes
     config.add_route('codes_files', '/codes/files')
     config.add_route('codes_add', '/codes/add')
