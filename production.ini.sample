@@ -33,6 +33,15 @@ lmkp.file_mime_extensions = {
 mail.host = smtp.example.com
 mail.default_sender = info@example.com
 
+; TODO: Documentation of these settings
+# pyramid_beaker settings
+session.type = file
+session.data_dir = %(here)s/data/sessions/data
+session.lock_dir = %(here)s/data/sessions/lock
+session.key = somekey
+session.secret = somesecret
+session.cookie_on_exception = true
+
 ; Specify the running mode of the application if desired
 ; lmkp.mode = demo
 # "lmkp.mode = demo" shows [Demo] flag and login credentials on login page.

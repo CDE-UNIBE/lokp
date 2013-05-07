@@ -9,25 +9,129 @@ from pyramid.path import AssetResolver
 
 log = logging.getLogger(__name__)
 
-def render_form(request, itemType, itemJson=None):
-    _ = request.translate
+def renderForm(request, itemType, itemJson=None):
 
     # TODO: Get this from request or somehow
     lang = 'fr' # So far, it doesn't matter what stands here
 
-    categorylist = getCategoryList(request, itemType, lang)
+    oldCategory = None
+    newCategory = 2 # Initial category
 
-    # Collect the forms for each category
-    cat_forms = []
-    for cat in sorted(categorylist.getCategories(), key=lambda cat: cat.order):
-        cat_forms.append(cat.getForm(request))
+    # Use a different template rendering engine (mako instead of chameleon)
+    deform.Form.set_default_renderer(mako_renderer)
 
-    # Put together all categories to one Schema
-    schema = colander.SchemaNode(colander.Mapping())
-    for cat_form in cat_forms:
-        schema.add(cat_form)
+    if request.POST != {}:
+        # Something was submitted
+        for p in request.POST:
+            if p == 'category':
+                oldCategory = request.POST[p]
+    
+    # Get the configuration of the categories (as defined in the config yaml)
+    configCategoryList = getCategoryList(request, itemType, lang)
 
-    # Add hidden fields for the identifier and the version
+    # Collect a list with id and names of all available categories which will be
+    # used to create the buttons
+    categoryListButtons = []
+    for cat in sorted(configCategoryList.getCategories(),
+        key=lambda cat: cat.order):
+        categoryListButtons.append((cat.getId(), cat.getName()))
+
+
+    captured = None
+    formHasErrors = False
+
+    # Check if something was submitted already
+    for p in request.POST:
+        if p.startswith('step_') or p == 'submit':
+            # A click was made on one of the category buttons or the final
+            # submit button. Try to validate the submitted form data. For this,
+            # a form is required with the same category that was submitted.
+
+            # Prepare the form with the submitted category
+            oldschema = addHiddenFields(colander.SchemaNode(colander.Mapping()))
+            oldCat = configCategoryList.findCategoryById(oldCategory)
+            if oldCat is not None:
+                oldschema.add(oldCat.getForm(request))
+            buttons = getFormButtons(request, categoryListButtons, oldCategory)
+            form = deform.Form(oldschema, buttons=buttons)
+
+            try:
+                # Try to validate the form
+                captured = form.validate(request.POST.items())
+
+            except deform.ValidationFailure as e:
+                # The submitted values could not be validated. Render the same 
+                # form again (with error messages) but return it later.
+                html = e.render()
+                formHasErrors = True
+
+            if formHasErrors is False:
+                # If the form data is valid, store it in the session.
+
+                # TODO
+                print "****** CAPTURED *****"
+                print captured
+
+                if p.startswith('step_'):
+                    # A button with a next category was clicked, set a new
+                    # current category to show in the form
+                    c = p.split('_')
+                    newCategory = c[1]
+
+                else:
+                    # The final submit button was clicked. Calculate the diff,
+                    # delete the session data and redirect to a confirm page.
+
+                    # TODO
+                    # Redirect
+                    print "*** redirect"
+                    return {
+                        'form': 'Form submitted!',
+                        'css_links': [],
+                        'js_links': [],
+                        'categories': 'cat_list'
+                    }
+
+            break
+
+    if formHasErrors is False:
+        # If nothing was submitted or the captured form data was stored
+        # correctly, create a form with the (new) current category.
+        newschema = addHiddenFields(colander.SchemaNode(colander.Mapping()))
+        newCat = configCategoryList.findCategoryById(newCategory)
+        if newCat is not None:
+            newschema.add(newCat.getForm(request))
+        buttons = getFormButtons(request, categoryListButtons, newCategory)
+        form = deform.Form(newschema, buttons=buttons)
+
+        # If there was an item provided to show in the form (to edit), get the
+        # data of this item to populate the form.
+        if itemJson is not None:
+            data = getFormdataFromItemjson(request, itemJson, itemType,
+                newCategory)
+        else:
+            # If there is no existing item, show the form with empty data
+            data = {}
+
+        html = form.render(data)
+
+    # Add JS and CSS requirements (for widgets)
+    resources = form.get_widget_resources()
+
+    return {
+        'form': html,
+        'css_links': resources['css'],
+        'js_links': resources['js']
+    }
+
+def addHiddenFields(schema):
+    """
+    Function to add hidden fields (for meta data of the item) to a form schema.
+    Fields are added for:
+    - id (the identifier of the item)
+    - version (the version being edited)
+    - category (the category of the form which is being edited)
+    """
     # For some reason, the deform.widget.HiddenWidget() does not seem to work.
     # Instead, the TextInputWidget is used with the hidden template.
     schema.add(colander.SchemaNode(
@@ -44,62 +148,32 @@ def render_form(request, itemType, itemJson=None):
         title='',
         missing = colander.null
     ))
+    schema.add(colander.SchemaNode(
+        colander.Int(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='category',
+        title='',
+        missing = colander.null
+    ))
+    return schema
 
-    # Use a different template rendering engine (mako instead of chameleon)
-    deform.Form.set_default_renderer(mako_renderer)
+def getFormButtons(request, categorylist, currentCategory=None):
+    """
+    Function returning an array of form buttons (one button for each category
+    and one final submit button). If a current category is provided, the button
+    of this category gets a special css class.
+    """
+    _ = request.translate
+    buttons = []
+    for cat in categorylist:
+        b = deform.Button('step_%s' % cat[0], cat[1], css_class='')
+        if currentCategory is not None and cat[0] == str(currentCategory):
+            b.css_class='formstepactive'
+        buttons.append(b)
+    buttons.append(deform.Button('submit', _('Submit'), css_class='formsubmit'))
+    return buttons
 
-    # Prepare the form
-    form = deform.Form(schema, buttons=[deform.Button('submit', _('Submit'))])
-
-    # Add JS and CSS requirements (for widgets)
-    resources = form.get_widget_resources()
-
-    captured = None
-    success = None
-
-    # Get the data to populate the form
-    if itemJson is not None:
-        data = getFormdataFromItemjson(request, itemJson, itemType)
-
-    else:
-        # If there is no existing item, show the form with empty data
-        data = {}
-
-    if 'submit' in request.POST:
-        # The request contains the data of a form submission.
-        try:
-            # Try to validate the submitted values
-            controls = request.POST.items()
-            captured = form.validate(controls)
-            if success:
-                response = success()
-                if response is not None:
-                    return response
-
-            log.debug('Captured data by form: %s' % captured)
-
-            diff = formdataToDiff(request, captured, itemType)
-
-            log.debug('Diff of object: %s' % diff)
-
-            html = form.render(captured)
-
-        except deform.ValidationFailure as e:
-            # The submitted values could not be validated, show the form again
-            # but with error messages
-            html = e.render()
-
-    else:
-        # No data submitted, show the form.
-        html = form.render(data)
-
-    return {
-        'form': html,
-        'css_links': resources['css'],
-        'js_links': resources['js']
-    }
-
-def getFormdataFromItemjson(request, itemJson, itemType):
+def getFormdataFromItemjson(request, itemJson, itemType, category):
     """
     Use the JSON representation of a feature (Activity or Stakeholder) to get
     the values in a way the form can handle to display it. This can be used to
@@ -120,7 +194,8 @@ def getFormdataFromItemjson(request, itemJson, itemType):
 
     data = {
         'id': itemJson['id'],
-        'version': itemJson['version']
+        'version': itemJson['version'],
+        'category': category
     }
 
     for taggroup in taggroups:
@@ -186,13 +261,16 @@ def getFormdataFromItemjson(request, itemJson, itemType):
         else:
             # Category does not exist yet, thematic group and taggroup and tags
             # can be added
-            data[cat] = {thmg: {tgid: tagsdata}}
+            # Add the category only if the category is to be visible in the
+            # current form.
+            if category is not None and cat == str(category):
+                data[cat] = {thmg: {tgid: tagsdata}}
 
     log.debug('Formdata created by ItemJSON: %s' % data)
     
     return data
 
-def formdataToDiff(request, newform, itemType):
+def formdataToDiff(request, newform, itemType, category):
     """
     Use the formdata captured on submission of the form and compare it with the
     old version of an object to create a diff which allows to create/update the
@@ -268,6 +346,12 @@ def formdataToDiff(request, newform, itemType):
         version = newform['version']
         del newform['version']
 
+    if 'category' in newform:
+        # Category should be the same as parameter in function
+        if newform['category'] != category:
+            log.debug('NOT THE SAME CATEGORIES: %s vs %s' % (newform['category'], category))
+        del newform['category']
+
     if identifier != colander.null and version != colander.null:
 
         # Use the protocol to query the values of the version which was edited
@@ -286,11 +370,13 @@ def formdataToDiff(request, newform, itemType):
 
         # Look only at the values transmitted to the form and therefore visible
         # to the editor.
-        oldform = getFormdataFromItemjson(request, olditemjson, itemType)
+        oldform = getFormdataFromItemjson(request, olditemjson, itemType, category)
         if 'id' in oldform:
             del oldform['id']
         if 'version' in oldform:
             del oldform['version']
+        if 'category' in oldform:
+            del oldform['category']
 
     taggroupdiffs = []
 
@@ -520,7 +606,8 @@ def formdataToDiff(request, newform, itemType):
 def mako_renderer(tmpl_name, **kw):
     """
     A helper function to use the mako rendering engine.
-    It is necessary to locate the templates by using the asset resolver.
+    It seems to be necessary to locate the templates by using the asset
+    resolver.
     """
     lmkp = AssetResolver('lmkp')
     resolver = lmkp.resolve('templates/form/%s.mak' % tmpl_name)

@@ -13,6 +13,7 @@ from lmkp.views.errors import forbidden_view
 from lmkp.views.errors import notfound_view
 import papyrus
 from pyramid.authorization import ACLAuthorizationPolicy
+from pyramid_beaker import session_factory_from_settings
 from pyramid.config import Configurator
 from pyramid.events import BeforeRender
 from pyramid.events import NewRequest
@@ -44,11 +45,16 @@ def main(global_config, ** settings):
     # Authorization policy
     authzPolicy = ACLAuthorizationPolicy()
 
+    session_factory = session_factory_from_settings(settings)
+
     config = Configurator(settings=settings,
-                          root_factory='lmkp.models.rootfactory.RootFactory')
+                          root_factory='lmkp.models.rootfactory.RootFactory',
+                          session_factory=session_factory)
     config.set_authentication_policy(authnPolicy)
     config.set_authorization_policy(authzPolicy)
 
+    config.include('pyramid_beaker')
+    
     # Add the directory that includes the translations
     config.add_translation_dirs(
         'lmkp:locale/',
