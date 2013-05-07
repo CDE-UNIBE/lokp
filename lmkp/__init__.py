@@ -13,6 +13,7 @@ from lmkp.views.errors import forbidden_view
 from lmkp.views.errors import notfound_view
 import papyrus
 from pyramid.authorization import ACLAuthorizationPolicy
+from pyramid_beaker import session_factory_from_settings
 from pyramid.config import Configurator
 from pyramid.events import BeforeRender
 from pyramid.events import NewRequest
@@ -44,13 +45,22 @@ def main(global_config, ** settings):
     # Authorization policy
     authzPolicy = ACLAuthorizationPolicy()
 
+    session_factory = session_factory_from_settings(settings)
+
     config = Configurator(settings=settings,
-                          root_factory='lmkp.models.rootfactory.RootFactory')
+                          root_factory='lmkp.models.rootfactory.RootFactory',
+                          session_factory=session_factory)
     config.set_authentication_policy(authnPolicy)
     config.set_authorization_policy(authzPolicy)
 
+    config.include('pyramid_beaker')
+    
     # Add the directory that includes the translations
-    config.add_translation_dirs('lmkp:locale/')
+    config.add_translation_dirs(
+        'lmkp:locale/',
+        'colander:locale',
+        'deform:locale'
+    )
 
     # Add event subscribers
     config.add_subscriber(add_renderer_globals, BeforeRender)
@@ -68,6 +78,7 @@ def main(global_config, ** settings):
     #config.add_renderer('geojson', GeoJSON())
     config.add_renderer('geojson', GeoJsonRenderer())
     config.add_static_view('static', 'static', cache_max_age=3600)
+    config.add_static_view('formstatic', 'deform:static')
     config.add_route('index', '/')
     config.add_route('administration', '/administration')
     config.add_route('login', '/login', request_method='POST')
@@ -261,10 +272,7 @@ def main(global_config, ** settings):
 
     config.add_route('cambodia_read_stakeholders', '/read/cambodia/stakeholders')
     config.add_route('cambodia_read_activities', '/read/cambodia/activities')
-
-    config.add_route('form_tests', '/blabla')
-    config.add_static_view('formstatic', 'deform:static')
-
+    
     # Error views
     config.add_forbidden_view(forbidden_view)
     config.add_notfound_view(notfound_view)

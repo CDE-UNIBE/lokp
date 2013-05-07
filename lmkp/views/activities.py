@@ -23,6 +23,7 @@ import yaml
 import simplejson as json
 
 from lmkp.renderers.renderers import translate_key
+from lmkp.views.form import renderForm
 
 log = logging.getLogger(__name__)
 
@@ -56,6 +57,13 @@ def read_many(request):
     elif output_format == 'html':
         #@TODO
         return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    elif output_format == 'form':
+        # This is used to display a new and empty form for an Activity
+        return render_to_response(
+            'lmkp:templates/form.mak',
+            renderForm(request, 'activities', None),
+            request
+        )
     elif output_format == 'geojson':
         activities = activity_protocol3.read_many_geojson(request, public=False)
         return render_to_response('json', activities, request)
@@ -185,6 +193,24 @@ def read_one(request):
     elif output_format == 'html':
         #@TODO
         return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    elif output_format == 'form':
+        # Query the Activities wih the given identifier
+        activities = activity_protocol3.read_one(request, uid=uid, public=False)
+        version = request.params.get('v', None)
+        if activities and 'data' in activities and len(activities['data']) != 0:
+            for a in activities['data']:
+                if 'version' in a:
+                    if version is None:
+                        # If there was no version provided, show the first
+                        # version visible to the user
+                        version = str(a['version'])
+                    if str(a['version']) == version:
+                        return render_to_response(
+                            'lmkp:templates/form.mak',
+                            renderForm(request, 'activities', a),
+                            request
+                        )
+        return HTTPNotFound()
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()

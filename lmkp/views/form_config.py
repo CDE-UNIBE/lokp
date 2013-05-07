@@ -101,8 +101,10 @@ class ConfigCategory(object):
     def __init__(self, id, name, level, fk_category):
         self.id = id
         self.name = name
+        self.translation = None
         self.level = level
         self.fk_category = fk_category
+        self.order = 9999
         self.thematicgroups = []
 
     def getId(self):
@@ -116,6 +118,18 @@ class ConfigCategory(object):
         Return the name (as defined in the configuration file) of the category.
         """
         return self.name
+
+    def setTranslation(self, translation):
+        """
+        Set the translation of this category.
+        """
+        self.translation = translation
+
+    def getTranslation(self):
+        """
+        Return the translation of this category.
+        """
+        return self.translation
 
     def addThematicgroup(self, thematicgroup):
         """
@@ -131,19 +145,33 @@ class ConfigCategory(object):
         """
         return self.thematicgroups
 
-    def getForm(self):
+    def setOrder(self, order):
+        """
+        Set the order of this category.
+        """
+        self.order = order
+
+    def getOrder(self):
+        """
+        Return the order of this category.
+        """
+        return self.order
+
+    def getForm(self, request):
         """
         Prepare the form node for this category, append the forms of its
         thematic groups and return it.
         """
+        title = (self.getTranslation() if self.getTranslation() is not None
+            else self.getName())
         cat_form = colander.SchemaNode(
             colander.Mapping(),
             name=self.getId(),
-            title=self.getName()
+            title=title
         )
-        for thg in self.getThematicgroups():
+        for thg in sorted(self.getThematicgroups(), key=lambda thmg: thmg.order):
             # Get the Form for each Thematicgroup
-            thg_form = thg.getForm()
+            thg_form = thg.getForm(request)
             thg_form.missing = colander.null
             thg_form.name = thg.getId()
             cat_form.add(thg_form)
@@ -157,9 +185,11 @@ class ConfigThematicgroup(object):
     Information'. It contains Form Taggroups as the next lower form structure.
     """
 
-    def __init__(self, id, name):
+    def __init__(self, id, name, translation):
         self.id = id
         self.name = name
+        self.translation = translation
+        self.order = 9999
         self.taggroups = []
 
     def getId(self):
@@ -190,14 +220,35 @@ class ConfigThematicgroup(object):
         """
         return self.name
 
-    def getForm(self):
+    def getTranslation(self):
+        """
+        Return the translation of this thematic group.
+        """
+        return self.translation
+
+    def setOrder(self, order):
+        """
+        Set the order of this thematic group.
+        """
+        self.order = order
+
+    def getOrder(self):
+        """
+        Return the order of this thematic group.
+        """
+        return self.order
+
+    def getForm(self, request):
         """
         Prepare the form node for this thematic group, append the forms of its
         taggroups and return it.
         """
+        _ = request.translate
+        title = (self.getTranslation() if self.getTranslation() is not None
+            else self.getName())
         thg_form = colander.SchemaNode(
             colander.Mapping(),
-            name=self.getName()
+            title=title
         )
         for tg in self.getTaggroups():
             # Get the Form for each Taggroup
@@ -214,7 +265,11 @@ class ConfigThematicgroup(object):
                     colander.Sequence(),
                     tg_form,
                     missing=colander.null,
-                    widget=deform.widget.SequenceWidget(min_len=1),
+                    widget=deform.widget.SequenceWidget(
+                        min_len=1,
+                        # TODO: Translation
+                        add_subitem_text_template=_('Add')
+                    ),
                     name=name,
                     title=''
                 ))
@@ -340,11 +395,14 @@ class ConfigTaggroup(object):
         for t in self.getTags():
             # Get the Form for each tag
             tg_form.add(t.getForm())
-        # Add a hidden field for the tg_id
+        # Add a hidden field for the tg_id. As when adding the version and
+        # identifier, the deform.widget.HiddenWidget() does not seem to work
+        # here. Instead, user TextInputWidget with hidden template
         tg_form.add(colander.SchemaNode(
             colander.Int(),
-            widget=deform.widget.HiddenWidget(),
+            widget=deform.widget.TextInputWidget(template='hidden'),
             name='tg_id',
+            title='',
             missing = colander.null
         ))
         tg_form.validator = self.maintag_validator
@@ -425,27 +483,54 @@ class ConfigTag(object):
         Prepare the form node for this tag, append the nodes of its keys
         (depending on its type) and return it.
         """
+        key = self.getKey()
         # Get name and type of key
-        name = self.getKey().getName()
-        type = self.getKey().getType()
+        name = key.getName()
+        title = (key.getTranslatedName() if key.getTranslatedName() != ''
+            else key.getName())
+        type = key.getType()
+        helptext = (key.getTranslatedHelptext() 
+            if key.getTranslatedHelptext() != '' else key.getHelptext())
         # Decide which type of form to add
-        if type.lower() == 'predefined' and len(self.getValues()) > 0:
+        if type.lower() == 'dropdown' and len(self.getValues()) > 0:
             # Dropdown
             # Prepare the choices for keys with predefined values
-            valuechoices = tuple((x.getName(), x.getName())
-                for x in self.getValues())
-            selectchoice = ('', '- Select -')
-            choices = (selectchoice,) + valuechoices
+            # TODO: Translation
+            choiceslist = [('', '- Select -')]
+            for v in sorted(self.getValues(),
+                key=lambda val: val.getOrderValue()):
+                choiceslist.append((v.getName(), v.getTranslation()))
+            choices = tuple(choiceslist)
             form = colander.SchemaNode(
                 colander.String(),
                 validator=colander.OneOf([x[0] for x in choices]),
-                widget=deform.widget.SelectWidget(values=choices),
-                name=name
+                widget=CustomSelectWidget(
+                    values=choices,
+                    helptext=helptext
+                ),
+                name=name,
+                title=title
+            )
+        elif type.lower() == 'checkbox' and len(self.getValues()) > 0:
+            # Checkbox
+            # Prepare the choices for keys with predefined values
+            choices = []
+            for v in sorted(self.getValues(),
+                key=lambda val: val.getOrderValue()):
+                choices.append((v.getName(), v.getTranslation()))
+            form = colander.SchemaNode(
+                colander.Set(),
+                widget=CustomCheckboxWidget(
+                    values=tuple(choices),
+                    helptext=helptext
+                ),
+                name=name,
+                title=title
             )
         elif type.lower() == 'number' or type.lower() == 'integer':
             # Number or Integer field
             deform.widget.default_resource_registry.set_js_resources(
-                'jqueryspinner', None, '../static/jquery-ui-1.9.2.custom.min.js')
+                'jqueryspinner',None,'../static/jquery-ui-1.9.2.custom.min.js')
             min = None
             max = None
             val = self.getKey().getValidator()
@@ -470,29 +555,46 @@ class ConfigTag(object):
                 colanderType = colander.Int()
             form = colander.SchemaNode(
                 colanderType,
-                widget=NumberSpinnerWidget(options=options),
-                name=name
+                widget=NumberSpinnerWidget(
+                    options=options,
+                    helptext=helptext
+                ),
+                name=name,
+                title=title
             )
         elif type.lower() == 'text':
             # Textarea
             form = colander.SchemaNode(
                 colander.String(),
-                widget=deform.widget.TextAreaWidget(rows=10, cols=60),
-                name=name
+                widget=CustomTextAreaWidget(
+                    rows=5,
+                    cols=60,
+                    style='float:left;',
+                    helptext=helptext
+                ),
+                name=name,
+                title=title
             )
         elif type.lower() == 'date':
             # Date
             form = colander.SchemaNode(
                 colander.Date(),
-                widget=deform.widget.DateInputWidget(),
+                widget=CustomDateInputWidget(
+                    helptext=helptext
+                ),
                 name=name,
+                title=title
             )
         else:
             # Default: Textfield
             form = colander.SchemaNode(
                 colander.String(),
-                widget=deform.widget.TextInputWidget(size=50),
-                name=name
+                widget=CustomTextInputWidget(
+                    size=50,
+                    helptext=helptext
+                ),
+                name=name,
+                title=title
             )
         # Is this tag mandatory?
         if self.getMandatory() is False:
@@ -547,6 +649,8 @@ class ConfigKey(object):
         self.type = type
         self.helptext = helptext
         self.validator = validator if validator != '' else None
+        self.translated_name = None
+        self.translated_helptext = None
 
     def getId(self):
         """
@@ -560,11 +664,36 @@ class ConfigKey(object):
         """
         return self.name
 
+    def setTranslation(self, name, helptext):
+        """
+        Set the translation of this key.
+        """
+        self.translated_name = name
+        self.translated_helptext = helptext
+
+    def getTranslatedName(self):
+        """
+        Return the translated name of this key.
+        """
+        return self.translated_name
+
+    def getTranslatedHelptext(self):
+        """
+        Return the translated helptext of this key
+        """
+        return self.translated_helptext
+
     def getType(self):
         """
         Return the type of this key.
         """
         return self.type
+
+    def getHelptext(self):
+        """
+        Return the helptext for this tag
+        """
+        return self.helptext
 
     def setValidator(self, validator):
         """
@@ -630,6 +759,15 @@ class ConfigValueList(object):
                 return v
         return None
 
+    def findValuesByFkkey(self, fk_key):
+        """
+        Find and return a list of values by a fk_key.
+        """
+        values = []
+        for v in self.getValues():
+            if v.getFkkey() == str(fk_key):
+                values.append(v)
+        return values
 
 class ConfigValue(object):
     """
@@ -640,10 +778,10 @@ class ConfigValue(object):
     def __init__(self, id, name, fk_key, order):
         self.id = id
         self.name = name
+        # The initial value of the translation is set to be the same as the name
+        self.translation = name
         self.fk_key = fk_key
         self.order = order
-
-        self.key = None
 
     def getId(self):
         """
@@ -653,9 +791,27 @@ class ConfigValue(object):
 
     def getName(self):
         """
-        Return the name (as defined in the configuration file) of the category.
+        Return the name (as defined in the configuration file) of the value.
         """
         return self.name
+
+    def setTranslation(self, translation):
+        """
+        Set the translation of this value.
+        """
+        self.translation = translation
+
+    def getTranslation(self):
+        """
+        Return the translation of this value.
+        """
+        return self.translation
+
+    def getFkkey(self):
+        """
+        Return the fk_key (as defined in the configuration file) of the value.
+        """
+        return self.fk_key
 
     def getOrder(self):
         """
@@ -663,8 +819,15 @@ class ConfigValue(object):
         """
         return self.order
 
+    def getOrderValue(self):
+        """
+        Returns the order value if one is set else the name of the value
+        """
+        if self.getOrder() != '':
+            return self.getOrder()
+        return self.getName()
 
-def getConfigKeyList(request, itemType):
+def getConfigKeyList(request, itemType, lang=None):
     """
     Function to collect and return all the keys from the configuration file
     (csv).
@@ -683,9 +846,23 @@ def getConfigKeyList(request, itemType):
         # Skip the first row
         if keys_csv.line_num > 1:
             configKeys.addKey(ConfigKey(*row))
+    # Translation
+    if lang is not None:
+        # TODO
+        t_filename = 'akeys_translated.csv'
+
+        translationStream = open('%s/%s'
+            % (profile_directory_path(request), t_filename), 'rb')
+        translationCsv = csv.reader(translationStream, delimiter=';')
+        for row in translationCsv:
+            # Skip the first row
+            if translationCsv.line_num > 1 and len(row) == 3:
+                k = configKeys.findKeyById(row[0])
+                if k is not None:
+                    k.setTranslation(row[1], row[2])
     return configKeys
 
-def getConfigValueList(request, itemType):
+def getConfigValueList(request, itemType, lang=None):
     """
     Function to collect and return all the values from the configuration file
     (csv).
@@ -704,9 +881,24 @@ def getConfigValueList(request, itemType):
         # Skip the first row
         if values_csv.line_num > 1:
             configValues.addValue(ConfigValue(*row))
+    # Translation
+    if lang is not None:
+        # TODO
+        t_filename = 'avalues_translated.csv'
+
+        translationStream = open('%s/%s'
+            % (profile_directory_path(request), t_filename), 'rb')
+        translationCsv = csv.reader(translationStream, delimiter=';')
+        for row in translationCsv:
+            # Skip the first row
+            if translationCsv.line_num > 1 and len(row) == 2:
+                v = configValues.findValueById(row[0])
+                if v is not None:
+                    v.setTranslation(row[1])
+
     return configValues
 
-def getConfigCategoryList(request, itemType):
+def getConfigCategoryList(request, itemType, lang=None):
     """
     Function to collect and return all the categories from the configuration
     file (csv). Both categories and thematic groups are treated as the same type
@@ -726,18 +918,58 @@ def getConfigCategoryList(request, itemType):
         # Skip the first row
         if categories_csv.line_num > 1:
             configCategories.addCategory(ConfigCategory(*row))
+    # Translation
+    if lang is not None:
+        # TODO
+        t_filename = 'acategories_translated.csv'
+
+        translationStream = open('%s/%s'
+            % (profile_directory_path(request), t_filename), 'rb')
+        translationCsv = csv.reader(translationStream, delimiter=';')
+        for row in translationCsv:
+            # Skip the first row
+            if translationCsv.line_num > 1 and len(row) == 2:
+                c = configCategories.findCategoryById(row[0])
+                if c is not None:
+                    c.setTranslation(row[1])
     return configCategories
 
-def getCategoryList(request, itemType):
+def getValidKeyTypes():
+    """
+    Function to return all valid key types that can be set in the config yaml.
+    """
+    return [
+        'dropdown',
+        'checkbox',
+        'number',
+        'integer',
+        'text',
+        'date',
+        'string'
+    ]
+
+def getCategoryList(request, itemType, lang=None):
     """
     Function to scan through the configuration yaml and put together the list of
     categories which can be used to create the form.
     itemType: activities / stakeholders
     """
     # Scan the configuration files for keys, values and categories
-    configKeys = getConfigKeyList(request, itemType)
-    configValues = getConfigValueList(request, itemType)
-    configCategories = getConfigCategoryList(request, itemType)
+    configKeys = getConfigKeyList(request, itemType, lang)
+    configValues = getConfigValueList(request, itemType, lang)
+    configCategories = getConfigCategoryList(request, itemType, lang)
+
+    # Do some first test on the keys: Check that each type is defined correctly
+    unknowntypes = []
+    knowntypes = getValidKeyTypes()
+    for k in configKeys.getKeys():
+        if k.getType().lower() not in knowntypes:
+            unknowntypes.append(k.getName())
+
+    if len(unknowntypes) > 0:
+        raise NameError('One or more keys have unknown types: %s'
+            % ', '.join(unknowntypes))
+
     # Load the yaml
     if itemType == 'stakeholders':
         # TODO
@@ -765,6 +997,10 @@ def getCategoryList(request, itemType):
         # Loop the thematic groups of the category
         for (thmgrp_id, taggroups) in thmgrps.iteritems():
 
+            if thmgrp_id == 'order':
+                category.setOrder(taggroups)
+                continue
+
             # The name of the thematic group also stands in the categories csv.
             # So it is necessary to find the category there
             thematicCategory = configCategories.findCategoryById(thmgrp_id)
@@ -775,11 +1011,17 @@ def getCategoryList(request, itemType):
 
             # Create a thematicgroup out of it
             thematicgroup = ConfigThematicgroup(
-                thematicCategory.getId(), thematicCategory.getName()
+                thematicCategory.getId(),
+                thematicCategory.getName(),
+                thematicCategory.getTranslation()
             )
 
             # Loop the taggroups of the thematic group
             for (tgroup_id, tags) in taggroups.iteritems():
+
+                if tgroup_id == 'order':
+                    thematicgroup.setOrder(tags)
+                    continue
 
                 # Create a taggroup out of it
                 taggroup = ConfigTaggroup(tgroup_id)
@@ -797,6 +1039,7 @@ def getCategoryList(request, itemType):
                         if configKey is None:
                             # Error handling if key is not found
                             unknownkeys.append(str(key_id))
+                            continue
 
                         # We need to make a copy of the original object.
                         # Otherwise we are not able to add a custom validator
@@ -806,7 +1049,9 @@ def getCategoryList(request, itemType):
                         if key_config is not None:
 
                             if 'values' in key_config:
-                                # If available, loop the values of the key
+                                # If there are values available in the YAML,
+                                # then use these. Else use the ones defined in
+                                # the values config csv.
                                 for v in key_config['values']:
                                     tag.addValue(configValues.findValueById(v))
 
@@ -820,6 +1065,15 @@ def getCategoryList(request, itemType):
 
                             if 'maintag' in key_config:
                                 taggroup.setMaintag(tag)
+
+                            # If the values are predefined and they are not set
+                            # already (defined explicitly in YAML), then get the
+                            # values from the value config csv.
+                            if (configKey.getType().lower() == 'dropdown'
+                                or configKey.getType().lower() == 'checkbox'):
+                                for v in configValues.\
+                                    findValuesByFkkey(configKey.getId()):
+                                    tag.addValue(v)
 
                         taggroup.addTag(tag)
 
@@ -869,16 +1123,70 @@ def getCategoryList(request, itemType):
 
     if len(duplicates) > 0:
         # TODO: Error handling
-        raise NameError('Duplicated mainkey(s): %s' % ', '.duplicates)
+        raise NameError('Duplicated mainkey(s): %s' % ', '.join(duplicates))
 
     return categorylist
 
-class NumberSpinnerWidget(deform.widget.Widget):
+
+class CustomWidget(deform.widget.Widget):
+    """
+    Overwrite the function get_template_values() with a custom one to add more
+    values to the template.
+    """
+    def get_template_values(self, field, cstruct, kw):
+        return custom_get_template_values(self, field, cstruct, kw)
+
+class CustomSelectWidget(deform.widget.SelectWidget):
+    """
+    Overwrite the function get_template_values() with a custom one to add more
+    values to the template.
+    """
+    def get_template_values(self, field, cstruct, kw):
+        return custom_get_template_values(self, field, cstruct, kw)
+
+class CustomTextAreaWidget(deform.widget.TextAreaWidget):
+    """
+    Overwrite the function get_template_values() with a custom one to add more
+    values to the template.
+    """
+    def get_template_values(self, field, cstruct, kw):
+        return custom_get_template_values(self, field, cstruct, kw)
+
+class CustomDateInputWidget(deform.widget.DateInputWidget):
+    """
+    Overwrite the function get_template_values() with a custom one to add more
+    values to the template.
+    """
+    def get_template_values(self, field, cstruct, kw):
+        return custom_get_template_values(self, field, cstruct, kw)
+
+class CustomTextInputWidget(deform.widget.TextInputWidget):
+    """
+    Overwrite the function get_template_values() with a custom one to add more
+    values to the template.
+    """
+    def get_template_values(self, field, cstruct, kw):
+        return custom_get_template_values(self, field, cstruct, kw)
+
+def custom_get_template_values(self, field, cstruct, kw):
+    """
+    This is a modification of the function get_template_values() called by
+    deform.widget.Widget and its subclasses.
+    It appends the keyword 'helptext' to the template values if available.
+    """
+    values = {'cstruct':cstruct, 'field':field}
+    values.update(kw)
+    values.pop('template', None)
+    if 'helptext' in self.__dict__:
+        values['helptext'] = self.__dict__['helptext']
+    return values
+
+class NumberSpinnerWidget(CustomWidget):
     """
     Custom Deform widget. Adds a spinner to a input field using the jQuery UI
     library.
     """
-    template = 'lmkp:templates/form/numberspinner_template'
+    template = 'numberspinner'
     readonly_template = 'readonly/textinput'
     type_name = 'number'
     size = None
@@ -903,3 +1211,71 @@ class NumberSpinnerWidget(deform.widget.Widget):
         if pstruct in ('', colander.null):
             return colander.null
         return pstruct
+
+class CustomCheckboxWidget(CustomWidget):
+    """
+    Custom Deform widget. Based very much on the default checkbox choice widget.
+    It allows to save a tg_id to the value before showing the checkboxes and
+    extracts this value again after submission.
+    """
+    template = 'checkbox'
+    readonly_template = 'readonly/checkbox_choice'
+    values = ()
+    separator = '|'
+
+    def serialize(self, field, cstruct, **kw):
+        if cstruct in (colander.null, None):
+            cstruct = ()
+        readonly = kw.get('readonly', self.readonly)
+        values = kw.get('values', self.values)
+
+        template = readonly and self.readonly_template or self.template
+
+        # The data needs to be prepared before showing in the form. Because a
+        # checkbox can contain only one real value, the tg_id needs to be stored
+        # in the inner (submit) value of the checkbox.
+        formdata = []
+        for c in cstruct:
+            # Transform tuples to list to access them more easily
+            valuelist = list(values)
+            for i, (name, title) in enumerate(valuelist):
+                if name == c[0]:
+                    # Update the (internal) name of the values
+                    newname = '%s%s%s' % (c[1], self.separator, name)
+                    valuelist[i] = (newname, title)
+
+            # Transform the list back to tuples
+            values = tuple(valuelist)
+            formdata.append(newname)
+
+        kw['values'] = values
+        tmpl_values = self.get_template_values(field, formdata, kw)
+
+        return field.renderer(template, **tmpl_values)
+
+    def deserialize(self, field, pstruct):
+        if pstruct is colander.null:
+            return colander.null
+        if isinstance(pstruct, deform.compat.string_types):
+            return (pstruct,)
+
+        # When submitted, additional data provided by the checkbox (old tg_id)
+        # needs to be extracted and stored.
+        ret = []
+        for p in pstruct:
+            # Default values (if no tg_id set)
+            old_tg_id = None
+            n = p
+
+            if self.separator in p:
+                # If a tg_id is set, separate it from the name and store it
+                separatorposition = p.find(self.separator)
+                n = p[separatorposition+1:]
+                old_tg_id = p[:separatorposition]
+
+            for (name, title) in self.values:
+                # Look for the name and set the old tg_id if available.
+                if name == n:
+                    ret.append((n, old_tg_id))
+
+        return tuple(ret)
