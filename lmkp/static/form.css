@@ -37,6 +37,14 @@ div.form_helptext {
     margin-bottom: 7px;
 }
 
+button.formstepactive {
+    background-color: lightgoldenrodyellow !important;
+}
+
+button.formsubmit {
+    background-color: darkseagreen !important;
+}
+
 /* NUMBER SPINNER */
 .ui-spinner {
 	position:relative;

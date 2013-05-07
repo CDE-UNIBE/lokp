@@ -23,7 +23,7 @@ import yaml
 import simplejson as json
 
 from lmkp.renderers.renderers import translate_key
-from lmkp.views.form import render_form
+from lmkp.views.form import renderForm
 
 log = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ def read_many(request):
         # This is used to display a new and empty form for an Activity
         return render_to_response(
             'lmkp:templates/form.mak',
-            render_form(request, 'activities', None),
+            renderForm(request, 'activities', None),
             request
         )
     elif output_format == 'geojson':
@@ -207,7 +207,7 @@ def read_one(request):
                     if str(a['version']) == version:
                         return render_to_response(
                             'lmkp:templates/form.mak',
-                            render_form(request, 'activities', a),
+                            renderForm(request, 'activities', a),
                             request
                         )
         return HTTPNotFound()
