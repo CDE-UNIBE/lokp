@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LMKP 0.31\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-03-11 10:15+0100\n"
+"POT-Creation-Date: 2013-05-06 10:14+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -124,6 +124,10 @@ msgstr ""
 msgid "Compare"
 msgstr ""
 
+#: lmkp/templates/form_test.mak:3
+msgid "FORM TEST"
+msgstr ""
+
 #: lmkp/templates/login_form.mak:13 lmkp/templates/reset_form.mak:5
 #: lmkp/views/viewers.py:28
 msgid "Login"
@@ -208,11 +212,11 @@ msgstr ""
 msgid "Translation"
 msgstr ""
 
-#: lmkp/views/activities.py:258 lmkp/views/stakeholders.py:260
+#: lmkp/views/activities.py:258 lmkp/views/stakeholders.py:262
 msgid "User is not logged in."
 msgstr ""
 
-#: lmkp/views/activities.py:261 lmkp/views/stakeholders.py:263
+#: lmkp/views/activities.py:261 lmkp/views/stakeholders.py:265
 msgid "User has no permissions to add a review."
 msgstr ""
 
@@ -224,7 +228,7 @@ msgstr ""
 msgid "The Deal was not found or is not situated within the user's profiles"
 msgstr ""
 
-#: lmkp/views/activities.py:299 lmkp/views/stakeholders.py:297
+#: lmkp/views/activities.py:299 lmkp/views/stakeholders.py:299
 msgid "Not all mandatory keys are provided"
 msgstr ""
 
@@ -284,6 +288,14 @@ msgstr ""
 msgid "File was successfully uploaded"
 msgstr ""
 
+#: lmkp/views/form.py:59 lmkp/views/translation.py:108
+msgid "Submit"
+msgstr ""
+
+#: lmkp/views/form_config.py:271
+msgid "Add"
+msgstr ""
+
 #: lmkp/views/login.py:56
 msgid "Login failed! Please try again."
 msgstr ""
@@ -310,57 +322,57 @@ msgstr ""
 msgid "Show user profile"
 msgstr ""
 
-#: lmkp/views/protocol.py:643
+#: lmkp/views/protocol.py:646
 msgid "Unknown object to review."
 msgstr ""
 
-#: lmkp/views/protocol.py:649
+#: lmkp/views/protocol.py:652
 msgid "Review decision not provided."
 msgstr ""
 
-#: lmkp/views/protocol.py:654 lmkp/views/protocol.py:936
+#: lmkp/views/protocol.py:657 lmkp/views/protocol.py:939
 msgid "Unknown review decision"
 msgstr ""
 
-#: lmkp/views/protocol.py:726
+#: lmkp/views/protocol.py:729
 msgid ""
 "At least one of the involved Stakeholders cannot be reviewed. Click on the "
 "icon next to the involvement for further details."
 msgstr ""
 
-#: lmkp/views/protocol.py:728
+#: lmkp/views/protocol.py:731
 msgid ""
 "At least one of the involved Activities cannot be reviewed. Click on the icon"
 " next to the involvement for further details."
 msgstr ""
 
-#: lmkp/views/protocol.py:764
+#: lmkp/views/protocol.py:767
 msgid "One of the Stakeholders to review was not found."
 msgstr ""
 
-#: lmkp/views/protocol.py:858
+#: lmkp/views/protocol.py:861
 msgid ""
 "No active version was found to base the review upon. Try to review an earlier"
 " version first."
 msgstr ""
 
-#: lmkp/views/protocol.py:888
+#: lmkp/views/protocol.py:891
 msgid "The diff seems to be incorrect (identifier not found)"
 msgstr ""
 
-#: lmkp/views/protocol.py:948
+#: lmkp/views/protocol.py:951
 msgid "Review successful."
 msgstr ""
 
-#: lmkp/views/stakeholders.py:273
+#: lmkp/views/stakeholders.py:275
 msgid "The Deal was not found"
 msgstr ""
 
-#: lmkp/views/stakeholders.py:338
+#: lmkp/views/stakeholders.py:339
 msgid "The Stakeholder was successfully created."
 msgstr ""
 
-#: lmkp/views/stakeholders.py:342
+#: lmkp/views/stakeholders.py:343
 msgid "No Stakeholder was created."
 msgstr ""
 
@@ -514,10 +526,6 @@ msgstr ""
 
 #: lmkp/views/translation.py:107
 msgid "Save"
-msgstr ""
-
-#: lmkp/views/translation.py:108
-msgid "Submit"
 msgstr ""
 
 #: lmkp/views/translation.py:109

@@ -29,7 +29,8 @@ requires = [
     'Chameleon==2.8.5',
     'recaptcha-client==1.0.6',
     'requests==1.1.0',
-    'deform'
+    'deform==0.9.7',
+    'pyramid_beaker==0.7'
     ]
 
 setup(name='LMKP',
