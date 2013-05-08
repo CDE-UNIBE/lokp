@@ -1,27 +1,21 @@
-import os
 import sys
-import transaction
-
-from sqlalchemy import engine_from_config
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm.exc import MultipleResultsFound
-
-from pyramid.paster import (
-    get_appsettings,
-    setup_logging,
-    )
-
-from ..models.meta import (
-    DBSession,
-    Base,
-    )
 
 from ..models.database_objects import *
+from ..models.meta import Base
+from ..models.meta import DBSession
+from datetime import datetime
+import os
+from pyramid.paster import get_appsettings
+from pyramid.paster import setup_logging
+from sqlalchemy import engine_from_config
+from sqlalchemy.orm.exc import MultipleResultsFound
+from sqlalchemy.orm.exc import NoResultFound
+import transaction
 
 def usage(argv):
     cmd = os.path.basename(argv[0])
     print('usage: %s <config_uri>\n'
-          '(example: "%s development.ini")' % (cmd, cmd)) 
+          '(example: "%s development.ini")' % (cmd, cmd))
     sys.exit(1)
 
 def main(argv=sys.argv):
@@ -113,7 +107,12 @@ def main(argv=sys.argv):
         # users (only 1 admin user)
         admin_password = settings['lmkp.admin_password']
         admin_email = settings['lmkp.admin_email']
-        user1 = _addIfNotExists_NoIDUnique(User(username='admin', password=admin_password, email=admin_email), User.username, 'admin')
+        user1 = _addIfNotExists_NoIDUnique(User(username='admin',
+                                           password=admin_password,
+                                           email=admin_email,
+                                           is_active=True,
+                                           is_approved=True,
+                                           registration_timestamp=datetime.now()), User.username, 'admin')
         if user1 is not None:
             user1.groups = [group1, group2, group3, group4]
         # connected with profile1 (global)

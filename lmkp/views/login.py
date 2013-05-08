@@ -101,7 +101,7 @@ class LoginView(BaseView):
 
         new_password = user.set_new_password()
 
-        body = render('lmkp:templates/reset_password_email.mak', {'user': user.username, 'new_password': new_password}, self.request)
+        body = render('lmkp:templates/emails/reset_password_email.mak', {'user': user.username, 'new_password': new_password}, self.request)
         self._send_email([user.email], _(u"Land Observatory - Password reset"), body)
 
         msg = _(u"Password reset was successful. An email containing the new password has been sent to your email address.")
