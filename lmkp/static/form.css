@@ -45,6 +45,13 @@ button.formsubmit {
     background-color: darkseagreen !important;
 }
 
+div.formFlashNotice {
+    background: #fff6bf;
+    color: #514721;
+    border: 1px solid #ffd324;
+    padding: 0 10px;
+}
+
 /* NUMBER SPINNER */
 .ui-spinner {
 	position:relative;
