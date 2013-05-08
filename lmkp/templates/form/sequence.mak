@@ -41,7 +41,7 @@
        id="${field.oid}-seqAdd"
        onClick="javascript: return deform.appendSequenceItem(this);"
     >
-        <small id="${field.oid}-addtext">${add_subitem_text}</small>
+        <small id="${field.oid}-addtext">${_(add_subitem_text)}</small>
     </a>
 
     <script type="text/javascript">

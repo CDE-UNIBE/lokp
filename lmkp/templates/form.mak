@@ -1,7 +1,4 @@
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
-      xmlns:tal="http://xml.zope.org/namespaces/tal"
-      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
-      i18n:domain="pyramid_i18n_howto">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
     <head>
         <title>${_("FORM TEST")}</title>
         <!-- Meta Tags -->
@@ -34,7 +31,7 @@
         % endif
 
         <div id="form">
-            <% context.write(form) %>
+            ${form | n}
         </div>
 
         <script type="text/javascript">

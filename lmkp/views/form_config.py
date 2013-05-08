@@ -266,9 +266,7 @@ class ConfigThematicgroup(object):
                     tg_form,
                     missing=colander.null,
                     widget=deform.widget.SequenceWidget(
-                        min_len=1,
-                        # TODO: Translation
-                        add_subitem_text_template=_('Add')
+                        min_len=1
                     ),
                     name=name,
                     title=''
