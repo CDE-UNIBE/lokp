@@ -58,8 +58,8 @@ def main(global_config, ** settings):
     # Add the directory that includes the translations
     config.add_translation_dirs(
         'lmkp:locale/',
-        'colander:locale',
-        'deform:locale'
+        'colander:locale/',
+        'deform:locale/'
     )
 
     # Add event subscribers
@@ -249,6 +249,9 @@ def main(global_config, ** settings):
     config.add_route('add_user', '/users/add', request_method='POST')
 
     config.add_route('user_self_registration', '/users/register')
+    config.add_route('user_activation', '/users/activate')
+    config.add_route('user_account', '/users/account')
+    config.add_route('user_approve', '/users/approve')
 
     # Codes
     config.add_route('codes_files', '/codes/files')

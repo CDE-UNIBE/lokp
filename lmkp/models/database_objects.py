@@ -20,6 +20,7 @@ from sqlalchemy import String
 from sqlalchemy import Table
 from sqlalchemy import Text
 from sqlalchemy import Unicode
+from sqlalchemy import and_
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import backref
@@ -28,6 +29,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import synonym
 from sqlalchemy.orm import validates
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.schema import CheckConstraint
 from sqlalchemy.schema import ForeignKeyConstraint
 from sqlalchemy.schema import PrimaryKeyConstraint
 from sqlalchemy.schema import UniqueConstraint
@@ -51,18 +53,18 @@ class A_Key(Base):
 
     fk_key = column_property(fk_a_key)
 
-    translations = relationship('A_Key', backref = backref('original',
-        remote_side = [id]))
-    tags = relationship('A_Tag', backref = 'key')
+    translations = relationship('A_Key', backref=backref('original',
+                                remote_side=[id]))
+    tags = relationship('A_Tag', backref='key')
 
     def __init__(self, key):
         self.key = key
 
     def __repr__(self):
         return (
-            '<A_Key> id [ %s ] | fk_a_key [ %s ] | fk_language [ %s ] | key [ %s ]' %
-            (self.id, self.fk_a_key, self.fk_language, self.key)
-        )
+                '<A_Key> id [ %s ] | fk_a_key [ %s ] | fk_language [ %s ] | key [ %s ]' %
+                (self.id, self.fk_a_key, self.fk_language, self.key)
+                )
 
     def to_json(self):
         return self.key
@@ -80,18 +82,18 @@ class SH_Key(Base):
     key = Column(String(255), nullable=False)
 
     fk_key = column_property(fk_sh_key)
-    translations = relationship('SH_Key', backref = backref('original',
-        remote_side = [id]))
-    tags = relationship('SH_Tag', backref = 'key')
+    translations = relationship('SH_Key', backref=backref('original',
+                                remote_side=[id]))
+    tags = relationship('SH_Tag', backref='key')
 
     def __init__(self, key):
         self.key = key
 
     def __repr__(self):
         return (
-            '<SH_Key> id [ %s ] | fk_sh_key [ %s ] | fk_language [ %s ] | key [ %s ]' %
-            (self.id, self.fk_sh_key, self.fk_language, self.key)
-        )
+                '<SH_Key> id [ %s ] | fk_sh_key [ %s ] | fk_language [ %s ] | key [ %s ]' %
+                (self.id, self.fk_sh_key, self.fk_language, self.key)
+                )
 
 class A_Value(Base):
     __tablename__ = 'a_values'
@@ -107,18 +109,18 @@ class A_Value(Base):
 
     fk_value = column_property(fk_a_value)
 
-    translations = relationship('A_Value', backref = backref('original',
-        remote_side = [id]))
-    tags = relationship('A_Tag', backref = 'value')
+    translations = relationship('A_Value', backref=backref('original',
+                                remote_side=[id]))
+    tags = relationship('A_Tag', backref='value')
 
     def __init__(self, value):
         self.value = value
 
     def __repr__(self):
         return (
-            '<A_Value> id [ %s ] | fk_a_value [ %s ] | fk_language [ %s ] | value [ %s ]' %
-            (self.id, self.fk_a_value, self.fk_language, self.value)
-        )
+                '<A_Value> id [ %s ] | fk_a_value [ %s ] | fk_language [ %s ] | value [ %s ]' %
+                (self.id, self.fk_a_value, self.fk_language, self.value)
+                )
 
 class SH_Value(Base):
     __tablename__ = 'sh_values'
@@ -134,18 +136,18 @@ class SH_Value(Base):
 
     fk_value = column_property(fk_sh_value)
 
-    translations = relationship('SH_Value', backref = backref('original',
-        remote_side = [id]))
-    tags = relationship('SH_Tag', backref = 'value')
+    translations = relationship('SH_Value', backref=backref('original',
+                                remote_side=[id]))
+    tags = relationship('SH_Tag', backref='value')
 
     def __init__(self, value):
         self.value = value
 
     def __repr__(self):
         return (
-            '<SH_Value> id [ %s ] | fk_sh_value [ %s ] | fk_language [ %s ] | value [ %s ]' %
-            (self.id, self.fk_sh_value, self.fk_language, self.value)
-        )
+                '<SH_Value> id [ %s ] | fk_sh_value [ %s ] | fk_language [ %s ] | value [ %s ]' %
+                (self.id, self.fk_sh_value, self.fk_language, self.value)
+                )
 
 class A_Tag(Base):
     __tablename__ = 'a_tags'
@@ -169,9 +171,9 @@ class A_Tag(Base):
 
     def __repr__(self):
         return (
-            '<A_Tag> id [ %s ] | fk_a_tag_group [ %s ] | fk_a_key [ %s ] | fk_a_value [ %s ]' %
-            (self.id, self.fk_a_tag_group, self.fk_a_key, self.fk_a_value)
-        )
+                '<A_Tag> id [ %s ] | fk_a_tag_group [ %s ] | fk_a_key [ %s ] | fk_a_value [ %s ]' %
+                (self.id, self.fk_a_tag_group, self.fk_a_key, self.fk_a_value)
+                )
 
     def to_json(self):
         return {'id': self.id, 'key': self.key.key, 'value': self.value.value}
@@ -198,9 +200,9 @@ class SH_Tag(Base):
 
     def __repr__(self):
         return (
-            '<SH_Tag> id [ %s ] | fk_sh_tag_group [ %s ] | fk_sh_key [ %s ] | fk_sh_value [ %s ]' %
-            (self.id, self.fk_sh_tag_group, self.fk_sh_key, self.fk_sh_value)
-        )
+                '<SH_Tag> id [ %s ] | fk_sh_tag_group [ %s ] | fk_sh_key [ %s ] | fk_sh_value [ %s ]' %
+                (self.id, self.fk_sh_tag_group, self.fk_sh_key, self.fk_sh_value)
+                )
 
     def to_json(self):
         return {'id': self.id, 'key': self.key.key, 'value': self.value.value}
@@ -242,16 +244,16 @@ class A_Tag_Group(Base):
         else:
             geom = wkb.loads(str(self.geometry.geom_wkb)).wkt
         return (
-            '<A_Tag_Group> id [ %s ] | tg_id [%s] | fk_activity [ %s ] | fk_a_tag [ %s ] | geometry [ %s ] | valid_from [ %s ] | valid_to [ %s ]' %
-            (self.id, self.tg_id, self.fk_activity, self.fk_a_tag, geom,
-            self.valid_from, self.valid_to)
-        )
+                '<A_Tag_Group> id [ %s ] | tg_id [%s] | fk_activity [ %s ] | fk_a_tag [ %s ] | geometry [ %s ] | valid_from [ %s ] | valid_to [ %s ]' %
+                (self.id, self.tg_id, self.fk_activity, self.fk_a_tag, geom,
+                self.valid_from, self.valid_to)
+                )
 
     def to_json(self):
         geometry = None
-#        if self.geometry is not None:
-#            shape = wkb.loads(str(self.geometry.geom_wkb))
-#            geometry = from_wkt(shape.wkt)
+        #        if self.geometry is not None:
+        #            shape = wkb.loads(str(self.geometry.geom_wkb))
+        #            geometry = from_wkt(shape.wkt)
         return {'id': self.id, 'geometry': geometry, 'tags': [t.to_json() for t
             in self.tags]}
 
@@ -272,10 +274,10 @@ class SH_Tag_Group(Base):
     valid_from = Column(DateTime)
     valid_to = Column(DateTime)
 
-    tags = relationship('SH_Tag', backref = backref('tag_group', order_by = id),
-        primaryjoin = id==SH_Tag.fk_sh_tag_group)
-    main_tag = relationship('SH_Tag', primaryjoin = fk_sh_tag==SH_Tag.id,
-        post_update = True)
+    tags = relationship('SH_Tag', backref=backref('tag_group', order_by=id),
+                        primaryjoin=id == SH_Tag.fk_sh_tag_group)
+    main_tag = relationship('SH_Tag', primaryjoin=fk_sh_tag == SH_Tag.id,
+                            post_update=True)
 
     fk_tag = column_property(fk_sh_tag)
 
@@ -287,10 +289,10 @@ class SH_Tag_Group(Base):
 
     def __repr__(self):
         return (
-            '<SH_Tag_Group> id [ %s ] | tg_id [%s] | fk_stakeholder [ %s ] | fk_sh_tag [ %s ] | valid_from [ %s ] | valid_to [ %s ]' %
-            (self.id, self.tg_id, self.fk_stakeholder, self.fk_sh_tag,
-            self.valid_from, self.valid_to)
-        )
+                '<SH_Tag_Group> id [ %s ] | tg_id [%s] | fk_stakeholder [ %s ] | fk_sh_tag [ %s ] | valid_from [ %s ] | valid_to [ %s ]' %
+                (self.id, self.tg_id, self.fk_stakeholder, self.fk_sh_tag,
+                self.valid_from, self.valid_to)
+                )
 
     def to_json(self):
         return {'id': self.id, 'tags': [t.to_json() for t in self.tags]}
@@ -298,19 +300,19 @@ class SH_Tag_Group(Base):
 class Activity(Base):
     __tablename__ = 'activities'
     __table_args__ = (
-            ForeignKeyConstraint(['fk_status'], ['data.status.id']),
-            ForeignKeyConstraint(['fk_changeset'], ['data.changesets.id']),
-            ForeignKeyConstraint(['fk_user_review'], ['data.users.id']),
-            ForeignKeyConstraint(['fk_profile'], ['data.profiles.id']),
-            {'schema': 'data'}
-            )
-    id = Column(Integer, primary_key = True)
-    activity_identifier = Column(UUID, nullable = False)
-    fk_changeset = Column(Integer, nullable = False)
-    point = GeometryColumn('point', Point(dimension = 2, srid = 4326,
-        spatial_index = True))
-    fk_status = Column(Integer, nullable = False)
-    version = Column(Integer, nullable = False)
+                      ForeignKeyConstraint(['fk_status'], ['data.status.id']),
+                      ForeignKeyConstraint(['fk_changeset'], ['data.changesets.id']),
+                      ForeignKeyConstraint(['fk_user_review'], ['data.users.id']),
+                      ForeignKeyConstraint(['fk_profile'], ['data.profiles.id']),
+                      {'schema': 'data'}
+                      )
+    id = Column(Integer, primary_key=True)
+    activity_identifier = Column(UUID, nullable=False)
+    fk_changeset = Column(Integer, nullable=False)
+    point = GeometryColumn('point', Point(dimension=2, srid=4326,
+                           spatial_index=True))
+    fk_status = Column(Integer, nullable=False)
+    version = Column(Integer, nullable=False)
     reliability = Column(Integer)
     previous_version = Column(Integer)
     timestamp_entry = Column(DateTime)
@@ -329,14 +331,14 @@ class Activity(Base):
         return self.activity_identifier
 
     def __init__(self, activity_identifier, version, previous_version=None,
-        reliability=None, timestamp_entry=None, point=None,
-        timestamp_review=None, comment_review=None):
+                 reliability=None, timestamp_entry=None, point=None,
+                 timestamp_review=None, comment_review=None):
         self.activity_identifier = activity_identifier
         self.version = version
         self.previous_version = previous_version
         self.reliability = reliability
         self.timestamp_entry = (datetime.datetime.now() if timestamp_entry is
-            None else timestamp_entry)
+                                None else timestamp_entry)
         self.point = point
         self.timestamp_review = timestamp_review
         self.comment_review = comment_review
@@ -350,12 +352,12 @@ class Activity(Base):
         """
         geom = '***'
         return (
-            '<Activity> id [ %s ] | activity_identifier [ %s ] | fk_changeset [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ] | previous_version [ %s ] | fk_user_review [ %s ] | timestamp_review [ %s ] | comment_review [ %s ] | fk_profile [ %s ]' %
-            (self.id, self.activity_identifier, self.fk_changeset, geom,
-            self.fk_status, self.version, self.previous_version,
-            self.fk_user_review, self.timestamp_review, self.comment_review,
-            self.fk_profile)
-        )
+                '<Activity> id [ %s ] | activity_identifier [ %s ] | fk_changeset [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ] | previous_version [ %s ] | fk_user_review [ %s ] | timestamp_review [ %s ] | comment_review [ %s ] | fk_profile [ %s ]' %
+                (self.id, self.activity_identifier, self.fk_changeset, geom,
+                self.fk_status, self.version, self.previous_version,
+                self.fk_user_review, self.timestamp_review, self.comment_review,
+                self.fk_profile)
+                )
 
     @property
     def __geo_interface__(self):
@@ -417,24 +419,24 @@ class Stakeholder(Base):
         return self.stakeholder_identifier
 
     def __init__(self, stakeholder_identifier, version, previous_version=None,
-        reliability=None, timestamp_entry=None, timestamp_review=None,
-        comment_review=None):
+                 reliability=None, timestamp_entry=None, timestamp_review=None,
+                 comment_review=None):
         self.stakeholder_identifier = stakeholder_identifier
         self.version = version
         self.previous_version = previous_version
         self.reliability = reliability
         self.timestamp_entry = (datetime.datetime.now() if timestamp_entry is
-            None else timestamp_entry)
+                                None else timestamp_entry)
         self.timestamp_review = timestamp_review
         self.comment_review = comment_review
 
     def __repr__(self):
         return (
-            '<Stakeholder> id [ %s ] | stakeholder_identifier [ %s ] | fk_changeset [ %s ] | fk_status [ %s ] | version [ %s ] | previous_version [ %s ] | fk_user_review [ %s ] | timestamp_review [ %s ] | comment_review [ %s ]' %
-            (self.id, self.stakeholder_identifier, self.fk_changeset,
-            self.fk_status, self.version, self.previous_version,
-            self.fk_user_review, self.timestamp_review, self.comment_review)
-        )
+                '<Stakeholder> id [ %s ] | stakeholder_identifier [ %s ] | fk_changeset [ %s ] | fk_status [ %s ] | version [ %s ] | previous_version [ %s ] | fk_user_review [ %s ] | timestamp_review [ %s ] | comment_review [ %s ]' %
+                (self.id, self.stakeholder_identifier, self.fk_changeset,
+                self.fk_status, self.version, self.previous_version,
+                self.fk_user_review, self.timestamp_review, self.comment_review)
+                )
 
     def get_comments(self):
         return DBSession.query(Comment).\
@@ -471,9 +473,9 @@ class Changeset(Base):
 
     def __repr__(self):
         return (
-            '<Changeset> id [ %s ] | fk_user [ %s ] | timestamp [ %s ] | source [ %s ] | diff [ %s ]' %
-            (self.id, self.fk_user, self.timestamp, self.source, self.diff)
-        )
+                '<Changeset> id [ %s ] | fk_user [ %s ] | timestamp [ %s ] | source [ %s ] | diff [ %s ]' %
+                (self.id, self.fk_user, self.timestamp, self.source, self.diff)
+                )
 
 class Status(Base):
     __tablename__ = 'status'
@@ -501,12 +503,12 @@ class Status(Base):
 class Language(Base):
     __tablename__ = 'languages'
     __table_args__ = (
-            {'schema': 'data'}
-            )
-    id = Column(Integer, primary_key = True)
-    english_name = Column(String(255), nullable = False)
-    local_name = Column(String(255), nullable = False)
-    locale = Column(String(31), nullable = False)
+                      {'schema': 'data'}
+                      )
+    id = Column(Integer, primary_key=True)
+    english_name = Column(String(255), nullable=False)
+    local_name = Column(String(255), nullable=False)
+    locale = Column(String(31), nullable=False)
 
     a_keys = relationship('A_Key', backref='language')
     a_values = relationship('A_Value', backref='language')
@@ -521,9 +523,9 @@ class Language(Base):
 
     def __repr__(self):
         return (
-            '<Language> id [ %s ] | english_name [ %s ] | local_name [ %s ] | locale [ %s ]' %
-            (self.id, self.english_name, self.local_name, self.locale)
-        )
+                '<Language> id [ %s ] | english_name [ %s ] | local_name [ %s ] | locale [ %s ]' %
+                (self.id, self.english_name, self.local_name, self.locale)
+                )
 
 class Involvement(Base):
     __tablename__ = 'involvements'
@@ -544,10 +546,10 @@ class Involvement(Base):
 
     def __repr__(self):
         return (
-            '<Involvement> id [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ] | fk_stakeholder_role [ %s ]' %
-            (self.id, self.fk_activity, self.fk_stakeholder,
-            self.fk_stakeholder_role)
-        )
+                '<Involvement> id [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ] | fk_stakeholder_role [ %s ]' %
+                (self.id, self.fk_activity, self.fk_stakeholder,
+                self.fk_stakeholder_role)
+                )
 
 class Stakeholder_Role(Base):
     __tablename__ = 'stakeholder_roles'
@@ -593,6 +595,8 @@ class User(Base):
     __tablename__ = 'users'
     __table_args__ = (
                       ForeignKeyConstraint(['fk_institution'], ['data.institutions.id']),
+                      # Create a constraint to make sure that there is an activation uuid if the user account is not active
+                      CheckConstraint('(data.users.is_active = FALSE) = (data.users.activation_uuid IS NOT NULL)', name="data_users_activation_uuid_not_null"),
                       {'schema': 'data'}
                       )
     id = Column(Integer, primary_key=True)
@@ -602,6 +606,10 @@ class User(Base):
     firstname = Column(String(255))
     lastname = Column(String(255))
     privacy = Column(Integer, nullable=False)
+    registration_timestamp = Column(DateTime(timezone=True), nullable=False)
+    is_active = Column(Boolean, nullable=False, default=False)
+    activation_uuid = Column(UUID, nullable=True)
+    is_approved = Column(Boolean, nullable=False, default=False)
     fk_institution = Column(Integer)
 
     changesets = relationship('Changeset', backref='user')
@@ -638,7 +646,10 @@ class User(Base):
         user = cls.get_by_username(username)
         if not user:
             return False
-        return crypt.check(user.password, password)
+        # Check also if the user is activated and approved
+        active, approved = DBSession.query(cls.is_active, cls.is_approved).filter(cls.username == username).first()
+        # Return True if the password is correct and the user is active and approved
+        return (crypt.check(user.password, password) and active and approved)
 
     def set_new_password(self):
         """
@@ -657,7 +668,8 @@ class User(Base):
         return new_password
 
     def __init__(self, username, password, email, firstname=None, lastname=None,
-                 privacy=None):
+                 privacy=None, is_active=False, activation_uuid=None,
+                 is_approved=False, registration_timestamp=None):
         self.uuid = uuid.uuid4()
         self.username = username
         self.password = password
@@ -665,12 +677,16 @@ class User(Base):
         self.firstname = firstname
         self.lastname = lastname
         self.privacy = privacy if privacy is not None else 1
+        self.activation_uuid = activation_uuid
+        self.is_active = is_active
+        self.is_approved = is_approved
+        self.registration_timestamp = registration_timestamp
 
     def __repr__(self):
         return (
-            '<User> id [ %s ] | uuid [ %s ] | username [ %s ] | password [ *** ] | email [ %s ]' %
-            (self.id, self.uuid, self.username, self.email)
-        )
+                '<User> id [ %s ] | uuid [ %s ] | username [ %s ] | password [ *** ] | email [ %s ]' %
+                (self.id, self.uuid, self.username, self.email)
+                )
 
 groups_permissions = Table('groups_permissions', Base.metadata,
                            Column('id', Integer, primary_key=True),
@@ -690,7 +706,7 @@ class Group(Base):
     description = Column(Text)
 
     permissions = relationship('Permission', secondary=groups_permissions,
-        backref=backref('groups', order_by = id))
+                               backref=backref('groups', order_by=id))
 
     def __init__(self, id, name, description=None):
         self.id = id
@@ -729,8 +745,8 @@ class Profile(Base):
     id = Column(Integer, primary_key=True)
     code = Column(String(255), nullable=False, unique=True)
     geometry = GeometryColumn(
-        'polygon', Polygon(dimension=2, srid=4326, spatial_index=True)
-    )
+                              'polygon', Polygon(dimension=2, srid=4326, spatial_index=True)
+                              )
 
     activities = relationship('Activity', backref='profile')
 
@@ -781,10 +797,10 @@ class Comment(Base):
 
     def __repr__(self):
         return (
-            '<Comment> id [ %s ] | comment [ %s ] | timestamp [ %s ] | fk_user [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ]' %
-            (self.id, self.comment, self.timestamp, self.fk_user,
-            self.fk_activity, self.fk_stakeholder)
-        )
+                '<Comment> id [ %s ] | comment [ %s ] | timestamp [ %s ] | fk_user [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ]' %
+                (self.id, self.comment, self.timestamp, self.fk_user,
+                self.fk_activity, self.fk_stakeholder)
+                )
 
     def get_activity(self):
         try:
