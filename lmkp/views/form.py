@@ -1,30 +1,60 @@
 import colander
+import copy
 import deform
 import logging
 from mako.template import Template
 
 from lmkp.views.form_config import *
 
+from pyramid.httpexceptions import HTTPFound
 from pyramid.path import AssetResolver
+from pyramid.view import view_config
 
 log = logging.getLogger(__name__)
+
+@view_config(route_name='form_clear_session')
+def form_clear_session(request):
+    """
+    View that can be called to clear the session of any form-related data.
+    Then redirects to url provided as request parameter or to the home view.
+    """
+
+    # Clear the session
+    doClearFormSessionData(request)
+
+    # Redirect to provided url
+    url = request.params.get('url', None)
+    if url is not None:
+        return HTTPFound(location=url)
+
+    # Else redirect home
+    return HTTPFound(request.route_url('/'))
 
 def renderForm(request, itemType, itemJson=None):
 
     # TODO: Get this from request or somehow
     lang = 'fr' # So far, it doesn't matter what stands here
 
+    session = request.session
+
+    log.debug('Session before processing the form: %s' % session)
+
+    # Define the initial categories of the form
     oldCategory = None
-    newCategory = 2 # Initial category
+    newCategory = 2
 
     # Use a different template rendering engine (mako instead of chameleon)
     deform.Form.set_default_renderer(mako_renderer)
 
+    # Check if anything was submitted at all. If so, remember which category was
+    # the one submitted.
+    formSubmit = False
     if request.POST != {}:
-        # Something was submitted
+        formSubmit = True
         for p in request.POST:
             if p == 'category':
                 oldCategory = request.POST[p]
+                break
     
     # Get the configuration of the categories (as defined in the config yaml)
     configCategoryList = getCategoryList(request, itemType, lang)
@@ -36,16 +66,15 @@ def renderForm(request, itemType, itemJson=None):
         key=lambda cat: cat.order):
         categoryListButtons.append((cat.getId(), cat.getName()))
 
-
     captured = None
     formHasErrors = False
 
-    # Check if something was submitted already
+    # Handle form submission
     for p in request.POST:
         if p.startswith('step_') or p == 'submit':
-            # A click was made on one of the category buttons or the final
-            # submit button. Try to validate the submitted form data. For this,
-            # a form is required with the same category that was submitted.
+            # Do a validation of the submitted form data. To do this, it is
+            # necessary to recreate a form with the same category that was
+            # submitted.
 
             # Prepare the form with the submitted category
             oldschema = addHiddenFields(colander.SchemaNode(colander.Mapping()))
@@ -60,17 +89,46 @@ def renderForm(request, itemType, itemJson=None):
                 captured = form.validate(request.POST.items())
 
             except deform.ValidationFailure as e:
-                # The submitted values could not be validated. Render the same 
-                # form again (with error messages) but return it later.
+                # The submitted values contains errors. Render the same form
+                # again with error messages. It will be returned later.
                 html = e.render()
                 formHasErrors = True
 
             if formHasErrors is False:
-                # If the form data is valid, store it in the session.
+                # The form is valid, store the captured data in the session.
 
-                # TODO
-                print "****** CAPTURED *****"
-                print captured
+                log.debug('Data captured by the form: %s' % captured)
+
+                if 'activity' in session:
+                    # There is already some data in the session.
+                    sessionActivity = session['activity']
+                    if (captured['id'] == sessionActivity['id']
+                        and captured['version'] == sessionActivity['version']
+                        and oldCategory in captured):
+                        # It is the same item as already in the session, add or
+                        # overwrite the form data.
+                        updatedCategory = captured[oldCategory]
+                        sessionActivity[oldCategory] = updatedCategory
+
+                        log.debug('Updated session item: Category %s' % oldCategory)
+
+                    else:
+                        # A different item is already in the session. It will be
+                        # overwriten.
+                        if 'category' in captured:
+                            del(captured['category'])
+                        session['activity'] = captured
+
+                        log.debug('Replaced session item')
+
+                else:
+                    # No data is in the session yet. Store the captured data
+                    # there.
+                    if 'category' in captured:
+                        del(captured['category'])
+                    session['activity'] = captured
+
+                    log.debug('Added session item')
 
                 if p.startswith('step_'):
                     # A button with a next category was clicked, set a new
@@ -82,11 +140,27 @@ def renderForm(request, itemType, itemJson=None):
                     # The final submit button was clicked. Calculate the diff,
                     # delete the session data and redirect to a confirm page.
 
-                    # TODO
-                    # Redirect
-                    print "*** redirect"
+                    if 'activity' in session:
+                        formdata = copy.copy(session['activity'])
+
+                        # TODO: Do the actual POST request to create/update the
+                        # stuff.
+
+                        log.debug('The complete formdata as in the session: %s' % formdata)
+
+                        diff = formdataToDiff(request, formdata, itemType)
+
+                        log.debug('The diff to create/update the item: %s' % diff)
+
+                        # Clear the session
+                        doClearFormSessionData(request)
+
+                        feedbackMessage = 'Form submitted! (well, actually not yet)'
+                    else:
+                        feedbackMessage = 'Nothing submitted (something went wrong)'
+
                     return {
-                        'form': 'Form submitted!',
+                        'form': feedbackMessage,
                         'css_links': [],
                         'js_links': [],
                         'categories': 'cat_list'
@@ -104,25 +178,114 @@ def renderForm(request, itemType, itemJson=None):
         buttons = getFormButtons(request, categoryListButtons, newCategory)
         form = deform.Form(newschema, buttons=buttons)
 
-        # If there was an item provided to show in the form (to edit), get the
-        # data of this item to populate the form.
-        if itemJson is not None:
+        # The form contains empty data by default
+        data = {'category': newCategory}
+
+        # Decide which data to show in the form
+        if itemJson is not None and 'activity' not in session:
+            # An item was provided to show in the form (edit form) and no values
+            # are in the session yet.
+            # Simply show the data of the provided item in the form.
             data = getFormdataFromItemjson(request, itemJson, itemType,
                 newCategory)
+        elif itemJson is not None and 'activity' in session:
+            # An item was provided to show in the form (edit form) and there are
+            # some values in the session.
+
+            sessionActivity = copy.copy(session['activity'])
+
+            if (itemJson['id'] == sessionActivity['id']
+                and itemJson['version'] == sessionActivity['version']):
+                # The item in the session and the item provided are the same.
+                if str(newCategory) in sessionActivity:
+                    # The current category of the form is already in the session
+                    # so we display this data.
+                    sessionActivity['category'] = newCategory
+                    data = sessionActivity
+                else:
+                    # The current category of the form is not yet in the session
+                    # so we use the data of the itemjson to populate the form.
+                    data = getFormdataFromItemjson(request, itemJson, itemType,
+                        newCategory)
+                if formSubmit is False:
+                    # If the form is rendered for the first time, inform the
+                    # user that session was used.
+                    session.flash('Unsaved data of this item was found in the session. You may continue to edit this form.<br/><a href="/form/clearsession?url=%s">Click here to delete the session data to clear the form.</a>' % request.url)
+
+            else:
+                # The item in the session is not the same as the item provided.
+                # Use the itemjson to populate the form
+                data = getFormdataFromItemjson(request, itemJson, itemType,
+                    newCategory)
+
+                # Inform the user that there is data in the session.
+                item_name = (sessionActivity['id'][:6]
+                    if sessionActivity['id'] != colander.null
+                    else 'New Activity')
+                if sessionActivity['id'] != colander.null:
+                    item_url = request.route_url('activities_read_one',
+                        output='form', uid=sessionActivity['id'])
+                else:
+                    item_url = request.route_url('activities_read_many',
+                        output='form')
+                session.flash('Unsaved data from another form (item: %s) was found in the session and will be deleted if you edit this form.<br/><a href="%s">Click here to see the other item and submit it.</a>' % (item_name, item_url))
+
+        elif itemJson is None and 'activity' in session:
+            # No item was provided (create form) but some data was found in the
+            # session.
+
+            if (session['activity']['id'] != colander.null
+                and session['activity']['version'] != colander.null):
+                # The item in the session is not new. Show empty form data 
+                # (already defined) and inform the user.
+                item_name = (session['activity']['id'][:6]
+                    if session['activity']['id'] != colander.null
+                    else 'Unknown Activity')
+                if session['activity']['id'] != colander.null:
+                    item_url = request.route_url('activities_read_one',
+                        output='form', uid=session['activity']['id'])
+                else:
+                    item_url = request.route_url('activities_read_many',
+                        output='form')
+                session.flash('Unsaved data from another form (item: %s) was found in the session and will be deleted if you edit this form.<br/><a href="%s">Click here to see the other item and submit it.</a>' % (item_name, item_url))
+
+            else:
+                # Use the data in the session to populate the form.
+                sessionActivity = copy.copy(session['activity'])
+                sessionActivity['category'] = newCategory
+                data = sessionActivity
+                if formSubmit is False:
+                    # If the form is rendered for the first time, inform the
+                    # user that session was used.
+                    session.flash('Unsaved data of this item was found in the session. You may continue to edit this form.<br/><a href="/form/clearsession?url=%s">Click here to delete the session data to clear the form.</a>' % request.url)
+        
         else:
+            # No itemjson and no sessionitem, do nothign (empty data already defined above)
             # If there is no existing item, show the form with empty data
-            data = {}
+            pass # Empty data already defined above
+
+        log.debug('Data used to populate the form: %s' % data)
 
         html = form.render(data)
 
     # Add JS and CSS requirements (for widgets)
     resources = form.get_widget_resources()
 
+    log.debug('Session after processing the form: %s' % session)
+
     return {
         'form': html,
         'css_links': resources['css'],
         'js_links': resources['js']
     }
+
+def doClearFormSessionData(request):
+    """
+    Function to clear the session of any form-related data.
+    """
+    # Clear the session of any form data
+    if 'activity' in request.session:
+        del(request.session['activity'])
 
 def addHiddenFields(schema):
     """
@@ -173,7 +336,7 @@ def getFormButtons(request, categorylist, currentCategory=None):
     buttons.append(deform.Button('submit', _('Submit'), css_class='formsubmit'))
     return buttons
 
-def getFormdataFromItemjson(request, itemJson, itemType, category):
+def getFormdataFromItemjson(request, itemJson, itemType, category=None):
     """
     Use the JSON representation of a feature (Activity or Stakeholder) to get
     the values in a way the form can handle to display it. This can be used to
@@ -263,14 +426,14 @@ def getFormdataFromItemjson(request, itemJson, itemType, category):
             # can be added
             # Add the category only if the category is to be visible in the
             # current form.
-            if category is not None and cat == str(category):
+            if category is None or cat == str(category):
                 data[cat] = {thmg: {tgid: tagsdata}}
 
     log.debug('Formdata created by ItemJSON: %s' % data)
     
     return data
 
-def formdataToDiff(request, newform, itemType, category):
+def formdataToDiff(request, newform, itemType, category=None):
     """
     Use the formdata captured on submission of the form and compare it with the
     old version of an object to create a diff which allows to create/update the
@@ -348,7 +511,7 @@ def formdataToDiff(request, newform, itemType, category):
 
     if 'category' in newform:
         # Category should be the same as parameter in function
-        if newform['category'] != category:
+        if category is not None and newform['category'] != category:
             log.debug('NOT THE SAME CATEGORIES: %s vs %s' % (newform['category'], category))
         del newform['category']
 

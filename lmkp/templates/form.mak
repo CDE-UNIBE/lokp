@@ -22,6 +22,17 @@
     </head>
 
     <body>
+
+        % if request.session.peek_flash():
+            <div class="formFlashNotice">
+                % for message in request.session.pop_flash():
+                    <p>
+                        <% context.write(message) %>
+                    </p>
+                % endfor
+            </div>
+        % endif
+
         <div id="form">
             <% context.write(form) %>
         </div>
