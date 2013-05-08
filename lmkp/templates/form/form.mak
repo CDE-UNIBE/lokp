@@ -4,7 +4,6 @@
     method="${field.method}"
     enctype="multipart/form-data"
     accept-charset="utf-8"
-    i18n:domain="deform"
     % if field.css_class:
         class=${field.css_class}
     % endif
@@ -27,14 +26,14 @@
       
         % if field.error:
             <li class="errorLi">
-                <h3 class="errorMsgLbl"
-                    i18n:translate=""
-                >There was a problem with your submission</h3>
-                <p class="errorMsg"
-                   i18n:translate=""
-                >Errors have been highlighted below</p>
+                <h3 class="errorMsgLbl">
+                    ${_("There was a problem with your submission")}
+                </h3>
+                <p class="errorMsg">
+                    ${_("Errors have been highlighted below")}
+                </p>
                 % if field.errormsg:
-                    <p class="errorMsg">${field.errormsg}</p>
+                    <p class="errorMsg">${_(field.errormsg)}</p>
                 % endif
             </li>
         % endif

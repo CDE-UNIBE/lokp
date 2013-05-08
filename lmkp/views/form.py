@@ -8,9 +8,12 @@ from lmkp.views.form_config import *
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.path import AssetResolver
+from pyramid.threadlocal import get_current_request
 from pyramid.view import view_config
 
 log = logging.getLogger(__name__)
+
+lmkpAssetResolver = AssetResolver('lmkp')
 
 @view_config(route_name='form_clear_session')
 def form_clear_session(request):
@@ -162,8 +165,7 @@ def renderForm(request, itemType, itemJson=None):
                     return {
                         'form': feedbackMessage,
                         'css_links': [],
-                        'js_links': [],
-                        'categories': 'cat_list'
+                        'js_links': []
                     }
 
             break
@@ -772,7 +774,11 @@ def mako_renderer(tmpl_name, **kw):
     It seems to be necessary to locate the templates by using the asset
     resolver.
     """
-    lmkp = AssetResolver('lmkp')
-    resolver = lmkp.resolve('templates/form/%s.mak' % tmpl_name)
+    resolver = lmkpAssetResolver.resolve('templates/form/%s.mak' % tmpl_name)
     template = Template(filename=resolver.abspath())
+
+    # Make the translation method (_) available in the templates.
+    request = get_current_request()
+    kw['_'] = request.translate
+
     return template.render(**kw)

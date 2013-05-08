@@ -5,6 +5,7 @@ from pyramid.events import BeforeRender
 from pyramid.events import NewRequest
 from pyramid.events import subscriber
 from pyramid.i18n import TranslationStringFactory
+from pyramid.i18n import TranslationString
 from pyramid.i18n import get_localizer
 from pyramid.security import authenticated_userid
 from pyramid.security import effective_principals
@@ -12,6 +13,8 @@ from pyramid.security import effective_principals
 log = getLogger(__name__)
 
 tsf = TranslationStringFactory('lmkp')
+tsf_deform = TranslationStringFactory('deform')
+tsf_colander = TranslationStringFactory('colander')
 
 @subscriber(BeforeRender)
 def add_renderer_globals(event):
@@ -33,7 +36,34 @@ def add_localizer(event):
     request = event.request
     localizer = get_localizer(request)
     def auto_translate(string):
-        return localizer.translate(tsf(string))
+        # Try to translate the string within the 'lmkp' domain.
+        translation = localizer.translate(tsf(string))
+        if (isinstance(string, TranslationString)
+            and translation != string.interpolate()
+            or not isinstance(string, TranslationString)
+            and translation != string):
+            return translation
+
+        # If no translation found, try to translate the domain within the
+        # 'deform' domain.
+        translation = localizer.translate(tsf_deform(string))
+        if (isinstance(string, TranslationString)
+            and translation != string.interpolate()
+            or not isinstance(string, TranslationString)
+            and translation != string):
+            return translation
+
+        # If no translation found, try to translate the domain within the
+        # 'colander' domain.
+        translation = localizer.translate(tsf_colander(string))
+        if (isinstance(string, TranslationString)
+            and translation != string.interpolate()
+            or not isinstance(string, TranslationString)
+            and translation != string):
+            return translation
+
+        # If no translation was found, return the string as it is.
+        return string
     request.localizer = localizer
     request.translate = auto_translate
 
