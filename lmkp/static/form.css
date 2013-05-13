@@ -52,6 +52,27 @@ div.formFlashNotice {
     padding: 0 10px;
 }
 
+div#create-new-stakeholder {
+    display: none;
+}
+
+div#new-stakeholder-buttons {
+    padding: 10px;
+}
+
+div#select-existing-stakeholder {
+    display: none;
+}
+
+div#stakeholderformcontainer {
+    background-color: lightgoldenrodyellow;
+}
+
+input.readonly {
+    background-color: #E8E8E8 !important;
+    border: 1px solid #B5BCC7 !important;
+}
+
 /* NUMBER SPINNER */
 .ui-spinner {
 	position:relative;

@@ -213,10 +213,11 @@ class ActivityProtocol3(Protocol):
                 ids.append(a)
 
                 # Append the diffs
-                if ret_diff is None:
-                    activity_diffs.append(self._convert_utf8(activity))
-                else:
-                    activity_diffs.append(activity)
+                activity_diffs.append(activity)
+#                if ret_diff is None:
+#                    activity_diffs.append(self._convert_utf8(activity))
+#                else:
+#                    activity_diffs.append(activity)
 
         if len(ids) > 0:
             # At least one Activity was created

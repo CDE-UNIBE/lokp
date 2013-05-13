@@ -61,7 +61,7 @@ def read_many(request):
         # This is used to display a new and empty form for an Activity
         return render_to_response(
             'lmkp:templates/form.mak',
-            renderForm(request, 'activities', None),
+            renderForm(request, 'activities'),
             request
         )
     elif output_format == 'geojson':
@@ -207,7 +207,7 @@ def read_one(request):
                     if str(a['version']) == version:
                         return render_to_response(
                             'lmkp:templates/form.mak',
-                            renderForm(request, 'activities', a),
+                            renderForm(request, 'activities', itemJson=a),
                             request
                         )
         return HTTPNotFound()

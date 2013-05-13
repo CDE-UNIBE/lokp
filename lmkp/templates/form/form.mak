@@ -70,7 +70,7 @@
 % if field.use_ajax:
     <script type="text/javascript">
         deform.addCallback(
-            '${formid}',
+            '${field.formid}',
             function(oid) {
                 var target = '#' + oid;
                 var options = {
@@ -81,7 +81,7 @@
                         deform.focusFirstInput(target);
                     }
                };
-               var extra_options = ${ajax_options} || {};
+               var extra_options = ${field.ajax_options} || {};
                $('#' + oid).ajaxForm($.extend(options, extra_options));
             }
         );
