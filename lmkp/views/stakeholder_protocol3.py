@@ -95,11 +95,8 @@ class StakeholderProtocol3(Protocol):
                 ids.append(sh)
 
                 # Append the diffs
-                if ret_diff is None:
-                    stakeholder_diffs.append(self._convert_utf8(stakeholder))
-                else:
-                    stakeholder_diffs.append(stakeholder)
-
+                stakeholder_diffs.append(stakeholder)
+                
         if len(ids) > 0:
             # At least one Stakeholder was created
             changeset_diff = {'stakeholders': stakeholder_diffs}
