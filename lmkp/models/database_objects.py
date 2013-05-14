@@ -607,9 +607,9 @@ class User(Base):
     lastname = Column(String(255))
     privacy = Column(Integer, nullable=False)
     registration_timestamp = Column(DateTime(timezone=True), nullable=False)
-    is_active = Column(Boolean, nullable=False, default=False)
+    is_active = Column(Boolean, nullable=False, server_default='FALSE')
     activation_uuid = Column(UUID, nullable=True)
-    is_approved = Column(Boolean, nullable=False, default=False)
+    is_approved = Column(Boolean, nullable=False, server_default='FALSE')
     fk_institution = Column(Integer)
 
     changesets = relationship('Changeset', backref='user')
