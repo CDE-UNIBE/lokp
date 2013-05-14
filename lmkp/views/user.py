@@ -5,6 +5,7 @@ import deform
 from lmkp.models.database_objects import Group
 from lmkp.models.database_objects import Profile
 from lmkp.models.database_objects import User
+from lmkp.models.database_objects import users_groups
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.profile import _processProfile
 from lmkp.views.views import BaseView
@@ -21,6 +22,7 @@ from pyramid.security import has_permission
 from pyramid.view import view_config
 import re
 from sqlalchemy import and_
+from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound
 import uuid
 
@@ -206,13 +208,23 @@ class UserView(BaseView):
         "firstname": user.firstname,
         "lastname": user.lastname,
         "email": user.email,
+        "profiles": ",".join([p.code for p in user.profiles]),
         "approval_link": "http://%s/users/approve?user=%s&name=%s" % (self.request.environ['HTTP_HOST'], user.uuid, user.username)
         }
 
-        # Send an email to the responsible moderator
+        # Send an email to all administrators, needs to be adapted later to
+        # the responsible moderator
         email_text = render('lmkp:templates/emails/approval.mak', approval_dict, request=self.request)
 
-        self._send_email(["adrian.weber@cde.unibe.ch", "lo-admin@cde.unibe.ch"],
+        # A list with email addresses the email is sent to
+        email_addresses = []
+
+        # Get all users with administrators privileges
+        for admin_user in Session.query(User).join(users_groups).join(Group).filter(func.lower(Group.name) == 'administrators'):
+            email_addresses.append(admin_user.email)
+
+        # Send the email
+        self._send_email(email_addresses,
                          "The Land Observatory: User %s requests approval" % user.username,
                          email_text)
 
@@ -238,7 +250,7 @@ class UserView(BaseView):
         user.is_approved = True
 
         # Return the username to the template
-        return { "username": user_username }
+        return {"username": user_username}
 
     @view_config(route_name='user_account', renderer='lmkp:templates/user_account.mak', permission='edit')
     def account(self):
