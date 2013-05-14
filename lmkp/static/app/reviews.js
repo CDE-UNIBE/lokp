@@ -14,6 +14,12 @@ Ext.require('Lmkp.store.ReviewDecisions');
 Ext.require('Lmkp.view.login.Toolbar');
 
 Ext.onReady(function(){
+
+    /**
+     * This is probably not needed anymore!
+     */
+    console.log("Don't delete me!!!");
+
     var loadingMask = Ext.get('loading-mask');
     loadingMask.fadeOut({
         duration: 1000,

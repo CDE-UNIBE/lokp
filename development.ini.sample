@@ -19,10 +19,29 @@ lmkp.admin_email = info@cde.unibe.ch
 lmkp.use_js_builds = false
 lmkp.comments_url = http://localhost:3000/
 
+; Specify the parameters for file upload
+; Upload directory, maximum file size, allowed mime-types and file extensions.
+lmkp.file_upload_dir = /files
+lmkp.file_upload_max_size = 5120 ; in kilobytes, default is 5120 (5 MB)
+lmkp.file_mime_extensions = {
+    image/jpeg .jpg
+    image/png .png
+    image/gif .gif
+    }
+
 ; Specify the smtp server used to send mails.
 ; See also http://packages.python.org/pyramid_mailer/ for more options
 mail.host = smtp.example.com
 mail.default_sender = info@example.com
+
+; TODO: Documentation of these settings
+# pyramid_beaker settings
+session.type = file
+session.data_dir = %(here)s/data/sessions/data
+session.lock_dir = %(here)s/data/sessions/lock
+session.key = somekey
+session.secret = somesecret
+session.cookie_on_exception = true
 
 ; Specify the running mode of the application if desired
 ; lmkp.mode = demo

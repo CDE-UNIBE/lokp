@@ -20,8 +20,10 @@ from lmkp.models.database_objects import Stakeholder
 from lmkp.models.database_objects import Stakeholder_Role
 from lmkp.models.database_objects import Status
 from lmkp.views.config import merge_profiles
+from lmkp.views.files import check_file_location_name
 from lmkp.models.database_objects import User
 from shapely import wkb
+from shapely.geometry import mapping as asGeoJSON
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import between
@@ -36,6 +38,8 @@ from pyramid.security import effective_principals
 from pyramid.i18n import get_localizer
 from lmkp.views.review import BaseReview
 import json
+import geojson
+from shapely.geometry import asShape
 
 from lmkp.views.translation import statusMap
 from lmkp.views.translation import get_translated_status
@@ -956,7 +960,6 @@ class Protocol(object):
         """
 
 #        print "============================================="
-
 #        log.debug("diff:\n%s" % diff)
 
         if mappedClass == Activity:
@@ -995,6 +998,10 @@ class Protocol(object):
         tg_ids = []
         for db_taggroup in db_taggroup_query:
 
+            # Remember if the main tag of a taggroup was deleted. In this case
+            # we will set it again at the end
+            maintag_deleted = False
+
             tg_ids.append(db_taggroup.tg_id)
 
             #TODO: clean up! Also make sure it works for all cases
@@ -1013,6 +1020,9 @@ class Protocol(object):
             taggroupadded = False
             if db is True:
                 new_taggroup = Db_Tag_Group(db_taggroup.tg_id)
+                if mappedClass == Activity:
+                    # Copy the old geometry of the taggroup (even if 'none')
+                    new_taggroup.geometry = db_taggroup.geometry
             else:
                 new_taggroup = TagGroup(tg_id = db_taggroup.tg_id)
 
@@ -1030,16 +1040,48 @@ class Protocol(object):
                     for taggroup_dict in diff['taggroups']:
                         if ('tg_id' in taggroup_dict and
                             taggroup_dict['tg_id'] == db_taggroup.tg_id):
+
+                            # Overwrite the geometry of the taggroup if it is
+                            # set
+                            if ('geometry' in taggroup_dict
+                                and mappedClass == Activity and db is True):
+                                tg_geom_diff = taggroup_dict['geometry']
+                                if tg_geom_diff == {}:
+                                    # Empty geometry: Set it to 'none'
+                                    new_taggroup.geometry = None
+                                else:
+                                    tg_geom = geojson.loads(json.dumps(tg_geom_diff),
+                                        object_hook = geojson.GeoJSON.to_instance)
+                                    try:
+                                        # Make sure it is a valid type
+                                        tg_shape = asShape(tg_geom)
+                                        geometrytype = tg_shape.geom_type
+                                    except:
+                                        raise HTTPBadRequest(detail="Invalid geometry type of taggroup")
+                                    # Store the geometry only if it is a polygon
+                                    # or multipolygon
+                                    if (geometrytype == 'Polygon'
+                                        or geometrytype == 'MultiPolygon'):
+                                        new_taggroup.geometry = tg_shape.wkt
+                                    else:
+                                        raise HTTPBadRequest(detail='Invalid geometry type of taggroup: Only Polygon or MultiPolygon is supported.')
+
                             # Check which tags we have to edit
                             for tag_dict in taggroup_dict['tags']:
-                                #TODO
-                                if 1 == 1:
-                                    # Yes, it is THIS tag
-                                    if tag_dict['op'] == 'delete':
-#                                        log.debug(
-#                                            "Tag is deleted (not copied) from taggroup."
-#                                        )
-                                        copy_tag = False
+                                # Make sure it is exactly this tag (same key)
+                                # and it is to be deleted.
+                                if (tag_dict['op'] == 'delete'
+                                    and db_tag.key.key and tag_dict['key']
+                                    and db_tag.key.key == tag_dict['key']):
+                                    
+#                                    log.debug(
+#                                        "Tag is deleted (not copied) from taggroup."
+#                                    )
+
+                                    if db_taggroup.main_tag == db_tag:
+                                        maintag_deleted = True
+
+                                    copy_tag = False
 
                 # Create and append the new tag only if requested
                 if copy_tag:
@@ -1135,6 +1177,13 @@ class Protocol(object):
                                 and len(new_taggroup.get_tags()) > 0
                                 and taggroupadded is False):
                                 item.add_taggroup(new_taggroup)
+
+            # If the main tag was deleted and no new one was set, we will simply
+            # use the first tag as a new main tag.
+            if (maintag_deleted is True and new_taggroup.main_tag is None
+                and len(new_taggroup.tags) > 0):
+                new_taggroup.main_tag = new_taggroup.tags[0]
+
 
         # Finally new tag groups (without id) need to be added
         # (and loop all again)
@@ -1546,6 +1595,12 @@ class Protocol(object):
                     first()
                 lang_fk = language.id if language is not None else 1
 
+            # FILES!
+            # Check if the files need to be moved (from temporary directory) or
+            # renamed
+            if key == 'Files':
+                check_file_location_name(request, value)
+
             v = Value_Item(value=value)
             v.fk_language = lang_fk
 
@@ -1607,6 +1662,8 @@ class TagGroup(object):
         # List to store the tags
         self._tags = []
         self._diffFlag = None
+        # Geometry (only used for Activity TagGroups)
+        self._geometry = None
 
     def add_tag(self, tag):
         """
@@ -1623,6 +1680,9 @@ class TagGroup(object):
 
     def get_tg_id(self):
         return self._tg_id
+
+    def get_maintag_id(self):
+        return self._main_tag_id
 
     def get_tag_by_key(self, key):
         """
@@ -1649,6 +1709,9 @@ class TagGroup(object):
     def getDiffFlag(self):
         return self._diffFlag
 
+    def set_geometry(self, geometry):
+        self._geometry = geometry
+
     def to_table(self):
         """
         Returns a JSON compatible representation of this object
@@ -1660,12 +1723,22 @@ class TagGroup(object):
             if t.get_id() == self._main_tag_id:
                 main_tag = t.to_table()
 
-        return {
+        ret = {
             'id': self._id,
             'tg_id': self._tg_id,
             'main_tag': main_tag,
             'tags': tags
         }
+
+        # Geometry
+        if self._geometry is not None:
+            try:
+                geom = wkb.loads(str(self._geometry.geom_wkb))
+                ret['geometry'] = asGeoJSON(geom)
+            except:
+                pass
+
+        return ret
 
 class Inv(object):
 
@@ -1753,19 +1826,19 @@ class Feature(object):
 
     def find_involvement_by_guid(self, guid):
         for i in self._involvements:
-            if (i.get_guid() == guid):
+            if (str(i.get_guid()) == str(guid)):
                 return i
         return None
 
     def find_involvement_by_role(self, guid, role):
         for i in self._involvements:
-            if (i.get_guid() == guid and i.get_role() == role):
+            if (str(i.get_guid()) == str(guid) and i.get_role() == role):
                 return i
         return None
 
     def find_involvement(self, guid, role, version):
         for i in self._involvements:
-            if (i.get_guid() == guid and i.get_role() == role and
+            if (str(i.get_guid()) == str(guid) and i.get_role() == role and
                 i.get_version() == version):
                 return i
         return None

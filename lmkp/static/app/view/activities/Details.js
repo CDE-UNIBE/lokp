@@ -7,7 +7,7 @@ Ext.define('Lmkp.view.activities.Details', {
 
     centerPanelType: 'lo_activitypanel',
 
-    commentPanelType: 'lo_commentpanel',
+//    commentPanelType: 'lo_commentpanel',
     
     config: {
         centerPanel: null,

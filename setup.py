@@ -28,11 +28,13 @@ requires = [
     'PyYAML==3.10',
     'Chameleon==2.8.5',
     'recaptcha-client==1.0.6',
-    'requests==1.1.0'
+    'requests==1.1.0',
+    'deform==0.9.7',
+    'pyramid_beaker==0.7'
     ]
 
 setup(name='LMKP',
-      version='0.31',
+      version='0.4',
       description='The Land Matrix Knowledge Platform',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[

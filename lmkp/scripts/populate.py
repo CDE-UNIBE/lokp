@@ -1,26 +1,21 @@
-import os
 import sys
-import transaction
-
-from sqlalchemy import engine_from_config
-from sqlalchemy.orm.exc import NoResultFound
-
-from pyramid.paster import (
-    get_appsettings,
-    setup_logging,
-    )
-
-from ..models.meta import (
-    DBSession,
-    Base,
-    )
 
 from ..models.database_objects import *
+from ..models.meta import Base
+from ..models.meta import DBSession
+from datetime import datetime
+import os
+from pyramid.paster import get_appsettings
+from pyramid.paster import setup_logging
+from sqlalchemy import engine_from_config
+from sqlalchemy.orm.exc import MultipleResultsFound
+from sqlalchemy.orm.exc import NoResultFound
+import transaction
 
 def usage(argv):
     cmd = os.path.basename(argv[0])
     print('usage: %s <config_uri>\n'
-          '(example: "%s development.ini")' % (cmd, cmd)) 
+          '(example: "%s development.ini")' % (cmd, cmd))
     sys.exit(1)
 
 def main(argv=sys.argv):
@@ -90,10 +85,11 @@ def main(argv=sys.argv):
         # stakeholder roles
         sh_role6 = _addIfNotExists_ID(Stakeholder_Role(id=6, name='Investor'))
         # permissions
-        permission1 = _addIfNotExists_ID(Permission(id=1, name='administer', description='Can add key/values and edit translations.'))
+        permission1 = _addIfNotExists_ID(Permission(id=1, name='administer', description='Can add key/values and do batch translations.'))
         permission2 = _addIfNotExists_ID(Permission(id=2, name='moderate', description='Can make review decisions on reported information.'))
         permission3 = _addIfNotExists_ID(Permission(id=3, name='edit', description='Can report information.'))
         permission4 = _addIfNotExists_ID(Permission(id=4, name='view', description='Can see information. (basic permission - granted to everyone)'))
+        permission5 = _addIfNotExists_ID(Permission(id=5, name='translate', description='Can add and modify translations.'))
         # groups (with permissions)
         group1 = _addIfNotExists_ID(Group(id=1, name='administrators'))
         group1.permissions.append(permission1)
@@ -106,11 +102,19 @@ def main(argv=sys.argv):
         group3 = _addIfNotExists_ID(Group(id=3, name='editors'))
         group3.permissions.append(permission3)
         group3.permissions.append(permission4)
+        group4 = _addIfNotExists_ID(Group(id=4, name='translators'))
+        group4.permissions.append(permission5)
         # users (only 1 admin user)
         admin_password = settings['lmkp.admin_password']
         admin_email = settings['lmkp.admin_email']
-        user1 = _addIfNotExists_NoIDUnique(User(username='admin', password=admin_password, email=admin_email), User.username, 'admin')
-        user1.groups = [group1, group2, group3]
+        user1 = _addIfNotExists_NoIDUnique(User(username='admin',
+                                           password=admin_password,
+                                           email=admin_email,
+                                           is_active=True,
+                                           is_approved=True,
+                                           registration_timestamp=datetime.now()), User.username, 'admin')
+        if user1 is not None:
+            user1.groups = [group1, group2, group3, group4]
         # connected with profile1 (global)
         #user2 = _addIfNotExists_NoIDUnique(User(username='user2', password='pw', email='user2@cde.unibe.ch'), User.username, 'user2')
         #user2.groups.append(group2)
@@ -119,7 +123,8 @@ def main(argv=sys.argv):
         #user3.groups.append(group3)
         # Profile
         profile1 = _addIfNotExists_NoIDUnique(Profile(code='global', geometry=None), Profile.code, 'global')
-        profile1.users = [user1] #, user2]
+        if profile1 is not None:
+            profile1.users = [user1] #, user2]
 
         # institution_types
         it1 = _addIfNotExists_ID(Institution_Type(id=1, name='CSO'))
@@ -140,3 +145,5 @@ def _addIfNotExists_NoIDUnique(object, filterColumn, filterAttr):
         return q
     except NoResultFound:
         return object
+    except MultipleResultsFound:
+        return None
