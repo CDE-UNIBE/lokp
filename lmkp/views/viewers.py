@@ -25,7 +25,8 @@ def view_toolbar_config(request):
 
     # Link to login form
     str += "Lmkp.login_form = { border: false, xtype: 'toolbar', items: [\n"
-    str += "{href: '/login', hrefTarget: '', text: '%s', xtype: 'button'}]};\n" % _(u"Login")
+    str += "{href: '/login', hrefTarget: '', text: '%s', xtype: 'button'},\n" % _(u"Login")
+    str += "{href: '/users/register', hrefTarget: '', text: '%s', xtype: 'button'}]};\n" % _(u"Register")
 
     # The current profile extent.
     str += "Lmkp.currentProfileExtent = %s" % _getCurrentProfileExtent(request)
