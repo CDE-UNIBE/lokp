@@ -1,6 +1,7 @@
 __author__ = "Adrian Weber, Centre for Development and Environment, University of Bern"
 __date__ = "$Nov 20, 2012 4:05:40 PM$"
 
+from lmkp.config import check_valid_uuid
 from lmkp.models.database_objects import Stakeholder
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.review import BaseReview
@@ -8,7 +9,6 @@ from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.config import get_mandatory_keys
 import logging
 import json
-import re
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPSeeOther
@@ -33,10 +33,7 @@ class StakeholderReview(BaseReview):
         uid = self.request.matchdict.get('uid', None)
 
         # Check if uid is valid
-        uuid4hex = re.compile('[0-9a-f-]{36}\Z', re.I)
-        validUid = uuid4hex.match(uid) is not None
-
-        if validUid:
+        if check_valid_uuid(uid) is True:
             c = Session.query(Stakeholder).\
                 filter(Stakeholder.stakeholder_identifier == uid).\
                 count()

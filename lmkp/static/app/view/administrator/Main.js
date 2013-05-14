@@ -3,16 +3,16 @@ Ext.define('Lmkp.view.administrator.Main', {
     alias: ['widget.lo_administratorpanel'],
 
     requires: [
-    'Lmkp.store.ActivityYamlScan',
-    'Lmkp.store.StakeholderYamlScan',
-    'Lmkp.view.administrator.CodeTab',
-    'Lmkp.view.administrator.UserManagement',
-    'Lmkp.view.administrator.YamlScan'
+        'Lmkp.store.ActivityYamlScan',
+        'Lmkp.store.StakeholderYamlScan',
+        'Lmkp.view.administrator.CodeTab',
+        'Lmkp.view.administrator.UserManagement',
+        'Lmkp.view.administrator.YamlScan',
+        'Lmkp.view.administrator.OverviewTab'
     ],
 
     frame: false,
     border: 0,
-
     defaults: {
         border: 0,
         frame: false
@@ -20,27 +20,41 @@ Ext.define('Lmkp.view.administrator.Main', {
 
     initComponent: function(){
 
+        // Create and load stores
         var stakeholderStore = Ext.create('Lmkp.store.StakeholderYamlScan');
         var activityStore = Ext.create('Lmkp.store.ActivityYamlScan');
 
         var items = [
-        {
-            postUrl: '/config/add/activities', // Also used to decide if A or SH
-            store: activityStore,
-            title: 'Activities',
-            xtype: 'lo_administratoryamlscanpanel'
-        },{
-            postUrl: '/config/add/stakeholders', // Also used to decide if A or SH
-            store: stakeholderStore,
-            title: 'Stakeholders',
-            xtype: 'lo_administratoryamlscanpanel'
-        },{
-            title: 'Codes',
-            xtype: 'lo_administratorcodetab'
-        },{
-            title: 'Add User',
-            xtype: 'lo_usermanagementpanel'
-        }];
+            {
+                xtype: 'lo_administratoroverviewtab'
+            }, {
+                xtype: 'lo_administratoryamlscanpanel',
+                title: Lmkp.ts.msg('activities_attributes'),
+                type: 'activity',
+                store: activityStore
+            }, {
+                xtype: 'lo_administratoryamlscanpanel',
+                title: Lmkp.ts.msg('stakeholders_attributes'),
+                type: 'stakeholder',
+                store: stakeholderStore
+            }, {
+                title: Lmkp.ts.msg('administration_languages'),
+                xtype: 'panel',
+                bodyPadding: 5,
+                html: 'Coming soon ... List of all languages, posibility to add (remove?) new ones.'
+            }, {
+                title: Lmkp.ts.msg('administration_batch-translation'),
+                xtype: 'lo_administratorcodetab'
+            }, {
+                title: Lmkp.ts.msg('administration_profiles'),
+                xtype: 'panel',
+                bodyPadding: 5,
+                html: 'Coming soon ... List of all profiles, possibility to add (remove?) new ones. Maybe even possibility to edit geometry?'
+            }, {
+                title: Lmkp.ts.msg('administration_user-management'),
+                xtype: 'lo_usermanagementpanel'
+            }
+        ];
 
         this.items = items;
 

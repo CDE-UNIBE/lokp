@@ -1,5 +1,8 @@
 import logging
+import mimetypes
 
+from lmkp.config import upload_max_file_size
+from lmkp.config import valid_mime_extensions
 from lmkp.models.database_objects import A_Key
 from lmkp.models.database_objects import A_Value
 from lmkp.models.database_objects import Language
@@ -18,32 +21,33 @@ _ = TranslationStringFactory('lmkp')
 
 # Translatable hashmap with all possible statuses
 statusMap = {
-    'pending': _('status_pending', default='pending'),
-    'active': _('status_active', default='active'),
-    'inactive': _('status_inactive', default='inactive'),
-    'deleted': _('status_deleted', default='deleted'),
-    'rejected': _('status_rejected', default='rejected'),
-    'edited': _('status_edited', default='edited')
+    'pending': _('pending'),
+    'active': _('active'),
+    'inactive': _('inactive'),
+    'deleted': _('deleted'),
+    'rejected': _('rejected'),
+    'edited': _('edited')
 }
 
 # Translatable hashmap with all possible statuses
 reviewdecisionMap = {
-    'approved': _('reviewdecision_approved', default='approved'),
-    'rejected': _('reviewdecision_rejected', default='rejected')
+    'approved': _('approved'),
+    'rejected': _('rejected')
 }
 
 # Translatable hashmap with all possible user groups
 usergroupMap = {
-    'editors': _('usergroup_editors', default='Editors'),
-    'moderators': _('usergroup_moderators', default='Moderators'),
-    'administrators': _('usergroup_administrators', default='Administrators')
+    'editors': _('Editors'),
+    'moderators': _('Moderators'),
+    'administrators': _('Administrators'),
+    'translators': _('Translators')
 }
 
 # Translatable hashmap with all possible user roles
 # TODO: Once the involvements attributes are properly solved using YAML or
 # something similar, the translation of the roles should not happen here anymore
 stakeholderroleMap = {
-    'Investor': _('stakeholderrole_investor', default='Investor')
+    'Investor': _('Investor')
 }
 
 @view_config(route_name='ui_translation', renderer='javascript')
@@ -54,7 +58,7 @@ def ui_messages(request):
     # Add new messages to this dict!
     uiMap = {
         # Status
-        'status_name': _('status_name', default='Status'),
+        'status_name': _('Status'),
         'status_pending': statusMap['pending'],
         'status_active': statusMap['active'],
         'status_inactive': statusMap['inactive'],
@@ -70,190 +74,242 @@ def ui_messages(request):
         'usergroup_editors': usergroupMap['editors'],
         'usergroup_moderators': usergroupMap['moderators'],
         'usergroup_administrators': usergroupMap['administrators'],
+        'usergroup_translators': usergroupMap['translators'],
 
         # Buttons
-        'button_add-attribute-filter': _('button_add-attribute-filter', default='Add attribute filter'),
-        'button_add-new-tag': _('button_add-new-tag', default='Add more specific information'),
-        'button_add-new-taggroup': _('button_add-new-taggroup', default='Add further information'),
-        'button_add-time-filter': _('button_add-time-filter', default='Add time filter'),
-        'button_back': _('button_back', default='Back'),
-        'button_cancel': _('button_cancel', default='Cancel'),
-        'button_clear': _('button_clear', default='Clear'),
-        'button_close': _('button_close', default='Close'),
-        'button_compare': _('button_compare', default='Compare'),
-        'button_continue': _('button_continue', default='Continue'),
-        'button_delete': _('button_delete', default='Delete'),
-        'button_edit': _('button_edit', default='Edit'),
-        'button_filter-activate': _('button_filter-activate', default='Activate'),
-        'button_filter-delete': _('button_filter-delete', default='Delete'),
-        'button_link': _('button_link', default='Link'),
-        'button_map_base-layers': _('button_map_base-layers', default='Base Layers'),
-        'button_map_context-layers': _('button_map_context-layers', default='Context Layers'),
-        'button_map_satellite-map': _('button_map_satellite-map', default='Satellite Imagery'),
-        'button_map_show-legend': _('button_map_show-legend', default='Show Legend'),
-        'button_map_street-map': _('button_map_street-map', default='Street Map'),
-        'button_map_terrain-map': _('button_map_terrain-map', default='Terrain Map'),
-        'button_next': _('button_next', default='Next'),
-        'button_no': _('button_no', default='No'),
-        'button_ok': _('button_ok', default='OK'),
-        'button_refresh': _('button_refresh', default='Refresh'),
-        'button_review': _('button_review', default='Review'),
-        'button_submit': _('button_submit', default='Submit'),
-        'button_yes': _('button_yes', default='Yes'),
+        'button_add-attribute-filter': _('Add attribute filter'),
+        'button_add-new-tag': _('Add more specific information'),
+        'button_add-new-taggroup': _('Add further information'),
+        'button_add-time-filter': _('Add time filter'),
+        'button_back': _('Back'),
+        'button_browse': _('Browse'),
+        'button_cancel': _('Cancel'),
+        'button_clear': _('Clear'),
+        'button_close': _('Close'),
+        'button_compare': _('Compare'),
+        'button_continue': _('Continue'),
+        'button_delete': _('Delete'),
+        'button_edit': _('Edit'),
+        'button_filter-activate': _('Activate'),
+        'button_filter-delete': _('Delete'),
+        'button_link': _('Link'),
+        'button_map_base-layers': _('Base Layers'),
+        'button_map_context-layers': _('Context Layers'),
+        'button_map_satellite-map': _('Satellite Imagery'),
+        'button_map_show-legend': _('Show Legend'),
+        'button_map_street-map': _('Street Map'),
+        'button_map_terrain-map': _('Terrain Map'),
+        'button_next': _('Next'),
+        'button_no': _('No'),
+        'button_ok': _('OK'),
+        'button_refresh': _('Refresh'),
+        'button_review': _('Review'),
+        'button_save': _('Save'),
+        'button_submit': _('Submit'),
+        'button_upload': _('Upload'),
+        'button_yes': _('Yes'),
 
         # Tooltips
-        'tooltip_add-attribute-filter': _('tooltip_add-attribute-filter', default='Add a filter based on attribute'),
-        'tooltip_add-time-filter': _('tooltip_add-time-filter', default='Add a filter based on time'),
-        'tooltip_compare': _('tooltip_compare', default='Compare'),
-        'tooltip_close-window': _('tooltip_close-window', default='Close Window'),
-        'tooltip_filter-activate': _('tooltip_filter-activate', default='Click to activate this filter'),
-        'tooltip_filter-delete': _('tooltip_filter-delete', default='Click to delete this filter'),
-        'tooltip_link': _('tooltip_link', default='Permament link to current view'),
-        'tooltip_map_identify-feature': _('tooltip_map_identify-feature', default='Identify Feature'),
-        'tooltip_map_pan': _('tooltip_map_pan', default='Pan'),
-        'tooltip_map_zoom-in': _('tooltip_map_zoom-in', default='Zoom In'),
-        'tooltip_map_zoom-out': _('tooltip_map_zoom-out', default='Zoom Out'),
-        'tooltip_map_zoom-to-profile-region': _('tooltip_map_zoom-to-profile-region', default='Zoom to Profile Region'),
-        'tooltip_missing-mandatory-key': _('tooltip_missing-mandatory-key', default='Missing mandatory key!'),
-        'tooltip_not-all-attributes-shown': _('tooltip_not-all-attributes-shown', default='It is possible that not all attributes are shown here!'),
-        'tooltip_refresh': _('tooltip_refresh', default='Refresh'),
-        'tooltip_remove-stakeholder': _('tooltip_remove-stakeholder', default='Remove this stakeholder'),
-        'tooltip_review': _('tooltip_review', default='Review'),
-        'tooltip_review-involvement-not-possible': _('tooltip_review-involvement-not-possible', default='Involvement can not be reviewed. Click for more information.'),
-        'tooltip_review-involvement-possible': _('tooltip_review-involvement-possible', default='Involvement can be reviewed'),
-        'tooltip_submit-review': _('tooltip_submit-review', default='Submit Review'),
+        'tooltip_add-attribute-filter': _('Add a filter based on attribute'),
+        'tooltip_add-time-filter': _('Add a filter based on time'),
+        'tooltip_close-window': _('Close Window'),
+        'tooltip_compare': _('Compare'),
+        'tooltip_delete-file': _('Delete file'),
+        'tooltip_download-file': _('Download file'),
+        'tooltip_edit-file': _('Edit file'),
+        'tooltip_filter-activate': _('Click to activate this filter'),
+        'tooltip_filter-delete': _('Click to delete this filter'),
+        'tooltip_link': _('Permament link to current view'),
+        'tooltip_map_identify-feature': _('Identify Feature'),
+        'tooltip_map_pan': _('Pan'),
+        'tooltip_map_zoom-in': _('Zoom In'),
+        'tooltip_map_zoom-out': _('Zoom Out'),
+        'tooltip_map_zoom-to-profile-region': _('Zoom to Profile Region'),
+        'tooltip_missing-mandatory-key': _('Missing mandatory key!'),
+        'tooltip_not-all-attributes-shown': _('It is possible that not all attributes are shown here!'),
+        'tooltip_refresh': _('Refresh'),
+        'tooltip_remove-stakeholder': _('Remove this stakeholder'),
+        'tooltip_review': _('Review'),
+        'tooltip_review-involvement-not-possible': _('Involvement can not be reviewed. Click for more information.'),
+        'tooltip_review-involvement-possible': _('Involvement can be reviewed'),
+        'tooltip_submit-review': _('Submit Review'),
+        'tooltip_upload-new-file': _('Upload a new file'),
+        'tooltip_view-file': _('View file'),
 
         # General GUI text
-        'gui_anonymous': _('gui_anonymous', default='Anonymous'),
-        'gui_clear-selection': _('gui_clear-selection', default='Clear Selection'),
-        'gui_confirm': _('gui_confirm', default='Please confirm'),
-        'gui_currently-seeing-pending-version': _('gui_currently-seeing-pending-version', default='You are seeing a {0} version, which needs to be reviewed before it is publicly visible'),
-        'gui_currently-seeing-inactive-version': _('gui_currently-seeing-inactive-version', default='You are seeing an {0} version, which was previously active and publicly visible.'),
-        'gui_currently-seeing-deleted-version': _('gui_currently-seeing-deleted-version', default='You are seeing a {0} version, which was previously active and publicly visible.'),
-        'gui_currently-seeing-rejected-version': _('gui_currently-seeing-rejected-version', default='You are seeing a {0} version, which was never publicly visible.'),
-        'gui_currently-seeing-edited-version': _('gui_currently-seeing-edited-version', default='You are seeing an {0} version, which was edited by a moderator and was never publicly visible.'),
-        'gui_date': _('gui_date', default='Date'),
-        'gui_last-change': _('gui_last-change', default='Last change'),
-        'gui_delete-all-filters': _('gui_delete-all-filters', default='Delete all Filters'),
-        'gui_details': _('gui_details', default='Details'),
-        'gui_filter-count': _('gui_filter-count', default='Filter ({0} active)'),
-        'gui_history': _('gui_history', default='History'),
-        'gui_id': _('gui_id', default='ID'),
-        'gui_language': _('gui_language', default='Language'),
-        'gui_loading': _('gui_loading', default='Loading ...'),
-        'gui_no-attributes': _('gui_no-attributes', default='No attributes to show'),
-        'gui_overview': _('gui_overview', default='Overview'),
-        'gui_paging-before': _('gui_paging-before', default='Page'),
-        'gui_paging-after': _('gui_paging-after', default='of {0}'),
-        'gui_previous-version': _('gui_previous-version', default='Previous Version'),
-        'gui_profile': _('gui_profile', default='Profile'),
-        'gui_search': _('gui_search', default='Search'),
-        'gui_show-details': _('gui_show-details', default='Show Details'),
-        'gui_show-pending-versions': _('gui_show-pending-versions', default='Show pending versions'),
-        'gui_taggroups': _('gui_taggroups', default='Taggroups'),
-        'gui_timestamp': _('gui_timestamp', default='Timestamp'),
-        'gui_unknown': _('gui_unknown', default='Unknown'),
-        'gui_user': _('gui_user', default='User'),
-        'gui_version': _('gui_version', default='Version'),
-        'gui_versions-pending': _('gui_versions-pending', default='Versions pending'),
+        'gui_anonymous': _('Anonymous'),
+        'gui_clear-selection': _('Clear Selection'),
+        'gui_confirm': _('Please confirm'),
+        'gui_currently-seeing-pending-version': _('You are seeing a {0} version, which needs to be reviewed before it is publicly visible.'),
+        'gui_currently-seeing-inactive-version': _('You are seeing an {0} version, which was previously active and publicly visible.'),
+        'gui_currently-seeing-deleted-version': _('You are seeing a {0} version, which was previously active and publicly visible.'),
+        'gui_currently-seeing-rejected-version': _('You are seeing a {0} version, which was never publicly visible.'),
+        'gui_currently-seeing-edited-version': _('You are seeing an {0} version, which was edited by a moderator and was never publicly visible.'),
+        'gui_date': _('Date'),
+        'gui_delete-all-filters': _('Delete all Filters'),
+        'gui_details': _('Details'),
+        'gui_filter-count': _('Filter ({0} active)'),
+        'gui_history': _('History'),
+        'gui_id': _('ID'),
+        'gui_language': _('Language'),
+        'gui_last-change': _('Last change'),
+        'gui_loading': _('Loading ...'),
+        'gui_no-attributes': _('No attributes to show'),
+        'gui_overview': _('Overview'),
+        'gui_paging-after': _('of {0}'),
+        'gui_paging-before': _('Page'),
+        'gui_please-confirm': _('Please confirm'),
+        'gui_previous-version': _('Previous Version'),
+        'gui_profile': _('Profile'),
+        'gui_search': _('Search'),
+        'gui_show-details': _('Show Details'),
+        'gui_show-pending-versions': _('Show pending versions'),
+        'gui_taggroups': _('Taggroups'),
+        'gui_timestamp': _('Timestamp'),
+        'gui_unknown': _('Unknown'),
+        'gui_user': _('User'),
+        'gui_version': _('Version'),
+        'gui_versions-pending': _('Versions pending'),
 
         # Feedback
-        'feedback_failure': _('feedback_failure', default='Failure'),
-        'feedback_information': _('feedback_information', default='Information'),
-        'feedback_new-activity-created': _('feedback_new-activity-created', default='The deal was successfully created. It will be reviewed shortly.'),
-        'feedback_new-activity-not-created': _('feedback_new-activity-not-created', default='The deal could not be created.'),
-        'feedback_new-stakeholder-created': _('feedback_new-stakeholder-created', default='The Stakeholder was successfully created. It will be reviewed shortly'),
-        'feedback_new-stakeholder-not-created': _('feedback_new-stakeholder-not-created', default='The Stakeholder could not be created.'),
-        'feedback_no-changes-made': _('feedback_no-changes-made', default='No changes made'),
-        'feedback_no-changes-made-explanation': _('feedback_no-changes-made-explanation', default='You did not make any changes.'),
-        'feedback_pending-edit-submitted': _('feedback_pending-edit-submitted', default='Edited changes were successfully submitted'),
-        'feedback_pending-edit-not-submitted': _('feedback_pending-edit-not-submitted', default='Edited changes could not be submitted'),
-        'feedback_some-attributes-not-editable-because-of-profile': _('feedback_some-attributes-not-editable-because-of-profile', default='Some of the attributes cannot be edited because they are not part of the currently selected profile.'),
-        'feedback_success': _('feedback_success', default='Success'),
+        'feedback_failure': _('Failure'),
+        'feedback_information': _('Information'),
+        'feedback_new-activity-created': _('The deal was successfully created. It will be reviewed shortly.'),
+        'feedback_new-activity-not-created': _('The deal could not be created.'),
+        'feedback_new-stakeholder-created': _('The Stakeholder was successfully created. It will be reviewed shortly.'),
+        'feedback_new-stakeholder-not-created': _('The Stakeholder could not be created.'),
+        'feedback_no-changes-made': _('No changes made'),
+        'feedback_no-changes-made-explanation': _('You did not make any changes.'),
+        'feedback_pending-edit-submitted': _('Edited changes were successfully submitted'),
+        'feedback_pending-edit-not-submitted': _('Edited changes could not be submitted'),
+        'feedback_some-attributes-not-editable-because-of-profile': _('Some of the attributes cannot be edited because they are not part of the currently selected profile.'),
+        'feedback_success': _('Success'),
 
         # Activities
-        'activities_add-new-activity': _('activities_add-new-activity', default='Add new Deal'),
-        'activities_compare-versions': _('activities_compare-versions', default='Compare versions of Deal {0}'),
-        'activities_edit-activity': _('activities_edit-activity', default='Edit Deal (version {0})'),
-        'activities_details-title': _('activities_details-title', default='Details on Deal'),
-        'activities_filter-title': _('activities_filter-title', default='Filter Deal'),
-        'activities_new-step-1': _('activities_new-step-1', default='Step 1: Please select a point on the map.'),
-        'activities_new-step-1-explanation': _('activities_new-step-1-explanation', default='You can drag and drop the point. Once you are done, click "Continue".'),
-        'activities_new-title': _('activities_new-title', default='New Deal'),
-        'activities_paging-message': _('activities_paging-message', default='Displaying Deals {0} - {1} of {2}'),
-        'activities_paging-empty': _('activities_paging-empty', default='No Deals found'),
-        'activities_pending-versions': _('activities_pending-versions', default='Pending versions of Deals'),
-        'activities_pending-paging-message': _('activities_pending-paging-message', default='Displaying pending Deals {0} - {1} of {2}'),
-        'activities_pending-paging-empty': _('activities_pending-paging-empty', default='No pending Deals to display'),
-        'activities_review-versions': _('activities_review-versions', default='Review versions of Deal {0}'),
-        'activities_title': _('activities_title', default='Deals'),
+        'activities_add-new-activity': _('Add new Deal'),
+        'activities_attributes': _('Deal Attributes'),
+        'activities_compare-versions': _('Compare versions of Deal {0}'),
+        'activities_details-title': _('Details on Deal'),
+        'activities_edit-activity': _('Edit Deal (version {0})'),
+        'activities_filter-title': _('Filter Deal'),
+        'activities_new-step-1': _('Step 1: Please select a point on the map.'),
+        'activities_new-step-1-explanation': _('You can drag and drop the point. Once you are done, click "Continue".'),
+        'activities_new-title': _('New Deal'),
+        'activities_paging-empty': _('No Deals found'),
+        'activities_paging-message': _('Displaying Deals {0} - {1} of {2}'),
+        'activities_pending-paging-empty': _('No pending Deals to display'),
+        'activities_pending-paging-message': _('Displaying pending Deals {0} - {1} of {2}'),
+        'activities_pending-versions': _('Pending versions of Deals'),
+        'activities_review-pending-versions': _('This deal has pending changes. Click to review them in a popup window.'),
+        'activities_review-versions': _('Review versions of Deal {0}'),
+        'activities_title': _('Deals'),
 
         # Involvements
-        'involvements_edit-involvement': _('involvements_edit-involvement', default='Edit this involvement'),
-        'involvements_stakeholder-role': _('involvements_stakeholder-role', default='Role'),
-        'involvements_title': _('involvements_title', default='Involvements'),
+        'involvements_edit-involvement': _('Edit this involvement'),
+        'involvements_stakeholder-role': _('Role'),
+        'involvements_title': _('Involvements'),
 
         # Stakeholders
-        'stakeholders_add-stakeholders': _('stakeholders_add-stakeholders', default='Add Stakeholders'),
-        'stakeholders_associated-stakeholders': _('stakeholders_associated-stakeholders', default='Associated Stakeholders'),
-        'stakeholders_compare-versions': _('stakeholders_compare-versions', default='Compare versions of Stakeholder {0}'),
-        'stakeholders_create-new-stakeholder': _('stakeholders_create-new-stakeholder', default='Create new Stakeholder'),
-        'stakeholders_edit-stakeholder': _('stakeholders_edit-stakeholder', default='Edit Stakeholder (version {0})'),
-        'stakeholders_details-title': _('stakeholders_details-title', default='Details on Stakeholder '),
-        'stakeholders_filter-title': _('stakeholders_filter-title', default='Filter Stakeholders'),
-        'stakeholders_no-associated-stakeholders-yet': _('stakeholders_no-associated-stakeholders-yet', default='No associated Stakeholders so far. You can search and select a Stakeholder using the Search field below. Or you can create a new Stakeholder by clicking on the button above.'),
-        'stakeholders_paging-message': _('stakeholders_paging-message', default='Displaying Stakeholders {0} - {1} of {2}'),
-        'stakeholders_paging-empty': _('stakeholders_paging-empty', default='No Stakeholders found'),
-        'stakeholders_pending-versions': _('stakeholders_pending-versions', default='Pending versions of Stakeholders'),
-        'stakeholders_pending-paging-message': _('stakeholders_pending-paging-message', default='Displaying pending Stakeholders {0} - {1} of {2}'),
-        'stakeholders_pending-paging-empty': _('stakeholders_pending-paging-empty', default='No pending Stakeholders to display'),
-        'stakeholders_review-versions': _('stakeholders_review-versions', default='Review versions of Stakeholder {0}'),
-        'stakeholders_search': _('stakeholders_search', default='Search Stakeholder'),
-        'stakeholders_select-stakeholder': _('stakeholders_select-stakeholder', default='Select Stakeholder'),
-        'stakeholders_title': _('stakeholder_title', default='Stakeholders'),
+        'stakeholders_add-stakeholders': _('Add Stakeholders'),
+        'stakeholders_associated-stakeholders': _('Associated Stakeholders'),
+        'stakeholders_attributes': _('Stakeholder Attributes'),
+        'stakeholders_compare-versions': _('Compare versions of Stakeholder {0}'),
+        'stakeholders_create-new-stakeholder': _('Create new Stakeholder'),
+        'stakeholders_details-title': _('Details on Stakeholder '),
+        'stakeholders_edit-stakeholder': _('Edit Stakeholder (version {0})'),
+        'stakeholders_filter-title': _('Filter Stakeholders'),
+        'stakeholders_no-associated-stakeholders-yet': _('No associated Stakeholders so far. You can search and select a Stakeholder using the Search field below. Or you can create a new Stakeholder by clicking on the button above.'),
+        'stakeholders_paging-empty': _('No Stakeholders found'),
+        'stakeholders_paging-message': _('Displaying Stakeholders {0} - {1} of {2}'),
+        'stakeholders_pending-paging-empty': _('No pending Stakeholders to display'),
+        'stakeholders_pending-paging-message': _('Displaying pending Stakeholders {0} - {1} of {2}'),
+        'stakeholders_pending-versions': _('Pending versions of Stakeholders'),
+        'stakeholders_review-pending-versions': _('This stakeholder has pending changes. Click to review them in a popup window.'),
+        'stakeholders_review-versions': _('Review versions of Stakeholder {0}'),
+        'stakeholders_search': _('Search Stakeholder'),
+        'stakeholders_select-stakeholder': _('Select Stakeholder'),
+        'stakeholders_title': _('Stakeholders'),
 
         # Comments
-        'comments_comment-by': _('comments_comment-by', default='Comment by'),
-        'comments_confirm-delete-comment': _('comments_confirm-delete-comment', default='Do you really want to delete this comment?'),
-        'comments_empty': _('comments_empty', default='No comments yet.'),
-        'comments_leave-comment': _('comments_leave-comment', default='Leave a comment'),
-        'comments_singular': _('comments_singular', default='Comment'),
-        'comments_title': _('comments_title', default='Comments'),
+        # TODO: Clean up if it is clear that these strings are not needed anymore.
+#        'comments_comment-by': _('comments_comment-by', default='Comment by'),
+#        'comments_confirm-delete-comment': _('comments_confirm-delete-comment', default='Do you really want to delete this comment?'),
+#        'comments_empty': _('comments_empty', default='No comments yet.'),
+#        'comments_leave-comment': _('comments_leave-comment', default='Leave a comment'),
+#        'comments_singular': _('comments_singular', default='Comment'),
+#        'comments_title': _('comments_title', default='Comments'),
+
+        # Files
+        'files_confirm-delete': _('Are your sure you want to delete the file {0}?'),
+        'files_edit-existing-file': _('Edit existing file'),
+        'files_file': _('File'),
+        'files_maximum-file-size': _('Maximum file size'),
+        'files_name': _('Name'),
+        'files_select-file': _('Select a file'),
+        'files_upload-new-file': _('Upload a new file'),
+        'files_uploading': _('Uploading ...'),
+        'files_valid-extensions': _('Valid file extensions'),
 
         # Moderator
-        'moderator_approving-creates-new-version': _('moderator_approving-creates-new-version', default='Approving this version will create a new version. (further additional information to come)'),
-        'moderator_changes-not-based-on-active': _('moderator_changes-not-based-on-active', default='These changes are based on a version which is not the active version.'),
-        'moderator_missing-mandatory-keys': _('moderator_missing-mandatory-keys', default='There are some mandatory keys missing. The item cannot be approved without these keys. Please click the "edit" button to add the missing keys.'),
-        'moderator_multiple-changes-pending': _('moderator_multiple-changes-pending', default='There are multiple changes pending! They may be conflicting.'),
-        'moderator_pending-version-title': _('moderator_pending-version-title', default='Pending version'),
-        'moderator_review-activity': _('moderator_review-activity', default='Review Activity'),
-        'moderator_review-activity-side-of-involvement-first': _('moderator_review-activity-side-of-involvement-first', default='The Activity of this involvement cannot be reviewed from the Stakeholder\'s side. Please review the Activity to approve or reject this involvement.'),
-        'moderator_review-comment': _('moderator_review-comment', default='Review Comment'),
-        'moderator_review-decision': _('moderator_review-decision', default='Review Decision'),
-        'moderator_review-not-possible': _('moderator_review-not-possible', default='Review not possible'),
-        'moderator_review-pending-changes': _('moderator_review-pending-changes', default='Review pending changes'),
-        'moderator_review-stakeholder': _('moderator_review-stakeholder', default='Review Stakeholder'),
-        'moderator_show-pending-changes': _('moderator_show-pending-changes', default='Show pending changes'),
-        'moderator_stakeholder-has-no-active-version': _('moderator_stakeholder-has-no-active-version', default='The Stakeholder of this involvement has no active version and cannot be set active. Please review the Stakeholder first.'),
+        'moderator_approving-creates-new-version': _('Approving this version will create a new version. (further additional information to come)'),
+        'moderator_changes-not-based-on-active': _('These changes are based on a version which is not the active version.'),
+        'moderator_missing-mandatory-keys': _('There are some mandatory keys missing. The item cannot be approved without these keys. Please click the "edit" button to add the missing keys.'),
+#        'moderator_multiple-changes-pending': _('moderator_multiple-changes-pending', default='There are multiple changes pending! They may be conflicting.'),
+#        'moderator_pending-version-title': _('moderator_pending-version-title', default='Pending version'),
+        'moderator_review-activity': _('Review Deal'),
+        'moderator_review-activity-side-of-involvement-first': _('The Activity of this involvement cannot be reviewed from the Stakeholder\'s side. Please review the Activity to approve or reject this involvement.'),
+        'moderator_review-comment': _('Review Comment'),
+        'moderator_review-decision': _('Review Decision'),
+        'moderator_review-not-possible': _('Review not possible'),
+        'moderator_review-pending-changes': _('Review pending changes'),
+        'moderator_review-stakeholder': _('Review Stakeholder'),
+        'moderator_show-pending-changes': _('Show pending changes'),
+        'moderator_stakeholder-has-no-active-version': _('The Stakeholder of this involvement has no active version and cannot be set active. Please review the Stakeholder first.'),
 
         # Filter
-        'filter_logical-operator': _('filter_logical-operator', default='Logical Operator'),
-        'filter_logical-operator-and': _('filter_logical-operator-and', default='and'),
-        'filter_logical-operator-or': _('filter_logical-operator-or', default='or'),
-        'filter_operator-is': _('filter_operator-is', default='is'),
-        'filter_operator-is-not': _('filter_operator-is-not', default='is not'),
-        'filter_operator-contains-case-sensitive': _('filter_operator-contains-case-sensitive', default='contains (case sensitive)'),
-        'filter_operator-contains-case-insensitive': _('filter_operator-contains-case-insensitive', default='contains (case insensitive)'),
-        'filter_operator-contains-not-case-sensitive': _('filter_operator-contains-not-case-sensitive', default='contains not (case sensitive)'),
-        'filter_operator-contains-not-case-insensitive': _('filter_operator-contains-not-case-insensitive', default='contains not (case insensitive)'),
-        'filter_operator-equals': _('filter_operator-equals', default='equals'),
-        'filter_operator-less-than': _('filter_operator-less-than', default='less than'),
-        'filter_operator-less-than-or-equal': _('filter_operator-less-than-or-equal', default='less than or equal'),
-        'filter_operator-greater-than': _('filter_operator-greater-than', default='greater than'),
-        'filter_operator-greater-than-or-equal': _('filter_operator-greater-than-or-equal', default='greater than or equal'),
-        'filter_operator-not-equals': _('filter_operator-not-equals', default='not equals'),
-        'filter_specify-number-value': _('filter_specify-number-value', default='Specify number value'),
-        'filter_specify-text-value': _('filter_specify-text-value', default='Specify value'),
+        'filter_logical-operator': _('Logical Operator'),
+        'filter_logical-operator-and': _('and'),
+        'filter_logical-operator-or': _('or'),
+        'filter_operator-contains-case-insensitive': _('contains (case insensitive)'),
+        'filter_operator-contains-case-sensitive': _('contains (case sensitive)'),
+        'filter_operator-contains-not-case-insensitive': _('contains not (case insensitive)'),
+        'filter_operator-contains-not-case-sensitive': _('contains not (case sensitive)'),
+        'filter_operator-equals': _('equals'),
+        'filter_operator-greater-than': _('greater than'),
+        'filter_operator-greater-than-or-equal': _('greater than or equal'),
+        'filter_operator-is': _('is'),
+        'filter_operator-is-not': _('is not'),
+        'filter_operator-less-than': _('less than'),
+        'filter_operator-less-than-or-equal': _('less than or equal'),
+        'filter_operator-not-equals': _('not equals'),
+        'filter_specify-number-value': _('Specify number value'),
+        'filter_specify-text-value': _('Specify value'),
+
+        # Translation
+        'translation_add-translation': _('Add translation'),
+        'translation_edit-translation': _('Edit translation'),
+        'translation_global-attribute': _('Global attribute'),
+        'translation_key-or-value': _('Key or Value'),
+        'translation_mandatory': _('Mandatory'),
+        'translation_original': _('Original'),
+        'translation_original-already-in-english': _('Original is already in English'),
+        'translation_translation': _('Translation'),
+
+        # Administration
+        'administration_add-all-to-database': _('Add all to Database'),
+        'administration_batch-translation': _('Batch translation'),
+        'administration_is-in-database': _('Is in Database'),
+        'administration_languages': _('Languages'),
+        'administration_profiles': _('Profiles'),
+        'administration_user-management': _('User management'),
+
+        # Input validations. These validations are defined in the YAML. In order
+        # for them to be translateable, they need to appear here.
+        'input-validation_date-format': _('dd.mm.YYYY'),
+        'input-validation_invalid-date': _('{0} is not a valid date - it must be in the format {1}'),
+        'input-validation_number-greater-than-0': _('This number must be greater than 0'),
+        'input-validation_percentage': _('Percentage must be between 0 and 100'),
+        'input-validation_year': _('The year must be a number value between 1900 and 2100'),
     }
 
     # Get the localizer
@@ -288,7 +344,10 @@ def ui_messages(request):
         'Country',                  # 2
         'Intended area (ha)',       # 3
         'Intention of Investment',  # 4
-        'Data source'               # 5
+        'Data source',              # 5
+        # Not needed for table but for special rendering of files tags
+        # The files also appear in protocol.py around line 1548 ...
+        'Files'                     # 6
     ]
     aKeysTranslateQuery = get_translated_db_keys(A_Key, aKeys, db_lang)
     aKeysTranslated = []
@@ -313,6 +372,8 @@ def ui_messages(request):
     uiMap['activity_db-key-intentionofinvestment'] = aKeysTranslated[4]
     uiMap['activity_db-key-datasource-original'] = aKeys[5]
     uiMap['activity_db-key-datasource'] = aKeysTranslated[5]
+    # For 'files', only the translated db-key is needed
+    uiMap['activity_db-key-files'] = aKeys[6]
 
     # Stakeholder keys: Must be exactly (!) the same as in global
     # stakeholder.yml
@@ -337,6 +398,24 @@ def ui_messages(request):
     uiMap['stakeholder_db-key-name'] = shKeysTranslated[0]
     uiMap['stakeholder_db-key-countryoforigin-original'] = shKeys[1]
     uiMap['stakeholder_db-key-countryoforigin'] = shKeysTranslated[1]
+
+    # Add known file extensions based on valid file types (defined in ini) to
+    # the translation JavaScript file so Ext can use them to build a regex
+    # expression to check file input on client side.
+    extensions = []
+    vme = valid_mime_extensions(request)
+    for fme in vme:
+        for known_extension in mimetypes.guess_all_extensions(fme):
+            if known_extension not in extensions: extensions.append(known_extension)
+    uiMap['files_valid-extensions-list'] = sorted(extensions)
+
+    # Also make the maximum file size available
+    maxfilesize = upload_max_file_size(request)
+    if maxfilesize < (1024*1024):
+        maxfilesize = '%s KB' % (maxfilesize / 1024)
+    else:
+        maxfilesize = '%s MB' % round(maxfilesize / (1024*1024.0), 1)
+    uiMap['files_maximum-size'] = maxfilesize
 
     # Define Lmkp.ts as class with static objects
     str = "Ext.define('Lmkp.ts',{\n"
@@ -371,10 +450,13 @@ def language_store(request):
     ret['total'] = len(langs)
     return ret
 
-@view_config(route_name='edit_translation', renderer='json', permission='administer')
+@view_config(route_name='edit_translation', renderer='json', permission='translate')
 def edit_translation(request):
+
+    _ = request.translate
+
     success = False
-    msg = 'Translation not successful'
+    msg = _('Translation not successful')
     if 'original' and 'translation' and 'language' and 'keyvalue' and 'item_type' in request.params:
         # find language
         language = Session.query(Language).filter(Language.locale == request.params['language']).all()
@@ -395,7 +477,7 @@ def edit_translation(request):
                         # translation found, just update it.
                         oldTranslation[0].key = request.params['translation']
                         success = True
-                        msg = 'Updated translation (<b>%s</b> for key <b>%s</b>.' % (request.params['translation'], request.params['original'])
+                        msg = _('Updated translation')
                     else:
                         # no translation available yet, add it to DB
                         translation = Key(request.params['translation'])
@@ -403,7 +485,7 @@ def edit_translation(request):
                         translation.language = language[0]
                         Session.add(translation)
                         success = True
-                        msg = 'Added translation (<b>%s</b>) for key <b>%s</b>.' % (request.params['translation'], request.params['original'])
+                        msg = _('Added translation')
                 else:
                     msg = 'Original key not found' # should never happen
             if request.params['keyvalue'] == 'value':
@@ -422,7 +504,7 @@ def edit_translation(request):
                         # translation found, just update it.
                         oldTranslation[0].value = request.params['translation']
                         success = True
-                        msg = 'Updated translation (<b>%s</b>) for value <b>%s</b>.' % (request.params['translation'], request.params['original'])
+                        msg = _('Updated translation')
                     else:
                         # no translation available yet, add it to DB
                         translation = Value(request.params['translation'])
@@ -430,7 +512,7 @@ def edit_translation(request):
                         translation.language = language[0]
                         Session.add(translation)
                         success = True
-                        msg = 'Added translation (<b>%s</b>) for value <b>%s</b>.' % (request.params['translation'], request.params['original'])
+                        msg = _('Added translation')
                 else:
                     msg = 'Original value not found' # should never happen
         else:

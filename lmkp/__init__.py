@@ -13,9 +13,11 @@ from lmkp.views.errors import forbidden_view
 from lmkp.views.errors import notfound_view
 import papyrus
 from pyramid.authorization import ACLAuthorizationPolicy
+from pyramid_beaker import session_factory_from_settings
 from pyramid.config import Configurator
 from pyramid.events import BeforeRender
 from pyramid.events import NewRequest
+from pyramid.settings import aslist
 from sqlalchemy import engine_from_config
 import transaction
 
@@ -25,6 +27,17 @@ def main(global_config, ** settings):
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
 
+    # Transform the list of valid file mime extensions from the ini file into a
+    # python dict.
+    # http://pyramid.readthedocs.org/en/latest/narr/environment.html#adding-a-custom-setting
+    file_mime_extensions = {}
+    for fme in aslist(settings.get('lmkp.file_mime_extensions', {}), False):
+        fme_entry = fme.split(' ')
+        if len(fme_entry) != 2:
+            continue
+        file_mime_extensions[fme_entry[0]] = fme_entry[1]
+    settings['lmkp.file_mime_extensions'] = file_mime_extensions
+
     _update_admin_user(DBSession, settings)
 
     # Authentiaction policy
@@ -32,13 +45,22 @@ def main(global_config, ** settings):
     # Authorization policy
     authzPolicy = ACLAuthorizationPolicy()
 
+    session_factory = session_factory_from_settings(settings)
+
     config = Configurator(settings=settings,
-                          root_factory='lmkp.models.rootfactory.RootFactory')
+                          root_factory='lmkp.models.rootfactory.RootFactory',
+                          session_factory=session_factory)
     config.set_authentication_policy(authnPolicy)
     config.set_authorization_policy(authzPolicy)
 
+    config.include('pyramid_beaker')
+    
     # Add the directory that includes the translations
-    config.add_translation_dirs('lmkp:locale/')
+    config.add_translation_dirs(
+        'lmkp:locale/',
+        'colander:locale/',
+        'deform:locale/'
+    )
 
     # Add event subscribers
     config.add_subscriber(add_renderer_globals, BeforeRender)
@@ -56,6 +78,7 @@ def main(global_config, ** settings):
     #config.add_renderer('geojson', GeoJSON())
     config.add_renderer('geojson', GeoJsonRenderer())
     config.add_static_view('static', 'static', cache_max_age=3600)
+    config.add_static_view('formstatic', 'deform:static')
     config.add_route('index', '/')
     config.add_route('administration', '/administration')
     config.add_route('login', '/login', request_method='POST')
@@ -63,7 +86,8 @@ def main(global_config, ** settings):
     config.add_route('reset', '/reset', request_method='POST')
     config.add_route('reset_form', '/reset', request_method='GET')
     config.add_route('logout', '/logout')
-    config.add_route('db_test', '/db_test')
+
+    config.add_route('translation', '/translation')
 
     # Embedded start page
     config.add_route('embedded_index', '/embedded/{profile}')
@@ -77,6 +101,7 @@ def main(global_config, ** settings):
     config.add_route('yaml_add_stakeholder_fields', '/config/add/stakeholders')
 
     config.add_route('config', '/config/form/{parameter}')
+    config.add_route('config_geomtaggroups', '/config/geometrytaggroups')
 
     # Manage sample values and tests
     config.add_route('sample_values', '/sample_values/insert')
@@ -186,6 +211,17 @@ def main(global_config, ** settings):
     # Tests (not intended for public)
     config.add_route('moderation_tests', '/moderation/ug6uWaef2')
 
+    """
+    Files
+    """
+    # Upload a file
+    config.add_route('file_upload', '/files/upload', request_method='POST')
+    # Show or download a file
+    config.add_route('file_view', '/files/{action}/{identifier}')
+
+    """
+    Translation
+    """
     # A controller that returns the translation needed in the ExtJS user interface
     config.add_route('ui_translation', '/lang')
     # Return a json with all available languages from DB
@@ -211,6 +247,11 @@ def main(global_config, ** settings):
     config.add_route('user_update', '/users/update', request_method='POST')
     # Add a new user
     config.add_route('add_user', '/users/add', request_method='POST')
+
+    config.add_route('user_self_registration', '/users/register')
+    config.add_route('user_activation', '/users/activate')
+    config.add_route('user_account', '/users/account')
+    config.add_route('user_approve', '/users/approve')
 
     # Codes
     config.add_route('codes_files', '/codes/files')

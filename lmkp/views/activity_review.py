@@ -1,6 +1,7 @@
 __date__ = "$Nov 20, 2012 4:05:32 PM$"
 
 from geoalchemy import functions
+from lmkp.config import check_valid_uuid
 from lmkp.models.database_objects import Activity
 from lmkp.models.database_objects import Profile
 from lmkp.models.meta import DBSession as Session
@@ -9,7 +10,6 @@ from lmkp.views.config import get_mandatory_keys
 from lmkp.views.review import BaseReview
 import logging
 import json
-import re
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPNotFound
@@ -34,10 +34,7 @@ class ActivityReview(BaseReview):
         uid = self.request.matchdict.get('uid', None)
 
         # Check if uid is valid
-        uuid4hex = re.compile('[0-9a-f-]{36}\Z', re.I)
-        validUid = uuid4hex.match(uid) is not None
-
-        if validUid:
+        if check_valid_uuid(uid) is True:
             c = Session.query(Activity).\
                 filter(Activity.activity_identifier == uid).\
                 count()

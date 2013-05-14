@@ -1422,7 +1422,7 @@ class StakeholderProtocol3(Protocol):
                 # yes, set the main_tag attribute to this tag
                 try:
                     if (sh_tag.key.key == main_tag_key
-                        and sh_tag.value.value == main_tag_value):
+                        and sh_tag.value.value == str(main_tag_value)):
                         db_tg.main_tag = sh_tag
                 except AttributeError:
                     pass

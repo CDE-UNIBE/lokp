@@ -425,6 +425,33 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                 var html = "";
                 for(var i = 0; i < value.tags.length; i++){
                     var tag = value.tags[i];
+                    var v = tag.value;
+
+                    // FILES
+                    // Tags with key == 'Files' need to be rendered separately
+                    if (tag.key && tag.key == Lmkp.ts.msg('activity_db-key-files')) {
+                        var values = tag.value.split(',');
+                        v = '';
+                        for (var tv in values) {
+                            var cv = values[tv].split('|');
+                            if (cv.length == 2) {
+                                var filename = cv[0];
+                                var identifier = cv[1];
+                                // Show the filename
+                                v += filename;
+                                // Show a link to view the file
+                                var view_url = '/files/view/' + identifier;
+                                var view_title = Lmkp.ts.msg('tooltip_view-file');
+                                v += '&nbsp;<a class="file-view-button" title="' + view_title + '" href="' + view_url + '" target="_blank">&nbsp;</a>'
+                                // Show a link to download the file
+                                var download_url = 'files/download/' + identifier;
+                                var download_title = Lmkp.ts.msg('tooltip_download-file');
+                                v += '&nbsp;<a class="file-download-button" title="' + download_title + '" href="' + download_url + '" target="_blank">&nbsp;</a>'
+                                v += '</br>';
+                            }
+                        }
+                    }
+
                     var prefix = "";
                     if(value['class'] == 'add' || value['class'] == 'add involvement'){
                         prefix += "+ ";
@@ -434,7 +461,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
                     	prefix += '? ';
                     	metaData.tdAttr = 'data-qtip="' + Lmkp.ts.msg('tooltip_missing-mandatory-key') + '"';
                     }
-                    html += "<div>" + prefix + tag.key + ": " + tag.value + "</div>";
+                    html += "<div>" + prefix + tag.key + ": " + v + "</div>";
                 }
                 if (value['class'] == 'add involvement'
                     || value['class'] == 'remove involvement') {

@@ -292,8 +292,15 @@ class ActivityProtocol3(Protocol):
         # Order the Activity by version
         query = query.order_by(desc(Activity.version))
 
-        activities = self._query_to_activities(request, query,
-                                               involvements=inv_details, public_query=public)
+        # Taggroup geometry
+        full_geometry = request.params.get('geometry', False)
+        if full_geometry is not False:
+            full_geometry = full_geometry.lower() == 'full'
+
+        activities = self._query_to_activities(
+            request, query, involvements=inv_details, public_query=public,
+            geom=full_geometry
+        )
 
         return {
             'total': count,
@@ -492,7 +499,7 @@ class ActivityProtocol3(Protocol):
 
         # If logged in and it is not a public query, add pending versions by
         # current user to selection. This is not necessary for moderators
-        # because they already see all pending versions
+        # because they already see all pending versions (see * below)
         if logged_in and public_query is False and not is_moderator:
 
             request_user_id = (request.user.id if request.user is not None
@@ -517,6 +524,19 @@ class ActivityProtocol3(Protocol):
                 outerjoin(order_query, order_query.c.id == Activity.id)
 
             relevant_activities = pending_activities.union(relevant_activities)
+
+        if is_moderator:
+            # * For moderators, it is important to filter out pending Activities
+            # based on the spatial extent of the moderator's profile. Otherwise,
+            # moderators could see pending Activities in another profile.
+            relevant_activities = relevant_activities.\
+                filter(or_(
+                    not_(Activity.fk_status == 1),
+                    and_(
+                        Activity.fk_status == 1,
+                        self._get_spatial_moderator_filter(request)
+                    )
+                ))
 
         # Join Activities with Tag Groups and order_query, then group it
         relevant_activities = relevant_activities.\
@@ -1263,7 +1283,13 @@ class ActivityProtocol3(Protocol):
         return query
 
     def _query_to_activities(self, request, query, involvements='none',
-                             public_query=False):
+                             public_query=False, **kwargs):
+
+        geom = kwargs.get('geom', False)
+        if geom is True:
+            query = query.add_columns(
+                A_Tag_Group.geometry.label('tg_geometry')
+            )
 
         logged_in, is_moderator = self._get_user_status(
                                                         effective_principals(request))
@@ -1321,6 +1347,9 @@ class ActivityProtocol3(Protocol):
                 taggroup = activity.find_taggroup_by_id(taggroup_id)
             else:
                 taggroup = TagGroup(taggroup_id, q.tg_id, q.main_tag)
+                # Set the taggroup geometry if available
+                if geom is True and q.tg_geometry is not None:
+                    taggroup.set_geometry(q.tg_geometry)
                 activity.add_taggroup(taggroup)
 
             # Because of Involvements, the same Tags appears for each
@@ -1630,17 +1659,25 @@ class ActivityProtocol3(Protocol):
         if ('geometry' in activity_dict and activity_dict['geometry']
             is not None):
             geom = geojson.loads(json.dumps(activity_dict['geometry']),
-                                 object_hook=geojson.GeoJSON.to_instance)
+                             object_hook=geojson.GeoJSON.to_instance)
 
             # The geometry
             shape = asShape(geom)
+
+            try:
+                geometrytype = shape.geom_type
+            except:
+                raise HTTPBadRequest(detail="Invalid geometry type, needs to be a point")
+
+#            if geometrytype != 'Point':
+#                raise HTTPBadRequest(detail="Wrong geometry type, needs to be a point")
+
             # Create a new activity and add representative point to the activity
             new_activity = Activity(activity_identifier=identifier,
                                     version=version, point=shape.representative_point().wkt)
         else:
-            # If no geometry is submitted, create new activity without geometry
-            new_activity = Activity(activity_identifier=identifier,
-                                    version=version)
+            # Activities cannot be created if they do not have a geometry
+            raise HTTPBadRequest(detail="No geometry provided!")
 
         # Status (default: 'pending')
         status = 'pending'
@@ -1709,10 +1746,29 @@ class ActivityProtocol3(Protocol):
                 # yes, set the main_tag attribute to this tag
                 try:
                     if (a_tag.key.key == main_tag_key
-                        and a_tag.value.value == main_tag_value):
+                        and a_tag.value.value == str(main_tag_value)):
                         db_tg.main_tag = a_tag
                 except AttributeError:
                     pass
+
+            # If available, try to handle the geometry of a taggroup
+            try:
+                tg_geom_diff = taggroup['geometry']
+                tg_geom = geojson.loads(json.dumps(tg_geom_diff),
+                             object_hook=geojson.GeoJSON.to_instance)
+                # The geometry
+                try:
+                    tg_shape = asShape(tg_geom)
+                    geometrytype = tg_shape.geom_type
+                except:
+                    raise HTTPBadRequest(detail="Invalid geometry type of taggroup")
+                # Store the geometry only if it is a polygon or multipolygon
+                if geometrytype == 'Polygon' or geometrytype == 'MultiPolygon':
+                    db_tg.geometry = tg_shape.wkt
+                else:
+                    raise HTTPBadRequest(detail="Invalid geometry type of taggroup: Only Polygon or MultiPolygon is supported.")
+            except KeyError:
+                pass
 
         return new_activity
 

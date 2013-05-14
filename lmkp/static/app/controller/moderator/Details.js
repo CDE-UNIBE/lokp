@@ -52,7 +52,7 @@ Ext.define('Lmkp.controller.moderator.Details', {
                     items: [
                         '->', {
                             text: Lmkp.ts.msg('moderator_review-pending-changes'),
-                            tooltip: 'This item has pending changes. Click to review them in a popup window.',
+                            tooltip: Lmkp.ts.msg('activities_review-pending-versions'),
                             handler: function() {
                                 var record = store.first();
                                 if (record) {
@@ -85,7 +85,7 @@ Ext.define('Lmkp.controller.moderator.Details', {
                     items: [
                         '->', {
                             text: Lmkp.ts.msg('moderator_review-pending-changes'),
-                            tooltip: 'This item has pending changes. Click to review them in a popup window.',
+                            tooltip: Lmkp.ts.msg('stakeholders_review-pending-versions'),
                             handler: function() {
                                 var record = store.first();
                                 if (record) {
