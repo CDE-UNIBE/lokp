@@ -212,7 +212,7 @@ class UserView(BaseView):
         # Send an email to the responsible moderator
         email_text = render('lmkp:templates/emails/approval.mak', approval_dict, request=self.request)
 
-        self._send_email(["adrian.weber@cde.unibe.ch", "info@landobservatory.org"],
+        self._send_email(["adrian.weber@cde.unibe.ch", "lo-admin@cde.unibe.ch"],
                          "The Land Observatory: User %s requests approval" % user.username,
                          email_text)
 
