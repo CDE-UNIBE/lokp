@@ -310,17 +310,45 @@ Ext.define('Lmkp.controller.public.Main', {
         }
     },
 
+    /**
+     * Show a dialog window to inform the user that he has to specify the
+     * location of the deal first. This can be either done directly on the map
+     * or by entering coordinates in a separate window.
+     */
     onNewActivityButtonClick: function() {
-        var me = this;
-        var infoWindow = Ext.create('Lmkp.utils.MessageBox');
-        infoWindow.alert(
-            Lmkp.ts.msg('activities_new-title'),
-            Lmkp.ts.msg('activities_new-step-1'),
-            function() {
-                var editorMapController = me.getController('editor.Map');
-                editorMapController.clickAddLocationButton();
-            }
-        );
+        var editorMapController = this.getController('editor.Map');
+        var win = Ext.create('Ext.window.Window', {
+            title: Lmkp.ts.msg('activities_new-title'),
+            layout: 'fit',
+            width: 300,
+            items: [
+                {
+                    xtype: 'panel',
+                    html: '<b>' + Lmkp.ts.msg('activities_new-step-1-part-1') + '</b><br/>'
+                        + Lmkp.ts.msg('activities_new-step-1-part-2'),
+                    border: 0,
+                    bodyPadding: 5
+                }
+            ],
+            bbar: [
+                {
+                    xtype: 'button',
+                    text: Lmkp.ts.msg('mappoints_select-on-map'),
+                    handler: function() {
+                        win.close();
+                        editorMapController.clickAddLocationButton();
+                    }
+                }, '->', {
+                    xtype: 'button',
+                    text: Lmkp.ts.msg('mappoints_enter-coordinates'),
+                    handler: function() {
+                        win.close();
+                        editorMapController.showCoordinatesWindow();
+                    }
+                }
+            ]
+        });
+        win.show();
     },
 
     /**

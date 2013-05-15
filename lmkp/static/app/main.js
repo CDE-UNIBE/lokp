@@ -6,6 +6,7 @@ Ext.require('Ext.form.field.Checkbox');
 Ext.require('Ext.form.field.ComboBox');
 Ext.require('Ext.form.field.File');
 Ext.require('Ext.form.field.Hidden');
+Ext.require('Ext.form.field.Radio');
 Ext.require('Ext.form.Label');
 Ext.require('Ext.form.Panel');
 Ext.require('Ext.fx.*');

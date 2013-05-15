@@ -192,7 +192,8 @@ def ui_messages(request):
         'activities_details-title': _('Details on Deal'),
         'activities_edit-activity': _('Edit Deal (version {0})'),
         'activities_filter-title': _('Filter Deal'),
-        'activities_new-step-1': _('Step 1: Please select a point on the map.'),
+        'activities_new-step-1-part-1': _('Step 1: Please specify the location.'),
+        'activities_new-step-1-part-2': _('You may either select a point on the map or enter some coordinates.'),
         'activities_new-step-1-explanation': _('You can drag and drop the point. Once you are done, click "Continue".'),
         'activities_new-title': _('New Deal'),
         'activities_paging-empty': _('No Deals found'),
@@ -310,6 +311,13 @@ def ui_messages(request):
         'input-validation_number-greater-than-0': _('This number must be greater than 0'),
         'input-validation_percentage': _('Percentage must be between 0 and 100'),
         'input-validation_year': _('The year must be a number value between 1900 and 2100'),
+
+        'mappoints_coordinates-format': _('Format'),
+        'mappoints_coordinates-parse-error': _('The coordinates could not be parsed!'),
+        'mappoints_coordinates-title': _('Coordinates'),
+        'mappoints_set-point': _('Put point on the map'),
+        'mappoints_select-on-map': _('Select on map'),
+        'mappoints_enter-coordinates': _('Enter coordinates'),
     }
 
     # Get the localizer
