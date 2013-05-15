@@ -35,6 +35,231 @@ Ext.define('Lmkp.controller.editor.Map', {
         }
     },
 
+    /**
+     * Show a window where the user can enter coordinates. If the coordinates
+     * can be parsed, a point will be put on the map.
+     */
+    showCoordinatesWindow: function() {
+        var me = this;
+        var win = Ext.create('Ext.window.Window', {
+            title: Lmkp.ts.msg('mappoints_coordinates-title'),
+            layout: 'fit',
+            width: 400,
+            items: [
+                {
+                    xtype: 'form',
+                    border: 0,
+                    bodyPadding: 5,
+                    layout: 'anchor',
+                    defaults: {
+                        anchor: '100%'
+                    },
+                    items: [
+                        {
+                            xtype: 'fieldcontainer',
+                            fieldLabel: Lmkp.ts.msg('mappoints_coordinates-format'),
+                            defaultType: 'radiofield',
+                            layout: 'vbox',
+                            items: [
+                                {
+                                    boxLabel: '46&deg; 57.1578 N 7&deg; 26.1102 E',
+                                    name: 'format',
+                                    inputValue: 1,
+                                    checked: true
+                                }, {
+                                    boxLabel: '46&deg; 57\' 9.468" N 7&deg; 26\' 6.612" E',
+                                    name: 'format',
+                                    inputValue: 2
+                                }, {
+                                    boxLabel: 'N 46&deg; 57.1578 E 7&deg; 26.1102',
+                                    name: 'format',
+                                    inputValue: 3
+                                }, {
+                                    boxLabel: 'N 46&deg; 57\' 9.468" E 7&deg; 26\' 6.612"',
+                                    name: 'format',
+                                    inputValue: 4
+                                }, {
+                                    boxLabel: '7.43517 46.95263',
+                                    name: 'format',
+                                    inputValue: 5
+                                }
+                            ]
+                        }, {
+                            xtype: 'textfield',
+                            name: 'coordinates',
+                            itemId: 'coordinates',
+                            allowBlank: false
+                        }, {
+                            xtype: 'panel',
+                            itemId: 'coordinatesError',
+                            html: Lmkp.ts.msg('mappoints_coordinates-parse-error'),
+                            border: 0,
+                            bodyPadding: 5,
+                            bodyCls: 'notice',
+                            hidden: true
+                        }
+                    ],
+                    buttons: [
+                        {
+                            text: Lmkp.ts.msg('mappoints_set-point'),
+                            formBind: true,
+                            disabled: true,
+                            handler: function() {
+                                var form = this.up('form').getForm();
+                                if (form.isValid()) {
+                                    var values = form.getValues();
+
+                                    var pattern, matches;
+                                    var latsign, longsign, d1, m1, s1, d2, m2, s2;
+                                    var latitude, longitude;
+                                    var lonlat;
+
+                                    // Regex inspiration by:
+                                    // http://www.nearby.org.uk/tests/geotools2.js
+
+                                    // It seems to be necessary to escape the
+                                    // values. Otherwise, the degree symbol (°)
+                                    // is not recognized.
+                                    var str = escape(values.coordinates);
+                                    // However, we do need to replace the spaces
+                                    // again do prevent regex error.
+                                    str = str.replace(/%20/g, ' ');
+                                    
+                                    if (values.format === 1) {
+
+                                        // 46° 57.1578 N 7° 26.1102 E
+
+                                        pattern = /(\d+)[%B0\s]+(\d+\.\d+)\s*([NS])[%2C\s]+(\d+)[%B0\s]+(\d+\.\d+)\s*([WE])/i;
+                                        matches = str.match(pattern);
+                                        if (matches) {
+                                            latsign = (matches[3]=='S') ? -1 : 1;
+                                            longsign = (matches[6]=='W') ? -1 : 1;
+                                            d1 = parseFloat(matches[1]);
+                                            m1 = parseFloat(matches[2]);
+                                            d2 = parseFloat(matches[4]);
+                                            m2 = parseFloat(matches[5]);
+                                            latitude = latsign * (d1 + (m1/60.0));
+                                            longitude = longsign * (d2 + (m2/60.0));
+                                            lonlat = new OpenLayers.LonLat(longitude, latitude);
+                                        }
+                                    } else if (values.format === 2) {
+
+                                        // 46° 57' 9.468" N 7° 26' 6.612" E
+
+                                        pattern = /(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([NS])[%2C\s]+(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([WE])/i;
+                                        matches = str.match(pattern);
+                                        if (matches) {
+                                            latsign = (matches[4]=='S') ? -1 : 1;
+                                            longsign = (matches[8]=='W') ? -1 : 1;
+                                            d1 = parseFloat(matches[1]);
+                                            m1 = parseFloat(matches[2]);
+                                            s1 = parseFloat(matches[3]);
+                                            d2 = parseFloat(matches[5]);
+                                            m2 = parseFloat(matches[6]);
+                                            s2 = parseFloat(matches[7]);
+                                            latitude = latsign * (d1 + (m1/60.0) + (s1/(60.0*60.0)));
+                                            longitude = longsign * (d2 + (m2/60.0) + (s2/(60.0*60.0)));
+                                            lonlat = new OpenLayers.LonLat(longitude, latitude);
+                                        }
+                                    } else if (values.format === 3) {
+
+                                        // N 46° 57.1578 E 7° 26.1102
+
+                                        pattern = /([NS])\s*(\d+)[%B0\s]+(\d+\.\d+)[%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+\.\d+)/i;
+                                        matches = str.match(pattern);
+                                        if (matches) {
+                                            latsign = (matches[1]=='S') ? -1 : 1;
+                                            longsign = (matches[4]=='W') ? -1 : 1;
+                                            d1 = parseFloat(matches[2]);
+                                            m1 = parseFloat(matches[3]);
+                                            d2 = parseFloat(matches[5]);
+                                            m2 = parseFloat(matches[6]);
+                                            latitude = latsign * (d1 + (m1/60.0));
+                                            longitude = longsign * (d2 + (m2/60.0));
+                                            lonlat = new OpenLayers.LonLat(longitude, latitude);
+                                        }
+                                    } else if (values.format === 4) {
+
+                                        // N 46° 57' 9.468" E 7° 26' 6.612"
+
+                                        pattern = /([NS])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)/i;
+                                        matches = str.match(pattern);
+                                        if (matches) {
+                                            latsign = (matches[1]=='S') ? -1 : 1;
+                                            longsign = (matches[5]=='W') ? -1 : 1;
+                                            d1 = parseFloat(matches[2]);
+                                            m1 = parseFloat(matches[3]);
+                                            s1 = parseFloat(matches[4]);
+                                            d2 = parseFloat(matches[6]);
+                                            m2 = parseFloat(matches[7]);
+                                            s2 = parseFloat(matches[8]);
+                                            latitude = latsign * (d1 + (m1/60.0) + (s1/(60.0*60.0)));
+                                            longitude = longsign * (d2 + (m2/60.0) + (s2/(60.0*60.0)));
+                                            lonlat = new OpenLayers.LonLat(longitude, latitude);
+                                        }
+                                    } else if (values.format === 5) {
+                                        
+                                        // 7.43517 46.95263
+                                        
+                                        pattern = /(\d+\.\d+)[%2C\s]+(\d+\.\d+)/i;
+                                        matches = str.match(pattern);
+                                        if (matches) {
+                                            lonlat = new OpenLayers.LonLat(matches[1], matches[2]);
+                                        }
+                                    }
+
+                                    if (lonlat != null) {
+                                        // Coordinates were parsed, put on map
+                                        var WGS84 = new OpenLayers.Projection("EPSG:4326");
+                                        me.addLonlatToMap(lonlat, WGS84);
+                                        win.close();
+                                    } else {
+                                        // Show error panel
+                                        var panel = this.up('form').query('panel[itemId=coordinatesError]');
+                                        if (panel.length > 0) {
+                                            panel[0].show();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        });
+        win.show();
+    },
+
+    /**
+     * Put a point on the map based on lonlat coordinates. If a projection is
+     * provided the coordinates will be transformed before they are put on the
+     * map.
+     */
+    addLonlatToMap: function(lonlat, projection) {
+
+        // Transform if necessary
+        if (projection && projection.getCode() != 'EPSG:900913') {
+            lonlat = lonlat.transform(
+                projection,
+                new OpenLayers.Projection("EPSG:900913")
+            );
+        }
+
+        // Center the map
+        var map = this.getMapPanel().getMap();
+        map.setCenter(lonlat);
+
+        // Activate draw controls and put the point on the map
+        var controls = map.getControlsBy('type', 'createPointControl');
+        if (controls && controls[0]) {
+            var createPointControl = controls[0];
+            createPointControl.activate();
+            createPointControl.drawFeature(
+                new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat)
+            );
+        }
+    },
+
     initEditorControls: function() {
         var mappanel = this.getMapPanel();
         var map = mappanel.getMap();
