@@ -25,6 +25,9 @@ from sqlalchemy import and_
 from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound
 import uuid
+import logging
+
+log = logging.getLogger(__name__)
 
 _ = TranslationStringFactory('lmkp')
 
@@ -223,12 +226,14 @@ class UserView(BaseView):
         for admin_user in Session.query(User).join(users_groups).join(Group).filter(func.lower(Group.name) == 'administrators'):
             email_addresses.append(admin_user.email)
 
+        log.debug("Approval emails will be sent to %s" % email_addresses)
+
         # Send the email
         self._send_email(email_addresses,
                          "The Land Observatory: User %s requests approval" % user.username,
                          email_text)
 
-        return {}
+        return {"username": user.username}
 
     @view_config(route_name="user_approve", renderer="lmkp:templates/user_approval.mak", permission="moderate")
     def approve(self):
@@ -248,6 +253,19 @@ class UserView(BaseView):
 
         # Set the is_approved attribute to TRUE
         user.is_approved = True
+
+        conf_dict = {
+        "firstname": user.firstname,
+        "lastname": user.lastname,
+        "host": "http://%s" % self.request.environ['HTTP_HOST']
+        }
+
+        email_text = render('lmkp:templates/emails/confirmation.mak', conf_dict, request=self.request)  
+
+        # Send the email
+        self._send_email([user.email],
+                         "The Land Observatory: Account confirmation on %s" % "http://%s" % self.request.environ['HTTP_HOST'],
+                         email_text)
 
         # Return the username to the template
         return {"username": user_username}
