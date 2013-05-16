@@ -73,6 +73,40 @@ input.readonly {
     border: 1px solid #B5BCC7 !important;
 }
 
+li.shtoomanyresults {
+    color: orange;
+}
+
+li.shnothingfound {
+    color: darkred;
+}
+
+div#stakeholderformcontainer {
+    padding: 10px;
+    display: none;
+}
+
+span.shautocompletedescription {
+    font-size: 0.8em;
+}
+
+input#shselectinput {
+    width: 300px;
+}
+
+.ui-autocomplete {
+    max-height: 300px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+  }
+/* IE 6 doesn't support max-height
+* we use height instead, but this forces the menu to always be this tall
+*/
+* html .ui-autocomplete {
+    height: 100px;
+}
+
 /* NUMBER SPINNER */
 .ui-spinner {
 	position:relative;
