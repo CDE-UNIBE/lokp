@@ -93,12 +93,12 @@ def renderForm(request, itemType, **kwargs):
         {
             success: function (rText, sText, xhr, form) {
                 if (typeof stakeholderdata !== 'undefined') {
-                    var marker = $('span#currentlyactiveinstakeholderform');
-                    var fieldset = marker.parent('fieldset');
-                    fieldset.find('input[name=id]').val(stakeholderdata['id']);
-                    fieldset.find('input[name=version]').val(stakeholderdata['version']);
-                    fieldset.find('input[name=name]').val(stakeholderdata['name']);
-                    fieldset.find('input[name=country]').val(stakeholderdata['country']);
+                    setInvolvementContent(
+                        stakeholderdata['id'],
+                        stakeholderdata['version'],
+                        stakeholderdata['name'],
+                        stakeholderdata['country']
+                    );
                 }
             }
         }
@@ -344,7 +344,7 @@ def renderForm(request, itemType, **kwargs):
                 sessionActivity = copy.copy(session['activity'])
                 sessionActivity['category'] = newCategory
                 data = sessionActivity
-                if formSubmit is False:
+                if formSubmit is False and embedded is False:
                     # If the form is rendered for the first time, inform the
                     # user that session was used.
                     session.flash('Unsaved data of this item was found in the session. You may continue to edit this form.<br/><a href="/form/clearsession?url=%s">Click here to delete the session data to clear the form.</a>' % request.url)
@@ -354,15 +354,14 @@ def renderForm(request, itemType, **kwargs):
             # If there is no existing item, show the form with empty data
             pass # Empty data already defined above
 
-        log.debug('Data used to populate the form: %s' % data)
+#        log.debug('Data used to populate the form: %s' % data)
 
         html = form.render(data)
 
     # If the current category contains involvements (eg. to add Stakeholders to
     # an Activity), show a (initially empty) div which will contain the form for
     # Stakeholders.
-    if (formSubmit is False
-        and str(newCategory) in configCategoryList.getInvolvementCategoryIds()):
+    if str(newCategory) in configCategoryList.getInvolvementCategoryIds():
         html += '<div id="stakeholderformcontainer"></div>'
 
     # Add JS and CSS requirements (for widgets)
@@ -537,7 +536,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
         involvements = itemJson['involvements']
 
         # Primary or secondary investor?
-        thmg = categorylist.getPrimaryInvolvementThematicgroup()
+        thmg = categorylist.findThematicgroupByInvolvement('primaryinvestor')
 
         # TODO: Do not always use the first involvement as the primary investor
         primaryinvestor = involvements[0]
@@ -790,6 +789,9 @@ def formdataToDiff(request, newform, itemType, category=None):
         if cat in categorylist.getInvolvementCategoryIds():
             # TODO
             print "***DO SOMETHING ELSE"
+            print cat
+            print thmgrps
+            print "***"
             continue
 
         # Loop the thematic groups of the category

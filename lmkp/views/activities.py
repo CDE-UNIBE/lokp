@@ -1,26 +1,19 @@
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
-from lmkp.views.activity_protocol2 import ActivityProtocol2
 from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.config import get_mandatory_keys
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
-from pyramid.httpexceptions import HTTPCreated
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPUnauthorized
-from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
 from pyramid.renderers import render_to_response
 from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
-from pyramid.security import effective_principals
 from pyramid.security import has_permission
-from pyramid.url import route_url
 from pyramid.view import view_config
-from sqlalchemy.sql.expression import or_, and_
 import yaml
-import simplejson as json
 
 from lmkp.renderers.renderers import translate_key
 from lmkp.views.form import renderForm
@@ -29,7 +22,6 @@ log = logging.getLogger(__name__)
 
 #_ = TranslationStringFactory('lmkp')
 
-activity_protocol2 = ActivityProtocol2(Session)
 activity_protocol3 = ActivityProtocol3(Session)
 
 def get_timestamp(request):

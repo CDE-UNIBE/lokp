@@ -1,5 +1,4 @@
 from lmkp.models.meta import DBSession as Session
-from lmkp.views.stakeholder_protocol import StakeholderProtocol
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.config import get_mandatory_keys
 from lmkp.views.form import renderForm
@@ -13,7 +12,6 @@ from pyramid.i18n import TranslationStringFactory
 from pyramid.renderers import render_to_response
 from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
-from pyramid.security import effective_principals
 from pyramid.security import has_permission
 from pyramid.view import view_config
 
@@ -21,7 +19,6 @@ log = logging.getLogger(__name__)
 
 _ = TranslationStringFactory('lmkp')
 
-stakeholder_protocol = StakeholderProtocol(Session)
 stakeholder_protocol3 = StakeholderProtocol3(Session)
 
 @view_config(route_name='stakeholders_read_one_active')
