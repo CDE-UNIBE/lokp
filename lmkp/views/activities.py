@@ -45,7 +45,7 @@ def read_many(request):
     all pending Activities if logged in as moderator.
     Default output format: JSON
     """
-    
+
     try:
         output_format = request.matchdict['output']
     except KeyError:
@@ -214,7 +214,7 @@ def read_one(request):
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
-   
+
 @view_config(route_name='activities_read_one_public')
 def read_one_public(request):
     """
@@ -277,7 +277,7 @@ def review(request):
     """
 
     _ = request.translate
-    
+
     # Check if the user is logged in and he/she has sufficient user rights
     userid = authenticated_userid(request)
     if userid is None:
@@ -300,7 +300,7 @@ def review(request):
     if activity is None:
         raise HTTPUnauthorized(_('The Deal was not found or is not situated within the user\'s profiles'))
 
-    # If review decision is 'approved', make sure that all mandatory fields are 
+    # If review decision is 'approved', make sure that all mandatory fields are
     # there, except if it is to be deleted
     try:
         review_decision = int(request.POST['review_decision'])
@@ -368,7 +368,7 @@ def create(request):
         response['created'] = False
         response['msg'] = _('No Deal was created.')
         request.response.status = 200
-        
+
     return response
 
 #@view_config(route_name='taggroups_model', renderer='string')
@@ -376,7 +376,7 @@ def model(request):
     # TODO: This is probably not needed anymore.
     """
     Controller that returns a dynamically generated JavaScript that builds the
-    client-side TagGroup model, which is related (belongsTo / hasMany) to the 
+    client-side TagGroup model, which is related (belongsTo / hasMany) to the
     static Activity model. The model is set up based on the defined mandatory
     and optional field in the configuration yaml file.
     """
@@ -404,7 +404,7 @@ def model(request):
         # Handle the AttributeError if the locale config file is empty
         except AttributeError:
             pass
-    
+
     object = {}
 
     object['extend'] = 'Ext.data.Model'
@@ -459,14 +459,14 @@ def model(request):
 def _check_difference(new, old, localizer=None):
 
     changes = {} # to collect the changes
-    
+
     # not all attributes are of interest when looking at the difference between two versions
     # @todo: geometry needs to be processed differently, not yet implemented
-    ignored = ['geometry', 'timestamp', 'id', 'version', 'username', 'userid', 'source', 
+    ignored = ['geometry', 'timestamp', 'id', 'version', 'username', 'userid', 'source',
                 'activity_identifier', 'modified', 'new', 'deleted']
-    
-    
-    
+
+
+
     # do comparison based on new version, loop through attributes
     if new is not None:
         for obj in new.__dict__:
@@ -485,14 +485,14 @@ def _check_difference(new, old, localizer=None):
                         changes[str(translate_key(None, localizer, obj))] = 'new' # attribute is new
                     # attribute is already in older version
                     else:
-                        # for some reason (?), attribute can already be there in older versions 
+                        # for some reason (?), attribute can already be there in older versions
                         # (set to None). this should be treated as if attribute was not there yet
                         if old.__dict__[obj] is None and new.__dict__[obj] is not None:
                             changes[str(translate_key(None, localizer, obj))] = 'new' # attribute is 'new'
                         # check if attribute is the same in both versions
                         elif new.__dict__[obj] != old.__dict__[obj]:
                             changes[str(translate_key(None, localizer, obj))] = 'modified' # attribute was modified
-    
+
     # do comparison based on old version
     if old is not None:
         # loop through attributes
@@ -501,7 +501,7 @@ def _check_difference(new, old, localizer=None):
                 # check if attribute is not there anymore in new version
                 if obj not in new.__dict__:
                     changes[str(translate_key(None, localizer, obj))] = 'deleted' # attribute was deleted
-    
+
     if new is not None: # when deleted
         new.changes = changes
     return new
@@ -522,16 +522,16 @@ def _check_difference(new, old, localizer=None):
 def _get_extjs_config(name, config, language):
 
     fieldConfig = {}
-    
+
     # check if translated name is available
     originalKey = Session.query(A_Key.id).filter(A_Key.key == name).filter(A_Key.fk_a_key == None).first()
-    
+
     # if no original value is found in DB, return None (this cannot be selected)
     if not originalKey:
         return None
-    
+
     translatedName = Session.query(A_Key).filter(A_Key.fk_a_key == originalKey).filter(A_Key.language == language).first()
-    
+
     if translatedName:
         fieldConfig['name'] = str(translatedName.key)
     else:
@@ -553,6 +553,8 @@ def _get_extjs_config(name, config, language):
 
 
 def _get_config_fields():
+    # TODO: Is this still needed?
+    log.debug('DO NOT DELETE ME!!!')
     """
     Return a list of mandatory and optional fields extracted from the application
     configuration file (yaml)

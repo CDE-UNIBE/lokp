@@ -6,6 +6,9 @@ import yaml
 
 from lmkp.config import profile_directory_path
 
+import logging
+log = logging.getLogger(__name__)
+
 class ConfigCategoryList(object):
     """
     A class representing a list of Form Category objects as defined in the
@@ -39,7 +42,19 @@ class ConfigCategoryList(object):
                 return c
         return None
 
-    def getAllMainkeys(self):
+    def findTagByKey(self, key):
+        """
+        Find and return tag by a given key object.
+        """
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                for tg in thg.getTaggroups():
+                    for t in tg.getTags():
+                        if t.getKey() == key:
+                            return t
+        return None
+
+    def getAllMainkeyNames(self):
         """
         Return a list with the names of all main keys in all categories.
         """
@@ -51,6 +66,18 @@ class ConfigCategoryList(object):
         return mainkeys
 
     def getAllKeys(self):
+        """
+        Return a list with all keys in all categories
+        """
+        keys = []
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                for tg in thg.getTaggroups():
+                    for t in tg.getTags():
+                        keys.append(t.getKey())
+        return keys
+
+    def getAllKeyNames(self):
         """
         Return a list with the names of all keys in all categories.
         """
@@ -113,9 +140,40 @@ class ConfigCategoryList(object):
                     categories.append(cat.getId())
         return categories
 
+    def checkValidKeyValue(self, key, value):
+        """
+        Check if a key and value are valid within the current category list.
+        Both need to be valid in order to return True.
+        """
+        key_is_valid = False
+        value_is_valid = False
+
+        for k in self.getAllKeys():
+            if key == k.getName():
+                # The current key is valid.
+                key_is_valid = True
+                if (k.getType().lower() == 'dropdown'
+                    or k.getType().lower() == 'checkbox'):
+                    # If there are predefined values for this key, check if the
+                    # value belongs to this key.
+                    tag = self.findTagByKey(k)
+                    if tag is not None:
+                        for v in tag.getValues():
+                            if str(value) == v.getName():
+                                value_is_valid = True
+                else:
+                    # If the key has no predefined values, the given value is
+                    # assumed to be valid.
+                    value_is_valid = True
+
+#        log.debug('Key (%s) and Value (%s) are valid: %s' % (key, value, key_is_valid and value_is_valid))
+
+        # Return only True if key and value are both valid
+        return key_is_valid and value_is_valid
+
 class ConfigCategory(object):
     """
-    A class representing a Form Category object as defined in the configuration 
+    A class representing a Form Category object as defined in the configuration
     file (csv). This is the top container of the form structure, for example
     'Spatial Data' or 'General Information' and it contains Form Thematic Groups
     as the next lower form structure.
@@ -202,7 +260,7 @@ class ConfigCategory(object):
 
 class ConfigThematicgroup(object):
     """
-    A class representing a Form Thematic Group object as defined in the 
+    A class representing a Form Thematic Group object as defined in the
     configuration file (csv). This is second top container of the form
     structure, for example 'Intention of Investment' in the Category 'General
     Information'. It contains Form Taggroups as the next lower form structure.
@@ -385,7 +443,7 @@ class ConfigTaggroupList(object):
 
 class ConfigTaggroup(object):
     """
-    A class representing a Form Taggroup object as defined in the configuration 
+    A class representing a Form Taggroup object as defined in the configuration
     file (csv). This is third level of the form structure. It is used to group
     tags belonging together and can be used to show this combination of tags
     multiple times. It contains a Form Tag as a Maintag and optionally other
@@ -510,6 +568,7 @@ class ConfigTaggroup(object):
                 if k != mainkey and v != colander.null and k != 'tg_id':
                     hasOtherValuesSet = True
             if hasOtherValuesSet:
+                # TODO: Translation
                 exc = colander.Invalid(form, 'The maintag (%s) cannot be empty!'
                     % mainkey)
                 raise exc
@@ -575,7 +634,7 @@ class ConfigTag(object):
         title = (key.getTranslatedName() if key.getTranslatedName() is not None
             else key.getName())
         type = key.getType()
-        helptext = (key.getTranslatedHelptext() 
+        helptext = (key.getTranslatedHelptext()
             if key.getTranslatedHelptext() is not None else key.getHelptext())
         # Decide which type of form to add
         if type.lower() == 'dropdown' and len(self.getValues()) > 0:
@@ -731,7 +790,7 @@ class ConfigKeyList(object):
 
 class ConfigKey(object):
     """
-    A class representing a Form Key object as defined in the configuration 
+    A class representing a Form Key object as defined in the configuration
     file (csv). This is the lowest structure of the form.
     """
 
@@ -863,7 +922,7 @@ class ConfigValueList(object):
 
 class ConfigValue(object):
     """
-    A class representing a Form Key object as defined in the configuration 
+    A class representing a Form Key object as defined in the configuration
     file (csv). This is the lowest structure of the form.
     """
 
@@ -1212,8 +1271,8 @@ def getCategoryList(request, itemType, lang=None):
             % ', '.join(emptystack))
 
     # Check that each mainkey is unique (is only set once throughout all keys)
-    allkeys = categorylist.getAllKeys()
-    allmainkeys = categorylist.getAllMainkeys()
+    allkeys = categorylist.getAllKeyNames()
+    allmainkeys = categorylist.getAllMainkeyNames()
     duplicates = []
     for mainkey in allmainkeys:
         if allkeys.count(mainkey) > 1:
