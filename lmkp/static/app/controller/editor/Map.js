@@ -79,7 +79,7 @@ Ext.define('Lmkp.controller.editor.Map', {
                                     name: 'format',
                                     inputValue: 4
                                 }, {
-                                    boxLabel: '7.43517 46.95263',
+                                    boxLabel: '46.95263, 7.43517',
                                     name: 'format',
                                     inputValue: 5
                                 }
@@ -199,12 +199,12 @@ Ext.define('Lmkp.controller.editor.Map', {
                                         }
                                     } else if (values.format === 5) {
                                         
-                                        // 7.43517 46.95263
+                                        // 46.95263, 7.43517
                                         
                                         pattern = /(\d+\.\d+)[%2C\s]+(\d+\.\d+)/i;
                                         matches = str.match(pattern);
                                         if (matches) {
-                                            lonlat = new OpenLayers.LonLat(matches[1], matches[2]);
+                                            lonlat = new OpenLayers.LonLat(matches[2], matches[1]);
                                         }
                                     }
 
