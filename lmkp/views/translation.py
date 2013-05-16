@@ -314,10 +314,10 @@ def ui_messages(request):
 
         'mappoints_coordinates-format': _('Format'),
         'mappoints_coordinates-parse-error': _('The coordinates could not be parsed!'),
-        'mappoints_coordinates-title': _('Coordinates'),
+        'mappoints_coordinates-title': _('GPS Coordinates'),
+        'mappoints_enter-coordinates': _('Enter GPS coordinates'),
         'mappoints_set-point': _('Put point on the map'),
         'mappoints_select-on-map': _('Select on map'),
-        'mappoints_enter-coordinates': _('Enter coordinates'),
     }
 
     # Get the localizer
