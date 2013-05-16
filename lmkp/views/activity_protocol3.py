@@ -9,7 +9,6 @@ from lmkp.views.translation import statusMap
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.i18n import get_localizer
-from pyramid.security import authenticated_userid
 from shapely.geometry import asShape
 from shapely.geometry.polygon import Polygon
 import simplejson as json
@@ -165,7 +164,8 @@ class ActivityProtocol3(Protocol):
 
     def __init__(self, Session):
         self.Session = Session
-        self.configuration = None
+        # The following is a ConfigCategoryList object as in form_config.py
+        self.categoryList = None
 
     def create(self, request, data=None):
         """
@@ -187,15 +187,11 @@ class ActivityProtocol3(Protocol):
         if 'activities' not in diff:
             raise HTTPBadRequest(detail="Not a valid format")
 
-        # Get the current configuration file to validate key and value pairs
-        self.configuration = self._read_configuration(request, 'activity.yml')
-
         # Return the IDs of the newly created Activities
         ids = []
         # Also collect the diffs again because they may have changed (due to
         # recalculation)
         activity_diffs = []
-        new_diffs = False
         for activity in diff['activities']:
 
             a, ret_diff = self._handle_activity(request, activity, changeset)
@@ -203,7 +199,6 @@ class ActivityProtocol3(Protocol):
             if a is not None:
                 if ret_diff is not None:
                     # If a new diff came back, use this to replace the old one
-                    new_diffs = True
                     activity = ret_diff
 
                 # Add the newly created identifier to the diff (this is
@@ -214,10 +209,6 @@ class ActivityProtocol3(Protocol):
 
                 # Append the diffs
                 activity_diffs.append(activity)
-#                if ret_diff is None:
-#                    activity_diffs.append(self._convert_utf8(activity))
-#                else:
-#                    activity_diffs.append(activity)
 
         if len(ids) > 0:
             # At least one Activity was created
@@ -530,13 +521,16 @@ class ActivityProtocol3(Protocol):
             # * For moderators, it is important to filter out pending Activities
             # based on the spatial extent of the moderator's profile. Otherwise,
             # moderators could see pending Activities in another profile.
+            # However, we do want to keep them if they were created by the
+            # moderator
             relevant_activities = relevant_activities.\
                 filter(or_(
                     not_(Activity.fk_status == 1),
                     and_(
                         Activity.fk_status == 1,
                         self._get_spatial_moderator_filter(request)
-                    )
+                    ),
+                    (Changeset.fk_user == request.user.id)
                 ))
 
         # Join Activities with Tag Groups and order_query, then group it
@@ -1870,12 +1864,6 @@ class ActivityProtocol3(Protocol):
 
         log.debug('Applying diff:\n%s\nto version %s of activity %s'
             % (activity_dict, previous_version, old_activity.identifier))
-
-        if self.configuration is None:
-            # Get the current configuration file to validate key and value pairs
-            self.configuration = self._read_configuration(
-                request, 'activity.yml'
-            )
 
         a = self._apply_diff(
             request,

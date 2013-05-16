@@ -1,5 +1,4 @@
 import logging
-import uuid
 from lmkp.config import locale_profile_directory_path
 from lmkp.config import profile_directory_path
 from lmkp.models.database_objects import Activity
@@ -20,7 +19,10 @@ from lmkp.models.database_objects import Stakeholder
 from lmkp.models.database_objects import Stakeholder_Role
 from lmkp.models.database_objects import Status
 from lmkp.views.config import merge_profiles
+from lmkp.views.config import ACTIVITY_YAML
+from lmkp.views.config import STAKEHOLDER_YAML
 from lmkp.views.files import check_file_location_name
+from lmkp.views.form_config import getCategoryList
 from lmkp.models.database_objects import User
 from shapely import wkb
 from shapely.geometry import mapping as asGeoJSON
@@ -53,7 +55,8 @@ class Protocol(object):
     """
 
     def __init__(self):
-        self.configuration = None
+        # The following is a ConfigCategoryList object as in form_config.py
+        self.categoryList = None
 
     def _get_timestamp_filter(self, request, AorSH, Changeset):
         """
@@ -631,16 +634,13 @@ class Protocol(object):
 
         # Activity or Stakeholder?
         diff_keyword = None
-        config_yaml = None
         if mappedClass == Activity:
             diff_keyword = 'activities'
             other_diff_keyword = 'stakeholders'
-            config_yaml = 'activity.yml'
             otherMappedClass = Stakeholder
         elif mappedClass == Stakeholder:
             diff_keyword = 'stakeholders'
             other_diff_keyword = 'activities'
-            config_yaml = 'stakeholder.yml'
             otherMappedClass = Activity
         else:
             ret['msg'] = _('Unknown object to review.')
@@ -661,7 +661,7 @@ class Protocol(object):
             review_comment = request.POST['comment_textarea']
 
         # TODO: Also delegate involvement review if rejected (review_decision == 2)
-        
+
 
         # Try to also review any affected involvement.
         if implicit is False:
@@ -723,7 +723,7 @@ class Protocol(object):
                     if reviewPossible is True and reviewable > 0:
                         continue
                     reviewPossible = reviewable
-    
+
                 if reviewPossible is not True:
                     if reviewPossible == -2:
                         ret['msg'] = _('At least one of the involved Stakeholders cannot be reviewed. Click on the icon next to the involvement for further details.')
@@ -813,7 +813,7 @@ class Protocol(object):
                 or previous_version.fk_status == statusArray.index('active')+1):
                 # There is no previous version (the item is brand new) or it is
                 # based directly on the active version.
-                
+
                 # If there is a previous active version, set it to 'inactive'
                 if previous_version:
                     previous_version.fk_status = statusArray.index('inactive')+1
@@ -860,11 +860,6 @@ class Protocol(object):
                 if ref_version is None:
                     ret['msg'] = _('No active version was found to base the review upon. Try to review an earlier version first.')
                     return ret
-
-                # Read the configuration
-                self.configuration = self._read_configuration(
-                    request, config_yaml
-                )
 
                 # Query the diff. If it is already available (queried while
                 # handling involvements earlier), no need to query it again
@@ -1073,7 +1068,7 @@ class Protocol(object):
                                 if (tag_dict['op'] == 'delete'
                                     and db_tag.key.key and tag_dict['key']
                                     and db_tag.key.key == tag_dict['key']):
-                                    
+
 #                                    log.debug(
 #                                        "Tag is deleted (not copied) from taggroup."
 #                                    )
@@ -1285,7 +1280,7 @@ class Protocol(object):
         uid: The identifier of the object
         old_version: The old version of the object
         new_diff: A diff containing only the part which is relevant to the
-          object: 
+          object:
           {
             'taggroups': [],
             'version': '',
@@ -1306,43 +1301,43 @@ class Protocol(object):
             Helper function to merge a new involvement diff (new_inv) into an
             existing diff of an Activity.
             """
-            
+
             if 'stakeholders' in old_diff:
                 # Loop the involvements of the old diff to find if some of the
                 # changes to the new diff are made to involvements already
                 # modified by the old diff
                 new_involvements_processed = False
                 for old_inv in old_diff['stakeholders']:
-                    
-                    if ('id' in old_inv and 'id' in new_inv 
+
+                    if ('id' in old_inv and 'id' in new_inv
                         and old_inv['id'] == new_inv['id']):
-                        
+
                         # TODO: Is this simple replacement enough?
                         if new_inv['op'] == 'delete' and old_inv['op'] == 'add':
                             # Replace
                             old_inv = new_inv
-                            
+
 #                            log.debug('Replaced old involvement (%s) with new involvement (%s)' % (old_inv, new_inv))
-                                            
+
                             new_involvements_processed = True
-                
-            
+
+
                 if new_involvements_processed is False:
-                    # New involvements did not affect any of the already 
+                    # New involvements did not affect any of the already
                     # modified involvements. It is assumed that it is brand new
                     # and is added to the existing diff
                     if 'stakeholders' in old_diff:
                         old_diff['stakeholders'].append(new_inv)
                     else:
                         old_diff['stakeholders'] = new_inv
-            
+
             else:
                 # If no involvements in old_diff, add the one from the new_inv
                 # as it is
                 old_diff['stakeholders'] = new_inv
-                
+
 #                log.debug('Added new involvement diff: %s' % new_inv)
-                
+
             return old_diff
 
         def _merge_taggroups(old_diff, new_tg):
@@ -1374,9 +1369,9 @@ class Protocol(object):
                                 # Loop through the tags of the new diff
 
                                 # If there is a tag previously added (old_t['op'] == 'add') and now to be deleted again (new_t['op'] == 'delete'), then remove it
-                                if (new_t['op'] == 'delete' 
-                                    and old_t['op'] == 'add' 
-                                    and new_t['key'] == old_t['key'] 
+                                if (new_t['op'] == 'delete'
+                                    and old_t['op'] == 'add'
+                                    and new_t['key'] == old_t['key']
                                     and str(new_t['value'])
                                         == str(old_t['value'])):
                                     # Remove
@@ -1482,27 +1477,63 @@ class Protocol(object):
 
         # Merge involvements (only for Stakeholders)
         if mappedClass == Activity and 'stakeholders' in new_diff:
-            
+
 #            log.debug('Diff before doing involvement merges:\n%s' % rel_diff)
-            
+
             for new_inv in new_diff['stakeholders']:
                 rel_diff = _merge_involvements(rel_diff, new_inv)
-            
+
 #            log.debug('Diff after doing involvement merges:\n%s' % rel_diff)
-            
+
         log.debug('Diff after recalculation:\n%s' % rel_diff)
 
         return rel_diff
 
-    def _key_value_is_valid(self, request, configuration, key, value):
+    def _key_value_is_valid(self, request, itemType, key, value):
         """
         Validate if key and value are in the current configuration
         """
+
+        if itemType is None or itemType not in ['activities', 'stakeholders']:
+            return False
+
+        if self.categoryList is None:
+
+#            log.debug('Created a new ConfigCategoryList object of type %s' % itemType)
+            
+            # TODO: language parameter
+            self.categoryList = getCategoryList(request, itemType, lang=None)
 
         # Trim white spaces
         try:
             value = value.strip()
         except AttributeError:
+            pass
+
+        # TODO: Make use of this! Delete the rest below.
+        # TODO: Also delete imports above
+#        return self.categoryList.checkValidKeyValue(key, value)
+
+
+        if itemType == 'activities':
+            filename = ACTIVITY_YAML
+        elif itemType == 'stakeholders':
+            filename = STAKEHOLDER_YAML
+
+        # Read the global configuration file
+        global_stream = open("%s/%s" % (profile_directory_path(request), filename), 'r')
+        configuration = yaml.load(global_stream)
+
+        # Read the localized configuration file
+        try:
+            locale_stream = open("%s/%s" % (locale_profile_directory_path(request), filename), 'r')
+            locale_config = yaml.load(locale_stream)
+
+            # If there is a localized config file then merge it with the global one
+            configuration = merge_profiles(configuration, locale_config)
+
+        except IOError:
+            # No localized configuration file found!
             pass
 
         # Per default key and value are not valid
@@ -1532,35 +1563,21 @@ class Protocol(object):
         # Return only True if key as well as value are valid
         return key_is_valid and value_is_valid
 
-    def _read_configuration(self, request, filename):
-
-        # Read the global configuration file
-        global_stream = open("%s/%s" % (profile_directory_path(request), filename), 'r')
-        self.configuration = yaml.load(global_stream)
-
-        # Read the localized configuration file
-        try:
-            locale_stream = open("%s/%s" % (locale_profile_directory_path(request), filename), 'r')
-            locale_config = yaml.load(locale_stream)
-
-            # If there is a localized config file then merge it with the global one
-            self.configuration = merge_profiles(self.configuration, locale_config)
-
-        except IOError:
-            # No localized configuration file found!
-            pass
-
-        return self.configuration
-
     def _create_tag(self, request, parent, key, value, Tag_Item, Key_Item,
         Value_Item):
         """
         Creates a new SQLAlchemy tag object and appends it to the parent list.
         """
 
+        # Activity or Stakeholder?
+        itemType = None
+        if Tag_Item == A_Tag:
+            itemType = 'activities'
+        elif Tag_Item == SH_Tag:
+            itemType = 'stakeholders'
+
         # Validate the key and value pair with the configuration file
-        if not self._key_value_is_valid(request, self.configuration, key,
-            value):
+        if not self._key_value_is_valid(request, itemType, key, value):
             self.Session.rollback()
             raise HTTPBadRequest("Key: %s or Value: %s is not valid." %
                 (key, value))
