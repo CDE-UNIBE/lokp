@@ -1164,7 +1164,7 @@ def getCategoryList(request, itemType, lang=None):
         # TODO
         filename = 'new_stakeholder.yml'
     else:
-        filename = 'test3.yml'
+        filename = 'new_activities.yml'
     yaml_stream = open("%s/%s"
         % (profile_directory_path(request), filename), 'r')
     yaml_config = yaml.load(yaml_stream)
