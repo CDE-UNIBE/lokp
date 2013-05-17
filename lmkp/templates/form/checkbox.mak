@@ -4,7 +4,7 @@ ${field.start_sequence()}
     <span class="form_helptext form_checkbox">${helptext}</span>
 % endif
 
-<ul class="deformSet">
+<ul class="deformSet formCheckbox">
     % for index, choice in enumerate(values):
         <li class="deformSet-item">
             <input

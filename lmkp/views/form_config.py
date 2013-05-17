@@ -6,6 +6,9 @@ import yaml
 
 from lmkp.config import profile_directory_path
 
+import logging
+log = logging.getLogger(__name__)
+
 class ConfigCategoryList(object):
     """
     A class representing a list of Form Category objects as defined in the
@@ -39,7 +42,19 @@ class ConfigCategoryList(object):
                 return c
         return None
 
-    def getAllMainkeys(self):
+    def findTagByKey(self, key):
+        """
+        Find and return tag by a given key object.
+        """
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                for tg in thg.getTaggroups():
+                    for t in tg.getTags():
+                        if t.getKey() == key:
+                            return t
+        return None
+
+    def getAllMainkeyNames(self):
         """
         Return a list with the names of all main keys in all categories.
         """
@@ -51,6 +66,18 @@ class ConfigCategoryList(object):
         return mainkeys
 
     def getAllKeys(self):
+        """
+        Return a list with all keys in all categories
+        """
+        keys = []
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                for tg in thg.getTaggroups():
+                    for t in tg.getTags():
+                        keys.append(t.getKey())
+        return keys
+
+    def getAllKeyNames(self):
         """
         Return a list with the names of all keys in all categories.
         """
@@ -90,9 +117,64 @@ class ConfigCategoryList(object):
                         return c.getId(), thg.getId(), tg
         return None, None, None
 
+    def findThematicgroupByInvolvement(self, involvementData):
+        """
+        Find and return the thematic group which contains a given involvement
+        data.
+        """
+        thematicgroup = None
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                if thg.getInvolvementData() == involvementData:
+                    thematicgroup = thg
+        return thematicgroup
+
+    def getInvolvementCategoryIds(self):
+        """
+        Find and return the IDs of all categories containing information about
+        involvements.
+        """
+        categories = []
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                if thg.getInvolvementData() is not None:
+                    categories.append(cat.getId())
+        return categories
+
+    def checkValidKeyValue(self, key, value):
+        """
+        Check if a key and value are valid within the current category list.
+        Both need to be valid in order to return True.
+        """
+        key_is_valid = False
+        value_is_valid = False
+
+        for k in self.getAllKeys():
+            if key == k.getName():
+                # The current key is valid.
+                key_is_valid = True
+                if (k.getType().lower() == 'dropdown'
+                    or k.getType().lower() == 'checkbox'):
+                    # If there are predefined values for this key, check if the
+                    # value belongs to this key.
+                    tag = self.findTagByKey(k)
+                    if tag is not None:
+                        for v in tag.getValues():
+                            if str(value) == v.getName():
+                                value_is_valid = True
+                else:
+                    # If the key has no predefined values, the given value is
+                    # assumed to be valid.
+                    value_is_valid = True
+
+#        log.debug('Key (%s) and Value (%s) are valid: %s' % (key, value, key_is_valid and value_is_valid))
+
+        # Return only True if key and value are both valid
+        return key_is_valid and value_is_valid
+
 class ConfigCategory(object):
     """
-    A class representing a Form Category object as defined in the configuration 
+    A class representing a Form Category object as defined in the configuration
     file (csv). This is the top container of the form structure, for example
     'Spatial Data' or 'General Information' and it contains Form Thematic Groups
     as the next lower form structure.
@@ -157,7 +239,7 @@ class ConfigCategory(object):
         """
         return self.order
 
-    def getForm(self, request):
+    def getForm(self):
         """
         Prepare the form node for this category, append the forms of its
         thematic groups and return it.
@@ -171,7 +253,7 @@ class ConfigCategory(object):
         )
         for thg in sorted(self.getThematicgroups(), key=lambda thmg: thmg.order):
             # Get the Form for each Thematicgroup
-            thg_form = thg.getForm(request)
+            thg_form = thg.getForm()
             thg_form.missing = colander.null
             thg_form.name = thg.getId()
             cat_form.add(thg_form)
@@ -179,7 +261,7 @@ class ConfigCategory(object):
 
 class ConfigThematicgroup(object):
     """
-    A class representing a Form Thematic Group object as defined in the 
+    A class representing a Form Thematic Group object as defined in the
     configuration file (csv). This is second top container of the form
     structure, for example 'Intention of Investment' in the Category 'General
     Information'. It contains Form Taggroups as the next lower form structure.
@@ -191,6 +273,7 @@ class ConfigThematicgroup(object):
         self.translation = translation
         self.order = 9999
         self.taggroups = []
+        self.involvementData = None
 
     def getId(self):
         """
@@ -238,12 +321,17 @@ class ConfigThematicgroup(object):
         """
         return self.order
 
-    def getForm(self, request):
+    def setInvolvementData(self, involvementData):
+        self.involvementData = involvementData
+
+    def getInvolvementData(self):
+        return self.involvementData
+
+    def getForm(self):
         """
         Prepare the form node for this thematic group, append the forms of its
         taggroups and return it.
         """
-        _ = request.translate
         title = (self.getTranslation() if self.getTranslation() is not None
             else self.getName())
         thg_form = colander.SchemaNode(
@@ -266,14 +354,105 @@ class ConfigThematicgroup(object):
                     tg_form,
                     missing=colander.null,
                     widget=deform.widget.SequenceWidget(
-                        min_len=1,
-                        # TODO: Translation
-                        add_subitem_text_template=_('Add')
+                        min_len=1
                     ),
                     name=name,
                     title=''
                 ))
+
+        if self.getInvolvementData() is not None:
+            # If there is some involvement data in this thematic group, get the
+            # corresponding involvement widget and add it to the form.
+            shortForm = getInvolvementWidget(self.getInvolvementData())
+            thg_form.add(shortForm)
+
         return thg_form
+
+def getInvolvementWidget(involvementData):
+    """
+    Return a widget to be used to display Involvements. This is only a short
+    display-only representation of a Stakeholder.
+    """
+
+    # By default don't show the widget in a sequence.
+    sequence = False
+
+    # Special settings for specific involvementData
+    if involvementData == 'secondaryinvestor':
+        sequence = True
+        # TODO: Translation
+        add_subitem_text = 'Add Secondary Investor'
+
+    involvementShortForm = colander.SchemaNode(
+        colander.Mapping(),
+        widget=deform.widget.MappingWidget(
+            template='customInvolvementMapping'
+        ),
+        name=involvementData,
+        title=''
+    )
+
+    involvementShortForm.add(colander.SchemaNode(
+        colander.String(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='id',
+        title='',
+        missing = colander.null
+    ))
+    involvementShortForm.add(colander.SchemaNode(
+        colander.Int(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='version',
+        title='',
+        missing = colander.null
+    ))
+    involvementShortForm.add(colander.SchemaNode(
+        colander.Int(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='role_id',
+        title='',
+        missing = 6
+    ))
+
+    involvementShortForm.add(colander.SchemaNode(
+        colander.String(),
+        widget=deform.widget.TextInputWidget(
+            template='readonly/custom_textinput_readonly'
+        ),
+        name='name',
+        # TODO: Translate
+        title='Name',
+        missing = colander.null
+    ))
+
+    involvementShortForm.add(colander.SchemaNode(
+        colander.String(),
+        widget=deform.widget.TextInputWidget(
+            template='readonly/custom_textinput_readonly'
+        ),
+        name='country',
+        # TODO: Translate
+        title='Country of origin',
+        missing = colander.null
+    ))
+
+    if sequence is False:
+        # If no sequence is required, return the node as it is
+        return involvementShortForm
+
+    else:
+        # If a sequence is required, pack the node in a sequence and return it
+        return colander.SchemaNode(
+            colander.Sequence(),
+            involvementShortForm,
+            widget=deform.widget.SequenceWidget(
+                min_len = 0,
+                add_subitem_text_template = add_subitem_text,
+            ),
+            missing=colander.null,
+            name=involvementData,
+            title=''
+        )
 
 class ConfigTaggroupList(object):
     """
@@ -299,7 +478,7 @@ class ConfigTaggroupList(object):
 
 class ConfigTaggroup(object):
     """
-    A class representing a Form Taggroup object as defined in the configuration 
+    A class representing a Form Taggroup object as defined in the configuration
     file (csv). This is third level of the form structure. It is used to group
     tags belonging together and can be used to show this combination of tags
     multiple times. It contains a Form Tag as a Maintag and optionally other
@@ -424,6 +603,7 @@ class ConfigTaggroup(object):
                 if k != mainkey and v != colander.null and k != 'tg_id':
                     hasOtherValuesSet = True
             if hasOtherValuesSet:
+                # TODO: Translation
                 exc = colander.Invalid(form, 'The maintag (%s) cannot be empty!'
                     % mainkey)
                 raise exc
@@ -486,11 +666,11 @@ class ConfigTag(object):
         key = self.getKey()
         # Get name and type of key
         name = key.getName()
-        title = (key.getTranslatedName() if key.getTranslatedName() != ''
+        title = (key.getTranslatedName() if key.getTranslatedName() is not None
             else key.getName())
         type = key.getType()
-        helptext = (key.getTranslatedHelptext() 
-            if key.getTranslatedHelptext() != '' else key.getHelptext())
+        helptext = (key.getTranslatedHelptext()
+            if key.getTranslatedHelptext() is not None else key.getHelptext())
         # Decide which type of form to add
         if type.lower() == 'dropdown' and len(self.getValues()) > 0:
             # Dropdown
@@ -499,7 +679,10 @@ class ConfigTag(object):
             choiceslist = [('', '- Select -')]
             for v in sorted(self.getValues(),
                 key=lambda val: val.getOrderValue()):
-                choiceslist.append((v.getName(), v.getTranslation()))
+                choiceslist.append((
+                    unicode(v.getName(), 'utf-8'),
+                    unicode(v.getTranslation(), 'utf-8')
+                ))
             choices = tuple(choiceslist)
             form = colander.SchemaNode(
                 colander.String(),
@@ -517,7 +700,10 @@ class ConfigTag(object):
             choices = []
             for v in sorted(self.getValues(),
                 key=lambda val: val.getOrderValue()):
-                choices.append((v.getName(), v.getTranslation()))
+                choices.append((
+                    unicode(v.getName(), 'utf-8'),
+                    unicode(v.getTranslation(), 'utf-8')
+                ))
             form = colander.SchemaNode(
                 colander.Set(),
                 widget=CustomCheckboxWidget(
@@ -639,7 +825,7 @@ class ConfigKeyList(object):
 
 class ConfigKey(object):
     """
-    A class representing a Form Key object as defined in the configuration 
+    A class representing a Form Key object as defined in the configuration
     file (csv). This is the lowest structure of the form.
     """
 
@@ -771,7 +957,7 @@ class ConfigValueList(object):
 
 class ConfigValue(object):
     """
-    A class representing a Form Key object as defined in the configuration 
+    A class representing a Form Key object as defined in the configuration
     file (csv). This is the lowest structure of the form.
     """
 
@@ -849,17 +1035,18 @@ def getConfigKeyList(request, itemType, lang=None):
     # Translation
     if lang is not None:
         # TODO
-        t_filename = 'akeys_translated.csv'
+        if itemType == 'activities':
+            t_filename = 'akeys_translated.csv'
 
-        translationStream = open('%s/%s'
-            % (profile_directory_path(request), t_filename), 'rb')
-        translationCsv = csv.reader(translationStream, delimiter=';')
-        for row in translationCsv:
-            # Skip the first row
-            if translationCsv.line_num > 1 and len(row) == 3:
-                k = configKeys.findKeyById(row[0])
-                if k is not None:
-                    k.setTranslation(row[1], row[2])
+            translationStream = open('%s/%s'
+                % (profile_directory_path(request), t_filename), 'rb')
+            translationCsv = csv.reader(translationStream, delimiter=';')
+            for row in translationCsv:
+                # Skip the first row
+                if translationCsv.line_num > 1 and len(row) == 3:
+                    k = configKeys.findKeyById(row[0])
+                    if k is not None:
+                        k.setTranslation(row[1], row[2])
     return configKeys
 
 def getConfigValueList(request, itemType, lang=None):
@@ -884,17 +1071,18 @@ def getConfigValueList(request, itemType, lang=None):
     # Translation
     if lang is not None:
         # TODO
-        t_filename = 'avalues_translated.csv'
+        if itemType == 'activities':
+            t_filename = 'avalues_translated.csv'
 
-        translationStream = open('%s/%s'
-            % (profile_directory_path(request), t_filename), 'rb')
-        translationCsv = csv.reader(translationStream, delimiter=';')
-        for row in translationCsv:
-            # Skip the first row
-            if translationCsv.line_num > 1 and len(row) == 2:
-                v = configValues.findValueById(row[0])
-                if v is not None:
-                    v.setTranslation(row[1])
+            translationStream = open('%s/%s'
+                % (profile_directory_path(request), t_filename), 'rb')
+            translationCsv = csv.reader(translationStream, delimiter=';')
+            for row in translationCsv:
+                # Skip the first row
+                if translationCsv.line_num > 1 and len(row) == 2:
+                    v = configValues.findValueById(row[0])
+                    if v is not None:
+                        v.setTranslation(row[1])
 
     return configValues
 
@@ -921,17 +1109,18 @@ def getConfigCategoryList(request, itemType, lang=None):
     # Translation
     if lang is not None:
         # TODO
-        t_filename = 'acategories_translated.csv'
+        if itemType == 'activities':
+            t_filename = 'acategories_translated.csv'
 
-        translationStream = open('%s/%s'
-            % (profile_directory_path(request), t_filename), 'rb')
-        translationCsv = csv.reader(translationStream, delimiter=';')
-        for row in translationCsv:
-            # Skip the first row
-            if translationCsv.line_num > 1 and len(row) == 2:
-                c = configCategories.findCategoryById(row[0])
-                if c is not None:
-                    c.setTranslation(row[1])
+            translationStream = open('%s/%s'
+                % (profile_directory_path(request), t_filename), 'rb')
+            translationCsv = csv.reader(translationStream, delimiter=';')
+            for row in translationCsv:
+                # Skip the first row
+                if translationCsv.line_num > 1 and len(row) == 2:
+                    c = configCategories.findCategoryById(row[0])
+                    if c is not None:
+                        c.setTranslation(row[1])
     return configCategories
 
 def getValidKeyTypes():
@@ -973,9 +1162,9 @@ def getCategoryList(request, itemType, lang=None):
     # Load the yaml
     if itemType == 'stakeholders':
         # TODO
-        filename = ''
+        filename = 'new_stakeholder.yml'
     else:
-        filename = 'test3.yml'
+        filename = 'new_activities.yml'
     yaml_stream = open("%s/%s"
         % (profile_directory_path(request), filename), 'r')
     yaml_config = yaml.load(yaml_stream)
@@ -1021,6 +1210,10 @@ def getCategoryList(request, itemType, lang=None):
 
                 if tgroup_id == 'order':
                     thematicgroup.setOrder(tags)
+                    continue
+
+                if tgroup_id == 'involvement':
+                    thematicgroup.setInvolvementData(tags)
                     continue
 
                 # Create a taggroup out of it
@@ -1113,8 +1306,8 @@ def getCategoryList(request, itemType, lang=None):
             % ', '.join(emptystack))
 
     # Check that each mainkey is unique (is only set once throughout all keys)
-    allkeys = categorylist.getAllKeys()
-    allmainkeys = categorylist.getAllMainkeys()
+    allkeys = categorylist.getAllKeyNames()
+    allmainkeys = categorylist.getAllMainkeyNames()
     duplicates = []
     for mainkey in allmainkeys:
         if allkeys.count(mainkey) > 1:
