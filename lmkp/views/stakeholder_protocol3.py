@@ -1,7 +1,5 @@
 from lmkp.models.database_objects import *
 from lmkp.views.protocol import *
-from lmkp.views.translation import get_translated_status
-from lmkp.views.translation import statusMap
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.i18n import get_localizer
@@ -14,6 +12,7 @@ from sqlalchemy.sql.expression import not_
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.expression import select
 
+log = logging.getLogger(__name__)
 
 class StakeholderFeature3(Feature):
 
@@ -45,7 +44,8 @@ class StakeholderProtocol3(Protocol):
 
     def __init__(self, Session):
         self.Session = Session
-        self.configuration = None
+        # The following is a ConfigCategoryList object as in form_config.py
+        self.categoryList = None
 
     def create(self, request, data=None):
         """
@@ -66,16 +66,11 @@ class StakeholderProtocol3(Protocol):
         if 'stakeholders' not in diff:
             raise HTTPBadRequest(detail="Not a valid format")
 
-        # Get the current configuration file to validate key and value pairs
-        self.configuration = self._read_configuration(request,
-                                                      'stakeholder.yml')
-
         # Return the IDs of the newly created Stakeholders
         ids = []
         # Also collect the diffs again because they may have changed (due to
         # recalculation)
         stakeholder_diffs = []
-        new_diffs = False
         for stakeholder in diff['stakeholders']:
 
             sh, ret_diff = self._handle_stakeholder(
@@ -85,7 +80,6 @@ class StakeholderProtocol3(Protocol):
             if sh is not None:
                 if ret_diff is not None:
                     # If a new diff came back, use this to replace the old one
-                    new_diffs = True
                     stakeholder = ret_diff
 
                 # Add the newly created identifier to the diff (this is
@@ -95,10 +89,7 @@ class StakeholderProtocol3(Protocol):
                 ids.append(sh)
 
                 # Append the diffs
-                if ret_diff is None:
-                    stakeholder_diffs.append(self._convert_utf8(stakeholder))
-                else:
-                    stakeholder_diffs.append(stakeholder)
+                stakeholder_diffs.append(stakeholder)
 
         if len(ids) > 0:
             # At least one Stakeholder was created
@@ -618,7 +609,7 @@ class StakeholderProtocol3(Protocol):
             relevant_stakeholders = relevant_stakeholders.\
                 filter(Stakeholder.fk_status.in_(status_filter))
         """
-        
+
         # Decide which version a user can see.
         # - Public (not logged in) always see active versions.
         # - Logged in users see their own pending versions, as long as they are
@@ -1456,7 +1447,7 @@ class StakeholderProtocol3(Protocol):
             # changes of the edited version. To do this, a new diff is
             # calculated which is then applied to the previous version of the
             # edited pending version.
-            
+
             # However, if the Stakeholder has no reference version and is
             # updated through an involvement, do not set the edited pending
             # version to 'edited' because it would then not be reviewable
@@ -1525,12 +1516,6 @@ class StakeholderProtocol3(Protocol):
 
         log.debug('Applying diff:\n%s\nto version %s of stakeholder %s'
             % (stakeholder_dict, previous_version, old_stakeholder.identifier))
-
-        if not self.configuration:
-            # Get the current configuration file to validate key and value pairs
-            self.configuration = self._read_configuration(
-                request, 'stakeholder.yml'
-            )
 
         sh = self._apply_diff(
             request,

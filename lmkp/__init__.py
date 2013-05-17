@@ -253,6 +253,8 @@ def main(global_config, ** settings):
     config.add_route('user_account', '/users/account')
     config.add_route('user_approve', '/users/approve')
 
+    config.add_route('form_clear_session', '/form/clearsession')
+
     # Codes
     config.add_route('codes_files', '/codes/files')
     config.add_route('codes_add', '/codes/add')

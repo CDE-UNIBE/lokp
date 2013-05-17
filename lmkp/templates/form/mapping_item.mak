@@ -7,7 +7,6 @@
     % endif
     title="${field.description}"
     id="item-${field.oid}"
-    i18n:domain="deform"
 >
 
     <!-- mapping_item -->
@@ -34,9 +33,6 @@
             errstr = 'error-%s' % field.oid
         %>
         % for msg in field.error.messages():
-            <%
-                errormessage = field.error.asdict()[field.error._keyname()]
-            %>
             <p
                 % if msg.index==0:
                     id="${errstr}"
@@ -44,9 +40,8 @@
                     id="${'%s-%s' % (errstr, msg.index)}"
                 % endif
                 class="${field.widget.error_class}"
-                i18n:translate=""
             >
-            ${errormessage}
+            ${_(msg)}
             </p>
         % endfor
     % endif

@@ -1,7 +1,7 @@
 from lmkp.models.meta import DBSession as Session
-from lmkp.views.stakeholder_protocol import StakeholderProtocol
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.config import get_mandatory_keys
+from lmkp.views.form import renderForm
 from lmkp.models.database_objects import *
 import logging
 from pyramid.httpexceptions import HTTPForbidden
@@ -12,7 +12,6 @@ from pyramid.i18n import TranslationStringFactory
 from pyramid.renderers import render_to_response
 from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
-from pyramid.security import effective_principals
 from pyramid.security import has_permission
 from pyramid.view import view_config
 
@@ -20,7 +19,6 @@ log = logging.getLogger(__name__)
 
 _ = TranslationStringFactory('lmkp')
 
-stakeholder_protocol = StakeholderProtocol(Session)
 stakeholder_protocol3 = StakeholderProtocol3(Session)
 
 @view_config(route_name='stakeholders_read_one_active')
@@ -146,6 +144,14 @@ def read_many(request):
     elif output_format == 'html':
         #@TODO
         return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    elif output_format == 'form':
+        # This is used to display a new and empty form for a Stakeholder. It is
+        # to be used to embed the form into an existing page.
+        return render_to_response(
+            'lmkp:templates/new_stakeholder.mak',
+            renderForm(request, 'stakeholders', embedded=True),
+            request
+        )
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
@@ -218,6 +224,25 @@ def read_one(request):
     elif output_format == 'html':
         #@TODO
         return render_to_response('json', {'HTML': 'Coming soon'}, request)
+    elif output_format == 'form':
+        # Query the Stakeholders with the given identifier
+        stakeholders = stakeholder_protocol3.read_one(request, uid=uid, 
+            public=False)
+        version = request.params.get('v', None)
+        if (stakeholders and 'data' in stakeholders 
+            and len(stakeholders['data']) != 0):
+            for sh in stakeholders['data']:
+                if 'version' in sh:
+                    if version is None:
+                        # If there is no version provided, show the first 
+                        # version visible to the user
+                        version = str(sh['version'])
+                    if str(sh['version']) == version:
+                        return render_to_response(
+                            'lmkp:templates/form.mak',
+                            renderForm(request, 'stakeholders', itemJson=sh),
+                            request
+                        )
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
