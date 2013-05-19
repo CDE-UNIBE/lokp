@@ -1502,7 +1502,8 @@ class Protocol(object):
 #            log.debug('Created a new ConfigCategoryList object of type %s' % itemType)
             
             # TODO: language parameter
-            self.categoryList = getCategoryList(request, itemType, lang=None)
+            pass
+#            self.categoryList = getCategoryList(request, itemType, lang=None)
 
         # Trim white spaces
         try:
