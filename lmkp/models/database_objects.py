@@ -50,15 +50,24 @@ class A_Key(Base):
     fk_a_key = Column(Integer)
     fk_language = Column(Integer, nullable=False)
     key = Column(String(255), nullable=False)
+    type = Column(String(255), nullable=False)
+    helptext = Column(Text)
+    description = Column(Text)
+    validator = Column(Text)
 
     fk_key = column_property(fk_a_key)
 
     translations = relationship('A_Key', backref=backref('original',
                                 remote_side=[id]))
     tags = relationship('A_Tag', backref='key')
+    values = relationship('A_Value', backref='key')
 
-    def __init__(self, key):
+    def __init__(self, key, type, helptext=None, description=None, validator=None):
         self.key = key
+        self.type = type
+        self.helptext = helptext
+        self.description = description
+        self.validator = validator
 
     def __repr__(self):
         return (
@@ -80,14 +89,23 @@ class SH_Key(Base):
     fk_sh_key = Column(Integer)
     fk_language = Column(Integer, nullable=False)
     key = Column(String(255), nullable=False)
+    type = Column(String(255), nullable=False)
+    helptext = Column(Text)
+    description = Column(Text)
+    validator = Column(Text)
 
     fk_key = column_property(fk_sh_key)
     translations = relationship('SH_Key', backref=backref('original',
                                 remote_side=[id]))
     tags = relationship('SH_Tag', backref='key')
+    values = relationship('SH_Value', backref='key')
 
-    def __init__(self, key):
+    def __init__(self, key, type, helptext=None, description=None, validator=None):
         self.key = key
+        self.type = type
+        self.helptext = helptext
+        self.description = description
+        self.validator = validator
 
     def __repr__(self):
         return (
@@ -100,14 +118,18 @@ class A_Value(Base):
     __table_args__ = (
                       ForeignKeyConstraint(['fk_a_value'], ['data.a_values.id']),
                       ForeignKeyConstraint(['fk_language'], ['data.languages.id']),
+                      ForeignKeyConstraint(['fk_a_key'], ['data.a_keys.id']),
                       {'schema': 'data'}
                       )
     id = Column(Integer, primary_key=True)
     fk_a_value = Column(Integer)
     fk_language = Column(Integer, nullable=False)
     value = Column(Text, nullable=False)
+    fk_a_key = Column(Integer)
+    order = Column(Integer)
 
     fk_value = column_property(fk_a_value)
+    fk_key = column_property(fk_a_key)
 
     translations = relationship('A_Value', backref=backref('original',
                                 remote_side=[id]))
@@ -127,14 +149,18 @@ class SH_Value(Base):
     __table_args__ = (
                       ForeignKeyConstraint(['fk_sh_value'], ['data.sh_values.id']),
                       ForeignKeyConstraint(['fk_language'], ['data.languages.id']),
+                      ForeignKeyConstraint(['fk_sh_key'], ['data.sh_keys.id']),
                       {'schema': 'data'}
                       )
     id = Column(Integer, primary_key=True)
     fk_sh_value = Column(Integer)
     fk_language = Column(Integer, nullable=False)
     value = Column(Text, nullable=False)
+    fk_sh_key = Column(Integer)
+    order = Column(Integer)
 
     fk_value = column_property(fk_sh_value)
+    fk_key = column_property(fk_sh_key)
 
     translations = relationship('SH_Value', backref=backref('original',
                                 remote_side=[id]))
@@ -514,6 +540,7 @@ class Language(Base):
     a_values = relationship('A_Value', backref='language')
     sh_keys = relationship('SH_Key', backref='language')
     sh_values = relationship('SH_Value', backref='language')
+    categories = relationship('Category', backref='language')
 
     def __init__(self, id, english_name, local_name, locale):
         self.id = id
@@ -875,3 +902,28 @@ class File(Base):
         self.mime = mime
         self.size = size
         self.hash = hash
+
+class Category(Base):
+    __tablename__ = 'categories'
+    __table_args__ = (
+        ForeignKeyConstraint(['fk_category'], ['data.categories.id']),
+        ForeignKeyConstraint(['fk_language'], ['data.languages.id']),
+        {'schema': 'data'}
+    )
+    id = Column(Integer, primary_key=True)
+    name = Column(String(511), nullable=False)
+    type = Column(String(255), nullable=False)
+    fk_language = Column(Integer, nullable=False)
+    description = Column(Text)
+    fk_category = Column(Integer)
+
+    translations = relationship('Category', backref=backref('original',
+        remote_side=[id]))
+
+    def __init__(self, id, name, type, fk_language, description=None, fk_category=None):
+        self.id = id
+        self.name = name
+        self.description = description
+        self.type = type
+        self.fk_language = fk_language
+        self.fk_category = fk_category

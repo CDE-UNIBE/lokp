@@ -5,6 +5,8 @@ import deform
 import yaml
 
 from lmkp.config import profile_directory_path
+from lmkp.models.database_objects import *
+from lmkp.models.meta import DBSession as Session
 
 import logging
 log = logging.getLogger(__name__)
@@ -38,7 +40,7 @@ class ConfigCategoryList(object):
         """
         # TODO: Try to speed up (?) by looking directly using the index
         for c in self.categories:
-            if c.getId() == str(id):
+            if str(c.getId()) == str(id):
                 return c
         return None
 
@@ -180,12 +182,10 @@ class ConfigCategory(object):
     as the next lower form structure.
     """
 
-    def __init__(self, id, name, level, fk_category):
+    def __init__(self, id, name, translation=None):
         self.id = id
         self.name = name
-        self.translation = None
-        self.level = level
-        self.fk_category = fk_category
+        self.translation = translation
         self.order = 9999
         self.thematicgroups = []
 
@@ -1093,34 +1093,42 @@ def getConfigCategoryList(request, itemType, lang=None):
     of 'categories' in this csv.
     itemType: activities / stakeholders
     """
-    if itemType == 'stakeholders':
-        filename = 'scategories.csv'
-    else:
-        filename = 'acategories.csv'
-    # Read and collect all Categories based on CSV list
-    configCategories = ConfigCategoryList()
-    categories_stream = open('%s/%s'
-        % (profile_directory_path(request), filename), 'rb')
-    categories_csv = csv.reader(categories_stream, delimiter=';')
-    for row in categories_csv:
-        # Skip the first row
-        if categories_csv.line_num > 1:
-            configCategories.addCategory(ConfigCategory(*row))
-    # Translation
-    if lang is not None:
-        # TODO
-        if itemType == 'activities':
-            t_filename = 'acategories_translated.csv'
+#    if itemType == 'stakeholders':
+#        filename = 'scategories.csv'
+#    else:
+#        filename = 'acategories.csv'
+#    # Read and collect all Categories based on CSV list
+#    configCategories = ConfigCategoryList()
+#    categories_stream = open('%s/%s'
+#        % (profile_directory_path(request), filename), 'rb')
+#    categories_csv = csv.reader(categories_stream, delimiter=';')
+#    for row in categories_csv:
+#        # Skip the first row
+#        if categories_csv.line_num > 1:
+#            configCategories.addCategory(ConfigCategory(row[0], row[1]))
 
-            translationStream = open('%s/%s'
-                % (profile_directory_path(request), t_filename), 'rb')
-            translationCsv = csv.reader(translationStream, delimiter=';')
-            for row in translationCsv:
-                # Skip the first row
-                if translationCsv.line_num > 1 and len(row) == 2:
-                    c = configCategories.findCategoryById(row[0])
-                    if c is not None:
-                        c.setTranslation(row[1])
+    configCategories = ConfigCategoryList()
+
+    # Query the config categories from database
+    translationQuery = Session.query(
+            Category.fk_category.label('original_id'),
+            Category.name.label('translation')
+        ).\
+        filter(Category.fk_language == 2).\
+        subquery()
+    categories = Session.query(
+            Category.id,
+            Category.name,
+            translationQuery.c.translation
+        ).\
+        filter(Category.type == itemType).\
+        filter(Category.fk_language == 1).\
+        outerjoin(translationQuery,
+            translationQuery.c.original_id == Category.id)
+    for cat in categories.all():
+        configCategories.addCategory(ConfigCategory(cat.id, cat.name,
+            cat.translation))
+
     return configCategories
 
 def getValidKeyTypes():

@@ -196,7 +196,7 @@ class ModerationActivities02(ModerationBase):
             return False
 
         """
-        User 2 (Cambodia moderator)
+        User 2 (Peru moderator)
         """
         session = requests.Session()
         user = self.getUser(2)
@@ -229,7 +229,7 @@ class ModerationActivities02(ModerationBase):
         session = requests.Session()
         user = self.getUser(2)
         session.auth = (user['username'], user['password'])
-        cookies = dict(_PROFILE_='Cambodia')
+        cookies = dict(_PROFILE_='Peru')
 
         request = session.post(
             self.getReviewUrl('activities'),
@@ -240,7 +240,7 @@ class ModerationActivities02(ModerationBase):
         # Make sure the review request returned 401
         if (self.handleResult(
             request.status_code == 401,
-            'The request to do a review as "user2" in Cambodia profile did not return 401 (unauthorized)'
+            'The request to do a review as "user2" in Peru profile did not return 401 (unauthorized)'
         )) is not True:
             return False
 
@@ -250,7 +250,7 @@ class ModerationActivities02(ModerationBase):
         )
         if (self.handleResult(
             self.a1v1.get_status_id() == 1,
-            'The pending Activity was reviewed by request as "2" in Cambodia profile'
+            'The pending Activity was reviewed by request as "2" in Peru profile'
         )) is not True:
             return False
 
@@ -260,7 +260,7 @@ class ModerationActivities02(ModerationBase):
         session = requests.Session()
         user = self.getUser(1)
         session.auth = (user['username'], user['password'])
-        cookies = dict(_PROFILE_='Cambodia')
+        cookies = dict(_PROFILE_='Peru')
 
         request = session.post(
             self.getReviewUrl('activities'),
@@ -271,7 +271,7 @@ class ModerationActivities02(ModerationBase):
         # Make sure the review request returned 401
         if (self.handleResult(
             request.status_code == 401,
-            'The request to do a review as "user1" in Cambodia profile did not return 401 (unauthorized)'
+            'The request to do a review as "user1" in Peru profile did not return 401 (unauthorized)'
         )) is not True:
             return False
 
@@ -281,7 +281,7 @@ class ModerationActivities02(ModerationBase):
         )
         if (self.handleResult(
             self.a1v1.get_status_id() == 1,
-            'The pending Activity was reviewed by request as "user1" in Cambodia profile'
+            'The pending Activity was reviewed by request as "user1" in Peru profile'
         )) is not True:
             return False
 

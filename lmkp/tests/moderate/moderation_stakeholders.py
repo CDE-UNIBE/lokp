@@ -195,7 +195,7 @@ class ModerationStakeholders02(ModerationBase):
             return False
 
         """
-        User 2 (Cambodia moderator)
+        User 2 (Peru moderator)
         """
         session = requests.Session()
         user = self.getUser(2)
@@ -228,7 +228,7 @@ class ModerationStakeholders02(ModerationBase):
         session = requests.Session()
         user = self.getUser(2)
         session.auth = (user['username'], user['password'])
-        cookies = dict(_PROFILE_='Cambodia')
+        cookies = dict(_PROFILE_='Peru')
 
         request = session.post(
             self.getReviewUrl('stakeholders'),
@@ -243,7 +243,7 @@ class ModerationStakeholders02(ModerationBase):
             reviewSuccess = False
         if (self.handleResult(
             reviewSuccess is True and json['success'] is True,
-            'Review request as user2 in Cambodia profile failed.'
+            'Review request as user2 in Peru profile failed.'
         )) is not True:
             return False
 
@@ -253,7 +253,7 @@ class ModerationStakeholders02(ModerationBase):
         )
         if (self.handleResult(
             self.s1v1.get_status_id() == 2,
-            'The pending Stakeholder reviewed by user2 in Cambodia profile is not active after review'
+            'The pending Stakeholder reviewed by user2 in Peru profile is not active after review'
         )) is not True:
             return False
 
