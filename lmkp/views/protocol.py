@@ -415,7 +415,7 @@ class Protocol(object):
                             A_Tag.fk_a_tag_group.label('a_filter_tg_id')
                         ).\
                         join(A_Key).\
-                        join(A_Value).\
+                        join(A_Value, A_Tag.fk_value == A_Value.id).\
                         filter(A_Key.key == col).\
                         filter(__get_filter_expression(prefix, v, op))
                     a_filter_expr.append(q)
@@ -427,7 +427,7 @@ class Protocol(object):
                             SH_Tag.fk_sh_tag_group.label('sh_filter_tg_id')
                         ).\
                         join(SH_Key).\
-                        join(SH_Value).\
+                        join(SH_Value, SH_Tag.fk_value == SH_Value.id).\
                         filter(SH_Key.key == col).\
                         filter(__get_filter_expression(prefix, v, op))
                     sh_filter_expr.append(q)

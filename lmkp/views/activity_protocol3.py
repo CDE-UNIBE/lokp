@@ -1087,7 +1087,7 @@ class ActivityProtocol3(Protocol):
             outerjoin(A_Tag_Group).\
             outerjoin(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
             outerjoin(A_Key).\
-            outerjoin(A_Value).\
+            outerjoin(A_Value, A_Tag.fk_value == A_Value.id).\
             outerjoin(key_translation,
                       key_translation.c.key_original_id == A_Key.id).\
             outerjoin(value_translation,
@@ -1149,7 +1149,7 @@ class ActivityProtocol3(Protocol):
             outerjoin(A_Tag_Group).\
             outerjoin(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
             outerjoin(A_Key).\
-            outerjoin(A_Value).\
+            outerjoin(A_Value, A_Tag.fk_value == A_Value.id).\
             outerjoin(key_translation,
                       key_translation.c.key_original_id == A_Key.id).\
             outerjoin(value_translation,

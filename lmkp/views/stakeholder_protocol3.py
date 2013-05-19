@@ -486,7 +486,7 @@ class StakeholderProtocol3(Protocol):
             join(Changeset).\
             outerjoin(SH_Tag_Group).\
             outerjoin(order_query, order_query.c.id == Stakeholder.id).\
-            filter(Changeset.diff.like("{'stakeholders':%")).\
+            filter(Changeset.diff.like('{"stakeholders":%')).\
             group_by(Stakeholder.id, order_query.c.value)
 
         # TODO: Order only by timestamp
@@ -932,7 +932,7 @@ class StakeholderProtocol3(Protocol):
             outerjoin(SH_Tag_Group).\
             outerjoin(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_sh_tag_group).\
             outerjoin(SH_Key).\
-            outerjoin(SH_Value).\
+            outerjoin(SH_Value, SH_Tag.fk_value == SH_Value.id).\
             outerjoin(key_translation,
                       key_translation.c.key_original_id == SH_Key.id).\
             outerjoin(value_translation,
@@ -995,7 +995,7 @@ class StakeholderProtocol3(Protocol):
             outerjoin(SH_Tag_Group).\
             outerjoin(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_sh_tag_group).\
             outerjoin(SH_Key).\
-            outerjoin(SH_Value).\
+            outerjoin(SH_Value, SH_Tag.fk_value == SH_Value.id).\
             outerjoin(key_translation,
                       key_translation.c.key_original_id == SH_Key.id).\
             outerjoin(value_translation,
