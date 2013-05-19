@@ -284,3 +284,8 @@ a.file-download-button {
     height: 16px !important;
     background-image: url("/static/img/add.png") !important;
 }
+
+div.olControlAttribution {
+    bottom: 5px;
+    right: 5px;
+}

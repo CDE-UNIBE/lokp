@@ -37,12 +37,87 @@ div.form_helptext {
     margin-bottom: 7px;
 }
 
+.formCheckbox {
+    max-height: 300px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+  }
+/* IE 6 doesn't support max-height
+* we use height instead, but this forces the menu to always be this tall
+*/
+* html .formCheckbox {
+    height: 300px;
+}
+
 button.formstepactive {
     background-color: lightgoldenrodyellow !important;
 }
 
 button.formsubmit {
     background-color: darkseagreen !important;
+}
+
+div.formFlashNotice {
+    background: #fff6bf;
+    color: #514721;
+    border: 1px solid #ffd324;
+    padding: 0 10px;
+}
+
+div#create-new-stakeholder {
+    display: none;
+}
+
+div#new-stakeholder-buttons {
+    padding: 10px;
+}
+
+div#select-existing-stakeholder {
+    display: none;
+}
+
+div#stakeholderformcontainer {
+    background-color: lightgoldenrodyellow;
+}
+
+input.readonly {
+    background-color: #E8E8E8 !important;
+    border: 1px solid #B5BCC7 !important;
+}
+
+li.shtoomanyresults {
+    color: orange;
+}
+
+li.shnothingfound {
+    color: darkred;
+}
+
+div#stakeholderformcontainer {
+    padding: 10px;
+    display: none;
+}
+
+span.shautocompletedescription {
+    font-size: 0.8em;
+}
+
+input#shselectinput {
+    width: 300px;
+}
+
+.ui-autocomplete {
+    max-height: 300px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+  }
+/* IE 6 doesn't support max-height
+* we use height instead, but this forces the menu to always be this tall
+*/
+* html .ui-autocomplete {
+    height: 300px;
 }
 
 /* NUMBER SPINNER */

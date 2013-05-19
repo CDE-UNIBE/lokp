@@ -1,5 +1,4 @@
-<fieldset class="deformMappingFieldset" 
-          i18n:domain="deform">
+<fieldset class="deformMappingFieldset">
 
     <!-- mapping -->
 
@@ -10,10 +9,12 @@
     <ul>
         % if field.errormsg:
             <li class="errorLi">
-                <h3 class="errorMsgLbl"
-                    i18n:translate=""
-                >There was a problem with this section</h3>
-                <p class="errorMsg">${field.errormsg}</p>
+                <h3 class="errorMsgLbl">
+                    ${_("There was a problem with this section")}
+                </h3>
+                <p class="errorMsg">
+                    ${_(field.errormsg)}
+                </p>
             </li>
         % endif
 
