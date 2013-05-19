@@ -30,6 +30,7 @@ CREATE TABLE data.categories
 WITH (
   OIDS=FALSE
 );
+ALTER TABLE data.categories OWNER TO lmkpeditor;
 
 INSERT INTO data.categories(id, name, type, fk_language, description, fk_category) VALUES
   (1, 'Spatial Data', 'activities', 1, NULL, NULL),
