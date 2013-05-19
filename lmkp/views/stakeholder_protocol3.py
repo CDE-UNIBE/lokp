@@ -228,7 +228,7 @@ class StakeholderProtocol3(Protocol):
                 join(Changeset).\
                 filter(Stakeholder.identifier == sh.get_guid()).\
                 filter(Stakeholder.fk_status == 1).\
-                filter(Changeset.diff.like("{'stakeholders':%"))
+                filter(Changeset.diff.like('{"stakeholders":%'))
 
             pending_dict = {
                 'pending_count': pending_count_query.count()
