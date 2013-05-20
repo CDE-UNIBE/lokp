@@ -1,7 +1,7 @@
 import colander
 import copy
-import csv
 import deform
+from pyramid.i18n import get_localizer
 import yaml
 
 from lmkp.config import profile_directory_path
@@ -248,14 +248,14 @@ class ConfigCategory(object):
             else self.getName())
         cat_form = colander.SchemaNode(
             colander.Mapping(),
-            name=self.getId(),
+            name=str(self.getId()),
             title=title
         )
         for thg in sorted(self.getThematicgroups(), key=lambda thmg: thmg.order):
             # Get the Form for each Thematicgroup
             thg_form = thg.getForm()
             thg_form.missing = colander.null
-            thg_form.name = thg.getId()
+            thg_form.name = str(thg.getId())
             cat_form.add(thg_form)
         return cat_form
 
@@ -679,10 +679,7 @@ class ConfigTag(object):
             choiceslist = [('', '- Select -')]
             for v in sorted(self.getValues(),
                 key=lambda val: val.getOrderValue()):
-                choiceslist.append((
-                    unicode(v.getName(), 'utf-8'),
-                    unicode(v.getTranslation(), 'utf-8')
-                ))
+                choiceslist.append((v.getName(), v.getTranslation()))
             choices = tuple(choiceslist)
             form = colander.SchemaNode(
                 colander.String(),
@@ -700,10 +697,7 @@ class ConfigTag(object):
             choices = []
             for v in sorted(self.getValues(),
                 key=lambda val: val.getOrderValue()):
-                choices.append((
-                    unicode(v.getName(), 'utf-8'),
-                    unicode(v.getTranslation(), 'utf-8')
-                ))
+                choices.append((v.getName(), v.getTranslation()))
             form = colander.SchemaNode(
                 colander.Set(),
                 widget=CustomCheckboxWidget(
@@ -819,7 +813,7 @@ class ConfigKeyList(object):
         """
         # TODO: Try to speed up (?) by looking directly using the index
         for k in self.getKeys():
-            if k.getId() == str(id):
+            if str(k.getId()) == str(id):
                 return k
         return None
 
@@ -829,14 +823,19 @@ class ConfigKey(object):
     file (csv). This is the lowest structure of the form.
     """
 
-    def __init__(self, id, name, type, helptext, validator):
+    def __init__(self, id, name, type, helptext, description, validator, t_key,
+        t_helptext, t_description):
         self.id = id
         self.name = name
         self.type = type
         self.helptext = helptext
-        self.validator = validator if validator != '' else None
-        self.translated_name = None
-        self.translated_helptext = None
+        # The description (and its translation) are stored but not really used
+        # so far.
+        self.description = description
+        self.validator = validator
+        self.translated_name = t_key
+        self.translated_helptext = t_helptext
+        self.translated_description = t_description
 
     def getId(self):
         """
@@ -951,7 +950,7 @@ class ConfigValueList(object):
         """
         values = []
         for v in self.getValues():
-            if v.getFkkey() == str(fk_key):
+            if str(v.getFkkey()) == str(fk_key):
                 values.append(v)
         return values
 
@@ -961,11 +960,10 @@ class ConfigValue(object):
     file (csv). This is the lowest structure of the form.
     """
 
-    def __init__(self, id, name, fk_key, order):
+    def __init__(self, id, name, fk_key, order, translation):
         self.id = id
         self.name = name
-        # The initial value of the translation is set to be the same as the name
-        self.translation = name
+        self.translation = translation if translation is not None else name
         self.fk_key = fk_key
         self.order = order
 
@@ -1013,85 +1011,103 @@ class ConfigValue(object):
             return self.getOrder()
         return self.getName()
 
-def getConfigKeyList(request, itemType, lang=None):
+def getConfigKeyList(request, itemType):
     """
-    Function to collect and return all the keys from the configuration file
-    (csv).
+    Function to collect and return all the keys from the database. It returns a
+    list of all keys found in the original language along with the translation
+    in the language requested. This list will be filtered later to match the
+    configuration in the (local) YAML.
     itemType: activities / stakeholders
     """
-    if itemType == 'stakeholders':
-        filename = 'skeys.csv'
-    else:
-        filename = 'akeys.csv'
-    # Read and collect all Keys based on CSV list
-    configKeys = ConfigKeyList()
-    keys_stream = open('%s/%s'
-        % (profile_directory_path(request), filename), 'rb')
-    keys_csv = csv.reader(keys_stream, delimiter=';')
-    for row in keys_csv:
-        # Skip the first row
-        if keys_csv.line_num > 1:
-            configKeys.addKey(ConfigKey(*row))
-    # Translation
-    if lang is not None:
-        # TODO
-        if itemType == 'activities':
-            t_filename = 'akeys_translated.csv'
 
-            translationStream = open('%s/%s'
-                % (profile_directory_path(request), t_filename), 'rb')
-            translationCsv = csv.reader(translationStream, delimiter=';')
-            for row in translationCsv:
-                # Skip the first row
-                if translationCsv.line_num > 1 and len(row) == 3:
-                    k = configKeys.findKeyById(row[0])
-                    if k is not None:
-                        k.setTranslation(row[1], row[2])
+    if itemType == 'activities':
+        MappedClass = A_Key
+    elif itemType == 'stakeholders':
+        MappedClass = SH_Key
+
+    configKeys = ConfigKeyList()
+
+    # Query the config keys from database
+    localizer = get_localizer(request)
+    translationQuery = Session.query(
+            MappedClass.fk_key.label('original_id'),
+            MappedClass.key.label('t_key'),
+            MappedClass.helptext.label('t_helptext'),
+            MappedClass.description.label('t_description')
+        ).\
+        join(Language).\
+        filter(Language.locale == localizer.locale_name).\
+        subquery()
+    keys = Session.query(
+            MappedClass.id,
+            MappedClass.key,
+            MappedClass.type,
+            MappedClass.helptext,
+            MappedClass.description,
+            MappedClass.validator,
+            translationQuery.c.t_key,
+            translationQuery.c.t_helptext,
+            translationQuery.c.t_description
+        ).\
+        filter(MappedClass.fk_language == 1).\
+        outerjoin(translationQuery,
+            translationQuery.c.original_id == MappedClass.id)
+    for k in keys.all():
+        configKeys.addKey(ConfigKey(k.id, k.key, k.type, k.helptext,
+            k.description, k.validator, k.t_key, k.t_helptext, k.t_description))
+
     return configKeys
 
-def getConfigValueList(request, itemType, lang=None):
+def getConfigValueList(request, itemType):
     """
-    Function to collect and return all the values from the configuration file
-    (csv).
+    Function to collect and return all the keys from the database. It returns a
+    list of all keys found in the original language with some fk_key value (in
+    order not to return all the values entered by users) along with the
+    translation in the language requested. This list will be filtered later to
+    match the configuration in the (local) YAML.
     itemType: activities / stakeholders
     """
-    if itemType == 'stakeholders':
-        filename = 'svalues.csv'
-    else:
-        filename = 'avalues.csv'
-    # Read and collect all Values based on CSV list
-    configValues = ConfigValueList()
-    values_stream = open('%s/%s'
-        % (profile_directory_path(request), filename), 'rb')
-    values_csv = csv.reader(values_stream, delimiter=';')
-    for row in values_csv:
-        # Skip the first row
-        if values_csv.line_num > 1:
-            configValues.addValue(ConfigValue(*row))
-    # Translation
-    if lang is not None:
-        # TODO
-        if itemType == 'activities':
-            t_filename = 'avalues_translated.csv'
 
-            translationStream = open('%s/%s'
-                % (profile_directory_path(request), t_filename), 'rb')
-            translationCsv = csv.reader(translationStream, delimiter=';')
-            for row in translationCsv:
-                # Skip the first row
-                if translationCsv.line_num > 1 and len(row) == 2:
-                    v = configValues.findValueById(row[0])
-                    if v is not None:
-                        v.setTranslation(row[1])
+    if itemType == 'activities':
+        MappedClass = A_Value
+    elif itemType == 'stakeholders':
+        MappedClass = SH_Value
+
+    configValues = ConfigValueList()
+
+    # Query the config values from database
+    localizer = get_localizer(request)
+    translationQuery = Session.query(
+            MappedClass.fk_value.label('original_id'),
+            MappedClass.value.label('t_value')
+        ).\
+        join(Language).\
+        filter(Language.locale == localizer.locale_name).\
+        subquery()
+    values = Session.query(
+            MappedClass.id,
+            MappedClass.value,
+            MappedClass.fk_key,
+            MappedClass.order,
+            translationQuery.c.t_value
+        ).\
+        filter(MappedClass.fk_language == 1).\
+        filter(MappedClass.fk_key != None).\
+        outerjoin(translationQuery,
+            translationQuery.c.original_id == MappedClass.id)
+    for v in values.all():
+        configValues.addValue(ConfigValue(v.id, v.value, v.fk_key, v.order,
+            v.t_value))
 
     return configValues
 
-def getConfigCategoryList(request, itemType, lang=None):
+def getConfigCategoryList(request, itemType):
     """
-    Function to collect and return all the categories from the configuration
-    file (csv). Both categories and thematic groups are treated as the same type
-    of 'categories' in this csv.
-    itemType: activities / stakeholders
+    Function to collect and return all the categories from the database. It
+    returns a list of all categories found in the original language along with
+    the translation in the language requested. This list will be filtered later
+    to match the configuration in the (local) YAML.
+    - itemType: activities / stakeholders
     """
 #    if itemType == 'stakeholders':
 #        filename = 'scategories.csv'
@@ -1110,11 +1126,13 @@ def getConfigCategoryList(request, itemType, lang=None):
     configCategories = ConfigCategoryList()
 
     # Query the config categories from database
+    localizer = get_localizer(request)
     translationQuery = Session.query(
             Category.fk_category.label('original_id'),
             Category.name.label('translation')
         ).\
-        filter(Category.fk_language == 2).\
+        join(Language).\
+        filter(Language.locale == localizer.locale_name).\
         subquery()
     categories = Session.query(
             Category.id,
@@ -1145,16 +1163,16 @@ def getValidKeyTypes():
         'string'
     ]
 
-def getCategoryList(request, itemType, lang=None):
+def getCategoryList(request, itemType):
     """
     Function to scan through the configuration yaml and put together the list of
     categories which can be used to create the form.
     itemType: activities / stakeholders
     """
     # Scan the configuration files for keys, values and categories
-    configKeys = getConfigKeyList(request, itemType, lang)
-    configValues = getConfigValueList(request, itemType, lang)
-    configCategories = getConfigCategoryList(request, itemType, lang)
+    configKeys = getConfigKeyList(request, itemType)
+    configValues = getConfigValueList(request, itemType)
+    configCategories = getConfigCategoryList(request, itemType)
 
     # Do some first test on the keys: Check that each type is defined correctly
     unknowntypes = []
