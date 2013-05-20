@@ -39,9 +39,6 @@ def renderForm(request, itemType, **kwargs):
     itemJson = kwargs.get('itemJson', None)
     embedded = kwargs.get('embedded', False)
 
-    # TODO: Get this from request or somehow
-    lang = 'fr' # So far, it doesn't matter what stands here
-
     # If an embedded Stakeholder form is submitted, the itemType is still
     # 'activities' although the submitted __formid__ hints at Stakeholders.
     if (itemType == 'activities' and '__formid__' in request.POST
@@ -57,7 +54,7 @@ def renderForm(request, itemType, **kwargs):
     # Activity or Stakeholder
     if itemType == 'activities':
         # The initial category of the form
-        newCategory = 4
+        newCategory = 2
         formid = 'activityform'
     elif itemType == 'stakeholders':
         # The initial category of the form
@@ -105,7 +102,7 @@ def renderForm(request, itemType, **kwargs):
         """
 
     # Get the configuration of the categories (as defined in the config yaml)
-    configCategoryList = getCategoryList(request, itemType, lang)
+    configCategoryList = getCategoryList(request, itemType)
 
     # Collect a list with id and names of all available categories which will be
     # used to create the buttons
@@ -498,8 +495,8 @@ def getFormButtons(request, categorylist, currentCategory=None):
     # Only show categories if there is more than 1 category
     if len(categorylist) > 1:
         for cat in categorylist:
-            b = deform.Button('step_%s' % cat[0], cat[1], css_class='')
-            if currentCategory is not None and cat[0] == str(currentCategory):
+            b = deform.Button('step_%s' % str(cat[0]), cat[1], css_class='')
+            if currentCategory is not None and str(cat[0]) == str(currentCategory):
                 b.css_class='formstepactive'
             buttons.append(b)
     buttons.append(deform.Button('submit', _('Submit'), css_class='formsubmit'))
