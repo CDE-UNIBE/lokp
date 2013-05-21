@@ -262,7 +262,9 @@ class ActivityProtocol3(Protocol):
         else:
             return activities[0]
 
-    def read_one(self, request, uid, public=True):
+    def read_one(self, request, uid, public=True, **kwargs):
+
+        translate = kwargs.get('translate', True)
 
         relevant_activities = self._get_relevant_activities_one(request, uid,
                                                                 public_query=public)
@@ -291,7 +293,7 @@ class ActivityProtocol3(Protocol):
 
         activities = self._query_to_activities(
             request, query, involvements=inv_details, public_query=public,
-            geom=full_geometry
+            geom=full_geometry, translate=translate
         )
 
         return {
@@ -1285,6 +1287,7 @@ class ActivityProtocol3(Protocol):
             query = query.add_columns(
                 A_Tag_Group.geometry.label('tg_geometry')
             )
+        translate = kwargs.get('translate', True)
 
         logged_in, is_moderator = self._get_user_status(
                                                         effective_principals(request))
@@ -1296,9 +1299,10 @@ class ActivityProtocol3(Protocol):
             # Prepare values if needed
             identifier = str(q.identifier)
             taggroup_id = int(q.taggroup) if q.taggroup is not None else None
-            key = q.key_translated if q.key_translated is not None else q.key
-            value = (q.value_translated if q.value_translated is not None else
-                     q.value)
+            key = (q.key_translated if q.key_translated is not None
+                and translate is not False else q.key)
+            value = (q.value_translated if q.value_translated is not None
+                and translate is not False else q.value)
 
             # Use UID and version to find existing ActivityFeature or create a
             # new one
