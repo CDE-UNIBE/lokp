@@ -1073,8 +1073,8 @@ class CreateStakeholders11(CreateBase):
         session = requests.Session()
         user = self.getUser(1)
         session.auth = (user['username'], user['password'])
-        cookies = dict(_PROFILE_='Cambodia')
-        request = session.get( # Explicit, with Cambodia profile
+        cookies = dict(_PROFILE_='Peru')
+        request = session.get( # Explicit, with Peru profile
             self.getDetailsUrl('stakeholders', self.identifier1),
             headers=headers,
             cookies=cookies
@@ -1082,7 +1082,7 @@ class CreateStakeholders11(CreateBase):
         json = request.json()
         if (self.handleResult(
             json['total'] == 0 and len(json['data']) == 0,
-            'User 1 (Laos moderator) sees the pending Stakeholder with Cambodia profile selected and querying it explicitely.'
+            'User 1 (Laos moderator) sees the pending Stakeholder with Peru profile selected and querying it explicitely.'
         )) is not True:
             return False
         session = requests.Session()
@@ -1101,8 +1101,8 @@ class CreateStakeholders11(CreateBase):
             return False
         session = requests.Session()
         session.auth = (user['username'], user['password'])
-        cookies = dict(_PROFILE_='Cambodia')
-        request = session.get( # Filtered, with Cambodia profile
+        cookies = dict(_PROFILE_='Peru')
+        request = session.get( # Filtered, with Peru profile
             self.getFilterUrl('stakeholders', ['Address'], [self.identifier1]),
             headers=headers,
             cookies=cookies
@@ -1110,7 +1110,7 @@ class CreateStakeholders11(CreateBase):
         json = request.json()
         if (self.handleResult(
             json['total'] == 0 and len(json['data']) == 0,
-            'User 1 (Laos moderator) sees the pending Stakeholder with Cambodia profile selected and using a filter to find it.'
+            'User 1 (Laos moderator) sees the pending Stakeholder with Peru profile selected and using a filter to find it.'
         )) is not True:
             return False
         session = requests.Session()
@@ -1772,12 +1772,12 @@ class CreateStakeholders12(CreateBase):
         )) is not True:
             return False
 
-        # User1 should only see the pending Stakeholder in the Cambodia profile
-        # SH, explicit, Cambodia
+        # User1 should only see the pending Stakeholder in the Peru profile
+        # SH, explicit, Peru
         session = requests.Session()
         user = self.getUser(1)
         session.auth = (user['username'], user['password'])
-        cookies = dict(_PROFILE_='Cambodia')
+        cookies = dict(_PROFILE_='Peru')
         request = session.get(
             self.getDetailsUrl('stakeholders', self.identifier1),
             headers=headers,
@@ -1786,17 +1786,17 @@ class CreateStakeholders12(CreateBase):
         json = request.json()
         if (self.handleResult(
             json['total'] == 1 and len(json['data']) == 1,
-            'User1 in Cambodia profile does not see only the active Stakeholder explicitely'
+            'User1 in Peru profile does not see only the active Stakeholder explicitely'
         )) is not True:
             return False
         if (self.handleResult(
             json['data'][0]['status_id'] == 2,
-            'The first Stakeholder User1 sees explicitely in Cambodia profile is not active'
+            'The first Stakeholder User1 sees explicitely in Peru profile is not active'
         )) is not True:
             return False
         if (self.handleResult(
             'involvements' not in json['data'][0],
-            'The active Stakeholder (explicit) User1 sees in Cambodia profile contains involvements'
+            'The active Stakeholder (explicit) User1 sees in Peru profile contains involvements'
         )) is not True:
             return False
 
@@ -1828,12 +1828,12 @@ class CreateStakeholders12(CreateBase):
         )) is not True:
             return False
 
-        # User1 should only see the pending Activity in the Cambodia profile
-        # A, explicit, Cambodia
+        # User1 should only see the pending Activity in the Peru profile
+        # A, explicit, Peru
         session = requests.Session()
         user = self.getUser(1)
         session.auth = (user['username'], user['password'])
-        cookies = dict(_PROFILE_='Cambodia')
+        cookies = dict(_PROFILE_='Peru')
         request = session.get(
             self.getDetailsUrl('activities', self.identifier2),
             headers=headers,
@@ -1842,17 +1842,17 @@ class CreateStakeholders12(CreateBase):
         json = request.json()
         if (self.handleResult(
             json['total'] == 1 and len(json['data']) == 1,
-            'User1 in Cambodia profile does not see only the active Activity explicitely'
+            'User1 in Peru profile does not see only the active Activity explicitely'
         )) is not True:
             return False
         if (self.handleResult(
             json['data'][0]['status_id'] == 2,
-            'The first Activity User1 sees explicitely in Cambodia profile is not active'
+            'The first Activity User1 sees explicitely in Peru profile is not active'
         )) is not True:
             return False
         if (self.handleResult(
             'involvements' not in json['data'][0],
-            'The active Activity (explicit) User1 sees in Cambodia profile contains involvements'
+            'The active Activity (explicit) User1 sees in Peru profile contains involvements'
         )) is not True:
             return False
 

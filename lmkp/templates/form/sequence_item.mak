@@ -5,21 +5,20 @@
     % else:
         class="field"
     % endif
-    title="${field.description}"
-    i18n:domain="deform">
+    title="${field.description}">
 
     <!-- sequence_item -->
 
     <span class="deformCloseButton"
           id="${field.oid}-close"
-          title="Remove"
+          title="${_("Remove")}"
           onClick="javascript:deform.removeSequenceItem(this);"
     >
     </span>
 
     <span class="deformOrderButton"
           id="${field.oid}-order"
-          title="Reorder (via drag and drop)"
+          title="${_("Reorder (via drag and drop)")}"
     >
     </span>
 
@@ -37,8 +36,7 @@
                     id="${'%s-%s' % (errstr, msg.index)}"
                 % endif
                 class="${field.widget.error_class}"
-                i18n:translate=""
-            >${msg}</p>
+            >${_(msg)}</p>
         % endfor
     % endif
 

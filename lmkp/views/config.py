@@ -45,7 +45,8 @@ def form_geomtaggroups(request):
 #    mainkeys = categorylist.getMainkeyWithGeometry()
     mainkeys = [
         'Contract area (ha)',
-        'Current area in operation (ha)'
+        'Current area in operation (ha)',
+        'Intended area (ha)'
     ]
 
     return {'mainkeys': mainkeys}
@@ -139,51 +140,51 @@ def get_mandatory_keys(request, item, translated=False):
 
     return None
 
-def get_current_keys(request, item, profile):
-    """
-    Returns a list of all keys (original, no translation) of a given profile
-    (combined with global profile)
-    """
-
-    if item == 'a':
-        config_yaml = ACTIVITY_YAML
-    elif item == 'sh':
-        config_yaml = STAKEHOLDER_YAML
-
-    # Read the global configuration file
-    global_stream = open("%s/%s" % (profile_directory_path(request), config_yaml), 'r')
-    global_config = yaml.load(global_stream)
-
-    # Read the localized configuration file
-    if profile != 'global':
-        try:
-            locale_stream = open("%s/%s" % (locale_profile_directory_path(request), config_yaml), 'r')
-            locale_config = yaml.load(locale_stream)
-
-            # If there is a localized config file then merge it with the global one
-            global_config = merge_profiles(global_config, locale_config)
-
-        except IOError:
-            # No localized configuration file found!
-            pass
-
-    if 'fields' not in global_config:
-        return None
-
-    fields = global_config['fields']
-
-    keys = []
-    if 'mandatory' in fields:
-        for (name, config) in fields['mandatory'].iteritems():
-            keys.append(name)
-    if 'optional' in fields:
-        for (name, config) in fields['optional'].iteritems():
-            keys.append(name)
-
-    if len(keys) > 0:
-        return keys
-
-    return None
+#def get_current_keys(request, item, profile):
+#    """
+#    Returns a list of all keys (original, no translation) of a given profile
+#    (combined with global profile)
+#    """
+#
+#    if item == 'a':
+#        config_yaml = ACTIVITY_YAML
+#    elif item == 'sh':
+#        config_yaml = STAKEHOLDER_YAML
+#
+#    # Read the global configuration file
+#    global_stream = open("%s/%s" % (profile_directory_path(request), config_yaml), 'r')
+#    global_config = yaml.load(global_stream)
+#
+#    # Read the localized configuration file
+#    if profile != 'global':
+#        try:
+#            locale_stream = open("%s/%s" % (locale_profile_directory_path(request), config_yaml), 'r')
+#            locale_config = yaml.load(locale_stream)
+#
+#            # If there is a localized config file then merge it with the global one
+#            global_config = merge_profiles(global_config, locale_config)
+#
+#        except IOError:
+#            # No localized configuration file found!
+#            pass
+#
+#    if 'fields' not in global_config:
+#        return None
+#
+#    fields = global_config['fields']
+#
+#    keys = []
+#    if 'mandatory' in fields:
+#        for (name, config) in fields['mandatory'].iteritems():
+#            keys.append(name)
+#    if 'optional' in fields:
+#        for (name, config) in fields['optional'].iteritems():
+#            keys.append(name)
+#
+#    if len(keys) > 0:
+#        return keys
+#
+#    return None
 
 @view_config(route_name='config', renderer='json')
 def get_config(request):

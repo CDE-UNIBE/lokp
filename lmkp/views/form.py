@@ -1,31 +1,109 @@
 import colander
+import copy
 import deform
 import logging
 from mako.template import Template
 
 from lmkp.views.form_config import *
 
+from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.httpexceptions import HTTPFound
 from pyramid.path import AssetResolver
+from pyramid.threadlocal import get_current_request
+from pyramid.view import view_config
 
 log = logging.getLogger(__name__)
 
-def renderForm(request, itemType, itemJson=None):
+lmkpAssetResolver = AssetResolver('lmkp')
+
+@view_config(route_name='form_clear_session')
+def form_clear_session(request):
+    """
+    View that can be called to clear the session of any form-related data.
+    Then redirects to url provided as request parameter or to the home view.
+    """
+
+    # Clear the session
+    doClearFormSessionData(request)
+
+    # Redirect to provided url
+    url = request.params.get('url', None)
+    if url is not None:
+        return HTTPFound(location=url)
+
+    # Else redirect home
+    return HTTPFound(request.route_url('/'))
+
+def renderForm(request, itemType, **kwargs):
+
+    itemJson = kwargs.get('itemJson', None)
+    embedded = kwargs.get('embedded', False)
 
     # TODO: Get this from request or somehow
     lang = 'fr' # So far, it doesn't matter what stands here
 
+    # If an embedded Stakeholder form is submitted, the itemType is still
+    # 'activities' although the submitted __formid__ hints at Stakeholders.
+    if (itemType == 'activities' and '__formid__' in request.POST
+        and request.POST['__formid__'] == 'stakeholderform'):
+        itemType = 'stakeholders'
+
+    # If an embedded Stakeholder form is submitted with errors, the 'embedded'
+    # keyword is not set. Instead, a hidden parameter 'embedded' inside the form
+    # can be used to know it is embedded (and AJAX should be used again)
+    if 'embedded' in request.POST:
+        embedded = True
+
+    # Activity or Stakeholder
+    if itemType == 'activities':
+        # The initial category of the form
+        newCategory = 4
+        formid = 'activityform'
+    elif itemType == 'stakeholders':
+        # The initial category of the form
+        newCategory = 1
+        formid = 'stakeholderform'
+    else:
+        raise HTTPBadRequest('Unknown itemType (neither "activities" nor "stakeholders")')
+
+    session = request.session
     oldCategory = None
-    newCategory = 2 # Initial category
+
+    log.debug('Session before processing the form: %s' % session)
 
     # Use a different template rendering engine (mako instead of chameleon)
     deform.Form.set_default_renderer(mako_renderer)
 
+    # Check if anything was submitted at all. If so, remember which category was
+    # the one submitted.
+    formSubmit = False
     if request.POST != {}:
-        # Something was submitted
+        formSubmit = True
         for p in request.POST:
             if p == 'category':
                 oldCategory = request.POST[p]
-    
+                break
+
+    if embedded is True:
+        # An embedded stakeholder form is submitted using AJAX. After the form
+        # was submitted, populate the fields of the Activity form with the
+        # involvement data. A html span element with a unique id is used to mark
+        # the fieldset where the values are to be inserted.
+        ajaxOptions = """
+        {
+            success: function (rText, sText, xhr, form) {
+                if (typeof stakeholderdata !== 'undefined') {
+                    setInvolvementContent(
+                        stakeholderdata['id'],
+                        stakeholderdata['version'],
+                        stakeholderdata['name'],
+                        stakeholderdata['country']
+                    );
+                }
+            }
+        }
+        """
+
     # Get the configuration of the categories (as defined in the config yaml)
     configCategoryList = getCategoryList(request, itemType, lang)
 
@@ -36,41 +114,82 @@ def renderForm(request, itemType, itemJson=None):
         key=lambda cat: cat.order):
         categoryListButtons.append((cat.getId(), cat.getName()))
 
-
     captured = None
     formHasErrors = False
+    templateJavascript = None
 
-    # Check if something was submitted already
+    # Handle form submission
     for p in request.POST:
         if p.startswith('step_') or p == 'submit':
-            # A click was made on one of the category buttons or the final
-            # submit button. Try to validate the submitted form data. For this,
-            # a form is required with the same category that was submitted.
+            # Do a validation of the submitted form data. To do this, it is
+            # necessary to recreate a form with the same category that was
+            # submitted.
 
             # Prepare the form with the submitted category
-            oldschema = addHiddenFields(colander.SchemaNode(colander.Mapping()))
+            oldschema = addHiddenFields(colander.SchemaNode(colander.Mapping()),
+                embedded=embedded)
             oldCat = configCategoryList.findCategoryById(oldCategory)
             if oldCat is not None:
-                oldschema.add(oldCat.getForm(request))
+                oldschema.add(oldCat.getForm())
             buttons = getFormButtons(request, categoryListButtons, oldCategory)
-            form = deform.Form(oldschema, buttons=buttons)
+
+            if embedded is True:
+                # If the form is embedded, use AJAX to submit it.
+                form = deform.Form(oldschema, buttons=buttons, formid=formid,
+                    use_ajax=True, ajax_options=ajaxOptions)
+            else:
+                form = deform.Form(oldschema, buttons=buttons, formid=formid)
 
             try:
                 # Try to validate the form
                 captured = form.validate(request.POST.items())
 
             except deform.ValidationFailure as e:
-                # The submitted values could not be validated. Render the same 
-                # form again (with error messages) but return it later.
+                # The submitted values contains errors. Render the same form
+                # again with error messages. It will be returned later.
                 html = e.render()
                 formHasErrors = True
 
             if formHasErrors is False:
-                # If the form data is valid, store it in the session.
+                # The form is valid, store the captured data in the session.
 
-                # TODO
-                print "****** CAPTURED *****"
-                print captured
+                log.debug('Data captured by the form: %s' % captured)
+
+                posted_formid = request.POST['__formid__']
+
+                # Only store Activity form to session
+                if posted_formid == 'activityform':
+
+                    if 'activity' in session:
+                        # There is already some data in the session.
+                        sessionActivity = session['activity']
+                        if (captured['id'] == sessionActivity['id']
+                            and captured['version'] == sessionActivity['version']
+                            and oldCategory in captured):
+                            # It is the same item as already in the session, add or
+                            # overwrite the form data.
+                            updatedCategory = captured[oldCategory]
+                            sessionActivity[oldCategory] = updatedCategory
+
+                            log.debug('Updated session item: Category %s' % oldCategory)
+
+                        else:
+                            # A different item is already in the session. It will be
+                            # overwriten.
+                            if 'category' in captured:
+                                del(captured['category'])
+                            session['activity'] = captured
+
+                            log.debug('Replaced session item')
+
+                    else:
+                        # No data is in the session yet. Store the captured data
+                        # there.
+                        if 'category' in captured:
+                            del(captured['category'])
+                        session['activity'] = captured
+
+                        log.debug('Added session item')
 
                 if p.startswith('step_'):
                     # A button with a next category was clicked, set a new
@@ -82,14 +201,52 @@ def renderForm(request, itemType, itemJson=None):
                     # The final submit button was clicked. Calculate the diff,
                     # delete the session data and redirect to a confirm page.
 
-                    # TODO
-                    # Redirect
-                    print "*** redirect"
+                    # Activity
+                    if (posted_formid == 'activityform'
+                        and 'activity' in session):
+                        formdata = copy.copy(session['activity'])
+
+                        # TODO: Do the actual POST request to create/update the
+                        # stuff.
+
+                        log.debug('The complete formdata as in the session: %s' % formdata)
+
+                        diff = formdataToDiff(request, formdata, itemType)
+
+                        log.debug('The diff to create/update the activity: %s' % diff)
+
+                        # Clear the session
+                        doClearFormSessionData(request)
+
+                        feedbackMessage = 'Activity Form submitted! (well, actually not yet)'
+
+                    # Stakeholder
+                    elif posted_formid == 'stakeholderform':
+
+                        diff = formdataToDiff(request, captured, itemType)
+
+                        log.debug('The diff to create/update the stakeholder: %s' % diff)
+
+                        # Create or update the Stakeholder
+                        success, js = doStakeholderUpdate(request, diff)
+
+                        if success is True:
+                            # TODO: Translation
+                            feedbackMessage = 'Stakeholder form submitted!'
+                            templateJavascript = js
+
+                        else:
+                            # TODO: Translation
+                            feedbackMessage = 'Error: %s' % js
+
+                    else:
+                        feedbackMessage = 'Error: Unknown form'
+
                     return {
-                        'form': 'Form submitted!',
+                        'form': feedbackMessage,
                         'css_links': [],
                         'js_links': [],
-                        'categories': 'cat_list'
+                        'js': templateJavascript
                     }
 
             break
@@ -97,26 +254,120 @@ def renderForm(request, itemType, itemJson=None):
     if formHasErrors is False:
         # If nothing was submitted or the captured form data was stored
         # correctly, create a form with the (new) current category.
-        newschema = addHiddenFields(colander.SchemaNode(colander.Mapping()))
+        newschema = addHiddenFields(colander.SchemaNode(colander.Mapping()),
+            embedded=embedded)
         newCat = configCategoryList.findCategoryById(newCategory)
         if newCat is not None:
-            newschema.add(newCat.getForm(request))
+            newschema.add(newCat.getForm())
         buttons = getFormButtons(request, categoryListButtons, newCategory)
-        form = deform.Form(newschema, buttons=buttons)
 
-        # If there was an item provided to show in the form (to edit), get the
-        # data of this item to populate the form.
-        if itemJson is not None:
+        if embedded is True:
+            # If the form is embedded, use AJAX to submit it.
+            form = deform.Form(newschema, buttons=buttons, formid=formid,
+                use_ajax=True, ajax_options=ajaxOptions)
+        else:
+            form = deform.Form(newschema, buttons=buttons, formid=formid)
+
+        # The form contains empty data by default
+        data = {'category': newCategory}
+
+        # Decide which data to show in the form
+        if itemJson is not None and 'activity' not in session:
+            # An item was provided to show in the form (edit form) and no values
+            # are in the session yet.
+            # Simply show the data of the provided item in the form.
             data = getFormdataFromItemjson(request, itemJson, itemType,
                 newCategory)
+        elif itemJson is not None and 'activity' in session:
+            # An item was provided to show in the form (edit form) and there are
+            # some values in the session.
+
+            sessionActivity = copy.copy(session['activity'])
+
+            if (itemJson['id'] == sessionActivity['id']
+                and itemJson['version'] == sessionActivity['version']):
+                # The item in the session and the item provided are the same.
+                if str(newCategory) in sessionActivity:
+                    # The current category of the form is already in the session
+                    # so we display this data.
+                    sessionActivity['category'] = newCategory
+                    data = sessionActivity
+                else:
+                    # The current category of the form is not yet in the session
+                    # so we use the data of the itemjson to populate the form.
+                    data = getFormdataFromItemjson(request, itemJson, itemType,
+                        newCategory)
+                if formSubmit is False:
+                    # If the form is rendered for the first time, inform the
+                    # user that session was used.
+                    session.flash('Unsaved data of this item was found in the session. You may continue to edit this form.<br/><a href="/form/clearsession?url=%s">Click here to delete the session data to clear the form.</a>' % request.url)
+
+            else:
+                # The item in the session is not the same as the item provided.
+                # Use the itemjson to populate the form
+                data = getFormdataFromItemjson(request, itemJson, itemType,
+                    newCategory)
+
+                # Inform the user that there is data in the session.
+                item_name = (sessionActivity['id'][:6]
+                    if sessionActivity['id'] != colander.null
+                    else 'New Activity')
+                if sessionActivity['id'] != colander.null:
+                    item_url = request.route_url('activities_read_one',
+                        output='form', uid=sessionActivity['id'])
+                else:
+                    item_url = request.route_url('activities_read_many',
+                        output='form')
+                session.flash('Unsaved data from another form (item: %s) was found in the session and will be deleted if you edit this form.<br/><a href="%s">Click here to see the other item and submit it.</a>' % (item_name, item_url))
+
+        elif itemJson is None and 'activity' in session:
+            # No item was provided (create form) but some data was found in the
+            # session.
+
+            if (session['activity']['id'] != colander.null
+                and session['activity']['version'] != colander.null):
+                # The item in the session is not new. Show empty form data 
+                # (already defined) and inform the user.
+                item_name = (session['activity']['id'][:6]
+                    if session['activity']['id'] != colander.null
+                    else 'Unknown Activity')
+                if session['activity']['id'] != colander.null:
+                    item_url = request.route_url('activities_read_one',
+                        output='form', uid=session['activity']['id'])
+                else:
+                    item_url = request.route_url('activities_read_many',
+                        output='form')
+                session.flash('Unsaved data from another form (item: %s) was found in the session and will be deleted if you edit this form.<br/><a href="%s">Click here to see the other item and submit it.</a>' % (item_name, item_url))
+
+            else:
+                # Use the data in the session to populate the form.
+                sessionActivity = copy.copy(session['activity'])
+                sessionActivity['category'] = newCategory
+                data = sessionActivity
+                if formSubmit is False and embedded is False:
+                    # If the form is rendered for the first time, inform the
+                    # user that session was used.
+                    session.flash('Unsaved data of this item was found in the session. You may continue to edit this form.<br/><a href="/form/clearsession?url=%s">Click here to delete the session data to clear the form.</a>' % request.url)
+        
         else:
+            # No itemjson and no sessionitem, do nothign (empty data already defined above)
             # If there is no existing item, show the form with empty data
-            data = {}
+            pass # Empty data already defined above
+
+#        log.debug('Data used to populate the form: %s' % data)
 
         html = form.render(data)
 
+    # If the current category contains involvements (eg. to add Stakeholders to
+    # an Activity), show a (initially empty) div which will contain the form for
+    # Stakeholders.
+    if str(newCategory) in configCategoryList.getInvolvementCategoryIds():
+        html += '<div id="stakeholderformcontainer"></div>'
+
     # Add JS and CSS requirements (for widgets)
     resources = form.get_widget_resources()
+
+    log.debug('Session after processing the form: %s' % session)
 
     return {
         'form': html,
@@ -124,13 +375,83 @@ def renderForm(request, itemType, itemJson=None):
         'js_links': resources['js']
     }
 
-def addHiddenFields(schema):
+def doClearFormSessionData(request):
+    """
+    Function to clear the session of any form-related data.
+    """
+    # Clear the session of any form data
+    if 'activity' in request.session:
+        del(request.session['activity'])
+
+def doStakeholderUpdate(request, diff):
+    """
+    Function to do the update / create of a Stakeholder.
+    Returns a boolean indicating the success of the update and an additional
+    variable (js)
+    If the update was successful, 'success' is True and 'js' contains a JS dict
+    variable (stakeholderdata) which contains some information about the created
+    Stakeholder verison.
+    If the update ws not successful, 'success' is False and 'js' contains an
+    error message.
+    """
+    from lmkp.models.meta import DBSession as Session
+    from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
+    stakeholder_protocol = StakeholderProtocol3(Session)
+
+    # Use the protocol to create/update the Stakeholder
+    ids = stakeholder_protocol.create(request, data=diff)
+
+    if ids is None or len(ids) != 1:
+        # TODO: Translation
+        return False, 'The Stakeholder could not be created / updated.'
+
+    stakeholder = ids[0]
+
+    # Use the protocol to query the created item
+    shFeature = stakeholder_protocol.read_one_by_version(request,
+        stakeholder.identifier, stakeholder.version)
+
+    if shFeature is None:
+        return False, 'The Stakeholder was created but not found.'
+
+    # TODO: Make this more dynamic
+    nameKey = 'Name'
+    countryKey = 'Country of origin'
+
+    # TODO: Translation
+    unknownString = 'Unknown'
+
+    name = unknownString
+    country = unknownString
+    for tg in shFeature.get_taggroups():
+        if tg.get_tag_by_key(countryKey) is not None:
+            country = tg.get_tag_by_key(countryKey).get_value()
+        if tg.get_tag_by_key(nameKey) is not None:
+            name = tg.get_tag_by_key(nameKey).get_value()
+
+    js = """
+    {
+        var stakeholderdata = {
+            id: "%s",
+            version: %s,
+            name: "%s",
+            country: "%s"
+        }
+    }
+    """ % (stakeholder.identifier, stakeholder.version,
+        name, country)
+
+    return True, js
+
+def addHiddenFields(schema, embedded=False):
     """
     Function to add hidden fields (for meta data of the item) to a form schema.
     Fields are added for:
     - id (the identifier of the item)
     - version (the version being edited)
     - category (the category of the form which is being edited)
+    [- embedded]: When submitting an embedded form with AJAX, it is necessary to
+    re-render this form in embedded mode (to use AJAX again on submission)
     """
     # For some reason, the deform.widget.HiddenWidget() does not seem to work.
     # Instead, the TextInputWidget is used with the hidden template.
@@ -155,6 +476,15 @@ def addHiddenFields(schema):
         title='',
         missing = colander.null
     ))
+    if embedded is True:
+        schema.add(colander.SchemaNode(
+            colander.Boolean(),
+            widget=deform.widget.TextInputWidget(template='hidden'),
+            name='embedded',
+            title='',
+            missing = False
+        ))
+
     return schema
 
 def getFormButtons(request, categorylist, currentCategory=None):
@@ -165,15 +495,17 @@ def getFormButtons(request, categorylist, currentCategory=None):
     """
     _ = request.translate
     buttons = []
-    for cat in categorylist:
-        b = deform.Button('step_%s' % cat[0], cat[1], css_class='')
-        if currentCategory is not None and cat[0] == str(currentCategory):
-            b.css_class='formstepactive'
-        buttons.append(b)
+    # Only show categories if there is more than 1 category
+    if len(categorylist) > 1:
+        for cat in categorylist:
+            b = deform.Button('step_%s' % cat[0], cat[1], css_class='')
+            if currentCategory is not None and cat[0] == str(currentCategory):
+                b.css_class='formstepactive'
+            buttons.append(b)
     buttons.append(deform.Button('submit', _('Submit'), css_class='formsubmit'))
     return buttons
 
-def getFormdataFromItemjson(request, itemJson, itemType, category):
+def getFormdataFromItemjson(request, itemJson, itemType, category=None):
     """
     Use the JSON representation of a feature (Activity or Stakeholder) to get
     the values in a way the form can handle to display it. This can be used to
@@ -197,6 +529,48 @@ def getFormdataFromItemjson(request, itemJson, itemType, category):
         'version': itemJson['version'],
         'category': category
     }
+
+    if (category is not None and 'involvements' in itemJson
+        and str(category) in categorylist.getInvolvementCategoryIds()):
+        # Have a look at the involvements
+        involvements = itemJson['involvements']
+
+        # Primary or secondary investor?
+        thmg = categorylist.findThematicgroupByInvolvement('primaryinvestor')
+
+        # TODO: Do not always use the first involvement as the primary investor
+        primaryinvestor = involvements[0]
+
+        investordata = primaryinvestor['data']
+
+        identifier = investordata['id']
+        version = primaryinvestor['version']
+        role = primaryinvestor['role_id']
+
+        # TODO: Make this more dynamic
+        # Name and Country of origin
+        name = ''
+        country = ''
+        for tg in investordata['taggroups']:
+            maintag = tg['main_tag']
+            if maintag['key'] == 'Name':
+                name = maintag['value']
+            if maintag['key'] == 'Country of origin':
+                country = maintag['value']
+        
+        cat = {
+            thmg.getId(): {
+                '1': {
+                    'id': identifier,
+                    'version': version,
+                    'role_id': role,
+                    'name': name,
+                    'country': country
+                }
+            }
+        }
+
+        data[str(category)] = cat
 
     for taggroup in taggroups:
 
@@ -263,14 +637,14 @@ def getFormdataFromItemjson(request, itemJson, itemType, category):
             # can be added
             # Add the category only if the category is to be visible in the
             # current form.
-            if category is not None and cat == str(category):
+            if category is None or cat == str(category):
                 data[cat] = {thmg: {tgid: tagsdata}}
 
     log.debug('Formdata created by ItemJSON: %s' % data)
     
     return data
 
-def formdataToDiff(request, newform, itemType, category):
+def formdataToDiff(request, newform, itemType, category=None):
     """
     Use the formdata captured on submission of the form and compare it with the
     old version of an object to create a diff which allows to create/update the
@@ -348,19 +722,23 @@ def formdataToDiff(request, newform, itemType, category):
 
     if 'category' in newform:
         # Category should be the same as parameter in function
-        if newform['category'] != category:
+        if category is not None and newform['category'] != category:
             log.debug('NOT THE SAME CATEGORIES: %s vs %s' % (newform['category'], category))
         del newform['category']
+
+    if 'embedded' in newform:
+        # Embedded indicator is to be removed
+        del newform['embedded']
 
     if identifier != colander.null and version != colander.null:
 
         # Use the protocol to query the values of the version which was edited
+        from lmkp.models.meta import DBSession as Session
         if itemType == 'stakeholders':
-            # TODO: Make this work for stakeholders as well.
-            print "**STAKEHOLDERS NOT YET IMPLEMENTED**"
+            from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
+            protocol = StakeholderProtocol3(Session)
         else:
             from lmkp.views.activity_protocol3 import ActivityProtocol3
-            from lmkp.models.meta import DBSession as Session
             protocol = ActivityProtocol3(Session)
 
         item = protocol.read_one_by_version(
@@ -378,12 +756,44 @@ def formdataToDiff(request, newform, itemType, category):
         if 'category' in oldform:
             del oldform['category']
 
+        for (oldcat, othmgrps) in oldform.iteritems():
+            # It is not sure that all of the form is in the session (the
+            # newform variable). This is the case for example if a user did not
+            # open a category of the form when editing the item.
+
+            if oldcat not in newform:
+                # For each category which is not in the newform but in the old
+                # original form, copy the original to the newform.
+                for (oldthmgrp, oldtgroups) in othmgrps.iteritems():
+                    # Because the values in the newform are rendered when
+                    # submitted by the form, some values of the original form
+                    # (which was not captured) need to be adopted to match.
+                    for (oldtgroup, oldtags) in oldtgroups.iteritems():
+                        if not isinstance(oldtags, list):
+                            if 'tg_id' not in oldtags:
+                                oldtags['tg_id'] = colander.null
+                            for (oldkey, oldvalue) in oldtags.iteritems():
+                                if isinstance(oldvalue, list):
+                                    oldtags[oldkey] = set(oldvalue)
+
+                newform[oldcat] = othmgrps
+
+    categorylist = getCategoryList(request, itemType)
     taggroupdiffs = []
 
     # Loop the newform to check if there are taggroups which changed or are new
 
     # Loop the categories of the form
     for (cat, thmgrps) in newform.iteritems():
+
+        if cat in categorylist.getInvolvementCategoryIds():
+            # TODO
+            print "***DO SOMETHING ELSE"
+            print cat
+            print thmgrps
+            print "***"
+            continue
+
         # Loop the thematic groups of the category
         for (thmgrp, tgroups) in thmgrps.iteritems():
             # Loop the tags of each taggroup
@@ -398,6 +808,10 @@ def formdataToDiff(request, newform, itemType, category):
                         # Taggroup was there before because it contains a tg_id.
                         # Check if it contains changed values.
 
+                        # Make a copy of the tags because the function to find
+                        # and remove below modifies t.
+                        t_copy = copy.copy(t)
+
                         # Try to find the taggroup by its tg_id in the oldform
                         oldform, oldtaggroup = findRemoveTgByCategoryThematicgroupTgid(
                             oldform, cat, thmgrp, t['tg_id'])
@@ -410,7 +824,7 @@ def formdataToDiff(request, newform, itemType, category):
                         deletedtags = []
                         addedtags = []
 
-                        for (k, v) in t.iteritems():
+                        for (k, v) in t_copy.iteritems():
 
                             if (k != 'tg_id'):
                                 if (k in oldtaggroup
@@ -444,7 +858,7 @@ def formdataToDiff(request, newform, itemType, category):
                                         'key': k,
                                         'value': v
                                     })
-                                elif (k in oldtaggroup and v != oldtaggroup[k]
+                                elif (k in oldtaggroup and str(v) != oldtaggroup[k]
                                     and v == colander.null):
                                     # If a key was in the oldform but not in the
                                     # new one anymore, add it as deleted.
@@ -609,7 +1023,11 @@ def mako_renderer(tmpl_name, **kw):
     It seems to be necessary to locate the templates by using the asset
     resolver.
     """
-    lmkp = AssetResolver('lmkp')
-    resolver = lmkp.resolve('templates/form/%s.mak' % tmpl_name)
+    resolver = lmkpAssetResolver.resolve('templates/form/%s.mak' % tmpl_name)
     template = Template(filename=resolver.abspath())
+
+    # Make the translation method (_) available in the templates.
+    request = get_current_request()
+    kw['_'] = request.translate
+
     return template.render(**kw)
