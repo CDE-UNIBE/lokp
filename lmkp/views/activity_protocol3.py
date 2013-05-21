@@ -1713,6 +1713,18 @@ class ActivityProtocol3(Protocol):
 
             # Main Tag: First reset it. Then try to get it (its key and value)
             # from the dict.
+
+            # TODO: Once the new form is in place, replace the code below
+            # (maintag should be mandatory!)
+
+            # The Main is indeed mandatory.
+#            try:
+#                main_tag = taggroup['main_tag']
+#                main_tag_key = main_tag['key']
+#                main_tag_value = main_tag['value']
+#            except KeyError:
+#                raise HTTPBadRequest(detail="No Main Tag provided. Taggroup %s has no taggroup." % taggroup)
+
             # The Main Tag is not mandatory.
             main_tag = None
             main_tag_key = None
@@ -1723,6 +1735,8 @@ class ActivityProtocol3(Protocol):
                 main_tag_value = main_tag['value']
             except KeyError:
                 pass
+
+            # TODO: End of replace
 
             # Loop all tags within a tag group
             for tag in taggroup['tags']:
@@ -1745,7 +1759,7 @@ class ActivityProtocol3(Protocol):
                 # yes, set the main_tag attribute to this tag
                 try:
                     if (a_tag.key.key == main_tag_key
-                        and a_tag.value.value == str(main_tag_value)):
+                        and a_tag.value.value == unicode(main_tag_value)):
                         db_tg.main_tag = a_tag
                 except AttributeError:
                     pass

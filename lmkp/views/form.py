@@ -58,7 +58,7 @@ def renderForm(request, itemType, **kwargs):
         formid = 'activityform'
     elif itemType == 'stakeholders':
         # The initial category of the form
-        newCategory = 1
+        newCategory = 40
         formid = 'stakeholderform'
     else:
         raise HTTPBadRequest('Unknown itemType (neither "activities" nor "stakeholders")')
@@ -634,6 +634,11 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
 
         # Get the category and thematic group based on the maintag
         mt = taggroup['main_tag']
+
+        if mt is None:
+            # If the maintag is empty, move on and do not add it to the form
+            continue
+
         cat, thmg, tg = categorylist.findCategoryThematicgroupTaggroupByMainkey(
             mt['key'])
 
@@ -975,7 +980,11 @@ def formdataToDiff(request, newform, itemType, category=None):
                                                     'key': k,
                                                     'value': value,
                                                     'op': 'add'
-                                                }]
+                                                }],
+                                                'main_tag': {
+                                                    'key': k,
+                                                    'value': value
+                                                }
                                             })
                                         else:
                                             # Try to find and remove the
@@ -999,6 +1008,31 @@ def formdataToDiff(request, newform, itemType, category=None):
 
                         # Put together diff for taggroup
                         elif len(addedtags) > 0:
+
+                            # Newly added taggroups need to have a valid 
+                            # main_tag. We need to find out the main_tag of the
+                            # current taggroup for the diff
+                            cCat = categorylist.findCategoryById(cat)
+                            if cCat is None:
+                                continue
+
+                            cThmg = cCat.findThematicgroupById(thmgrp)
+                            if cThmg is None:
+                                continue
+
+                            cTg = cThmg.findTaggroupById(tgroup)
+                            if cTg is None:
+                                continue
+
+                            mainkey = cTg.getMaintag().getKey().getName()
+
+                            if mainkey is None or mainkey not in t:
+                                continue
+
+                            mainvalue = t[mainkey]
+                            if mainvalue is None:
+                                continue
+
                             tagdiffs = []
                             for at in addedtags:
                                 tagdiffs.append({
@@ -1008,7 +1042,11 @@ def formdataToDiff(request, newform, itemType, category=None):
                                 })
                             taggroupdiffs.append({
                                 'op': 'add',
-                                'tags': tagdiffs
+                                'tags': tagdiffs,
+                                'main_tag': {
+                                    'key': mainkey,
+                                    'value': mainvalue
+                                }
                             })
 
     # Loop the oldform to check if there are any tags remaining which have

@@ -389,92 +389,6 @@ class ConfigThematicgroup(object):
 
         return thg_form
 
-def getInvolvementWidget(involvementData):
-    """
-    Return a widget to be used to display Involvements. This is only a short
-    display-only representation of a Stakeholder.
-    """
-
-    # By default don't show the widget in a sequence.
-    sequence = False
-
-    # Special settings for specific involvementData
-    if involvementData == 'secondaryinvestor':
-        sequence = True
-        # TODO: Translation
-        add_subitem_text = 'Add Secondary Investor'
-
-    involvementShortForm = colander.SchemaNode(
-        colander.Mapping(),
-        widget=deform.widget.MappingWidget(
-            template='customInvolvementMapping'
-        ),
-        name=involvementData,
-        title=''
-    )
-
-    involvementShortForm.add(colander.SchemaNode(
-        colander.String(),
-        widget=deform.widget.TextInputWidget(template='hidden'),
-        name='id',
-        title='',
-        missing = colander.null
-    ))
-    involvementShortForm.add(colander.SchemaNode(
-        colander.Int(),
-        widget=deform.widget.TextInputWidget(template='hidden'),
-        name='version',
-        title='',
-        missing = colander.null
-    ))
-    involvementShortForm.add(colander.SchemaNode(
-        colander.Int(),
-        widget=deform.widget.TextInputWidget(template='hidden'),
-        name='role_id',
-        title='',
-        missing = 6
-    ))
-
-    involvementShortForm.add(colander.SchemaNode(
-        colander.String(),
-        widget=deform.widget.TextInputWidget(
-            template='readonly/custom_textinput_readonly'
-        ),
-        name='name',
-        # TODO: Translate
-        title='Name',
-        missing = colander.null
-    ))
-
-    involvementShortForm.add(colander.SchemaNode(
-        colander.String(),
-        widget=deform.widget.TextInputWidget(
-            template='readonly/custom_textinput_readonly'
-        ),
-        name='country',
-        # TODO: Translate
-        title='Country of origin',
-        missing = colander.null
-    ))
-
-    if sequence is False:
-        # If no sequence is required, return the node as it is
-        return involvementShortForm
-
-    else:
-        # If a sequence is required, pack the node in a sequence and return it
-        return colander.SchemaNode(
-            colander.Sequence(),
-            involvementShortForm,
-            widget=deform.widget.SequenceWidget(
-                min_len = 0,
-                add_subitem_text_template = add_subitem_text,
-            ),
-            missing=colander.null,
-            name=involvementData,
-            title=''
-        )
-
 class ConfigTaggroupList(object):
     """
     A class representing a list of Form Taggroups.
@@ -1031,6 +945,92 @@ class ConfigValue(object):
         if self.getOrder() != '':
             return self.getOrder()
         return self.getName()
+
+def getInvolvementWidget(involvementData):
+    """
+    Return a widget to be used to display Involvements. This is only a short
+    display-only representation of a Stakeholder.
+    """
+
+    # By default don't show the widget in a sequence.
+    sequence = False
+
+    # Special settings for specific involvementData
+    if involvementData == 'secondaryinvestor':
+        sequence = True
+        # TODO: Translation
+        add_subitem_text = 'Add Secondary Investor'
+
+    involvementShortForm = colander.SchemaNode(
+        colander.Mapping(),
+        widget=deform.widget.MappingWidget(
+            template='customInvolvementMapping'
+        ),
+        name=involvementData,
+        title=''
+    )
+
+    involvementShortForm.add(colander.SchemaNode(
+        colander.String(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='id',
+        title='',
+        missing = colander.null
+    ))
+    involvementShortForm.add(colander.SchemaNode(
+        colander.Int(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='version',
+        title='',
+        missing = colander.null
+    ))
+    involvementShortForm.add(colander.SchemaNode(
+        colander.Int(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='role_id',
+        title='',
+        missing = 6
+    ))
+
+    involvementShortForm.add(colander.SchemaNode(
+        colander.String(),
+        widget=deform.widget.TextInputWidget(
+            template='readonly/custom_textinput_readonly'
+        ),
+        name='name',
+        # TODO: Translate
+        title='Name',
+        missing = colander.null
+    ))
+
+    involvementShortForm.add(colander.SchemaNode(
+        colander.String(),
+        widget=deform.widget.TextInputWidget(
+            template='readonly/custom_textinput_readonly'
+        ),
+        name='country',
+        # TODO: Translate
+        title='Country of origin',
+        missing = colander.null
+    ))
+
+    if sequence is False:
+        # If no sequence is required, return the node as it is
+        return involvementShortForm
+
+    else:
+        # If a sequence is required, pack the node in a sequence and return it
+        return colander.SchemaNode(
+            colander.Sequence(),
+            involvementShortForm,
+            widget=deform.widget.SequenceWidget(
+                min_len = 0,
+                add_subitem_text_template = add_subitem_text,
+            ),
+            missing=colander.null,
+            name=involvementData,
+            title=''
+        )
 
 def getConfigKeyList(request, itemType):
     """
