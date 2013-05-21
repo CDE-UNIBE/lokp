@@ -4,9 +4,12 @@ import deform
 from pyramid.i18n import get_localizer
 import yaml
 
+from lmkp.config import locale_profile_directory_path
 from lmkp.config import profile_directory_path
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
+from lmkp.views.config import NEW_ACTIVITY_YAML
+from lmkp.views.config import NEW_STAKEHOLDER_YAML
 
 import logging
 log = logging.getLogger(__name__)
@@ -140,7 +143,7 @@ class ConfigCategoryList(object):
         for cat in self.getCategories():
             for thg in cat.getThematicgroups():
                 if thg.getInvolvementData() is not None:
-                    categories.append(cat.getId())
+                    categories.append(str(cat.getId()))
         return categories
 
     def checkValidKeyValue(self, key, value):
@@ -227,6 +230,15 @@ class ConfigCategory(object):
         """
         return self.thematicgroups
 
+    def findThematicgroupById(self, id):
+        """
+        Find and return a thematic group based on its id.
+        """
+        for thmg in self.getThematicgroups():
+            if str(thmg.getId()) == str(id):
+                return thmg
+        return None
+
     def setOrder(self, order):
         """
         Set the order of this category.
@@ -295,6 +307,15 @@ class ConfigThematicgroup(object):
         Return a list of all taggroups in this thematic group.
         """
         return self.taggroups
+
+    def findTaggroupById(self, id):
+        """
+        Find and return a taggroup based on its id.
+        """
+        for tg in self.getTaggroups():
+            if str(tg.getId()) == str(id):
+                return tg
+        return None
 
     def getName(self):
         """
@@ -520,7 +541,7 @@ class ConfigTaggroup(object):
 
     def getTags(self):
         """
-        Return a list of all thematic groups in this category.
+        Return a list of all tags in this taggroup.
         """
         return self.tags
 
@@ -1187,10 +1208,10 @@ def getCategoryList(request, itemType):
 
     # Load the yaml
     if itemType == 'stakeholders':
-        # TODO
-        filename = 'new_stakeholder.yml'
+        filename = NEW_STAKEHOLDER_YAML
     else:
-        filename = 'new_activities.yml'
+        filename = NEW_ACTIVITY_YAML
+
     yaml_stream = open("%s/%s"
         % (profile_directory_path(request), filename), 'r')
     yaml_config = yaml.load(yaml_stream)
@@ -1312,6 +1333,126 @@ def getCategoryList(request, itemType):
             category.addThematicgroup(thematicgroup)
 
         categorylist.addCategory(category)
+
+    # Look for local profiles if there is any local profile set.
+    local_yaml_config = None
+    if (locale_profile_directory_path(request)
+        != profile_directory_path(request)):
+        try:
+            local_yaml_stream = open("%s/%s"
+                % (locale_profile_directory_path(request), filename), 'r')
+            local_yaml_config = yaml.load(local_yaml_stream)
+        except IOError:
+            pass
+
+    # Apply the configuration of the local yaml. So far, only additional
+    # categories, taggroups and keys can be defined in the local yaml. It is not
+    # yet possible to remove any categories or keys.
+    if local_yaml_config is not None and 'fields' in local_yaml_config:
+
+        # Loop the categories of the local yaml config file
+        for (cat_id, thmgrps) in local_yaml_config['fields'].iteritems():
+            newCategory = False
+
+            # Try to find the category in the existing configuration
+            category = categorylist.findCategoryById(cat_id)
+
+            if category is None:
+                # If the category is not in the existing configuration, it needs
+                # to be found in the database
+                category = configCategories.findCategoryById(cat_id)
+                newCategory = True
+
+            if category is None:
+                # If category is still not found, skip it
+                continue
+
+            # Loop the thematic groups of the local yaml config file
+            for (thmgrp_id, taggroups) in thmgrps.iteritems():
+                newThematicgroup = False
+
+                # Try to find the thematic group in the existing configuration
+                thematicgroup = category.findThematicgroupById(thmgrp_id)
+
+                if thematicgroup is None:
+                    # If the thematic group is not in the existing config, it
+                    # needs to be found in the database
+                    thmg = configCategories.findCategoryById(thmgrp_id)
+                    if thmg is not None:
+                        # Create a thematicgroupobject out of it
+                        thematicgroup = ConfigThematicgroup(
+                            thmg.getId(),
+                            thmg.getName(),
+                            thmg.getTranslation()
+                        )
+                        newThematicgroup = True
+                    else:
+                        # If the thematic group is still not found, skip it
+                        continue
+
+                # Loop the taggroups of the local yaml config file
+                for (tgroup_id, tags) in taggroups.iteritems():
+                    newTaggroup = False
+
+                    # Try to find the taggroup in the existing configuration
+                    taggroup = thematicgroup.findTaggroupById(tgroup_id)
+
+                    if taggroup is None:
+                        # If the taggroup is not in the existing config, it
+                        # needs to be created
+                        taggroup = ConfigTaggroup(tgroup_id)
+                        newTaggroup = True
+
+                    # Loop the keys of the taggroup
+                    for (key_id, key_config) in tags.iteritems():
+
+                        # Make sure the key exists in the database
+                        configKey = configKeys.findKeyById(key_id)
+                        if configKey is None:
+                            unknownkeys.append(str(key_id))
+                            continue
+
+                        # Create the configtag object
+                        tag = ConfigTag()
+                        tag.setKey(copy.copy(configKey))
+
+                        if key_config is not None:
+                            # Additional configuration of the key. Not
+                            # everything can be configured in the local yaml
+
+                            if 'maintag' in key_config:
+                                taggroup.setMaintag(tag)
+
+                            if 'validator' in key_config:
+                                tag.getKey().setValidator(
+                                    key_config['validator'])
+
+                            if (configKey.getType().lower() == 'dropdown'
+                                or configKey.getType().lower() == 'checkbox'):
+                                for v in configValues.findValuesByFkkey(
+                                    configKey.getId()):
+                                    tag.addValue(v)
+
+                        taggroup.addTag(tag)
+
+                    # If the taggroup did not exist in the global configuration
+                    # and it is valid (has a maintag), add it to the thematic
+                    # group.
+                    if newTaggroup is True:
+                        if taggroup.getMaintag() is None:
+                            emptymaintag.append(taggroup)
+                        else:
+                            thematicgroup.addTaggroup(taggroup)
+
+                # If the thematic group did not exist in the global
+                # configuration, add it to the category.
+                if newThematicgroup is True:
+                    category.addThematicgroup(thematicgroup)
+
+            # If the category did not exist in the global configuration, add it
+            # to the list of categories.
+            if newCategory is True:
+                categorylist.addCategory(category)
 
     # Keys not found
     if len(unknownkeys) > 0:

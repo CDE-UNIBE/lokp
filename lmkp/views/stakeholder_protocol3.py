@@ -142,10 +142,12 @@ class StakeholderProtocol3(Protocol):
         else:
             return stakeholders[0]
 
-    def read_one(self, request, uid, public=True):
+    def read_one(self, request, uid, public=True, **kwargs):
         """
         ''public'': Boolean
         """
+
+        translate = kwargs.get('translate', True)
 
         relevant_stakeholders = self._get_relevant_stakeholders_one(request,
                                                                     uid, public_query=public)
@@ -168,7 +170,7 @@ class StakeholderProtocol3(Protocol):
         query = query.order_by(desc(Stakeholder.version))
 
         stakeholders = self._query_to_stakeholders(request, query,
-                                                   involvements=inv_details, public_query=public)
+            involvements=inv_details, public_query=public, translate=translate)
 
         return {
             'total': count,
@@ -1097,7 +1099,9 @@ class StakeholderProtocol3(Protocol):
             return query
 
     def _query_to_stakeholders(self, request, query,
-                               involvements='none', public_query=False):
+                               involvements='none', public_query=False, **kwargs):
+
+        translate = kwargs.get('translate', True)
 
         logged_in, is_moderator = self._get_user_status(
                                                         effective_principals(request))
@@ -1109,9 +1113,10 @@ class StakeholderProtocol3(Protocol):
             # Prepare values if needed
             identifier = str(q.identifier)
             taggroup_id = int(q.taggroup) if q.taggroup is not None else None
-            key = q.key_translated if q.key_translated is not None else q.key
-            value = (q.value_translated if q.value_translated is not None else
-                     q.value)
+            key = (q.key_translated if q.key_translated is not None
+                and translate is not False else q.key)
+            value = (q.value_translated if q.value_translated is not None
+                and translate is not False else q.value)
 
             # Use UID and version to find existing Feature or create a new one
             stakeholder = None

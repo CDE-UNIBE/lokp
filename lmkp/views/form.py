@@ -502,6 +502,62 @@ def getFormButtons(request, categorylist, currentCategory=None):
     buttons.append(deform.Button('submit', _('Submit'), css_class='formsubmit'))
     return buttons
 
+def checkValidItemjson(categorylist, itemJson, output='dict'):
+    validMainkeys = categorylist.getAllMainkeyNames()
+
+    taggroups = itemJson['taggroups']
+
+    errors = []
+    for taggroup in taggroups:
+        maintag = taggroup['main_tag']
+
+        # Make sure the maintag exists and contains values
+        if maintag is None or 'key' not in maintag or maintag['key'] is None:
+            errors.append('Undefined Maintag: Maintag of taggroup %s is not defined or has no values.' % taggroup)
+            continue
+
+        # Make sure that the maintag is in the list of valid maintags according
+        # to the configuration
+        if maintag['key'] not in validMainkeys:
+            errors.append('Invalid Maintag: Maintag (%s) of taggroup %s is not a valid maintag according to the configuration.' % (maintag['key'], taggroup))
+
+        # Make sure that the taggroup contains only one mainkey according to the
+        # configuration
+        keys = []
+        for tag in taggroup['tags']:
+            keys.append(tag['key'])
+
+        mainkeys = []
+        for k in keys:
+            if k in validMainkeys:
+                mainkeys.append(k)
+
+        if len(mainkeys) > 1:
+            errors.append('Too many Mainkeys: The taggroup %s should contain only 1 mainkey according to the configuration. It contains %s: %s' % (taggroup, len(mainkeys), ', '.join(mainkeys)))
+
+        # Make sure that all the tags are valid keys in the same taggroup
+        # according to the configuration
+        if len(mainkeys) == 1:
+            catId, thgId, confTaggroup = categorylist.findCategoryThematicgroupTaggroupByMainkey(maintag['key'])
+            if confTaggroup is not None:
+                for k in keys:
+                    if confTaggroup.hasKey(k) is False:
+                        errors.append('Wrong key in taggroup: The key %s is not valid in a taggroup with mainkey %s' % (k, maintag['key']))
+
+    if output == 'dict':
+        ret = {'errors': errors}
+        if len(errors) > 0:
+            ret['itemJson is valid'] = False
+            ret['errorCount'] = len(errors)
+        else:
+            ret['itemJson is valid'] = True
+        return ret
+
+    elif output == 'list':
+        return errors
+
+    return None
+
 def getFormdataFromItemjson(request, itemJson, itemType, category=None):
     """
     Use the JSON representation of a feature (Activity or Stakeholder) to get
@@ -520,6 +576,11 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
     categorylist = getCategoryList(request, itemType)
 
     taggroups = itemJson['taggroups']
+
+    formErrors = checkValidItemjson(categorylist, itemJson, output='list')
+    if len(formErrors) > 0:
+        log.debug('The itemJson is not valid according to the yaml configuration. The following errors exist:\n** FORM ERROR ** %s'
+            % '\n** FORM ERROR ** '.join(formErrors))
 
     data = {
         'id': itemJson['id'],
@@ -575,6 +636,10 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
         mt = taggroup['main_tag']
         cat, thmg, tg = categorylist.findCategoryThematicgroupTaggroupByMainkey(
             mt['key'])
+
+        # Treat the id's all as strings
+        cat = str(cat)
+        thmg = str(thmg)
 
         if tg is None:
             # If the Form Taggroup for this maintag was not found, move on and
