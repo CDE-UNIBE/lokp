@@ -177,6 +177,20 @@ class ConfigCategoryList(object):
         # Return only True if key and value are both valid
         return key_is_valid and value_is_valid
 
+    def getInvolvementOverviewKeyNames(self):
+        """
+        Return the names of the keys of all tags which should appear in the
+        involvement overview.
+        """
+        keyNames = []
+        for cat in self.getCategories():
+            for thmg in cat.getThematicgroups():
+                for tg in thmg.getTaggroups():
+                    for t in tg.getTags():
+                        if t.getInvolvementOverview() is True:
+                            keyNames.append(t.getKey().getName())
+        return keyNames
+
 class ConfigCategory(object):
     """
     A class representing a Form Category object as defined in the configuration
@@ -251,7 +265,7 @@ class ConfigCategory(object):
         """
         return self.order
 
-    def getForm(self):
+    def getForm(self, request):
         """
         Prepare the form node for this category, append the forms of its
         thematic groups and return it.
@@ -265,7 +279,7 @@ class ConfigCategory(object):
         )
         for thg in sorted(self.getThematicgroups(), key=lambda thmg: thmg.order):
             # Get the Form for each Thematicgroup
-            thg_form = thg.getForm()
+            thg_form = thg.getForm(request)
             thg_form.missing = colander.null
             thg_form.name = str(thg.getId())
             cat_form.add(thg_form)
@@ -279,10 +293,11 @@ class ConfigThematicgroup(object):
     Information'. It contains Form Taggroups as the next lower form structure.
     """
 
-    def __init__(self, id, name, translation):
+    def __init__(self, id, name, translation, itemType):
         self.id = id
         self.name = name
         self.translation = translation
+        self.itemType = itemType
         self.order = 9999
         self.taggroups = []
         self.involvementData = None
@@ -330,6 +345,12 @@ class ConfigThematicgroup(object):
         """
         return self.translation
 
+    def getItemType(self):
+        """
+        Get the itemType of this thematic group.
+        """
+        return self.itemType
+
     def setOrder(self, order):
         """
         Set the order of this thematic group.
@@ -343,12 +364,18 @@ class ConfigThematicgroup(object):
         return self.order
 
     def setInvolvementData(self, involvementData):
+        """
+        Set the involvement data of this thematic group.
+        """
         self.involvementData = involvementData
 
     def getInvolvementData(self):
+        """
+        Return the involvement data of this thematic group.
+        """
         return self.involvementData
 
-    def getForm(self):
+    def getForm(self, request):
         """
         Prepare the form node for this thematic group, append the forms of its
         taggroups and return it.
@@ -384,7 +411,7 @@ class ConfigThematicgroup(object):
         if self.getInvolvementData() is not None:
             # If there is some involvement data in this thematic group, get the
             # corresponding involvement widget and add it to the form.
-            shortForm = getInvolvementWidget(self.getInvolvementData())
+            shortForm = getInvolvementWidget(request, self)
             thg_form.add(shortForm)
 
         return thg_form
@@ -554,6 +581,7 @@ class ConfigTag(object):
         self.key = None
         self.values = []
         self.mandatory = False
+        self.involvementOverview = False
 
     def setKey(self, key):
         """
@@ -592,6 +620,19 @@ class ConfigTag(object):
         Return a boolean whether this tag is mandatory or not.
         """
         return self.mandatory is True
+
+    def setInvolvementOverview(self, overview):
+        """
+        Set if this tag should appear in the involvement overview or not.
+        """
+        self.involvementOverview = overview
+
+    def getInvolvementOverview(self):
+        """
+        Return a boolean whether this tag should appear in the involvement
+        overview or not.
+        """
+        return self.involvementOverview is True
 
     def getForm(self):
         """
@@ -946,17 +987,25 @@ class ConfigValue(object):
             return self.getOrder()
         return self.getName()
 
-def getInvolvementWidget(involvementData):
+def getInvolvementWidget(request, thematicgroup):
     """
     Return a widget to be used to display Involvements. This is only a short
     display-only representation of a Stakeholder.
     """
 
+    # We need the configuration of the other side of the involvement to know
+    # which fields are to be used for the overview display of the involvement.
+    if thematicgroup.getItemType() == 'activities':
+        otherItemType = 'stakeholders'
+    else:
+        otherItemType = 'activities'
+    otherCategoryList = getCategoryList(request, otherItemType)
+
     # By default don't show the widget in a sequence.
     sequence = False
 
     # Special settings for specific involvementData
-    if involvementData == 'secondaryinvestor':
+    if thematicgroup.getInvolvementData() == 'secondaryinvestor':
         sequence = True
         # TODO: Translation
         add_subitem_text = 'Add Secondary Investor'
@@ -966,10 +1015,11 @@ def getInvolvementWidget(involvementData):
         widget=deform.widget.MappingWidget(
             template='customInvolvementMapping'
         ),
-        name=involvementData,
+        name=thematicgroup.getInvolvementData(),
         title=''
     )
 
+    # First add the hidden fields required to keep track of the involvements
     involvementShortForm.add(colander.SchemaNode(
         colander.String(),
         widget=deform.widget.TextInputWidget(template='hidden'),
@@ -992,27 +1042,17 @@ def getInvolvementWidget(involvementData):
         missing = 6
     ))
 
-    involvementShortForm.add(colander.SchemaNode(
-        colander.String(),
-        widget=deform.widget.TextInputWidget(
-            template='readonly/custom_textinput_readonly'
-        ),
-        name='name',
-        # TODO: Translate
-        title='Name',
-        missing = colander.null
-    ))
-
-    involvementShortForm.add(colander.SchemaNode(
-        colander.String(),
-        widget=deform.widget.TextInputWidget(
-            template='readonly/custom_textinput_readonly'
-        ),
-        name='country',
-        # TODO: Translate
-        title='Country of origin',
-        missing = colander.null
-    ))
+    # Then add the display fields used for showing the involvement overview
+    for n in otherCategoryList.getInvolvementOverviewKeyNames():
+        involvementShortForm.add(colander.SchemaNode(
+            colander.String(),
+            widget=deform.widget.TextInputWidget(
+                template='readonly/custom_textinput_readonly'
+            ),
+            name=n,
+            title=n,
+            missing = colander.null
+        ))
 
     if sequence is False:
         # If no sequence is required, return the node as it is
@@ -1028,7 +1068,7 @@ def getInvolvementWidget(involvementData):
                 add_subitem_text_template = add_subitem_text,
             ),
             missing=colander.null,
-            name=involvementData,
+            name=thematicgroup.getInvolvementData(),
             title=''
         )
 
@@ -1249,7 +1289,8 @@ def getCategoryList(request, itemType):
             thematicgroup = ConfigThematicgroup(
                 thematicCategory.getId(),
                 thematicCategory.getName(),
-                thematicCategory.getTranslation()
+                thematicCategory.getTranslation(),
+                itemType
             )
 
             # Loop the taggroups of the thematic group
@@ -1305,6 +1346,10 @@ def getCategoryList(request, itemType):
 
                             if 'maintag' in key_config:
                                 taggroup.setMaintag(tag)
+
+                            if ('involvementoverview' in key_config
+                                and key_config['involvementoverview'] is True):
+                                tag.setInvolvementOverview(True)
 
                             # If the values are predefined and they are not set
                             # already (defined explicitly in YAML), then get the

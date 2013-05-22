@@ -80,7 +80,7 @@
         fieldset.append('<span id="currentlyactiveinstakeholderform"></span>');
 
         $.ajax({
-            url: '/stakeholders/form',
+            url: '/stakeholders/form'
         }).done(function(data) {
             stakeholderform.html(data);
         });

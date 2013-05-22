@@ -90,12 +90,7 @@ def renderForm(request, itemType, **kwargs):
         {
             success: function (rText, sText, xhr, form) {
                 if (typeof stakeholderdata !== 'undefined') {
-                    setInvolvementContent(
-                        stakeholderdata['id'],
-                        stakeholderdata['version'],
-                        stakeholderdata['name'],
-                        stakeholderdata['country']
-                    );
+                    setInvolvementContent(stakeholderdata);
                 }
             }
         }
@@ -127,7 +122,7 @@ def renderForm(request, itemType, **kwargs):
                 embedded=embedded)
             oldCat = configCategoryList.findCategoryById(oldCategory)
             if oldCat is not None:
-                oldschema.add(oldCat.getForm())
+                oldschema.add(oldCat.getForm(request))
             buttons = getFormButtons(request, categoryListButtons, oldCategory)
 
             if embedded is True:
@@ -255,7 +250,7 @@ def renderForm(request, itemType, **kwargs):
             embedded=embedded)
         newCat = configCategoryList.findCategoryById(newCategory)
         if newCat is not None:
-            newschema.add(newCat.getForm())
+            newschema.add(newCat.getForm(request))
         buttons = getFormButtons(request, categoryListButtons, newCategory)
 
         if embedded is True:
@@ -411,32 +406,35 @@ def doStakeholderUpdate(request, diff):
     if shFeature is None:
         return False, 'The Stakeholder was created but not found.'
 
-    # TODO: Make this more dynamic
-    nameKey = 'Name'
-    countryKey = 'Country of origin'
-
     # TODO: Translation
     unknownString = 'Unknown'
 
-    name = unknownString
-    country = unknownString
+    # We need to know which fields of the stakeholder are used to populate the
+    # display fields in the involvement overview.
+    categorylist = getCategoryList(request, 'stakeholders')
+
+    # Set all values to 'unknown' first
+    keyValues = []
+    for k in categorylist.getInvolvementOverviewKeyNames():
+        keyValues.append([k, unknownString])
+
+    # Update the value if available
     for tg in shFeature.get_taggroups():
-        if tg.get_tag_by_key(countryKey) is not None:
-            country = tg.get_tag_by_key(countryKey).get_value()
-        if tg.get_tag_by_key(nameKey) is not None:
-            name = tg.get_tag_by_key(nameKey).get_value()
+        for k in keyValues:
+            if tg.get_tag_by_key(k[0]) is not None:
+                k[1] = tg.get_tag_by_key(k[0]).get_value()
 
     js = """
     {
         var stakeholderdata = {
             id: "%s",
             version: %s,
-            name: "%s",
-            country: "%s"
+            %s
         }
     }
     """ % (stakeholder.identifier, stakeholder.version,
-        name, country)
+        ', '.join('"%s": "%s"' % (n[0], n[1]) for n in keyValues)
+    )
 
     return True, js
 
