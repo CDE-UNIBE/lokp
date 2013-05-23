@@ -154,9 +154,8 @@
                 for (var d in involvementdata) {
                     fieldset.find('input[name="' + d + '"]').val(involvementdata[d]);
                 }
-                fieldset.find('button.add-investor').hide();
-                fieldset.find('button.edit-investor').show();
-                fieldset.find('button.remove-investor').show();
+                fieldset.find('button.add-stakeholder').hide();
+                fieldset.find('button.remove-stakeholder').show();
             }
 
         </script>

@@ -1039,18 +1039,18 @@ def getInvolvementWidget(request, thematicgroup):
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='role_id',
         title='',
-        missing = 6
+        missing = colander.null
     ))
 
     # Then add the display fields used for showing the involvement overview
-    for n in otherCategoryList.getInvolvementOverviewKeyNames():
+    for keyName in otherCategoryList.getInvolvementOverviewKeyNames():
         involvementShortForm.add(colander.SchemaNode(
             colander.String(),
             widget=deform.widget.TextInputWidget(
                 template='readonly/custom_textinput_readonly'
             ),
-            name=n,
-            title=n,
+            name=keyName,
+            title=keyName,
             missing = colander.null
         ))
 

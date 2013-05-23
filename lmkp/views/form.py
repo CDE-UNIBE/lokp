@@ -570,6 +570,43 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
     - itemType: activities / stakeholders
     """
 
+    # TODO: Translation
+    unknownString = 'Unknown'
+
+    def _getInvolvementData(involvementData, keyNames):
+        """
+        Helper function to extract the involvement data needed for the display
+        fields of the involvement overview.
+        """
+
+        if involvementData is None or 'data' not in involvementData:
+            return None
+
+        data = involvementData['data']
+
+        if 'taggroups' not in data:
+            return None
+
+        # Set them to null by default
+        fields = {}
+        for keyName in keyNames:
+            fields[keyName] = unknownString
+
+        for tg in data['taggroups']:
+            if 'main_tag' not in tg or tg['main_tag'] is None:
+                continue
+            maintag = tg['main_tag']
+            for f in fields:
+                if ('key' in maintag and 'value' in maintag
+                    and maintag['key'] == f):
+                    fields[f] = maintag['value']
+
+        fields['id'] = data['id']
+        fields['version'] = involvementData['version']
+        fields['role_id'] = involvementData['role_id']
+
+        return fields
+
     # Get the list of categories (needed to validate the tags)
     categorylist = getCategoryList(request, itemType)
 
@@ -586,47 +623,63 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
         'category': category
     }
 
-    if (category is not None and 'involvements' in itemJson
-        and str(category) in categorylist.getInvolvementCategoryIds()):
+    if ('involvements' in itemJson and (category is None or
+        str(category) in categorylist.getInvolvementCategoryIds())):
         # Have a look at the involvements
         involvements = itemJson['involvements']
 
-        # Primary or secondary investor?
+        # Collect the involvements and if they are primary or secondary
+        # investors.
+        primaryinvestor = None
+        secondaryinvestors = []
+        for i in involvements:
+
+            if 'role_id' not in i:
+                # The role_id should always be there. If not, skip.
+                continue
+
+            if i['role_id'] == 6 and primaryinvestor is None:
+                # If there is more than one primary investor, only the first one
+                # is treated as primary investor, all others as secondary.
+                primaryinvestor = i
+            else:
+                secondaryinvestors.append(i)
+
+        # The configuration of the other side of the involvement is needed to
+        # know which fields are to be used for the overview display of the
+        # involvement.
+        if itemType == 'activities':
+            otherItemType = 'stakeholders'
+        else:
+            otherItemType = 'activities'
+        otherCategoryList = getCategoryList(request, otherItemType)
+        keyNames = otherCategoryList.getInvolvementOverviewKeyNames()
+
+        cat = {}
+
+        # Primary investor
+        f = _getInvolvementData(primaryinvestor, keyNames)
         thmg = categorylist.findThematicgroupByInvolvement('primaryinvestor')
-
-        # TODO: Do not always use the first involvement as the primary investor
-        primaryinvestor = involvements[0]
-
-        investordata = primaryinvestor['data']
-
-        identifier = investordata['id']
-        version = primaryinvestor['version']
-        role = primaryinvestor['role_id']
-
-        # TODO: Make this more dynamic
-        # Name and Country of origin
-        name = ''
-        country = ''
-        for tg in investordata['taggroups']:
-            maintag = tg['main_tag']
-            if maintag['key'] == 'Name':
-                name = maintag['value']
-            if maintag['key'] == 'Country of origin':
-                country = maintag['value']
-        
-        cat = {
-            thmg.getId(): {
-                '1': {
-                    'id': identifier,
-                    'version': version,
-                    'role_id': role,
-                    'name': name,
-                    'country': country
-                }
+        if f is not None:
+            cat[str(thmg.getId())] = {
+                'primaryinvestor': f
             }
-        }
 
-        data[str(category)] = cat
+        # Secondary investors
+        thmg = categorylist.findThematicgroupByInvolvement('secondaryinvestor')
+        siForm = []
+        for si in secondaryinvestors:
+            f = _getInvolvementData(si, keyNames)
+            if f is not None:
+                siForm.append(f)
+        if len(siForm) > 0:
+            cat[str(thmg.getId())] = {
+                'secondaryinvestor': siForm
+            }
+
+        cat_id = 'involvements' if category is None else str(category)
+
+        data[cat_id] = cat
 
     for taggroup in taggroups:
 
@@ -709,7 +762,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
     
     return data
 
-def formdataToDiff(request, newform, itemType, category=None):
+def formdataToDiff(request, newform, itemType):
     """
     Use the formdata captured on submission of the form and compare it with the
     old version of an object to create a diff which allows to create/update the
@@ -722,7 +775,7 @@ def formdataToDiff(request, newform, itemType, category=None):
     - itemType: activities / stakeholders
     """
 
-    def findRemoveTgByCategoryThematicgroupTgid(form, category, thematicgroup,
+    def _findRemoveTgByCategoryThematicgroupTgid(form, category, thematicgroup,
         tg_id, checkbox=False):
         """
         Helper function to find a taggroup by its category, thematic group and
@@ -752,14 +805,18 @@ def formdataToDiff(request, newform, itemType, category=None):
                                         # Set the values to null
                                         t[k] = colander.null
                                     return form, ret
-                                elif checkbox is True and 'tg_id' not in t:
+                                elif checkbox is True and ('tg_id' not in t
+                                    or t['tg_id'] == colander.null):
                                     # Checkboxes: The actual taggroups are in a
                                     # list one level further down
                                     for (k, v) in t.iteritems():
+                                        if isinstance(v, set):
+                                            # Turn sets into lists
+                                            v = list(v)
                                         if not isinstance(v, list):
                                             continue
                                         for (value, taggroupid) in v:
-                                            if str(taggroupid) == tg_id:
+                                            if str(taggroupid) == str(tg_id):
                                                 # If the taggroup was found,
                                                 # remove it from the list.
                                                 v.remove((value, taggroupid))
@@ -786,9 +843,7 @@ def formdataToDiff(request, newform, itemType, category=None):
         del newform['version']
 
     if 'category' in newform:
-        # Category should be the same as parameter in function
-        if category is not None and newform['category'] != category:
-            log.debug('NOT THE SAME CATEGORIES: %s vs %s' % (newform['category'], category))
+        # The category is not needed
         del newform['category']
 
     if 'embedded' in newform:
@@ -813,7 +868,7 @@ def formdataToDiff(request, newform, itemType, category=None):
 
         # Look only at the values transmitted to the form and therefore visible
         # to the editor.
-        oldform = getFormdataFromItemjson(request, olditemjson, itemType, category)
+        oldform = getFormdataFromItemjson(request, olditemjson, itemType)
         if 'id' in oldform:
             del oldform['id']
         if 'version' in oldform:
@@ -845,6 +900,7 @@ def formdataToDiff(request, newform, itemType, category=None):
 
     categorylist = getCategoryList(request, itemType)
     taggroupdiffs = []
+    involvementdiffs = []
 
     # Loop the newform to check if there are taggroups which changed or are new
 
@@ -852,11 +908,91 @@ def formdataToDiff(request, newform, itemType, category=None):
     for (cat, thmgrps) in newform.iteritems():
 
         if cat in categorylist.getInvolvementCategoryIds():
-            # TODO
-            print "***DO SOMETHING ELSE"
-            print cat
-            print thmgrps
-            print "***"
+
+            # The form division between primaryinvestor and secondaryinvestor
+            # is ignored if there already is a role_id available (because for
+            # example if there are multiple primary investors they are also
+            # shown as secondary investors).
+            # In a first step, collect all the involvements there are in the new
+            # form and the involvements that were in the oldform. Use them only
+            # if they have an id, a version and a role_id.
+            newInvolvements = []
+            oldInvolvements = []
+
+            for (thmgrp, involvements) in thmgrps.iteritems():
+                if 'primaryinvestor' in involvements:
+                    i = involvements['primaryinvestor']
+                    if ('id' in i and i['id'] != colander.null
+                        and 'version' in i and i['version'] != colander.null
+                        and 'role_id' in i):
+                        if i['role_id'] == colander.null:
+                            i['role_id'] = 6
+                        newInvolvements.append(i)
+
+                elif 'secondaryinvestor' in involvements:
+                    for i in involvements['secondaryinvestor']:
+                        if ('id' in i and i['id'] != colander.null
+                            and 'version' in i and i['version'] != colander.null
+                            and 'role_id' in i):
+                            if i['role_id'] == colander.null:
+                                i['role_id'] = 7
+                            newInvolvements.append(i)
+
+            for (oldCat, oldThmgrps) in oldform.iteritems():
+                if oldCat == 'involvements' or oldCat in categorylist.getInvolvementCategoryIds():
+                    for (thmgrp, involvements) in oldThmgrps.iteritems():
+                        if 'primaryinvestor' in involvements:
+                            i = involvements['primaryinvestor']
+                            if ('id' in i and i['id'] != colander.null
+                                and 'version' in i
+                                and i['version'] != colander.null
+                                and 'role_id' in i):
+                                if i['role_id'] == colander.null:
+                                    i['role_id'] = 6
+                                oldInvolvements.append(i)
+                        elif 'secondaryinvestor' in involvements:
+                            for i in involvements['secondaryinvestor']:
+                                if ('id' in i and i['id'] != colander.null
+                                    and 'version' in i
+                                    and i['version'] != colander.null
+                                    and 'role_id' in i):
+                                    if i['role_id'] == colander.null:
+                                        i['role_id'] = 7
+                                    oldInvolvements.append(i)
+
+            # Loop the new involvements and try to find them in the old
+            # involvements (based on their identifier, version and role_id). If
+            # they are found, remove them from the list of old involvements. If
+            # they are not found, mark them as newly added.
+            for ni in newInvolvements:
+                found = False
+
+                for oi in oldInvolvements:
+
+                    if (ni['id'] == oi['id'] and ni['version'] == oi['version']
+                        and ni['role_id'] == oi['role_id']):
+                        found = True
+                        oldInvolvements.remove(oi)
+                        break
+
+                if found is False:
+                    # Involvement is new
+                    involvementdiffs.append({
+                        'id': ni['id'],
+                        'version': ni['version'],
+                        'role_id': ni['role_id'],
+                        'op': 'add'
+                    })
+
+            # Loop the remaining old involvements and mark them as deleted.
+            for oi in oldInvolvements:
+                involvementdiffs.append({
+                    'id': oi['id'],
+                    'version': oi['version'],
+                    'role_id': oi['role_id'],
+                    'op': 'delete'
+                })
+
             continue
 
         # Loop the thematic groups of the category
@@ -869,6 +1005,9 @@ def formdataToDiff(request, newform, itemType, category=None):
                     tags = [tags]
 
                 for t in tags:
+                    if 'tg_id' not in t:
+                        continue
+
                     if t['tg_id'] != colander.null:
                         # Taggroup was there before because it contains a tg_id.
                         # Check if it contains changed values.
@@ -878,12 +1017,13 @@ def formdataToDiff(request, newform, itemType, category=None):
                         t_copy = copy.copy(t)
 
                         # Try to find the taggroup by its tg_id in the oldform
-                        oldform, oldtaggroup = findRemoveTgByCategoryThematicgroupTgid(
+                        oldform, oldtaggroup = _findRemoveTgByCategoryThematicgroupTgid(
                             oldform, cat, thmgrp, t['tg_id'])
 
                         if oldtaggroup is None:
                             # This should never happen since all tg_ids should
                             # be known.
+                            log.debug('\n\n*** TG_ID NOT FOUND: When trying to find and remove taggroup by tg_id (%s), the taggroup was not found in the old form.\n\n' % tg_id)
                             continue
 
                         deletedtags = []
@@ -987,11 +1127,11 @@ def formdataToDiff(request, newform, itemType, category=None):
                                         else:
                                             # Try to find and remove the
                                             # taggroup in the old form
-                                            oldform, oldtaggroup = findRemoveTgByCategoryThematicgroupTgid(
+                                            oldform, oldtaggroup = _findRemoveTgByCategoryThematicgroupTgid(
                                                 oldform, cat, thmgrp, tg_id, True)
-                                            if oldtaggroup is not True:
+                                            if oldtaggroup is None:
                                                 # This basically should not happen because the tg_id always should be found.
-                                                log.debug('TG_ID NOT FOUND: When trying to find and remove taggroup by tg_id (%s), the taggroup was not found in the old form.' % tg_id)
+                                                log.debug('\n\n*** TG_ID NOT FOUND: When trying to find and remove taggroup by tg_id (%s), the taggroup was not found in the old form.\n\n' % tg_id)
                                 else:
                                     # No checkbox, simply a new tag
                                     addedtags.append({
@@ -1102,10 +1242,16 @@ def formdataToDiff(request, newform, itemType, category=None):
 
     ret = None
 
-    if len(taggroupdiffs) > 0:
-        itemdiff = {
-            'taggroups': taggroupdiffs
-        }
+    if len(taggroupdiffs) > 0 or len(involvementdiffs) > 0:
+        itemdiff = {}
+
+        if len(taggroupdiffs) > 0:
+            itemdiff['taggroups'] = taggroupdiffs
+
+        if len(involvementdiffs) > 0:
+            kw = 'activities' if itemType == 'stakeholders' else 'stakeholders'
+            itemdiff[kw] = involvementdiffs
+
         itemdiff['version'] = version if version is not colander.null else 1
         if identifier is not colander.null:
             itemdiff['id'] = identifier
