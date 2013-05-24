@@ -63,6 +63,9 @@ def add_localizer(event):
             return translation
 
         # If no translation was found, return the string as it is.
+        if isinstance(string, TranslationString):
+            # If it it is a TranslationString, return it interpolated
+            return string.interpolate()
         return string
     request.localizer = localizer
     request.translate = auto_translate

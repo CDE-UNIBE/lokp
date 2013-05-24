@@ -146,6 +146,29 @@ class ConfigCategoryList(object):
                     categories.append(str(cat.getId()))
         return categories
 
+    def getMapCategoryIds(self):
+        """
+        Find and return the IDs of all categories containing some kind of map.
+        """
+        categories = []
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                if thg.getMapData() is not None:
+                    categories.append(str(cat.getId()))
+        return categories
+
+    def getMapThematicgroupIds(self):
+        """
+        Find and return the IDs of all thematicgroups containing some kind of a
+        map.
+        """
+        thematicgroups = []
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                if thg.getMapData() is not None:
+                    thematicgroups.append(str(thg.getId()))
+        return thematicgroups
+
     def checkValidKeyValue(self, key, value):
         """
         Check if a key and value are valid within the current category list.
@@ -301,6 +324,7 @@ class ConfigThematicgroup(object):
         self.order = 9999
         self.taggroups = []
         self.involvementData = None
+        self.mapData = None
 
     def getId(self):
         """
@@ -375,6 +399,18 @@ class ConfigThematicgroup(object):
         """
         return self.involvementData
 
+    def setMapData(self, mapData):
+        """
+        Set the map data of this thematic group.
+        """
+        self.mapData = mapData
+
+    def getMapData(self):
+        """
+        Return the involvement data of this thematic group.
+        """
+        return self.mapData
+
     def getForm(self, request):
         """
         Prepare the form node for this thematic group, append the forms of its
@@ -413,6 +449,12 @@ class ConfigThematicgroup(object):
             # corresponding involvement widget and add it to the form.
             shortForm = getInvolvementWidget(request, self)
             thg_form.add(shortForm)
+
+        if self.getMapData() is not None:
+            # If there is some map data in this thematic group, get the widget
+            # and add it to the form.
+            mapWidget = getMapWidget(self)
+            thg_form.add(mapWidget)
 
         return thg_form
 
@@ -987,6 +1029,40 @@ class ConfigValue(object):
             return self.getOrder()
         return self.getName()
 
+def getMapWidget(thematicgroup):
+    """
+    Similar to getInvolvementWidget below.
+    Return a widget to be used to display the map in the form.
+    """
+    # TODO: Lots of TODOs here ...
+
+    mapWidget = colander.SchemaNode(
+        colander.Mapping(),
+        widget=deform.widget.MappingWidget(
+            template='customMapMapping'
+        ),
+        name=thematicgroup.getMapData(),
+        title='MAP (TODO)' # TODO: Set this to ''
+    )
+
+    mapWidget.add(colander.SchemaNode(
+        colander.Float(),
+#        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='lon',
+        title='lon',
+        missing=colander.null
+    ))
+
+    mapWidget.add(colander.SchemaNode(
+        colander.Float(),
+#        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='lat',
+        title='lat',
+        missing=colander.null
+    ))
+
+    return mapWidget
+
 def getInvolvementWidget(request, thematicgroup):
     """
     Return a widget to be used to display Involvements. This is only a short
@@ -1170,19 +1246,6 @@ def getConfigCategoryList(request, itemType):
     to match the configuration in the (local) YAML.
     - itemType: activities / stakeholders
     """
-#    if itemType == 'stakeholders':
-#        filename = 'scategories.csv'
-#    else:
-#        filename = 'acategories.csv'
-#    # Read and collect all Categories based on CSV list
-#    configCategories = ConfigCategoryList()
-#    categories_stream = open('%s/%s'
-#        % (profile_directory_path(request), filename), 'rb')
-#    categories_csv = csv.reader(categories_stream, delimiter=';')
-#    for row in categories_csv:
-#        # Skip the first row
-#        if categories_csv.line_num > 1:
-#            configCategories.addCategory(ConfigCategory(row[0], row[1]))
 
     configCategories = ConfigCategoryList()
 
@@ -1302,6 +1365,10 @@ def getCategoryList(request, itemType):
 
                 if tgroup_id == 'involvement':
                     thematicgroup.setInvolvementData(tags)
+                    continue
+
+                if tgroup_id == 'map':
+                    thematicgroup.setMapData(tags)
                     continue
 
                 # Create a taggroup out of it
