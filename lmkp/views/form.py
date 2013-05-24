@@ -54,7 +54,7 @@ def renderForm(request, itemType, **kwargs):
     # Activity or Stakeholder
     if itemType == 'activities':
         # The initial category of the form
-        newCategory = 2
+        newCategory = 1
         formid = 'activityform'
     elif itemType == 'stakeholders':
         # The initial category of the form
@@ -584,6 +584,10 @@ def checkValidItemjson(categorylist, itemJson, output='dict'):
                     if confTaggroup.hasKey(k) is False:
                         errors.append('Wrong key in taggroup: The key %s is not valid in a taggroup with mainkey %s' % (k, maintag['key']))
 
+    if len(errors) > 0:
+        log.debug('\n\n==================================\nThe itemJson is not valid according to the yaml configuration. The following errors exist:\n** FORM ERROR ** %s\n==================================\n\n'
+            % '\n** FORM ERROR ** '.join(errors))
+
     if output == 'dict':
         ret = {'errors': errors}
         if len(errors) > 0:
@@ -651,13 +655,9 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
 
     # Get the list of categories (needed to validate the tags)
     categorylist = getCategoryList(request, itemType)
-
-    taggroups = itemJson['taggroups']
-
-    formErrors = checkValidItemjson(categorylist, itemJson, output='list')
-    if len(formErrors) > 0:
-        log.debug('The itemJson is not valid according to the yaml configuration. The following errors exist:\n** FORM ERROR ** %s'
-            % '\n** FORM ERROR ** '.join(formErrors))
+    validJsonErrors = checkValidItemjson(categorylist, itemJson, output='list')
+#    if len(validJsonErrors) > 0:
+#        return {}
 
     data = {
         'id': itemJson['id'],
@@ -723,7 +723,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
 
         data[cat_id] = cat
 
-    for taggroup in taggroups:
+    for taggroup in itemJson['taggroups']:
 
         # Get the category and thematic group based on the maintag
         mt = taggroup['main_tag']
@@ -799,6 +799,25 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
             # current form.
             if category is None or cat == str(category):
                 data[cat] = {thmg: {tgid: tagsdata}}
+
+        # Map: Look only if the category contains a thematic group which has a
+        # map.
+        if (cat in categorylist.getMapCategoryIds()
+            and thmg in categorylist.getMapThematicgroupIds()):
+            # Make sure all the necessary values are there and add it only once.
+            # TODO: The parameter 'map' is defined in the yaml (map: map) and
+            # therefore rather static. Should this be made more dynamic?
+            if (cat in data and thmg in data[cat]
+                and 'map' not in data[cat][thmg] and 'geometry' in itemJson):
+                geometry = itemJson['geometry']
+                # Make sure the geometry is valid
+                if ('coordinates' in geometry
+                    and isinstance(geometry['coordinates'], list)
+                    and len(geometry['coordinates']) == 2):
+                    data[cat][thmg]['map'] = {
+                        'lon': geometry['coordinates'][0],
+                        'lat': geometry['coordinates'][1]
+                    }
 
     log.debug('Formdata created by ItemJSON: %s' % data)
     
@@ -1041,6 +1060,15 @@ def formdataToDiff(request, newform, itemType):
         for (thmgrp, tgroups) in thmgrps.iteritems():
             # Loop the tags of each taggroup
             for (tgroup, tags) in tgroups.iteritems():
+
+                # TODO: The parameter 'map' is defined in the yaml (map: map)
+                # and therefore rather static. Should this be made more dynamic?
+                if tgroup == 'map':
+                    # TODO: Compare with the submitted values below with the old
+                    # values and add to diff if necessary (or new).
+                    lon = tags['lon'] if 'lon' in tags and tags['lon'] != colander.null else None
+                    lat = tags['lat'] if 'lat' in tags and tags['lat'] != colander.null else None
+                    print "\n\n***** MAP ****** (not yet implemented)\nlon: %s, lat: %s\n\n" % (lon, lat)
 
                 # Transform all to list so they can be treated all the same
                 if not isinstance(tags, list):

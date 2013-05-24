@@ -29,7 +29,7 @@ from pyramid.i18n import get_localizer
 # File names in the locale profile directory
 APPLICATION_YAML = 'application.yml'
 ACTIVITY_YAML = 'activity.yml'
-NEW_ACTIVITY_YAML = 'new_activities.yml'
+NEW_ACTIVITY_YAML = 'new_activity.yml'
 STAKEHOLDER_YAML = 'stakeholder.yml'
 NEW_STAKEHOLDER_YAML = 'new_stakeholder.yml'
 
