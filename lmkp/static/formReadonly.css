@@ -1,0 +1,31 @@
+/* CATEGORY */
+div.deform>li {
+    border: 1px solid red;
+}
+div>li>p.desc {
+    color: red;
+}
+
+/* THEMATIC GROUP */
+div>li>div>ul>li>p.desc {
+    color: green;
+}
+div.deform>li>div>ul>li {
+    border: 1px solid green;
+}
+
+/* TAGGROUP */
+div>li>div>ul>li>div>ul>li>div.deformMappingFieldset {
+    border: 1px solid silver;
+}
+div>li>div>ul>li>div>ul>li>div.deformSeq>ul>li>div.deformMappingFieldset {
+    border: 1px solid silver;
+}
+
+/* KEYS */
+div>li>div>ul>li>div>ul>li>div>ul>li>p.desc {
+    font-weight: bold;
+}
+div>li>div>ul>li>div>ul>li>div>ul>li>div>ul>li>p.desc {
+    font-weight: bold;
+}
