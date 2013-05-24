@@ -41,8 +41,13 @@
 
             $('button#select-existing-stakeholder').click(function() {
                 hideButtons();
+                // TODO: Translation
+                var unknownString = 'Unknown';
                 $('input#shselectinput').autocomplete({
                     source: function(request, response) {
+                        // Use an ajax query as a search (by name). Query 11
+                        // results so the last item can be replaced with a
+                        // message to narrow down the search.
                         $.ajax({
                             url: '/stakeholders/json',
                             dataType: 'json',
@@ -55,11 +60,20 @@
                                 if (data.total == 0) {
                                     response(['nothingfound']);
                                 } else {
+                                    // Find out which values of the stakeholder
+                                    // to display (the readonly fieldsets)
+                                    var marker = $('span#currentlyactiveinstakeholderform');
+                                    var fieldset = marker.parent('fieldset');
+                                    var fields = []
+                                    $.each(fieldset.find('input.readonly'), function() {
+                                        fields.push($(this).attr('name'));
+                                    });
                                     var res = $.map(data.data, function(item) {
-                                        var name = null;
-                                        var country = '[Unknown]';
-                                        var id = null;
-                                        var version = null;
+                                        // Get the values to display
+                                        var values = {};
+                                        for (var f in fields) {
+                                            values[fields[f]] = unknownString;
+                                        }
                                         if ('taggroups' in item) {
                                             $.each(item['taggroups'], function() {
                                                 var tg = this;
@@ -67,26 +81,20 @@
                                                     $.each(tg['tags'], function(){
                                                         var t = this;
                                                         if ('key' in t && 'value' in t) {
-                                                            if (t['key'] == 'Name') {
-                                                                name = t['value'];
-                                                            }
-                                                            if (t['key'] == 'Country of origin') {
-                                                                country = t['value'];
+                                                            for (var v in values) {
+                                                                if (t['key'] == v) {
+                                                                    values[v] = t['value'];
+                                                                }
                                                             }
                                                         }
                                                     });
                                                 }
                                             });
                                         }
-                                        id = item['id'];
-                                        version = item['version'];
-                                        if (name != null && id != null && version != null) {
-                                            return {
-                                                value: name,
-                                                id: id,
-                                                version: version,
-                                                country: country
-                                            }
+                                        values['id'] = item['id'];
+                                        values['version'] = item['version'];
+                                        if (values['id'] != null && values['version'] != null) {
+                                            return values
                                         }
                                     });
                                     if (res.length == 11) {
@@ -99,19 +107,29 @@
                     },
                     select: function(event, ui) {
                         if (ui.item.id && ui.item.version) {
-                            setInvolvementContent(ui.item.id, ui.item.version,
-                                ui.item.value, ui.item.country);
+                            setInvolvementContent(ui.item);
                             $('div#stakeholderformcontainer').hide();
                         }
                     },
                     minLength: 4
                 }).data('autocomplete')._renderItem = function(ul, item) {
                     if (item.id && item.version) {
+                        // Always use name as first display value
+                        var val1 = ('Name' in item) ? item.Name : unknownString;
+                        // The second value is a composite of all other (non
+                        // empty) display values
+                        var val2 = [];
+                        for (var v in item) {
+                            if (v != 'label' && v != 'value' && v != 'Name'
+                                && v != 'id' && v != 'version' && item[v] != unknownString) {
+                                val2.push(item[v]);
+                            }
+                        }
                         return $('<li>')
                             .data("item.autocomplete", item)
-                            .append('<a>' + item.value
+                            .append('<a>' + val1
                                 + '<br/><span class="shautocompletedescription">'
-                                + item.country + '</span></a>')
+                                + val2.join(' - ') + '</span></a>')
                             .appendTo(ul);
                     } else if (item.label == 'nothingfound') {
                         return $('<li class="shnothingfound">')
@@ -130,16 +148,14 @@
                 $('div#new-stakeholder-buttons').hide();
             }
 
-            function setInvolvementContent(id, version, name, country) {
+            function setInvolvementContent(involvementdata) {
                 var marker = $('span#currentlyactiveinstakeholderform');
                 var fieldset = marker.parent('fieldset');
-                fieldset.find('input[name=id]').val(id);
-                fieldset.find('input[name=version]').val(version);
-                fieldset.find('input[name=name]').val(name);
-                fieldset.find('input[name=country]').val(country);
-                fieldset.find('button.add-investor').hide();
-                fieldset.find('button.edit-investor').show();
-                fieldset.find('button.remove-investor').show();
+                for (var d in involvementdata) {
+                    fieldset.find('input[name="' + d + '"]').val(involvementdata[d]);
+                }
+                fieldset.find('button.add-stakeholder').hide();
+                fieldset.find('button.remove-stakeholder').show();
             }
 
         </script>

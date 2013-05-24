@@ -9,7 +9,7 @@
   - SH_Keys
   - SH_Values
   - Profiles (sets geometry for 'global', adds 'Laos', 'Peru', 'Madagascar', 'Cambodia')
-  Last update: 2013-05-19 14:09
+  Last update: 2013-05-21 12:25
 */
 
 INSERT INTO data.categories(id, name, type, fk_language, description, fk_category) VALUES
@@ -51,9 +51,10 @@ INSERT INTO data.categories(id, name, type, fk_language, description, fk_categor
   (36, 'Source of Water Extraction', 'activities', 1, NULL, NULL),
   (37, 'How Much do Investors Pay for Water and the Use of Water Infrastruture?', 'activities', 1, NULL, NULL),
   (38, 'How Much Water Is Extracted?', 'activities', 1, NULL, NULL),
-  (39, 'Overall Comment', 'activities', 1, NULL, NULL)
+  (39, 'Overall Comment', 'activities', 1, NULL, NULL),
+  (40, 'Stakeholder Information', 'stakeholders', 1, NULL, NULL)
 ;
-SELECT setval('data.categories_id_seq', 39, true);
+SELECT setval('data.categories_id_seq', 40, true);
 
 INSERT INTO data.a_keys(id, fk_a_key, fk_language, key, type, helptext, description, validator) VALUES
   (1, NULL, 1, 'Data source', 'Dropdown', NULL, NULL, NULL),

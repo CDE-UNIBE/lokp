@@ -38,8 +38,9 @@
         newForm = 'id' in cstruct and cstruct['id'] == colander.null
     %>
 
-    <button id="add-investor-${field.oid}"
-            class="add-investor"
+    <button id="add-stakeholder-${field.oid}"
+            class="add-stakeholder"
+            onclick="return addStakeholder(this);"
             % if not newForm:
                 style="display:none;"
             % endif
@@ -47,16 +48,9 @@
         <span>Add Investor</span>
     </button>
 
-    <button id="edit-investor-${field.oid}"
-            class="edit-investor"
-            % if newForm:
-                style="display:none;"
-            % endif
-    >
-        <span>Edit Investor</span>
-    </button>
-    <button id="remove-investor-${field.oid}"
-            class="remove-investor"
+    <button id="remove-stakeholder-${field.oid}"
+            class="remove-stakeholder"
+            onclick="return removeStakeholder(this);"
             % if newForm:
                 style="display:none;"
             % endif
@@ -69,30 +63,30 @@
 </fieldset>
 
 <script type="text/javascript">
-    $('button.add-investor').click(function() {
+    function addStakeholder(btn) {
         var stakeholderform = $('div#stakeholderformcontainer');
         stakeholderform.show();
         stakeholderform.html('Loading ...');
-
-        var fieldset = $(this).parent('fieldset');
-
         $('span#currentlyactiveinstakeholderform').remove();
+        var fieldset = $(btn).parent('fieldset');
         fieldset.append('<span id="currentlyactiveinstakeholderform"></span>');
-
         $.ajax({
-            url: '/stakeholders/form',
+            url: '/stakeholders/form'
         }).done(function(data) {
             stakeholderform.html(data);
         });
-
         return false;
-    });
-
-    $('button.edit-investor').click(function() {
+    }
+    function removeStakeholder(btn) {
+        var fieldset = $(btn).parent('fieldset');
+        $.each(fieldset.find('input'), function() {
+            // Only reset those with an id (others are used for mapping)
+            if (this.id) {
+                $(this).val(null);
+            }
+        });
+        fieldset.find('button.remove-stakeholder').hide();
+        fieldset.find('button.add-stakeholder').show();
         return false;
-    });
-
-    $('button.remove-investor').click(function() {
-        return false;
-    });
+    }
 </script>
