@@ -367,6 +367,48 @@ def renderForm(request, itemType, **kwargs):
         'js_links': resources['js']
     }
 
+def renderReadonlyForm(request, itemType, itemJson):
+    """
+    Function to return a rendered form in readonly mode. The form is based on
+    the configuration.
+    """
+
+    # TODO: Map.
+    # TODO: Show involvements.
+
+    deform.Form.set_default_renderer(mako_renderer)
+    configCategoryList = getCategoryList(request, itemType)
+    schema = colander.SchemaNode(colander.Mapping())
+    for cat in configCategoryList.getCategories():
+        schema.add(cat.getForm(request))
+    form = deform.Form(schema)
+    data = getFormdataFromItemjson(request, itemJson, itemType)
+    html = form.render(data, readonly=True)
+    return {
+        'form': html
+    }
+
+def structHasOnlyNullValues(cstruct):
+    """
+    Recursive function checking if the 'struct' value of a form only contains
+    empty values.
+    """
+    allNull = True
+    if cstruct == colander.null:
+        allNull = allNull and True
+    elif isinstance(cstruct, dict):
+        # A dict. Go one level deeper for each.
+        for c in cstruct:
+            allNull = allNull and structHasOnlyNullValues(cstruct[c])
+    elif isinstance(cstruct, list):
+        # A list. Go one level deeper for each.
+        for c in cstruct:
+            allNull = allNull and structHasOnlyNullValues(c)
+    else:
+        # Values are not null.
+        allNull = allNull and False
+    return allNull
+
 def doClearFormSessionData(request):
     """
     Function to clear the session of any form-related data.
@@ -660,7 +702,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
         # Primary investor
         f = _getInvolvementData(primaryinvestor, keyNames)
         thmg = categorylist.findThematicgroupByInvolvement('primaryinvestor')
-        if f is not None:
+        if f is not None and thmg is not None:
             cat[str(thmg.getId())] = {
                 'primaryinvestor': f
             }
@@ -672,7 +714,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
             f = _getInvolvementData(si, keyNames)
             if f is not None:
                 siForm.append(f)
-        if len(siForm) > 0:
+        if len(siForm) > 0 and thmg is not None:
             cat[str(thmg.getId())] = {
                 'secondaryinvestor': siForm
             }
