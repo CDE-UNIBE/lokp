@@ -262,7 +262,9 @@ class ActivityProtocol3(Protocol):
         else:
             return activities[0]
 
-    def read_one(self, request, uid, public=True):
+    def read_one(self, request, uid, public=True, **kwargs):
+
+        translate = kwargs.get('translate', True)
 
         relevant_activities = self._get_relevant_activities_one(request, uid,
                                                                 public_query=public)
@@ -291,7 +293,7 @@ class ActivityProtocol3(Protocol):
 
         activities = self._query_to_activities(
             request, query, involvements=inv_details, public_query=public,
-            geom=full_geometry
+            geom=full_geometry, translate=translate
         )
 
         return {
@@ -1285,6 +1287,7 @@ class ActivityProtocol3(Protocol):
             query = query.add_columns(
                 A_Tag_Group.geometry.label('tg_geometry')
             )
+        translate = kwargs.get('translate', True)
 
         logged_in, is_moderator = self._get_user_status(
                                                         effective_principals(request))
@@ -1296,9 +1299,10 @@ class ActivityProtocol3(Protocol):
             # Prepare values if needed
             identifier = str(q.identifier)
             taggroup_id = int(q.taggroup) if q.taggroup is not None else None
-            key = q.key_translated if q.key_translated is not None else q.key
-            value = (q.value_translated if q.value_translated is not None else
-                     q.value)
+            key = (q.key_translated if q.key_translated is not None
+                and translate is not False else q.key)
+            value = (q.value_translated if q.value_translated is not None
+                and translate is not False else q.value)
 
             # Use UID and version to find existing ActivityFeature or create a
             # new one
@@ -1709,6 +1713,18 @@ class ActivityProtocol3(Protocol):
 
             # Main Tag: First reset it. Then try to get it (its key and value)
             # from the dict.
+
+            # TODO: Once the new form is in place, replace the code below
+            # (maintag should be mandatory!)
+
+            # The Main is indeed mandatory.
+#            try:
+#                main_tag = taggroup['main_tag']
+#                main_tag_key = main_tag['key']
+#                main_tag_value = main_tag['value']
+#            except KeyError:
+#                raise HTTPBadRequest(detail="No Main Tag provided. Taggroup %s has no taggroup." % taggroup)
+
             # The Main Tag is not mandatory.
             main_tag = None
             main_tag_key = None
@@ -1719,6 +1735,8 @@ class ActivityProtocol3(Protocol):
                 main_tag_value = main_tag['value']
             except KeyError:
                 pass
+
+            # TODO: End of replace
 
             # Loop all tags within a tag group
             for tag in taggroup['tags']:
@@ -1741,7 +1759,7 @@ class ActivityProtocol3(Protocol):
                 # yes, set the main_tag attribute to this tag
                 try:
                     if (a_tag.key.key == main_tag_key
-                        and a_tag.value.value == str(main_tag_value)):
+                        and a_tag.value.value == unicode(main_tag_value)):
                         db_tg.main_tag = a_tag
                 except AttributeError:
                     pass
