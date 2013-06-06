@@ -2,6 +2,9 @@ from lmkp.models.meta import DBSession as Session
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.config import get_mandatory_keys
 from lmkp.views.form import renderForm
+from lmkp.views.form import renderReadonlyForm
+from lmkp.views.form import checkValidItemjson
+from lmkp.views.form_config import getCategoryList
 from lmkp.models.database_objects import *
 import logging
 from pyramid.httpexceptions import HTTPForbidden
@@ -222,12 +225,30 @@ def read_one(request):
             public=False)
         return render_to_response('json', stakeholders, request)
     elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+        # Show the details of a Stakeholder by rendering the form in readonly
+        # mode.
+        stakeholders = stakeholder_protocol3.read_one(request, uid=uid,
+            public=False, translate=False)
+        version = request.params.get('v', None)
+        if (stakeholders and 'data' in stakeholders
+            and len(stakeholders['data']) != 0):
+            for sh in stakeholders['data']:
+                if 'version' in sh:
+                    if version is None:
+                        # If there is no version provided, show the first
+                        # version visible to the user
+                        version = str(sh['version'])
+                    if str(sh['version']) == version:
+                        return render_to_response(
+                            'lmkp:templates/formReadonly.mak',
+                            renderReadonlyForm(request, 'stakeholders', sh),
+                            request
+                        )
+        return HTTPNotFound()
     elif output_format == 'form':
         # Query the Stakeholders with the given identifier
         stakeholders = stakeholder_protocol3.read_one(request, uid=uid, 
-            public=False)
+            public=False, translate=False)
         version = request.params.get('v', None)
         if (stakeholders and 'data' in stakeholders 
             and len(stakeholders['data']) != 0):
@@ -243,6 +264,23 @@ def read_one(request):
                             renderForm(request, 'stakeholders', itemJson=sh),
                             request
                         )
+        return HTTPNotFound()
+    elif output_format == 'formtest':
+        # Test if a Stakeholder is valid according to the form configuration
+        stakeholders = stakeholder_protocol3.read_one(request, uid=uid,
+            public=False, translate=False)
+        version = request.params.get('v', None)
+        if (stakeholders and 'data' in stakeholders
+            and len(stakeholders['data']) != 0):
+            for sh in stakeholders['data']:
+                if 'version' in sh:
+                    if version is None:
+                        version = str(sh['version'])
+                    if str(sh['version']) == version:
+                        categorylist = getCategoryList(request, 'stakeholders')
+                        return render_to_response('json',
+                            checkValidItemjson(categorylist, sh), request)
+        return HTTPNotFound()
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()

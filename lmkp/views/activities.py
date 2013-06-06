@@ -17,6 +17,9 @@ import yaml
 
 from lmkp.renderers.renderers import translate_key
 from lmkp.views.form import renderForm
+from lmkp.views.form import renderReadonlyForm
+from lmkp.views.form import checkValidItemjson
+from lmkp.views.form_config import getCategoryList
 
 log = logging.getLogger(__name__)
 
@@ -183,11 +186,29 @@ def read_one(request):
         activities = activity_protocol3.read_one(request, uid=uid, public=False)
         return render_to_response('json', activities, request)
     elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+        # Show the details of an Activity by rendering the form in readonly
+        # mode.
+        activities = activity_protocol3.read_one(request, uid=uid, public=False,
+            translate=False)
+        version = request.params.get('v', None)
+        if activities and 'data' in activities and len(activities['data']) != 0:
+            for a in activities['data']:
+                if 'version' in a:
+                    if version is None:
+                        # If there was no version provided, show the first
+                        # version visible to the user
+                        version = str(a['version'])
+                    if str(a['version']) == version:
+                        return render_to_response(
+                            'lmkp:templates/formReadonly.mak',
+                            renderReadonlyForm(request, 'activities', a),
+                            request
+                        )
+        return HTTPNotFound()
     elif output_format == 'form':
         # Query the Activities wih the given identifier
-        activities = activity_protocol3.read_one(request, uid=uid, public=False)
+        activities = activity_protocol3.read_one(request, uid=uid, public=False,
+            translate=False)
         version = request.params.get('v', None)
         if activities and 'data' in activities and len(activities['data']) != 0:
             for a in activities['data']:
@@ -202,6 +223,21 @@ def read_one(request):
                             renderForm(request, 'activities', itemJson=a),
                             request
                         )
+        return HTTPNotFound()
+    elif output_format == 'formtest':
+        # Test if an Activity is valid according to the form configuration
+        activities = activity_protocol3.read_one(request, uid=uid, public=False,
+            translate=False)
+        version = request.params.get('v', None)
+        if activities and 'data' in activities and len(activities['data']) != 0:
+            for a in activities['data']:
+                if 'version' in a:
+                    if version is None:
+                        version = str(a['version'])
+                    if str(a['version']) == version:
+                        categorylist = getCategoryList(request, 'activities')
+                        return render_to_response('json',
+                        checkValidItemjson(categorylist, a), request)
         return HTTPNotFound()
     else:
         # If the output format was not found, raise 404 error

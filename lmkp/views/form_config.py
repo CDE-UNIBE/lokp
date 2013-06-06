@@ -1,12 +1,15 @@
 import colander
 import copy
-import csv
 import deform
+from pyramid.i18n import get_localizer
 import yaml
 
+from lmkp.config import locale_profile_directory_path
 from lmkp.config import profile_directory_path
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
+from lmkp.views.config import NEW_ACTIVITY_YAML
+from lmkp.views.config import NEW_STAKEHOLDER_YAML
 
 import logging
 log = logging.getLogger(__name__)
@@ -140,8 +143,31 @@ class ConfigCategoryList(object):
         for cat in self.getCategories():
             for thg in cat.getThematicgroups():
                 if thg.getInvolvementData() is not None:
-                    categories.append(cat.getId())
+                    categories.append(str(cat.getId()))
         return categories
+
+    def getMapCategoryIds(self):
+        """
+        Find and return the IDs of all categories containing some kind of map.
+        """
+        categories = []
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                if thg.getMapData() is not None:
+                    categories.append(str(cat.getId()))
+        return categories
+
+    def getMapThematicgroupIds(self):
+        """
+        Find and return the IDs of all thematicgroups containing some kind of a
+        map.
+        """
+        thematicgroups = []
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                if thg.getMapData() is not None:
+                    thematicgroups.append(str(thg.getId()))
+        return thematicgroups
 
     def checkValidKeyValue(self, key, value):
         """
@@ -173,6 +199,20 @@ class ConfigCategoryList(object):
 
         # Return only True if key and value are both valid
         return key_is_valid and value_is_valid
+
+    def getInvolvementOverviewKeyNames(self):
+        """
+        Return the names of the keys of all tags which should appear in the
+        involvement overview.
+        """
+        keyNames = []
+        for cat in self.getCategories():
+            for thmg in cat.getThematicgroups():
+                for tg in thmg.getTaggroups():
+                    for t in tg.getTags():
+                        if t.getInvolvementOverview() is True:
+                            keyNames.append(t.getKey().getName())
+        return keyNames
 
 class ConfigCategory(object):
     """
@@ -227,6 +267,15 @@ class ConfigCategory(object):
         """
         return self.thematicgroups
 
+    def findThematicgroupById(self, id):
+        """
+        Find and return a thematic group based on its id.
+        """
+        for thmg in self.getThematicgroups():
+            if str(thmg.getId()) == str(id):
+                return thmg
+        return None
+
     def setOrder(self, order):
         """
         Set the order of this category.
@@ -239,7 +288,7 @@ class ConfigCategory(object):
         """
         return self.order
 
-    def getForm(self):
+    def getForm(self, request):
         """
         Prepare the form node for this category, append the forms of its
         thematic groups and return it.
@@ -248,14 +297,14 @@ class ConfigCategory(object):
             else self.getName())
         cat_form = colander.SchemaNode(
             colander.Mapping(),
-            name=self.getId(),
+            name=str(self.getId()),
             title=title
         )
         for thg in sorted(self.getThematicgroups(), key=lambda thmg: thmg.order):
             # Get the Form for each Thematicgroup
-            thg_form = thg.getForm()
+            thg_form = thg.getForm(request)
             thg_form.missing = colander.null
-            thg_form.name = thg.getId()
+            thg_form.name = str(thg.getId())
             cat_form.add(thg_form)
         return cat_form
 
@@ -267,13 +316,15 @@ class ConfigThematicgroup(object):
     Information'. It contains Form Taggroups as the next lower form structure.
     """
 
-    def __init__(self, id, name, translation):
+    def __init__(self, id, name, translation, itemType):
         self.id = id
         self.name = name
         self.translation = translation
+        self.itemType = itemType
         self.order = 9999
         self.taggroups = []
         self.involvementData = None
+        self.mapData = None
 
     def getId(self):
         """
@@ -296,6 +347,15 @@ class ConfigThematicgroup(object):
         """
         return self.taggroups
 
+    def findTaggroupById(self, id):
+        """
+        Find and return a taggroup based on its id.
+        """
+        for tg in self.getTaggroups():
+            if str(tg.getId()) == str(id):
+                return tg
+        return None
+
     def getName(self):
         """
         Return the name (as defined in the configuration file) of the thematic
@@ -308,6 +368,12 @@ class ConfigThematicgroup(object):
         Return the translation of this thematic group.
         """
         return self.translation
+
+    def getItemType(self):
+        """
+        Get the itemType of this thematic group.
+        """
+        return self.itemType
 
     def setOrder(self, order):
         """
@@ -322,12 +388,30 @@ class ConfigThematicgroup(object):
         return self.order
 
     def setInvolvementData(self, involvementData):
+        """
+        Set the involvement data of this thematic group.
+        """
         self.involvementData = involvementData
 
     def getInvolvementData(self):
+        """
+        Return the involvement data of this thematic group.
+        """
         return self.involvementData
 
-    def getForm(self):
+    def setMapData(self, mapData):
+        """
+        Set the map data of this thematic group.
+        """
+        self.mapData = mapData
+
+    def getMapData(self):
+        """
+        Return the involvement data of this thematic group.
+        """
+        return self.mapData
+
+    def getForm(self, request):
         """
         Prepare the form node for this thematic group, append the forms of its
         taggroups and return it.
@@ -363,96 +447,16 @@ class ConfigThematicgroup(object):
         if self.getInvolvementData() is not None:
             # If there is some involvement data in this thematic group, get the
             # corresponding involvement widget and add it to the form.
-            shortForm = getInvolvementWidget(self.getInvolvementData())
+            shortForm = getInvolvementWidget(request, self)
             thg_form.add(shortForm)
 
+        if self.getMapData() is not None:
+            # If there is some map data in this thematic group, get the widget
+            # and add it to the form.
+            mapWidget = getMapWidget(self)
+            thg_form.add(mapWidget)
+
         return thg_form
-
-def getInvolvementWidget(involvementData):
-    """
-    Return a widget to be used to display Involvements. This is only a short
-    display-only representation of a Stakeholder.
-    """
-
-    # By default don't show the widget in a sequence.
-    sequence = False
-
-    # Special settings for specific involvementData
-    if involvementData == 'secondaryinvestor':
-        sequence = True
-        # TODO: Translation
-        add_subitem_text = 'Add Secondary Investor'
-
-    involvementShortForm = colander.SchemaNode(
-        colander.Mapping(),
-        widget=deform.widget.MappingWidget(
-            template='customInvolvementMapping'
-        ),
-        name=involvementData,
-        title=''
-    )
-
-    involvementShortForm.add(colander.SchemaNode(
-        colander.String(),
-        widget=deform.widget.TextInputWidget(template='hidden'),
-        name='id',
-        title='',
-        missing = colander.null
-    ))
-    involvementShortForm.add(colander.SchemaNode(
-        colander.Int(),
-        widget=deform.widget.TextInputWidget(template='hidden'),
-        name='version',
-        title='',
-        missing = colander.null
-    ))
-    involvementShortForm.add(colander.SchemaNode(
-        colander.Int(),
-        widget=deform.widget.TextInputWidget(template='hidden'),
-        name='role_id',
-        title='',
-        missing = 6
-    ))
-
-    involvementShortForm.add(colander.SchemaNode(
-        colander.String(),
-        widget=deform.widget.TextInputWidget(
-            template='readonly/custom_textinput_readonly'
-        ),
-        name='name',
-        # TODO: Translate
-        title='Name',
-        missing = colander.null
-    ))
-
-    involvementShortForm.add(colander.SchemaNode(
-        colander.String(),
-        widget=deform.widget.TextInputWidget(
-            template='readonly/custom_textinput_readonly'
-        ),
-        name='country',
-        # TODO: Translate
-        title='Country of origin',
-        missing = colander.null
-    ))
-
-    if sequence is False:
-        # If no sequence is required, return the node as it is
-        return involvementShortForm
-
-    else:
-        # If a sequence is required, pack the node in a sequence and return it
-        return colander.SchemaNode(
-            colander.Sequence(),
-            involvementShortForm,
-            widget=deform.widget.SequenceWidget(
-                min_len = 0,
-                add_subitem_text_template = add_subitem_text,
-            ),
-            missing=colander.null,
-            name=involvementData,
-            title=''
-        )
 
 class ConfigTaggroupList(object):
     """
@@ -520,7 +524,7 @@ class ConfigTaggroup(object):
 
     def getTags(self):
         """
-        Return a list of all thematic groups in this category.
+        Return a list of all tags in this taggroup.
         """
         return self.tags
 
@@ -619,6 +623,7 @@ class ConfigTag(object):
         self.key = None
         self.values = []
         self.mandatory = False
+        self.involvementOverview = False
 
     def setKey(self, key):
         """
@@ -658,6 +663,19 @@ class ConfigTag(object):
         """
         return self.mandatory is True
 
+    def setInvolvementOverview(self, overview):
+        """
+        Set if this tag should appear in the involvement overview or not.
+        """
+        self.involvementOverview = overview
+
+    def getInvolvementOverview(self):
+        """
+        Return a boolean whether this tag should appear in the involvement
+        overview or not.
+        """
+        return self.involvementOverview is True
+
     def getForm(self):
         """
         Prepare the form node for this tag, append the nodes of its keys
@@ -679,10 +697,7 @@ class ConfigTag(object):
             choiceslist = [('', '- Select -')]
             for v in sorted(self.getValues(),
                 key=lambda val: val.getOrderValue()):
-                choiceslist.append((
-                    unicode(v.getName(), 'utf-8'),
-                    unicode(v.getTranslation(), 'utf-8')
-                ))
+                choiceslist.append((v.getName(), v.getTranslation()))
             choices = tuple(choiceslist)
             form = colander.SchemaNode(
                 colander.String(),
@@ -700,10 +715,7 @@ class ConfigTag(object):
             choices = []
             for v in sorted(self.getValues(),
                 key=lambda val: val.getOrderValue()):
-                choices.append((
-                    unicode(v.getName(), 'utf-8'),
-                    unicode(v.getTranslation(), 'utf-8')
-                ))
+                choices.append((v.getName(), v.getTranslation()))
             form = colander.SchemaNode(
                 colander.Set(),
                 widget=CustomCheckboxWidget(
@@ -819,7 +831,7 @@ class ConfigKeyList(object):
         """
         # TODO: Try to speed up (?) by looking directly using the index
         for k in self.getKeys():
-            if k.getId() == str(id):
+            if str(k.getId()) == str(id):
                 return k
         return None
 
@@ -829,14 +841,19 @@ class ConfigKey(object):
     file (csv). This is the lowest structure of the form.
     """
 
-    def __init__(self, id, name, type, helptext, validator):
+    def __init__(self, id, name, type, helptext, description, validator, t_key,
+        t_helptext, t_description):
         self.id = id
         self.name = name
         self.type = type
         self.helptext = helptext
-        self.validator = validator if validator != '' else None
-        self.translated_name = None
-        self.translated_helptext = None
+        # The description (and its translation) are stored but not really used
+        # so far.
+        self.description = description
+        self.validator = validator
+        self.translated_name = t_key
+        self.translated_helptext = t_helptext
+        self.translated_description = t_description
 
     def getId(self):
         """
@@ -951,7 +968,7 @@ class ConfigValueList(object):
         """
         values = []
         for v in self.getValues():
-            if v.getFkkey() == str(fk_key):
+            if str(v.getFkkey()) == str(fk_key):
                 values.append(v)
         return values
 
@@ -961,11 +978,10 @@ class ConfigValue(object):
     file (csv). This is the lowest structure of the form.
     """
 
-    def __init__(self, id, name, fk_key, order):
+    def __init__(self, id, name, fk_key, order, translation):
         self.id = id
         self.name = name
-        # The initial value of the translation is set to be the same as the name
-        self.translation = name
+        self.translation = translation if translation is not None else name
         self.fk_key = fk_key
         self.order = order
 
@@ -1013,108 +1029,234 @@ class ConfigValue(object):
             return self.getOrder()
         return self.getName()
 
-def getConfigKeyList(request, itemType, lang=None):
+def getMapWidget(thematicgroup):
     """
-    Function to collect and return all the keys from the configuration file
-    (csv).
+    Similar to getInvolvementWidget below.
+    Return a widget to be used to display the map in the form.
+    """
+    # TODO: Lots of TODOs here ...
+
+    mapWidget = colander.SchemaNode(
+        colander.Mapping(),
+        widget=deform.widget.MappingWidget(
+            template='customMapMapping'
+        ),
+        name=thematicgroup.getMapData(),
+        title='MAP (TODO)' # TODO: Set this to ''
+    )
+
+    mapWidget.add(colander.SchemaNode(
+        colander.Float(),
+#        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='lon',
+        title='lon',
+        missing=colander.null
+    ))
+
+    mapWidget.add(colander.SchemaNode(
+        colander.Float(),
+#        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='lat',
+        title='lat',
+        missing=colander.null
+    ))
+
+    return mapWidget
+
+def getInvolvementWidget(request, thematicgroup):
+    """
+    Return a widget to be used to display Involvements. This is only a short
+    display-only representation of a Stakeholder.
+    """
+
+    # We need the configuration of the other side of the involvement to know
+    # which fields are to be used for the overview display of the involvement.
+    if thematicgroup.getItemType() == 'activities':
+        otherItemType = 'stakeholders'
+    else:
+        otherItemType = 'activities'
+    otherCategoryList = getCategoryList(request, otherItemType)
+
+    # By default don't show the widget in a sequence.
+    sequence = False
+
+    # Special settings for specific involvementData
+    if thematicgroup.getInvolvementData() == 'secondaryinvestor':
+        sequence = True
+        # TODO: Translation
+        add_subitem_text = 'Add Secondary Investor'
+
+    involvementShortForm = colander.SchemaNode(
+        colander.Mapping(),
+        widget=deform.widget.MappingWidget(
+            template='customInvolvementMapping'
+        ),
+        name=thematicgroup.getInvolvementData(),
+        title=''
+    )
+
+    # First add the hidden fields required to keep track of the involvements
+    involvementShortForm.add(colander.SchemaNode(
+        colander.String(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='id',
+        title='',
+        missing = colander.null
+    ))
+    involvementShortForm.add(colander.SchemaNode(
+        colander.Int(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='version',
+        title='',
+        missing = colander.null
+    ))
+    involvementShortForm.add(colander.SchemaNode(
+        colander.Int(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='role_id',
+        title='',
+        missing = colander.null
+    ))
+
+    # Then add the display fields used for showing the involvement overview
+    for keyName in otherCategoryList.getInvolvementOverviewKeyNames():
+        involvementShortForm.add(colander.SchemaNode(
+            colander.String(),
+            widget=deform.widget.TextInputWidget(
+                template='readonly/custom_textinput_readonly'
+            ),
+            name=keyName,
+            title=keyName,
+            missing = colander.null
+        ))
+
+    if sequence is False:
+        # If no sequence is required, return the node as it is
+        return involvementShortForm
+
+    else:
+        # If a sequence is required, pack the node in a sequence and return it
+        return colander.SchemaNode(
+            colander.Sequence(),
+            involvementShortForm,
+            widget=deform.widget.SequenceWidget(
+                min_len = 0,
+                add_subitem_text_template = add_subitem_text,
+            ),
+            missing=colander.null,
+            name=thematicgroup.getInvolvementData(),
+            title=''
+        )
+
+def getConfigKeyList(request, itemType):
+    """
+    Function to collect and return all the keys from the database. It returns a
+    list of all keys found in the original language along with the translation
+    in the language requested. This list will be filtered later to match the
+    configuration in the (local) YAML.
     itemType: activities / stakeholders
     """
-    if itemType == 'stakeholders':
-        filename = 'skeys.csv'
-    else:
-        filename = 'akeys.csv'
-    # Read and collect all Keys based on CSV list
-    configKeys = ConfigKeyList()
-    keys_stream = open('%s/%s'
-        % (profile_directory_path(request), filename), 'rb')
-    keys_csv = csv.reader(keys_stream, delimiter=';')
-    for row in keys_csv:
-        # Skip the first row
-        if keys_csv.line_num > 1:
-            configKeys.addKey(ConfigKey(*row))
-    # Translation
-    if lang is not None:
-        # TODO
-        if itemType == 'activities':
-            t_filename = 'akeys_translated.csv'
 
-            translationStream = open('%s/%s'
-                % (profile_directory_path(request), t_filename), 'rb')
-            translationCsv = csv.reader(translationStream, delimiter=';')
-            for row in translationCsv:
-                # Skip the first row
-                if translationCsv.line_num > 1 and len(row) == 3:
-                    k = configKeys.findKeyById(row[0])
-                    if k is not None:
-                        k.setTranslation(row[1], row[2])
+    if itemType == 'activities':
+        MappedClass = A_Key
+    elif itemType == 'stakeholders':
+        MappedClass = SH_Key
+
+    configKeys = ConfigKeyList()
+
+    # Query the config keys from database
+    localizer = get_localizer(request)
+    translationQuery = Session.query(
+            MappedClass.fk_key.label('original_id'),
+            MappedClass.key.label('t_key'),
+            MappedClass.helptext.label('t_helptext'),
+            MappedClass.description.label('t_description')
+        ).\
+        join(Language).\
+        filter(Language.locale == localizer.locale_name).\
+        subquery()
+    keys = Session.query(
+            MappedClass.id,
+            MappedClass.key,
+            MappedClass.type,
+            MappedClass.helptext,
+            MappedClass.description,
+            MappedClass.validator,
+            translationQuery.c.t_key,
+            translationQuery.c.t_helptext,
+            translationQuery.c.t_description
+        ).\
+        filter(MappedClass.fk_language == 1).\
+        outerjoin(translationQuery,
+            translationQuery.c.original_id == MappedClass.id)
+    for k in keys.all():
+        configKeys.addKey(ConfigKey(k.id, k.key, k.type, k.helptext,
+            k.description, k.validator, k.t_key, k.t_helptext, k.t_description))
+
     return configKeys
 
-def getConfigValueList(request, itemType, lang=None):
+def getConfigValueList(request, itemType):
     """
-    Function to collect and return all the values from the configuration file
-    (csv).
+    Function to collect and return all the keys from the database. It returns a
+    list of all keys found in the original language with some fk_key value (in
+    order not to return all the values entered by users) along with the
+    translation in the language requested. This list will be filtered later to
+    match the configuration in the (local) YAML.
     itemType: activities / stakeholders
     """
-    if itemType == 'stakeholders':
-        filename = 'svalues.csv'
-    else:
-        filename = 'avalues.csv'
-    # Read and collect all Values based on CSV list
-    configValues = ConfigValueList()
-    values_stream = open('%s/%s'
-        % (profile_directory_path(request), filename), 'rb')
-    values_csv = csv.reader(values_stream, delimiter=';')
-    for row in values_csv:
-        # Skip the first row
-        if values_csv.line_num > 1:
-            configValues.addValue(ConfigValue(*row))
-    # Translation
-    if lang is not None:
-        # TODO
-        if itemType == 'activities':
-            t_filename = 'avalues_translated.csv'
 
-            translationStream = open('%s/%s'
-                % (profile_directory_path(request), t_filename), 'rb')
-            translationCsv = csv.reader(translationStream, delimiter=';')
-            for row in translationCsv:
-                # Skip the first row
-                if translationCsv.line_num > 1 and len(row) == 2:
-                    v = configValues.findValueById(row[0])
-                    if v is not None:
-                        v.setTranslation(row[1])
+    if itemType == 'activities':
+        MappedClass = A_Value
+    elif itemType == 'stakeholders':
+        MappedClass = SH_Value
+
+    configValues = ConfigValueList()
+
+    # Query the config values from database
+    localizer = get_localizer(request)
+    translationQuery = Session.query(
+            MappedClass.fk_value.label('original_id'),
+            MappedClass.value.label('t_value')
+        ).\
+        join(Language).\
+        filter(Language.locale == localizer.locale_name).\
+        subquery()
+    values = Session.query(
+            MappedClass.id,
+            MappedClass.value,
+            MappedClass.fk_key,
+            MappedClass.order,
+            translationQuery.c.t_value
+        ).\
+        filter(MappedClass.fk_language == 1).\
+        filter(MappedClass.fk_key != None).\
+        outerjoin(translationQuery,
+            translationQuery.c.original_id == MappedClass.id)
+    for v in values.all():
+        configValues.addValue(ConfigValue(v.id, v.value, v.fk_key, v.order,
+            v.t_value))
 
     return configValues
 
-def getConfigCategoryList(request, itemType, lang=None):
+def getConfigCategoryList(request, itemType):
     """
-    Function to collect and return all the categories from the configuration
-    file (csv). Both categories and thematic groups are treated as the same type
-    of 'categories' in this csv.
-    itemType: activities / stakeholders
+    Function to collect and return all the categories from the database. It
+    returns a list of all categories found in the original language along with
+    the translation in the language requested. This list will be filtered later
+    to match the configuration in the (local) YAML.
+    - itemType: activities / stakeholders
     """
-#    if itemType == 'stakeholders':
-#        filename = 'scategories.csv'
-#    else:
-#        filename = 'acategories.csv'
-#    # Read and collect all Categories based on CSV list
-#    configCategories = ConfigCategoryList()
-#    categories_stream = open('%s/%s'
-#        % (profile_directory_path(request), filename), 'rb')
-#    categories_csv = csv.reader(categories_stream, delimiter=';')
-#    for row in categories_csv:
-#        # Skip the first row
-#        if categories_csv.line_num > 1:
-#            configCategories.addCategory(ConfigCategory(row[0], row[1]))
 
     configCategories = ConfigCategoryList()
 
     # Query the config categories from database
+    localizer = get_localizer(request)
     translationQuery = Session.query(
             Category.fk_category.label('original_id'),
             Category.name.label('translation')
         ).\
-        filter(Category.fk_language == 2).\
+        join(Language).\
+        filter(Language.locale == localizer.locale_name).\
         subquery()
     categories = Session.query(
             Category.id,
@@ -1145,16 +1287,16 @@ def getValidKeyTypes():
         'string'
     ]
 
-def getCategoryList(request, itemType, lang=None):
+def getCategoryList(request, itemType):
     """
     Function to scan through the configuration yaml and put together the list of
     categories which can be used to create the form.
     itemType: activities / stakeholders
     """
     # Scan the configuration files for keys, values and categories
-    configKeys = getConfigKeyList(request, itemType, lang)
-    configValues = getConfigValueList(request, itemType, lang)
-    configCategories = getConfigCategoryList(request, itemType, lang)
+    configKeys = getConfigKeyList(request, itemType)
+    configValues = getConfigValueList(request, itemType)
+    configCategories = getConfigCategoryList(request, itemType)
 
     # Do some first test on the keys: Check that each type is defined correctly
     unknowntypes = []
@@ -1169,10 +1311,10 @@ def getCategoryList(request, itemType, lang=None):
 
     # Load the yaml
     if itemType == 'stakeholders':
-        # TODO
-        filename = 'new_stakeholder.yml'
+        filename = NEW_STAKEHOLDER_YAML
     else:
-        filename = 'new_activities.yml'
+        filename = NEW_ACTIVITY_YAML
+
     yaml_stream = open("%s/%s"
         % (profile_directory_path(request), filename), 'r')
     yaml_config = yaml.load(yaml_stream)
@@ -1210,7 +1352,8 @@ def getCategoryList(request, itemType, lang=None):
             thematicgroup = ConfigThematicgroup(
                 thematicCategory.getId(),
                 thematicCategory.getName(),
-                thematicCategory.getTranslation()
+                thematicCategory.getTranslation(),
+                itemType
             )
 
             # Loop the taggroups of the thematic group
@@ -1222,6 +1365,10 @@ def getCategoryList(request, itemType, lang=None):
 
                 if tgroup_id == 'involvement':
                     thematicgroup.setInvolvementData(tags)
+                    continue
+
+                if tgroup_id == 'map':
+                    thematicgroup.setMapData(tags)
                     continue
 
                 # Create a taggroup out of it
@@ -1267,6 +1414,10 @@ def getCategoryList(request, itemType, lang=None):
                             if 'maintag' in key_config:
                                 taggroup.setMaintag(tag)
 
+                            if ('involvementoverview' in key_config
+                                and key_config['involvementoverview'] is True):
+                                tag.setInvolvementOverview(True)
+
                             # If the values are predefined and they are not set
                             # already (defined explicitly in YAML), then get the
                             # values from the value config csv.
@@ -1294,6 +1445,126 @@ def getCategoryList(request, itemType, lang=None):
             category.addThematicgroup(thematicgroup)
 
         categorylist.addCategory(category)
+
+    # Look for local profiles if there is any local profile set.
+    local_yaml_config = None
+    if (locale_profile_directory_path(request)
+        != profile_directory_path(request)):
+        try:
+            local_yaml_stream = open("%s/%s"
+                % (locale_profile_directory_path(request), filename), 'r')
+            local_yaml_config = yaml.load(local_yaml_stream)
+        except IOError:
+            pass
+
+    # Apply the configuration of the local yaml. So far, only additional
+    # categories, taggroups and keys can be defined in the local yaml. It is not
+    # yet possible to remove any categories or keys.
+    if local_yaml_config is not None and 'fields' in local_yaml_config:
+
+        # Loop the categories of the local yaml config file
+        for (cat_id, thmgrps) in local_yaml_config['fields'].iteritems():
+            newCategory = False
+
+            # Try to find the category in the existing configuration
+            category = categorylist.findCategoryById(cat_id)
+
+            if category is None:
+                # If the category is not in the existing configuration, it needs
+                # to be found in the database
+                category = configCategories.findCategoryById(cat_id)
+                newCategory = True
+
+            if category is None:
+                # If category is still not found, skip it
+                continue
+
+            # Loop the thematic groups of the local yaml config file
+            for (thmgrp_id, taggroups) in thmgrps.iteritems():
+                newThematicgroup = False
+
+                # Try to find the thematic group in the existing configuration
+                thematicgroup = category.findThematicgroupById(thmgrp_id)
+
+                if thematicgroup is None:
+                    # If the thematic group is not in the existing config, it
+                    # needs to be found in the database
+                    thmg = configCategories.findCategoryById(thmgrp_id)
+                    if thmg is not None:
+                        # Create a thematicgroupobject out of it
+                        thematicgroup = ConfigThematicgroup(
+                            thmg.getId(),
+                            thmg.getName(),
+                            thmg.getTranslation()
+                        )
+                        newThematicgroup = True
+                    else:
+                        # If the thematic group is still not found, skip it
+                        continue
+
+                # Loop the taggroups of the local yaml config file
+                for (tgroup_id, tags) in taggroups.iteritems():
+                    newTaggroup = False
+
+                    # Try to find the taggroup in the existing configuration
+                    taggroup = thematicgroup.findTaggroupById(tgroup_id)
+
+                    if taggroup is None:
+                        # If the taggroup is not in the existing config, it
+                        # needs to be created
+                        taggroup = ConfigTaggroup(tgroup_id)
+                        newTaggroup = True
+
+                    # Loop the keys of the taggroup
+                    for (key_id, key_config) in tags.iteritems():
+
+                        # Make sure the key exists in the database
+                        configKey = configKeys.findKeyById(key_id)
+                        if configKey is None:
+                            unknownkeys.append(str(key_id))
+                            continue
+
+                        # Create the configtag object
+                        tag = ConfigTag()
+                        tag.setKey(copy.copy(configKey))
+
+                        if key_config is not None:
+                            # Additional configuration of the key. Not
+                            # everything can be configured in the local yaml
+
+                            if 'maintag' in key_config:
+                                taggroup.setMaintag(tag)
+
+                            if 'validator' in key_config:
+                                tag.getKey().setValidator(
+                                    key_config['validator'])
+
+                            if (configKey.getType().lower() == 'dropdown'
+                                or configKey.getType().lower() == 'checkbox'):
+                                for v in configValues.findValuesByFkkey(
+                                    configKey.getId()):
+                                    tag.addValue(v)
+
+                        taggroup.addTag(tag)
+
+                    # If the taggroup did not exist in the global configuration
+                    # and it is valid (has a maintag), add it to the thematic
+                    # group.
+                    if newTaggroup is True:
+                        if taggroup.getMaintag() is None:
+                            emptymaintag.append(taggroup)
+                        else:
+                            thematicgroup.addTaggroup(taggroup)
+
+                # If the thematic group did not exist in the global
+                # configuration, add it to the category.
+                if newThematicgroup is True:
+                    category.addThematicgroup(thematicgroup)
+
+            # If the category did not exist in the global configuration, add it
+            # to the list of categories.
+            if newCategory is True:
+                categorylist.addCategory(category)
 
     # Keys not found
     if len(unknownkeys) > 0:

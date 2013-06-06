@@ -82,6 +82,7 @@ div#stakeholderformcontainer {
 }
 
 input.readonly {
+    /* This class is used as a selector in new_stakeohlder.mak, edit with care! */
     background-color: #E8E8E8 !important;
     border: 1px solid #B5BCC7 !important;
 }

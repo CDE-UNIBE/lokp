@@ -83,7 +83,8 @@ def main(argv=sys.argv):
         status5 = _addIfNotExists_ID(Status(id=5, name='rejected', description='Reviewed and rejected. Never published.'))
         status6 = _addIfNotExists_ID(Status(id=6, name='edited', description='Edited. Previously pending.'))
         # stakeholder roles
-        sh_role6 = _addIfNotExists_ID(Stakeholder_Role(id=6, name='Investor'))
+        sh_role6 = _addIfNotExists_ID(Stakeholder_Role(id=6, name='Primary Investor'))
+        sh_role7 = _addIfNotExists_ID(Stakeholder_Role(id=7, name='Secondary Investor'))
         # permissions
         permission1 = _addIfNotExists_ID(Permission(id=1, name='administer', description='Can add key/values and do batch translations.'))
         permission2 = _addIfNotExists_ID(Permission(id=2, name='moderate', description='Can make review decisions on reported information.'))
