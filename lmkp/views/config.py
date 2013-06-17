@@ -47,7 +47,8 @@ def form_geomtaggroups(request):
 #    mainkeys = categorylist.getMainkeyWithGeometry()
     mainkeys = [
         'Contract area (ha)',
-        'Current area in operation (ha)'
+        'Current area in operation (ha)',
+        'Intended area (ha)'
     ]
 
     return {'mainkeys': mainkeys}
