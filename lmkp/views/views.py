@@ -62,6 +62,10 @@ class MainView(BaseView):
         
         return {}
 
+    @view_config(route_name='map_view', renderer='lmkp:templates/map-view.mak')
+    def map_view(self):
+        return {}
+
     @view_config(route_name='embedded_index', renderer='lmkp:templates/embedded.mak')
     def embedded_version(self):
         """
