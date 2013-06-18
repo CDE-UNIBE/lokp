@@ -115,6 +115,10 @@ def main(global_config, ** settings):
     # Add a renderer to return JavaScript files
     config.add_renderer('javascript', JavaScriptRenderer())
 
+
+    #
+    config.add_route("map_view", "/map")
+
     """
     Activities
     """
