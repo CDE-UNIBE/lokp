@@ -378,7 +378,7 @@ def renderReadonlyForm(request, itemType, itemJson):
 
     deform.Form.set_default_renderer(mako_renderer)
     configCategoryList = getCategoryList(request, itemType)
-    schema = colander.SchemaNode(colander.Mapping())
+    schema = addHiddenFields(colander.SchemaNode(colander.Mapping()))
     for cat in configCategoryList.getCategories():
         schema.add(cat.getForm(request))
     form = deform.Form(schema)
@@ -388,26 +388,41 @@ def renderReadonlyForm(request, itemType, itemJson):
         'form': html
     }
 
-def structHasOnlyNullValues(cstruct):
+def structHasOnlyNullValues(cstruct, depth=0):
     """
     Recursive function checking if the 'struct' value of a form only contains
     empty values.
+    Also return the depth of the recursion, which allows to identify what type
+    the current 'struct' value is:
+    0: A single tag
+    1: A Taggroup
+    2: A Thematic Group
+    3: A Category
     """
     allNull = True
+    newDepth = None
     if cstruct == colander.null:
         allNull = allNull and True
     elif isinstance(cstruct, dict):
         # A dict. Go one level deeper for each.
         for c in cstruct:
-            allNull = allNull and structHasOnlyNullValues(cstruct[c])
+            a, d = structHasOnlyNullValues(cstruct[c], depth+1)
+            if newDepth is None:
+                newDepth = d
+            else:
+                newDepth = max(newDepth, d)
+            allNull = allNull and a
     elif isinstance(cstruct, list):
-        # A list. Go one level deeper for each.
+        # A list. Go through each item of the list (though this does not mean a
+        # recursion level deeper)
         for c in cstruct:
-            allNull = allNull and structHasOnlyNullValues(c)
+            a, d = structHasOnlyNullValues(c, depth)
+            newDepth = d if newDepth is None else max(newDepth, d)
+            allNull = allNull and a
     else:
         # Values are not null.
         allNull = allNull and False
-    return allNull
+    return allNull, newDepth if newDepth is not None else depth
 
 def doClearFormSessionData(request):
     """
