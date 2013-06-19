@@ -373,7 +373,6 @@ def renderReadonlyForm(request, itemType, itemJson):
     the configuration.
     """
 
-    # TODO: Map.
     # TODO: Show involvements.
 
     deform.Form.set_default_renderer(mako_renderer)
@@ -384,8 +383,13 @@ def renderReadonlyForm(request, itemType, itemJson):
     form = deform.Form(schema)
     data = getFormdataFromItemjson(request, itemJson, itemType)
     html = form.render(data, readonly=True)
+
+    coords = (itemJson['geometry']['coordinates'] if 'geometry' in itemJson
+        and 'coordinates' in itemJson['geometry'] else None)
+
     return {
-        'form': html
+        'form': html,
+        'coords': coords
     }
 
 def structHasOnlyNullValues(cstruct, depth=0):

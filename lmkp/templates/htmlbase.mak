@@ -63,7 +63,7 @@
                                         # - icon (li class)
                                         # - name
                                         topmenu = [
-                                            ["request.route_url('map')", 'icon-map-marker', 'Map'],
+                                            [request.route_url('map_view'), 'icon-map-marker', 'Map'],
                                             ["request.route_url('grid')", 'icon-align-justify', 'Grid'],
                                             ["request.route_url('chart')", 'icon-bar-chart', 'Charts']
                                         ]
@@ -176,4 +176,13 @@
             s.parentNode.insertBefore(g,s)}(document,'script'));
         </script>
     </body>
+
+    ## Include the bottom tags of the child template if available.
+    <%
+        try:
+            self.bottom_tags()
+        except AttributeError:
+            pass
+    %>
+
 </html>

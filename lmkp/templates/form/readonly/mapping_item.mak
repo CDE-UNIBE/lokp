@@ -12,11 +12,8 @@
 % if not hasOnlyNullValues:
 
     % if field.name == 'map':
-        <div class="row-fluid">
-            <div class="span9 map-not-whole-page">
-                <div id="googleMapNotFull"></div>
-            </div>
-        </div>
+        ## The map container was already rendered by the initial form item so it
+        ## appears right on top.
 
     % elif depth >= 2:
         ## Category or Thematic Group
