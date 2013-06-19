@@ -64,8 +64,8 @@
                                         # - name
                                         topmenu = [
                                             [request.route_url('map_view'), 'icon-map-marker', 'Map'],
-                                            ["request.route_url('grid')", 'icon-align-justify', 'Grid'],
-                                            ["request.route_url('chart')", 'icon-bar-chart', 'Charts']
+                                            [request.route_url('grid_view'), 'icon-align-justify', 'Grid'],
+                                            [request.route_url('charts_view'), 'icon-bar-chart', 'Charts']
                                         ]
                                     %>
 
@@ -115,14 +115,8 @@
 
                 ## Content
 
-                <div class="container">
-                    <div class="content no-border">
-
-                        ## Use the body of the child template
-                        ${self.body()}
-
-                    </div>
-                </div>
+                ## Use the body of the child template
+                ${self.body()}
 
                 ## End of Content
 

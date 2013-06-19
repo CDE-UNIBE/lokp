@@ -3,7 +3,7 @@
 <%def name="title()">Deal Details</%def>
 
 <%def name="head_tags()">
-    <script src="/static/lib/OpenLayers-2.12/OpenLayers.js" type="text/javascript"></script>
+    <script src="${request.static_url('lmkp:static/lib/OpenLayers-2.12/OpenLayers.js')}" type="text/javascript"></script>
     <script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3&amp;sensor=false"></script>
     <style type="text/css" >
         .olTileImage {
@@ -12,10 +12,14 @@
     </style>
 </%def>
 
-${form | n}
+<div class="container">
+    <div class="content no-border">
+        ${form | n}
+    </div>
+</div>
 
 <%def name="bottom_tags()">
-    <script src="/static/v2/activitydetails.js" type="text/javascript"></script>
+    <script src="${request.static_url('lmkp:static/v2/activitydetails.js')}" type="text/javascript"></script>
 
     <script type="text/javascript">
         $(document).ready(function() {

@@ -99,7 +99,7 @@ window.onload = function() {
         onSelect: function(feature){
             var activityId = feature.data.activity_identifier;
             var shortId = activityId.split("-")[0]
-            $("#deal-shortid-span").html("# " + shortId);
+            $("#deal-shortid-span").html('<a href="/activities/html/' + activityId + '"># ' + shortId + '</a>');
             $("#taggroups-ul" ).empty();
             $.get("/activities/public/json/" + activityId, function(r){
                 var a = r.data[0];
