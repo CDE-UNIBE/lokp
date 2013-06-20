@@ -50,7 +50,7 @@
                 <div class="navbar header_self">
                     <div class="container">
                         <div class="logo">
-                            <a href="#">
+                            <a href="${request.route_url('index')}">
                                 <img src="${request.static_url('lmkp:static/media/img/logo.png')}" />
                             </a>
                         </div>
@@ -112,6 +112,18 @@
                 </div>
 
                 ## End of Header
+
+                ## Show session messages if available
+                % if request.session.peek_flash():
+                    <div class="alert alert-block" style="margin-bottom:0;">
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        % for message in request.session.pop_flash():
+                            <p>
+                                <% context.write(message) %>
+                            </p>
+                        % endfor
+                    </div>
+                % endif
 
                 ## Content
 

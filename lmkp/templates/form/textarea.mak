@@ -1,24 +1,15 @@
-<textarea id="${field.oid}"
-
-        % if field.widget.rows:
-            rows="${field.widget.rows}"
+<div class="row-fluid">
+    <div class="span4">
+        <p>${field.name}</p>
+    </div>
+    <div class="span6">
+        <textarea
+            class="input-style"
+            rows="4"
+            id="${field.oid}"
+            name="${field.name}"></textarea>
+        % if helptext:
+            <div class="input-description">${helptext}</div>
         % endif
-
-        % if field.widget.cols:
-            cols="${field.widget.cols}"
-        % endif
-
-        % if field.widget.css_class:
-            class="${field.widget.css_class}"
-        % endif
-
-        % if field.widget.style:
-            style="${field.widget.style}"
-        % endif
-
-          name="${field.name}"
->${cstruct}</textarea>
-
-% if helptext:
-    <div class="form_helptext">${helptext}</div>
-% endif
+    </div>
+</div>

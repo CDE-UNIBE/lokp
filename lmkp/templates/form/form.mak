@@ -1,71 +1,69 @@
+<%
+    import colander
+    new_form = 'id' not in cstruct or cstruct['id'] == colander.null
+%>
+
+<h3>Deal Editor</h3>
+
+% if new_form is True:
+    <p class="id">New Deal</p>
+% else:
+    <p class="id">${cstruct['id']}</p>
+% endif
+
 <form
     id="${field.formid}"
     action="${field.action}"
     method="${field.method}"
     enctype="multipart/form-data"
-    accept-charset="utf-8"
-    % if field.css_class:
-        class=${field.css_class}
-    % endif
-    >
+    accept-charset="utf-8">
 
-<fieldset class="deformFormFieldset">
-  
-    % if field.title:
-        <legend>${field.title}</legend>
-    % endif
-  
-    <input type="hidden" 
+    <input type="hidden"
            name="_charset_"
     />
     <input type="hidden"
            name="__formid__"
            value="${field.formid}"
     />
-    <ul>
-      
-        % if field.error:
-            <li class="errorLi">
-                <h3 class="errorMsgLbl">
-                    ${_("There was a problem with your submission")}
-                </h3>
-                <p class="errorMsg">
-                    ${_("Errors have been highlighted below")}
-                </p>
-                % if field.errormsg:
-                    <p class="errorMsg">${_(field.errormsg)}</p>
-                % endif
-            </li>
-        % endif
 
-        % if field.description:
-            <li class="section first">${description}</li>
-        % endif
-      
-        % for child in field.children:
-            ${child.render_template(field.widget.item_template)}
-        % endfor
-      
-        <li class="buttons">
-            % for button in field.buttons:
-                <button
-                    % if button.disabled:
-                        disabled=${button.disabled}
+    % if field.error:
+        <div class="alert alert-error">
+            <h5>${_("There was a problem with your submission")}</h5>
+            <p>${_("Errors have been highlighted below")}</p>
+        </div>
+    % endif
+
+    <div class="deal-editor-menu-bar">
+        % for button in field.buttons:
+            <ul>
+                % if button.css_class == 'formstepactive':
+                    <div class="active-wrapper">
+                % endif
+
+                <li
+                    % if button.name == 'submit':
+                        style="background-color:gray;"
                     % endif
-                    id="${field.formid + button.name}"
-                    name="${button.name}"
-                    type="${button.type}"
-                    class="btnText submit ${button.css_class}"
-                    value="${button.value}"
-                >
-                    <span>${button.title}</span>
-                </button>
-            % endfor
-        </li>
-      
-    </ul>
-    
-</fieldset>
+                    >
+                    <button
+                        id="${field.formid + button.name}"
+                        name="${button.name}"
+                        value="${button.value}"
+                        class="btnText ${button.css_class}">
+                        ${button.title}
+                    </button>
+                </li>
+
+                % if button.css_class == 'formstepactive':
+                    </div>
+                % endif
+            </ul>
+        % endfor
+    </div>
+
+    % for child in field.children:
+        ${child.render_template(field.widget.item_template)}
+    % endfor
 
 % if field.use_ajax:
     <script type="text/javascript">

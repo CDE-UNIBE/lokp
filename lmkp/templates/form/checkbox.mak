@@ -1,27 +1,31 @@
 ${field.start_sequence()}
 
+% for index, choice in enumerate(values):
+    <div class="row-fluid">
+        <ul class="select-list">
+            <li>
+                <p>${choice[1]}</p>
+            </li>
+            <li class="select-only">
+                <div class="checkbox-modified">
+                    <input id="${field.oid}-${index}"
+                           class="input-top"
+                           type="checkbox"
+                           name="checkbox"
+                           value="${choice[0]}"
+                           % if choice[0] in cstruct:
+                            checked
+                           % endif
+                           />
+                    <label for="${field.oid}-${index}"></label>
+                </div>
+            </li>
+        </ul>
+    </div>
+% endfor
+
 % if helptext:
     <span class="form_helptext form_checkbox">${helptext}</span>
 % endif
-
-<ul class="deformSet formCheckbox">
-    % for index, choice in enumerate(values):
-        <li class="deformSet-item">
-            <input
-                % if field.widget.css_class:
-                    class="${field.widget.css_class}"
-                % endif
-                % if choice[0] in cstruct:
-                    checked
-                % endif
-                type="checkbox"
-                name="checkbox"
-                value="${choice[0]}"
-                id="${field.oid}-${index}"
-            />
-            <label for="${field.oid}-${index}">${choice[1]}</label>
-        </li>
-    % endfor
-</ul>
 
 ${field.end_sequence()}

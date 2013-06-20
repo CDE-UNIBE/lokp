@@ -23,7 +23,9 @@
               we ignore the first element (the cstruct) because it's already
               attached to the field -->
         % for subfield in subfields:
+            <div class="formSingleSequence">
             ${subfield[1].render_template(field.widget.item_template, parent=field)}
+            </div>
         % endfor
 
         <span class="deformInsertBefore"
@@ -31,26 +33,23 @@
               max_len="${max_len}"
               now_len="${now_len}"
               orderable="${orderable}"
-        >
-        </span>
+        ></span>
 
+        <div class="form-add-more-icon">
+            <span 
+                class="green pointer" id="${field.oid}-seqAdd" onClick="javascript:customAppendSequenceItem(this);">
+                <i class="icon-plus"></i>
+            </span>
+        </div>
     </ul>
-
-    <a href="#"
-       class="deformSeqAdd"
-       id="${field.oid}-seqAdd"
-       onClick="javascript: return deform.appendSequenceItem(this);"
-    >
-        <small id="${field.oid}-addtext">${_(add_subitem_text)}</small>
-    </a>
 
     <script type="text/javascript">
         deform.addCallback(
             '${field.oid}',
             function(oid) {
-                oid_node = $('#'+ oid);
-                deform.processSequenceButtons(
-                    oid_node, ${min_len}, ${max_len}, ${now_len}, ${orderable}
+                var oid_node = $('#'+ oid);
+                customProcessSequenceButtons(
+                    oid_node, ${min_len}, ${max_len}, ${now_len}
                 );
             }
         );
