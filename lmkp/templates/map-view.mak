@@ -176,7 +176,7 @@
                     </div>
                 </div>
 
-                <div class="basic-data" style="z-index: 1000;">
+                <div class="basic-data" style="z-index: 1000; display: none;">
                     <h6 class="deal-headline">Deal
                         <span id="deal-shortid-span" class="underline">#</span>
                     </h6>

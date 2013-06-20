@@ -27,6 +27,15 @@ window.onload = function() {
                 $.cookie("_LOCATION_", center.lon + "|" + center.lat + "|" + zoom, {
                     expires: 7
                 });
+                /*var ext  = map.getExtent();
+                activitiesLayer.protocol.read({
+                    params: {
+                        epsg: 900913,
+                        bbox: ext.left + "," + ext.bottom + "," + ext.right + "," + ext.top,
+                        limit: 500
+                    },
+                    url: "/activities/geojson"
+                });*/
             }
         },
         projection: sphericalMercatorProjection
@@ -81,7 +90,7 @@ window.onload = function() {
             url: "/activities/geojson"
         }),
         sphericalMercator: true,
-        strategies: [new OpenLayers.Strategy.Fixed()],
+        strategies: [new OpenLayers.Strategy.BBOX()],
         styleMap: new OpenLayers.StyleMap({
             "default": new OpenLayers.Style({}, {
                 rules: rules
@@ -108,11 +117,14 @@ window.onload = function() {
                     $( "#taggroups-ul" ).append( "<li><p><span class=\"bolder\">" + tg.main_tag.key + ": </span>" + tg.main_tag.value + "</p></li>" );
                 }
             });
+            $(".basic-data").fadeIn();
         },
         onUnselect: function(feature){
-            $("#deal-shortid-span").html("#");
-            $("#taggroups-ul" ).empty();
-            $("#taggroups-ul").html("<li><p>Select a deal to get information.</p></li>")
+            $(".basic-data").fadeOut(400, function(){
+                $("#deal-shortid-span").html("#");
+                $("#taggroups-ul" ).empty();
+                $("#taggroups-ul").html("<li><p>Select a deal to get information.</p></li>")
+            });
         }
     });
     selectControl.activate();
@@ -153,7 +165,7 @@ window.onload = function() {
 
     $(".context-layers-description > i").click(function(event){
         // Do something
-    });
+        });
 
 }
 
