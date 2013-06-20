@@ -85,7 +85,7 @@
                             <div class="user">
                                 <ul class="nav nav-pills">
                                     <li class="active">
-                                        <a href="#">
+                                        <a href="/login">
                                             Login
                                         </a>
                                     </li>

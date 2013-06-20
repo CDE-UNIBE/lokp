@@ -105,7 +105,7 @@
     </h6>
     <ul id="taggroups-ul">
         <li>
-            <p>Select a deal to get information.</p>
+            <p>No deal selected.</p>
         </li>
     </ul>
 </div>

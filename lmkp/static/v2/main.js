@@ -17,7 +17,7 @@ window.onload = function() {
                 enableKinetic: true
             }
         }),
-        new OpenLayers.Control.PanZoomBar()
+        new OpenLayers.Control.PanZoom()
         ],
         layers: layers,
         eventListeners: {
@@ -27,7 +27,7 @@ window.onload = function() {
                 $.cookie("_LOCATION_", center.lon + "|" + center.lat + "|" + zoom, {
                     expires: 7
                 });
-                /*var ext  = map.getExtent();
+                var ext  = map.getExtent();
                 activitiesLayer.protocol.read({
                     params: {
                         epsg: 900913,
@@ -35,7 +35,7 @@ window.onload = function() {
                         limit: 500
                     },
                     url: "/activities/geojson"
-                });*/
+                });
             }
         },
         projection: sphericalMercatorProjection
@@ -78,7 +78,52 @@ window.onload = function() {
     })
     ];
 
+    var radius = function(feature){
+        return (Math.min(feature.attributes.count, 7) + 3) * 1.5;
+    }
+
+    var count = function(feature){
+        return feature.attributes.count;
+    }
+
     var activitiesLayer = new OpenLayers.Layer.Vector('Activities', {
+        eventListeners: {
+            "featureselected": function(event){
+                var feature = event.feature;
+                if(feature.cluster.length == 1){
+                    var f = feature.cluster[0];
+                    var activityId = f.data.activity_identifier;
+                    var shortId = activityId.split("-")[0]
+                    $("#deal-shortid-span").html('<a href="/activities/html/' + activityId + '"># ' + shortId + '</a>');
+                    $("#taggroups-ul" ).empty();
+                    $.get("/activities/json/" + activityId, function(r){
+                        var a = r.data[0];
+                        for(var i=0; i < a.taggroups.length; i++){
+                            var tg = a.taggroups[i];
+                            if(tg.main_tag){
+                                $( "#taggroups-ul" ).append( "<li><p><span class=\"bolder\">" + tg.main_tag.key + ": </span>" + tg.main_tag.value + "</p></li>" );
+                            }
+                        }
+                    });
+                } else {
+                    $("#deal-shortid-span").html('# ');
+                    $("#taggroups-ul").empty();
+                    $("#taggroups-ul").append("<li><p><span class=\"bolder\">" + feature.cluster.length + " deals selected:</span> Please zoom in to get details about a single deal.</p></li>" );
+                }
+            },
+            "featureunselected": function(event){
+                if(activitiesLayer.selectedFeatures.length == 0){
+                    $("#deal-shortid-span").html("#");
+                    $("#taggroups-ul" ).empty();
+                    $("#taggroups-ul").html("<li><p>No deal selected.</p></li>");
+                }
+            }
+        },
+        filter: new OpenLayers.Filter.Comparison({
+            property: 'status',
+            type: OpenLayers.Filter.Comparison.EQUAL_TO,
+            value: 'active'
+        }),
         isBaseLayer: false,
         maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34,
             20037508.34, 20037508.34),
@@ -90,8 +135,13 @@ window.onload = function() {
             url: "/activities/geojson"
         }),
         sphericalMercator: true,
-        strategies: [new OpenLayers.Strategy.BBOX()],
-        styleMap: new OpenLayers.StyleMap({
+        strategies: [
+        new OpenLayers.Strategy.Fixed(),
+        new OpenLayers.Strategy.Cluster({
+            distance: 30
+        })
+        ],
+        /*styleMap: new OpenLayers.StyleMap({
             "default": new OpenLayers.Style({}, {
                 rules: rules
             }),
@@ -100,32 +150,76 @@ window.onload = function() {
                 fillOpacity: 0.8,
                 strokeColor: '#006666'
             })
+        })*/
+        styleMap: new OpenLayers.StyleMap({
+            "default":new OpenLayers.Style({
+                fontColor: "#ffffff",
+                fontSize: "9px",
+                label: "${count}",
+                pointRadius: "${radius}",
+                fillColor: "#bd0026",
+                fillOpacity: 1, //fillOpacity,
+                strokeColor: "#bd0026",
+                strokeOpacity: 0.5,
+                strokeWidth: 5
+            }, {
+                context: {
+                    count: count,
+                    radius: radius
+                }
+            }),
+            "select": new OpenLayers.Style({
+                fontColor: "#000000",
+                fontSize: "9px",
+                label: "${count}",
+                pointRadius: "${radius}",
+                fillColor: "#00ffff",
+                fillOpacity: 1, //fillOpacity,
+                strokeColor: "#00ffff",
+                strokeOpacity: 0.5,
+                strokeWidth: 5
+            }, {
+                context: {
+                    count: count,
+                    radius: radius
+                }
+            })
         })
     });
 
     var selectControl = new OpenLayers.Control.SelectFeature(activitiesLayer,{
-        map: map,
-        onSelect: function(feature){
-            var activityId = feature.data.activity_identifier;
-            var shortId = activityId.split("-")[0]
-            $("#deal-shortid-span").html('<a href="/activities/html/' + activityId + '"># ' + shortId + '</a>');
-            $("#taggroups-ul" ).empty();
-            $.get("/activities/public/json/" + activityId, function(r){
-                var a = r.data[0];
-                for(var i=0; i < a.taggroups.length; i++){
-                    var tg = a.taggroups[i];
-                    $( "#taggroups-ul" ).append( "<li><p><span class=\"bolder\">" + tg.main_tag.key + ": </span>" + tg.main_tag.value + "</p></li>" );
-                }
-            });
-            $(".basic-data").fadeIn();
+        map: map
+    /*onSelect: function(feature){
+            if(feature.cluster.length == 1){
+                var f = feature.cluster[0];
+                var activityId = f.data.activity_identifier;
+                var shortId = activityId.split("-")[0]
+                $("#deal-shortid-span").html('<a href="/activities/html/' + activityId + '"># ' + shortId + '</a>');
+                $("#taggroups-ul" ).empty();
+                $.get("/activities/json/" + activityId, function(r){
+                    var a = r.data[0];
+                    for(var i=0; i < a.taggroups.length; i++){
+                        var tg = a.taggroups[i];
+                        $( "#taggroups-ul" ).append( "<li><p><span class=\"bolder\">" + tg.main_tag.key + ": </span>" + tg.main_tag.value + "</p></li>" );
+                    }
+                });
+                $(".basic-data").fadeIn();
+            } else {
+                $("#deal-shortid-span").html('# ');
+                $("#taggroups-ul").empty();
+                $("#taggroups-ul").append("<li><p><span class=\"bolder\">" + feature.cluster.length + " deals selected:</span> Please zoom in to get details about a single deal.</p></li>" );
+                $(".basic-data").fadeIn();
+            }
         },
         onUnselect: function(feature){
-            $(".basic-data").fadeOut(400, function(){
-                $("#deal-shortid-span").html("#");
-                $("#taggroups-ul" ).empty();
-                $("#taggroups-ul").html("<li><p>Select a deal to get information.</p></li>")
-            });
-        }
+            if(activitiesLayer.selectedFeatures.length == 0){
+                $(".basic-data").fadeOut(400, function(){
+                    $("#deal-shortid-span").html("#");
+                    $("#taggroups-ul" ).empty();
+                    $("#taggroups-ul").html("<li><p>Select a deal to get information.</p></li>")
+                });
+            }
+        }*/
     });
     selectControl.activate();
 
@@ -151,7 +245,6 @@ window.onload = function() {
     });
 
     $(".input-top").click(function(event){
-        //console.log(event);
         var ol = map.getLayersByName(event.target.value)[0];
         if(ol){
             ol.setVisibility(event.target.checked);
