@@ -118,6 +118,8 @@ def main(global_config, ** settings):
 
     #
     config.add_route("map_view", "/map")
+    config.add_route("grid_view", "/grid")
+    config.add_route("charts_view", "/charts")
 
     """
     Activities
@@ -272,7 +274,7 @@ def main(global_config, ** settings):
     # Evaluation
     config.add_route('evaluation_json', '/evaluation/{temp}')
     # Some (hopefully) nice charts from the evalution
-    config.add_route('charts', '/charts')
+    config.add_route('charts', '/charts_old')
 
     # Yet another test
     config.add_route('privileges_test', '/privileges')

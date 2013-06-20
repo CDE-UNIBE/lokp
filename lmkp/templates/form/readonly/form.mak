@@ -1,21 +1,16 @@
-<div class="deform"
-    % if field.name:
-        id="${field.name}"
-    % endif
->
-    <div class="deformFormFieldset">
-        % if field.title:
-            <li class="section first">
-                <h3>${field.title}</h3>
-                % if field.description:
-                    <div>${field.description}</div>
-                % endif
-            </li>
-        % endif
-    </div>
+<h3>Deal Details</h3>
 
-    % for child in field:
-        ${child.render_template(field.widget.readonly_item_template)}
-    % endfor
-	
+% if 'id' in cstruct:
+    <p class="id">${cstruct['id']}</p>
+% endif
+
+## Map container
+<div class="row-fluid">
+    <div class="span9 map-not-whole-page">
+        <div id="googleMapNotFull"></div>
+    </div>
 </div>
+
+% for child in field:
+    ${child.render_template(field.widget.readonly_item_template)}
+% endfor

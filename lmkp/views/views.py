@@ -62,8 +62,16 @@ class MainView(BaseView):
         
         return {}
 
-    @view_config(route_name='map_view', renderer='lmkp:templates/map-view.mak')
+    @view_config(route_name='map_view', renderer='lmkp:templates/map_view.mak')
     def map_view(self):
+        return {}
+
+    @view_config(route_name='grid_view', renderer='lmkp:templates/grid_view.mak')
+    def grid_view(self):
+        return {}
+
+    @view_config(route_name='charts_view', renderer='lmkp:templates/charts_view.mak')
+    def charts_view(self):
         return {}
 
     @view_config(route_name='embedded_index', renderer='lmkp:templates/embedded.mak')

@@ -200,7 +200,7 @@ def read_one(request):
                         version = str(a['version'])
                     if str(a['version']) == version:
                         return render_to_response(
-                            'lmkp:templates/formReadonly.mak',
+                            'lmkp:templates/activities/details.mak',
                             renderReadonlyForm(request, 'activities', a),
                             request
                         )
