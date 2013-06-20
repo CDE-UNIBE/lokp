@@ -28,6 +28,16 @@
 
         <script src="${request.static_url('lmkp:static/media/js/vendor/modernizr-2.6.2-respond-1.1.0.min.js')}"></script>
 
+        <style type="text/css">
+            .header-select {
+                border: 0px;
+                color: black;
+                font-size: 0.8em;
+                height: 22px;
+                width: 100px;
+            }
+        </style>
+
         ## Include the head tags of the child template if available.
         <%
             try:
@@ -91,20 +101,64 @@
                                     </li>
                                     <li>|</li>
                                     <li>
-                                        <a href="#">
+                                        <select id="language-select" name="language-select" class="header-select">
+                                              <option value="en"
+                                              % if locale == "en":
+                                                selected="selected"
+                                              %endif
+                                              >English</option>
+                                              <option value="fr"
+                                              % if locale == "fr":
+                                                selected="selected"
+                                              %endif
+                                              >Français</option>
+                                              <option value="es"
+                                              % if locale == "es":
+                                                selected="selected"
+                                              %endif
+                                              >Espagñol</option>
+                                        </select>
+                                        <!--a href="#">
                                             English
                                             <span class="arrow">
                                                 <i class="icon-sort-down"></i>
                                             </span>
-                                        </a>
+                                        </a-->
                                     <li>|</li>
                                     <li>
-                                        <a href="#">
+                                        <select id="profile-select" name="profile-select" class="header-select">
+                                              <option value="global"
+                                              % if profile == "global":
+                                                selected="selected"
+                                              %endif
+                                              >global</option>
+                                              <option value="Laos"
+                                              % if profile == "Laos":
+                                                selected="selected"
+                                              %endif
+                                              >Laos</option>
+                                              <option value="Cambodia"
+                                              % if profile == "Cambodia":
+                                                selected="selected"
+                                              %endif
+                                              >Cambodia</option>
+                                              <option value="Peru"
+                                              % if profile == "Peru":
+                                                selected="selected"
+                                              %endif
+                                              >Peru</option>
+                                              <option value="Madagascar"
+                                              % if profile == "Madagascar":
+                                                selected="selected"
+                                              %endif
+                                              >Madagascar</option>
+                                        </select>
+                                        <!--a href="#">
                                             Profile
                                             <span class="arrow">
                                                 <i class="icon-sort-down"></i>
                                             </span>
-                                        </a>
+                                        </a-->
                                     </li>
                                 </ul>
                             </div>

@@ -7,6 +7,8 @@ from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
+from lmkp.views.profile import get_current_profile
+from lmkp.views.profile import get_current_locale
 
 log = logging.getLogger(__name__)
 
@@ -64,15 +66,24 @@ class MainView(BaseView):
 
     @view_config(route_name='map_view', renderer='lmkp:templates/map_view.mak')
     def map_view(self):
-        return {}
+
+        self._handle_parameters()
+
+        return {"profile": get_current_profile(self.request), "locale": get_current_locale(self.request)}
 
     @view_config(route_name='grid_view', renderer='lmkp:templates/grid_view.mak')
     def grid_view(self):
-        return {}
+
+        self._handle_parameters()
+
+        return {"profile": get_current_profile(self.request), "locale": get_current_locale(self.request)}
 
     @view_config(route_name='charts_view', renderer='lmkp:templates/charts_view.mak')
     def charts_view(self):
-        return {}
+
+        self._handle_parameters()
+
+        return {"profile": get_current_profile(self.request), "locale": get_current_locale(self.request)}
 
     @view_config(route_name='embedded_index', renderer='lmkp:templates/embedded.mak')
     def embedded_version(self):

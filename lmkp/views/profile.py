@@ -20,6 +20,15 @@ def get_current_profile(request):
 
     return 'global'
 
+def get_current_locale(request):
+
+    if '_LOCALE_' in request.params:
+        return request.params['_LOCALE_']
+    if '_LOCALE_' in request.cookies:
+        return request.cookies['_LOCALE_']
+
+    return 'en'
+
 @view_config(route_name='profile_store', renderer='json')
 def profile_store(request):
     """

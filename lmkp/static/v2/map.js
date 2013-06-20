@@ -223,9 +223,26 @@ window.onload = function() {
     });
     selectControl.activate();
 
+    for(var i = 0; i < contextLayers.length; i++){
+        var l = contextLayers[i];
+
+        var layerName = contextLayers[i].name;
+
+        var t = "\n\
+<li>\n\
+<div class=\"checkbox-modified-small\">\n\
+<input class=\"input-top\" type=\"checkbox\" value=\"" + layerName + "\" id=\"checkbox" + layerName + "\">\n\
+<label for=\"checkbox" + layerName + "\"></label>\n\
+</div>\n\
+<p class=\"context-layers-description\">" + layerName + "&nbsp;<i class=\"icon-exclamation-sign pointer\"></i>\n\
+</p>\n\
+</li>";
+        $("#context-layers-list").append(t);
+    }
+
     map.addControl(selectControl);
     
-    map.addLayers(getOverlayLayers());
+    map.addLayers(contextLayers);
     map.addLayers([activitiesLayer]);
 
 
@@ -309,6 +326,7 @@ function getBaseLayers(){
     return layers;
 }
 
+/*
 function getOverlayLayers() {
     var layers = [ new OpenLayers.Layer.WMS("Accessibility","http://cdetux2.unibe.ch/geoserver/lo/wms",{
         epsg: 900913,
@@ -372,4 +390,4 @@ function getOverlayLayers() {
     })];
 
     return layers;
-}
+}*/
