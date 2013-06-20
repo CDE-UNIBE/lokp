@@ -14,3 +14,9 @@
 % for child in field:
     ${child.render_template(field.widget.readonly_item_template)}
 % endfor
+
+% if 'id' in cstruct:
+    <a href="/activities/form/${cstruct['id']}">
+        <i class="icon-pencil"></i>&nbsp;&nbsp;Edit this deal
+    </a>
+% endif

@@ -437,6 +437,7 @@ class ConfigThematicgroup(object):
                     colander.Sequence(),
                     tg_form,
                     missing=colander.null,
+                    default=[colander.null],
                     widget=deform.widget.SequenceWidget(
                         min_len=1
                     ),
@@ -727,8 +728,8 @@ class ConfigTag(object):
             )
         elif type.lower() == 'number' or type.lower() == 'integer':
             # Number or Integer field
-            deform.widget.default_resource_registry.set_js_resources(
-                'jqueryspinner',None,'../static/jquery-ui-1.9.2.custom.min.js')
+#            deform.widget.default_resource_registry.set_js_resources(
+#                'jqueryspinner',None,'../static/jquery-ui-1.9.2.custom.min.js')
             min = None
             max = None
             val = self.getKey().getValidator()
@@ -753,8 +754,11 @@ class ConfigTag(object):
                 colanderType = colander.Int()
             form = colander.SchemaNode(
                 colanderType,
-                widget=NumberSpinnerWidget(
-                    options=options,
+#                widget=NumberSpinnerWidget(
+#                    options=options,
+#                    helptext=helptext
+#                ),
+                widget=CustomTextInputWidget(
                     helptext=helptext
                 ),
                 name=name,

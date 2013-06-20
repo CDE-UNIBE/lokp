@@ -55,7 +55,7 @@ def read_many(request):
     elif output_format == 'form':
         # This is used to display a new and empty form for an Activity
         return render_to_response(
-            'lmkp:templates/form.mak',
+            'lmkp:templates/activities/form.mak',
             renderForm(request, 'activities'),
             request
         )
@@ -219,7 +219,7 @@ def read_one(request):
                         version = str(a['version'])
                     if str(a['version']) == version:
                         return render_to_response(
-                            'lmkp:templates/form.mak',
+                            'lmkp:templates/activities/form.mak',
                             renderForm(request, 'activities', itemJson=a),
                             request
                         )
