@@ -54,7 +54,7 @@ def renderForm(request, itemType, **kwargs):
     # Activity or Stakeholder
     if itemType == 'activities':
         # The initial category of the form
-        newCategory = 1
+        newCategory = 2
         formid = 'activityform'
     elif itemType == 'stakeholders':
         # The initial category of the form

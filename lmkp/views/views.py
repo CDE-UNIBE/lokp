@@ -68,7 +68,50 @@ class MainView(BaseView):
 
     @view_config(route_name='grid_view', renderer='lmkp:templates/grid_view.mak')
     def grid_view(self):
-        return {}
+        request = self.request
+
+        # Default limit of how many entries are listed per page
+        limit = 10
+
+        # Default item type: activities
+        item_type = request.params.get('tab', 'a')
+
+        if item_type == 'sh':
+            from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
+            protocol = StakeholderProtocol3(DBSession)
+        else:
+            from lmkp.views.activity_protocol3 import ActivityProtocol3
+            protocol = ActivityProtocol3(DBSession)
+
+        # Default page: 1
+        page = request.params.get('page', None)
+        try:
+            page = int(page)
+        except TypeError:
+            page = 1
+
+        # Temporarily set limit and offset so the protocol makes use of this
+        request.GET.add('limit', str(limit))
+        request.GET.add('offset', str(limit * page - limit))
+
+        # Query the items
+        items = protocol.read_many(request, public=False)
+
+        # Remove limit and offset parameters
+        request.GET.pop('limit')
+        request.GET.pop('offset')
+
+        data = items['data'] if 'data' in items else []
+        total = items['total'] if 'total' in items else 0
+
+        return {
+            'data': data,
+            'total': total,
+            'currentpage': page,
+            'pagesize': limit,
+            'paginationneighbours': 2,
+            'activetab': item_type
+        }
 
     @view_config(route_name='charts_view', renderer='lmkp:templates/charts_view.mak')
     def charts_view(self):
