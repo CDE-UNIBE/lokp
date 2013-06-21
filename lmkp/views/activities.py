@@ -20,6 +20,9 @@ from lmkp.views.form import renderForm
 from lmkp.views.form import renderReadonlyForm
 from lmkp.views.form import checkValidItemjson
 from lmkp.views.form_config import getCategoryList
+from lmkp.views.profile import get_current_profile
+from lmkp.views.profile import get_current_locale
+from lmkp.views.views import BaseView
 
 log = logging.getLogger(__name__)
 
@@ -175,6 +178,10 @@ def read_one(request):
     Default output format: JSON
     """
 
+    # Handle the parameters (locale, profile)
+    bv = BaseView(request)
+    bv._handle_parameters()
+
     try:
         output_format = request.matchdict['output']
     except KeyError:
@@ -199,9 +206,12 @@ def read_one(request):
                         # version visible to the user
                         version = str(a['version'])
                     if str(a['version']) == version:
+                        templateValues = renderReadonlyForm(request, 'activities', a)
+                        templateValues['profile'] = get_current_profile(request)
+                        templateValues['locale'] = get_current_locale(request)
                         return render_to_response(
                             'lmkp:templates/activities/details.mak',
-                            renderReadonlyForm(request, 'activities', a),
+                            templateValues,
                             request
                         )
         return HTTPNotFound()
@@ -218,9 +228,12 @@ def read_one(request):
                         # version visible to the user
                         version = str(a['version'])
                     if str(a['version']) == version:
+                        templateValues = renderForm(request, 'activities', itemJson=a)
+                        templateValues['profile'] = get_current_profile(request)
+                        templateValues['locale'] = get_current_locale(request)
                         return render_to_response(
                             'lmkp:templates/activities/form.mak',
-                            renderForm(request, 'activities', itemJson=a),
+                            templateValues,
                             request
                         )
         return HTTPNotFound()

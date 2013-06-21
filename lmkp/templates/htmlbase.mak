@@ -36,6 +36,14 @@
                 height: 22px;
                 width: 100px;
             }
+            .blacktemp {
+                color: black;
+                margin: 0 7px;
+                text-decoration: underline;
+            }
+            .blacktemp .caret {
+                border-top-color: black !important;
+}
         </style>
 
         ## Include the head tags of the child template if available.
@@ -95,70 +103,64 @@
                             <div class="user">
                                 <ul class="nav nav-pills">
                                     <li class="active">
-                                        <a href="/login">
-                                            Login
-                                        </a>
+                                        <div>
+                                            <a class="blacktemp" href="/login">
+                                                Login
+                                            </a>
+
+                                        </div>
                                     </li>
+
                                     <li>|</li>
+                                    <%
+                                        from lmkp.views.translation import get_languages
+                                        languages = get_languages()
+                                        selectedlanguage = languages[0]
+                                        for l in languages:
+                                            if locale == l[0]:
+                                                selectedlanguage = l
+                                    %>
                                     <li>
-                                        <select id="language-select" name="language-select" class="header-select">
-                                              <option value="en"
-                                              % if locale == "en":
-                                                selected="selected"
-                                              %endif
-                                              >English</option>
-                                              <option value="fr"
-                                              % if locale == "fr":
-                                                selected="selected"
-                                              %endif
-                                              >Français</option>
-                                              <option value="es"
-                                              % if locale == "es":
-                                                selected="selected"
-                                              %endif
-                                              >Espagñol</option>
-                                        </select>
-                                        <!--a href="#">
-                                            English
-                                            <span class="arrow">
-                                                <i class="icon-sort-down"></i>
-                                            </span>
-                                        </a-->
+                                        <div class="dropdown">
+                                            <a class="dropdown-toggle blacktemp" data-toggle="dropdown" href="#">
+                                                ${selectedlanguage[1]}
+                                                <b class="caret"></b>
+                                            </a>
+                                            <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+                                                % for l in languages:
+                                                    <li class="cursor">
+                                                        <a href="#" onclick="updateQueryParams({'_LOCALE_': '${l[0]}'})">${l[1]}</a>
+                                                    </li>
+                                                % endfor
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>
+
                                     <li>|</li>
+                                    <%
+                                        from lmkp.views.translation import get_profiles
+                                        profiles = get_profiles()
+                                        selectedprofile = profiles[0]
+                                        for p in profiles:
+                                            if profile == p[0]:
+                                                selectedprofile = p
+                                    %>
                                     <li>
-                                        <select id="profile-select" name="profile-select" class="header-select">
-                                              <option value="global"
-                                              % if profile == "global":
-                                                selected="selected"
-                                              %endif
-                                              >global</option>
-                                              <option value="Laos"
-                                              % if profile == "Laos":
-                                                selected="selected"
-                                              %endif
-                                              >Laos</option>
-                                              <option value="Cambodia"
-                                              % if profile == "Cambodia":
-                                                selected="selected"
-                                              %endif
-                                              >Cambodia</option>
-                                              <option value="Peru"
-                                              % if profile == "Peru":
-                                                selected="selected"
-                                              %endif
-                                              >Peru</option>
-                                              <option value="Madagascar"
-                                              % if profile == "Madagascar":
-                                                selected="selected"
-                                              %endif
-                                              >Madagascar</option>
-                                        </select>
-                                        <!--a href="#">
-                                            Profile
-                                            <span class="arrow">
-                                                <i class="icon-sort-down"></i>
-                                            </span>
-                                        </a-->
+                                        <div class="dropdown">
+                                            <a class="dropdown-toggle blacktemp" data-toggle="dropdown" href="#">
+                                                ${selectedprofile[1]}
+                                                <b class="caret"></b>
+                                            </a>
+                                            <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+                                                % for p in profiles:
+                                                    <li class="cursor">
+                                                        <a href="#" onclick="updateQueryParams({'_PROFILE_': '${p[0]}'})">${p[1]}</a>
+                                                    </li>
+                                                % endfor
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </li>
                                 </ul>
                             </div>

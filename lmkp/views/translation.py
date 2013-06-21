@@ -6,6 +6,7 @@ from lmkp.config import valid_mime_extensions
 from lmkp.models.database_objects import A_Key
 from lmkp.models.database_objects import A_Value
 from lmkp.models.database_objects import Language
+from lmkp.models.database_objects import Profile
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Value
 from lmkp.models.meta import DBSession as Session
@@ -611,3 +612,12 @@ def get_stakeholder_keys(request):
         ret.append([k[0], translation, k[1]])
 
     return ret
+
+# TODO: This does not necessarily belong here. Also, all the stuff needed for
+# each view (languages, profiles, keys, ...) should be loaded in a single
+# request for performance reasons.
+def get_languages():
+    return Session.query(Language.locale, Language.local_name).all()
+
+def get_profiles():
+    return Session.query(Profile.code, Profile.code).all()
