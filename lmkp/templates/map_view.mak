@@ -34,7 +34,7 @@
         </div>
         <div class="control-group">
             <div class="controls">
-                <input type="text" id="filter2" class="filter-variable2" placeholder="Another sample variable = Combodia">
+                <input type="text" id="filter2" class="filter-variable2" placeholder="Another sample variable = Cambodia">
                 <span class="icon-remove2">
                     <i class="icon-remove pointer"></i>
                 </span>
@@ -44,7 +44,7 @@
             <label class="control-label">New Filter</label>
             <div class="controls">
                 <div class="btn-group">
-                    <button class="btn select_btn_filter">Tagggroup</button>
+                    <button class="btn select_btn_filter">Taggroup</button>
                     <button class="btn select_btn_filter_right dropdown-toggle" data-toggle="dropdown">
                         <span class="caret"></span>
                     </button>
@@ -204,6 +204,7 @@
 ## End of content
 
 <%def name="bottom_tags()">
-<script src="${request.static_url('lmkp:static/v2/map.js')}" type="text/javascript"></script>
-<script src="${request.static_url('lmkp:static/v2/jquery.cookie.js')}" type="text/javascript"></script>
+    <script src="${request.static_url('lmkp:static/v2/map.js')}" type="text/javascript"></script>
+    <script src="${request.static_url('lmkp:static/v2/filters.js')}" type="text/javascript"></script>
+    <script src="${request.static_url('lmkp:static/v2/jquery.cookie.js')}" type="text/javascript"></script>
 </%def>
