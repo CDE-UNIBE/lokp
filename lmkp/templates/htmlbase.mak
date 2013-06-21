@@ -235,14 +235,15 @@
             g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
             s.parentNode.insertBefore(g,s)}(document,'script'));
         </script>
-    </body>
+    
+        ## Include the bottom tags of the child template if available.
+        <%
+            try:
+                self.bottom_tags()
+            except AttributeError:
+                pass
+        %>
 
-    ## Include the bottom tags of the child template if available.
-    <%
-        try:
-            self.bottom_tags()
-        except AttributeError:
-            pass
-    %>
+    </body>
 
 </html>

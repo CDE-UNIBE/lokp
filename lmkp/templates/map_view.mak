@@ -127,21 +127,15 @@
         <ul>
             <li>
                 <label class="radio inline">
-                    <input type="radio" class="baseMapOptions" name="baseMapOptions" id="streetMapOption" value="streetMap" checked>
-                    Street Map
-                </label>
+                    <input type="radio" class="baseMapOptions" name="baseMapOptions" id="streetMapOption" value="streetMap" checked>Street Map</label>
             </li>
             <li>
                 <label class="radio inline">
-                    <input type="radio" class="baseMapOptions" name="baseMapOptions" id="satelliteMapOption" value="satelliteMap">
-                    Satellite Imagery
-                </label>
+                    <input type="radio" class="baseMapOptions" name="baseMapOptions" id="satelliteMapOption" value="satelliteMap">Satellite Imagery</label>
             </li>
             <li>
                 <label class="radio inline">
-                    <input type="radio" class="baseMapOptions" name="baseMapOptions" id="terrainMapOption" value="terrainMap">
-                    Terrain Map
-                </label>
+                    <input type="radio" class="baseMapOptions" name="baseMapOptions" id="terrainMapOption" value="terrainMap">Terrain Map</label>
             </li>
         </ul>
     </div>
