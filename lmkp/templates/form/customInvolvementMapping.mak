@@ -1,66 +1,37 @@
-<fieldset class="deformMappingFieldset">
+${field.start_mapping()}
 
-    <!-- mapping -->
+% for child in field.children:
+    ${child.render_template(field.widget.item_template)}
+% endfor
 
-    % if field.title:
-        <legend>${field.title}</legend>
+${field.end_mapping()}
+
+<%
+    import colander
+    newForm = 'id' in cstruct and cstruct['id'] == colander.null
+%>
+
+<button
+    id="add-stakeholder-${field.oid}"
+    class="add-stakeholder"
+    onclick="return addStakeholder(this);"
+    % if not newForm:
+        style="display:none;"
     % endif
+>
+    <span>Add Investor</span>
+</button>
 
-    <ul>
-        % if field.errormsg:
-            <li class="errorLi">
-                <h3 class="errorMsgLbl">
-                    ${_("There was a problem with this section")}
-                </h3>
-                <p class="errorMsg">
-                    ${_(field.errormsg)}
-                </p>
-            </li>
-        % endif
-
-        % if field.description:
-            <li class="section">
-                <div>${field.description}</div>
-            </li>
-        % endif
-
-        ${field.start_mapping()}
-
-        % for child in field.children:
-            ${child.render_template(field.widget.item_template)}
-        % endfor
-
-        ${field.end_mapping()}
-    </ul>
-
-    <%
-        import colander
-        newForm = 'id' in cstruct and cstruct['id'] == colander.null
-    %>
-
-    <button id="add-stakeholder-${field.oid}"
-            class="add-stakeholder"
-            onclick="return addStakeholder(this);"
-            % if not newForm:
-                style="display:none;"
-            % endif
-    >
-        <span>Add Investor</span>
-    </button>
-
-    <button id="remove-stakeholder-${field.oid}"
-            class="remove-stakeholder"
-            onclick="return removeStakeholder(this);"
-            % if newForm:
-                style="display:none;"
-            % endif
-    >
-        <span>Remove Investor</span>
-    </button>
-
-    <!-- /mapping -->
-
-</fieldset>
+<button
+    id="remove-stakeholder-${field.oid}"
+    class="remove-stakeholder"
+    onclick="return removeStakeholder(this);"
+    % if newForm:
+        style="display:none;"
+    % endif
+>
+    <span>Remove Investor</span>
+</button>
 
 <script type="text/javascript">
     function addStakeholder(btn) {

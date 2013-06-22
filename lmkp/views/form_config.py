@@ -1144,10 +1144,11 @@ def getInvolvementWidget(request, thematicgroup):
             colander.Sequence(),
             involvementShortForm,
             widget=deform.widget.SequenceWidget(
-                min_len = 0,
+                min_len = 1,
                 add_subitem_text_template = add_subitem_text,
             ),
             missing=colander.null,
+            default=[colander.null],
             name=thematicgroup.getInvolvementData(),
             title=''
         )

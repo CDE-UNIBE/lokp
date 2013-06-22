@@ -1,15 +1,18 @@
-<input type="text"
-       name="${field.name}"
-       value="${cstruct}"
-        % if field.widget.size:
-            size = ${field.widget.size}
+<div class="row-fluid">
+    <div class="span4">
+        <p>${field.name}</p>
+    </div>
+    <div class="span6">
+        <input
+            type="text"
+            class="input-style"
+            readonly="readonly"
+            name="${field.name}"
+            value="${cstruct}"
+            id="${field.oid}"
+            placeholder="-" />
+        % if helptext:
+            <div class="input-description">${helptext}</div>
         % endif
-
-	id="${field.oid}"
-        class="readonly"
-        readonly="readonly"
-/>
-
-% if helptext:
-    <span class="form_helptext">${helptext}</span>
-% endif
+    </div>
+</div>

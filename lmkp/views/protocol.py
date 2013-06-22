@@ -1031,7 +1031,7 @@ class Protocol(object):
 
                 # Before copying the tag, make sure that it is not to delete
                 copy_tag = True
-                if 'taggroups' in diff:
+                if diff is not None and 'taggroups' in diff:
                     for taggroup_dict in diff['taggroups']:
                         if ('tg_id' in taggroup_dict and
                             taggroup_dict['tg_id'] == db_taggroup.tg_id):
@@ -1122,7 +1122,7 @@ class Protocol(object):
                         taggroupadded = True
 
             # Step 2: Add new tags (who don't have an ID yet) to this taggroup
-            if 'taggroups' in diff:
+            if diff is not None and 'taggroups' in diff:
                 for taggroup_dict in diff['taggroups']:
                     if ('tg_id' in taggroup_dict and
                         taggroup_dict['tg_id'] == db_taggroup.tg_id):
@@ -1182,7 +1182,7 @@ class Protocol(object):
 
         # Finally new tag groups (without id) need to be added
         # (and loop all again)
-        if 'taggroups' in diff:
+        if diff is not None and 'taggroups' in diff:
 
             for taggroup_dict in diff['taggroups']:
 

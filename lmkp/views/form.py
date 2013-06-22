@@ -738,7 +738,8 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
                 'secondaryinvestor': siForm
             }
 
-        cat_id = 'involvements' if category is None else str(category)
+        cat_id = (categorylist.getInvolvementCategoryIds()[0]
+            if category is None else str(category))
 
         data[cat_id] = cat
 
