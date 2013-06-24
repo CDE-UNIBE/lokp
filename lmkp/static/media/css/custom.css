@@ -1,12 +1,12 @@
 body,
 html {
- 	height: 100%;
- 	padding: 0;
+    height: 100%;
+    padding: 0;
 }
 
 * {
-	margin: 0;
-	padding: 0;
+    margin: 0;
+    padding: 0;
 }
 
 body {
@@ -22,8 +22,8 @@ html {
 
 
 body > #wrap {
-	height: auto;
-	min-height: 100%;
+    height: auto;
+    min-height: 100%;
 }
 
 a:focus,
@@ -32,7 +32,7 @@ a:active,
 button,
 input,
 label {
-  outline: none !important;
+    outline: none !important;
 }
 
 h1,
@@ -41,46 +41,46 @@ h3,
 h4,
 h5,
 h6 {
-	text-transform: uppercase;
-	margin: 0;
+    text-transform: uppercase;
+    margin: 0;
 }
 
 h3 {
-	padding-top: 50px;
+    padding-top: 50px;
 }
 
 h5 {
-	padding: 0 0 10px 0;
+    padding: 0 0 10px 0;
 }
 
 h6 {
-	font-weight: 800;
+    font-weight: 800;
 }
 
 ul {
-	list-style-type: none;
+    list-style-type: none;
 }
 
 
 ::-webkit-input-placeholder,
- {
-   color: #585858;  
-   opacity: 1;
+{
+    color: #585858;
+    opacity: 1;
 }
 
 :-moz-placeholder { /* Firefox 18- */
-   color: #585858;  
-   opacity: 1;
+                    color: #585858;
+                    opacity: 1;
 }
 
 ::-moz-placeholder {  /* Firefox 19+ */
-   color: #585858;  
-   opacity: 1;
+                      color: #585858;
+                      opacity: 1;
 }
 
 :-ms-input-placeholder {  
-   color: #585858;  
-   opacity: 1;
+    color: #585858;
+    opacity: 1;
 }
 
 
@@ -93,58 +93,58 @@ ul, ol  {
 
 
 .clearfix:after {
-	content: ".";
-	display: block;
-	height: 0;
-	clear: both;
-	visibility: hidden;
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
 }
 .clearfix {
-	display: inline-block;
+    display: inline-block;
 }
 
 
 * html
 .clearfix {
-	height: 1%;
+    height: 1%;
 }
 .clearfix {
-	display: block;
+    display: block;
 }
 
 
 
 hr.gray,
 hr.lightgray {
-	border-top: none;
-	border-bottom: 1px solid gray;
+    border-top: none;
+    border-bottom: 1px solid gray;
 }
 
 hr.lightgray {
-	border-color: #BDBDBD;
+    border-color: #BDBDBD;
 }
 
 .green {
-	color: #A3A708;
+    color: #A3A708;
 }
 
 .white {
-	color: white;
+    color: white;
 }
 
 .border-bottom {
-	border-bottom: 1px solid gray;
+    border-bottom: 1px solid gray;
 }
 
 .underline {
-	text-decoration: underline;
+    text-decoration: underline;
 }
 
 .bolder {
-	font-weight: 800;
+    font-weight: 800;
 }
 
- 
+
 
 
 
@@ -176,7 +176,7 @@ hr.lightgray {
 }
 
 .nav-pills li a{
-	border-radius: 0;
+    border-radius: 0;
 }
 
 .nav  {
@@ -191,25 +191,25 @@ hr.lightgray {
 
 
 .wrap  {
-	min-height: 100%;
-	height: auto !important;
-	height: 100%;
-	margin: 0 auto -25px; /* the bottom margin is the negative value of the footer's height */
-	max-width: 100%;
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0 auto -25px; /* the bottom margin is the negative value of the footer's height */
+    max-width: 100%;
 }
 
 .footer,
 .push  {
-	height: 25px; /* .push must be the same height as .footer */
+    height: 25px; /* .push must be the same height as .footer */
 }
 
 .push-top {
-	padding-top: 58px;
+    padding-top: 58px;
 }
 
 
 #main {
-	padding-bottom: 25px;
+    padding-bottom: 25px;
 }  /* Muss genau so hoch sein wie der Footer */
 
 
@@ -217,42 +217,42 @@ hr.lightgray {
 /*	header   */
 
 .header_self {
-	padding: 10px 0 0 0;
-	background-color: white;
-	border-bottom: 4px solid black;
-	max-height: 74px;
-	max-width: 100%;
-	margin: 0;
-	height: 74px;
+    padding: 10px 0 0 0;
+    background-color: white;
+    border-bottom: 4px solid black;
+    max-height: 74px;
+    max-width: 100%;
+    margin: 0;
+    height: 74px;
 }
 
 .logo {
-	margin-left: 11%;
-	max-width: 180px;
+    margin-left: 11%;
+    max-width: 180px;
 }
 
 
 
 .filter_area {
-	padding: 10px 0 6px 0;
-	background-color: #D8D8D8;
-	left: 0;
-	text-transform: uppercase;
-	margin: 0;
+    padding: 10px 0 6px 0;
+    background-color: #D8D8D8;
+    left: 0;
+    text-transform: uppercase;
+    margin: 0;
 }
 
 
 .filter_area_openclose {
-	border-top: double 3px #BDBDBD;
-	border-bottom: 1px solid gray;
-	width: 100%;
-	left: 0;
-	top: 0;
-	text-align: center;
-	background-color: #D8D8D8;
-	-moz-box-shadow: 1px 2px 4px #BDBDBD;
-	-webkit-box-shadow: 1px 2px 4px #BDBDBD;
-	box-shadow: 1px 2px 4px #BDBDBD;
+    border-top: double 3px #BDBDBD;
+    border-bottom: 1px solid gray;
+    width: 100%;
+    left: 0;
+    top: 0;
+    text-align: center;
+    background-color: #D8D8D8;
+    -moz-box-shadow: 1px 2px 4px #BDBDBD;
+    -webkit-box-shadow: 1px 2px 4px #BDBDBD;
+    box-shadow: 1px 2px 4px #BDBDBD;
 }
 
 .form-horizontal .control-group {
@@ -260,21 +260,21 @@ hr.lightgray {
 }
 
 .top-menu {
-	text-transform: uppercase;
-	font-size: 1.3em;
-	position: absolute;
-	width: 400px;
-	top: 35px;
-	left: 50%;
-	margin-left: -220px;
+    text-transform: uppercase;
+    font-size: 1.3em;
+    position: absolute;
+    width: 400px;
+    top: 35px;
+    left: 50%;
+    margin-left: -220px;
 }
 
 .top-menu a {
-	color: gray;
+    color: gray;
 }
 
 .top-menu a:hover {
-	text-decoration: none;
+    text-decoration: none;
 }
 .top-menu > .active > a,
 .top-menu > .active > a:hover,
@@ -286,13 +286,13 @@ hr.lightgray {
 }
 
 .navbar .nav {
-	margin: 0;
+    margin: 0;
 }
 
 .top-menu li {
-	margin: 20px;
-	padding: 0 10px 0 10px;
-	float: left;
+    margin: 20px;
+    padding: 0 10px 0 10px;
+    float: left;
 }
 
 .top-menu li a, 
@@ -302,23 +302,23 @@ hr.lightgray {
 }
 
 .top-menu li:last-child {
-	margin-right: 0;
-	padding-right: 0;
+    margin-right: 0;
+    padding-right: 0;
 }
 
 .top-menu li.active {
-	padding-bottom: 9px;
-	border-bottom: 4px solid #a3a708;
-	color: #a3a708;
+    padding-bottom: 9px;
+    border-bottom: 4px solid #a3a708;
+    color: #a3a708;
 }
 
 .user {
-	text-transform: uppercase;
-	float: right;
-	margin: -70px 8.5% 0 0;
-	font-size: 0.8em;
-	color: black;
-	padding: 8px 50px 0 0;
+    text-transform: uppercase;
+    float: right;
+    margin: -70px 8.5% 0 0;
+    font-size: 0.8em;
+    color: black;
+    padding: 8px 50px 0 0;
 }
 
 .navbar .nav > .active > a, 
@@ -332,7 +332,7 @@ hr.lightgray {
 
 
 span.arrow {
-	vertical-align: top;
+    vertical-align: top;
 }
 
 .user .nav > li.active > a,
@@ -343,17 +343,17 @@ span.arrow {
 }
 
 .user li.active {
-	text-decoration: underline;
-	background: white !important;
+    text-decoration: underline;
+    background: white !important;
 }
 
 
 .filter_area .control-group {
-	height: 18px;
+    height: 18px;
 }
 
 .filter-value {
-	width: 175px;
+    width: 175px;
 }
 
 
@@ -362,28 +362,28 @@ span.arrow {
 }
 
 .filter_area label {
-	font-weight: bold;
-	cursor: text;
-	padding-top: 3px;
+    font-weight: bold;
+    cursor: text;
+    padding-top: 3px;
 }
 
 .select_btn_filter,
 .filter_area input {
-	border: none;
-	box-shadow: none;
-	font-weight: bold;
-	text-transform: uppercase;
-	font-style:italic;
+    border: none;
+    box-shadow: none;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-style:italic;
 }
 
 .filter_area input {
-	height: 16px;
+    height: 16px;
 }
 
 
 .filter-variable1,
 .filter-variable2 {
-	width: 425px;
+    width: 425px;
 }
 
 
@@ -395,17 +395,17 @@ span.arrow {
 .select_btn_operator_right,
 .select_btn_bordered,
 .select_btn_bordered_right {
-	height: 24px;
+    height: 24px;
 }
 
 
 
 .select_btn_filter {
-	padding-left: 7px;
-	width: 148px;
-	font-weight: bold;
-	text-align: left;
-	color: #585858;
+    padding-left: 7px;
+    width: 148px;
+    font-weight: bold;
+    text-align: left;
+    color: #585858;
 }
 
 .select_btn_filter,
@@ -417,8 +417,8 @@ span.arrow {
 .select_btn_operator:hover,
 .select_btn_operator:active,
 .select_btn_operator:focus {
-	cursor: text;
-	outline: none;
+    cursor: text;
+    outline: none;
 }
 
 
@@ -451,10 +451,10 @@ span.arrow {
 .select_btn_bordered_right:hover,
 .select_btn_bordered_right:active,
 .select_btn_bordered_right:focus {
-	background-image: none;
-	background-color: white;
-	box-shadow: none;
-	border: none;
+    background-image: none;
+    background-color: white;
+    box-shadow: none;
+    border: none;
 }
 
 
@@ -462,55 +462,55 @@ span.arrow {
 
 
 .select_btn_operator_right {
-	margin-right: 8px;
+    margin-right: 8px;
 }
 
 .select_btn_filter_right {
-	margin-right: 3px;
+    margin-right: 3px;
 }
 
 
 
 .favorite {
-	float: right;
-	margin: -40px 35px 0 0;
+    float: right;
+    margin: -40px 35px 0 0;
 }
 
 
 
 
 .btn_favorite {
-	background-image: none;
-	background-color: white;
-	width: 150px;
-	font-weight: bold;
-	text-transform: none;
-	text-align: left;
-	color: #585858;
-	cursor: text;
+    background-image: none;
+    background-color: white;
+    width: 150px;
+    font-weight: bold;
+    text-transform: none;
+    text-align: left;
+    color: #585858;
+    cursor: text;
 }
 
 .btn_favorite:hover,
 .btn_favorite:active,
 .btn_favorite:focus {
-	background-image: none;
-	background-color: white;
-	box-shadow: none;
-	outline: none;
+    background-image: none;
+    background-color: white;
+    box-shadow: none;
+    outline: none;
 }
 
 .btn_favorite_right {
-	background-image: none;
-	background-color: #A3A708;
-	border: 1px solid #A3A708;
+    background-image: none;
+    background-color: #A3A708;
+    border: 1px solid #A3A708;
 }
 
 .btn_favorite_right:hover,
 .btn_favorite_right:active,
 .btn_favorite_right:focus {
-	background-image: none;
-	background-color: #A3A708;
-	box-shadow: none;
+    background-image: none;
+    background-color: #A3A708;
+    box-shadow: none;
 }
 
 
@@ -525,16 +525,16 @@ span.arrow {
 .select_btn_bordered_right:hover,
 .select_btn_bordered_right:active,
 .select_btn_bordered_right:focus {
-	border: 1px solid #A4A4A4;
+    border: 1px solid #A4A4A4;
 }
 
 .select_btn_bordered,
 .select_btn_bordered:hover,
 .select_btn_bordered:active,
 .select_btn_bordered:focus {
-	display: inline; 
-	width: 338%;
-	cursor: text;
+    display: inline;
+    width: 338%;
+    cursor: text;
 }
 
 
@@ -544,13 +544,13 @@ span.arrow {
 /*	content   */
 
 .nav-tabs {
-	border: none;
+    border: none;
 }
 
 .table_tabs {
-	margin: 0 0 1px 20px;
-	text-transform: uppercase;
-	font-weight: 600;
+    margin: 0 0 1px 20px;
+    text-transform: uppercase;
+    font-weight: 600;
 }
 
 .nav-tabs {
@@ -560,7 +560,7 @@ span.arrow {
 .nav-tabs > .active > a,
 .nav-tabs > .active > a:hover,
 .nav-tabs > .active > a:focus {
-	border: none;
+    border: none;
     background-color: #a3a708;
     color: white;
     border-bottom: 2px solid #a3a708;
@@ -577,18 +577,18 @@ span.arrow {
 }
 
 .container {
-	min-height: 100%;
+    min-height: 100%;
 }
 
 .content {
-	border-right: 1px solid black;
-	border-left: 1px solid black;
-	padding: 30px 20px 0 20px;
-	margin: 0 40px 0 40px;
+    border-right: 1px solid black;
+    border-left: 1px solid black;
+    padding: 30px 20px 0 20px;
+    margin: 0 40px 0 40px;
 }
 
 .no-border {
-	border:none;
+    border:none;
 }
 
 
@@ -602,142 +602,142 @@ span.arrow {
 }
 
 .table_wrapper {
-	border: 1px solid #A4A4A4;
-	border-radius: 5px;
-	padding: 10px;
+    border: 1px solid #A4A4A4;
+    border-radius: 5px;
+    padding: 10px;
 }
 
 table.table-self {
-	width: 880px;
+    width: 880px;
 }
 
 
 .table-self tbody tr:hover > td,
- .table-self tbody tr:hover > th,
- .active-row  {
+.table-self tbody tr:hover > th,
+.active-row  {
     background-color: #dbdb9b;
     cursor: pointer;
 }
 
 .table-self th {
-	height: 42px;
+    height: 42px;
 }
 
 
 .asc,
 .desc {
-	color: white;
-	width: 15px;
-	height: 10px;
-	float: right;
+    color: white;
+    width: 15px;
+    height: 10px;
+    float: right;
 }
 
 .asc {
-	background: url("../img/to-bottom-gray.png") right top no-repeat;
+    background: url("../img/to-bottom-gray.png") right top no-repeat;
 }
 
 .asc.active {
-	background: url("../img/to-bottom-black.png") right top no-repeat;
+    background: url("../img/to-bottom-black.png") right top no-repeat;
 }
 
 .asc:hover {
-	background: url("../img/to-bottom-black.png") right top no-repeat;
+    background: url("../img/to-bottom-black.png") right top no-repeat;
 }
 
 .desc {
-	background: url("../img/to-top-gray.png") right bottom no-repeat;
-	margin-top: -10px;
+    background: url("../img/to-top-gray.png") right bottom no-repeat;
+    margin-top: -10px;
 }
 
 .desc:hover {
-	background: url("../img/to-top-black.png") right bottom no-repeat;
+    background: url("../img/to-top-black.png") right bottom no-repeat;
 }
 
 .deal-editor-menu-bar {
-	position: fixed;
-	right: 12%;
-	top: 247px;
+    position: fixed;
+    right: 12%;
+    top: 247px;
 }
 
 .deal-editor-menu-bar ul li {
-	background-color: #A3A708;
-	margin-bottom: 5px;
-	padding: 2px 8px 2px 8px;
-	border-radius: 4px;
-	color: white;
+    background-color: #A3A708;
+    margin-bottom: 5px;
+    padding: 2px 8px 2px 8px;
+    border-radius: 4px;
+    color: white;
 }
 
 .deal-editor-menu-bar ul li:hover {
-	background-color: gray;
-	color: white;
+    background-color: gray;
+    color: white;
 }
 
 .deal-editor-menu-bar a{
-	color: white;
-	font-weight: bold;
-	text-transform: uppercase;
-	font-size: 0.9em;
-			text-align: left;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9em;
+    text-align: left;
 }
 
 .deal-editor-menu-bar a:hover,
 .deal-editor-menu-bar a:focus{
-	text-decoration: none;
+    text-decoration: none;
 }
 
 .active-wrapper {
-	background: url("../img/arrow-left-green.png") no-repeat left center;
-	text-align: right;
-	margin-left: -8px;
-	background-size: 12px 12px;
-	padding-left: 7px;
+    background: url("../img/arrow-left-green.png") no-repeat left center;
+    text-align: right;
+    margin-left: -8px;
+    background-size: 12px 12px;
+    padding-left: 7px;
 }
 
 .active-wrapper:hover {
-	background: url("../img/arrow-left-gray.png") no-repeat left center;
-	text-align: right;
-	margin-left: -8px;
-	background-size: 12px 12px;
-	padding-left: 7px;
+    background: url("../img/arrow-left-gray.png") no-repeat left center;
+    text-align: right;
+    margin-left: -8px;
+    background-size: 12px 12px;
+    padding-left: 7px;
 }
 
 .show-investors-wrapper {
-	background: url("../img/arrow-left-green.png") no-repeat left center;
-	position: absolute;
-	right: 11.8%;
-	top: 458px;
-	width: 150px;
+    background: url("../img/arrow-left-green.png") no-repeat left center;
+    position: absolute;
+    right: 11.8%;
+    top: 458px;
+    width: 150px;
 }
 
 .show-investors {
-	float: right;
-	background-color: #A3A708;
-	color: white;
-	width: 120px;
-	height: 30px;
-	padding: 10px;
-	border-radius: 4px;
-	line-height: 1.2em;
-	text-decoration: underline;
-	text-transform: uppercase;
-	font-weight: 700;
-	font-size: 0.9em;
-	cursor: pointer;
+    float: right;
+    background-color: #A3A708;
+    color: white;
+    width: 120px;
+    height: 30px;
+    padding: 10px;
+    border-radius: 4px;
+    line-height: 1.2em;
+    text-decoration: underline;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 0.9em;
+    cursor: pointer;
 }
 
 
 .grid-area {
-	border-top: 1px solid gray;
-	padding: 10px 0 0;
+    border-top: 1px solid gray;
+    padding: 10px 0 0;
 }
 
 .select-list li {
-	float: left;
-	width: 200px;
+    float: left;
+    width: 200px;
 }
 
 .select-list li:last-child {
-	width: 20px;
+    width: 20px;
 }
 
 
@@ -748,10 +748,10 @@ textarea {
 
 
 input[type="text"].input-style {
-	height: 16px;
-	max-width: auto;
-	margin-right: 10px;
-	float: left;
+    height: 16px;
+    max-width: auto;
+    margin-right: 10px;
+    float: left;
 }
 
 input[type="text"].input-style,
@@ -762,59 +762,59 @@ textarea.input-style,
 .select_btn_bordered_right,
 
 .navbar-search .search-query {
-	border: 1px solid #A4A4A4;
-	-moz-box-shadow: inset 0 0 3px #D8D8D8;
-	-webkit-box-shadow: inset 0 0 3px #D8D8D8;
-	box-shadow: inset 0 0 3px #D8D8D8;
-	outline: none;
-	color: #585858 !important;
+    border: 1px solid #A4A4A4;
+    -moz-box-shadow: inset 0 0 3px #D8D8D8;
+    -webkit-box-shadow: inset 0 0 3px #D8D8D8;
+    box-shadow: inset 0 0 3px #D8D8D8;
+    outline: none;
+    color: #585858 !important;
 }
 
 
 .checkbox-modified {
-	width: 10px;
-	position: relative;
+    width: 10px;
+    position: relative;
 }
 
 
 .checkbox-modified label {
-	cursor: pointer;
-	position: absolute;
-	width: 13px;
-	height: 13px;
-	top: 0;
-  	left: 0;
-	background: white;
-	border: 1px solid #A4A4A4;
-	margin-top: 5px;
-	margin-left: -1px;
-	border-radius: 2px;
+    cursor: pointer;
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    top: 0;
+    left: 0;
+    background: white;
+    border: 1px solid #A4A4A4;
+    margin-top: 5px;
+    margin-left: -1px;
+    border-radius: 2px;
 }
 
 
 
 .checkbox-modified label:after {
-	opacity: 0.2;
-	content: '';
-	position: absolute;
-	width: 9px;
-	height: 5px;
-	background: transparent;
-	border: 3px solid #585858;
-	border-top: none;
-	border-right: none;
-	margin-left: 2px;
-	padding-right: 3px;
-	-webkit-transform: rotate(-45deg);
-	-moz-transform: rotate(-45deg);
-	-o-transform: rotate(-45deg);
-	-ms-transform: rotate(-45deg);
-	transform: rotate(-45deg);
+    opacity: 0.2;
+    content: '';
+    position: absolute;
+    width: 9px;
+    height: 5px;
+    background: transparent;
+    border: 3px solid #585858;
+    border-top: none;
+    border-right: none;
+    margin-left: 2px;
+    padding-right: 3px;
+    -webkit-transform: rotate(-45deg);
+    -moz-transform: rotate(-45deg);
+    -o-transform: rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    transform: rotate(-45deg);
 }
 
 /**
 
- 
+
 .checkbox-modified label:hover::after {
 	opacity: 0.5;
 }
@@ -822,183 +822,197 @@ textarea.input-style,
 */
 
 .checkbox-modified input[type=checkbox]:checked + label:after {
-	opacity: 1;
+    opacity: 1;
 }
 
 
 .checkbox-modified-small {
-	width: 10px;
-	position: relative;
-	margin-bottom: 5px;
+    width: 10px;
+    position: relative;
+    margin-bottom: 5px;
 }
 
 
 .checkbox-modified-small label {
-	cursor: pointer;
-	position: absolute;
-	width: 12px;
-	height: 12px;
-	top: 0;
-  	left: 0;
-	background: white;
-	border: 1px solid #A4A4A4;
-	margin-top: 4px;
-	margin-left: 0;
+    cursor: pointer;
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    top: 0;
+    left: 0;
+    background: white;
+    border: 1px solid #A4A4A4;
+    margin-top: 4px;
+    margin-left: 0;
 }
 
 
 
 .checkbox-modified-small label:after {
-	opacity: 0;
-	content: '';
-	position: absolute;
-	width: 9px;
-	height: 5px;
-	background: transparent;
-	border: 2px solid #01A9DB;
-	border-top: none;
-	border-right: none;
-	margin-left: 2px;
-	padding-right: 2px;
-	-webkit-transform: rotate(-45deg);
-	-moz-transform: rotate(-45deg);
-	-o-transform: rotate(-45deg);
-	-ms-transform: rotate(-45deg);
-	transform: rotate(-45deg);
+    opacity: 0;
+    content: '';
+    position: absolute;
+    width: 9px;
+    height: 5px;
+    background: transparent;
+    border: 2px solid #01A9DB;
+    border-top: none;
+    border-right: none;
+    margin-left: 2px;
+    padding-right: 2px;
+    -webkit-transform: rotate(-45deg);
+    -moz-transform: rotate(-45deg);
+    -o-transform: rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    transform: rotate(-45deg);
 }
 
 .checkbox-modified-small input[type=checkbox]:checked + label:after {
-	opacity: 1;
+    opacity: 1;
 }
 
 
 
 
 .id {
-	margin: -10px 0 30px 0;
-	font-size: 0.85em;
+    margin: -10px 0 30px 0;
+    font-size: 0.85em;
 }
 
 .input-description {
-	float: left;
-	padding-top: 2px;
-	width: 20px;
+    float: left;
+    padding-top: 2px;
+    width: 20px;
 }
 
 .input-description-with-icon {
-	float: left;
-	padding-top: 2px;
-	width: 40px;
+    float: left;
+    padding-top: 2px;
+    width: 40px;
 }
 
 .radio-btn-description {
-	margin-top: -3px;
-	position: absolute;
+    margin-top: -3px;
+    position: absolute;
 }
 
 .input-description,
 .input-description-with-icon {
-	color: gray;
+    color: gray;
 }
 
 
 p.deal-detail {
-	font-weight: bold;
-	color: #424242;
+    font-weight: bold;
+    color: #424242;
 }
 
 .tight {
-	margin: 0;
-	padding: 0;
+    margin: 0;
+    padding: 0;
 }
 
 .map-not-whole-page {
-	margin-bottom: 30px;
+    margin-bottom: 30px;
 }
 
 #googleMapNotFull {
-	width: 99%; 
-	height: 440px;
+    width: 99%;
+    height: 440px;
 }
 
 #googleMapFull {
-	width: 100%; 
-	height: 429px;
+    width: 100%;
+    height: 429px;
 }
 .map-whole-page iframe,
 .shadow-inside {
-	position: absolute;
-	right: 0;
-	width: 100%;
-	height: 429px;
+    position: absolute;
+    right: 0;
+    width: 100%;
+    height: 429px;
 }
 
 .shadow-inside {
-	-moz-box-shadow: inset 1px 1px 4px #424242;
-	-webkit-box-shadow: inset 1px 1px 4px #424242;
-	box-shadow: inset 1px 1px 4px #424242;
+    -moz-box-shadow: inset 1px 1px 4px #424242;
+    -webkit-box-shadow: inset 1px 1px 4px #424242;
+    box-shadow: inset 1px 1px 4px #424242;
 }
 
 
 .basic-data,
 .map-menu {
-	position: absolute;
-	-moz-box-shadow: 0 0 2px black;
-	-webkit-box-shadow: 0 0 2px black;
-	box-shadow: 0 0 2px black;
-	width: 160px;
-	right: 11.8%;
+    position: absolute;
+    -moz-box-shadow: 0 0 2px black;
+    -webkit-box-shadow: 0 0 2px black;
+    box-shadow: 0 0 2px black;
+    width: 160px;
+    right: 11.8%;
 }
 
 
 .map-menu {
-	bottom: 25px;
-	background-color: white;
-	border-top-right-radius: 4px;
-	border-top-left-radius: 4px;
-	padding: 12px 15px 5px 15px;
+    bottom: 25px;
+    background-color: white;
+    border-top-right-radius: 4px;
+    border-top-left-radius: 4px;
+    padding: 12px 15px 5px 15px;
+}
+
+.legend-menu {
+    position: absolute;
+    -moz-box-shadow: 0 0 2px black;
+    -webkit-box-shadow: 0 0 2px black;
+    box-shadow: 0 0 2px black;
+    width: 160px;
+    left: 11.8%;
+    bottom: 25px;
+    background-color: white;
+    border-top-right-radius: 4px;
+    border-top-left-radius: 4px;
+    padding: 12px 15px 5px 15px;
 }
 
 .basic-data {
-	top: 212px;
-	background-color: #A3A708;
-	border-bottom-right-radius: 4px;
-	border-bottom-left-radius: 4px;
-	padding: 20px 15px 20px 15px;
-	font-size: 0.8em;
-	color: white;
-	-moz-box-shadow: 0 1px 2px black;
-	-webkit-box-shadow: 0 1px 2px black;
-	box-shadow: 0 1px 2px black;
+    top: 212px;
+    background-color: #A3A708;
+    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    padding: 20px 15px 20px 15px;
+    font-size: 0.8em;
+    color: white;
+    -moz-box-shadow: 0 1px 2px black;
+    -webkit-box-shadow: 0 1px 2px black;
+    box-shadow: 0 1px 2px black;
 }
 
 .basic-data p {
-	margin: 0;
-	line-height: 1.4em;
+    margin: 0;
+    line-height: 1.4em;
 }
 
 .map-menu-base-layers h6 {
-	margin-top: 30px;
+    margin-top: 30px;
     color: #424242; 
 }
 
 #search-submit {
-	position: absolute;
-	top: 7px;
-	right: 5px;
-	display: inline-block;
-	width: 14px;
-	height: 14px;
-	line-height: 14px;
-	text-indent: -9999px;
-	vertical-align: text-top;
-	cursor: pointer;
-	background-color: transparent;
-	background-image: url("../img/glyphicons-halflings.png");
-	background-position: -48px 0;
-	background-repeat: no-repeat;
-	border: 0 none;
-	opacity: 0.75;
+    position: absolute;
+    top: 7px;
+    right: 5px;
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+    text-indent: -9999px;
+    vertical-align: text-top;
+    cursor: pointer;
+    background-color: transparent;
+    background-image: url("../img/glyphicons-halflings.png");
+    background-position: -48px 0;
+    background-repeat: no-repeat;
+    border: 0 none;
+    opacity: 0.75;
 }
 
 
@@ -1013,33 +1027,33 @@ p.deal-detail {
 
 
 .map-menu ul{
-	padding-left: 5px;
+    padding-left: 5px;
 }
 
 .map-menu li{
-	margin-bottom: -6px;
+    margin-bottom: -6px;
 }
 
 .map-menu label,
 .map-menu-context-layers {
-	font-size: 0.8em;
+    font-size: 0.8em;
 }
 
 .context-layers-description {
-	margin: -24px 0 4px 20px;
+    margin: -24px 0 4px 20px;
 }
 
 .map-menu-context-layers {
-	margin: -10px 0 20px 0;
+    margin: -10px 0 20px 0;
 }
 
 .map-menu-context-layers h6 {
-	margin-bottom: 5px;
+    margin-bottom: 5px;
 }
 
 
 .deal-headline {
-	margin-bottom: 5px;
+    margin-bottom: 5px;
 }
 
 
@@ -1048,20 +1062,20 @@ p.deal-detail {
 /*	footer   */
 
 .footer {
-	background-color: #424242;
-	position: relative;
-	padding-right: 8.5%;
-	color: #D8D8D8;
+    background-color: #424242;
+    position: relative;
+    padding-right: 8.5%;
+    color: #D8D8D8;
 }
 
 
 
 .footer.navbar {
-	margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .footer li {
-	line-height:1.7em;
+    line-height:1.7em;
 }
 
 
@@ -1069,14 +1083,14 @@ p.deal-detail {
 .footer .nav > li > a:hover,
 .footer .nav > li > a:active,
 .footer .nav > li > a:focus {
-	color: #D8D8D8;
-	font-size: 0.8em;
-	text-shadow: none;
-	line-height: 0.5em;
-	text-transform: uppercase;
-	padding-right: 8px;
-	padding-left: 8px;
-	background: transparent;
+    color: #D8D8D8;
+    font-size: 0.8em;
+    text-shadow: none;
+    line-height: 0.5em;
+    text-transform: uppercase;
+    padding-right: 8px;
+    padding-left: 8px;
+    background: transparent;
 }
 
 
@@ -1085,11 +1099,11 @@ p.deal-detail {
 /*	tools	*/
 
 .pointer {
-	cursor: pointer;
+    cursor: pointer;
 }
 
 .bordered {
-	border: 1px solid black;
+    border: 1px solid black;
 }
 
 
@@ -1098,249 +1112,249 @@ p.deal-detail {
 
 @media (max-width: 1200px) { 
 
-	.select-list li {
-		width: 156px;
-	}
+    .select-list li {
+        width: 156px;
+    }
 
-	input, 
-	textarea {
-	    width: 60%;
-	}
+    input,
+    textarea {
+        width: 60%;
+    }
 
-	.select_btn_bordered,
-	.select_btn_bordered:hover,
-	.select_btn_bordered:active,
-	.select_btn_bordered:focus {
-		width: 209%;
-	}
+    .select_btn_bordered,
+    .select_btn_bordered:hover,
+    .select_btn_bordered:active,
+    .select_btn_bordered:focus {
+        width: 209%;
+    }
 
 }
 
 
 @media (max-width: 979px) {
 
-	.logo {
-		margin-left: 10px;
-	}
-	
-	.filter_area {
-		margin: 0;
-	}
+    .logo {
+        margin-left: 10px;
+    }
 
-	.filter-value {
-		width: 176px;
-	}
+    .filter_area {
+        margin: 0;
+    }
 
-	.filter-variable1,
-	.filter-variable2 {
-		width: 418px;
-	}
+    .filter-value {
+        width: 176px;
+    }
 
-	.favorite {
-		float: left;
-		bottom: 5px;
-		margin: 5px 0 0 25px;
-	}
+    .filter-variable1,
+    .filter-variable2 {
+        width: 418px;
+    }
 
-	.user {
-		padding: 0;
-		position: absolute;
-		right: 2%;
-	}
+    .favorite {
+        float: left;
+        bottom: 5px;
+        margin: 5px 0 0 25px;
+    }
 
-	.btn_favorite {
-    	width: auto;
-	}
+    .user {
+        padding: 0;
+        position: absolute;
+        right: 2%;
+    }
 
-	.btn-group {
-		float: left;
-	}
+    .btn_favorite {
+        width: auto;
+    }
 
-	.basic-data {
-	    padding: 20px 0 15px 15px;
-	    top: 0;
-	    left: 0;
-	    max-width: 98.4%;
-	    width: auto;
-	    position: relative;
-	}
+    .btn-group {
+        float: left;
+    }
 
-	.map-menu {
-		bottom: -483px;
-		left: 0;
-		max-width: 96.9%;
-		width: auto;
-		background-color: white;
-		border-top-right-radius: 4px;
-		border-top-left-radius: 4px;
-		padding: 12px 15px 5px 15px;
-		position: relative;
-	}
+    .basic-data {
+        padding: 20px 0 15px 15px;
+        top: 0;
+        left: 0;
+        max-width: 98.4%;
+        width: auto;
+        position: relative;
+    }
 
-
-	#googleMapFull {
-		top: 0;
-		height: 487px;
-	}
-
-	.shadow-inside {
-		top: 340px;
-		height: 490px;
-	}
-
-	.footer-map {
-		padding-right: 2%;
-		position: absolute;
-		bottom: -560px;
-		width: 98%;
-	}
-
-	.footer {
-		padding-right: 2%;
-	}
-
-	h3 {
-		padding-top: 20px;
-	}
-
-	.push-top {
-		display: none;
-	}
-
-	.deal-editor-menu-bar {
-		position: absolute;
-		right: 2%;
-		top: 100px;
-	}
-
-	.show-investors-wrapper {
-		right: 2%;
-		top: 495px;
-		width: 150px;
-	}
-
-	.row-fluid .span9 {
-		width: 100%;
-	}
-
-	.select_btn_bordered,
-	.select_btn_bordered:hover,
-	.select_btn_bordered:active,
-	.select_btn_bordered:focus {
-		width: 202%;
-	}
+    .map-menu {
+        bottom: -483px;
+        left: 0;
+        max-width: 96.9%;
+        width: auto;
+        background-color: white;
+        border-top-right-radius: 4px;
+        border-top-left-radius: 4px;
+        padding: 12px 15px 5px 15px;
+        position: relative;
+    }
 
 
- }
+    #googleMapFull {
+        top: 0;
+        height: 487px;
+    }
+
+    .shadow-inside {
+        top: 340px;
+        height: 490px;
+    }
+
+    .footer-map {
+        padding-right: 2%;
+        position: absolute;
+        bottom: -560px;
+        width: 98%;
+    }
+
+    .footer {
+        padding-right: 2%;
+    }
+
+    h3 {
+        padding-top: 20px;
+    }
+
+    .push-top {
+        display: none;
+    }
+
+    .deal-editor-menu-bar {
+        position: absolute;
+        right: 2%;
+        top: 100px;
+    }
+
+    .show-investors-wrapper {
+        right: 2%;
+        top: 495px;
+        width: 150px;
+    }
+
+    .row-fluid .span9 {
+        width: 100%;
+    }
+
+    .select_btn_bordered,
+    .select_btn_bordered:hover,
+    .select_btn_bordered:active,
+    .select_btn_bordered:focus {
+        width: 202%;
+    }
+
+
+}
 
 
 
 @media (max-width: 767px) {
 
-	.logo {
-		position: absolute;
-		top: 10px;
-		left: 0;
-		padding: 0;
-	}
+    .logo {
+        position: absolute;
+        top: 10px;
+        left: 0;
+        padding: 0;
+    }
 
-	.header_self {
-		min-height: 105px;
-	}
+    .header_self {
+        min-height: 105px;
+    }
 
-	.top-menu {
-		top: 73px;
-		font-size: 0.9em;
-		left: 0;
-		width: 320px;
-		margin-left: 0;
-	}
+    .top-menu {
+        top: 73px;
+        font-size: 0.9em;
+        left: 0;
+        width: 320px;
+        margin-left: 0;
+    }
 
-	.top-menu li.active {
-		padding-bottom: 2px;
-	}
+    .top-menu li.active {
+        padding-bottom: 2px;
+    }
 
-	.top-menu li:first-child {
-		margin-left: 10px;
-	}
+    .top-menu li:first-child {
+        margin-left: 10px;
+    }
 
-	.user {
-		font-size: 0.7em;
-		margin: 0;
-	}
+    .user {
+        font-size: 0.7em;
+        margin: 0;
+    }
 
-	.map-menu {
-		bottom: -487px;
-		left: 0;
-		max-width: 96.9%;
-		width: auto;
-		position: relative;
-	}
+    .map-menu {
+        bottom: -487px;
+        left: 0;
+        max-width: 96.9%;
+        width: auto;
+        position: relative;
+    }
 
 
-	#googleMapFull {
-		top: 0;
-		height: 520px;
-	}
+    #googleMapFull {
+        top: 0;
+        height: 520px;
+    }
 
-	.shadow-inside {
-		top: 340px;
-		height: 525px;
-	}
+    .shadow-inside {
+        top: 340px;
+        height: 525px;
+    }
 
-	.footer-map {
-		padding-right: 2%;
-		position: absolute;
-		bottom: -605px;
-		width: 98%;
-	}
+    .footer-map {
+        padding-right: 2%;
+        position: absolute;
+        bottom: -605px;
+        width: 98%;
+    }
 
-	.span2.inactive {
-	    display: none;
-	}
+    .span2.inactive {
+        display: none;
+    }
 
-	.deal-editor-menu-bar {
-		top: 130px;
-	}
+    .deal-editor-menu-bar {
+        top: 130px;
+    }
 
-	.show-investors-wrapper {
-		right: 0;
-		top: 531px;
-		font-size: 0.7em;
-		width: 120px;
-	}
+    .show-investors-wrapper {
+        right: 0;
+        top: 531px;
+        font-size: 0.7em;
+        width: 120px;
+    }
 
-	.show-investors {
-		width: 90px;
-		padding-bottom: 0;
-	}
+    .show-investors {
+        width: 90px;
+        padding-bottom: 0;
+    }
 
-	.row-fluid,
-	.row-fluid .span9 {
-		width: auto;
-		min-width: 20px;
-	}
+    .row-fluid,
+    .row-fluid .span9 {
+        width: auto;
+        min-width: 20px;
+    }
 
-	.content {
-		padding: 30px 20px 0 20px;
-		margin: 0;
-	}
+    .content {
+        padding: 30px 20px 0 20px;
+        margin: 0;
+    }
 
-	input, 
-	textarea {
-	    width: 70%;
-	}
+    input,
+    textarea {
+        width: 70%;
+    }
 
-	.select-list li {
-	    width: 70%;
-	}
+    .select-list li {
+        width: 70%;
+    }
 
-	.select_btn_bordered,
-	.select_btn_bordered:hover,
-	.select_btn_bordered:active,
-	.select_btn_bordered:focus {
-		width: 402%;
-	}
+    .select_btn_bordered,
+    .select_btn_bordered:hover,
+    .select_btn_bordered:active,
+    .select_btn_bordered:focus {
+        width: 402%;
+    }
 
 
 }
@@ -1350,140 +1364,140 @@ p.deal-detail {
 
 
 
-	.icon-remove1,
-	.icon-remove2,
-	.icon-add {
-		position: absolute;
-		margin: 5px;
-	}
+    .icon-remove1,
+    .icon-remove2,
+    .icon-add {
+        position: absolute;
+        margin: 5px;
+    }
 
-	.icon-add {
-		margin-top: 10px;
-	}
+    .icon-add {
+        margin-top: 10px;
+    }
 
-	.filter-value,
-	.filter-variable1,
-	.filter-variable2 {
-		width: 222px;
-	}
+    .filter-value,
+    .filter-variable1,
+    .filter-variable2 {
+        width: 222px;
+    }
 
-	table.table-self {
-		min-width: 500px;
-	}
+    table.table-self {
+        min-width: 500px;
+    }
 
-	.content {
-		min-width: 520px;
-	}
+    .content {
+        min-width: 520px;
+    }
 
-	.table th, .table td {
-	    padding: 4px;
-	    font-size: 0.9em;
-	}
+    .table th, .table td {
+        padding: 4px;
+        font-size: 0.9em;
+    }
 
-	.show-investors-wrapper {
-		top: 504px;
-	}
+    .show-investors-wrapper {
+        top: 504px;
+    }
 
-	.span9.grid-area,
-	.row-fluid {
-	    width: auto;
-	}
+    .span9.grid-area,
+    .row-fluid {
+        width: auto;
+    }
 
-	.content.no-border {
-		min-width: auto;
-	}
+    .content.no-border {
+        min-width: auto;
+    }
 
-	.filter-value {
-		margin-top: 5px;
-	}
+    .filter-value {
+        margin-top: 5px;
+    }
 
 
 }
 
 @media (max-width: 480px) { 
 
-	.favorite {
-		position: absolute;
-		margin: 0;
-		top: 162px;
-		float: left;
-	}
+    .favorite {
+        position: absolute;
+        margin: 0;
+        top: 162px;
+        float: left;
+    }
 
-	.dropdown-menu {
-		position: absolute;
-		margin: 0;
-		top: 100px;
-	}
+    .dropdown-menu {
+        position: absolute;
+        margin: 0;
+        top: 100px;
+    }
 
-	.filter_area {
-		height: 230px;
-		padding-left: 10px;
-	}
+    .filter_area {
+        height: 230px;
+        padding-left: 10px;
+    }
 
-	.filter-variable2 {
-		margin-top: 28px;
-	}
+    .filter-variable2 {
+        margin-top: 28px;
+    }
 
-	.new-filter {
-		margin-top: 50px;
-	}
+    .new-filter {
+        margin-top: 50px;
+    }
 
-	.icon-remove2 {
-		margin-top: 32px;
-	}
+    .icon-remove2 {
+        margin-top: 32px;
+    }
 
-	.map-menu {
-		bottom: -400px;
-		left: 0;
-		max-width: 96.9%;
-		width: auto;
-		position: relative;
-	}
+    .map-menu {
+        bottom: -400px;
+        left: 0;
+        max-width: 96.9%;
+        width: auto;
+        position: relative;
+    }
 
-	#googleMapFull {
-		top: 30px;
-		height: 400px;
-	}
+    #googleMapFull {
+        top: 30px;
+        height: 400px;
+    }
 
-	.shadow-inside {
-		top: 450px;
-		height: 525px;
-	}
+    .shadow-inside {
+        top: 450px;
+        height: 525px;
+    }
 
-	.footer-map {
-		padding-right: 2%;
-		position: absolute;
-		bottom: -620px;
-		width: 98%;
-	}
+    .footer-map {
+        padding-right: 2%;
+        position: absolute;
+        bottom: -620px;
+        width: 98%;
+    }
 
-	.deal-editor-menu-bar {
-		top: 140px;
-		left: 20px;
-		right: 20px;
-	}
+    .deal-editor-menu-bar {
+        top: 140px;
+        left: 20px;
+        right: 20px;
+    }
 
-	.deal-edit-content {
-		margin-top: 110px;
-	}
+    .deal-edit-content {
+        margin-top: 110px;
+    }
 
-	.show-investors-wrapper {
-		top: 610px;
-		right: 0;
-	}
+    .show-investors-wrapper {
+        top: 610px;
+        right: 0;
+    }
 
-	.span9.grid-area,
-	.row-fluid {
-	    width: auto;
-	}
+    .span9.grid-area,
+    .row-fluid {
+        width: auto;
+    }
 
-	.content.no-border {
-		min-width: auto;
-	}
+    .content.no-border {
+        min-width: auto;
+    }
 
-	.dropdown-menu {
-		top: 32px;
-	}
+    .dropdown-menu {
+        top: 32px;
+    }
 
 }
 

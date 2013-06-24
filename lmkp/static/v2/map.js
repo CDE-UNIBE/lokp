@@ -140,7 +140,7 @@ window.onload = function() {
     }
 
     // Vector layer that contains all deals whose intention of investment is agriculture
-    var agricultureDealsLayer = new OpenLayers.Layer.Vector('Agriculture Deals', {
+    var agricultureDealsLayer = new OpenLayers.Layer.Vector('Agricultural deals', {
         eventListeners: {
             "featureselected": onFeatureSelected,
             "featureunselected": onFeatureUnselected
@@ -204,7 +204,7 @@ window.onload = function() {
     });
 
     // Vector layer that contains all deals whose intention of investment is forestry
-    var forestryDealsLayer = new OpenLayers.Layer.Vector('Forestry Deals', {
+    var forestryDealsLayer = new OpenLayers.Layer.Vector('Forestry deals', {
         eventListeners: {
             "featureselected": onFeatureSelected,
             "featureunselected": onFeatureUnselected
@@ -258,7 +258,7 @@ window.onload = function() {
     });
 
     // Vector layer that contains all deals whose intention of investment is mining
-    var miningDealsLayer = new OpenLayers.Layer.Vector('Mining Deals', {
+    var miningDealsLayer = new OpenLayers.Layer.Vector('Mining deals', {
         eventListeners: {
             "featureselected": onFeatureSelected,
             "featureunselected": onFeatureUnselected
@@ -312,7 +312,7 @@ window.onload = function() {
     });
 
     // Vector layer that contains all deals whose intention of investment is tourism
-    var tourismDealsLayer = new OpenLayers.Layer.Vector('Tourism Deals', {
+    var tourismDealsLayer = new OpenLayers.Layer.Vector('Tourism deals', {
         eventListeners: {
             "featureselected": onFeatureSelected,
             "featureunselected": onFeatureUnselected
@@ -366,7 +366,7 @@ window.onload = function() {
     });
 
     // Vector layer that contains all deals with other intentions of investment
-    var otherDealsLayer = new OpenLayers.Layer.Vector('Other Deals', {
+    var otherDealsLayer = new OpenLayers.Layer.Vector('Other deals', {
         eventListeners: {
             "featureselected": onFeatureSelected,
             "featureunselected": onFeatureUnselected
@@ -393,7 +393,7 @@ window.onload = function() {
         ],
         styleMap: new OpenLayers.StyleMap({
             "default":new OpenLayers.Style({
-                fillColor: "#ffffff",
+                fillColor: "#04089B",
                 fillOpacity: fillOpacity,
                 fontColor: "#000000",
                 fontSize: "9px",
@@ -401,7 +401,7 @@ window.onload = function() {
                 label: "${label}",
                 pointRadius: "${radius}",
                 rotation: 180.0,
-                strokeColor: "#ffffff",
+                strokeColor: "#04089B",
                 strokeOpacity: 0.5,
                 strokeWidth: 5
             }, {
@@ -440,12 +440,23 @@ window.onload = function() {
     // Add the context layers to the map
     map.addLayers(contextLayers);
     // Add also the deals layers to the map
-    map.addLayers([agricultureDealsLayer,
-        forestryDealsLayer,
-        miningDealsLayer,
-        tourismDealsLayer,
-        otherDealsLayer
-        ]);
+    var vectorLayers = [agricultureDealsLayer,
+    forestryDealsLayer,
+    miningDealsLayer,
+    tourismDealsLayer,
+    otherDealsLayer
+    ];
+    map.addLayers(vectorLayers);
+
+    for(var i = 0; i < vectorLayers.length; i++){
+        var l = vectorLayers[i];
+
+        var color = l.options.styleMap.styles.default.defaultStyle.fillColor;
+
+        var legendTemplate = "<li class=\"legendEntry\"><div class=\"vectorLegendSymbol\" style=\"background-color: " + color + ";\"></div>" + l.name + "</li>";
+
+        $("#map-legend-list").append(legendTemplate);
+    }
 
     // Create the SelectFeature control __after__ adding the layers to the map!
     var selectControl = new OpenLayers.Control.SelectFeature([
