@@ -43,7 +43,11 @@
             }
             .blacktemp .caret {
                 border-top-color: black !important;
-}
+            }
+            .logouttemp {
+                color: black;
+                text-decoration: underline;
+            }
         </style>
 
         ## Include the head tags of the child template if available.
@@ -102,14 +106,21 @@
                             </div>
                             <div class="user">
                                 <ul class="nav nav-pills">
-                                    <li class="active">
-                                        <div>
-                                            <a class="blacktemp" href="/login">
-                                                Login
-                                            </a>
-
-                                        </div>
-                                    </li>
+                                            % if request.user is None:
+                                                <li class="active">
+                                                    <div>
+                                                        <a class="blacktemp" href="${request.route_url('login_form')}">
+                                                            Login
+                                                        </a>
+                                                    </div>
+                                                </li>
+                                            % else:
+                                                <li>
+                                                    <div>
+                                                        ${request.user.username} (<a href="${request.route_url('logout')}" class="logouttemp">Logout</a>)&nbsp;&nbsp;
+                                                    </div>
+                                                </li>
+                                            % endif
 
                                     <li>|</li>
                                     <%
