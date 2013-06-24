@@ -1093,7 +1093,8 @@ def getInvolvementWidget(request, thematicgroup):
     involvementShortForm = colander.SchemaNode(
         colander.Mapping(),
         widget=deform.widget.MappingWidget(
-            template='customInvolvementMapping'
+            template='customInvolvementMapping',
+            readonly_template='readonly/customInvolvementMapping'
         ),
         name=thematicgroup.getInvolvementData(),
         title=''

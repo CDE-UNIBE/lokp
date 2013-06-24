@@ -378,10 +378,18 @@ def renderReadonlyForm(request, itemType, itemJson):
     deform.Form.set_default_renderer(mako_renderer)
     configCategoryList = getCategoryList(request, itemType)
     schema = addHiddenFields(colander.SchemaNode(colander.Mapping()))
+    schema.add(colander.SchemaNode(
+        colander.String(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='itemType',
+        title='',
+        missing = colander.null
+    ))
     for cat in configCategoryList.getCategories():
         schema.add(cat.getForm(request))
     form = deform.Form(schema)
     data = getFormdataFromItemjson(request, itemJson, itemType)
+    data['itemType'] = itemType
     html = form.render(data, readonly=True)
 
     coords = (itemJson['geometry']['coordinates'] if 'geometry' in itemJson
@@ -738,8 +746,11 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
                 'secondaryinvestor': siForm
             }
 
-        cat_id = (categorylist.getInvolvementCategoryIds()[0]
-            if category is None else str(category))
+        if itemType == 'activities':
+            cat_id = (categorylist.getInvolvementCategoryIds()[0]
+                if category is None else str(category))
+        else:
+            cat_id = 'involvement'
 
         data[cat_id] = cat
 

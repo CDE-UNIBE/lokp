@@ -25,7 +25,7 @@
             <div class="span9 grid-area">${field.serialize(cstruct, readonly=True)}</div>
         </div>
 
-    % elif field.name not in ['tg_id', 'id', 'category', 'version']:
+    % elif field.name not in ['tg_id', 'id', 'category', 'version', 'itemType']:
         ## Single tag
         <div class="span5">
             <h5 class="green">${field.title}</h5>
