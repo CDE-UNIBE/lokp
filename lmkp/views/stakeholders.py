@@ -5,6 +5,8 @@ from lmkp.views.form import renderForm
 from lmkp.views.form import renderReadonlyForm
 from lmkp.views.form import checkValidItemjson
 from lmkp.views.form_config import getCategoryList
+from lmkp.views.profile import get_current_profile
+from lmkp.views.profile import get_current_locale
 from lmkp.models.database_objects import *
 import logging
 from pyramid.httpexceptions import HTTPForbidden
@@ -151,7 +153,7 @@ def read_many(request):
         # This is used to display a new and empty form for a Stakeholder. It is
         # to be used to embed the form into an existing page.
         return render_to_response(
-            'lmkp:templates/new_stakeholder.mak',
+            'lmkp:templates/stakeholders/form.mak',
             renderForm(request, 'stakeholders', embedded=True),
             request
         )
@@ -239,9 +241,12 @@ def read_one(request):
                         # version visible to the user
                         version = str(sh['version'])
                     if str(sh['version']) == version:
+                        templateValues = renderReadonlyForm(request, 'stakeholders', sh)
+                        templateValues['profile'] = get_current_profile(request)
+                        templateValues['locale'] = get_current_locale(request)
                         return render_to_response(
-                            'lmkp:templates/formReadonly.mak',
-                            renderReadonlyForm(request, 'stakeholders', sh),
+                            'lmkp:templates/stakeholders/details.mak',
+                            templateValues,
                             request
                         )
         return HTTPNotFound()
