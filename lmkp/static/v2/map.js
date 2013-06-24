@@ -395,7 +395,7 @@ window.onload = function() {
             "default":new OpenLayers.Style({
                 fillColor: "#04089B",
                 fillOpacity: fillOpacity,
-                fontColor: "#000000",
+                fontColor: "#ffffff",
                 fontSize: "9px",
                 graphicName: "${graphicName}",
                 label: "${label}",
