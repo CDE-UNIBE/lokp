@@ -108,6 +108,8 @@
 <div class="container">
     <div class="content">
 
+        <p>Active spatial filter: ${spatialfilter}</p>
+
         % if len(data) == 0:
 
             ## Empty data

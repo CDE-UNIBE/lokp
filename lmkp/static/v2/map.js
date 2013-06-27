@@ -20,10 +20,9 @@ window.onload = function() {
         layers: layers,
         eventListeners: {
             "moveend": function(event){
-                var center = map.getCenter();
-                var zoom = map.getZoom();
-                // Store the current location in a cookie
-                $.cookie("_LOCATION_", center.lon + "|" + center.lat + "|" + zoom, {
+                var extent = map.getExtent();
+                // Store the current location (the extent) in a cookie
+                $.cookie("_LOCATION_", extent.toString(), {
                     expires: 7
                 });
             /*var ext  = map.getExtent();
@@ -472,9 +471,12 @@ window.onload = function() {
 
     // Check if a location cookie is set. If yes, center the map to this location
     var location = $.cookie("_LOCATION_");
-    if(location){
-        var arr = location.split("|");
-        map.setCenter(new OpenLayers.LonLat(arr[0], arr[1]), arr[2]);
+    if (location) {
+        var arr = location.split(',');
+        if (arr.length == 4) {
+            var extent = new OpenLayers.Bounds(arr);
+            map.zoomToExtent(extent);
+        }
     }
 
     /**** events ****/
