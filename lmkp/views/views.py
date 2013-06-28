@@ -2,6 +2,7 @@ from datetime import timedelta
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession
 import logging
+import urllib
 from pyramid.renderers import render
 from pyramid.response import Response
 from pyramid.view import view_config
@@ -102,12 +103,23 @@ class MainView(BaseView):
         request.GET.add('limit', str(limit))
         request.GET.add('offset', str(limit * page - limit))
 
+        spatialfilter = 'profile'
+        location = self.request.cookies.get('_LOCATION_')
+        if location is not None:
+            location = urllib.unquote(location)
+            if len(location.split(',')) == 4:
+                spatialfilter = 'mapextent'
+                request.GET.add('bbox', location)
+                request.GET.add('epsg', '900913')
+
         # Query the items
         items = protocol.read_many(request, public=False)
 
         # Remove limit and offset parameters
         request.GET.pop('limit')
         request.GET.pop('offset')
+        request.GET.pop('bbox')
+        request.GET.pop('epsg')
 
         data = items['data'] if 'data' in items else []
         total = items['total'] if 'total' in items else 0
@@ -120,7 +132,8 @@ class MainView(BaseView):
             'currentpage': page,
             'pagesize': limit,
             'paginationneighbours': 2,
-            'activetab': item_type
+            'activetab': item_type,
+            'spatialfilter': spatialfilter
         }
 
     @view_config(route_name='charts_view', renderer='lmkp:templates/charts_view.mak')

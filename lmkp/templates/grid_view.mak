@@ -101,12 +101,16 @@
 </form>
 
 <div class="filter_area_openclose">
-    <i class="icon-double-angle-up pointer"></i>
+    <i class="icon-double-angle-down pointer"></i>
+    <span class="pointer">Click here to add or edit a filter</span>
+    <i class="icon-double-angle-down pointer"></i>
 </div>
 
 <!-- content -->
 <div class="container">
     <div class="content">
+
+        <p>Active spatial filter: ${spatialfilter}</p>
 
         % if len(data) == 0:
 
