@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
 <!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
@@ -19,12 +18,26 @@
         <meta name="viewport" content="width=device-width">
 
         <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/bootstrap-combined.no-icons.min.css')}">
-        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/font-awesome/css/font-awesome.css')}">
+        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/font-awesome/css/font-awesome.min.css')}">
 
         <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/bootstrap-responsive.min.css')}">
         <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/main.css')}">
 
         <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/custom.css')}">
+
+        <!--[if IE 7]>
+
+            <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/ie7.css')}">
+            <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/font-awesome/css/font-awesome-ie7.css')}">
+
+        <![endif]-->
+
+
+        <!--[if IE 8]>
+
+            <link rel="stylesheet" href="../media/css/ie8.css">
+
+        <![endif]-->
 
         <script src="${request.static_url('lmkp:static/media/js/vendor/modernizr-2.6.2-respond-1.1.0.min.js')}"></script>
 

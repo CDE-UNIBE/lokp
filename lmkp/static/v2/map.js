@@ -1,12 +1,44 @@
-// Define the geographic and spherical mercator globally
-var geographicProjection = new OpenLayers.Projection("EPSG:4326");
-var sphericalMercatorProjection = new OpenLayers.Projection("EPSG:900913");
+$(function() {
 
-window.onload = function() {
+    /**
+     * Static variables
+     */
+    // Define the geographic and spherical mercator globally
+    var geographicProjection = new OpenLayers.Projection("EPSG:4326");
+    var sphericalMercatorProjection = new OpenLayers.Projection("EPSG:900913");
 
+    /**
+     * Layer Legend
+     */
+
+    // Base-layers up/down
+    $('.base-layers').click(function() {
+        $('.base-layers-content').slideToggle();
+    });
+
+    // Context-layers up/down
+    $('.context-layers').click(function() {
+        $('.context-layers-content').slideToggle();
+    });
+
+    // Map legend up/down
+    var legendCounter = 0;
+    $('.map-legend').click(function() {
+        legendCounter++;
+        $('.map-legend-content').slideToggle(function() {
+            if (legendCounter % 2 == 0) {
+                $('.map-legend').css('margin-bottom', '15px');
+            } else {
+                $('.map-legend').css('margin-bottom', '5px');
+            }
+        });
+    });
+
+    /**
+     * Map and layers
+     */
     var layers = getBaseLayers();
-
-    var map = new OpenLayers.Map("map-div", {
+    var map = new OpenLayers.Map("googleMapFull", {
         displayProjection: geographicProjection,
         controls: [
         new OpenLayers.Control.Attribution(),
@@ -508,51 +540,50 @@ window.onload = function() {
         // Do something
         });
 
-}
+    /**
+     *
+     */
+    function getBaseLayers(){
 
-/**
- *
- */
-function getBaseLayers(){
-
-    var layers = [new OpenLayers.Layer.OSM("streetMap", [
-        "http://otile1.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
-        "http://otile2.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
-        "http://otile3.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
-        "http://otile4.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg"
-        ],{
-            attribution: "<p>Tiles Courtesy of <a href=\"http://www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"http://developer.mapquest.com/content/osm/mq_logo.png\"></p>",
-            isBaseLayer: true,
-            sphericalMercator: true,
-            projection: sphericalMercatorProjection,
-            transitionEffect: "resize"
-        })];
-
-    // Try to get the Google Satellite layer
-    try {
-        layers.push(new OpenLayers.Layer.Google("satelliteMap", {
-            type: google.maps.MapTypeId.HYBRID,
-            numZoomLevels: 22
-        }));
-
-        layers.push(new OpenLayers.Layer.Google("terrainMap", {
-            type: google.maps.MapTypeId.TERRAIN
-        }));
-    // else get backup layers that don't block the application in case there
-    // is no internet connection.
-    } catch(error) {
-        layers.push(new OpenLayers.Layer.OSM("satelliteMap", [
-            "http://oatile1.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
-            "http://oatile2.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
-            "http://oatile3.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
-            "http://oatile4.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg"
+        var layers = [new OpenLayers.Layer.OSM("streetMap", [
+            "http://otile1.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
+            "http://otile2.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
+            "http://otile3.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
+            "http://otile4.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg"
             ],{
                 attribution: "<p>Tiles Courtesy of <a href=\"http://www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"http://developer.mapquest.com/content/osm/mq_logo.png\"></p>",
                 isBaseLayer: true,
                 sphericalMercator: true,
-                projection: new OpenLayers.Projection("EPSG:900913")
-            }));
-    }
+                projection: sphericalMercatorProjection,
+                transitionEffect: "resize"
+            })];
 
-    return layers;
-}
+        // Try to get the Google Satellite layer
+        try {
+            layers.push(new OpenLayers.Layer.Google("satelliteMap", {
+                type: google.maps.MapTypeId.HYBRID,
+                numZoomLevels: 22
+            }));
+
+            layers.push(new OpenLayers.Layer.Google("terrainMap", {
+                type: google.maps.MapTypeId.TERRAIN
+            }));
+        // else get backup layers that don't block the application in case there
+        // is no internet connection.
+        } catch(error) {
+            layers.push(new OpenLayers.Layer.OSM("satelliteMap", [
+                "http://oatile1.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
+                "http://oatile2.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
+                "http://oatile3.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
+                "http://oatile4.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg"
+                ],{
+                    attribution: "<p>Tiles Courtesy of <a href=\"http://www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"http://developer.mapquest.com/content/osm/mq_logo.png\"></p>",
+                    isBaseLayer: true,
+                    sphericalMercator: true,
+                    projection: new OpenLayers.Projection("EPSG:900913")
+                }));
+        }
+
+        return layers;
+    }
+});
