@@ -54,7 +54,7 @@ def renderForm(request, itemType, **kwargs):
     # Activity or Stakeholder
     if itemType == 'activities':
         # The initial category of the form
-        newCategory = 2
+        newCategory = 1
         formid = 'activityform'
     elif itemType == 'stakeholders':
         # The initial category of the form
@@ -993,6 +993,7 @@ def formdataToDiff(request, newform, itemType):
     categorylist = getCategoryList(request, itemType)
     taggroupdiffs = []
     involvementdiffs = []
+    geometrydiff = None
 
     # Loop the newform to check if there are taggroups which changed or are new
 
@@ -1095,11 +1096,25 @@ def formdataToDiff(request, newform, itemType):
                 # TODO: The parameter 'map' is defined in the yaml (map: map)
                 # and therefore rather static. Should this be made more dynamic?
                 if tgroup == 'map':
-                    # TODO: Compare with the submitted values below with the old
-                    # values and add to diff if necessary (or new).
-                    lon = tags['lon'] if 'lon' in tags and tags['lon'] != colander.null else None
-                    lat = tags['lat'] if 'lat' in tags and tags['lat'] != colander.null else None
-                    print "\n\n***** MAP ****** (not yet implemented)\nlon: %s, lat: %s\n\n" % (lon, lat)
+                    
+                    oldpoint = None
+                    if (cat in oldform and thmgrp in oldform[cat]
+                        and 'map' in oldform[cat][thmgrp]):
+                        oldpoint = oldform[cat][thmgrp]['map']
+
+                    lon = (tags['lon'] if 'lon' in tags
+                        and tags['lon'] != colander.null else None)
+                    lat = (tags['lat'] if 'lat' in tags
+                        and tags['lat'] != colander.null else None)
+
+                    if lon is not None and lat is not None:
+                        if (oldpoint is None or lon != oldpoint['lon']
+                            or lat != oldpoint['lat']):
+
+                            geometrydiff = {
+                                'type': 'Point',
+                                'coordinates': [lon, lat]
+                            }
 
                 # Transform all to list so they can be treated all the same
                 if not isinstance(tags, list):
@@ -1343,7 +1358,8 @@ def formdataToDiff(request, newform, itemType):
 
     ret = None
 
-    if len(taggroupdiffs) > 0 or len(involvementdiffs) > 0:
+    if (len(taggroupdiffs) > 0 or len(involvementdiffs) > 0
+        or geometrydiff is not None):
         itemdiff = {}
 
         if len(taggroupdiffs) > 0:
@@ -1352,6 +1368,9 @@ def formdataToDiff(request, newform, itemType):
         if len(involvementdiffs) > 0:
             kw = 'activities' if itemType == 'stakeholders' else 'stakeholders'
             itemdiff[kw] = involvementdiffs
+
+        if geometrydiff is not None:
+            itemdiff['geometry'] = geometrydiff
 
         itemdiff['version'] = version if version is not colander.null else 1
         if identifier is not colander.null:
@@ -1374,5 +1393,8 @@ def mako_renderer(tmpl_name, **kw):
     # Make the translation method (_) available in the templates.
     request = get_current_request()
     kw['_'] = request.translate
+
+    if tmpl_name == 'customMapMapping':
+        kw['request'] = request
 
     return template.render(**kw)

@@ -6,10 +6,19 @@
         <legend>${field.title}</legend>
     % endif
 
-    <span>
-        This is where the map could end up. For the form, it may be necessary to
-        submit the coordinates using hidden text inputs.
-    </span>
+    <div id="googleMapNotFull" style="height:300px;"></div>
+
+    <%
+        from mako.template import Template
+        from pyramid.path import AssetResolver
+        import colander
+        lmkpAssetResolver = AssetResolver('lmkp')
+        resolver = lmkpAssetResolver.resolve('templates/map/mapform.mak')
+        template = Template(filename=resolver.abspath())
+        coords = None if cstruct['lon'] == colander.null or cstruct['lat'] == colander.null else [cstruct['lon'], cstruct['lat']]
+    %>
+
+    ${template.render(request=request, coords=coords)}
 
     <ul>
         % if field.errormsg:
@@ -29,6 +38,10 @@
             </li>
         % endif
 
+        <p style="margin-top: 10px;">
+            Click on the map to set the location of the deal. Please zoom in to set the point as accurately as possible.
+        </p>
+
         ${field.start_mapping()}
 
         % for child in field.children:
@@ -37,11 +50,6 @@
 
         ${field.end_mapping()}
     </ul>
-
-    <span>
-        This is the form/customMapMapping.mak template, add or include some map
-        stuff (html and javascript) here.
-    </span>
 
     <!-- /mapping -->
 
