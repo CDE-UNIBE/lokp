@@ -89,9 +89,11 @@ def renderForm(request, itemType, **kwargs):
         ajaxOptions = """
         {
             success: function (rText, sText, xhr, form) {
+                $('#stakeholderFormLoading').hide();
                 if (typeof stakeholderdata !== 'undefined') {
                     setInvolvementContent(stakeholderdata);
                 }
+                return false;
             }
         }
         """
@@ -119,7 +121,7 @@ def renderForm(request, itemType, **kwargs):
 
             # Prepare the form with the submitted category
             oldschema = addHiddenFields(colander.SchemaNode(colander.Mapping()),
-                embedded=embedded)
+                itemType, embedded=embedded)
             oldCat = configCategoryList.findCategoryById(oldCategory)
             if oldCat is not None:
                 oldschema.add(oldCat.getForm(request))
@@ -238,7 +240,8 @@ def renderForm(request, itemType, **kwargs):
                         'form': feedbackMessage,
                         'css_links': [],
                         'js_links': [],
-                        'js': templateJavascript
+                        'js': templateJavascript,
+                        'success': success
                     }
 
             break
@@ -247,7 +250,7 @@ def renderForm(request, itemType, **kwargs):
         # If nothing was submitted or the captured form data was stored
         # correctly, create a form with the (new) current category.
         newschema = addHiddenFields(colander.SchemaNode(colander.Mapping()),
-            embedded=embedded)
+            itemType, embedded=embedded)
         newCat = configCategoryList.findCategoryById(newCategory)
         if newCat is not None:
             newschema.add(newCat.getForm(request))
@@ -377,7 +380,7 @@ def renderReadonlyForm(request, itemType, itemJson):
 
     deform.Form.set_default_renderer(mako_renderer)
     configCategoryList = getCategoryList(request, itemType)
-    schema = addHiddenFields(colander.SchemaNode(colander.Mapping()))
+    schema = addHiddenFields(colander.SchemaNode(colander.Mapping()), itemType)
     schema.add(colander.SchemaNode(
         colander.String(),
         widget=deform.widget.TextInputWidget(template='hidden'),
@@ -507,7 +510,7 @@ def doStakeholderUpdate(request, diff):
 
     return True, js
 
-def addHiddenFields(schema, embedded=False):
+def addHiddenFields(schema, itemType, embedded=False):
     """
     Function to add hidden fields (for meta data of the item) to a form schema.
     Fields are added for:
@@ -539,6 +542,14 @@ def addHiddenFields(schema, embedded=False):
         name='category',
         title='',
         missing = colander.null
+    ))
+    schema.add(colander.SchemaNode(
+        colander.String(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='itemType',
+        title='',
+        missing = colander.null,
+        default = itemType
     ))
     if embedded is True:
         schema.add(colander.SchemaNode(
@@ -1393,8 +1404,6 @@ def mako_renderer(tmpl_name, **kw):
     # Make the translation method (_) available in the templates.
     request = get_current_request()
     kw['_'] = request.translate
-
-    if tmpl_name == 'customMapMapping':
-        kw['request'] = request
+    kw['request'] = request
 
     return template.render(**kw)

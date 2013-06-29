@@ -11,53 +11,78 @@ ${field.end_mapping()}
     newForm = 'id' in cstruct and cstruct['id'] == colander.null
 %>
 
-<button
-    id="add-stakeholder-${field.oid}"
-    class="add-stakeholder"
-    onclick="return addStakeholder(this);"
-    % if not newForm:
-        style="display:none;"
-    % endif
->
-    <span>Add Investor</span>
-</button>
+<p>
+    <a
+        id="add-stakeholder-${field.oid}"
+        href=""
+        class="btn btn-small btn-primary add-stakeholder"
+        onclick="return addStakeholder(this);"
+        % if not newForm:
+            style="display:none;"
+        % endif
+        >
+        Select Investor
+    </a>
 
-<button
-    id="remove-stakeholder-${field.oid}"
-    class="remove-stakeholder"
-    onclick="return removeStakeholder(this);"
-    % if newForm:
-        style="display:none;"
-    % endif
->
-    <span>Remove Investor</span>
-</button>
+    <a
+        id="remove-stakeholder-${field.oid}"
+        href=""
+        class="btn btn-small btn-warning remove-stakeholder"
+        onclick="return removeStakeholder(this);"
+        % if newForm:
+            style="display:none;"
+        % endif
+        >
+        Remove Investor
+    </a>
+</p>
 
 <script type="text/javascript">
+
+    /**
+     * Function to add (select or create) a new Stakeholder. Shows a modal
+     * window where a Stakeholder can be selected or created.
+     */
     function addStakeholder(btn) {
-        var stakeholderform = $('div#stakeholderformcontainer');
-        stakeholderform.show();
-        stakeholderform.html('Loading ...');
+
+        // Set a loading indicator and show the modal window.
+        $('#formModal .modal-body').html('<p>Loading ...</p>');
+        $('#formModal').modal();
+
+        // Remove old indicator and add a new one. This is used to know which
+        // Stakeholder we are currently editing.
         $('span#currentlyactiveinstakeholderform').remove();
-        var fieldset = $(btn).parent('fieldset');
+        var fieldset = $(btn).parent('p').parent('div');
         fieldset.append('<span id="currentlyactiveinstakeholderform"></span>');
+
+        // Query and set the content of the modal window.
         $.ajax({
-            url: '/stakeholders/form'
+            url: "${request.route_url('stakeholders_read_many', output='form')}?embedded=True"
         }).done(function(data) {
-            stakeholderform.html(data);
+            $('#formModal .modal-body').html(data);
         });
+
         return false;
     }
+
+    /**
+     * Function to remove a selected Stakeholder.
+     */
     function removeStakeholder(btn) {
-        var fieldset = $(btn).parent('fieldset');
+
+        // Empty the values of all the readonly fields. Only reset those with an
+        // id, others are used by Deform for mapping.
+        var fieldset = $(btn).parent('p').parent('div');
         $.each(fieldset.find('input'), function() {
-            // Only reset those with an id (others are used for mapping)
             if (this.id) {
                 $(this).val(null);
             }
         });
-        fieldset.find('button.remove-stakeholder').hide();
-        fieldset.find('button.add-stakeholder').show();
+
+        // Change the buttons back
+        fieldset.find('a.remove-stakeholder').hide();
+        fieldset.find('a.add-stakeholder').show();
+        
         return false;
     }
 </script>

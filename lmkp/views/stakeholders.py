@@ -152,11 +152,19 @@ def read_many(request):
     elif output_format == 'form':
         # This is used to display a new and empty form for a Stakeholder. It is
         # to be used to embed the form into an existing page.
-        return render_to_response(
-            'lmkp:templates/stakeholders/form.mak',
-            renderForm(request, 'stakeholders', embedded=True),
-            request
-        )
+        embedded = request.params.get('embedded', False)
+        if embedded:
+            return render_to_response(
+                'lmkp:templates/stakeholders/form_embedded.mak',
+                renderForm(request, 'stakeholders', embedded=True),
+                request
+            )
+        else:
+            return render_to_response(
+                'lmkp:templates/stakeholders/form.mak',
+                renderForm(request, 'stakeholders', embedded=False),
+                request
+            )
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
