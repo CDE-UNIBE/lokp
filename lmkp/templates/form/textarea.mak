@@ -2,7 +2,7 @@
     <div class="span4">
         <p>${field.name}</p>
     </div>
-    <div class="span6">
+    <div class="span8">
         <textarea
             class="input-style"
             rows="4"

@@ -25,31 +25,34 @@
     % endfor
 
     % for button in field.buttons:
+        <div class="row-fluid">
+            <div class="span3 offset9 text-center">
+                <ul>
+                    % if button.css_class == 'formstepactive':
+                        <div class="active-wrapper">
+                    % endif
 
-        <ul>
-            % if button.css_class == 'formstepactive':
-                <div class="active-wrapper">
-            % endif
+                    <li
+                        % if button.name == 'submit':
+                            style="background-color:gray;"
+                        % endif
+                        >
+                        <button
+                            id="${field.formid + button.name}"
+                            name="${button.name}"
+                            value="${button.value}"
+                            class="btnText ${button.css_class}"
+                            onclick="showLoadingIndicator(this);">
+                            ${button.title}
+                        </button>
+                    </li>
 
-            <li
-                % if button.name == 'submit':
-                    style="background-color:gray;"
-                % endif
-                >
-                <button
-                    id="${field.formid + button.name}"
-                    name="${button.name}"
-                    value="${button.value}"
-                    class="btnText ${button.css_class}"
-                    onclick="showLoadingIndicator(this);">
-                    ${button.title}
-                </button>
-            </li>
-
-            % if button.css_class == 'formstepactive':
-                </div>
-            % endif
-        </ul>
+                    % if button.css_class == 'formstepactive':
+                        </div>
+                    % endif
+                </ul>
+            </div>
+        </div>
     % endfor
 
     % if field.use_ajax:
