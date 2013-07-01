@@ -118,8 +118,12 @@ class MainView(BaseView):
         # Remove limit and offset parameters
         request.GET.pop('limit')
         request.GET.pop('offset')
-        request.GET.pop('bbox')
-        request.GET.pop('epsg')
+        
+        try:
+            request.GET.pop('bbox')
+            request.GET.pop('epsg')
+        except KeyError:
+            pass
 
         data = items['data'] if 'data' in items else []
         total = items['total'] if 'total' in items else 0

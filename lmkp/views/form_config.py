@@ -422,6 +422,13 @@ class ConfigThematicgroup(object):
             colander.Mapping(),
             title=title
         )
+
+        if self.getMapData() is not None:
+            # If there is some map data in this thematic group, get the widget
+            # and add it to the form.
+            mapWidget = getMapWidget(self)
+            thg_form.add(mapWidget)
+
         for tg in self.getTaggroups():
             # Get the Form for each Taggroup
             tg_form = tg.getForm()
@@ -450,12 +457,6 @@ class ConfigThematicgroup(object):
             # corresponding involvement widget and add it to the form.
             shortForm = getInvolvementWidget(request, self)
             thg_form.add(shortForm)
-
-        if self.getMapData() is not None:
-            # If there is some map data in this thematic group, get the widget
-            # and add it to the form.
-            mapWidget = getMapWidget(self)
-            thg_form.add(mapWidget)
 
         return thg_form
 
@@ -1038,7 +1039,6 @@ def getMapWidget(thematicgroup):
     Similar to getInvolvementWidget below.
     Return a widget to be used to display the map in the form.
     """
-    # TODO: Lots of TODOs here ...
 
     mapWidget = colander.SchemaNode(
         colander.Mapping(),
@@ -1046,12 +1046,12 @@ def getMapWidget(thematicgroup):
             template='customMapMapping'
         ),
         name=thematicgroup.getMapData(),
-        title='MAP (TODO)' # TODO: Set this to ''
+        title=''
     )
 
     mapWidget.add(colander.SchemaNode(
         colander.Float(),
-#        widget=deform.widget.TextInputWidget(template='hidden'),
+        widget=deform.widget.TextInputWidget(template='hidden'),
         name='lon',
         title='lon',
         missing=colander.null
@@ -1059,7 +1059,7 @@ def getMapWidget(thematicgroup):
 
     mapWidget.add(colander.SchemaNode(
         colander.Float(),
-#        widget=deform.widget.TextInputWidget(template='hidden'),
+        widget=deform.widget.TextInputWidget(template='hidden'),
         name='lat',
         title='lat',
         missing=colander.null
