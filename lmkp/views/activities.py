@@ -44,6 +44,10 @@ def read_many(request):
     Default output format: JSON
     """
 
+    # Handle the parameters (locale, profile)
+    bv = BaseView(request)
+    bv._handle_parameters()
+
     try:
         output_format = request.matchdict['output']
     except KeyError:
@@ -57,9 +61,12 @@ def read_many(request):
         return render_to_response('json', {'HTML': 'Coming soon'}, request)
     elif output_format == 'form':
         # This is used to display a new and empty form for an Activity
+        templateValues = renderForm(request, 'activities')
+        templateValues['profile'] = get_current_profile(request)
+        templateValues['locale'] = get_current_locale(request)
         return render_to_response(
             'lmkp:templates/activities/form.mak',
-            renderForm(request, 'activities'),
+            templateValues,
             request
         )
     elif output_format == 'geojson':

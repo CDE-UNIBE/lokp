@@ -121,6 +121,7 @@
 
                                     ## If the user is logged in, show link to add a new deal
                                     % if request.user:
+                                        <li></li>
                                         <li>
                                             <a href="${request.route_url('activities_read_many', output='form')}" >
                                                 <i class="icon-pencil"></i>
@@ -216,14 +217,15 @@
 
                 ## Show session messages if available
                 % if request.session.peek_flash():
+                <div class="row-fluid">
                     <div class="alert alert-block" style="margin-bottom:0;">
-                        <button type="button" class="close" data-dismiss="alert">&times;</button>
                         % for message in request.session.pop_flash():
                             <p>
                                 <% context.write(message) %>
                             </p>
                         % endfor
                     </div>
+                </div>
                 % endif
 
                 ## Content
