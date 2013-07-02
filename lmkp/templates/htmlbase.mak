@@ -61,6 +61,9 @@
                 color: black;
                 text-decoration: underline;
             }
+            .red {
+                color: red;
+            }
         </style>
 
         ## Include the head tags of the child template if available.
@@ -115,25 +118,43 @@
                                             </a>
                                         </li>
                                     % endfor
+
+                                    ## If the user is logged in, show link to add a new deal
+                                    % if request.user:
+                                        <li>
+                                            <a href="${request.route_url('activities_read_many', output='form')}" >
+                                                <i class="icon-pencil"></i>
+                                                New Deal
+                                            </a>
+                                        </li>
+                                    % endif
                                 </ul>
                             </div>
                             <div class="user">
                                 <ul class="nav nav-pills">
-                                            % if request.user is None:
-                                                <li class="active">
-                                                    <div>
-                                                        <a class="blacktemp" href="${request.route_url('login_form')}">
-                                                            Login
-                                                        </a>
-                                                    </div>
-                                                </li>
-                                            % else:
-                                                <li>
-                                                    <div>
-                                                        ${request.user.username} (<a href="${request.route_url('logout')}" class="logouttemp">Logout</a>)&nbsp;&nbsp;
-                                                    </div>
-                                                </li>
-                                            % endif
+                                    % if request.user is None:
+                                        <li class="active">
+                                            <div>
+                                                <a class="blacktemp" href="${request.route_url('login_form')}">
+                                                    Login
+                                                </a>
+                                            </div>
+                                        </li>
+                                        <li>/</li>
+                                        <li class="active">
+                                            <div>
+                                                <a class="blacktemp" href="${request.route_url('user_self_registration')}">
+                                                    Register
+                                                </a>
+                                            </div>
+                                        </li>
+                                    % else:
+                                        <li>
+                                            <div>
+                                                ${request.user.username} (<a href="${request.route_url('logout')}" class="logouttemp">Logout</a>)&nbsp;&nbsp;
+                                            </div>
+                                        </li>
+                                    % endif
 
                                     <li>|</li>
                                     <%
@@ -220,23 +241,24 @@
 
         <div class="navbar footer">
             <ul class="nav pull-right">
-                <li>
-                    <a href="#">
-                        Faq
-                    </a>
-                </li>
-                <li>|</li>
-                <li>
-                    <a href="#">
-                        Imprint
-                    </a>
-                </li>
-                <li>|</li>
-                <li>
-                    <a href="#">
-                        Partners
-                    </a>
-                </li>
+
+                <%
+                # The entries of the footer as arrays with
+                # - url
+                # - name
+                footer = [
+                    ['#', 'FAQ'],
+                    ['#', 'About'],
+                    ['#', 'Partners'],
+                    ['#', 'Blog']
+                ]
+                %>
+
+                % for f in footer:
+                    <li>
+                        <a href="${f[0]}">${f[1]}</a>
+                    </li>
+                % endfor
             </ul>
         </div>
 

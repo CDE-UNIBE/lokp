@@ -1030,7 +1030,7 @@ class ConfigValue(object):
         """
         Returns the order value if one is set else the name of the value
         """
-        if self.getOrder() != '':
+        if self.getOrder() != '' and self.getOrder() is not None:
             return self.getOrder()
         return self.getName()
 
@@ -1053,16 +1053,14 @@ def getMapWidget(thematicgroup):
         colander.Float(),
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='lon',
-        title='lon',
-        missing=colander.null
+        title='lon'
     ))
 
     mapWidget.add(colander.SchemaNode(
         colander.Float(),
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='lat',
-        title='lat',
-        missing=colander.null
+        title='lat'
     ))
 
     return mapWidget

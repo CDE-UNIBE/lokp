@@ -1,6 +1,3 @@
-<fieldset class="deformMappingFieldset">
-
-    <!-- mapping -->
 
     % if field.title:
         <legend>${field.title}</legend>
@@ -20,41 +17,34 @@
 
     ${template.render(request=request, coords=coords)}
 
-    <ul>
-        % if field.errormsg:
-            <li class="errorLi">
-                <h3 class="errorMsgLbl">
-                    ${_("There was a problem with this section")}
-                </h3>
-                <p class="errorMsg">
-                    ${_(field.errormsg)}
-                </p>
-            </li>
+    % if field.errormsg:
+        <li class="errorLi">
+            <h3 class="errorMsgLbl">
+                ${_("There was a problem with this section")}
+            </h3>
+            <p class="errorMsg">
+                ${_(field.errormsg)}
+            </p>
+        </li>
+    % endif
+
+    % if field.description:
+        <li class="section">
+            <div>${field.description}</div>
+        </li>
+    % endif
+
+    <p style="margin-top: 10px;">
+        % if field.required:
+            <span class="red"><b>*</b></span>
         % endif
+        Click on the map to set the location of the deal. Please zoom in to set the point as accurately as possible.
+    </p>
 
-        % if field.description:
-            <li class="section">
-                <div>${field.description}</div>
-            </li>
-        % endif
+    ${field.start_mapping()}
 
-        <p style="margin-top: 10px;">
-            Click on the map to set the location of the deal. Please zoom in to set the point as accurately as possible.
-        </p>
+    % for child in field.children:
+        ${child.render_template(field.widget.item_template)}
+    % endfor
 
-        ${field.start_mapping()}
-
-        % for child in field.children:
-            ${child.render_template(field.widget.item_template)}
-        % endfor
-
-        ${field.end_mapping()}
-    </ul>
-
-    <!-- /mapping -->
-
-</fieldset>
-
-<script type="text/javascript">
-    // TODO
-</script>
+    ${field.end_mapping()}
