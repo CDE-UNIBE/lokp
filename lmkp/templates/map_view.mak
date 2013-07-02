@@ -3,7 +3,7 @@
 <%def name="title()">Map View</%def>
 
 <%def name="head_tags()">
-<link rel="stylesheet" href="${request.static_url('lmkp:static/lib/OpenLayers-2.12/theme/default/style.css')}" type="text/css">
+<link rel="stylesheet" href="${request.static_url('lmkp:static/lib/OpenLayers-2.12/theme/default/style.css')}" type="text/css" />
 <style type="text/css" >
     .olTileImage {
         max-width: none !important;
@@ -156,7 +156,7 @@ var profilePolygon = ${extent | n};
     <form class="navbar-search" action="">
         <input name="q" id="search" class="search-query" placeholder="search location" />
         <input type="submit" value="Search" id="search-submit" />
-    </form><br>
+    </form><br/>
 
     <!-- Base layers -->
     <div class="map-menu-base-layers">
