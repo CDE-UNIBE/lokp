@@ -1,11 +1,22 @@
-<!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<%
+from lmkp.views.translation import get_languages
+languages = get_languages()
+selectedlanguage = languages[0]
+for l in languages:
+    if locale == l[0]:
+        selectedlanguage = l
+%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--[if lt IE 7]>      <html xmlns="http://www.w3.org/1999/xhtml" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html xmlns="http://www.w3.org/1999/xhtml" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html xmlns="http://www.w3.org/1999/xhtml" class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html xmlns="http://www.w3.org/1999/xhtml" class="no-js"> <!--<![endif]-->
     <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="content-language" content="${selectedlanguage[0]}" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <link rel="icon" type="image/ico" href="/favicon.ico"/>
         <title>
             <%
                 try:
@@ -14,28 +25,28 @@
                     context.write("Land Observatory")
             %>
         </title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width">
+        <meta name="description" content="" />
+        <meta name="viewport" content="width=device-width" />
 
-        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/bootstrap-combined.no-icons.min.css')}">
-        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/font-awesome/css/font-awesome.min.css')}">
+        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/bootstrap-combined.no-icons.min.css')}" ></link>
+        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/font-awesome/css/font-awesome.min.css')}" ></link>
 
-        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/bootstrap-responsive.min.css')}">
-        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/main.css')}">
+        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/bootstrap-responsive.min.css')}"></link>
+        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/main.css')}"></link>
 
-        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/custom.css')}">
+        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/custom.css')}"></link>
 
         <!--[if IE 7]>
 
-            <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/ie7.css')}">
-            <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/font-awesome/css/font-awesome-ie7.css')}">
+            <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/ie7.css')}"></link>
+            <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/font-awesome/css/font-awesome-ie7.css')}"></link>
 
         <![endif]-->
 
 
         <!--[if IE 8]>
 
-            <link rel="stylesheet" href="../media/css/ie8.css">
+            <link rel="stylesheet" href="../media/css/ie8.css"></link>
 
         <![endif]-->
 
@@ -136,14 +147,6 @@
                                             % endif
 
                                     <li>|</li>
-                                    <%
-                                        from lmkp.views.translation import get_languages
-                                        languages = get_languages()
-                                        selectedlanguage = languages[0]
-                                        for l in languages:
-                                            if locale == l[0]:
-                                                selectedlanguage = l
-                                    %>
                                     <li>
                                         <div class="dropdown">
                                             <a class="dropdown-toggle blacktemp" data-toggle="dropdown" href="#">
@@ -156,7 +159,6 @@
                                                         <a href="#" onclick="updateQueryParams({'_LOCALE_': '${l[0]}'})">${l[1]}</a>
                                                     </li>
                                                 % endfor
-                                                </li>
                                             </ul>
                                         </div>
                                     </li>
@@ -182,7 +184,6 @@
                                                         <a href="#" onclick="updateQueryParams({'_PROFILE_': '${p[0]}'})">${p[1]}</a>
                                                     </li>
                                                 % endfor
-                                                </li>
                                             </ul>
                                         </div>
                                     </li>

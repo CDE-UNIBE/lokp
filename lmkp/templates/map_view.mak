@@ -38,6 +38,18 @@
         margin-bottom: 15px;
     }
 </style>
+<script type="text/javascript">
+<%
+
+from lmkp.views.profile import _getCurrentProfileExtent
+import json
+
+extent = json.dumps(_getCurrentProfileExtent(request))
+
+%>
+var profilePolygon = ${extent | n};
+    
+</script>
 </%def>
 
 ## Start of content
@@ -48,7 +60,7 @@
         <div class="control-group">
             <label class="control-label">Active filters</label>
             <div class="controls">
-                <input type="text" id="filter1" class="filter-variable1" placeholder="A sample variable > 23">
+                <input type="text" id="filter1" class="filter-variable1" placeholder="A sample variable > 23" />
                 <span class="icon-remove1">
                     <i class="icon-remove pointer"></i>
                 </span>
@@ -56,7 +68,7 @@
         </div>
         <div class="control-group">
             <div class="controls">
-                <input type="text" id="filter2" class="filter-variable2" placeholder="Another sample variable = Cambodia">
+                <input type="text" id="filter2" class="filter-variable2" placeholder="Another sample variable = Cambodia" />
                 <span class="icon-remove2">
                     <i class="icon-remove pointer"></i>
                 </span>
@@ -90,7 +102,7 @@
                         <li><a href="#">!=</a></li>
                     </ul>
                 </div>
-                <input type="text" class="filter-value" id="filter2" placeholder="Value">
+                <input type="text" class="filter-value" id="filter2" placeholder="Value" />
                 <span class="icon-add">
                     <i class="icon-plus pointer"></i>
                 </span>
@@ -139,8 +151,8 @@
 <!-- map menu -->
 <div class="map-menu">
     <form class="navbar-search" action="">
-        <input name="q" id="search" class="search-query" placeholder="search location">
-        <input type="submit" value="Search" id="search-submit">
+        <input name="q" id="search" class="search-query" placeholder="search location" />
+        <input type="submit" value="Search" id="search-submit" />
     </form><br>
 
     <!-- Base layers -->
@@ -149,16 +161,13 @@
         <div class="base-layers-content">
             <ul>
                 <li>
-                    <label class="radio inline">
-                        <input type="radio" class="baseMapOptions" name="baseMapOptions" id="streetMapOption" value="streetMap" checked>Street Map</label>
+                    <label class="radio inline"><input type="radio" class="baseMapOptions" name="baseMapOptions" id="streetMapOption" value="streetMap" checked />Street Map</label>
                 </li>
                 <li>
-                    <label class="radio inline">
-                        <input type="radio" class="baseMapOptions" name="baseMapOptions" id="satelliteMapOption" value="satelliteMap">Satellite Imagery</label>
+                    <label class="radio inline"><input type="radio" class="baseMapOptions" name="baseMapOptions" id="satelliteMapOption" value="satelliteMap" />Satellite Imagery</label>
                 </li>
                 <li>
-                    <label class="radio inline">
-                        <input type="radio" class="baseMapOptions" name="baseMapOptions" id="terrainMapOption" value="terrainMap">Terrain Map</label>
+                    <label class="radio inline"><input type="radio" class="baseMapOptions" name="baseMapOptions" id="terrainMapOption" value="terrainMap" />Terrain Map</label>
                 </li>
             </ul>
         </div>

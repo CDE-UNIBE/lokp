@@ -501,7 +501,8 @@ $(document).ready(function() {
     map.addControl(selectControl);
     selectControl.activate();
 
-    // Check if a location cookie is set. If yes, center the map to this location
+    // Check if a location cookie is set. If yes, center the map to this location.
+    // If no cookie is set, zoom the map to the extent of the current profile
     var location = $.cookie("_LOCATION_");
     if (location) {
         var arr = location.split(',');
@@ -509,6 +510,12 @@ $(document).ready(function() {
             var extent = new OpenLayers.Bounds(arr);
             map.zoomToExtent(extent);
         }
+    } else {
+        var f = new OpenLayers.Format.GeoJSON();
+        // Variable profilePolygon is a GeoJSON geometry
+        var profileExtent = f.read(profilePolygon, "Geometry");
+        // Reproject the extent to spherical mercator projection and zoom the map to its extent
+        map.zoomToExtent(profileExtent.transform(geographicProjection, sphericalMercatorProjection).getBounds());
     }
 
     /**** events ****/
