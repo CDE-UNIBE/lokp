@@ -108,13 +108,32 @@ $(document).ready(function() {
     ];
     **/
 
-
     var fillOpacity = 1;
+   
+    var strokeOpacity = function(feature){
+        if(feature.attributes.count == 1){
+            var f = feature.cluster[0];
+            if(f.attributes.status == "pending"){
+                return 1;
+            }
+        }
+        return 0.5;
+    };
+
+    var strokeWidth = function(feature){
+        if(feature.attributes.count == 1){
+            var f = feature.cluster[0];
+            if(f.attributes.status == "pending"){
+                return 2;
+            }
+        }
+        return 5;
+    };
 
     // Calculates the radius for clustered features
     var radius = function(feature){
         if(feature.attributes.count == 1){
-            return 5;
+            return 6;
         } else {
             return Math.min(feature.attributes.count, 12) + 5;
         }
@@ -157,17 +176,31 @@ $(document).ready(function() {
                 }
             });
         } else {
+            $(".basic-data").empty();
+            // Create a list of selected deals, when selecting several deals
+            var header = $(".basic-data").append("<h6 class=\"deal-headlline\">Selected Deals</h6>");
+            for(var i = 0; i < feature.cluster.length; i++){
+                var f = feature.cluster[i];
+                var activityId = f.data.activity_identifier;
+                var shortId = activityId.split("-")[0]
+                
+                header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/\"" + activityId + '"># ' + shortId + '</a></span></h6>');
+            }
+            
+        /*
             $("#deal-shortid-span").html('# ');
             $("#taggroups-ul").empty();
             $("#taggroups-ul").append("<li><p><span class=\"bolder\">" + feature.cluster.length + " deals selected:</span> Please zoom in to get details about a single deal.</p></li>" );
+            */
         }
     }
 
     // Reset the basic-data overlay box
     var onFeatureUnselected = function(event){
-        $("#deal-shortid-span").html("#");
+        $(".basic-data").empty();
+        var header = $(".basic-data").append("<h6 class=\"deal-headlline\">Deal <span id=\"deal-shortid-span\" class=\"underline\">#</span></h6>");
         $("#taggroups-ul" ).empty();
-        $("#taggroups-ul").html("<li><p>No deal selected.</p></li>");
+        $(".basic-data").append('<ul id="taggroups-ul"><li><p>No deal selected.</p></li></ul>');
     }
 
     // Vector layer that contains all deals whose intention of investment is agriculture
@@ -214,16 +247,27 @@ $(document).ready(function() {
                 label: "${label}",
                 pointRadius: "${radius}",
                 rotation: 180.0,
-                fillColor: "#006600",
+                fillColor: "${fillColor}",
                 fillOpacity: fillOpacity,
                 strokeColor: "#006600",
-                strokeOpacity: 0.5,
-                strokeWidth: 5
+                strokeOpacity: "${strokeOpacity}",
+                strokeWidth: "${strokeWidth}"
             }, {
                 context: {
                     graphicName: graphicName,
                     label: label,
-                    radius: radius
+                    radius: radius,
+                    strokeOpacity: strokeOpacity,
+                    strokeWidth: strokeWidth,
+                    fillColor: function(feature){
+                        if(feature.attributes.count == 1){
+                            var f = feature.cluster[0];
+                            if(f.attributes.status == "pending"){
+                                return "#ffffff";
+                            }
+                        }
+                        return "#006600";
+                    }
                 }
             }),
             "select": new OpenLayers.Style({
@@ -262,7 +306,7 @@ $(document).ready(function() {
         ],
         styleMap: new OpenLayers.StyleMap({
             "default":new OpenLayers.Style({
-                fillColor: "#916100",
+                fillColor: "${fillColor}",
                 fillOpacity: fillOpacity,
                 fontColor: "#ffffff",
                 fontSize: "9px",
@@ -271,13 +315,24 @@ $(document).ready(function() {
                 pointRadius: "${radius}",
                 rotation: 180.0,
                 strokeColor: "#916100",
-                strokeOpacity: 0.5,
-                strokeWidth: 5
+                strokeOpacity: "${strokeOpacity}",
+                strokeWidth: "${strokeWidth}"
             }, {
                 context: {
                     graphicName: graphicName,
                     label: label,
-                    radius: radius
+                    radius: radius,
+                    strokeOpacity: strokeOpacity,
+                    strokeWidth: strokeWidth,
+                    fillColor: function(feature){
+                        if(feature.attributes.count == 1){
+                            var f = feature.cluster[0];
+                            if(f.attributes.status == "pending"){
+                                return "#ffffff";
+                            }
+                        }
+                        return "#916100";
+                    }
                 }
             }),
             "select": new OpenLayers.Style({
@@ -316,7 +371,7 @@ $(document).ready(function() {
         ],
         styleMap: new OpenLayers.StyleMap({
             "default":new OpenLayers.Style({
-                fillColor: "#5a5a5a",
+                fillColor: "${fillColor}",
                 fillOpacity: fillOpacity,
                 fontColor: "#ffffff",
                 fontSize: "9px",
@@ -325,13 +380,24 @@ $(document).ready(function() {
                 pointRadius: "${radius}",
                 rotation: 180.0,
                 strokeColor: "#5a5a5a",
-                strokeOpacity: 0.5,
-                strokeWidth: 5
+                strokeOpacity: "${strokeOpacity}",
+                strokeWidth: "${strokeWidth}"
             }, {
                 context: {
                     graphicName: graphicName,
                     label: label,
-                    radius: radius
+                    radius: radius,
+                    strokeOpacity: strokeOpacity,
+                    strokeWidth: strokeWidth,
+                    fillColor: function(feature){
+                        if(feature.attributes.count == 1){
+                            var f = feature.cluster[0];
+                            if(f.attributes.status == "pending"){
+                                return "#ffffff";
+                            }
+                        }
+                        return "#5a5a5a";
+                    }
                 }
             }),
             "select": new OpenLayers.Style({
@@ -370,7 +436,7 @@ $(document).ready(function() {
         ],
         styleMap: new OpenLayers.StyleMap({
             "default":new OpenLayers.Style({
-                fillColor: "#bd0026",
+                fillColor: "${fillColor}",
                 fillOpacity: fillOpacity,
                 fontColor: "#ffffff",
                 fontSize: "9px",
@@ -379,13 +445,24 @@ $(document).ready(function() {
                 pointRadius: "${radius}",
                 rotation: 180.0,
                 strokeColor: "#bd0026",
-                strokeOpacity: 0.5,
-                strokeWidth: 5
+                strokeOpacity: "${strokeOpacity}",
+                strokeWidth: "${strokeWidth}"
             }, {
                 context: {
                     graphicName: graphicName,
                     label: label,
-                    radius: radius
+                    radius: radius,
+                    strokeOpacity: strokeOpacity,
+                    strokeWidth: strokeWidth,
+                    fillColor: function(feature){
+                        if(feature.attributes.count == 1){
+                            var f = feature.cluster[0];
+                            if(f.attributes.status == "pending"){
+                                return "#ffffff";
+                            }
+                        }
+                        return "#bd0026";
+                    }
                 }
             }),
             "select": new OpenLayers.Style({
@@ -424,7 +501,7 @@ $(document).ready(function() {
         ],
         styleMap: new OpenLayers.StyleMap({
             "default":new OpenLayers.Style({
-                fillColor: "#04089B",
+                fillColor: "${fillColor}",
                 fillOpacity: fillOpacity,
                 fontColor: "#ffffff",
                 fontSize: "9px",
@@ -433,13 +510,24 @@ $(document).ready(function() {
                 pointRadius: "${radius}",
                 rotation: 180.0,
                 strokeColor: "#04089B",
-                strokeOpacity: 0.5,
-                strokeWidth: 5
+                strokeOpacity: "${strokeOpacity}",
+                strokeWidth: "${strokeWidth}"
             }, {
                 context: {
                     graphicName: graphicName,
                     label: label,
-                    radius: radius
+                    radius: radius,
+                    strokeOpacity: strokeOpacity,
+                    strokeWidth: strokeWidth,
+                    fillColor: function(feature){
+                        if(feature.attributes.count == 1){
+                            var f = feature.cluster[0];
+                            if(f.attributes.status == "pending"){
+                                return "#ffffff";
+                            }
+                        }
+                        return "#04089B";
+                    }
                 }
             }),
             "select": new OpenLayers.Style({
@@ -482,7 +570,7 @@ $(document).ready(function() {
     for(var i = 0; i < vectorLayers.length; i++){
         var l = vectorLayers[i];
 
-        var color = l.options.styleMap.styles.default.defaultStyle.fillColor;
+        var color = l.options.styleMap.styles.default.defaultStyle.strokeColor;
 
         var legendTemplate = "<li class=\"legendEntry\"><div class=\"vectorLegendSymbol\" style=\"background-color: " + color + ";\"></div>" + l.name + "</li>";
 
