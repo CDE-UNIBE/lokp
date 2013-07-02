@@ -8,7 +8,14 @@
 <div class="row-fluid">
     <div class="span4">
         <p>
-            ${field.name}
+            % if field.title:
+                ${field.title}
+            % elif field.name:
+                ${field.name}
+            % endif
+            % if field.required:
+                <span class="red"><b>*</b></span>
+            % endif
         </p>
     </div>
     <div class="span8">

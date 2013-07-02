@@ -28,8 +28,8 @@
 
         % if field.error:
             <div class="alert alert-error">
-                <h5>${_("There was a problem with your submission")}</h5>
-                <p>${_("Errors have been highlighted below")}</p>
+                <h5>${request.translate("There was a problem with your submission")}</h5>
+                <p>${request.translate("Errors have been highlighted below")}</p>
             </div>
         % endif
 

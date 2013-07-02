@@ -1053,16 +1053,14 @@ def getMapWidget(thematicgroup):
         colander.Float(),
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='lon',
-        title='lon',
-        missing=colander.null
+        title='lon'
     ))
 
     mapWidget.add(colander.SchemaNode(
         colander.Float(),
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='lat',
-        title='lat',
-        missing=colander.null
+        title='lat'
     ))
 
     return mapWidget
