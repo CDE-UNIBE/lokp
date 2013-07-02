@@ -17,6 +17,7 @@ from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_locale_name
 from pyramid.path import AssetResolver
 from pyramid.renderers import render
+from pyramid.renderers import render_to_response
 from pyramid.response import Response
 from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
@@ -141,10 +142,7 @@ class UserView(BaseView):
 
             self._send_email([email_field], _(u"The Land Observatory: Activate your Account"), email_text)
 
-            msg = '<div id="thanks">Thank you for registering!<br/>A message with an activation link has been sent to your email address.'
-            msg += 'Your account will be approved after activation.</div>'
-
-            return Response(msg)
+            return render_to_response('lmkp:templates/user_registration_success.mak', {}, request=self.request)
 
         return self._render_form(form, success=succeed)
 
