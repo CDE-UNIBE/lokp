@@ -5,6 +5,7 @@ import logging
 from mako.template import Template
 
 from lmkp.views.form_config import *
+from lmkp.models.meta import DBSession as Session
 
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPFound
@@ -32,9 +33,19 @@ def form_clear_session(request):
         return HTTPFound(location=url)
 
     # Else redirect home
-    return HTTPFound(request.route_url('/'))
+    return HTTPFound(request.route_url('index'))
 
 def renderForm(request, itemType, **kwargs):
+
+    # TODO: Translation
+    activity = 'Deal'
+    noticeTitle = 'Notice'
+    notice1 = 'Unsaved data of this item was found in the session. You may continue to edit this form.'
+    notice2 = 'Unsaved data from another form %s was found in the session and will be deleted if you continue to edit this form.'
+    action1 = 'Click here to delete the session data to clear the form.'
+    action2 = 'See the unsaved changes of this Deal and submit it.'
+    dealSuccess = 'The Deal was successfully created. It is now pending and needs to be reviewed by a moderator before it is publicly visible.'
+    dealLink = 'View the Deal.'
 
     itemJson = kwargs.get('itemJson', None)
     embedded = kwargs.get('embedded', False)
@@ -110,7 +121,8 @@ def renderForm(request, itemType, **kwargs):
 
     captured = None
     formHasErrors = False
-    templateJavascript = None
+    # Some sort of data used for feedback. Can be Javascript or something else
+    feedbackData = None
 
     # Handle form submission
     for p in request.POST:
@@ -195,6 +207,8 @@ def renderForm(request, itemType, **kwargs):
                     # The final submit button was clicked. Calculate the diff,
                     # delete the session data and redirect to a confirm page.
 
+                    success = False
+
                     # Activity
                     if (posted_formid == 'activityform'
                         and 'activity' in session):
@@ -209,10 +223,21 @@ def renderForm(request, itemType, **kwargs):
 
                         log.debug('The diff to create/update the activity: %s' % diff)
 
-                        # Clear the session
-                        doClearFormSessionData(request)
+                        success, feedback = doActivityUpdate(request, diff)
 
-                        feedbackMessage = 'Activity Form submitted! (well, actually not yet)'
+                        if success is True:
+                            feedbackMessage = ('<p>%s</p><p><a href="%s">%s</a></p>'
+                                % (
+                                    dealSuccess,
+                                    request.route_url('activities_read_one', output='html', uid=feedback),
+                                    dealLink
+                                ))
+
+                            # Clear the session
+                            doClearFormSessionData(request)
+
+                        else:
+                            feedbackMessage = 'Error: %s' % feedback
 
                     # Stakeholder
                     elif posted_formid == 'stakeholderform':
@@ -227,7 +252,7 @@ def renderForm(request, itemType, **kwargs):
                         if success is True:
                             # TODO: Translation
                             feedbackMessage = 'Stakeholder form submitted!'
-                            templateJavascript = js
+                            feedbackData = js
 
                         else:
                             # TODO: Translation
@@ -240,7 +265,7 @@ def renderForm(request, itemType, **kwargs):
                         'form': feedbackMessage,
                         'css_links': [],
                         'js_links': [],
-                        'js': templateJavascript,
+                        'js': feedbackData,
                         'success': success
                     }
 
@@ -295,7 +320,9 @@ def renderForm(request, itemType, **kwargs):
                 if formSubmit is False:
                     # If the form is rendered for the first time, inform the
                     # user that session was used.
-                    session.flash('Unsaved data of this item was found in the session. You may continue to edit this form.<br/><a href="/form/clearsession?url=%s">Click here to delete the session data to clear the form.</a>' % request.url)
+
+                    url = request.route_url('form_clear_session', _query={'url':request.url})
+                    session.flash('<strong>%s</strong>: %s<br/><a href="%s">%s</a>' % (noticeTitle, notice1, url, action1))
 
             else:
                 # The item in the session is not the same as the item provided.
@@ -313,8 +340,14 @@ def renderForm(request, itemType, **kwargs):
                 else:
                     item_url = request.route_url('activities_read_many',
                         output='form')
-                session.flash('Unsaved data from another form (item: %s) was found in the session and will be deleted if you edit this form.<br/><a href="%s">Click here to see the other item and submit it.</a>' % (item_name, item_url))
 
+                try:
+                    notice2 = notice2 % '(%s %s)' % (activity, item_name)
+                except TypeError:
+                    pass
+
+                session.flash('<strong>%s</strong>: %s<br/><a href="%s">%s</a>' % (noticeTitle, notice2, item_url, action2));
+                
         elif itemJson is None and 'activity' in session:
             # No item was provided (create form) but some data was found in the
             # session.
@@ -332,7 +365,13 @@ def renderForm(request, itemType, **kwargs):
                 else:
                     item_url = request.route_url('activities_read_many',
                         output='form')
-                session.flash('Unsaved data from another form (item: %s) was found in the session and will be deleted if you edit this form.<br/><a href="%s">Click here to see the other item and submit it.</a>' % (item_name, item_url))
+
+                try:
+                    notice2 = notice2 % '(%s %s)' % (activity, item_name)
+                except TypeError:
+                    pass
+
+                session.flash('<strong>%s</strong>: %s<br/><a href="%s">%s</a>' % (noticeTitle, notice2, item_url, action2));
 
             else:
                 # Use the data in the session to populate the form.
@@ -342,7 +381,8 @@ def renderForm(request, itemType, **kwargs):
                 if formSubmit is False and embedded is False:
                     # If the form is rendered for the first time, inform the
                     # user that session was used.
-                    session.flash('Unsaved data of this item was found in the session. You may continue to edit this form.<br/><a href="/form/clearsession?url=%s">Click here to delete the session data to clear the form.</a>' % request.url)
+                    url = request.route_url('form_clear_session', _query={'url':request.url})
+                    session.flash('<strong>%s</strong>: %s<br/><a href="%s">%s</a>' % (noticeTitle, notice1, url, action1))
         
         else:
             # No itemjson and no sessionitem, do nothign (empty data already defined above)
@@ -384,7 +424,7 @@ def renderReadonlyForm(request, itemType, itemJson):
     schema.add(colander.SchemaNode(
         colander.String(),
         widget=deform.widget.TextInputWidget(template='hidden'),
-        name='itemType',
+        name='statusId',
         title='',
         missing = colander.null
     ))
@@ -393,6 +433,8 @@ def renderReadonlyForm(request, itemType, itemJson):
     form = deform.Form(schema)
     data = getFormdataFromItemjson(request, itemJson, itemType)
     data['itemType'] = itemType
+    statusId = itemJson['status_id'] if 'status_id' in itemJson else colander.null
+    data['statusId'] = statusId
     html = form.render(data, readonly=True)
 
     coords = (itemJson['geometry']['coordinates'] if 'geometry' in itemJson
@@ -447,6 +489,27 @@ def doClearFormSessionData(request):
     if 'activity' in request.session:
         del(request.session['activity'])
 
+def doActivityUpdate(request, diff):
+    """
+    Function to do the update / create of an Activity.
+    Returns a boolean indicating the success of the update and an additional
+    variable, being either the error message (success == False) or the
+    identifier of the newly create Activity (success == True)
+    """
+    from lmkp.views.activity_protocol3 import ActivityProtocol3
+    protocol = ActivityProtocol3(Session)
+
+    # Use the protocol to create/update the Activity
+    ids = protocol.create(request, data=diff)
+
+    if ids is None or len(ids) != 1:
+        # TODO: Translation
+        return False, 'The Activity could not be created or updated.'
+
+    activity = ids[0]
+
+    return True, activity.identifier
+
 def doStakeholderUpdate(request, diff):
     """
     Function to do the update / create of a Stakeholder.
@@ -458,21 +521,23 @@ def doStakeholderUpdate(request, diff):
     If the update ws not successful, 'success' is False and 'js' contains an
     error message.
     """
-    from lmkp.models.meta import DBSession as Session
     from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
-    stakeholder_protocol = StakeholderProtocol3(Session)
+    protocol = StakeholderProtocol3(Session)
 
     # Use the protocol to create/update the Stakeholder
-    ids = stakeholder_protocol.create(request, data=diff)
+    ids = protocol.create(request, data=diff)
 
     if ids is None or len(ids) != 1:
         # TODO: Translation
-        return False, 'The Stakeholder could not be created / updated.'
+        return False, 'The Stakeholder could not be created or updated.'
 
     stakeholder = ids[0]
 
+    # Now we need to re-collect the values for the feedback to the user. This is
+    # especially important if the form is embedded.
+
     # Use the protocol to query the created item
-    shFeature = stakeholder_protocol.read_one_by_version(request,
+    shFeature = protocol.read_one_by_version(request,
         stakeholder.identifier, stakeholder.version)
 
     if shFeature is None:
@@ -953,6 +1018,14 @@ def formdataToDiff(request, newform, itemType):
         # Embedded indicator is to be removed
         del newform['embedded']
 
+    if 'itemType' in newform:
+        # ItemType is not needed
+        del newform['itemType']
+
+    if 'statusId' in newform:
+        # statusId is not needed
+        del newform['statusId']
+
     if identifier != colander.null and version != colander.null:
 
         # Use the protocol to query the values of the version which was edited
@@ -1099,8 +1172,13 @@ def formdataToDiff(request, newform, itemType):
 
             continue
 
+        try:
+            thmgrpsitems = thmgrps.iteritems()
+        except AttributeError:
+            continue
+
         # Loop the thematic groups of the category
-        for (thmgrp, tgroups) in thmgrps.iteritems():
+        for (thmgrp, tgroups) in thmgrpsitems:
             # Loop the tags of each taggroup
             for (tgroup, tags) in tgroups.iteritems():
 
