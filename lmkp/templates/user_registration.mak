@@ -1,59 +1,31 @@
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
-      xmlns:tal="http://xml.zope.org/namespaces/tal"
-      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
-      i18n:domain="pyramid_i18n_howto">
-    <head>
-        <title>${_("User Registration")}</title>
-        <!-- Meta Tags -->
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <!-- CSS -->
-        <!--link rel="stylesheet" href="/formstatic/css/beautify.css" type="text/css" />
-        <link rel="stylesheet" href="/static/form.css" type="text/css" /-->
-        <style type="text/css">
-            div.login {
-                border: 1px solid silver;
-                padding: 10px;
-                width: 600px;
-                margin: 0 auto;
-                margin-bottom: 5px;
-                margin-top: 5px;
-                font-family: Arial, sans-serif;
-                font-size: 12px;
-                text-align: center;
-            }
-            select, input {
-                margin-left: 30px;
-            }
-            .error {
-                background-color: #F68E1D;
-            }
-        </style>
-        <!-- JavaScript -->
+<%inherit file="lmkp:templates/htmlbase.mak" />
 
-        <!-- REQUIREMENTS -->
-        <!-- CSS -->
-        % for reqt in css_links:
-        <!--link rel="stylesheet" href="/formstatic/${reqt}" type="text/css" /-->
-        % endfor
-        % for reqt in js_links:
+<%def name="title()">${_("User Registration")}</%def>
+
+<%def name="head_tags()">
+
+    <!-- REQUIREMENTS -->
+    <!-- CSS -->
+    % for reqt in css_links:
+    <!--link rel="stylesheet" href="/formstatic/${reqt}" type="text/css" /-->
+    % endfor
+    % for reqt in js_links:
         <script type="text/javascript" src="/formstatic/${reqt}"></script>
-        % endfor
-    </head>
+    % endfor
+</%def>
 
-    <body>
-        <div class="login">
-            <a href="/">
-                <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" alt="${_(u'Land Observatory')}"/>
-            </a><br/>
-            ${_(u"Please register for the Land Observatory")}
-        </div>
-        <div id="form" class="login" style="text-align: left;">
+<div class="container">
+    <div class="content no-border">
+        <h3>Register</h3>
+        <p>Please register for the Land Observatory.</p>
+        <hr class="grey" />
+        ${form | n}
+    </div>
+</div>
 
-            <% context.write(form) %>
-        </div>
+<%def name="bottom_tags()">
+    <script type="text/javascript">
+       deform.load();
+    </script>
+</%def>
 
-        <script type="text/javascript">
-            deform.load();
-        </script>
-    </body>
-</html>

@@ -1,8 +1,17 @@
 <div class="row-fluid">
     <div class="span4">
-        <p>${field.name}</p>
+        <p>
+            % if field.title:
+                ${field.title}
+            % elif field.name:
+                ${field.name}
+            % endif
+            % if field.required:
+                <span class="red"><b>*</b></span>
+            % endif
+        </p>
     </div>
-    <div class="span6">
+    <div class="span8">
         <input 
             class="input-style"
             type="text"

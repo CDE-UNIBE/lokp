@@ -37,6 +37,9 @@
         display: none;
         margin-bottom: 15px;
     }
+    .map-menu b.caret {
+        margin: 8px 5px 0 0;
+    }
 </style>
 <script type="text/javascript">
 <%
@@ -157,7 +160,7 @@ var profilePolygon = ${extent | n};
 
     <!-- Base layers -->
     <div class="map-menu-base-layers">
-        <h6 class="base-layers">Base layers</h6>
+        <h6 class="base-layers"><b class="caret"></b>Base layers</h6>
         <div class="base-layers-content">
             <ul>
                 <li>
@@ -175,7 +178,7 @@ var profilePolygon = ${extent | n};
 
     <!-- Context layers -->
     <div class="map-menu-context-layers">
-        <h6 class="context-layers">Context layers</h6>
+        <h6 class="context-layers"><b class="caret"></b>Context layers</h6>
         <div class="context-layers-content">
             <ul id="context-layers-list">
                 <!--  Placeholder for context layers entries -->
@@ -185,7 +188,7 @@ var profilePolygon = ${extent | n};
 
     <!-- Map legend -->
     <div class="map-menu-legend">
-        <h6 class="map-legend">Map Legend</h6>
+        <h6 class="map-legend"><b class="caret"></b>Map Legend</h6>
         <div class="map-legend-content">
             <ul id="map-legend-list">
                 <!--  Placeholder for map legend entries -->
