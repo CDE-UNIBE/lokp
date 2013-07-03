@@ -44,7 +44,7 @@ def renderForm(request, itemType, **kwargs):
     notice2 = 'Unsaved data from another form %s was found in the session and will be deleted if you continue to edit this form.'
     action1 = 'Click here to delete the session data to clear the form.'
     action2 = 'See the unsaved changes of this Deal and submit it.'
-    dealSuccess = 'The Deal was successfully created. It is now pending and needs to be reviewed by a moderator before it is publicly visible.'
+    dealSuccess = 'The Deal was successfully created or updated. It is now pending and needs to be reviewed by a moderator before it is publicly visible.'
     dealLink = 'View the Deal.'
 
     itemJson = kwargs.get('itemJson', None)
@@ -416,8 +416,6 @@ def renderReadonlyForm(request, itemType, itemJson):
     the configuration.
     """
 
-    # TODO: Show involvements.
-
     deform.Form.set_default_renderer(mako_renderer)
     configCategoryList = getCategoryList(request, itemType)
     schema = addHiddenFields(colander.SchemaNode(colander.Mapping()), itemType)
@@ -430,6 +428,27 @@ def renderReadonlyForm(request, itemType, itemJson):
     ))
     for cat in configCategoryList.getCategories():
         schema.add(cat.getForm(request))
+
+    if itemType == 'stakeholders':
+        # For Stakeholders, the readonly detail view should also contain the
+        # involvements which are not part of the edit form so we need to add it
+        # explicitely.
+
+        activitiesCategoryList = getCategoryList(request, 'activities')
+        overviewKeys = activitiesCategoryList.getInvolvementOverviewKeyNames()
+
+        mappingNames = ['primaryinvestors', 'secondaryinvestors']
+
+        for mn in mappingNames:
+            schema.add(getInvolvementWidget(
+                mn,
+                'customInvolvementMapping',
+                'readonly/customInvolvementMappingActivity',
+                overviewKeys,
+                True,
+                ''
+            ))
+
     form = deform.Form(schema)
     data = getFormdataFromItemjson(request, itemJson, itemType)
     data['itemType'] = itemType
@@ -770,65 +789,106 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
 
     if ('involvements' in itemJson and (category is None or
         str(category) in categorylist.getInvolvementCategoryIds())):
+
         # Have a look at the involvements
         involvements = itemJson['involvements']
 
-        # Collect the involvements and if they are primary or secondary
-        # investors.
-        primaryinvestor = None
-        secondaryinvestors = []
-        for i in involvements:
-
-            if 'role_id' not in i:
-                # The role_id should always be there. If not, skip.
-                continue
-
-            if i['role_id'] == 6 and primaryinvestor is None:
-                # If there is more than one primary investor, only the first one
-                # is treated as primary investor, all others as secondary.
-                primaryinvestor = i
-            else:
-                secondaryinvestors.append(i)
-
-        # The configuration of the other side of the involvement is needed to
-        # know which fields are to be used for the overview display of the
-        # involvement.
         if itemType == 'activities':
+            # Activities: The involvements of an activity generally consist of
+            # one Primary Investor and multiple Secondary Investors.
+
+            # Collect the involvements and if they are primary or secondary
+            # investors.
+            primaryinvestor = None
+            secondaryinvestors = []
+            for i in involvements:
+
+                if 'role_id' not in i:
+                    # The role_id should always be there. If not, skip.
+                    continue
+
+                if i['role_id'] == 6 and primaryinvestor is None:
+                    # If there is more than one primary investor, only the first one
+                    # is treated as primary investor, all others as secondary.
+                    primaryinvestor = i
+                else:
+                    secondaryinvestors.append(i)
+
+            # The configuration of the other side of the involvement is needed to
+            # know which fields are to be used for the overview display of the
+            # involvement.
             otherItemType = 'stakeholders'
-        else:
-            otherItemType = 'activities'
-        otherCategoryList = getCategoryList(request, otherItemType)
-        keyNames = otherCategoryList.getInvolvementOverviewKeyNames()
+            otherCategoryList = getCategoryList(request, otherItemType)
+            keyNames = otherCategoryList.getInvolvementOverviewKeyNames()
 
-        cat = {}
+            cat = {}
 
-        # Primary investor
-        f = _getInvolvementData(primaryinvestor, keyNames)
-        thmg = categorylist.findThematicgroupByInvolvement('primaryinvestor')
-        if f is not None and thmg is not None:
-            cat[str(thmg.getId())] = {
-                'primaryinvestor': f
-            }
+            # Primary investor
+            f = _getInvolvementData(primaryinvestor, keyNames)
+            thmg = categorylist.findThematicgroupByInvolvement('primaryinvestor')
+            if f is not None and thmg is not None:
+                cat[str(thmg.getId())] = {
+                    'primaryinvestor': f
+                }
 
-        # Secondary investors
-        thmg = categorylist.findThematicgroupByInvolvement('secondaryinvestor')
-        siForm = []
-        for si in secondaryinvestors:
-            f = _getInvolvementData(si, keyNames)
-            if f is not None:
-                siForm.append(f)
-        if len(siForm) > 0 and thmg is not None:
-            cat[str(thmg.getId())] = {
-                'secondaryinvestor': siForm
-            }
+            # Secondary investors
+            thmg = categorylist.findThematicgroupByInvolvement('secondaryinvestor')
+            siForm = []
+            for si in secondaryinvestors:
+                f = _getInvolvementData(si, keyNames)
+                if f is not None:
+                    siForm.append(f)
+            if len(siForm) > 0 and thmg is not None:
+                cat[str(thmg.getId())] = {
+                    'secondaryinvestor': siForm
+                }
 
-        if itemType == 'activities':
             cat_id = (categorylist.getInvolvementCategoryIds()[0]
                 if category is None else str(category))
-        else:
-            cat_id = 'involvement'
 
-        data[cat_id] = cat
+            data[cat_id] = cat
+
+        else:
+            # Stakeholders. There can be multiple Primary Investors and multiple
+            # Secondary Investors.
+
+            # Collect the involvements and if they are primary or secondary
+            # investors
+            primaryinvestors = []
+            secondaryinvestors = []
+            for i in involvements:
+
+                if 'role_id' not in i:
+                    # The role_id should always be there.
+                    continue
+
+                if i['role_id'] == 6:
+                    primaryinvestors.append(i)
+                else:
+                    secondaryinvestors.append(i)
+
+            # The configuration of the other side of the involvement is needed to
+            # know which fields are to be used for the overview display of the
+            # involvement.
+            otherItemType = 'activities'
+            otherCategoryList = getCategoryList(request, otherItemType)
+            keyNames = otherCategoryList.getInvolvementOverviewKeyNames()
+
+            cat = {}
+
+            piForm = []
+            for pi in primaryinvestors:
+                f = _getInvolvementData(pi, keyNames)
+                if f is not None:
+                    piForm.append(f)
+            data['primaryinvestors'] = piForm
+
+            siForm = []
+            for si in secondaryinvestors:
+                f = _getInvolvementData(si, keyNames)
+                if f is not None:
+                    siForm.append(f)
+            data['secondaryinvestors'] = siForm
 
     for taggroup in itemJson['taggroups']:
 
@@ -1157,7 +1217,7 @@ def formdataToDiff(request, newform, itemType):
                     involvementdiffs.append({
                         'id': ni['id'],
                         'version': ni['version'],
-                        'role_id': ni['role_id'],
+                        'role': ni['role_id'],
                         'op': 'add'
                     })
 
@@ -1166,7 +1226,7 @@ def formdataToDiff(request, newform, itemType):
                 involvementdiffs.append({
                     'id': oi['id'],
                     'version': oi['version'],
-                    'role_id': oi['role_id'],
+                    'role': oi['role_id'],
                     'op': 'delete'
                 })
 

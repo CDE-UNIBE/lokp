@@ -455,7 +455,31 @@ class ConfigThematicgroup(object):
         if self.getInvolvementData() is not None:
             # If there is some involvement data in this thematic group, get the
             # corresponding involvement widget and add it to the form.
-            shortForm = getInvolvementWidget(request, self)
+
+            # Involvements can only be edited from Activity side. For
+            # Stakeholders, the Involvement Widget is added when creating the
+            # readonly form (function renderReadonlyForm in form.py).
+            mappingName = self.getInvolvementData()
+            if mappingName == 'primaryinvestor':
+                sequence = False
+                addItemText = '' # Does not matter
+            else:
+                sequence = True
+                # TODO: Translation
+                addItemText = 'Add Secondary Investor'
+                
+            shCategoryList = getCategoryList(request, 'stakeholders')
+            overviewKeys = shCategoryList.getInvolvementOverviewKeyNames()
+
+            shortForm = getInvolvementWidget(
+                mappingName,
+                'customInvolvementMapping',
+                'readonly/customInvolvementMappingStakeholder',
+                overviewKeys,
+                sequence,
+                addItemText
+            )
+
             thg_form.add(shortForm)
 
         return thg_form
@@ -1036,7 +1060,6 @@ class ConfigValue(object):
 
 def getMapWidget(thematicgroup):
     """
-    Similar to getInvolvementWidget below.
     Return a widget to be used to display the map in the form.
     """
 
@@ -1065,55 +1088,38 @@ def getMapWidget(thematicgroup):
 
     return mapWidget
 
-def getInvolvementWidget(request, thematicgroup):
+def getInvolvementWidget(mappingName, template, readonlyTemplate, overviewKeys,
+    sequence=False, addItemText=''):
     """
-    Return a widget to be used to display Involvements. This is only a short
-    display-only representation of a Stakeholder.
+    Return a widget to be used to display the involvements in the form.
     """
-
-    # We need the configuration of the other side of the involvement to know
-    # which fields are to be used for the overview display of the involvement.
-    if thematicgroup.getItemType() == 'activities':
-        otherItemType = 'stakeholders'
-    else:
-        otherItemType = 'activities'
-    otherCategoryList = getCategoryList(request, otherItemType)
-
-    # By default don't show the widget in a sequence.
-    sequence = False
-
-    # Special settings for specific involvementData
-    if thematicgroup.getInvolvementData() == 'secondaryinvestor':
-        sequence = True
-        # TODO: Translation
-        add_subitem_text = 'Add Secondary Investor'
-
-    involvementShortForm = colander.SchemaNode(
+    invForm = colander.SchemaNode(
         colander.Mapping(),
         widget=deform.widget.MappingWidget(
-            template='customInvolvementMapping',
-            readonly_template='readonly/customInvolvementMapping'
+            template=template,
+            readonly_template=readonlyTemplate
         ),
-        name=thematicgroup.getInvolvementData(),
+        name=mappingName,
         title=''
     )
 
-    # First add the hidden fields required to keep track of the involvements
-    involvementShortForm.add(colander.SchemaNode(
+    # Add all the hidden fields which are required to keep track of the
+    # involvements.
+    invForm.add(colander.SchemaNode(
         colander.String(),
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='id',
         title='',
         missing = colander.null
     ))
-    involvementShortForm.add(colander.SchemaNode(
+    invForm.add(colander.SchemaNode(
         colander.Int(),
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='version',
         title='',
         missing = colander.null
     ))
-    involvementShortForm.add(colander.SchemaNode(
+    invForm.add(colander.SchemaNode(
         colander.Int(),
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='role_id',
@@ -1122,8 +1128,8 @@ def getInvolvementWidget(request, thematicgroup):
     ))
 
     # Then add the display fields used for showing the involvement overview
-    for keyName in otherCategoryList.getInvolvementOverviewKeyNames():
-        involvementShortForm.add(colander.SchemaNode(
+    for keyName in overviewKeys:
+        invForm.add(colander.SchemaNode(
             colander.String(),
             widget=deform.widget.TextInputWidget(
                 template='readonly/custom_textinput_readonly'
@@ -1135,20 +1141,20 @@ def getInvolvementWidget(request, thematicgroup):
 
     if sequence is False:
         # If no sequence is required, return the node as it is
-        return involvementShortForm
+        return invForm
 
     else:
         # If a sequence is required, pack the node in a sequence and return it
         return colander.SchemaNode(
             colander.Sequence(),
-            involvementShortForm,
+            invForm,
             widget=deform.widget.SequenceWidget(
                 min_len = 1,
-                add_subitem_text_template = add_subitem_text,
+                add_subitem_text_template = addItemText,
             ),
             missing=colander.null,
             default=[colander.null],
-            name=thematicgroup.getInvolvementData(),
+            name=mappingName,
             title=''
         )
 

@@ -37,7 +37,7 @@
     <div class="span3 text-right">
         % if request.user and 'id' in cstruct:
             % if isStakeholder:
-                <a href="${request.route_url('stakeholders_read_one', output='form', uid=cstruct['id'])}"></a>
+                <a href="${request.route_url('stakeholders_read_one', output='form', uid=cstruct['id'])}">
                     <i class="icon-pencil"></i>&nbsp;&nbsp;Edit this Stakeholder
                 </a>
             % else:
@@ -47,6 +47,8 @@
             % endif
         % endif
     </div>
+</div>
+<div class="row-fluid">
     % if 'id' in cstruct:
         <div class="span9">
             <p class="id">${cstruct['id']}</p>
@@ -71,7 +73,7 @@
     <p>&nbsp;</p>
     <div class="row-fluid">
         % if isStakeholder:
-            <a href="${request.route_url('stakeholders_read_one', output='form', uid=cstruct['id'])}"></a>
+            <a href="${request.route_url('stakeholders_read_one', output='form', uid=cstruct['id'])}">
                 <i class="icon-pencil"></i>&nbsp;&nbsp;Edit this Stakeholder
             </a>
         % else:
