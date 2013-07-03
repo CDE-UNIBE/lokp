@@ -12,7 +12,9 @@ ${field.start_sequence()}
                     % endif
                 </p>
                 % if field.required:
-                    <span class="red"><b>*</b></span>
+                    <span class="required-form-field"></span>
+                % elif desired:
+                    <span class="desired-form-field"></span>
                 % endif
             </div>
             <div class="span8" style="margin-left: 0;">

@@ -27,6 +27,15 @@
             <h4>Success</h4>
             <p>The Stakeholder was successfully created. It will be reviewed shortly.</p>
 
+        % elif success is False:
+            ## The form was rerendered becaues it contains errors
+            <div id="create-new-stakeholder">
+                ${form | n}
+            </div>
+            <script type="text/javascript">
+                createNewStakeholder();
+            </script>
+
         % else:
             <div id="select-stakeholder">
                 <h4>Select a Stakeholder</h4>

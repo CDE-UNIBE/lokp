@@ -72,8 +72,15 @@ for l in languages:
                 color: black;
                 text-decoration: underline;
             }
-            .red {
-                color: red;
+            .desired-form-field:after {
+                content: '*';
+                font-weight: bold;
+                color: #3a87ad;
+            }
+            .required-form-field:after {
+                content: '*';
+                font-weight: bold;
+                color: #b94a48;
             }
         </style>
 
