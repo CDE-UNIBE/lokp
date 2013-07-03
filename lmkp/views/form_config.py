@@ -649,6 +649,7 @@ class ConfigTag(object):
         self.key = None
         self.values = []
         self.mandatory = False
+        self.desired = False
         self.involvementOverview = False
 
     def setKey(self, key):
@@ -689,6 +690,18 @@ class ConfigTag(object):
         """
         return self.mandatory is True
 
+    def setDesired(self, desired):
+        """
+        Set this tag as desired or not.
+        """
+        self.desired = desired
+
+    def getDesired(self):
+        """
+        Return a boolean whether this tag is desired or not.
+        """
+        return self.desired is True
+
     def setInvolvementOverview(self, overview):
         """
         Set if this tag should appear in the involvement overview or not.
@@ -715,6 +728,7 @@ class ConfigTag(object):
         type = key.getType()
         helptext = (key.getTranslatedHelptext()
             if key.getTranslatedHelptext() is not None else key.getHelptext())
+        desired = self.getDesired()
         # Decide which type of form to add
         if type.lower() == 'dropdown' and len(self.getValues()) > 0:
             # Dropdown
@@ -730,7 +744,8 @@ class ConfigTag(object):
                 validator=colander.OneOf([x[0] for x in choices]),
                 widget=CustomSelectWidget(
                     values=choices,
-                    helptext=helptext
+                    helptext=helptext,
+                    desired=desired
                 ),
                 name=name,
                 title=title
@@ -746,7 +761,8 @@ class ConfigTag(object):
                 colander.Set(),
                 widget=CustomCheckboxWidget(
                     values=tuple(choices),
-                    helptext=helptext
+                    helptext=helptext,
+                    desired=desired
                 ),
                 name=name,
                 title=title
@@ -781,10 +797,12 @@ class ConfigTag(object):
                 colanderType,
 #                widget=NumberSpinnerWidget(
 #                    options=options,
-#                    helptext=helptext
+#                    helptext=helptext,
+#                    desired=desired
 #                ),
                 widget=CustomTextInputWidget(
-                    helptext=helptext
+                    helptext=helptext,
+                    desired=desired
                 ),
                 name=name,
                 title=title
@@ -797,7 +815,8 @@ class ConfigTag(object):
                     rows=5,
                     cols=60,
                     style='float:left;',
-                    helptext=helptext
+                    helptext=helptext,
+                    desired=desired
                 ),
                 name=name,
                 title=title
@@ -807,7 +826,8 @@ class ConfigTag(object):
             form = colander.SchemaNode(
                 colander.Date(),
                 widget=CustomDateInputWidget(
-                    helptext=helptext
+                    helptext=helptext,
+                    desired=desired
                 ),
                 name=name,
                 title=title
@@ -818,7 +838,8 @@ class ConfigTag(object):
                 colander.String(),
                 widget=CustomTextInputWidget(
                     size=50,
-                    helptext=helptext
+                    helptext=helptext,
+                    desired=desired
                 ),
                 name=name,
                 title=title
@@ -1417,6 +1438,10 @@ def getCategoryList(request, itemType):
                                 and key_config['mandatory'] is True):
                                 tag.setMandatory(True)
 
+                            if ('desired' in key_config
+                                and key_config['desired'] is True):
+                                tag.setDesired(True)
+
                             if 'validator' in key_config:
                                 tag.getKey().\
                                     setValidator(key_config['validator'])
@@ -1654,13 +1679,16 @@ def custom_get_template_values(self, field, cstruct, kw):
     """
     This is a modification of the function get_template_values() called by
     deform.widget.Widget and its subclasses.
-    It appends the keyword 'helptext' to the template values if available.
+    It appends the keywords 'helptext' and 'desired' to the template values if
+    available.
     """
     values = {'cstruct':cstruct, 'field':field}
     values.update(kw)
     values.pop('template', None)
     if 'helptext' in self.__dict__:
         values['helptext'] = self.__dict__['helptext']
+    if 'desired' in self.__dict__:
+        values['desired'] = self.__dict__['desired']
     return values
 
 class NumberSpinnerWidget(CustomWidget):
