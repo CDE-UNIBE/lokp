@@ -44,8 +44,14 @@ def renderForm(request, itemType, **kwargs):
     notice2 = 'Unsaved data from another form %s was found in the session and will be deleted if you continue to edit this form.'
     action1 = 'Click here to delete the session data to clear the form.'
     action2 = 'See the unsaved changes of this Deal and submit it.'
+    successTitle = 'Success'
     dealSuccess = 'The Deal was successfully created or updated. It is now pending and needs to be reviewed by a moderator before it is publicly visible.'
     dealLink = 'View the Deal.'
+    emptyTitle = 'Empty Form'
+    emptyText = 'You submitted an empty form or did not make any changes.'
+    stakeholderSuccess = 'The Stakeholder was successfully created or updated. It is not pending and needs to be reviewed by a moderator before it is publicly visible.'
+    stakeholderLink = 'View the Stakeholder'
+    errorTitle = 'Error'
 
     itemJson = kwargs.get('itemJson', None)
     embedded = kwargs.get('embedded', False)
@@ -214,9 +220,6 @@ def renderForm(request, itemType, **kwargs):
                         and 'activity' in session):
                         formdata = copy.copy(session['activity'])
 
-                        # TODO: Do the actual POST request to create/update the
-                        # stuff.
-
                         log.debug('The complete formdata as in the session: %s' % formdata)
 
                         diff = formdataToDiff(request, formdata, itemType)
@@ -226,8 +229,9 @@ def renderForm(request, itemType, **kwargs):
                         success, feedback = doActivityUpdate(request, diff)
 
                         if success is True:
-                            feedbackMessage = ('<p>%s</p><p><a href="%s">%s</a></p>'
+                            feedbackMessage = ('<h3 class="text-success">%s</h3><p>%s</p><p><a href="%s">%s</a></p>'
                                 % (
+                                    successTitle,
                                     dealSuccess,
                                     request.route_url('activities_read_one', output='html', uid=feedback),
                                     dealLink
@@ -237,7 +241,7 @@ def renderForm(request, itemType, **kwargs):
                             doClearFormSessionData(request)
 
                         else:
-                            feedbackMessage = 'Error: %s' % feedback
+                            feedbackMessage = '<h3 class="text-error">%s</h3>: %s' % (errorTitle, feedback)
 
                     # Stakeholder
                     elif posted_formid == 'stakeholderform':
@@ -246,20 +250,33 @@ def renderForm(request, itemType, **kwargs):
 
                         log.debug('The diff to create/update the stakeholder: %s' % diff)
 
+                        if diff is None:
+                            return {
+                                'form': '<h3 class="text-info">%s</h3><p>%s</p>' % (emptyTitle, emptyText),
+                                'css_links': [],
+                                'js_links': [],
+                                'js': None,
+                                'success': False
+                            }
+
                         # Create or update the Stakeholder
-                        success, js = doStakeholderUpdate(request, diff)
+                        success, js, identifier = doStakeholderUpdate(request, diff)
 
                         if success is True:
-                            # TODO: Translation
-                            feedbackMessage = 'Stakeholder form submitted!'
+                            feedbackMessage = ('<h3 class="text-success">%s</h3><p>%s</p><p><a href="%s">%s</a></p>'
+                                % (
+                                    successTitle,
+                                    stakeholderSuccess,
+                                    request.route_url('stakeholders_read_one', output='html', uid=identifier),
+                                    stakeholderLink
+                                ))
                             feedbackData = js
 
                         else:
-                            # TODO: Translation
-                            feedbackMessage = 'Error: %s' % js
+                            feedbackMessage = '<h3 class="text-error">%s</h3>%s' % (errorTitle, js)
 
                     else:
-                        feedbackMessage = 'Error: Unknown form'
+                        feedbackMessage = '<h3 class="text-error">%s</h3>: Unknown form' % errorTitle
 
                     return {
                         'form': feedbackMessage,
@@ -407,7 +424,8 @@ def renderForm(request, itemType, **kwargs):
     return {
         'form': html,
         'css_links': resources['css'],
-        'js_links': resources['js']
+        'js_links': resources['js'],
+        'success': not formHasErrors
     }
 
 def renderReadonlyForm(request, itemType, itemJson):
@@ -548,7 +566,7 @@ def doStakeholderUpdate(request, diff):
 
     if ids is None or len(ids) != 1:
         # TODO: Translation
-        return False, 'The Stakeholder could not be created or updated.'
+        return False, 'The Stakeholder could not be created or updated.', None
 
     stakeholder = ids[0]
 
@@ -560,7 +578,7 @@ def doStakeholderUpdate(request, diff):
         stakeholder.identifier, stakeholder.version)
 
     if shFeature is None:
-        return False, 'The Stakeholder was created but not found.'
+        return False, 'The Stakeholder was created but not found.', None
 
     # TODO: Translation
     unknownString = 'Unknown'
@@ -592,7 +610,7 @@ def doStakeholderUpdate(request, diff):
         ', '.join('"%s": "%s"' % (n[0], n[1]) for n in keyValues)
     )
 
-    return True, js
+    return True, js, stakeholder.identifier
 
 def addHiddenFields(schema, itemType, embedded=False):
     """
@@ -1112,6 +1130,16 @@ def formdataToDiff(request, newform, itemType):
         if 'category' in oldform:
             del oldform['category']
 
+        if itemType == 'stakeholders':
+            # The form for Stakeholders has involvement fields in them which are
+            # only used for display purposes (since involvements can only be
+            # added on Activity side). We need to remove them before processing
+            # the diff.
+            if 'primaryinvestors' in oldform:
+                del oldform['primaryinvestors']
+            if 'secondaryinvestors' in oldform:
+                del oldform['secondaryinvestors']
+
         for (oldcat, othmgrps) in oldform.iteritems():
             # It is not sure that all of the form is in the session (the
             # newform variable). This is the case for example if a user did not
@@ -1288,7 +1316,7 @@ def formdataToDiff(request, newform, itemType):
                         if oldtaggroup is None:
                             # This should never happen since all tg_ids should
                             # be known.
-                            log.debug('\n\n*** TG_ID NOT FOUND: When trying to find and remove taggroup by tg_id (%s), the taggroup was not found in the old form.\n\n' % tg_id)
+                            log.debug('\n\n*** TG_ID NOT FOUND: When trying to find and remove taggroup by tg_id (%s), the taggroup was not found in the old form.\n\n' % t['tg_id'])
                             continue
 
                         deletedtags = []

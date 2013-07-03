@@ -7,6 +7,7 @@ from lmkp.views.form import checkValidItemjson
 from lmkp.views.form_config import getCategoryList
 from lmkp.views.profile import get_current_profile
 from lmkp.views.profile import get_current_locale
+from lmkp.views.views import BaseView
 from lmkp.models.database_objects import *
 import logging
 from pyramid.httpexceptions import HTTPForbidden
@@ -223,6 +224,10 @@ def read_one(request):
     Default output format: JSON
     """
 
+    # Handle the parameters (locale, profile)
+    bv = BaseView(request)
+    bv._handle_parameters()
+
     try:
         output_format = request.matchdict['output']
     except KeyError:
@@ -272,9 +277,12 @@ def read_one(request):
                         # version visible to the user
                         version = str(sh['version'])
                     if str(sh['version']) == version:
+                        templateValues = renderForm(request, 'stakeholders', itemJson=sh)
+                        templateValues['profile'] = get_current_profile(request)
+                        templateValues['locale'] = get_current_locale(request)
                         return render_to_response(
-                            'lmkp:templates/form.mak',
-                            renderForm(request, 'stakeholders', itemJson=sh),
+                            'lmkp:templates/stakeholders/form.mak',
+                            templateValues,
                             request
                         )
         return HTTPNotFound()
