@@ -1,6 +1,7 @@
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.config import get_mandatory_keys
+from lmkp.views.comments import comments_sitekey
 from lmkp.views.form import renderForm
 from lmkp.views.form import renderReadonlyForm
 from lmkp.views.form import checkValidItemjson
@@ -257,6 +258,15 @@ def read_one(request):
                         templateValues = renderReadonlyForm(request, 'stakeholders', sh)
                         templateValues['profile'] = get_current_profile(request)
                         templateValues['locale'] = get_current_locale(request)
+
+                        # Append the short uid and the uid to the templates values
+                        templateValues['uid'] = uid
+                        templateValues['shortuid'] = uid.split("-")[0]
+                        # Append also the site key from the commenting system
+                        templateValues['site_key'] = comments_sitekey(request)['site_key']
+                        # and the url of the commenting system
+                        templateValues['comments_url'] = request.registry.settings['lmkp.comments_url']
+
                         return render_to_response(
                             'lmkp:templates/stakeholders/details.mak',
                             templateValues,
