@@ -5,8 +5,8 @@
 
 % if field.errormsg:
     <div class="alert alert-error">
-        <h5>${_("There was a problem with this section")}</h5>
-        <p>${_(field.errormsg)}</p>
+        <h5>${request.translate("There was a problem with this section")}</h5>
+        <p>${request.translate(field.errormsg)}</p>
     </div>
 % endif
 

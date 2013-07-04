@@ -5,6 +5,9 @@
 <%def name="head_tags()">
 
     <link rel="stylesheet" href="/static/form.css" type="text/css" />
+
+    <script type="text/javascript" src="${request.static_url('lmkp:static/v2/form.js')}"></script>
+
     <%
         if 'scripts/jquery-ui-1.8.11.custom.min.js' not in js_links:
             js_links.append('scripts/jquery-ui-1.8.11.custom.min.js')

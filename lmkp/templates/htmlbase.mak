@@ -1,10 +1,16 @@
 <%
 from lmkp.views.translation import get_languages
+from lmkp.views.translation import get_profiles
 languages = get_languages()
 selectedlanguage = languages[0]
 for l in languages:
     if locale == l[0]:
         selectedlanguage = l
+profiles = get_profiles()
+selectedprofile = profiles[0]
+for p in profiles:
+    if profile == p[0]:
+        selectedprofile = p
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -82,6 +88,16 @@ for l in languages:
                 font-weight: bold;
                 color: #b94a48;
             }
+            .sequencestyle {
+                background-color: #F7F7F7;
+                border: 1px solid silver;
+                color: #333333;
+            }
+            .sequence-close {
+                color: #8B1A1A;
+                opacity: 0.5;
+            }
+
         </style>
 
         ## Include the head tags of the child template if available.
@@ -191,16 +207,7 @@ for l in languages:
                                             </ul>
                                         </div>
                                     </li>
-
                                     <li>|</li>
-                                    <%
-                                        from lmkp.views.translation import get_profiles
-                                        profiles = get_profiles()
-                                        selectedprofile = profiles[0]
-                                        for p in profiles:
-                                            if profile == p[0]:
-                                                selectedprofile = p
-                                    %>
                                     <li>
                                         <div class="dropdown">
                                             <a class="dropdown-toggle blacktemp" data-toggle="dropdown" href="#">

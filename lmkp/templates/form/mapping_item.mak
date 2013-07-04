@@ -44,7 +44,7 @@
                 % endif
                 class="${field.widget.error_class}"
             >
-            ${_(msg)}
+            ${request.translate(msg)}
             </p>
         % endfor
     </div>

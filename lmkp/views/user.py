@@ -540,9 +540,8 @@ def mako_renderer(tmpl_name, **kw):
     resolver = lmkpAssetResolver.resolve('templates/form/%s.mak' % tmpl_name)
     template = Template(filename=resolver.abspath())
 
-    # Make the translation method (_) available in the templates.
+    # Add the request to the keywords so it is available in the templates.
     request = get_current_request()
-    kw['_'] = request.translate
     kw['request'] = request
 
     return template.render(**kw)
