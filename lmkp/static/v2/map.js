@@ -179,13 +179,29 @@ $(document).ready(function() {
             $(".basic-data").empty();
             // Create a list of selected deals, when selecting several deals
             var header = $(".basic-data").append("<h6 class=\"deal-headlline\">Selected Deals</h6>");
-            for(var i = 0; i < feature.cluster.length; i++){
-                var f = feature.cluster[i];
-                var activityId = f.data.activity_identifier;
-                var shortId = activityId.split("-")[0]
-                
-                header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/\"" + activityId + '"># ' + shortId + '</a></span></h6>');
+
+            // Show at maximum ten deals to prevent a too long basic data box
+            var maxFeatures = 10;
+            if(feature.cluster.length <= maxFeatures){
+                for(var i = 0; i < feature.cluster.length; i++){
+                    var f = feature.cluster[i];
+                    var activityId = f.data.activity_identifier;
+                    var shortId = activityId.split("-")[0]
+
+                    header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/" + activityId + '"># ' + shortId + '</a></span></h6>');
+                }
+            } else {
+                for(var i = 0; i < maxFeatures; i++){
+                    var f = feature.cluster[i];
+                    var activityId = f.data.activity_identifier;
+                    var shortId = activityId.split("-")[0]
+
+                    header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/" + activityId + '"># ' + shortId + '</a></span></h6>');
+                }
+                header.append("<span>and " + (feature.cluster.length - maxFeatures) + " more deals ...</span>");
             }
+
+            
             
         /*
             $("#deal-shortid-span").html('# ');
