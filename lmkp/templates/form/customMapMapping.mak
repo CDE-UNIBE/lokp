@@ -36,7 +36,7 @@
 
     <p style="margin-top: 10px;">
         % if field.required:
-            <span class="red"><b>*</b></span>
+            <span class="required-form-field"></span>
         % endif
         Click on the map to set the location of the deal. Please zoom in to set the point as accurately as possible.
     </p>

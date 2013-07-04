@@ -7,7 +7,9 @@
                 ${field.name}
             % endif
             % if field.required:
-                <span class="red"><b>*</b></span>
+                <span class="required-form-field"></span>
+            % elif desired:
+                <span class="desired-form-field"></span>
             % endif
         </p>
     </div>

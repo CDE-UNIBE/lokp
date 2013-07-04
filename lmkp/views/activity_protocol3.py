@@ -1759,7 +1759,7 @@ class ActivityProtocol3(Protocol):
                 # yes, set the main_tag attribute to this tag
                 try:
                     if (a_tag.key.key == main_tag_key
-                        and a_tag.value.value == unicode(main_tag_value)):
+                        and unicode(a_tag.value.value) == unicode(main_tag_value)):
                         db_tg.main_tag = a_tag
                 except AttributeError:
                     pass
