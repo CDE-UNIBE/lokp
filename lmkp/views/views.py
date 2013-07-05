@@ -11,6 +11,8 @@ from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
+from urlparse import parse_qs, urlsplit, urlunsplit
+from urllib import urlencode
 from lmkp.views.profile import get_current_profile
 from lmkp.views.profile import get_current_locale
 
@@ -71,7 +73,7 @@ class BaseView(object):
                     l = '%s,%s' % (','.join([str(x) for x in p1]), ','.join([str(x) for x in p2]))
 
                     response.set_cookie('_LOCATION_', urllib.quote(l), timedelta(days=90))
-                
+
             elif '_PROFILE_' in self.request.cookies:
                 # Profile already set, leave it
                 pass
@@ -228,3 +230,37 @@ class MainView(BaseView):
         Simple view to output the current privileges
         """
         return {}
+
+def getQueryString(url, **kwargs):
+    """
+    Function to update the query parameters of a given URL.
+    kwargs:
+    - add: array of tuples with key and value to add to the URL. If the key
+      already exists, it will be replaced with the new value.
+      Example: add=[('page', 1)]
+    - remove: array of keys to remove from the URL.
+    """
+
+    if 'add' not in kwargs and 'remove' not in kwargs:
+        return url
+
+    # Collect the values to add / remove
+    add = kwargs.pop('add', {})
+    remove = kwargs.pop('remove', [])
+
+    # Extract query_strings from url
+    scheme, netloc, path, query_string, fragment = urlsplit(url)
+    qp = parse_qs(query_string)
+
+    # Remove
+    for d in remove:
+        if d in qp:
+            del(qp[d])
+
+    # Add
+    for k, v in add:
+        qp[k] = v
+
+    # Put URL together again and return it
+    new_query_string = urlencode(qp, doseq=True)
+    return urlunsplit((scheme, netloc, path, new_query_string, fragment))

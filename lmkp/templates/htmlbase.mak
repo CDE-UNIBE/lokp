@@ -1,4 +1,5 @@
 <%
+from lmkp.views.views import getQueryString
 from lmkp.views.translation import get_languages
 from lmkp.views.translation import get_profiles
 languages = get_languages()
@@ -219,7 +220,7 @@ for p in profiles:
                                             <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
                                                 % for l in languages:
                                                     <li class="cursor">
-                                                        <a href="#" onclick="updateQueryParams({'_LOCALE_': '${l[0]}'})">${l[1]}</a>
+                                                        <a href="${getQueryString(request.url, add=[('_LOCALE_', l[0])])}">${l[1]}</a>
                                                     </li>
                                                 % endfor
                                             </ul>
@@ -235,7 +236,7 @@ for p in profiles:
                                             <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
                                                 % for p in profiles:
                                                     <li class="cursor">
-                                                        <a href="#" onclick="updateQueryParams({'_PROFILE_': '${p[0]}'})">${p[1]}</a>
+                                                        <a href="${getQueryString(request.url, add=[('_PROFILE_', p[0])])}">${p[1]}</a>
                                                     </li>
                                                 % endfor
                                             </ul>

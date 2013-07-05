@@ -22,6 +22,7 @@
 
 <%
     import urllib
+    from lmkp.views.views import getQueryString
 
     # Get the keys and their translation
     from lmkp.views.translation import get_activity_keys
@@ -177,16 +178,20 @@
                                 ## Only use the headers which are to be shown
                                 % if k[2] is True:
                                     <th>${k[1]}
-                                        <div class="desc pointer
-                                             % if 'order_by=%s' % urllib.quote_plus(k[0]) in request.path_qs and 'dir=%s' % urllib.quote_plus('desc') in request.path_qs:
-                                                active
-                                             % endif
-                                             " onclick="updateQueryParams({'order_by': '${k[0]}', 'dir': 'desc'})">_</div>
-                                        <div class="asc pointer
+                                        <a href="${getQueryString(request.url, add=[('order_by', k[0]), ('dir', 'desc')])}">
+                                            <div class="desc
+                                                 % if 'order_by=%s' % urllib.quote_plus(k[0]) in request.path_qs and 'dir=%s' % urllib.quote_plus('desc') in request.path_qs:
+                                                    active
+                                                 % endif
+                                                 ">&nbsp;</div>
+                                        </a>
+                                        <a href="${getQueryString(request.url, add=[('order_by', k[0]), ('dir', 'asc')])}">
+                                        <div class="asc
                                              % if 'order_by=%s' % urllib.quote_plus(k[0]) in request.path_qs and 'dir=%s' % urllib.quote_plus('asc') in request.path_qs:
                                                 active
                                              % endif
-                                             " onclick="updateQueryParams({'order_by': '${k[0]}', 'dir': 'asc'})">_</div>
+                                             ">&nbsp;</div>
+                                        </a>
                                     </th>
                                 % endif
                             % endfor
