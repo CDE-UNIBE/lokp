@@ -927,3 +927,24 @@ class Category(Base):
         self.type = type
         self.fk_language = fk_language
         self.fk_category = fk_category
+
+
+class Geonames(Base):
+    __tablename__ = 'geonames'
+    __table_args__ = (
+                      {'schema': 'context'}
+                      )
+
+    id = Column(Integer, primary_key=True)
+    name = Column(Text)
+    asciiname = Column(Text)
+    alternatenames = Column(Text)
+    wkb_geometry = GeometryColumn(Point(dimension=2, srid=4326, spatial_index=True))
+
+    #def __repr__(self):
+    #    return (
+    #            '<Geonames> id [ %s ] | name [ %s ] | asciinames [ %s ] | alternatenames [ %s ]' %
+    #            (self.id, self.name, self.asciiname, self.alternatenames)
+    #            )
+
+GeometryDDL(Activity.__table__)
