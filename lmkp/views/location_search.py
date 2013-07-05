@@ -1,3 +1,7 @@
+import json
+
+from geoalchemy.postgis import functions
+from geoalchemy.postgis import pg_functions
 from lmkp.models.database_objects import Geonames
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.views import BaseView
@@ -6,9 +10,7 @@ from pyramid.i18n import TranslationStringFactory
 from pyramid.view import view_config
 from sqlalchemy import func
 from sqlalchemy import or_
-from geoalchemy.postgis import pg_functions
-from geoalchemy.postgis import functions
-import json
+from sqlalchemy.sql.expression import literal_column
 
 _ = TranslationStringFactory('lmkp')
 
@@ -36,7 +38,8 @@ class LocationSearchView(BaseView):
 
         rows = []
 
-        for geojson, name, in Session.query(pg_functions.geojson(geometry), Geonames.name).filter(or_(*filters)).all():
+        for geojson, name, in Session.query(pg_functions.geojson(geometry), Geonames.name).\
+        filter(or_(*filters)).order_by(literal_column('bit_length("name")').label("word_length")).all():
             rows.append({"name": name, "geometry": json.loads(geojson)})
 
 
