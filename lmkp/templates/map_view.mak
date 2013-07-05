@@ -50,7 +50,7 @@ import json
 extent = json.dumps(_getCurrentProfileExtent(request))
 
 %>
-var profilePolygon = ${extent | n};
+        var profilePolygon = ${extent | n};
     
 </script>
 </%def>
@@ -155,7 +155,7 @@ var profilePolygon = ${extent | n};
 <div class="map-menu">
     <form class="navbar-search" action="">
         <input name="q" id="search" class="search-query" placeholder="search location" />
-        <input type="submit" value="Search" id="search-submit" />
+        <!--input type="submit" value="Search" id="search-submit" /-->
     </form><br/>
 
     <!-- Base layers -->

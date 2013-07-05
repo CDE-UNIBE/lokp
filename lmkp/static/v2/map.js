@@ -698,7 +698,11 @@ $(document).ready(function() {
             var size = new OpenLayers.Size(27,27);
             var offset = new OpenLayers.Pixel(-(size.w/2), -(size.h/2));
             var icon = new OpenLayers.Icon('/static/img/glyphicons_185_screenshot.png', size, offset);
-            markers.addMarker(new OpenLayers.Marker(pos,icon));
+            var m = new OpenLayers.Marker(pos, icon);
+            m.events.register('click', m, function(event) {
+                console.log("event");
+            });
+            markers.addMarker(m);
             
             return loc[0].name;
         }
