@@ -1,3 +1,7 @@
+<%inherit file="lmkp:templates/htmlbase.mak" />
+
+<%def name="title()">Land Observatory - Login</%def>
+
 <%
 mode = None
 if 'lmkp.mode' in request.registry.settings:
@@ -5,48 +9,44 @@ if 'lmkp.mode' in request.registry.settings:
         mode = 'demo'
 %>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <title>
-            ${_("Land Observatory")} - ${_(u"Login")}
-            % if mode == 'demo':
-                ${_("[Demo]")}
-            % endif
-        </title>
-        <link rel="stylesheet" type="text/css" href="${request.static_url('lmkp:static/style.css')}"></link>
-    </head>
-    <body>
-        <div class="login">
-            <a href="/">
-                <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" alt="${_(u'Land Observatory')}"/>
-            </a><br/>
-            ${_(u"Login to the Land Observatory")}
-        </div>
-        % if warning is not None:
-        <div class="login login-warning">
-            ${warning | n}
-        </div>
-        % endif
-        <div>
-            <form action="/login" method="POST">
-                <fieldset class="simple_login">
-                    <label for="login">${_(u"Username")}:</label>
-                    <input class="simple_login" type="text" id="login" name="login" /><br />
-                    <label for="password">${_(u"Password")}:</label>
-                    <input class="simple_login" type="password" id="password" name="password" /><br/>
-                    <input type="hidden" name="came_from" value="${came_from}"/><br />
-                    <input type="submit" name="form.submitted" value="Login"/>
-                </fieldset>
-            </form>
-        </div>
-        % if mode != 'demo':
-            <div class="login">
-                <a href="/reset">${_(u"Forgot Password?")}</a>
+<div class="container">
+    <div class="content no-border">
+        <div class="row-fluid">
+            <div class="span4 offset4">
+                <h3>Login</h3>
+
+                % if warning is not None:
+                    <div class="alert alert-error">
+                        ${warning | n}
+                    </div>
+                % endif
+                <form action="/login" method="POST">
+                    <fieldset class="simple_login">
+                        <label for="login">${_(u"Username")}:</label>
+                        <input class="input-style span12" type="text" id="login" name="login" /><br />
+                        <label for="password">${_(u"Password")}:</label>
+                        <input class="input-style span12" type="password" id="password" name="password" /><br/>
+                        <input type="hidden" name="came_from" value="${came_from}"/><br />
+                        <input class="btn btn-primary" type="submit" name="form.submitted" value="Login"/>
+                    </fieldset>
+                </form>
+
+                % if mode != 'demo':
+                <p>
+                    <a href="/reset">${_(u"Forgot Password?")}</a>
+                </p>
+                <hr class="grey" />
+                <p>
+                    You do not have a password yet?<br/><a href="${request.route_url('user_self_registration')}">Register now!</a>
+                </p>
             </div>
-        % else:
-            <div class="demo-instructions">
+        </div>
+
+                % else:
+            </div>
+        </div>
+        <div class="row-fluid">
+            <div class="span12">
                 <h3>
                     ${_(u"Welcome to the demonstration version of the Land Observatory.")}
                 </h3>
@@ -76,6 +76,7 @@ if 'lmkp.mode' in request.registry.settings:
                     ${_(u"Please send your questions and feedback on the Observatory to: ")}<a href="mailto:info_landobservatory@cde.unibe.ch">info_landobservatory@cde.unibe.ch</a>
                 </p>
             </div>
-        % endif
-    </body>
-</html>
+        </div>
+            % endif
+    </div>
+</div>
