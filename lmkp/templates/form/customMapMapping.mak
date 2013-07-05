@@ -20,10 +20,10 @@
     % if field.errormsg:
         <li class="errorLi">
             <h3 class="errorMsgLbl">
-                ${_("There was a problem with this section")}
+                ${request.translate("There was a problem with this section")}
             </h3>
             <p class="errorMsg">
-                ${_(field.errormsg)}
+                ${request.translate(field.errormsg)}
             </p>
         </li>
     % endif

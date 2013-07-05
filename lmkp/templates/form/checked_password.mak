@@ -1,6 +1,6 @@
 <div class="row-fluid">
     <div class="span4">
-        <p>
+        <label for="${field.oid}">
             % if field.title:
                 ${field.title}
             % elif field.name:
@@ -11,18 +11,18 @@
             % elif desired:
                 <span class="desired-form-field"></span>
             % endif
-        </p>
+        </label>
     </div>
     <div class="span8">
         ${field.start_mapping()}
-        <label for="${field.oid}">${_('Password')}</label>
+        <label for="${field.oid}">${request.translate('Password')}</label>
         <input
             class="input-style"
             type="password"
             name="${field.name}"
             value="${cstruct}"
             id="${field.oid}" />
-        <label for="${field.oid}-confirm">${_('Confirm Password')}</label>
+        <label for="${field.oid}-confirm">${request.translate('Confirm Password')}</label>
         <input
             class="input-style"
             type="password"

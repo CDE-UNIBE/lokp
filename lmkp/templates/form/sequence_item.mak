@@ -1,10 +1,9 @@
 <div class="row-fluid">
     <div class="form-remove-more-icon">
-        <span class="red pointer deformCloseButton"
+        <span class="sequence-close close hide"
               id="${field.oid}-close"
               onClick="javascript:customRemoveSequenceItem(this);"
-        >
-        </span>
+        >&times;</span>
     </div>
 </div>
 

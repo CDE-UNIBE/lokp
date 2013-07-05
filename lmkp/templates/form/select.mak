@@ -7,7 +7,7 @@
 
 <div class="row-fluid">
     <div class="span4">
-        <p>
+        <label for="${field.oid}">
             % if field.title:
                 ${field.title}
             % elif field.name:
@@ -18,24 +18,11 @@
             % elif desired:
                 <span class="desired-form-field"></span>
             % endif
-        </p>
+        </label>
     </div>
     <div class="span8">
         <select name="${field.name}"
-            id="${field.oid}"
-
-            % if field.widget.size:
-                size="${field.widget.size}"
-            % endif
-
-            % if field.widget.css_class:
-                class="${field.widget.css_class}"
-            % endif
-
-            % if field.widget.multiple:
-                multiple="${field.widget.multiple}"
-            % endif
-        >
+            id="${field.oid}" class="span8">
             % for value,description in field.widget.values:
                 <option value="${value}"
                     % if field.widget.css_class:
