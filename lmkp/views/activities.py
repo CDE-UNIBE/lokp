@@ -79,13 +79,6 @@ def read_many(request):
         items = activity_protocol3.read_many(request, public=False, limit=limit,
             offset=limit*page-limit)
 
-        # TODO: Really needed?
-        try:
-            request.GET.pop('bbox')
-            request.GET.pop('epsg')
-        except KeyError:
-            pass
-
         return render_to_response('lmkp:templates/activities/grid.mak', {
             'data': items['data'] if 'data' in items else [],
             'total': items['total'] if 'total' in items else 0,
@@ -697,6 +690,8 @@ def _handle_spatial_parameters(request):
         if bboxparam == 'profile':
             # Use profile as boundary
             spatialfilter = 'profile'
+            if 'epsg' in request.GET:
+                del(request.GET['epsg'])
 
         else:
             # Use map extent from GET parameter
