@@ -37,15 +37,18 @@
     <div class="content no-border">
         ${form | n}
     </div>
+    %if site_key is not None:
     <div id="comments-div" class="comments content no-border">
         Loading ...
     </div>
+    %endif
 </div>
 
 <%def name="bottom_tags()">
 
 <%include file="lmkp:templates/map/mapform.mak" args="readonly=True" />
 
+% if site_key is not None:
 <script type="text/javascript" class="juvia">
     (function() {
         var options = {
@@ -93,5 +96,6 @@
             document.getElementsByTagName('body')[0]).appendChild(s);
     })();
 </script>
+%endif
 
 </%def>

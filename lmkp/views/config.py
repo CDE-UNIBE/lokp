@@ -831,7 +831,7 @@ def _get_admin_scan(Key, Value, name, config, language, mandatory, local=False):
 def get_activity_sitekey(request):
     # Read the profile activity configuration file
     try:
-        stream = open("%s/%s" % (locale_profile_directory_path(request), ACTIVITY_YAML), 'r')
+        stream = open("%s/%s" % (locale_profile_directory_path(request), NEW_ACTIVITY_YAML), 'r')
     except IOError:
         return None
 
@@ -845,7 +845,7 @@ def get_activity_sitekey(request):
 def get_stakeholder_sitekey(request):
     # Read the profile stakeholder configuration file
     try:
-        stream = open("%s/%s" % (locale_profile_directory_path(request), STAKEHOLDER_YAML), 'r')
+        stream = open("%s/%s" % (locale_profile_directory_path(request), NEW_STAKEHOLDER_YAML), 'r')
     except IOError:
         return None
 
