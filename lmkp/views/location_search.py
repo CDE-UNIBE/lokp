@@ -1,16 +1,8 @@
-
-from datetime import timedelta
 from lmkp.models.database_objects import Geonames
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.views import BaseView
 import logging
-from pyramid.httpexceptions import HTTPFound
 from pyramid.i18n import TranslationStringFactory
-from pyramid.renderers import render
-from pyramid.renderers import render_to_response
-from pyramid.security import effective_principals
-from pyramid.security import forget
-from pyramid.security import remember
 from pyramid.view import view_config
 from sqlalchemy import func
 from sqlalchemy import or_
@@ -37,7 +29,6 @@ class LocationSearchView(BaseView):
             geometry = functions.transform(Geonames.wkb_geometry, epsg)
         else:
             geometry = Geonames.wkb_geometry
-
 
         filters = [func.lower(Geonames.name).like(func.lower(q + "%")),
         func.lower(Geonames.asciiname).like(func.lower(q + "%")),
