@@ -3,6 +3,7 @@ from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.config import get_mandatory_keys
 import logging
+import urllib
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPNotFound
@@ -57,8 +58,43 @@ def read_many(request):
         activities = activity_protocol3.read_many(request, public=False)
         return render_to_response('json', activities, request)
     elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+        """
+        Show a HTML representation of the Activities in a grid.
+        """
+        limit = 10
+
+        # Get page parameter from request and make sure it is valid
+        page = request.params.get('page', 1)
+        try:
+            page = int(page)
+        except TypeError:
+            page = 1
+        page = max(page, 1) # Page should be >= 1
+
+        # Spatial filter
+        spatialfilter = _handle_spatial_parameters(request)
+
+        # Query the items with the protocol
+        items = activity_protocol3.read_many(request, public=False, limit=limit,
+            offset=limit*page-limit)
+
+        # TODO: Really needed?
+        try:
+            request.GET.pop('bbox')
+            request.GET.pop('epsg')
+        except KeyError:
+            pass
+
+        return render_to_response('lmkp:templates/activities/grid.mak', {
+            'data': items['data'] if 'data' in items else [],
+            'total': items['total'] if 'total' in items else 0,
+            'profile': get_current_profile(request),
+            'locale': get_current_locale(request),
+            'spatialfilter': spatialfilter,
+            'currentpage': page,
+            'pagesize': limit
+        }, request)
+
     elif output_format == 'form':
         # This is used to display a new and empty form for an Activity
         templateValues = renderForm(request, 'activities')
@@ -629,3 +665,46 @@ def _get_config_fields():
     log.info(fields)
 
     return fields
+
+def _handle_spatial_parameters(request):
+    """
+    Get the spatial extent of a request. The different options are checked in
+    the following order:
+    - request GET parameter {bbox}: use this parameter (handled by protocol) if
+      provided. Special parameter: bbox=profile in which case use the profile
+      boundary as bbox.
+    - cookie _LOCATION_: if no bbox parameter was provided in GET, look for the
+      map cookie to use as bbox.
+    - profile boundary: if no GET parameter was provided and no cookie was found
+      use the profile boundary as bbox.
+    """
+
+    spatialfilter = None
+
+    bboxparam = request.params.get('bbox', None)
+    if bboxparam is not None:
+
+        if bboxparam == 'profile':
+            # Use profile as boundary
+            spatialfilter = 'profile'
+
+        else:
+            # Use map extent from GET parameter
+            spatialfilter = 'mapextentparam'
+            epsg = request.params.get('epsg', None)
+            if epsg is None:
+                request.GET.add('epsg', '900913')
+    else:
+        # Use map extent from cookie
+        location = request.cookies.get('_LOCATION_')
+        if location is not None:
+            location = urllib.unquote(location)
+            if len(location.split(',')) == 4:
+                spatialfilter = 'mapextentcookie'
+                request.GET.add('bbox', location)
+                request.GET.add('epsg', '900913')
+
+    if spatialfilter is None:
+        spatialfilter = 'profile'
+
+    return spatialfilter

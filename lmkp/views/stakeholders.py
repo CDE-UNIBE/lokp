@@ -148,8 +148,31 @@ def read_many(request):
         stakeholders = stakeholder_protocol3.read_many(request, public=False)
         return render_to_response('json', stakeholders, request)
     elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+        """
+        Show a HTML representation of the Stakeholders in a grid.
+        """
+        limit = 10
+
+        # Get page parameter from request and make sure it is valid
+        page = request.params.get('page', 1)
+        try:
+            page = int(page)
+        except TypeError:
+            page = 1
+        page = max(page, 1) # Page should be >= 1
+
+        items = stakeholder_protocol3.read_many(request, public=False,
+            limit=limit, offset=limit*page-limit)
+
+        return render_to_response('lmkp:templates/stakeholders/grid.mak', {
+            'data': items['data'] if 'data' in items else [],
+            'total': items['total'] if 'total' in items else 0,
+            'profile': get_current_profile(request),
+            'locale': get_current_locale(request),
+            'currentpage': page,
+            'pagesize': limit
+        }, request)
+
     elif output_format == 'form':
         # This is used to display a new and empty form for a Stakeholder. It is
         # to be used to embed the form into an existing page.

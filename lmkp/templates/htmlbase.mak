@@ -131,23 +131,37 @@ for p in profiles:
                                     <%
                                         # The entries of the top menus as arrays
                                         # with
-                                        # - url
+                                        # - an array of urls (the first one being used for the link)
                                         # - icon (li class)
                                         # - name
                                         topmenu = [
-                                            [request.route_url('map_view'), 'icon-map-marker', 'Map'],
-                                            [request.route_url('grid_view'), 'icon-align-justify', 'Grid'],
-                                            [request.route_url('charts_view'), 'icon-bar-chart', 'Charts']
+                                            [
+                                                [request.route_url('map_view')],
+                                                'icon-map-marker',
+                                                'Map'
+                                            ], [
+                                                [
+                                                    request.route_url('grid_view'),
+                                                    request.route_url('activities_read_many', output='html'),
+                                                    request.route_url('stakeholders_read_many', output='html')
+                                                ],
+                                                'icon-align-justify',
+                                                'Grid'
+                                            ], [
+                                                [request.route_url('charts_view')],
+                                                'icon-bar-chart',
+                                                'Charts'
+                                            ]
                                         ]
                                     %>
 
                                     % for t in topmenu:
                                         <li
-                                            % if t[0] == request.current_route_url():
+                                            % if request.current_route_url() in t[0]:
                                                 class="active grid"
                                             % endif
                                             >
-                                            <a href="${t[0]}">
+                                            <a href="${t[0][0]}">
                                                 <i class="${t[1]}"></i>&nbsp;&nbsp;${t[2]}
                                             </a>
                                         </li>
@@ -156,7 +170,11 @@ for p in profiles:
                                     ## If the user is logged in, show link to add a new deal
                                     % if request.user:
                                         <li></li>
-                                        <li>
+                                        <li
+                                            % if request.current_route_url() == request.route_url('activities_read_many', output='form'):
+                                                class="active grid"
+                                            % endif
+                                            >
                                             <a href="${request.route_url('activities_read_many', output='form')}" >
                                                 <i class="icon-pencil"></i>
                                                 New Deal
