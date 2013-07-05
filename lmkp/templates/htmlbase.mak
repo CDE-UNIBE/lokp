@@ -1,10 +1,16 @@
 <%
 from lmkp.views.translation import get_languages
+from lmkp.views.translation import get_profiles
 languages = get_languages()
 selectedlanguage = languages[0]
 for l in languages:
     if locale == l[0]:
         selectedlanguage = l
+profiles = get_profiles()
+selectedprofile = profiles[0]
+for p in profiles:
+    if profile == p[0]:
+        selectedprofile = p
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -82,6 +88,16 @@ for l in languages:
                 font-weight: bold;
                 color: #b94a48;
             }
+            .sequencestyle {
+                background-color: #F7F7F7;
+                border: 1px solid silver;
+                color: #333333;
+            }
+            .sequence-close {
+                color: #8B1A1A;
+                opacity: 0.5;
+            }
+
         </style>
 
         ## Include the head tags of the child template if available.
@@ -115,23 +131,37 @@ for l in languages:
                                     <%
                                         # The entries of the top menus as arrays
                                         # with
-                                        # - url
+                                        # - an array of urls (the first one being used for the link)
                                         # - icon (li class)
                                         # - name
                                         topmenu = [
-                                            [request.route_url('map_view'), 'icon-map-marker', 'Map'],
-                                            [request.route_url('grid_view'), 'icon-align-justify', 'Grid'],
-                                            [request.route_url('charts_view'), 'icon-bar-chart', 'Charts']
+                                            [
+                                                [request.route_url('map_view')],
+                                                'icon-map-marker',
+                                                'Map'
+                                            ], [
+                                                [
+                                                    request.route_url('grid_view'),
+                                                    request.route_url('activities_read_many', output='html'),
+                                                    request.route_url('stakeholders_read_many', output='html')
+                                                ],
+                                                'icon-align-justify',
+                                                'Grid'
+                                            ], [
+                                                [request.route_url('charts_view')],
+                                                'icon-bar-chart',
+                                                'Charts'
+                                            ]
                                         ]
                                     %>
 
                                     % for t in topmenu:
                                         <li
-                                            % if t[0] == request.current_route_url():
+                                            % if request.current_route_url() in t[0]:
                                                 class="active grid"
                                             % endif
                                             >
-                                            <a href="${t[0]}">
+                                            <a href="${t[0][0]}">
                                                 <i class="${t[1]}"></i>&nbsp;&nbsp;${t[2]}
                                             </a>
                                         </li>
@@ -140,7 +170,11 @@ for l in languages:
                                     ## If the user is logged in, show link to add a new deal
                                     % if request.user:
                                         <li></li>
-                                        <li>
+                                        <li
+                                            % if request.current_route_url() == request.route_url('activities_read_many', output='form'):
+                                                class="active grid"
+                                            % endif
+                                            >
                                             <a href="${request.route_url('activities_read_many', output='form')}" >
                                                 <i class="icon-pencil"></i>
                                                 New Deal
@@ -191,16 +225,7 @@ for l in languages:
                                             </ul>
                                         </div>
                                     </li>
-
                                     <li>|</li>
-                                    <%
-                                        from lmkp.views.translation import get_profiles
-                                        profiles = get_profiles()
-                                        selectedprofile = profiles[0]
-                                        for p in profiles:
-                                            if profile == p[0]:
-                                                selectedprofile = p
-                                    %>
                                     <li>
                                         <div class="dropdown">
                                             <a class="dropdown-toggle blacktemp" data-toggle="dropdown" href="#">

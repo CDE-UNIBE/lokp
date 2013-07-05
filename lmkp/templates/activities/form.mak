@@ -5,7 +5,7 @@
 <%def name="head_tags()">
     <link rel="stylesheet" href="/static/form.css" type="text/css" />
 
-    <script type="text/javascript" src="${request.static_url('lmkp:static/v2/activityform.js')}"></script>
+    <script type="text/javascript" src="${request.static_url('lmkp:static/v2/form.js')}"></script>
 
     <!-- REQUIREMENTS -->
     <!-- CSS -->

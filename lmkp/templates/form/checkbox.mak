@@ -4,13 +4,13 @@ ${field.start_sequence()}
     % if index == 0:
         <div class="row-fluid">
             <div class="span4">
-                <p>
+                <label for="${field.oid}">
                     % if field.title:
                         ${field.title}
                     % elif field.name:
                         ${field.name}
                     % endif
-                </p>
+                </label>
                 % if field.required:
                     <span class="required-form-field"></span>
                 % elif desired:

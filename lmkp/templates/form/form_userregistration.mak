@@ -9,8 +9,6 @@
     % endif
     >
 
-<fieldset class="deformFormFieldset">
-
     % if field.title:
         <legend>${field.title}</legend>
     % endif
@@ -22,31 +20,24 @@
            name="__formid__"
            value="${field.formid}"
     />
+
+    % if field.error:
+        <div class="row-fluid">
+            <div class="span12">
+                <div class="alert alert-error">
+                    <h5>${request.translate("There was a problem with your submission")}</h5>
+                    <p>${request.translate("Errors have been highlighted below")}</p>
+                </div>
+            </div>
+        </div>
+    % endif
+
+    % for child in field.children:
+        ${child.render_template(field.widget.item_template)}
+    % endfor
+
     <ul>
-
-        % if field.error:
-            <li class="errorLi">
-                <h3 class="errorMsgLbl">
-                    ${_("There was a problem with your submission")}
-                </h3>
-                <p class="errorMsg">
-                    ${_("Errors have been highlighted below")}
-                </p>
-                % if field.errormsg:
-                    <p class="errorMsg">${_(field.errormsg)}</p>
-                % endif
-            </li>
-        % endif
-
-        % if field.description:
-            <li class="section first">${description}</li>
-        % endif
-
-        % for child in field.children:
-            ${child.render_template(field.widget.item_template)}
-        % endfor
-
-        <li class="buttons">
+        <li class="buttons unstyled">
             % for button in field.buttons:
                 <button
                     % if button.disabled:
@@ -62,10 +53,7 @@
                 </button>
             % endfor
         </li>
-
     </ul>
-
-</fieldset>
 
 % if field.use_ajax:
     <script type="text/javascript">

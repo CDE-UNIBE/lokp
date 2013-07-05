@@ -301,7 +301,12 @@ class ActivityProtocol3(Protocol):
             'data': [a.to_table(request) for a in activities]
         }
 
-    def read_many(self, request, public=True):
+    def read_many(self, request, public=True, **kwargs):
+        """
+        Valid kwargs:
+        - limit
+        - offset
+        """
 
         relevant_activities = self._get_relevant_activities_many(
                                                                  request, public_query=public)
@@ -310,10 +315,10 @@ class ActivityProtocol3(Protocol):
         # Default is: 'full'
         inv_details = request.params.get('involvements', 'full')
 
-        # Get limit and offset from request.
+        # Get limit and offset from request if they are not in kwargs.
         # Defaults: limit = None / offset = 0
-        limit = self._get_limit(request)
-        offset = self._get_offset(request)
+        limit = kwargs.get('limit', self._get_limit(request))
+        offset = kwargs.get('offset', self._get_offset(request))
 
         query, count = self._query_many(
                                         request, relevant_activities, limit=limit, offset=offset,
@@ -749,6 +754,10 @@ class ActivityProtocol3(Protocol):
             # join to also capture empty Items)
             relevant_activities = relevant_activities.\
                 outerjoin(A_Tag_Group)
+
+        # Always filter by profile boundary
+        relevant_activities = relevant_activities.\
+            filter(self._get_profile_filter(request))
 
         # Filter spatially
         relevant_activities = relevant_activities.\
@@ -1572,6 +1581,23 @@ class ActivityProtocol3(Protocol):
                     pass
 
         return None
+
+    def _get_profile_filter(self, request):
+        """
+        Return a spatial filter based on the profile boundary of the current
+        profile which is queried from the database.
+        """
+
+        profile = self.Session.query(Profile).\
+            filter(Profile.code == get_current_profile(request)).\
+            first()
+
+        if profile is None:
+            return (Activity.id == 0)
+
+        return functions.intersects(
+            Activity.point, profile.geometry
+        )
 
     def _handle_activity(self, request, activity_dict, changeset,
                          status='pending'):

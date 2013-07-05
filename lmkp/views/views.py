@@ -3,6 +3,9 @@ from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession
 import logging
 import urllib
+from geoalchemy.functions import functions as geofunctions
+from geoalchemy import utils
+from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render
 from pyramid.response import Response
 from pyramid.view import view_config
@@ -22,20 +25,53 @@ class BaseView(object):
         self.request = request
 
     def _handle_parameters(self):
+
+        response = self.request.response
+
+        # Make sure the _LOCATION_ cookie is correctly set: The old version GUI
+        # version used to store the map center and the zoom level which is not
+        # understood by new GUI (which stores the map extent as 4 coordinates)
+        if '_LOCATION_' in self.request.cookies:
+            c = urllib.unquote(self.request.cookies['_LOCATION_'])
+            if len(c.split('|')) == 3:
+                response.delete_cookie('_LOCATION_')
+
         # Check if language (_LOCALE_) is set
         if self.request is not None:
-            response = self.request.response
             if '_LOCALE_' in self.request.params:
                 response.set_cookie('_LOCALE_', self.request.params.get('_LOCALE_'), timedelta(days=90))
             elif '_LOCALE_' in self.request.cookies:
                 pass
 
-
         # Check if profile (_PROFILE_) is set
         if self.request is not None:
-            response = self.request.response
             if '_PROFILE_' in self.request.params:
-                response.set_cookie('_PROFILE_', self.request.params.get('_PROFILE_'), timedelta(days=90))
+                # Set the profile cookie
+                profile_code = self.request.params.get('_PROFILE_')
+                response.set_cookie('_PROFILE_', profile_code, timedelta(days=90))
+
+                # Update _LOCATION_ from cookies to profile geometry bbox
+                # retrieved from database
+                profile_db = DBSession.query(Profile).\
+                    filter(Profile.code == profile_code).\
+                    first()
+
+                if profile_db is not None:
+                    # Calculate and transform bounding box
+                    bbox = DBSession.scalar(geofunctions.envelope(
+                            geofunctions.transform(profile_db.geometry, '900913')
+                        ).wkt)
+
+                    geojson = utils.from_wkt(bbox)
+
+                    coords = geojson['coordinates'][0]
+                    p1 = coords[0]
+                    p2 = coords[2]
+
+                    l = '%s,%s' % (','.join([str(x) for x in p1]), ','.join([str(x) for x in p2]))
+
+                    response.set_cookie('_LOCATION_', urllib.quote(l), timedelta(days=90))
+                
             elif '_PROFILE_' in self.request.cookies:
                 # Profile already set, leave it
                 pass
@@ -72,73 +108,15 @@ class MainView(BaseView):
 
         return {"profile": get_current_profile(self.request), "locale": get_current_locale(self.request)}
 
-    @view_config(route_name='grid_view', renderer='lmkp:templates/grid_view.mak')
+    @view_config(route_name='grid_view')
     def grid_view(self):
-
-        self._handle_parameters()
-
-        request = self.request
-
-        # Default limit of how many entries are listed per page
-        limit = 10
-
-        # Default item type: activities
-        item_type = request.params.get('tab', 'a')
-
-        if item_type == 'sh':
-            from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
-            protocol = StakeholderProtocol3(DBSession)
-        else:
-            from lmkp.views.activity_protocol3 import ActivityProtocol3
-            protocol = ActivityProtocol3(DBSession)
-
-        # Default page: 1
-        page = request.params.get('page', None)
-        try:
-            page = int(page)
-        except TypeError:
-            page = 1
-
-        # Temporarily set limit and offset so the protocol makes use of this
-        request.GET.add('limit', str(limit))
-        request.GET.add('offset', str(limit * page - limit))
-
-        spatialfilter = 'profile'
-        location = self.request.cookies.get('_LOCATION_')
-        if location is not None:
-            location = urllib.unquote(location)
-            if len(location.split(',')) == 4:
-                spatialfilter = 'mapextent'
-                request.GET.add('bbox', location)
-                request.GET.add('epsg', '900913')
-
-        # Query the items
-        items = protocol.read_many(request, public=False)
-
-        # Remove limit and offset parameters
-        request.GET.pop('limit')
-        request.GET.pop('offset')
-        
-        try:
-            request.GET.pop('bbox')
-            request.GET.pop('epsg')
-        except KeyError:
-            pass
-
-        data = items['data'] if 'data' in items else []
-        total = items['total'] if 'total' in items else 0
-
-        return {
-            'profile': get_current_profile(self.request),
-            'locale': get_current_locale(self.request),
-            'data': data,
-            'total': total,
-            'currentpage': page,
-            'pagesize': limit,
-            'paginationneighbours': 2,
-            'activetab': item_type,
-            'spatialfilter': spatialfilter
-        }
+        """
+        This view is basically only a redirect to the read_many view of the
+        Activities.
+        """
+        return HTTPFound(
+            location=self.request.route_url('activities_read_many', output='html')
+        )
 
     @view_config(route_name='charts_view', renderer='lmkp:templates/charts_view.mak')
     def charts_view(self):

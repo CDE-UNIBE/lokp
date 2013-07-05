@@ -1,12 +1,19 @@
 <%inherit file="lmkp:templates/htmlbase.mak" />
 
-<%def name="title()">Grid View</%def>
+<%def name="title()">Grid View - Investors</%def>
 
 <%def name="head_tags()">
     ## TODO: This should be fixed in bootstrap
     <style type="text/css" >
         .desc.active {
             background: url("${request.static_url('lmkp:static/media/img/to-top-black.png')}") no-repeat scroll right top transparent;
+        }
+        tr.pending {
+            background-color: #fcf8e3;
+        }
+        .show-investors a {
+            text-decoration: none;
+            color: white;
         }
     </style>
 </%def>
@@ -23,10 +30,7 @@
     stakeholderkeys = get_stakeholder_keys(request)
 
     # Decide which keys are relevant for the grid
-    if activetab == 'sh':
-        keys = stakeholderkeys
-    else:
-        keys = activitykeys
+    keys = stakeholderkeys
 %>
 
 <!-- Filter-area  -->
@@ -108,41 +112,56 @@
 
 <!-- content -->
 <div class="container">
+
+    <div class="show-investors visible-phone">
+        <i class="icon-info-sign"></i>
+        <p>Show deals by clicking on a specific row</p>
+    </div>
+
     <div class="content">
 
-        <p>Active spatial filter: ${spatialfilter}</p>
+        ## Tabs
+        <ul class="nav nav-tabs table_tabs">
+            <%
+                # The entries of the tabs as arrays with
+                # - url
+                # - name
+                tabs = [
+                    [request.route_url('activities_read_many', output='html'), 'Deals'],
+                    [request.route_url('stakeholders_read_many', output='html'), 'Investors']
+                ]
+            %>
+            % for t in tabs:
+                % if t[0] == request.current_route_url():
+                    <li class="active">
+                % else:
+                    <li>
+                % endif
+                    <a href="${t[0]}">${t[1]}</a>
+                </li>
+            % endfor
+        </ul>
 
-        % if len(data) == 0:
+        ## Table
+        <div class="table_wrapper">
 
-            ## Empty data
-            <p>Nothing found!</p>
+            % if len(data) == 0:
 
-        % else:
+                ## Empty data
+                <p>&nbsp;</p>
+                <h5>Nothing found</h5>
+                <p>No results were found.</p>
+                <p>&nbsp;</p>
 
-            ## Tabs
-            <ul class="nav nav-tabs table_tabs">
-                <%
-                    # The entries of the tabs as arrays with
-                    # - "tab id" (a / sh)
-                    # - name
-                    tabs = [
-                        ['a', 'Deals'],
-                        ['sh', 'Investors']
-                    ]
-                %>
-                % for t in tabs:
-                    % if activetab == t[0]:
-                        <li class="active">
-                    % else:
-                        <li>
-                    % endif
-                        <a href="#" onclick="updateQueryParams({'tab': '${t[0]}'})">${t[1]}</a>
-                    </li>
-                % endfor
-            </ul>
+            % else:
 
-            ## Table
-            <div class="table_wrapper">
+                ## "Tooltip" when clicking a table row
+                <div class="show-investors-wrapper hidden hidden-phone">
+                    <div class="show-investors">
+                        <a href="#">Show deals of this investor</a>
+                    </div>
+                </div>
+
                 <table
                     class="table table-hover table-self table-bordered"
                     id="activitygrid">
@@ -179,6 +198,11 @@
                             <%
                                 # Collect and prepare the necessary values to
                                 # show in the grid.
+
+                                pending = False
+                                if 'status_id' in d and d['status_id'] == 1:
+                                    pending = True
+
                                 id = d['id'] if 'id' in d else 'Unknown id'
                                 values = []
                                 translatedkeys = []
@@ -193,102 +217,38 @@
                                                 values[i] = t['value']
                             %>
 
-                            <tr>
+                            % if pending:
+                                <tr class="pending">
+                            % else:
+                                <tr>
+                            % endif
                                 <td>
-                                    % if activetab == 'sh':
-                                        <a href="${request.route_url('stakeholders_read_one', output='html', uid=id)}">
-                                    % else:
-                                        <a href="${request.route_url('activities_read_one', output='html', uid=id)}">
-                                    % endif
+                                    <a href="${request.route_url('stakeholders_read_one', output='html', uid=id)}">
                                         ${id[:6]}
                                     </a>
                                 </td>
                                 % for v in values:
                                     <td>${v}</td>
                                 % endfor
+
+                                <td class="identifier hide">${id}</td>
+
                             </tr>
                         % endfor
 
                     </tbody>
                 </table>
-            </div>
 
-            ## Pagination
-            <div class="pagination text-center">
+            % endif
+        </div>
 
-                <%
-                    import math
-                    maxpage = int(math.ceil(float(total)/pagesize))
-                    endleft = 1 if currentpage > paginationneighbours + 1 else None
-                    endright = maxpage if (currentpage + paginationneighbours < maxpage) else None
-                %>
-
-                <ul>
-                    <li
-                        % if currentpage == 1:
-                            class="disabled"
-                        % endif
-                        ><a href="#" onclick="updateQueryParams({'page': ${currentpage-1}})">&laquo;</a>
-                    </li>
-                    % if endleft:
-                        <li>
-                            <a href="#" onclick="updateQueryParams({'page': ${endleft}})">${endleft}</a>
-                        </li>
-                    % endif
-                    % if currentpage > paginationneighbours + 2:
-                        <li class="disabled">
-                            <a>...</a>
-                        </li>
-                    % endif
-                    % for i in range(min(currentpage-paginationneighbours+1, paginationneighbours), 0, -1):
-                        <li>
-                            <a href="#" onclick="updateQueryParams({'page': ${currentpage-i}})">
-                                ${currentpage-i}
-                            </a>
-                        </li>
-                    % endfor
-                    <li class="active">
-                        <a href="#" onclick="updateQueryParams({'page': ${currentpage}})">${currentpage}</a>
-                    </li>
-                    % for i in range(min(maxpage-currentpage, paginationneighbours)):
-                        <li>
-                            <a href="#" onclick="updateQueryParams({'page': ${currentpage+i+1}})">
-                                ${currentpage+i+1}
-                            </a>
-                        </li>
-                    % endfor
-                    % if currentpage+paginationneighbours+1 < maxpage:
-                        <li class="disabled">
-                            <a>...</a>
-                        </li>
-                    % endif
-                    % if endright:
-                        <li>
-                            <a href="#" onclick="updateQueryParams({'page': ${endright}})">${endright}</a>
-                        </li>
-                    % endif
-                    <li
-                        % if currentpage == maxpage:
-                            class="disabled"
-                        % endif
-                        ><a href="#" onclick="updateQueryParams({'page': ${maxpage}})">&raquo;</a>
-                    </li>
-                </ul>
-            </div>
-
+        ## Pagination
+        % if len(data) > 0:
+            <%include file="lmkp:templates/parts/pagination.mak"
+                args="totalitems=total, currentpage=currentpage, pagesize=pagesize"
+            />
         % endif
 
-    </div>
-</div>
-
-## "Tooltip" when clicking a table row
-<div class="show-investors-wrapper hidden">
-    <div class="show-investors">
-        % if activetab == 'sh':
-            <p>Show deals of this investor</p>
-        % else:
-            <p>Show investors for this deal</p>
-        % endif
     </div>
 </div>
 

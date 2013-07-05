@@ -1,6 +1,6 @@
 <div class="row-fluid">
     <div class="span4">
-        <p>
+        <label for="${field.oid}">
             % if field.title:
                 ${field.title}
             % elif field.name:
@@ -11,7 +11,7 @@
             % elif desired:
                 <span class="desired-form-field"></span>
             % endif
-        </p>
+        </label>
     </div>
     <div class="span8">
         <input type="text"

@@ -226,6 +226,15 @@ def renderForm(request, itemType, **kwargs):
 
                         log.debug('The diff to create/update the activity: %s' % diff)
 
+                        if diff is None:
+                            return {
+                                'form': '<h3 class="text-info">%s</h3><p>%s</p>' % (emptyTitle, emptyText),
+                                'css_links': [],
+                                'js_links': [],
+                                'js': None,
+                                'success': False
+                            }
+
                         success, feedback = doActivityUpdate(request, diff)
 
                         if success is True:
@@ -309,13 +318,13 @@ def renderForm(request, itemType, **kwargs):
         data = {'category': newCategory}
 
         # Decide which data to show in the form
-        if itemJson is not None and 'activity' not in session:
+        if itemType == 'activities' and itemJson is not None and 'activity' not in session:
             # An item was provided to show in the form (edit form) and no values
             # are in the session yet.
             # Simply show the data of the provided item in the form.
             data = getFormdataFromItemjson(request, itemJson, itemType,
                 newCategory)
-        elif itemJson is not None and 'activity' in session:
+        elif itemType == 'activities' and itemJson is not None and 'activity' in session:
             # An item was provided to show in the form (edit form) and there are
             # some values in the session.
 
@@ -365,7 +374,7 @@ def renderForm(request, itemType, **kwargs):
 
                 session.flash('<strong>%s</strong>: %s<br/><a href="%s">%s</a>' % (noticeTitle, notice2, item_url, action2));
                 
-        elif itemJson is None and 'activity' in session:
+        elif itemType == 'activities' and itemJson is None and 'activity' in session:
             # No item was provided (create form) but some data was found in the
             # session.
 
@@ -1567,9 +1576,8 @@ def mako_renderer(tmpl_name, **kw):
     resolver = lmkpAssetResolver.resolve('templates/form/%s.mak' % tmpl_name)
     template = Template(filename=resolver.abspath())
 
-    # Make the translation method (_) available in the templates.
+    # Add the request to the keywords so it is available in the templates.
     request = get_current_request()
-    kw['_'] = request.translate
     kw['request'] = request
 
     return template.render(**kw)
