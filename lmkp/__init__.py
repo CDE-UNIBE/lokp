@@ -289,6 +289,9 @@ def main(global_config, ** settings):
 
     # Add a route to search locations
     config.add_route('location_search', '/search')
+
+    # A route for ajax queries to get values for a given key
+    config.add_route('filterValues', '/json/filtervalues')
     
     # Error views
     config.add_forbidden_view(forbidden_view)

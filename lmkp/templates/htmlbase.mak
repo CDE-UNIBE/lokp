@@ -98,6 +98,42 @@ for p in profiles:
                 color: #8B1A1A;
                 opacity: 0.5;
             }
+            .filter_area_openclose {
+                cursor: pointer;
+            }
+            #new-filter-value {
+                width: 178px;
+            }
+            .input-append #new-filter-value {
+                width: 147px;
+            }
+            #new-filter-value-box .dropdown-menu {
+                max-height: 300px;
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            #new-filter-value-box button {
+                margin-right: 0;
+            }
+            .select_btn_operator_right {
+                margin-right: 3px;
+            }
+            .filterCategory {
+                font-weight: bold;
+                padding: 5px 0 5px 10px;
+            }
+            #new-filter-key {
+                overflow: hidden;
+                width: 108px;
+            }
+            #new-filter-operator-display {
+                width: 40px;
+                overflow: hidden;
+            }
+            .filter_area input:focus {
+                border: medium none;
+                box-shadow: none;
+            }
 
         </style>
 

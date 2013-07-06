@@ -6,7 +6,6 @@ import urllib
 from geoalchemy.functions import functions as geofunctions
 from geoalchemy import utils
 from pyramid.httpexceptions import HTTPFound
-from pyramid.renderers import render
 from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid_mailer import get_mailer
@@ -15,6 +14,7 @@ from urlparse import parse_qs, urlsplit, urlunsplit
 from urllib import urlencode
 from lmkp.views.profile import get_current_profile
 from lmkp.views.profile import get_current_locale
+from lmkp.views.form_config import getCategoryList
 
 log = logging.getLogger(__name__)
 
@@ -264,3 +264,131 @@ def getQueryString(url, **kwargs):
     # Put URL together again and return it
     new_query_string = urlencode(qp, doseq=True)
     return urlunsplit((scheme, netloc, path, new_query_string, fragment))
+
+def getFilterKeys(request):
+    """
+    Return two lists (the first for Activities, the second for Stakeholders)
+    with the keys which can be filtered.
+    Each list contains:
+    - [0]: display name (translated)
+    - [1]: internal name
+    - [2]: the type of the key
+    """
+
+    def getList(categoryList):
+        list = []
+        for key in categoryList.getFilterableKeys():
+            name = key.getName()
+            translation = key.getTranslatedName()
+            type = key.getType()
+            list.append([
+                translation if translation is not None else name,
+                name,
+                type.lower()
+            ])
+        return list
+
+    aList = getList(getCategoryList(request, 'activities'))
+    shList = getList(getCategoryList(request, 'stakeholders'))
+
+    return aList, shList
+
+def getActiveFilters(request):
+    """
+    Get the active filters of a request in a list.
+    The list contains another list for each active filter with
+    - [0]: the query string as provided in the parameter
+    - [1]: a clean text representation of the filter
+    """
+
+    # Map the operators
+    operators = {
+        'like': '=',
+        'nlike': '!=',
+        'eq': '=',
+        'ne': '!=',
+        'lt': '<',
+        'lte': '<=',
+        'gt': '>',
+        'gte': '>='
+    }
+
+    # Extract query_strings from url
+    scheme, netloc, path, query_string, fragment = urlsplit(request.url)
+    queryparams = parse_qs(query_string)
+
+    filters = []
+    for q in queryparams:
+        if q.startswith('a__') or q.startswith('sh__'):
+            queryparts = q.split('__')
+
+            if len(queryparts) != 3:
+                continue
+
+            key = queryparts[1]
+            op = queryparts[2]
+
+            for v in queryparams[q]:
+                q_string = '%s=%s' % (q, v)
+                q_display = '%s %s %s' % (key, operators[op], v)
+                filters.append([q_string, q_display])
+
+    return filters
+
+@view_config(route_name='filterValues', renderer='json')
+def getFilterValuesForKey(request):
+    """
+    Return a JSON representation of all the values for a given key.
+    The JSON array contains an array for each entry with:
+    - [0]: The display name (translated)
+    - [1]: The internal name
+    """
+
+    type = request.params.get('type', None)
+    key = request.params.get('key', None)
+
+    if type is None:
+        return {
+            'error': 'No type specified.'
+        }
+
+    if key is None:
+        return {
+            'error': 'No key specified'
+        }
+
+    itemType = None
+    if type == 'a':
+        itemType = 'activities'
+    elif type == 'sh':
+        itemType = 'stakeholders'
+
+    if itemType is None:
+        return {
+            'error': 'Type not valid.'
+        }
+
+    categoryList = getCategoryList(request, itemType)
+
+    tag = categoryList.findTagByKeyName(key)
+
+    if tag is None:
+        return {
+            'error': 'Key not found.'
+        }
+
+    values = tag.getValues()
+
+    if len(values) == 0:
+        return {
+            'error': 'No values found for this key.'
+        }
+
+    ret = []
+    for v in sorted(values, key=lambda val: val.getOrderValue()):
+        ret.append([
+            v.getTranslation(),
+            v.getName()
+        ])
+
+    return ret
