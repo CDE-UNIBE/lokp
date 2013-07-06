@@ -35,9 +35,7 @@
 %>
 
 ## Filter
-<%include file="lmkp:templates/parts/filter.mak"
-    args="temporary='temporary'"
-/>
+<%include file="lmkp:templates/parts/filter.mak" />
 
 <!-- content -->
 <div class="container">

@@ -47,6 +47,18 @@ class ConfigCategoryList(object):
                 return c
         return None
 
+    def findTagByKeyName(self, name):
+        """
+        Find and return tag by a given key name.
+        """
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                for tg in thg.getTaggroups():
+                    for t in tg.getTags():
+                        if t.getKey().getName() == name:
+                            return t
+        return None
+
     def findTagByKey(self, key):
         """
         Find and return tag by a given key object.
@@ -92,6 +104,19 @@ class ConfigCategoryList(object):
                 for tg in thg.getTaggroups():
                     for t in tg.getTags():
                         keys.append(t.getKey().getName())
+        return keys
+
+    def getFilterableKeys(self):
+        """
+        Return a list with all the keys which are filterable.
+        """
+        keys = []
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                for tg in thg.getTaggroups():
+                    for t in tg.getTags():
+                        if t.getFilterable() is True:
+                            keys.append(t.getKey())
         return keys
 
     def getMainkeyWithGeometry(self):
@@ -651,6 +676,7 @@ class ConfigTag(object):
         self.mandatory = False
         self.desired = False
         self.involvementOverview = False
+        self.filterable = False
 
     def setKey(self, key):
         """
@@ -714,6 +740,18 @@ class ConfigTag(object):
         overview or not.
         """
         return self.involvementOverview is True
+
+    def setFilterable(self, filterable):
+        """
+        Set if this tag should be used in the filters or not.
+        """
+        self.filterable = filterable
+
+    def getFilterable(self):
+        """
+        Return a boolean whether this tag should be used in the filters or not.
+        """
+        return self.filterable is True
 
     def getForm(self):
         """
@@ -1452,6 +1490,10 @@ def getCategoryList(request, itemType):
                             if ('involvementoverview' in key_config
                                 and key_config['involvementoverview'] is True):
                                 tag.setInvolvementOverview(True)
+
+                            if ('filterable' in key_config
+                                and key_config['filterable'] is True):
+                                tag.setFilterable(True)
 
                             # If the values are predefined and they are not set
                             # already (defined explicitly in YAML), then get the
