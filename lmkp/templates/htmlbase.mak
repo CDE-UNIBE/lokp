@@ -325,15 +325,19 @@ for p in profiles:
                 # - url
                 # - name
                 footer = [
-                    ['#', 'FAQ'],
-                    ['#', 'About'],
+                    [request.route_url('faq_view'), 'FAQ'],
+                    [request.route_url('about_view'), 'About'],
                     ['#', 'Partners'],
                     ['#', 'Blog']
                 ]
                 %>
 
                 % for f in footer:
-                    <li>
+                    <li 
+                        % if request.current_route_url() == f[0]:
+                            class="active"
+                        % endif
+                        >
                         <a href="${f[0]}">${f[1]}</a>
                     </li>
                 % endfor

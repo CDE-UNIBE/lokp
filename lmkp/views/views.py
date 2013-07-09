@@ -128,6 +128,26 @@ class MainView(BaseView):
 
         return {"profile": get_current_profile(self.request), "locale": get_current_locale(self.request)}
 
+    @view_config(route_name='about_view', renderer='lmkp:templates/about_view.mak')
+    def about_view(self):
+
+        self._handle_parameters()
+
+        return {
+            'profile': get_current_profile(self.request),
+            'locale': get_current_locale(self.request)
+        }
+
+    @view_config(route_name='faq_view', renderer='lmkp:templates/faq_view.mak')
+    def faq_view(self):
+
+        self._handle_parameters()
+
+        return {
+            'profile': get_current_profile(self.request),
+            'locale': get_current_locale(self.request)
+        }
+
     @view_config(route_name='embedded_index', renderer='lmkp:templates/embedded.mak')
     def embedded_version(self):
         """
