@@ -1,17 +1,11 @@
 <%
 from lmkp.views.views import getQueryString
 from lmkp.views.translation import get_languages
-from lmkp.views.translation import get_profiles
 languages = get_languages()
 selectedlanguage = languages[0]
 for l in languages:
     if locale == l[0]:
         selectedlanguage = l
-profiles = get_profiles()
-selectedprofile = None
-for p in profiles:
-    if profile == p[0]:
-        selectedprofile = p
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -163,129 +157,107 @@ for p in profiles:
                                 <img src="${request.static_url('lmkp:static/media/img/logo.png')}" />
                             </a>
                         </div>
-                            <div class="top_menu">
-                                <ul class="top-menu">
-                                    <%
-                                        # The entries of the top menus as arrays
-                                        # with
-                                        # - an array of urls (the first one being used for the link)
-                                        # - icon (li class)
-                                        # - name
-                                        topmenu = [
+                        <div class="top_menu">
+                            <ul class="top-menu">
+                                <%
+                                    # The entries of the top menus as arrays
+                                    # with
+                                    # - an array of urls (the first one being used for the link)
+                                    # - icon (li class)
+                                    # - name
+                                    topmenu = [
+                                        [
+                                            [request.route_url('map_view')],
+                                            'icon-map-marker',
+                                            'Map'
+                                        ], [
                                             [
-                                                [request.route_url('map_view')],
-                                                'icon-map-marker',
-                                                'Map'
-                                            ], [
-                                                [
-                                                    request.route_url('grid_view'),
-                                                    request.route_url('activities_read_many', output='html'),
-                                                    request.route_url('stakeholders_read_many', output='html')
-                                                ],
-                                                'icon-align-justify',
-                                                'Grid'
-                                            ], [
-                                                [request.route_url('charts_view')],
-                                                'icon-bar-chart',
-                                                'Charts'
-                                            ]
+                                                request.route_url('grid_view'),
+                                                request.route_url('activities_read_many', output='html'),
+                                                request.route_url('stakeholders_read_many', output='html')
+                                            ],
+                                            'icon-align-justify',
+                                            'Grid'
+                                        ], [
+                                            [request.route_url('charts_view')],
+                                            'icon-bar-chart',
+                                            'Charts'
                                         ]
-                                    %>
+                                    ]
+                                %>
 
-                                    % for t in topmenu:
-                                        <li
-                                            % if request.current_route_url() in t[0]:
-                                                class="active grid"
-                                            % endif
-                                            >
-                                            <a href="${t[0][0]}">
-                                                <i class="${t[1]}"></i>&nbsp;&nbsp;${t[2]}
-                                            </a>
-                                        </li>
-                                    % endfor
+                                % for t in topmenu:
+                                    <li
+                                        % if request.current_route_url() in t[0]:
+                                            class="active grid"
+                                        % endif
+                                        >
+                                        <a href="${t[0][0]}">
+                                            <i class="${t[1]}"></i>&nbsp;&nbsp;${t[2]}
+                                        </a>
+                                    </li>
+                                % endfor
 
-                                    ## If the user is logged in, show link to add a new deal
-                                    % if request.user:
-                                        <li></li>
-                                        <li
-                                            % if request.current_route_url() == request.route_url('activities_read_many', output='form'):
-                                                class="active grid"
-                                            % endif
-                                            >
-                                            <a href="${request.route_url('activities_read_many', output='form')}" >
-                                                <i class="icon-pencil"></i>
-                                                New Deal
+                                ## If the user is logged in, show link to add a new deal
+                                % if request.user:
+                                    <li></li>
+                                    <li
+                                        % if request.current_route_url() == request.route_url('activities_read_many', output='form'):
+                                            class="active grid"
+                                        % endif
+                                        >
+                                        <a href="${request.route_url('activities_read_many', output='form')}" >
+                                            <i class="icon-pencil"></i>
+                                            New Deal
+                                        </a>
+                                    </li>
+                                % endif
+                            </ul>
+                        </div>
+                        <div class="user">
+                            <ul class="nav nav-pills">
+                                % if request.user is None:
+                                    <li class="active">
+                                        <div>
+                                            <a class="blacktemp" href="${request.route_url('login_form')}">
+                                                Login
                                             </a>
-                                        </li>
-                                    % endif
-                                </ul>
-                            </div>
-                            <div class="user">
-                                <ul class="nav nav-pills">
-                                    % if request.user is None:
-                                        <li class="active">
-                                            <div>
-                                                <a class="blacktemp" href="${request.route_url('login_form')}">
-                                                    Login
-                                                </a>
-                                            </div>
-                                        </li>
-                                        <li>/</li>
-                                        <li class="active">
-                                            <div>
-                                                <a class="blacktemp" href="${request.route_url('user_self_registration')}">
-                                                    Register
-                                                </a>
-                                            </div>
-                                        </li>
-                                    % else:
-                                        <li>
-                                            <div>
-                                                ${request.user.username} (<a href="${request.route_url('logout')}" class="logouttemp">Logout</a>)&nbsp;&nbsp;
-                                            </div>
-                                        </li>
-                                    % endif
-
-                                    <li>|</li>
-                                    <li>
-                                        <div class="dropdown">
-                                            <a class="dropdown-toggle blacktemp" data-toggle="dropdown" href="#">
-                                                ${selectedlanguage[1]}
-                                                <b class="caret"></b>
-                                            </a>
-                                            <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
-                                                % for l in languages:
-                                                    <li class="cursor">
-                                                        <a href="${getQueryString(request.url, add=[('_LOCALE_', l[0])])}">${l[1]}</a>
-                                                    </li>
-                                                % endfor
-                                            </ul>
                                         </div>
                                     </li>
-                                    % if len(profiles) >= 1:
-                                        <li>|</li>
-                                        <li>
-                                            <div class="dropdown">
-                                                <a class="dropdown-toggle blacktemp" data-toggle="dropdown" href="#">
-                                                    % if selectedprofile is None:
-                                                        Select Profile
-                                                    % else:
-                                                        ${selectedprofile[1]}
-                                                    % endif
-                                                    <b class="caret"></b>
-                                                </a>
-                                                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
-                                                    % for p in profiles:
-                                                        <li class="cursor">
-                                                            <a href="${getQueryString(request.url, add=[('_PROFILE_', p[0])])}">${p[1]}</a>
-                                                        </li>
-                                                    % endfor
-                                                </ul>
-                                            </div>
-                                        </li>
-                                    % endif
-                                </ul>
-                            </div>
+                                    <li>/</li>
+                                    <li class="active">
+                                        <div>
+                                            <a class="blacktemp" href="${request.route_url('user_self_registration')}">
+                                                Register
+                                            </a>
+                                        </div>
+                                    </li>
+                                % else:
+                                    <li>
+                                        <div>
+                                            ${request.user.username} (<a href="${request.route_url('logout')}" class="logouttemp">Logout</a>)&nbsp;&nbsp;
+                                        </div>
+                                    </li>
+                                % endif
+
+                                <li>|</li>
+                                <li>
+                                    <div class="dropdown">
+                                        <a class="dropdown-toggle blacktemp" data-toggle="dropdown" href="#">
+                                            ${selectedlanguage[1]}
+                                            <b class="caret"></b>
+                                        </a>
+                                        <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+                                            % for l in languages:
+                                                <li class="cursor">
+                                                    <a href="${getQueryString(request.url, add=[('_LOCALE_', l[0])])}">${l[1]}</a>
+                                                </li>
+                                            % endfor
+                                        </ul>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
@@ -327,8 +299,7 @@ for p in profiles:
                 footer = [
                     [request.route_url('faq_view'), 'FAQ'],
                     [request.route_url('about_view'), 'About'],
-                    ['#', 'Partners'],
-                    ['#', 'Blog']
+                    [request.route_url('partners_view'), 'Partners']
                 ]
                 %>
 
