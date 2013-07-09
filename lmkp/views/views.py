@@ -93,7 +93,7 @@ class BaseView(object):
 
 class MainView(BaseView):
 
-    @view_config(route_name='index', renderer='lmkp:templates/index.mak')
+#    @view_config(route_name='index', renderer='lmkp:templates/index.mak')
     def index(self):
         """
         Returns the main HTML page
@@ -103,6 +103,7 @@ class MainView(BaseView):
         
         return {}
 
+    @view_config(route_name='index', renderer='lmkp:templates/map_view.mak')
     @view_config(route_name='map_view', renderer='lmkp:templates/map_view.mak')
     def map_view(self):
 
@@ -305,6 +306,7 @@ def getActiveFilters(request):
     operators = {
         'like': '=',
         'nlike': '!=',
+        'ilike': '=',
         'eq': '=',
         'ne': '!=',
         'lt': '<',

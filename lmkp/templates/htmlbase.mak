@@ -8,7 +8,7 @@ for l in languages:
     if locale == l[0]:
         selectedlanguage = l
 profiles = get_profiles()
-selectedprofile = profiles[0]
+selectedprofile = None
 for p in profiles:
     if profile == p[0]:
         selectedprofile = p
@@ -262,22 +262,28 @@ for p in profiles:
                                             </ul>
                                         </div>
                                     </li>
-                                    <li>|</li>
-                                    <li>
-                                        <div class="dropdown">
-                                            <a class="dropdown-toggle blacktemp" data-toggle="dropdown" href="#">
-                                                ${selectedprofile[1]}
-                                                <b class="caret"></b>
-                                            </a>
-                                            <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
-                                                % for p in profiles:
-                                                    <li class="cursor">
-                                                        <a href="${getQueryString(request.url, add=[('_PROFILE_', p[0])])}">${p[1]}</a>
-                                                    </li>
-                                                % endfor
-                                            </ul>
-                                        </div>
-                                    </li>
+                                    % if len(profiles) >= 1:
+                                        <li>|</li>
+                                        <li>
+                                            <div class="dropdown">
+                                                <a class="dropdown-toggle blacktemp" data-toggle="dropdown" href="#">
+                                                    % if selectedprofile is None:
+                                                        Select Profile
+                                                    % else:
+                                                        ${selectedprofile[1]}
+                                                    % endif
+                                                    <b class="caret"></b>
+                                                </a>
+                                                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+                                                    % for p in profiles:
+                                                        <li class="cursor">
+                                                            <a href="${getQueryString(request.url, add=[('_PROFILE_', p[0])])}">${p[1]}</a>
+                                                        </li>
+                                                    % endfor
+                                                </ul>
+                                            </div>
+                                        </li>
+                                    % endif
                                 </ul>
                             </div>
                     </div>
