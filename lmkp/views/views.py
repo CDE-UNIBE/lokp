@@ -2,11 +2,19 @@ from datetime import timedelta
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession
 import logging
-from pyramid.renderers import render
+import urllib
+from geoalchemy.functions import functions as geofunctions
+from geoalchemy import utils
+from pyramid.httpexceptions import HTTPFound
 from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
+from urlparse import parse_qs, urlsplit, urlunsplit
+from urllib import urlencode
+from lmkp.views.profile import get_current_profile
+from lmkp.views.profile import get_current_locale
+from lmkp.views.form_config import getCategoryList
 
 log = logging.getLogger(__name__)
 
@@ -19,20 +27,53 @@ class BaseView(object):
         self.request = request
 
     def _handle_parameters(self):
+
+        response = self.request.response
+
+        # Make sure the _LOCATION_ cookie is correctly set: The old version GUI
+        # version used to store the map center and the zoom level which is not
+        # understood by new GUI (which stores the map extent as 4 coordinates)
+        if '_LOCATION_' in self.request.cookies:
+            c = urllib.unquote(self.request.cookies['_LOCATION_'])
+            if len(c.split('|')) == 3:
+                response.delete_cookie('_LOCATION_')
+
         # Check if language (_LOCALE_) is set
         if self.request is not None:
-            response = self.request.response
             if '_LOCALE_' in self.request.params:
                 response.set_cookie('_LOCALE_', self.request.params.get('_LOCALE_'), timedelta(days=90))
             elif '_LOCALE_' in self.request.cookies:
                 pass
 
-
         # Check if profile (_PROFILE_) is set
         if self.request is not None:
-            response = self.request.response
             if '_PROFILE_' in self.request.params:
-                response.set_cookie('_PROFILE_', self.request.params.get('_PROFILE_'), timedelta(days=90))
+                # Set the profile cookie
+                profile_code = self.request.params.get('_PROFILE_')
+                response.set_cookie('_PROFILE_', profile_code, timedelta(days=90))
+
+                # Update _LOCATION_ from cookies to profile geometry bbox
+                # retrieved from database
+                profile_db = DBSession.query(Profile).\
+                    filter(Profile.code == profile_code).\
+                    first()
+
+                if profile_db is not None:
+                    # Calculate and transform bounding box
+                    bbox = DBSession.scalar(geofunctions.envelope(
+                            geofunctions.transform(profile_db.geometry, '900913')
+                        ).wkt)
+
+                    geojson = utils.from_wkt(bbox)
+
+                    coords = geojson['coordinates'][0]
+                    p1 = coords[0]
+                    p2 = coords[2]
+
+                    l = '%s,%s' % (','.join([str(x) for x in p1]), ','.join([str(x) for x in p2]))
+
+                    response.set_cookie('_LOCATION_', urllib.quote(l), timedelta(days=90))
+
             elif '_PROFILE_' in self.request.cookies:
                 # Profile already set, leave it
                 pass
@@ -61,6 +102,30 @@ class MainView(BaseView):
         self._handle_parameters()
         
         return {}
+
+    @view_config(route_name='map_view', renderer='lmkp:templates/map_view.mak')
+    def map_view(self):
+
+        self._handle_parameters()
+
+        return {"profile": get_current_profile(self.request), "locale": get_current_locale(self.request)}
+
+    @view_config(route_name='grid_view')
+    def grid_view(self):
+        """
+        This view is basically only a redirect to the read_many view of the
+        Activities.
+        """
+        return HTTPFound(
+            location=self.request.route_url('activities_read_many', output='html')
+        )
+
+    @view_config(route_name='charts_view', renderer='lmkp:templates/charts_view.mak')
+    def charts_view(self):
+
+        self._handle_parameters()
+
+        return {"profile": get_current_profile(self.request), "locale": get_current_locale(self.request)}
 
     @view_config(route_name='embedded_index', renderer='lmkp:templates/embedded.mak')
     def embedded_version(self):
@@ -165,3 +230,165 @@ class MainView(BaseView):
         Simple view to output the current privileges
         """
         return {}
+
+def getQueryString(url, **kwargs):
+    """
+    Function to update the query parameters of a given URL.
+    kwargs:
+    - add: array of tuples with key and value to add to the URL. If the key
+      already exists, it will be replaced with the new value.
+      Example: add=[('page', 1)]
+    - remove: array of keys to remove from the URL.
+    """
+
+    if 'add' not in kwargs and 'remove' not in kwargs:
+        return url
+
+    # Collect the values to add / remove
+    add = kwargs.pop('add', {})
+    remove = kwargs.pop('remove', [])
+
+    # Extract query_strings from url
+    scheme, netloc, path, query_string, fragment = urlsplit(url)
+    qp = parse_qs(query_string)
+
+    # Remove
+    for d in remove:
+        if d in qp:
+            del(qp[d])
+
+    # Add
+    for k, v in add:
+        qp[k] = v
+
+    # Put URL together again and return it
+    new_query_string = urlencode(qp, doseq=True)
+    return urlunsplit((scheme, netloc, path, new_query_string, fragment))
+
+def getFilterKeys(request):
+    """
+    Return two lists (the first for Activities, the second for Stakeholders)
+    with the keys which can be filtered.
+    Each list contains:
+    - [0]: display name (translated)
+    - [1]: internal name
+    - [2]: the type of the key
+    """
+
+    def getList(categoryList):
+        list = []
+        for key in categoryList.getFilterableKeys():
+            name = key.getName()
+            translation = key.getTranslatedName()
+            type = key.getType()
+            list.append([
+                translation if translation is not None else name,
+                name,
+                type.lower()
+            ])
+        return list
+
+    aList = getList(getCategoryList(request, 'activities'))
+    shList = getList(getCategoryList(request, 'stakeholders'))
+
+    return aList, shList
+
+def getActiveFilters(request):
+    """
+    Get the active filters of a request in a list.
+    The list contains another list for each active filter with
+    - [0]: the query string as provided in the parameter
+    - [1]: a clean text representation of the filter
+    """
+
+    # Map the operators
+    operators = {
+        'like': '=',
+        'nlike': '!=',
+        'eq': '=',
+        'ne': '!=',
+        'lt': '<',
+        'lte': '<=',
+        'gt': '>',
+        'gte': '>='
+    }
+
+    # Extract query_strings from url
+    scheme, netloc, path, query_string, fragment = urlsplit(request.url)
+    queryparams = parse_qs(query_string)
+
+    filters = []
+    for q in queryparams:
+        if q.startswith('a__') or q.startswith('sh__'):
+            queryparts = q.split('__')
+
+            if len(queryparts) != 3:
+                continue
+
+            key = queryparts[1]
+            op = queryparts[2]
+
+            for v in queryparams[q]:
+                q_string = '%s=%s' % (q, v)
+                q_display = '%s %s %s' % (key, operators[op], v)
+                filters.append([q_string, q_display])
+
+    return filters
+
+@view_config(route_name='filterValues', renderer='json')
+def getFilterValuesForKey(request):
+    """
+    Return a JSON representation of all the values for a given key.
+    The JSON array contains an array for each entry with:
+    - [0]: The display name (translated)
+    - [1]: The internal name
+    """
+
+    type = request.params.get('type', None)
+    key = request.params.get('key', None)
+
+    if type is None:
+        return {
+            'error': 'No type specified.'
+        }
+
+    if key is None:
+        return {
+            'error': 'No key specified'
+        }
+
+    itemType = None
+    if type == 'a':
+        itemType = 'activities'
+    elif type == 'sh':
+        itemType = 'stakeholders'
+
+    if itemType is None:
+        return {
+            'error': 'Type not valid.'
+        }
+
+    categoryList = getCategoryList(request, itemType)
+
+    tag = categoryList.findTagByKeyName(key)
+
+    if tag is None:
+        return {
+            'error': 'Key not found.'
+        }
+
+    values = tag.getValues()
+
+    if len(values) == 0:
+        return {
+            'error': 'No values found for this key.'
+        }
+
+    ret = []
+    for v in sorted(values, key=lambda val: val.getOrderValue()):
+        ret.append([
+            v.getTranslation(),
+            v.getName()
+        ])
+
+    return ret

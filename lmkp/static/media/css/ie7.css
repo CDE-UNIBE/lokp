@@ -1,0 +1,29 @@
+/* IE-7-Hacks */
+
+.not-ie7 {
+	display: none;
+}
+
+.only-ie7 {
+	display: block;
+}
+
+.top-menu li.active {
+	padding-bottom: 8px;
+}
+
+.checkbox-modified label,
+.checkbox-modified-small label {
+   	display: none;
+}
+
+.checkbox-modified {
+	float: right;
+	margin: -28px 0 0 0;
+}
+
+.deal-editor-menu-bar {
+	position: relative;
+}
+
+

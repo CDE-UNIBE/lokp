@@ -1,34 +1,37 @@
-% if not field.widget.hidden:
-<li 
-    % if field.error and field.widget.error_class:
-        class="field ${field.widget.error_class}"
-    % else:
-        class="field"
-    % endif
-    title="${field.description}"
-    id="item-${field.oid}"
->
+<%
+    from lmkp.views.form import structHasOnlyNullValues
+    hasOnlyNullValues, depth = structHasOnlyNullValues(cstruct)
+%>
 
-    <!-- mapping_item -->
-    % if not field.widget.category == 'structural':
-        <label class="desc"
-               title="${field.description}"
-               for="${field.oid}"
-        >
-            ${field.title}
-
-            % if field.required:
-                <span class="req"
-                      id="req-${field.oid}"
-                >*</span>
-            % endif
-
-        </label>
-    % endif
-
+% if depth == 3:
+    ## Category
     ${field.serialize(cstruct)}
 
-    % if field.error and field.typ.__class__.__name__ != 'Mapping':
+% elif depth == 2:
+    ## Thematic Group
+    <div class="row-fluid">
+        <div class="span9 grid-area">
+            <div class="span4">
+                <h5 class="green">${field.title}</h5>
+            </div>
+            ${field.serialize(cstruct)}
+        </div>
+    </div>
+
+% elif depth == 1:
+    ## Taggroup
+    <div class="span8 taggroup">
+        ${field.serialize(cstruct)}
+    </div>
+
+% elif depth == 0:
+    ## Single Tag
+    ${field.serialize(cstruct)}
+
+% endif
+
+% if field.error and field.typ.__class__.__name__ != 'Mapping' and len(field.error.messages()) > 0:
+    <div class="alert alert-error">
         <%
             errstr = 'error-%s' % field.oid
         %>
@@ -41,12 +44,8 @@
                 % endif
                 class="${field.widget.error_class}"
             >
-            ${_(msg)}
+            ${request.translate(msg)}
             </p>
         % endfor
-    % endif
-
-    <!-- /mapping_item -->
-    
-</li>
+    </div>
 % endif

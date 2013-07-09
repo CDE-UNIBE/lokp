@@ -5,36 +5,40 @@
     />
 % endif
 
-<select name="${field.name}"
-        id="${field.oid}"
-
-        % if field.widget.size:
-            size="${field.widget.size}"
-        % endif
-
-        % if field.widget.css_class:
-            class="${field.widget.css_class}"
-        % endif
-
-        % if field.widget.multiple:
-            multiple="${field.widget.multiple}"
-        % endif
->
-    % for value,description in field.widget.values:
-        <option value="${value}"
-            % if field.widget.css_class:
-                class="${field.widget.css_class}"
+<div class="row-fluid">
+    <div class="span4">
+        <label for="${field.oid}">
+            % if field.title:
+                ${field.title}
+            % elif field.name:
+                ${field.name}
             % endif
-            % if cstruct == value:
-                selected="selected"
+            % if field.required:
+                <span class="required-form-field"></span>
+            % elif desired:
+                <span class="desired-form-field"></span>
             % endif
-        >${description}</option>
-    % endfor
-</select>
-
-% if helptext:
-    <span class="form_helptext">${helptext}</span>
-% endif
+        </label>
+    </div>
+    <div class="span8">
+        <select name="${field.name}"
+            id="${field.oid}" class="span8">
+            % for value,description in field.widget.values:
+                <option value="${value}"
+                    % if field.widget.css_class:
+                        class="${field.widget.css_class}"
+                    % endif
+                    % if cstruct == value:
+                        selected="selected"
+                    % endif
+                >${description}</option>
+            % endfor
+        </select>
+        % if helptext:
+            <span class="form_helptext">${helptext}</span>
+        % endif
+        </div>
+    </div>
 
 % if field.widget.multiple:
     <input type="hidden"

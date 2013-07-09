@@ -1,38 +1,28 @@
-<fieldset class="deformMappingFieldset">
+<%
+    from lmkp.views.form import structHasOnlyNullValues
+    hasOnlyNullValues, depth = structHasOnlyNullValues(cstruct)
+%>
 
-    <!-- mapping -->
+% if field.errormsg:
+    <div class="alert alert-error">
+        <h5>${request.translate("There was a problem with this section")}</h5>
+        <p>${request.translate(field.errormsg)}</p>
+    </div>
+% endif
 
-    % if field.title:
-        <legend>${field.title}</legend>
+${field.start_mapping()}
+
+% for i, child in enumerate(field.children):
+    % if depth == 2 and i > 0:
+        </div>
+        <div class="row-fluid">
+            <div class="span9">
+                <div class="span4"></div>
+                ${child.render_template(field.widget.item_template)}
+            </div>
+    % else:
+        ${child.render_template(field.widget.item_template)}
     % endif
+% endfor
 
-    <ul>
-        % if field.errormsg:
-            <li class="errorLi">
-                <h3 class="errorMsgLbl">
-                    ${_("There was a problem with this section")}
-                </h3>
-                <p class="errorMsg">
-                    ${_(field.errormsg)}
-                </p>
-            </li>
-        % endif
-
-        % if field.description:
-            <li class="section">
-                <div>${field.description}</div>
-            </li>
-        % endif
-
-        ${field.start_mapping()}
-
-        % for child in field.children:
-            ${child.render_template(field.widget.item_template)}
-        % endfor
-
-        ${field.end_mapping()}
-    </ul>
-
-    <!-- /mapping -->
-
-</fieldset>
+${field.end_mapping()}

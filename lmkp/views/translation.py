@@ -6,6 +6,7 @@ from lmkp.config import valid_mime_extensions
 from lmkp.models.database_objects import A_Key
 from lmkp.models.database_objects import A_Value
 from lmkp.models.database_objects import Language
+from lmkp.models.database_objects import Profile
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Value
 from lmkp.models.meta import DBSession as Session
@@ -561,3 +562,62 @@ def get_translated_db_keys(mappedClass, db_keys, db_lang):
 
     # If nothing found, return None
     return None
+
+# TODO: Clean up and maybe merge these two functions
+def get_activity_keys(request):
+
+    localizer = get_localizer(request)
+    db_lang = Session.query(Language).filter(Language.locale == localizer.locale_name).first()
+    if db_lang is None: # fall back language: english
+        db_lang = Language(1, 'English', 'English', 'en')
+
+    aKeys = [
+        ['Spatial Accuracy', False],
+        ['Negotiation Status', True],
+        ['Country', False],
+        ['Intended area (ha)', True],
+        ['Intention of Investment', True],
+        ['Data source', False]
+    ]
+    aKeysTranslateQuery = get_translated_db_keys(A_Key, (a[0] for a in aKeys), db_lang)
+    ret = []
+    for k in aKeys:
+        translation = k[0]
+        for tk in aKeysTranslateQuery:
+            if tk.original == k[0]:
+                translation = tk.translation
+        ret.append([k[0], translation, k[1]])
+
+    return ret
+
+# TODO: Clean up and maybe merge these two functions
+def get_stakeholder_keys(request):
+
+    localizer = get_localizer(request)
+    db_lang = Session.query(Language).filter(Language.locale == localizer.locale_name).first()
+    if db_lang is None: # fall back language: english
+        db_lang = Language(1, 'English', 'English', 'en')
+
+    shKeys = [
+        ['Name', True],                 # 0
+        ['Country of origin', True]     # 1
+    ]
+    shKeysTranslateQuery = get_translated_db_keys(SH_Key, (sh[0] for sh in shKeys), db_lang)
+    ret = []
+    for k in shKeys:
+        translation = k[0]
+        for tk in shKeysTranslateQuery:
+            if tk.original == k[0]:
+                translation = tk.translation
+        ret.append([k[0], translation, k[1]])
+
+    return ret
+
+# TODO: This does not necessarily belong here. Also, all the stuff needed for
+# each view (languages, profiles, keys, ...) should be loaded in a single
+# request for performance reasons.
+def get_languages():
+    return Session.query(Language.locale, Language.local_name).all()
+
+def get_profiles():
+    return Session.query(Profile.code, Profile.code).all()

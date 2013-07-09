@@ -1031,7 +1031,7 @@ class Protocol(object):
 
                 # Before copying the tag, make sure that it is not to delete
                 copy_tag = True
-                if 'taggroups' in diff:
+                if diff is not None and 'taggroups' in diff:
                     for taggroup_dict in diff['taggroups']:
                         if ('tg_id' in taggroup_dict and
                             taggroup_dict['tg_id'] == db_taggroup.tg_id):
@@ -1063,6 +1063,8 @@ class Protocol(object):
 
                             # Check which tags we have to edit
                             for tag_dict in taggroup_dict['tags']:
+                                if 'op' not in tag_dict:
+                                    raise HTTPBadRequest(detail='Each tag needs to have an operator (add/edit)')
                                 # Make sure it is exactly this tag (same key)
                                 # and it is to be deleted.
                                 if (tag_dict['op'] == 'delete'
@@ -1122,7 +1124,7 @@ class Protocol(object):
                         taggroupadded = True
 
             # Step 2: Add new tags (who don't have an ID yet) to this taggroup
-            if 'taggroups' in diff:
+            if diff is not None and 'taggroups' in diff:
                 for taggroup_dict in diff['taggroups']:
                     if ('tg_id' in taggroup_dict and
                         taggroup_dict['tg_id'] == db_taggroup.tg_id):
@@ -1182,7 +1184,7 @@ class Protocol(object):
 
         # Finally new tag groups (without id) need to be added
         # (and loop all again)
-        if 'taggroups' in diff:
+        if diff is not None and 'taggroups' in diff:
 
             for taggroup_dict in diff['taggroups']:
 
@@ -1501,9 +1503,7 @@ class Protocol(object):
 
 #            log.debug('Created a new ConfigCategoryList object of type %s' % itemType)
             
-            # TODO: language parameter
-            pass
-#            self.categoryList = getCategoryList(request, itemType, lang=None)
+            self.categoryList = getCategoryList(request, itemType)
 
         # Trim white spaces
         try:
@@ -1513,56 +1513,7 @@ class Protocol(object):
 
         # TODO: Make use of this! Delete the rest below.
         # TODO: Also delete imports above
-#        return self.categoryList.checkValidKeyValue(key, value)
-
-
-        if itemType == 'activities':
-            filename = ACTIVITY_YAML
-        elif itemType == 'stakeholders':
-            filename = STAKEHOLDER_YAML
-
-        # Read the global configuration file
-        global_stream = open("%s/%s" % (profile_directory_path(request), filename), 'r')
-        configuration = yaml.load(global_stream)
-
-        # Read the localized configuration file
-        try:
-            locale_stream = open("%s/%s" % (locale_profile_directory_path(request), filename), 'r')
-            locale_config = yaml.load(locale_stream)
-
-            # If there is a localized config file then merge it with the global one
-            configuration = merge_profiles(configuration, locale_config)
-
-        except IOError:
-            # No localized configuration file found!
-            pass
-
-        # Per default key and value are not valid
-        key_is_valid = False
-        value_is_valid = False
-
-        # Loop the optional and mandatory fields
-        for fields in configuration['fields']:
-
-            # Loop all tags in fields
-            for tags in configuration['fields'][fields].iteritems():
-                # If the current key equals the key in the tag, set key_is_valid
-                # to True
-                if key == tags[0]:
-                    key_is_valid = True
-                    # Check the value in the next step:
-                    # If the current key contains predefined values, check the
-                    # value against these
-                    if 'predefined' in tags[1]:
-                        if value in tags[1]['predefined']:
-                            value_is_valid = True
-                    # In other cases (non-predefined values), set value_is_valid
-                    # to True
-                    else:
-                        value_is_valid = True
-
-        # Return only True if key as well as value are valid
-        return key_is_valid and value_is_valid
+        return self.categoryList.checkValidKeyValue(key, value)
 
     def _create_tag(self, request, parent, key, value, Tag_Item, Key_Item,
         Value_Item):

@@ -1,7 +1,14 @@
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.config import get_mandatory_keys
+from lmkp.views.comments import comments_sitekey
 from lmkp.views.form import renderForm
+from lmkp.views.form import renderReadonlyForm
+from lmkp.views.form import checkValidItemjson
+from lmkp.views.form_config import getCategoryList
+from lmkp.views.profile import get_current_profile
+from lmkp.views.profile import get_current_locale
+from lmkp.views.views import BaseView
 from lmkp.models.database_objects import *
 import logging
 from pyramid.httpexceptions import HTTPForbidden
@@ -142,16 +149,47 @@ def read_many(request):
         stakeholders = stakeholder_protocol3.read_many(request, public=False)
         return render_to_response('json', stakeholders, request)
     elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+        """
+        Show a HTML representation of the Stakeholders in a grid.
+        """
+        limit = 10
+
+        # Get page parameter from request and make sure it is valid
+        page = request.params.get('page', 1)
+        try:
+            page = int(page)
+        except TypeError:
+            page = 1
+        page = max(page, 1) # Page should be >= 1
+
+        items = stakeholder_protocol3.read_many(request, public=False,
+            limit=limit, offset=limit*page-limit)
+
+        return render_to_response('lmkp:templates/stakeholders/grid.mak', {
+            'data': items['data'] if 'data' in items else [],
+            'total': items['total'] if 'total' in items else 0,
+            'profile': get_current_profile(request),
+            'locale': get_current_locale(request),
+            'currentpage': page,
+            'pagesize': limit
+        }, request)
+
     elif output_format == 'form':
         # This is used to display a new and empty form for a Stakeholder. It is
         # to be used to embed the form into an existing page.
-        return render_to_response(
-            'lmkp:templates/new_stakeholder.mak',
-            renderForm(request, 'stakeholders', embedded=True),
-            request
-        )
+        embedded = request.params.get('embedded', False)
+        if embedded:
+            return render_to_response(
+                'lmkp:templates/stakeholders/form_embedded.mak',
+                renderForm(request, 'stakeholders', embedded=True),
+                request
+            )
+        else:
+            return render_to_response(
+                'lmkp:templates/stakeholders/form.mak',
+                renderForm(request, 'stakeholders', embedded=False),
+                request
+            )
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
@@ -210,6 +248,10 @@ def read_one(request):
     Default output format: JSON
     """
 
+    # Handle the parameters (locale, profile)
+    bv = BaseView(request)
+    bv._handle_parameters()
+
     try:
         output_format = request.matchdict['output']
     except KeyError:
@@ -222,12 +264,42 @@ def read_one(request):
             public=False)
         return render_to_response('json', stakeholders, request)
     elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+        # Show the details of a Stakeholder by rendering the form in readonly
+        # mode.
+        stakeholders = stakeholder_protocol3.read_one(request, uid=uid,
+            public=False, translate=False)
+        version = request.params.get('v', None)
+        if (stakeholders and 'data' in stakeholders
+            and len(stakeholders['data']) != 0):
+            for sh in stakeholders['data']:
+                if 'version' in sh:
+                    if version is None:
+                        # If there is no version provided, show the first
+                        # version visible to the user
+                        version = str(sh['version'])
+                    if str(sh['version']) == version:
+                        templateValues = renderReadonlyForm(request, 'stakeholders', sh)
+                        templateValues['profile'] = get_current_profile(request)
+                        templateValues['locale'] = get_current_locale(request)
+
+                        # Append the short uid and the uid to the templates values
+                        templateValues['uid'] = uid
+                        templateValues['shortuid'] = uid.split("-")[0]
+                        # Append also the site key from the commenting system
+                        templateValues['site_key'] = comments_sitekey(request)['site_key']
+                        # and the url of the commenting system
+                        templateValues['comments_url'] = request.registry.settings['lmkp.comments_url']
+
+                        return render_to_response(
+                            'lmkp:templates/stakeholders/details.mak',
+                            templateValues,
+                            request
+                        )
+        return HTTPNotFound()
     elif output_format == 'form':
         # Query the Stakeholders with the given identifier
         stakeholders = stakeholder_protocol3.read_one(request, uid=uid, 
-            public=False)
+            public=False, translate=False)
         version = request.params.get('v', None)
         if (stakeholders and 'data' in stakeholders 
             and len(stakeholders['data']) != 0):
@@ -238,11 +310,31 @@ def read_one(request):
                         # version visible to the user
                         version = str(sh['version'])
                     if str(sh['version']) == version:
+                        templateValues = renderForm(request, 'stakeholders', itemJson=sh)
+                        templateValues['profile'] = get_current_profile(request)
+                        templateValues['locale'] = get_current_locale(request)
                         return render_to_response(
-                            'lmkp:templates/form.mak',
-                            renderForm(request, 'stakeholders', itemJson=sh),
+                            'lmkp:templates/stakeholders/form.mak',
+                            templateValues,
                             request
                         )
+        return HTTPNotFound()
+    elif output_format == 'formtest':
+        # Test if a Stakeholder is valid according to the form configuration
+        stakeholders = stakeholder_protocol3.read_one(request, uid=uid,
+            public=False, translate=False)
+        version = request.params.get('v', None)
+        if (stakeholders and 'data' in stakeholders
+            and len(stakeholders['data']) != 0):
+            for sh in stakeholders['data']:
+                if 'version' in sh:
+                    if version is None:
+                        version = str(sh['version'])
+                    if str(sh['version']) == version:
+                        categorylist = getCategoryList(request, 'stakeholders')
+                        return render_to_response('json',
+                            checkValidItemjson(categorylist, sh), request)
+        return HTTPNotFound()
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()

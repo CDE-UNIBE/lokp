@@ -25,8 +25,15 @@ Populate the database
 
     (venv)user@computer:~/this/directory$ populate_LMKP development.ini
 
+or
+
+    (venv)user@computer:~/this/directory$ populate_lmkp development.ini
+
 Start the server
 
     (venv)user@computer:~/this/directory$ pserve development.ini
     
 Point your browser to [http://localhost:6543/](http://localhost:6543/)
+
+Don't forget to include some profiles and enter some keys and values (for
+example by using the SQL script in /scripts).

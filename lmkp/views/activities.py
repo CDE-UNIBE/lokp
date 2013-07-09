@@ -1,8 +1,10 @@
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol3 import ActivityProtocol3
+from lmkp.views.comments import comments_sitekey
 from lmkp.views.config import get_mandatory_keys
 import logging
+import urllib
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPNotFound
@@ -17,6 +19,12 @@ import yaml
 
 from lmkp.renderers.renderers import translate_key
 from lmkp.views.form import renderForm
+from lmkp.views.form import renderReadonlyForm
+from lmkp.views.form import checkValidItemjson
+from lmkp.views.form_config import getCategoryList
+from lmkp.views.profile import get_current_profile
+from lmkp.views.profile import get_current_locale
+from lmkp.views.views import BaseView
 
 log = logging.getLogger(__name__)
 
@@ -38,6 +46,10 @@ def read_many(request):
     Default output format: JSON
     """
 
+    # Handle the parameters (locale, profile)
+    bv = BaseView(request)
+    bv._handle_parameters()
+
     try:
         output_format = request.matchdict['output']
     except KeyError:
@@ -47,13 +59,44 @@ def read_many(request):
         activities = activity_protocol3.read_many(request, public=False)
         return render_to_response('json', activities, request)
     elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+        """
+        Show a HTML representation of the Activities in a grid.
+        """
+        limit = 10
+
+        # Get page parameter from request and make sure it is valid
+        page = request.params.get('page', 1)
+        try:
+            page = int(page)
+        except TypeError:
+            page = 1
+        page = max(page, 1) # Page should be >= 1
+
+        # Spatial filter
+        spatialfilter = _handle_spatial_parameters(request)
+
+        # Query the items with the protocol
+        items = activity_protocol3.read_many(request, public=False, limit=limit,
+            offset=limit*page-limit)
+
+        return render_to_response('lmkp:templates/activities/grid.mak', {
+            'data': items['data'] if 'data' in items else [],
+            'total': items['total'] if 'total' in items else 0,
+            'profile': get_current_profile(request),
+            'locale': get_current_locale(request),
+            'spatialfilter': spatialfilter,
+            'currentpage': page,
+            'pagesize': limit
+        }, request)
+
     elif output_format == 'form':
         # This is used to display a new and empty form for an Activity
+        templateValues = renderForm(request, 'activities')
+        templateValues['profile'] = get_current_profile(request)
+        templateValues['locale'] = get_current_locale(request)
         return render_to_response(
-            'lmkp:templates/form.mak',
-            renderForm(request, 'activities'),
+            'lmkp:templates/activities/form.mak',
+            templateValues,
             request
         )
     elif output_format == 'geojson':
@@ -172,6 +215,10 @@ def read_one(request):
     Default output format: JSON
     """
 
+    # Handle the parameters (locale, profile)
+    bv = BaseView(request)
+    bv._handle_parameters()
+
     try:
         output_format = request.matchdict['output']
     except KeyError:
@@ -183,11 +230,10 @@ def read_one(request):
         activities = activity_protocol3.read_one(request, uid=uid, public=False)
         return render_to_response('json', activities, request)
     elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
-    elif output_format == 'form':
-        # Query the Activities wih the given identifier
-        activities = activity_protocol3.read_one(request, uid=uid, public=False)
+        # Show the details of an Activity by rendering the form in readonly
+        # mode.
+        activities = activity_protocol3.read_one(request, uid=uid, public=False,
+            translate=False)
         version = request.params.get('v', None)
         if activities and 'data' in activities and len(activities['data']) != 0:
             for a in activities['data']:
@@ -197,11 +243,60 @@ def read_one(request):
                         # version visible to the user
                         version = str(a['version'])
                     if str(a['version']) == version:
+                        templateValues = renderReadonlyForm(request, 'activities', a)
+                        templateValues['profile'] = get_current_profile(request)
+                        templateValues['locale'] = get_current_locale(request)
+
+                        # Append the short uid and the uid to the templates values
+                        templateValues['uid'] = uid
+                        templateValues['shortuid'] = uid.split("-")[0]
+                        # Append also the site key from the commenting system
+                        templateValues['site_key'] = comments_sitekey(request)['site_key']
+                        # and the url of the commenting system
+                        templateValues['comments_url'] = request.registry.settings['lmkp.comments_url']
+
                         return render_to_response(
-                            'lmkp:templates/form.mak',
-                            renderForm(request, 'activities', itemJson=a),
+                            'lmkp:templates/activities/details.mak',
+                            templateValues,
                             request
                         )
+        return HTTPNotFound()
+    elif output_format == 'form':
+        # Query the Activities wih the given identifier
+        activities = activity_protocol3.read_one(request, uid=uid, public=False,
+            translate=False)
+        version = request.params.get('v', None)
+        if activities and 'data' in activities and len(activities['data']) != 0:
+            for a in activities['data']:
+                if 'version' in a:
+                    if version is None:
+                        # If there was no version provided, show the first
+                        # version visible to the user
+                        version = str(a['version'])
+                    if str(a['version']) == version:
+                        templateValues = renderForm(request, 'activities', itemJson=a)
+                        templateValues['profile'] = get_current_profile(request)
+                        templateValues['locale'] = get_current_locale(request)
+                        return render_to_response(
+                            'lmkp:templates/activities/form.mak',
+                            templateValues,
+                            request
+                        )
+        return HTTPNotFound()
+    elif output_format == 'formtest':
+        # Test if an Activity is valid according to the form configuration
+        activities = activity_protocol3.read_one(request, uid=uid, public=False,
+            translate=False)
+        version = request.params.get('v', None)
+        if activities and 'data' in activities and len(activities['data']) != 0:
+            for a in activities['data']:
+                if 'version' in a:
+                    if version is None:
+                        version = str(a['version'])
+                    if str(a['version']) == version:
+                        categorylist = getCategoryList(request, 'activities')
+                        return render_to_response('json',
+                        checkValidItemjson(categorylist, a), request)
         return HTTPNotFound()
     else:
         # If the output format was not found, raise 404 error
@@ -573,3 +668,48 @@ def _get_config_fields():
     log.info(fields)
 
     return fields
+
+def _handle_spatial_parameters(request):
+    """
+    Get the spatial extent of a request. The different options are checked in
+    the following order:
+    - request GET parameter {bbox}: use this parameter (handled by protocol) if
+      provided. Special parameter: bbox=profile in which case use the profile
+      boundary as bbox.
+    - cookie _LOCATION_: if no bbox parameter was provided in GET, look for the
+      map cookie to use as bbox.
+    - profile boundary: if no GET parameter was provided and no cookie was found
+      use the profile boundary as bbox.
+    """
+
+    spatialfilter = None
+
+    bboxparam = request.params.get('bbox', None)
+    if bboxparam is not None:
+
+        if bboxparam == 'profile':
+            # Use profile as boundary
+            spatialfilter = 'profile'
+            if 'epsg' in request.GET:
+                del(request.GET['epsg'])
+
+        else:
+            # Use map extent from GET parameter
+            spatialfilter = 'mapextentparam'
+            epsg = request.params.get('epsg', None)
+            if epsg is None:
+                request.GET.add('epsg', '900913')
+    else:
+        # Use map extent from cookie
+        location = request.cookies.get('_LOCATION_')
+        if location is not None:
+            location = urllib.unquote(location)
+            if len(location.split(',')) == 4:
+                spatialfilter = 'mapextentcookie'
+                request.GET.add('bbox', location)
+                request.GET.add('epsg', '900913')
+
+    if spatialfilter is None:
+        spatialfilter = 'profile'
+
+    return spatialfilter

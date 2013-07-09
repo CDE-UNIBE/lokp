@@ -142,10 +142,12 @@ class StakeholderProtocol3(Protocol):
         else:
             return stakeholders[0]
 
-    def read_one(self, request, uid, public=True):
+    def read_one(self, request, uid, public=True, **kwargs):
         """
         ''public'': Boolean
         """
+
+        translate = kwargs.get('translate', True)
 
         relevant_stakeholders = self._get_relevant_stakeholders_one(request,
                                                                     uid, public_query=public)
@@ -168,14 +170,19 @@ class StakeholderProtocol3(Protocol):
         query = query.order_by(desc(Stakeholder.version))
 
         stakeholders = self._query_to_stakeholders(request, query,
-                                                   involvements=inv_details, public_query=public)
+            involvements=inv_details, public_query=public, translate=translate)
 
         return {
             'total': count,
             'data': [sh.to_table(request) for sh in stakeholders]
         }
 
-    def read_many(self, request, public=True):
+    def read_many(self, request, public=True, **kwargs):
+        """
+        Valid kwargs:
+        - limit
+        - offset
+        """
 
         relevant_stakeholders = self._get_relevant_stakeholders_many(
                                                                      request, public_query=public)
@@ -184,10 +191,10 @@ class StakeholderProtocol3(Protocol):
         # Default is: 'full'
         inv_details = request.params.get('involvements', 'full')
 
-        # Get limit and offset from request.
+        # Get limit and offset from request if they are not in kwargs.
         # Defaults: limit = None / offset = 0
-        limit = self._get_limit(request)
-        offset = self._get_offset(request)
+        limit = kwargs.get('limit', self._get_limit(request))
+        offset = kwargs.get('offset', self._get_offset(request))
 
         query, count = self._query_many(
                                         request, relevant_stakeholders, limit=limit, offset=offset,
@@ -1097,7 +1104,9 @@ class StakeholderProtocol3(Protocol):
             return query
 
     def _query_to_stakeholders(self, request, query,
-                               involvements='none', public_query=False):
+                               involvements='none', public_query=False, **kwargs):
+
+        translate = kwargs.get('translate', True)
 
         logged_in, is_moderator = self._get_user_status(
                                                         effective_principals(request))
@@ -1109,9 +1118,10 @@ class StakeholderProtocol3(Protocol):
             # Prepare values if needed
             identifier = str(q.identifier)
             taggroup_id = int(q.taggroup) if q.taggroup is not None else None
-            key = q.key_translated if q.key_translated is not None else q.key
-            value = (q.value_translated if q.value_translated is not None else
-                     q.value)
+            key = (q.key_translated if q.key_translated is not None
+                and translate is not False else q.key)
+            value = (q.value_translated if q.value_translated is not None
+                and translate is not False else q.value)
 
             # Use UID and version to find existing Feature or create a new one
             stakeholder = None
@@ -1382,16 +1392,16 @@ class StakeholderProtocol3(Protocol):
 
             # Main Tag: First reset it. Then try to get it (its key and value)
             # from the dict.
-            # The Main Tag is not mandatory.
-            main_tag = None
-            main_tag_key = None
-            main_tag_value = None
+
+            # The Main is indeed mandatory.
             try:
                 main_tag = taggroup['main_tag']
                 main_tag_key = main_tag['key']
                 main_tag_value = main_tag['value']
             except KeyError:
-                pass
+                raise HTTPBadRequest(detail="No Main Tag provided. Taggroup %s has no taggroup." % taggroup)
+
+            # TODO: End of replace
 
             # Loop all tags within a tag group
             for tag in taggroup['tags']:
@@ -1413,7 +1423,7 @@ class StakeholderProtocol3(Protocol):
                 # yes, set the main_tag attribute to this tag
                 try:
                     if (sh_tag.key.key == main_tag_key
-                        and sh_tag.value.value == str(main_tag_value)):
+                        and unicode(sh_tag.value.value) == unicode(main_tag_value)):
                         db_tg.main_tag = sh_tag
                 except AttributeError:
                     pass

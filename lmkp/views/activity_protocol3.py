@@ -262,7 +262,9 @@ class ActivityProtocol3(Protocol):
         else:
             return activities[0]
 
-    def read_one(self, request, uid, public=True):
+    def read_one(self, request, uid, public=True, **kwargs):
+
+        translate = kwargs.get('translate', True)
 
         relevant_activities = self._get_relevant_activities_one(request, uid,
                                                                 public_query=public)
@@ -291,7 +293,7 @@ class ActivityProtocol3(Protocol):
 
         activities = self._query_to_activities(
             request, query, involvements=inv_details, public_query=public,
-            geom=full_geometry
+            geom=full_geometry, translate=translate
         )
 
         return {
@@ -299,7 +301,12 @@ class ActivityProtocol3(Protocol):
             'data': [a.to_table(request) for a in activities]
         }
 
-    def read_many(self, request, public=True):
+    def read_many(self, request, public=True, **kwargs):
+        """
+        Valid kwargs:
+        - limit
+        - offset
+        """
 
         relevant_activities = self._get_relevant_activities_many(
                                                                  request, public_query=public)
@@ -308,10 +315,10 @@ class ActivityProtocol3(Protocol):
         # Default is: 'full'
         inv_details = request.params.get('involvements', 'full')
 
-        # Get limit and offset from request.
+        # Get limit and offset from request if they are not in kwargs.
         # Defaults: limit = None / offset = 0
-        limit = self._get_limit(request)
-        offset = self._get_offset(request)
+        limit = kwargs.get('limit', self._get_limit(request))
+        offset = kwargs.get('offset', self._get_offset(request))
 
         query, count = self._query_many(
                                         request, relevant_activities, limit=limit, offset=offset,
@@ -747,6 +754,10 @@ class ActivityProtocol3(Protocol):
             # join to also capture empty Items)
             relevant_activities = relevant_activities.\
                 outerjoin(A_Tag_Group)
+
+        # Always filter by profile boundary
+        relevant_activities = relevant_activities.\
+            filter(self._get_profile_filter(request))
 
         # Filter spatially
         relevant_activities = relevant_activities.\
@@ -1285,6 +1296,7 @@ class ActivityProtocol3(Protocol):
             query = query.add_columns(
                 A_Tag_Group.geometry.label('tg_geometry')
             )
+        translate = kwargs.get('translate', True)
 
         logged_in, is_moderator = self._get_user_status(
                                                         effective_principals(request))
@@ -1296,9 +1308,10 @@ class ActivityProtocol3(Protocol):
             # Prepare values if needed
             identifier = str(q.identifier)
             taggroup_id = int(q.taggroup) if q.taggroup is not None else None
-            key = q.key_translated if q.key_translated is not None else q.key
-            value = (q.value_translated if q.value_translated is not None else
-                     q.value)
+            key = (q.key_translated if q.key_translated is not None
+                and translate is not False else q.key)
+            value = (q.value_translated if q.value_translated is not None
+                and translate is not False else q.value)
 
             # Use UID and version to find existing ActivityFeature or create a
             # new one
@@ -1569,6 +1582,23 @@ class ActivityProtocol3(Protocol):
 
         return None
 
+    def _get_profile_filter(self, request):
+        """
+        Return a spatial filter based on the profile boundary of the current
+        profile which is queried from the database.
+        """
+
+        profile = self.Session.query(Profile).\
+            filter(Profile.code == get_current_profile(request)).\
+            first()
+
+        if profile is None:
+            return (Activity.id == 0)
+
+        return functions.intersects(
+            Activity.point, profile.geometry
+        )
+
     def _handle_activity(self, request, activity_dict, changeset,
                          status='pending'):
         """
@@ -1709,16 +1739,14 @@ class ActivityProtocol3(Protocol):
 
             # Main Tag: First reset it. Then try to get it (its key and value)
             # from the dict.
-            # The Main Tag is not mandatory.
-            main_tag = None
-            main_tag_key = None
-            main_tag_value = None
+
+            # The Main is indeed mandatory.
             try:
                 main_tag = taggroup['main_tag']
                 main_tag_key = main_tag['key']
                 main_tag_value = main_tag['value']
             except KeyError:
-                pass
+                raise HTTPBadRequest(detail="No Main Tag provided. Taggroup %s has no taggroup." % taggroup)
 
             # Loop all tags within a tag group
             for tag in taggroup['tags']:
@@ -1741,7 +1769,7 @@ class ActivityProtocol3(Protocol):
                 # yes, set the main_tag attribute to this tag
                 try:
                     if (a_tag.key.key == main_tag_key
-                        and a_tag.value.value == str(main_tag_value)):
+                        and unicode(a_tag.value.value) == unicode(main_tag_value)):
                         db_tg.main_tag = a_tag
                 except AttributeError:
                     pass

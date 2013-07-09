@@ -115,6 +115,12 @@ def main(global_config, ** settings):
     # Add a renderer to return JavaScript files
     config.add_renderer('javascript', JavaScriptRenderer())
 
+
+    #
+    config.add_route("map_view", "/map")
+    config.add_route("grid_view", "/grid")
+    config.add_route("charts_view", "/charts")
+
     """
     Activities
     """
@@ -235,6 +241,7 @@ def main(global_config, ** settings):
     config.add_route('moderator_toolbar_config', '/app/view/ModeratorToolbar.js')
 
     config.add_route('context_layers', '/app/view/layers.js')
+    config.add_route('context_layers2', '/app/view/layers2.js')
     # Return a json with all available profiles from disk
     config.add_route('profile_store', '/profiles/all')
 
@@ -268,7 +275,7 @@ def main(global_config, ** settings):
     # Evaluation
     config.add_route('evaluation_json', '/evaluation/{temp}')
     # Some (hopefully) nice charts from the evalution
-    config.add_route('charts', '/charts')
+    config.add_route('charts', '/charts_old')
 
     # Yet another test
     config.add_route('privileges_test', '/privileges')
@@ -279,6 +286,12 @@ def main(global_config, ** settings):
 
     config.add_route('cambodia_read_stakeholders', '/read/cambodia/stakeholders')
     config.add_route('cambodia_read_activities', '/read/cambodia/activities')
+
+    # Add a route to search locations
+    config.add_route('location_search', '/search')
+
+    # A route for ajax queries to get values for a given key
+    config.add_route('filterValues', '/json/filtervalues')
     
     # Error views
     config.add_forbidden_view(forbidden_view)

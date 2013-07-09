@@ -1,25 +1,32 @@
-<input type="text" 
-       name="${field.name}"
-       value="${cstruct}"
-        % if field.widget.size:
-            size = ${field.widget.size}
+<div class="row-fluid">
+    <div class="span4">
+        <label for="${field.oid}">
+            % if field.title:
+                ${field.title}
+            % elif field.name:
+                ${field.name}
+            % endif
+            % if field.required:
+                <span class="required-form-field"></span>
+            % elif desired:
+                <span class="desired-form-field"></span>
+            % endif
+        </label>
+    </div>
+    <div class="span8">
+        <input 
+            class="input-style"
+            type="text"
+            name="${field.name}"
+            value="${cstruct}"
+            id="${field.oid}"
+            placeholder="" />
+        % if helptext:
+            <div class="input-description">${helptext}</div>
         % endif
-    
-        % if field.widget.css_class:
-            class = ${field.widget.css_class}
-	% endif
+    </div>
+</div>
 
-        % if field.widget.style:
-            style = ${field.widget.style}
-        % endif
-
-	id="${field.oid}"
-/>
-
-% if helptext:
-    <span class="form_helptext">${helptext}</span>
-% endif
-           
 % if field.widget.mask:
     <script type="text/javascript">
         deform.addCallback(

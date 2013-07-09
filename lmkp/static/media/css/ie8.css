@@ -1,0 +1,34 @@
+
+.checkbox-modified label,
+.checkbox-modified-small label {
+   	display: none;
+}
+
+.checkbox-modified {
+	--float: right;
+}
+
+
+.deal-editor-menu-bar ul li {
+	--behavior: url("../media/htc/border-radius.htc");
+    --border-radius: 4px
+}
+
+.active-wrapper,
+.active-wrapper:hover {
+	background-size: 10px 10px;
+	padding-left: 9px;
+}
+
+
+
+/* media-queries */
+
+
+@media (max-width: 767px) {
+
+	.top-menu {
+		width: auto;
+	}
+
+}

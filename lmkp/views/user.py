@@ -10,15 +10,19 @@ from lmkp.models.meta import DBSession as Session
 from lmkp.views.profile import _processProfile
 from lmkp.views.views import BaseView
 import psycopg2.tz
+from mako.template import Template
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_locale_name
+from pyramid.path import AssetResolver
 from pyramid.renderers import render
+from pyramid.renderers import render_to_response
 from pyramid.response import Response
 from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
 from pyramid.security import has_permission
+from pyramid.threadlocal import get_current_request
 from pyramid.view import view_config
 import re
 from sqlalchemy import and_
@@ -30,6 +34,8 @@ import logging
 log = logging.getLogger(__name__)
 
 _ = TranslationStringFactory('lmkp')
+
+lmkpAssetResolver = AssetResolver('lmkp')
 
 def _is_valid_email(node, value):
     """
@@ -70,26 +76,28 @@ class UserView(BaseView):
         # Define a colander Schema for the self registration
         class Schema(colander.Schema):
             profile = colander.SchemaNode(colander.String(),
-                                          widget=deform.widget.SelectWidget(values=self._get_available_profiles()))
+                                          widget=deform.widget.SelectWidget(values=self._get_available_profiles()),
+                                          title='Profile')
             username = colander.SchemaNode(colander.String(),
                                            validator=_user_already_exists,
-                                           description='User name')
+                                           title='Username')
             password = colander.SchemaNode(colander.String(),
                                            validator=colander.Length(min=5),
                                            widget=deform.widget.CheckedPasswordWidget(size=20),
-                                           description='Type your password and confirm it')
+                                           title='Password')
             firstname = colander.SchemaNode(colander.String(),
                                             missing=unicode(u''),
-                                            description='First name')
+                                            title='First Name')
             lastname = colander.SchemaNode(colander.String(),
                                            missing=unicode(u''),
-                                           description='Last name')
+                                           title='Last Name')
             email = colander.SchemaNode(colander.String(),
                                         default='',
-                                        description="Valid email",
+                                        title="Valid Email",
                                         validator=_is_valid_email)
         schema = Schema()
-        form = deform.Form(schema, buttons=('submit',), use_ajax=True)
+        deform.Form.set_default_renderer(mako_renderer)
+        form = deform.Form(schema, buttons=('submit',))
 
         def succeed():
             """
@@ -118,7 +126,7 @@ class UserView(BaseView):
                             lastname=lastname_field,
                             activation_uuid=activation_uuid,
                             registration_timestamp=datetime.now())
-                            
+                    
             # Set the user profile
             new_user.profiles = [selected_profile]
             new_user.groups = [user_group]
@@ -134,10 +142,7 @@ class UserView(BaseView):
 
             self._send_email([email_field], _(u"The Land Observatory: Activate your Account"), email_text)
 
-            msg = '<div id="thanks">Thank you for registering!<br/>A message with an activation link has been sent to your email address.'
-            msg += 'Your account will be approved after activation.</div>'
-
-            return Response(msg)
+            return render_to_response('lmkp:templates/user_registration_success.mak', {}, request=self.request)
 
         return self._render_form(form, success=succeed)
 
@@ -521,3 +526,22 @@ def _user_exists(filterColumn, filterAttr):
         return True
 
     return False
+
+def mako_renderer(tmpl_name, **kw):
+    """
+    A helper function to use the mako rendering engine.
+    It seems to be necessary to locate the templates by using the asset
+    resolver.
+    """
+
+    if tmpl_name == 'form':
+        tmpl_name = 'form_userregistration'
+
+    resolver = lmkpAssetResolver.resolve('templates/form/%s.mak' % tmpl_name)
+    template = Template(filename=resolver.abspath())
+
+    # Add the request to the keywords so it is available in the templates.
+    request = get_current_request()
+    kw['request'] = request
+
+    return template.render(**kw)
