@@ -3,6 +3,8 @@ import copy
 import deform
 import logging
 from mako.template import Template
+#from datetime import datetime
+import datetime
 
 from lmkp.views.form_config import *
 from lmkp.models.meta import DBSession as Session
@@ -805,8 +807,8 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
     # Get the list of categories (needed to validate the tags)
     categorylist = getCategoryList(request, itemType)
     validJsonErrors = checkValidItemjson(categorylist, itemJson, output='list')
-#    if len(validJsonErrors) > 0:
-#        return {}
+    if len(validJsonErrors) > 0:
+        return {}
 
     data = {
         'id': itemJson['id'],
@@ -951,9 +953,16 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
         for t in taggroup['tags']:
             # Add the tag only if the key exists in this taggroup
             if tg.hasKey(t['key']):
+                configTag = categorylist.findTagByKeyName(t['key'])
                 if maintag.getKey().getType().lower() == 'checkbox':
                     # Checkboxes: List of tuples with name and tg_id
                     tagsdata[t['key']] = [(t['value'], taggroup['tg_id'])]
+                elif configTag.getKey().getType().lower() == 'date':
+                    try:
+                        d = datetime.datetime.strptime(t['value'], '%Y-%m-%d')
+                        tagsdata[t['key']] = d
+                    except ValueError:
+                        pass
                 else:
                     tagsdata[t['key']] = t['value']
 

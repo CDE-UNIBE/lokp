@@ -1740,29 +1740,13 @@ class ActivityProtocol3(Protocol):
             # Main Tag: First reset it. Then try to get it (its key and value)
             # from the dict.
 
-            # TODO: Once the new form is in place, replace the code below
-            # (maintag should be mandatory!)
-
             # The Main is indeed mandatory.
-#            try:
-#                main_tag = taggroup['main_tag']
-#                main_tag_key = main_tag['key']
-#                main_tag_value = main_tag['value']
-#            except KeyError:
-#                raise HTTPBadRequest(detail="No Main Tag provided. Taggroup %s has no taggroup." % taggroup)
-
-            # The Main Tag is not mandatory.
-            main_tag = None
-            main_tag_key = None
-            main_tag_value = None
             try:
                 main_tag = taggroup['main_tag']
                 main_tag_key = main_tag['key']
                 main_tag_value = main_tag['value']
             except KeyError:
-                pass
-
-            # TODO: End of replace
+                raise HTTPBadRequest(detail="No Main Tag provided. Taggroup %s has no taggroup." % taggroup)
 
             # Loop all tags within a tag group
             for tag in taggroup['tags']:

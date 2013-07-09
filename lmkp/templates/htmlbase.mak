@@ -107,7 +107,7 @@ for p in profiles:
             .input-append #new-filter-value {
                 width: 147px;
             }
-            #new-filter-value-box .dropdown-menu {
+            .new-filter .dropdown-menu {
                 max-height: 300px;
                 overflow-y: auto;
                 overflow-x: hidden;

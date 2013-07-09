@@ -18,7 +18,8 @@
             class="input-style"
             rows="4"
             id="${field.oid}"
-            name="${field.name}"></textarea>
+            name="${field.name}">${cstruct}
+        </textarea>
         % if helptext:
             <div class="input-description">${helptext}</div>
         % endif
