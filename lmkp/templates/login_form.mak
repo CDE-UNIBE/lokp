@@ -2,6 +2,15 @@
 
 <%def name="title()">Land Observatory - Login</%def>
 
+<%def name="head_tags()">
+    ## TODO: This should be fixed in bootstrap
+    <style type="text/css" >
+        p.login-info {
+            margin-left: 30px;
+        }
+    </style>
+</%def>
+
 <%
 mode = None
 if 'lmkp.mode' in request.registry.settings:
@@ -48,29 +57,28 @@ if 'lmkp.mode' in request.registry.settings:
         <div class="row-fluid">
             <div class="span12">
                 <h3>
-                    ${_(u"Welcome to the demonstration version of the Land Observatory.")}
+                    ${_(u"Demo Version")}
                 </h3>
-                    ${_(u"Any member of the public can log-in as an Editor or a Moderator.")}
-                    <ul>
-                        <p><b>${_(u"Editor")}</b>${_(u" has the permission to create or edit new Deals or Stakeholders")}</p>
-                        <ul>
-                            ${_(u"Username")}: editor<br/>${_(u"Password")}: editor
-                        </ul>
-                    </ul>
-                    <ul>
-                        <p><b>${_(u"Moderator")}</b>${_(u" has the additional permission to review pending changes in the global profile")}:</p>
-                        <ul>
-                            ${_(u"Username")}: moderator<br/>${_(u"Password")}: moderator
-                        </ul>
-                    </ul>
+                <p class="lead">This is the demonstration version of the <a href="http://www.landobservatory.org">Land Observatory</a>.</p>
+                <p>${_(u"Any member of the public can log-in as an Editor or a Moderator.")}</p>
+
+                <p><strong>Editor</strong> has the permission to create or edit new Deals or Stakeholders.</p>
+                <p class="login-info">
+                    Username: editor<br/>
+                    Password: editor
+                </p>
+
+                <p><strong>Moderator</strong>  has the additional permission to review pending changes.</p>
+                <p class="login-info">
+                    Username: moderator<br/>
+                    Password: moderator
+                </p>
+
                 <p>
                     ${_(u"This demo version is for learning and experimentation purposes, so first-time users can get a feel for the Observatory and its functions.")}
                 </p>
                 <p>
-                    ${_(u"New data added by users to the demo has not been verified in any way. It will be visible to the public, but deleted every 24 hours.")}
-                </p>
-                <p>
-                    ${_(u"We will be releasing the official, public version of the Observatory soon.")}
+                    ${_(u"New data added by users to the demo has not been verified in any way. It will be visible to the public, but the database will be reset regularly.")}
                 </p>
                 <p>
                     ${_(u"Please send your questions and feedback on the Observatory to: ")}<a href="mailto:info_landobservatory@cde.unibe.ch">info_landobservatory@cde.unibe.ch</a>

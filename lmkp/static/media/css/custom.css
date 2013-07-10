@@ -204,6 +204,11 @@ hr.lightgray {
 	height: 25px; /* .push must be the same height as .footer */
 }
 
+.landing-page-footer,
+.landing-page-push  {
+	height: 50px; /* .push must be the same height as .footer */
+}
+
 .push-top {
 	padding-top: 58px;
 }
@@ -481,7 +486,8 @@ span.arrow {
 
 
 
-.btn_favorite {
+.btn_favorite,
+.btn-country-selector {
 	background-image: none;
 	background-color: white;
 	width: 150px;
@@ -492,9 +498,19 @@ span.arrow {
 	cursor: text;
 }
 
+.btn-country-selector {
+	width: 130px;
+}
+
+
+
 .btn_favorite:hover,
 .btn_favorite:active,
-.btn_favorite:focus {
+.btn_favorite:focus,
+
+.btn-country-selector:hover,
+.btn-country-selector:active,
+.btn-country-selector:focus {
 	background-image: none;
 	background-color: white;
 	box-shadow: none;
@@ -581,6 +597,13 @@ span.arrow {
 .container {
 	min-height: 100%;
 }
+
+/*.landing-page {
+	background: #F2F2F2;
+	--position: relative;
+	--z-index: 1;
+	min-height: 100% !important;
+}*/
 
 .content {
 	border-right: 1px solid black;
@@ -1097,8 +1120,114 @@ p.deal-detail {
     width: 55px;
 }
 
+.dropdown-menu.country-selector  {
+	min-width: 0 !important;
+	width: 130px;
+}
 
 
+/* landing page */
+
+.country-selector {
+	float: right;
+}
+
+.item > img { 
+	margin: 0 auto; 
+}
+
+.carousel-inner {
+	border: 1px solid #cccccc;
+	border-radius: 4px;
+}
+
+.carousel-control {
+	position: absolute;
+	top: 48%;
+	left: 5px;
+	width: 40px;
+	height: 40px;
+	margin-top: -20px;
+	font-size: 70px;
+	font-weight: 100;
+	line-height: 30px;
+	color: #A4A4A4;
+	background: none;
+	border: none;
+	-webkit-border-radius: none;
+	-moz-border-radius: none;
+	border-radius: none;
+	opacity: 0.5;
+	filter: alpha(opacity=50);
+
+}
+
+.carousel-control.right {
+	left: auto;
+	right: 5px;
+}
+
+.carousel-controls {
+	display: none;
+}
+
+.carousel-inner:hover + .carousel-controls  {
+	display: block;
+}
+
+.slide {
+	max-height: 64%;
+}
+
+.carousel-indicators {
+	top: 105%;
+	right: 38%;
+}
+
+.carousel-indicators li {
+	background: white;
+	border: 1px solid #2E2E2E;
+	width: 17px;
+	height: 17px;
+	border-radius: 20px;
+}
+
+.carousel-indicators li:hover {
+	cursor: pointer;
+	background: gray;
+	border-color: gray;
+}
+.carousel-indicators .active {
+	background: #a3a708;
+	--border-color: #a3a708;
+}
+
+.carousel-caption {
+	opacity: 0.7;
+	background: white;
+}
+
+.carousel-caption h4,
+.carousel-caption p {
+	color: black;
+	text-align: center;
+}
+
+.carousel-caption h4 {
+	display: none;
+}
+
+.without-image{
+	top: 0;
+}
+
+.without-image {
+	top: 42%;
+}
+
+.carousel-caption:hover{
+	opacity: 1;
+}
 
 
 /*	footer   */
@@ -1139,7 +1268,6 @@ p.deal-detail {
 	bottom: 0;
 	width: 91.5%;
 }
-
 
 /*	tools	*/
 

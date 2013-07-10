@@ -1,6 +1,10 @@
 <%
 from lmkp.views.translation import get_profiles
 profiles = get_profiles()
+mode = None
+if 'lmkp.mode' in request.registry.settings:
+    if str(request.registry.settings['lmkp.mode']).lower() == 'demo':
+        mode = 'demo'
 %>
 
 <!DOCTYPE html>
@@ -11,7 +15,7 @@ profiles = get_profiles()
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>Land observatory</title>
+        <title>Land Observatory</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
    
@@ -99,7 +103,11 @@ profiles = get_profiles()
                         <div class="content no-border">
                             <div class="row-fluid">
 
-                                <div class="span10">
+                                % if mode != 'demo':
+                                    <div class="span10">
+                                % else:
+                                    <div class="span12">
+                                % endif
 
                                     <!-- slider -->
                                     <div id="myCarousel" class="carousel slide">
@@ -121,7 +129,6 @@ profiles = get_profiles()
                                             <div class="item active">
                                                 <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_01.png')}" alt="">
                                                 <div class="carousel-caption">
-                                                    <h4>First Thumbnail label</h4>
                                                     <p>This is a pilot project by some partners of the <a href="http://landmatrix.org/">Land Matrix</a>, designed to provide greater context and deeper insight on land deals, from a more local perspective.</p>
                                                 </div>
                                             </div>
@@ -129,7 +136,6 @@ profiles = get_profiles()
                                             <div class="item">
                                                 <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_02.png')}" alt="">
                                                 <div class="carousel-caption">
-                                                    <h4>Second Thumbnail label</h4>
                                                     <p>Users in select pilot countries gather, explore and analyze spatial data on large-scale land acquisitions.
                                                             Data is managed and reviewed locally by partners.
                                                             Select your country profile from the menu</p>
@@ -139,7 +145,6 @@ profiles = get_profiles()
                                             <div class="item">
                                                 <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_03.png')}" alt="">
                                                 <div class="carousel-caption">
-                                                    <h4>Third Thumbnail label</h4>
                                                     <p>Users can see deals in full geographical context, learn more about investors and the kinds of investments in question.</p>
                                                 </div>
                                             </div>
@@ -147,7 +152,6 @@ profiles = get_profiles()
                                             <div class="item">
                                                 <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_04.png')}" alt="">
                                                 <div class="carousel-caption">
-                                                    <h4>Third Thumbnail label</h4>
                                                     <p>You can also select a specific land deal to see more: "who" (investors and other stakeholders) and "what" the land will be used for </p>
                                                 </div>
                                             </div>
@@ -155,7 +159,6 @@ profiles = get_profiles()
                                             <div class="item">
                                                 <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_05.png')}" alt="">
                                                 <div class="carousel-caption">
-                                                    <h4>Fifth Thumbnail label</h4>
                                                     <p>You can go further and learn more about an investor, seeing the same investor's other land deals.</p>
                                                 </div>
                                             </div>
@@ -163,7 +166,6 @@ profiles = get_profiles()
                                             <div class="item">
                                                 <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_06.png')}" alt="">
                                                 <div class="carousel-caption">
-                                                    <h4>Sixth Thumbnail label</h4>
                                                     <p>Logged in users can also help contribute and update data, and anybody can freely comment on it. </p>
                                                 </div>
                                             </div>
@@ -171,7 +173,6 @@ profiles = get_profiles()
                                             <div class="item">
                                                 <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_07.png')}" alt="">
                                                 <div class="carousel-caption">
-                                                    <h4>Seventh Thumbnail label</h4>
                                                     <p>You can filter the land deals by various attributes – like size, or crop. Or make a spatial selection of land deals</p>
                                                 </div>
                                             </div>
@@ -179,7 +180,6 @@ profiles = get_profiles()
                                             <div class="item">
                                                 <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_08.png')}" alt="">
                                                 <div class="carousel-caption">
-                                                    <h4>Eighth Thumbnail label</h4>
                                                     <p>Want to know if anybody lives on a concession? Use the context layers to view population density and more</p>
                                                 </div>
                                             </div>
@@ -187,7 +187,6 @@ profiles = get_profiles()
                                             <div class="item">
                                                 <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_09.png')}" alt="">
                                                 <div class="carousel-caption without-image">
-                                                    <h4>Ninth Thumbnail label</h4>
                                                     <p class="without-image">We are still adding a number of features. Please feel free to write us with questions or <a href="mailto:info_landobservatory@cde.unibe.ch" title="info_landobservatory@cde.unibe.ch">feedback</a></p>
                                                 </div>
                                             </div>
@@ -203,28 +202,40 @@ profiles = get_profiles()
                                     </div>
                                 </div>
 
-                                <div class="span2">
-                                    <div class="country-selector">
-                                        <div class="btn-group">
-                                            <button class="btn btn-country-selector">Select country</button>
-                                            <button class="btn btn_favorite_right dropdown-toggle" data-toggle="dropdown">
-                                                <span class="caret"></span>
-                                            </button>
-                                            <ul class="dropdown-menu country-selector">
-
-                                                % for p in sorted(profiles, key=lambda profile: profile[0]):
-                                                    <li><a href="/${p[0]}">${p[0]}</a></li>
-                                                % endfor
-
-<!--                                                <li><a href="#">Cambodia</a></li>
-                                                <li><a href="#">Laos</a></li>
-                                                <li><a href="#">Peru</a></li>
-                                                <li><a href="#">Tanzania</a></li>-->
-                                            </ul>
+                                % if mode != 'demo':
+                                    <div class="span2">
+                                        <div class="country-selector">
+                                            <div class="btn-group">
+                                                <button class="btn btn-country-selector">Select country</button>
+                                                <button class="btn btn_favorite_right dropdown-toggle" data-toggle="dropdown">
+                                                    <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu country-selector">
+                                                    % for p in sorted(profiles, key=lambda profile: profile[0]):
+                                                        <li><a href="/${p[0]}">${p[0]}</a></li>
+                                                    % endfor
+                                                </ul>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                % endif
                             </div>
+
+                            % if mode == 'demo':
+                                <div class="row-fluid">
+                                    <h3>Demo Version</h3>
+                                    <p class="lead">Welcome to the demonstration version of the <a href="http://www.landobservatory.org">Land Observatory</a>.</p>
+                                    <p>
+                                        This demo version is for learning and experimentation purposes, so first-time users can get a feel for the Observatory and its functions.
+                                    </p>
+                                    <p>Any member of the public can log-in as an Editor or a Moderator. New data added by users to the demo has not been verified in any way. It will be visible to the public, but the database will be reset regularly.</p>
+                                    <p>&nbsp;</p>
+                                    <p class="text-right">
+                                        <a href="/global" class="btn btn-primary">Continue</a>
+                                    </p>
+                                </div>
+                            % endif
+
                         </div>
                     </div>
                 </div>

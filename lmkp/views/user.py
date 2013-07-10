@@ -6,6 +6,7 @@ from lmkp.models.database_objects import Group
 from lmkp.models.database_objects import Profile
 from lmkp.models.database_objects import User
 from lmkp.models.database_objects import users_groups
+from lmkp.models.database_objects import users_profiles
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.profile import _processProfile
 from lmkp.views.views import BaseView
@@ -30,6 +31,7 @@ from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound
 import uuid
 import logging
+from lmkp.views.profile import get_current_profile
 
 log = logging.getLogger(__name__)
 
@@ -76,8 +78,12 @@ class UserView(BaseView):
         # Define a colander Schema for the self registration
         class Schema(colander.Schema):
             profile = colander.SchemaNode(colander.String(),
-                                          widget=deform.widget.SelectWidget(values=self._get_available_profiles()),
-                                          title='Profile')
+                widget=deform.widget.TextInputWidget(template='hidden'),
+                name='profile',
+                title='Profile',
+                default=get_current_profile(self.request),
+                missing='global'
+                )
             username = colander.SchemaNode(colander.String(),
                                            validator=_user_already_exists,
                                            title='Username')
@@ -220,18 +226,37 @@ class UserView(BaseView):
         "approval_link": "http://%s/users/approve?user=%s&name=%s" % (self.request.environ['HTTP_HOST'], user.uuid, user.username)
         }
 
-        # Send an email to all administrators, needs to be adapted later to
-        # the responsible moderator
+        # Send an email to all moderators of the profile in which the user
+        # registered.
         email_text = render('lmkp:templates/emails/approval.mak', approval_dict, request=self.request)
+
+        # Determine profile. Each user should only have one profile when 
+        # registering!
+        profiles = [p.code for p in user.profiles]
+        profile = profiles[0]
+
+        # Find moderators of this profile
+        moderators = Session.query(User).\
+            join(users_groups).\
+            join(Group).\
+            join(users_profiles).\
+            join(Profile).\
+            filter(Group.name == 'moderators').\
+            filter(Profile.code == profile)
 
         # A list with email addresses the email is sent to
         email_addresses = []
+        for m in moderators.all():
+            email_addresses.append(m.email)
 
-        # Get all users with administrators privileges
-        for admin_user in Session.query(User).join(users_groups).join(Group).filter(func.lower(Group.name) == 'administrators'):
-            email_addresses.append(admin_user.email)
+        if len(email_addresses) == 0:
+            # If no moderator, try to contact the administrators
+            for admin_user in Session.query(User).join(users_groups).join(Group).filter(func.lower(Group.name) == 'administrators'):
+                email_addresses.append(admin_user.email)
+            log.debug("No moderator found for profile %s. Approval emails will be sent to administrators: %s" % (profile, email_addresses))
 
-        log.debug("Approval emails will be sent to %s" % email_addresses)
+        else:
+            log.debug("Approval emails will be sent to moderators of %s profile: %s" % (profile, email_addresses))
 
         # Send the email
         self._send_email(email_addresses,

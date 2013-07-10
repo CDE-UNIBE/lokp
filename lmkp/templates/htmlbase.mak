@@ -1,11 +1,21 @@
 <%
 from lmkp.views.views import getQueryString
 from lmkp.views.translation import get_languages
+from lmkp.views.translation import get_profiles
 languages = get_languages()
 selectedlanguage = languages[0]
 for l in languages:
     if locale == l[0]:
         selectedlanguage = l
+profiles = get_profiles()
+selectedprofile = None
+for p in profiles:
+   if profile == p[0]:
+       selectedprofile = p
+mode = None
+if 'lmkp.mode' in request.registry.settings:
+    if str(request.registry.settings['lmkp.mode']).lower() == 'demo':
+        mode = 'demo'
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -154,7 +164,11 @@ for l in languages:
                     <div class="container">
                         <div class="logo">
                             <a href="${request.route_url('map_view')}">
-                                <img src="${request.static_url('lmkp:static/media/img/logo.png')}" />
+                                % if mode == 'demo':
+                                    <img src="${request.static_url('lmkp:static/img/logo_demo.png')}" />
+                                % else:
+                                    <img src="${request.static_url('lmkp:static/media/img/logo.png')}" />
+                                % endif
                             </a>
                         </div>
                         <div class="top_menu">
@@ -224,14 +238,16 @@ for l in languages:
                                             </a>
                                         </div>
                                     </li>
-                                    <li>/</li>
-                                    <li class="active">
-                                        <div>
-                                            <a class="blacktemp" href="${request.route_url('user_self_registration')}">
-                                                Register
-                                            </a>
-                                        </div>
-                                    </li>
+                                    % if mode != 'demo':
+                                        <li>/</li>
+                                        <li class="active">
+                                            <div>
+                                                <a class="blacktemp" href="${request.route_url('user_self_registration')}">
+                                                    Register
+                                                </a>
+                                            </div>
+                                        </li>
+                                    % endif
                                 % else:
                                     <li>
                                         <div>
@@ -256,6 +272,28 @@ for l in languages:
                                         </ul>
                                     </div>
                                 </li>
+                                % if len(profiles) >= 1:
+                                   <li>|</li>
+                                   <li>
+                                       <div class="dropdown">
+                                           <a class="dropdown-toggle blacktemp" data-toggle="dropdown" href="#">
+                                               % if selectedprofile is None:
+                                                   Select Profile
+                                               % else:
+                                                   ${selectedprofile[1]}
+                                               % endif
+                                               <b class="caret"></b>
+                                           </a>
+                                           <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
+                                               % for p in profiles:
+                                                   <li class="cursor">
+                                                       <a href="/${p[0]}">${p[1]}</a>
+                                                   </li>
+                                               % endfor
+                                           </ul>
+                                       </div>
+                                   </li>
+                               % endif
                             </ul>
                         </div>
                     </div>
