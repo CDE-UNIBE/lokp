@@ -58,8 +58,7 @@ extent = json.dumps(_getCurrentProfileExtent(request))
 ## Start of content
 
 ## Filter
-##<%include file="lmkp:templates/parts/filter.mak" />
-<div class="filter_area_openclose">&nbsp;</div>
+<%include file="lmkp:templates/parts/filter.mak" />
 
 <!-- content -->
 <div id="googleMapFull">
