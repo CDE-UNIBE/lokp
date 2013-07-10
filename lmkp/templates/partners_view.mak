@@ -16,7 +16,7 @@
         <div class="row-fluid">
             <div class="span4 text-left">
                 <a href="http://www.landcoalition.org/" target="_blank">
-                    <img src="${request.static_url('lmkp:static/img/logos/ilc2.png')}" />
+                    <img src="${request.static_url('lmkp:static/img/logos/ilc.png')}" />
                 </a>
             </div>
             <div class="span4 text-center">
