@@ -145,9 +145,9 @@ if 'lmkp.mode' in request.registry.settings:
 	            	<div class="row-fluid">
 
 
-                            <div class="span10">
+                            <div class="span10 offset1">
 
-                                    <!-- slider -->
+                                <!-- slider -->
                                 <div id="myCarousel" class="carousel slide">
                                     <ol class="carousel-indicators">
                                         <li data-target="#myCarousel" data-slide-to="0" class="active"></li>

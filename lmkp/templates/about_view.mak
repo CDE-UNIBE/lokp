@@ -17,11 +17,8 @@
 <div class="container">
     <div class="content no-border">
 
-        <h3>
-            About the Land Observatory
-        </h3>
         <p class="lead">
-            The Land Observatory is a pilot project of some of the partners of the Land Matrix initiative, to crowdsource data about land deals, allowing for greater transparency and improved decision-making.
+            The Land Observatory is a pilot project of some of the partners of the Land Matrix initiative, to support observatories designed to crowdsource data about land deals, allowing for greater transparency and improved decision-making.
         </p>
         <p>
             We are co-creating software with partner organizations in pilot countries that will allow for them to
@@ -47,6 +44,13 @@
         <p>
             Updated information on land will benefit citizens, but also governments and companies interested in sustainability.
         </p>
+
+        <p>&nbsp;</p>
+
+        <p>
+            <a href="https://www.youtube.com/watch?v=aYKnZOr6NdM">View our brief video introduction here</a>
+        </p>
+
     </div>
 </div>
 
