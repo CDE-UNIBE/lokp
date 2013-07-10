@@ -287,7 +287,7 @@ if 'lmkp.mode' in request.registry.settings:
                                            <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
                                                % for p in profiles:
                                                    <li class="cursor">
-                                                       <a href="${getQueryString(request.url, add=[('_PROFILE_', p[0])])}">${p[1]}</a>
+                                                       <a href="/${p[0]}">${p[1]}</a>
                                                    </li>
                                                % endfor
                                            </ul>
