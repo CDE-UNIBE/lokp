@@ -138,6 +138,9 @@ if 'lmkp.mode' in request.registry.settings:
                 border: medium none;
                 box-shadow: none;
             }
+            [class*="filter-variable"] {
+                width: 425px;
+            }
 
         </style>
 
