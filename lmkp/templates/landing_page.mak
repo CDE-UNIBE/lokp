@@ -254,7 +254,7 @@ if 'lmkp.mode' in request.registry.settings:
                         footer = [
                             [request.route_url('faq_view'), 'FAQ'],
                             [request.route_url('about_view'), 'About'],
-                            [request.route_url('partners_view'), 'Partners']
+                            [request.route_url('partners_view'), 'Partners & Donors']
                         ]
                         %>
 
