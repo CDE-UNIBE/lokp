@@ -620,4 +620,9 @@ def get_languages():
     return Session.query(Language.locale, Language.local_name).all()
 
 def get_profiles():
-    return Session.query(Profile.code, Profile.code).all()
+    """
+    Never return the global profile!
+    """
+    profiles = Session.query(Profile.code, Profile.code).all()
+    ret = [p for p in profiles if p[0] != 'global']
+    return ret

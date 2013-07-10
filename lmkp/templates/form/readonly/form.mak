@@ -1,6 +1,10 @@
 <%
     isStakeholder = 'itemType' in cstruct and cstruct['itemType'] == 'stakeholders'
     statusId = cstruct['statusId'] if 'statusId' in cstruct else '2'
+
+    from pyramid.security import ACLAllowed
+    from pyramid.security import has_permission
+    isModerator = isinstance(has_permission('moderate', request.context, request), ACLAllowed)
 %>
 
 % if statusId != '2':
@@ -37,10 +41,20 @@
     <div class="span3 text-right">
         % if request.user and 'id' in cstruct:
             % if isStakeholder:
+                % if isModerator and statusId == '1':
+                    <a href="${request.route_url('stakeholders_moderate_item', uid=cstruct['id'])}" target="_blank">
+                        <i class="icon-check">&nbsp;&nbsp;Review this version</i>
+                    </a><br/>
+                % endif
                 <a href="${request.route_url('stakeholders_read_one', output='form', uid=cstruct['id'])}">
                     <i class="icon-pencil"></i>&nbsp;&nbsp;Edit this Stakeholder
                 </a>
             % else:
+                % if isModerator and statusId == '1':
+                    <a href="${request.route_url('activities_moderate_item', uid=cstruct['id'])}" target="_blank">
+                        <i class="icon-check">&nbsp;&nbsp;Review this version</i>
+                    </a><br/>
+                % endif
                 <a href="${request.route_url('activities_read_one', output='form', uid=cstruct['id'])}">
                     <i class="icon-pencil"></i>&nbsp;&nbsp;Edit this deal
                 </a>
@@ -76,10 +90,20 @@
             <a href="${request.route_url('stakeholders_read_one', output='form', uid=cstruct['id'])}">
                 <i class="icon-pencil"></i>&nbsp;&nbsp;Edit this Stakeholder
             </a>
+            % if isModerator and statusId == '1':
+                &nbsp;|&nbsp;<a href="${request.route_url('stakeholders_moderate_item', uid=cstruct['id'])}" target="_blank">
+                    <i class="icon-check">&nbsp;&nbsp;Review this version</i>
+                </a>
+            % endif
         % else:
             <a href="${request.route_url('activities_read_one', output='form', uid=cstruct['id'])}">
                 <i class="icon-pencil"></i>&nbsp;&nbsp;Edit this Deal
             </a>
+            % if isModerator and statusId == '1':
+                &nbsp;|&nbsp;<a href="${request.route_url('activities_moderate_item', uid=cstruct['id'])}" target="_blank">
+                    <i class="icon-check">&nbsp;&nbsp;Review this version</i>
+                </a>
+            % endif
         % endif
     </div>
 % endif

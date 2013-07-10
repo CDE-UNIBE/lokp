@@ -70,7 +70,7 @@ class LoginView(BaseView):
             and not self.request.referer.startswith(self.request.route_url('login_form')):
             came_from = self.request.referer
         else:
-            came_from = self.request.route_url('index')
+            came_from = self.request.route_url('map_view')
 
         # Make sure the user is not logged in
         principals = effective_principals(self.request)
@@ -85,7 +85,7 @@ class LoginView(BaseView):
         if self.request.params.get('came_from') is not None:
             came_from = self.request.params.get('came_from')
         else:
-            came_from = self.request.route_url('index')
+            came_from = self.request.route_url('map_view')
 
         # Make sure the user is not logged in
         principals = effective_principals(self.request)
@@ -117,7 +117,7 @@ class LoginView(BaseView):
         came_from = self.request.params.get('came_from', None)
         return {'came_from': came_from}
 
-    @view_config(route_name='logout', renderer='lmkp:templates/index.pt')
+    @view_config(route_name='logout')
     def logout(self):
         headers = forget(self.request)
-        return HTTPFound(location=self.request.route_url('index'), headers=headers)
+        return HTTPFound(location=self.request.route_url('map_view'), headers=headers)
