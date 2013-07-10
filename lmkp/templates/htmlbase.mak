@@ -340,12 +340,12 @@ if 'lmkp.mode' in request.registry.settings:
                 footer = [
                     [request.route_url('faq_view'), 'FAQ'],
                     [request.route_url('about_view'), 'About'],
-                    [request.route_url('partners_view'), 'Partners']
+                    [request.route_url('partners_view'), 'Partners & Donors']
                 ]
                 %>
 
                 % for f in footer:
-                    <li 
+                    <li
                         % if request.current_route_url() == f[0]:
                             class="active"
                         % endif
@@ -377,7 +377,7 @@ if 'lmkp.mode' in request.registry.settings:
             g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
             s.parentNode.insertBefore(g,s)}(document,'script'));
         </script>
-    
+
         ## Include the bottom tags of the child template if available.
         <%
             try:

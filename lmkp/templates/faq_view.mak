@@ -36,11 +36,11 @@
             </ul>
         <hr class="grey" />
 
-        <a name="q1"></a><p class="lead">Who "owns" each observatory in the five pilot countries?</p>
+        <a name="q2"></a><p class="lead">Why are there observatories in only five countries?</p>
         <p>We are piloting this project in five countries. More than just testing software, this requires partners to design crowdsourcing campaigns and organise multi-stakeholder platforms to manage the observatories. These are all very intensive processes and need time. We plan to scale, and seed observatories in other countries in the near future.</p>
         <hr class="grey" />
 
-        <a name="q2"></a><p class="lead">Why are there observatories in only five countries?</p>
+        <a name="q1"></a><p class="lead">Who "owns" each observatory in the five pilot countries?</p>
         <p>We have co-developed this software with partners in country, and we are still firming up formal arrangements with partner organisations, and where possible with governments. Generally speaking, each observatory will have its own governance structure and moderation team and procedures. More information will be made available soon about each country.</p>
         <hr class="grey" />
 
