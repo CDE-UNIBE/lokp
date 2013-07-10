@@ -6,6 +6,10 @@ selectedlanguage = languages[0]
 for l in languages:
     if locale == l[0]:
         selectedlanguage = l
+mode = None
+if 'lmkp.mode' in request.registry.settings:
+    if str(request.registry.settings['lmkp.mode']).lower() == 'demo':
+        mode = 'demo'
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -154,7 +158,11 @@ for l in languages:
                     <div class="container">
                         <div class="logo">
                             <a href="${request.route_url('map_view')}">
-                                <img src="${request.static_url('lmkp:static/media/img/logo.png')}" />
+                                % if mode == 'demo':
+                                    <img src="${request.static_url('lmkp:static/img/logo_demo.png')}" />
+                                % else:
+                                    <img src="${request.static_url('lmkp:static/media/img/logo.png')}" />
+                                % endif
                             </a>
                         </div>
                         <div class="top_menu">
@@ -224,14 +232,16 @@ for l in languages:
                                             </a>
                                         </div>
                                     </li>
-                                    <li>/</li>
-                                    <li class="active">
-                                        <div>
-                                            <a class="blacktemp" href="${request.route_url('user_self_registration')}">
-                                                Register
-                                            </a>
-                                        </div>
-                                    </li>
+                                    % if mode != 'demo':
+                                        <li>/</li>
+                                        <li class="active">
+                                            <div>
+                                                <a class="blacktemp" href="${request.route_url('user_self_registration')}">
+                                                    Register
+                                                </a>
+                                            </div>
+                                        </li>
+                                    % endif
                                 % else:
                                     <li>
                                         <div>
