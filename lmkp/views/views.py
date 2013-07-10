@@ -128,7 +128,7 @@ class MainView(BaseView):
     def profile_global(self):
         return change_profile(self.request, 'global')
 
-    @view_config(route_name='index', renderer='lmkp:templates/landingpage.mak')
+    @view_config(route_name='index', renderer='lmkp:templates/landing_page.mak')
     def index(self):
         """
         Returns the main HTML page

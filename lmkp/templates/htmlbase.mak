@@ -153,7 +153,7 @@ for l in languages:
                 <div class="navbar header_self">
                     <div class="container">
                         <div class="logo">
-                            <a href="${request.route_url('index')}">
+                            <a href="${request.route_url('map_view')}">
                                 <img src="${request.static_url('lmkp:static/media/img/logo.png')}" />
                             </a>
                         </div>
