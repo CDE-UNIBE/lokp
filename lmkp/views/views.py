@@ -7,6 +7,7 @@ from geoalchemy.functions import functions as geofunctions
 from geoalchemy import utils
 from pyramid.httpexceptions import HTTPFound
 from pyramid.response import Response
+from pyramid.renderers import render_to_response
 from pyramid.view import view_config
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
@@ -91,9 +92,43 @@ class BaseView(object):
         message = Message(subject=subject, recipients=recipients, body=body)
         mailer.send(message)
 
+def change_profile(request, profile):
+    """
+    Sets a cookie for the given profile and deletes any location set in the
+    cookies.
+    Returns a response which directs to the map view.
+    """
+    response = HTTPFound(location=request.route_url('map_view'))
+    response.set_cookie('_PROFILE_', profile, timedelta(days=90))
+
+    if '_LOCATION_' in request.cookies:
+        response.delete_cookie('_LOCATION_')
+
+    return response
+
 class MainView(BaseView):
 
-    @view_config(route_name='index', renderer='lmkp:templates/index.mak')
+    @view_config(route_name='profile_cambodia')
+    def profile_cambodia(self):
+        return change_profile(self.request, 'cambodia')
+
+    @view_config(route_name='profile_laos')
+    def profile_laos(self):
+        return change_profile(self.request, 'laos')
+
+    @view_config(route_name='profile_peru')
+    def profile_peru(self):
+        return change_profile(self.request, 'peru')
+
+    @view_config(route_name='profile_madagascar')
+    def profile_madagascar(self):
+        return change_profile(self.request, 'madagascar')
+
+    @view_config(route_name='profile_global')
+    def profile_global(self):
+        return change_profile(self.request, 'global')
+
+    @view_config(route_name='index', renderer='lmkp:templates/landing_page.mak')
     def index(self):
         """
         Returns the main HTML page
@@ -101,7 +136,10 @@ class MainView(BaseView):
 
         self._handle_parameters()
         
-        return {}
+        return {
+            'profile': get_current_profile(self.request),
+            'locale': get_current_locale(self.request)
+        }
 
     @view_config(route_name='map_view', renderer='lmkp:templates/map_view.mak')
     def map_view(self):
@@ -126,6 +164,36 @@ class MainView(BaseView):
         self._handle_parameters()
 
         return {"profile": get_current_profile(self.request), "locale": get_current_locale(self.request)}
+
+    @view_config(route_name='about_view', renderer='lmkp:templates/about_view.mak')
+    def about_view(self):
+
+        self._handle_parameters()
+
+        return {
+            'profile': get_current_profile(self.request),
+            'locale': get_current_locale(self.request)
+        }
+
+    @view_config(route_name='faq_view', renderer='lmkp:templates/faq_view.mak')
+    def faq_view(self):
+
+        self._handle_parameters()
+
+        return {
+            'profile': get_current_profile(self.request),
+            'locale': get_current_locale(self.request)
+        }
+
+    @view_config(route_name='partners_view', renderer='lmkp:templates/partners_view.mak')
+    def partners_view(self):
+
+        self._handle_parameters()
+
+        return {
+            'profile': get_current_profile(self.request),
+            'locale': get_current_locale(self.request)
+        }
 
     @view_config(route_name='embedded_index', renderer='lmkp:templates/embedded.mak')
     def embedded_version(self):
@@ -305,6 +373,7 @@ def getActiveFilters(request):
     operators = {
         'like': '=',
         'nlike': '!=',
+        'ilike': '=',
         'eq': '=',
         'ne': '!=',
         'lt': '<',

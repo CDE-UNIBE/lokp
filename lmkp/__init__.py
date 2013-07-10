@@ -115,11 +115,19 @@ def main(global_config, ** settings):
     # Add a renderer to return JavaScript files
     config.add_renderer('javascript', JavaScriptRenderer())
 
+    config.add_route('profile_cambodia', '/cambodia')
+    config.add_route('profile_laos', '/laos')
+    config.add_route('profile_peru', '/peru')
+    config.add_route('profile_madagascar', '/madagascar')
+    config.add_route('profile_global', '/global')
 
     #
     config.add_route("map_view", "/map")
     config.add_route("grid_view", "/grid")
     config.add_route("charts_view", "/charts")
+    config.add_route('about_view', '/about')
+    config.add_route('faq_view', '/faq')
+    config.add_route('partners_view', '/partners')
 
     """
     Activities

@@ -1,5 +1,14 @@
 $(document).ready(function() {
 
+    // Collect any active filters (both A and SH)
+    var filterParams = [], hash;
+    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    for (var i = 0; i < hashes.length; i++) {
+        if (hashes[i].lastIndexOf('a__', 0) === 0 || hashes[i].lastIndexOf('sh__', 0) === 0) {
+            filterParams.push(hashes[i]);
+        }
+    }
+
     /**
      * Static variables
      */
@@ -233,10 +242,7 @@ $(document).ready(function() {
                 externalProjection: geographicProjection,
                 internalProjection: sphericalMercatorProjection
             }),
-            params: {
-                "a__Intention of Investment__like": "Agriculture"
-            },
-            url: "/activities/geojson"
+            url: "/activities/geojson?" + $.merge(["a__Intention of Investment__like=Agriculture"], filterParams).join('&')
         }),
         sphericalMercator: true,
         strategies: [
@@ -311,7 +317,7 @@ $(document).ready(function() {
             params: {
                 "a__Intention of Investment__like": "Forestry"
             },
-            url: "/activities/geojson"
+            url: "/activities/geojson?" + $.merge(["a__Intention of Investment__like=Forestry"], filterParams).join('&')
         }),
         sphericalMercator: true,
         strategies: [
@@ -373,10 +379,7 @@ $(document).ready(function() {
                 externalProjection: geographicProjection,
                 internalProjection: sphericalMercatorProjection
             }),
-            params: {
-                "a__Intention of Investment__like": "Mining"
-            },
-            url: "/activities/geojson"
+            url: "/activities/geojson?" + $.merge(["a__Intention of Investment__like=Mining"], filterParams).join('&')
         }),
         sphericalMercator: true,
         strategies: [
@@ -438,10 +441,7 @@ $(document).ready(function() {
                 externalProjection: geographicProjection,
                 internalProjection: sphericalMercatorProjection
             }),
-            params: {
-                "a__Intention of Investment__like": "Tourism"
-            },
-            url: "/activities/geojson"
+            url: "/activities/geojson?" + $.merge(["a__Intention of Investment__like=Tourism"], filterParams).join('&')
         }),
         sphericalMercator: true,
         strategies: [
@@ -503,10 +503,7 @@ $(document).ready(function() {
                 externalProjection: geographicProjection,
                 internalProjection: sphericalMercatorProjection
             }),
-            params: {
-                "a__Intention of Investment__like": "Other"
-            },
-            url: "/activities/geojson"
+            url: "/activities/geojson?" + $.merge(["a__Intention of Investment__like=Other"], filterParams).join('&')
         }),
         sphericalMercator: true,
         strategies: [
