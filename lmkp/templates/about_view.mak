@@ -21,7 +21,7 @@
             About the Land Observatory
         </h3>
         <p class="lead">
-            The Land Observatory is a pilot project of some of the partners of the Land Matrix, to crowdsource data about large-scale land acquisition, allowing for greater transparency and improved decision-making.
+            The Land Observatory is a pilot project of some of the partners of the Land Matrix initiative, to crowdsource data about land deals, allowing for greater transparency and improved decision-making.
         </p>
         <p>
             We are co-creating software with partner organizations in pilot countries that will allow for them to
@@ -39,10 +39,10 @@
             </li>
         </ul>
         <p>
-            We are piloting this project in five countries - Cambodia, Laos, Madagascar, Peru and Tanzania, with partners and governments who will work to open government data, crowdsource and help customize local observatories using our software.
+            We are piloting this project in five countries - Cambodia, Laos, Madagascar, Peru and Tanzania, with civil society partners and governments who will work to open government data, crowdsource and help customize local observatories using our software.
         </p>
         <p>
-            But the project is not merely technical, we are accompanying partners as they test different crowdsourcing strategies. Partners and their extended networks play a crucial role in bringing the online information to the real world, and back again.
+            The project is not merely technical, we are accompanying partners as they test different crowdsourcing strategies. Partners and their extended networks play a crucial role in bringing the online information to the real world, and back again.
         </p>
         <p>
             Updated information on land will benefit citizens, but also governments and companies interested in sustainability.
