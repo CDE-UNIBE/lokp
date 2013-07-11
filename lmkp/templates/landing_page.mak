@@ -56,25 +56,27 @@ if 'lmkp.mode' in request.registry.settings:
             ul.country-selector {
                 text-transform: uppercase;
             }
-
-            /* Tin's edits */
-
-            .landing-action {
-
-            }
-            .landing-action p {
-                float: left;
-                margin: 5px;
-            }
-            .logo {
-                float: left;
-            }
-
             .carousel-caption p {
                 font-size: 16px;
             }
             .carousel-caption {
                 opacity: 0.8;
+            }
+            .country-selector {
+                float: none;
+            }
+            .header_self {
+                height: inherit;
+                max-height: none;
+            }
+            .lo_logo {
+                margin: 0 0 5px 5px;
+            }
+            div.visible-phone>div {
+                padding: 0 10px;
+            }
+            div.visible-phone div.btn-group {
+                margin: 0 0 10px 0;
             }
 
         </style>
@@ -109,34 +111,63 @@ if 'lmkp.mode' in request.registry.settings:
 
 	        <div class="navbar header_self">
 	            <div class="container">
-	                <div class="logo">
-                            <a href="${request.route_url('index')}">
-                                <img src="${request.static_url('lmkp:static/media/img/logo.png')}" />
-	                    </a>
-	                </div>
+                        <div class="row-fluid hidden-phone">
+                            <div class="span3 text-right">
+                                <a href="${request.route_url('index')}">
+                                    <img src="${request.static_url('lmkp:static/media/img/logo.png')}" class="lo_logo" />
+                                </a>
+                            </div>
 
-	            	<div class="span6 landing-action">
-                            <p>
-                            The <b>Land Observatory</b> is a pilot project by some partners of the <a href="http://www.landmatrix.org">Land Matrix</a>, designed to provide greater context and deeper insight on land deals, from a more local perspective. Please <b>choose a country</b> from the drop-down menu:
-                            </p>
-                        </div>
-                        <div class="span2">
-                            <div class="country-selector">
-                                <div class="btn-group">
-                                    <button class="btn btn-country-selector">Select country</button>
-                                    <button class="btn btn_favorite_right dropdown-toggle" data-toggle="dropdown">
-                                        <span class="caret"></span>
-                                    </button>
-                                    <ul class="dropdown-menu country-selector">
-                                        % for p in sorted(profiles, key=lambda profile: profile[0]):
-                                            <li><a href="/${p[0]}">${p[0]}</a></li>
-                                        % endfor
-                                    </ul>
+                            <div class="span6 landing-action">
+                                    <p>
+                                    The <b>Land Observatory</b> is a pilot project by some partners of the <a href="http://www.landmatrix.org">Land Matrix</a>, designed to provide greater context and deeper insight on land deals, from a more local perspective. Please <b>choose a country</b> from the drop-down menu:
+                                    </p>
+                            </div>
+                            <div class="span3 text-left">
+                                <div class="country-selector">
+                                    <div class="btn-group">
+                                        <button class="btn btn-country-selector">Select country</button>
+                                        <button class="btn btn_favorite_right dropdown-toggle" data-toggle="dropdown">
+                                            <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu country-selector">
+                                            % for p in sorted(profiles, key=lambda profile: profile[0]):
+                                                <li><a href="/${p[0]}">${p[0]}</a></li>
+                                            % endfor
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-	            </div>
-	        </div>
+                        <div class="row-fluid visible-phone">
+                            <div class="span3">
+                                <a href="${request.route_url('index')}">
+                                    <img src="${request.static_url('lmkp:static/media/img/logo.png')}" class="lo_logo" />
+                                </a>
+                            </div>
+                            <div class="span6 landing-action">
+                                    <p>
+                                    The <b>Land Observatory</b> is a pilot project by some partners of the <a href="http://www.landmatrix.org">Land Matrix</a>, designed to provide greater context and deeper insight on land deals, from a more local perspective. Please <b>choose a country</b> from the drop-down menu:
+                                    </p>
+                            </div>
+                            <div class="span3">
+                                <div class="country-selector">
+                                    <div class="btn-group">
+                                        <button class="btn btn-country-selector">Select country</button>
+                                        <button class="btn btn_favorite_right dropdown-toggle" data-toggle="dropdown">
+                                            <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu country-selector">
+                                            % for p in sorted(profiles, key=lambda profile: profile[0]):
+                                                <li><a href="/${p[0]}">${p[0]}</a></li>
+                                            % endfor
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
 	    	<!-- content -->
 
