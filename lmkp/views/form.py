@@ -987,7 +987,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
                             (t['value'], taggroup['tg_id'])
                         )
                     else:
-                        log.debug('DUPLICATE TAGGROUP: Taggroup %s in thematic group %s and category %s appears twice although it is not repeatable!' % (cat, thmg, tg))
+                        log.debug('DUPLICATE TAGGROUP: Taggroup %s in thematic group %s and category %s appears twice although it is not repeatable!' % (tgid, thmg, cat))
                 else:
                     # Taggroup does not exist yet, tags can be added
                     data[cat][thmg][tgid] = tagsdata
@@ -1086,10 +1086,11 @@ def formdataToDiff(request, newform, itemType):
                                                 v.remove((value, taggroupid))
                                                 if len(v) == 0:
                                                     # If there is no further
-                                                    # taggroup in the lits, set
+                                                    # taggroup in the list, set
                                                     # value of key to null.
                                                     t[k] = colander.null
-                                    return form, True
+                                            
+                                            return form, True
         return form, None
 
     identifier = colander.null

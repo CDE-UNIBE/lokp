@@ -85,6 +85,7 @@ def read_many(request):
             'profile': get_current_profile(request),
             'locale': get_current_locale(request),
             'spatialfilter': spatialfilter,
+            'invfilter': None,
             'currentpage': page,
             'pagesize': limit
         }, request)
@@ -174,8 +175,37 @@ def by_stakeholder(request):
             uid=uid, public=False)
         return render_to_response('json', activities, request)
     elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
+        """
+        Show a HTML representation of the Activities of a Stakeholder in a grid.
+        """
+        limit = 10
+
+        # Get page parameter from request and make sure it is valid
+        page = request.params.get('page', 1)
+        try:
+            page = int(page)
+        except TypeError:
+            page = 1
+        page = max(page, 1) # Page should be >= 1
+
+        # No spatial filter is used if the activities are filtered by a
+        # stakeholder
+        spatialfilter = None
+
+        # Query the items with the protocol
+        items = activity_protocol3.read_many_by_stakeholder(request, uid=uid,
+            public=False, limit=limit, offset=limit*page-limit)
+
+        return render_to_response('lmkp:templates/activities/grid.mak', {
+            'data': items['data'] if 'data' in items else [],
+            'total': items['total'] if 'total' in items else 0,
+            'profile': get_current_profile(request),
+            'locale': get_current_locale(request),
+            'spatialfilter': spatialfilter,
+            'invfilter': uid,
+            'currentpage': page,
+            'pagesize': limit
+        }, request)
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
