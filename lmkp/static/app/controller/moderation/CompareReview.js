@@ -576,7 +576,7 @@ Ext.define('Lmkp.controller.moderation.CompareReview', {
         var version = mData.get('new_version');
 
         var url = '/' + type + '/form/' + identifier + '?v=' + version;
-        window.open(url, 'lo_edit')
+        window.open(url, 'lo_edit');
     },
 
     onWindowCloseButtonClick: function() {
