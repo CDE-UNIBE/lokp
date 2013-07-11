@@ -17,7 +17,7 @@ ${field.start_sequence()}
                     <span class="desired-form-field"></span>
                 % endif
             </div>
-            <div class="span8" style="margin-left: 0;">
+            <div class="span8">
                 <ul class="select-list">
                     <li>
                         <p>${choice[1]}</p>
@@ -43,7 +43,7 @@ ${field.start_sequence()}
     % else:
         <div class="row-fluid">
             <div class="span4"></div>
-            <div clsas="span8">
+            <div class="span8">
                 <ul class="select-list">
                     <li>
                         <p>${choice[1]}</p>
