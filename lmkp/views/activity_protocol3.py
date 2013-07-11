@@ -373,7 +373,12 @@ class ActivityProtocol3(Protocol):
         }
 
 
-    def read_many_by_stakeholder(self, request, uid, public=True):
+    def read_many_by_stakeholder(self, request, uid, public=True, **kwargs):
+        """
+        Valid kwargs:
+        - limit
+        - offset
+        """
 
         relevant_activities = self._get_relevant_activities_by_stakeholder(
                                                                            request, uid, public_query=public)
@@ -382,10 +387,10 @@ class ActivityProtocol3(Protocol):
         # Default is: 'full'
         inv_details = request.params.get('involvements', 'full')
 
-        # Get limit and offset from request.
+        # Get limit and offset from request if they are not in kwargs.
         # Defaults: limit = None / offset = 0
-        limit = self._get_limit(request)
-        offset = self._get_offset(request)
+        limit = kwargs.get('limit', self._get_limit(request))
+        offset = kwargs.get('offset', self._get_offset(request))
 
         query, count = self._query_many(
                                         request, relevant_activities, limit=limit, offset=offset,
