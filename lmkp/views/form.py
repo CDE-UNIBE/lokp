@@ -375,14 +375,14 @@ def renderForm(request, itemType, **kwargs):
                     pass
 
                 session.flash('<strong>%s</strong>: %s<br/><a href="%s">%s</a>' % (noticeTitle, notice2, item_url, action2));
-                
+
         elif itemType == 'activities' and itemJson is None and 'activity' in session:
             # No item was provided (create form) but some data was found in the
             # session.
 
             if (session['activity']['id'] != colander.null
                 and session['activity']['version'] != colander.null):
-                # The item in the session is not new. Show empty form data 
+                # The item in the session is not new. Show empty form data
                 # (already defined) and inform the user.
                 item_name = (session['activity']['id'][:6]
                     if session['activity']['id'] != colander.null
@@ -411,7 +411,7 @@ def renderForm(request, itemType, **kwargs):
                     # user that session was used.
                     url = request.route_url('form_clear_session', _query={'url':request.url})
                     session.flash('<strong>%s</strong>: %s<br/><a href="%s">%s</a>' % (noticeTitle, notice1, url, action1))
-        
+
         else:
             # No itemjson and no sessionitem, do nothign (empty data already defined above)
             # If there is no existing item, show the form with empty data
@@ -1023,7 +1023,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
                     }
 
     log.debug('Formdata created by ItemJSON: %s' % data)
-    
+
     return data
 
 def formdataToDiff(request, newform, itemType):
@@ -1291,7 +1291,7 @@ def formdataToDiff(request, newform, itemType):
                 # TODO: The parameter 'map' is defined in the yaml (map: map)
                 # and therefore rather static. Should this be made more dynamic?
                 if tgroup == 'map':
-                    
+
                     oldpoint = None
                     if (cat in oldform and thmgrp in oldform[cat]
                         and 'map' in oldform[cat][thmgrp]):
@@ -1354,6 +1354,8 @@ def formdataToDiff(request, newform, itemType):
                                             continue
                                     except ValueError:
                                         pass
+                                    except TypeError:
+                                        continue
 
                                     # If a key is there in both forms but its
                                     # value changed, add it once as deleted and
@@ -1382,7 +1384,7 @@ def formdataToDiff(request, newform, itemType):
                                         'key': k,
                                         'value': oldtaggroup[k]
                                     })
-                                
+
                         # Put together diff for the taggroup
                         if len(deletedtags) > 0 or len(addedtags) > 0:
                             tagdiffs = []
@@ -1458,7 +1460,7 @@ def formdataToDiff(request, newform, itemType):
                         # Put together diff for taggroup
                         elif len(addedtags) > 0:
 
-                            # Newly added taggroups need to have a valid 
+                            # Newly added taggroups need to have a valid
                             # main_tag. We need to find out the main_tag of the
                             # current taggroup for the diff
                             cCat = categorylist.findCategoryById(cat)
