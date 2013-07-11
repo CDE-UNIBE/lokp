@@ -25,13 +25,10 @@
     from lmkp.views.views import getQueryString
 
     # Get the keys and their translation
-    from lmkp.views.translation import get_activity_keys
     from lmkp.views.translation import get_stakeholder_keys
-    activitykeys = get_activity_keys(request)
-    stakeholderkeys = get_stakeholder_keys(request)
+    keys = get_stakeholder_keys(request)
 
-    # Decide which keys are relevant for the grid
-    keys = stakeholderkeys
+    a_uid = invfilter if invfilter is not None else ''
 %>
 
 ## Filter
@@ -47,6 +44,14 @@
 
     <div class="content">
 
+        ## Involvement Filter
+        % if invfilter:
+        <div class="alert alert-info">
+            <i class="icon-filter"></i>&nbsp;
+            <strong>Deal Filter</strong>: You are currently only seeing Investors which are involved in Deal <a href="${request.route_url('activities_read_one', output='html', uid=a_uid)}">${a_uid[:6]}</a>.<br/><a href="${request.route_url('stakeholders_read_many', output='html')}">Remove this filter and show all Investors</a>.
+        </div>
+        % endif
+
         ## Tabs
         <ul class="nav nav-tabs table_tabs">
             <%
@@ -54,17 +59,25 @@
                 # - url
                 # - name
                 tabs = [
-                    [request.route_url('activities_read_many', output='html'), 'Deals'],
-                    [request.route_url('stakeholders_read_many', output='html'), 'Investors']
+                    [
+                        [
+                            request.route_url('activities_read_many', output='html')
+                        ], 'Deals'
+                    ], [
+                        [
+                            request.route_url('stakeholders_read_many', output='html'),
+                            request.route_url('stakeholders_byactivity', output='html', uid=a_uid)
+                        ], 'Investors'
+                    ]
                 ]
             %>
             % for t in tabs:
-                % if t[0] == request.current_route_url():
+                % if request.current_route_url() in t[0]:
                     <li class="active">
                 % else:
                     <li>
                 % endif
-                    <a href="${t[0]}">${t[1]}</a>
+                    <a href="${t[0][0]}">${t[1]}</a>
                 </li>
             % endfor
         </ul>
@@ -163,6 +176,7 @@
                                 % endfor
 
                                 <td class="identifier hide">${id}</td>
+                                <td class="itemType hide">stakeholders</td>
 
                             </tr>
                         % endfor

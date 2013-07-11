@@ -26,12 +26,9 @@
 
     # Get the keys and their translation
     from lmkp.views.translation import get_activity_keys
-    from lmkp.views.translation import get_stakeholder_keys
-    activitykeys = get_activity_keys(request)
-    stakeholderkeys = get_stakeholder_keys(request)
+    keys = get_activity_keys(request)
 
-    # Decide which keys are relevant for the grid
-    keys = activitykeys
+    sh_uid = invfilter if invfilter is not None else ''
 %>
 
 ## Filter
@@ -59,6 +56,7 @@
                 spatialFilterLink = 'Show all Deals of the profile.'
         %>
 
+        % if spatialfilter:
         <div class="alert alert-info">
             <i class="icon-globe"></i>&nbsp;
             <strong>Spatial Filter</strong> based on 
@@ -72,7 +70,15 @@
                 <br/><a href="${getQueryString(request.url, add=[('bbox', 'profile')])}">${spatialFilterLink}</a>
             % endif
         </div>
+        % endif
 
+        ## Involvement Filter
+        % if invfilter:
+        <div class="alert alert-info">
+            <i class="icon-filter"></i>&nbsp;
+            <strong>Investor Filter</strong>: You are currently only seeing Deals where Investor <a href="${request.route_url('stakeholders_read_one', output='html', uid=sh_uid)}">${sh_uid[:6]}</a> is involved.<br/><a href="${request.route_url('activities_read_many', output='html')}">Remove this filter and show all Deals</a>.
+        </div>
+        % endif
 
         ## Tabs
         <ul class="nav nav-tabs table_tabs">
@@ -81,17 +87,25 @@
                 # - url
                 # - name
                 tabs = [
-                    [request.route_url('activities_read_many', output='html'), 'Deals'],
-                    [request.route_url('stakeholders_read_many', output='html'), 'Investors']
+                    [
+                        [
+                            request.route_url('activities_read_many', output='html'),
+                            request.route_url('activities_bystakeholder', output='html', uid=sh_uid)
+                        ], 'Deals'
+                    ], [
+                        [
+                            request.route_url('stakeholders_read_many', output='html')
+                        ], 'Investors'
+                    ]
                 ]
             %>
             % for t in tabs:
-                % if t[0] == request.current_route_url():
+                % if request.current_route_url() in t[0]:
                     <li class="active">
                 % else:
                     <li>
                 % endif
-                    <a href="${t[0]}">${t[1]}</a>
+                    <a href="${t[0][0]}">${t[1]}</a>
                 </li>
             % endfor
         </ul>
@@ -191,6 +205,7 @@
                                 % endfor
 
                                 <td class="identifier hide">${id}</td>
+                                <td class="itemType hide">activities</td>
 
                             </tr>
                         % endfor
