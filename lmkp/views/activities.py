@@ -3,6 +3,7 @@ from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.comments import comments_sitekey
 from lmkp.views.config import get_mandatory_keys
+from lmkp.config import check_valid_uuid
 import logging
 import urllib
 from pyramid.httpexceptions import HTTPBadRequest
@@ -169,6 +170,8 @@ def by_stakeholder(request):
         output_format = 'json'
 
     uid = request.matchdict.get('uid', None)
+    if check_valid_uuid(uid) is not True:
+        raise HTTPNotFound()
 
     if output_format == 'json':
         activities = activity_protocol3.read_many_by_stakeholder(request,
@@ -224,6 +227,8 @@ def by_stakeholder_public(request):
         output_format = 'json'
 
     uid = request.matchdict.get('uid', None)
+    if check_valid_uuid(uid) is not True:
+        raise HTTPNotFound()
 
     if output_format == 'json':
         activities = activity_protocol3.read_many_by_stakeholder(request,
@@ -255,6 +260,8 @@ def read_one(request):
         output_format = 'json'
 
     uid = request.matchdict.get('uid', None)
+    if check_valid_uuid(uid) is not True:
+        raise HTTPNotFound()
 
     if output_format == 'json':
         activities = activity_protocol3.read_one(request, uid=uid, public=False)
@@ -341,6 +348,8 @@ def read_one_public(request):
     """
 
     uid = request.matchdict.get('uid', None)
+    if check_valid_uuid(uid) is not True:
+        raise HTTPNotFound()
 
     try:
         output_format = request.matchdict['output']
@@ -371,6 +380,8 @@ def read_one_active(request):
         output_format = 'json'
 
     uid = request.matchdict.get('uid', None)
+    if check_valid_uuid(uid) is not True:
+        raise HTTPNotFound()
 
     if output_format == 'json':
         activities = activity_protocol3.read_one_active(request, uid=uid)
