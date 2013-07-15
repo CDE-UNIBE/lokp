@@ -1255,7 +1255,7 @@ def getConfigKeyList(request, itemType):
             translationQuery.c.t_helptext,
             translationQuery.c.t_description
         ).\
-        filter(MappedClass.fk_language == 1).\
+        filter(MappedClass.fk_language == None).\
         outerjoin(translationQuery,
             translationQuery.c.original_id == MappedClass.id)
     for k in keys.all():

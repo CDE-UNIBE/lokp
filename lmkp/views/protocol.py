@@ -1511,8 +1511,6 @@ class Protocol(object):
         except AttributeError:
             pass
 
-        # TODO: Make use of this! Delete the rest below.
-        # TODO: Also delete imports above
         return self.categoryList.checkValidKeyValue(key, value)
 
     def _create_tag(self, request, parent, key, value, Tag_Item, Key_Item,
@@ -1534,35 +1532,36 @@ class Protocol(object):
             raise HTTPBadRequest("Key: %s or Value: %s is not valid." %
                 (key, value))
 
-        # The key has to be already in the database. The key is supposed to be
-        # always in English.
+        # The key has to be already in the database. The key is supposed to have
+        # no fk_language.
         k = self.Session.query(
                 Key_Item
             ).\
             filter(Key_Item.key == key).\
-            filter(Key_Item.fk_language == 1).\
+            filter(Key_Item.fk_language == None).\
             first()
+
+        localizer = get_localizer(request)
+        language = self.Session.query(
+                Language
+            ).\
+            filter(Language.locale == localizer.locale_name).\
+            first()
+        lang_fk = language.id if language is not None else 1
+
+        try:
+            # Number values are always inserted in the first language.
+            float(value)
+            lang_fk = 1
+        except:
+            pass
 
         # If the value is not yet in the database, create a new value
         v = self.Session.query(Value_Item).\
             filter(Value_Item.value == unicode(value)).\
-            filter(Value_Item.fk_language == 1).\
+            filter(Value_Item.fk_language == lang_fk).\
             first()
         if v is None:
-
-            try:
-                # For number values, set language 'English'
-                float(value)
-                lang_fk = 1
-            except:
-                # Add the currently set language to the key (fallback: English)
-                localizer = get_localizer(request)
-                language = self.Session.query(
-                        Language
-                    ).\
-                    filter(Language.locale == localizer.locale_name).\
-                    first()
-                lang_fk = language.id if language is not None else 1
 
             # FILES!
             # Check if the files need to be moved (from temporary directory) or
