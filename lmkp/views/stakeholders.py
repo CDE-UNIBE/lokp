@@ -185,7 +185,6 @@ def read_many(request):
         """
         Show a HTML representation of the Stakeholders in a grid.
         """
-        limit = 10
 
         # Get page parameter from request and make sure it is valid
         page = request.params.get('page', 1)
@@ -195,8 +194,17 @@ def read_many(request):
             page = 1
         page = max(page, 1) # Page should be >= 1
 
+        # Get pagesize parameter from request and make sure it is valid
+        pageSize = request.params.get('pagesize', 10)
+        try:
+            pageSize = int(pageSize)
+        except TypeError:
+            pageSize = 10
+        pageSize = max(pageSize, 1) # Page size should be >= 1
+        pageSize = min(pageSize, 50) # Page size should be <= 50
+
         items = stakeholder_protocol3.read_many(request, public=False,
-            limit=limit, offset=limit*page-limit)
+            limit=pageSize, offset=pageSize*page-pageSize)
 
         return render_to_response('lmkp:templates/stakeholders/grid.mak', {
             'data': items['data'] if 'data' in items else [],
@@ -205,7 +213,7 @@ def read_many(request):
             'locale': get_current_locale(request),
             'invfilter': None,
             'currentpage': page,
-            'pagesize': limit
+            'pagesize': pageSize
         }, request)
 
     elif output_format == 'form':

@@ -15,6 +15,9 @@
             text-decoration: none;
             color: white;
         }
+        .pagesizeselect {
+            margin-top: 20px;
+        }
     </style>
 </%def>
 
@@ -215,7 +218,7 @@
         ## Pagination
         % if len(data) > 0:
             <%include file="lmkp:templates/parts/pagination.mak"
-                args="totalitems=total, currentpage=currentpage, pagesize=pagesize"
+                args="totalitems=total, currentpage=currentpage, pagesize=pagesize, itemsname='Deals'"
             />
         % endif
 
