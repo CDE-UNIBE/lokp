@@ -27,12 +27,14 @@
 
     % elif field.name not in ['tg_id', 'id', 'category', 'version', 'itemType', 'statusId']:
         ## Single tag
-        <div class="span5">
-            <h5 class="green">${field.title}</h5>
-        </div>
-        <div class="span2 inactive"></div>
-        <div class="span4">
-            <p class="deal-detail">${field.serialize(cstruct, readonly=True)}</p>
+        <div class="row-fluid">
+            <div class="span5">
+                <h5 class="green">${field.title}</h5>
+            </div>
+            <div class="span2 inactive"></div>
+            <div class="span4">
+                <p class="deal-detail">${field.serialize(cstruct, readonly=True)}</p>
+            </div>
         </div>
     % endif
 

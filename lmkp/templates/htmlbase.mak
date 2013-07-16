@@ -141,6 +141,12 @@ if 'lmkp.mode' in request.registry.settings:
             [class*="filter-variable"] {
                 width: 425px;
             }
+            div.grid-area div.row-fluid div.span5 h5 {
+                font-weight: normal !important;
+            }
+            div.grid-area div.row-fluid:first-child div.span5 h5 {
+                font-weight: bold !important;
+            }
 
         </style>
 

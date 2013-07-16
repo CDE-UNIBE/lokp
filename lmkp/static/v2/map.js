@@ -38,7 +38,7 @@ $(document).ready(function() {
     });
 
     // Map legend up/down
-    var legendCounter = 0;
+    var legendCounter = 1; // Open by default
     $('.map-legend').click(function() {
         legendCounter++;
         $('.map-legend-content').slideToggle(function() {
@@ -226,7 +226,7 @@ $(document).ready(function() {
         } else {
             $(".basic-data").empty();
             // Create a list of selected deals, when selecting several deals
-            var header = $(".basic-data").append("<h6 class=\"deal-headlline\">Selected Deals</h6>");
+            var header = $(".basic-data").append("<h6 class=\"deal-headline\">Selected Deals</h6>");
 
             // Show at maximum ten deals to prevent a too long basic data box
             var maxFeatures = 10;
@@ -800,22 +800,4 @@ function addCommas(nStr) {
         x1 = x1.replace(rgx, '$1' + ',' + '$2');
     }
     return x1 + x2;
-}
-
-/**
- * Function to get the key names used for the overview representation of an
- * Activity or a Stakeholder. If the keys are ordered with numbers, return the
- * names of the keys in that order.
- * Returns an array with the names of the keys.
- */
-function getKeyNames(keys) {
-    var names = [];
-    $.each(keys, function() {
-        if ($.isNumeric(this[1])) {
-            names[this[1]] = this[0];
-        } else {
-            names.push(this[0]);
-        }
-    });
-    return $.grep(names, function(n) { return(n) });
 }
