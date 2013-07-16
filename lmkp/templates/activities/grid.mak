@@ -137,11 +137,7 @@
                     <thead>
                         ## The table headers
                         <tr>
-                            <th>ID
-                                <div class="desc">_</div>
-                                <div class="asc">_</div>
-                            </th>
-
+                            <th>Deal ID</th>
                             % for k in keys:
                                 ## Only use the headers which are to be shown
                                 % if k[2] is True:

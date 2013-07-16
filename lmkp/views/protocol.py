@@ -414,8 +414,8 @@ class Protocol(object):
                     q = self.Session.query(
                             A_Tag.fk_a_tag_group.label('a_filter_tg_id')
                         ).\
-                        join(A_Key).\
-                        join(A_Value, A_Tag.fk_value == A_Value.id).\
+                        join(A_Key, A_Key.id == A_Tag.fk_key).\
+                        join(A_Value, A_Value.id == A_Tag.fk_value).\
                         filter(A_Key.key == col).\
                         filter(__get_filter_expression(prefix, v, op))
                     a_filter_expr.append(q)
@@ -426,8 +426,8 @@ class Protocol(object):
                     q = self.Session.query(
                             SH_Tag.fk_sh_tag_group.label('sh_filter_tg_id')
                         ).\
-                        join(SH_Key).\
-                        join(SH_Value, SH_Tag.fk_value == SH_Value.id).\
+                        join(SH_Key, SH_Key.id == SH_Tag.fk_key).\
+                        join(SH_Value, SH_Value.id == SH_Tag.fk_value).\
                         filter(SH_Key.key == col).\
                         filter(__get_filter_expression(prefix, v, op))
                     sh_filter_expr.append(q)
@@ -489,8 +489,8 @@ class Protocol(object):
                     cast(Value.value, Float).label('value')).\
                 join(Tag_Group).\
                 join(Tag, Tag.fk_tag_group == Tag_Group.id).\
-                join(Value).\
-                join(Key).\
+                join(Value, Value.id == Tag.fk_value).\
+                join(Key, Key.id == Tag.fk_key).\
                 filter(Key.key.like(order_key))
                 # Query to order string values
                 q_text = self.Session.query(
@@ -498,8 +498,8 @@ class Protocol(object):
                     Value.value.label('value')).\
                 join(Tag_Group).\
                 join(Tag, Tag.fk_tag_group == Tag_Group.id).\
-                join(Value).\
-                join(Key).\
+                join(Value, Value.id == Tag.fk_value).\
+                join(Key, Key.id == Tag.fk_key).\
                 filter(Key.key.like(order_key))
 
                 # Try to query numbered values and cast them
