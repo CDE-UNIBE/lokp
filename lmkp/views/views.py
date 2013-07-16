@@ -361,6 +361,18 @@ def getFilterKeys(request):
 
     return aList, shList
 
+def getOverviewKeys(request):
+    """
+    Return two lists (the first for Activities, the second for Stakeholders)
+    with the keys which are to be used in the involvement overview. Because
+    these are the keys of the other side, the first one actually contains the
+    keys for Stakeholders, the second one the keys for Activities!
+    """
+    return (
+        getCategoryList(request, 'activities').getInvolvementOverviewKeyNames(),
+        getCategoryList(request, 'stakeholders').getInvolvementOverviewKeyNames()
+    )
+
 def getActiveFilters(request):
     """
     Get the active filters of a request in a list.

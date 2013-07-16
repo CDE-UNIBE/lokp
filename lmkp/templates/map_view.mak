@@ -45,12 +45,16 @@
 <%
 
 from lmkp.views.profile import _getCurrentProfileExtent
+from lmkp.views.views import getOverviewKeys
 import json
 
+aKeys, shKeys = getOverviewKeys(request)
 extent = json.dumps(_getCurrentProfileExtent(request))
 
 %>
-        var profilePolygon = ${extent | n};
+    var profilePolygon = ${extent | n};
+    var aKeys = ${json.dumps(aKeys) | n};
+    var shKeys = ${json.dumps(shKeys) | n};
     
 </script>
 </%def>

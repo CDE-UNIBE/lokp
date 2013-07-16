@@ -464,7 +464,7 @@ def renderReadonlyForm(request, itemType, itemJson):
         # explicitely.
 
         activitiesCategoryList = getCategoryList(request, 'activities')
-        overviewKeys = activitiesCategoryList.getInvolvementOverviewKeyNames()
+        overviewKeys = [k[0] for k in activitiesCategoryList.getInvolvementOverviewKeyNames()]
 
         mappingNames = ['primaryinvestors', 'secondaryinvestors']
 
@@ -600,7 +600,8 @@ def doStakeholderUpdate(request, diff):
 
     # Set all values to 'unknown' first
     keyValues = []
-    for k in categorylist.getInvolvementOverviewKeyNames():
+    overviewKeys = [o[0] for o in categorylist.getInvolvementOverviewKeyNames()]
+    for k in overviewKeys:
         keyValues.append([k, unknownString])
 
     # Update the value if available
@@ -848,7 +849,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
             # involvement.
             otherItemType = 'stakeholders'
             otherCategoryList = getCategoryList(request, otherItemType)
-            keyNames = otherCategoryList.getInvolvementOverviewKeyNames()
+            keyNames = [k[0] for k in otherCategoryList.getInvolvementOverviewKeyNames()]
 
             cat = {}
 
@@ -901,7 +902,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
             # involvement.
             otherItemType = 'activities'
             otherCategoryList = getCategoryList(request, otherItemType)
-            keyNames = otherCategoryList.getInvolvementOverviewKeyNames()
+            keyNames = [k[0] for k in otherCategoryList.getInvolvementOverviewKeyNames()]
 
             cat = {}
 
