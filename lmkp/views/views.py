@@ -152,10 +152,17 @@ class MainView(BaseView):
     def grid_view(self):
         """
         This view is basically only a redirect to the read_many view of the
-        Activities.
+        Activities. Keep query parameters so for example filters are also active
+        in grid.
         """
+
+        # Extract query_strings from url
+        scheme, netloc, path, query_string, fragment = urlsplit(self.request.url)
+        qp = parse_qs(query_string)
+
         return HTTPFound(
-            location=self.request.route_url('activities_read_many', output='html')
+            location=self.request.route_url('activities_read_many',
+            output='html', _query=qp)
         )
 
     @view_config(route_name='charts_view', renderer='lmkp:templates/charts_view.mak')
@@ -307,9 +314,11 @@ def getQueryString(url, **kwargs):
       already exists, it will be replaced with the new value.
       Example: add=[('page', 1)]
     - remove: array of keys to remove from the URL.
+    - ret: fullUrl (default) / queryString. Use 'queryString' to return only the
+      query string instead of the full URL.
     """
 
-    if 'add' not in kwargs and 'remove' not in kwargs:
+    if 'add' not in kwargs and 'remove' not in kwargs and 'ret' not in kwargs:
         return url
 
     # Collect the values to add / remove
@@ -331,6 +340,13 @@ def getQueryString(url, **kwargs):
 
     # Put URL together again and return it
     new_query_string = urlencode(qp, doseq=True)
+
+    # What is to be returned?
+    returnWhat = kwargs.pop('ret', 'fullUrl')
+
+    if returnWhat == 'queryString':
+        return new_query_string
+
     return urlunsplit((scheme, netloc, path, new_query_string, fragment))
 
 def getFilterKeys(request):

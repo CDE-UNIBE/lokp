@@ -215,7 +215,7 @@ if 'lmkp.mode' in request.registry.settings:
                                             class="active grid"
                                         % endif
                                         >
-                                        <a href="${t[0][0]}">
+                                        <a href="${t[0][0]}?${getQueryString(request.url, ret='queryString')}">
                                             <i class="${t[1]}"></i>&nbsp;&nbsp;${t[2]}
                                         </a>
                                     </li>
