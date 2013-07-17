@@ -977,9 +977,13 @@ class ConfigKey(object):
 
     def getTranslatedName(self):
         """
-        Return the translated name of this key.
+        Return the translated name of this key if there is a translation set,
+        else return the name.
         """
-        return self.translated_name
+        if self.translated_name is not None:
+            return self.translated_name
+        else:
+            return self.name
 
     def getTranslatedHelptext(self):
         """

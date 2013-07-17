@@ -27,6 +27,8 @@ class EvaluationView(BaseView):
         # temp
         tempSwitch = request.matchdict.get('temp', None)
         if tempSwitch == '1':
+            groupby = request.params.get('groupby', 'Intention of Investment')
+
             input = {
             'item': 'Activity',
                 'filter': {
@@ -35,9 +37,9 @@ class EvaluationView(BaseView):
                 },
                 'attributes': {
                     'Activity': 'count',
-                    'Contract area (ha)': 'sum'
+                    'Intended area (ha)': 'sum'
                 },
-                'group_by': ['Intention of Investment']
+                'group_by': [groupby]
             }
         elif tempSwitch == '2':
             input = {
@@ -195,8 +197,8 @@ class EvaluationView(BaseView):
                                    cast(Value.value, Float).label('v')).\
                     join(Tag_Group).\
                     join(Tag, Tag_Group.id == Tag.fk_tag_group).\
-                    join(Value).\
-                    join(Key).\
+                    join(Value, Value.id == Tag.fk_value).\
+                    join(Key, Key.id == Tag.fk_key).\
                     filter(Key.key == attr).\
                     subquery()
                 subqueries.append(sq)

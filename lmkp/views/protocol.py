@@ -417,6 +417,7 @@ class Protocol(object):
                         join(A_Key, A_Key.id == A_Tag.fk_key).\
                         join(A_Value, A_Value.id == A_Tag.fk_value).\
                         filter(A_Key.key == col).\
+                        filter(A_Key.fk_language == None).\
                         filter(__get_filter_expression(prefix, v, op))
                     a_filter_expr.append(q)
             # Second: Stakeholder attributes
@@ -429,6 +430,7 @@ class Protocol(object):
                         join(SH_Key, SH_Key.id == SH_Tag.fk_key).\
                         join(SH_Value, SH_Value.id == SH_Tag.fk_value).\
                         filter(SH_Key.key == col).\
+                        filter(SH_Key.fk_language == None).\
                         filter(__get_filter_expression(prefix, v, op))
                     sh_filter_expr.append(q)
 
