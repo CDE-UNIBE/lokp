@@ -228,15 +228,19 @@ class ConfigCategoryList(object):
     def getInvolvementOverviewKeyNames(self):
         """
         Return the names of the keys of all tags which should appear in the
-        involvement overview.
+        involvement overview along with the value for involvementoverview in the
+        configuration yaml.
+        Returns an array where each entry is an array with
+        - name of the key (translated)
+        - involvementoverview data (usually an order number)
         """
         keyNames = []
         for cat in self.getCategories():
             for thmg in cat.getThematicgroups():
                 for tg in thmg.getTaggroups():
                     for t in tg.getTags():
-                        if t.getInvolvementOverview() is True:
-                            keyNames.append(t.getKey().getName())
+                        if t.getInvolvementOverview() is not None:
+                            keyNames.append([t.getKey().getTranslatedName(), t.getInvolvementOverview()])
         return keyNames
 
 class ConfigCategory(object):
@@ -494,7 +498,7 @@ class ConfigThematicgroup(object):
                 addItemText = 'Add Secondary Investor'
                 
             shCategoryList = getCategoryList(request, 'stakeholders')
-            overviewKeys = shCategoryList.getInvolvementOverviewKeyNames()
+            overviewKeys = [k[0] for k in shCategoryList.getInvolvementOverviewKeyNames()]
 
             shortForm = getInvolvementWidget(
                 mappingName,
@@ -675,7 +679,7 @@ class ConfigTag(object):
         self.values = []
         self.mandatory = False
         self.desired = False
-        self.involvementOverview = False
+        self.involvementOverview = None
         self.filterable = False
 
     def setKey(self, key):
@@ -730,16 +734,15 @@ class ConfigTag(object):
 
     def setInvolvementOverview(self, overview):
         """
-        Set if this tag should appear in the involvement overview or not.
+        Set the value for involvement overview.
         """
         self.involvementOverview = overview
 
     def getInvolvementOverview(self):
         """
-        Return a boolean whether this tag should appear in the involvement
-        overview or not.
+        Return the value set in involvement overview.
         """
-        return self.involvementOverview is True
+        return self.involvementOverview
 
     def setFilterable(self, filterable):
         """
@@ -1487,9 +1490,8 @@ def getCategoryList(request, itemType):
                             if 'maintag' in key_config:
                                 taggroup.setMaintag(tag)
 
-                            if ('involvementoverview' in key_config
-                                and key_config['involvementoverview'] is True):
-                                tag.setInvolvementOverview(True)
+                            if ('involvementoverview' in key_config):
+                                tag.setInvolvementOverview(key_config['involvementoverview'])
 
                             if ('filterable' in key_config
                                 and key_config['filterable'] is True):

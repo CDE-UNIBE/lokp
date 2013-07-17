@@ -141,6 +141,12 @@ if 'lmkp.mode' in request.registry.settings:
             [class*="filter-variable"] {
                 width: 425px;
             }
+            div.grid-area div.row-fluid div.span5 h5 {
+                font-weight: normal !important;
+            }
+            div.grid-area div.row-fluid:first-child div.span5 h5 {
+                font-weight: bold !important;
+            }
 
         </style>
 
@@ -209,7 +215,7 @@ if 'lmkp.mode' in request.registry.settings:
                                             class="active grid"
                                         % endif
                                         >
-                                        <a href="${t[0][0]}">
+                                        <a href="${t[0][0]}?${getQueryString(request.url, ret='queryString')}">
                                             <i class="${t[1]}"></i>&nbsp;&nbsp;${t[2]}
                                         </a>
                                     </li>
@@ -371,11 +377,14 @@ if 'lmkp.mode' in request.registry.settings:
 
         <script type="text/javascript" src="${request.static_url('lmkp:static/v2/main.js')}"></script>
 
-        <script type="text/javascript">
-            var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
-            (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
-            g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
-            s.parentNode.insertBefore(g,s)}(document,'script'));
+        <script>
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+            ga('create', 'UA-42525474-1', 'landobservatory.org');
+            ga('send', 'pageview');
         </script>
 
         ## Include the bottom tags of the child template if available.

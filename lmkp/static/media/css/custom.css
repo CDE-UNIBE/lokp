@@ -115,7 +115,8 @@ ul, ol  {
 
 
 hr.gray,
-hr.lightgray {
+hr.lightgray,
+hr.landing {
 	border-top: none;
 	border-bottom: 1px solid gray;
 }
@@ -487,7 +488,8 @@ span.arrow {
 
 
 .btn_favorite,
-.btn-country-selector {
+.btn-country-selector,
+.btn-start {
 	background-image: none;
 	background-color: white;
 	width: 150px;
@@ -502,7 +504,12 @@ span.arrow {
 	width: 130px;
 }
 
-
+.btn-group>.btn:hover, 
+.btn-group>.btn:focus, 
+.btn-group>.btn:active, 
+.btn-group>.btn.active {
+	z-index: 0;
+}
 
 .btn_favorite:hover,
 .btn_favorite:active,
@@ -510,7 +517,11 @@ span.arrow {
 
 .btn-country-selector:hover,
 .btn-country-selector:active,
-.btn-country-selector:focus {
+.btn-country-selector:focus,
+
+.btn-start:hover,
+.btn-start:active,
+.btn-start:focus {
 	background-image: none;
 	background-color: white;
 	box-shadow: none;
@@ -1128,12 +1139,71 @@ p.deal-detail {
 
 /* landing page */
 
-.country-selector {
+.landing-introduction {
+	margin-top: 25px;
+	padding-left: 60px;
+	color: #424242;
+}
+
+.action,
+.not-action {
+	font-weight: 700;
+	text-transform: uppercase;
+	color: #424242;
+	font-size: 0.9em;
+}
+
+.not-action {
+	margin-top: 23px;
+}
+
+/*.not-action2 {
+	font-weight: 700;
+	text-transform: uppercase;
+	color: #424242;
+	font-size: 0.9em;
+	position: absolute;
+	background: white;
+	overflow: 0.9;
+	padding: 5px 10px 5px 5px;
+	border-bottom-right-radius: 10px;
+	border-bottom: 1px solid #cccccc;
+	border-right: 1px solid #cccccc;
+}*/
+
+.row-fluid.not-action [class*="span"] {
+	min-height: 20px;
+}
+
+.icon-caret-right {
+	vertical-align: middle;
+}
+
+.country-selector,
+.start {
 	float: right;
+	margin-top: 6px;
+}
+
+.start {
+	margin-left: 10px;
+}
+
+.btn-start {
+	width: auto;
+}
+
+.icon-caret-down,
+.icon-caret-right {
+	text-shadow: none;
 }
 
 .item > img { 
 	margin: 0 auto; 
+}
+
+.carousel {
+	margin-bottom: 0;	
 }
 
 .carousel-inner {
@@ -1158,8 +1228,7 @@ p.deal-detail {
 	-moz-border-radius: none;
 	border-radius: none;
 	opacity: 0.5;
-	filter: alpha(opacity=50);
-
+	filter: alpha(opacity=50);	
 }
 
 .carousel-control.right {
@@ -1176,7 +1245,7 @@ p.deal-detail {
 }
 
 .slide {
-	max-height: 64%;
+	max-height: 54%;
 }
 
 .carousel-indicators {
@@ -1199,7 +1268,6 @@ p.deal-detail {
 }
 .carousel-indicators .active {
 	background: #a3a708;
-	--border-color: #a3a708;
 }
 
 .carousel-caption {
@@ -1228,6 +1296,27 @@ p.deal-detail {
 .carousel-caption:hover{
 	opacity: 1;
 }
+
+ul.country-selector {
+    text-transform: uppercase;
+}
+
+.blacktemp,
+.blacktemp:hover {
+    color: black;
+    margin: 0 7px;
+    text-decoration: underline;
+}
+
+.blacktemp .caret {
+    border-top-color: black !important;
+}
+
+.blacktemp .caret:active {
+    background: none;
+}
+
+
 
 
 /*	footer   */

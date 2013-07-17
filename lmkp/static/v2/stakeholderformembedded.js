@@ -1,7 +1,9 @@
 $(function() {
 
+    var nameKey = getKeyNames(shKeys)[0];
+
     $('#shselectinput').autocomplete({
-        minLength: 4,
+        minLength: 2,
         // Use an ajax query as a search (by name). Query 11 results so the last
         // item can be replaced with a message to narrow down the search.
         source: function(request, response) {
@@ -75,12 +77,12 @@ $(function() {
     }).data('autocomplete')._renderItem = function(ul, item) {
         if (item.id && item.version) {
             // Always use name as first display value
-            var val1 = ('Name' in item) ? item.Name : unknownString;
+            var val1 = (nameKey in item) ? item[nameKey] : unknownString;
             // The second value is a composite of all other (non
             // empty) display values
             var val2 = [];
             for (var v in item) {
-                if (v != 'label' && v != 'value' && v != 'Name'
+                if (v != 'label' && v != 'value' && v != nameKey
                     && v != 'id' && v != 'version' && item[v] != unknownString) {
                     val2.push(item[v]);
                 }

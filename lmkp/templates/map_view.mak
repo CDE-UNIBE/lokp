@@ -30,27 +30,34 @@
         margin-bottom: 15px;
     }
     .map-legend {
-        margin-bottom: 15px;
+        margin-bottom: 5px;
         cursor: pointer;
     }
     .map-legend-content {
-        display: none;
         margin-bottom: 15px;
     }
     .map-menu b.caret {
         margin: 8px 5px 0 0;
+    }
+    #deal-shortid-span a {
+        color: inherit;
+        font-weight: normal;
     }
 </style>
 <script type="text/javascript">
 <%
 
 from lmkp.views.profile import _getCurrentProfileExtent
+from lmkp.views.views import getOverviewKeys
 import json
 
+aKeys, shKeys = getOverviewKeys(request)
 extent = json.dumps(_getCurrentProfileExtent(request))
 
 %>
-        var profilePolygon = ${extent | n};
+    var profilePolygon = ${extent | n};
+    var aKeys = ${json.dumps(aKeys) | n};
+    var shKeys = ${json.dumps(shKeys) | n};
     
 </script>
 </%def>

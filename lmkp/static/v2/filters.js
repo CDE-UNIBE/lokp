@@ -179,23 +179,13 @@ function addQueryParam(paramobject) {
 function removeQueryParam(paramstring) {
     var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
     var newHashes = []
-
-    // Encode the parts of the paramstring so they can be compared with the ones
-    // from the current url.
-    var t = [];
-    $.each(paramstring.split('='), function(i, d) {
-        t.push(encodeURIComponent(d));
-    });
-    paramstring = t.join('=');
-
     $.each(hashes, function(i, h) {
         // Remove any '#' in the URL
         var newHash = h.replace('#', '');
-        if (newHash != paramstring) {
+        if (_urldecode(newHash) != _urldecode(paramstring)) {
             newHashes.push(newHash);
         }
     });
-
     location.href = '?' + newHashes.join('&');
 }
 
@@ -215,4 +205,12 @@ function _addOperators(operators) {
         }
         operatorDropdown.append('<li><a href="#" onClick="javascript:selectOperator(\'' + o[0] + '\', \'' + o[1] + '\')">' + o[0] + '</a></li>');
     });
+}
+
+/**
+ * Helper function to decode a string, also handles spaces being decoded as +.
+ * http://stackoverflow.com/a/4458580/841644
+ */
+function _urldecode(str) {
+   return decodeURIComponent((str+'').replace(/\+/g, '%20'));
 }
