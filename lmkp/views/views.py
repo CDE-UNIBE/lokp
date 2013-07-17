@@ -135,7 +135,7 @@ class MainView(BaseView):
         """
 
         self._handle_parameters()
-        
+
         return {
             'profile': get_current_profile(self.request),
             'locale': get_current_locale(self.request)
@@ -284,7 +284,7 @@ class MainView(BaseView):
         """
         Returns the translation HTML page
         """
-        
+
         self._handle_parameters()
 
         return {}
@@ -394,7 +394,7 @@ def getActiveFilters(request):
     Get the active filters of a request in a list.
     The list contains another list for each active filter with
     - [0]: the query string as provided in the parameter
-    - [1]: a clean text representation of the filter
+    - [1]: a clean text representation (translated) of the filter
     """
 
     # Map the operators
@@ -410,6 +410,9 @@ def getActiveFilters(request):
         'gte': '>='
     }
 
+    aList = getCategoryList(request, 'activities')
+    shList = getCategoryList(request, 'stakeholders')
+
     # Extract query_strings from url
     scheme, netloc, path, query_string, fragment = urlsplit(request.url)
     queryparams = parse_qs(query_string)
@@ -422,12 +425,34 @@ def getActiveFilters(request):
             if len(queryparts) != 3:
                 continue
 
+            if queryparts[0] == 'a':
+                itemName = 'Deals'
+                configList = aList
+            elif queryparts[0] == 'sh':
+                itemName = 'Investors'
+                configList = shList
+            else:
+                continue
+
             key = queryparts[1]
             op = queryparts[2]
 
+            # Use translated key for display
+            displayKey = key
+            tag = configList.findTagByKeyName(key)
+            if tag is not None:
+                displayKey = tag.getKey().getTranslatedName()
+
             for v in queryparams[q]:
+                # Use translated value for display
+                displayValue = v
+                if tag is not None:
+                    valueObject = tag.findValueByName(v)
+                    if valueObject is not None:
+                        displayValue = valueObject.getTranslation()
                 q_string = '%s=%s' % (q, v)
-                q_display = '%s %s %s' % (key, operators[op], v)
+                q_display = ('(%s) %s %s %s' % (itemName, displayKey,
+                    operators[op], displayValue))
                 filters.append([q_string, q_display])
 
     return filters

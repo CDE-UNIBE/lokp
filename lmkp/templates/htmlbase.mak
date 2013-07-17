@@ -71,14 +71,6 @@ if 'lmkp.mode' in request.registry.settings:
                 height: 22px;
                 width: 100px;
             }
-            .blacktemp {
-                color: black;
-                margin: 0 7px;
-                text-decoration: underline;
-            }
-            .blacktemp .caret {
-                border-top-color: black !important;
-            }
             .logouttemp {
                 color: black;
                 text-decoration: underline;
@@ -105,10 +97,10 @@ if 'lmkp.mode' in request.registry.settings:
             .filter_area_openclose {
                 cursor: pointer;
             }
-            #new-filter-value {
+            #new-filter-value-internal {
                 width: 178px;
             }
-            .input-append #new-filter-value {
+            .input-append #new-filter-value-internal {
                 width: 147px;
             }
             .new-filter .dropdown-menu {
