@@ -90,6 +90,12 @@
 
 <div class="filter_area_openclose">
     <i class="icon-double-angle-down pointer"></i>
-    <span class="pointer">Click here to add or edit a filter</span>
+    % if len(activeFilters) == 1:
+        <span class="pointer">${len(activeFilters)} filter is active, click here to edit</span>
+    % elif len(activeFilters) > 1:
+        <span class="pointer">${len(activeFilters)} filters are active, click here to edit</span>
+    % else:
+        <span class="pointer">Click here to add a filter</span>
+    % endif
     <i class="icon-double-angle-down pointer"></i>
 </div>

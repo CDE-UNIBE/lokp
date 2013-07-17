@@ -15,6 +15,9 @@
             text-decoration: none;
             color: white;
         }
+        .pagesizeselect {
+            margin-top: 20px;
+        }
     </style>
 </%def>
 
@@ -105,7 +108,7 @@
                 % else:
                     <li>
                 % endif
-                    <a href="${t[0][0]}">${t[1]}</a>
+                    <a href="${t[0][0]}?${getQueryString(request.url, ret='queryString')}">${t[1]}</a>
                 </li>
             % endfor
         </ul>
@@ -137,11 +140,7 @@
                     <thead>
                         ## The table headers
                         <tr>
-                            <th>ID
-                                <div class="desc">_</div>
-                                <div class="asc">_</div>
-                            </th>
-
+                            <th>Deal ID</th>
                             % for k in keys:
                                 ## Only use the headers which are to be shown
                                 % if k[2] is True:
@@ -219,7 +218,7 @@
         ## Pagination
         % if len(data) > 0:
             <%include file="lmkp:templates/parts/pagination.mak"
-                args="totalitems=total, currentpage=currentpage, pagesize=pagesize"
+                args="totalitems=total, currentpage=currentpage, pagesize=pagesize, itemsname='Deals'"
             />
         % endif
 

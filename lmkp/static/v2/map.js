@@ -1,5 +1,12 @@
 $(document).ready(function() {
 
+    // Prepare keys to show in overview
+    // For Activities, only use the first two keys of overview
+    var aKeyNames = getKeyNames(aKeys).slice(0, 2);
+    // For Stakeholders, only use the first key of overview
+    var shKeyNames = getKeyNames(shKeys).slice(0, 1);
+    var shReprString = shKeyNames[0];
+
     // Collect any active filters (both A and SH)
     var filterParams = [], hash;
     var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
@@ -31,7 +38,7 @@ $(document).ready(function() {
     });
 
     // Map legend up/down
-    var legendCounter = 0;
+    var legendCounter = 1; // Open by default
     $('.map-legend').click(function() {
         legendCounter++;
         $('.map-legend-content').slideToggle(function() {
@@ -174,20 +181,52 @@ $(document).ready(function() {
             var activityId = f.data.activity_identifier;
             var shortId = activityId.split("-")[0]
             $("#deal-shortid-span").html('<a href="/activities/html/' + activityId + '"># ' + shortId + '</a>');
-            $("#taggroups-ul" ).empty();
+            $("#taggroups-ul" ).empty().append('<li><p>Loading the details ...</p></li>');
             $.get("/activities/json/" + activityId, function(r){
                 var a = r.data[0];
-                for(var i=0; i < a.taggroups.length; i++){
-                    var tg = a.taggroups[i];
-                    if(tg.main_tag){
-                        $( "#taggroups-ul" ).append( "<li><p><span class=\"bolder\">" + tg.main_tag.key + ": </span>" + tg.main_tag.value + "</p></li>" );
+                var tgs = a.hasOwnProperty('taggroups') ? a.taggroups : [];
+                var invs = a.hasOwnProperty('involvements') ? a.involvements : [];
+                
+                $("#taggroups-ul" ).empty();
+                $.each(tgs, function() {
+                    var v;
+                    if (this.main_tag && this.main_tag.key && $.inArray(this.main_tag.key, aKeyNames) > -1) {
+                        v = this.main_tag.value;
+                        if ($.isNumeric(v)) v = addCommas(v);
+                        $( "#taggroups-ul" ).append( "<li><p><span class=\"bolder\">" + this.main_tag.key + ": </span>" + v + "</p></li>" );
                     }
+                });
+                
+                var involvements = [];
+                $.each(invs, function() {
+                    var sh = this.data;
+                    var sh_tgs = sh.hasOwnProperty('taggroups') ? sh.taggroups : [];
+
+                    if (shReprString !== null) {
+                        var s = shReprString;
+                        $.each(sh_tgs, function() {
+                            if (this.main_tag && this.main_tag.key && $.inArray(this.main_tag.key, shKeyNames) > -1) {
+                                s = s.replace(this.main_tag.key, this.main_tag.value);
+                            }
+                        });
+                        involvements.push(s);
+                    } else {
+                        $.each(sh_tgs, function() {
+                            if (this.main_tag && this.main_tag.key && $.inArray(this.main_tag.key, shKeyNames) > -1) {
+                                $('.inv').append('<div><span class="bolder">' + this.main_tag.key + ': </span>' + this.main_tag.value + '</div>');
+                            }
+                        });
+                    }
+                });
+                if (involvements.length > 0) {
+                    var label = (involvements.length == 1) ? 'Investor' : 'Investors';
+                    $('#taggroups-ul').append('<li class="inv"><p><span class="bolder">' + label + ': </span>' + involvements.join(', ') + '</p></li>')
                 }
             });
         } else {
             $(".basic-data").empty();
             // Create a list of selected deals, when selecting several deals
-            var header = $(".basic-data").append("<h6 class=\"deal-headlline\">Selected Deals</h6>");
+            var header = $(".basic-data").append("<h6 class=\"deal-headline\">Selected Deals</h6>");
 
             // Show at maximum ten deals to prevent a too long basic data box
             var maxFeatures = 10;
@@ -209,14 +248,6 @@ $(document).ready(function() {
                 }
                 header.append("<span>and " + (feature.cluster.length - maxFeatures) + " more deals ...</span>");
             }
-
-            
-            
-        /*
-            $("#deal-shortid-span").html('# ');
-            $("#taggroups-ul").empty();
-            $("#taggroups-ul").append("<li><p><span class=\"bolder\">" + feature.cluster.length + " deals selected:</span> Please zoom in to get details about a single deal.</p></li>" );
-            */
         }
     }
 
@@ -753,3 +784,20 @@ $(document).ready(function() {
         return layers;
     }
 });
+
+/**
+ * Function to add commas as a separator for thousands to a string containing
+ * numbers.
+ * Returns a formatted string.
+ */
+function addCommas(nStr) {
+    nStr += '';
+    var x = nStr.split('.');
+    var x1 = x[0];
+    var x2 = x.length > 1 ? '.' + x[1] : '';
+    var rgx = /(\d+)(\d{3})/;
+    while (rgx.test(x1)) {
+        x1 = x1.replace(rgx, '$1' + ',' + '$2');
+    }
+    return x1 + x2;
+}

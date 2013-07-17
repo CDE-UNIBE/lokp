@@ -4,6 +4,11 @@
         <%
             if 'scripts/jquery-ui-1.8.11.custom.min.js' not in js_links:
                 js_links.append('scripts/jquery-ui-1.8.11.custom.min.js')
+
+            import json
+            from lmkp.views.views import getOverviewKeys
+            aKeys, shKeys = getOverviewKeys(request)
+
         %>
 
         % for reqt in js_links:
@@ -11,12 +16,18 @@
         % endfor
 
         <script type="text/javascript" src="${request.static_url('lmkp:static/v2/form.js')}"></script>
+        <script type="text/javascript" src="${request.static_url('lmkp:static/v2/main.js')}"></script>
 
         <script type="text/javascript" src="${request.static_url('lmkp:static/v2/stakeholderformembedded.js')}"></script>
         <script type="text/javascript" src="${request.static_url('lmkp:static/media/js/vendor/bootstrap.min.js')}"></script>
     </head>
 
     <body>
+
+        <script type="text/javascript">
+            var aKeys = ${json.dumps(aKeys) | n};
+            var shKeys = ${json.dumps(shKeys) | n};
+        </script>
 
         % if js and success is True:
 
