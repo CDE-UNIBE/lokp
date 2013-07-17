@@ -11,7 +11,33 @@
     ul.about li {
         margin: 5px 0;
     }
+    .introvideo {
+        margin-top: 40px;
+    }
 </style>
+
+<script type="text/javascript"> <!--
+    function UnCryptMailto( s )
+    {
+        var n = 0;
+        var r = "";
+        for( var i = 0; i < s.length; i++)
+        {
+            n = s.charCodeAt( i );
+            if( n >= 8364 )
+            {
+                n = 128;
+            }
+            r += String.fromCharCode( n - 1 );
+        }
+        return r;
+    }
+
+    function linkTo_UnCryptMailto( s )
+    {
+        location.href=UnCryptMailto( s );
+    }
+    // --> </script>
 </%def>
 
 <div class="container">
@@ -44,13 +70,16 @@
         <p>
             Updated information on land will benefit citizens, but also governments and companies interested in sustainability.
         </p>
-
-        <p>&nbsp;</p>
-
         <p>
-            <a href="https://www.youtube.com/watch?v=aYKnZOr6NdM">View our brief video introduction here</a>
+            If you are experiencing any technical difficulties, have questions or would like to send us feedback about how to improve user experience, please email us: <a href="javascript:linkTo_UnCryptMailto('nbjmup;mboe`pctfswbupszAvojcf/def/di');">land_observatory@unibe.cde.ch</a>
         </p>
 
+        <div class="introvideo text-center">
+            <iframe width="560" height="315" src="//www.youtube.com/embed/aYKnZOr6NdM?rel=0" frameborder="0" allowfullscreen></iframe>
+            <p>
+                View our brief video introduction (<a href="https://www.youtube.com/watch?v=aYKnZOr6NdM">Click here if the embedded video is not working</a>).
+            </p>
+        </div>
     </div>
 </div>
 
