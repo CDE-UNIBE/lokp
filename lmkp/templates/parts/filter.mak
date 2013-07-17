@@ -35,6 +35,7 @@
                 ## Key
                 <div class="btn-group input-append">
                     <input id="new-filter-key" class="select_btn_filter" type="text" placeholder="Key" />
+                    <input id="new-filter-key-internal" type="hidden" value=""/>
                     <input id="new-filter-itemtype" type="hidden" value="a"/>
                     <button class="btn select_btn_filter_right dropdown-toggle" data-toggle="dropdown">
                         <span class="caret"></span>
@@ -42,11 +43,11 @@
                     <ul class="dropdown-menu pull-right" role="menu">
                         <li class="disabled filterCategory">Deals</li>
                         % for k in aFilterKeys:
-                            <li><a href="#" onClick="javascript:selectKey('${k[1]}', '${k[2]}', 'a')">${k[0]}</a></li>
+                            <li><a href="#" onClick="javascript:selectKey('${k[0]}', '${k[1]}', '${k[2]}', 'a')">${k[0]}</a></li>
                         % endfor
                         <li class="disabled filterCategory">Investors</li>
                         % for k in shFilterKeys:
-                            <li><a href="#" onClick="javascript:selectKey('${k[1]}', '${k[2]}', 'sh')">${k[0]}</a></li>
+                            <li><a href="#" onClick="javascript:selectKey('${k[0]}', '${k[1]}', '${k[2]}', 'sh')">${k[0]}</a></li>
                         % endfor
                     </ul>
                 </div>
@@ -63,7 +64,8 @@
                 </div>
                 ## Value
                 <div id="new-filter-value-box" class="btn-group">
-                    <input id="new-filter-value" type="text" class="filter-value" placeholder="Value" />
+                    <!-- will be replaced -->
+                    <input id="new-filter-value-internal" type="text" class="filter-value" placeholder="Value" />
                 </div>
                 <span class="icon-add" onClick="javascript:addNewFilter();">
                     <i class="icon-plus pointer"></i>

@@ -496,7 +496,7 @@ class ConfigThematicgroup(object):
                 sequence = True
                 # TODO: Translation
                 addItemText = 'Add Secondary Investor'
-                
+
             shCategoryList = getCategoryList(request, 'stakeholders')
             overviewKeys = [k[0] for k in shCategoryList.getInvolvementOverviewKeyNames()]
 
@@ -755,6 +755,16 @@ class ConfigTag(object):
         Return a boolean whether this tag should be used in the filters or not.
         """
         return self.filterable is True
+
+    def findValueByName(self, name):
+        """
+        Find and return a value object in the list of this tag's values by its
+        name.
+        """
+        for v in self.getValues():
+            if v.getName() == name:
+                return v
+        return None
 
     def getForm(self):
         """

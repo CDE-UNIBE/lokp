@@ -55,14 +55,16 @@ $(function() {
 });
 
 /**
- * Function called when selecting a new key in the dropdown. Puts the value in 
- * the display field, changes the available filter operators and the key field
- * (populates it if there are predefined values).
+ * Function called when selecting a new key in the dropdown. Puts the translated
+ * value in the display field, sets the internal value, changes the available
+ * filter operators and the key field (populates it if there are predefined
+ * values).
  */
-function selectKey(key, keyType, itemType) {
+function selectKey(keyTranslated, keyName, keyType, itemType) {
 
     // Set the value of the selected key in the field.
-    $('#new-filter-key').val(key);
+    $('#new-filter-key').val(keyTranslated);
+    $('#new-filter-key-internal').val(keyName);
 
     /**
      * TODO: Make this more dynamic (consider the following use case: A user
@@ -72,16 +74,16 @@ function selectKey(key, keyType, itemType) {
 
     // Update the value field.
     if (keyType != 'dropdown' && keyType != 'checkbox') {
-        $('#new-filter-value-box').replaceWith('<div id="new-filter-value-box" class="btn-group"><input id="new-filter-value" type="text" class="filter-value" placeholder="Value" /></div>');
+        $('#new-filter-value-box').replaceWith('<div id="new-filter-value-box" class="btn-group"><input id="new-filter-value-internal" type="text" class="filter-value" placeholder="Value" /></div>');
     } else {
-        $('#new-filter-value-box').replaceWith('<div id="new-filter-value-box" class="btn-group input-append"><input id="new-filter-value" class="select-value" type="text" placeholder="Value" /><button class="btn select_btn_filter_right dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button></div>');
+        $('#new-filter-value-box').replaceWith('<div id="new-filter-value-box" class="btn-group input-append"><input id="new-filter-value" class="select-value" type="text" placeholder="Value" /><button class="btn select_btn_filter_right dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button><input id="new-filter-value-internal" type="hidden" value=""/></div>');
         $.get('/json/filtervalues', {
             type: itemType,
-            key: key
+            key: keyName
         }, function(data) {
             var menu = $('<ul class="dropdown-menu pull-right" role="menu"></ul>');
             $.each(data, function(i, d) {
-                menu.append('<li><a href="#" onClick="javascript:selectValue(\'' + d[1] + '\')">' + d[0] + '</a></li>')
+                menu.append('<li><a href="#" onClick="javascript:selectValue(\'' + d[0] + '\', \'' + d[1] + '\')">' + d[0] + '</a></li>')
             });
             $('#new-filter-value-box').append(menu);
         });
@@ -109,11 +111,12 @@ function selectOperator(display, operator) {
 }
 
 /**
- * Function called when selecting a new value in the dropdown. Puts the value in
- * the display field.
+ * Function called when selecting a new value in the dropdown. Puts the
+ * translated value in the display field and sets the internal value.
  */
-function selectValue(value) {
-    $('#new-filter-value').val(value);
+function selectValue(valueTranslated, valueName) {
+    $('#new-filter-value').val(valueTranslated);
+    $('#new-filter-value-internal').val(valueName);
 }
 
 /**
@@ -123,8 +126,8 @@ function selectValue(value) {
 function addNewFilter() {
 
     // Collect the values
-    var key = $('#new-filter-key').val();
-    var value = $('#new-filter-value').val();
+    var key = $('#new-filter-key-internal').val();
+    var value = $('#new-filter-value-internal').val();
     var itemtype = $('#new-filter-itemtype').val()
     var operator = $('#new-filter-operator').val();
 
