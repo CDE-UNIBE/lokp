@@ -1,13 +1,6 @@
 <%
-from lmkp.views.views import getQueryString
 from lmkp.views.translation import get_profiles
-from lmkp.views.translation import get_languages
-profiles = sorted(get_profiles(), key=lambda profile: profile[0])
-languages = get_languages()
-selectedlanguage = languages[0]
-for l in languages:
-    if locale == l[0]:
-        selectedlanguage = l
+profiles = get_profiles()
 mode = None
 if 'lmkp.mode' in request.registry.settings:
     if str(request.registry.settings['lmkp.mode']).lower() == 'demo':
@@ -21,7 +14,6 @@ if 'lmkp.mode' in request.registry.settings:
 <!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
     <head>
         <meta charset="utf-8">
-        <meta name="content-language" content="${selectedlanguage[0]}" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <title>Land Observatory</title>
         <meta name="description" content="">
@@ -52,20 +44,26 @@ if 'lmkp.mode' in request.registry.settings:
         <script src="${request.static_url('lmkp:static/media/js/vendor/jquery-1.9.1.min.js')}"></script>
 
         <style type="text/css">
-            .user {
-                margin-top: -8px;
-                padding-right: 0;
-            }
-            h3 {
-                padding: 0;
-                display: inline;
-                font-size: 1.5em;
-            }
+
             #main {
                 padding-bottom: 50px;
             }
+
             .wrap {
                 margin: 0 auto -50px;
+            }
+
+            ul.country-selector {
+                text-transform: uppercase;
+            }
+            .carousel-caption p {
+                font-size: 16px;
+            }
+            .carousel-caption {
+                opacity: 0.8;
+            }
+            .country-selector {
+                float: none;
             }
             .header_self {
                 height: inherit;
@@ -74,33 +72,28 @@ if 'lmkp.mode' in request.registry.settings:
             .lo_logo {
                 margin: 0 0 5px 5px;
             }
-            .btn-country-selector {
-                text-transform: uppercase;
+            div.visible-phone>div {
+                padding: 0 10px;
             }
+            div.visible-phone div.btn-group {
+                margin: 0 0 10px 0;
+            }
+
         </style>
 
         <script type="text/javascript">
 
-            jQuery(document).bind('keyup', function(e) {
+                jQuery(document).bind('keyup', function(e) {
 
-                if(e.keyCode==39){
-                    jQuery('a.carousel-control.right').trigger('click');
-                }
+                  if(e.keyCode==39){
+                  jQuery('a.carousel-control.right').trigger('click');
+                  }
 
-                else if(e.keyCode==37){
-                    jQuery('a.carousel-control.left').trigger('click');
-                }
+                  else if(e.keyCode==37){
+                  jQuery('a.carousel-control.left').trigger('click');
+                  }
 
-            });
-
-            function selectProfile(p) {
-                $('.btn-country-selector').html(p);
-            }
-
-            function go() {
-                var p = $('.btn-country-selector').html();
-                location.href = '/' + p;
-            }
+                });
 
         </script>
 
@@ -114,228 +107,171 @@ if 'lmkp.mode' in request.registry.settings:
 
 	    <!-- Header  -->
 
-                <div id="main" class="clearfix">
+	    <div id="main" class="clearfix">
 
-                    <div class="navbar header_self">
-                        <div class="container">
-                            <div class="row-fluid hidden-phone">
-                                <div class="span3 text-right">
-                                    <a href="${request.route_url('index')}">
-                                        <img src="${request.static_url('lmkp:static/media/img/logo.png')}" class="lo_logo" />
-                                    </a>
-                                </div>
+	        <div class="navbar header_self">
+	            <div class="container">
+                        <div class="row-fluid hidden-phone">
+                            <div class="span3 text-right">
+                                <a href="${request.route_url('index')}">
+                                    <img src="${request.static_url('lmkp:static/media/img/logo.png')}" class="lo_logo" />
+                                </a>
+                            </div>
 
-                                <div class="span6 landing-introduction">
+                            <div class="span6 landing-action">
                                     <p>
-                                        The <b>Land Observatory</b> is a pilot project by some partners of the <a href="http://www.landmatrix.org">Land Matrix</a>, designed to provide greater context and deeper insight on land deals, from a more local perspective
+                                    The <b>Land Observatory</b> is a pilot project by some partners of the <a href="http://www.landmatrix.org">Land Matrix</a>, designed to provide greater context and deeper insight on land deals, from a more local perspective. Please <b>choose a country</b> from the drop-down menu:
                                     </p>
-                                </div>
-                                <div class="user">
-                                    <ul class="nav nav-pills">
-                                        <li>
-                                            <div class="dropdown">
-                                                <a class="dropdown-toggle blacktemp" data-toggle="dropdown" href="#">
-                                                    ${selectedlanguage[1]}
-                                                    <b class="caret"></b>
-                                                </a>
-                                                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
-                                                    % for l in languages:
-                                                    <li class="cursor">
-                                                        <a href="${getQueryString(request.url, add=[('_LOCALE_', l[0])])}">${l[1]}</a>
-                                                    </li>
-                                                    % endfor
-                                                </ul>
-                                            </div>
-                                        </li>
-                                    </ul>
+                            </div>
+                            <div class="span3 text-left">
+                                <div class="country-selector">
+                                    <div class="btn-group">
+                                        <button class="btn btn-country-selector">Select country</button>
+                                        <button class="btn btn_favorite_right dropdown-toggle" data-toggle="dropdown">
+                                            <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu country-selector">
+                                            % for p in sorted(profiles, key=lambda profile: profile[0]):
+                                                <li><a href="/${p[0]}">${p[0]}</a></li>
+                                            % endfor
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="row-fluid visible-phone">
-                                <div class="span3">
-                                    <a href="${request.route_url('index')}">
-                                        <img src="${request.static_url('lmkp:static/media/img/logo.png')}" class="lo_logo" />
-                                    </a>
-                                </div>
-                                <div class="span6 landing-introduction">
+                        </div>
+                        <div class="row-fluid visible-phone">
+                            <div class="span3">
+                                <a href="${request.route_url('index')}">
+                                    <img src="${request.static_url('lmkp:static/media/img/logo.png')}" class="lo_logo" />
+                                </a>
+                            </div>
+                            <div class="span6 landing-action">
                                     <p>
-                                        The <b>Land Observatory</b> is a pilot project by some partners of the <a href="http://www.landmatrix.org">Land Matrix</a>, designed to provide greater context and deeper insight on land deals, from a more local perspective. Please <b>choose a country</b> from the drop-down menu:
+                                    The <b>Land Observatory</b> is a pilot project by some partners of the <a href="http://www.landmatrix.org">Land Matrix</a>, designed to provide greater context and deeper insight on land deals, from a more local perspective. Please <b>choose a country</b> from the drop-down menu:
                                     </p>
-                                </div>
-                                <div class="span3">
-                                    <div class="user">
-                                        <ul class="nav nav-pills">
-                                            <li>
-                                                <div class="dropdown">
-                                                    <a class="dropdown-toggle blacktemp" data-toggle="dropdown" href="#">
-                                                        ${selectedlanguage[1]}
-                                                        <b class="caret"></b>
-                                                    </a>
-                                                    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu">
-                                                        % for l in languages:
-                                                        <li class="cursor">
-                                                            <a href="${getQueryString(request.url, add=[('_LOCALE_', l[0])])}">${l[1]}</a>
-                                                        </li>
-                                                        % endfor
-                                                    </ul>
-                                                </div>
-                                            </li>
+                            </div>
+                            <div class="span3">
+                                <div class="country-selector">
+                                    <div class="btn-group">
+                                        <button class="btn btn-country-selector">Select country</button>
+                                        <button class="btn btn_favorite_right dropdown-toggle" data-toggle="dropdown">
+                                            <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu country-selector">
+                                            % for p in sorted(profiles, key=lambda profile: profile[0]):
+                                                <li><a href="/${p[0]}">${p[0]}</a></li>
+                                            % endfor
                                         </ul>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- content -->
+	    	<!-- content -->
 
-                    <div class="container">
-                        <div class="content no-border">
-
-    <!--                        <div class="row-fluid">
-                                <div class="span offset1">
-                                    To start,  please
-                                </div>
-                            </div>-->
-
-                            <div class="row-fluid action">
-                                <div class="span4 offset1">
-                                    <h3>1.</h3> select a country
-                                    <div class="country-selector">
-                                       <div class="btn-group">
-                                           <button class="btn btn-country-selector">${profiles[0][1]}</button>
-                                           <button class="btn btn_favorite_right dropdown-toggle" data-toggle="dropdown">
-                                               <i class="icon-caret-down"></i>
-                                           </button>
-                                           <ul class="dropdown-menu country-selector">
-                                               % for p in profiles:
-                                                <li><a href="javascript:selectProfile('${p[1]}')">${p[0]}</a></li>
-                                                % endfor
-                                           </ul>
-                                       </div>
-                                    </div>
-                                </div>
-                                <div class="span2 text-center">
-                                    <h3><i class="icon-arrow-right"></i></h3>
-                                </div>
-                                <div class="span3">
-                                    <h3>2.</h3>  Explore
-                                    <div class="start">
-                                        <div class="btn-group">
-                                            <button class="btn btn-start">GO</button>
-                                            <button class="btn btn_favorite_right dropdown-toggle" data-toggle="dropdown" onclick="javascript:go()">
-                                                <i class="icon-caret-right"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row-fluid not-action">
-                                <div class="span offset1">
-                                    Or take a short tour:
-                                </div>
-                            </div>
-
-                            <div class="row-fluid">
-                                <div class="span10 offset1">
-
-                                    <!-- slider -->
-                                    <div id="myCarousel" class="carousel slide">
-                                        <ol class="carousel-indicators">
-                                            <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
-                                            <li data-target="#myCarousel" data-slide-to="1"></li>
-                                            <li data-target="#myCarousel" data-slide-to="2"></li>
-                                            <li data-target="#myCarousel" data-slide-to="3"></li>
-                                            <li data-target="#myCarousel" data-slide-to="4"></li>
-                                            <li data-target="#myCarousel" data-slide-to="5"></li>
-                                            <li data-target="#myCarousel" data-slide-to="6"></li>
-                                        </ol>
-
-                                        <!-- Carousel items -->
-                                        <div class="carousel-inner">
+	        <div class="container">
+	            <div class="content no-border">
+	            	<div class="row-fluid">
 
 
-                                            <div class="item active">
-<!--                                                <div class="not-action2">
-                                                    Or take a short tour.
-                                                </div>-->
-                                                <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_02.png')}" alt="">
-                                                <div class="carousel-caption">
-                                                    <h4>Second Thumbnail label</h4>
-                                                    <p>Users in select pilot countries gather, explore and analyze spatial data on large-scale land acquisitions.
-                                                    Data is managed and reviewed locally by partners.
-                                                    </p>
-                                                </div>
+                            <div class="span10 offset1">
+
+                                <!-- slider -->
+                                <div id="myCarousel" class="carousel slide">
+                                    <ol class="carousel-indicators">
+                                        <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                                        <li data-target="#myCarousel" data-slide-to="1"></li>
+                                        <li data-target="#myCarousel" data-slide-to="2"></li>
+                                        <li data-target="#myCarousel" data-slide-to="3"></li>
+                                        <li data-target="#myCarousel" data-slide-to="4"></li>
+                                        <li data-target="#myCarousel" data-slide-to="5"></li>
+                                        <li data-target="#myCarousel" data-slide-to="6"></li>
+                                    </ol>
+
+                                    <!-- Carousel items -->
+                                    <div class="carousel-inner">
+
+
+                                        <div class="item active">
+                                            <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_02.png')}" alt="">
+                                            <div class="carousel-caption">
+                                                <h4>Second Thumbnail label</h4>
+                                                <p>Users in select pilot countries gather, explore and analyze spatial data on large-scale land acquisitions.
+                                                Data is managed and reviewed locally by partners.
+                                                </p>
                                             </div>
-
-                                            <div class="item">
-                                                <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_03.png')}" alt="">
-                                                <div class="carousel-caption">
-                                                    <h4>Third Thumbnail label</h4>
-                                                    <p>Users can see deals in full geographical context, learn more about investors and the kinds of investments in question.</p>
-                                                </div>
-                                            </div>
-
-                                            <div class="item">
-                                                <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_04.png')}" alt="">
-                                                <div class="carousel-caption">
-                                                    <h4>Third Thumbnail label</h4>
-                                                    <p>You can also select a specific land deal to see more: "who" (investors and other stakeholders) and "what" the land will be used for </p>
-                                                </div>
-                                            </div>
-
-                                            <div class="item">
-                                                <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_05.png')}" alt="">
-                                                <div class="carousel-caption">
-                                                    <h4>Fifth Thumbnail label</h4>
-                                                    <p>You can go further and learn more about an investor, seeing the same investor's other land deals.</p>
-                                                </div>
-                                            </div>
-
-                                            <div class="item">
-                                                <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_06.png')}" alt="">
-                                                <div class="carousel-caption">
-                                                    <h4>Sixth Thumbnail label</h4>
-                                                    <p>Logged in users can also help contribute and update data, and anybody can freely comment on it. </p>
-                                                </div>
-                                            </div>
-
-                                            <div class="item">
-                                                <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_07.png')}" alt="">
-                                                <div class="carousel-caption">
-                                                    <h4>Sixth Thumbnail label</h4>
-                                                    <p>You can filter the land deals by various attributes - like size, or crop. Or make a spatial selection of land deals</p>
-                                                </div>
-                                            </div>
-
-                                            <div class="item">
-                                                <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_08.png')}" alt="">
-                                                <div class="carousel-caption">
-                                                    <h4>Seventh Thumbnail label</h4>
-                                                    <p>Want to know if anybody lives on a concession? Use the context layers to view population density and more</p>
-                                                </div>
-                                            </div>
-
                                         </div>
 
-                                        <!-- Carousel nav -->
-                                        <div class="carousel-controls">
-                                                <a class="carousel-control left" href="#myCarousel" data-slide="prev">&lsaquo;</a>
-                                                <a class="carousel-control right" href="#myCarousel" data-slide="next">&rsaquo;</a>
+                                        <div class="item">
+                                            <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_03.png')}" alt="">
+                                            <div class="carousel-caption">
+                                                <h4>Third Thumbnail label</h4>
+                                                <p>Users can see deals in full geographical context, learn more about investors and the kinds of investments in question.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="item">
+                                            <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_04.png')}" alt="">
+                                            <div class="carousel-caption">
+                                                <h4>Third Thumbnail label</h4>
+                                                <p>You can also select a specific land deal to see more: "who" (investors and other stakeholders) and "what" the land will be used for </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="item">
+                                            <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_05.png')}" alt="">
+                                            <div class="carousel-caption">
+                                                <h4>Fifth Thumbnail label</h4>
+                                                <p>You can go further and learn more about an investor, seeing the same investor's other land deals.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="item">
+                                            <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_06.png')}" alt="">
+                                            <div class="carousel-caption">
+                                                <h4>Sixth Thumbnail label</h4>
+                                                <p>Logged in users can also help contribute and update data, and anybody can freely comment on it. </p>
+                                            </div>
+                                        </div>
+
+                                        <div class="item">
+                                            <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_07.png')}" alt="">
+                                            <div class="carousel-caption">
+                                                <h4>Sixth Thumbnail label</h4>
+                                                <p>You can filter the land deals by various attributes - like size, or crop. Or make a spatial selection of land deals</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="item">
+                                            <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_08.png')}" alt="">
+                                            <div class="carousel-caption">
+                                                <h4>Seventh Thumbnail label</h4>
+                                                <p>Want to know if anybody lives on a concession? Use the context layers to view population density and more</p>
+                                            </div>
                                         </div>
 
                                     </div>
-                                </div>
 
+                                    <!-- Carousel nav -->
+                                    <div class="carousel-controls">
+                                            <a class="carousel-control left" href="#myCarousel" data-slide="prev">&lsaquo;</a>
+                                            <a class="carousel-control right" href="#myCarousel" data-slide="next">&rsaquo;</a>
+                                    </div>
+
+                                </div>
                             </div>
+
                         </div>
-                    </div>
-                </div>
+	            </div>
+	        </div>
+	    </div>
 
-                <div class="landing-page-push">
-                </div>
+	    <div class="landing-page-push">
+	    </div>
 
-            </div>
+		</div>
 
             <div class="navbar footer landing-page-footer">
                 <ul class="nav pull-right">
@@ -348,19 +284,19 @@ if 'lmkp.mode' in request.registry.settings:
                             [request.route_url('about_view'), 'About'],
                             [request.route_url('partners_view'), 'Partners & Donors']
                         ]
-                    %>
+                        %>
 
-                    % for f in footer:
-                    <li
-                        % if request.current_route_url() == f[0]:
-                            class="active"
-                        % endif
-                        >
-                        <a href="${f[0]}">${f[1]}</a>
-                    </li>
-                    % endfor
-                </ul>
-            </div>
+                        % for f in footer:
+                            <li
+                                % if request.current_route_url() == f[0]:
+                                    class="active"
+                                % endif
+                                >
+                                <a href="${f[0]}">${f[1]}</a>
+                            </li>
+                        % endfor
+			</ul>
+		</div>
 
         <script type="text/javascript">
          /* <![CDATA[ */
@@ -376,10 +312,13 @@ if 'lmkp.mode' in request.registry.settings:
         <script src="${request.static_url('lmkp:static/media/js/main.js')}"></script>
 
         <script>
-            var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
-            (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
-            g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
-            s.parentNode.insertBefore(g,s)}(document,'script'));
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+            ga('create', 'UA-42525474-1', 'landobservatory.org');
+            ga('send', 'pageview');
         </script>
     </body>
 </html>
