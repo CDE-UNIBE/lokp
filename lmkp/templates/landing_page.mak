@@ -311,9 +311,7 @@ if 'lmkp.mode' in request.registry.settings:
 
         <script src="${request.static_url('lmkp:static/media/js/main.js')}"></script>
 
-        <script>
-            <script type="text/javascript">
-
+        <script type="text/javascript">
           var _gaq = _gaq || [];
           _gaq.push(['_setAccount', 'UA-42520999-1']);
           _gaq.push(['_trackPageview']);
@@ -323,7 +321,6 @@ if 'lmkp.mode' in request.registry.settings:
             ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
             var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
           })();
-
         </script>
     </body>
 </html>
