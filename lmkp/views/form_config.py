@@ -1137,6 +1137,9 @@ class ConfigValue(object):
 def getMapWidget(thematicgroup):
     """
     Return a widget to be used to display the map in the form.
+    The map widget (resp. its hidden lon/lat fields) is mandatory, only one
+    field is marked as mandatory (lon) in order to prevent double error messages
+    if it is missing.
     """
 
     mapWidget = colander.SchemaNode(
@@ -1159,7 +1162,8 @@ def getMapWidget(thematicgroup):
         colander.Float(),
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='lat',
-        title='lat'
+        title='lat',
+        missing=''
     ))
 
     return mapWidget

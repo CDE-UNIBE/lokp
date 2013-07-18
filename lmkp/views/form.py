@@ -145,7 +145,10 @@ def renderForm(request, itemType, **kwargs):
             oldCat = configCategoryList.findCategoryById(oldCategory)
             if oldCat is not None:
                 oldschema.add(oldCat.getForm(request))
-            buttons = getFormButtons(request, categoryListButtons, oldCategory)
+
+            showSessionCategories = 'activity' if itemType == 'activities' else None
+            buttons = getFormButtons(request, categoryListButtons, oldCategory,
+                showSessionCategories=showSessionCategories)
 
             if embedded is True:
                 # If the form is embedded, use AJAX to submit it.
@@ -307,7 +310,9 @@ def renderForm(request, itemType, **kwargs):
         newCat = configCategoryList.findCategoryById(newCategory)
         if newCat is not None:
             newschema.add(newCat.getForm(request))
-        buttons = getFormButtons(request, categoryListButtons, newCategory)
+        showSessionCategories = 'activity' if itemType == 'activities' else None
+        buttons = getFormButtons(request, categoryListButtons, newCategory,
+            showSessionCategories=showSessionCategories)
 
         if embedded is True:
             # If the form is embedded, use AJAX to submit it.
@@ -412,10 +417,16 @@ def renderForm(request, itemType, **kwargs):
                     url = request.route_url('form_clear_session', _query={'url':request.url})
                     session.flash('<strong>%s</strong>: %s<br/><a href="%s">%s</a>' % (noticeTitle, notice1, url, action1))
 
+        elif itemType == 'stakeholders' and itemJson is not None:
+            # An item was provided to show in the form (edit form)
+            # Simply show the data of the provided item in the form.
+            data = getFormdataFromItemjson(request, itemJson, itemType,
+                newCategory)
+
         else:
-            # No itemjson and no sessionitem, do nothign (empty data already defined above)
-            # If there is no existing item, show the form with empty data
-            pass # Empty data already defined above
+            # No itemjson and no sessionitem, do nothing (empty data already
+            # defined above).
+            pass
 
 #        log.debug('Data used to populate the form: %s' % data)
 
@@ -676,18 +687,36 @@ def addHiddenFields(schema, itemType, embedded=False):
 
     return schema
 
-def getFormButtons(request, categorylist, currentCategory=None):
+def getFormButtons(request, categorylist, currentCategory=None, **kwargs):
     """
     Function returning an array of form buttons (one button for each category
     and one final submit button). If a current category is provided, the button
     of this category gets a special css class.
+    kwargs:
+    - showSessionCategories [sessionName]: Tries to find [sessionName] in the
+      session and loops its categories. The button of each category found gets
+      the css_class 'formstepvisited'.
     """
+
+    sessionCategories = []
+    sessionKeyword = kwargs.pop('showSessionCategories', None)
+    if sessionKeyword is not None and sessionKeyword in request.session:
+        for c in request.session['activity']:
+            try:
+                # Only keep integers
+                int(c)
+                sessionCategories.append(c)
+            except ValueError:
+                pass
+
     _ = request.translate
     buttons = []
     # Only show categories if there is more than 1 category
     if len(categorylist) > 1:
         for cat in categorylist:
             b = deform.Button('step_%s' % str(cat[0]), cat[1], css_class='')
+            if str(cat[0]) in sessionCategories:
+                b.css_class='formstepvisited'
             if currentCategory is not None and str(cat[0]) == str(currentCategory):
                 b.css_class='formstepactive'
             buttons.append(b)
