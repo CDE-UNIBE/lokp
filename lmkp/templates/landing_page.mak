@@ -12,6 +12,9 @@ mode = None
 if 'lmkp.mode' in request.registry.settings:
     if str(request.registry.settings['lmkp.mode']).lower() == 'demo':
         mode = 'demo'
+trackingId = 'XX-XXXXXXXX-X'
+if 'lmkp.tracking_id' in request.registry.settings:
+    trackingId = request.registry.settings['lmkp.tracking_id']
 %>
 
 <!DOCTYPE html>
@@ -351,7 +354,7 @@ if 'lmkp.mode' in request.registry.settings:
 
         <script type="text/javascript">
           var _gaq = _gaq || [];
-          _gaq.push(['_setAccount', 'UA-42520999-1']);
+          _gaq.push(['_setAccount', ${trackingId | n}]);
           _gaq.push(['_trackPageview']);
 
           (function() {
