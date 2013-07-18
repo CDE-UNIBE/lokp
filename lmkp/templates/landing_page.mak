@@ -12,7 +12,7 @@ mode = None
 if 'lmkp.mode' in request.registry.settings:
     if str(request.registry.settings['lmkp.mode']).lower() == 'demo':
         mode = 'demo'
-trackingId = 'XX-XXXXXXXX-X'
+trackingId = None
 if 'lmkp.tracking_id' in request.registry.settings:
     trackingId = request.registry.settings['lmkp.tracking_id']
 %>
@@ -352,6 +352,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
 
         <script src="${request.static_url('lmkp:static/media/js/main.js')}"></script>
 
+        % if trackingId is not None:
         <script type="text/javascript">
           var _gaq = _gaq || [];
           _gaq.push(['_setAccount', ${trackingId | n}]);
@@ -363,5 +364,6 @@ if 'lmkp.tracking_id' in request.registry.settings:
             var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
           })();
         </script>
+        % endif
     </body>
 </html>

@@ -16,6 +16,9 @@ mode = None
 if 'lmkp.mode' in request.registry.settings:
     if str(request.registry.settings['lmkp.mode']).lower() == 'demo':
         mode = 'demo'
+trackingId = None
+if 'lmkp.tracking_id' in request.registry.settings:
+    trackingId = request.registry.settings['lmkp.tracking_id']
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -378,9 +381,10 @@ if 'lmkp.mode' in request.registry.settings:
 
         <script type="text/javascript" src="${request.static_url('lmkp:static/v2/main.js')}"></script>
 
+        % if trackingId is not None:
         <script type="text/javascript">
           var _gaq = _gaq || [];
-          _gaq.push(['_setAccount', 'UA-42520999-1']);
+          _gaq.push(['_setAccount', ${trackingId | n}]);
           _gaq.push(['_trackPageview']);
 
           (function() {
@@ -389,6 +393,7 @@ if 'lmkp.mode' in request.registry.settings:
             var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
           })();
         </script>
+        % endif
 
         ## Include the bottom tags of the child template if available.
         <%
