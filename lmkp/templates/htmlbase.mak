@@ -139,6 +139,15 @@ if 'lmkp.mode' in request.registry.settings:
             div.grid-area div.row-fluid:first-child div.span5 h5 {
                 font-weight: bold !important;
             }
+            .form-button-visited {
+                float: right;
+                margin-left: 5px;
+            }
+            .stakeholder-editor-menu-bar-embedded {
+                position: absolute;
+                right: 5%;
+                top: 5%;
+            }
 
         </style>
 

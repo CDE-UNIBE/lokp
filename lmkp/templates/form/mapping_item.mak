@@ -36,16 +36,21 @@
             errstr = 'error-%s' % field.oid
         %>
         % for msg in field.error.messages():
-            <p
-                % if msg.index==0:
-                    id="${errstr}"
-                % else:
-                    id="${'%s-%s' % (errstr, msg.index)}"
-                % endif
-                class="${field.widget.error_class}"
-            >
-            ${request.translate(msg)}
-            </p>
+            ## Special error message for map
+            % if field.name == 'lon':
+                ${request.translate('The location of the deal is required. Please select a point on the map before continuing.')}
+            % else:
+                <p
+                    % if msg.index==0:
+                        id="${errstr}"
+                    % else:
+                        id="${'%s-%s' % (errstr, msg.index)}"
+                    % endif
+                    class="${field.widget.error_class}"
+                >
+                ${request.translate(msg)}
+                </p>
+            % endif
         % endfor
     </div>
 % endif
