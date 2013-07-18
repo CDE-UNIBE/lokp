@@ -56,11 +56,6 @@ if 'lmkp.mode' in request.registry.settings:
                 margin-top: -8px;
                 padding-right: 0;
             }
-            h3 {
-                padding: 0;
-                display: inline;
-                font-size: 1.5em;
-            }
             #main {
                 padding-bottom: 50px;
             }
@@ -93,15 +88,6 @@ if 'lmkp.mode' in request.registry.settings:
 
             });
 
-            function selectProfile(p) {
-                $('.btn-country-selector').html(p);
-            }
-
-            function go() {
-                var p = $('.btn-country-selector').html();
-                location.href = '/' + p;
-            }
-
         </script>
 
     </head>
@@ -127,7 +113,7 @@ if 'lmkp.mode' in request.registry.settings:
 
                                 <div class="span6 landing-introduction">
                                     <p>
-                                        The <b>Land Observatory</b> is a pilot project by some partners of the <a href="http://www.landmatrix.org">Land Matrix</a>, designed to provide greater context and deeper insight on land deals, from a more local perspective
+                                        The <b>Land Observatory</b> is a pilot project by some partners of the <a href="http://www.landmatrix.org">Land Matrix</a>, designed to provide greater context and deeper insight on land deals, from a more local perspective.
                                     </p>
                                 </div>
                                 <div class="user">
@@ -158,7 +144,7 @@ if 'lmkp.mode' in request.registry.settings:
                                 </div>
                                 <div class="span6 landing-introduction">
                                     <p>
-                                        The <b>Land Observatory</b> is a pilot project by some partners of the <a href="http://www.landmatrix.org">Land Matrix</a>, designed to provide greater context and deeper insight on land deals, from a more local perspective. Please <b>choose a country</b> from the drop-down menu:
+                                        The <b>Land Observatory</b> is a pilot project by some partners of the <a href="http://www.landmatrix.org">Land Matrix</a>, designed to provide greater context and deeper insight on land deals, from a more local perspective.
                                     </p>
                                 </div>
                                 <div class="span3">
@@ -198,8 +184,10 @@ if 'lmkp.mode' in request.registry.settings:
                             </div>-->
 
                             <div class="row-fluid action">
-                                <div class="span4 offset1">
-                                    <h3>1.</h3> select a country
+                                <div class="span2 offset1">
+                                    Select a country
+                                </div>
+                                <div class="span3">
                                     <div class="country-selector">
                                        <div class="btn-group">
                                            <button class="btn btn-country-selector">${profiles[0][1]}</button>
@@ -208,24 +196,10 @@ if 'lmkp.mode' in request.registry.settings:
                                            </button>
                                            <ul class="dropdown-menu country-selector">
                                                % for p in profiles:
-                                                <li><a href="javascript:selectProfile('${p[1]}')">${p[0]}</a></li>
+                                                <li><a href="/${p[1]}">${p[0]}</a></li>
                                                 % endfor
                                            </ul>
                                        </div>
-                                    </div>
-                                </div>
-                                <div class="span2 text-center">
-                                    <h3><i class="icon-arrow-right"></i></h3>
-                                </div>
-                                <div class="span3">
-                                    <h3>2.</h3>  Explore
-                                    <div class="start">
-                                        <div class="btn-group">
-                                            <button class="btn btn-start">GO</button>
-                                            <button class="btn btn_favorite_right dropdown-toggle" data-toggle="dropdown" onclick="javascript:go()">
-                                                <i class="icon-caret-right"></i>
-                                            </button>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
