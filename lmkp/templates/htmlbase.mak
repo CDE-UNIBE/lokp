@@ -143,6 +143,11 @@ if 'lmkp.mode' in request.registry.settings:
                 float: right;
                 margin-left: 5px;
             }
+            .stakeholder-editor-menu-bar-embedded {
+                position: absolute;
+                right: 5%;
+                top: 5%;
+            }
 
         </style>
 
