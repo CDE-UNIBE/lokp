@@ -766,8 +766,10 @@ class Protocol(object):
                         first()
 
                 if sh is None:
-                    ret['msg'] = _('One of the Stakeholders to review was not found.')
-                    return ret
+                    log.debug('One of the Stakeholders to review was not found.')
+                    continue
+#                    ret['msg'] = _('One of the Stakeholders to review was not found.')
+#                    return ret
 
                 log.debug('Reviewing involvement: Stakeholder with identifier %s, version %s and status %s'
                         % (sh.identifier, sh.version, sh.fk_status))
@@ -1260,16 +1262,16 @@ class Protocol(object):
                             # Set the main tag
                             if 'main_tag' in taggroup_dict:
                                 if (db is True and
-                                    taggroup_dict['main_tag']['key'] ==
-                                        new_tag.key.key and
-                                    taggroup_dict['main_tag']['value'] ==
-                                        new_tag.value.value):
+                                    unicode(taggroup_dict['main_tag']['key']) ==
+                                        unicode(new_tag.key.key) and
+                                    unicode(taggroup_dict['main_tag']['value']) ==
+                                        unicode(new_tag.value.value)):
                                     new_taggroup.main_tag = new_tag
                                 elif (db is False and
-                                    taggroup_dict['main_tag']['key'] ==
-                                        new_tag.get_key() and
-                                    taggroup_dict['main_tag']['value'] ==
-                                        new_tag.get_value()):
+                                    unicode(taggroup_dict['main_tag']['key']) ==
+                                        unicode(new_tag.get_key()) and
+                                    unicode(taggroup_dict['main_tag']['value']) ==
+                                        unicode(new_tag.get_value())):
                                     new_taggroup._main_tag = new_tag
 
 #        print "============================================="
@@ -1363,6 +1365,16 @@ class Protocol(object):
 #                        log.debug('Merging diff of taggroups. Old taggroup diff:\n%s\nNew taggroup diff:\n%s'
 #                            % (old_tg, new_tg))
 
+                        # If the whole taggroup is to be deleted, no need to
+                        # continue. Set the operator, delete main_tag and any
+                        # old tags
+                        deleteTaggroup = 'op' in new_tg and new_tg['op'] == 'delete'
+                        if deleteTaggroup:
+                            old_tg['op'] = 'delete'
+                            del old_tg['main_tag']
+                            del old_tg['tags']
+                            continue
+
                         tags_to_delete = []
                         tags_to_add = []
 
@@ -1376,8 +1388,8 @@ class Protocol(object):
                                 if (new_t['op'] == 'delete'
                                     and old_t['op'] == 'add'
                                     and new_t['key'] == old_t['key']
-                                    and str(new_t['value'])
-                                        == str(old_t['value'])):
+                                    and unicode(new_t['value'])
+                                        == unicode(old_t['value'])):
                                     # Remove
                                     tags_to_delete.append(old_t)
 
@@ -1464,7 +1476,8 @@ class Protocol(object):
                             f_tags = {}
                             for f_t in f_tg.get_tags():
                                 f_tags[f_t.get_key()] = f_t.get_value()
-                            if list(set(rel_tags) & set(f_tags)) == rel_keys:
+                            if (len(set(rel_tags.items()) & set(f_tags.items()))
+                                == len(rel_keys)):
                                 found_tg_id = f_tg.get_tg_id()
                     if found_tg_id is not None:
                         rel_tg['tg_id'] = found_tg_id

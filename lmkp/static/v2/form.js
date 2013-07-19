@@ -80,7 +80,7 @@ function customAddSequenceItem(protonode, before) {
     $idnodes.each(function(idx, node) {
         var $node = $(node);
         var oldid = $node.attr('id');
-        var newid = oldid.replace(fieldmatch, "deformField$1-" + genid);
+        var newid = oldid.replace(fieldmatch, "deformField$1");
         $node.attr('id', newid);
         idmap[oldid] = newid;
         var labelselector = 'label[for=' + oldid + ']';
@@ -93,7 +93,7 @@ function customAddSequenceItem(protonode, before) {
     $namednodes.each(function(idx, node) {
         var $node = $(node);
         var oldname = $node.attr('name');
-        var newname = oldname.replace(fieldmatch, "deformField$1-" + genid);
+        var newname = oldname.replace(fieldmatch, "deformField$1");
         $node.attr('name', newname);
         });
 

@@ -146,8 +146,12 @@ def renderForm(request, itemType, **kwargs):
             if oldCat is not None:
                 oldschema.add(oldCat.getForm(request))
 
-            showSessionCategories = 'activity' if itemType == 'activities' else None
-            buttons = getFormButtons(request, categoryListButtons, oldCategory,
+                showSessionCategories = None
+                if (itemType == 'activities' and (itemJson is None
+                    or ('activity' in session and 'id' in session['activity']
+                    and session['activity']['id'] == itemJson['id']))):
+                    showSessionCategories = 'activity'
+                buttons = getFormButtons(request, categoryListButtons, oldCategory,
                 showSessionCategories=showSessionCategories)
 
             if embedded is True:
@@ -310,7 +314,11 @@ def renderForm(request, itemType, **kwargs):
         newCat = configCategoryList.findCategoryById(newCategory)
         if newCat is not None:
             newschema.add(newCat.getForm(request))
-        showSessionCategories = 'activity' if itemType == 'activities' else None
+        showSessionCategories = None
+        if (itemType == 'activities' and (itemJson is None
+            or ('activity' in session and 'id' in session['activity']
+            and session['activity']['id'] == itemJson['id']))):
+            showSessionCategories = 'activity'
         buttons = getFormButtons(request, categoryListButtons, newCategory,
             showSessionCategories=showSessionCategories)
 
@@ -797,6 +805,8 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
     - itemType: activities / stakeholders
     """
 
+    mapAdded = False
+
     # TODO: Translation
     unknownString = 'Unknown'
 
@@ -1047,10 +1057,45 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
                 if ('coordinates' in geometry
                     and isinstance(geometry['coordinates'], list)
                     and len(geometry['coordinates']) == 2):
+                    mapAdded = True
                     data[cat][thmg]['map'] = {
                         'lon': geometry['coordinates'][0],
                         'lat': geometry['coordinates'][1]
                     }
+
+    # Map
+    if (category is not None and str(category) in categorylist.getMapCategoryIds()
+        and mapAdded is False):
+        # The current category contains a map which has not yet been added to
+        # the form data. This may be the case if there are no other taggroups in
+        # this category or thematic group filled out.
+        cat = categorylist.findCategoryById(category)
+        catId = str(cat.getId())
+
+        if catId not in data:
+            data[catId] = {}
+
+        thematicgroup = None
+        for thmg in categorylist.getMapThematicgroupIds():
+            if cat.findThematicgroupById(thmg) is not None:
+                thematicgroup = cat.findThematicgroupById(thmg)
+                break
+
+        if thematicgroup is not None and 'geometry' in itemJson:
+            thmgId = str(thematicgroup.getId())
+
+            if thmgId not in data[catId]:
+                data[catId][thmgId] = {}
+
+            geometry = itemJson['geometry']
+            # Make sure the geometry is valid
+            if ('coordinates' in geometry
+                and isinstance(geometry['coordinates'], list)
+                and len(geometry['coordinates']) == 2):
+                data[catId][thmgId]['map'] = {
+                    'lon': geometry['coordinates'][0],
+                    'lat': geometry['coordinates'][1]
+                }
 
     log.debug('Formdata created by ItemJSON: %s' % data)
 
@@ -1373,27 +1418,35 @@ def formdataToDiff(request, newform, itemType):
 
                         for (k, v) in t_copy.iteritems():
 
+                            if type(v) == datetime.date or type(v) == datetime.datetime:
+                                v = datetime.datetime.strftime(v, '%Y-%m-%d')
+
+                            oldv = oldtaggroup[k] if k in oldtaggroup else None
+                            if type(oldv) == datetime.date or type(oldv) == datetime.datetime:
+                                oldv = datetime.datetime.strftime(oldv, '%Y-%m-%d')
+
+
                             if (k != 'tg_id'):
-                                if (k in oldtaggroup
-                                    and str(v) != oldtaggroup[k]
+                                if (oldv is not None and 
+                                    unicode(v) != unicode(oldv)
                                     and v != colander.null):
                                     # Because the form renders values as floats,
                                     # it is important to compare them correctly
                                     # with an integer value
                                     try:
-                                        if float(oldtaggroup[k]) == float(v):
+                                        if float(oldv) == float(v):
                                             continue
                                     except ValueError:
                                         pass
                                     except TypeError:
-                                        continue
+                                        pass
 
                                     # If a key is there in both forms but its
                                     # value changed, add it once as deleted and
                                     # once as added.
                                     deletedtags.append({
                                         'key': k,
-                                        'value': oldtaggroup[k]
+                                        'value': oldv
                                     })
                                     addedtags.append({
                                         'key': k,
@@ -1407,10 +1460,13 @@ def formdataToDiff(request, newform, itemType):
                                         'key': k,
                                         'value': v
                                     })
-                                elif (k in oldtaggroup and str(v) != oldtaggroup[k]
+                                elif (k in oldtaggroup and unicode(v) != unicode(oldtaggroup[k])
                                     and v == colander.null):
                                     # If a key was in the oldform but not in the
                                     # new one anymore, add it as deleted.
+                                    oldv = oldtaggroup[k]
+                                    if type(oldv) == datetime.date or type(oldv) == datetime.datetime:
+                                        oldv = datetime.datetime.strftime(oldv, '%Y-%m-%d')
                                     deletedtags.append({
                                         'key': k,
                                         'value': oldtaggroup[k]
@@ -1453,7 +1509,9 @@ def formdataToDiff(request, newform, itemType):
                                     # a group of checkboxes. Each of the values
                                     # is treated as a separate taggroup.
                                     for (value, tg_id) in v:
-                                        if tg_id is None:
+                                        # Since we transformed all values to
+                                        # unicode, also 'None' is a string now.
+                                        if tg_id is None or tg_id == 'None':
                                             # No tg_id, treat it as a new
                                             # taggroup
                                             addedtaggroups.append({
@@ -1477,6 +1535,10 @@ def formdataToDiff(request, newform, itemType):
                                                 # This basically should not happen because the tg_id always should be found.
                                                 log.debug('\n\n*** TG_ID NOT FOUND: When trying to find and remove taggroup by tg_id (%s), the taggroup was not found in the old form.\n\n' % tg_id)
                                 else:
+                                    # Write dates as string
+                                    if type(v) == datetime.date or type(v) == datetime.datetime:
+                                        v = datetime.datetime.strftime(v, '%Y-%m-%d')
+
                                     # No checkbox, simply a new tag
                                     addedtags.append({
                                         'key': k,
@@ -1549,6 +1611,10 @@ def formdataToDiff(request, newform, itemType):
                     if 'tg_id' in t and t['tg_id'] != colander.null:
                         deletedtags = []
                         for (k, v) in t.iteritems():
+
+                            if type(v) == datetime.date or type(v) == datetime.datetime:
+                                v = datetime.datetime.strftime(v, '%Y-%m-%d')
+
                             if (k != 'tg_id' and v != colander.null):
                                 deletedtags.append({
                                     'key': k,

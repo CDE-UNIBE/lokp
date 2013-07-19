@@ -604,13 +604,6 @@ span.arrow {
 	min-height: 100%;
 }
 
-/*.landing-page {
-	background: #F2F2F2;
-	--position: relative;
-	--z-index: 1;
-	min-height: 100% !important;
-}*/
-
 .content {
 	border-right: 1px solid black;
 	border-left: 1px solid black;
@@ -978,7 +971,6 @@ p.deal-detail {
 
 .basic-data,
 .map-menu {
-	position: absolute;
 	-moz-box-shadow: 0 0 2px black;
 	-webkit-box-shadow: 0 0 2px black;
 	box-shadow: 0 0 2px black;
@@ -987,6 +979,7 @@ p.deal-detail {
 }
 
 .map-menu {
+	position: absolute;
 	bottom: 25px;
 	background-color: white;
 	border-top-right-radius: 4px;
@@ -1005,6 +998,15 @@ p.deal-detail {
 	-moz-box-shadow: 0 1px 2px black;
 	-webkit-box-shadow: 0 1px 2px black;
 	box-shadow: 0 1px 2px black;
+	position: absolute;
+}
+
+.basic-data {
+	position: relative;
+    top: -1px;
+    float: right;
+    z-index: 9;
+    border-top: 1px solid gray;
 }
 
 .basic-data p {

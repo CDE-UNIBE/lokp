@@ -594,7 +594,7 @@ $(document).ready(function() {
 <input class=\"input-top\" type=\"checkbox\" value=\"" + layerName + "\" id=\"checkbox" + layerName + "\">\n\
 <label for=\"checkbox" + layerName + "\"></label>\n\
 </div>\n\
-<p class=\"context-layers-description\">" + layerName + "&nbsp;<i class=\"icon-exclamation-sign pointer\"></i>\n\
+<p class=\"context-layers-description\">" + layerName + "&nbsp;<i class=\"icon-exclamation-sign pointer\" onClick=\"javascript:showContextLegend('" + layerName + "')\"></i>\n\
 </p>\n\
 </li>";
         $("#context-layers-list").append(t);
@@ -671,17 +671,6 @@ $(document).ready(function() {
             ol.setVisibility(event.target.checked);
         }
     });
-
-    // Collapse the filter division
-    $(".filter_area_openclose > .pointer").click(function(event){
-        // Do something
-        //$(".filter_area").hide();
-        });
-
-    // Show the legend as overlay?
-    $(".context-layers-description > i").click(function(event){
-        // Do something
-        });
 
     var rows = new Array();
 
@@ -784,6 +773,49 @@ $(document).ready(function() {
         return layers;
     }
 });
+
+/**
+ * Function to show the legend of a context layer in a modal window.
+ */
+function showContextLegend(layerName) {
+
+    // Find the layer in the list of available context layers
+    var layer = null;
+    $.each(contextLayers, function() {
+        if (this.name == layerName) {
+            layer = this;
+        }
+    });
+    if (layer === null) return false;
+
+    // Prepare URL of legend image
+    var imgParams = {
+        request: 'GetLegendGraphic',
+        service: layer.params.SERVICE,
+        version: layer.params.VERSION,
+        layer: layer.params.LAYERS,
+        style: layer.params.STYLES,
+        format: 'image/png',
+        width: 25,
+        height: 25
+    };
+    var imgUrl = layer.url + '?' + $.param(imgParams);
+
+    // Set the content: Image is hidden first while loading indicator is shown
+    $('#mapModalHeader').html('Legend');
+    $('#mapModalBody').html('<div id="contextLegendImgLoading">Loading ...</div><div id="contextLegendContent" class="hide"><p>Legend for context layer <strong>' + layerName + '</strong>:</p><img id="contextLegendImg" src="' + imgUrl + '"></div>');
+
+    // Show the model window
+    $('#mapModal').modal();
+
+    // Once the image is loaded, hide the loading indicator and show the image
+    $('#contextLegendImg').load(function() {
+        $('#contextLegendContent').removeClass('hide');
+        $('#contextLegendImgLoading').hide();
+    });
+
+    return false;
+}
 
 /**
  * Function to add commas as a separator for thousands to a string containing
