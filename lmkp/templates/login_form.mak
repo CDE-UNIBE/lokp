@@ -55,7 +55,7 @@ if 'lmkp.mode' in request.registry.settings:
             </div>
         </div>
         <div class="row-fluid">
-            <div class="span12">
+            <div class="span8 offset2">
                 <h3>
                     ${_(u"Demo Version")}
                 </h3>
