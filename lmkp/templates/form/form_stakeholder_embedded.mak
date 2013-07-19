@@ -16,7 +16,7 @@
     % if field.error:
         <div class="alert alert-error">
             <h5>${request.translate("There was a problem with your submission")}</h5>
-            <p>${request.translate("Errors have been highlighted below")}</p>
+            ${request.translate("Errors have been highlighted below")}
         </div>
     % endif
 
@@ -24,36 +24,34 @@
         ${child.render_template(field.widget.item_template)}
     % endfor
 
+    <div class="deal-editor-menu-bar stakeholder-editor-menu-bar-embedded">
     % for button in field.buttons:
-        <div class="row-fluid">
-            <div class="span3 offset9 text-center">
-                <ul>
-                    % if button.css_class == 'formstepactive':
-                        <div class="active-wrapper">
-                    % endif
+        <ul>
+            % if button.css_class == 'formstepactive':
+                <div class="active-wrapper">
+            % endif
 
-                    <li
-                        % if button.name == 'submit':
-                            style="background-color:gray;"
-                        % endif
-                        >
-                        <button
-                            id="${field.formid + button.name}"
-                            name="${button.name}"
-                            value="${button.value}"
-                            class="btnText ${button.css_class}"
-                            onclick="showLoadingIndicator(this);">
-                            ${button.title}
-                        </button>
-                    </li>
+            <li
+                % if button.name == 'submit':
+                    style="background-color:gray;"
+                % endif
+                >
+                <button
+                    id="${field.formid + button.name}"
+                    name="${button.name}"
+                    value="${button.value}"
+                    class="btnText ${button.css_class}"
+                    onclick="showLoadingIndicator(this);">
+                    ${button.title}
+                </button>
+            </li>
 
-                    % if button.css_class == 'formstepactive':
-                        </div>
-                    % endif
-                </ul>
-            </div>
-        </div>
+            % if button.css_class == 'formstepactive':
+                </div>
+            % endif
+        </ul>
     % endfor
+    </div>
 
     % if field.use_ajax:
         <script type="text/javascript">

@@ -16,6 +16,9 @@ mode = None
 if 'lmkp.mode' in request.registry.settings:
     if str(request.registry.settings['lmkp.mode']).lower() == 'demo':
         mode = 'demo'
+trackingId = None
+if 'lmkp.tracking_id' in request.registry.settings:
+    trackingId = request.registry.settings['lmkp.tracking_id']
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -71,14 +74,6 @@ if 'lmkp.mode' in request.registry.settings:
                 height: 22px;
                 width: 100px;
             }
-            .blacktemp {
-                color: black;
-                margin: 0 7px;
-                text-decoration: underline;
-            }
-            .blacktemp .caret {
-                border-top-color: black !important;
-            }
             .logouttemp {
                 color: black;
                 text-decoration: underline;
@@ -105,10 +100,10 @@ if 'lmkp.mode' in request.registry.settings:
             .filter_area_openclose {
                 cursor: pointer;
             }
-            #new-filter-value {
+            #new-filter-value-internal {
                 width: 178px;
             }
-            .input-append #new-filter-value {
+            .input-append #new-filter-value-internal {
                 width: 147px;
             }
             .new-filter .dropdown-menu {
@@ -146,6 +141,15 @@ if 'lmkp.mode' in request.registry.settings:
             }
             div.grid-area div.row-fluid:first-child div.span5 h5 {
                 font-weight: bold !important;
+            }
+            .form-button-visited {
+                float: right;
+                margin-left: 5px;
+            }
+            .stakeholder-editor-menu-bar-embedded {
+                position: absolute;
+                right: 5%;
+                top: 5%;
             }
 
         </style>
@@ -370,16 +374,17 @@ if 'lmkp.mode' in request.registry.settings:
          /* ]]> */
         </script>
 
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<!--        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>-->
         <script>window.jQuery || document.write('<script type="text/javascript" src="${request.static_url("lmkp:static/media/js/vendor/jquery-1.9.1.min.js")}"><\/script>')</script>
 
         <script type="text/javascript" src="${request.static_url('lmkp:static/media/js/vendor/bootstrap.min.js')}"></script>
 
         <script type="text/javascript" src="${request.static_url('lmkp:static/v2/main.js')}"></script>
 
+        % if trackingId is not None:
         <script type="text/javascript">
           var _gaq = _gaq || [];
-          _gaq.push(['_setAccount', 'UA-42520999-1']);
+          _gaq.push(['_setAccount', ${trackingId | n}]);
           _gaq.push(['_trackPageview']);
 
           (function() {
@@ -388,6 +393,7 @@ if 'lmkp.mode' in request.registry.settings:
             var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
           })();
         </script>
+        % endif
 
         ## Include the bottom tags of the child template if available.
         <%

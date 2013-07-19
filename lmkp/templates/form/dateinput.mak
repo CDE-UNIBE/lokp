@@ -28,5 +28,10 @@
 </div>
 
 <script type="text/javascript">
-    $('#${field.oid}').datepicker(${options});
+    deform.addCallback(
+        '${field.oid}',
+        function(oid) {
+            $('#' + oid).datepicker(${options});
+        }
+    );
 </script>

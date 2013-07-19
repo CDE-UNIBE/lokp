@@ -29,6 +29,9 @@ lmkp.file_mime_extensions = {
     image/gif .gif
     }
 
+; Specify the Google Analytics tracking ID to be used
+lmkp.tracking_id = 'XX-XXXXXXXX-X'
+
 ; Specify the smtp server used to send mails.
 ; See also http://packages.python.org/pyramid_mailer/ for more options
 mail.host = smtp.example.com

@@ -43,6 +43,9 @@
         color: inherit;
         font-weight: normal;
     }
+    #mapModal h3 {
+        padding-top: 0;
+    }
 </style>
 <script type="text/javascript">
 <%
@@ -87,7 +90,7 @@ extent = json.dumps(_getCurrentProfileExtent(request))
 <div class="map-menu">
     <form class="navbar-search" action="">
         <input name="q" id="search" class="search-query" placeholder="search location" />
-        <!--input type="submit" value="Search" id="search-submit" /-->
+        <input value="Search" id="search-submit" />
     </form><br/>
 
     <!-- Base layers -->
@@ -130,6 +133,19 @@ extent = json.dumps(_getCurrentProfileExtent(request))
 </div>
 
 ## End of content
+
+<div id="mapModal" class="modal fade hide">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3 id="mapModalHeader"><!-- Placeholder --></h3>
+    </div>
+    <div id="mapModalBody" class="modal-body">
+        <!-- Placeholder -->
+    </div>
+    <div class="modal-footer">
+        <button id="mapModalClose" class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    </div>
+</div>
 
 <%def name="bottom_tags()">
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3&amp;sensor=false"></script>
