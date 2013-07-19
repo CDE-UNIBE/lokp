@@ -233,7 +233,10 @@ class UserView(BaseView):
         # Determine profile. Each user should only have one profile when 
         # registering!
         profiles = [p.code for p in user.profiles]
-        profile = profiles[0]
+        if len(profiles) == 0:
+            profile = 'global'
+        else:
+            profile = profiles[0]
 
         # Find moderators of this profile
         moderators = Session.query(User).\

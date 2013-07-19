@@ -109,9 +109,11 @@ if 'lmkp.tracking_id' in request.registry.settings:
                         <div class="container">
                             <div class="row-fluid hidden-phone">
                                 <div class="span3 text-right">
-                                    <a href="${request.route_url('index')}">
+                                    % if mode == 'demo':
+                                        <img src="${request.static_url('lmkp:static/img/logo_demo.png')}" class="lo_logo" />
+                                    % else:
                                         <img src="${request.static_url('lmkp:static/media/img/logo.png')}" class="lo_logo" />
-                                    </a>
+                                    % endif
                                 </div>
 
                                 <div class="span6 landing-introduction">
@@ -186,6 +188,21 @@ if 'lmkp.tracking_id' in request.registry.settings:
                                 </div>
                             </div>-->
 
+                            % if mode == 'demo':
+                            <div class="row-fluid">
+                                <div clsas="span10 offset1">
+                                    <p>Welcome to the <strong>Demonstration Version</strong> of the <a href="http://www.landobservatory.org">Land Observatory</a>. This demo version is for learning and experimentation purposes, so first-time users can get a feel for the Observatory and its functions.</p>
+                                    <div class="start">
+                                        <div class="btn-group">
+                                            <a href="/global" class="btn btn-start">ENTER</a>
+                                            <a href="/global" class="btn btn_favorite_right dropdown-toggle">
+                                                <i class="icon-caret-right"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            % else:
                             <div class="row-fluid action">
                                 <div class="span2 offset1">
                                     Select a country
@@ -193,6 +210,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
                                 <div class="span3">
                                     <div class="country-selector">
                                        <div class="btn-group">
+                                           % if len(profiles) > 0:
                                            <button class="btn btn-country-selector">${profiles[0][1]}</button>
                                            <button class="btn btn_favorite_right dropdown-toggle" data-toggle="dropdown">
                                                <i class="icon-caret-down"></i>
@@ -202,10 +220,20 @@ if 'lmkp.tracking_id' in request.registry.settings:
                                                 <li><a href="/${p[1]}">${p[0]}</a></li>
                                                 % endfor
                                            </ul>
+                                           % else:
+                                           <button class="btn btn-country-selector">Global</button>
+                                           <button class="btn btn_favorite_right dropdown-toggle" data-toggle="dropdown">
+                                               <i class="icon-caret-down"></i>
+                                           </button>
+                                           <ul class="dropdown-menu country-selector">
+                                                <li><a href="/global">Global</a></li>
+                                           </ul>
+                                           % endif
                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            % endif
 
                             <div class="row-fluid not-action">
                                 <div class="span offset1">
