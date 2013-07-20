@@ -6,6 +6,9 @@
     <div class="content no-border">
         <p>More content coming soon ...</p>
         <p>In the meantime, you may have a look at the <a href="${request.route_url('charts')}">previous charts page</a>.</p>
+
+        <p><a href="${request.route_url('charts_overview')}">Overview</a></p>
+
     </div>
 </div>
 
