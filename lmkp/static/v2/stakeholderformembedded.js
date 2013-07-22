@@ -1,3 +1,11 @@
+/**
+ * Necessary variables with translated text for this file (must be defined and
+ * translated in template):
+ * tForUnknown
+ * tForNothingfound
+ * tForToomanyresults
+ */
+
 $(function() {
 
     var nameKey = getKeyNames(shKeys)[0];
@@ -31,7 +39,7 @@ $(function() {
                             // Get the values to display
                             var values = {};
                             for (var f in fields) {
-                                values[fields[f]] = unknownString;
+                                values[fields[f]] = tForUnknown;
                             }
                             if ('taggroups' in item) {
                                 $.each(item['taggroups'], function() {
@@ -77,13 +85,13 @@ $(function() {
     }).data('autocomplete')._renderItem = function(ul, item) {
         if (item.id && item.version) {
             // Always use name as first display value
-            var val1 = (nameKey in item) ? item[nameKey] : unknownString;
+            var val1 = (nameKey in item) ? item[nameKey] : tForUnknown;
             // The second value is a composite of all other (non
             // empty) display values
             var val2 = [];
             for (var v in item) {
                 if (v != 'label' && v != 'value' && v != nameKey
-                    && v != 'id' && v != 'version' && item[v] != unknownString) {
+                    && v != 'id' && v != 'version' && item[v] != tForUnknown) {
                     val2.push(item[v]);
                 }
             }
@@ -95,11 +103,11 @@ $(function() {
                 .appendTo(ul);
         } else if (item.label == 'nothingfound') {
             return $('<li class="shnothingfound">')
-                .append('No results found.')
+                .append(tForNothingfound)
                 .appendTo(ul);
         } else if (item.label == 'toomanyresults') {
             return $('<li class="shtoomanyresults">')
-                .append('Too many results to display. Try to enter more characters')
+                .append(tForToomanyresults)
                 .appendTo(ul);
         }
     };

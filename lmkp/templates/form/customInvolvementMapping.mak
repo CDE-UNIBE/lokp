@@ -8,7 +8,9 @@ ${field.end_mapping()}
 
 <%
     import colander
+    import json
     newForm = 'id' in cstruct and cstruct['id'] == colander.null
+    _ = request.translate
 %>
 
 <p>
@@ -21,7 +23,7 @@ ${field.end_mapping()}
             style="display:none;"
         % endif
         >
-        Select Investor
+        ${_('Select Investor')}
     </a>
 
     <a
@@ -33,7 +35,7 @@ ${field.end_mapping()}
             style="display:none;"
         % endif
         >
-        Remove Investor
+        ${_('Remove Investor')}
     </a>
 </p>
 
@@ -46,7 +48,7 @@ ${field.end_mapping()}
     function addStakeholder(btn) {
 
         // Set a loading indicator and show the modal window.
-        $('#formModal .modal-body').html('<p>Loading ...</p>');
+        $('#formModal .modal-body').html('<p>' + ${json.dumps(_('Loading ...'))} + '</p>');
         $('#formModal').modal();
 
         // Remove old indicator and add a new one. This is used to know which

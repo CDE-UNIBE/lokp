@@ -1,76 +1,1129 @@
+
 msgid ""
 msgstr ""
+"Project-Id-Version:  LOKP\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2013-07-22 12:09+0200\n"
+"PO-Revision-Date: 2013-07-22 08:10+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: es <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: POEditor.com\n"
-"Project-Id-Version: LOKP\n"
-"Language: es\n"
+"Generated-By: Babel 0.9.6\n"
 
-#: Default: Loading ...
-#: lmkp/templates/administration.mak:19 lmkp/templates/charts.mak:35
-#: lmkp/templates/compare_versions.mak:48 lmkp/templates/embedded.mak:35
-#: lmkp/templates/index.mak:36 lmkp/templates/moderation.mak:31
-#: lmkp/templates/review_versions.mak:33 lmkp/views/translation.py:143
-msgid "gui_loading"
-msgstr "Cargando ..."
+#: lmkp/templates/about_view.mak:3 lmkp/templates/htmlbase.mak:352
+#: lmkp/templates/landing_page.mak:344
+msgid "About"
+msgstr ""
 
-#: lmkp/templates/administration.mak:11 lmkp/templates/base.mak:51
-#: lmkp/templates/base.mak:54 lmkp/templates/charts.mak:16
+#: lmkp/templates/about_view.mak:47
+msgid ""
+"The Land Observatory is a pilot project of some of the partners of the "
+"Land Matrix initiative, to support observatories designed to crowdsource "
+"data about land deals, allowing for greater transparency and improved "
+"decision-making."
+msgstr ""
+
+#: lmkp/templates/about_view.mak:50
+msgid ""
+"We are co-creating software with partner organizations in pilot countries"
+" that will allow for them to"
+msgstr ""
+
+#: lmkp/templates/about_view.mak:53
+msgid "generate greater spatial context for land deals"
+msgstr ""
+
+#: lmkp/templates/about_view.mak:55
+msgid "make possible deeper investigation of the actors involved"
+msgstr ""
+
+#: lmkp/templates/about_view.mak:58
+msgid "increase citizen participation, crowdsource and ground-truth data"
+msgstr ""
+
+#: lmkp/templates/about_view.mak:61
+msgid "locally manage data on land deals"
+msgstr ""
+
+#: lmkp/templates/about_view.mak:65
+msgid ""
+"We are piloting this project in five countries - Cambodia, Laos, "
+"Madagascar, Peru and Tanzania, with civil society partners and "
+"governments who will work to open government data, crowdsource and help "
+"customize local observatories using our software."
+msgstr ""
+
+#: lmkp/templates/about_view.mak:68
+msgid ""
+"The project is not merely technical, we are accompanying partners as they"
+" test different crowdsourcing strategies. Partners and their extended "
+"networks play a crucial role in bringing the online information to the "
+"real world, and back again."
+msgstr ""
+
+#: lmkp/templates/about_view.mak:71
+msgid ""
+"Updated information on land will benefit citizens, but also governments "
+"and companies interested in sustainability."
+msgstr ""
+
+#: lmkp/templates/about_view.mak:74
+msgid ""
+"If you are experiencing any technical difficulties, have questions or "
+"would like to send us feedback about how to improve user experience, "
+"please email us: "
+msgstr ""
+
+#: lmkp/templates/about_view.mak:80
+msgid "View our brief video introduction"
+msgstr ""
+
+#: lmkp/templates/about_view.mak:80
+msgid "Click here if the embedded video is not working"
+msgstr ""
+
+#: lmkp/templates/activation_successful.mak:3
+msgid "User Activation Success"
+msgstr ""
+
+#: lmkp/templates/activation_successful.mak:8
+msgid "User activation was successful:"
+msgstr ""
+
+#: lmkp/templates/activation_successful.mak:10
+msgid "Your account has been activated. It will be approved during the next days."
+msgstr ""
+
+#: lmkp/templates/administration.mak:21 lmkp/templates/base.mak:55
+#: lmkp/templates/base.mak:58 lmkp/templates/charts.mak:16
 #: lmkp/templates/compare_versions.mak:11 lmkp/templates/embedded.mak:10
-#: lmkp/templates/index.mak:15 lmkp/templates/login_form.mak:5
-#: lmkp/templates/moderation.mak:13 lmkp/templates/reset_form.mak:5
-#: lmkp/templates/review_versions.mak:4
+#: lmkp/templates/htmlbase.mak:39 lmkp/templates/htmlbase.mak:181
+#: lmkp/templates/htmlbase.mak:183 lmkp/templates/index.mak:20
+#: lmkp/templates/landing_page.mak:29 lmkp/templates/landing_page.mak:113
+#: lmkp/templates/landing_page.mak:115 lmkp/templates/landing_page.mak:121
+#: lmkp/templates/landing_page.mak:152 lmkp/templates/landing_page.mak:194
+#: lmkp/templates/login_form.mak:62 lmkp/templates/moderation.mak:18
+#: lmkp/templates/reset_form.mak:5 lmkp/templates/review_versions.mak:4
+#: lmkp/templates/translation.mak:21 lmkp/templates/user_account.mak:46
+#: lmkp/templates/user_approval.mak:33
 msgid "Land Observatory"
 msgstr "Observatorio de Adquisiciones de Tierras"
 
-#: lmkp/templates/base.mak:57
-msgid "The Land Observatory will make information on large-scale land acquisition transparent and accessible through an interactive, map-based platform. We are piloting the project in five countries, with partners and governments who will work to open government data, crowdsource and help customize local observatories. Updated information on land will benefit citizens, but also governments and companies interested in sustainability."
-msgstr "El Observatorio de Adquisiciones de Tierras (OLA) es un proyecto innovador dirigido a mejorar la calidad y la inclusión en el diálogo de políticas y la toma de decisiones sobre temas relativos a la tierra, tanto en el ámbito global como en países alrededor del mundo, haciendo que los datos sobre tierras, así como también la información sobre los actores y sus actividades, sean más accesibles y atractivos. Esta plataforma ofrecerá una visión global, regional y local del tema de las inversiones en las tierras."
+#: lmkp/templates/administration.mak:21
+msgid "Administration"
+msgstr ""
 
-#: lmkp/templates/base.mak:60
+#: lmkp/templates/administration.mak:23 lmkp/templates/base.mak:60
+#: lmkp/templates/index.mak:22 lmkp/templates/moderation.mak:20
+#: lmkp/templates/translation.mak:23
+msgid "[Demo]"
+msgstr ""
+
+#: lmkp/templates/administration.mak:37 lmkp/templates/charts.mak:35
+#: lmkp/templates/compare_versions.mak:48 lmkp/templates/embedded.mak:35
+#: lmkp/templates/index.mak:45 lmkp/templates/map_view.mak:71
+#: lmkp/templates/moderation.mak:41 lmkp/templates/review_versions.mak:33
+#: lmkp/templates/translation.mak:37 lmkp/templates/activities/details.mak:42
+#: lmkp/templates/form/customInvolvementMapping.mak:51
+#: lmkp/templates/stakeholders/details.mak:39 lmkp/views/translation.py:157
+#, fuzzy
+msgid "Loading ..."
+msgstr "Cargando ..."
+
+#: lmkp/templates/base.mak:64
+msgid ""
+"The Land Observatory will make information on large-scale land "
+"acquisition transparent and accessible through an interactive, map-based "
+"platform. We are piloting the project in five countries, with partners "
+"and governments who will work to open government data, crowdsource and "
+"help customize local observatories. Updated information on land will "
+"benefit citizens, but also governments and companies interested in "
+"sustainability."
+msgstr ""
+"El Observatorio de Adquisiciones de Tierras (OLA) es un proyecto "
+"innovador dirigido a mejorar la calidad y la inclusión en el diálogo de "
+"políticas y la toma de decisiones sobre temas relativos a la tierra, "
+"tanto en el ámbito global como en países alrededor del mundo, haciendo "
+"que los datos sobre tierras, así como también la información sobre los "
+"actores y sus actividades, sean más accesibles y atractivos. Esta "
+"plataforma ofrecerá una visión global, regional y local del tema de las "
+"inversiones en las tierras."
+
+#: lmkp/templates/base.mak:67
 msgid "The pilot project is coordinated by the"
 msgstr "El proyecto es coordinado por la "
 
-#: lmkp/templates/base.mak:61
+#: lmkp/templates/base.mak:68
 msgid "International Land Coalition"
 msgstr "Coalición Internacional para el Acceso a la Tierra (ILC)"
 
-#: lmkp/templates/base.mak:62
+#: lmkp/templates/base.mak:69
 msgid "and the"
 msgstr " y por el "
 
-#: lmkp/templates/base.mak:63
+#: lmkp/templates/base.mak:70
 msgid "Centre for Development and Environment"
 msgstr "Centre for Development and the Environment (CDE) "
 
-#: lmkp/templates/base.mak:64
+#: lmkp/templates/base.mak:71
 msgid "at the University of Bern, Switzerland. It is funded by the"
 msgstr "en la universidad de Berna, Suiza. Es financiado por la"
 
-#: lmkp/templates/base.mak:65
+#: lmkp/templates/base.mak:72
 msgid "Swiss Agency for Development Cooperation"
 msgstr "Agencia Suiza para el Desarrollo y la Cooperación (COSUDE)"
 
-#: lmkp/templates/base.mak:66
+#: lmkp/templates/base.mak:72
 msgid ", with co-funding from other ILC and CDE programs."
 msgstr ", con la cofinanciación de otros programas de ILC y CDE."
 
-#: lmkp/views/activities.py:258 lmkp/views/stakeholders.py:260
+#: lmkp/templates/base.mak:75 lmkp/templates/login_form.mak:84
+msgid "Please send your questions and feedback on the Observatory to: "
+msgstr ""
+
+#: lmkp/templates/charts.mak:16 lmkp/templates/htmlbase.mak:211
+msgid "Charts"
+msgstr "Diagramas"
+
+#: lmkp/templates/charts.mak:39
+msgid "Heat map for Cambodia and Laos"
+msgstr ""
+
+#: lmkp/templates/charts.mak:41
+msgid ""
+"Distribution of land related deals in Cambodia and for Champasak and "
+"Attapeu province in Laos."
+msgstr ""
+
+#: lmkp/templates/charts.mak:42
+msgid "Data for Cambodia are provided by the website"
+msgstr "Los datos para Camboya son proporcionados por el sitio web"
+
+#: lmkp/templates/charts.mak:44
+msgid "Data for Laos are based on the landconcessions database."
+msgstr ""
+
+#: lmkp/templates/charts.mak:49
+msgid "Distribution of activities worldwide"
+msgstr ""
+
+#: lmkp/templates/charts.mak:51
+msgid ""
+"Worldwide distribution of land related deals based on the Landmatrix "
+"database available at"
+msgstr ""
+
+#: lmkp/templates/compare_versions.mak:11 lmkp/views/translation.py:90
+#: lmkp/views/translation.py:117
+msgid "Compare"
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:3 lmkp/templates/faq_view.mak:32
+#: lmkp/templates/htmlbase.mak:351 lmkp/templates/landing_page.mak:343
+msgid "FAQ"
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:35 lmkp/templates/faq_view.mak:45
+msgid "Why are there observatories in only five countries?"
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:36 lmkp/templates/faq_view.mak:49
+msgid "Who \"owns\" each observatory in the five pilot countries?"
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:37 lmkp/templates/faq_view.mak:53
+msgid "Can I comment on a land deal?"
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:38 lmkp/templates/faq_view.mak:57
+msgid "How do I submit information on a land deal?"
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:39 lmkp/templates/faq_view.mak:69
+msgid ""
+"Can I submit information on a land deal even if I am in a different "
+"country?"
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:40 lmkp/templates/faq_view.mak:73
+msgid "Will this application display polygons and land areas?"
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:41 lmkp/templates/faq_view.mak:77
+msgid "Do you protect my privacy?"
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:46
+msgid ""
+"We are piloting this project in five countries. More than just testing "
+"software, this requires partners to design crowdsourcing campaigns and "
+"organise multi-stakeholder platforms to manage the observatories. These "
+"are all very intensive processes and need time. We plan to scale, and "
+"seed observatories in other countries in the near future."
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:50
+msgid ""
+"We have co-developed this software with partners in country, and we are "
+"still firming up formal arrangements with partner organisations, and "
+"where possible with governments. Generally speaking, each observatory "
+"will have its own governance structure and moderation team and "
+"procedures. More information will be made available soon about each "
+"country."
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:54
+msgid ""
+"Anybody, even anonymous, non-logged in users can comment on a land deal. "
+"These comments will be subject to the rules of moderation, unique to each"
+" observatory."
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:58
+msgid ""
+"If you have information about a land deal in one of the five pilot "
+"countries, you can submit information about one or more attributes of "
+"this deal. You can also submit a new land deal if the one you are "
+"concerned with does not appear on the map."
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:59
+msgid "You will need to "
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:59
+#, fuzzy
+msgid "register"
+msgstr "Usuario"
+
+#: lmkp/templates/faq_view.mak:59
+msgid " (giving us your email) and "
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:59
+#, fuzzy
+msgid "log-in"
+msgstr "Iniciar sesión"
+
+#: lmkp/templates/faq_view.mak:60
+msgid ""
+"After you submit, moderators will review and approve your report. New "
+"deals will not be approved until all of the mandatory attributes are "
+"completed."
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:66
+msgid ""
+"Once your report is reviewed and approved, it is public for the whole "
+"world to see."
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:70
+msgid ""
+"Yes, but it will be reviewed and approved by moderators. At the moment, "
+"we ask that your account is connected to a particular country."
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:74
+msgid ""
+"Yes, these functions are in development and should be ready soon, as well"
+" as data downloads."
+msgstr ""
+
+#: lmkp/templates/faq_view.mak:78
+msgid ""
+"All defaults are set to safeguard user privacy. To comment, you need not "
+"give any personal information, although providing it may enhance your "
+"credibility. To log-in and submit data, all you need to provide is an "
+"email address. Currently, metadata about your submissions is stored on "
+"the servers of the Centre for Development and Environment - University of"
+" Bern and are only kept for reference: your personal information will not"
+" be shared with others or re-used for any purposes except for possible "
+"verification of submitted information."
+msgstr ""
+
+#: lmkp/templates/form.mak:3 lmkp/templates/stakeholderform.mak:3
+msgid "FORM TEST"
+msgstr ""
+
+#: lmkp/templates/htmlbase.mak:199 lmkp/templates/activities/grid.mak:125
+msgid "Map"
+msgstr ""
+
+#: lmkp/templates/htmlbase.mak:207
+msgid "Grid"
+msgstr ""
+
+#: lmkp/templates/htmlbase.mak:238 lmkp/templates/form/form_activity.mak:10
+#: lmkp/views/translation.py:199
+msgid "New Deal"
+msgstr ""
+
+#: lmkp/templates/htmlbase.mak:250 lmkp/templates/login_form.mak:3
+#: lmkp/templates/login_form.mak:25 lmkp/templates/login_form.mak:39
+#: lmkp/templates/reset_form.mak:5 lmkp/views/viewers.py:28
+msgid "Login"
+msgstr "Iniciar sesión"
+
+#: lmkp/templates/htmlbase.mak:259 lmkp/templates/user_registration.mak:19
+#: lmkp/views/viewers.py:29
+#, fuzzy
+msgid "Register"
+msgstr "Usuario"
+
+#: lmkp/templates/htmlbase.mak:267 lmkp/views/editors.py:27
+#: lmkp/views/moderators.py:32
+msgid "Logout"
+msgstr "Cerrar sesión"
+
+#: lmkp/templates/htmlbase.mak:294
+#, fuzzy
+msgid "Select Profile"
+msgstr "Borrar todos los filtros"
+
+#: lmkp/templates/htmlbase.mak:353 lmkp/templates/landing_page.mak:345
+#: lmkp/templates/partners_view.mak:3 lmkp/templates/partners_view.mak:8
+msgid "Partners & Donors"
+msgstr ""
+
+#: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
+#, fuzzy
+msgid "The "
+msgstr " y por el "
+
+#: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
+msgid " is a pilot project by some partners of the "
+msgstr ""
+
+#: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
+#, fuzzy
+msgid "Land Matrix"
+msgstr "Observatorio de Adquisiciones de Tierras"
+
+#: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
+msgid ""
+", designed to provide greater context and deeper insight on land deals, "
+"from a more local perspective."
+msgstr ""
+
+#: lmkp/templates/landing_page.mak:194
+msgid "Welcome to the "
+msgstr ""
+
+#: lmkp/templates/landing_page.mak:194
+#, fuzzy
+msgid "Demonstration Version"
+msgstr "Versión"
+
+#: lmkp/templates/landing_page.mak:194
+#, fuzzy
+msgid " of the "
+msgstr " y por el "
+
+#: lmkp/templates/landing_page.mak:194
+msgid ""
+". This demo version is for learning and experimentation purposes, so "
+"first-time users can get a feel for the Observatory and its functions."
+msgstr ""
+
+#: lmkp/templates/landing_page.mak:197
+#, fuzzy
+msgid "Enter"
+msgstr "Usuario"
+
+#: lmkp/templates/landing_page.mak:208
+msgid "Select a country"
+msgstr ""
+
+#: lmkp/templates/landing_page.mak:224 lmkp/templates/landing_page.mak:229
+msgid "Global"
+msgstr ""
+
+#: lmkp/templates/landing_page.mak:240
+msgid "Or take a short tour:"
+msgstr ""
+
+#: lmkp/templates/landing_page.mak:269
+msgid ""
+"Users in select pilot countries gather, explore and analyze spatial data "
+"on large-scale land acquisitions. Data is managed and reviewed locally by"
+" partners."
+msgstr ""
+
+#: lmkp/templates/landing_page.mak:276
+msgid ""
+"Users can see deals in full geographical context, learn more about "
+"investors and the kinds of investments in question."
+msgstr ""
+
+#: lmkp/templates/landing_page.mak:283
+msgid ""
+"You can also select a specific land deal to see more: \"who\" (investors "
+"and other stakeholders) and \"what\" the land will be used for."
+msgstr ""
+
+#: lmkp/templates/landing_page.mak:290
+msgid ""
+"You can go further and learn more about an investor, seeing the same "
+"investors other land deals."
+msgstr ""
+
+#: lmkp/templates/landing_page.mak:297
+msgid ""
+"Logged in users can also help contribute and update data, and anybody can"
+" freely comment on it."
+msgstr ""
+
+#: lmkp/templates/landing_page.mak:304
+msgid ""
+"You can filter the land deals by various attributes - like size, or crop."
+" Or make a spatial selection of land deals."
+msgstr ""
+
+#: lmkp/templates/landing_page.mak:311
+msgid ""
+"Want to know if anybody lives on a concession? Use the context layers to "
+"view population density and more."
+msgstr ""
+
+#: lmkp/templates/login_form.mak:34 lmkp/templates/login_form.mak:67
+#: lmkp/templates/login_form.mak:73 lmkp/views/user.py:91
+msgid "Username"
+msgstr "Nombre del usuario"
+
+#: lmkp/templates/login_form.mak:36 lmkp/templates/login_form.mak:68
+#: lmkp/templates/login_form.mak:74 lmkp/views/user.py:95
+msgid "Password"
+msgstr "Contraseña"
+
+#: lmkp/templates/login_form.mak:45
+msgid "Forgot Password?"
+msgstr ""
+
+#: lmkp/templates/login_form.mak:49
+msgid "You do not have a password yet?"
+msgstr ""
+
+#: lmkp/templates/login_form.mak:49
+#, fuzzy
+msgid "Register now!"
+msgstr "Usuario"
+
+#: lmkp/templates/login_form.mak:60
+#, fuzzy
+msgid "Demo Version"
+msgstr "Versión"
+
+#: lmkp/templates/login_form.mak:62
+#, fuzzy
+msgid "This is the demonstration version of the "
+msgstr "Versión"
+
+#: lmkp/templates/login_form.mak:63
+msgid "Any member of the public can log-in as an Editor or a Moderator."
+msgstr ""
+
+#: lmkp/templates/login_form.mak:65
+#, fuzzy
+msgid "Editor"
+msgstr "editada"
+
+#: lmkp/templates/login_form.mak:65
+msgid " has the permission to create or edit new Deals or Investors."
+msgstr ""
+
+#: lmkp/templates/login_form.mak:71
+msgid "Moderator"
+msgstr ""
+
+#: lmkp/templates/login_form.mak:71
+msgid " has the additional permission to review pending changes."
+msgstr ""
+
+#: lmkp/templates/login_form.mak:78
+msgid ""
+"This demo version is for learning and experimentation purposes, so first-"
+"time users can get a feel for the Observatory and its functions."
+msgstr ""
+
+#: lmkp/templates/login_form.mak:81
+msgid ""
+"New data added by users to the demo has not been verified in any way. It "
+"will be visible to the public, but the database will be reset regularly."
+msgstr ""
+
+#: lmkp/templates/map_view.mak:3
+msgid "Map View"
+msgstr ""
+
+#: lmkp/templates/map_view.mak:66 lmkp/templates/map_view.mak:91
+#: lmkp/templates/form/readonly/form.mak:59
+#: lmkp/templates/form/readonly/form.mak:100 lmkp/views/form.py:45
+#, fuzzy
+msgid "Deal"
+msgstr "Detalles"
+
+#: lmkp/templates/map_view.mak:67 lmkp/templates/form/readonly/form.mak:50
+#: lmkp/templates/form/readonly/form.mak:91 lmkp/views/translation.py:51
+msgid "Investor"
+msgstr ""
+
+#: lmkp/templates/map_view.mak:68 lmkp/templates/activities/grid.mak:101
+#: lmkp/templates/parts/filter.mak:53 lmkp/templates/stakeholders/grid.mak:3
+#: lmkp/templates/stakeholders/grid.mak:73
+#, fuzzy
+msgid "Investors"
+msgstr "Historia"
+
+#: lmkp/templates/map_view.mak:69
+#, fuzzy
+msgid "Legend"
+msgstr "eliminada"
+
+#: lmkp/templates/map_view.mak:70
+#, fuzzy
+msgid "Legend for context layer"
+msgstr "Capas de contexto"
+
+#: lmkp/templates/map_view.mak:72
+#, fuzzy
+msgid "Loading the details ..."
+msgstr "Cargando ..."
+
+#: lmkp/templates/map_view.mak:73
+msgid " more deals ..."
+msgstr ""
+
+#: lmkp/templates/map_view.mak:74 lmkp/templates/map_view.mak:96
+msgid "No deal selected."
+msgstr ""
+
+#: lmkp/templates/map_view.mak:75
+msgid "Selected Deals"
+msgstr ""
+
+#: lmkp/templates/map_view.mak:104
+#, fuzzy
+msgid "search location"
+msgstr "Borrar selección"
+
+#: lmkp/templates/map_view.mak:110
+#, fuzzy
+msgid "Base layers"
+msgstr "Capas de base"
+
+#: lmkp/templates/map_view.mak:114 lmkp/views/translation.py:101
+msgid "Street Map"
+msgstr ""
+
+#: lmkp/templates/map_view.mak:117 lmkp/views/translation.py:99
+msgid "Satellite Imagery"
+msgstr ""
+
+#: lmkp/templates/map_view.mak:120 lmkp/views/translation.py:102
+#, fuzzy
+msgid "Terrain Map"
+msgstr "Mapa del terreno"
+
+#: lmkp/templates/map_view.mak:128
+#, fuzzy
+msgid "Context layers"
+msgstr "Capas de contexto"
+
+#: lmkp/templates/map_view.mak:138
+msgid "Map Legend"
+msgstr ""
+
+#: lmkp/templates/map_view.mak:158 lmkp/templates/form/form.mak:34
+#: lmkp/views/translation.py:89
+msgid "Close"
+msgstr ""
+
+#: lmkp/templates/moderation.mak:18
+msgid "Moderation"
+msgstr ""
+
+#: lmkp/templates/partners_view.mak:11
+msgid ""
+"The pilot project is coordinated by the International Land Coalition and "
+"the Centre for Development and Environment at the University of Bern, "
+"Switzerland. It is funded by the Swiss Agency for Development "
+"Cooperation, with co-funding from other ILC and CDE programs."
+msgstr ""
+
+#: lmkp/templates/reset_form.mak:50
+#, fuzzy
+msgid "Reset password"
+msgstr "Contraseña"
+
+#: lmkp/templates/reset_form.mak:55
+msgid "Email Address"
+msgstr ""
+
+#: lmkp/templates/review_versions.mak:4 lmkp/views/translation.py:107
+#: lmkp/views/translation.py:133
+msgid "Review"
+msgstr ""
+
+#: lmkp/templates/translation.mak:21 lmkp/views/translation.py:298
+msgid "Translation"
+msgstr ""
+
+#: lmkp/templates/user_account.mak:6
+msgid "User Account"
+msgstr ""
+
+#: lmkp/templates/user_account.mak:48
+msgid "Update user settings"
+msgstr ""
+
+#: lmkp/templates/user_approval.mak:6
+msgid "User Approval Success"
+msgstr ""
+
+#: lmkp/templates/user_approval.mak:35
+#, fuzzy
+msgid "User approval"
+msgstr "Mostrar perfil de usuario"
+
+#: lmkp/templates/user_approval.mak:38
+msgid "The following user has been successfully approved:"
+msgstr ""
+
+#: lmkp/templates/user_registration.mak:3
+#: lmkp/templates/user_registration_success.mak:3
+msgid "User Registration"
+msgstr ""
+
+#: lmkp/templates/user_registration.mak:20
+msgid "Please register for the Land Observatory."
+msgstr ""
+
+#: lmkp/templates/user_registration_success.mak:7
+msgid "Thank you for registering"
+msgstr ""
+
+#: lmkp/templates/user_registration_success.mak:8
+msgid ""
+"A message with an activation link has been sent to your email address. "
+"Your account will be approved after activation."
+msgstr ""
+
+#: lmkp/templates/activities/details.mak:3
+#: lmkp/templates/form/readonly/form.mak:38
+#, fuzzy
+msgid "Deal Details"
+msgstr "Detalles"
+
+#: lmkp/templates/activities/grid.mak:3 lmkp/templates/stakeholders/grid.mak:3
+msgid "Grid View"
+msgstr ""
+
+#: lmkp/templates/activities/grid.mak:3 lmkp/templates/activities/grid.mak:97
+#: lmkp/templates/parts/filter.mak:49 lmkp/templates/stakeholders/grid.mak:68
+#: lmkp/views/translation.py:207
+#, fuzzy
+msgid "Deals"
+msgstr "Detalles"
+
+#: lmkp/templates/activities/grid.mak:45
+msgid "Show investors by click on a specific row."
+msgstr ""
+
+#: lmkp/templates/activities/grid.mak:52 lmkp/views/translation.py:164
+#, fuzzy
+msgid "Profile"
+msgstr "Perfil"
+
+#: lmkp/templates/activities/grid.mak:53
+msgid "You are seeing all the Deals within the current profile."
+msgstr ""
+
+#: lmkp/templates/activities/grid.mak:57
+msgid "Map Extent"
+msgstr ""
+
+#: lmkp/templates/activities/grid.mak:58
+msgid "You are currently only seeing Deals which are visible on the map."
+msgstr ""
+
+#: lmkp/templates/activities/grid.mak:59
+msgid "Show all Deals of the profile."
+msgstr ""
+
+#: lmkp/templates/activities/grid.mak:65
+#, fuzzy
+msgid "Spatial Filter"
+msgstr "Añadir filtro temporal"
+
+#: lmkp/templates/activities/grid.mak:65
+msgid " based on "
+msgstr ""
+
+#: lmkp/templates/activities/grid.mak:82
+#, fuzzy
+msgid "Investor Filter"
+msgstr "Añadir filtro temporal"
+
+#: lmkp/templates/activities/grid.mak:82
+msgid "You are currently only seeing Deals where Investor "
+msgstr ""
+
+#: lmkp/templates/activities/grid.mak:82
+msgid " is involved."
+msgstr ""
+
+#: lmkp/templates/activities/grid.mak:82
+msgid "Remove this filter and show all Deals"
+msgstr ""
+
+#: lmkp/templates/activities/grid.mak:123
+#: lmkp/templates/stakeholders/grid.mak:95
+#, fuzzy
+msgid "Nothing found"
+msgstr "Objeto no encontrado"
+
+#: lmkp/templates/activities/grid.mak:124
+#: lmkp/templates/stakeholders/grid.mak:96
+msgid "No results were found."
+msgstr ""
+
+#: lmkp/templates/activities/grid.mak:125
+msgid "Make sure there are some deals on the "
+msgstr ""
+
+#: lmkp/templates/activities/grid.mak:133
+msgid "Show investors for this deal"
+msgstr ""
+
+#: lmkp/templates/activities/grid.mak:143
+msgid "Deal ID"
+msgstr ""
+
+#: lmkp/templates/emails/activation.mak:1
+#: lmkp/templates/emails/confirmation.mak:1
+msgid "Dear"
+msgstr ""
+
+#: lmkp/templates/emails/activation.mak:3
+msgid "Thank you for registering on the landobservatory.org platform!"
+msgstr ""
+
+#: lmkp/templates/emails/activation.mak:5
+msgid ""
+"In order to activate your account please visit the following link or copy"
+" it to your web browser. The activation link expires in 48 hours."
+msgstr ""
+
+#: lmkp/templates/emails/activation.mak:8
+msgid "Your account will be approved after activation."
+msgstr ""
+
+#: lmkp/templates/emails/activation.mak:10
+#: lmkp/templates/emails/approval.mak:12
+#: lmkp/templates/emails/confirmation.mak:7
+#, fuzzy
+msgid "The Land Observatory"
+msgstr "Observatorio de Adquisiciones de Tierras"
+
+#: lmkp/templates/emails/approval.mak:1
+msgid "The following user requests approval for the landobservatory.org platform:"
+msgstr ""
+
+#: lmkp/templates/emails/approval.mak:3
+#, fuzzy
+msgid "Username:"
+msgstr "Nombre del usuario"
+
+#: lmkp/templates/emails/approval.mak:4
+msgid "First name:"
+msgstr ""
+
+#: lmkp/templates/emails/approval.mak:5
+msgid "Last name:"
+msgstr ""
+
+#: lmkp/templates/emails/approval.mak:6
+msgid "Email address:"
+msgstr ""
+
+#: lmkp/templates/emails/approval.mak:7
+#, fuzzy
+msgid "Profiles:"
+msgstr "Perfil"
+
+#: lmkp/templates/emails/approval.mak:9
+msgid ""
+"In order to approve this account, please visit the following link or copy"
+" it to your web browser."
+msgstr ""
+
+#: lmkp/templates/emails/confirmation.mak:3
+msgid "Your account has been approved and you are ready to contribute!"
+msgstr ""
+
+#: lmkp/templates/emails/confirmation.mak:5
+msgid "Please proceed to:"
+msgstr ""
+
+#: lmkp/templates/form/customInvolvementMapping.mak:26
+msgid "Select Investor"
+msgstr ""
+
+#: lmkp/templates/form/customInvolvementMapping.mak:38
+msgid "Remove Investor"
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:42
+msgid ""
+"Click on the map to set the location of the deal. Please zoom in to set "
+"the point as accurately as possible."
+msgstr ""
+
+#: lmkp/templates/form/form_activity.mak:7
+#, fuzzy
+msgid "Deal Editor"
+msgstr "Añadir filtro temporal"
+
+#: lmkp/templates/form/form_stakeholder.mak:8
+#, fuzzy
+msgid "Stakeholder Editor"
+msgstr "Buscar actor"
+
+#: lmkp/templates/form/mapping_item.mak:42
+msgid ""
+"The location of the deal is required. Please select a point on the map "
+"before continuing."
+msgstr ""
+
+#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:5
+#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:11
+#, fuzzy
+msgid "Involvement as"
+msgstr "Participación"
+
+#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:5
+#: lmkp/templates/form/readonly/customInvolvementMappingStakeholder.mak:5
+msgid "Primary Investor"
+msgstr ""
+
+#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:11
+#: lmkp/templates/form/readonly/customInvolvementMappingStakeholder.mak:11
+msgid "Secondary Investor"
+msgstr ""
+
+#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:20
+msgid "View Deal"
+msgstr ""
+
+#: lmkp/templates/form/readonly/customInvolvementMappingStakeholder.mak:20
+#, fuzzy
+msgid "View Stakeholder"
+msgstr "Remover este actor"
+
+#: lmkp/templates/form/readonly/form.mak:16
+#, fuzzy
+msgid "Pending Version"
+msgstr "pendiente"
+
+#: lmkp/templates/form/readonly/form.mak:17
+msgid ""
+"You are seeing a pending version which needs to be reviewed before it is "
+"publicly visible."
+msgstr ""
+
+#: lmkp/templates/form/readonly/form.mak:20
+#, fuzzy
+msgid "Inactive Version"
+msgstr "inactiva"
+
+#: lmkp/templates/form/readonly/form.mak:21
+msgid "You are seeing an inactive version which is not active anymore."
+msgstr ""
+
+#: lmkp/templates/form/readonly/form.mak:25
+msgid "Not an active Version"
+msgstr ""
+
+#: lmkp/templates/form/readonly/form.mak:26
+msgid "You are seeing a version which is not active."
+msgstr ""
+
+#: lmkp/templates/form/readonly/form.mak:36
+#: lmkp/templates/stakeholders/details.mak:3
+#, fuzzy
+msgid "Stakeholder Details"
+msgstr "Buscar actor"
+
+#: lmkp/templates/form/readonly/form.mak:46
+#: lmkp/templates/form/readonly/form.mak:55
+#: lmkp/templates/form/readonly/form.mak:95
+#: lmkp/templates/form/readonly/form.mak:104
+#, fuzzy
+msgid "Review this version"
+msgstr "Versión anterior"
+
+#: lmkp/templates/form/readonly/form.mak:50
+#: lmkp/templates/form/readonly/form.mak:59
+#: lmkp/templates/form/readonly/form.mak:91
+#: lmkp/templates/form/readonly/form.mak:100
+msgid "Edit this"
+msgstr ""
+
+#: lmkp/templates/parts/filter.mak:15 lmkp/templates/parts/filter.mak:73
+#, fuzzy
+msgid "Value"
+msgstr "Fracaso"
+
+#: lmkp/templates/parts/filter.mak:24
+#, fuzzy
+msgid "Active Filters"
+msgstr "Añadir filtro temporal"
+
+#: lmkp/templates/parts/filter.mak:38
+#, fuzzy
+msgid "New Filter"
+msgstr "Añadir filtro temporal"
+
+#: lmkp/templates/parts/filter.mak:42
+msgid "Key"
+msgstr ""
+
+#: lmkp/templates/parts/filter.mak:101
+msgid " filter is active, click here to edit"
+msgstr ""
+
+#: lmkp/templates/parts/filter.mak:103
+msgid " filters are active, click here to edit"
+msgstr ""
+
+#: lmkp/templates/parts/filter.mak:105
+msgid "Click here to add a filter"
+msgstr ""
+
+#: lmkp/templates/parts/pagination.mak:33
+msgid "Total number of "
+msgstr ""
+
+#: lmkp/templates/parts/pagination.mak:93
+msgid "per page"
+msgstr ""
+
+#: lmkp/templates/stakeholders/form_embedded.mak:40 lmkp/views/form.py:51
+#: lmkp/views/translation.py:187
+#, fuzzy
+msgid "Success"
+msgstr "Éxito"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:41
+#: lmkp/views/translation.py:180
+msgid "The Stakeholder was successfully created. It will be reviewed shortly."
+msgstr ""
+
+#: lmkp/templates/stakeholders/form_embedded.mak:54
+#, fuzzy
+msgid "Select a Stakeholder"
+msgstr "Actores"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:56
+#, fuzzy
+msgid "Select an existing Stakeholder."
+msgstr "Actores"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:59
+msgid "Start typing (at least 4 characters) to search a Stakeholder by name."
+msgstr ""
+
+#: lmkp/templates/stakeholders/form_embedded.mak:61
+#, fuzzy
+msgid "Search ..."
+msgstr "Buscar"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:66
+#, fuzzy
+msgid "Stakeholder not found?"
+msgstr "Crear nuevo actor"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:74
+#, fuzzy
+msgid "Create a new Stakeholder"
+msgstr "Remover este actor"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:84
+#, fuzzy
+msgid "Sending ..."
+msgstr "Cargando ..."
+
+#: lmkp/templates/stakeholders/form_embedded.mak:93
+#: lmkp/views/translation.py:170
+#, fuzzy
+msgid "Unknown"
+msgstr "Desconocido"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:94
+msgid "No results found."
+msgstr ""
+
+#: lmkp/templates/stakeholders/form_embedded.mak:95
+msgid "Too many results to display. Try to enter more characters"
+msgstr ""
+
+#: lmkp/templates/stakeholders/grid.mak:45
+msgid "Show deals by clicking on a specific row."
+msgstr ""
+
+#: lmkp/templates/stakeholders/grid.mak:54
+#, fuzzy
+msgid "Deal Filter"
+msgstr "Añadir filtro temporal"
+
+#: lmkp/templates/stakeholders/grid.mak:54
+msgid "You are currently only seeing Investors which are involved in Deal "
+msgstr ""
+
+#: lmkp/templates/stakeholders/grid.mak:54
+msgid "Remove this filter and show all Investors"
+msgstr ""
+
+#: lmkp/templates/stakeholders/grid.mak:104
+msgid "Show deals of this investor"
+msgstr ""
+
+#: lmkp/templates/stakeholders/grid.mak:114
+#, fuzzy
+msgid "Investor ID"
+msgstr "Historia"
+
+#: lmkp/views/activities.py:420 lmkp/views/stakeholders.py:425
 msgid "User is not logged in."
 msgstr "El usuario no está conectado"
 
-#: lmkp/views/activities.py:261 lmkp/views/stakeholders.py:263
+#: lmkp/views/activities.py:423 lmkp/views/stakeholders.py:428
 msgid "User has no permissions to add a review."
 msgstr "El usuario no tiene permisos para añadir una revisión"
 
-#: lmkp/views/activities.py:268
+#: lmkp/views/activities.py:430
 msgid "User has no profile attached"
 msgstr "El usuario no tiene un perfil registrado"
 
-#: lmkp/views/activities.py:299 lmkp/views/stakeholders.py:297
+#: lmkp/views/activities.py:437
+msgid "The Deal was not found or is not situated within the user's profiles"
+msgstr ""
+
+#: lmkp/views/activities.py:461 lmkp/views/stakeholders.py:462
 msgid "Not all mandatory keys are provided"
 msgstr "No se proporcionaron todos los elementos obligatorios"
+
+#: lmkp/views/activities.py:501
+msgid "The Deal was successfully created."
+msgstr ""
+
+#: lmkp/views/activities.py:505
+msgid "No Deal was created."
+msgstr ""
 
 #: lmkp/views/comments.py:72 lmkp/views/comments.py:170
 msgid "Object not found."
@@ -92,749 +1145,99 @@ msgstr "Comentario eliminado correctamente"
 msgid "Logged in as:"
 msgstr "Conectado como: "
 
-#: lmkp/views/moderators.py:31
-msgid "Show user profile"
-msgstr "Mostrar perfil de usuario"
-
-#: lmkp/views/editors.py:27 lmkp/views/moderators.py:32
-msgid "Logout"
-msgstr "Cerrar sesión"
-
-#: Default: pending
-#: lmkp/views/translation.py:21
-msgid "status_pending"
-msgstr "pendiente"
-
-#: Default: active
-#: lmkp/views/translation.py:22
-msgid "status_active"
-msgstr "activa"
-
-#: Default: inactive
-#: lmkp/views/translation.py:23
-msgid "status_inactive"
-msgstr "inactiva"
-
-#: Default: deleted
-#: lmkp/views/translation.py:24
-msgid "status_deleted"
-msgstr "eliminada"
-
-#: Default: rejected
-#: lmkp/views/translation.py:25
-msgid "status_rejected"
-msgstr "rechazada"
-
-#: Default: edited
-#: lmkp/views/translation.py:26
-msgid "status_edited"
-msgstr "editada"
-
-#: Default: approved
-#: lmkp/views/translation.py:31
-msgid "reviewdecision_approved"
-msgstr "aprobada"
-
-#: Default: rejected
-#: lmkp/views/translation.py:32
-msgid "reviewdecision_rejected"
-msgstr "rechazada"
-
-#: Default: Status
-#: lmkp/views/translation.py:57
-msgid "status_name"
-msgstr "Estado"
-
-#: Default: Add attribute filter
-#: lmkp/views/translation.py:75
-msgid "button_add-attribute-filter"
-msgstr "Añadir filtro de atributos"
-
-#: Default: Add more specific information
-#: lmkp/views/translation.py:76
-msgid "button_add-new-tag"
-msgstr "Agregar información más específica"
-
-#: Default: Add further information
-#: lmkp/views/translation.py:77
-msgid "button_add-new-taggroup"
-msgstr "Añadir más información"
-
-#: Default: Add time filter
-#: lmkp/views/translation.py:78
-msgid "button_add-time-filter"
-msgstr "Añadir filtro temporal"
-
-#: Default: Back
-#: lmkp/views/translation.py:79
-msgid "button_back"
-msgstr "Retroceder"
-
-#: Default: Cancel
-#: lmkp/views/translation.py:80
-msgid "button_cancel"
-msgstr "Cancelar"
-
-#: Default: Clear
-#: lmkp/views/translation.py:81
-msgid "button_clear"
-msgstr "Borrar"
-
-#: Default: Close
-#: lmkp/views/translation.py:82
-msgid "button_close"
-msgstr "Cerrar"
-
-#: Default: Continue
-#: lmkp/views/translation.py:84
-msgid "button_continue"
-msgstr "Continuar"
-
-#: Default: Delete
-#: lmkp/views/translation.py:85
-msgid "button_delete"
-msgstr "Suprimir"
-
-#: Default: Edit
-#: lmkp/views/translation.py:86
-msgid "button_edit"
-msgstr "Editar"
-
-#: Default: Activate
-#: lmkp/views/translation.py:87
-msgid "button_filter-activate"
-msgstr "Activar"
-
-#: Default: Delete
-#: lmkp/views/translation.py:88
-msgid "button_filter-delete"
-msgstr "Suprimir"
-
-#: Default: Base Layers
-#: lmkp/views/translation.py:90
-msgid "button_map_base-layers"
-msgstr "Capas de base"
-
-#: Default: Context Layers
-#: lmkp/views/translation.py:91
-msgid "button_map_context-layers"
-msgstr "Capas de contexto"
-
-#: Default: Satellite Imagery
-#: lmkp/views/translation.py:92
-msgid "button_map_satellite-map"
-msgstr "Imágenes de satélite"
-
-#: Default: Show Legend
-#: lmkp/views/translation.py:93
-msgid "button_map_show-legend"
-msgstr "Mostrar leyenda"
-
-#: Default: Street Map
-#: lmkp/views/translation.py:94
-msgid "button_map_street-map"
-msgstr "Mapa de calles"
-
-#: Default: Terrain Map
-#: lmkp/views/translation.py:95
-msgid "button_map_terrain-map"
-msgstr "Mapa del terreno"
-
-#: Default: Next
-#: lmkp/views/translation.py:96
-msgid "button_next"
-msgstr "Siguiente"
-
-#: Default: No
-#: lmkp/views/translation.py:97
-msgid "button_no"
-msgstr "No"
-
-#: Default: OK
-#: lmkp/views/translation.py:98
-msgid "button_ok"
-msgstr "Aceptar"
-
-#: Default: Submit
-#: lmkp/views/translation.py:101
-msgid "button_submit"
-msgstr "Enviar"
-
-#: Default: Yes
-#: lmkp/views/translation.py:102
-msgid "button_yes"
-msgstr "Sí"
-
-#: Default: Add a filter based on attribute
-#: lmkp/views/translation.py:105
-msgid "tooltip_add-attribute-filter"
-msgstr "Agregar un filtro basado en un atributo"
-
-#: Default: Add a filter based on time
-#: lmkp/views/translation.py:106
-msgid "tooltip_add-time-filter"
-msgstr "Añadir un filtro temporal"
-
-#: Default: Close Window
-#: lmkp/views/translation.py:108
-msgid "tooltip_close-window"
-msgstr "Cerrar ventana"
-
-#: Default: Click to activate this filter
-#: lmkp/views/translation.py:109
-msgid "tooltip_filter-activate"
-msgstr "Haga clic para activar este filtro"
-
-#: Default: Click to delete this filter
-#: lmkp/views/translation.py:110
-msgid "tooltip_filter-delete"
-msgstr "Haga clic para eliminar este filtro"
-
-#: Default: Identify Feature
-#: lmkp/views/translation.py:112
-msgid "tooltip_map_identify-feature"
-msgstr "Identificar las características"
-
-#: Default: Pan
-#: lmkp/views/translation.py:113
-msgid "tooltip_map_pan"
-msgstr "Mover"
-
-#: Default: Zoom In
-#: lmkp/views/translation.py:114
-msgid "tooltip_map_zoom-in"
-msgstr "Acercar"
-
-#: Default: Zoom Out
-#: lmkp/views/translation.py:115
-msgid "tooltip_map_zoom-out"
-msgstr "Alejar"
-
-#: Default: Zoom to Profile Region
-#: lmkp/views/translation.py:116
-msgid "tooltip_map_zoom-to-profile-region"
-msgstr "Zoom a región del perfil"
-
-#: Default: Remove this stakeholder
-#: lmkp/views/translation.py:120
-msgid "tooltip_remove-stakeholder"
-msgstr "Remover este actor"
-
-#: Default: Anonymous
-#: lmkp/views/translation.py:127
-msgid "gui_anonymous"
-msgstr "anónimo"
-
-#: Default: Clear Selection
-#: lmkp/views/translation.py:128
-msgid "gui_clear-selection"
-msgstr "Borrar selección"
-
-#: Default: Please confirm
-#: lmkp/views/translation.py:129
-msgid "gui_confirm"
-msgstr "Por favor, confirmar"
-
-#: Default: You are seeing a {0} version, which needs to be reviewed before it is
-#: publicly visible
-#: lmkp/views/translation.py:130
-msgid "gui_currently-seeing-pending-version"
-msgstr "Está viendo una versión {0}, que debe ser revisada antes de que sea visible al público"
-
-#: Default: You are seeing an {0} version, which was previously active and publicly
-#: visible.
-#: lmkp/views/translation.py:131
-msgid "gui_currently-seeing-inactive-version"
-msgstr "Está viendo una versión {0}, que anteriormente era activa y visible públicamente"
-
-#: Default: You are seeing a {0} version, which was previously active and publicly
-#: visible.
-#: lmkp/views/translation.py:132
-msgid "gui_currently-seeing-deleted-version"
-msgstr "Está viendo una versión {0}, que anteriormente era activa y visible públicamente"
-
-#: Default: You are seeing a {0} version, which was never publicly visible.
-#: lmkp/views/translation.py:133
-msgid "gui_currently-seeing-rejected-version"
-msgstr "Está viendo una versión {0}, que nunca fue públicamente visible"
-
-#: Default: You are seeing an {0} version, which was edited by a moderator and was
-#: never publicly visible.
-#: lmkp/views/translation.py:134
-msgid "gui_currently-seeing-edited-version"
-msgstr "Está viendo una versión {0}, que fue editada por un moderador y nunca fue públicamente visible"
-
-#: Default: Date
-#: lmkp/views/translation.py:135
-msgid "gui_date"
-msgstr "Fecha"
-
-#: Default: Delete all Filters
-#: lmkp/views/translation.py:137
-msgid "gui_delete-all-filters"
-msgstr "Borrar todos los filtros"
-
-#: Default: Details
-#: lmkp/views/translation.py:138
-msgid "gui_details"
-msgstr "Detalles"
-
-#: Default: Filter ({0} active)
-#: lmkp/views/translation.py:139
-msgid "gui_filter-count"
-msgstr "Filtrar ({0} activo)"
-
-#: Default: History
-#: lmkp/views/translation.py:140
-msgid "gui_history"
-msgstr "Historia"
-
-#: Default: ID
-#: lmkp/views/translation.py:141
-msgid "gui_id"
-msgstr "Identificación"
-
-#: Default: Language
-#: lmkp/views/translation.py:142
-msgid "gui_language"
-msgstr "Idioma"
-
-#: Default: No attributes to show
-#: lmkp/views/translation.py:144
-msgid "gui_no-attributes"
-msgstr "No hay atributos a mostrar"
-
-#: Default: Page
-#: lmkp/views/translation.py:146
-msgid "gui_paging-before"
-msgstr "Página"
-
-#: Default: of {0}
-#: lmkp/views/translation.py:147
-msgid "gui_paging-after"
-msgstr "de {0}"
-
-#: Default: Previous Version
-#: lmkp/views/translation.py:148
-msgid "gui_previous-version"
-msgstr "Versión anterior"
-
-#: Default: Profile
-#: lmkp/views/translation.py:149
-msgid "gui_profile"
-msgstr "Perfil"
-
-#: Default: Search
-#: lmkp/views/translation.py:150
-msgid "gui_search"
-msgstr "Buscar"
-
-#: Default: Show Details
-#: lmkp/views/translation.py:151
-msgid "gui_show-details"
-msgstr "Mostrar detalles"
-
-#: Default: Timestamp
-#: lmkp/views/translation.py:154
-msgid "gui_timestamp"
-msgstr "Fecha"
-
-#: Default: Unknown
-#: lmkp/views/translation.py:155
-msgid "gui_unknown"
-msgstr "Desconocido"
-
-#: Default: User
-#: lmkp/views/translation.py:156
-msgid "gui_user"
-msgstr "Usuario"
-
-#: Default: Version
-#: lmkp/views/translation.py:157
-msgid "gui_version"
-msgstr "Versión"
-
-#: Default: Failure
-#: lmkp/views/translation.py:161
-msgid "feedback_failure"
-msgstr "Fracaso"
-
-#: Default: The deal was successfully created. It will be reviewed shortly.
-#: lmkp/views/translation.py:163
-msgid "feedback_new-activity-created"
-msgstr "La actividad fue creada correctamente. Será revisada pronto."
-
-#: Default: The deal could not be created.
-#: lmkp/views/translation.py:164
-msgid "feedback_new-activity-not-created"
-msgstr "No pudo crearse la actividad."
-
-#: Default: Edited changes were successfully submitted
-#: lmkp/views/translation.py:169
-msgid "feedback_pending-edit-submitted"
-msgstr "Los cambios fueron enviados correctamente."
-
-#: Default: Edited changes could not be submitted
-#: lmkp/views/translation.py:170
-msgid "feedback_pending-edit-not-submitted"
-msgstr "Los cambios no pueden ser enviados."
-
-#: Default: Some of the attributes cannot be edited because they are not part of
-#: the currently selected profile.
-#: lmkp/views/translation.py:171
-msgid "feedback_some-attributes-not-editable-because-of-profile"
-msgstr "Algunos de los atributos no se pueden editar porque no son parte del perfil seleccionado actualmente."
-
-#: Default: Success
-#: lmkp/views/translation.py:172
-msgid "feedback_success"
-msgstr "Éxito"
-
-#: Default: Add new Deal
-#: lmkp/views/translation.py:175
-msgid "activities_add-new-activity"
-msgstr "Añadir nueva actividad"
-
-#: Default: Details on Deal
-#: lmkp/views/translation.py:178
-msgid "activities_details-title"
-msgstr "Detalles sobre la actividad"
-
-#: Default: Filter Deal
-#: lmkp/views/translation.py:179
-msgid "activities_filter-title"
-msgstr "Filtrar las actividades"
-
-#: Default: Step 1: Please select a point on the map.
-#: lmkp/views/translation.py:180
-msgid "activities_new-step-1"
-msgstr "Paso 1: Por favor, seleccionar un punto en el mapa."
-
-#: Default: You can drag and drop the point. Once you are done, click "Continue".
-#: lmkp/views/translation.py:181
-msgid "activities_new-step-1-explanation"
-msgstr "Puede arrastrar y soltar el punto. Una vez que haya terminado, haga clic en \"Continuar\"."
-
-#: Default: New Deal
-#: lmkp/views/translation.py:182
-msgid "activities_new-title"
-msgstr "Nueva actividad"
-
-#: Default: Displaying Deals {0} - {1} of {2}
-#: lmkp/views/translation.py:183
-msgid "activities_paging-message"
-msgstr "Viendo Actividades {0} - {1} de {2}"
-
-#: Default: No Deals found
-#: lmkp/views/translation.py:184
-msgid "activities_paging-empty"
-msgstr "No se encontraron Actividades"
-
-#: Default: Deals
-#: lmkp/views/translation.py:189
-msgid "activities_title"
-msgstr "Actividades"
-
-#: Default: Edit this involvement
-#: lmkp/views/translation.py:192
-msgid "involvements_edit-involvement"
-msgstr "Editar esta participación"
-
-#: Default: Role
-#: lmkp/views/translation.py:193
-msgid "involvements_stakeholder-role"
-msgstr "Rol"
-
-#: Default: Involvements
-#: lmkp/views/translation.py:194
-msgid "involvements_title"
-msgstr "Participación"
-
-#: Default: Add Stakeholders
-#: lmkp/views/translation.py:197
-msgid "stakeholders_add-stakeholders"
-msgstr "Añadir Actor"
-
-#: Default: Associated Stakeholders
-#: lmkp/views/translation.py:198
-msgid "stakeholders_associated-stakeholders"
-msgstr "Actores participativos"
-
-#: Default: Create new Stakeholder
-#: lmkp/views/translation.py:200
-msgid "stakeholders_create-new-stakeholder"
-msgstr "Crear nuevo actor"
-
-#: Default: Details on Stakeholder
-#: lmkp/views/translation.py:202
-msgid "stakeholders_details-title"
-msgstr "Los detalles sobre el actor"
-
-#: Default: Filter Stakeholders
-#: lmkp/views/translation.py:203
-msgid "stakeholders_filter-title"
-msgstr "Filtrar los actores"
-
-#: Default: No associated Stakeholders so far. You can search and select a
-#: Stakeholder using the Search field below. Or you can create a new Stakeholder by
-#: clicking on the button above.
-#: lmkp/views/translation.py:204
-msgid "stakeholders_no-associated-stakeholders-yet"
-msgstr "No hay actores ​​relacionados hasta ahora. Usted puede buscar y seleccionar un actor utilizando el campo de búsqueda. O bien, puede crear un nuevo actor haciendo clic en el botón de arriba."
-
-#: Default: Displaying Stakeholders {0} - {1} of {2}
-#: lmkp/views/translation.py:205
-msgid "stakeholders_paging-message"
-msgstr "Viendo Actores {0} - {1} de {2}"
-
-#: Default: No Stakeholders found
-#: lmkp/views/translation.py:206
-msgid "stakeholders_paging-empty"
-msgstr "No se encontraron Actores"
-
-#: Default: Search Stakeholder
-#: lmkp/views/translation.py:211
-msgid "stakeholders_search"
-msgstr "Buscar actor"
-
-#: Default: Select Stakeholder
-#: lmkp/views/translation.py:212
-msgid "stakeholders_select-stakeholder"
-msgstr "Seleccionar actor"
-
-#: Default: Stakeholders
-#: lmkp/views/translation.py:213
-msgid "stakeholder_title"
-msgstr "Actores"
-
-#: Default: Comment by
-#: lmkp/views/translation.py:216
-msgid "comments_comment-by"
-msgstr "Comentario por"
-
-#: Default: Do you really want to delete this comment?
-#: lmkp/views/translation.py:217
-msgid "comments_confirm-delete-comment"
-msgstr "¿Está seguro que quiere eliminar este comentario?"
-
-#: Default: No comments yet.
-#: lmkp/views/translation.py:218
-msgid "comments_empty"
-msgstr "No hay comentarios todavía."
-
-#: Default: Leave a comment
-#: lmkp/views/translation.py:219
-msgid "comments_leave-comment"
-msgstr "Deja un comentario."
-
-#: Default: Comment
-#: lmkp/views/translation.py:220
-msgid "comments_singular"
-msgstr "Comentario"
-
-#: Default: Comments
-#: lmkp/views/translation.py:221
-msgid "comments_title"
-msgstr "Comentarios"
-
-#: Default: These changes are based on a version which is not the active version.
-#: lmkp/views/translation.py:225
-msgid "moderator_changes-not-based-on-active"
-msgstr "Estos cambios se basan en una versión que no es la versión activa."
-
-#: Default: There are multiple changes pending! They may be conflicting.
-#: lmkp/views/translation.py:227
-msgid "moderator_multiple-changes-pending"
-msgstr "Hay varios cambios pendientes! Podrían ser en conflicto."
-
-#: Default: Pending version
-#: lmkp/views/translation.py:228
-msgid "moderator_pending-version-title"
-msgstr "Versión pendiente"
-
-#: Default: Review Comment
-#: lmkp/views/translation.py:231
-msgid "moderator_review-comment"
-msgstr "Comentario de la revisión"
-
-#: Default: Review Decision
-#: lmkp/views/translation.py:232
-msgid "moderator_review-decision"
-msgstr "Decisión sobre la revisión"
-
-#: Default: Review pending changes
-#: lmkp/views/translation.py:234
-msgid "moderator_review-pending-changes"
-msgstr "Revisar los cambios pendientes"
-
-#: Default: Show pending changes
-#: lmkp/views/translation.py:236
-msgid "moderator_show-pending-changes"
-msgstr "Muestra los cambios pendientes"
-
-#: Default: Logical Operator
-#: lmkp/views/translation.py:240
-msgid "filter_logical-operator"
-msgstr "Operador lógico"
-
-#: Default: and
-#: lmkp/views/translation.py:241
-msgid "filter_logical-operator-and"
-msgstr "y"
-
-#: Default: or
-#: lmkp/views/translation.py:242
-msgid "filter_logical-operator-or"
-msgstr "o"
-
-#: Default: is
-#: lmkp/views/translation.py:243
-msgid "filter_operator-is"
-msgstr "es"
-
-#: Default: is not
-#: lmkp/views/translation.py:244
-msgid "filter_operator-is-not"
-msgstr "no es"
-
-#: Default: contains (case sensitive)
-#: lmkp/views/translation.py:245
-msgid "filter_operator-contains-case-sensitive"
-msgstr "contiene (sensible a mayúsculas)"
-
-#: Default: contains (case insensitive)
-#: lmkp/views/translation.py:246
-msgid "filter_operator-contains-case-insensitive"
-msgstr "contiene (insensible a mayúsculas)"
-
-#: Default: contains not (case sensitive)
-#: lmkp/views/translation.py:247
-msgid "filter_operator-contains-not-case-sensitive"
-msgstr "no contiene (sensible a mayúsculas)"
-
-#: Default: contains not (case insensitive)
-#: lmkp/views/translation.py:248
-msgid "filter_operator-contains-not-case-insensitive"
-msgstr "no contiene (insensible a mayúsculas)"
-
-#: Default: equals
-#: lmkp/views/translation.py:249
-msgid "filter_operator-equals"
-msgstr "es igual a"
-
-#: Default: less than
-#: lmkp/views/translation.py:250
-msgid "filter_operator-less-than"
-msgstr "es menos que"
-
-#: Default: less than or equal
-#: lmkp/views/translation.py:251
-msgid "filter_operator-less-than-or-equal"
-msgstr "es menor que o igual a"
-
-#: Default: greater than
-#: lmkp/views/translation.py:252
-msgid "filter_operator-greater-than"
-msgstr "es mayor que"
-
-#: Default: greater than or equal
-#: lmkp/views/translation.py:253
-msgid "filter_operator-greater-than-or-equal"
-msgstr "es mayor que o igual a"
-
-#: Default: not equals
-#: lmkp/views/translation.py:254
-msgid "filter_operator-not-equals"
-msgstr "no es igual a"
-
-#: Default: Specify number value
-#: lmkp/views/translation.py:255
-msgid "filter_specify-number-value"
-msgstr "Especifique un valor numérico"
-
-#: Default: Specify value
-#: lmkp/views/translation.py:256
-msgid "filter_specify-text-value"
-msgstr "Especifique un valor"
-
-#: lmkp/templates/login_form.mak:21
-msgid "Username"
-msgstr "Nombre del usuario"
-
-#: lmkp/templates/login_form.mak:23
-msgid "Password"
-msgstr "Contraseña"
-
-#: lmkp/templates/login_form.mak:5 lmkp/templates/reset_form.mak:5
-#: lmkp/views/viewers.py:28
-msgid "Login"
-msgstr "Iniciar sesión"
-
-#: lmkp/templates/administration.mak:11
-msgid "Administration"
-msgstr ""
-
-#: lmkp/templates/charts.mak:16
-msgid "Charts"
-msgstr "Diagramas"
-
-#: lmkp/templates/charts.mak:39
-msgid "Heat map for Cambodia and Laos"
-msgstr ""
-
-#: lmkp/templates/charts.mak:41
-msgid "Distribution of land related deals in Cambodia and for Champasak and Attapeu province in Laos."
-msgstr ""
-
-#: lmkp/templates/charts.mak:42
-msgid "Data for Cambodia are provided by the website"
-msgstr "Los datos para Camboya son proporcionados por el sitio web"
-
-#: lmkp/templates/charts.mak:44
-msgid "Data for Laos are based on the landconcessions database."
-msgstr ""
-
-#: lmkp/templates/charts.mak:49
-msgid "Distribution of activities worldwide"
-msgstr ""
-
-#: lmkp/templates/charts.mak:51
-msgid "Worldwide distribution of land related deals based on the Landmatrix database available at"
-msgstr ""
-
-#: lmkp/templates/compare_versions.mak:11
-msgid "Compare"
-msgstr ""
-
-#: lmkp/templates/login_form.mak:11
-#, fuzzy
-msgid "Login to the Land Observatory"
-msgstr "Observatorio de Adquisiciones de Tierras"
-
-#: lmkp/templates/login_form.mak:31
-msgid "Forgot Password?"
-msgstr ""
-
-#: lmkp/templates/moderation.mak:13
-msgid "Moderation"
-msgstr ""
-
-#: lmkp/templates/reset_form.mak:37
-#, fuzzy
-msgid "Reset password"
-msgstr "Contraseña"
-
-#: lmkp/templates/reset_form.mak:42
-msgid "Email Address"
-msgstr ""
-
-#: lmkp/templates/review_versions.mak:4
-msgid "Review"
-msgstr ""
-
 #: lmkp/views/errors.py:17
 msgid "Please login to access:"
 msgstr ""
+
+#: lmkp/views/files.py:56
+#, fuzzy
+msgid "Not all necessary values were provided."
+msgstr "No se proporcionaron todos los elementos obligatorios"
+
+#: lmkp/views/files.py:67
+msgid "Upload directory not specified or not found."
+msgstr ""
+
+#: lmkp/views/files.py:74
+msgid "File type is not valid."
+msgstr ""
+
+#: lmkp/views/files.py:81
+msgid "File is too big."
+msgstr ""
+
+#: lmkp/views/files.py:147
+#, fuzzy
+msgid "File was successfully uploaded"
+msgstr "Comentario eliminado correctamente"
+
+#: lmkp/views/form.py:46
+msgid "Notice"
+msgstr ""
+
+#: lmkp/views/form.py:47
+msgid ""
+"Unsaved data of this item was found in the session. You may continue to "
+"edit this form."
+msgstr ""
+
+#: lmkp/views/form.py:48
+#, python-format
+msgid ""
+"Unsaved data from another form %s was found in the session and will be "
+"deleted if you continue to edit this form."
+msgstr ""
+
+#: lmkp/views/form.py:49
+msgid "Click here to delete the session data to clear the form."
+msgstr ""
+
+#: lmkp/views/form.py:50
+msgid "See the unsaved changes of this Deal and submit it."
+msgstr ""
+
+#: lmkp/views/form.py:52
+msgid ""
+"The Deal was successfully created or updated. It is now pending and needs"
+" to be reviewed by a moderator before it is publicly visible."
+msgstr ""
+
+#: lmkp/views/form.py:53
+msgid "View the Deal."
+msgstr ""
+
+#: lmkp/views/form.py:54
+msgid "Empty Form"
+msgstr ""
+
+#: lmkp/views/form.py:55
+msgid "You submitted an empty form or did not make any changes."
+msgstr ""
+
+#: lmkp/views/form.py:56
+msgid ""
+"The Stakeholder was successfully created or updated. It is not pending "
+"and needs to be reviewed by a moderator before it is publicly visible."
+msgstr ""
+
+#: lmkp/views/form.py:57
+#, fuzzy
+msgid "View the Stakeholder"
+msgstr "Remover este actor"
+
+#: lmkp/views/form.py:58
+msgid "Error"
+msgstr ""
+
+#: lmkp/views/form.py:734 lmkp/views/translation.py:109
+#, fuzzy
+msgid "Submit"
+msgstr "Enviar"
+
+#: lmkp/views/form_config.py:803
+#, fuzzy
+msgid "Select"
+msgstr "Suprimir"
 
 #: lmkp/views/login.py:56
 msgid "Login failed! Please try again."
@@ -849,315 +1252,977 @@ msgid "Land Observatory - Password reset"
 msgstr ""
 
 #: lmkp/views/login.py:107
-msgid "Password reset was successful. An email containing the new password has been sent to your email address."
+msgid ""
+"Password reset was successful. An email containing the new password has "
+"been sent to your email address."
 msgstr ""
 
 #: lmkp/views/login.py:109
 msgid "Proceed to the login page"
 msgstr ""
 
-#: lmkp/views/stakeholders.py:342
+#: lmkp/views/moderators.py:31
+msgid "Show user profile"
+msgstr "Mostrar perfil de usuario"
+
+#: lmkp/views/protocol.py:648
+msgid "Unknown object to review."
+msgstr ""
+
+#: lmkp/views/protocol.py:654
+msgid "Review decision not provided."
+msgstr ""
+
+#: lmkp/views/protocol.py:659 lmkp/views/protocol.py:938
+msgid "Unknown review decision"
+msgstr ""
+
+#: lmkp/views/protocol.py:731
+msgid ""
+"At least one of the involved Stakeholders cannot be reviewed. Click on "
+"the icon next to the involvement for further details."
+msgstr ""
+
+#: lmkp/views/protocol.py:733
+msgid ""
+"At least one of the involved Activities cannot be reviewed. Click on the "
+"icon next to the involvement for further details."
+msgstr ""
+
+#: lmkp/views/protocol.py:865
+msgid ""
+"No active version was found to base the review upon. Try to review an "
+"earlier version first."
+msgstr ""
+
+#: lmkp/views/protocol.py:890
+msgid "The diff seems to be incorrect (identifier not found)"
+msgstr ""
+
+#: lmkp/views/protocol.py:950
+msgid "Review successful."
+msgstr ""
+
+#: lmkp/views/stakeholders.py:438
+msgid "The Deal was not found"
+msgstr ""
+
+#: lmkp/views/stakeholders.py:502
+msgid "The Stakeholder was successfully created."
+msgstr ""
+
+#: lmkp/views/stakeholders.py:506
 #, fuzzy
 msgid "No Stakeholder was created."
 msgstr "Crear nuevo actor"
 
-#: Default: Editors
-#: lmkp/views/translation.py:37
-msgid "usergroup_editors"
+#: lmkp/views/translation.py:25
+#, fuzzy
+msgid "pending"
+msgstr "pendiente"
+
+#: lmkp/views/translation.py:26
+#, fuzzy
+msgid "active"
+msgstr "activa"
+
+#: lmkp/views/translation.py:27
+#, fuzzy
+msgid "inactive"
+msgstr "inactiva"
+
+#: lmkp/views/translation.py:28
+#, fuzzy
+msgid "deleted"
+msgstr "eliminada"
+
+#: lmkp/views/translation.py:29 lmkp/views/translation.py:36
+#, fuzzy
+msgid "rejected"
+msgstr "rechazada"
+
+#: lmkp/views/translation.py:30
+#, fuzzy
+msgid "edited"
+msgstr "editada"
+
+#: lmkp/views/translation.py:35
+msgid "approved"
 msgstr ""
 
-#: Default: Moderators
-#: lmkp/views/translation.py:38
-msgid "usergroup_moderators"
+#: lmkp/views/translation.py:41
+msgid "Editors"
 msgstr ""
 
-#: Default: Administrators
-#: lmkp/views/translation.py:39
-msgid "usergroup_administrators"
+#: lmkp/views/translation.py:42
+msgid "Moderators"
 msgstr ""
 
-#: Default: Investor
-#: lmkp/views/translation.py:46
-#, fuzzy
-msgid "stakeholderrole_investor"
-msgstr "No se encontraron Actores"
+#: lmkp/views/translation.py:43
+msgid "Administrators"
+msgstr ""
 
-#: Default: Link
-#: lmkp/views/translation.py:89
-#, fuzzy
-msgid "button_link"
-msgstr "Aceptar"
+#: lmkp/views/translation.py:44
+msgid "Translators"
+msgstr ""
 
-#: Default: Refresh
-#: lmkp/views/translation.py:99
+#: lmkp/views/translation.py:62
 #, fuzzy
-msgid "button_refresh"
+msgid "Status"
+msgstr "Estado"
+
+#: lmkp/views/translation.py:81
+#, fuzzy
+msgid "Add attribute filter"
+msgstr "Añadir filtro de atributos"
+
+#: lmkp/views/translation.py:82
+msgid "Add more specific information"
+msgstr ""
+
+#: lmkp/views/translation.py:83
+msgid "Add further information"
+msgstr ""
+
+#: lmkp/views/translation.py:84
+#, fuzzy
+msgid "Add time filter"
+msgstr "Añadir filtro temporal"
+
+#: lmkp/views/translation.py:85
+msgid "Back"
+msgstr ""
+
+#: lmkp/views/translation.py:86
+msgid "Browse"
+msgstr ""
+
+#: lmkp/views/translation.py:87
+#, fuzzy
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: lmkp/views/translation.py:88
+msgid "Clear"
+msgstr ""
+
+#: lmkp/views/translation.py:91
+#, fuzzy
+msgid "Continue"
+msgstr "Continuar"
+
+#: lmkp/views/translation.py:92 lmkp/views/translation.py:95
+#, fuzzy
+msgid "Delete"
+msgstr "Suprimir"
+
+#: lmkp/views/translation.py:93
+msgid "Edit"
+msgstr ""
+
+#: lmkp/views/translation.py:94
+msgid "Activate"
+msgstr ""
+
+#: lmkp/views/translation.py:96
+msgid "Link"
+msgstr ""
+
+#: lmkp/views/translation.py:97
+#, fuzzy
+msgid "Base Layers"
+msgstr "Capas de base"
+
+#: lmkp/views/translation.py:98
+#, fuzzy
+msgid "Context Layers"
+msgstr "Capas de contexto"
+
+#: lmkp/views/translation.py:100
+#, fuzzy
+msgid "Show Legend"
+msgstr "Mostrar leyenda"
+
+#: lmkp/views/translation.py:103
+msgid "Next"
+msgstr ""
+
+#: lmkp/views/translation.py:104
+msgid "No"
+msgstr ""
+
+#: lmkp/views/translation.py:105
+msgid "OK"
+msgstr ""
+
+#: lmkp/views/translation.py:106 lmkp/views/translation.py:131
+#, fuzzy
+msgid "Refresh"
 msgstr "Sí"
 
-#: Default: Last change
-#: lmkp/views/translation.py:136
+#: lmkp/views/translation.py:108
+msgid "Save"
+msgstr ""
+
+#: lmkp/views/translation.py:110
+msgid "Upload"
+msgstr ""
+
+#: lmkp/views/translation.py:111
+msgid "Yes"
+msgstr ""
+
+#: lmkp/views/translation.py:114
+msgid "Add a filter based on attribute"
+msgstr ""
+
+#: lmkp/views/translation.py:115
+msgid "Add a filter based on time"
+msgstr ""
+
+#: lmkp/views/translation.py:116
 #, fuzzy
-msgid "gui_last-change"
+msgid "Close Window"
+msgstr "Cerrar ventana"
+
+#: lmkp/views/translation.py:118
+#, fuzzy
+msgid "Delete file"
+msgstr "Borrar todos los filtros"
+
+#: lmkp/views/translation.py:119
+msgid "Download file"
+msgstr ""
+
+#: lmkp/views/translation.py:120
+msgid "Edit file"
+msgstr ""
+
+#: lmkp/views/translation.py:121
+msgid "Click to activate this filter"
+msgstr ""
+
+#: lmkp/views/translation.py:122
+msgid "Click to delete this filter"
+msgstr ""
+
+#: lmkp/views/translation.py:123
+msgid "Permament link to current view"
+msgstr ""
+
+#: lmkp/views/translation.py:124
+#, fuzzy
+msgid "Identify Feature"
+msgstr "Identificar las características"
+
+#: lmkp/views/translation.py:125
+msgid "Pan"
+msgstr ""
+
+#: lmkp/views/translation.py:126
+msgid "Zoom In"
+msgstr ""
+
+#: lmkp/views/translation.py:127
+msgid "Zoom Out"
+msgstr ""
+
+#: lmkp/views/translation.py:128
+#, fuzzy
+msgid "Zoom to Profile Region"
+msgstr "Zoom a región del perfil"
+
+#: lmkp/views/translation.py:129
+msgid "Missing mandatory key!"
+msgstr ""
+
+#: lmkp/views/translation.py:130
+msgid "It is possible that not all attributes are shown here!"
+msgstr ""
+
+#: lmkp/views/translation.py:132
+#, fuzzy
+msgid "Remove this stakeholder"
+msgstr "Remover este actor"
+
+#: lmkp/views/translation.py:134
+msgid "Involvement can not be reviewed. Click for more information."
+msgstr ""
+
+#: lmkp/views/translation.py:135
+msgid "Involvement can be reviewed"
+msgstr ""
+
+#: lmkp/views/translation.py:136
+msgid "Submit Review"
+msgstr ""
+
+#: lmkp/views/translation.py:137 lmkp/views/translation.py:251
+msgid "Upload a new file"
+msgstr ""
+
+#: lmkp/views/translation.py:138
+msgid "View file"
+msgstr ""
+
+#: lmkp/views/translation.py:141
+#, fuzzy
+msgid "Anonymous"
+msgstr "anónimo"
+
+#: lmkp/views/translation.py:142
+#, fuzzy
+msgid "Clear Selection"
+msgstr "Borrar selección"
+
+#: lmkp/views/translation.py:143 lmkp/views/translation.py:162
+msgid "Please confirm"
+msgstr ""
+
+#: lmkp/views/translation.py:144
+msgid ""
+"You are seeing a {0} version, which needs to be reviewed before it is "
+"publicly visible."
+msgstr ""
+
+#: lmkp/views/translation.py:145
+msgid ""
+"You are seeing an {0} version, which was previously active and publicly "
+"visible."
+msgstr ""
+
+#: lmkp/views/translation.py:146
+msgid ""
+"You are seeing a {0} version, which was previously active and publicly "
+"visible."
+msgstr ""
+
+#: lmkp/views/translation.py:147
+msgid "You are seeing a {0} version, which was never publicly visible."
+msgstr ""
+
+#: lmkp/views/translation.py:148
+msgid ""
+"You are seeing an {0} version, which was edited by a moderator and was "
+"never publicly visible."
+msgstr ""
+
+#: lmkp/views/translation.py:149
+#, fuzzy
+msgid "Date"
+msgstr "Fecha"
+
+#: lmkp/views/translation.py:150
+#, fuzzy
+msgid "Delete all Filters"
+msgstr "Borrar todos los filtros"
+
+#: lmkp/views/translation.py:151
+#, fuzzy
+msgid "Details"
+msgstr "Detalles"
+
+#: lmkp/views/translation.py:152
+msgid "Filter ({0} active)"
+msgstr ""
+
+#: lmkp/views/translation.py:153
+#, fuzzy
+msgid "History"
+msgstr "Historia"
+
+#: lmkp/views/translation.py:154
+msgid "ID"
+msgstr ""
+
+#: lmkp/views/translation.py:155
+#, fuzzy
+msgid "Language"
 msgstr "Idioma"
 
-#: Default: The Stakeholder was successfully created. It will be reviewed shortly
+#: lmkp/views/translation.py:156
+#, fuzzy
+msgid "Last change"
+msgstr "Idioma"
+
+#: lmkp/views/translation.py:158
+#, fuzzy
+msgid "No attributes to show"
+msgstr "No hay atributos a mostrar"
+
+#: lmkp/views/translation.py:159
+msgid "Overview"
+msgstr ""
+
+#: lmkp/views/translation.py:160
+msgid "of {0}"
+msgstr ""
+
+#: lmkp/views/translation.py:161
+msgid "Page"
+msgstr ""
+
+#: lmkp/views/translation.py:163
+#, fuzzy
+msgid "Previous Version"
+msgstr "Versión anterior"
+
 #: lmkp/views/translation.py:165
 #, fuzzy
-msgid "feedback_new-stakeholder-created"
-msgstr "La actividad fue creada correctamente. Será revisada pronto."
+msgid "Search"
+msgstr "Buscar"
 
-#: Default: The Stakeholder could not be created.
 #: lmkp/views/translation.py:166
 #, fuzzy
-msgid "feedback_new-stakeholder-not-created"
-msgstr "No pudo crearse la actividad."
+msgid "Show Details"
+msgstr "Mostrar detalles"
 
-#: Default: No changes made
 #: lmkp/views/translation.py:167
+msgid "Show pending versions"
+msgstr ""
+
+#: lmkp/views/translation.py:168
+msgid "Taggroups"
+msgstr ""
+
+#: lmkp/views/translation.py:169
 #, fuzzy
-msgid "feedback_no-changes-made"
+msgid "Timestamp"
+msgstr "Fecha"
+
+#: lmkp/views/translation.py:171
+#, fuzzy
+msgid "User"
+msgstr "Usuario"
+
+#: lmkp/views/translation.py:172
+#, fuzzy
+msgid "Version"
+msgstr "Versión"
+
+#: lmkp/views/translation.py:173
+#, fuzzy
+msgid "Versions pending"
+msgstr "pendiente"
+
+#: lmkp/views/translation.py:176
+#, fuzzy
+msgid "Failure"
+msgstr "Fracaso"
+
+#: lmkp/views/translation.py:177
+msgid "Information"
+msgstr ""
+
+#: lmkp/views/translation.py:178
+msgid "The deal was successfully created. It will be reviewed shortly."
+msgstr ""
+
+#: lmkp/views/translation.py:179
+msgid "The deal could not be created."
+msgstr ""
+
+#: lmkp/views/translation.py:181
+#, fuzzy
+msgid "The Stakeholder could not be created."
+msgstr "Crear nuevo actor"
+
+#: lmkp/views/translation.py:182
+#, fuzzy
+msgid "No changes made"
 msgstr "Éxito"
 
-#: Default: You did not make any changes.
-#: lmkp/views/translation.py:168
-msgid "feedback_no-changes-made-explanation"
+#: lmkp/views/translation.py:183
+msgid "You did not make any changes."
 msgstr ""
 
-#: Default: Edit Deal (version {0})
-#: lmkp/views/translation.py:177
-#, fuzzy
-msgid "activities_edit-activity"
-msgstr "Añadir nueva actividad"
-
-#: Default: Edit Stakeholder (version {0})
-#: lmkp/views/translation.py:201
-#, fuzzy
-msgid "stakeholders_edit-stakeholder"
-msgstr "Seleccionar actor"
-
-#: Default: Overview
-#: lmkp/views/translation.py:145
-msgid "gui_overview"
+#: lmkp/views/translation.py:184
+msgid "Edited changes were successfully submitted"
 msgstr ""
 
-#: Default: Show pending versions
-#: lmkp/views/translation.py:152
-msgid "gui_show-pending-versions"
-msgstr ""
-
-#: Default: Versions pending
-#: lmkp/views/translation.py:158
-msgid "gui_versions-pending"
-msgstr ""
-
-#: Default: Pending versions of Deals
 #: lmkp/views/translation.py:185
-msgid "activities_pending-versions"
+msgid "Edited changes could not be submitted"
 msgstr ""
 
-#: Default: Displaying pending Deals {0} - {1} of {2}
 #: lmkp/views/translation.py:186
-msgid "activities_pending-paging-message"
+msgid ""
+"Some of the attributes cannot be edited because they are not part of the "
+"currently selected profile."
 msgstr ""
 
-#: Default: No pending Deals to display
-#: lmkp/views/translation.py:187
-msgid "activities_pending-paging-empty"
+#: lmkp/views/translation.py:190
+msgid "Add new Deal"
 msgstr ""
 
-#: Default: Pending versions of Stakeholders
-#: lmkp/views/translation.py:207
-msgid "stakeholders_pending-versions"
+#: lmkp/views/translation.py:191
+#, fuzzy
+msgid "Deal Attributes"
+msgstr "No hay atributos a mostrar"
+
+#: lmkp/views/translation.py:192
+msgid "Compare versions of Deal {0}"
 msgstr ""
 
-#: Default: Displaying pending Stakeholders {0} - {1} of {2}
-#: lmkp/views/translation.py:208
-msgid "stakeholders_pending-paging-message"
+#: lmkp/views/translation.py:193
+msgid "Details on Deal"
 msgstr ""
 
-#: Default: No pending Stakeholders to display
-#: lmkp/views/translation.py:209
-msgid "stakeholders_pending-paging-empty"
+#: lmkp/views/translation.py:194
+msgid "Edit Deal (version {0})"
 msgstr ""
 
-#: Default: Compare
-#: lmkp/views/translation.py:83
-msgid "button_compare"
+#: lmkp/views/translation.py:195
+msgid "Filter Deal"
 msgstr ""
 
-#: Default: Review
-#: lmkp/views/translation.py:100
-msgid "button_review"
+#: lmkp/views/translation.py:196
+msgid "Step 1: Please specify the location."
 msgstr ""
 
-#: Default: Compare
-#: lmkp/views/translation.py:107
-msgid "tooltip_compare"
+#: lmkp/views/translation.py:197
+msgid "You may either select a point on the map or enter some coordinates."
 msgstr ""
 
-#: Default: Permament link to current view
-#: lmkp/views/translation.py:111
-msgid "tooltip_link"
+#: lmkp/views/translation.py:198
+msgid "You can drag and drop the point. Once you are done, click \"Continue\"."
 msgstr ""
 
-#: Default: Refresh
-#: lmkp/views/translation.py:119
-msgid "tooltip_refresh"
+#: lmkp/views/translation.py:200
+msgid "No Deals found"
 msgstr ""
 
-#: Default: Review
-#: lmkp/views/translation.py:121
-msgid "tooltip_review"
+#: lmkp/views/translation.py:201
+msgid "Displaying Deals {0} - {1} of {2}"
 msgstr ""
 
-#: Default: Submit Review
-#: lmkp/views/translation.py:124
-msgid "tooltip_submit-review"
+#: lmkp/views/translation.py:202
+msgid "No pending Deals to display"
 msgstr ""
 
-#: Default: Taggroups
-#: lmkp/views/translation.py:153
-msgid "gui_taggroups"
+#: lmkp/views/translation.py:203
+msgid "Displaying pending Deals {0} - {1} of {2}"
 msgstr ""
 
-#: Default: Approving this version will create a new version. (further additional
-#: information to come)
-#: lmkp/views/translation.py:224
-msgid "moderator_approving-creates-new-version"
+#: lmkp/views/translation.py:204
+msgid "Pending versions of Deals"
 msgstr ""
 
-#: Default: Missing mandatory key!
-#: lmkp/views/translation.py:117
-msgid "tooltip_missing-mandatory-key"
+#: lmkp/views/translation.py:205
+msgid "This deal has pending changes. Click to review them in a popup window."
 msgstr ""
 
-#: Default: It is possible that not all attributes are shown here!
-#: lmkp/views/translation.py:118
-msgid "tooltip_not-all-attributes-shown"
+#: lmkp/views/translation.py:206
+msgid "Review versions of Deal {0}"
 msgstr ""
 
-#: Default: Involvement can not be reviewed. Click for more information.
-#: lmkp/views/translation.py:122
-msgid "tooltip_review-involvement-not-possible"
-msgstr ""
-
-#: Default: Involvement can be reviewed
-#: lmkp/views/translation.py:123
-msgid "tooltip_review-involvement-possible"
-msgstr ""
-
-#: Default: Information
-#: lmkp/views/translation.py:162
-msgid "feedback_information"
-msgstr ""
-
-#: Default: Compare versions of Deal {0}
-#: lmkp/views/translation.py:176
-msgid "activities_compare-versions"
-msgstr ""
-
-#: Default: Review versions of Deal {0}
-#: lmkp/views/translation.py:188
-msgid "activities_review-versions"
-msgstr ""
-
-#: Default: Compare versions of Stakeholder {0}
-#: lmkp/views/translation.py:199
-msgid "stakeholders_compare-versions"
-msgstr ""
-
-#: Default: Review versions of Stakeholder {0}
 #: lmkp/views/translation.py:210
-msgid "stakeholders_review-versions"
+msgid "Edit this involvement"
 msgstr ""
 
-#: Default: There are some mandatory keys missing. The item cannot be approved
-#: without these keys. Please click the "edit" button to add the missing keys.
+#: lmkp/views/translation.py:211
+msgid "Role"
+msgstr ""
+
+#: lmkp/views/translation.py:212
+#, fuzzy
+msgid "Involvements"
+msgstr "Participación"
+
+#: lmkp/views/translation.py:215
+#, fuzzy
+msgid "Add Stakeholders"
+msgstr "Buscar actor"
+
+#: lmkp/views/translation.py:216
+msgid "Associated Stakeholders"
+msgstr ""
+
+#: lmkp/views/translation.py:217
+#, fuzzy
+msgid "Stakeholder Attributes"
+msgstr "Actores"
+
+#: lmkp/views/translation.py:218
+msgid "Compare versions of Stakeholder {0}"
+msgstr ""
+
+#: lmkp/views/translation.py:219
+msgid "Create new Stakeholder"
+msgstr ""
+
+#: lmkp/views/translation.py:220
+msgid "Details on Stakeholder "
+msgstr ""
+
+#: lmkp/views/translation.py:221
+msgid "Edit Stakeholder (version {0})"
+msgstr ""
+
+#: lmkp/views/translation.py:222
+#, fuzzy
+msgid "Filter Stakeholders"
+msgstr "Buscar actor"
+
+#: lmkp/views/translation.py:223
+msgid ""
+"No associated Stakeholders so far. You can search and select a "
+"Stakeholder using the Search field below. Or you can create a new "
+"Stakeholder by clicking on the button above."
+msgstr ""
+
+#: lmkp/views/translation.py:224
+#, fuzzy
+msgid "No Stakeholders found"
+msgstr "Crear nuevo actor"
+
+#: lmkp/views/translation.py:225
+msgid "Displaying Stakeholders {0} - {1} of {2}"
+msgstr ""
+
 #: lmkp/views/translation.py:226
-msgid "moderator_missing-mandatory-keys"
+msgid "No pending Stakeholders to display"
 msgstr ""
 
-#: Default: Review Activity
+#: lmkp/views/translation.py:227
+msgid "Displaying pending Stakeholders {0} - {1} of {2}"
+msgstr ""
+
+#: lmkp/views/translation.py:228
+msgid "Pending versions of Stakeholders"
+msgstr ""
+
 #: lmkp/views/translation.py:229
-msgid "moderator_review-activity"
+msgid ""
+"This stakeholder has pending changes. Click to review them in a popup "
+"window."
 msgstr ""
 
-#: Default: The Activity of this involvement cannot be reviewed from the
-#: Stakeholder's side. Please review the Activity to approve or reject this
-#: involvement.
 #: lmkp/views/translation.py:230
-msgid "moderator_review-activity-side-of-involvement-first"
+msgid "Review versions of Stakeholder {0}"
 msgstr ""
 
-#: Default: Review not possible
+#: lmkp/views/translation.py:231
+#, fuzzy
+msgid "Search Stakeholder"
+msgstr "Actores"
+
+#: lmkp/views/translation.py:232
+#, fuzzy
+msgid "Select Stakeholder"
+msgstr "Actores"
+
 #: lmkp/views/translation.py:233
-msgid "moderator_review-not-possible"
+#, fuzzy
+msgid "Stakeholders"
+msgstr "Buscar actor"
+
+#: lmkp/views/translation.py:245
+msgid "Are your sure you want to delete the file {0}?"
 msgstr ""
 
-#: Default: Review Stakeholder
-#: lmkp/views/translation.py:235
-msgid "moderator_review-stakeholder"
+#: lmkp/views/translation.py:246
+msgid "Edit existing file"
 msgstr ""
 
-#: Default: The Stakeholder of this involvement has no active version and cannot be
-#: set active. Please review the Stakeholder first.
-#: lmkp/views/translation.py:237
-msgid "moderator_stakeholder-has-no-active-version"
+#: lmkp/views/translation.py:247
+msgid "File"
 msgstr ""
 
-#: lmkp/views/protocol.py:642
-msgid "Unknown object to review."
+#: lmkp/views/translation.py:248
+msgid "Maximum file size"
 msgstr ""
 
-#: lmkp/views/activities.py:275
-msgid "The Deal was not found or is not situated within the user's profiles"
+#: lmkp/views/translation.py:249
+#, fuzzy
+msgid "Name"
+msgstr "Nombre del usuario"
+
+#: lmkp/views/translation.py:250
+msgid "Select a file"
 msgstr ""
 
-#: lmkp/views/activities.py:339
-msgid "The Deal was successfully created."
+#: lmkp/views/translation.py:252
+#, fuzzy
+msgid "Uploading ..."
+msgstr "Cargando ..."
+
+#: lmkp/views/translation.py:253
+msgid "Valid file extensions"
 msgstr ""
 
-#: lmkp/views/activities.py:343
-msgid "No Deal was created."
+#: lmkp/views/translation.py:256
+msgid ""
+"Approving this version will create a new version. (further additional "
+"information to come)"
 msgstr ""
 
-#: lmkp/views/protocol.py:648
-msgid "Review decision not provided."
+#: lmkp/views/translation.py:257
+msgid "These changes are based on a version which is not the active version."
 msgstr ""
 
-#: lmkp/views/protocol.py:653 lmkp/views/protocol.py:935
-msgid "Unknown review decision"
+#: lmkp/views/translation.py:258
+msgid ""
+"There are some mandatory keys missing. The item cannot be approved "
+"without these keys. Please click the \"edit\" button to add the missing "
+"keys."
 msgstr ""
 
-#: lmkp/views/protocol.py:725
-msgid "At least one of the involved Stakeholders cannot be reviewed. Click on the icon next to the involvement for further details."
+#: lmkp/views/translation.py:261
+msgid "Review Deal"
 msgstr ""
 
-#: lmkp/views/protocol.py:727
-msgid "At least one of the involved Activities cannot be reviewed. Click on the icon next to the involvement for further details."
+#: lmkp/views/translation.py:262
+msgid ""
+"The Activity of this involvement cannot be reviewed from the "
+"Stakeholder's side. Please review the Activity to approve or reject this "
+"involvement."
 msgstr ""
 
-#: lmkp/views/protocol.py:763
-msgid "One of the Stakeholders to review was not found."
+#: lmkp/views/translation.py:263
+#, fuzzy
+msgid "Review Comment"
+msgstr "Comentario de la revisión"
+
+#: lmkp/views/translation.py:264
+#, fuzzy
+msgid "Review Decision"
+msgstr "rechazada"
+
+#: lmkp/views/translation.py:265
+msgid "Review not possible"
 msgstr ""
 
-#: lmkp/views/protocol.py:857
-msgid "No active version was found to base the review upon. Try to review an earlier version first."
+#: lmkp/views/translation.py:266
+#, fuzzy
+msgid "Review pending changes"
+msgstr "Revisar los cambios pendientes"
+
+#: lmkp/views/translation.py:267
+#, fuzzy
+msgid "Review Stakeholder"
+msgstr "Remover este actor"
+
+#: lmkp/views/translation.py:268
+#, fuzzy
+msgid "Show pending changes"
+msgstr "Muestra los cambios pendientes"
+
+#: lmkp/views/translation.py:269
+msgid ""
+"The Stakeholder of this involvement has no active version and cannot be "
+"set active. Please review the Stakeholder first."
 msgstr ""
 
-#: lmkp/views/protocol.py:887
-msgid "The diff seems to be incorrect (identifier not found)"
+#: lmkp/views/translation.py:272
+#, fuzzy
+msgid "Logical Operator"
+msgstr "Operador lógico"
+
+#: lmkp/views/translation.py:273
+#, fuzzy
+msgid "and"
+msgstr " y por el "
+
+#: lmkp/views/translation.py:274
+msgid "or"
 msgstr ""
 
-#: lmkp/views/protocol.py:947
-msgid "Review successful."
+#: lmkp/views/translation.py:275
+#, fuzzy
+msgid "contains (case insensitive)"
+msgstr "contiene (insensible a mayúsculas)"
+
+#: lmkp/views/translation.py:276
+#, fuzzy
+msgid "contains (case sensitive)"
+msgstr "contiene (sensible a mayúsculas)"
+
+#: lmkp/views/translation.py:277
+#, fuzzy
+msgid "contains not (case insensitive)"
+msgstr "no contiene (insensible a mayúsculas)"
+
+#: lmkp/views/translation.py:278
+#, fuzzy
+msgid "contains not (case sensitive)"
+msgstr "no contiene (sensible a mayúsculas)"
+
+#: lmkp/views/translation.py:279
+msgid "equals"
 msgstr ""
 
-#: lmkp/views/stakeholders.py:273
-msgid "The Deal was not found"
+#: lmkp/views/translation.py:280
+msgid "greater than"
 msgstr ""
 
-#: lmkp/views/stakeholders.py:338
-msgid "The Stakeholder was successfully created."
+#: lmkp/views/translation.py:281
+#, fuzzy
+msgid "greater than or equal"
+msgstr "es mayor que o igual a"
+
+#: lmkp/views/translation.py:282
+msgid "is"
 msgstr ""
+
+#: lmkp/views/translation.py:283
+msgid "is not"
+msgstr ""
+
+#: lmkp/views/translation.py:284
+msgid "less than"
+msgstr ""
+
+#: lmkp/views/translation.py:285
+msgid "less than or equal"
+msgstr ""
+
+#: lmkp/views/translation.py:286
+msgid "not equals"
+msgstr ""
+
+#: lmkp/views/translation.py:287
+#, fuzzy
+msgid "Specify number value"
+msgstr "Especifique un valor numérico"
+
+#: lmkp/views/translation.py:288
+#, fuzzy
+msgid "Specify value"
+msgstr "Especifique un valor"
+
+#: lmkp/views/translation.py:291
+msgid "Add translation"
+msgstr ""
+
+#: lmkp/views/translation.py:292
+msgid "Edit translation"
+msgstr ""
+
+#: lmkp/views/translation.py:293
+#, fuzzy
+msgid "Global attribute"
+msgstr "No hay atributos a mostrar"
+
+#: lmkp/views/translation.py:294
+msgid "Key or Value"
+msgstr ""
+
+#: lmkp/views/translation.py:295
+#, fuzzy
+msgid "Mandatory"
+msgstr "Observatorio de Adquisiciones de Tierras"
+
+#: lmkp/views/translation.py:296
+#, fuzzy
+msgid "Original"
+msgstr "Iniciar sesión"
+
+#: lmkp/views/translation.py:297
+msgid "Original is already in English"
+msgstr ""
+
+#: lmkp/views/translation.py:301
+msgid "Add all to Database"
+msgstr ""
+
+#: lmkp/views/translation.py:302
+msgid "Batch translation"
+msgstr ""
+
+#: lmkp/views/translation.py:303
+msgid "Is in Database"
+msgstr ""
+
+#: lmkp/views/translation.py:304
+#, fuzzy
+msgid "Languages"
+msgstr "Idioma"
+
+#: lmkp/views/translation.py:305
+#, fuzzy
+msgid "Profiles"
+msgstr "Perfil"
+
+#: lmkp/views/translation.py:306
+#, fuzzy
+msgid "User management"
+msgstr "Nombre del usuario"
+
+#: lmkp/views/translation.py:310
+msgid "dd.mm.YYYY"
+msgstr ""
+
+#: lmkp/views/translation.py:311
+msgid "{0} is not a valid date - it must be in the format {1}"
+msgstr ""
+
+#: lmkp/views/translation.py:312
+msgid "This number must be greater than 0"
+msgstr ""
+
+#: lmkp/views/translation.py:313
+msgid "Percentage must be between 0 and 100"
+msgstr ""
+
+#: lmkp/views/translation.py:314
+msgid "The year must be a number value between 1900 and 2100"
+msgstr ""
+
+#: lmkp/views/translation.py:316
+msgid "Format"
+msgstr ""
+
+#: lmkp/views/translation.py:317
+msgid "The coordinates could not be parsed!"
+msgstr ""
+
+#: lmkp/views/translation.py:318
+msgid "GPS Coordinates"
+msgstr ""
+
+#: lmkp/views/translation.py:319
+msgid "Enter GPS coordinates"
+msgstr ""
+
+#: lmkp/views/translation.py:320
+msgid "Put point on the map"
+msgstr ""
+
+#: lmkp/views/translation.py:321
+msgid "Select on map"
+msgstr ""
+
+#: lmkp/views/translation.py:468
+msgid "Translation not successful"
+msgstr ""
+
+#: lmkp/views/translation.py:489 lmkp/views/translation.py:516
+msgid "Updated translation"
+msgstr ""
+
+#: lmkp/views/translation.py:497 lmkp/views/translation.py:524
+msgid "Added translation"
+msgstr ""
+
+#: lmkp/views/user.py:98
+msgid "First Name"
+msgstr ""
+
+#: lmkp/views/user.py:101
+#, fuzzy
+msgid "Last Name"
+msgstr "Idioma"
+
+#: lmkp/views/user.py:104
+msgid "Valid Email"
+msgstr ""
+
+#: lmkp/views/user.py:151
+msgid "The Land Observatory: Activate your Account"
+msgstr ""
+
+#: lmkp/views/user.py:347
+#, fuzzy
+msgid "Update"
+msgstr "Fecha"
 

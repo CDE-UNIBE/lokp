@@ -1,14 +1,14 @@
 <%inherit file="lmkp:templates/htmlbase.mak" />
 
-<%def name="title()">Land Observatory FAQ</%def>
+<%def name="title()">${_('Partners & Donors')}</%def>
 
 <div class="container">
     <div class="content no-border">
         <h3>
-            Partners &amp; Donors
+            ${_('Partners & Donors')}
         </h3>
 
-        <p>The pilot project is coordinated by the International Land Coalition and the Centre for Development and Environment at the University of Bern, Switzerland. It is funded by the Swiss Agency for Development Cooperation, with co-funding from other ILC and CDE programs.</p>
+        <p>${_('The pilot project is coordinated by the International Land Coalition and the Centre for Development and Environment at the University of Bern, Switzerland. It is funded by the Swiss Agency for Development Cooperation, with co-funding from other ILC and CDE programs.')}</p>
 
         <p>&nbsp;</p>
         <p>&nbsp;</p>

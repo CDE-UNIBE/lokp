@@ -1,6 +1,6 @@
 <%inherit file="lmkp:templates/htmlbase.mak" />
 
-<%def name="title()">Grid View - Investors</%def>
+<%def name="title()">${_('Grid View')} - ${_('Investors')}</%def>
 
 <%def name="head_tags()">
     ## TODO: This should be fixed in bootstrap
@@ -42,7 +42,7 @@
 
     <div class="show-investors visible-phone">
         <i class="icon-info-sign"></i>
-        <p>Show deals by clicking on a specific row</p>
+        <p>${_('Show deals by clicking on a specific row.')}</p>
     </div>
 
     <div class="content">
@@ -51,7 +51,7 @@
         % if invfilter:
         <div class="alert alert-info">
             <i class="icon-filter"></i>&nbsp;
-            <strong>Deal Filter</strong>: You are currently only seeing Investors which are involved in Deal <a href="${request.route_url('activities_read_one', output='html', uid=a_uid)}">${a_uid[:6]}</a>.<br/><a href="${request.route_url('stakeholders_read_many', output='html')}">Remove this filter and show all Investors</a>.
+            <strong>${_('Deal Filter')}</strong>: ${_('You are currently only seeing Investors which are involved in Deal ')}<a href="${request.route_url('activities_read_one', output='html', uid=a_uid)}">${a_uid[:6]}</a>.<br/><a href="${request.route_url('stakeholders_read_many', output='html')}">${_('Remove this filter and show all Investors')}</a>.
         </div>
         % endif
 
@@ -65,12 +65,12 @@
                     [
                         [
                             request.route_url('activities_read_many', output='html')
-                        ], 'Deals'
+                        ], _('Deals')
                     ], [
                         [
                             request.route_url('stakeholders_read_many', output='html'),
                             request.route_url('stakeholders_byactivity', output='html', uid=a_uid)
-                        ], 'Investors'
+                        ], _('Investors')
                     ]
                 ]
             %>
@@ -92,8 +92,8 @@
 
                 ## Empty data
                 <p>&nbsp;</p>
-                <h5>Nothing found</h5>
-                <p>No results were found.</p>
+                <h5>${_('Nothing found')}</h5>
+                <p>${_('No results were found.')}</p>
                 <p>&nbsp;</p>
 
             % else:
@@ -101,7 +101,7 @@
                 ## "Tooltip" when clicking a table row
                 <div class="show-investors-wrapper hidden hidden-phone">
                     <div class="show-investors">
-                        <a href="#">Show deals of this investor</a>
+                        <a href="#">${_('Show deals of this investor')}</a>
                     </div>
                 </div>
 
@@ -111,7 +111,7 @@
                     <thead>
                         ## The table headers
                         <tr>
-                            <th>Investor ID</th>
+                            <th>${_('Investor ID')}</th>
                             % for k in keys:
                                 ## Only use the headers which are to be shown
                                 % if k[2] is True:
@@ -189,7 +189,7 @@
         ## Pagination
         % if len(data) > 0:
             <%include file="lmkp:templates/parts/pagination.mak"
-                args="totalitems=total, currentpage=currentpage, pagesize=pagesize, itemsname='Investors'"
+                args="totalitems=total, currentpage=currentpage, pagesize=pagesize, itemsname=_('Investors')"
             />
         % endif
 

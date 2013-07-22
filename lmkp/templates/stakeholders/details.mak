@@ -1,6 +1,6 @@
 <%inherit file="lmkp:templates/htmlbase.mak" />
 
-<%def name="title()">Stakeholder Details ${shortuid}</%def>
+<%def name="title()">${_('Stakeholder Details')} ${shortuid}</%def>
 
 <%def name="head_tags()">
 <style type="text/css" >
@@ -36,7 +36,7 @@
     </div>
     %if site_key is not None:
     <div id="comments-div" class="comments content no-border">
-        Loading ...
+        ${_('Loading ...')}
     </div>
     %endif
 </div>

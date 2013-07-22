@@ -30,7 +30,7 @@
 
 <div class="row-fluid">
     <div class="span4 pagination">
-        Total number of ${itemsname}: <strong>${totalitems}</strong>
+        ${_('Total number of ')}${itemsname}: <strong>${totalitems}</strong>
     </div>
     <div class="span4 pagination text-center">
         <ul>
@@ -90,7 +90,7 @@
     </div>
     <div class="span4 text-right pagesizeselect">
         <div class="dropdown">
-            ${itemsname} per page:
+            ${itemsname} ${_('per page')}:
             <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                 ${pagesize}
                 <b class="caret"></b>
