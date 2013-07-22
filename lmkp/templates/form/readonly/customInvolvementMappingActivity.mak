@@ -2,13 +2,13 @@
     % if field.name == 'primaryinvestors' and child.name == 'role_id':
         <div class="span12">
             <h5 class="green">
-                Involvement as Primary Investor
+                ${_('Involvement as')} ${_('Primary Investor')}
             </h5>
         </div>
     % elif field.name == 'secondaryinvestors' and child.name == 'role_id':
         <div class="span12">
             <h5 class="green">
-                Involvement as Secondary Investor
+                ${_('Involvement as')} ${_('Secondary Investor')}
             </h5>
         </div>
     % else:
@@ -17,4 +17,4 @@
 % endfor
 <div class="span5"></div>
 <div class="span2 inactive"></div>
-<div class="span4"><a href="/activities/html/${cstruct['id']}">View Deal</a></div>
+<div class="span4"><a href="/activities/html/${cstruct['id']}">${_('View Deal')}</a></div>

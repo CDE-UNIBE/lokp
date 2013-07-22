@@ -1,6 +1,7 @@
 <%
     from lmkp.views.form import structHasOnlyNullValues
     hasOnlyNullValues, depth = structHasOnlyNullValues(cstruct)
+    _ = request.translate
 %>
 
 % if depth == 3:
@@ -38,7 +39,7 @@
         % for msg in field.error.messages():
             ## Special error message for map
             % if field.name == 'lon':
-                ${request.translate('The location of the deal is required. Please select a point on the map before continuing.')}
+                ${_('The location of the deal is required. Please select a point on the map before continuing.')}
             % else:
                 <p
                     % if msg.index==0:

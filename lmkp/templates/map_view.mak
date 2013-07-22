@@ -1,6 +1,6 @@
 <%inherit file="lmkp:templates/htmlbase.mak" />
 
-<%def name="title()">Map View</%def>
+<%def name="title()">${_('Map View')}</%def>
 
 <%def name="head_tags()">
 <link rel="stylesheet" href="${request.static_url('lmkp:static/lib/OpenLayers-2.12/theme/default/style.css')}" type="text/css" />
@@ -61,7 +61,19 @@ extent = json.dumps(_getCurrentProfileExtent(request))
     var profilePolygon = ${extent | n};
     var aKeys = ${json.dumps(aKeys) | n};
     var shKeys = ${json.dumps(shKeys) | n};
-    
+
+    ## JS Translation
+    var tForDeals = '${_("Deal")}';
+    var tForInvestor = '${_("Investor")}';
+    var tForInvestors = '${_("Investors")}';
+    var tForLegend = '${_("Legend")}';
+    var tForLegendforcontextlayer = '${_("Legend for context layer")}';
+    var tForLoading = '${_("Loading ...")}';
+    var tForLoadingdetails = '${_("Loading the details ...")}';
+    var tForMoredeals = '${_(" more deals ...")}';
+    var tForNodealselected = '${_("No deal selected.")}';
+    var tForSelecteddeals = '${_("Selected Deals")}';
+
 </script>
 </%def>
 
@@ -76,12 +88,12 @@ extent = json.dumps(_getCurrentProfileExtent(request))
 </div>
 
 <div class="basic-data">
-    <h6 class="deal-headline">Deal
+    <h6 class="deal-headline">${_('Deal')}
         <span id="deal-shortid-span" class="underline">#</span>
     </h6>
     <ul id="taggroups-ul">
         <li>
-            <p>No deal selected.</p>
+            <p>${_('No deal selected.')}</p>
         </li>
     </ul>
 </div>
@@ -89,23 +101,23 @@ extent = json.dumps(_getCurrentProfileExtent(request))
 <!-- map menu -->
 <div class="map-menu">
     <form class="navbar-search" action="">
-        <input name="q" id="search" class="search-query" placeholder="search location" />
+        <input name="q" id="search" class="search-query" placeholder="${_('search location')}" />
         <input value="Search" id="search-submit" />
     </form><br/>
 
     <!-- Base layers -->
     <div class="map-menu-base-layers">
-        <h6 class="base-layers"><b class="caret"></b>Base layers</h6>
+        <h6 class="base-layers"><b class="caret"></b>${_('Base layers')}</h6>
         <div class="base-layers-content">
             <ul>
                 <li>
-                    <label class="radio inline"><input type="radio" class="baseMapOptions" name="baseMapOptions" id="streetMapOption" value="streetMap" checked />Street Map</label>
+                    <label class="radio inline"><input type="radio" class="baseMapOptions" name="baseMapOptions" id="streetMapOption" value="streetMap" checked />${_('Street Map')}</label>
                 </li>
                 <li>
-                    <label class="radio inline"><input type="radio" class="baseMapOptions" name="baseMapOptions" id="satelliteMapOption" value="satelliteMap" />Satellite Imagery</label>
+                    <label class="radio inline"><input type="radio" class="baseMapOptions" name="baseMapOptions" id="satelliteMapOption" value="satelliteMap" />${_('Satellite Imagery')}</label>
                 </li>
                 <li>
-                    <label class="radio inline"><input type="radio" class="baseMapOptions" name="baseMapOptions" id="terrainMapOption" value="terrainMap" />Terrain Map</label>
+                    <label class="radio inline"><input type="radio" class="baseMapOptions" name="baseMapOptions" id="terrainMapOption" value="terrainMap" />${_('Terrain Map')}</label>
                 </li>
             </ul>
         </div>
@@ -113,7 +125,7 @@ extent = json.dumps(_getCurrentProfileExtent(request))
 
     <!-- Context layers -->
     <div class="map-menu-context-layers">
-        <h6 class="context-layers"><b class="caret"></b>Context layers</h6>
+        <h6 class="context-layers"><b class="caret"></b>${_('Context layers')}</h6>
         <div class="context-layers-content">
             <ul id="context-layers-list">
                 <!--  Placeholder for context layers entries -->
@@ -123,7 +135,7 @@ extent = json.dumps(_getCurrentProfileExtent(request))
 
     <!-- Map legend -->
     <div class="map-menu-legend">
-        <h6 class="map-legend"><b class="caret"></b>Map Legend</h6>
+        <h6 class="map-legend"><b class="caret"></b>${_('Map Legend')}</h6>
         <div class="map-legend-content">
             <ul id="map-legend-list">
                 <!--  Placeholder for map legend entries -->
@@ -143,7 +155,7 @@ extent = json.dumps(_getCurrentProfileExtent(request))
         <!-- Placeholder -->
     </div>
     <div class="modal-footer">
-        <button id="mapModalClose" class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+        <button id="mapModalClose" class="btn" data-dismiss="modal" aria-hidden="true">${_('Close')}</button>
     </div>
 </div>
 

@@ -1,24 +1,146 @@
+
 msgid ""
 msgstr ""
+"Project-Id-Version:  LOKP\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2013-07-22 14:16+0200\n"
+"PO-Revision-Date: 2013-07-22 12:09+0100\n"
+"Last-Translator: Lukas Vonlanthen <lukas.vonlanthen@cde.unibe.ch>\n"
+"Language-Team: th <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: POEditor.com\n"
-"Project-Id-Version: LOKP\n"
-"Language: th\n"
+"Generated-By: Babel 0.9.6\n"
+
+#: lmkp/templates/about_view.mak:3 lmkp/templates/htmlbase.mak:352
+#: lmkp/templates/landing_page.mak:344
+msgid "About"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/about_view.mak:47
+msgid ""
+"The Land Observatory is a pilot project of some of the partners of the "
+"Land Matrix initiative, to support observatories designed to crowdsource "
+"data about land deals, allowing for greater transparency and improved "
+"decision-making."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/about_view.mak:50
+msgid ""
+"We are co-creating software with partner organizations in pilot countries"
+" that will allow for them to"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/about_view.mak:53
+msgid "generate greater spatial context for land deals"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/about_view.mak:55
+msgid "make possible deeper investigation of the actors involved"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/about_view.mak:58
+msgid "increase citizen participation, crowdsource and ground-truth data"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/about_view.mak:61
+msgid "locally manage data on land deals"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/about_view.mak:65
+msgid ""
+"We are piloting this project in five countries - Cambodia, Laos, "
+"Madagascar, Peru and Tanzania, with civil society partners and "
+"governments who will work to open government data, crowdsource and help "
+"customize local observatories using our software."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/about_view.mak:68
+msgid ""
+"The project is not merely technical, we are accompanying partners as they"
+" test different crowdsourcing strategies. Partners and their extended "
+"networks play a crucial role in bringing the online information to the "
+"real world, and back again."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/about_view.mak:71
+msgid ""
+"Updated information on land will benefit citizens, but also governments "
+"and companies interested in sustainability."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/about_view.mak:74
+msgid ""
+"If you are experiencing any technical difficulties, have questions or "
+"would like to send us feedback about how to improve user experience, "
+"please email us: "
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/about_view.mak:80
+msgid "View our brief video introduction"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/about_view.mak:80
+msgid "Click here if the embedded video is not working"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activation_successful.mak:3
+msgid "User Activation Success"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activation_successful.mak:8
+msgid "User activation was successful:"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activation_successful.mak:10
+msgid "Your account has been activated. It will be approved during the next days."
+msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/administration.mak:21 lmkp/templates/base.mak:55
 #: lmkp/templates/base.mak:58 lmkp/templates/charts.mak:16
 #: lmkp/templates/compare_versions.mak:11 lmkp/templates/embedded.mak:10
-#: lmkp/templates/index.mak:20 lmkp/templates/login_form.mak:13
-#: lmkp/templates/login_form.mak:23 lmkp/templates/moderation.mak:18
-#: lmkp/templates/reset_form.mak:5 lmkp/templates/review_versions.mak:4
-#: lmkp/templates/translation.mak:21
+#: lmkp/templates/htmlbase.mak:37 lmkp/templates/htmlbase.mak:39
+#: lmkp/templates/htmlbase.mak:181 lmkp/templates/htmlbase.mak:183
+#: lmkp/templates/index.mak:20 lmkp/templates/landing_page.mak:29
+#: lmkp/templates/landing_page.mak:113 lmkp/templates/landing_page.mak:115
+#: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
+#: lmkp/templates/landing_page.mak:194 lmkp/templates/login_form.mak:62
+#: lmkp/templates/moderation.mak:18 lmkp/templates/reset_form.mak:5
+#: lmkp/templates/review_versions.mak:4 lmkp/templates/translation.mak:21
+#: lmkp/templates/user_account.mak:46 lmkp/templates/user_approval.mak:33
 msgid "Land Observatory"
 msgstr "这仅仅是一个测试。"
 
+#: lmkp/templates/administration.mak:21
+msgid "Administration"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/administration.mak:23 lmkp/templates/base.mak:60
+#: lmkp/templates/index.mak:22 lmkp/templates/moderation.mak:20
+#: lmkp/templates/translation.mak:23
+msgid "[Demo]"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/administration.mak:37 lmkp/templates/charts.mak:35
+#: lmkp/templates/compare_versions.mak:48 lmkp/templates/embedded.mak:35
+#: lmkp/templates/index.mak:45 lmkp/templates/map_view.mak:71
+#: lmkp/templates/moderation.mak:41 lmkp/templates/review_versions.mak:33
+#: lmkp/templates/translation.mak:37 lmkp/templates/activities/details.mak:42
+#: lmkp/templates/form/customInvolvementMapping.mak:51
+#: lmkp/templates/stakeholders/details.mak:39 lmkp/views/translation.py:157
+msgid "Loading ..."
+msgstr "这仅仅是一个测试。"
+
 #: lmkp/templates/base.mak:64
-msgid "The Land Observatory will make information on large-scale land acquisition transparent and accessible through an interactive, map-based platform. We are piloting the project in five countries, with partners and governments who will work to open government data, crowdsource and help customize local observatories. Updated information on land will benefit citizens, but also governments and companies interested in sustainability."
+msgid ""
+"The Land Observatory will make information on large-scale land "
+"acquisition transparent and accessible through an interactive, map-based "
+"platform. We are piloting the project in five countries, with partners "
+"and governments who will work to open government data, crowdsource and "
+"help customize local observatories. Updated information on land will "
+"benefit citizens, but also governments and companies interested in "
+"sustainability."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/base.mak:67
@@ -49,20 +171,894 @@ msgstr "这仅仅是一个测试。"
 msgid ", with co-funding from other ILC and CDE programs."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/activities.py:258 lmkp/views/stakeholders.py:262
+#: lmkp/templates/base.mak:75 lmkp/templates/login_form.mak:84
+msgid "Please send your questions and feedback on the Observatory to: "
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/charts.mak:16 lmkp/templates/htmlbase.mak:211
+msgid "Charts"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/charts.mak:39
+msgid "Heat map for Cambodia and Laos"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/charts.mak:41
+msgid ""
+"Distribution of land related deals in Cambodia and for Champasak and "
+"Attapeu province in Laos."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/charts.mak:42
+msgid "Data for Cambodia are provided by the website"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/charts.mak:44
+msgid "Data for Laos are based on the landconcessions database."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/charts.mak:49
+msgid "Distribution of activities worldwide"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/charts.mak:51
+msgid ""
+"Worldwide distribution of land related deals based on the Landmatrix "
+"database available at"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/compare_versions.mak:11 lmkp/views/translation.py:90
+#: lmkp/views/translation.py:117
+msgid "Compare"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:3 lmkp/templates/faq_view.mak:32
+#: lmkp/templates/htmlbase.mak:351 lmkp/templates/landing_page.mak:343
+msgid "FAQ"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:35 lmkp/templates/faq_view.mak:45
+msgid "Why are there observatories in only five countries?"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:36 lmkp/templates/faq_view.mak:49
+msgid "Who \"owns\" each observatory in the five pilot countries?"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:37 lmkp/templates/faq_view.mak:53
+msgid "Can I comment on a land deal?"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:38 lmkp/templates/faq_view.mak:57
+msgid "How do I submit information on a land deal?"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:39 lmkp/templates/faq_view.mak:69
+msgid ""
+"Can I submit information on a land deal even if I am in a different "
+"country?"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:40 lmkp/templates/faq_view.mak:73
+msgid "Will this application display polygons and land areas?"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:41 lmkp/templates/faq_view.mak:77
+msgid "Do you protect my privacy?"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:46
+msgid ""
+"We are piloting this project in five countries. More than just testing "
+"software, this requires partners to design crowdsourcing campaigns and "
+"organise multi-stakeholder platforms to manage the observatories. These "
+"are all very intensive processes and need time. We plan to scale, and "
+"seed observatories in other countries in the near future."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:50
+msgid ""
+"We have co-developed this software with partners in country, and we are "
+"still firming up formal arrangements with partner organisations, and "
+"where possible with governments. Generally speaking, each observatory "
+"will have its own governance structure and moderation team and "
+"procedures. More information will be made available soon about each "
+"country."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:54
+msgid ""
+"Anybody, even anonymous, non-logged in users can comment on a land deal. "
+"These comments will be subject to the rules of moderation, unique to each"
+" observatory."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:58
+msgid ""
+"If you have information about a land deal in one of the five pilot "
+"countries, you can submit information about one or more attributes of "
+"this deal. You can also submit a new land deal if the one you are "
+"concerned with does not appear on the map."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:59
+msgid "You will need to "
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:59
+msgid "register"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:59
+msgid " (giving us your email) and "
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:59
+msgid "log-in"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:60
+msgid ""
+"After you submit, moderators will review and approve your report. New "
+"deals will not be approved until all of the mandatory attributes are "
+"completed."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:66
+msgid ""
+"Once your report is reviewed and approved, it is public for the whole "
+"world to see."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:70
+msgid ""
+"Yes, but it will be reviewed and approved by moderators. At the moment, "
+"we ask that your account is connected to a particular country."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:74
+msgid ""
+"Yes, these functions are in development and should be ready soon, as well"
+" as data downloads."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/faq_view.mak:78
+msgid ""
+"All defaults are set to safeguard user privacy. To comment, you need not "
+"give any personal information, although providing it may enhance your "
+"credibility. To log-in and submit data, all you need to provide is an "
+"email address. Currently, metadata about your submissions is stored on "
+"the servers of the Centre for Development and Environment - University of"
+" Bern and are only kept for reference: your personal information will not"
+" be shared with others or re-used for any purposes except for possible "
+"verification of submitted information."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form.mak:3 lmkp/templates/stakeholderform.mak:3
+msgid "FORM TEST"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/htmlbase.mak:199 lmkp/templates/activities/grid.mak:125
+msgid "Map"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/htmlbase.mak:207
+msgid "Grid"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/htmlbase.mak:238 lmkp/templates/form/form_activity.mak:10
+#: lmkp/views/translation.py:199
+msgid "New Deal"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/htmlbase.mak:250 lmkp/templates/login_form.mak:3
+#: lmkp/templates/login_form.mak:25 lmkp/templates/login_form.mak:39
+#: lmkp/templates/reset_form.mak:5 lmkp/views/viewers.py:28
+msgid "Login"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/htmlbase.mak:259 lmkp/templates/user_registration.mak:19
+#: lmkp/views/viewers.py:29
+msgid "Register"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/htmlbase.mak:267 lmkp/views/editors.py:27
+#: lmkp/views/moderators.py:32
+msgid "Logout"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/htmlbase.mak:294
+msgid "Select Profile"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/htmlbase.mak:353 lmkp/templates/landing_page.mak:345
+#: lmkp/templates/partners_view.mak:3 lmkp/templates/partners_view.mak:8
+msgid "Partners & Donors"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
+msgid "The "
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
+msgid " is a pilot project by some partners of the "
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
+msgid "Land Matrix"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
+msgid ""
+", designed to provide greater context and deeper insight on land deals, "
+"from a more local perspective."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:194
+msgid "Welcome to the "
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:194
+msgid "Demonstration Version"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:194
+msgid " of the "
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:194
+msgid ""
+". This demo version is for learning and experimentation purposes, so "
+"first-time users can get a feel for the Observatory and its functions."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:197
+msgid "Enter"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:208
+msgid "Select a country"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:224 lmkp/templates/landing_page.mak:229
+msgid "Global"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:240
+msgid "Or take a short tour:"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:269
+msgid ""
+"Users in select pilot countries gather, explore and analyze spatial data "
+"on large-scale land acquisitions. Data is managed and reviewed locally by"
+" partners."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:276
+msgid ""
+"Users can see deals in full geographical context, learn more about "
+"investors and the kinds of investments in question."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:283
+msgid ""
+"You can also select a specific land deal to see more: \"who\" (investors "
+"and other stakeholders) and \"what\" the land will be used for."
+msgstr "这仅仅是一 \"who\" 个测试。"
+
+#: lmkp/templates/landing_page.mak:290
+msgid ""
+"You can go further and learn more about an investor, seeing the same "
+"investors other land deals."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:297
+msgid ""
+"Logged in users can also help contribute and update data, and anybody can"
+" freely comment on it."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:304
+msgid ""
+"You can filter the land deals by various attributes - like size, or crop."
+" Or make a spatial selection of land deals."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/landing_page.mak:311
+msgid ""
+"Want to know if anybody lives on a concession? Use the context layers to "
+"view population density and more."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:34 lmkp/templates/login_form.mak:67
+#: lmkp/templates/login_form.mak:73 lmkp/views/user.py:91
+msgid "Username"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:36 lmkp/templates/login_form.mak:68
+#: lmkp/templates/login_form.mak:74 lmkp/views/user.py:95
+msgid "Password"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:45
+msgid "Forgot Password?"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:49
+msgid "You do not have a password yet?"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:49
+msgid "Register now!"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:60
+msgid "Demo Version"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:62
+msgid "This is the demonstration version of the "
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:63
+msgid "Any member of the public can log-in as an Editor or a Moderator."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:65
+msgid "Editor"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:65
+msgid " has the permission to create or edit new Deals or Investors."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:71
+msgid "Moderator"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:71
+msgid " has the additional permission to review pending changes."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:78
+msgid ""
+"This demo version is for learning and experimentation purposes, so first-"
+"time users can get a feel for the Observatory and its functions."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/login_form.mak:81
+msgid ""
+"New data added by users to the demo has not been verified in any way. It "
+"will be visible to the public, but the database will be reset regularly."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:3
+msgid "Map View"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:66 lmkp/templates/map_view.mak:91
+#: lmkp/templates/form/readonly/form.mak:59
+#: lmkp/templates/form/readonly/form.mak:100 lmkp/views/form.py:45
+msgid "Deal"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:67 lmkp/templates/form/readonly/form.mak:50
+#: lmkp/templates/form/readonly/form.mak:91 lmkp/views/translation.py:51
+msgid "Investor"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:68 lmkp/templates/activities/grid.mak:101
+#: lmkp/templates/parts/filter.mak:53 lmkp/templates/stakeholders/grid.mak:3
+#: lmkp/templates/stakeholders/grid.mak:73
+msgid "Investors"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:69
+msgid "Legend"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:70
+msgid "Legend for context layer"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:72
+msgid "Loading the details ..."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:73
+msgid " more deals ..."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:74 lmkp/templates/map_view.mak:96
+msgid "No deal selected."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:75
+msgid "Selected Deals"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:104
+msgid "search location"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:110
+msgid "Base layers"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:114 lmkp/views/translation.py:101
+msgid "Street Map"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:117 lmkp/views/translation.py:99
+msgid "Satellite Imagery"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:120 lmkp/views/translation.py:102
+msgid "Terrain Map"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:128
+msgid "Context layers"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:138
+msgid "Map Legend"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/map_view.mak:158 lmkp/templates/form/form.mak:34
+#: lmkp/views/translation.py:89
+msgid "Close"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/moderation.mak:18
+msgid "Moderation"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/partners_view.mak:11
+msgid ""
+"The pilot project is coordinated by the International Land Coalition and "
+"the Centre for Development and Environment at the University of Bern, "
+"Switzerland. It is funded by the Swiss Agency for Development "
+"Cooperation, with co-funding from other ILC and CDE programs."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/reset_form.mak:50
+msgid "Reset password"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/reset_form.mak:55
+msgid "Email Address"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/review_versions.mak:4 lmkp/views/translation.py:107
+#: lmkp/views/translation.py:133
+msgid "Review"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/translation.mak:21 lmkp/views/translation.py:298
+msgid "Translation"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/user_account.mak:6
+msgid "User Account"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/user_account.mak:48
+msgid "Update user settings"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/user_approval.mak:6
+msgid "User Approval Success"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/user_approval.mak:35
+msgid "User approval"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/user_approval.mak:38
+msgid "The following user has been successfully approved:"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/user_registration.mak:3
+#: lmkp/templates/user_registration_success.mak:3
+msgid "User Registration"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/user_registration.mak:20
+msgid "Please register for the Land Observatory."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/user_registration_success.mak:7
+msgid "Thank you for registering"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/user_registration_success.mak:8
+msgid ""
+"A message with an activation link has been sent to your email address. "
+"Your account will be approved after activation."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/details.mak:3
+#: lmkp/templates/form/readonly/form.mak:38
+msgid "Deal Details"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:3 lmkp/templates/stakeholders/grid.mak:3
+msgid "Grid View"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:3 lmkp/templates/activities/grid.mak:97
+#: lmkp/templates/parts/filter.mak:49 lmkp/templates/stakeholders/grid.mak:68
+#: lmkp/views/translation.py:207
+msgid "Deals"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:45
+msgid "Show investors by click on a specific row."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:52 lmkp/views/translation.py:164
+msgid "Profile"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:53
+msgid "You are seeing all the Deals within the current profile."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:57
+msgid "Map Extent"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:58
+msgid "You are currently only seeing Deals which are visible on the map."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:59
+msgid "Show all Deals of the profile."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:65
+msgid "Spatial Filter"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:65
+msgid " based on "
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:82
+msgid "Investor Filter"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:82
+msgid "You are currently only seeing Deals where Investor "
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:82
+msgid " is involved."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:82
+msgid "Remove this filter and show all Deals"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:123
+#: lmkp/templates/stakeholders/grid.mak:95
+msgid "Nothing found"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:124
+#: lmkp/templates/stakeholders/grid.mak:96
+msgid "No results were found."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:125
+msgid "Make sure there are some deals on the "
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:133
+msgid "Show investors for this deal"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/activities/grid.mak:143
+msgid "Deal ID"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/emails/activation.mak:1
+#: lmkp/templates/emails/confirmation.mak:1
+msgid "Dear"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/emails/activation.mak:3
+msgid "Thank you for registering on the landobservatory.org platform!"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/emails/activation.mak:5
+msgid ""
+"In order to activate your account please visit the following link or copy"
+" it to your web browser. The activation link expires in 48 hours."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/emails/activation.mak:8
+msgid "Your account will be approved after activation."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/emails/activation.mak:10
+#: lmkp/templates/emails/approval.mak:12
+#: lmkp/templates/emails/confirmation.mak:7
+msgid "The Land Observatory"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/emails/approval.mak:1
+msgid "The following user requests approval for the landobservatory.org platform:"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/emails/approval.mak:3
+msgid "Username:"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/emails/approval.mak:4
+msgid "First name:"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/emails/approval.mak:5
+msgid "Last name:"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/emails/approval.mak:6
+msgid "Email address:"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/emails/approval.mak:7
+msgid "Profiles:"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/emails/approval.mak:9
+msgid ""
+"In order to approve this account, please visit the following link or copy"
+" it to your web browser."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/emails/confirmation.mak:3
+msgid "Your account has been approved and you are ready to contribute!"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/emails/confirmation.mak:5
+msgid "Please proceed to:"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/customInvolvementMapping.mak:26
+msgid "Select Investor"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/customInvolvementMapping.mak:38
+msgid "Remove Investor"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/customMapMapping.mak:42
+msgid ""
+"Click on the map to set the location of the deal. Please zoom in to set "
+"the point as accurately as possible."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/form_activity.mak:7
+msgid "Deal Editor"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/form_stakeholder.mak:8
+msgid "Stakeholder Editor"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/mapping_item.mak:42
+msgid ""
+"The location of the deal is required. Please select a point on the map "
+"before continuing."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:5
+#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:11
+msgid "Involvement as"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:5
+#: lmkp/templates/form/readonly/customInvolvementMappingStakeholder.mak:5
+msgid "Primary Investor"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:11
+#: lmkp/templates/form/readonly/customInvolvementMappingStakeholder.mak:11
+msgid "Secondary Investor"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:20
+msgid "View Deal"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/readonly/customInvolvementMappingStakeholder.mak:20
+msgid "View Stakeholder"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/readonly/form.mak:16
+msgid "Pending Version"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/readonly/form.mak:17
+msgid ""
+"You are seeing a pending version which needs to be reviewed before it is "
+"publicly visible."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/readonly/form.mak:20
+msgid "Inactive Version"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/readonly/form.mak:21
+msgid "You are seeing an inactive version which is not active anymore."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/readonly/form.mak:25
+msgid "Not an active Version"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/readonly/form.mak:26
+msgid "You are seeing a version which is not active."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/readonly/form.mak:36
+#: lmkp/templates/stakeholders/details.mak:3
+msgid "Stakeholder Details"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/readonly/form.mak:46
+#: lmkp/templates/form/readonly/form.mak:55
+#: lmkp/templates/form/readonly/form.mak:95
+#: lmkp/templates/form/readonly/form.mak:104
+msgid "Review this version"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/form/readonly/form.mak:50
+#: lmkp/templates/form/readonly/form.mak:59
+#: lmkp/templates/form/readonly/form.mak:91
+#: lmkp/templates/form/readonly/form.mak:100
+msgid "Edit this"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/parts/filter.mak:15 lmkp/templates/parts/filter.mak:73
+msgid "Value"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/parts/filter.mak:24
+msgid "Active Filters"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/parts/filter.mak:38
+msgid "New Filter"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/parts/filter.mak:42
+msgid "Key"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/parts/filter.mak:101
+msgid " filter is active, click here to edit"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/parts/filter.mak:103
+msgid " filters are active, click here to edit"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/parts/filter.mak:105
+msgid "Click here to add a filter"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/parts/pagination.mak:33
+msgid "Total number of "
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/parts/pagination.mak:93
+msgid "per page"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:40 lmkp/views/form.py:51
+#: lmkp/views/translation.py:187
+msgid "Success"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:41
+msgid "The Stakeholder was successfully created. It will be reviewed shortly."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:54
+msgid "Select a Stakeholder"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:56
+msgid "Select an existing Stakeholder."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:59
+msgid "Start typing (at least 4 characters) to search a Stakeholder by name."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:61
+msgid "Search ..."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:66
+msgid "Stakeholder not found?"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:74
+msgid "Create a new Stakeholder"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:84
+msgid "Sending ..."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:93
+#: lmkp/views/translation.py:170
+msgid "Unknown"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:94
+msgid "No results found."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/form_embedded.mak:95
+msgid "Too many results to display. Try to enter more characters"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/grid.mak:45
+msgid "Show deals by clicking on a specific row."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/grid.mak:54
+msgid "Deal Filter"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/grid.mak:54
+msgid "You are currently only seeing Investors which are involved in Deal "
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/grid.mak:54
+msgid "Remove this filter and show all Investors"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/grid.mak:104
+msgid "Show deals of this investor"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/templates/stakeholders/grid.mak:114
+msgid "Investor ID"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/activities.py:420 lmkp/views/stakeholders.py:425
 msgid "User is not logged in."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/activities.py:261 lmkp/views/stakeholders.py:265
+#: lmkp/views/activities.py:423 lmkp/views/stakeholders.py:428
 msgid "User has no permissions to add a review."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/activities.py:268
+#: lmkp/views/activities.py:430
 msgid "User has no profile attached"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/activities.py:299 lmkp/views/stakeholders.py:299
+#: lmkp/views/activities.py:437
+msgid "The Deal was not found or is not situated within the user's profiles"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/activities.py:461 lmkp/views/stakeholders.py:462
 msgid "Not all mandatory keys are provided"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/activities.py:501
+msgid "The Deal was successfully created."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/activities.py:505
+msgid "No Deal was created."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/comments.py:72 lmkp/views/comments.py:170
@@ -85,279 +1081,8 @@ msgstr "这仅仅是一个测试。"
 msgid "Logged in as:"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/moderators.py:31
-msgid "Show user profile"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/editors.py:27 lmkp/views/moderators.py:32
-msgid "Logout"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/login_form.mak:35 lmkp/templates/login_form.mak:57
-#: lmkp/templates/login_form.mak:63
-msgid "Username"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/login_form.mak:37 lmkp/templates/login_form.mak:57
-#: lmkp/templates/login_form.mak:63
-msgid "Password"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/login_form.mak:13 lmkp/templates/reset_form.mak:5
-#: lmkp/views/viewers.py:28
-msgid "Login"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/administration.mak:21
-msgid "Administration"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/charts.mak:16
-msgid "Charts"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/charts.mak:39
-msgid "Heat map for Cambodia and Laos"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/charts.mak:41
-msgid "Distribution of land related deals in Cambodia and for Champasak and Attapeu province in Laos."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/charts.mak:42
-msgid "Data for Cambodia are provided by the website"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/charts.mak:44
-msgid "Data for Laos are based on the landconcessions database."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/charts.mak:49
-msgid "Distribution of activities worldwide"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/charts.mak:51
-msgid "Worldwide distribution of land related deals based on the Landmatrix database available at"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/compare_versions.mak:11 lmkp/views/translation.py:89
-#: lmkp/views/translation.py:116
-msgid "Compare"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/login_form.mak:25
-msgid "Login to the Land Observatory"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/login_form.mak:46
-msgid "Forgot Password?"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/moderation.mak:18
-msgid "Moderation"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/reset_form.mak:50
-msgid "Reset password"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/reset_form.mak:55
-msgid "Email Address"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/review_versions.mak:4 lmkp/views/translation.py:106
-#: lmkp/views/translation.py:132
-msgid "Review"
-msgstr "这仅仅是一个测试。"
-
 #: lmkp/views/errors.py:17
 msgid "Please login to access:"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/login.py:56
-msgid "Login failed! Please try again."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/login.py:99
-msgid "No registered user found with this email address."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/login.py:105
-msgid "Land Observatory - Password reset"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/login.py:107
-msgid "Password reset was successful. An email containing the new password has been sent to your email address."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/login.py:109
-msgid "Proceed to the login page"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/stakeholders.py:343
-msgid "No Stakeholder was created."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/protocol.py:646
-msgid "Unknown object to review."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/activities.py:275
-msgid "The Deal was not found or is not situated within the user's profiles"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/activities.py:339
-msgid "The Deal was successfully created."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/activities.py:343
-msgid "No Deal was created."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/protocol.py:652
-msgid "Review decision not provided."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/protocol.py:657 lmkp/views/protocol.py:939
-msgid "Unknown review decision"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/protocol.py:729
-msgid "At least one of the involved Stakeholders cannot be reviewed. Click on the icon next to the involvement for further details."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/protocol.py:731
-msgid "At least one of the involved Activities cannot be reviewed. Click on the icon next to the involvement for further details."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/protocol.py:767
-msgid "One of the Stakeholders to review was not found."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/protocol.py:861
-msgid "No active version was found to base the review upon. Try to review an earlier version first."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/protocol.py:891
-msgid "The diff seems to be incorrect (identifier not found)"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/protocol.py:951
-msgid "Review successful."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/stakeholders.py:275
-msgid "The Deal was not found"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/stakeholders.py:339
-msgid "The Stakeholder was successfully created."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/administration.mak:23 lmkp/templates/base.mak:60
-#: lmkp/templates/index.mak:22 lmkp/templates/login_form.mak:15
-#: lmkp/templates/moderation.mak:20 lmkp/templates/translation.mak:23
-msgid "[Demo]"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/base.mak:75 lmkp/templates/login_form.mak:76
-msgid "Please send your questions and feedback on the Observatory to: "
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/login_form.mak:51
-msgid "Welcome to the demonstration version of the Land Observatory."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/login_form.mak:53
-msgid "Any member of the public can log-in as an Editor or a Moderator."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/login_form.mak:55
-msgid "Editor"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/login_form.mak:55
-msgid " has the permission to create or edit new Deals or Stakeholders"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/login_form.mak:61
-msgid "Moderator"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/login_form.mak:61
-msgid " has the additional permission to review pending changes in the global profile"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/login_form.mak:67
-msgid "This demo version is for learning and experimentation purposes, so first-time users can get a feel for the Observatory and its functions."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/login_form.mak:70
-msgid "New data added by users to the demo has not been verified in any way. It will be visible to the public, but deleted every 24 hours."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/login_form.mak:73
-msgid "We will be releasing the official, public version of the Observatory soon."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/templates/translation.mak:21 lmkp/views/translation.py:296
-msgid "Translation"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:459
-msgid "Translation not successful"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:480 lmkp/views/translation.py:507
-msgid "Updated translation"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:488 lmkp/views/translation.py:515
-msgid "Added translation"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:24
-msgid "pending"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:25
-msgid "active"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:26
-msgid "inactive"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:27
-msgid "deleted"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:28 lmkp/views/translation.py:35
-msgid "rejected"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:29
-msgid "edited"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:40
-msgid "Editors"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:41
-msgid "Moderators"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:42
-msgid "Administrators"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:43
-msgid "Translators"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:50
-msgid "Investor"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/files.py:56
@@ -380,775 +1105,882 @@ msgstr "这仅仅是一个测试。"
 msgid "File was successfully uploaded"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:34
-msgid "approved"
+#: lmkp/views/form.py:46
+msgid "Notice"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:61
-msgid "Status"
+#: lmkp/views/form.py:47
+msgid ""
+"Unsaved data of this item was found in the session. You may continue to "
+"edit this form."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:80
-msgid "Add attribute filter"
+#: lmkp/views/form.py:48
+#, python-format
+msgid ""
+"Unsaved data from another form %s was found in the session and will be "
+"deleted if you continue to edit this form."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:81
-msgid "Add more specific information"
+#: lmkp/views/form.py:49
+msgid "Click here to delete the session data to clear the form."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:82
-msgid "Add further information"
+#: lmkp/views/form.py:50
+msgid "See the unsaved changes of this Deal and submit it."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:83
-msgid "Add time filter"
+#: lmkp/views/form.py:52
+msgid ""
+"The Deal was successfully created or updated. It is now pending and needs"
+" to be reviewed by a moderator before it is publicly visible."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:84
-msgid "Back"
+#: lmkp/views/form.py:53
+msgid "View the Deal."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:85
-msgid "Browse"
+#: lmkp/views/form.py:54
+msgid "Empty Form"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:86
-msgid "Cancel"
+#: lmkp/views/form.py:55
+msgid "You submitted an empty form or did not make any changes."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:87
-msgid "Clear"
+#: lmkp/views/form.py:56
+msgid ""
+"The Stakeholder was successfully created or updated. It is not pending "
+"and needs to be reviewed by a moderator before it is publicly visible."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:88
-msgid "Close"
+#: lmkp/views/form.py:57
+msgid "View the Stakeholder"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:90
-msgid "Continue"
+#: lmkp/views/form.py:58
+msgid "Error"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:91 lmkp/views/translation.py:94
-msgid "Delete"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:92
-msgid "Edit"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:93
-msgid "Activate"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:95
-msgid "Link"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:96
-msgid "Base Layers"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:97
-msgid "Context Layers"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:98
-msgid "Satellite Imagery"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:99
-msgid "Show Legend"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:100
-msgid "Street Map"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:101
-msgid "Terrain Map"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:102
-msgid "Next"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:103
-msgid "No"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:104
-msgid "OK"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:105 lmkp/views/translation.py:130
-msgid "Refresh"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:107
-msgid "Save"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/form.py:61 lmkp/views/translation.py:108
+#: lmkp/views/form.py:734 lmkp/views/translation.py:109
 msgid "Submit"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:109
-msgid "Upload"
+#: lmkp/views/form_config.py:802
+msgid "Select"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/login.py:56
+msgid "Login failed! Please try again."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/login.py:99
+msgid "No registered user found with this email address."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/login.py:105
+msgid "Land Observatory - Password reset"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/login.py:107
+msgid ""
+"Password reset was successful. An email containing the new password has "
+"been sent to your email address."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/login.py:109
+msgid "Proceed to the login page"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/moderators.py:31
+msgid "Show user profile"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/protocol.py:648
+msgid "Unknown object to review."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/protocol.py:654
+msgid "Review decision not provided."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/protocol.py:659 lmkp/views/protocol.py:938
+msgid "Unknown review decision"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/protocol.py:731
+msgid ""
+"At least one of the involved Stakeholders cannot be reviewed. Click on "
+"the icon next to the involvement for further details."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/protocol.py:733
+msgid ""
+"At least one of the involved Activities cannot be reviewed. Click on the "
+"icon next to the involvement for further details."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/protocol.py:865
+msgid ""
+"No active version was found to base the review upon. Try to review an "
+"earlier version first."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/protocol.py:890
+msgid "The diff seems to be incorrect (identifier not found)"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/protocol.py:950
+msgid "Review successful."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/stakeholders.py:438
+msgid "The Deal was not found"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/stakeholders.py:502
+msgid "The Stakeholder was successfully created."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/stakeholders.py:506
+msgid "No Stakeholder was created."
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:25
+msgid "pending"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:26
+msgid "active"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:27
+msgid "inactive"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:28
+msgid "deleted"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:29 lmkp/views/translation.py:36
+msgid "rejected"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:30
+msgid "edited"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:35
+msgid "approved"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:41
+msgid "Editors"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:42
+msgid "Moderators"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:43
+msgid "Administrators"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:44
+msgid "Translators"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:62
+msgid "Status"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:81
+msgid "Add attribute filter"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:82
+msgid "Add more specific information"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:83
+msgid "Add further information"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:84
+msgid "Add time filter"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:85
+msgid "Back"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:86
+msgid "Browse"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:87
+msgid "Cancel"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:88
+msgid "Clear"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:91
+msgid "Continue"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:92 lmkp/views/translation.py:95
+msgid "Delete"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:93
+msgid "Edit"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:94
+msgid "Activate"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:96
+msgid "Link"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:97
+msgid "Base Layers"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:98
+msgid "Context Layers"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:100
+msgid "Show Legend"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:103
+msgid "Next"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:104
+msgid "No"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:105
+msgid "OK"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:106 lmkp/views/translation.py:131
+msgid "Refresh"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:108
+msgid "Save"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:110
+msgid "Upload"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:111
 msgid "Yes"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:113
+#: lmkp/views/translation.py:114
 msgid "Add a filter based on attribute"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:114
+#: lmkp/views/translation.py:115
 msgid "Add a filter based on time"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:115
+#: lmkp/views/translation.py:116
 msgid "Close Window"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:117
+#: lmkp/views/translation.py:118
 msgid "Delete file"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:118
+#: lmkp/views/translation.py:119
 msgid "Download file"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:119
+#: lmkp/views/translation.py:120
 msgid "Edit file"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:120
+#: lmkp/views/translation.py:121
 msgid "Click to activate this filter"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:121
+#: lmkp/views/translation.py:122
 msgid "Click to delete this filter"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:122
+#: lmkp/views/translation.py:123
 msgid "Permament link to current view"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:123
-msgid "Identify Feature"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:124
-msgid "Pan"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:125
-msgid "Zoom In"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:126
-msgid "Zoom Out"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:127
-msgid "Zoom to Profile Region"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:128
+#: lmkp/views/translation.py:129
 msgid "Missing mandatory key!"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:129
+#: lmkp/views/translation.py:130
 msgid "It is possible that not all attributes are shown here!"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:131
+#: lmkp/views/translation.py:132
 msgid "Remove this stakeholder"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:133
+#: lmkp/views/translation.py:134
 msgid "Involvement can not be reviewed. Click for more information."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:134
+#: lmkp/views/translation.py:135
 msgid "Involvement can be reviewed"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:135
+#: lmkp/views/translation.py:136
 msgid "Submit Review"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:136 lmkp/views/translation.py:249
+#: lmkp/views/translation.py:137
 msgid "Upload a new file"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:137
+#: lmkp/views/translation.py:138
 msgid "View file"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:140
+#: lmkp/views/translation.py:141
 msgid "Anonymous"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:141
+#: lmkp/views/translation.py:142
 msgid "Clear Selection"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:142 lmkp/views/translation.py:161
+#: lmkp/views/translation.py:143 lmkp/views/translation.py:162
 msgid "Please confirm"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:143
-msgid "You are seeing a {0} version, which needs to be reviewed before it is publicly visible."
-msgstr "这仅仅是一个测试。"
-
 #: lmkp/views/translation.py:144
-msgid "You are seeing an {0} version, which was previously active and publicly visible."
+msgid ""
+"You are seeing a {0} version, which needs to be reviewed before it is "
+"publicly visible."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:145
-msgid "You are seeing a {0} version, which was previously active and publicly visible."
+msgid ""
+"You are seeing an {0} version, which was previously active and publicly "
+"visible."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:146
-msgid "You are seeing a {0} version, which was never publicly visible."
+msgid ""
+"You are seeing a {0} version, which was previously active and publicly "
+"visible."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:147
-msgid "You are seeing an {0} version, which was edited by a moderator and was never publicly visible."
+msgid "You are seeing a {0} version, which was never publicly visible."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:148
-msgid "Date"
+msgid ""
+"You are seeing an {0} version, which was edited by a moderator and was "
+"never publicly visible."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:149
-msgid "Delete all Filters"
+msgid "Date"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:150
-msgid "Details"
+msgid "Delete all Filters"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:151
-msgid "Filter ({0} active)"
+msgid "Details"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:152
-msgid "History"
+msgid "Filter ({0} active)"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:153
-msgid "ID"
+msgid "History"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:154
-msgid "Language"
+msgid "ID"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:155
+msgid "Language"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:156
 msgid "Last change"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/templates/administration.mak:37 lmkp/templates/charts.mak:35
-#: lmkp/templates/compare_versions.mak:48 lmkp/templates/embedded.mak:35
-#: lmkp/templates/index.mak:45 lmkp/templates/moderation.mak:41
-#: lmkp/templates/review_versions.mak:33 lmkp/templates/translation.mak:37
-#: lmkp/views/translation.py:156
-msgid "Loading ..."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:157
+#: lmkp/views/translation.py:158
 msgid "No attributes to show"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:158
+#: lmkp/views/translation.py:159
 msgid "Overview"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:159
+#: lmkp/views/translation.py:160
 msgid "of {0}"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:160
+#: lmkp/views/translation.py:161
 msgid "Page"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:162
+#: lmkp/views/translation.py:163
 msgid "Previous Version"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:163
-msgid "Profile"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:164
+#: lmkp/views/translation.py:165
 msgid "Search"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:165
+#: lmkp/views/translation.py:166
 msgid "Show Details"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:166
+#: lmkp/views/translation.py:167
 msgid "Show pending versions"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:167
+#: lmkp/views/translation.py:168
 msgid "Taggroups"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:168
+#: lmkp/views/translation.py:169
 msgid "Timestamp"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:169
-msgid "Unknown"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:170
+#: lmkp/views/translation.py:171
 msgid "User"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:171
+#: lmkp/views/translation.py:172
 msgid "Version"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:172
+#: lmkp/views/translation.py:173
 msgid "Versions pending"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:175
+#: lmkp/views/translation.py:176
 msgid "Failure"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:176
+#: lmkp/views/translation.py:177
 msgid "Information"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:177
-msgid "The deal was successfully created. It will be reviewed shortly."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:178
-msgid "The deal could not be created."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:179
-msgid "The Stakeholder was successfully created. It will be reviewed shortly."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:180
-msgid "The Stakeholder could not be created."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:181
-msgid "No changes made"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:182
-msgid "You did not make any changes."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:183
-msgid "Edited changes were successfully submitted"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:184
-msgid "Edited changes could not be submitted"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:185
-msgid "Some of the attributes cannot be edited because they are not part of the currently selected profile."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:186
-msgid "Success"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:189
+#: lmkp/views/translation.py:190
 msgid "Add new Deal"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:190
+#: lmkp/views/translation.py:191
 msgid "Deal Attributes"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:191
+#: lmkp/views/translation.py:192
 msgid "Compare versions of Deal {0}"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:192
+#: lmkp/views/translation.py:193
 msgid "Details on Deal"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:193
+#: lmkp/views/translation.py:194
 msgid "Edit Deal (version {0})"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:194
+#: lmkp/views/translation.py:195
 msgid "Filter Deal"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:195
-msgid "Step 1: Please select a point on the map."
-msgstr "这仅仅是一个测试。"
-
 #: lmkp/views/translation.py:196
-msgid "You can drag and drop the point. Once you are done, click \"Continue\"."
+msgid "Step 1: Please specify the location."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:197
-msgid "New Deal"
+msgid "You may either select a point on the map or enter some coordinates."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:198
-msgid "No Deals found"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:199
-msgid "Displaying Deals {0} - {1} of {2}"
+msgid "You can drag and drop the point. Once you are done, click \"Continue\"."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:200
-msgid "No pending Deals to display"
+msgid "No Deals found"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:201
-msgid "Displaying pending Deals {0} - {1} of {2}"
+msgid "Displaying Deals {0} - {1} of {2}"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:202
-msgid "Pending versions of Deals"
+msgid "No pending Deals to display"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:203
-msgid "This deal has pending changes. Click to review them in a popup window."
+msgid "Displaying pending Deals {0} - {1} of {2}"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:204
-msgid "Review versions of Deal {0}"
+msgid "Pending versions of Deals"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:205
-msgid "Deals"
+msgid "This deal has pending changes. Click to review them in a popup window."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:208
-msgid "Edit this involvement"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:209
-msgid "Role"
+#: lmkp/views/translation.py:206
+msgid "Review versions of Deal {0}"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:210
+msgid "Edit this involvement"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:211
+msgid "Role"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:212
 msgid "Involvements"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:213
+#: lmkp/views/translation.py:215
 msgid "Add Stakeholders"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:214
+#: lmkp/views/translation.py:216
 msgid "Associated Stakeholders"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:215
+#: lmkp/views/translation.py:217
 msgid "Stakeholder Attributes"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:216
+#: lmkp/views/translation.py:218
 msgid "Compare versions of Stakeholder {0}"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:217
+#: lmkp/views/translation.py:219
 msgid "Create new Stakeholder"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:218
+#: lmkp/views/translation.py:220
 msgid "Details on Stakeholder "
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:219
+#: lmkp/views/translation.py:221
 msgid "Edit Stakeholder (version {0})"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:220
+#: lmkp/views/translation.py:222
 msgid "Filter Stakeholders"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:221
-msgid "No associated Stakeholders so far. You can search and select a Stakeholder using the Search field below. Or you can create a new Stakeholder by clicking on the button above."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:222
-msgid "No Stakeholders found"
-msgstr "这仅仅是一个测试。"
-
 #: lmkp/views/translation.py:223
-msgid "Displaying Stakeholders {0} - {1} of {2}"
+msgid ""
+"No associated Stakeholders so far. You can search and select a "
+"Stakeholder using the Search field below. Or you can create a new "
+"Stakeholder by clicking on the button above."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:224
-msgid "No pending Stakeholders to display"
+msgid "No Stakeholders found"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:225
-msgid "Displaying pending Stakeholders {0} - {1} of {2}"
+msgid "Displaying Stakeholders {0} - {1} of {2}"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:226
-msgid "Pending versions of Stakeholders"
+msgid "No pending Stakeholders to display"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:227
-msgid "This stakeholder has pending changes. Click to review them in a popup window."
+msgid "Displaying pending Stakeholders {0} - {1} of {2}"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:228
-msgid "Review versions of Stakeholder {0}"
+msgid "Pending versions of Stakeholders"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:229
-msgid "Search Stakeholder"
+msgid ""
+"This stakeholder has pending changes. Click to review them in a popup "
+"window."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:230
-msgid "Select Stakeholder"
+msgid "Review versions of Stakeholder {0}"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:231
+msgid "Search Stakeholder"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:232
+msgid "Select Stakeholder"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:233
 msgid "Stakeholders"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:243
-msgid "Are your sure you want to delete the file {0}?"
+#: lmkp/views/translation.py:256
+msgid ""
+"Approving this version will create a new version. (further additional "
+"information to come)"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:244
-msgid "Edit existing file"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:245
-msgid "File"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:246
-msgid "Maximum file size"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:247
-msgid "Name"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:248
-msgid "Select a file"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:250
-msgid "Uploading ..."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:251
-msgid "Valid file extensions"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:254
-msgid "Approving this version will create a new version. (further additional information to come)"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:255
+#: lmkp/views/translation.py:257
 msgid "These changes are based on a version which is not the active version."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:256
-msgid "There are some mandatory keys missing. The item cannot be approved without these keys. Please click the \"edit\" button to add the missing keys."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:259
-msgid "Review Deal"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:260
-msgid "The Activity of this involvement cannot be reviewed from the Stakeholder's side. Please review the Activity to approve or reject this involvement."
+#: lmkp/views/translation.py:258
+msgid ""
+"There are some mandatory keys missing. The item cannot be approved "
+"without these keys. Please click the \"edit\" button to add the missing "
+"keys."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:261
-msgid "Review Comment"
+msgid "Review Deal"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:262
-msgid "Review Decision"
+msgid ""
+"The Activity of this involvement cannot be reviewed from the "
+"Stakeholder's side. Please review the Activity to approve or reject this "
+"involvement."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:263
-msgid "Review not possible"
+msgid "Review Comment"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:264
-msgid "Review pending changes"
+msgid "Review Decision"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:265
-msgid "Review Stakeholder"
+msgid "Review not possible"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:266
-msgid "Show pending changes"
+msgid "Review pending changes"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:267
-msgid "The Stakeholder of this involvement has no active version and cannot be set active. Please review the Stakeholder first."
+msgid "Review Stakeholder"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:270
-msgid "Logical Operator"
+#: lmkp/views/translation.py:268
+msgid "Show pending changes"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:271
-msgid "and"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:272
-msgid "or"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:273
-msgid "contains (case insensitive)"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:274
-msgid "contains (case sensitive)"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:275
-msgid "contains not (case insensitive)"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:276
-msgid "contains not (case sensitive)"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:277
-msgid "equals"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:278
-msgid "greater than"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:279
-msgid "greater than or equal"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:280
-msgid "is"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:281
-msgid "is not"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:282
-msgid "less than"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:283
-msgid "less than or equal"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:284
-msgid "not equals"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:285
-msgid "Specify number value"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:286
-msgid "Specify value"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:289
-msgid "Add translation"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/translation.py:290
-msgid "Edit translation"
+#: lmkp/views/translation.py:269
+msgid ""
+"The Stakeholder of this involvement has no active version and cannot be "
+"set active. Please review the Stakeholder first."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:291
-msgid "Global attribute"
+msgid "Add translation"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:292
-msgid "Key or Value"
+msgid "Edit translation"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:293
-msgid "Mandatory"
+msgid "Global attribute"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:294
-msgid "Original"
+msgid "Key or Value"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:295
+msgid "Mandatory"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:296
+msgid "Original"
+msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/translation.py:297
 msgid "Original is already in English"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:299
+#: lmkp/views/translation.py:301
 msgid "Add all to Database"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:300
+#: lmkp/views/translation.py:302
 msgid "Batch translation"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:301
+#: lmkp/views/translation.py:303
 msgid "Is in Database"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:302
+#: lmkp/views/translation.py:304
 msgid "Languages"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:303
+#: lmkp/views/translation.py:305
 msgid "Profiles"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:304
+#: lmkp/views/translation.py:306
 msgid "User management"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:308
-msgid "dd.mm.YYYY"
+#: lmkp/views/translation.py:468
+msgid "Translation not successful"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:309
-msgid "{0} is not a valid date - it must be in the format {1}"
+#: lmkp/views/translation.py:489 lmkp/views/translation.py:516
+msgid "Updated translation"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:310
-msgid "This number must be greater than 0"
+#: lmkp/views/translation.py:497 lmkp/views/translation.py:524
+msgid "Added translation"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:311
-msgid "Percentage must be between 0 and 100"
+#: lmkp/views/user.py:98
+msgid "First Name"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/translation.py:312
-msgid "The year must be a number value between 1900 and 2100"
+#: lmkp/views/user.py:101
+msgid "Last Name"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/form_config.py:274
-msgid "Add"
+#: lmkp/views/user.py:104
+msgid "Valid Email"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/templates/form_test.mak:3
-msgid "FORM TEST"
+#: lmkp/views/user.py:151
+msgid "The Land Observatory: Activate your Account"
 msgstr "这仅仅是一个测试。"
+
+#: lmkp/views/user.py:347
+msgid "Update"
+msgstr "这仅仅是一个测试。"
+
+#~ msgid "Identify Feature"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Pan"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Zoom In"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Zoom Out"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Zoom to Profile Region"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "The deal was successfully created. It will be reviewed shortly."
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "The deal could not be created."
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "The Stakeholder could not be created."
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "No changes made"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "You did not make any changes."
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Edited changes were successfully submitted"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Edited changes could not be submitted"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid ""
+#~ "Some of the attributes cannot be "
+#~ "edited because they are not part "
+#~ "of the currently selected profile."
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Are your sure you want to delete the file {0}?"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Edit existing file"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "File"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Maximum file size"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Name"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Select a file"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Uploading ..."
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Valid file extensions"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "dd.mm.YYYY"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "{0} is not a valid date - it must be in the format {1}"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "This number must be greater than 0"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Percentage must be between 0 and 100"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "The year must be a number value between 1900 and 2100"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Format"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "The coordinates could not be parsed!"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "GPS Coordinates"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Enter GPS coordinates"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Put point on the map"
+#~ msgstr "这仅仅是一个测试。"
+
+#~ msgid "Select on map"
+#~ msgstr "这仅仅是一个测试。"
 

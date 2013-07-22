@@ -16,8 +16,8 @@
 
 <div class="container">
     <div class="content no-border">
-        <h3>Register</h3>
-        <p>Please register for the Land Observatory.</p>
+        <h3>${_('Register')}</h3>
+        <p>${_('Please register for the Land Observatory.')}</p>
         <hr class="grey" />
         ${form | n}
     </div>

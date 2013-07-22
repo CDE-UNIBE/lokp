@@ -1,3 +1,18 @@
+/**
+ * Necessary variables with translated text for this file (must be defined and
+ * translated in template):
+ * tForDeals
+ * tForInvestor
+ * tForInvestors
+ * tForLegend
+ * tForLegendforcontextlayer
+ * tForLoading
+ * tForLoadingdetails
+ * tForMoredeals
+ * tForNodealselected
+ * tForSelecteddeals
+ */
+
 $(document).ready(function() {
 
     // Prepare keys to show in overview
@@ -181,7 +196,7 @@ $(document).ready(function() {
             var activityId = f.data.activity_identifier;
             var shortId = activityId.split("-")[0]
             $("#deal-shortid-span").html('<a href="/activities/html/' + activityId + '"># ' + shortId + '</a>');
-            $("#taggroups-ul" ).empty().append('<li><p>Loading the details ...</p></li>');
+            $("#taggroups-ul" ).empty().append('<li><p>' + tForLoadingdetails + '</p></li>');
             $.get("/activities/json/" + activityId, function(r){
                 var a = r.data[0];
                 var tgs = a.hasOwnProperty('taggroups') ? a.taggroups : [];
@@ -219,14 +234,14 @@ $(document).ready(function() {
                     }
                 });
                 if (involvements.length > 0) {
-                    var label = (involvements.length == 1) ? 'Investor' : 'Investors';
+                    var label = (involvements.length == 1) ? tForInvestor : tForInvestors;
                     $('#taggroups-ul').append('<li class="inv"><p><span class="bolder">' + label + ': </span>' + involvements.join(', ') + '</p></li>')
                 }
             });
         } else {
             $(".basic-data").empty();
             // Create a list of selected deals, when selecting several deals
-            var header = $(".basic-data").append("<h6 class=\"deal-headline\">Selected Deals</h6>");
+            var header = $(".basic-data").append("<h6 class=\"deal-headline\">" + tForSelecteddeals + "</h6>");
 
             // Show at maximum ten deals to prevent a too long basic data box
             var maxFeatures = 10;
@@ -246,7 +261,7 @@ $(document).ready(function() {
 
                     header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/" + activityId + '"># ' + shortId + '</a></span></h6>');
                 }
-                header.append("<span>and " + (feature.cluster.length - maxFeatures) + " more deals ...</span>");
+                header.append("<span>and " + (feature.cluster.length - maxFeatures) + tForMoredeals + "</span>");
             }
         }
     }
@@ -254,9 +269,9 @@ $(document).ready(function() {
     // Reset the basic-data overlay box
     var onFeatureUnselected = function(event){
         $(".basic-data").empty();
-        var header = $(".basic-data").append("<h6 class=\"deal-headlline\">Deal <span id=\"deal-shortid-span\" class=\"underline\">#</span></h6>");
+        var header = $(".basic-data").append("<h6 class=\"deal-headlline\">" + tForDeals + " <span id=\"deal-shortid-span\" class=\"underline\">#</span></h6>");
         $("#taggroups-ul" ).empty();
-        $(".basic-data").append('<ul id="taggroups-ul"><li><p>No deal selected.</p></li></ul>');
+        $(".basic-data").append('<ul id="taggroups-ul"><li><p>' + tForNodealselected + '</p></li></ul>');
     }
 
     // Vector layer that contains all deals whose intention of investment is agriculture
@@ -802,8 +817,8 @@ function showContextLegend(layerName) {
     var imgUrl = layer.url + '?' + $.param(imgParams);
 
     // Set the content: Image is hidden first while loading indicator is shown
-    $('#mapModalHeader').html('Legend');
-    $('#mapModalBody').html('<div id="contextLegendImgLoading">Loading ...</div><div id="contextLegendContent" class="hide"><p>Legend for context layer <strong>' + layerName + '</strong>:</p><img id="contextLegendImg" src="' + imgUrl + '"></div>');
+    $('#mapModalHeader').html(tForLegend);
+    $('#mapModalBody').html('<div id="contextLegendImgLoading">' + tForLoading + '</div><div id="contextLegendContent" class="hide"><p>' + tForLegendforcontextlayer + ' <strong>' + layerName + '</strong>:</p><img id="contextLegendImg" src="' + imgUrl + '"></div>');
 
     // Show the model window
     $('#mapModal').modal();

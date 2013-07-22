@@ -34,9 +34,9 @@ if 'lmkp.tracking_id' in request.registry.settings:
         <title>
             <%
                 try:
-                    self.title()
+                    context.write("%s - %s" % (self.title(), _("Land Observatory")))
                 except AttributeError:
-                    context.write("Land Observatory")
+                    context.write(_("Land Observatory"))
             %>
         </title>
         <meta name="description" content="" />
@@ -178,9 +178,9 @@ if 'lmkp.tracking_id' in request.registry.settings:
                         <div class="logo">
                             <a href="${request.route_url('map_view')}">
                                 % if mode == 'demo':
-                                    <img src="${request.static_url('lmkp:static/img/logo_demo.png')}" />
+                                    <img src="${request.static_url('lmkp:static/img/logo_demo.png')}" alt="${_('Land Observatory')}" />
                                 % else:
-                                    <img src="${request.static_url('lmkp:static/media/img/logo.png')}" />
+                                    <img src="${request.static_url('lmkp:static/media/img/logo.png')}" alt="${_('Land Observatory')}" />
                                 % endif
                             </a>
                         </div>
@@ -196,7 +196,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
                                         [
                                             [request.route_url('map_view')],
                                             'icon-map-marker',
-                                            'Map'
+                                            _('Map')
                                         ], [
                                             [
                                                 request.route_url('grid_view'),
@@ -204,11 +204,11 @@ if 'lmkp.tracking_id' in request.registry.settings:
                                                 request.route_url('stakeholders_read_many', output='html')
                                             ],
                                             'icon-align-justify',
-                                            'Grid'
+                                            _('Grid')
                                         ], [
                                             [request.route_url('charts_view')],
                                             'icon-bar-chart',
-                                            'Charts'
+                                            _('Charts')
                                         ]
                                     ]
                                 %>
@@ -235,7 +235,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
                                         >
                                         <a href="${request.route_url('activities_read_many', output='form')}" >
                                             <i class="icon-pencil"></i>
-                                            New Deal
+                                            ${_('New Deal')}
                                         </a>
                                     </li>
                                 % endif
@@ -247,7 +247,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
                                     <li class="active">
                                         <div>
                                             <a class="blacktemp" href="${request.route_url('login_form')}">
-                                                Login
+                                                ${_('Login')}
                                             </a>
                                         </div>
                                     </li>
@@ -256,7 +256,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
                                         <li class="active">
                                             <div>
                                                 <a class="blacktemp" href="${request.route_url('user_self_registration')}">
-                                                    Register
+                                                    ${_('Register')}
                                                 </a>
                                             </div>
                                         </li>
@@ -264,7 +264,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
                                 % else:
                                     <li>
                                         <div>
-                                            ${request.user.username} (<a href="${request.route_url('logout')}" class="logouttemp">Logout</a>)&nbsp;&nbsp;
+                                            ${request.user.username} (<a href="${request.route_url('logout')}" class="logouttemp">${_('Logout')}</a>)&nbsp;&nbsp;
                                         </div>
                                     </li>
                                 % endif
@@ -291,7 +291,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
                                        <div class="dropdown">
                                            <a class="dropdown-toggle blacktemp" data-toggle="dropdown" href="#">
                                                % if selectedprofile is None:
-                                                   Select Profile
+                                                   ${_('Select Profile')}
                                                % else:
                                                    ${selectedprofile[1]}
                                                % endif
@@ -348,9 +348,9 @@ if 'lmkp.tracking_id' in request.registry.settings:
                 # - url
                 # - name
                 footer = [
-                    [request.route_url('faq_view'), 'FAQ'],
-                    [request.route_url('about_view'), 'About'],
-                    [request.route_url('partners_view'), 'Partners & Donors']
+                    [request.route_url('faq_view'), _('FAQ')],
+                    [request.route_url('about_view'), _('About')],
+                    [request.route_url('partners_view'), _('Partners & Donors')]
                 ]
                 %>
 

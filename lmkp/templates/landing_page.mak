@@ -26,7 +26,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
         <meta charset="utf-8">
         <meta name="content-language" content="${selectedlanguage[0]}" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>Land Observatory</title>
+        <title>${_('Land Observatory')}</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
@@ -72,7 +72,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
             .lo_logo {
                 margin: 0 0 5px 5px;
             }
-            .btn-country-selector {
+            .btn-country-selector, .btn-start {
                 text-transform: uppercase;
             }
         </style>
@@ -110,15 +110,15 @@ if 'lmkp.tracking_id' in request.registry.settings:
                             <div class="row-fluid hidden-phone">
                                 <div class="span3 text-right">
                                     % if mode == 'demo':
-                                        <img src="${request.static_url('lmkp:static/img/logo_demo.png')}" class="lo_logo" />
+                                        <img src="${request.static_url('lmkp:static/img/logo_demo.png')}" class="lo_logo" alt="${_('Land Observatory')}" />
                                     % else:
-                                        <img src="${request.static_url('lmkp:static/media/img/logo.png')}" class="lo_logo" />
+                                        <img src="${request.static_url('lmkp:static/media/img/logo.png')}" class="lo_logo" alt="${_('Land Observatory')}" />
                                     % endif
                                 </div>
 
                                 <div class="span6 landing-introduction">
                                     <p>
-                                        The <b>Land Observatory</b> is a pilot project by some partners of the <a href="http://www.landmatrix.org">Land Matrix</a>, designed to provide greater context and deeper insight on land deals, from a more local perspective.
+                                        ${_('The ')}<strong>${_('Land Observatory')}</strong>${_(' is a pilot project by some partners of the ')}<a href="http://www.landmatrix.org">${_('Land Matrix')}</a>${_(', designed to provide greater context and deeper insight on land deals, from a more local perspective.')}
                                     </p>
                                 </div>
                                 <div class="user">
@@ -149,7 +149,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
                                 </div>
                                 <div class="span6 landing-introduction">
                                     <p>
-                                        The <b>Land Observatory</b> is a pilot project by some partners of the <a href="http://www.landmatrix.org">Land Matrix</a>, designed to provide greater context and deeper insight on land deals, from a more local perspective.
+                                        ${_('The ')}<strong>${_('Land Observatory')}</strong>${_(' is a pilot project by some partners of the ')}<a href="http://www.landmatrix.org">${_('Land Matrix')}</a>${_(', designed to provide greater context and deeper insight on land deals, from a more local perspective.')}
                                     </p>
                                 </div>
                                 <div class="span3">
@@ -191,10 +191,10 @@ if 'lmkp.tracking_id' in request.registry.settings:
                             % if mode == 'demo':
                             <div class="row-fluid">
                                 <div clsas="span10 offset1">
-                                    <p>Welcome to the <strong>Demonstration Version</strong> of the <a href="http://www.landobservatory.org">Land Observatory</a>. This demo version is for learning and experimentation purposes, so first-time users can get a feel for the Observatory and its functions.</p>
+                                    <p>${_('Welcome to the ')}<strong>${_('Demonstration Version')}</strong>${_(' of the ')}<a href="http://www.landobservatory.org">${_('Land Observatory')}</a>${_('. This demo version is for learning and experimentation purposes, so first-time users can get a feel for the Observatory and its functions.')}</p>
                                     <div class="start">
                                         <div class="btn-group">
-                                            <a href="/global" class="btn btn-start">ENTER</a>
+                                            <a href="/global" class="btn btn-start">${_('Enter')}</a>
                                             <a href="/global" class="btn btn_favorite_right dropdown-toggle">
                                                 <i class="icon-caret-right"></i>
                                             </a>
@@ -205,7 +205,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
                             % else:
                             <div class="row-fluid action">
                                 <div class="span2 offset1">
-                                    Select a country
+                                    ${_('Select a country')}
                                 </div>
                                 <div class="span3">
                                     <div class="country-selector">
@@ -221,12 +221,12 @@ if 'lmkp.tracking_id' in request.registry.settings:
                                                 % endfor
                                            </ul>
                                            % else:
-                                           <button class="btn btn-country-selector">Global</button>
+                                           <button class="btn btn-country-selector">${_('Global')}</button>
                                            <button class="btn btn_favorite_right dropdown-toggle" data-toggle="dropdown">
                                                <i class="icon-caret-down"></i>
                                            </button>
                                            <ul class="dropdown-menu country-selector">
-                                                <li><a href="/global">Global</a></li>
+                                                <li><a href="/global">${_('Global')}</a></li>
                                            </ul>
                                            % endif
                                        </div>
@@ -237,7 +237,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
 
                             <div class="row-fluid not-action">
                                 <div class="span offset1">
-                                    Or take a short tour:
+                                    ${_('Or take a short tour:')}
                                 </div>
                             </div>
 
@@ -266,58 +266,49 @@ if 'lmkp.tracking_id' in request.registry.settings:
                                                 </div>-->
                                                 <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_02.png')}" alt="">
                                                 <div class="carousel-caption">
-                                                    <h4>Second Thumbnail label</h4>
-                                                    <p>Users in select pilot countries gather, explore and analyze spatial data on large-scale land acquisitions.
-                                                    Data is managed and reviewed locally by partners.
-                                                    </p>
+                                                    <p>${_('Users in select pilot countries gather, explore and analyze spatial data on large-scale land acquisitions. Data is managed and reviewed locally by partners.')}</p>
                                                 </div>
                                             </div>
 
                                             <div class="item">
                                                 <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_03.png')}" alt="">
                                                 <div class="carousel-caption">
-                                                    <h4>Third Thumbnail label</h4>
-                                                    <p>Users can see deals in full geographical context, learn more about investors and the kinds of investments in question.</p>
+                                                    <p>${_('Users can see deals in full geographical context, learn more about investors and the kinds of investments in question.')}</p>
                                                 </div>
                                             </div>
 
                                             <div class="item">
                                                 <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_04.png')}" alt="">
                                                 <div class="carousel-caption">
-                                                    <h4>Third Thumbnail label</h4>
-                                                    <p>You can also select a specific land deal to see more: "who" (investors and other stakeholders) and "what" the land will be used for </p>
+                                                    <p>${_('You can also select a specific land deal to see more: "who" (investors and other stakeholders) and "what" the land will be used for.')}</p>
                                                 </div>
                                             </div>
 
                                             <div class="item">
                                                 <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_05.png')}" alt="">
                                                 <div class="carousel-caption">
-                                                    <h4>Fifth Thumbnail label</h4>
-                                                    <p>You can go further and learn more about an investor, seeing the same investor's other land deals.</p>
+                                                    <p>${_('You can go further and learn more about an investor, seeing the same investor''s other land deals.')}</p>
                                                 </div>
                                             </div>
 
                                             <div class="item">
                                                 <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_06.png')}" alt="">
                                                 <div class="carousel-caption">
-                                                    <h4>Sixth Thumbnail label</h4>
-                                                    <p>Logged in users can also help contribute and update data, and anybody can freely comment on it. </p>
+                                                    <p>${_('Logged in users can also help contribute and update data, and anybody can freely comment on it.')}</p>
                                                 </div>
                                             </div>
 
                                             <div class="item">
                                                 <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_07.png')}" alt="">
                                                 <div class="carousel-caption">
-                                                    <h4>Sixth Thumbnail label</h4>
-                                                    <p>You can filter the land deals by various attributes - like size, or crop. Or make a spatial selection of land deals</p>
+                                                    <p>${_('You can filter the land deals by various attributes - like size, or crop. Or make a spatial selection of land deals.')}</p>
                                                 </div>
                                             </div>
 
                                             <div class="item">
                                                 <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_08.png')}" alt="">
                                                 <div class="carousel-caption">
-                                                    <h4>Seventh Thumbnail label</h4>
-                                                    <p>Want to know if anybody lives on a concession? Use the context layers to view population density and more</p>
+                                                    <p>${_('Want to know if anybody lives on a concession? Use the context layers to view population density and more.')}</p>
                                                 </div>
                                             </div>
 
@@ -349,9 +340,9 @@ if 'lmkp.tracking_id' in request.registry.settings:
                         # - url
                         # - name
                         footer = [
-                            [request.route_url('faq_view'), 'FAQ'],
-                            [request.route_url('about_view'), 'About'],
-                            [request.route_url('partners_view'), 'Partners & Donors']
+                            [request.route_url('faq_view'), _('FAQ')],
+                            [request.route_url('about_view'), _('About')],
+                            [request.route_url('partners_view'), _('Partners & Donors')]
                         ]
                     %>
 

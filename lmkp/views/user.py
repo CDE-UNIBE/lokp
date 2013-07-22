@@ -75,6 +75,8 @@ class UserView(BaseView):
         Returns and process user self registration form.
         """
 
+        _ = self.request.translate
+
         # Define a colander Schema for the self registration
         class Schema(colander.Schema):
             profile = colander.SchemaNode(colander.String(),
@@ -86,20 +88,20 @@ class UserView(BaseView):
                 )
             username = colander.SchemaNode(colander.String(),
                                            validator=_user_already_exists,
-                                           title='Username')
+                                           title=_('Username'))
             password = colander.SchemaNode(colander.String(),
                                            validator=colander.Length(min=5),
                                            widget=deform.widget.CheckedPasswordWidget(size=20),
-                                           title='Password')
+                                           title=_('Password'))
             firstname = colander.SchemaNode(colander.String(),
                                             missing=unicode(u''),
-                                            title='First Name')
+                                            title=_('First Name'))
             lastname = colander.SchemaNode(colander.String(),
                                            missing=unicode(u''),
-                                           title='Last Name')
+                                           title=_('Last Name'))
             email = colander.SchemaNode(colander.String(),
                                         default='',
-                                        title="Valid Email",
+                                        title=_("Valid Email"),
                                         validator=_is_valid_email)
         schema = Schema()
         deform.Form.set_default_renderer(mako_renderer)
