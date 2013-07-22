@@ -1,12 +1,9 @@
-var data, currentKey, width;
+var data, currentKey, width, valueKey1, valueKey2, labelKey;
 
 function visualize(data) {
 
     data = data.data;
 
-    var valueKey1 = 'Activity (count)';
-    var labelKey = 'Intention of Investment';
-    var valueKey2 = 'Intended area (ha) (sum)';
     currentKey = valueKey1;
 
     // Some size constants
