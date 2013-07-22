@@ -34,7 +34,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
         <title>
             <%
                 try:
-                    self.title()
+                    context.write("%s - %s" % (self.title(), _("Land Observatory")))
                 except AttributeError:
                     context.write(_("Land Observatory"))
             %>
