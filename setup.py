@@ -34,8 +34,8 @@ requires = [
     ]
 
 setup(name='LMKP',
-      version='0.58',
-      description='The Land Matrix Knowledge Platform',
+      version='0.59',
+      description='The Land Observatory',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
       "Programming Language :: Python",
