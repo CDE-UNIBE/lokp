@@ -39,21 +39,23 @@ def form_clear_session(request):
 
 def renderForm(request, itemType, **kwargs):
 
+    _ = request.translate
+
     # TODO: Translation
-    activity = 'Deal'
-    noticeTitle = 'Notice'
-    notice1 = 'Unsaved data of this item was found in the session. You may continue to edit this form.'
-    notice2 = 'Unsaved data from another form %s was found in the session and will be deleted if you continue to edit this form.'
-    action1 = 'Click here to delete the session data to clear the form.'
-    action2 = 'See the unsaved changes of this Deal and submit it.'
-    successTitle = 'Success'
-    dealSuccess = 'The Deal was successfully created or updated. It is now pending and needs to be reviewed by a moderator before it is publicly visible.'
-    dealLink = 'View the Deal.'
-    emptyTitle = 'Empty Form'
-    emptyText = 'You submitted an empty form or did not make any changes.'
-    stakeholderSuccess = 'The Stakeholder was successfully created or updated. It is not pending and needs to be reviewed by a moderator before it is publicly visible.'
-    stakeholderLink = 'View the Stakeholder'
-    errorTitle = 'Error'
+    activity = _('Deal')
+    noticeTitle = _('Notice')
+    notice1 = _('Unsaved data of this item was found in the session. You may continue to edit this form.')
+    notice2 = _('Unsaved data from another form %s was found in the session and will be deleted if you continue to edit this form.')
+    action1 = _('Click here to delete the session data to clear the form.')
+    action2 = _('See the unsaved changes of this Deal and submit it.')
+    successTitle = _('Success')
+    dealSuccess = _('The Deal was successfully created or updated. It is now pending and needs to be reviewed by a moderator before it is publicly visible.')
+    dealLink = _('View the Deal.')
+    emptyTitle = _('Empty Form')
+    emptyText = _('You submitted an empty form or did not make any changes.')
+    stakeholderSuccess = _('The Stakeholder was successfully created or updated. It is not pending and needs to be reviewed by a moderator before it is publicly visible.')
+    stakeholderLink = _('View the Stakeholder')
+    errorTitle = _('Error')
 
     itemJson = kwargs.get('itemJson', None)
     embedded = kwargs.get('embedded', False)
@@ -125,7 +127,8 @@ def renderForm(request, itemType, **kwargs):
     categoryListButtons = []
     for cat in sorted(configCategoryList.getCategories(),
         key=lambda cat: cat.order):
-        categoryListButtons.append((cat.getId(), cat.getName()))
+        displayName = cat.getTranslation() if cat.getTranslation() is not None else cat.getName()
+        categoryListButtons.append((cat.getId(), displayName))
 
     captured = None
     formHasErrors = False
@@ -1687,5 +1690,6 @@ def mako_renderer(tmpl_name, **kw):
     # Add the request to the keywords so it is available in the templates.
     request = get_current_request()
     kw['request'] = request
+    kw['_'] = request.translate
 
     return template.render(**kw)

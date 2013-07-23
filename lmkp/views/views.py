@@ -170,6 +170,9 @@ class MainView(BaseView):
 
         self._handle_parameters()
 
+        # TEMP
+        return HTTPFound(location=self.request.route_url('charts_overview'))
+
         return {"profile": get_current_profile(self.request), "locale": get_current_locale(self.request)}
 
     @view_config(route_name='about_view', renderer='lmkp:templates/about_view.mak')

@@ -1,7 +1,11 @@
 ## Form to EDIT a stakeholder. New stakeholders can only be created with the
 ## embedded form.
 
-<h3>Stakeholder Editor</h3>
+<%
+    _ = request.translate
+%>
+
+<h3>${_('Stakeholder Editor')}</h3>
 
 <p class="id">${cstruct['id']}</p>
 

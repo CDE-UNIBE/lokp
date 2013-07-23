@@ -1,12 +1,13 @@
 <%
     import colander
     new_form = 'id' not in cstruct or cstruct['id'] == colander.null
+    _ = request.translate
 %>
 
-    <h3>Deal Editor</h3>
+    <h3>${_('Deal Editor')}</h3>
 
     % if new_form is True:
-        <p class="id">New Deal</p>
+        <p class="id">${_('New Deal')}</p>
     % else:
         <p class="id">${cstruct['id']}</p>
     % endif

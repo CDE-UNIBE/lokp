@@ -1,3 +1,9 @@
+/**
+ * Necessary variables with translated text for this file (must be defined and
+ * translated in template):
+ * tForValue
+ */
+
 // This object is used to map the filter operators used for display and the ones
 // submitted in the query.
 var filterOperators = {
@@ -74,9 +80,9 @@ function selectKey(keyTranslated, keyName, keyType, itemType) {
 
     // Update the value field.
     if (keyType != 'dropdown' && keyType != 'checkbox') {
-        $('#new-filter-value-box').replaceWith('<div id="new-filter-value-box" class="btn-group"><input id="new-filter-value-internal" type="text" class="filter-value" placeholder="Value" /></div>');
+        $('#new-filter-value-box').replaceWith('<div id="new-filter-value-box" class="btn-group"><input id="new-filter-value-internal" type="text" class="filter-value" placeholder="' + tForValue + '" /></div>');
     } else {
-        $('#new-filter-value-box').replaceWith('<div id="new-filter-value-box" class="btn-group input-append"><input id="new-filter-value" class="select-value" type="text" placeholder="Value" /><button class="btn select_btn_filter_right dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button><input id="new-filter-value-internal" type="hidden" value=""/></div>');
+        $('#new-filter-value-box').replaceWith('<div id="new-filter-value-box" class="btn-group input-append"><input id="new-filter-value" class="select-value" type="text" placeholder="' + tForValue + '" /><button class="btn select_btn_filter_right dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button><input id="new-filter-value-internal" type="hidden" value=""/></div>');
         $.get('/json/filtervalues', {
             type: itemType,
             key: keyName

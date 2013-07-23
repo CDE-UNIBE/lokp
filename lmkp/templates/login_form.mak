@@ -1,6 +1,6 @@
 <%inherit file="lmkp:templates/htmlbase.mak" />
 
-<%def name="title()">Land Observatory - Login</%def>
+<%def name="title()">${_('Login')}</%def>
 
 <%def name="head_tags()">
     ## TODO: This should be fixed in bootstrap
@@ -22,7 +22,7 @@ if 'lmkp.mode' in request.registry.settings:
     <div class="content no-border">
         <div class="row-fluid">
             <div class="span4 offset4">
-                <h3>Login</h3>
+                <h3>${_('Login')}</h3>
 
                 % if warning is not None:
                     <div class="alert alert-error">
@@ -36,7 +36,7 @@ if 'lmkp.mode' in request.registry.settings:
                         <label for="password">${_(u"Password")}:</label>
                         <input class="input-style span12" type="password" id="password" name="password" /><br/>
                         <input type="hidden" name="came_from" value="${came_from}"/><br />
-                        <input class="btn btn-primary" type="submit" name="form.submitted" value="Login"/>
+                        <input class="btn btn-primary" type="submit" name="form.submitted" value="${_('Login')}"/>
                     </fieldset>
                 </form>
 
@@ -46,7 +46,7 @@ if 'lmkp.mode' in request.registry.settings:
                 </p>
                 <hr class="grey" />
                 <p>
-                    You do not have a password yet?<br/><a href="${request.route_url('user_self_registration')}">Register now!</a>
+                    ${_('You do not have a password yet?')}<br/><a href="${request.route_url('user_self_registration')}">${_('Register now!')}</a>
                 </p>
             </div>
         </div>
@@ -59,19 +59,19 @@ if 'lmkp.mode' in request.registry.settings:
                 <h3>
                     ${_(u"Demo Version")}
                 </h3>
-                <p class="lead">This is the demonstration version of the <a href="http://www.landobservatory.org">Land Observatory</a>.</p>
+                <p class="lead">${_('This is the demonstration version of the ')}<a href="http://www.landobservatory.org">${_('Land Observatory')}</a>.</p>
                 <p>${_(u"Any member of the public can log-in as an Editor or a Moderator.")}</p>
 
-                <p><strong>Editor</strong> has the permission to create or edit new Deals or Stakeholders.</p>
+                <p><strong>${_('Editor')}</strong>${_(' has the permission to create or edit new Deals or Investors.')}</p>
                 <p class="login-info">
-                    Username: editor<br/>
-                    Password: editor
+                    ${_('Username')}: editor<br/>
+                    ${_('Password')}: editor
                 </p>
 
-                <p><strong>Moderator</strong>  has the additional permission to review pending changes.</p>
+                <p><strong>${_('Moderator')}</strong>${_(' has the additional permission to review pending changes.')}</p>
                 <p class="login-info">
-                    Username: moderator<br/>
-                    Password: moderator
+                    ${_('Username')} moderator<br/>
+                    ${_('Password')} moderator
                 </p>
 
                 <p>

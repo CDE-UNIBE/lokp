@@ -2,13 +2,13 @@
     % if field.name == 'primaryinvestor' and child.name == 'role_id':
         <div class="span12">
             <h5 class="green">
-                Primary Investor
+                ${_('Primary Investor')}
             </h5>
         </div>
     % elif field.name == 'secondaryinvestor' and child.name == 'role_id':
         <div class="span12">
             <h5 class="green">
-                Secondary Investor
+                ${_('Secondary Investor')}
             </h5>
         </div>
     % else:
@@ -17,4 +17,4 @@
 % endfor
 <div class="span5"></div>
 <div class="span2 inactive"></div>
-<div class="span4"><a href="/stakeholders/html/${cstruct['id']}">View Stakeholder</a></div>
+<div class="span4"><a href="/stakeholders/html/${cstruct['id']}">${_('View Stakeholder')}</a></div>

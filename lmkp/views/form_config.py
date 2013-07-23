@@ -107,6 +107,20 @@ class ConfigCategoryList(object):
                         keys.append(t.getKey().getName())
         return keys
 
+    def getDesiredKeyNames(self):
+        """
+        Return a list with the names (translated) of all main keys in all
+        categories.
+        """
+        desiredkeys = []
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                for tg in thg.getTaggroups():
+                    for t in tg.getTags():
+                        if t.getDesired() is True:
+                            desiredkeys.append(t.getKey().getTranslatedName())
+        return desiredkeys
+
     def getFilterableKeys(self):
         """
         Return a list with all the keys which are filterable.
@@ -461,7 +475,7 @@ class ConfigThematicgroup(object):
 
         for tg in self.getTaggroups():
             # Get the Form for each Taggroup
-            tg_form = tg.getForm()
+            tg_form = tg.getForm(request)
             name = str(tg.getId())
             if tg.getRepeatable() is False:
                 # Add them as single node or ...
@@ -617,7 +631,7 @@ class ConfigTaggroup(object):
                 return True
         return False
 
-    def getForm(self):
+    def getForm(self, request):
         """
         Prepare the form node for this taggroup, append the forms of its  tags
         and return it.
@@ -626,14 +640,14 @@ class ConfigTaggroup(object):
         maintag = self.getMaintag()
         # First add the maintag
         if maintag is not None:
-            tg_form.add(maintag.getForm())
+            tg_form.add(maintag.getForm(request))
         # Remove the maintag from the list and get the form of the remaining
         # tags
         if maintag in self.getTags():
             self.getTags().remove(maintag)
         for t in self.getTags():
             # Get the Form for each tag
-            tg_form.add(t.getForm())
+            tg_form.add(t.getForm(request))
         # Add a hidden field for the tg_id. As when adding the version and
         # identifier, the deform.widget.HiddenWidget() does not seem to work
         # here. Instead, user TextInputWidget with hidden template
@@ -767,11 +781,12 @@ class ConfigTag(object):
                 return v
         return None
 
-    def getForm(self):
+    def getForm(self, request):
         """
         Prepare the form node for this tag, append the nodes of its keys
         (depending on its type) and return it.
         """
+        _ = request.translate
         key = self.getKey()
         # Get name and type of key
         name = key.getName()
@@ -785,8 +800,7 @@ class ConfigTag(object):
         if type.lower() == 'dropdown' and len(self.getValues()) > 0:
             # Dropdown
             # Prepare the choices for keys with predefined values
-            # TODO: Translation
-            choiceslist = [('', '- Select -')]
+            choiceslist = [('', '- ' + _('Select') + ' -')]
             for v in sorted(self.getValues(),
                 key=lambda val: val.getOrderValue()):
                 choiceslist.append((v.getName(), v.getTranslation()))
@@ -1132,11 +1146,12 @@ class ConfigValue(object):
 
     def getOrderValue(self):
         """
-        Returns the order value if one is set else the name of the value
+        Returns the order value if one is set else the name of the value (use
+        the translation)
         """
         if self.getOrder() != '' and self.getOrder() is not None:
             return self.getOrder()
-        return self.getName()
+        return self.getTranslation()
 
 def getMapWidget(thematicgroup):
     """

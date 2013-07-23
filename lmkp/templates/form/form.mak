@@ -31,6 +31,6 @@ ${template.render(request=request, field=field, cstruct=cstruct)}
         <!-- Placeholder for the content of the modal window -->
     </div>
     <div class="modal-footer">
-        <button id="formModalClose" class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+        <button id="formModalClose" class="btn" data-dismiss="modal" aria-hidden="true">${_('Close')}</button>
     </div>
 </div>

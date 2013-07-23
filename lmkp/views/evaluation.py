@@ -1,6 +1,7 @@
 from datetime import timedelta
 from lmkp.models.database_objects import *
 from lmkp.views.views import BaseView
+from lmkp.views.profile import get_current_profile
 from lmkp.models.meta import DBSession as Session
 from pyramid.view import view_config
 from pyramid.view import view_defaults
@@ -8,6 +9,7 @@ from sqlalchemy import distinct
 from sqlalchemy import func
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.types import Float
+from geoalchemy.functions import functions
 
 #@view_defaults(request_method='GET')
 class EvaluationView(BaseView):
@@ -162,6 +164,14 @@ class EvaluationView(BaseView):
         fk_status = Session.query(Status.id).filter(Status.name == 'active')
         q = q.filter(Item.fk_status == fk_status)
 
+        # Apply profile boundary filter
+        if Item == Activity:
+            profile = Session.query(Profile).\
+                filter(Profile.code == get_current_profile(request)).\
+                first()
+            if profile is not None:
+                q = q.filter(functions.intersects(Item.point, profile.geometry))
+
         # Apply grouping and ordering
         q = q.group_by(*groups_columns).\
             order_by(groups_columns[0])
@@ -174,7 +184,10 @@ class EvaluationView(BaseView):
                 entry[group] = res[i]
             # then go through functions
             for i, attr in enumerate(input['attributes']):
-                entry["%s (%s)" % (attr, input['attributes'][attr])] = res[i + len(input['group_by'])]
+                displayAttr = attr
+                if attr == 'Activity':
+                    displayAttr = 'Deals'
+                entry["%s (%s)" % (displayAttr, input['attributes'][attr])] = res[i + len(input['group_by'])]
             data.append(entry)
 
         ret['success'] = True

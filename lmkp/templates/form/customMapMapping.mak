@@ -13,6 +13,7 @@
         resolver = lmkpAssetResolver.resolve('templates/map/mapform.mak')
         template = Template(filename=resolver.abspath())
         coords = None if cstruct['lon'] == colander.null or cstruct['lat'] == colander.null else [cstruct['lon'], cstruct['lat']]
+        _ = request.translate
     %>
 
     ${template.render(request=request, coords=coords)}
@@ -38,7 +39,7 @@
         % if field.required:
             <span class="required-form-field"></span>
         % endif
-        Click on the map to set the location of the deal. Please zoom in to set the point as accurately as possible.
+        ${_('Click on the map to set the location of the deal. Please zoom in to set the point as accurately as possible.')}
     </p>
 
     ${field.start_mapping()}

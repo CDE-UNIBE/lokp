@@ -37,8 +37,8 @@
                 ${js | n}
             </script>
             
-            <h4>Success</h4>
-            <p>The Stakeholder was successfully created. It will be reviewed shortly.</p>
+            <h4>${_('Success')}</h4>
+            <p>${_('The Stakeholder was successfully created. It will be reviewed shortly.')}</p>
 
         % elif success is False:
             ## The form was rerendered becaues it contains errors
@@ -51,19 +51,19 @@
 
         % else:
             <div id="select-stakeholder">
-                <h4>Select a Stakeholder</h4>
+                <h4>${_('Select a Stakeholder')}</h4>
                 <p>
-                    Select an existing Stakeholder.
+                    ${_('Select an existing Stakeholder.')}
                 </p>
                 <p>
-                    Start typing (at least 4 characters) to search a Stakeholder by name.
+                    ${_('Start typing (at least 4 characters) to search a Stakeholder by name.')}
                 </p>
-                <input type="text" tabindex="1" id="shselectinput" placeholder="Search ..."/>
+                <input type="text" tabindex="1" id="shselectinput" placeholder="${_('Search ...')}"/>
 
                 <hr class="lightgray" />
 
                 <p>
-                    Stakeholder not found?
+                    ${_('Stakeholder not found?')}
                 </p>
                 <p>
                     <a
@@ -71,7 +71,7 @@
                         href=""
                         class="btn"
                         onclick="return createNewStakeholder();">
-                        Create a new Stakeholder
+                        ${_('Create a new Stakeholder')}
                     </a>
                 </p>
             </div>
@@ -81,7 +81,7 @@
             </div>
 
             <div id="stakeholderFormLoading" class="hide">
-                Sending ...
+                ${_('Sending ...')}
             </div>
         % endif
 
@@ -90,7 +90,10 @@
         <script type="text/javascript">
             deform.load();
 
-            var unknownString = 'Unknown';
+            var tForUnknown = "${_('Unknown')}";
+            var tForNothingfound = "${_('No results found.')}";
+            var tForToomanyresults = "${_('Too many results to display. Try to enter more characters')}";
+
             var queryUrl = "${request.route_url('stakeholders_read_many', output='json')}"
 
             $('button#create-new-stakeholder').click(function() {
