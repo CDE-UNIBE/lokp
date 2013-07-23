@@ -124,7 +124,7 @@ function visualize(data) {
             .attr('height', vHeight)
             .attr('class', 'valueShape')
         svg.append('text')
-            .text(d[currentKey])
+            .text(formatNumber(d[currentKey]))
             .attr('x', xScale(d[labelKey]) + xScale.rangeBand() / 2)
             .attr('y', yScale(d[currentKey]) - vPadding - (vHeight / 2) + (fontSize / 2))
             .style('text-anchor','middle')
@@ -215,4 +215,21 @@ function visualize(data) {
             .text(key);
     }
 
+}
+
+/**
+ * Helper function to return a nicely rendered number string (adds thousands
+ * separator)
+ * http://stackoverflow.com/a/2646441/841644
+ */
+function formatNumber(nStr) {
+    nStr += '';
+    var x = nStr.split('.');
+    var x1 = x[0];
+    var x2 = x.length > 1 ? '.' + x[1] : '';
+    var rgx = /(\d+)(\d{3})/;
+    while (rgx.test(x1)) {
+        x1 = x1.replace(rgx, '$1' + ',' + '$2');
+    }
+    return x1 + x2;
 }

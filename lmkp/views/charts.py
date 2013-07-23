@@ -11,7 +11,7 @@ class ChartsView(BaseView):
 
         self._handle_parameters()
 
-        groupedBy = self.request.params.get('groupby', '')
+        groupedBy = self.request.params.get('groupby', None)
 
         # TODO: Make this more dynamic.
         # TODO: Translation.
@@ -21,11 +21,14 @@ class ChartsView(BaseView):
             'Implementation status'
         ]
 
+        alert = groupedBy is None
+
         groupedBy = groupedBy if groupedBy in groupableBy else groupableBy[0]
 
         return {
             'profile': get_current_profile(self.request),
             'locale': get_current_locale(self.request),
             'groupedBy': groupedBy,
-            'groupableBy': groupableBy
+            'groupableBy': groupableBy,
+            'alert': alert
         }
