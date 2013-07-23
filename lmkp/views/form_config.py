@@ -3,6 +3,7 @@ import copy
 import deform
 from pyramid.i18n import get_localizer
 import yaml
+import datetime
 
 from lmkp.config import locale_profile_directory_path
 from lmkp.config import profile_directory_path
@@ -893,6 +894,9 @@ class ConfigTag(object):
                 widget=CustomDateInputWidget(
                     helptext=helptext,
                     desired=desired
+                ),
+                validator=colander.Range(
+                    min=datetime.date(1900, 1, 1)
                 ),
                 name=name,
                 title=title
