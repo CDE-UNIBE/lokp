@@ -2,10 +2,29 @@
 
 <%def name="title()">Charts View</%def>
 
+<%def name="head_tags()">
+<style type="text/css" >
+    .chartGalleryDescription {
+        margin-top: 1em;
+    }
+</style>
+</%def>
+
 <div class="container">
     <div class="content no-border">
-        <p>More content coming soon ...</p>
-        <p>In the meantime, you may have a look at the <a href="${request.route_url('charts')}">previous charts page</a>.</p>
+
+        <h3>Charts</h3>
+
+        <p>Place some meaningful content here ...</p>
+
+        <div class="row-fluid chartGallery">
+            <div class="span4">
+                <a href="${request.route_url('charts_overview')}">
+                    <img src="${request.static_url('lmkp:static/img/charts/overview_thumbnail_medium.png')}" class="img-polaroid" />
+                    <p class="chartGalleryDescription text-center">Overview</p>
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 

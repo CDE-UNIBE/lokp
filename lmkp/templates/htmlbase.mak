@@ -206,7 +206,10 @@ if 'lmkp.tracking_id' in request.registry.settings:
                                             'icon-align-justify',
                                             _('Grid')
                                         ], [
-                                            [request.route_url('charts_view')],
+                                            [
+                                                request.route_url('charts_view'),
+                                                request.route_url('charts_overview')
+                                            ],
                                             'icon-bar-chart',
                                             _('Charts')
                                         ]
