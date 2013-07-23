@@ -89,19 +89,24 @@ function visualize(data) {
         .append('path')
         .attr('d', 'M' + chartPaddingLeft + ',0V0H' + (chartPaddingLeft + labelOffset) + 'V0')
 
-    // Initial sort direction
-    var sortDir = 'asc';
-
-    // Use button to sort the graph
-    d3.select('button#sortButton')
+    // Use buttons to sort the graph
+    d3.select('button#sortAsc')
         .on('click', function() {
-            sortChart();
+            sortChart('asc');
+        });
+    d3.select('button#sortDesc')
+        .on('click', function() {
+            sortChart('desc');
         });
 
-    //
-    d3.select('button#changeData')
+    // Use buttons to change the data of the graph
+    d3.select('button#showCount')
         .on('click', function() {
-            changeData();
+            changeData(valueKey1);
+        });
+    d3.select('button#showSum')
+        .on('click', function() {
+            changeData(valueKey2);
         });
 
     /**
@@ -138,7 +143,7 @@ function visualize(data) {
     /**
      * Function to sort the chart.
      */
-    var sortChart = function() {
+    var sortChart = function(sortDir) {
 
         // Draw the newly sorted chart
         svg.selectAll('rect')
@@ -173,45 +178,41 @@ function visualize(data) {
             .call(xAxis)
             .selectAll('text')
             .style('text-anchor', 'end')
-
-        // Switch the sort direction
-        sortDir = sortDir == 'asc' ? 'desc' : 'asc';
     }
 
     /**
      * Function to change the data of the chart (switches between valueKey1 and
      * valueKey2) and redraw it, also re-creating y-Axis.
      */
-    var changeData = function() {
-        // Switch the value key
-        currentKey = (currentKey == valueKey1) ? valueKey2 : valueKey1;
+    var changeData = function(key) {
+
+        currentKey = key;
 
         // Change the domain of the yScale
-        yScale.domain([0, d3.max(data, function(d) { return d[currentKey]; })])
+        yScale.domain([0, d3.max(data, function(d) { return d[key]; })])
 
         // Update the bars
         svg.selectAll('rect')
-        .transition()
-        .delay(function(d, i) {
-            return i * 50;
-        })
-        .attr('x', function(d) { return xScale(d[labelKey]); })
-        .attr('y', function(d) { return yScale(d[currentKey]); })
-        .attr('width', xScale.rangeBand())
-        .attr('height', function(d) { return chartBottom - yScale(d[currentKey]); })
-        .attr('class', 'bar')
+            .transition()
+            .delay(function(d, i) {
+                return i * 50;
+            })
+            .attr('x', function(d) { return xScale(d[labelKey]); })
+            .attr('y', function(d) { return yScale(d[key]); })
+            .attr('width', xScale.rangeBand())
+            .attr('height', function(d) { return chartBottom - yScale(d[key]); })
+            .attr('class', 'bar');
 
         // Draw the axis again
         svg.select('.axis.yAxis')
             .transition()
             .duration(500)
             .call(yAxis)
-            .selectAll('text')
+            .selectAll('text');
 
         // Change axis label
         svg.select('text.yAxisLabel')
-            .text(currentKey)
-
+            .text(key);
     }
 
 }

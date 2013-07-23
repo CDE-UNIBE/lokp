@@ -39,12 +39,21 @@
 <div class="container">
     <div class="content no-border">
 
-        <div class="pull-right">
-            Group by:
-            % for g in groupableBy:
-            <a href="?groupby=${g}">${g}</a>
-            % endfor
+        <div class="row-fluid">
+            <div class="pull-right">
+                <ul class="nav nav-pills">
+                    % for g in groupableBy:
+                    <li
+                        % if g == groupedBy:
+                        class="active"
+                        % endif
+                        ><a href="?groupby=${g}">${g}</a></li>
+                    % endfor
+                </ul>
+            </div>
+            
         </div>
+
 
         <h4>${groupedBy}</h4>
 
@@ -55,8 +64,24 @@
         </div>
 
         <div id="graph"></div>
-        <button id="sortButton">Sort Data</button>
-	<button id="changeData">Count / Sum</button>
+
+        <div class="btn-group" data-toggle="buttons-radio">
+            <button class="btn" id="sortDesc">
+                <i class="icon-sort-by-attributes-alt"></i>&nbsp;Sort desc
+            </button>
+            <button class="btn" id="sortAsc">
+                <i class="icon-sort-by-attributes-alt"></i>&nbsp;Sort asc
+            </button>
+        </div>
+
+        <div class="btn-group" data-toggle="buttons-radio">
+            <button class="btn active" id="showCount">
+                Count
+            </button>
+            <button class="btn" id="showSum">
+                Sum
+            </button>
+        </div>
 
     </div>
 </div>

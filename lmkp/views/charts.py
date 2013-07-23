@@ -17,7 +17,8 @@ class ChartsView(BaseView):
         # TODO: Translation.
         groupableBy = [
             'Intention of Investment',
-            'Negotiation Status'
+            'Negotiation Status',
+            'Implementation status'
         ]
 
         groupedBy = groupedBy if groupedBy in groupableBy else groupableBy[0]
