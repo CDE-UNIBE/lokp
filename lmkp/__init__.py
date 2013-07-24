@@ -231,8 +231,8 @@ def main(global_config, ** settings):
     """
     Files
     """
-    # Upload a file
-    config.add_route('file_upload', '/files/upload', request_method='POST')
+    # Embedded form to upload a form
+    config.add_route('file_upload_form_embedded', '/files/form')
     # Show or download a file
     config.add_route('file_view', '/files/{action}/{identifier}')
 

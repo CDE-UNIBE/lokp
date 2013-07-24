@@ -901,6 +901,16 @@ class ConfigTag(object):
                 name=name,
                 title=title
             )
+        elif type.lower() == 'file':
+            # File
+            form = colander.SchemaNode(
+                colander.String(),
+                widget=deform.widget.TextInputWidget(
+                    template='customFileDisplay'
+                ),
+                name=name,
+                title=title
+            )
         else:
             # Default: Textfield
             form = colander.SchemaNode(
@@ -1393,7 +1403,8 @@ def getValidKeyTypes():
         'integer',
         'text',
         'date',
-        'string'
+        'string',
+        'file'
     ]
 
 def getCategoryList(request, itemType):
