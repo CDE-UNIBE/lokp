@@ -1473,7 +1473,7 @@ class StakeholderProtocol3(Protocol):
 
             # Query the diff of the edited pending version and recalculate it
             # with the recent changes to the pending version
-            diff = json.loads(old_stakeholder.changeset.diff.replace('\'', '"'))
+            diff = json.loads(old_stakeholder.changeset.diff)
             stakeholder_dict = self.recalculate_diffs(
                 request,
                 Stakeholder,
