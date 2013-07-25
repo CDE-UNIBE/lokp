@@ -57,16 +57,23 @@ def file_upload_form_embedded(request):
         use_ajax=True)
 
     def succeed(uploadResponse):
+        """
+        Function called after file upload was handled.
+        """
 
         if uploadResponse['success'] is True:
-
+            # Success
             filename = uploadResponse['filename']
             identifier = uploadResponse['fileidentifier']
+            message = uploadResponse['msg']
 
-            return '<script type="text/javascript">addUploadedFile("%s", "%s");</script>' % (filename, identifier);
+            return '<script type="text/javascript">handleSuccess("%s", "%s", "%s");</script>' % (filename, identifier, message);
 
         else:
-            return 'failure'
+            # Failure
+            message = uploadResponse['msg']
+
+            return '<script type="text/javascript">handleFailure("%s");</script>' % message
 
     reqts = form.get_widget_resources()
 

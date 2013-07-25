@@ -906,7 +906,8 @@ class ConfigTag(object):
             form = colander.SchemaNode(
                 colander.String(),
                 widget=deform.widget.TextInputWidget(
-                    template='customFileDisplay'
+                    template='customFileDisplay',
+                    readonly_template='readonly/customFileDisplay'
                 ),
                 name=name,
                 title=title

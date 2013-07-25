@@ -15,12 +15,8 @@
 
     <body>
 
-        <h3>File upload</h3>
-
-        ${form | n}
-
-        <div id="fileUploadFormLoading" class="hide">
-            ${_('Sending ...')}
+        <div id="fileUploadForm">
+            ${form | n}
         </div>
 
         <script type="text/javascript">

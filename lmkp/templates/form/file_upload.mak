@@ -21,7 +21,7 @@ ${field.start_mapping()}
         <span id="${oid}-filename">${cstruct['filename']}</span>
         % endif
 
-        <input type="file" name="upload" id="${field.oid}"/>
+        <input type="file" class="input-style fileInput" name="upload" id="${field.oid}"/>
     </div>
 </div>
 
