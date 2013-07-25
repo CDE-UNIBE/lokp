@@ -279,6 +279,7 @@ def main(global_config, ** settings):
 
     # A WMS proxy
     config.add_route('wms_proxy', '/geoserver/lo/wms', request_method='GET')
+    config.add_route('simple_proxy', '/proxy', request_method='GET')
 
     # Changeset protocol, query the changeset
     config.add_route('changesets_read', '/changesets')

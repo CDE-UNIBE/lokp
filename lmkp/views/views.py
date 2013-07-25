@@ -6,6 +6,8 @@ import urllib
 from geoalchemy.functions import functions as geofunctions
 from geoalchemy import utils
 from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.response import Response
 from pyramid.renderers import render_to_response
 from pyramid.view import view_config
@@ -16,6 +18,7 @@ from urllib import urlencode
 from lmkp.views.profile import get_current_profile
 from lmkp.views.profile import get_current_locale
 from lmkp.views.form_config import getCategoryList
+import re
 
 log = logging.getLogger(__name__)
 
@@ -308,6 +311,24 @@ class MainView(BaseView):
         Simple view to output the current privileges
         """
         return {}
+
+    @view_config(route_name='simple_proxy', renderer='string')
+    def simple_proxy(self):
+
+        allowedHosts = ['^http://cdetux2.unibe.ch']
+
+        if "url" not in self.request.params:
+            raise HTTPNotFound()
+
+        url = self.request.params.get("url")
+
+        for host in allowedHosts:
+            pattern = re.compile(host)
+            if pattern.search(url) is not None:
+                handle = urllib.urlopen(url)
+                return handle.read()
+
+        raise HTTPBadRequest("Host not allowed.")
 
 def getQueryString(url, **kwargs):
     """
