@@ -939,6 +939,8 @@ class Geonames(Base):
     name = Column(Text)
     asciiname = Column(Text)
     alternatenames = Column(Text)
+    fcode = Column(Text)
+    country = Column(Text)
     wkb_geometry = GeometryColumn(Point(dimension=2, srid=4326, spatial_index=True))
 
     #def __repr__(self):

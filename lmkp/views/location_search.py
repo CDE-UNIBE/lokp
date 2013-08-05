@@ -38,9 +38,9 @@ class LocationSearchView(BaseView):
 
         rows = []
 
-        for geojson, name, in Session.query(pg_functions.geojson(geometry), Geonames.name).\
+        for geojson, name, fcode, country in Session.query(pg_functions.geojson(geometry), Geonames.name, Geonames.fcode, Geonames.country).\
         filter(or_(*filters)).order_by(literal_column('bit_length("name")').label("word_length")).all():
-            rows.append({"name": name, "geometry": json.loads(geojson)})
+            rows.append({"name": "%s, %s, %s" % (name, fcode, country), "geometry": json.loads(geojson)})
 
 
         return {"success": True, "data": rows}
