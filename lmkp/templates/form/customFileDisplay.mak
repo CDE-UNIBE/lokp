@@ -216,7 +216,10 @@
         // stored in the CSS class of the text input.
         var fileInfo = hiddenField.val();
         var identifier = changedFilelist.attr('class');
-        var newFilename = changedFilelist.val();
+        // Filenames should not contain any "," or "|".
+        var newFilename = changedFilelist.val()
+            .replace(/,/g, '-')
+            .replace(/\|/g, '-');
 
         // Store the information in a new array.
         var newInfo = [];

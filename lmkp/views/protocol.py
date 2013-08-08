@@ -1582,7 +1582,7 @@ class Protocol(object):
             # Check if the files need to be moved (from temporary directory) or
             # renamed
             if key == 'Files':
-                check_file_location_name(request, value)
+                value = check_file_location_name(request, value)
 
             v = Value_Item(value=value)
             v.fk_language = lang_fk

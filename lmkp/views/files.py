@@ -393,7 +393,14 @@ def check_file_location_name(request, filevaluestring):
 
                 log.debug('Moved file %s from temporary folder to new location at %s.'
                     % (f_db.name, new_location))
-                
+
+    # Return the file information, use only the valid ones
+    rets = []
+    for i, fileidentifier in enumerate(fileidentifiers):
+        rets.append('%s|%s' % (filenames[i], fileidentifier))
+
+    return ','.join(rets)
+
 def get_file_hash(filepath, hexdigest=True):
     """
     Calculate the hash digest of a file.
