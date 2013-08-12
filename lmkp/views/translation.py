@@ -10,6 +10,7 @@ from lmkp.models.database_objects import Profile
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Value
 from lmkp.models.meta import DBSession as Session
+from lmkp.views.form_config import getCategoryList
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
 from pyramid.view import view_config
@@ -626,3 +627,145 @@ def get_profiles():
     profiles = Session.query(Profile.code, Profile.code).all()
     ret = [p for p in profiles if p[0] != 'global']
     return ret
+
+@view_config(route_name='extractDatabaseTranslation', renderer='string')
+def extractDatabaseTranslation(request):
+    """
+    View to extract a csv-like representation of the attributes and categories
+    in the database.
+    Matchdict {type}: activities, stakeholders, categories
+    Getparam {lang}: locale
+    """
+
+    type = request.matchdict.get('type')
+    lang = request.params.get('lang', 'en')
+
+    separator1 = ';'
+    separator2 = '\n'
+
+    if type in ['activities', 'stakeholders']:
+        strings = _extractKeyValues(request, type, lang, separator1)
+
+    elif type == 'categories':
+        strings = _extractCategories(request, lang, separator1)
+
+    else:
+        strings = []
+
+    return separator2.join(strings)
+
+def _extractCategories(request, lang, separator):
+    """
+    Helper function to extract the categories of the database and their
+    translations.
+    """
+
+    def _processCategories(originalCategoryList, translatedCategoryList, type, separator):
+
+        strings = []
+
+        originalCategories = sorted(originalCategoryList.getCategories(), key=lambda c:c.getId())
+        translatedCategories = sorted(translatedCategoryList.getCategories(), key=lambda c:c.getId())
+
+        for i, originalCategory in enumerate(originalCategories):
+            translatedCategory = translatedCategories[i]
+
+            strings.append(separator.join([
+                originalCategory.getName(),
+                translatedCategory.getTranslation(True),
+                type
+            ]))
+
+        return strings
+
+    strings = []
+    strings.append(separator.join([
+        'Name (original)',
+        'Name (translation)',
+        'Type',
+        'Additional comments'
+    ]))
+
+    for t in ['activities', 'stakeholders']:
+        strings += _processCategories(
+            getCategoryList(request, t, lang='en'),
+            getCategoryList(request, t, lang=lang),
+            t,
+            separator)
+
+    return strings
+
+
+def _extractKeyValues(request, itemType, lang, separator):
+    """
+    Helper function to extract the keys and values of the database and their
+    translations.
+    """
+
+    keys = []
+    values = []
+    strings = []
+    valueStrings = []
+
+    originalCategoryList = getCategoryList(request, itemType, lang='en')
+    translatedCategoryList = getCategoryList(request, itemType, lang=lang)
+
+    originalTags = sorted(originalCategoryList.getAllTags(), key=lambda t:t.getKey().getName())
+    translatedTags = sorted(translatedCategoryList.getAllTags(), key=lambda t:t.getKey().getName())
+
+    strings.append(separator.join([
+        'Name (original)',              # [0]
+        'Name (translation)',           # [1]
+        'Helptext (original)',          # [2]
+        'Helptext (translation)',       # [3]
+        'Type',                         # [4]
+        'Belongs to Key',               # [5]
+        'Additional comments'           # [6]
+    ]))
+
+    # Keys
+    for i, originalTag in enumerate(originalTags):
+
+        originalKeyName = originalTag.getKey().getTranslatedName()
+
+        # Add each key only once
+        if originalKeyName in keys:
+            continue
+
+        keys.append(originalKeyName)
+        originalKey = originalTag.getKey()
+        translatedTag = translatedTags[i]
+        translatedKey = translatedTag.getKey()
+        strings.append(separator.join([
+            originalKeyName,
+            translatedKey.getTranslatedName(True),
+            originalKey.getTranslatedHelptext(),
+            translatedKey.getTranslatedHelptext(True),
+            'key',
+            '-'
+        ]))
+
+        originalValues = sorted(originalTag.getValues(), key=lambda val: val.getName())
+        translatedValues = sorted(translatedTag.getValues(), key=lambda val: val.getName())
+
+        if len(originalValues) > 0 and len(translatedValues) == len(originalValues):
+            for j, originalValue in enumerate(originalValues):
+
+                originalValueName = originalValue.getTranslation()
+
+                # Add each value only once
+                if originalValueName in values:
+                    continue
+
+                values.append(originalValueName)
+                translatedValue = translatedValues[j]
+                valueStrings.append(separator.join([
+                    originalValueName,
+                    translatedValue.getTranslation(True),
+                    '',
+                    '',
+                    'value',
+                    originalKeyName
+                ]))
+
+    return strings + valueStrings

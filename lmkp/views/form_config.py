@@ -48,6 +48,15 @@ class ConfigCategoryList(object):
                 return c
         return None
 
+    def getAllTags(self):
+        tags = []
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                for tg in thg.getTaggroups():
+                    for t in tg.getTags():
+                        tags.append(t)
+        return tags
+
     def findTagByKeyName(self, name):
         """
         Find and return tag by a given key name.
@@ -291,11 +300,16 @@ class ConfigCategory(object):
         """
         self.translation = translation
 
-    def getTranslation(self):
+    def getTranslation(self, orEmpty=False):
         """
         Return the translation of this category.
         """
-        return self.translation
+        if self.translation is not None:
+            return self.translation
+        elif orEmpty is True:
+            return ''
+        else:
+            return self.name
 
     def addThematicgroup(self, thematicgroup):
         """
@@ -993,21 +1007,28 @@ class ConfigKey(object):
         self.translated_name = name
         self.translated_helptext = helptext
 
-    def getTranslatedName(self):
+    def getTranslatedName(self, orEmpty=False):
         """
         Return the translated name of this key if there is a translation set,
         else return the name.
         """
         if self.translated_name is not None:
             return self.translated_name
+        elif orEmpty is True:
+            return ''
         else:
             return self.name
 
-    def getTranslatedHelptext(self):
+    def getTranslatedHelptext(self, orEmpty=False):
         """
         Return the translated helptext of this key
         """
-        return self.translated_helptext
+        if self.translated_helptext is not None:
+            return self.translated_helptext
+        elif orEmpty is True:
+            return ''
+        else:
+            return self.getHelptext()
 
     def getType(self):
         """
@@ -1019,6 +1040,8 @@ class ConfigKey(object):
         """
         Return the helptext for this tag
         """
+        if self.helptext is None:
+            return ''
         return self.helptext
 
     def setValidator(self, validator):
@@ -1104,7 +1127,7 @@ class ConfigValue(object):
     def __init__(self, id, name, fk_key, order, translation):
         self.id = id
         self.name = name
-        self.translation = translation if translation is not None else name
+        self.translation = translation
         self.fk_key = fk_key
         self.order = order
 
@@ -1126,11 +1149,16 @@ class ConfigValue(object):
         """
         self.translation = translation
 
-    def getTranslation(self):
+    def getTranslation(self, orEmpty=False):
         """
         Return the translation of this value.
         """
-        return self.translation
+        if self.translation is not None:
+            return self.translation
+        elif orEmpty is True:
+            return ''
+        else:
+            return self.name
 
     def getFkkey(self):
         """
@@ -1257,7 +1285,7 @@ def getInvolvementWidget(mappingName, template, readonlyTemplate, overviewKeys,
             title=''
         )
 
-def getConfigKeyList(request, itemType):
+def getConfigKeyList(request, itemType, **kwargs):
     """
     Function to collect and return all the keys from the database. It returns a
     list of all keys found in the original language along with the translation
@@ -1265,6 +1293,8 @@ def getConfigKeyList(request, itemType):
     configuration in the (local) YAML.
     itemType: activities / stakeholders
     """
+
+    lang = kwargs.get('lang', None)
 
     if itemType == 'activities':
         MappedClass = A_Key
@@ -1275,6 +1305,8 @@ def getConfigKeyList(request, itemType):
 
     # Query the config keys from database
     localizer = get_localizer(request)
+    if lang is None:
+        lang = localizer.locale_name
     translationQuery = Session.query(
             MappedClass.fk_key.label('original_id'),
             MappedClass.key.label('t_key'),
@@ -1282,7 +1314,7 @@ def getConfigKeyList(request, itemType):
             MappedClass.description.label('t_description')
         ).\
         join(Language).\
-        filter(Language.locale == localizer.locale_name).\
+        filter(Language.locale == lang).\
         subquery()
     keys = Session.query(
             MappedClass.id,
@@ -1304,7 +1336,7 @@ def getConfigKeyList(request, itemType):
 
     return configKeys
 
-def getConfigValueList(request, itemType):
+def getConfigValueList(request, itemType, **kwargs):
     """
     Function to collect and return all the keys from the database. It returns a
     list of all keys found in the original language with some fk_key value (in
@@ -1313,6 +1345,8 @@ def getConfigValueList(request, itemType):
     match the configuration in the (local) YAML.
     itemType: activities / stakeholders
     """
+
+    lang = kwargs.get('lang', None)
 
     if itemType == 'activities':
         MappedClass = A_Value
@@ -1323,12 +1357,14 @@ def getConfigValueList(request, itemType):
 
     # Query the config values from database
     localizer = get_localizer(request)
+    if lang is None:
+        lang = localizer.locale_name
     translationQuery = Session.query(
             MappedClass.fk_value.label('original_id'),
             MappedClass.value.label('t_value')
         ).\
         join(Language).\
-        filter(Language.locale == localizer.locale_name).\
+        filter(Language.locale == lang).\
         subquery()
     values = Session.query(
             MappedClass.id,
@@ -1347,7 +1383,7 @@ def getConfigValueList(request, itemType):
 
     return configValues
 
-def getConfigCategoryList(request, itemType):
+def getConfigCategoryList(request, itemType, **kwargs):
     """
     Function to collect and return all the categories from the database. It
     returns a list of all categories found in the original language along with
@@ -1356,16 +1392,20 @@ def getConfigCategoryList(request, itemType):
     - itemType: activities / stakeholders
     """
 
+    lang = kwargs.get('lang', None)
+
     configCategories = ConfigCategoryList()
 
     # Query the config categories from database
     localizer = get_localizer(request)
+    if lang is None:
+        lang = localizer.locale_name
     translationQuery = Session.query(
             Category.fk_category.label('original_id'),
             Category.name.label('translation')
         ).\
         join(Language).\
-        filter(Language.locale == localizer.locale_name).\
+        filter(Language.locale == lang).\
         subquery()
     categories = Session.query(
             Category.id,
@@ -1396,16 +1436,16 @@ def getValidKeyTypes():
         'string'
     ]
 
-def getCategoryList(request, itemType):
+def getCategoryList(request, itemType, **kwargs):
     """
     Function to scan through the configuration yaml and put together the list of
     categories which can be used to create the form.
     itemType: activities / stakeholders
     """
     # Scan the configuration files for keys, values and categories
-    configKeys = getConfigKeyList(request, itemType)
-    configValues = getConfigValueList(request, itemType)
-    configCategories = getConfigCategoryList(request, itemType)
+    configKeys = getConfigKeyList(request, itemType, **kwargs)
+    configValues = getConfigValueList(request, itemType, **kwargs)
+    configCategories = getConfigCategoryList(request, itemType, **kwargs)
 
     # Do some first test on the keys: Check that each type is defined correctly
     unknowntypes = []

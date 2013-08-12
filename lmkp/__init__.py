@@ -246,6 +246,8 @@ def main(global_config, ** settings):
     # Try to add or edit a translation
     config.add_route('edit_translation', '/lang/edit')
 
+    config.add_route('extractDatabaseTranslation', '/translation/extract/{type}')
+
     # A view that returns an editing toolbar configuration object
     config.add_route('edit_toolbar_config', '/app/view/EditToolbar.js')
     config.add_route('view_toolbar_config', '/app/view/ViewToolbar.js')

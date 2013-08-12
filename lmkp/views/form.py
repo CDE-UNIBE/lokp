@@ -501,7 +501,7 @@ def renderReadonlyForm(request, itemType, itemJson):
             ))
 
     form = deform.Form(schema)
-    data = getFormdataFromItemjson(request, itemJson, itemType)
+    data = getFormdataFromItemjson(request, itemJson, itemType, readOnly=True)
     data['itemType'] = itemType
     statusId = itemJson['status_id'] if 'status_id' in itemJson else colander.null
     data['statusId'] = statusId
@@ -794,7 +794,7 @@ def checkValidItemjson(categorylist, itemJson, output='dict'):
 
     return None
 
-def getFormdataFromItemjson(request, itemJson, itemType, category=None):
+def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs):
     """
     Use the JSON representation of a feature (Activity or Stakeholder) to get
     the values in a way the form can handle to display it. This can be used to
@@ -807,6 +807,8 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
       {'stakeholders': {...}}
     - itemType: activities / stakeholders
     """
+
+    readOnly = kwargs.get('readOnly', False)
 
     mapAdded = False
 
@@ -997,17 +999,27 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None):
             # Add the tag only if the key exists in this taggroup
             if tg.hasKey(t['key']):
                 configTag = categorylist.findTagByKeyName(t['key'])
+
+                v = t['value']
+                if readOnly is True and configTag is not None:
+                    # If the form is rendered for readOnly, use the translated
+                    # value (of checkboxes, dropdowns etc.) if there is one.
+                    configValue = configTag.findValueByName(v)
+                    if configValue is not None:
+                        v = configValue.getTranslation()
+
                 if maintag.getKey().getType().lower() == 'checkbox':
                     # Checkboxes: List of tuples with name and tg_id
-                    tagsdata[t['key']] = [(t['value'], taggroup['tg_id'])]
-                elif configTag.getKey().getType().lower() == 'date':
+                    tagsdata[t['key']] = [(v, taggroup['tg_id'])]
+                elif (configTag is not None
+                    and configTag.getKey().getType().lower() == 'date'):
                     try:
-                        d = datetime.datetime.strptime(t['value'], '%Y-%m-%d')
+                        d = datetime.datetime.strptime(v, '%Y-%m-%d')
                         tagsdata[t['key']] = d
                     except ValueError:
                         pass
                 else:
-                    tagsdata[t['key']] = t['value']
+                    tagsdata[t['key']] = v
 
         if tg.getRepeatable():
             tagsdata = [tagsdata]
