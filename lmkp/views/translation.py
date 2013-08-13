@@ -413,24 +413,6 @@ def ui_messages(request):
     uiMap['stakeholder_db-key-countryoforigin-original'] = shKeys[1]
     uiMap['stakeholder_db-key-countryoforigin'] = shKeysTranslated[1]
 
-    # Add known file extensions based on valid file types (defined in ini) to
-    # the translation JavaScript file so Ext can use them to build a regex
-    # expression to check file input on client side.
-    extensions = []
-    vme = valid_mime_extensions(request)
-    for fme in vme:
-        for known_extension in mimetypes.guess_all_extensions(fme):
-            if known_extension not in extensions: extensions.append(known_extension)
-    uiMap['files_valid-extensions-list'] = sorted(extensions)
-
-    # Also make the maximum file size available
-    maxfilesize = upload_max_file_size(request)
-    if maxfilesize < (1024*1024):
-        maxfilesize = '%s KB' % (maxfilesize / 1024)
-    else:
-        maxfilesize = '%s MB' % round(maxfilesize / (1024*1024.0), 1)
-    uiMap['files_maximum-size'] = maxfilesize
-
     # Define Lmkp.ts as class with static objects
     str = "Ext.define('Lmkp.ts',{\n"
     str += "\tstatics: {\n"
