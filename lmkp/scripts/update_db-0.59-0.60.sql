@@ -1,9 +1,11 @@
 /**
 This script can be used to update the database to version 0.6.
-It updates the names of the countries (both for Activities and Stakeholders) to
-match ISO 3166-1 (http://en.wikipedia.org/wiki/ISO_3166-1).
 
-Also drop a NOT NULL constraint on the table "categories".
+This is what it does:
+- It updates the names of the countries (both for Activities and Stakeholders)
+  to match ISO 3166-1 (http://en.wikipedia.org/wiki/ISO_3166-1).
+- Drop a NOT NULL constraint on the table "categories".
+- Change the type of A_Key "Files" from "Text" to "File".
 */
 
 /*
@@ -93,3 +95,6 @@ DELETE FROM data.sh_values WHERE fk_sh_key = 1 AND value = 'Spratly islands';
 
 -- Drop a NOT NULL constraint on column "type" of table "categories".
 ALTER TABLE data.categories ALTER COLUMN "type" DROP NOT NULL;
+
+-- Change type of A_Key "Files" from "Text" to "File"
+UPDATE data.a_values SET type = 'File' WHERE key = 'Files' AND fk_language = NULL;
