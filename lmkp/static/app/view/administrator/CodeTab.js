@@ -9,7 +9,7 @@ Ext.define('Lmkp.view.administrator.CodeTab', {
 
     items: [{
         xtype: 'form',
-        url: 'codes/add',
+        url: 'translation/batch',
         region: 'north',
         layout: 'column',
         items: [
@@ -53,7 +53,7 @@ Ext.define('Lmkp.view.administrator.CodeTab', {
                 xtype: 'textarea',
                 fieldLabel: 'Text',
                 name: 'code_text',
-                emptyText: '[code] [delimiter] [value] (Not yet supported)',
+                emptyText: '{translation} {delimiter} {value} [{delimiter} {helptext_original} {delimiter} {helptext_translation}] (Not yet supported)',
                 anchor: '100%'
             }
             ]
@@ -88,7 +88,8 @@ Ext.define('Lmkp.view.administrator.CodeTab', {
                         'A_Key',
                         'A_Value',
                         'SH_Key',
-                        'SH_Value'
+                        'SH_Value',
+                        'Category'
                     ],
                     itemId: 'value_type',
                     name: 'item_type',

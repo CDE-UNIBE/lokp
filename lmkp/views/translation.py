@@ -1,15 +1,20 @@
 import logging
 import mimetypes
+import os
+import csv
 
 from lmkp.config import upload_max_file_size
 from lmkp.config import valid_mime_extensions
+from lmkp.config import translation_directory_path
 from lmkp.models.database_objects import A_Key
 from lmkp.models.database_objects import A_Value
+from lmkp.models.database_objects import Category
 from lmkp.models.database_objects import Language
 from lmkp.models.database_objects import Profile
 from lmkp.models.database_objects import SH_Key
 from lmkp.models.database_objects import SH_Value
 from lmkp.models.meta import DBSession as Session
+from lmkp.views.form_config import getCategoryList
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
 from pyramid.view import view_config
@@ -626,3 +631,408 @@ def get_profiles():
     profiles = Session.query(Profile.code, Profile.code).all()
     ret = [p for p in profiles if p[0] != 'global']
     return ret
+
+@view_config(route_name='extractDatabaseTranslation', renderer='string')
+def extractDatabaseTranslation(request):
+    """
+    View to extract a csv-like representation of the attributes and categories
+    in the database.
+    Matchdict {type}: activities, stakeholders, categories
+    Getparam {lang}: locale
+    """
+
+    type = request.matchdict.get('type')
+    lang = request.params.get('lang', 'en')
+
+    separator1 = ';'
+    separator2 = '\n'
+
+    if type in ['activities', 'stakeholders']:
+        strings = _extractKeyValues(request, type, lang, separator1)
+
+    elif type == 'categories':
+        strings = _extractCategories(request, lang, separator1)
+
+    else:
+        strings = []
+
+    return separator2.join(strings)
+
+def _extractCategories(request, lang, separator):
+    """
+    Helper function to extract the categories of the database and their
+    translations.
+    """
+
+    def _processCategories(originalCategoryList, translatedCategoryList, type, separator):
+
+        strings = []
+
+        originalCategories = sorted(originalCategoryList.getCategories(), key=lambda c:c.getId())
+        translatedCategories = sorted(translatedCategoryList.getCategories(), key=lambda c:c.getId())
+
+        for i, originalCategory in enumerate(originalCategories):
+            translatedCategory = translatedCategories[i]
+
+            strings.append(separator.join([
+                originalCategory.getName(),
+                translatedCategory.getTranslation(True),
+                type
+            ]))
+
+        return strings
+
+    strings = []
+    strings.append(separator.join([
+        'Name (original)',
+        'Name (translation)',
+        'Type',
+        'Additional comments'
+    ]))
+
+    for t in ['activities', 'stakeholders']:
+        strings += _processCategories(
+            getCategoryList(request, t, lang='en'),
+            getCategoryList(request, t, lang=lang),
+            t,
+            separator)
+
+    return strings
+
+
+def _extractKeyValues(request, itemType, lang, separator):
+    """
+    Helper function to extract the keys and values of the database and their
+    translations.
+    """
+
+    keys = []
+    values = []
+    strings = []
+    valueStrings = []
+
+    originalCategoryList = getCategoryList(request, itemType, lang='en')
+    translatedCategoryList = getCategoryList(request, itemType, lang=lang)
+
+    originalTags = sorted(originalCategoryList.getAllTags(), key=lambda t:t.getKey().getName())
+    translatedTags = sorted(translatedCategoryList.getAllTags(), key=lambda t:t.getKey().getName())
+
+    strings.append(separator.join([
+        'Name (original)',              # [0]
+        'Name (translation)',           # [1]
+        'Helptext (original)',          # [2]
+        'Helptext (translation)',       # [3]
+        'Type',                         # [4]
+        'Belongs to Key',               # [5]
+        'Additional comments'           # [6]
+    ]))
+
+    # Keys
+    for i, originalTag in enumerate(originalTags):
+
+        originalKeyName = originalTag.getKey().getTranslatedName()
+
+        # Add each key only once
+        if originalKeyName in keys:
+            continue
+
+        keys.append(originalKeyName)
+        originalKey = originalTag.getKey()
+        translatedTag = translatedTags[i]
+        translatedKey = translatedTag.getKey()
+        strings.append(separator.join([
+            originalKeyName,
+            translatedKey.getTranslatedName(True),
+            originalKey.getTranslatedHelptext(),
+            translatedKey.getTranslatedHelptext(True),
+            'key',
+            '-'
+        ]))
+
+        originalValues = sorted(originalTag.getValues(), key=lambda val: val.getName())
+        translatedValues = sorted(translatedTag.getValues(), key=lambda val: val.getName())
+
+        if len(originalValues) > 0 and len(translatedValues) == len(originalValues):
+            for j, originalValue in enumerate(originalValues):
+
+                originalValueName = originalValue.getTranslation()
+
+                # Add each value only once
+                if originalValueName in values:
+                    continue
+
+                values.append(originalValueName)
+                translatedValue = translatedValues[j]
+                valueStrings.append(separator.join([
+                    originalValueName,
+                    translatedValue.getTranslation(True),
+                    '',
+                    '',
+                    'value',
+                    originalKeyName
+                ]))
+
+    return strings + valueStrings
+
+@view_config(route_name='translation_files', renderer='json', permission='administer')
+def translation_files(request):
+    """
+    List all the batch translation files available in the directory
+    """
+
+    ret = {'success': False}
+
+    files = []
+
+    # Empty file to allow deselecting a file
+    files.append({
+        'description': '',
+        'delimiter': '',
+        'item': '',
+        'success': True,
+        'filename': '-',
+        'language': ''
+    })
+
+    dirList = os.listdir(translation_directory_path())
+    for filename in dirList:
+        try:
+            stream = open("%s/%s" % (translation_directory_path(), filename), 'rb')
+        except IOError:
+            ret['msg'] = 'Unable to open file %s' % filename
+            return ret
+
+        csvReader = csv.reader(stream, delimiter=";")
+
+        line = None
+
+        try:
+            line = csvReader.next()
+        except StopIteration:
+            # This happens if file is empty
+            pass
+
+        if line is None:
+            item = {
+                'description': 'Empty file',
+                'success': False,
+                'filename': filename + ' (seems to be empty)'
+            }
+
+        elif len(line) > 3:
+            item = {
+                'description': line[0],
+                'delimiter': line[1],
+                'item': line[2],
+                'success': True,
+                'filename': filename,
+                'language': line[3]
+            }
+        else:
+            item = {
+                'description': 'Unable to parse file information.',
+                'success': False,
+                'filename': filename
+            }
+        files.append(item)
+
+    ret['success'] = True
+    ret['files'] = files
+
+    return ret
+
+@view_config(route_name='translation_batch', renderer='json', permission='administer')
+def translation_batch(request):
+    """
+    Do a batch translation based on csv-like file in the following format:
+    {translation} {delimiter} {value} [{delimiter} {helptext_original} {delimiter} {helptext_translation}]
+    """
+
+    def _translate_keyvalue(original, translation, TableItem, isKey,
+        locale, helptext_translation):
+        """
+        Helper function to insert or update a single translation for a key or a
+        value
+        """
+
+        # Query the database to find english entry of key or value
+        if isKey:
+            english_query = Session.query(TableItem).\
+                filter(TableItem.key == original).\
+                filter(TableItem.fk_language == 1)
+        else:
+            english_query = Session.query(TableItem).\
+                filter(TableItem.value == original).\
+                filter(TableItem.fk_language == 1)
+        eng = english_query.all()
+
+        if eng is None or len(eng) == 0:
+            return {'success': False, 'msg': 'No english value found for "%s", translation "%s" not inserted.' % (original, translation)}
+
+        for e in eng:
+            # Check if translation already exists for value
+            if isKey:
+                originalEntry = e.original
+                translation_query = Session.query(TableItem).\
+                    filter(TableItem.original == originalEntry).\
+                    filter(TableItem.language == locale)
+            else:
+                originalEntry = e
+                translation_query = Session.query(TableItem).\
+                    filter(TableItem.original == originalEntry).\
+                    filter(TableItem.language == locale)
+            translation_entry = translation_query.first()
+
+            if translation_entry is None:
+                # No translation found, insert a new translation
+                if isKey:
+                    new_translation = TableItem(translation, e.type)
+                else:
+                    new_translation = TableItem(translation)
+                new_translation.language = locale
+                new_translation.original = originalEntry
+                if helptext_translation != '':
+                    new_translation.helptext = helptext_translation
+                Session.add(new_translation)
+            else:
+                # There is already a translation, update it
+                if isKey:
+                    translation_entry.key = translation
+                else:
+                    translation_entry.value = translation
+                if helptext_translation != '':
+                    translation_entry.helptext = helptext_translation
+
+        return {'success': True, 'msg': 'Translation "%s" inserted for value "%s".' % (translation, original)}
+
+    def _translate_category(original, translation, TableItem, locale):
+        """
+        Helper function to insert or update a single translation for a category.
+        """
+
+        # Query the database to find the english entry of the category
+        english_query = Session.query(TableItem).\
+            filter(TableItem.name == original).\
+            filter(TableItem.fk_language == 1)
+        eng = english_query.all()
+
+        if len(eng) == 0:
+            return {
+                'success': False,
+                'msg': 'No english value found for "%s", translation "%s" not inserted.' % (original, translation)
+            }
+
+        for e in eng:
+            # Check if translation already exists
+            translation_query = Session.query(TableItem).\
+                filter(TableItem.original == e).\
+                filter(TableItem.language == locale)
+            translation_entry = translation_query.first()
+
+            if translation_entry is None:
+                # Insert a new translation
+                new_translation = TableItem(translation)
+                new_translation.language = locale
+                new_translation.original = e
+                Session.add(new_translation)
+            else:
+                # Update an existing translation
+                translation_entry.name = translation
+
+        return {
+            'success': True,
+            'msg': 'Translation "%s" inserted for value "%s".' % (translation, original)
+        }
+
+    ret = {'success': False}
+
+    filename = request.params.get('filename', None)
+    delimiter = request.params.get('delimiter', None)
+    locale = request.params.get('locale', None)
+
+    if filename is None or delimiter is None or locale is None:
+        ret['msg'] = 'Not all needed values provided.'
+        return ret
+
+    if len(delimiter) != 1:
+        ret['msg'] = 'Delimiter must be a 1-character string'
+        return ret
+
+    item_type = request.params.get('item_type', None)
+    if item_type == 'A_Value':
+        TableItem = A_Value
+        translationType = 'value'
+    elif item_type == 'A_Key':
+        TableItem = A_Key
+        translationType = 'key'
+    elif item_type == 'SH_Value':
+        TableItem = SH_Value
+        translationType = 'value'
+    elif item_type == 'SH_Key':
+        TableItem = SH_Key
+        translationType = 'key'
+    elif item_type == 'Category':
+        TableItem = Category
+        translationType = 'category'
+    else:
+        ret['msg'] = 'Database item not found.'
+        return ret
+
+    if locale == 'en':
+        ret['msg'] = 'The language "English" cannot be selected!'
+        return ret
+
+    language = Session.query(Language).\
+        filter(Language.locale == locale).\
+        first()
+
+    try:
+        stream = open("%s/%s" % (translation_directory_path(), filename), 'rb')
+    except IOError:
+        ret['msg'] = 'File (%s) not found' % filename
+        return ret
+
+    errorCount = 0
+    insertCount = 0
+    msgStack = []
+
+    csvReader = csv.reader(stream, delimiter=str(delimiter))
+    for row in csvReader:
+        # Skip the first item
+        if csvReader.line_num > 1:
+            try:
+                if row[0] != '' and row[1] != '':
+                    if translationType in ['key', 'value']:
+                        # Key or value
+                        helptext_translation = ''
+                        if len(row) >= 4:
+                            helptext_translation = row[3]
+                        inserted = _translate_keyvalue(row[0], row[1], TableItem,
+                            translationType == 'key', language, helptext_translation)
+                    else:
+                        # Category
+                        inserted = _translate_category(row[0], row[1], TableItem,
+                            language)
+                else:
+                    inserted = None
+            except:
+                ret['msg'] = 'Wrong delimiter or wrong value type?'
+                return ret
+            if inserted is not None:
+                msgStack.append(inserted)
+                if inserted['success'] is True:
+                    insertCount += 1
+                elif inserted['success'] is None:
+                    pass
+                else:
+                    errorCount += 1
+
+    if errorCount == 0:
+        ret['success'] = True
+
+    ret['insertCount'] = insertCount
+    ret['errorCount'] = errorCount
+    ret['messages'] = msgStack
+
+    return ret
+

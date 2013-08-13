@@ -245,6 +245,12 @@ def main(global_config, ** settings):
     config.add_route('language_store', '/lang/all')
     # Try to add or edit a translation
     config.add_route('edit_translation', '/lang/edit')
+    # Scan the directory of translation files
+    config.add_route('translation_files', '/translation/files')
+    # Do a batch translation based on a file
+    config.add_route('translation_batch', '/translation/batch')
+    # Extract the translatable strings of the database
+    config.add_route('extractDatabaseTranslation', '/translation/extract/{type}')
 
     # A view that returns an editing toolbar configuration object
     config.add_route('edit_toolbar_config', '/app/view/EditToolbar.js')
@@ -272,10 +278,6 @@ def main(global_config, ** settings):
     config.add_route('user_approve', '/users/approve')
 
     config.add_route('form_clear_session', '/form/clearsession')
-
-    # Codes
-    config.add_route('codes_files', '/codes/files')
-    config.add_route('codes_add', '/codes/add')
 
     # A WMS proxy
     config.add_route('wms_proxy', '/geoserver/lo/wms', request_method='GET')
