@@ -374,11 +374,10 @@ class ConfigThematicgroup(object):
     Information'. It contains Form Taggroups as the next lower form structure.
     """
 
-    def __init__(self, id, name, translation, itemType):
+    def __init__(self, id, name, translation=None):
         self.id = id
         self.name = name
         self.translation = translation
-        self.itemType = itemType
         self.order = 9999
         self.taggroups = []
         self.involvementData = None
@@ -421,17 +420,22 @@ class ConfigThematicgroup(object):
         """
         return self.name
 
-    def getTranslation(self):
+    def getTranslation(self, orEmpty=False):
         """
-        Return the translation of this thematic group.
+        Return the translation of this category.
         """
-        return self.translation
+        if self.translation is not None and self.translation != '':
+            return self.translation
+        elif orEmpty is True:
+            return ''
+        else:
+            return self.name
 
-    def getItemType(self):
+    def setTranslation(self):
         """
-        Get the itemType of this thematic group.
+        Set the translation of this category.
         """
-        return self.itemType
+        self.translation = translation
 
     def setOrder(self, order):
         """
@@ -1513,8 +1517,7 @@ def getCategoryList(request, itemType, **kwargs):
             thematicgroup = ConfigThematicgroup(
                 thematicCategory.getId(),
                 thematicCategory.getName(),
-                thematicCategory.getTranslation(),
-                itemType
+                thematicCategory.getTranslation(True)
             )
 
             # Loop the taggroups of the thematic group
@@ -1663,7 +1666,7 @@ def getCategoryList(request, itemType, **kwargs):
                         thematicgroup = ConfigThematicgroup(
                             thmg.getId(),
                             thmg.getName(),
-                            thmg.getTranslation()
+                            thmg.getTranslation(True)
                         )
                         newThematicgroup = True
                     else:
