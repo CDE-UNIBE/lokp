@@ -1881,15 +1881,19 @@ class CustomCheckboxWidget(CustomWidget):
         for c in cstruct:
             # Transform tuples to list to access them more easily
             valuelist = list(values)
+            newname = None
             for i, (name, title) in enumerate(valuelist):
-                if name == c[0]:
+                # If the form is readonly, the title is relevant, for the normal
+                # form the name is relevant.
+                if readonly and title == c[0] or not readonly and name == c[0]:
                     # Update the (internal) name of the values
                     newname = '%s%s%s' % (c[1], self.separator, name)
                     valuelist[i] = (newname, title)
 
             # Transform the list back to tuples
             values = tuple(valuelist)
-            formdata.append(newname)
+            if newname is not None:
+                formdata.append(newname)
 
         kw['values'] = values
         tmpl_values = self.get_template_values(field, formdata, kw)
