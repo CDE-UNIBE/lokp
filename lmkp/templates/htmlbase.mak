@@ -16,9 +16,11 @@ mode = None
 if 'lmkp.mode' in request.registry.settings:
     if str(request.registry.settings['lmkp.mode']).lower() == 'demo':
         mode = 'demo'
-trackingId = None
-if 'lmkp.tracking_id' in request.registry.settings:
-    trackingId = request.registry.settings['lmkp.tracking_id']
+
+use_piwik_analytics = False
+if 'lmkp.use_piwik_analytics' in request.registry.settings:
+    if str(request.registry.settings['lmkp.use_piwik_analytics']).lower() == "true":
+        use_piwik_analytics = True
 %>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -419,18 +421,23 @@ if 'lmkp.tracking_id' in request.registry.settings:
 
         <script type="text/javascript" src="${request.static_url('lmkp:static/v2/main.js')}"></script>
 
-        % if trackingId is not None:
+        % if use_piwik_analytics==True:
+        <!-- Piwik -->
         <script type="text/javascript">
-          var _gaq = _gaq || [];
-          _gaq.push(['_setAccount', ${trackingId | n}]);
-          _gaq.push(['_trackPageview']);
+          var _paq = _paq || [];
+          _paq.push(["setCustomVariable", 1, "profile", "${selectedprofile[0]}", "page"])
+          _paq.push(["trackPageView"]);
+          _paq.push(["enableLinkTracking"]);
 
           (function() {
-            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            var u=(("https:" == document.location.protocol) ? "https" : "http") + "://webstats.landobservatory.org/";
+            _paq.push(["setTrackerUrl", u+"piwik.php"]);
+            _paq.push(["setSiteId", "1"]);
+            var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
+            g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
           })();
         </script>
+        <!-- End Piwik Code -->
         % endif
 
         ## Include the bottom tags of the child template if available.
