@@ -103,7 +103,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
             #new-filter-value-internal {
                 width: 178px;
             }
-            .input-append #new-filter-value-internal {
+            .input-append #new-filter-value {
                 width: 147px;
             }
             .new-filter .dropdown-menu {
