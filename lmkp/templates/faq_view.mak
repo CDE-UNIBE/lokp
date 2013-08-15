@@ -56,7 +56,7 @@
 
         <a name="q4"></a><p class="lead">${_('How do I submit information on a land deal?')}</p>
         <p>${_('If you have information about a land deal in one of the five pilot countries, you can submit information about one or more attributes of this deal. You can also submit a new land deal if the one you are concerned with does not appear on the map.')}
-            ${_('You will need to ')}<a href="${request.route_url('user_self_registration')}">${_('register')}</a>${_(' (giving us your email) and ')}<a href="${request.route_url('login')}">${_('log-in')}</a>.</p>
+            ${_('You will need to')} <a href="${request.route_url('user_self_registration')}">${_('register')}</a> ${_('(giving us your email) and')} <a href="${request.route_url('login')}">${_('log-in')}</a>.</p>
         <p>${_('After you submit, moderators will review and approve your report. New deals will not be approved until all of the mandatory attributes are completed.')}</p>
         <ul class="bullets">
             % for k in desiredKeys:

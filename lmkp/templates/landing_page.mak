@@ -191,7 +191,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
                             % if mode == 'demo':
                             <div class="row-fluid">
                                 <div clsas="span10 offset1">
-                                    <p>${_('Welcome to the ')}<strong>${_('Demonstration Version')}</strong>${_(' of the ')}<a href="http://www.landobservatory.org">${_('Land Observatory')}</a>${_('. This demo version is for learning and experimentation purposes, so first-time users can get a feel for the Observatory and its functions.')}</p>
+                                    <p>${_('Welcome to the')} <strong>${_('Demonstration Version')}</strong> ${_('of the')} <a href="http://www.landobservatory.org">${_('Land Observatory')}</a>. ${_('This demo version is for learning and experimentation purposes, so first-time users can get a feel for the Observatory and its functions.')}</p>
                                     <div class="start">
                                         <div class="btn-group">
                                             <a href="/global" class="btn btn-start">${_('Enter')}</a>

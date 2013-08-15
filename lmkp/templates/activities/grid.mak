@@ -15,9 +15,6 @@
             text-decoration: none;
             color: white;
         }
-        .pagesizeselect {
-            margin-top: 20px;
-        }
     </style>
 </%def>
 
@@ -62,7 +59,7 @@
         % if spatialfilter:
         <div class="alert alert-info">
             <i class="icon-globe"></i>&nbsp;
-            <strong>${_('Spatial Filter')}</strong>${_(' based on ')}
+            <strong>${_('Spatial Filter')}</strong> ${_('based on')}
                 % if spatialFilterLink:
                     <strong><a href="${request.route_url('map_view')}">${spatialFilterBasedOn}</a></strong>.
                 % else:
@@ -79,7 +76,7 @@
         % if invfilter:
         <div class="alert alert-info">
             <i class="icon-filter"></i>&nbsp;
-            <strong>${_('Investor Filter')}</strong>: ${_('You are currently only seeing Deals where Investor ')}<a href="${request.route_url('stakeholders_read_one', output='html', uid=sh_uid)}">${sh_uid[:6]}</a>${_(' is involved.')}<br/><a href="${request.route_url('activities_read_many', output='html')}">${_('Remove this filter and show all Deals')}</a>.
+            <strong>${_('Investor Filter')}</strong>: ${_('You are currently only seeing Deals where Investor')} <a href="${request.route_url('stakeholders_read_one', output='html', uid=sh_uid)}">${sh_uid[:6]}</a> ${_('is involved.')}<br/><a href="${request.route_url('activities_read_many', output='html')}">${_('Remove this filter and show all Deals')}</a>.
         </div>
         % endif
 
@@ -122,7 +119,7 @@
                 <p>&nbsp;</p>
                 <h5>${_('Nothing found')}</h5>
                 <p>${_('No results were found.')}</p>
-                <p>${_('Make sure there are some deals on the ')}<a href="${request.route_url('map_view')}">${_('Map')}</a>.</p>
+                <p>${_('Make sure there are some deals on the')} <a href="${request.route_url('map_view')}">${_('Map')}</a>.</p>
                 <p>&nbsp;</p>
 
             % else:
