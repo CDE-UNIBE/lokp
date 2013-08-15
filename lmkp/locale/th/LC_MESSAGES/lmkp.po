@@ -1,17 +1,17 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: LOKP\n"
+"Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-08-14 08:20+0200\n"
+"POT-Creation-Date: 2013-08-15 09:01+0200\n"
 "PO-Revision-Date: 2013-08-14 08:21+0100\n"
 "Last-Translator: Lukas Vonlanthen <lukas.vonlanthen@cde.unibe.ch>\n"
 "Language-Team: th <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Plural-Forms: nplurals=1; plural=0\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"X-Generator: Poedit 1.5.4\n"
 
 #: lmkp/templates/about_view.mak:3 lmkp/templates/htmlbase.mak:390
 #: lmkp/templates/landing_page.mak:344
@@ -20,16 +20,16 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/about_view.mak:47
 msgid ""
-"The Land Observatory is a pilot project of some of the partners of the Land "
-"Matrix initiative, to support observatories designed to crowdsource data "
-"about land deals, allowing for greater transparency and improved decision-"
-"making."
+"The Land Observatory is a pilot project of some of the partners of the "
+"Land Matrix initiative, to support observatories designed to crowdsource "
+"data about land deals, allowing for greater transparency and improved "
+"decision-making."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/about_view.mak:50
 msgid ""
-"We are co-creating software with partner organizations in pilot countries "
-"that will allow for them to"
+"We are co-creating software with partner organizations in pilot countries"
+" that will allow for them to"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/about_view.mak:53
@@ -50,31 +50,31 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/about_view.mak:65
 msgid ""
-"We are piloting this project in five countries - Cambodia, Laos, Madagascar, "
-"Peru and Tanzania, with civil society partners and governments who will work "
-"to open government data, crowdsource and help customize local observatories "
-"using our software."
+"We are piloting this project in five countries - Cambodia, Laos, "
+"Madagascar, Peru and Tanzania, with civil society partners and "
+"governments who will work to open government data, crowdsource and help "
+"customize local observatories using our software."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/about_view.mak:68
 msgid ""
-"The project is not merely technical, we are accompanying partners as they "
-"test different crowdsourcing strategies. Partners and their extended "
-"networks play a crucial role in bringing the online information to the real "
-"world, and back again."
+"The project is not merely technical, we are accompanying partners as they"
+" test different crowdsourcing strategies. Partners and their extended "
+"networks play a crucial role in bringing the online information to the "
+"real world, and back again."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/about_view.mak:71
 msgid ""
-"Updated information on land will benefit citizens, but also governments and "
-"companies interested in sustainability."
+"Updated information on land will benefit citizens, but also governments "
+"and companies interested in sustainability."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/about_view.mak:74
 msgid ""
-"If you are experiencing any technical difficulties, have questions or would "
-"like to send us feedback about how to improve user experience, please email "
-"us: "
+"If you are experiencing any technical difficulties, have questions or "
+"would like to send us feedback about how to improve user experience, "
+"please email us: "
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/about_view.mak:80
@@ -94,8 +94,7 @@ msgid "User activation was successful:"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/activation_successful.mak:10
-msgid ""
-"Your account has been activated. It will be approved during the next days."
+msgid "Your account has been activated. It will be approved during the next days."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/administration.mak:21 lmkp/templates/base.mak:55
@@ -105,7 +104,6 @@ msgstr "这仅仅是一个测试。"
 #: lmkp/templates/htmlbase.mak:216 lmkp/templates/htmlbase.mak:218
 #: lmkp/templates/index.mak:20 lmkp/templates/landing_page.mak:29
 #: lmkp/templates/landing_page.mak:113 lmkp/templates/landing_page.mak:115
-#: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
 #: lmkp/templates/landing_page.mak:194 lmkp/templates/login_form.mak:62
 #: lmkp/templates/moderation.mak:18 lmkp/templates/reset_form.mak:5
 #: lmkp/templates/review_versions.mak:4 lmkp/templates/translation.mak:21
@@ -136,12 +134,13 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/base.mak:64
 msgid ""
-"The Land Observatory will make information on large-scale land acquisition "
-"transparent and accessible through an interactive, map-based platform. We "
-"are piloting the project in five countries, with partners and governments "
-"who will work to open government data, crowdsource and help customize local "
-"observatories. Updated information on land will benefit citizens, but also "
-"governments and companies interested in sustainability."
+"The Land Observatory will make information on large-scale land "
+"acquisition transparent and accessible through an interactive, map-based "
+"platform. We are piloting the project in five countries, with partners "
+"and governments who will work to open government data, crowdsource and "
+"help customize local observatories. Updated information on land will "
+"benefit citizens, but also governments and companies interested in "
+"sustainability."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/base.mak:67
@@ -186,8 +185,8 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/charts.mak:41
 msgid ""
-"Distribution of land related deals in Cambodia and for Champasak and Attapeu "
-"province in Laos."
+"Distribution of land related deals in Cambodia and for Champasak and "
+"Attapeu province in Laos."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/charts.mak:42
@@ -236,7 +235,8 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/faq_view.mak:39 lmkp/templates/faq_view.mak:69
 msgid ""
-"Can I submit information on a land deal even if I am in a different country?"
+"Can I submit information on a land deal even if I am in a different "
+"country?"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/faq_view.mak:40 lmkp/templates/faq_view.mak:73
@@ -251,33 +251,34 @@ msgstr "这仅仅是一个测试。"
 msgid ""
 "We are piloting this project in five countries. More than just testing "
 "software, this requires partners to design crowdsourcing campaigns and "
-"organise multi-stakeholder platforms to manage the observatories. These are "
-"all very intensive processes and need time. We plan to scale, and seed "
-"observatories in other countries in the near future."
+"organise multi-stakeholder platforms to manage the observatories. These "
+"are all very intensive processes and need time. We plan to scale, and "
+"seed observatories in other countries in the near future."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/faq_view.mak:50
 msgid ""
 "We have co-developed this software with partners in country, and we are "
-"still firming up formal arrangements with partner organisations, and where "
-"possible with governments. Generally speaking, each observatory will have "
-"its own governance structure and moderation team and procedures. More "
-"information will be made available soon about each country."
+"still firming up formal arrangements with partner organisations, and "
+"where possible with governments. Generally speaking, each observatory "
+"will have its own governance structure and moderation team and "
+"procedures. More information will be made available soon about each "
+"country."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/faq_view.mak:54
 msgid ""
 "Anybody, even anonymous, non-logged in users can comment on a land deal. "
-"These comments will be subject to the rules of moderation, unique to each "
-"observatory."
+"These comments will be subject to the rules of moderation, unique to each"
+" observatory."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/faq_view.mak:58
 msgid ""
 "If you have information about a land deal in one of the five pilot "
-"countries, you can submit information about one or more attributes of this "
-"deal. You can also submit a new land deal if the one you are concerned with "
-"does not appear on the map."
+"countries, you can submit information about one or more attributes of "
+"this deal. You can also submit a new land deal if the one you are "
+"concerned with does not appear on the map."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/faq_view.mak:59
@@ -298,38 +299,39 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/faq_view.mak:60
 msgid ""
-"After you submit, moderators will review and approve your report. New deals "
-"will not be approved until all of the mandatory attributes are completed."
+"After you submit, moderators will review and approve your report. New "
+"deals will not be approved until all of the mandatory attributes are "
+"completed."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/faq_view.mak:66
 msgid ""
-"Once your report is reviewed and approved, it is public for the whole world "
-"to see."
+"Once your report is reviewed and approved, it is public for the whole "
+"world to see."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/faq_view.mak:70
 msgid ""
-"Yes, but it will be reviewed and approved by moderators. At the moment, we "
-"ask that your account is connected to a particular country."
+"Yes, but it will be reviewed and approved by moderators. At the moment, "
+"we ask that your account is connected to a particular country."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/faq_view.mak:74
 msgid ""
-"Yes, these functions are in development and should be ready soon, as well as "
-"data downloads."
+"Yes, these functions are in development and should be ready soon, as well"
+" as data downloads."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/faq_view.mak:78
 msgid ""
 "All defaults are set to safeguard user privacy. To comment, you need not "
 "give any personal information, although providing it may enhance your "
-"credibility. To log-in and submit data, all you need to provide is an email "
-"address. Currently, metadata about your submissions is stored on the servers "
-"of the Centre for Development and Environment - University of Bern and are "
-"only kept for reference: your personal information will not be shared with "
-"others or re-used for any purposes except for possible verification of "
-"submitted information."
+"credibility. To log-in and submit data, all you need to provide is an "
+"email address. Currently, metadata about your submissions is stored on "
+"the servers of the Centre for Development and Environment - University of"
+" Bern and are only kept for reference: your personal information will not"
+" be shared with others or re-used for any purposes except for possible "
+"verification of submitted information."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/htmlbase.mak:234 lmkp/templates/activities/grid.mak:125
@@ -371,11 +373,15 @@ msgid "Partners & Donors"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
-msgid "The "
+#: lmkp/templates/emails/activation.mak:10
+#: lmkp/templates/emails/approval.mak:12
+#: lmkp/templates/emails/confirmation.mak:7
+msgid "The Land Observatory"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
-msgid " is a pilot project by some partners of the "
+#, fuzzy
+msgid "is a pilot project by some partners of the"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
@@ -383,9 +389,10 @@ msgid "Land Matrix"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
+#, fuzzy
 msgid ""
-", designed to provide greater context and deeper insight on land deals, from "
-"a more local perspective."
+"designed to provide greater context and deeper insight on land deals, "
+"from a more local perspective."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/landing_page.mak:194
@@ -402,8 +409,8 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/landing_page.mak:194
 msgid ""
-". This demo version is for learning and experimentation purposes, so first-"
-"time users can get a feel for the Observatory and its functions."
+". This demo version is for learning and experimentation purposes, so "
+"first-time users can get a feel for the Observatory and its functions."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/landing_page.mak:197
@@ -424,21 +431,21 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/landing_page.mak:269
 msgid ""
-"Users in select pilot countries gather, explore and analyze spatial data on "
-"large-scale land acquisitions. Data is managed and reviewed locally by "
-"partners."
+"Users in select pilot countries gather, explore and analyze spatial data "
+"on large-scale land acquisitions. Data is managed and reviewed locally by"
+" partners."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/landing_page.mak:276
 msgid ""
-"Users can see deals in full geographical context, learn more about investors "
-"and the kinds of investments in question."
+"Users can see deals in full geographical context, learn more about "
+"investors and the kinds of investments in question."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/landing_page.mak:283
 msgid ""
-"You can also select a specific land deal to see more: \"who\" (investors and "
-"other stakeholders) and \"what\" the land will be used for."
+"You can also select a specific land deal to see more: \"who\" (investors "
+"and other stakeholders) and \"what\" the land will be used for."
 msgstr "这仅仅是一 \"who\" 个测试。"
 
 #: lmkp/templates/landing_page.mak:290
@@ -449,14 +456,14 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/landing_page.mak:297
 msgid ""
-"Logged in users can also help contribute and update data, and anybody can "
-"freely comment on it."
+"Logged in users can also help contribute and update data, and anybody can"
+" freely comment on it."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/landing_page.mak:304
 msgid ""
-"You can filter the land deals by various attributes - like size, or crop. Or "
-"make a spatial selection of land deals."
+"You can filter the land deals by various attributes - like size, or crop."
+" Or make a spatial selection of land deals."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/landing_page.mak:311
@@ -611,10 +618,10 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/partners_view.mak:11
 msgid ""
-"The pilot project is coordinated by the International Land Coalition and the "
-"Centre for Development and Environment at the University of Bern, "
-"Switzerland. It is funded by the Swiss Agency for Development Cooperation, "
-"with co-funding from other ILC and CDE programs."
+"The pilot project is coordinated by the International Land Coalition and "
+"the Centre for Development and Environment at the University of Bern, "
+"Switzerland. It is funded by the Swiss Agency for Development "
+"Cooperation, with co-funding from other ILC and CDE programs."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/reset_form.mak:50
@@ -669,8 +676,8 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/user_registration_success.mak:8
 msgid ""
-"A message with an activation link has been sent to your email address. Your "
-"account will be approved after activation."
+"A message with an activation link has been sent to your email address. "
+"Your account will be approved after activation."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/activities/details.mak:3
@@ -769,23 +776,16 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/emails/activation.mak:5
 msgid ""
-"In order to activate your account please visit the following link or copy it "
-"to your web browser. The activation link expires in 48 hours."
+"In order to activate your account please visit the following link or copy"
+" it to your web browser. The activation link expires in 48 hours."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/emails/activation.mak:8
 msgid "Your account will be approved after activation."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/templates/emails/activation.mak:10
-#: lmkp/templates/emails/approval.mak:12
-#: lmkp/templates/emails/confirmation.mak:7
-msgid "The Land Observatory"
-msgstr "这仅仅是一个测试。"
-
 #: lmkp/templates/emails/approval.mak:1
-msgid ""
-"The following user requests approval for the landobservatory.org platform:"
+msgid "The following user requests approval for the landobservatory.org platform:"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/emails/approval.mak:3
@@ -810,8 +810,8 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/emails/approval.mak:9
 msgid ""
-"In order to approve this account, please visit the following link or copy it "
-"to your web browser."
+"In order to approve this account, please visit the following link or copy"
+" it to your web browser."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/emails/confirmation.mak:3
@@ -824,20 +824,17 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/form/customFileDisplay.mak:35
 #, fuzzy
-#| msgid "Upload a new file"
 msgid "Upload a file"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/form/customFileDisplay.mak:43
 #: lmkp/templates/form/readonly/customFileDisplay.mak:14
 #, fuzzy
-#| msgid "View file"
 msgid "View this file"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/form/customFileDisplay.mak:44
 #, fuzzy
-#| msgid "Click to delete this filter"
 msgid "Delete this file"
 msgstr "这仅仅是一个测试。"
 
@@ -871,8 +868,8 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/form/customMapMapping.mak:42
 msgid ""
-"Click on the map to set the location of the deal. Please zoom in to set the "
-"point as accurately as possible."
+"Click on the map to set the location of the deal. Please zoom in to set "
+"the point as accurately as possible."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/form/form_activity.mak:7
@@ -885,13 +882,12 @@ msgstr ""
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:32
 msgid ""
-"Please note that the file upload may take a while depending on your Internet "
-"connection."
+"Please note that the file upload may take a while depending on your "
+"Internet connection."
 msgstr ""
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:34
 #, fuzzy
-#| msgid "Valid Email"
 msgid "Valid files"
 msgstr "这仅仅是一个测试。"
 
@@ -930,7 +926,6 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/form/readonly/customFileDisplay.mak:15
 #, fuzzy
-#| msgid "Download file"
 msgid "Download this file"
 msgstr "这仅仅是一个测试。"
 
@@ -1185,8 +1180,8 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/form.py:47
 msgid ""
-"Unsaved data of this item was found in the session. You may continue to edit "
-"this form."
+"Unsaved data of this item was found in the session. You may continue to "
+"edit this form."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/form.py:48
@@ -1206,8 +1201,8 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/form.py:52
 msgid ""
-"The Deal was successfully created or updated. It is now pending and needs to "
-"be reviewed by a moderator before it is publicly visible."
+"The Deal was successfully created or updated. It is now pending and needs"
+" to be reviewed by a moderator before it is publicly visible."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/form.py:53
@@ -1224,8 +1219,8 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/form.py:56
 msgid ""
-"The Stakeholder was successfully created or updated. It is not pending and "
-"needs to be reviewed by a moderator before it is publicly visible."
+"The Stakeholder was successfully created or updated. It is not pending "
+"and needs to be reviewed by a moderator before it is publicly visible."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/form.py:57
@@ -1236,7 +1231,7 @@ msgstr "这仅仅是一个测试。"
 msgid "Submit"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/form_config.py:817
+#: lmkp/views/form_config.py:821
 msgid "Select"
 msgstr "这仅仅是一个测试。"
 
@@ -1254,8 +1249,8 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/login.py:107
 msgid ""
-"Password reset was successful. An email containing the new password has been "
-"sent to your email address."
+"Password reset was successful. An email containing the new password has "
+"been sent to your email address."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/login.py:109
@@ -1280,8 +1275,8 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/protocol.py:731
 msgid ""
-"At least one of the involved Stakeholders cannot be reviewed. Click on the "
-"icon next to the involvement for further details."
+"At least one of the involved Stakeholders cannot be reviewed. Click on "
+"the icon next to the involvement for further details."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/protocol.py:733
@@ -1548,8 +1543,8 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:153
 msgid ""
-"You are seeing an {0} version, which was edited by a moderator and was never "
-"publicly visible."
+"You are seeing an {0} version, which was edited by a moderator and was "
+"never publicly visible."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:154
@@ -1754,9 +1749,9 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:228
 msgid ""
-"No associated Stakeholders so far. You can search and select a Stakeholder "
-"using the Search field below. Or you can create a new Stakeholder by "
-"clicking on the button above."
+"No associated Stakeholders so far. You can search and select a "
+"Stakeholder using the Search field below. Or you can create a new "
+"Stakeholder by clicking on the button above."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:229
@@ -1781,7 +1776,8 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:234
 msgid ""
-"This stakeholder has pending changes. Click to review them in a popup window."
+"This stakeholder has pending changes. Click to review them in a popup "
+"window."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:235
@@ -1812,8 +1808,9 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:263
 msgid ""
-"There are some mandatory keys missing. The item cannot be approved without "
-"these keys. Please click the \"edit\" button to add the missing keys."
+"There are some mandatory keys missing. The item cannot be approved "
+"without these keys. Please click the \"edit\" button to add the missing "
+"keys."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:266
@@ -1822,8 +1819,9 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:267
 msgid ""
-"The Activity of this involvement cannot be reviewed from the Stakeholder's "
-"side. Please review the Activity to approve or reject this involvement."
+"The Activity of this involvement cannot be reviewed from the "
+"Stakeholder's side. Please review the Activity to approve or reject this "
+"involvement."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:268
@@ -1852,8 +1850,8 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:274
 msgid ""
-"The Stakeholder of this involvement has no active version and cannot be set "
-"active. Please review the Stakeholder first."
+"The Stakeholder of this involvement has no active version and cannot be "
+"set active. Please review the Stakeholder first."
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/translation.py:296
@@ -1940,5 +1938,12 @@ msgstr "这仅仅是一个测试。"
 msgid "Update"
 msgstr "这仅仅是一个测试。"
 
-#~ msgid "FORM TEST"
+#~ msgid "is a pilot project by some partners of the "
 #~ msgstr "这仅仅是一个测试。"
+
+#~ msgid ""
+#~ ", designed to provide greater context"
+#~ " and deeper insight on land deals,"
+#~ " from a more local perspective."
+#~ msgstr "这仅仅是一个测试。"
+

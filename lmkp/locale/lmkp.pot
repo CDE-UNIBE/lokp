@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LMKP 0.59\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-08-14 08:20+0200\n"
+"POT-Creation-Date: 2013-08-15 09:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -108,7 +108,6 @@ msgstr ""
 #: lmkp/templates/htmlbase.mak:216 lmkp/templates/htmlbase.mak:218
 #: lmkp/templates/index.mak:20 lmkp/templates/landing_page.mak:29
 #: lmkp/templates/landing_page.mak:113 lmkp/templates/landing_page.mak:115
-#: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
 #: lmkp/templates/landing_page.mak:194 lmkp/templates/login_form.mak:62
 #: lmkp/templates/moderation.mak:18 lmkp/templates/reset_form.mak:5
 #: lmkp/templates/review_versions.mak:4 lmkp/templates/translation.mak:21
@@ -373,11 +372,13 @@ msgid "Partners & Donors"
 msgstr ""
 
 #: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
-msgid "The "
+#: lmkp/templates/emails/activation.mak:10 lmkp/templates/emails/approval.mak:12
+#: lmkp/templates/emails/confirmation.mak:7
+msgid "The Land Observatory"
 msgstr ""
 
 #: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
-msgid " is a pilot project by some partners of the "
+msgid "is a pilot project by some partners of the"
 msgstr ""
 
 #: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
@@ -386,8 +387,8 @@ msgstr ""
 
 #: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
 msgid ""
-", designed to provide greater context and deeper insight on land deals, from "
-"a more local perspective."
+"designed to provide greater context and deeper insight on land deals, from a "
+"more local perspective."
 msgstr ""
 
 #: lmkp/templates/landing_page.mak:194
@@ -773,11 +774,6 @@ msgstr ""
 
 #: lmkp/templates/emails/activation.mak:8
 msgid "Your account will be approved after activation."
-msgstr ""
-
-#: lmkp/templates/emails/activation.mak:10 lmkp/templates/emails/approval.mak:12
-#: lmkp/templates/emails/confirmation.mak:7
-msgid "The Land Observatory"
 msgstr ""
 
 #: lmkp/templates/emails/approval.mak:1
@@ -1221,7 +1217,7 @@ msgstr ""
 msgid "Submit"
 msgstr ""
 
-#: lmkp/views/form_config.py:817
+#: lmkp/views/form_config.py:821
 msgid "Select"
 msgstr ""
 

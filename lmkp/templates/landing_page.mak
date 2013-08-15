@@ -118,7 +118,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
 
                                 <div class="span6 landing-introduction">
                                     <p>
-                                        <strong>${_('The Land Observatory')} </strong>${_('is a pilot project by some partners of the ')}<a href="http://www.landmatrix.org">${_('Land Matrix')}</a>${_(', designed to provide greater context and deeper insight on land deals, from a more local perspective.')}
+                                        <strong>${_('The Land Observatory')} </strong>${_('is a pilot project by some partners of the')} <a href="http://www.landmatrix.org">${_('Land Matrix')}</a>, ${_('designed to provide greater context and deeper insight on land deals, from a more local perspective.')}
                                     </p>
                                 </div>
                                 <div class="user">
@@ -149,7 +149,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
                                 </div>
                                 <div class="span6 landing-introduction">
                                     <p>
-                                        <strong>${_('The Land Observatory')} </strong>${_('is a pilot project by some partners of the ')}<a href="http://www.landmatrix.org">${_('Land Matrix')}</a>${_(', designed to provide greater context and deeper insight on land deals, from a more local perspective.')}
+                                        <strong>${_('The Land Observatory')} </strong>${_('is a pilot project by some partners of the')} <a href="http://www.landmatrix.org">${_('Land Matrix')}</a>, ${_('designed to provide greater context and deeper insight on land deals, from a more local perspective.')}
                                     </p>
                                 </div>
                                 <div class="span3">

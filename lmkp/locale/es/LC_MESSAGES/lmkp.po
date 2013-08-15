@@ -1,17 +1,17 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: LOKP\n"
+"Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-08-14 08:20+0200\n"
-"PO-Revision-Date: 2013-08-14 08:32+0100\n"
+"POT-Creation-Date: 2013-08-15 09:01+0200\n"
+"PO-Revision-Date: 2013-08-15 09:00+0100\n"
 "Last-Translator: Lukas Vonlanthen <lukas.vonlanthen@cde.unibe.ch>\n"
 "Language-Team: es <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"X-Generator: Poedit 1.5.4\n"
 
 #: lmkp/templates/about_view.mak:3 lmkp/templates/htmlbase.mak:390
 #: lmkp/templates/landing_page.mak:344
@@ -20,29 +20,30 @@ msgstr "Acerca de"
 
 #: lmkp/templates/about_view.mak:47
 msgid ""
-"The Land Observatory is a pilot project of some of the partners of the Land "
-"Matrix initiative, to support observatories designed to crowdsource data "
-"about land deals, allowing for greater transparency and improved decision-"
-"making."
+"The Land Observatory is a pilot project of some of the partners of the "
+"Land Matrix initiative, to support observatories designed to crowdsource "
+"data about land deals, allowing for greater transparency and improved "
+"decision-making."
 msgstr ""
-"El Observatorio de Adquisiciones de Tierra es un proyecto piloto de uno de "
-"los miembros del Observatorio Global de Adquisiciones, con el fin de apoyar "
-"a los observatorios diseñados para obtener información de los casos a través "
-"de crowdsourcing. Esto permitirá una mayor transparencia y mejor toma de "
-"decisiones."
+"El Observatorio de Adquisiciones de Tierra es un proyecto piloto de uno "
+"de los miembros del Observatorio Global de Adquisiciones, con el fin de "
+"apoyar a los observatorios diseñados para obtener información de los "
+"casos a través de crowdsourcing. Esto permitirá una mayor transparencia y"
+" mejor toma de decisiones."
 
 #: lmkp/templates/about_view.mak:50
 msgid ""
-"We are co-creating software with partner organizations in pilot countries "
-"that will allow for them to"
+"We are co-creating software with partner organizations in pilot countries"
+" that will allow for them to"
 msgstr ""
-"Estamos co-creando un software con el apoyo de organizaciones miembros de la "
-"red en países piloto que les permitirá "
+"Estamos co-creando un software con el apoyo de organizaciones miembros de"
+" la red en países piloto que les permitirá "
 
 #: lmkp/templates/about_view.mak:53
 msgid "generate greater spatial context for land deals"
 msgstr ""
-"generar un mayor contexto espacial de los casos de adquisiciones de tierra."
+"generar un mayor contexto espacial de los casos de adquisiciones de "
+"tierra."
 
 #: lmkp/templates/about_view.mak:55
 msgid "make possible deeper investigation of the actors involved"
@@ -60,48 +61,48 @@ msgstr "gestionar localmente la data sobre adquisiciones de tierra"
 
 #: lmkp/templates/about_view.mak:65
 msgid ""
-"We are piloting this project in five countries - Cambodia, Laos, Madagascar, "
-"Peru and Tanzania, with civil society partners and governments who will work "
-"to open government data, crowdsource and help customize local observatories "
-"using our software."
+"We are piloting this project in five countries - Cambodia, Laos, "
+"Madagascar, Peru and Tanzania, with civil society partners and "
+"governments who will work to open government data, crowdsource and help "
+"customize local observatories using our software."
 msgstr ""
 "Contamos con este proyecto piloto en cinco países - Cambodia, Laos, "
-"Madagascar, Perú y Tanzania, con miembros de la sociedad civil y gobiernos "
-"quienes trabajarán para el libre acceso a la data Oficial, \"crowdsourcing\" "
-"y la adecuación a la realidad local de los observatorios usando nuestro "
-"software."
+"Madagascar, Perú y Tanzania, con miembros de la sociedad civil y "
+"gobiernos quienes trabajarán para el libre acceso a la data Oficial, "
+"\"crowdsourcing\" y la adecuación a la realidad local de los "
+"observatorios usando nuestro software."
 
 #: lmkp/templates/about_view.mak:68
 msgid ""
-"The project is not merely technical, we are accompanying partners as they "
-"test different crowdsourcing strategies. Partners and their extended "
-"networks play a crucial role in bringing the online information to the real "
-"world, and back again."
+"The project is not merely technical, we are accompanying partners as they"
+" test different crowdsourcing strategies. Partners and their extended "
+"networks play a crucial role in bringing the online information to the "
+"real world, and back again."
 msgstr ""
-"El proyecto no es únicamente para propósitos técnicos, llevamos adelante el "
-"acompañamiento de los miembros dedicados a las diferentes estrategias de "
-"crowdsourcing. Los miembros así como su amplia red de influencia juegan un "
-"rol crucial en llevar la información disponible en la web al mundo real y "
-"viceversa."
+"El proyecto no es únicamente para propósitos técnicos, llevamos adelante "
+"el acompañamiento de los miembros dedicados a las diferentes estrategias "
+"de crowdsourcing. Los miembros así como su amplia red de influencia "
+"juegan un rol crucial en llevar la información disponible en la web al "
+"mundo real y viceversa."
 
 #: lmkp/templates/about_view.mak:71
 msgid ""
-"Updated information on land will benefit citizens, but also governments and "
-"companies interested in sustainability."
+"Updated information on land will benefit citizens, but also governments "
+"and companies interested in sustainability."
 msgstr ""
 "Información actualziada sobre adquisiciones de tierra beneficiará a la "
-"ciudadanía, pero también también a los gobiernos y compañías interesados en "
-"sostenibilidad"
+"ciudadanía, pero también también a los gobiernos y compañías interesados "
+"en sostenibilidad"
 
 #: lmkp/templates/about_view.mak:74
 msgid ""
-"If you are experiencing any technical difficulties, have questions or would "
-"like to send us feedback about how to improve user experience, please email "
-"us: "
+"If you are experiencing any technical difficulties, have questions or "
+"would like to send us feedback about how to improve user experience, "
+"please email us: "
 msgstr ""
-"Si has detectado alguna dificultad técnica, tienes consultas o te gustaría "
-"enviarnos algún comentario relacionado a cómo mejorar la experiencia de "
-"usuario, por favor envíanos un e-mail a:"
+"Si has detectado alguna dificultad técnica, tienes consultas o te "
+"gustaría enviarnos algún comentario relacionado a cómo mejorar la "
+"experiencia de usuario, por favor envíanos un e-mail a:"
 
 #: lmkp/templates/about_view.mak:80
 msgid "View our brief video introduction"
@@ -120,8 +121,7 @@ msgid "User activation was successful:"
 msgstr "Activación del Usuario correcta"
 
 #: lmkp/templates/activation_successful.mak:10
-msgid ""
-"Your account has been activated. It will be approved during the next days."
+msgid "Your account has been activated. It will be approved during the next days."
 msgstr "Tu cuenta ha sido activada. Se aprobará en los siguientes días."
 
 #: lmkp/templates/administration.mak:21 lmkp/templates/base.mak:55
@@ -131,7 +131,6 @@ msgstr "Tu cuenta ha sido activada. Se aprobará en los siguientes días."
 #: lmkp/templates/htmlbase.mak:216 lmkp/templates/htmlbase.mak:218
 #: lmkp/templates/index.mak:20 lmkp/templates/landing_page.mak:29
 #: lmkp/templates/landing_page.mak:113 lmkp/templates/landing_page.mak:115
-#: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
 #: lmkp/templates/landing_page.mak:194 lmkp/templates/login_form.mak:62
 #: lmkp/templates/moderation.mak:18 lmkp/templates/reset_form.mak:5
 #: lmkp/templates/review_versions.mak:4 lmkp/templates/translation.mak:21
@@ -160,16 +159,25 @@ msgstr "[Demo]"
 msgid "Loading ..."
 msgstr "Cargando ..."
 
-# You are right, this was not the right translation. Could you please correct it? Thank you very much!
 #: lmkp/templates/base.mak:64
 msgid ""
-"The Land Observatory will make information on large-scale land acquisition "
-"transparent and accessible through an interactive, map-based platform. We "
-"are piloting the project in five countries, with partners and governments "
-"who will work to open government data, crowdsource and help customize local "
-"observatories. Updated information on land will benefit citizens, but also "
-"governments and companies interested in sustainability."
+"The Land Observatory will make information on large-scale land "
+"acquisition transparent and accessible through an interactive, map-based "
+"platform. We are piloting the project in five countries, with partners "
+"and governments who will work to open government data, crowdsource and "
+"help customize local observatories. Updated information on land will "
+"benefit citizens, but also governments and companies interested in "
+"sustainability."
 msgstr ""
+"El Observatorio de Adquisiciones de Tierra hará transparente y accesible "
+"la información sobre adquisiciones masivas de tierra a través de una "
+"plataforma interactiva basada en el mapeo de las mismas. Estamos "
+"piloteando el proyecto en cinco países, con organizaciones aliadas y "
+"gobiernos quienes trabajarán para aperturar la data oficial, "
+"\"crowdsourcing\" y apoyo en adecuar los observatorios a la realidad de "
+"cada país. La información actualizada sobre adquisiciones masivas de "
+"tierra beneficiará a la ciudadanía, pero también a los gobiernos y "
+"empresas interesadas en la sostenibilidad del proyecto."
 
 #: lmkp/templates/base.mak:67
 msgid "The pilot project is coordinated by the"
@@ -201,8 +209,7 @@ msgstr ", con la cofinanciación de otros programas de ILC y CDE."
 
 #: lmkp/templates/base.mak:75 lmkp/templates/login_form.mak:84
 msgid "Please send your questions and feedback on the Observatory to: "
-msgstr ""
-"Por favor, envíanos tus preguntas y comentarios sobre el Obervatorio a:"
+msgstr "Por favor, envíanos tus preguntas y comentarios sobre el Obervatorio a:"
 
 #: lmkp/templates/charts.mak:16 lmkp/templates/htmlbase.mak:249
 msgid "Charts"
@@ -214,8 +221,8 @@ msgstr "Mapa de Calor para Cambodia y Laos"
 
 #: lmkp/templates/charts.mak:41
 msgid ""
-"Distribution of land related deals in Cambodia and for Champasak and Attapeu "
-"province in Laos."
+"Distribution of land related deals in Cambodia and for Champasak and "
+"Attapeu province in Laos."
 msgstr ""
 "Distribución de la tierra relacionada a los casos en Cambodia y para las "
 "provincias de Champasak y Attapeu en Laos."
@@ -227,7 +234,8 @@ msgstr "Los datos de Camboya son proporcionados por el sitio web"
 #: lmkp/templates/charts.mak:44
 msgid "Data for Laos are based on the landconcessions database."
 msgstr ""
-"La data para Laos se sustenta en la base de datos de concesiones de tierras"
+"La data para Laos se sustenta en la base de datos de concesiones de "
+"tierras"
 
 #: lmkp/templates/charts.mak:49
 msgid "Distribution of activities worldwide"
@@ -238,8 +246,8 @@ msgid ""
 "Worldwide distribution of land related deals based on the Landmatrix "
 "database available at"
 msgstr ""
-"Distribución mundial de los casos de adquisiciones de tierra dispuestos en "
-"la base de datos del Observatorio Global disponibles en"
+"Distribución mundial de los casos de adquisiciones de tierra dispuestos "
+"en la base de datos del Observatorio Global disponibles en"
 
 #: lmkp/templates/compare_versions.mak:11 lmkp/views/translation.py:95
 #: lmkp/views/translation.py:122
@@ -271,7 +279,8 @@ msgstr "¿Cómo puedo remitir información de un caso de adquisición de tierra?
 
 #: lmkp/templates/faq_view.mak:39 lmkp/templates/faq_view.mak:69
 msgid ""
-"Can I submit information on a land deal even if I am in a different country?"
+"Can I submit information on a land deal even if I am in a different "
+"country?"
 msgstr ""
 "¿Puedo presentar información sobre un caso de adquisición de tierra, "
 "inclusive si soy de un país diferente al del caso?"
@@ -288,51 +297,54 @@ msgstr "¿Será protegida mi identidad?"
 msgid ""
 "We are piloting this project in five countries. More than just testing "
 "software, this requires partners to design crowdsourcing campaigns and "
-"organise multi-stakeholder platforms to manage the observatories. These are "
-"all very intensive processes and need time. We plan to scale, and seed "
-"observatories in other countries in the near future."
+"organise multi-stakeholder platforms to manage the observatories. These "
+"are all very intensive processes and need time. We plan to scale, and "
+"seed observatories in other countries in the near future."
 msgstr ""
 "Estamos piloteando este proyecto en cinco países. Más que sólo probar un "
-"software, esto requiere el apoyo de los miembros para diseñar campañas de "
-"crowdsourcing y organizar plataformas multi-inversor para administrar los "
-"observatorios. Todo ello son procesos intensivos y requieren tiempo. Tenemos "
-"la intención de ampliar e iniciar otros observatorios en el futuro próximo."
+"software, esto requiere el apoyo de los miembros para diseñar campañas de"
+" crowdsourcing y organizar plataformas multi-inversor para administrar "
+"los observatorios. Todo ello son procesos intensivos y requieren tiempo. "
+"Tenemos la intención de ampliar e iniciar otros observatorios en el "
+"futuro próximo."
 
 #: lmkp/templates/faq_view.mak:50
 msgid ""
 "We have co-developed this software with partners in country, and we are "
-"still firming up formal arrangements with partner organisations, and where "
-"possible with governments. Generally speaking, each observatory will have "
-"its own governance structure and moderation team and procedures. More "
-"information will be made available soon about each country."
+"still firming up formal arrangements with partner organisations, and "
+"where possible with governments. Generally speaking, each observatory "
+"will have its own governance structure and moderation team and "
+"procedures. More information will be made available soon about each "
+"country."
 msgstr ""
-"Hemos co-desarrollado este software con miembros en el país en cuestión, y "
-"estamos concretando acuerdos formales con organizaciones aliadas y de ser "
-"posible con los mismos gobiernos. De modo transversal, cada observatorio "
-"tendrá su propia estructura de manejo, un equipo de moderación y "
-"procedimientos. Mayor información acerca de cada país estará disponible muy "
-"pronto."
+"Hemos co-desarrollado este software con miembros en el país en cuestión, "
+"y estamos concretando acuerdos formales con organizaciones aliadas y de "
+"ser posible con los mismos gobiernos. De modo transversal, cada "
+"observatorio tendrá su propia estructura de manejo, un equipo de "
+"moderación y procedimientos. Mayor información acerca de cada país estará"
+" disponible muy pronto."
 
 #: lmkp/templates/faq_view.mak:54
 msgid ""
 "Anybody, even anonymous, non-logged in users can comment on a land deal. "
-"These comments will be subject to the rules of moderation, unique to each "
-"observatory."
+"These comments will be subject to the rules of moderation, unique to each"
+" observatory."
 msgstr ""
 "Alguien, inclusive personas anónimas, o usuarios no registrados pueden "
-"comentar un caso de adquisición de tierra. Estos comentarios serán sujetos "
-"de las reglas de moderación, únicas para cada observatorio."
+"comentar un caso de adquisición de tierra. Estos comentarios serán "
+"sujetos de las reglas de moderación, únicas para cada observatorio."
 
 #: lmkp/templates/faq_view.mak:58
 msgid ""
 "If you have information about a land deal in one of the five pilot "
-"countries, you can submit information about one or more attributes of this "
-"deal. You can also submit a new land deal if the one you are concerned with "
-"does not appear on the map."
+"countries, you can submit information about one or more attributes of "
+"this deal. You can also submit a new land deal if the one you are "
+"concerned with does not appear on the map."
 msgstr ""
-"Si tienes información acerca de un caso de adquisición de tierras en uno de "
-"los cinco países piloto, puedes remitirla con uno o más atributos del mismo. "
-"También puedes remitir un nuevo caso de no aparecer éste en el mapa."
+"Si tienes información acerca de un caso de adquisición de tierras en uno "
+"de los cinco países piloto, puedes remitirla con uno o más atributos del "
+"mismo. También puedes remitir un nuevo caso de no aparecer éste en el "
+"mapa."
 
 #: lmkp/templates/faq_view.mak:59
 msgid "You will need to "
@@ -352,57 +364,58 @@ msgstr "Iniciar sesión"
 
 #: lmkp/templates/faq_view.mak:60
 msgid ""
-"After you submit, moderators will review and approve your report. New deals "
-"will not be approved until all of the mandatory attributes are completed."
+"After you submit, moderators will review and approve your report. New "
+"deals will not be approved until all of the mandatory attributes are "
+"completed."
 msgstr ""
-"Luego la remisión de la información, los moderadores revisarán y aprobarán "
-"el reporte. Los casos nuevos no serán aprobados a menos que los campos "
-"obligatorios estén completos."
+"Luego la remisión de la información, los moderadores revisarán y "
+"aprobarán el reporte. Los casos nuevos no serán aprobados a menos que los"
+" campos obligatorios estén completos."
 
 #: lmkp/templates/faq_view.mak:66
 msgid ""
-"Once your report is reviewed and approved, it is public for the whole world "
-"to see."
+"Once your report is reviewed and approved, it is public for the whole "
+"world to see."
 msgstr ""
-"Una vez que tu reporte es revisado y aprobado, este es publicado en la web "
-"para ser visto por todo el mundo."
+"Una vez que tu reporte es revisado y aprobado, este es publicado en la "
+"web para ser visto por todo el mundo."
 
 #: lmkp/templates/faq_view.mak:70
 msgid ""
-"Yes, but it will be reviewed and approved by moderators. At the moment, we "
-"ask that your account is connected to a particular country."
+"Yes, but it will be reviewed and approved by moderators. At the moment, "
+"we ask that your account is connected to a particular country."
 msgstr ""
-"Sí, pero será revisada y aprobada por los moderadores. Por el momento, te "
-"comunicamos que tu cuenta está vinculada a un país específico."
+"Sí, pero será revisada y aprobada por los moderadores. Por el momento, te"
+" comunicamos que tu cuenta está vinculada a un país específico."
 
 #: lmkp/templates/faq_view.mak:74
 msgid ""
-"Yes, these functions are in development and should be ready soon, as well as "
-"data downloads."
+"Yes, these functions are in development and should be ready soon, as well"
+" as data downloads."
 msgstr ""
-"Sí, estas funciones se encuentran en desarrollo y estarán listas pronto, así "
-"como la descarga de datos."
+"Sí, estas funciones se encuentran en desarrollo y estarán listas pronto, "
+"así como la descarga de datos."
 
 #: lmkp/templates/faq_view.mak:78
 msgid ""
 "All defaults are set to safeguard user privacy. To comment, you need not "
 "give any personal information, although providing it may enhance your "
-"credibility. To log-in and submit data, all you need to provide is an email "
-"address. Currently, metadata about your submissions is stored on the servers "
-"of the Centre for Development and Environment - University of Bern and are "
-"only kept for reference: your personal information will not be shared with "
-"others or re-used for any purposes except for possible verification of "
-"submitted information."
+"credibility. To log-in and submit data, all you need to provide is an "
+"email address. Currently, metadata about your submissions is stored on "
+"the servers of the Centre for Development and Environment - University of"
+" Bern and are only kept for reference: your personal information will not"
+" be shared with others or re-used for any purposes except for possible "
+"verification of submitted information."
 msgstr ""
 "Por defecto, todos los datos consignados mantenienen la privacidad del "
-"usuario. Para hacer comentarios, no necesitas brindar ninguna información "
-"personal, aunque de hacerlo mejora tu credibilidad. Para accesar y remitir "
-"data, todo lo que necesitas es una dirección de correo electrónico. Por el "
-"momento, la metadata que remitas es mantenida en los servidores del Centro "
-"para el Desarrollo y el Ambiente (CDE) de la Universidad de Berna y será "
-"mantenida sólo como referencia: tu información personal no será compartida "
-"con otros o re-usada por ningún otro propósito excepto para la verificación "
-"de la información ingresada."
+"usuario. Para hacer comentarios, no necesitas brindar ninguna información"
+" personal, aunque de hacerlo mejora tu credibilidad. Para accesar y "
+"remitir data, todo lo que necesitas es una dirección de correo "
+"electrónico. Por el momento, la metadata que remitas es mantenida en los "
+"servidores del Centro para el Desarrollo y el Ambiente (CDE) de la "
+"Universidad de Berna y será mantenida sólo como referencia: tu "
+"información personal no será compartida con otros o re-usada por ningún "
+"otro propósito excepto para la verificación de la información ingresada."
 
 #: lmkp/templates/htmlbase.mak:234 lmkp/templates/activities/grid.mak:125
 msgid "Map"
@@ -443,24 +456,27 @@ msgid "Partners & Donors"
 msgstr "Miembros y Donantes"
 
 #: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
-msgid "The "
-msgstr "el/la"
+#: lmkp/templates/emails/activation.mak:10
+#: lmkp/templates/emails/approval.mak:12
+#: lmkp/templates/emails/confirmation.mak:7
+msgid "The Land Observatory"
+msgstr "Observatorio de Adquisiciones de Tierras"
 
 #: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
-msgid " is a pilot project by some partners of the "
-msgstr "Es un proyecto piloto por parte de los miembros de"
+msgid "is a pilot project by some partners of the"
+msgstr "es un proyecto piloto por parte de los miembros de"
 
 #: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
 msgid "Land Matrix"
-msgstr "Observatorio Global de Adquisiciones de Tierras."
+msgstr "Observatorio Global de Adquisiciones de Tierras"
 
 #: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
 msgid ""
-", designed to provide greater context and deeper insight on land deals, from "
-"a more local perspective."
+"designed to provide greater context and deeper insight on land deals, "
+"from a more local perspective."
 msgstr ""
-"diseñado para brindar mayor contexto y una visión más profunda de los casos "
-"de adquisiciones de tierra, desde una perspectiva más local."
+"diseñado para brindar mayor contexto y una visión más profunda de los "
+"casos de adquisiciones de tierra, desde una perspectiva más local."
 
 #: lmkp/templates/landing_page.mak:194
 msgid "Welcome to the "
@@ -476,11 +492,11 @@ msgstr "del"
 
 #: lmkp/templates/landing_page.mak:194
 msgid ""
-". This demo version is for learning and experimentation purposes, so first-"
-"time users can get a feel for the Observatory and its functions."
+". This demo version is for learning and experimentation purposes, so "
+"first-time users can get a feel for the Observatory and its functions."
 msgstr ""
-". Esta versión demo es para fines de aprendizaje y de experimentación así "
-"los que usan por primera vez la plataforma podrán tener una idea del "
+". Esta versión demo es para fines de aprendizaje y de experimentación así"
+" los que usan por primera vez la plataforma podrán tener una idea del "
 "Observatorio y de sus funciones."
 
 #: lmkp/templates/landing_page.mak:197
@@ -501,50 +517,50 @@ msgstr "O toma un vistazo rápido:"
 
 #: lmkp/templates/landing_page.mak:269
 msgid ""
-"Users in select pilot countries gather, explore and analyze spatial data on "
-"large-scale land acquisitions. Data is managed and reviewed locally by "
-"partners."
+"Users in select pilot countries gather, explore and analyze spatial data "
+"on large-scale land acquisitions. Data is managed and reviewed locally by"
+" partners."
 msgstr ""
-"Usuarios en los países pilotos seleccionados, reunen, exploran y analizan "
-"datos espaciales de las adquisiciones de tierra a gran escala. La data es "
-"administrada y revisada localmente por los miembros."
+"Usuarios en los países pilotos seleccionados, reunen, exploran y analizan"
+" datos espaciales de las adquisiciones de tierra a gran escala. La data "
+"es administrada y revisada localmente por los miembros."
 
 #: lmkp/templates/landing_page.mak:276
 msgid ""
-"Users can see deals in full geographical context, learn more about investors "
-"and the kinds of investments in question."
+"Users can see deals in full geographical context, learn more about "
+"investors and the kinds of investments in question."
 msgstr ""
-"Usuarios pueden ver los casos en un completo contexto geográfico, aprender "
-"más sobre los inversores y los tipos de inversión en cuestión"
+"Usuarios pueden ver los casos en un completo contexto geográfico, "
+"aprender más sobre los inversores y los tipos de inversión en cuestión"
 
 #: lmkp/templates/landing_page.mak:283
 msgid ""
-"You can also select a specific land deal to see more: \"who\" (investors and "
-"other stakeholders) and \"what\" the land will be used for."
+"You can also select a specific land deal to see more: \"who\" (investors "
+"and other stakeholders) and \"what\" the land will be used for."
 msgstr ""
-"Puedes también seleccionar un caso específico para ver más: \"quién"
-"\" (inversores y otras organizaciones) y \"qué\" la tierra será usada para."
+"Puedes también seleccionar un caso específico para ver más: \"quién\" "
+"(inversores y otras organizaciones) y \"qué\" la tierra será usada para."
 
 #: lmkp/templates/landing_page.mak:290
 msgid ""
 "You can go further and learn more about an investor, seeing the same "
 "investors other land deals."
 msgstr ""
-"Puedes ir más lejos y aprender más acerca de un inversor, viendo al mismo "
-"inversor en otros casos de adquisición de tierras."
+"Puedes ir más lejos y aprender más acerca de un inversor, viendo al mismo"
+" inversor en otros casos de adquisición de tierras."
 
 #: lmkp/templates/landing_page.mak:297
 msgid ""
-"Logged in users can also help contribute and update data, and anybody can "
-"freely comment on it."
+"Logged in users can also help contribute and update data, and anybody can"
+" freely comment on it."
 msgstr ""
-"Los usuarios registrados también pueden ayudar contribuyendo y actualizando "
-"data, y cualquiera siéntase libre de dejar su comentario."
+"Los usuarios registrados también pueden ayudar contribuyendo y "
+"actualizando data, y cualquiera siéntase libre de dejar su comentario."
 
 #: lmkp/templates/landing_page.mak:304
 msgid ""
-"You can filter the land deals by various attributes - like size, or crop. Or "
-"make a spatial selection of land deals."
+"You can filter the land deals by various attributes - like size, or crop."
+" Or make a spatial selection of land deals."
 msgstr ""
 "Puedes filtrar los casos de adquisiciones de tierra de acuerdo a varios "
 "atributos - tales como tamaño, tipo de cultivo. O hacer una selección "
@@ -614,16 +630,16 @@ msgid ""
 "time users can get a feel for the Observatory and its functions."
 msgstr ""
 "Esta versión Demo es para fines de aprendizaje y experimentación, de tal "
-"forma que aquellos que lo utilizan por primera vez comprendan el sentido del "
-"Observatorio y sus funciones."
+"forma que aquellos que lo utilizan por primera vez comprendan el sentido "
+"del Observatorio y sus funciones."
 
 #: lmkp/templates/login_form.mak:81
 msgid ""
 "New data added by users to the demo has not been verified in any way. It "
 "will be visible to the public, but the database will be reset regularly."
 msgstr ""
-"Nueva data agregada por usuarios para el Demo no ha sido verificada. Esta "
-"será visible públicamente, pero la base de datos será formateada "
+"Nueva data agregada por usuarios para el Demo no ha sido verificada. Esta"
+" será visible públicamente, pero la base de datos será formateada "
 "regularmente."
 
 #: lmkp/templates/map_view.mak:3
@@ -710,16 +726,16 @@ msgstr "Moderación"
 
 #: lmkp/templates/partners_view.mak:11
 msgid ""
-"The pilot project is coordinated by the International Land Coalition and the "
-"Centre for Development and Environment at the University of Bern, "
-"Switzerland. It is funded by the Swiss Agency for Development Cooperation, "
-"with co-funding from other ILC and CDE programs."
+"The pilot project is coordinated by the International Land Coalition and "
+"the Centre for Development and Environment at the University of Bern, "
+"Switzerland. It is funded by the Swiss Agency for Development "
+"Cooperation, with co-funding from other ILC and CDE programs."
 msgstr ""
 "El proyecto piloto es coordinado por la Coalición Internacional para el "
 "Acceso a la Tierra y el Centro para el Desarrollo y el Ambiente de la "
 "Universidad de Berna, Suiza. Es financiado por la Agencia Suiza para el "
-"Desarrollo y la Cooperación, con el cofinanciamiento de otros programas de "
-"ILC y de CDE"
+"Desarrollo y la Cooperación, con el cofinanciamiento de otros programas "
+"de ILC y de CDE"
 
 #: lmkp/templates/reset_form.mak:50
 msgid "Reset password"
@@ -773,8 +789,8 @@ msgstr "Gracias por tu registro"
 
 #: lmkp/templates/user_registration_success.mak:8
 msgid ""
-"A message with an activation link has been sent to your email address. Your "
-"account will be approved after activation."
+"A message with an activation link has been sent to your email address. "
+"Your account will be approved after activation."
 msgstr ""
 "Un mensaje con un enlace de activación de cuenta ha sido enviado a tu "
 "dirección de correo electrónico. Tu cuenta será aprobada después de la "
@@ -813,8 +829,7 @@ msgstr "Extensión del mapa"
 
 #: lmkp/templates/activities/grid.mak:58
 msgid "You are currently only seeing Deals which are visible on the map."
-msgstr ""
-"En este momento estás viendo únicamente Casos que son visibles en el mapa"
+msgstr "En este momento estás viendo únicamente Casos que son visibles en el mapa"
 
 #: lmkp/templates/activities/grid.mak:59
 msgid "Show all Deals of the profile."
@@ -877,28 +892,21 @@ msgstr "Gracias por registrarte en el portal landobservatory.org!"
 
 #: lmkp/templates/emails/activation.mak:5
 msgid ""
-"In order to activate your account please visit the following link or copy it "
-"to your web browser. The activation link expires in 48 hours."
+"In order to activate your account please visit the following link or copy"
+" it to your web browser. The activation link expires in 48 hours."
 msgstr ""
-"De acuerdo al orden para activar tu cuenta, por favor visita el siguiente "
-"enlace o cópialo en tu navegador. Este enlace expirará en 48 horas"
+"De acuerdo al orden para activar tu cuenta, por favor visita el siguiente"
+" enlace o cópialo en tu navegador. Este enlace expirará en 48 horas"
 
 #: lmkp/templates/emails/activation.mak:8
 msgid "Your account will be approved after activation."
 msgstr "Tu cuenta será aprobada luego de la activación"
 
-#: lmkp/templates/emails/activation.mak:10
-#: lmkp/templates/emails/approval.mak:12
-#: lmkp/templates/emails/confirmation.mak:7
-msgid "The Land Observatory"
-msgstr "Observatorio de Adquisiciones de Tierras"
-
 #: lmkp/templates/emails/approval.mak:1
-msgid ""
-"The following user requests approval for the landobservatory.org platform:"
+msgid "The following user requests approval for the landobservatory.org platform:"
 msgstr ""
-"El siguiente usuario solicita la aprobación de la plataforma landobservatory."
-"org"
+"El siguiente usuario solicita la aprobación de la plataforma "
+"landobservatory.org"
 
 #: lmkp/templates/emails/approval.mak:3
 msgid "Username:"
@@ -922,11 +930,11 @@ msgstr "Perfiles"
 
 #: lmkp/templates/emails/approval.mak:9
 msgid ""
-"In order to approve this account, please visit the following link or copy it "
-"to your web browser."
+"In order to approve this account, please visit the following link or copy"
+" it to your web browser."
 msgstr ""
-"En orden para la aprobación de esta cuenta, por favor visitar el siguiente "
-"enlace o cópialo en tu navegador"
+"En orden para la aprobación de esta cuenta, por favor visitar el "
+"siguiente enlace o cópialo en tu navegador"
 
 #: lmkp/templates/emails/confirmation.mak:3
 msgid "Your account has been approved and you are ready to contribute!"
@@ -937,28 +945,25 @@ msgid "Please proceed to:"
 msgstr "Por favor proceder a:"
 
 #: lmkp/templates/form/customFileDisplay.mak:35
-#| msgid "Upload a new file"
 msgid "Upload a file"
-msgstr ""
+msgstr "Subir un archivo"
 
 #: lmkp/templates/form/customFileDisplay.mak:43
 #: lmkp/templates/form/readonly/customFileDisplay.mak:14
-#| msgid "View file"
 msgid "View this file"
-msgstr ""
+msgstr "Ver este archivo"
 
 #: lmkp/templates/form/customFileDisplay.mak:44
-#| msgid "Click to delete this filter"
 msgid "Delete this file"
-msgstr ""
+msgstr "Borrar este archivo"
 
 #: lmkp/templates/form/customFileDisplay.mak:45
 msgid "Warning"
-msgstr ""
+msgstr "Atención"
 
 #: lmkp/templates/form/customFileDisplay.mak:46
 msgid "Are you sure you want to delete this file?"
-msgstr ""
+msgstr "Está seguro que desea borrar este archivo"
 
 #: lmkp/templates/form/customFileDisplay.mak:47 lmkp/views/translation.py:116
 msgid "Yes"
@@ -970,7 +975,7 @@ msgstr "No"
 
 #: lmkp/templates/form/customFileDisplay.mak:49
 msgid "No file uploaded yet"
-msgstr ""
+msgstr "Ningún archivo ha sido cargado aún"
 
 #: lmkp/templates/form/customInvolvementMapping.mak:26
 msgid "Select Investor"
@@ -982,12 +987,12 @@ msgstr "Remover inversor"
 
 #: lmkp/templates/form/customMapMapping.mak:42
 msgid ""
-"Click on the map to set the location of the deal. Please zoom in to set the "
-"point as accurately as possible."
+"Click on the map to set the location of the deal. Please zoom in to set "
+"the point as accurately as possible."
 msgstr ""
-"Dar click en el mapa para visualizar la localización del Caso. Por favor, "
-"acercar la imagen para ubicar el punto y asegurarlo con la mayor precisión "
-"posible. "
+"Dar click en el mapa para visualizar la localización del Caso. Por favor,"
+" acercar la imagen para ubicar el punto y asegurarlo con la mayor "
+"precisión posible. "
 
 #: lmkp/templates/form/form_activity.mak:7
 msgid "Deal Editor"
@@ -995,22 +1000,23 @@ msgstr "Editor de Casos"
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:30
 msgid "File upload"
-msgstr ""
+msgstr "Archivo cargado"
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:32
 msgid ""
-"Please note that the file upload may take a while depending on your Internet "
-"connection."
+"Please note that the file upload may take a while depending on your "
+"Internet connection."
 msgstr ""
+"Por favor, tenga en cuenta que la carga del archivo puede tomar unos "
+"minutos dependiendo de su conexión de internet"
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:34
-#| msgid "Valid Email"
 msgid "Valid files"
-msgstr ""
+msgstr "Archivos válidos"
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:36
 msgid "Maximum file size"
-msgstr ""
+msgstr "Extensión máxima de archivo"
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:65
 #: lmkp/views/translation.py:115
@@ -1029,7 +1035,7 @@ msgstr "Error"
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:159
 msgid "The file is being uploaded. Please do not close this window!"
-msgstr ""
+msgstr "El archivo está siendo cargado. Por favor no cierre esta ventana"
 
 #: lmkp/templates/form/form_stakeholder.mak:8
 msgid "Stakeholder Editor"
@@ -1040,13 +1046,12 @@ msgid ""
 "The location of the deal is required. Please select a point on the map "
 "before continuing."
 msgstr ""
-"La ubicación del caso es requerida. Por favor selecciona un punto en el mapa "
-"antes de continuar"
+"La ubicación del caso es requerida. Por favor selecciona un punto en el "
+"mapa antes de continuar"
 
 #: lmkp/templates/form/readonly/customFileDisplay.mak:15
-#| msgid "Download file"
 msgid "Download this file"
-msgstr ""
+msgstr "Descargar este archivo"
 
 #: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:5
 #: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:11
@@ -1080,8 +1085,8 @@ msgid ""
 "You are seeing a pending version which needs to be reviewed before it is "
 "publicly visible."
 msgstr ""
-"Estás viendo una versión pendiente que necesita ser revisada antes de ser "
-"públicamente visible."
+"Estás viendo una versión pendiente que necesita ser revisada antes de ser"
+" públicamente visible."
 
 #: lmkp/templates/form/readonly/form.mak:20
 msgid "Inactive Version"
@@ -1169,7 +1174,8 @@ msgstr "Seleccionar un Inversor existente"
 #: lmkp/templates/stakeholders/form_embedded.mak:59
 msgid "Start typing (at least 4 characters) to search a Stakeholder by name."
 msgstr ""
-"Empieza tipeando (mínimo 4 caracteres) para buscar un Inversor por su nombre"
+"Empieza tipeando (mínimo 4 caracteres) para buscar un Inversor por su "
+"nombre"
 
 #: lmkp/templates/stakeholders/form_embedded.mak:61
 msgid "Search ..."
@@ -1302,8 +1308,8 @@ msgstr "Aviso"
 
 #: lmkp/views/form.py:47
 msgid ""
-"Unsaved data of this item was found in the session. You may continue to edit "
-"this form."
+"Unsaved data of this item was found in the session. You may continue to "
+"edit this form."
 msgstr ""
 "La data no guardada de este item fue encontrada en esta sesión. Puedes "
 "continuar editando este formulario."
@@ -1314,8 +1320,8 @@ msgid ""
 "Unsaved data from another form %s was found in the session and will be "
 "deleted if you continue to edit this form."
 msgstr ""
-"Data no guardada desde otro formulario %s fue encontrada en la sesión y será "
-"borrada si continúa editando este formulario"
+"Data no guardada desde otro formulario %s fue encontrada en la sesión y "
+"será borrada si continúa editando este formulario"
 
 #: lmkp/views/form.py:49
 msgid "Click here to delete the session data to clear the form."
@@ -1327,11 +1333,12 @@ msgstr "Mira los cambios no guardados de este Caso y remítelos."
 
 #: lmkp/views/form.py:52
 msgid ""
-"The Deal was successfully created or updated. It is now pending and needs to "
-"be reviewed by a moderator before it is publicly visible."
+"The Deal was successfully created or updated. It is now pending and needs"
+" to be reviewed by a moderator before it is publicly visible."
 msgstr ""
 "El caso fue creado o actualizado correctamente. Ahora está pendiente y "
-"necesita ser revisado por un moderador antes de que sea públicamente visible."
+"necesita ser revisado por un moderador antes de que sea públicamente "
+"visible."
 
 #: lmkp/views/form.py:53
 msgid "View the Deal."
@@ -1347,12 +1354,12 @@ msgstr "Ingresaste un formulario vacío o no hiciste cambio alguno"
 
 #: lmkp/views/form.py:56
 msgid ""
-"The Stakeholder was successfully created or updated. It is not pending and "
-"needs to be reviewed by a moderator before it is publicly visible."
+"The Stakeholder was successfully created or updated. It is not pending "
+"and needs to be reviewed by a moderator before it is publicly visible."
 msgstr ""
 "El Inversor fue creado o actualizado correctamente. No se encuentra "
-"pendiente y necesita ser revisado por un moderador antes de ser públicamente "
-"visible"
+"pendiente y necesita ser revisado por un moderador antes de ser "
+"públicamente visible"
 
 #: lmkp/views/form.py:57
 msgid "View the Stakeholder"
@@ -1362,7 +1369,7 @@ msgstr "Ver el inversor"
 msgid "Submit"
 msgstr "Entregar información"
 
-#: lmkp/views/form_config.py:817
+#: lmkp/views/form_config.py:821
 msgid "Select"
 msgstr "Seleccionar"
 
@@ -1380,8 +1387,8 @@ msgstr "Observatorio de Adquisiciones de Tierra - Clave reseteada"
 
 #: lmkp/views/login.py:107
 msgid ""
-"Password reset was successful. An email containing the new password has been "
-"sent to your email address."
+"Password reset was successful. An email containing the new password has "
+"been sent to your email address."
 msgstr ""
 "Cambio de clave exitoso. Un e-mail conteniendo la nueva clave ha sido "
 "enviado a tu dirección de correo electrónico"
@@ -1408,11 +1415,11 @@ msgstr "Decisión de revisión desconocida"
 
 #: lmkp/views/protocol.py:731
 msgid ""
-"At least one of the involved Stakeholders cannot be reviewed. Click on the "
-"icon next to the involvement for further details."
+"At least one of the involved Stakeholders cannot be reviewed. Click on "
+"the icon next to the involvement for further details."
 msgstr ""
-"Al menos uno de los Inversores involucrados no puede ser revisado. Dar click "
-"en el Ícono Siguiente de la participación por más detalles"
+"Al menos uno de los Inversores involucrados no puede ser revisado. Dar "
+"click en el Ícono Siguiente de la participación por más detalles"
 
 #: lmkp/views/protocol.py:733
 msgid ""
@@ -1663,8 +1670,8 @@ msgid ""
 "You are seeing a {0} version, which needs to be reviewed before it is "
 "publicly visible."
 msgstr ""
-"Estás viendo una versión {0}, la que necesita ser revisada antes de hacerse "
-"públicamente visible"
+"Estás viendo una versión {0}, la que necesita ser revisada antes de "
+"hacerse públicamente visible"
 
 #: lmkp/views/translation.py:150
 msgid ""
@@ -1684,16 +1691,15 @@ msgstr ""
 
 #: lmkp/views/translation.py:152
 msgid "You are seeing a {0} version, which was never publicly visible."
-msgstr ""
-"Estás viendo una versión {0}, la cual nunca estuvo públicamente visible"
+msgstr "Estás viendo una versión {0}, la cual nunca estuvo públicamente visible"
 
 #: lmkp/views/translation.py:153
 msgid ""
-"You are seeing an {0} version, which was edited by a moderator and was never "
-"publicly visible."
+"You are seeing an {0} version, which was edited by a moderator and was "
+"never publicly visible."
 msgstr ""
-"Estás viendo una versión {0}, la cual fue editada por un moderador y nunca "
-"estuvo públicamente visible"
+"Estás viendo una versión {0}, la cual fue editada por un moderador y "
+"nunca estuvo públicamente visible"
 
 #: lmkp/views/translation.py:154
 msgid "Date"
@@ -1822,7 +1828,8 @@ msgstr "Puedes seleccionar un punto en el mapa o ingresar unas coordenadas"
 #: lmkp/views/translation.py:203
 msgid "You can drag and drop the point. Once you are done, click \"Continue\"."
 msgstr ""
-"Puedes arrastrar y ubicar el punto. Una vez hecho dar click en \"Continuar\"."
+"Puedes arrastrar y ubicar el punto. Una vez hecho dar click en "
+"\"Continuar\"."
 
 #: lmkp/views/translation.py:205
 msgid "No Deals found"
@@ -1847,7 +1854,8 @@ msgstr "Versiones pendientes de los casos"
 #: lmkp/views/translation.py:210
 msgid "This deal has pending changes. Click to review them in a popup window."
 msgstr ""
-"El Caso tiene cambios pendientes. Dar click para revisarlos en otra ventana"
+"El Caso tiene cambios pendientes. Dar click para revisarlos en otra "
+"ventana"
 
 #: lmkp/views/translation.py:211
 msgid "Review versions of Deal {0}"
@@ -1899,9 +1907,9 @@ msgstr "Filtrar Inversores"
 
 #: lmkp/views/translation.py:228
 msgid ""
-"No associated Stakeholders so far. You can search and select a Stakeholder "
-"using the Search field below. Or you can create a new Stakeholder by "
-"clicking on the button above."
+"No associated Stakeholders so far. You can search and select a "
+"Stakeholder using the Search field below. Or you can create a new "
+"Stakeholder by clicking on the button above."
 msgstr ""
 "Hasta ahora no hay Inversores asociados. Puedes buscar y seleccionar un "
 "Inversor usando el Campo de Búsqueda (abajo). O puede crear un nuevo "
@@ -1929,7 +1937,8 @@ msgstr "Versiones pendientes de Inversores"
 
 #: lmkp/views/translation.py:234
 msgid ""
-"This stakeholder has pending changes. Click to review them in a popup window."
+"This stakeholder has pending changes. Click to review them in a popup "
+"window."
 msgstr ""
 "Este inversor tiene cambios pendientes. Dar click para revisarlos en una "
 "nueva ventana"
@@ -1955,22 +1964,22 @@ msgid ""
 "Approving this version will create a new version. (further additional "
 "information to come)"
 msgstr ""
-"Aprobando esta versión se creará una nueva versión. (más información le será "
-"alcanzada)"
+"Aprobando esta versión se creará una nueva versión. (más información le "
+"será alcanzada)"
 
 #: lmkp/views/translation.py:262
 msgid "These changes are based on a version which is not the active version."
-msgstr ""
-"Estos cambios están realizados en una versión que no es la versión activa"
+msgstr "Estos cambios están realizados en una versión que no es la versión activa"
 
 #: lmkp/views/translation.py:263
 msgid ""
-"There are some mandatory keys missing. The item cannot be approved without "
-"these keys. Please click the \"edit\" button to add the missing keys."
+"There are some mandatory keys missing. The item cannot be approved "
+"without these keys. Please click the \"edit\" button to add the missing "
+"keys."
 msgstr ""
-"Falta algunos campos obligatorios. El item no puede ser aprobado sin estos "
-"campos. Por favor dar click en el botón \"Editar\" para completar los campos "
-"obligatorios faltantes"
+"Falta algunos campos obligatorios. El item no puede ser aprobado sin "
+"estos campos. Por favor dar click en el botón \"Editar\" para completar "
+"los campos obligatorios faltantes"
 
 #: lmkp/views/translation.py:266
 msgid "Review Deal"
@@ -1978,12 +1987,13 @@ msgstr "Revisar Caso"
 
 #: lmkp/views/translation.py:267
 msgid ""
-"The Activity of this involvement cannot be reviewed from the Stakeholder's "
-"side. Please review the Activity to approve or reject this involvement."
+"The Activity of this involvement cannot be reviewed from the "
+"Stakeholder's side. Please review the Activity to approve or reject this "
+"involvement."
 msgstr ""
-"La Actividad de esta participación no puede ser revisada desde el lado del "
-"Inversor. Por favor revisar la Actividad para aprobar o rechazar esta "
-"participación."
+"La Actividad de esta participación no puede ser revisada desde el lado "
+"del Inversor. Por favor revisar la Actividad para aprobar o rechazar esta"
+" participación."
 
 #: lmkp/views/translation.py:268
 msgid "Review Comment"
@@ -2011,8 +2021,8 @@ msgstr "Muestra los cambios pendientes"
 
 #: lmkp/views/translation.py:274
 msgid ""
-"The Stakeholder of this involvement has no active version and cannot be set "
-"active. Please review the Stakeholder first."
+"The Stakeholder of this involvement has no active version and cannot be "
+"set active. Please review the Stakeholder first."
 msgstr ""
 "El Inversor de esta participación no tiene versión activa y no puede ser "
 "activa. Por favor, revisar primero el Inversor"
@@ -2100,3 +2110,17 @@ msgstr "Observatorio de Adquisiciones de Tierras: Activa tu cuenta"
 #: lmkp/views/user.py:347
 msgid "Update"
 msgstr "Actualizar"
+
+#~ msgid "is a pilot project by some partners of the "
+#~ msgstr "es un proyecto piloto por parte de los miembros de"
+
+#~ msgid ""
+#~ ", designed to provide greater context"
+#~ " and deeper insight on land deals,"
+#~ " from a more local perspective."
+#~ msgstr ""
+#~ "diseñado para brindar mayor contexto y"
+#~ " una visión más profunda de los "
+#~ "casos de adquisiciones de tierra, desde"
+#~ " una perspectiva más local."
+
