@@ -1038,9 +1038,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
                     elif (maintag.getKey().getType().lower() == 'checkbox'
                         and t['key'] in data[cat][thmg][tgid]):
                         # Checkboxes: Add the data to the list of tuples
-                        data[cat][thmg][tgid][t['key']].append(
-                            (t['value'], taggroup['tg_id'])
-                        )
+                        data[cat][thmg][tgid][t['key']] += tagsdata[t['key']]
                     else:
                         log.debug('DUPLICATE TAGGROUP: Taggroup %s in thematic group %s and category %s appears twice although it is not repeatable!' % (tgid, thmg, cat))
                 else:

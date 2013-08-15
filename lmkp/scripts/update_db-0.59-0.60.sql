@@ -6,6 +6,8 @@ This is what it does:
   to match ISO 3166-1 (http://en.wikipedia.org/wiki/ISO_3166-1).
 - Drop a NOT NULL constraint on the table "categories".
 - Change the type of A_Key "Files" from "Text" to "File".
+- Inserts new Language "Spanish".
+- Insert new Group and Permission for "Translators" and give permissions to admin.
 */
 
 /*
@@ -97,4 +99,25 @@ DELETE FROM data.sh_values WHERE fk_sh_key = 1 AND value = 'Spratly islands';
 ALTER TABLE data.categories ALTER COLUMN "type" DROP NOT NULL;
 
 -- Change type of A_Key "Files" from "Text" to "File"
-UPDATE data.a_values SET type = 'File' WHERE key = 'Files' AND fk_language = NULL;
+UPDATE data.a_keys SET type = 'File' WHERE key = 'Files' AND fk_language = NULL;
+
+-- Insert a new Language "Spanish"
+INSERT INTO data.languages(id, english_name, local_name, locale)
+    VALUES (3, 'Spanish', 'Español', 'es');
+SELECT setval('data.languages_id_seq', 3, true);
+
+-- Insert a new Group and Permission for "Translators" and give permissions to admin.
+INSERT INTO data.groups(id, name, description)
+    VALUES (4, 'translators', NULL);
+SELECT setval('data.groups_id_seq', 4, true);
+INSERT INTO data.permissions(id, name, description)
+    VALUES (5, 'translate', 'Can add or edit translations.');
+SELECT setval('data.permissions_id_seq', 5, true);
+INSERT INTO data.groups_permissions(
+            id, fk_group, fk_permission)
+    VALUES (9, 4, 5);
+SELECT setval('data.groups_permissions_id_seq', 9, true);
+INSERT INTO data.users_groups(id, fk_user, fk_group)
+    VALUES (28, 1, 4);
+SELECT setval('data.users_groups_id_seq', 28, true);
+

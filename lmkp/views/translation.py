@@ -648,6 +648,7 @@ def _extractCategories(request, lang, separator):
 
     def _processCategories(originalCategoryList, translatedCategoryList, type, separator):
 
+        categories = []
         strings = []
 
         originalCategories = sorted(originalCategoryList.getCategories(), key=lambda c:c.getId())
@@ -656,11 +657,30 @@ def _extractCategories(request, lang, separator):
         for i, originalCategory in enumerate(originalCategories):
             translatedCategory = translatedCategories[i]
 
-            strings.append(separator.join([
-                originalCategory.getName(),
-                translatedCategory.getTranslation(True),
-                type
-            ]))
+            # Add each category only once
+            if originalCategory.getName() not in categories:
+                categories.append(originalCategory.getName())
+                strings.append(separator.join([
+                    originalCategory.getName(),
+                    translatedCategory.getTranslation(True),
+                    type
+                ]))
+
+            # Subcategories
+            originalSubcategories = sorted(originalCategory.getThematicgroups(), key=lambda c:c.getId())
+            translatedSubcategories = sorted(translatedCategory.getThematicgroups(), key=lambda c:c.getId())
+
+            for j, originalSubcategory in enumerate(originalSubcategories):
+                translatedSubcategory = translatedSubcategories[j]
+
+                # Add each subcategory only once
+                if originalSubcategory.getName() not in categories:
+                    categories.append(originalSubcategory.getName())
+                    strings.append(separator.join([
+                        originalSubcategory.getName(),
+                        translatedSubcategory.getTranslation(True),
+                        type
+                    ]))
 
         return strings
 
