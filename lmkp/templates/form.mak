@@ -1,6 +1,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
     <head>
-        <title>${_("FORM TEST")}</title>
+        <title>FORM TEST</title>
         <!-- Meta Tags -->
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <!-- CSS -->

@@ -1,5 +1,5 @@
 % if field.name == 'URL / Web':
-<a href="${cstruct}">${cstruct}</a>
+<a href="${cstruct}" target="_blank">${cstruct}</a>
 % else:
 ${cstruct}
 % endif

@@ -31,12 +31,12 @@ def profile_directory_path(request=None):
     """
     return request.registry.settings['lmkp.profiles_dir']
 
-def codes_directory_path():
+def translation_directory_path():
     """
-    Returns the absolute path to the directory containing the files for code
+    Returns the absolute path to the directory containing the files for batch
     translation
     """
-    return "%s/documents/codes" % os.path.dirname(__file__)
+    return "%s/documents/translation" % os.path.dirname(__file__)
 
 def upload_directory_path(request):
     """

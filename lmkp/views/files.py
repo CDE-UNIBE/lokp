@@ -21,19 +21,120 @@ from pyramid.view import view_config
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.exc import MultipleResultsFound
 
+import colander
+import deform
+from mako.template import Template
+from pyramid.path import AssetResolver
+from pyramid.threadlocal import get_current_request
+lmkpAssetResolver = AssetResolver('lmkp')
+
 log = logging.getLogger(__name__)
 
 _ = TranslationStringFactory('lmkp')
 
-@view_config(route_name='file_upload', permission='edit')
-def file_upload(request):
+@view_config(route_name='file_upload_form_embedded', permission='edit',
+    renderer='lmkp:templates/fileupload_embedded.mak')
+def file_upload_form_embedded(request):
+    
+    class MemoryTmpStore(dict):
+        def preview_url(self, uid):
+            return None
+    tmpStore = MemoryTmpStore()
+
+    class Schema(colander.Schema):
+        file = colander.SchemaNode(
+            deform.FileData(),
+            widget=deform.widget.FileUploadWidget(tmpStore),
+            name='file',
+            title='File'
+        )
+
+    formid = 'fileupload'
+
+    schema = Schema()
+    deform.Form.set_default_renderer(mako_renderer)
+    form = deform.Form(schema, buttons=('submit',), formid=formid, 
+        use_ajax=True)
+
+    def succeed(uploadResponse):
+        """
+        Function called after file upload was handled.
+        """
+
+        if uploadResponse['success'] is True:
+            # Success
+            filename = uploadResponse['filename']
+            identifier = uploadResponse['fileidentifier']
+            message = uploadResponse['msg']
+
+            return '<script type="text/javascript">handleSuccess("%s", "%s", "%s");</script>' % (filename, identifier, message);
+
+        else:
+            # Failure
+            message = uploadResponse['msg']
+
+            return '<script type="text/javascript">handleFailure("%s");</script>' % message
+
+    reqts = form.get_widget_resources()
+
+    return {
+        'form': _get_rendered_form(request, form, success=succeed),
+        'js_links': reqts['js'],
+        'css_links': reqts['css']
+    }
+
+def _get_rendered_form(request, form, appstruct=colander.null, submitted='submit', success=None, readonly=False):
+    """
+    Based on method copied from http://deformdemo.repoze.org/allcode?start=70&end=114#line-70
+    """
+    captured = None
+
+    if submitted in request.POST:
+        # the request represents a form submission
+        try:
+            # try to validate the submitted values
+            controls = request.POST.items()
+            captured = form.validate(controls)
+
+            uploadResponse = handle_upload(request, captured['file'])
+
+            if success:
+                response = success(uploadResponse)
+                if response is not None:
+                    return response
+            html = form.render(captured)
+        except deform.ValidationFailure as e:
+            # the submitted values could not be validated
+            html = e.render()
+
+    else:
+        # the request requires a simple form rendering
+        html = form.render(appstruct, readonly=readonly)
+
+    return html
+
+def mako_renderer(tmpl_name, **kw):
+    """
+    A helper function to use the mako rendering engine.
+    It seems to be necessary to locate the templates by using the asset
+    resolver.
+    """
+
+    if tmpl_name == 'form':
+        tmpl_name = 'form_fileupload_embedded'
+
+    resolver = lmkpAssetResolver.resolve('templates/form/%s.mak' % tmpl_name)
+    template = Template(filename=resolver.abspath())
+
+    # Add the request to the keywords so it is available in the templates.
+    request = get_current_request()
+    kw['request'] = request
+
+    return template.render(**kw)
+
+def handle_upload(request, filedict):
     """
     Handle the upload of a new file.
-    Note that when uploading a file using a form in Ext, the content-type of the
-    server response needs to be in 'text/html', otherwise Ext will throw an
-    error when trying to decode the JSON string
-    http://stackoverflow.com/a/10388091
-
     http://code.google.com/p/file-uploader/
     """
 
@@ -43,115 +144,110 @@ def file_upload(request):
         'success': False,
         'msg': ''
     }
-    valid = True
 
     filename = None
     filetype = None
     file = None
+
     try:
-        filename = request.POST['file'].filename
-        file = request.POST['file'].file
-        filetype = request.POST['file'].type
+        filename = filedict['filename']
+        file = filedict['fp']
+        filetype = filedict['mimetype']
     except:
         ret['msg'] = _('Not all necessary values were provided.')
         valid = False
 
-    if (filename is not None and file is not None and filetype is not None
-        and valid is True):
+    if filename is None or file is None or filetype is None:
+        ret['msg'] = 'Uploaded file not found.'
 
-        # Check upload directory
-        if valid is True:
-            upload_path = upload_directory_path(request)
-            if upload_path is None or not os.path.exists(upload_path):
-                valid = False
-                ret['msg'] = _('Upload directory not specified or not found.')
+    # Check upload directory
+    upload_path = upload_directory_path(request)
+    if upload_path is None or not os.path.exists(upload_path):
+        ret['msg'] = _('Upload directory not specified or not found.')
+        return ret
 
-        # Check filetype
-        if valid is True:
-            fileextension = get_valid_file_extension(request, filetype)
-            if fileextension is None:
-                valid = False
-                ret['msg'] = _('File type is not valid.')
+    # Check filetype
+    fileextension = get_valid_file_extension(request, filetype)
+    if fileextension is None:
+        ret['msg'] = _('File type is not valid.')
+        return ret
 
-        # Check filesize
-        if valid is True:
-            size = get_file_size(file)
-            if size > upload_max_file_size(request):
-                valid = False
-                ret['msg'] = _('File is too big.')
+    # Check filesize
+    size = get_file_size(file)
+    if size > upload_max_file_size(request):
+        ret['msg'] = _('File is too big.')
+        return ret
 
-        if valid is True:
-            # Do the actual file processing
+    # Do the actual file processing
 
-            # Strip leading path from file name to avoid directory traversal
-            # attacks
-            old_filename = os.path.basename(filename)
+    # Strip leading path from file name to avoid directory traversal
+    # attacks
+    old_filename = os.path.basename(filename)
 
-            # Internet Explorer will attempt to provide full path for filename
-            # fix
-            old_filename = old_filename.split('\\')[-1]
+    # Internet Explorer will attempt to provide full path for filename
+    # fix
+    old_filename = old_filename.split('\\')[-1]
 
-            # Remove the extension and check the filename
-            clean_filename = '.'.join(old_filename.split('.')[:-1])
-            clean_filename = _clean_filename(clean_filename)
+    # Remove the extension and check the filename
+    clean_filename = '.'.join(old_filename.split('.')[:-1])
+    clean_filename = _clean_filename(clean_filename)
 
-            # Make sure the filename is not too long
-            if len(clean_filename) > 500:
-                clean_filename = clean_filename[:500]
+    # Make sure the filename is not too long
+    if len(clean_filename) > 500:
+        clean_filename = clean_filename[:500]
 
-            # Append the predefined file extension
-            clean_filename = '%s%s' % (clean_filename, fileextension)
+    # Append the predefined file extension
+    clean_filename = '%s%s' % (clean_filename, fileextension)
 
-            # Use a randomly generated UUID as filename
-            file_identifier = uuid.uuid4()
-            new_filename = '%s%s' % (file_identifier, fileextension)
+    # Use a randomly generated UUID as filename
+    file_identifier = uuid.uuid4()
+    new_filename = '%s%s' % (file_identifier, fileextension)
 
-            # Check if the directories already exist. If not, create them.
-            if not os.path.exists(os.path.join(upload_path, TEMP_FOLDER_NAME)):
-                os.makedirs(os.path.join(upload_path, TEMP_FOLDER_NAME))
+    # Check if the directories already exist. If not, create them.
+    if not os.path.exists(os.path.join(upload_path, TEMP_FOLDER_NAME)):
+        os.makedirs(os.path.join(upload_path, TEMP_FOLDER_NAME))
 
-            new_filepath = os.path.join(
-                upload_path, TEMP_FOLDER_NAME, new_filename
-            )
+    new_filepath = os.path.join(
+        upload_path, TEMP_FOLDER_NAME, new_filename
+    )
 
-            # Open the new file for writing
-            f = open(new_filepath, 'wb', 10000)
+    # Open the new file for writing
+    f = open(new_filepath, 'wb', 10000)
 
-            datalength = 0
+    datalength = 0
 
-            # Read the file in chunks
-            for chunk in _file_buffer(file):
-                f.write(chunk)
-                datalength += len(chunk)
-            f.close()
+    # Read the file in chunks
+    for chunk in _file_buffer(file):
+        f.write(chunk)
+        datalength += len(chunk)
+    f.close()
 
-            # Open the file again to get the hash
-            hash = get_file_hash(new_filepath)
+    # Open the file again to get the hash
+    hash = get_file_hash(new_filepath)
 
-            # Database values
-            db_file = File(
-                identifier = file_identifier,
-                name = clean_filename,
-                mime = filetype,
-                size = datalength,
-                hash = hash
-            )
-            Session.add(db_file)
+    # Database values
+    db_file = File(
+        identifier = file_identifier,
+        name = clean_filename,
+        mime = filetype,
+        size = datalength,
+        hash = hash
+    )
+    Session.add(db_file)
 
-            log.debug('The uploaded file (%s) was saved as %s at %s'
-                % (clean_filename, new_filename, new_filepath))
+    log.debug('The uploaded file (%s) was saved as %s at %s'
+        % (clean_filename, new_filename, new_filepath))
 
-            ret['filename'] = clean_filename
-            ret['fileidentifier'] = str(file_identifier)
-            
-            ret['msg'] = _('File was successfully uploaded')
-            ret['success'] = True
+    ret['filename'] = clean_filename
+    ret['fileidentifier'] = str(file_identifier)
+
+    ret['msg'] = _('File was successfully uploaded')
+    ret['success'] = True
 
     localizer = get_localizer(request)
     ret['msg'] = localizer.translate(ret['msg'])
 
-    # Send the response with content-type 'text/html'
-    return Response(content_type='text/html', body=json.dumps(ret))
+    return ret
 
 @view_config(route_name='file_view')
 def file_view(request):
@@ -297,7 +393,14 @@ def check_file_location_name(request, filevaluestring):
 
                 log.debug('Moved file %s from temporary folder to new location at %s.'
                     % (f_db.name, new_location))
-                
+
+    # Return the file information, use only the valid ones
+    rets = []
+    for i, fileidentifier in enumerate(fileidentifiers):
+        rets.append('%s|%s' % (filenames[i], fileidentifier))
+
+    return ','.join(rets)
+
 def get_file_hash(filepath, hexdigest=True):
     """
     Calculate the hash digest of a file.

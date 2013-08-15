@@ -151,6 +151,41 @@ if 'lmkp.tracking_id' in request.registry.settings:
                 right: 5%;
                 top: 5%;
             }
+            .confirmButtons {
+                margin-right: 5px;
+            }
+            .file-upload-button {
+                position: relative;
+                right: 0;
+                top: 0;
+            }
+            .fileDisplay {
+                margin-bottom: 5px;
+            }
+            .fileNameField input {
+                border: 1px solid #A4A4A4;
+                box-shadow: 0 0 3px #D8D8D8 inset;
+                color: #585858 !important;
+                outline: medium none;
+                height: 16px;
+                margin-right: 10px;
+            }
+            .fileNameField input:focus {
+                border: 1px solid #A4A4A4;
+                box-shadow: 0 0 3px #D8D8D8 inset;
+            }
+            .fileNameField a, .fileNameField button {
+                margin: 0 5px 8px 0;
+            }
+            .uploadButton {
+                margin-bottom: 15px;
+            }
+            .fileUploadTitle {
+                padding-top: 0;
+            }
+            .fileInput {
+                width: 300px !important;
+            }
 
         </style>
 
