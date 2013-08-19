@@ -175,7 +175,7 @@ if 'lmkp.tracking_id' in request.registry.settings:
                 box-shadow: 0 0 3px #D8D8D8 inset;
             }
             .fileNameField a, .fileNameField button {
-                margin: 0 5px 8px 0;
+                margin: 0 4px 8px 0;
             }
             .uploadButton {
                 margin-bottom: 15px;

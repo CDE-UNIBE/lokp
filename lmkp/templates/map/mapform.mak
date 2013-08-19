@@ -7,6 +7,7 @@
 
 <script type="text/javascript">
 
+    var bbox = null;
     % if coords:
         var pointIsSet = true;
         var coords = ${coords};

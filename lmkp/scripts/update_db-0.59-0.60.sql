@@ -99,7 +99,7 @@ DELETE FROM data.sh_values WHERE fk_sh_key = 1 AND value = 'Spratly islands';
 ALTER TABLE data.categories ALTER COLUMN "type" DROP NOT NULL;
 
 -- Change type of A_Key "Files" from "Text" to "File"
-UPDATE data.a_keys SET type = 'File' WHERE key = 'Files' AND fk_language = NULL;
+UPDATE data.a_keys SET type = 'File' WHERE key = 'Files' AND type = 'Text';
 
 -- Insert a new Language "Spanish"
 INSERT INTO data.languages(id, english_name, local_name, locale)
@@ -117,7 +117,5 @@ INSERT INTO data.groups_permissions(
             id, fk_group, fk_permission)
     VALUES (9, 4, 5);
 SELECT setval('data.groups_permissions_id_seq', 9, true);
-INSERT INTO data.users_groups(id, fk_user, fk_group)
-    VALUES (28, 1, 4);
-SELECT setval('data.users_groups_id_seq', 28, true);
-
+INSERT INTO data.users_groups(fk_user, fk_group)
+    VALUES (1, 4);
