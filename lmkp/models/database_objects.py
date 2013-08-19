@@ -912,7 +912,7 @@ class Category(Base):
     )
     id = Column(Integer, primary_key=True)
     name = Column(String(511), nullable=False)
-    type = Column(String(255), nullable=False)
+    type = Column(String(255))
     fk_language = Column(Integer, nullable=False)
     description = Column(Text)
     fk_category = Column(Integer)
@@ -920,12 +920,11 @@ class Category(Base):
     translations = relationship('Category', backref=backref('original',
         remote_side=[id]))
 
-    def __init__(self, id, name, type, fk_language, description=None, fk_category=None):
-        self.id = id
+    def __init__(self, name, fk_language=None, type=None, description=None, fk_category=None):
         self.name = name
         self.description = description
-        self.type = type
         self.fk_language = fk_language
+        self.type = type
         self.fk_category = fk_category
 
 
@@ -939,6 +938,8 @@ class Geonames(Base):
     name = Column(Text)
     asciiname = Column(Text)
     alternatenames = Column(Text)
+    fcode = Column(Text)
+    country = Column(Text)
     wkb_geometry = GeometryColumn(Point(dimension=2, srid=4326, spatial_index=True))
 
     #def __repr__(self):

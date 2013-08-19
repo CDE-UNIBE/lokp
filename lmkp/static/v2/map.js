@@ -137,7 +137,7 @@ $(document).ready(function() {
         }
     })
     ];
-    **/
+     **/
 
     var fillOpacity = 1;
    
@@ -659,14 +659,14 @@ $(document).ready(function() {
         var arr = location.split(',');
         if (arr.length == 4) {
             var extent = new OpenLayers.Bounds(arr);
-            map.zoomToExtent(extent);
+            map.zoomToExtent(extent, true);
         }
     } else {
         var f = new OpenLayers.Format.GeoJSON();
         // Variable profilePolygon is a GeoJSON geometry
         var profileExtent = f.read(profilePolygon, "Geometry");
         // Reproject the extent to spherical mercator projection and zoom the map to its extent
-        map.zoomToExtent(profileExtent.transform(geographicProjection, sphericalMercatorProjection).getBounds());
+        map.zoomToExtent(profileExtent.transform(geographicProjection, sphericalMercatorProjection).getBounds(), true);
     }
 
     /**** events ****/
@@ -742,8 +742,8 @@ $(document).ready(function() {
 
 
     /**
-     *
-     */
+         *
+         */
     function getBaseLayers(){
 
         var layers = [new OpenLayers.Layer.OSM("streetMap", [
@@ -812,23 +812,49 @@ function showContextLegend(layerName) {
         style: layer.params.STYLES,
         format: 'image/png',
         width: 25,
-        height: 25
+        height: 25,
+        legend_options: 'forceLabels:1;fontAntiAliasing:1;fontName:Nimbus Sans L Regular;'
     };
     var imgUrl = layer.url + '?' + $.param(imgParams);
 
     // Set the content: Image is hidden first while loading indicator is shown
     $('#mapModalHeader').html(tForLegend);
-    $('#mapModalBody').html('<div id="contextLegendImgLoading">' + tForLoading + '</div><div id="contextLegendContent" class="hide"><p>' + tForLegendforcontextlayer + ' <strong>' + layerName + '</strong>:</p><img id="contextLegendImg" src="' + imgUrl + '"></div>');
+    $('#mapModalBody').html('<div id="contextLegendImgLoading" style="text-align: center;"><img src="/static/img/ajax-loader-green.gif" alt="' + tForLoading + '" height="55" width="54"></div><div id="contextLegendContent" class="hide"><p>' + tForLegendforcontextlayer + ' <strong>' + layerName + '</strong>:</p><img id="contextLegendImg" src="' + imgUrl + '"></div>');
 
     // Show the model window
     $('#mapModal').modal();
 
     // Once the image is loaded, hide the loading indicator and show the image
-    $('#contextLegendImg').load(function() {
+    /*$('#contextLegendImg').load(function() {
         $('#contextLegendContent').removeClass('hide');
         $('#contextLegendImgLoading').hide();
-    });
+    });*/
 
+    var getCapabilitiesRequest = layer.url + '?' + $.param({
+        request: 'GetCapabilities',
+        namespace: 'lo'
+    });
+    $.get("/proxy", {
+        url: getCapabilitiesRequest
+    },
+    function(data){
+        var xmlDoc = $.parseXML(data);
+        $xml = $( xmlDoc );
+        $xml.find("Layer[queryable='1']").each(function(){
+            $layer = $( this );
+            if($layer.find("Name").first().text() == layer.params.LAYERS || $layer.find("Name").first().text() == layer.params.LAYERS.split(":")[1]){
+                var layerAbstract = $layer.find("Abstract").first().text();
+                $("<p>" + layerAbstract + "</p>").insertAfter('#contextLegendContent > p');
+                // Assuming to load and parse the GetCapabilites documents takes
+                // longer than the image, the "Loading ..." text is hidden and the
+                // #contextLegendContent div is shown as soon as the Ajax request
+                // has successfully finished.
+                $('#contextLegendContent').removeClass('hide');
+                $('#contextLegendImgLoading').hide();
+                return false;
+            }
+        });   
+    });
     return false;
 }
 

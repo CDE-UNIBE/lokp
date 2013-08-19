@@ -4,8 +4,11 @@ __author__ = "Adrian Weber, Centre for Development and Environment, University o
 __date__ = "$Jan 20, 2012 10:39:24 AM$"
 
 import geojson
+import mimetypes
 from lmkp.config import locale_profile_directory_path
 from lmkp.config import profile_directory_path
+from lmkp.config import valid_mime_extensions
+from lmkp.config import upload_max_file_size
 from lmkp.models.database_objects import A_Key
 from lmkp.models.database_objects import A_Value
 from lmkp.models.database_objects import Language
@@ -41,17 +44,34 @@ def form_geomtaggroups(request):
     Simple service to return all the mainkeys of taggroups which can have
     geometries as defined in the configuration yaml.
     """
+    categorylist = getCategoryList(request, 'activities')
+    return {'mainkeys': categorylist.getMainkeyWithGeometry()}
 
-    # TODO: Remove this once the config yaml is completely replaced!
-#    categorylist = getCategoryList(request, 'activities')
-#    mainkeys = categorylist.getMainkeyWithGeometry()
-    mainkeys = [
-        'Contract area (ha)',
-        'Current area in operation (ha)',
-        'Intended area (ha)'
-    ]
+def getFileUploadValidExtensions(request):
+    """
+    Return an ordered list of valid file extensions for uploads as defined in
+    the ini configuration of the application.
+    """
+    extensions = []
+    validExtensions = valid_mime_extensions(request)
+    for currentExtension in validExtensions:
+        for knownExtension in mimetypes.guess_all_extensions(currentExtension):
+            # Add each extension only once
+            if knownExtension not in extensions:
+                extensions.append(knownExtension)
+    return sorted(extensions)
 
-    return {'mainkeys': mainkeys}
+def getFileUploadMaximumSize(request):
+    """
+    Return a nicely rendered string of the maximum file size for uploads as
+    defined in the ini configuration of the application.
+    """
+    maxSize = upload_max_file_size(request)
+    if maxSize < (1024*1024):
+        maxSize = '%s KB' % (maxSize / 1024)
+    else:
+        maxSize = '%s MB' % round(maxSize / (1024*1024.0), 1)
+    return maxSize
 
 def merge_profiles(global_config, locale_config):
     """

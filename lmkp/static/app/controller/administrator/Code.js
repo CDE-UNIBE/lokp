@@ -50,7 +50,7 @@ Ext.define('Lmkp.controller.administrator.Code', {
             model: 'File',
             proxy: {
                 type: 'ajax',
-                url: '/codes/files',
+                url: '/translation/files',
                 reader: {
                     type: 'json',
                     root: 'files'

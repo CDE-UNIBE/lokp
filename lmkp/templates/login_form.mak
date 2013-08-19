@@ -59,16 +59,16 @@ if 'lmkp.mode' in request.registry.settings:
                 <h3>
                     ${_(u"Demo Version")}
                 </h3>
-                <p class="lead">${_('This is the demonstration version of the ')}<a href="http://www.landobservatory.org">${_('Land Observatory')}</a>.</p>
+                <p class="lead">${_('This is the demonstration version of the')} <a href="http://www.landobservatory.org">${_('Land Observatory')}</a>.</p>
                 <p>${_(u"Any member of the public can log-in as an Editor or a Moderator.")}</p>
 
-                <p><strong>${_('Editor')}</strong>${_(' has the permission to create or edit new Deals or Investors.')}</p>
+                <p><strong>${_('Editor')}</strong> ${_('has the permission to create or edit new Deals or Investors.')}</p>
                 <p class="login-info">
                     ${_('Username')}: editor<br/>
                     ${_('Password')}: editor
                 </p>
 
-                <p><strong>${_('Moderator')}</strong>${_(' has the additional permission to review pending changes.')}</p>
+                <p><strong>${_('Moderator')}</strong> ${_('has the additional permission to review pending changes.')}</p>
                 <p class="login-info">
                     ${_('Username')} moderator<br/>
                     ${_('Password')} moderator

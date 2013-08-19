@@ -105,7 +105,7 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
             #new-filter-value-internal {
                 width: 178px;
             }
-            .input-append #new-filter-value-internal {
+            .input-append #new-filter-value {
                 width: 147px;
             }
             .new-filter .dropdown-menu {
@@ -152,6 +152,41 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
                 position: absolute;
                 right: 5%;
                 top: 5%;
+            }
+            .confirmButtons {
+                margin-right: 5px;
+            }
+            .file-upload-button {
+                position: relative;
+                right: 0;
+                top: 0;
+            }
+            .fileDisplay {
+                margin-bottom: 5px;
+            }
+            .fileNameField input {
+                border: 1px solid #A4A4A4;
+                box-shadow: 0 0 3px #D8D8D8 inset;
+                color: #585858 !important;
+                outline: medium none;
+                height: 16px;
+                margin-right: 10px;
+            }
+            .fileNameField input:focus {
+                border: 1px solid #A4A4A4;
+                box-shadow: 0 0 3px #D8D8D8 inset;
+            }
+            .fileNameField a, .fileNameField button {
+                margin: 0 4px 8px 0;
+            }
+            .uploadButton {
+                margin-bottom: 15px;
+            }
+            .fileUploadTitle {
+                padding-top: 0;
+            }
+            .fileInput {
+                width: 300px !important;
             }
 
         </style>
@@ -224,7 +259,7 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
                                             class="active grid"
                                         % endif
                                         >
-                                        <a href="${t[0][0]}?${getQueryString(request.url, ret='queryString')}">
+                                        <a href="${t[0][0]}?${getQueryString(request.url, ret='queryString', remove=['page'])}">
                                             <i class="${t[1]}"></i>&nbsp;&nbsp;${t[2]}
                                         </a>
                                     </li>

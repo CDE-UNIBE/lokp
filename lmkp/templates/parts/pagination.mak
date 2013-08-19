@@ -29,10 +29,7 @@
 %>
 
 <div class="row-fluid">
-    <div class="span4 pagination">
-        ${_('Total number of ')}${itemsname}: <strong>${totalitems}</strong>
-    </div>
-    <div class="span4 pagination text-center">
+    <div class="pagination text-center">
         <ul>
             % if currentpage == 1:
                 <li class="disabled"><a>&laquo;</a></li>
@@ -88,7 +85,12 @@
 
         </ul>
     </div>
-    <div class="span4 text-right pagesizeselect">
+</div>
+<div class="row-fluid">
+    <div class="span4">
+        ${_('Total number of')} ${itemsname}: <strong>${totalitems}</strong>
+    </div>
+    <div class="span4 offset4 text-right">
         <div class="dropdown">
             ${itemsname} ${_('per page')}:
             <a class="dropdown-toggle" data-toggle="dropdown" href="#">

@@ -999,7 +999,7 @@ class Protocol(object):
 
             # Remember if the main tag of a taggroup was deleted. In this case
             # we will set it again at the end
-            maintag_deleted = False
+            deleted_maintag = None
 
             tg_ids.append(db_taggroup.tg_id)
 
@@ -1080,7 +1080,7 @@ class Protocol(object):
 #                                    )
 
                                     if db_taggroup.main_tag == db_tag:
-                                        maintag_deleted = True
+                                        deleted_maintag = db_tag
 
                                     copy_tag = False
 
@@ -1179,12 +1179,14 @@ class Protocol(object):
                                 and taggroupadded is False):
                                 item.add_taggroup(new_taggroup)
 
-            # If the main tag was deleted and no new one was set, we will simply
-            # use the first tag as a new main tag.
-            if (maintag_deleted is True and new_taggroup.main_tag is None
+            # If the main tag was deleted and no new one was set, we have to
+            # find the new main_tag in the list of tags (it has to have the same
+            # key as the old one)
+            if (deleted_maintag is not None and new_taggroup.main_tag is None
                 and len(new_taggroup.tags) > 0):
-                new_taggroup.main_tag = new_taggroup.tags[0]
-
+                for t in new_taggroup.tags:
+                    if deleted_maintag.key.key == t.key.key:
+                        new_taggroup.main_tag = t
 
         # Finally new tag groups (without id) need to be added
         # (and loop all again)
@@ -1397,13 +1399,26 @@ class Protocol(object):
                                     # Add new diff
                                     tags_to_add.append(new_t)
 
+                        changedMainTag = None
                         for tdt in tags_to_delete:
                             old_tg['tags'].remove(tdt)
+
+                            # Check if the removed tag was the main_tag.
+                            if ('main_tag' in old_tg
+                                and unicode(old_tg['main_tag']['key']) == unicode(tdt['key'])
+                                and unicode(old_tg['main_tag']['value']) == unicode(tdt['value'])):
+                                changedMainTag = tdt
 
 #                            log.debug('Removed old tag diff: %s' % tdt)
 
                         for tda in tags_to_add:
                             old_tg['tags'].append(tda)
+
+                            # If the main_tag was removed, store the new value
+                            # of it as new main_tag
+                            if (changedMainTag is not None
+                                and unicode(changedMainTag['key']) == unicode(tda['key'])):
+                                old_tg['main_tag']['value'] = tda['value']
 
 #                            log.debug('Added new tag diff: %s' % tda)
 
@@ -1582,7 +1597,7 @@ class Protocol(object):
             # Check if the files need to be moved (from temporary directory) or
             # renamed
             if key == 'Files':
-                check_file_location_name(request, value)
+                value = check_file_location_name(request, value)
 
             v = Value_Item(value=value)
             v.fk_language = lang_fk
