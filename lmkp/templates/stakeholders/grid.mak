@@ -15,9 +15,6 @@
             text-decoration: none;
             color: white;
         }
-        .pagesizeselect {
-            margin-top: 20px;
-        }
     </style>
 </%def>
 
@@ -51,7 +48,7 @@
         % if invfilter:
         <div class="alert alert-info">
             <i class="icon-filter"></i>&nbsp;
-            <strong>${_('Deal Filter')}</strong>: ${_('You are currently only seeing Investors which are involved in Deal ')}<a href="${request.route_url('activities_read_one', output='html', uid=a_uid)}">${a_uid[:6]}</a>.<br/><a href="${request.route_url('stakeholders_read_many', output='html')}">${_('Remove this filter and show all Investors')}</a>.
+            <strong>${_('Deal Filter')}</strong>: ${_('You are currently only seeing Investors which are involved in Deal')} <a href="${request.route_url('activities_read_one', output='html', uid=a_uid)}">${a_uid[:6]}</a>.<br/><a href="${request.route_url('stakeholders_read_many', output='html')}">${_('Remove this filter and show all Investors')}</a>.
         </div>
         % endif
 
@@ -80,7 +77,7 @@
                 % else:
                     <li>
                 % endif
-                    <a href="${t[0][0]}?${getQueryString(request.url, ret='queryString')}">${t[1]}</a>
+                    <a href="${t[0][0]}?${getQueryString(request.url, ret='queryString', remove=['page'])}">${t[1]}</a>
                 </li>
             % endfor
         </ul>

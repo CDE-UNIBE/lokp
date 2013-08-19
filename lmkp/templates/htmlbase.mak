@@ -105,7 +105,7 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
             #new-filter-value-internal {
                 width: 178px;
             }
-            .input-append #new-filter-value-internal {
+            .input-append #new-filter-value {
                 width: 147px;
             }
             .new-filter .dropdown-menu {
@@ -177,7 +177,7 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
                 box-shadow: 0 0 3px #D8D8D8 inset;
             }
             .fileNameField a, .fileNameField button {
-                margin: 0 5px 8px 0;
+                margin: 0 4px 8px 0;
             }
             .uploadButton {
                 margin-bottom: 15px;
@@ -259,7 +259,7 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
                                             class="active grid"
                                         % endif
                                         >
-                                        <a href="${t[0][0]}?${getQueryString(request.url, ret='queryString')}">
+                                        <a href="${t[0][0]}?${getQueryString(request.url, ret='queryString', remove=['page'])}">
                                             <i class="${t[1]}"></i>&nbsp;&nbsp;${t[2]}
                                         </a>
                                     </li>

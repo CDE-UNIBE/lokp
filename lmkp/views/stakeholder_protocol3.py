@@ -121,7 +121,10 @@ class StakeholderProtocol3(Protocol):
             'data': [sh.to_table(request) for sh in stakeholders]
         }
 
-    def read_one_by_version(self, request, uid, version):
+    def read_one_by_version(self, request, uid, version, **kwargs):
+
+        translate = kwargs.get('translate', True)
+
         relevant_stakeholders = self._get_relevant_stakeholders_one_by_version(uid, version)
 
         # Determine if and how detailed Involvements are to be displayed.
@@ -134,7 +137,8 @@ class StakeholderProtocol3(Protocol):
         )
 
         stakeholders = self._query_to_stakeholders(
-            request, query, involvements=inv_details, public_query=False
+            request, query, involvements=inv_details, public_query=False,
+            translate=translate
         )
 
         if len(stakeholders) == 0:

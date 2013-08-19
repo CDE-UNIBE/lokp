@@ -1,6 +1,64 @@
 var geographicProjection = new OpenLayers.Projection("EPSG:4326");
 var sphericalMercatorProjection = new OpenLayers.Projection("EPSG:900913");
 
+$(document).ready(function() {
+    var layers = getBaseLayers();
+
+    markerLayer = new OpenLayers.Layer.Markers("Points", {
+        'calculateInRange': function() { return true; }
+    });
+    layers.push(markerLayer);
+
+    var map = new OpenLayers.Map('googleMapNotFull', {
+        displayProjection: geographicProjection,
+        projection: sphericalMercatorProjection,
+        controls: [
+            new OpenLayers.Control.Attribution(),
+            new OpenLayers.Control.Navigation({
+                dragPanOptions: {
+                    enableKinetic: true
+                }
+            }),
+            new OpenLayers.Control.PanZoom()
+        ],
+        layers: layers
+    });
+
+    if (bbox) {
+        map.zoomToExtent(bbox, true);
+    } else {
+        var coordsTransformed = new OpenLayers.LonLat(coords[0], coords[1])
+            .transform(geographicProjection,sphericalMercatorProjection);
+        map.setCenter(coordsTransformed, zoomlevel);
+    }
+    if (pointIsSet) {
+        markerLayer.addMarker(getMarker(coordsTransformed));
+    }
+
+    if (!readonly) {
+        $('#googleMapNotFull').css('cursor', "crosshair");
+
+        map.events.register('click', map, function(e) {
+            var position = map.getLonLatFromPixel(e.xy);
+
+            // Set a new marker on the map
+            markerLayer.clearMarkers();
+            markerLayer.addMarker(getMarker(position));
+
+            // Store the new coordinates for form submission
+            var coords = position.clone().transform(sphericalMercatorProjection, geographicProjection)
+            var lon = $('input[name=lon]');
+            if (lon && lon.length == 1) {
+                $(lon[0]).val(coords.lon);
+            }
+            var lat = $('input[name=lat]');
+            if (lat && lat.length == 1) {
+                $(lat[0]).val(coords.lat);
+            }
+        });
+    }
+});
+
 function getBaseLayers(){
 
     var layers = [];

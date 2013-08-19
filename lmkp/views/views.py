@@ -421,6 +421,8 @@ def getActiveFilters(request):
     - [1]: a clean text representation (translated) of the filter
     """
 
+    _ = request.translate
+
     # Map the operators
     operators = {
         'like': '=',
@@ -450,10 +452,10 @@ def getActiveFilters(request):
                 continue
 
             if queryparts[0] == 'a':
-                itemName = 'Deals'
+                itemName = _('Deals')
                 configList = aList
             elif queryparts[0] == 'sh':
-                itemName = 'Investors'
+                itemName = _('Investors')
                 configList = shList
             else:
                 continue
