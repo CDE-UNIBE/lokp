@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-08-15 09:01+0200\n"
+"POT-Creation-Date: 2013-08-15 10:51+0200\n"
 "PO-Revision-Date: 2013-08-14 08:21+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -74,7 +74,7 @@ msgstr ""
 msgid ""
 "If you are experiencing any technical difficulties, have questions or "
 "would like to send us feedback about how to improve user experience, "
-"please email us: "
+"please email us:"
 msgstr ""
 
 #: lmkp/templates/about_view.mak:80
@@ -290,7 +290,7 @@ msgid ""
 msgstr ""
 
 #: lmkp/templates/faq_view.mak:59
-msgid "You will need to "
+msgid "You will need to"
 msgstr ""
 
 #: lmkp/templates/faq_view.mak:59
@@ -298,7 +298,7 @@ msgid "register"
 msgstr ""
 
 #: lmkp/templates/faq_view.mak:59
-msgid " (giving us your email) and "
+msgid "(giving us your email) and"
 msgstr ""
 
 #: lmkp/templates/faq_view.mak:59
@@ -343,7 +343,7 @@ msgid ""
 "verification of submitted information."
 msgstr ""
 
-#: lmkp/templates/htmlbase.mak:234 lmkp/templates/activities/grid.mak:125
+#: lmkp/templates/htmlbase.mak:234 lmkp/templates/activities/grid.mak:122
 msgid "Map"
 msgstr ""
 
@@ -405,7 +405,7 @@ msgid ""
 msgstr ""
 
 #: lmkp/templates/landing_page.mak:194
-msgid "Welcome to the "
+msgid "Welcome to the"
 msgstr ""
 
 #: lmkp/templates/landing_page.mak:194
@@ -414,13 +414,14 @@ msgstr ""
 
 #: lmkp/templates/landing_page.mak:194
 #, fuzzy
-msgid " of the "
+#| msgid " of the "
+msgid "of the"
 msgstr "et le"
 
-#: lmkp/templates/landing_page.mak:194
+#: lmkp/templates/landing_page.mak:194 lmkp/templates/login_form.mak:78
 msgid ""
-". This demo version is for learning and experimentation purposes, so "
-"first-time users can get a feel for the Observatory and its functions."
+"This demo version is for learning and experimentation purposes, so first-"
+"time users can get a feel for the Observatory and its functions."
 msgstr ""
 
 #: lmkp/templates/landing_page.mak:197
@@ -509,7 +510,7 @@ msgid "Demo Version"
 msgstr ""
 
 #: lmkp/templates/login_form.mak:62
-msgid "This is the demonstration version of the "
+msgid "This is the demonstration version of the"
 msgstr ""
 
 #: lmkp/templates/login_form.mak:63
@@ -521,7 +522,7 @@ msgid "Editor"
 msgstr ""
 
 #: lmkp/templates/login_form.mak:65
-msgid " has the permission to create or edit new Deals or Investors."
+msgid "has the permission to create or edit new Deals or Investors."
 msgstr ""
 
 #: lmkp/templates/login_form.mak:71
@@ -529,13 +530,7 @@ msgid "Moderator"
 msgstr ""
 
 #: lmkp/templates/login_form.mak:71
-msgid " has the additional permission to review pending changes."
-msgstr ""
-
-#: lmkp/templates/login_form.mak:78
-msgid ""
-"This demo version is for learning and experimentation purposes, so first-"
-"time users can get a feel for the Observatory and its functions."
+msgid "has the additional permission to review pending changes."
 msgstr ""
 
 #: lmkp/templates/login_form.mak:81
@@ -559,9 +554,9 @@ msgstr ""
 msgid "Investor"
 msgstr ""
 
-#: lmkp/templates/map_view.mak:68 lmkp/templates/activities/grid.mak:101
+#: lmkp/templates/map_view.mak:68 lmkp/templates/activities/grid.mak:98
 #: lmkp/templates/parts/filter.mak:53 lmkp/templates/stakeholders/grid.mak:3
-#: lmkp/templates/stakeholders/grid.mak:73
+#: lmkp/templates/stakeholders/grid.mak:70
 msgid "Investors"
 msgstr ""
 
@@ -701,80 +696,80 @@ msgstr ""
 msgid "Grid View"
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:3 lmkp/templates/activities/grid.mak:97
-#: lmkp/templates/parts/filter.mak:49 lmkp/templates/stakeholders/grid.mak:68
+#: lmkp/templates/activities/grid.mak:3 lmkp/templates/activities/grid.mak:94
+#: lmkp/templates/parts/filter.mak:49 lmkp/templates/stakeholders/grid.mak:65
 #: lmkp/views/translation.py:212
 msgid "Deals"
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:45
+#: lmkp/templates/activities/grid.mak:42
 msgid "Show investors by click on a specific row."
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:52 lmkp/views/translation.py:169
+#: lmkp/templates/activities/grid.mak:49 lmkp/views/translation.py:169
 msgid "Profile"
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:53
+#: lmkp/templates/activities/grid.mak:50
 msgid "You are seeing all the Deals within the current profile."
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:57
+#: lmkp/templates/activities/grid.mak:54
 msgid "Map Extent"
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:58
+#: lmkp/templates/activities/grid.mak:55
 msgid "You are currently only seeing Deals which are visible on the map."
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:59
+#: lmkp/templates/activities/grid.mak:56
 msgid "Show all Deals of the profile."
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:65
+#: lmkp/templates/activities/grid.mak:62
 msgid "Spatial Filter"
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:65
-msgid " based on "
+#: lmkp/templates/activities/grid.mak:62
+msgid "based on"
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:82
+#: lmkp/templates/activities/grid.mak:79
 msgid "Investor Filter"
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:82
-msgid "You are currently only seeing Deals where Investor "
+#: lmkp/templates/activities/grid.mak:79
+msgid "You are currently only seeing Deals where Investor"
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:82
-msgid " is involved."
+#: lmkp/templates/activities/grid.mak:79
+msgid "is involved."
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:82
+#: lmkp/templates/activities/grid.mak:79
 msgid "Remove this filter and show all Deals"
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:123
-#: lmkp/templates/stakeholders/grid.mak:95
+#: lmkp/templates/activities/grid.mak:120
+#: lmkp/templates/stakeholders/grid.mak:92
 #, fuzzy
 msgid "Nothing found"
 msgstr "Objet non trouvé."
 
-#: lmkp/templates/activities/grid.mak:124
-#: lmkp/templates/stakeholders/grid.mak:96
+#: lmkp/templates/activities/grid.mak:121
+#: lmkp/templates/stakeholders/grid.mak:93
 msgid "No results were found."
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:125
-msgid "Make sure there are some deals on the "
+#: lmkp/templates/activities/grid.mak:122
+msgid "Make sure there are some deals on the"
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:133
+#: lmkp/templates/activities/grid.mak:130
 msgid "Show investors for this deal"
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:143
+#: lmkp/templates/activities/grid.mak:140
 msgid "Deal ID"
 msgstr ""
 
@@ -1024,22 +1019,22 @@ msgid "Key"
 msgstr ""
 
 #: lmkp/templates/parts/filter.mak:101
-msgid " filter is active, click here to edit"
+msgid "filter is active, click here to edit"
 msgstr ""
 
 #: lmkp/templates/parts/filter.mak:103
-msgid " filters are active, click here to edit"
+msgid "filters are active, click here to edit"
 msgstr ""
 
 #: lmkp/templates/parts/filter.mak:105
 msgid "Click here to add a filter"
 msgstr ""
 
-#: lmkp/templates/parts/pagination.mak:33
-msgid "Total number of "
+#: lmkp/templates/parts/pagination.mak:91
+msgid "Total number of"
 msgstr ""
 
-#: lmkp/templates/parts/pagination.mak:93
+#: lmkp/templates/parts/pagination.mak:95
 msgid "per page"
 msgstr ""
 
@@ -1088,27 +1083,27 @@ msgstr ""
 msgid "Too many results to display. Try to enter more characters"
 msgstr ""
 
-#: lmkp/templates/stakeholders/grid.mak:45
+#: lmkp/templates/stakeholders/grid.mak:42
 msgid "Show deals by clicking on a specific row."
 msgstr ""
 
-#: lmkp/templates/stakeholders/grid.mak:54
+#: lmkp/templates/stakeholders/grid.mak:51
 msgid "Deal Filter"
 msgstr ""
 
-#: lmkp/templates/stakeholders/grid.mak:54
-msgid "You are currently only seeing Investors which are involved in Deal "
+#: lmkp/templates/stakeholders/grid.mak:51
+msgid "You are currently only seeing Investors which are involved in Deal"
 msgstr ""
 
-#: lmkp/templates/stakeholders/grid.mak:54
+#: lmkp/templates/stakeholders/grid.mak:51
 msgid "Remove this filter and show all Investors"
 msgstr ""
 
-#: lmkp/templates/stakeholders/grid.mak:104
+#: lmkp/templates/stakeholders/grid.mak:101
 msgid "Show deals of this investor"
 msgstr ""
 
-#: lmkp/templates/stakeholders/grid.mak:114
+#: lmkp/templates/stakeholders/grid.mak:111
 msgid "Investor ID"
 msgstr ""
 
@@ -1949,12 +1944,61 @@ msgstr ""
 msgid "Update"
 msgstr ""
 
-#~ msgid "is a pilot project by some partners of the "
+#~ msgid ""
+#~ "If you are experiencing any technical"
+#~ " difficulties, have questions or would "
+#~ "like to send us feedback about how"
+#~ " to improve user experience, please "
+#~ "email us: "
+#~ msgstr ""
+
+#~ msgid "You will need to "
+#~ msgstr ""
+
+#~ msgid " (giving us your email) and "
+#~ msgstr ""
+
+#~ msgid "Welcome to the "
 #~ msgstr ""
 
 #~ msgid ""
-#~ ", designed to provide greater context"
-#~ " and deeper insight on land deals,"
-#~ " from a more local perspective."
+#~ ". This demo version is for "
+#~ "learning and experimentation purposes, so "
+#~ "first-time users can get a feel"
+#~ " for the Observatory and its "
+#~ "functions."
+#~ msgstr ""
+
+#~ msgid "This is the demonstration version of the "
+#~ msgstr ""
+
+#~ msgid " has the permission to create or edit new Deals or Investors."
+#~ msgstr ""
+
+#~ msgid " has the additional permission to review pending changes."
+#~ msgstr ""
+
+#~ msgid " based on "
+#~ msgstr ""
+
+#~ msgid "You are currently only seeing Deals where Investor "
+#~ msgstr ""
+
+#~ msgid " is involved."
+#~ msgstr ""
+
+#~ msgid "Make sure there are some deals on the "
+#~ msgstr ""
+
+#~ msgid " filter is active, click here to edit"
+#~ msgstr ""
+
+#~ msgid " filters are active, click here to edit"
+#~ msgstr ""
+
+#~ msgid "Total number of "
+#~ msgstr ""
+
+#~ msgid "You are currently only seeing Investors which are involved in Deal "
 #~ msgstr ""
 

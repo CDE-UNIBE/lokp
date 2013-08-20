@@ -240,7 +240,9 @@ class ActivityProtocol3(Protocol):
             'data': [a.to_table(request) for a in activities]
         }
 
-    def read_one_by_version(self, request, uid, version):
+    def read_one_by_version(self, request, uid, version, **kwargs):
+
+        translate = kwargs.get('translate', True)
 
         relevant_activities = self._get_relevant_activities_one_by_version(uid, version)
 
@@ -254,7 +256,8 @@ class ActivityProtocol3(Protocol):
         )
 
         activities = self._query_to_activities(
-            request, query, involvements=inv_details, public_query=False
+            request, query, involvements=inv_details, public_query=False,
+            translate=translate
         )
 
         if len(activities) == 0:

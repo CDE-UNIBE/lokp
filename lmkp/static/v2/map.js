@@ -659,14 +659,14 @@ $(document).ready(function() {
         var arr = location.split(',');
         if (arr.length == 4) {
             var extent = new OpenLayers.Bounds(arr);
-            map.zoomToExtent(extent);
+            map.zoomToExtent(extent, true);
         }
     } else {
         var f = new OpenLayers.Format.GeoJSON();
         // Variable profilePolygon is a GeoJSON geometry
         var profileExtent = f.read(profilePolygon, "Geometry");
         // Reproject the extent to spherical mercator projection and zoom the map to its extent
-        map.zoomToExtent(profileExtent.transform(geographicProjection, sphericalMercatorProjection).getBounds());
+        map.zoomToExtent(profileExtent.transform(geographicProjection, sphericalMercatorProjection).getBounds(), true);
     }
 
     /**** events ****/

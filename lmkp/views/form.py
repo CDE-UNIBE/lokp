@@ -1223,7 +1223,7 @@ def formdataToDiff(request, newform, itemType):
             protocol = ActivityProtocol3(Session)
 
         item = protocol.read_one_by_version(
-            request, identifier, version
+            request, identifier, version, translate=False
         )
         olditemjson = item.to_table(request)
 
