@@ -9,6 +9,8 @@ from lmkp.models.database_objects import users_groups
 from lmkp.models.database_objects import users_profiles
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.profile import _processProfile
+from lmkp.views.profile import get_current_profile
+from lmkp.views.profile import get_current_locale
 from lmkp.views.views import BaseView
 import psycopg2.tz
 from mako.template import Template
@@ -152,7 +154,13 @@ class UserView(BaseView):
 
             return render_to_response('lmkp:templates/user_registration_success.mak', {}, request=self.request)
 
-        return self._render_form(form, success=succeed)
+        ret = self._render_form(form, success=succeed)
+
+        self._handle_parameters()
+        ret['profile'] = get_current_profile(self.request)
+        ret['locale'] = get_current_locale(self.request)
+
+        return ret
 
     def _render_form(self, form, appstruct=colander.null, submitted='submit', success=None, readonly=False):
         """

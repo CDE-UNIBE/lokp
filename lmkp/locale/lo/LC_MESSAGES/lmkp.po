@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-08-15 10:51+0200\n"
+"POT-Creation-Date: 2013-08-20 16:47+0200\n"
 "PO-Revision-Date: 2013-08-14 08:21+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: lo <LL@li.org>\n"
@@ -13,8 +13,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
 
-#: lmkp/templates/about_view.mak:3 lmkp/templates/htmlbase.mak:390
-#: lmkp/templates/landing_page.mak:344
+#: lmkp/templates/about_view.mak:3 lmkp/templates/htmlbase.mak:395
+#: lmkp/templates/landing_page.mak:346
 msgid "About"
 msgstr ""
 
@@ -100,11 +100,11 @@ msgstr ""
 #: lmkp/templates/administration.mak:21 lmkp/templates/base.mak:55
 #: lmkp/templates/base.mak:58 lmkp/templates/charts.mak:16
 #: lmkp/templates/compare_versions.mak:11 lmkp/templates/embedded.mak:10
-#: lmkp/templates/htmlbase.mak:37 lmkp/templates/htmlbase.mak:39
-#: lmkp/templates/htmlbase.mak:216 lmkp/templates/htmlbase.mak:218
-#: lmkp/templates/index.mak:20 lmkp/templates/landing_page.mak:29
-#: lmkp/templates/landing_page.mak:113 lmkp/templates/landing_page.mak:115
-#: lmkp/templates/landing_page.mak:194 lmkp/templates/login_form.mak:62
+#: lmkp/templates/htmlbase.mak:39 lmkp/templates/htmlbase.mak:41
+#: lmkp/templates/htmlbase.mak:221 lmkp/templates/htmlbase.mak:223
+#: lmkp/templates/index.mak:20 lmkp/templates/landing_page.mak:31
+#: lmkp/templates/landing_page.mak:115 lmkp/templates/landing_page.mak:117
+#: lmkp/templates/landing_page.mak:196 lmkp/templates/login_form.mak:62
 #: lmkp/templates/moderation.mak:18 lmkp/templates/reset_form.mak:5
 #: lmkp/templates/review_versions.mak:4 lmkp/templates/translation.mak:21
 #: lmkp/templates/user_account.mak:46 lmkp/templates/user_approval.mak:33
@@ -175,7 +175,7 @@ msgstr ""
 msgid "Please send your questions and feedback on the Observatory to: "
 msgstr ""
 
-#: lmkp/templates/charts.mak:16 lmkp/templates/htmlbase.mak:249
+#: lmkp/templates/charts.mak:16 lmkp/templates/htmlbase.mak:254
 msgid "Charts"
 msgstr ""
 
@@ -213,7 +213,7 @@ msgid "Compare"
 msgstr ""
 
 #: lmkp/templates/faq_view.mak:3 lmkp/templates/faq_view.mak:32
-#: lmkp/templates/htmlbase.mak:389 lmkp/templates/landing_page.mak:343
+#: lmkp/templates/htmlbase.mak:394 lmkp/templates/landing_page.mak:345
 msgid "FAQ"
 msgstr ""
 
@@ -334,149 +334,149 @@ msgid ""
 "verification of submitted information."
 msgstr ""
 
-#: lmkp/templates/htmlbase.mak:234 lmkp/templates/activities/grid.mak:122
+#: lmkp/templates/htmlbase.mak:239 lmkp/templates/activities/grid.mak:122
 msgid "Map"
 msgstr ""
 
-#: lmkp/templates/htmlbase.mak:242
+#: lmkp/templates/htmlbase.mak:247
 msgid "Grid"
 msgstr ""
 
-#: lmkp/templates/htmlbase.mak:276 lmkp/templates/form/form_activity.mak:10
+#: lmkp/templates/htmlbase.mak:281 lmkp/templates/form/form_activity.mak:10
 #: lmkp/views/translation.py:204
 msgid "New Deal"
 msgstr ""
 
-#: lmkp/templates/htmlbase.mak:288 lmkp/templates/login_form.mak:3
+#: lmkp/templates/htmlbase.mak:293 lmkp/templates/login_form.mak:3
 #: lmkp/templates/login_form.mak:25 lmkp/templates/login_form.mak:39
 #: lmkp/templates/reset_form.mak:5 lmkp/views/viewers.py:28
 msgid "Login"
 msgstr ""
 
-#: lmkp/templates/htmlbase.mak:297 lmkp/templates/user_registration.mak:19
+#: lmkp/templates/htmlbase.mak:302 lmkp/templates/user_registration.mak:19
 #: lmkp/views/viewers.py:29
 msgid "Register"
 msgstr ""
 
-#: lmkp/templates/htmlbase.mak:305 lmkp/views/editors.py:27
+#: lmkp/templates/htmlbase.mak:310 lmkp/views/editors.py:27
 #: lmkp/views/moderators.py:32
 msgid "Logout"
 msgstr ""
 
-#: lmkp/templates/htmlbase.mak:332
+#: lmkp/templates/htmlbase.mak:337
 msgid "Select Profile"
 msgstr ""
 
-#: lmkp/templates/htmlbase.mak:391 lmkp/templates/landing_page.mak:345
+#: lmkp/templates/htmlbase.mak:396 lmkp/templates/landing_page.mak:347
 #: lmkp/templates/partners_view.mak:3 lmkp/templates/partners_view.mak:8
 msgid "Partners & Donors"
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
+#: lmkp/templates/landing_page.mak:123 lmkp/templates/landing_page.mak:154
 #: lmkp/templates/emails/activation.mak:10
 #: lmkp/templates/emails/approval.mak:12
 #: lmkp/templates/emails/confirmation.mak:7
 msgid "The Land Observatory"
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
+#: lmkp/templates/landing_page.mak:123 lmkp/templates/landing_page.mak:154
 msgid "is a pilot project by some partners of the"
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
+#: lmkp/templates/landing_page.mak:123 lmkp/templates/landing_page.mak:154
 msgid "Land Matrix"
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:121 lmkp/templates/landing_page.mak:152
+#: lmkp/templates/landing_page.mak:123 lmkp/templates/landing_page.mak:154
 msgid ""
 "designed to provide greater context and deeper insight on land deals, "
 "from a more local perspective."
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:194
+#: lmkp/templates/landing_page.mak:196
 msgid "Welcome to the"
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:194
+#: lmkp/templates/landing_page.mak:196
 msgid "Demonstration Version"
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:194
+#: lmkp/templates/landing_page.mak:196
 msgid "of the"
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:194 lmkp/templates/login_form.mak:78
+#: lmkp/templates/landing_page.mak:196 lmkp/templates/login_form.mak:78
 msgid ""
 "This demo version is for learning and experimentation purposes, so first-"
 "time users can get a feel for the Observatory and its functions."
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:197
+#: lmkp/templates/landing_page.mak:199
 msgid "Enter"
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:208
+#: lmkp/templates/landing_page.mak:210
 msgid "Select a country"
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:224 lmkp/templates/landing_page.mak:229
+#: lmkp/templates/landing_page.mak:226 lmkp/templates/landing_page.mak:231
 msgid "Global"
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:240
+#: lmkp/templates/landing_page.mak:242
 msgid "Or take a short tour:"
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:269
+#: lmkp/templates/landing_page.mak:271
 msgid ""
 "Users in select pilot countries gather, explore and analyze spatial data "
 "on large-scale land acquisitions. Data is managed and reviewed locally by"
 " partners."
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:276
+#: lmkp/templates/landing_page.mak:278
 msgid ""
 "Users can see deals in full geographical context, learn more about "
 "investors and the kinds of investments in question."
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:283
+#: lmkp/templates/landing_page.mak:285
 msgid ""
 "You can also select a specific land deal to see more: \"who\" (investors "
 "and other stakeholders) and \"what\" the land will be used for."
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:290
+#: lmkp/templates/landing_page.mak:292
 msgid ""
 "You can go further and learn more about an investor, seeing the same "
 "investors other land deals."
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:297
+#: lmkp/templates/landing_page.mak:299
 msgid ""
 "Logged in users can also help contribute and update data, and anybody can"
 " freely comment on it."
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:304
+#: lmkp/templates/landing_page.mak:306
 msgid ""
 "You can filter the land deals by various attributes - like size, or crop."
 " Or make a spatial selection of land deals."
 msgstr ""
 
-#: lmkp/templates/landing_page.mak:311
+#: lmkp/templates/landing_page.mak:313
 msgid ""
 "Want to know if anybody lives on a concession? Use the context layers to "
 "view population density and more."
 msgstr ""
 
 #: lmkp/templates/login_form.mak:34 lmkp/templates/login_form.mak:67
-#: lmkp/templates/login_form.mak:73 lmkp/views/user.py:91
+#: lmkp/templates/login_form.mak:73 lmkp/views/user.py:93
 msgid "Username"
 msgstr ""
 
 #: lmkp/templates/login_form.mak:36 lmkp/templates/login_form.mak:68
-#: lmkp/templates/login_form.mak:74 lmkp/views/user.py:95
+#: lmkp/templates/login_form.mak:74 lmkp/views/user.py:97
 msgid "Password"
 msgstr ""
 
@@ -543,7 +543,7 @@ msgstr ""
 
 #: lmkp/templates/map_view.mak:68 lmkp/templates/activities/grid.mak:98
 #: lmkp/templates/parts/filter.mak:53 lmkp/templates/stakeholders/grid.mak:3
-#: lmkp/templates/stakeholders/grid.mak:70
+#: lmkp/templates/stakeholders/grid.mak:70 lmkp/views/views.py:458
 msgid "Investors"
 msgstr ""
 
@@ -683,7 +683,7 @@ msgstr ""
 
 #: lmkp/templates/activities/grid.mak:3 lmkp/templates/activities/grid.mak:94
 #: lmkp/templates/parts/filter.mak:49 lmkp/templates/stakeholders/grid.mak:65
-#: lmkp/views/translation.py:212
+#: lmkp/views/translation.py:212 lmkp/views/views.py:455
 msgid "Deals"
 msgstr ""
 
@@ -856,9 +856,37 @@ msgid "Remove Investor"
 msgstr ""
 
 #: lmkp/templates/form/customMapMapping.mak:42
+msgid "Set the location of the deal."
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:43
 msgid ""
-"Click on the map to set the location of the deal. Please zoom in to set "
-"the point as accurately as possible."
+"Click on the map to set the location. Please zoom in to set the point as "
+"accurately as possible."
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:44
+msgid "Enter coordinates."
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:47
+msgid "Success!"
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:48
+msgid "Not in a valid format!"
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:53
+msgid "Coordinates"
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:61
+msgid "Format"
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:75
+msgid "Parse"
 msgstr ""
 
 #: lmkp/templates/form/form_activity.mak:7
@@ -1905,84 +1933,30 @@ msgstr ""
 msgid "Added translation"
 msgstr ""
 
-#: lmkp/views/user.py:98
+#: lmkp/views/user.py:100
 msgid "First Name"
 msgstr ""
 
-#: lmkp/views/user.py:101
+#: lmkp/views/user.py:103
 msgid "Last Name"
 msgstr ""
 
-#: lmkp/views/user.py:104
+#: lmkp/views/user.py:106
 msgid "Valid Email"
 msgstr ""
 
-#: lmkp/views/user.py:151
+#: lmkp/views/user.py:153
 msgid "The Land Observatory: Activate your Account"
 msgstr ""
 
-#: lmkp/views/user.py:347
+#: lmkp/views/user.py:355
 msgid "Update"
 msgstr ""
 
 #~ msgid ""
-#~ "If you are experiencing any technical"
-#~ " difficulties, have questions or would "
-#~ "like to send us feedback about how"
-#~ " to improve user experience, please "
-#~ "email us: "
-#~ msgstr ""
-
-#~ msgid "You will need to "
-#~ msgstr ""
-
-#~ msgid " (giving us your email) and "
-#~ msgstr ""
-
-#~ msgid "Welcome to the "
-#~ msgstr ""
-
-#~ msgid " of the "
-#~ msgstr ""
-
-#~ msgid ""
-#~ ". This demo version is for "
-#~ "learning and experimentation purposes, so "
-#~ "first-time users can get a feel"
-#~ " for the Observatory and its "
-#~ "functions."
-#~ msgstr ""
-
-#~ msgid "This is the demonstration version of the "
-#~ msgstr ""
-
-#~ msgid " has the permission to create or edit new Deals or Investors."
-#~ msgstr ""
-
-#~ msgid " has the additional permission to review pending changes."
-#~ msgstr ""
-
-#~ msgid " based on "
-#~ msgstr ""
-
-#~ msgid "You are currently only seeing Deals where Investor "
-#~ msgstr ""
-
-#~ msgid " is involved."
-#~ msgstr ""
-
-#~ msgid "Make sure there are some deals on the "
-#~ msgstr ""
-
-#~ msgid " filter is active, click here to edit"
-#~ msgstr ""
-
-#~ msgid " filters are active, click here to edit"
-#~ msgstr ""
-
-#~ msgid "Total number of "
-#~ msgstr ""
-
-#~ msgid "You are currently only seeing Investors which are involved in Deal "
+#~ "Click on the map to set the "
+#~ "location of the deal. Please zoom "
+#~ "in to set the point as accurately"
+#~ " as possible."
 #~ msgstr ""
 

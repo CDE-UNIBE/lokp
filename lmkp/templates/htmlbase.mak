@@ -90,7 +90,7 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
                 font-weight: bold;
                 color: #b94a48;
             }
-            .sequencestyle {
+            .sequencestyle, #coordinates-div {
                 background-color: #F7F7F7;
                 border: 1px solid silver;
                 color: #333333;
@@ -187,6 +187,9 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
             }
             .fileInput {
                 width: 300px !important;
+            }
+            #coordinates-div {
+                padding: 10px;
             }
 
         </style>
