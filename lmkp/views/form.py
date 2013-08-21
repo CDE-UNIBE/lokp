@@ -1590,6 +1590,10 @@ def formdataToDiff(request, newform, itemType):
                             if mainvalue is None:
                                 continue
 
+                            # Store date maintags also as string
+                            if type(mainvalue) == datetime.date or type(mainvalue) == datetime.datetime:
+                                mainvalue = datetime.datetime.strftime(mainvalue, '%Y-%m-%d')
+
                             tagdiffs = []
                             for at in addedtags:
                                 tagdiffs.append({

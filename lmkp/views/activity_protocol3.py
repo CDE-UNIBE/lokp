@@ -213,19 +213,8 @@ class ActivityProtocol3(Protocol):
         if len(ids) > 0:
             # At least one Activity was created
             changeset_diff = {'activities': activity_diffs}
-            try:
-                changeset.diff = json.dumps(changeset_diff)
-            except TypeError:
-                # TODO: This was included because of some strange error with 
-                # datetime still in JSON (though that should've been fixed) 
-                # causing parsing errors.
-                # Remove this once everything is ok again.
-                from pyramid_mailer import get_mailer
-                from pyramid_mailer.message import Message
-                mailer = get_mailer(request)
-                message = Message(subject='LO ERROR', recipients=['lukas.vonlanthen@cde.unibe.ch'], body='Error with the following diff: %s' % str(changeset_diff))
-                mailer.send(message)
-                return None
+            changeset.diff = json.dumps(changeset_diff)
+
             return ids
 
         else:
