@@ -10,6 +10,7 @@ from lmkp.views.profile import get_current_profile
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import Everyone
 from pyramid.security import Authenticated
+from pyramid.httpexceptions import HTTPUnauthorized
 from sqlalchemy.orm.exc import NoResultFound
 
 class CustomAuthenticationPolicy(AuthTktAuthenticationPolicy):
@@ -35,6 +36,8 @@ class CustomAuthenticationPolicy(AuthTktAuthenticationPolicy):
             if User.check_password(credentials['login'], credentials['password']):
                 # Return the user id if the login and password are correct
                 return credentials['login']
+            else:
+                raise HTTPUnauthorized()
 
         return AuthTktAuthenticationPolicy.authenticated_userid(self, request)
 
