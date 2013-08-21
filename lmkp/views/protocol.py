@@ -1386,7 +1386,10 @@ class Protocol(object):
                             for new_t in new_tg['tags']:
                                 # Loop through the tags of the new diff
 
-                                # If there is a tag previously added (old_t['op'] == 'add') and now to be deleted again (new_t['op'] == 'delete'), then remove it
+                                # If there is a tag previously added
+                                # (old_t['op'] == 'add') and now to be deleted
+                                # again (new_t['op'] == 'delete'), then remove
+                                # it
                                 if (new_t['op'] == 'delete'
                                     and old_t['op'] == 'add'
                                     and new_t['key'] == old_t['key']
@@ -1396,8 +1399,9 @@ class Protocol(object):
                                     tags_to_delete.append(old_t)
 
                                 else:
-                                    # Add new diff
-                                    tags_to_add.append(new_t)
+                                    # Add new diff (add it only once)
+                                    if new_t not in tags_to_add:
+                                        tags_to_add.append(new_t)
 
                         changedMainTag = None
                         for tdt in tags_to_delete:
@@ -1417,7 +1421,8 @@ class Protocol(object):
                             # If the main_tag was removed, store the new value
                             # of it as new main_tag
                             if (changedMainTag is not None
-                                and unicode(changedMainTag['key']) == unicode(tda['key'])):
+                                and unicode(changedMainTag['key']) == unicode(tda['key'])
+                                and tda['op'] == 'add'):
                                 old_tg['main_tag']['value'] = tda['value']
 
 #                            log.debug('Added new tag diff: %s' % tda)
