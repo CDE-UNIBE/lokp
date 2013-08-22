@@ -50,6 +50,13 @@ $(document).ready(function() {
             var position = map.getLonLatFromPixel(e.xy);
             setMapMarker(position);
         });
+
+        // Listen to 'paste' events on the coordinate field
+        $('#map-coords-field').on('paste', function() {
+            setTimeout(function() {
+                parseCoordinates();
+            }, 50);
+        });
     }
 });
 

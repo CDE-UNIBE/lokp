@@ -62,11 +62,11 @@
             </div>
             <div class="span8">
                 <select id="map-coords-format" class="span8">
-                    <option selected="selected" value="1">46&deg; 57.1578 N 7&deg; 26.1102 E</option>
+                    <option value="1">46&deg; 57.1578 N 7&deg; 26.1102 E</option>
                     <option value="2">46&deg 57' 9.468" N 7&deg 26' 6.612" E</option>
                     <option value="3">N 46&deg 57.1578 E 7&deg 26.1102</option>
                     <option value="4">N 46&deg 57' 9.468" E 7&deg 26' 6.612"</option>
-                    <option value="5">46.95263, 7.43517</option>
+                    <option selected="selected" value="5">46.95263, 7.43517</option>
                 </select>
             </div>
         </div>
