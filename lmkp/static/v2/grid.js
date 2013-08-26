@@ -24,7 +24,8 @@ $('#activitygrid tbody>tr').click(function() {
     } else {
         // Show a popup
         var popup = $('.show-investors-wrapper');
-        var position = $(this).position().top - $('#activitygrid').position().top - 5;
+        var position = $(this).position().top - $('#activitygrid').position().top 
+            + (($(this).height() - popup.height())/2) + 2;
         popup.removeClass('hidden').css({'margin-top': position});
         popup.find('a').attr('href', url);
     }

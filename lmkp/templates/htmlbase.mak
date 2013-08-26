@@ -191,6 +191,9 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
             #coordinates-div {
                 padding: 10px;
             }
+            .show-investors {
+                height: auto;
+            }
 
         </style>
 
