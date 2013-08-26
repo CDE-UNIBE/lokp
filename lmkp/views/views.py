@@ -380,7 +380,10 @@ def getQueryString(url, **kwargs):
     returnWhat = kwargs.pop('ret', 'fullUrl')
 
     if returnWhat == 'queryString':
-        return new_query_string
+        if len(qp) == 0:
+            return ''
+        # Return only the query string (with leading '?')
+        return '%s%s' % ('?', new_query_string)
 
     return urlunsplit((scheme, netloc, path, new_query_string, fragment))
 

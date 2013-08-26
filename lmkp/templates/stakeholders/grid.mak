@@ -110,7 +110,7 @@
                 % else:
                     <li>
                 % endif
-                    <a href="${t[0][0]}?${getQueryString(request.url, ret='queryString', remove=['order_by', 'dir'])}">${t[1]}</a>
+                    <a href="${t[0][0]}${getQueryString(request.url, ret='queryString', remove=['order_by', 'dir'])}">${t[1]}</a>
                 </li>
             % endfor
         </ul>
