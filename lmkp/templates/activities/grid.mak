@@ -28,7 +28,7 @@
     from lmkp.views.translation import get_activity_keys
     keys = get_activity_keys(request)
 
-    sh_uid = invfilter if invfilter is not None else ''
+    sh_uids = ','.join(invfilter) if invfilter is not None else ''
 %>
 
 ## Filter
@@ -76,7 +76,12 @@
         % if invfilter:
         <div class="alert alert-info">
             <i class="icon-filter"></i>&nbsp;
-            <strong>${_('Investor Filter')}</strong>: ${_('You are currently only seeing Deals where Investor')} <a href="${request.route_url('stakeholders_read_one', output='html', uid=sh_uid)}">${sh_uid[:6]}</a> ${_('is involved.')}<br/><a href="${request.route_url('activities_read_many', output='html')}">${_('Remove this filter and show all Deals')}</a>.
+            <strong>${_('Investor Filter')}</strong>: ${_('You are currently only seeing Deals where Investor')}
+            % for uid in invfilter:
+                <a href="${request.route_url('stakeholders_read_one', output='html', uid=uid)}">
+                    ${uid[:6]}</a>
+            % endfor
+            ${_('is involved.')}<br/><a href="${request.route_url('activities_read_many', output='html')}">${_('Remove this filter and show all Deals')}</a>.
         </div>
         % endif
 
@@ -90,11 +95,11 @@
                     [
                         [
                             request.route_url('activities_read_many', output='html'),
-                            request.route_url('activities_bystakeholder', output='html', uid=sh_uid)
+                            request.route_url('activities_bystakeholders', output='html', uids=sh_uids)
                         ], _('Deals')
                     ], [
                         [
-                            request.route_url('stakeholders_read_many', output='html')
+                            request.route_url('stakeholders_byactivities_all', output='html')
                         ], _('Investors')
                     ]
                 ]
@@ -105,7 +110,7 @@
                 % else:
                     <li>
                 % endif
-                    <a href="${t[0][0]}?${getQueryString(request.url, ret='queryString', remove=['page'])}">${t[1]}</a>
+                    <a href="${t[0][0]}${getQueryString(request.url, ret='queryString', remove=['order_by', 'dir'])}">${t[1]}</a>
                 </li>
             % endfor
         </ul>

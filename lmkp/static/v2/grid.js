@@ -15,7 +15,7 @@ $('#activitygrid tbody>tr').click(function() {
     if (!itemType) return;
 
     var otherType = (itemType == 'stakeholders') ? 'activities' : 'stakeholders';
-    var byThis = (itemType == 'stakeholders') ? 'bystakeholder' : 'byactivity';
+    var byThis = (itemType == 'stakeholders') ? 'bystakeholders' : 'byactivities';
     var url = '/' + [otherType, byThis, 'html', identifier].join('/');
 
     if ($('div.show-investors.visible-phone').is(':visible')) {

@@ -28,7 +28,7 @@
     from lmkp.views.translation import get_stakeholder_keys
     keys = get_stakeholder_keys(request)
 
-    a_uid = invfilter if invfilter is not None else ''
+    a_uids = ','.join(invfilter) if invfilter is not None else ''
 %>
 
 ## Filter
@@ -44,11 +44,44 @@
 
     <div class="content">
 
+        ## Spatial Filter
+        <%
+            spatialFilterBasedOn = _('Profile')
+            spatialFilterExplanation = _('You are seeing all the Investors involved in Deals within the current profile.')
+            spatialFilterLink = None
+
+            if spatialfilter == 'mapextentparam' or spatialfilter == 'mapextentcookie':
+                spatialFilterBasedOn = _('Map Extent')
+                spatialFilterExplanation = _('You are currently only seeing Investors involved in Deals which are visible on the map.')
+                spatialFilterLink = _('Show all the Investors involved in Deals of the profile.')
+        %>
+
+        % if spatialfilter:
+        <div class="alert alert-info">
+            <i class="icon-globe"></i>&nbsp;
+            <strong>${_('Spatial Filter')}</strong> ${_('based on')}
+                % if spatialFilterLink:
+                    <strong><a href="${request.route_url('map_view')}">${spatialFilterBasedOn}</a></strong>.
+                % else:
+                    <strong>${spatialFilterBasedOn}</strong>.
+                % endif
+            ${spatialFilterExplanation}
+            % if spatialFilterLink:
+                <br/><a href="${getQueryString(request.url, add=[('bbox', 'profile')])}">${spatialFilterLink}</a>
+            % endif
+        </div>
+        % endif
+
         ## Involvement Filter
         % if invfilter:
         <div class="alert alert-info">
             <i class="icon-filter"></i>&nbsp;
-            <strong>${_('Deal Filter')}</strong>: ${_('You are currently only seeing Investors which are involved in Deal')} <a href="${request.route_url('activities_read_one', output='html', uid=a_uid)}">${a_uid[:6]}</a>.<br/><a href="${request.route_url('stakeholders_read_many', output='html')}">${_('Remove this filter and show all Investors')}</a>.
+            <strong>${_('Deal Filter')}</strong>: ${_('You are currently only seeing Investors which are involved in Deal')}
+            % for uid in invfilter:
+                <a href="${request.route_url('activities_read_one', output='html', uid=uid)}">
+                    ${uid[:6]}</a>
+            % endfor
+            .<br/><a href="${request.route_url('stakeholders_byactivities_all', output='html')}">${_('Remove this filter and show all Investors')}</a>.
         </div>
         % endif
 
@@ -65,8 +98,8 @@
                         ], _('Deals')
                     ], [
                         [
-                            request.route_url('stakeholders_read_many', output='html'),
-                            request.route_url('stakeholders_byactivity', output='html', uid=a_uid)
+                            request.route_url('stakeholders_byactivities_all', output='html'),
+                            request.route_url('stakeholders_byactivities', output='html', uids=a_uids)
                         ], _('Investors')
                     ]
                 ]
@@ -77,7 +110,7 @@
                 % else:
                     <li>
                 % endif
-                    <a href="${t[0][0]}?${getQueryString(request.url, ret='queryString', remove=['page'])}">${t[1]}</a>
+                    <a href="${t[0][0]}${getQueryString(request.url, ret='queryString', remove=['order_by', 'dir'])}">${t[1]}</a>
                 </li>
             % endfor
         </ul>

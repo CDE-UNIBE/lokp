@@ -54,7 +54,7 @@ def main(global_config, ** settings):
     config.set_authorization_policy(authzPolicy)
 
     config.include('pyramid_beaker')
-    
+
     # Add the directory that includes the translations
     config.add_translation_dirs(
         'lmkp:locale/',
@@ -155,8 +155,8 @@ def main(global_config, ** settings):
     config.add_route('activities_read_one_public', '/activities/public/{output}/{uid}')
 
     # By Stakeholder
-    config.add_route('activities_bystakeholder', '/activities/bystakeholder/{output}/{uid}')
-    config.add_route('activities_bystakeholder_public', '/activities/bystakeholder/public/{output}/{uid}')
+    config.add_route('activities_bystakeholders', '/activities/bystakeholders/{output}/{uids}')
+    config.add_route('activities_bystakeholders_public', '/activities/bystakeholders/public/{output}/{uids}')
 
     # Read pending
     config.add_route('activities_read_many_pending', '/activities/pending/{output}')
@@ -190,9 +190,11 @@ def main(global_config, ** settings):
     config.add_route('stakeholders_read_one_active', '/stakeholders/active/{output}/{uid}')
     config.add_route('stakeholders_read_one_public', '/stakeholders/public/{output}/{uid}')
 
-    # By Activity
-    config.add_route('stakeholders_byactivity', '/stakeholders/byactivity/{output}/{uid}')
-    config.add_route('stakeholders_byactivity_public', '/stakeholders/byactivity/public/{output}/{uid}')
+    # By Activities
+    config.add_route('stakeholders_byactivities_all', '/stakeholders/byactivities/{output}')
+    config.add_route('stakeholders_byactivities_all_public', '/stakeholders/byactivities/public/{output}')
+    config.add_route('stakeholders_byactivities', '/stakeholders/byactivities/{output}/{uids}')
+    config.add_route('stakeholders_byactivities_public', '/stakeholders/byactivities/public/{output}/{uids}')
 
     # Read pending
     config.add_route('stakeholders_read_many_pending', '/stakeholders/pending/{output}')
@@ -306,7 +308,7 @@ def main(global_config, ** settings):
 
     # A route for ajax queries to get values for a given key
     config.add_route('filterValues', '/json/filtervalues')
-    
+
     # Error views
     config.add_forbidden_view(forbidden_view)
     config.add_notfound_view(notfound_view)

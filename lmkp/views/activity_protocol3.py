@@ -8,6 +8,7 @@ from lmkp.views.translation import get_translated_status
 from lmkp.views.translation import statusMap
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.i18n import get_localizer
 from shapely.geometry import asShape
 from shapely.geometry.polygon import Polygon
@@ -376,15 +377,15 @@ class ActivityProtocol3(Protocol):
         }
 
 
-    def read_many_by_stakeholder(self, request, uid, public=True, **kwargs):
+    def read_many_by_stakeholders(self, request, uids, public=True, **kwargs):
         """
         Valid kwargs:
         - limit
         - offset
         """
 
-        relevant_activities = self._get_relevant_activities_by_stakeholder(
-                                                                           request, uid, public_query=public)
+        relevant_activities = self._get_relevant_activities_by_stakeholders(
+            request, uids, public_query=public)
 
         # Determine if and how detailed Involvements are to be displayed.
         # Default is: 'full'
@@ -395,12 +396,11 @@ class ActivityProtocol3(Protocol):
         limit = kwargs.get('limit', self._get_limit(request))
         offset = kwargs.get('offset', self._get_offset(request))
 
-        query, count = self._query_many(
-                                        request, relevant_activities, limit=limit, offset=offset,
-                                        involvements=inv_details != 'none')
+        query, count = self._query_many(request, relevant_activities,
+            limit=limit, offset=offset, involvements=inv_details != 'none')
 
-        activities = self._query_to_activities(
-                                               request, query, involvements=inv_details, public_query=public)
+        activities = self._query_to_activities(request, query,
+            involvements=inv_details, public_query=public)
 
         return {
             'total': count,
@@ -906,7 +906,7 @@ class ActivityProtocol3(Protocol):
 
         return relevant_activities
 
-    def _get_relevant_activities_by_stakeholder(self, request, uid,
+    def _get_relevant_activities_by_stakeholders(self, request, uids,
                                                 public_query=False):
 
         logged_in, is_moderator = self._get_user_status(
@@ -915,8 +915,16 @@ class ActivityProtocol3(Protocol):
         # Use StakeholderProtocol to query the Stakeholder versions
         # corresponding to given uid
         sp = StakeholderProtocol3(self.Session)
-        relevant_stakeholders = sp._get_relevant_stakeholders_one(request,
-                                                                  uid=uid, public_query=public_query)
+
+        if len(uids) == 1:
+            # Query only 1 Stakeholder
+            relevant_stakeholders = sp._get_relevant_stakeholders_one(request,
+              uid=uids[0], public_query=public_query)
+        elif isinstance(uids, list):
+            raise HTTPBadRequest(detail='Not yet supported')
+        else:
+            raise HTTPNotFound()
+
         relevant_stakeholders = relevant_stakeholders.\
             subquery()
 

@@ -9,6 +9,7 @@ from lmkp.views.form import checkValidItemjson
 from lmkp.views.form_config import getCategoryList
 from lmkp.views.profile import get_current_profile
 from lmkp.views.profile import get_current_locale
+from lmkp.views.activities import _handle_spatial_parameters
 from lmkp.views.views import BaseView
 from lmkp.models.database_objects import *
 import logging
@@ -84,12 +85,14 @@ def read_one_public(request):
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
 
-@view_config(route_name='stakeholders_byactivity')
-def by_activity(request):
+# Use route stakeholders_by_activities_all if there is no UID specified
+@view_config(route_name='stakeholders_byactivities')
+@view_config(route_name='stakeholders_byactivities_all')
+def by_activities(request):
     """
-    Read many Stakeholders based on an Activity ID. Also return pending
-    Stakeholders by currently logged in user and all pending Stakeholders if
-    logged in as moderator.
+    Read many Stakeholders based on Activities filter params and/or an Actity
+    ID. Also returning Stakeholders by currently logged in user and all pending
+    Stakeholders if logged in as moderator.
     Default output format: JSON
     """
 
@@ -98,19 +101,24 @@ def by_activity(request):
     except KeyError:
         output_format = 'json'
 
-    uid = request.matchdict.get('uid', None)
-    if check_valid_uuid(uid) is not True:
-        raise HTTPNotFound()
+    uids = []
+    uidsMatchdict = request.matchdict.get('uids', None)
+    if uidsMatchdict is not None:
+        uids = uidsMatchdict.split(',')
+
+    # Remove any invalid UIDs
+    for uid in uids:
+        if check_valid_uuid(uid) is not True:
+            uids.remove(uid)
 
     if output_format == 'json':
-        stakeholders = stakeholder_protocol3.read_many_by_activity(request,
-            uid=uid, public=False)
+        stakeholders = stakeholder_protocol3.read_many_by_activities(request,
+            public=False, uids=uids)
         return render_to_response('json', stakeholders, request)
     elif output_format == 'html':
         """
         Show a HTML representation of the Stakeholders of an Activity in a grid.
         """
-        limit = 10
 
         # Get page parameter from request and make sure it is valid
         page = request.params.get('page', 1)
@@ -120,28 +128,46 @@ def by_activity(request):
             page = 1
         page = max(page, 1) # Page should be >= 1
 
+        # Get pagesize parameter from request and make sure it is valid
+        pageSize = request.params.get('pagesize', 10)
+        try:
+            pageSize = int(pageSize)
+        except TypeError:
+            pageSize = 10
+        pageSize = max(pageSize, 1) # Page size should be >= 1
+        pageSize = min(pageSize, 50) # Page size should be <= 50
+
+        # Spatial filter: Show it only if there is no involvement filter (no
+        # deal uid set)
+        spatialfilter = None
+        if len(uids) == 0:
+            spatialfilter = _handle_spatial_parameters(request)
+
         # Query the items with the protocol
-        items = stakeholder_protocol3.read_many_by_activity(request, uid=uid,
-            public=False, limit=limit, offset=limit*page-limit)
+        items = stakeholder_protocol3.read_many_by_activities(request,
+            public=False, uids=uids, limit=pageSize,
+            offset=pageSize*page-pageSize)
 
         return render_to_response('lmkp:templates/stakeholders/grid.mak', {
             'data': items['data'] if 'data' in items else [],
             'total': items['total'] if 'total' in items else 0,
             'profile': get_current_profile(request),
             'locale': get_current_locale(request),
-            'invfilter': uid,
+            'spatialfilter': spatialfilter,
+            'invfilter': uids,
             'currentpage': page,
-            'pagesize': limit
+            'pagesize': pageSize
         }, request)
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
 
-@view_config(route_name='stakeholders_byactivity_public')
-def by_activity_public(request):
+@view_config(route_name='stakeholders_byactivities_public')
+@view_config(route_name='stakeholders_byactivities_all_public')
+def by_activities_public(request):
     """
-    Read many Stakeholders based on an Activity ID. Do not return any pending
-    versions.
+    Read many Stakeholders based on Activities filter params and/or an Activity
+    ID. Do not return any pending versions.
     Default output format: JSON
     """
 
@@ -150,13 +176,19 @@ def by_activity_public(request):
     except KeyError:
         output_format = 'json'
 
-    uid = request.matchdict.get('uid', None)
-    if check_valid_uuid(uid) is not True:
-        raise HTTPNotFound()
+    uids = []
+    uidsMatchdict = request.matchdict.get('uids', None)
+    if uidsMatchdict is not None:
+        uids = uidsMatchdict.split(',')
+
+    # Remove any invalid UIDs
+    for uid in uids:
+        if check_valid_uuid(uid) is not True:
+            uids.remove(uid)
 
     if output_format == 'json':
-        stakeholders = stakeholder_protocol3.read_many_by_activity(request,
-            uid=uid, public=True)
+        stakeholders = stakeholder_protocol3.read_many_by_activities(request,
+            uids=uids, public=True)
         return render_to_response('json', stakeholders, request)
     elif output_format == 'html':
         #@TODO
@@ -211,6 +243,7 @@ def read_many(request):
             'total': items['total'] if 'total' in items else 0,
             'profile': get_current_profile(request),
             'locale': get_current_locale(request),
+            'spatialfilter': None,
             'invfilter': None,
             'currentpage': page,
             'pagesize': pageSize
