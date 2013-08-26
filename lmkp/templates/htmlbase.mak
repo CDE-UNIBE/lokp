@@ -262,7 +262,7 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
                                             class="active grid"
                                         % endif
                                         >
-                                        <a href="${t[0][0]}?${getQueryString(request.url, ret='queryString', remove=['page'])}">
+                                        <a href="${t[0][0]}?${getQueryString(request.url, ret='queryString', remove=['bbox', 'order_by', 'dir'])}">
                                             <i class="${t[1]}"></i>&nbsp;&nbsp;${t[2]}
                                         </a>
                                     </li>

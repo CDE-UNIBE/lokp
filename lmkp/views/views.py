@@ -353,6 +353,17 @@ def getQueryString(url, **kwargs):
     scheme, netloc, path, query_string, fragment = urlsplit(url)
     qp = parse_qs(query_string)
 
+    # Always remove 'epsg' as it is not needed (map is stored in cookie)
+    if 'epsg' in qp: del(qp['epsg'])
+
+    # Always remove 'bbox' if it is not set to 'profile' (bbox of map is stored
+    # in cookie)
+    if 'bbox' in qp and 'profile' not in qp['bbox']:
+        del(qp['bbox'])
+
+    # Always remove 'page'
+    if 'page' in qp: del(qp['page'])
+
     # Remove
     for d in remove:
         if d in qp:

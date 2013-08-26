@@ -163,12 +163,15 @@ def read_many_pending(request):
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
 
-@view_config(route_name='activities_bystakeholder')
-def by_stakeholder(request):
+@view_config(route_name='activities_bystakeholders')
+def by_stakeholders(request):
     """
     Read many Activities based on a Stakeholder ID. Also return pending
     Activities by currently logged in user and all pending Activities if logged
     in as moderator.
+    In contrast to the similar method in views/stakeholders.py, at least one
+    uid has to be specified in the matchdict "uids". To query *all* the
+    Stakeholders, use route "activities_read_many".
     Default output format: JSON
     """
 
@@ -177,19 +180,27 @@ def by_stakeholder(request):
     except KeyError:
         output_format = 'json'
 
-    uid = request.matchdict.get('uid', None)
-    if check_valid_uuid(uid) is not True:
+    uids = []
+    uidsMatchdict = request.matchdict.get('uids', None)
+    if uidsMatchdict is not None:
+        uids = uidsMatchdict.split(',')
+
+    # Remove any invalid UIDs
+    for uid in uids:
+        if check_valid_uuid(uid) is not True:
+            uids.remove(uid)
+
+    if len(uids) == 0:
         raise HTTPNotFound()
 
     if output_format == 'json':
-        activities = activity_protocol3.read_many_by_stakeholder(request,
-            uid=uid, public=False)
+        activities = activity_protocol3.read_many_by_stakeholders(request,
+            uids=uids, public=False)
         return render_to_response('json', activities, request)
     elif output_format == 'html':
         """
         Show a HTML representation of the Activities of a Stakeholder in a grid.
         """
-        limit = 10
 
         # Get page parameter from request and make sure it is valid
         page = request.params.get('page', 1)
@@ -199,13 +210,22 @@ def by_stakeholder(request):
             page = 1
         page = max(page, 1) # Page should be >= 1
 
+        # Get pagesize parameter from request and make sure it is valid
+        pageSize = request.params.get('pagesize', 10)
+        try:
+            pageSize = int(pageSize)
+        except TypeError:
+            pageSize = 10
+        pageSize = max(pageSize, 1) # Page size should be >= 1
+        pageSize = min(pageSize, 50) # Page size should be <= 50
+
         # No spatial filter is used if the activities are filtered by a
         # stakeholder
         spatialfilter = None
 
         # Query the items with the protocol
-        items = activity_protocol3.read_many_by_stakeholder(request, uid=uid,
-            public=False, limit=limit, offset=limit*page-limit)
+        items = activity_protocol3.read_many_by_stakeholders(request, uids=uids,
+            public=False, limit=pageSize, offset=pageSize*page-pageSize)
 
         return render_to_response('lmkp:templates/activities/grid.mak', {
             'data': items['data'] if 'data' in items else [],
@@ -213,16 +233,16 @@ def by_stakeholder(request):
             'profile': get_current_profile(request),
             'locale': get_current_locale(request),
             'spatialfilter': spatialfilter,
-            'invfilter': uid,
+            'invfilter': uids,
             'currentpage': page,
-            'pagesize': limit
+            'pagesize': pageSize
         }, request)
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
 
-@view_config(route_name='activities_bystakeholder_public')
-def by_stakeholder_public(request):
+@view_config(route_name='activities_bystakeholders_public')
+def by_stakeholders_public(request):
     """
     Read many Activities based on a Stakeholder ID. Do not return any pending
     versions.
@@ -234,13 +254,22 @@ def by_stakeholder_public(request):
     except KeyError:
         output_format = 'json'
 
-    uid = request.matchdict.get('uid', None)
-    if check_valid_uuid(uid) is not True:
+    uids = []
+    uidsMatchdict = request.matchdict.get('uids', None)
+    if uidsMatchdict is not None:
+        uids = uidsMatchdict.split(',')
+
+    # Remove any invalid UIDs
+    for uid in uids:
+        if check_valid_uuid(uid) is not True:
+            uids.remove(uid)
+
+    if len(uids) == 0:
         raise HTTPNotFound()
 
     if output_format == 'json':
-        activities = activity_protocol3.read_many_by_stakeholder(request,
-            uid=uid, public=True)
+        activities = activity_protocol3.read_many_by_stakeholders(request,
+            uids=uids, public=True)
         return render_to_response('json', activities, request)
     elif output_format == 'html':
         #@TODO
