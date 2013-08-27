@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-08-20 16:47+0200\n"
+"POT-Creation-Date: 2013-08-27 11:42+0200\n"
 "PO-Revision-Date: 2013-08-15 10:52+0100\n"
 "Last-Translator: Lukas Vonlanthen <lukas.vonlanthen@cde.unibe.ch>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
 
-#: lmkp/templates/about_view.mak:3 lmkp/templates/htmlbase.mak:395
+#: lmkp/templates/about_view.mak:3 lmkp/templates/htmlbase.mak:398
 #: lmkp/templates/landing_page.mak:346
 msgid "About"
 msgstr "Acerca de"
@@ -128,7 +128,7 @@ msgstr "Tu cuenta ha sido activada. Se aprobará en los siguientes días."
 #: lmkp/templates/base.mak:58 lmkp/templates/charts.mak:16
 #: lmkp/templates/compare_versions.mak:11 lmkp/templates/embedded.mak:10
 #: lmkp/templates/htmlbase.mak:39 lmkp/templates/htmlbase.mak:41
-#: lmkp/templates/htmlbase.mak:221 lmkp/templates/htmlbase.mak:223
+#: lmkp/templates/htmlbase.mak:224 lmkp/templates/htmlbase.mak:226
 #: lmkp/templates/index.mak:20 lmkp/templates/landing_page.mak:31
 #: lmkp/templates/landing_page.mak:115 lmkp/templates/landing_page.mak:117
 #: lmkp/templates/landing_page.mak:196 lmkp/templates/login_form.mak:62
@@ -211,7 +211,7 @@ msgstr ", con la cofinanciación de otros programas de ILC y CDE."
 msgid "Please send your questions and feedback on the Observatory to: "
 msgstr "Por favor, envíanos tus preguntas y comentarios sobre el Obervatorio a:"
 
-#: lmkp/templates/charts.mak:16 lmkp/templates/htmlbase.mak:254
+#: lmkp/templates/charts.mak:16 lmkp/templates/htmlbase.mak:257
 msgid "Charts"
 msgstr "Diagramas"
 
@@ -255,7 +255,7 @@ msgid "Compare"
 msgstr "Compare"
 
 #: lmkp/templates/faq_view.mak:3 lmkp/templates/faq_view.mak:32
-#: lmkp/templates/htmlbase.mak:394 lmkp/templates/landing_page.mak:345
+#: lmkp/templates/htmlbase.mak:397 lmkp/templates/landing_page.mak:345
 msgid "FAQ"
 msgstr "FAQ"
 
@@ -417,40 +417,40 @@ msgstr ""
 "información personal no será compartida con otros o re-usada por ningún "
 "otro propósito excepto para la verificación de la información ingresada."
 
-#: lmkp/templates/htmlbase.mak:239 lmkp/templates/activities/grid.mak:122
+#: lmkp/templates/htmlbase.mak:242 lmkp/templates/activities/grid.mak:127
 msgid "Map"
 msgstr "Mapa"
 
-#: lmkp/templates/htmlbase.mak:247
+#: lmkp/templates/htmlbase.mak:250
 msgid "Grid"
 msgstr "Cuadrícula"
 
-#: lmkp/templates/htmlbase.mak:281 lmkp/templates/form/form_activity.mak:10
+#: lmkp/templates/htmlbase.mak:284 lmkp/templates/form/form_activity.mak:10
 #: lmkp/views/translation.py:204
 msgid "New Deal"
 msgstr "Caso nuevo"
 
-#: lmkp/templates/htmlbase.mak:293 lmkp/templates/login_form.mak:3
+#: lmkp/templates/htmlbase.mak:296 lmkp/templates/login_form.mak:3
 #: lmkp/templates/login_form.mak:25 lmkp/templates/login_form.mak:39
 #: lmkp/templates/reset_form.mak:5 lmkp/views/viewers.py:28
 msgid "Login"
 msgstr "Iniciar sesión"
 
-#: lmkp/templates/htmlbase.mak:302 lmkp/templates/user_registration.mak:19
+#: lmkp/templates/htmlbase.mak:305 lmkp/templates/user_registration.mak:19
 #: lmkp/views/viewers.py:29
 msgid "Register"
 msgstr "Registro"
 
-#: lmkp/templates/htmlbase.mak:310 lmkp/views/editors.py:27
+#: lmkp/templates/htmlbase.mak:313 lmkp/views/editors.py:27
 #: lmkp/views/moderators.py:32
 msgid "Logout"
 msgstr "Cerrar sesión"
 
-#: lmkp/templates/htmlbase.mak:337
+#: lmkp/templates/htmlbase.mak:340
 msgid "Select Profile"
 msgstr "Elige un perfil"
 
-#: lmkp/templates/htmlbase.mak:396 lmkp/templates/landing_page.mak:347
+#: lmkp/templates/htmlbase.mak:399 lmkp/templates/landing_page.mak:347
 #: lmkp/templates/partners_view.mak:3 lmkp/templates/partners_view.mak:8
 msgid "Partners & Donors"
 msgstr "Miembros y Donantes"
@@ -648,9 +648,9 @@ msgstr "Caso de adquisición de tierra"
 msgid "Investor"
 msgstr "Inversor"
 
-#: lmkp/templates/map_view.mak:68 lmkp/templates/activities/grid.mak:98
+#: lmkp/templates/map_view.mak:68 lmkp/templates/activities/grid.mak:103
 #: lmkp/templates/parts/filter.mak:53 lmkp/templates/stakeholders/grid.mak:3
-#: lmkp/templates/stakeholders/grid.mak:70 lmkp/views/views.py:458
+#: lmkp/templates/stakeholders/grid.mak:103 lmkp/views/views.py:472
 msgid "Investors"
 msgstr "Inversores"
 
@@ -796,9 +796,9 @@ msgstr "Detalles del caso"
 msgid "Grid View"
 msgstr "Vista en cuadrícula"
 
-#: lmkp/templates/activities/grid.mak:3 lmkp/templates/activities/grid.mak:94
-#: lmkp/templates/parts/filter.mak:49 lmkp/templates/stakeholders/grid.mak:65
-#: lmkp/views/translation.py:212 lmkp/views/views.py:455
+#: lmkp/templates/activities/grid.mak:3 lmkp/templates/activities/grid.mak:99
+#: lmkp/templates/parts/filter.mak:49 lmkp/templates/stakeholders/grid.mak:98
+#: lmkp/views/translation.py:212 lmkp/views/views.py:469
 msgid "Deals"
 msgstr "Casos de adquisiciones de tierras"
 
@@ -806,7 +806,8 @@ msgstr "Casos de adquisiciones de tierras"
 msgid "Show investors by click on a specific row."
 msgstr "Mostrar inversores dando click en una fila específica"
 
-#: lmkp/templates/activities/grid.mak:49 lmkp/views/translation.py:169
+#: lmkp/templates/activities/grid.mak:49
+#: lmkp/templates/stakeholders/grid.mak:49 lmkp/views/translation.py:169
 msgid "Profile"
 msgstr "Perfil"
 
@@ -815,6 +816,7 @@ msgid "You are seeing all the Deals within the current profile."
 msgstr "Estás viendo todos los Casos con el perfil indicado"
 
 #: lmkp/templates/activities/grid.mak:54
+#: lmkp/templates/stakeholders/grid.mak:54
 msgid "Map Extent"
 msgstr "Extensión del mapa"
 
@@ -827,10 +829,12 @@ msgid "Show all Deals of the profile."
 msgstr "Mostrar todos los casos del perfil"
 
 #: lmkp/templates/activities/grid.mak:62
+#: lmkp/templates/stakeholders/grid.mak:62
 msgid "Spatial Filter"
 msgstr "Filtro espacial"
 
 #: lmkp/templates/activities/grid.mak:62
+#: lmkp/templates/stakeholders/grid.mak:62
 msgid "based on"
 msgstr "basado en"
 
@@ -842,33 +846,33 @@ msgstr "Filtrar Inversor"
 msgid "You are currently only seeing Deals where Investor"
 msgstr "En este momento estás viendo sólo Casos donde el Inversor"
 
-#: lmkp/templates/activities/grid.mak:79
+#: lmkp/templates/activities/grid.mak:84
 msgid "is involved."
 msgstr "está relacionado"
 
-#: lmkp/templates/activities/grid.mak:79
+#: lmkp/templates/activities/grid.mak:84
 msgid "Remove this filter and show all Deals"
 msgstr "Remover este filtro y mostrar todos los casos"
 
-#: lmkp/templates/activities/grid.mak:120
-#: lmkp/templates/stakeholders/grid.mak:92
+#: lmkp/templates/activities/grid.mak:125
+#: lmkp/templates/stakeholders/grid.mak:125
 msgid "Nothing found"
 msgstr "No se hallaron resultados"
 
-#: lmkp/templates/activities/grid.mak:121
-#: lmkp/templates/stakeholders/grid.mak:93
+#: lmkp/templates/activities/grid.mak:126
+#: lmkp/templates/stakeholders/grid.mak:126
 msgid "No results were found."
 msgstr "No se encontraron resultados"
 
-#: lmkp/templates/activities/grid.mak:122
+#: lmkp/templates/activities/grid.mak:127
 msgid "Make sure there are some deals on the"
 msgstr "Asegúrate que existan casos en "
 
-#: lmkp/templates/activities/grid.mak:130
+#: lmkp/templates/activities/grid.mak:135
 msgid "Show investors for this deal"
 msgstr "Mostrar los inversores para este Caso"
 
-#: lmkp/templates/activities/grid.mak:140
+#: lmkp/templates/activities/grid.mak:145
 msgid "Deal ID"
 msgstr "Código del Caso (ID)"
 
@@ -982,8 +986,6 @@ msgstr ""
 
 #: lmkp/templates/form/customMapMapping.mak:43
 #, fuzzy
-#| msgid "" "Click on the map to set the location of the deal. Please zoom in
-#| to set " "the point as accurately as possible."
 msgid ""
 "Click on the map to set the location. Please zoom in to set the point as "
 "accurately as possible."
@@ -998,7 +1000,6 @@ msgstr ""
 
 #: lmkp/templates/form/customMapMapping.mak:47
 #, fuzzy
-#| msgid "Success"
 msgid "Success!"
 msgstr "Correcto"
 
@@ -1012,13 +1013,11 @@ msgstr ""
 
 #: lmkp/templates/form/customMapMapping.mak:61
 #, fuzzy
-#| msgid "Information"
 msgid "Format"
 msgstr "Información"
 
 #: lmkp/templates/form/customMapMapping.mak:75
 #, fuzzy
-#| msgid "Compare"
 msgid "Parse"
 msgstr "Compare"
 
@@ -1032,36 +1031,42 @@ msgstr "Archivo cargado"
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:32
 msgid ""
+"Important: All the uploaded files will be publicly visible! You should "
+"not upload confidential data."
+msgstr ""
+
+#: lmkp/templates/form/form_fileupload_embedded.mak:34
+msgid ""
 "Please note that the file upload may take a while depending on your "
 "Internet connection."
 msgstr ""
 "Por favor, tenga en cuenta que la carga del archivo puede tomar unos "
 "minutos dependiendo de su conexión de internet"
 
-#: lmkp/templates/form/form_fileupload_embedded.mak:34
+#: lmkp/templates/form/form_fileupload_embedded.mak:36
 msgid "Valid files"
 msgstr "Archivos válidos"
 
-#: lmkp/templates/form/form_fileupload_embedded.mak:36
+#: lmkp/templates/form/form_fileupload_embedded.mak:38
 msgid "Maximum file size"
 msgstr "Extensión máxima de archivo"
 
-#: lmkp/templates/form/form_fileupload_embedded.mak:65
+#: lmkp/templates/form/form_fileupload_embedded.mak:67
 #: lmkp/views/translation.py:115
 msgid "Upload"
 msgstr "Subir"
 
-#: lmkp/templates/form/form_fileupload_embedded.mak:102
+#: lmkp/templates/form/form_fileupload_embedded.mak:104
 #: lmkp/templates/stakeholders/form_embedded.mak:40 lmkp/views/form.py:51
 #: lmkp/views/translation.py:192
 msgid "Success"
 msgstr "Correcto"
 
-#: lmkp/templates/form/form_fileupload_embedded.mak:103 lmkp/views/form.py:58
+#: lmkp/templates/form/form_fileupload_embedded.mak:105 lmkp/views/form.py:58
 msgid "Error"
 msgstr "Error"
 
-#: lmkp/templates/form/form_fileupload_embedded.mak:159
+#: lmkp/templates/form/form_fileupload_embedded.mak:161
 msgid "The file is being uploaded. Please do not close this window!"
 msgstr "El archivo está siendo cargado. Por favor no cierre esta ventana"
 
@@ -1238,51 +1243,73 @@ msgstr "Demasiados resultados para mostrar. Intenta ingresar más caracteres"
 msgid "Show deals by clicking on a specific row."
 msgstr "Mostrar los casos por dar click en determinada fila"
 
-#: lmkp/templates/stakeholders/grid.mak:51
+#: lmkp/templates/stakeholders/grid.mak:50
+#, fuzzy
+#| msgid "You are seeing all the Deals within the current profile."
+msgid ""
+"You are seeing all the Investors involved in Deals within the current "
+"profile."
+msgstr "Estás viendo todos los Casos con el perfil indicado"
+
+#: lmkp/templates/stakeholders/grid.mak:55
+#, fuzzy
+#| msgid "You are currently only seeing Deals which are visible on the map."
+msgid ""
+"You are currently only seeing Investors involved in Deals which are "
+"visible on the map."
+msgstr "En este momento estás viendo únicamente Casos que son visibles en el mapa"
+
+#: lmkp/templates/stakeholders/grid.mak:56
+#, fuzzy
+#| msgid "Show all Deals of the profile."
+msgid "Show all the Investors involved in Deals of the profile."
+msgstr "Mostrar todos los casos del perfil"
+
+#: lmkp/templates/stakeholders/grid.mak:79
 msgid "Deal Filter"
 msgstr "Filtrar Caso"
 
-#: lmkp/templates/stakeholders/grid.mak:51
+#: lmkp/templates/stakeholders/grid.mak:79
 msgid "You are currently only seeing Investors which are involved in Deal"
 msgstr "Estás viendo únicamente Inversores involucrados en un caso"
 
-#: lmkp/templates/stakeholders/grid.mak:51
+#: lmkp/templates/stakeholders/grid.mak:84
 msgid "Remove this filter and show all Investors"
 msgstr "Remover el filtro y mostrar todos los Inversores"
 
-#: lmkp/templates/stakeholders/grid.mak:101
+#: lmkp/templates/stakeholders/grid.mak:134
 msgid "Show deals of this investor"
 msgstr "Mostrar los casos del Inversor"
 
-#: lmkp/templates/stakeholders/grid.mak:111
+#: lmkp/templates/stakeholders/grid.mak:144
 msgid "Investor ID"
 msgstr "Código (ID) del Inversor"
 
-#: lmkp/views/activities.py:420 lmkp/views/stakeholders.py:425
+#: lmkp/views/activities.py:449 lmkp/views/stakeholders.py:458
 msgid "User is not logged in."
 msgstr "El usuario no está conectado"
 
-#: lmkp/views/activities.py:423 lmkp/views/stakeholders.py:428
+#: lmkp/views/activities.py:452 lmkp/views/stakeholders.py:461
 msgid "User has no permissions to add a review."
 msgstr "El usuario no tiene permisos para añadir una revisión"
 
-#: lmkp/views/activities.py:430
+#: lmkp/views/activities.py:459
 msgid "User has no profile attached"
 msgstr "El usuario no tiene un perfil registrado"
 
-#: lmkp/views/activities.py:437
+#: lmkp/views/activities.py:466
 msgid "The Deal was not found or is not situated within the user's profiles"
 msgstr "El caso no se encuentra o no se ubica dentro del perfil del usuario"
 
-#: lmkp/views/activities.py:461 lmkp/views/stakeholders.py:462
+#: lmkp/views/activities.py:490 lmkp/views/stakeholders.py:495
 msgid "Not all mandatory keys are provided"
 msgstr "No se proporcionaron todos los elementos obligatorios"
 
-#: lmkp/views/activities.py:501
+#: lmkp/views/activities.py:530
 msgid "The Deal was successfully created."
 msgstr "El caso fue creado correctamente"
 
-#: lmkp/views/activities.py:505
+#: lmkp/views/activities.py:534
 msgid "No Deal was created."
 msgstr "Ningún caso fue creado"
 
@@ -1310,23 +1337,23 @@ msgstr "Conectado como: "
 msgid "Please login to access:"
 msgstr "Por favor, inicia sesión para ingresar"
 
-#: lmkp/views/files.py:157
+#: lmkp/views/files.py:164
 msgid "Not all necessary values were provided."
 msgstr "No se proporcionaron todos los elementos obligatorios"
 
-#: lmkp/views/files.py:166
+#: lmkp/views/files.py:173
 msgid "Upload directory not specified or not found."
 msgstr "Actualización de directorio no especificada o no encontrada"
 
-#: lmkp/views/files.py:172
+#: lmkp/views/files.py:179
 msgid "File type is not valid."
 msgstr "Tipo de archivo no válido"
 
-#: lmkp/views/files.py:178
+#: lmkp/views/files.py:185
 msgid "File is too big."
 msgstr "Perfil muy amplio"
 
-#: lmkp/views/files.py:244
+#: lmkp/views/files.py:251
 msgid "File was successfully uploaded"
 msgstr "Perfil fue cargado exitosamente"
 
@@ -1473,15 +1500,15 @@ msgstr "El archivo parece ser incorrecto (identificador no encontrado)"
 msgid "Review successful."
 msgstr "Revisión correcta"
 
-#: lmkp/views/stakeholders.py:438
+#: lmkp/views/stakeholders.py:471
 msgid "The Deal was not found"
 msgstr "No se encontró el caso"
 
-#: lmkp/views/stakeholders.py:502
+#: lmkp/views/stakeholders.py:535
 msgid "The Stakeholder was successfully created."
 msgstr "El Inversor fue creado correctamente"
 
-#: lmkp/views/stakeholders.py:506
+#: lmkp/views/stakeholders.py:539
 msgid "No Stakeholder was created."
 msgstr "Ningún inversor fue creado"
 

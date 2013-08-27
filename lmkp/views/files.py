@@ -10,11 +10,18 @@ from lmkp.config import upload_directory_path
 from lmkp.config import upload_max_file_size
 from lmkp.config import valid_mime_extensions
 from lmkp.models.database_objects import File
+from lmkp.models.database_objects import Activity
+from lmkp.models.database_objects import A_Tag_Group
+from lmkp.models.database_objects import A_Tag
+from lmkp.models.database_objects import A_Value
+from lmkp.models.database_objects import A_Key
 from lmkp.models.meta import DBSession as Session
 
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
 from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPForbidden
+from pyramid.security import effective_principals
 from pyramid.response import Response
 from pyramid.view import view_config
 
@@ -302,13 +309,59 @@ def file_view(request):
     filepath = os.path.join(upload_path, folder1, folder2, filename)
 
     # Check that the file is on the disk
+    temporaryFile = False
     if not os.path.exists(filepath):
         # If the file was not found in its proper directory, try to find it in
-        # the temporary upload directory
+        # the temporary upload directory. This means the Activity was not (yet)
+        # submitted and the file is only visible for logged in users.
         filepath = os.path.join(upload_path, TEMP_FOLDER_NAME, filename)
         if not os.path.exists(filepath):
             # If it is still not found, raise error
             raise HTTPNotFound()
+
+        # TODO: Authentication: Handle it properly
+        if 'system.Authenticated' not in effective_principals(request):
+            raise HTTPForbidden()
+
+        temporaryFile = True
+
+    # If the file is not in the temporary folder, find its Activity versions by
+    # searching for its A_Value (filename|UID).
+    if temporaryFile is False:
+        a_value = '%s|%s' % (db_file.name, db_file.identifier)
+        a_db_query = Session.query(
+                Activity
+            ).\
+            join(A_Tag_Group, A_Tag_Group.fk_activity == Activity.id).\
+            join(A_Tag, A_Tag.fk_tag_group == A_Tag_Group.id).\
+            join(A_Key, A_Tag.fk_key == A_Key.id).\
+            join(A_Value, A_Tag.fk_value == A_Value.id).\
+            filter(A_Key.type.ilike('File')).\
+            filter(A_Value.value.ilike(a_value))
+
+        # Files for Activities are always visible if there is an active version
+        # having the file attached.
+        # Files for pending versions of Activities are only visible if the
+        # current user is moderator or edited at least one pending version.
+        showFile = False
+        for a in a_db_query.all():
+            if a.fk_status == 2:
+                # Active: There is an active version with the file, show it
+                showFile = True
+                break
+            if a.fk_status == 1 and request.user is not None:
+                # Pending: Check if user is moderator or created the version.
+                if 'group:moderators' in effective_principals(request):
+                    # Moderator
+                    showFile = True
+                    break
+                if a.changeset.user == request.user:
+                    # Editor of a version
+                    showFile = True
+                    break
+
+        if showFile is False:
+            raise HTTPForbidden()
 
     # Open the file
     file = open(filepath, 'rb').read()

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-08-20 16:47+0200\n"
+"POT-Creation-Date: 2013-08-27 11:42+0200\n"
 "PO-Revision-Date: 2013-08-14 08:21+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: lo <LL@li.org>\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
 
-#: lmkp/templates/about_view.mak:3 lmkp/templates/htmlbase.mak:395
+#: lmkp/templates/about_view.mak:3 lmkp/templates/htmlbase.mak:398
 #: lmkp/templates/landing_page.mak:346
 msgid "About"
 msgstr ""
@@ -101,7 +101,7 @@ msgstr ""
 #: lmkp/templates/base.mak:58 lmkp/templates/charts.mak:16
 #: lmkp/templates/compare_versions.mak:11 lmkp/templates/embedded.mak:10
 #: lmkp/templates/htmlbase.mak:39 lmkp/templates/htmlbase.mak:41
-#: lmkp/templates/htmlbase.mak:221 lmkp/templates/htmlbase.mak:223
+#: lmkp/templates/htmlbase.mak:224 lmkp/templates/htmlbase.mak:226
 #: lmkp/templates/index.mak:20 lmkp/templates/landing_page.mak:31
 #: lmkp/templates/landing_page.mak:115 lmkp/templates/landing_page.mak:117
 #: lmkp/templates/landing_page.mak:196 lmkp/templates/login_form.mak:62
@@ -175,7 +175,7 @@ msgstr ""
 msgid "Please send your questions and feedback on the Observatory to: "
 msgstr ""
 
-#: lmkp/templates/charts.mak:16 lmkp/templates/htmlbase.mak:254
+#: lmkp/templates/charts.mak:16 lmkp/templates/htmlbase.mak:257
 msgid "Charts"
 msgstr ""
 
@@ -213,7 +213,7 @@ msgid "Compare"
 msgstr ""
 
 #: lmkp/templates/faq_view.mak:3 lmkp/templates/faq_view.mak:32
-#: lmkp/templates/htmlbase.mak:394 lmkp/templates/landing_page.mak:345
+#: lmkp/templates/htmlbase.mak:397 lmkp/templates/landing_page.mak:345
 msgid "FAQ"
 msgstr ""
 
@@ -334,40 +334,40 @@ msgid ""
 "verification of submitted information."
 msgstr ""
 
-#: lmkp/templates/htmlbase.mak:239 lmkp/templates/activities/grid.mak:122
+#: lmkp/templates/htmlbase.mak:242 lmkp/templates/activities/grid.mak:127
 msgid "Map"
 msgstr ""
 
-#: lmkp/templates/htmlbase.mak:247
+#: lmkp/templates/htmlbase.mak:250
 msgid "Grid"
 msgstr ""
 
-#: lmkp/templates/htmlbase.mak:281 lmkp/templates/form/form_activity.mak:10
+#: lmkp/templates/htmlbase.mak:284 lmkp/templates/form/form_activity.mak:10
 #: lmkp/views/translation.py:204
 msgid "New Deal"
 msgstr ""
 
-#: lmkp/templates/htmlbase.mak:293 lmkp/templates/login_form.mak:3
+#: lmkp/templates/htmlbase.mak:296 lmkp/templates/login_form.mak:3
 #: lmkp/templates/login_form.mak:25 lmkp/templates/login_form.mak:39
 #: lmkp/templates/reset_form.mak:5 lmkp/views/viewers.py:28
 msgid "Login"
 msgstr ""
 
-#: lmkp/templates/htmlbase.mak:302 lmkp/templates/user_registration.mak:19
+#: lmkp/templates/htmlbase.mak:305 lmkp/templates/user_registration.mak:19
 #: lmkp/views/viewers.py:29
 msgid "Register"
 msgstr ""
 
-#: lmkp/templates/htmlbase.mak:310 lmkp/views/editors.py:27
+#: lmkp/templates/htmlbase.mak:313 lmkp/views/editors.py:27
 #: lmkp/views/moderators.py:32
 msgid "Logout"
 msgstr ""
 
-#: lmkp/templates/htmlbase.mak:337
+#: lmkp/templates/htmlbase.mak:340
 msgid "Select Profile"
 msgstr ""
 
-#: lmkp/templates/htmlbase.mak:396 lmkp/templates/landing_page.mak:347
+#: lmkp/templates/htmlbase.mak:399 lmkp/templates/landing_page.mak:347
 #: lmkp/templates/partners_view.mak:3 lmkp/templates/partners_view.mak:8
 msgid "Partners & Donors"
 msgstr ""
@@ -541,9 +541,9 @@ msgstr ""
 msgid "Investor"
 msgstr ""
 
-#: lmkp/templates/map_view.mak:68 lmkp/templates/activities/grid.mak:98
+#: lmkp/templates/map_view.mak:68 lmkp/templates/activities/grid.mak:103
 #: lmkp/templates/parts/filter.mak:53 lmkp/templates/stakeholders/grid.mak:3
-#: lmkp/templates/stakeholders/grid.mak:70 lmkp/views/views.py:458
+#: lmkp/templates/stakeholders/grid.mak:103 lmkp/views/views.py:472
 msgid "Investors"
 msgstr ""
 
@@ -681,9 +681,9 @@ msgstr ""
 msgid "Grid View"
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:3 lmkp/templates/activities/grid.mak:94
-#: lmkp/templates/parts/filter.mak:49 lmkp/templates/stakeholders/grid.mak:65
-#: lmkp/views/translation.py:212 lmkp/views/views.py:455
+#: lmkp/templates/activities/grid.mak:3 lmkp/templates/activities/grid.mak:99
+#: lmkp/templates/parts/filter.mak:49 lmkp/templates/stakeholders/grid.mak:98
+#: lmkp/views/translation.py:212 lmkp/views/views.py:469
 msgid "Deals"
 msgstr ""
 
@@ -691,7 +691,8 @@ msgstr ""
 msgid "Show investors by click on a specific row."
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:49 lmkp/views/translation.py:169
+#: lmkp/templates/activities/grid.mak:49
+#: lmkp/templates/stakeholders/grid.mak:49 lmkp/views/translation.py:169
 msgid "Profile"
 msgstr ""
 
@@ -700,6 +701,7 @@ msgid "You are seeing all the Deals within the current profile."
 msgstr ""
 
 #: lmkp/templates/activities/grid.mak:54
+#: lmkp/templates/stakeholders/grid.mak:54
 msgid "Map Extent"
 msgstr ""
 
@@ -712,10 +714,12 @@ msgid "Show all Deals of the profile."
 msgstr ""
 
 #: lmkp/templates/activities/grid.mak:62
+#: lmkp/templates/stakeholders/grid.mak:62
 msgid "Spatial Filter"
 msgstr ""
 
 #: lmkp/templates/activities/grid.mak:62
+#: lmkp/templates/stakeholders/grid.mak:62
 msgid "based on"
 msgstr ""
 
@@ -727,33 +731,33 @@ msgstr ""
 msgid "You are currently only seeing Deals where Investor"
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:79
+#: lmkp/templates/activities/grid.mak:84
 msgid "is involved."
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:79
+#: lmkp/templates/activities/grid.mak:84
 msgid "Remove this filter and show all Deals"
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:120
-#: lmkp/templates/stakeholders/grid.mak:92
+#: lmkp/templates/activities/grid.mak:125
+#: lmkp/templates/stakeholders/grid.mak:125
 msgid "Nothing found"
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:121
-#: lmkp/templates/stakeholders/grid.mak:93
+#: lmkp/templates/activities/grid.mak:126
+#: lmkp/templates/stakeholders/grid.mak:126
 msgid "No results were found."
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:122
+#: lmkp/templates/activities/grid.mak:127
 msgid "Make sure there are some deals on the"
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:130
+#: lmkp/templates/activities/grid.mak:135
 msgid "Show investors for this deal"
 msgstr ""
 
-#: lmkp/templates/activities/grid.mak:140
+#: lmkp/templates/activities/grid.mak:145
 msgid "Deal ID"
 msgstr ""
 
@@ -899,34 +903,40 @@ msgstr ""
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:32
 msgid ""
+"Important: All the uploaded files will be publicly visible! You should "
+"not upload confidential data."
+msgstr ""
+
+#: lmkp/templates/form/form_fileupload_embedded.mak:34
+msgid ""
 "Please note that the file upload may take a while depending on your "
 "Internet connection."
 msgstr ""
 
-#: lmkp/templates/form/form_fileupload_embedded.mak:34
+#: lmkp/templates/form/form_fileupload_embedded.mak:36
 msgid "Valid files"
 msgstr ""
 
-#: lmkp/templates/form/form_fileupload_embedded.mak:36
+#: lmkp/templates/form/form_fileupload_embedded.mak:38
 msgid "Maximum file size"
 msgstr ""
 
-#: lmkp/templates/form/form_fileupload_embedded.mak:65
+#: lmkp/templates/form/form_fileupload_embedded.mak:67
 #: lmkp/views/translation.py:115
 msgid "Upload"
 msgstr ""
 
-#: lmkp/templates/form/form_fileupload_embedded.mak:102
+#: lmkp/templates/form/form_fileupload_embedded.mak:104
 #: lmkp/templates/stakeholders/form_embedded.mak:40 lmkp/views/form.py:51
 #: lmkp/views/translation.py:192
 msgid "Success"
 msgstr ""
 
-#: lmkp/templates/form/form_fileupload_embedded.mak:103 lmkp/views/form.py:58
+#: lmkp/templates/form/form_fileupload_embedded.mak:105 lmkp/views/form.py:58
 msgid "Error"
 msgstr ""
 
-#: lmkp/templates/form/form_fileupload_embedded.mak:159
+#: lmkp/templates/form/form_fileupload_embedded.mak:161
 msgid "The file is being uploaded. Please do not close this window!"
 msgstr ""
 
@@ -1097,51 +1107,67 @@ msgstr ""
 msgid "Show deals by clicking on a specific row."
 msgstr ""
 
-#: lmkp/templates/stakeholders/grid.mak:51
+#: lmkp/templates/stakeholders/grid.mak:50
+msgid ""
+"You are seeing all the Investors involved in Deals within the current "
+"profile."
+msgstr ""
+
+#: lmkp/templates/stakeholders/grid.mak:55
+msgid ""
+"You are currently only seeing Investors involved in Deals which are "
+"visible on the map."
+msgstr ""
+
+#: lmkp/templates/stakeholders/grid.mak:56
+msgid "Show all the Investors involved in Deals of the profile."
+msgstr ""
+
+#: lmkp/templates/stakeholders/grid.mak:79
 msgid "Deal Filter"
 msgstr ""
 
-#: lmkp/templates/stakeholders/grid.mak:51
+#: lmkp/templates/stakeholders/grid.mak:79
 msgid "You are currently only seeing Investors which are involved in Deal"
 msgstr ""
 
-#: lmkp/templates/stakeholders/grid.mak:51
+#: lmkp/templates/stakeholders/grid.mak:84
 msgid "Remove this filter and show all Investors"
 msgstr ""
 
-#: lmkp/templates/stakeholders/grid.mak:101
+#: lmkp/templates/stakeholders/grid.mak:134
 msgid "Show deals of this investor"
 msgstr ""
 
-#: lmkp/templates/stakeholders/grid.mak:111
+#: lmkp/templates/stakeholders/grid.mak:144
 msgid "Investor ID"
 msgstr ""
 
-#: lmkp/views/activities.py:420 lmkp/views/stakeholders.py:425
+#: lmkp/views/activities.py:449 lmkp/views/stakeholders.py:458
 msgid "User is not logged in."
 msgstr ""
 
-#: lmkp/views/activities.py:423 lmkp/views/stakeholders.py:428
+#: lmkp/views/activities.py:452 lmkp/views/stakeholders.py:461
 msgid "User has no permissions to add a review."
 msgstr ""
 
-#: lmkp/views/activities.py:430
+#: lmkp/views/activities.py:459
 msgid "User has no profile attached"
 msgstr ""
 
-#: lmkp/views/activities.py:437
+#: lmkp/views/activities.py:466
 msgid "The Deal was not found or is not situated within the user's profiles"
 msgstr ""
 
-#: lmkp/views/activities.py:461 lmkp/views/stakeholders.py:462
+#: lmkp/views/activities.py:490 lmkp/views/stakeholders.py:495
 msgid "Not all mandatory keys are provided"
 msgstr ""
 
-#: lmkp/views/activities.py:501
+#: lmkp/views/activities.py:530
 msgid "The Deal was successfully created."
 msgstr ""
 
-#: lmkp/views/activities.py:505
+#: lmkp/views/activities.py:534
 msgid "No Deal was created."
 msgstr ""
 
@@ -1169,23 +1195,23 @@ msgstr ""
 msgid "Please login to access:"
 msgstr ""
 
-#: lmkp/views/files.py:157
+#: lmkp/views/files.py:164
 msgid "Not all necessary values were provided."
 msgstr ""
 
-#: lmkp/views/files.py:166
+#: lmkp/views/files.py:173
 msgid "Upload directory not specified or not found."
 msgstr ""
 
-#: lmkp/views/files.py:172
+#: lmkp/views/files.py:179
 msgid "File type is not valid."
 msgstr ""
 
-#: lmkp/views/files.py:178
+#: lmkp/views/files.py:185
 msgid "File is too big."
 msgstr ""
 
-#: lmkp/views/files.py:244
+#: lmkp/views/files.py:251
 msgid "File was successfully uploaded"
 msgstr ""
 
@@ -1314,15 +1340,15 @@ msgstr ""
 msgid "Review successful."
 msgstr ""
 
-#: lmkp/views/stakeholders.py:438
+#: lmkp/views/stakeholders.py:471
 msgid "The Deal was not found"
 msgstr ""
 
-#: lmkp/views/stakeholders.py:502
+#: lmkp/views/stakeholders.py:535
 msgid "The Stakeholder was successfully created."
 msgstr ""
 
-#: lmkp/views/stakeholders.py:506
+#: lmkp/views/stakeholders.py:539
 msgid "No Stakeholder was created."
 msgstr ""
 
@@ -1952,11 +1978,4 @@ msgstr ""
 #: lmkp/views/user.py:355
 msgid "Update"
 msgstr ""
-
-#~ msgid ""
-#~ "Click on the map to set the "
-#~ "location of the deal. Please zoom "
-#~ "in to set the point as accurately"
-#~ " as possible."
-#~ msgstr ""
 
