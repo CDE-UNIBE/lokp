@@ -156,9 +156,12 @@ class UserView(BaseView):
 
         ret = self._render_form(form, success=succeed)
 
-        self._handle_parameters()
-        ret['profile'] = get_current_profile(self.request)
-        ret['locale'] = get_current_locale(self.request)
+        # 'ret' is a Response object if the form was submitted with success. In
+        # this case, it is not possible to add any parameters to it.
+        if not isinstance(ret, Response):
+            self._handle_parameters()
+            ret['profile'] = get_current_profile(self.request)
+            ret['locale'] = get_current_locale(self.request)
 
         return ret
 
