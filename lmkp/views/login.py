@@ -7,6 +7,7 @@ from datetime import timedelta
 from lmkp.models.database_objects import User
 from lmkp.models.meta import DBSession
 from lmkp.views.views import BaseView
+from lmkp.config import getTemplatePath
 import logging
 from pyramid.httpexceptions import HTTPFound
 from pyramid.i18n import TranslationStringFactory
@@ -54,11 +55,14 @@ class LoginView(BaseView):
                 log.debug('Login failed')
                 headers = forget(self.request)
                 msg = _(u"Login failed! Please try again.")
-                return render_to_response('lmkp:templates/login_form.mak', {'came_from': came_from, 'warning': msg}, self.request)
+                return render_to_response(getTemplatePath(self.request, 'login_form.mak'), {
+                    'came_from': came_from,
+                    'warning': msg
+                }, self.request)
 
         return HTTPFound(location=came_from, headers=headers)
 
-    @view_config(route_name='login_form', renderer='lmkp:templates/login_form.mak')
+    @view_config(route_name='login_form')
     def login_form(self):
         """
         Renders the simple login form
@@ -76,8 +80,11 @@ class LoginView(BaseView):
         principals = effective_principals(self.request)
         if "system.Authenticated" in principals:
             return HTTPFound(location=came_from)
-
-        return {"came_from": came_from, "warning": None}
+        
+        return render_to_response(getTemplatePath(self.request, 'login_form.mak'), {
+            'came_from': came_from,
+            'warning': None
+        }, self.request)
 
     @view_config(route_name='reset', renderer='json')
     def reset(self):
@@ -101,7 +108,10 @@ class LoginView(BaseView):
 
         new_password = user.set_new_password()
 
-        body = render('lmkp:templates/emails/reset_password_email.mak', {'user': user.username, 'new_password': new_password}, self.request)
+        body = render(getTemplatePath(self.request, 'emails/reset_password.mak'), {
+            'user': user.username,
+            'new_password': new_password
+        }, self.request)
         self._send_email([user.email], _(u"Land Observatory - Password reset"), body)
 
         msg = _(u"Password reset was successful. An email containing the new password has been sent to your email address.")
@@ -111,11 +121,14 @@ class LoginView(BaseView):
 
         return {'success': True, 'msg': msg}
 
-    @view_config(route_name='reset_form', renderer='lmkp:templates/reset_form.mak')
+    @view_config(route_name='reset_form')
     def reset_form(self):
 
         came_from = self.request.params.get('came_from', None)
-        return {'came_from': came_from}
+
+        return render_to_response(getTemplatePath(self.request, 'users/reset_password_form.mak'), {
+            'came_from': came_from
+        }, self.request)
 
     @view_config(route_name='logout')
     def logout(self):

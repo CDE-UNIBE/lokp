@@ -1,7 +1,7 @@
 <%def name="height()">500</%def>
 <%def name="defaultWidth()">800</%def>
 
-<%inherit file="lmkp:templates/htmlbase.mak" />
+<%inherit file="lmkp:customization/lo/templates/base.mak" />
 
 <%def name="title()">Charts - Overview</%def>
 

@@ -18,6 +18,7 @@ from urllib import urlencode
 from lmkp.views.profile import get_current_profile
 from lmkp.views.profile import get_current_locale
 from lmkp.views.form_config import getCategoryList
+from lmkp.config import getTemplatePath
 import re
 
 log = logging.getLogger(__name__)
@@ -131,7 +132,7 @@ class MainView(BaseView):
     def profile_global(self):
         return change_profile(self.request, 'global')
 
-    @view_config(route_name='index', renderer='lmkp:templates/landing_page.mak')
+    @view_config(route_name='index')
     def index(self):
         """
         Returns the main HTML page
@@ -139,17 +140,20 @@ class MainView(BaseView):
 
         self._handle_parameters()
 
-        return {
+        return render_to_response(getTemplatePath(self.request, 'landing_page.mak'), {
             'profile': get_current_profile(self.request),
             'locale': get_current_locale(self.request)
-        }
+        }, self.request)
 
-    @view_config(route_name='map_view', renderer='lmkp:templates/map_view.mak')
+    @view_config(route_name='map_view')
     def map_view(self):
 
         self._handle_parameters()
 
-        return {"profile": get_current_profile(self.request), "locale": get_current_locale(self.request)}
+        return render_to_response(getTemplatePath(self.request, 'map_view.mak'), {
+            'profile': get_current_profile(self.request),
+            'locale': get_current_locale(self.request)
+        }, self.request)
 
     @view_config(route_name='grid_view')
     def grid_view(self):
@@ -168,7 +172,7 @@ class MainView(BaseView):
             output='html', _query=qp)
         )
 
-    @view_config(route_name='charts_view', renderer='lmkp:templates/charts_view.mak')
+    @view_config(route_name='charts_view')
     def charts_view(self):
 
         self._handle_parameters()
@@ -176,39 +180,42 @@ class MainView(BaseView):
         # TEMP
         return HTTPFound(location=self.request.route_url('charts_overview'))
 
-        return {"profile": get_current_profile(self.request), "locale": get_current_locale(self.request)}
+        return render_to_response(getTemplatePath(self.request, 'charts_view.mak'), {
+            'profile': get_current_profile(self.request),
+            'locale': get_current_locale(self.request)
+        }, self.request)
 
-    @view_config(route_name='about_view', renderer='lmkp:templates/about_view.mak')
+    @view_config(route_name='about_view')
     def about_view(self):
 
         self._handle_parameters()
 
-        return {
+        return render_to_response(getTemplatePath(self.request, 'about_view.mak'), {
             'profile': get_current_profile(self.request),
             'locale': get_current_locale(self.request)
-        }
+        }, self.request)
 
-    @view_config(route_name='faq_view', renderer='lmkp:templates/faq_view.mak')
+    @view_config(route_name='faq_view')
     def faq_view(self):
 
         self._handle_parameters()
 
-        return {
+        return render_to_response(getTemplatePath(self.request, 'faq_view.mak'), {
             'profile': get_current_profile(self.request),
             'locale': get_current_locale(self.request)
-        }
+        }, self.request)
 
-    @view_config(route_name='partners_view', renderer='lmkp:templates/partners_view.mak')
+    @view_config(route_name='partners_view')
     def partners_view(self):
 
         self._handle_parameters()
 
-        return {
+        return render_to_response(getTemplatePath(self.request, 'partners_view.mak'), {
             'profile': get_current_profile(self.request),
             'locale': get_current_locale(self.request)
-        }
+        }, self.request)
 
-    @view_config(route_name='embedded_index', renderer='lmkp:templates/embedded.mak')
+    @view_config(route_name='embedded_index', renderer='lmkp:templates/old_embedded.mak')
     def embedded_version(self):
         """
         Returns a version of the Land Observatory that can be embedded in other
@@ -271,7 +278,7 @@ class MainView(BaseView):
 
         return Response(html, content_type='text/html', status_int=200)
 
-    @view_config(route_name='moderation_html', renderer='lmkp:templates/moderation.mak', permission='moderate')
+    @view_config(route_name='moderation_html', renderer='lmkp:templates/ext_moderation.mak', permission='moderate')
     def moderation_html(self):
         """
         Returns the moderation HTML page
@@ -285,7 +292,7 @@ class MainView(BaseView):
             'identifier': ''
         }
 
-    @view_config(route_name='translation', renderer='lmkp:templates/translation.mak', permission='translate')
+    @view_config(route_name='translation', renderer='lmkp:templates/ext_translation.mak', permission='translate')
     def translation(self):
         """
         Returns the translation HTML page
@@ -295,7 +302,7 @@ class MainView(BaseView):
 
         return {}
 
-    @view_config(route_name='administration', renderer='lmkp:templates/administration.mak', permission='administer')
+    @view_config(route_name='administration', renderer='lmkp:templates/ext_administration.mak', permission='administer')
     def administration(self):
         """
         Returns the administration HTML page
@@ -305,7 +312,7 @@ class MainView(BaseView):
 
         return {}
 
-    @view_config(route_name='privileges_test', renderer='lmkp:templates/privilegestest.mak')
+    @view_config(route_name='privileges_test', renderer='lmkp:templates/old_privilegestest.mak')
     def privileges_test(self):
         """
         Simple view to output the current privileges

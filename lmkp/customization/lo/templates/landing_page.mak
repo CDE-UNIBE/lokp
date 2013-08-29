@@ -12,7 +12,7 @@ mode = None
 if 'lmkp.mode' in request.registry.settings:
     if str(request.registry.settings['lmkp.mode']).lower() == 'demo':
         mode = 'demo'
-    
+
 use_piwik_analytics = False
 if 'lmkp.use_piwik_analytics' in request.registry.settings:
     if str(request.registry.settings['lmkp.use_piwik_analytics']).lower() == "true":

@@ -1,9 +1,12 @@
-<%inherit file="lmkp:templates/htmlbase.mak" />
+<%inherit file="lmkp:customization/lo/templates/base.mak" />
 
-<%def name="title()">${_('Stakeholder Details')} ${shortuid}</%def>
+<%def name="title()">${_('Deal Details')} ${shortuid}</%def>
 
 <%def name="head_tags()">
 <style type="text/css" >
+    .olTileImage {
+        max-width: none !important;
+    }
     /* Some nasty temporary css hacks */
     p.deal-detail {
         font-weight: normal;
@@ -43,7 +46,9 @@
 
 <%def name="bottom_tags()">
 
-%if site_key is not None:
+<%include file="lmkp:templates/map/mapform.mak" args="readonly=True" />
+
+% if site_key is not None:
 <script type="text/javascript" class="juvia">
     (function() {
         var options = {

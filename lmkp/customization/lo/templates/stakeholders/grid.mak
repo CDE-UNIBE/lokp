@@ -1,6 +1,6 @@
-<%inherit file="lmkp:templates/htmlbase.mak" />
+<%inherit file="lmkp:customization/lo/templates/base.mak" />
 
-<%def name="title()">${_('Grid View')} - ${_('Deals')}</%def>
+<%def name="title()">${_('Grid View')} - ${_('Investors')}</%def>
 
 <%def name="head_tags()">
     ## TODO: This should be fixed in bootstrap
@@ -25,10 +25,10 @@
     from lmkp.views.views import getQueryString
 
     # Get the keys and their translation
-    from lmkp.views.translation import get_activity_keys
-    keys = get_activity_keys(request)
+    from lmkp.views.translation import get_stakeholder_keys
+    keys = get_stakeholder_keys(request)
 
-    sh_uids = ','.join(invfilter) if invfilter is not None else ''
+    a_uids = ','.join(invfilter) if invfilter is not None else ''
 %>
 
 ## Filter
@@ -39,7 +39,7 @@
 
     <div class="show-investors visible-phone">
         <i class="icon-info-sign"></i>
-        <p>${_('Show investors by click on a specific row.')}</p>
+        <p>${_('Show deals by clicking on a specific row.')}</p>
     </div>
 
     <div class="content">
@@ -47,13 +47,13 @@
         ## Spatial Filter
         <%
             spatialFilterBasedOn = _('Profile')
-            spatialFilterExplanation = _('You are seeing all the Deals within the current profile.')
+            spatialFilterExplanation = _('You are seeing all the Investors involved in Deals within the current profile.')
             spatialFilterLink = None
 
             if spatialfilter == 'mapextentparam' or spatialfilter == 'mapextentcookie':
                 spatialFilterBasedOn = _('Map Extent')
-                spatialFilterExplanation = _('You are currently only seeing Deals which are visible on the map.')
-                spatialFilterLink = _('Show all Deals of the profile.')
+                spatialFilterExplanation = _('You are currently only seeing Investors involved in Deals which are visible on the map.')
+                spatialFilterLink = _('Show all the Investors involved in Deals of the profile.')
         %>
 
         % if spatialfilter:
@@ -76,12 +76,12 @@
         % if invfilter:
         <div class="alert alert-info">
             <i class="icon-filter"></i>&nbsp;
-            <strong>${_('Investor Filter')}</strong>: ${_('You are currently only seeing Deals where Investor')}
+            <strong>${_('Deal Filter')}</strong>: ${_('You are currently only seeing Investors which are involved in Deal')}
             % for uid in invfilter:
-                <a href="${request.route_url('stakeholders_read_one', output='html', uid=uid)}">
+                <a href="${request.route_url('activities_read_one', output='html', uid=uid)}">
                     ${uid[:6]}</a>
             % endfor
-            ${_('is involved.')}<br/><a href="${request.route_url('activities_read_many', output='html')}">${_('Remove this filter and show all Deals')}</a>.
+            .<br/><a href="${request.route_url('stakeholders_byactivities_all', output='html')}">${_('Remove this filter and show all Investors')}</a>.
         </div>
         % endif
 
@@ -94,12 +94,12 @@
                 tabs = [
                     [
                         [
-                            request.route_url('activities_read_many', output='html'),
-                            request.route_url('activities_bystakeholders', output='html', uids=sh_uids)
+                            request.route_url('activities_read_many', output='html')
                         ], _('Deals')
                     ], [
                         [
-                            request.route_url('stakeholders_byactivities_all', output='html')
+                            request.route_url('stakeholders_byactivities_all', output='html'),
+                            request.route_url('stakeholders_byactivities', output='html', uids=a_uids)
                         ], _('Investors')
                     ]
                 ]
@@ -124,7 +124,6 @@
                 <p>&nbsp;</p>
                 <h5>${_('Nothing found')}</h5>
                 <p>${_('No results were found.')}</p>
-                <p>${_('Make sure there are some deals on the')} <a href="${request.route_url('map_view')}">${_('Map')}</a>.</p>
                 <p>&nbsp;</p>
 
             % else:
@@ -132,7 +131,7 @@
                 ## "Tooltip" when clicking a table row
                 <div class="show-investors-wrapper hidden hidden-phone">
                     <div class="show-investors">
-                        <a href="#">${_('Show investors for this deal')}</a>
+                        <a href="#">${_('Show deals of this investor')}</a>
                     </div>
                 </div>
 
@@ -142,7 +141,7 @@
                     <thead>
                         ## The table headers
                         <tr>
-                            <th>${_('Deal ID')}</th>
+                            <th>${_('Investor ID')}</th>
                             % for k in keys:
                                 ## Only use the headers which are to be shown
                                 % if k[2] is True:
@@ -197,7 +196,7 @@
                                 <tr>
                             % endif
                                 <td>
-                                    <a href="${request.route_url('activities_read_one', output='html', uid=id)}">
+                                    <a href="${request.route_url('stakeholders_read_one', output='html', uid=id)}">
                                         ${id[:6]}
                                     </a>
                                 </td>
@@ -206,7 +205,7 @@
                                 % endfor
 
                                 <td class="identifier hide">${id}</td>
-                                <td class="itemType hide">activities</td>
+                                <td class="itemType hide">stakeholders</td>
 
                             </tr>
                         % endfor
@@ -220,7 +219,7 @@
         ## Pagination
         % if len(data) > 0:
             <%include file="lmkp:templates/parts/pagination.mak"
-                args="totalitems=total, currentpage=currentpage, pagesize=pagesize, itemsname=_('Deals')"
+                args="totalitems=total, currentpage=currentpage, pagesize=pagesize, itemsname=_('Investors')"
             />
         % endif
 
