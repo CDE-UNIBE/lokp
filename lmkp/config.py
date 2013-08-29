@@ -5,6 +5,7 @@ import os.path
 from os import sep as separator
 import mimetypes
 import re
+from pyramid.request import Request
 
 def locale_profile_directory_path(request):
     """
@@ -91,7 +92,7 @@ def valid_mime_extensions(request):
             vfme['image/x-png'] = '.png'
 
         return vfme
-    
+
     return {}
 
 def check_valid_uuid(uuid):
@@ -100,3 +101,46 @@ def check_valid_uuid(uuid):
     """
     uuid4hex = re.compile('[0-9a-f-]{36}\Z', re.I)
     return uuid4hex.match(uuid) is not None
+
+
+def getTemplatePath(request, tplName):
+    """
+    Get the path to the customized Mako templates. Use the folder name set in
+    the application's ini file or use the default folder name if no 
+    customization is specified.
+    """
+
+    prefix = getCustomizationName(request)
+
+    return 'lmkp:customization/%s/templates/%s' % (prefix, tplName)
+
+def getDefaultCustomizationName():
+    """
+    Return the default customization name. This is only used if none was
+    specified in the application's ini file.
+    """
+    return 'lo'
+
+def getCustomizationName(requestOrSettings):
+    """
+    Return the name of the customization as defined in the application's ini
+    file. If none is specified, use the default name as in function
+    getDefaultCustomizationName()
+    """
+
+    if isinstance(requestOrSettings, Request):
+        settings = requestOrSettings.registry.settings
+    elif isinstance(requestOrSettings, dict):
+        settings = requestOrSettings
+
+    # Check if a customization parameter is set
+    if 'lmkp.customization' in settings:
+        customization = settings['lmkp.customization']
+    else:
+        customization = getDefaultCustomizationName()
+
+    # Check if such a folder exists
+    if not os.path.exists(os.path.join('lmkp/customization', customization)):
+        customization = getDefaultCustomizationName()
+
+    return customization

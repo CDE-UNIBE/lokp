@@ -11,6 +11,7 @@ from lmkp.subscribers import add_renderer_globals
 from lmkp.subscribers import add_user
 from lmkp.views.errors import forbidden_view
 from lmkp.views.errors import notfound_view
+from lmkp.config import getCustomizationName
 import papyrus
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid_beaker import session_factory_from_settings
@@ -40,7 +41,10 @@ def main(global_config, ** settings):
 
     _update_admin_user(DBSession, settings)
 
-    # Authentiaction policy
+    # Customization: Determine the name of the customization
+    customization = getCustomizationName(settings)
+
+    # Authentication policy
     authnPolicy = CustomAuthenticationPolicy('9ZbfPv Ez-eV8LeTJVNjUhQf FXWBBi_cWKn2fqnpz3PA', callback=group_finder)
     # Authorization policy
     authzPolicy = ACLAuthorizationPolicy()
@@ -55,11 +59,13 @@ def main(global_config, ** settings):
 
     config.include('pyramid_beaker')
 
-    # Add the directory that includes the translations
+    # Add the directories that include the translations, also include the
+    # translation directory for the customization
     config.add_translation_dirs(
         'lmkp:locale/',
         'colander:locale/',
-        'deform:locale/'
+        'deform:locale/',
+        'customization/%s/locale/' % customization
     )
 
     # Add event subscribers
@@ -79,6 +85,10 @@ def main(global_config, ** settings):
     config.add_renderer('geojson', GeoJsonRenderer())
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_static_view('formstatic', 'deform:static')
+
+    # Customization: Add the static customization folder as view
+    config.add_static_view('custom', 'customization/%s/static' % customization, cache_max_age=3600)
+
     config.add_route('index', '/')
     config.add_route('administration', '/administration')
     config.add_route('login', '/login', request_method='POST')
