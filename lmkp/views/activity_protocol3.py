@@ -214,7 +214,11 @@ class ActivityProtocol3(Protocol):
         if len(ids) > 0:
             # At least one Activity was created
             changeset_diff = {'activities': activity_diffs}
-            changeset.diff = json.dumps(changeset_diff)
+            try:
+                changeset.diff = json.dumps(changeset_diff)
+            except TypeError:
+                log.error('Changeset JSON Error with the following diff: %s' % changeset_diff)
+                return None
 
             return ids
 
