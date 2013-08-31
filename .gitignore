@@ -31,6 +31,10 @@ lmkp/static/lib.tar.gz
 # Ignore configuration files
 *.ini
 
+# Ignore all customization folders except the sample folder
+lmkp/customization/*
+!lmkp/customization/sample/
+
 # Ignore generate JSON files
 activities.json
 stakeholders.json
