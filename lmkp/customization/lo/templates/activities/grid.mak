@@ -6,7 +6,7 @@
     ## TODO: This should be fixed in bootstrap
     <style type="text/css" >
         .desc.active {
-            background: url("${request.static_url('lmkp:static/media/img/to-top-black.png')}") no-repeat scroll right top transparent;
+            background: url("/custom/img/to-top-black.png") no-repeat scroll right top transparent;
         }
         tr.pending {
             background-color: #fcf8e3;

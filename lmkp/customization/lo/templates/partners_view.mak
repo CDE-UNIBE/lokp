@@ -16,20 +16,20 @@
         <div class="row-fluid">
             <div class="span4 text-left">
                 <a href="http://www.landcoalition.org/" target="_blank">
-                    <img src="${request.static_url('lmkp:static/img/logos/ilc.png')}" />
+                    <img src="/custom/img/logos/ilc.png" />
                 </a>
             </div>
             <div class="span4 text-center">
                 <a href="http://www.cde.unibe.ch/" target="_blank">
-                    <img src="${request.static_url('lmkp:static/img/logos/cde.jpg')}" />
+                    <img src="/custom/img/logos/cde.jpg" />
                 </a>
             </div>
             <div class="span4 text-right">
                 <a href="http://www.sdc.admin.ch/" target="_blank">
-                    <img src="${request.static_url('lmkp:static/img/logos/sdc.jpg')}" />
+                    <img src="/custom/img/logos/sdc.jpg" />
                 </a><br/>
                 <a href="http://www.fordfoundation.org/" target="_blank">
-                    <img src="${request.static_url('lmkp:static/img/logos/fordfoundation.png')}" />
+                    <img src="/custom/img/logos/fordfoundation.png" />
                 </a>
             </div>
         </div>

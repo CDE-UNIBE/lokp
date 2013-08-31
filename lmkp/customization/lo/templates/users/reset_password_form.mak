@@ -46,7 +46,7 @@
     </head>
     <body id="body">
         <div id="reset-header-div" class="login">
-            <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" alt="Land Observatory"/><br/>
+            <img src="/custom/img/logo_short.png" alt="Land Observatory"/><br/>
             ${_(u"Reset password")}
         </div>
         <div id="reset-form-div">

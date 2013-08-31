@@ -10,7 +10,7 @@
             <script type="text/javascript" src="/formstatic/${reqt}"></script>
         % endfor
 
-        <script type="text/javascript" src="${request.static_url('lmkp:static/media/js/vendor/bootstrap.min.js')}"></script>
+        <script type="text/javascript" src="/custom/js/vendor/bootstrap.min.js"></script>
     </head>
 
     <body>

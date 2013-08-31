@@ -43,7 +43,7 @@
     <body>
         <div class="login">
             <a href="/">
-                <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" alt="${_(u'Land Observatory')}"/>
+                <img src="/custom/img/logo_short.png" alt="${_(u'Land Observatory')}"/>
             </a><br/>
             ${_(u"Update user settings")}
         </div>

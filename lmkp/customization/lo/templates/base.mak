@@ -44,29 +44,29 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
         <meta name="description" content="" />
         <meta name="viewport" content="width=device-width" />
 
-        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/bootstrap-combined.no-icons.min.css')}" ></link>
-        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/font-awesome/css/font-awesome.min.css')}" ></link>
+        <link rel="stylesheet" href="/custom/css/bootstrap-combined.no-icons.min.css"></link>
+        <link rel="stylesheet" href="/custom/css/font-awesome/css/font-awesome.min.css"></link>
 
-        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/bootstrap-responsive.min.css')}"></link>
-        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/main.css')}"></link>
+        <link rel="stylesheet" href="/custom/css/bootstrap-responsive.min.css"></link>
+        <link rel="stylesheet" href="/custom/css/main.css"></link>
 
-        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/custom.css')}"></link>
+        <link rel="stylesheet" href="/custom/css/custom.css"></link>
 
         <!--[if IE 7]>
 
-            <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/ie7.css')}"></link>
-            <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/font-awesome/css/font-awesome-ie7.css')}"></link>
+            <link rel="stylesheet" href="/custom/css/ie7.css"></link>
+            <link rel="stylesheet" href="/custom/css/font-awesome/css/font-awesome-ie7.css"></link>
 
         <![endif]-->
 
 
         <!--[if IE 8]>
 
-            <link rel="stylesheet" href="../media/css/ie8.css"></link>
+            <link rel="stylesheet" href="/custom/css/ie8.css"></link>
 
         <![endif]-->
 
-        <script type="text/javascript" src="${request.static_url('lmkp:static/media/js/vendor/modernizr-2.6.2-respond-1.1.0.min.js')}"></script>
+        <script type="text/javascript" src="/custom/js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>
 
         <style type="text/css">
             .header-select {
@@ -221,9 +221,9 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
                         <div class="logo">
                             <a href="${request.route_url('map_view')}">
                                 % if mode == 'demo':
-                                    <img src="${request.static_url('lmkp:static/img/logo_demo.png')}" alt="${_('Land Observatory')}" />
+                                    <img src="/custom/img/logo_demo.png" alt="${_('Land Observatory')}" />
                                 % else:
-                                    <img src="${request.static_url('lmkp:static/media/img/logo.png')}" alt="${_('Land Observatory')}" />
+                                    <img src="/custom/img/logo.png" alt="${_('Land Observatory')}" />
                                 % endif
                             </a>
                         </div>
@@ -421,9 +421,9 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
         </script>
 
 <!--        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>-->
-        <script>window.jQuery || document.write('<script type="text/javascript" src="${request.static_url("lmkp:static/media/js/vendor/jquery-1.9.1.min.js")}"><\/script>')</script>
+        <script>window.jQuery || document.write('<script type="text/javascript" src="/custom/js/vendor/jquery-1.9.1.min.js"><\/script>')</script>
 
-        <script type="text/javascript" src="${request.static_url('lmkp:static/media/js/vendor/bootstrap.min.js')}"></script>
+        <script type="text/javascript" src="/custom/js/vendor/bootstrap.min.js"></script>
 
         <script type="text/javascript" src="${request.static_url('lmkp:static/v2/main.js')}"></script>
 

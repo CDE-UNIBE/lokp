@@ -32,29 +32,29 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
-        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/bootstrap-combined.no-icons.min.css')}">
-        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/font-awesome/css/font-awesome.min.css')}">
+        <link rel="stylesheet" href="/custom/css/bootstrap-combined.no-icons.min.css">
+        <link rel="stylesheet" href="/custom/css/font-awesome/css/font-awesome.min.css">
 
-        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/bootstrap-responsive.min.css')}">
-        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/main.css')}">
+        <link rel="stylesheet" href="/custom/css/bootstrap-responsive.min.css">
+        <link rel="stylesheet" href="/custom/css/main.css">
 
-        <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/custom.css')}">
+        <link rel="stylesheet" href="/custom/css/custom.css">
 
         <!--[if IE 7]>
 
-            <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/ie7.css')}">
-            <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/font-awesome/css/font-awesome-ie7.css')}">
+            <link rel="stylesheet" href="/custom/css/ie7.css">
+            <link rel="stylesheet" href="/custom/css/font-awesome/css/font-awesome-ie7.css">
 
         <![endif]-->
 
         <!--[if IE 8]>
 
-            <link rel="stylesheet" href="${request.static_url('lmkp:static/media/css/ie8.css')}">
+            <link rel="stylesheet" href="/custom/css/ie8.css')}">
 
         <![endif]-->
 
-        <script src="${request.static_url('lmkp:static/media/js/vendor/modernizr-2.6.2-respond-1.1.0.min.js')}"></script>
-        <script src="${request.static_url('lmkp:static/media/js/vendor/jquery-1.9.1.min.js')}"></script>
+        <script src="/custom/js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+        <script src="/custom/js/vendor/jquery-1.9.1.min.js"></script>
 
         <style type="text/css">
             .user {
@@ -112,9 +112,9 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
                             <div class="row-fluid hidden-phone">
                                 <div class="span3 text-right">
                                     % if mode == 'demo':
-                                        <img src="${request.static_url('lmkp:static/img/logo_demo.png')}" class="lo_logo" alt="${_('Land Observatory')}" />
+                                        <img src="/custom/img/logo_demo.png" class="lo_logo" alt="${_('Land Observatory')}" />
                                     % else:
-                                        <img src="${request.static_url('lmkp:static/media/img/logo.png')}" class="lo_logo" alt="${_('Land Observatory')}" />
+                                        <img src="/custom/img/logo.png" class="lo_logo" alt="${_('Land Observatory')}" />
                                     % endif
                                 </div>
 
@@ -146,7 +146,7 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
                             <div class="row-fluid visible-phone">
                                 <div class="span3">
                                     <a href="${request.route_url('index')}">
-                                        <img src="${request.static_url('lmkp:static/media/img/logo.png')}" class="lo_logo" />
+                                        <img src="custom/img/logo.png" class="lo_logo" />
                                     </a>
                                 </div>
                                 <div class="span6 landing-introduction">
@@ -266,49 +266,49 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
 <!--                                                <div class="not-action2">
                                                     Or take a short tour.
                                                 </div>-->
-                                                <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_02.png')}" alt="">
+                                                <img class="slide" src="/custom/img/slides/slider-image_02.png" alt="">
                                                 <div class="carousel-caption">
                                                     <p>${_('Users in select pilot countries gather, explore and analyze spatial data on large-scale land acquisitions. Data is managed and reviewed locally by partners.')}</p>
                                                 </div>
                                             </div>
 
                                             <div class="item">
-                                                <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_03.png')}" alt="">
+                                                <img class="slide" src="/custom/img/slides/slider-image_03.png" alt="">
                                                 <div class="carousel-caption">
                                                     <p>${_('Users can see deals in full geographical context, learn more about investors and the kinds of investments in question.')}</p>
                                                 </div>
                                             </div>
 
                                             <div class="item">
-                                                <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_04.png')}" alt="">
+                                                <img class="slide" src="/custom/img/slides/slider-image_04.png" alt="">
                                                 <div class="carousel-caption">
                                                     <p>${_('You can also select a specific land deal to see more: "who" (investors and other stakeholders) and "what" the land will be used for.')}</p>
                                                 </div>
                                             </div>
 
                                             <div class="item">
-                                                <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_05.png')}" alt="">
+                                                <img class="slide" src="/custom/img/slides/slider-image_05.png" alt="">
                                                 <div class="carousel-caption">
                                                     <p>${_('You can go further and learn more about an investor, seeing the same investor''s other land deals.')}</p>
                                                 </div>
                                             </div>
 
                                             <div class="item">
-                                                <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_06.png')}" alt="">
+                                                <img class="slide" src="/custom/img/slides/slider-image_06.png" alt="">
                                                 <div class="carousel-caption">
                                                     <p>${_('Logged in users can also help contribute and update data, and anybody can freely comment on it.')}</p>
                                                 </div>
                                             </div>
 
                                             <div class="item">
-                                                <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_07.png')}" alt="">
+                                                <img class="slide" src="/custom/img/slides/slider-image_07.png" alt="">
                                                 <div class="carousel-caption">
                                                     <p>${_('You can filter the land deals by various attributes - like size, or crop. Or make a spatial selection of land deals.')}</p>
                                                 </div>
                                             </div>
 
                                             <div class="item">
-                                                <img class="slide" src="${request.static_url('lmkp:static/media/img/slides/slider-image_08.png')}" alt="">
+                                                <img class="slide" src="/custom/img/slides/slider-image_08.png" alt="">
                                                 <div class="carousel-caption">
                                                     <p>${_('Want to know if anybody lives on a concession? Use the context layers to view population density and more.')}</p>
                                                 </div>
@@ -367,11 +367,11 @@ if 'lmkp.use_piwik_analytics' in request.registry.settings:
         </script>
 
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-        <script>window.jQuery || document.write('<script src="${request.static_url("lmkp:static/media/js/vendor/jquery-1.9.1.min.js")}"><\/script>')</script>
+        <script>window.jQuery || document.write('<script src="/custom/js/vendor/jquery-1.9.1.min.js"><\/script>')</script>
 
-        <script src="${request.static_url('lmkp:static/media/js/vendor/bootstrap.min.js')}"></script>
+        <script src="/custom/js/vendor/bootstrap.min.js"></script>
 
-        <script src="${request.static_url('lmkp:static/media/js/main.js')}"></script>
+        <script src="/custom/js/main.js"></script>
 
         % if use_piwik_analytics==True:
         <!-- Piwik -->

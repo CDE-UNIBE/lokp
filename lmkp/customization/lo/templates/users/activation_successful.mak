@@ -1,4 +1,4 @@
-<%inherit file="lmkp:templates/htmlbase.mak" />
+<%inherit file="lmkp:customization/lo/templates/base.mak" />
 
 <%def name="title()">${_(u"User Activation Success")}</%def>
 

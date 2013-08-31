@@ -19,7 +19,7 @@
         <script type="text/javascript" src="${request.static_url('lmkp:static/v2/main.js')}"></script>
 
         <script type="text/javascript" src="${request.static_url('lmkp:static/v2/stakeholderformembedded.js')}"></script>
-        <script type="text/javascript" src="${request.static_url('lmkp:static/media/js/vendor/bootstrap.min.js')}"></script>
+        <script type="text/javascript" src="/custom/js/vendor/bootstrap.min.js"></script>
     </head>
 
     <body>
