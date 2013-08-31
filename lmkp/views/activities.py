@@ -4,6 +4,7 @@ from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.comments import comments_sitekey
 from lmkp.views.config import get_mandatory_keys
 from lmkp.config import check_valid_uuid
+from lmkp.config import getTemplatePath
 import logging
 import urllib
 from pyramid.httpexceptions import HTTPBadRequest
@@ -88,7 +89,7 @@ def read_many(request):
         items = activity_protocol3.read_many(request, public=False,
             limit=pageSize, offset=pageSize*page-pageSize)
 
-        return render_to_response('lmkp:templates/activities/grid.mak', {
+        return render_to_response(getTemplatePath(request, 'activities/grid.mak'), {
             'data': items['data'] if 'data' in items else [],
             'total': items['total'] if 'total' in items else 0,
             'profile': get_current_profile(request),
@@ -104,8 +105,7 @@ def read_many(request):
         templateValues = renderForm(request, 'activities')
         templateValues['profile'] = get_current_profile(request)
         templateValues['locale'] = get_current_locale(request)
-        return render_to_response(
-            'lmkp:templates/activities/form.mak',
+        return render_to_response(getTemplatePath(request, 'activities/form.mak'),
             templateValues,
             request
         )
@@ -227,7 +227,7 @@ def by_stakeholders(request):
         items = activity_protocol3.read_many_by_stakeholders(request, uids=uids,
             public=False, limit=pageSize, offset=pageSize*page-pageSize)
 
-        return render_to_response('lmkp:templates/activities/grid.mak', {
+        return render_to_response(getTemplatePath(request, 'activities/grid.mak'), {
             'data': items['data'] if 'data' in items else [],
             'total': items['total'] if 'total' in items else 0,
             'profile': get_current_profile(request),
@@ -330,7 +330,7 @@ def read_one(request):
                         templateValues['comments_url'] = request.registry.settings['lmkp.comments_url']
 
                         return render_to_response(
-                            'lmkp:templates/activities/details.mak',
+                            getTemplatePath(request, 'activities/details.mak'),
                             templateValues,
                             request
                         )
@@ -352,7 +352,7 @@ def read_one(request):
                         templateValues['profile'] = get_current_profile(request)
                         templateValues['locale'] = get_current_locale(request)
                         return render_to_response(
-                            'lmkp:templates/activities/form.mak',
+                            getTemplatePath(request, 'activities/form.mak'),
                             templateValues,
                             request
                         )
@@ -429,11 +429,6 @@ def read_one_active(request):
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
-
-#@view_config(route_name='activities_read_pending', renderer='lmkp:templates/rss.mak')
-#def read_pending(request):
-#    activities = activity_protocol2.read(request) #, filter={'status_filter': (Status.id==2)})
-#    return {'data': activities['data']}
 
 @view_config(route_name='activities_review', renderer='json')
 def review(request):

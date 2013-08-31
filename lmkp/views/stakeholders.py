@@ -1,5 +1,6 @@
 from lmkp.models.meta import DBSession as Session
 from lmkp.config import check_valid_uuid
+from lmkp.config import getTemplatePath
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.config import get_mandatory_keys
 from lmkp.views.comments import comments_sitekey
@@ -148,7 +149,7 @@ def by_activities(request):
             public=False, uids=uids, limit=pageSize,
             offset=pageSize*page-pageSize)
 
-        return render_to_response('lmkp:templates/stakeholders/grid.mak', {
+        return render_to_response(getTemplatePath(request, 'stakeholders/grid.mak'), {
             'data': items['data'] if 'data' in items else [],
             'total': items['total'] if 'total' in items else 0,
             'profile': get_current_profile(request),
@@ -238,7 +239,7 @@ def read_many(request):
         items = stakeholder_protocol3.read_many(request, public=False,
             limit=pageSize, offset=pageSize*page-pageSize)
 
-        return render_to_response('lmkp:templates/stakeholders/grid.mak', {
+        return render_to_response(getTemplatePath(request, 'stakeholders/grid.mak'), {
             'data': items['data'] if 'data' in items else [],
             'total': items['total'] if 'total' in items else 0,
             'profile': get_current_profile(request),
@@ -255,13 +256,13 @@ def read_many(request):
         embedded = request.params.get('embedded', False)
         if embedded:
             return render_to_response(
-                'lmkp:templates/stakeholders/form_embedded.mak',
+                getTemplatePath(request, 'stakeholders/form_embedded.mak'),
                 renderForm(request, 'stakeholders', embedded=True),
                 request
             )
         else:
             return render_to_response(
-                'lmkp:templates/stakeholders/form.mak',
+                getTemplatePath(request, 'stakeholders/form.mak'),
                 renderForm(request, 'stakeholders', embedded=False),
                 request
             )
@@ -368,7 +369,7 @@ def read_one(request):
                         templateValues['comments_url'] = request.registry.settings['lmkp.comments_url']
 
                         return render_to_response(
-                            'lmkp:templates/stakeholders/details.mak',
+                            getTemplatePath(request, 'stakeholders/details.mak'),
                             templateValues,
                             request
                         )
@@ -391,7 +392,7 @@ def read_one(request):
                         templateValues['profile'] = get_current_profile(request)
                         templateValues['locale'] = get_current_locale(request)
                         return render_to_response(
-                            'lmkp:templates/stakeholders/form.mak',
+                            getTemplatePath(request, 'stakeholders/form.mak'),
                             templateValues,
                             request
                         )

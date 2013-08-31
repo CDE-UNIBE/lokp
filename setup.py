@@ -53,10 +53,12 @@ setup(name='LMKP',
       test_suite='lmkp',
       install_requires=requires,
       message_extractors={'lmkp': [
-      ('**.py', 'lingua_python', None),
-      ('**.pt', 'lingua_xml', None),
-      ('**.mak', 'mako', None),
-      ('lmkp/static/**', 'ignore', None)
+          ('customization/**', 'ignore', None),
+          ('static/**', 'ignore', None),
+          ('scripts/**', 'ignore', None),
+          ('**.py', 'lingua_python', None),
+          ('**.pt', 'lingua_xml', None),
+          ('**.mak', 'mako', None),
       ]},
       entry_points="""\
       [paste.app_factory]

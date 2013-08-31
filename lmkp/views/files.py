@@ -40,7 +40,7 @@ log = logging.getLogger(__name__)
 _ = TranslationStringFactory('lmkp')
 
 @view_config(route_name='file_upload_form_embedded', permission='edit',
-    renderer='lmkp:templates/fileupload_embedded.mak')
+    renderer='lmkp:templates/form/fileupload_embedded.mak')
 def file_upload_form_embedded(request):
     
     class MemoryTmpStore(dict):

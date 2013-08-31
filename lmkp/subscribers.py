@@ -1,5 +1,6 @@
 from lmkp.models.database_objects import User
 from lmkp.models.meta import DBSession as Session
+from lmkp.config import getCustomizationName
 from logging import getLogger
 from pyramid.events import BeforeRender
 from pyramid.events import NewRequest
@@ -35,8 +36,21 @@ def add_localizer(event):
     """
     request = event.request
     localizer = get_localizer(request)
+
+    # Create the customized TranslationFactory
+    tsf_custom = TranslationStringFactory(getCustomizationName(request))
+
     def auto_translate(string):
-        # Try to translate the string within the 'lmkp' domain.
+        # Try to translate the string within the [custom] domain
+        translation = localizer.translate(tsf_custom(string))
+        if (isinstance(string, TranslationString)
+            and translation != string.interpolate()
+            or not isinstance(string, TranslationString)
+            and translation != string):
+            return translation
+
+        # If no translation found, try to translate the string within the
+        # 'lmkp' domain.
         translation = localizer.translate(tsf(string))
         if (isinstance(string, TranslationString)
             and translation != string.interpolate()
@@ -44,7 +58,7 @@ def add_localizer(event):
             and translation != string):
             return translation
 
-        # If no translation found, try to translate the domain within the
+        # If no translation found, try to translate the string within the
         # 'deform' domain.
         translation = localizer.translate(tsf_deform(string))
         if (isinstance(string, TranslationString)
@@ -53,7 +67,7 @@ def add_localizer(event):
             and translation != string):
             return translation
 
-        # If no translation found, try to translate the domain within the
+        # If no translation found, try to translate the string within the
         # 'colander' domain.
         translation = localizer.translate(tsf_colander(string))
         if (isinstance(string, TranslationString)
