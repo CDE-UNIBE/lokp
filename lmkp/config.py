@@ -146,7 +146,7 @@ def getCustomizationName(requestOrSettings):
         customization = getDefaultCustomizationName()
 
     # Check if such a folder exists
-    if not os.path.exists(os.path.join('lmkp/customization', customization)):
+    if not os.path.exists(os.path.join(os.path.dirname(__file__), 'customization', customization)):
         customization = getDefaultCustomizationName()
 
     return customization
