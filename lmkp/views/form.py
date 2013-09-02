@@ -75,11 +75,9 @@ def renderForm(request, itemType, **kwargs):
     # Activity or Stakeholder
     if itemType == 'activities':
         # The initial category of the form
-        newCategory = 1
         formid = 'activityform'
     elif itemType == 'stakeholders':
         # The initial category of the form
-        newCategory = 40
         formid = 'stakeholderform'
     else:
         raise HTTPBadRequest('Unknown itemType (neither "activities" nor "stakeholders")')
@@ -121,6 +119,8 @@ def renderForm(request, itemType, **kwargs):
 
     # Get the configuration of the categories (as defined in the config yaml)
     configCategoryList = getCategoryList(request, itemType)
+
+    newCategory = configCategoryList.getFirstCategoryId()
 
     # Collect a list with id and names of all available categories which will be
     # used to create the buttons

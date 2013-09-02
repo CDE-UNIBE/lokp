@@ -143,6 +143,15 @@ class ConfigCategoryList(object):
                             keys.append(t.getKey())
         return keys
 
+    def getFirstCategoryId(self):
+        """
+        Return the ID of the first category of the list
+        """
+        categories = sorted(self.getCategories(), key=lambda c: c.getOrder())
+        if len(categories) > 0:
+            return categories[0].getId()
+        return 0
+
     def getMainkeyWithGeometry(self):
         """
         Return a list with the names of all main keys of taggroups which can
