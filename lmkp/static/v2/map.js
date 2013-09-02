@@ -665,8 +665,12 @@ $(document).ready(function() {
         var f = new OpenLayers.Format.GeoJSON();
         // Variable profilePolygon is a GeoJSON geometry
         var profileExtent = f.read(profilePolygon, "Geometry");
-        // Reproject the extent to spherical mercator projection and zoom the map to its extent
-        map.zoomToExtent(profileExtent.transform(geographicProjection, sphericalMercatorProjection).getBounds(), true);
+        if (profileExtent) {
+            // Reproject the extent to spherical mercator projection and zoom the map to its extent
+            map.zoomToExtent(profileExtent.transform(geographicProjection, sphericalMercatorProjection).getBounds(), true);
+        } else {
+            map.zoomToMaxExtent();
+        }
     }
 
     /**** events ****/
