@@ -16,14 +16,14 @@ def locale_profile_directory_path(request):
     profiles_dir = request.registry.settings['lmkp.profiles_dir']
     prefix = getCustomizationName(request)
 
-    profiles_path = 'lmkp/customization/%s/profiles/%s' % (prefix, profiles_dir)
+    profiles_path = os.path.join(os.path.dirname(__file__), 'customization', prefix, 'profiles', profiles_dir)
 
     if '_PROFILE_' in request.params:
-        p = '%s/%s' % (profiles_path, request.params['_PROFILE_'])
+        p = os.path.join(profiles_path, request.params['_PROFILE_'])
         if os.path.exists(p):
             return p
     elif '_PROFILE_' in request.cookies:
-        p = '%s/%s' % (profiles_path, request.cookies['_PROFILE_'])
+        p = os.path.join(profiles_path, request.cookies['_PROFILE_'])
         if os.path.exists(p):
             return p
 
@@ -36,7 +36,7 @@ def profile_directory_path(request=None):
     profiles_dir = request.registry.settings['lmkp.profiles_dir']
     prefix = getCustomizationName(request)
 
-    return 'lmkp/customization/%s/profiles/%s' % (prefix, profiles_dir)
+    return os.path.join(os.path.dirname(__file__), 'customization', prefix, 'profiles', profiles_dir)
 
 def translation_directory_path():
     """

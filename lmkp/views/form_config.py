@@ -3,6 +3,7 @@ import copy
 import deform
 from pyramid.i18n import get_localizer
 import yaml
+import os
 import datetime
 
 from lmkp.config import locale_profile_directory_path
@@ -1489,8 +1490,7 @@ def getCategoryList(request, itemType, **kwargs):
     else:
         filename = NEW_ACTIVITY_YAML
 
-    yaml_stream = open("%s/%s"
-        % (profile_directory_path(request), filename), 'r')
+    yaml_stream = open(os.path.join(profile_directory_path(request), filename), 'r')
     yaml_config = yaml.load(yaml_stream)
 
     categorylist = ConfigCategoryList()
