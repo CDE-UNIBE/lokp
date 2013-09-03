@@ -1598,14 +1598,13 @@ def getCategoryList(request, itemType, **kwargs):
                                 and key_config['filterable'] is True):
                                 tag.setFilterable(True)
 
-                            # If the values are predefined and they are not set
-                            # already (defined explicitly in YAML), then get the
-                            # values from the value config csv.
-                            if (configKey.getType().lower() == 'dropdown'
-                                or configKey.getType().lower() == 'checkbox'):
-                                for v in configValues.\
-                                    findValuesByFkkey(configKey.getId()):
-                                    tag.addValue(v)
+                        # If the values are predefined and they are not set
+                        # already (defined explicitly in YAML), then get the
+                        # values from the value config csv.
+                        if configKey.getType().lower() in ['dropdown', 'checkbox']:
+                            for v in configValues.\
+                                findValuesByFkkey(configKey.getId()):
+                                tag.addValue(v)
 
                         taggroup.addTag(tag)
 
