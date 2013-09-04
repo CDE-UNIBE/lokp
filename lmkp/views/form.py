@@ -988,7 +988,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
         tgid = str(tg.getId())
         maintag = tg.getMaintag()
 
-        if maintag.getKey().getType().lower() == 'checkbox':
+        if maintag.getKey().getType().lower() in ['checkbox', 'inputtoken']:
             # Checkboxes are represented as a list of tuples containing their
             # names and tg_id's.
             tagsdata = {}
@@ -1008,7 +1008,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
                     if configValue is not None:
                         v = configValue.getTranslation()
 
-                if maintag.getKey().getType().lower() == 'checkbox':
+                if maintag.getKey().getType().lower() in ['checkbox', 'inputtoken']:
                     # Checkboxes: List of tuples with name and tg_id
                     tagsdata[t['key']] = [(v, taggroup['tg_id'])]
                 elif (configTag is not None
@@ -1035,7 +1035,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
                     if tg.getRepeatable():
                         # Repeatable: Add the data to the list of taggroups
                         data[cat][thmg][tgid].append(tagsdata[0])
-                    elif (maintag.getKey().getType().lower() == 'checkbox'
+                    elif (maintag.getKey().getType().lower() in ['checkbox', 'inputtoken']
                         and t['key'] in data[cat][thmg][tgid]):
                         # Checkboxes: Add the data to the list of tuples
                         data[cat][thmg][tgid][t['key']] += tagsdata[t['key']]

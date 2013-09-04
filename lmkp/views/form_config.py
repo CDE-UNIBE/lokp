@@ -240,8 +240,7 @@ class ConfigCategoryList(object):
             if key == k.getName():
                 # The current key is valid.
                 key_is_valid = True
-                if (k.getType().lower() == 'dropdown'
-                    or k.getType().lower() == 'checkbox'):
+                if k.getType().lower() in ['dropdown', 'checkbox', 'inputtoken']:
                     # If there are predefined values for this key, check if the
                     # value belongs to this key.
                     tag = self.findTagByKey(k)
@@ -844,20 +843,36 @@ class ConfigTag(object):
                 name=name,
                 title=title
             )
-        elif type.lower() == 'checkbox' and len(self.getValues()) > 0:
-            # Checkbox
+        elif type.lower() in ['checkbox', 'inputtoken'] and len(self.getValues()) > 0:
+            # Checkbox or Input Token
             # Prepare the choices for keys with predefined values
             choices = []
             for v in sorted(self.getValues(),
                 key=lambda val: val.getOrderValue()):
                 choices.append((v.getName(), v.getTranslation()))
-            form = colander.SchemaNode(
-                colander.Set(),
-                widget=CustomCheckboxWidget(
+            if type.lower() == 'checkbox':
+                # Checkbox
+                widget = CustomCheckboxWidget(
                     values=tuple(choices),
                     helptext=helptext,
                     desired=desired
-                ),
+                )
+            else:
+                # Input Token
+                deform.widget.default_resource_registry.set_js_resources(
+                    'inputtoken', None, '../static/v2/form_inputtoken.js'
+                )
+                deform.widget.default_resource_registry.set_css_resources(
+                    'inputtoken', None, '../static/v2/form_inputtoken.css'
+                )
+                widget = CustomInputTokenWidget(
+                    values=tuple(choices),
+                    helptext=helptext,
+                    desired=desired
+                )
+            form = colander.SchemaNode(
+                colander.Set(),
+                widget=widget,
                 name=name,
                 title=title
             )
@@ -1459,7 +1474,8 @@ def getValidKeyTypes():
         'text',
         'date',
         'string',
-        'file'
+        'file',
+        'inputtoken'
     ]
 
 def getCategoryList(request, itemType, **kwargs):
@@ -1601,7 +1617,7 @@ def getCategoryList(request, itemType, **kwargs):
                         # If the values are predefined and they are not set
                         # already (defined explicitly in YAML), then get the
                         # values from the value config csv.
-                        if configKey.getType().lower() in ['dropdown', 'checkbox']:
+                        if configKey.getType().lower() in ['dropdown', 'checkbox', 'inputtoken']:
                             for v in configValues.\
                                 findValuesByFkkey(configKey.getId()):
                                 tag.addValue(v)
@@ -1718,8 +1734,8 @@ def getCategoryList(request, itemType, **kwargs):
                                 tag.getKey().setValidator(
                                     key_config['validator'])
 
-                            if (configKey.getType().lower() == 'dropdown'
-                                or configKey.getType().lower() == 'checkbox'):
+                            if (configKey.getType().lower() in
+                                ['dropdown', 'checkbox', 'inputtoken']):
                                 for v in configValues.findValuesByFkkey(
                                     configKey.getId()):
                                     tag.addValue(v)
@@ -1865,6 +1881,80 @@ class NumberSpinnerWidget(CustomWidget):
         if pstruct in ('', colander.null):
             return colander.null
         return pstruct
+
+class CustomInputTokenWidget(CustomWidget):
+    """
+    Custom Deform widget. Search for an item to add it to the list of selected
+    items.
+    Can be seen as a replacement of very long checkbox lists and also works a
+    lot like checkbox (saving and extracting tg_id)
+    """
+    template = 'inputtoken'
+    readonly_template = 'readonly/inputtoken'
+    values = ()
+    separator = '|'
+    requirements = ( ('inputtoken', None), )
+
+    def serialize(self, field, cstruct, **kw):
+        if cstruct in (colander.null, None):
+            cstruct = ()
+        readonly = kw.get('readonly', self.readonly)
+        values = kw.get('values', self.values)
+
+        template = readonly and self.readonly_template or self.template
+
+        # The data needs to be prepared before showing in the form. Because an
+        # Input Token can only contain one real value, the tg_id needs to be
+        # stored in the inner (submit) value of the Token.
+        formdata = []
+        for c in cstruct:
+            # Transform tuples to list to access them more easily
+            valuelist = list(values)
+            newname = None
+            for i, (name, title) in enumerate(valuelist):
+                # If the form is readonly, the title is relevant. For the normal
+                # form, the name is relevant.
+                if readonly and title == c[0] or not readonly and name == c[0]:
+                    # Update the (internal) name of the values
+                    newname = '%s%s%s' % (c[1], self.separator, name)
+                    valuelist[i] = (newname, title)
+
+            # Transform the list back to tuples
+            values = tuple(valuelist)
+            if newname is not None:
+                formdata.append(newname)
+
+        kw['values'] = values
+        tmpl_values = self.get_template_values(field, formdata, kw)
+
+        return field.renderer(template, **tmpl_values)
+
+    def deserialize(self, field, pstruct):
+        if pstruct is colander.null:
+            return colander.null
+        if isinstance(pstruct, deform.compat.string_types):
+            return (pstruct,)
+
+        # When submitted, additional data provided by the token (old tg_id)
+        # needs to be extracted and stored.
+        ret = []
+        for p in pstruct:
+            # Default values (if no tg_id set)
+            old_tg_id = None
+            n = p
+
+            if self.separator in p:
+                # If a tg_id is set, separate it from the name and store it
+                separatorposition = p.find(self.separator)
+                n = p[separatorposition+1:]
+                old_tg_id = p[:separatorposition]
+
+            for (name, title) in self.values:
+                # Look for the name and set the old tg_id if available.
+                if name == n:
+                    ret.append((n, old_tg_id))
+
+        return tuple(ret)
 
 class CustomCheckboxWidget(CustomWidget):
     """
