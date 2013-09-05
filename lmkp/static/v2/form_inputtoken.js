@@ -27,3 +27,8 @@ function findToken(tokenDiv, token) {
     });
     return found;
 }
+
+$(document).ready(function() {
+    // Initialize the tooltips
+    $('.inputTokenHelp').tooltip({html: true});
+});
