@@ -17,6 +17,7 @@ ${field.start_sequence()}
     </div>
     <div class="span8">
         <input id="input-${field.oid}" class="input-style inputToken" type="text" data-provide="typeahead" autocomplete="off">
+        <span class="inputTokenHelp icon-question-sign" data-toggle="tooltip" title="${_('Start typing in the textfield to search and select values.')}"></span>
         <div class="tokenDiv">
             % for c in cstruct:
                 % if len(c.split('|')) == 2:
