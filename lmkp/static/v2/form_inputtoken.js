@@ -30,5 +30,5 @@ function findToken(tokenDiv, token) {
 
 $(document).ready(function() {
     // Initialize the tooltips
-    $('.inputTokenHelp').tooltip();
+    $('.inputTokenHelp').tooltip({html: true});
 });

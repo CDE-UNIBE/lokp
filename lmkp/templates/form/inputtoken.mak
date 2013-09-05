@@ -15,9 +15,9 @@ ${field.start_sequence()}
             <span class="desired-form-field"></span>
         % endif
     </div>
-    <div class="span8">
+    <div class="span8 inputTokenSpan">
         <input id="input-${field.oid}" class="input-style inputToken" type="text" data-provide="typeahead" autocomplete="off">
-        <span class="inputTokenHelp icon-question-sign" data-toggle="tooltip" title="${_('Start typing in the textfield to search and select values.')}"></span>
+        <span class="inputTokenHelp icon-question-sign" data-toggle="tooltip" title="${_('Type in the textfield to search and select values.')}<br>${_('Type * to show all possible values.')}"></span>
         <div class="tokenDiv">
             % for c in cstruct:
                 % if len(c.split('|')) == 2:
@@ -48,6 +48,11 @@ ${field.start_sequence()}
                 source: values,
                 updater: function(item) {
                     addToken(oid, input, item);
+                },
+                items: values.length,
+                matcher: function(item) {
+                    if (this.query == '*') return true;
+                    return ~item.toLowerCase().indexOf(this.query.toLowerCase());
                 }
             });
         }

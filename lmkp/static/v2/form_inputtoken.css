@@ -13,3 +13,9 @@
     color: #333333;
     cursor: pointer;
 }
+
+.inputTokenSpan .dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
