@@ -167,9 +167,10 @@ class UserView(BaseView):
             ret['profile'] = get_current_profile(self.request)
             ret['locale'] = get_current_locale(self.request)
 
-        return render_to_response(getTemplatePath(self.request, 'users/registration_form.mak'),
-            ret,
-        self.request)
+            # Render the return values
+            return render_to_response(getTemplatePath(self.request, 'users/registration_form.mak'),
+                ret,
+            self.request)
 
         return ret
 

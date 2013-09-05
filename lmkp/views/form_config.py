@@ -367,7 +367,7 @@ class ConfigCategory(object):
             name=str(self.getId()),
             title=title
         )
-        for thg in sorted(self.getThematicgroups(), key=lambda thmg: thmg.order):
+        for thg in sorted(self.getThematicgroups(), key=lambda thmg: thmg.getOrder()):
             # Get the Form for each Thematicgroup
             thg_form = thg.getForm(request)
             thg_form.missing = colander.null
@@ -500,7 +500,7 @@ class ConfigThematicgroup(object):
             mapWidget = getMapWidget(self)
             thg_form.add(mapWidget)
 
-        for tg in self.getTaggroups():
+        for tg in sorted(self.getTaggroups(), key=lambda tg: tg.getOrder()):
             # Get the Form for each Taggroup
             tg_form = tg.getForm(request)
             name = str(tg.getId())
@@ -592,6 +592,7 @@ class ConfigTaggroup(object):
         self.tags = []
         self.repeatable = False
         self.geometry = False
+        self.order = 9999
 
     def getId(self):
         """
@@ -648,6 +649,18 @@ class ConfigTaggroup(object):
         Return a boolean whether this taggroup can have a geometry or not.
         """
         return self.geometry is True
+
+    def setOrder(self, order):
+        """
+        Set the order of this taggroup.
+        """
+        self.order = order
+
+    def getOrder(self):
+        """
+        Return the order of this taggroup.
+        """
+        return self.order
 
     def hasKey(self, key):
         """
@@ -824,13 +837,26 @@ class ConfigTag(object):
             if key.getTranslatedHelptext() is not None else key.getHelptext())
         desired = self.getDesired()
         # Decide which type of form to add
-        if type.lower() == 'dropdown' and len(self.getValues()) > 0:
+        if ((type.lower() == 'dropdown' and len(self.getValues()) > 0)
+            or type.lower() == 'integerdropdown'):
             # Dropdown
             # Prepare the choices for keys with predefined values
             choiceslist = [('', '- ' + _('Select') + ' -')]
-            for v in sorted(self.getValues(),
-                key=lambda val: val.getOrderValue()):
-                choiceslist.append((v.getName(), v.getTranslation()))
+            if type.lower() == 'dropdown':
+                for v in sorted(self.getValues(),
+                    key=lambda val: val.getOrderValue()):
+                    choiceslist.append((v.getName(), v.getTranslation()))
+            else:
+                # Integer dropdown
+                dropdownRange = self.getKey().getValidator()
+                if isinstance(dropdownRange, list) and len(dropdownRange) == 2:
+                    try:
+                        dropdownRangeInt = [int(d) for d in dropdownRange]
+                    except ValueError:
+                        dropdownRangeInt = None
+                    if dropdownRangeInt is not None:
+                        for v in range(dropdownRangeInt[0], dropdownRangeInt[1]+1):
+                            choiceslist.append((v, v))
             choices = tuple(choiceslist)
             form = colander.SchemaNode(
                 colander.String(),
@@ -1475,7 +1501,8 @@ def getValidKeyTypes():
         'date',
         'string',
         'file',
-        'inputtoken'
+        'inputtoken',
+        'integerdropdown'
     ]
 
 def getCategoryList(request, itemType, **kwargs):
@@ -1631,6 +1658,9 @@ def getCategoryList(request, itemType, **kwargs):
 
                         if key_id == 'geometry' and key_config is True:
                             taggroup.setGeometry(True)
+
+                        if key_id == 'order' and key_config is not None:
+                            taggroup.setOrder(key_config)
 
                 if taggroup.getMaintag() is None:
                     emptymaintag.append(taggroup)
