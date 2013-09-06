@@ -137,7 +137,7 @@ class StakeholderReview(BaseReview):
             pending_feature = self.protocol.read_one_by_version(
                 self.request, uid, pending_version
             )
-            pending_feature.mark_complete(get_mandatory_keys(self.request, 'sh'))
+            pending_feature.mark_complete(get_mandatory_keys(self.request, 'sh', True))
             missing_keys = pending_feature._missing_keys
 
             if len(missing_keys) > 0:
