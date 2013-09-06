@@ -134,7 +134,7 @@ class BaseReview(BaseView):
 
                 # Write the old one
                 old_tags = []
-                for t in inv._feature.to_tags():
+                for t in inv._feature.to_tags(self.request):
                     old_tags.append(t)
                 current_row['ref'] = {'class': 'remove involvement', 'tags': old_tags}
                 # Write the new one
@@ -148,13 +148,13 @@ class BaseReview(BaseView):
 
                 # Write the old one
                 old_tags = []
-                for t in inv._feature.to_tags():
+                for t in inv._feature.to_tags(self.request):
                     old_tags.append(t)
                 current_row['ref'] = {'class': 'remove involvement', 'tags': old_tags}
                 # Write the new one
                 new_tags = []
                 new_tags = []
-                for t in new_inv._feature.to_tags():
+                for t in new_inv._feature.to_tags(self.request):
                     new_tags.append(t)
                 current_row['new'] = {'class': 'add involvement', 'tags': new_tags}
 
@@ -164,12 +164,12 @@ class BaseReview(BaseView):
                 current_row = {}
                 # Write the old one
                 old_tags = []
-                for t in inv._feature.to_tags():
+                for t in inv._feature.to_tags(self.request):
                     old_tags.append(t)
                 current_row['ref'] = {'class': 'involvement', 'tags': old_tags}
                 # Write the new one
                 new_tags = []
-                for t in new_inv._feature.to_tags():
+                for t in new_inv._feature.to_tags(self.request):
                     new_tags.append(t)
                 current_row['new'] = {'class': 'involvement', 'tags': new_tags}
 
@@ -190,7 +190,7 @@ class BaseReview(BaseView):
                 # Write the new one
                 new_tags = []
 
-                for t in inv._feature.to_tags():
+                for t in inv._feature.to_tags(self.request):
                     new_tags.append(t)
 
                 reviewable = 0
@@ -290,7 +290,7 @@ class BaseReview(BaseView):
             current_row = {}
 
             old_inv_tags = []
-            for t in inv._feature.to_tags():
+            for t in inv._feature.to_tags(self.request):
                 old_inv_tags.append(t)
 
             # Write the old one
