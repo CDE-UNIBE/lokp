@@ -1591,11 +1591,30 @@ class Protocol(object):
         except:
             pass
 
-        # If the value is not yet in the database, create a new value
-        v = self.Session.query(Value_Item).\
+        v = None
+        # For checkboxes or dropdowns, values are transmitted in English but the
+        # current language is set to something else than the first Language
+        # (English).
+        # Instead of falsly inserting these values as "translations" in the
+        # current language, we need to link them to the original value in the
+        # database.
+        # To do this, check if there is an original with the same value and
+        # belonging to the same key as provided.
+        origValue = self.Session.query(Value_Item).\
             filter(Value_Item.value == unicode(value)).\
-            filter(Value_Item.fk_language == lang_fk).\
+            filter(Value_Item.fk_language == 1).\
+            filter(Value_Item.key == k).\
             first()
+
+        if origValue is not None:
+            v = origValue
+
+        # If the value is not yet in the database, create a new value
+        if v is None:
+            v = self.Session.query(Value_Item).\
+                filter(Value_Item.value == unicode(value)).\
+                filter(Value_Item.fk_language == lang_fk).\
+                first()
         if v is None:
 
             # FILES!
