@@ -1,5 +1,6 @@
 from lmkp.models.database_objects import *
 from lmkp.views.protocol import *
+from lmkp.views.form_config import getCategoryList
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.i18n import get_localizer
@@ -22,23 +23,25 @@ class StakeholderFeature3(Feature):
     def getOtherMappedClass(self):
         return Activity
 
-    def to_tags(self):
+    def to_tags(self, request):
+        """
+        Return a short representation in tag form (array of keys/values) of the
+        most important attributes of the feature (as defined in the yaml as
+        'involvementoverview')
+        """
 
-        repr = []
-        c = []
-        n = []
-        for tg in self._taggroups:
+        categoryList = getCategoryList(request, 'stakeholders')
+        overviewkeys = categoryList.getInvolvementOverviewKeyNames()
+        overviewtags = [{'key': k[0], 'value': []} for k in overviewkeys]
 
-            for t in tg.get_tags():
-                if t.get_key() == 'Country of origin':
-                    c.append(t.get_value())
-                if t.get_key() == 'Name':
-                    n.append(t.get_value())
+        for rettag in overviewtags:
+            for tg in self._taggroups:
+                for t in tg.get_tags():
+                    if t.get_key() == rettag['key']:
+                        rettag['value'].append(t.get_value())
+            rettag['value'] = ', '.join(rettag['value'])
 
-        repr.append({"key": "Country of origin", 'value': ','.join(c)})
-        repr.append({"key": "Name", 'value': ','.join(n)})
-
-        return repr
+        return overviewtags
 
 class StakeholderProtocol3(Protocol):
 

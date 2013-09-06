@@ -330,7 +330,7 @@ class BaseReview(BaseView):
             current_row['ref'] = {'class': '', 'tags': []}
 
             new_inv_tags = []
-            for t in inv._feature.to_tags():
+            for t in inv._feature.to_tags(self.request):
                 new_inv_tags.append(t)
 
             reviewable = 0

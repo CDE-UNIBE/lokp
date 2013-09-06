@@ -6,6 +6,7 @@ from lmkp.views.protocol import *
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.translation import get_translated_status
 from lmkp.views.translation import statusMap
+from lmkp.views.form_config import getCategoryList
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.i18n import get_localizer
@@ -61,27 +62,25 @@ class ActivityFeature3(Feature):
     def getOtherMappedClass(self):
         return Stakeholder
 
-    def to_tags(self):
+    def to_tags(self, request):
+        """
+        Return a short representation in tag form (array of keys/values) of the
+        most important attributes of the feature (as defined in the yaml as
+        'involvementoverview')
+        """
 
-        repr = []
-        c = []
-        a = []
-        i = []
-        for tg in self._taggroups:
+        categoryList = getCategoryList(request, 'activities')
+        overviewkeys = categoryList.getInvolvementOverviewKeyNames()
+        overviewtags = [{'key': k[0], 'value': []} for k in overviewkeys]
 
-            for t in tg.get_tags():
-                if t.get_key() == 'Country':
-                    c.append(t.get_value())
-                if t.get_key() == 'Intended area (ha)':
-                    a.append(t.get_value())
-                if t.get_key() == 'Intention of Investment':
-                    i.append(t.get_value())
+        for rettag in overviewtags:
+            for tg in self._taggroups:
+                for t in tg.get_tags():
+                    if t.get_key() == rettag['key']:
+                        rettag['value'].append(t.get_value())
+            rettag['value'] = ', '.join(rettag['value'])
 
-        repr.append({"key": "Country", 'value': ','.join(c)})
-        repr.append({"key": "Intended area (ha)", 'value': ','.join(a)})
-        repr.append({"key": "Intention of Investment", 'value': ','.join(i)})
-
-        return repr
+        return overviewtags
 
     def get_geometry(self):
         return self._geometry
