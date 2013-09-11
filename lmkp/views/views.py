@@ -434,6 +434,27 @@ def getOverviewKeys(request):
         getCategoryList(request, 'stakeholders').getInvolvementOverviewKeyNames()
     )
 
+def getMapSymbolKeys(request):
+    """
+    Return a list with the keys which are used for the map symbols.
+    Each entry of the array has
+    - name of the key (translated)
+    - name of the key (original)
+    - mapsymbol data (usually an order number)
+    If there is an attribute set, it is moved to the top of the list with the
+    help of the order number
+    """
+    mapSymbolKeys = getCategoryList(request, 'activities').getMapSymbolKeyNames()
+
+    attrs = request.params.get('attrs', None)
+
+    if attrs is not None:
+        for m in mapSymbolKeys:
+            if m[1] in attrs:
+                m[2] = 0
+
+    return sorted(mapSymbolKeys, key=lambda k: k[2])
+
 def getActiveFilters(request):
     """
     Get the active filters of a request in a list.
@@ -505,7 +526,7 @@ def getActiveFilters(request):
     return filters
 
 @view_config(route_name='filterValues', renderer='json')
-def getFilterValuesForKey(request):
+def getFilterValuesForKey(request, predefinedType=None, predefinedKey=None):
     """
     Return a JSON representation of all the values for a given key.
     The JSON array contains an array for each entry with:
@@ -513,8 +534,8 @@ def getFilterValuesForKey(request):
     - [1]: The internal name
     """
 
-    type = request.params.get('type', None)
-    key = request.params.get('key', None)
+    type = request.params.get('type', predefinedType)
+    key = request.params.get('key', predefinedKey)
 
     if type is None:
         return {
