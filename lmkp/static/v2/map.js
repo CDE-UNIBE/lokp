@@ -11,6 +11,7 @@
  * tForMoredeals
  * tForNodealselected
  * tForSelecteddeals
+ * tForDealsGroupedBy
  */
 
 $(document).ready(function() {
@@ -183,8 +184,8 @@ $(document).ready(function() {
     if (typeof mapValues === 'undefined') {
         mapValues = [];
     }
-    if (typeof mapCriteria === 'undefined') {
-        mapCriteria = '';
+    if (typeof mapCriteria === 'undefined' || mapCriteria.length != 3) {
+        mapCriteria = ['', '', 1];
     }
 
     /**
@@ -206,7 +207,7 @@ $(document).ready(function() {
     var featureLayers = [];
 
     // Get the data with a jQuery AJAX request
-    $.get('/activities/geojson?attrs=' + mapCriteria, function(data) {
+    $.get('/activities/geojson?attrs=' + mapCriteria[1], function(data) {
 
         // Define a geojson format needed to read the features
         var geojsonFormat = new OpenLayers.Format.GeoJSON({
@@ -219,14 +220,22 @@ $(document).ready(function() {
         $.each(features, function() {
 
             // Make sure the mapCriteria is present in the feature
-            if (!this.attributes[mapCriteria]) return;
+            if (!this.attributes[mapCriteria[1]]) return;
 
             // Make sure the mapCriteria exists in the list of available groups
-            if (!mapFeatures[this.attributes[mapCriteria]]) return;
+            if (!mapFeatures[this.attributes[mapCriteria[1]]]) return;
 
             // Add it to the group
-            mapFeatures[this.attributes[mapCriteria]].push(this);
+            mapFeatures[this.attributes[mapCriteria[1]]].push(this);
         });
+
+        var legendExplanation = [
+            '<div class="legendExplanation">',
+            tForDealsGroupedBy, ': ',
+            '<strong>', mapCriteria[0], '</strong>',
+            '</div>'
+        ].join('');
+        $("#map-legend-list").append(legendExplanation);
 
         // Give each group a different color
         var colorIndex = 0;
