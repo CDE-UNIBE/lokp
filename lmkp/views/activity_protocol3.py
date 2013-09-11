@@ -420,10 +420,17 @@ class ActivityProtocol3(Protocol):
         limit = self._get_limit(request)
         offset = self._get_offset(request)
 
-        query = self._query_geojson(relevant_activities, limit=limit,
-                                    offset=offset)
+        # Get the additional attributes for the geojson query
+        attrs = []
+        queryAttrs = request.params.get('attrs', None)
 
-        return self._query_to_geojson(query)
+        if queryAttrs is not None:
+            attrs = queryAttrs.split(',')
+
+        query = self._query_geojson(request, relevant_activities, limit=limit,
+            offset=offset, attrs=attrs)
+
+        return self._query_to_geojson(query, attrs)
 
     def _get_relevant_activities_one_by_version(self, uid, version):
         # Create relevant Activities
@@ -1283,7 +1290,8 @@ class ActivityProtocol3(Protocol):
         else:
             return query
 
-    def _query_geojson(self, relevant_activities, limit=None, offset=None):
+    def _query_geojson(self, request, relevant_activities, limit=None,
+        offset=None, attrs=[]):
 
         # Apply limit and offset
         if limit is not None:
@@ -1293,6 +1301,8 @@ class ActivityProtocol3(Protocol):
 
         # Create query
         relevant_activities = relevant_activities.subquery()
+        # Caution: If you change something here (add or remove columns), adapt
+        # the number in function _query_to_geojson as well!
         query = self.Session.query(
                                    Activity.id.label('id'),
                                    Activity.point.label('geometry'),
@@ -1304,6 +1314,29 @@ class ActivityProtocol3(Protocol):
             join(relevant_activities,
                  relevant_activities.c.order_id == Activity.id).\
             join(Status)
+
+        if len(attrs) > 0:
+            localizer = get_localizer(request)
+            lang = self.Session.query(Language).\
+                filter(Language.locale == localizer.locale_name).\
+                first()
+
+            query = query.\
+                outerjoin(A_Tag_Group, Activity.id == A_Tag_Group.fk_activity).\
+                outerjoin(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
+                outerjoin(A_Key, A_Tag.fk_key == A_Key.id).\
+                outerjoin(A_Value, A_Tag.fk_value == A_Value.id).\
+                filter(A_Key.key.in_(attrs))
+
+            if lang.id != 1:
+                key_translation, value_translation = self._get_translatedKV(lang,
+                    A_Key, A_Value)
+                query = query.add_columns(value_translation.c.value_translated)
+                query = query.outerjoin(value_translation,
+                    value_translation.c.value_original_id == A_Value.id)
+
+            else:
+                query = query.add_columns(A_Value.value)
 
         return query
 
@@ -1490,9 +1523,10 @@ class ActivityProtocol3(Protocol):
 
         return activities
 
-    def _query_to_geojson(self, query):
+    def _query_to_geojson(self, query, additionalKeys=[]):
 
-        def _create_feature(id, g, identifier, status_id, status_name, version):
+        def _create_feature(id, g, identifier, status_id, status_name, version,
+            keys, values):
             """
             Small helper function to create a new Feature
             """
@@ -1510,6 +1544,8 @@ class ActivityProtocol3(Protocol):
                 'activity_identifier': str(identifier),
                 'version': int(version)
             }
+            for i, k in enumerate(keys):
+                properties[k] = values[i]
             feature['properties'] = properties
 
             # Doppelt genaeht haelt besser
@@ -1524,16 +1560,18 @@ class ActivityProtocol3(Protocol):
         featureCollection['type'] = 'FeatureCollection'
 
         for q in query.all():
-            featureCollection['features'].append(
-                                                 _create_feature(
-                                                 q.id,
-                                                 q.geometry,
-                                                 q.identifier,
-                                                 q.status_id,
-                                                 q.status_name,
-                                                 q.version
-                                                 )
-                                                 )
+            additionalValues = []
+            # Caution: This number is strongly correlated with the number of
+            # columns set when creating the query in function _query_geojson
+            # above.
+            if len(q) > 6 and len(additionalKeys) > 0:
+                additionalValues = q[6:]
+            if len(additionalKeys) != len(additionalValues):
+                additionalKeys = []
+                additionalValues = []
+            featureCollection['features'].append(_create_feature(q.id,
+                q.geometry, q.identifier, q.status_id, q.status_name, q.version,
+                additionalKeys, additionalValues))
 
         return featureCollection
 

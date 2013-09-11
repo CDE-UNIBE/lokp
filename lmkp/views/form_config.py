@@ -276,6 +276,24 @@ class ConfigCategoryList(object):
                             keyNames.append([t.getKey().getTranslatedName(), t.getInvolvementOverview()])
         return keyNames
 
+    def getMapSymbolKeyNames(self):
+        """
+        Return the names of the keys which have a value set for mapSymbol in the
+        configuration yaml.
+        Returns an array where each entry is an array with
+        - name of the key (translated)
+        - name of the key (original)
+        - mapsymbol data (usually an order number)
+        """
+        keyNames = []
+        for cat in self.getCategories():
+            for thmg in cat.getThematicgroups():
+                for tg in thmg.getTaggroups():
+                    for t in tg.getTags():
+                        if t.getMapSymbol() is not None:
+                            keyNames.append([t.getKey().getTranslatedName(), t.getKey().getName(), t.getMapSymbol()])
+        return keyNames
+
 class ConfigCategory(object):
     """
     A class representing a Form Category object as defined in the configuration
@@ -735,6 +753,7 @@ class ConfigTag(object):
         self.mandatory = False
         self.desired = False
         self.involvementOverview = None
+        self.mapSymbol = None
         self.filterable = False
 
     def setKey(self, key):
@@ -798,6 +817,18 @@ class ConfigTag(object):
         Return the value set in involvement overview.
         """
         return self.involvementOverview
+
+    def setMapSymbol(self, symbol):
+        """
+        Set the value for map symbol.
+        """
+        self.mapSymbol = symbol
+
+    def getMapSymbol(self):
+        """
+        Return the value set in map symbole.
+        """
+        return self.mapSymbol
 
     def setFilterable(self, filterable):
         """
@@ -1634,8 +1665,11 @@ def getCategoryList(request, itemType, **kwargs):
                             if 'maintag' in key_config:
                                 taggroup.setMaintag(tag)
 
-                            if ('involvementoverview' in key_config):
+                            if 'involvementoverview' in key_config:
                                 tag.setInvolvementOverview(key_config['involvementoverview'])
+
+                            if 'mapsymbol' in key_config:
+                                tag.setMapSymbol(key_config['mapsymbol'])
 
                             if ('filterable' in key_config
                                 and key_config['filterable'] is True):
