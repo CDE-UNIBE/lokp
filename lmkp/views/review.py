@@ -612,6 +612,7 @@ class BaseReview(BaseView):
         else:
             diff_keyword = None
 
+        new_item = None
         if (diff_keyword is not None and diff_keyword in diff
             and diff[diff_keyword] is not None):
             for item_diff in diff[diff_keyword]:
@@ -641,6 +642,9 @@ class BaseReview(BaseView):
                         None,
                         db = False
                     )
+
+        if new_item is None:
+            new_item = item
 
         return new_item
 
@@ -688,7 +692,7 @@ class BaseReview(BaseView):
                 filter(mappedClass.identifier == uid).\
                 filter(mappedClass.version == new_version_number).\
                 first()
-            new_diff = json.loads(new_diff_query.diff.replace('\'', '"'))
+            new_diff = json.loads(new_diff_query.diff)
 
             # Get the reference object
             new_object = self.protocol.read_one_by_version(
