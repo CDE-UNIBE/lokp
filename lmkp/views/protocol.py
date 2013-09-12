@@ -876,7 +876,7 @@ class Protocol(object):
                         filter(mappedClass.identifier == item.identifier).\
                         filter(mappedClass.version == item.version).\
                         first()
-                    json_diff = json.loads(diff_query.diff.replace('\'', '"'))
+                    json_diff = json.loads(diff_query.diff)
 
                 # Cut to the part of the diff which is relevant for this item
                 relevant_diff = None
