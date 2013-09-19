@@ -39,7 +39,7 @@
         % if field.required:
             <span class="required-form-field"></span>
         % endif
-        ${_('Set the location of the deal.')}<br/>
+        ${_('Set the location.')}<br/>
         ${_('Click on the map to set the location. Please zoom in to set the point as accurately as possible.')}<br/>
         <a href="#" onClick="javascript:triggerCoordinatesDiv();">${_('Enter coordinates.')}</a>
     </p>

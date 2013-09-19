@@ -1,5 +1,6 @@
 import fnmatch
 from lmkp.config import profile_directory_path
+from lmkp.config import locale_profile_directory_path
 import os
 from pyramid.view import view_config
 import re
@@ -73,15 +74,11 @@ def _getCurrentProfileExtent(request):
     database query
     """
 
-    current_profile = get_current_profile(request)
+    # Get the path of the yaml
+    path = locale_profile_directory_path(request)
 
-    path = APPLICATION_YAML
-    if current_profile != 'global':
-        path = "%s/%s" % (current_profile, APPLICATION_YAML)
-
-    try:
-        profile_stream = open("%s/%s" % (profile_directory_path(request),
-            path), 'r')
+    if os.path.exists(os.path.join(path, APPLICATION_YAML)):
+        profile_stream = open(os.path.join(path, APPLICATION_YAML))
         profile_config = yaml.load(profile_stream)
 
         if 'application' not in profile_config:
@@ -91,10 +88,7 @@ def _getCurrentProfileExtent(request):
         if 'geometry' in profile_config['application']:
             return profile_config['application']['geometry']
 
-    except IOError:
-        # File not found
-        pass
-
+    # No local or global file found
     return 'null'
 
 def _processProfile(request, dbProfile, isGlobal=False):

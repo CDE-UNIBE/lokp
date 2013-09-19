@@ -24,7 +24,7 @@ class StakeholderReview(BaseReview):
         super(StakeholderReview, self).__init__(request)
         self.protocol = StakeholderProtocol3(Session)
 
-    @view_config(route_name='stakeholders_moderate_item', renderer='lmkp:templates/moderation.mak', permission='moderate')
+    @view_config(route_name='stakeholders_moderate_item', renderer='lmkp:templates/ext_moderation.mak', permission='moderate')
     def stakeholders_moderate_item(self):
 
         self._handle_parameters()
@@ -53,7 +53,7 @@ class StakeholderReview(BaseReview):
             'identifier': uid
         }
 
-    @action(name='html', renderer='lmkp:templates/compare_versions.mak')
+    @action(name='html', renderer='lmkp:templates/old_compare_versions.mak')
     def compare_html(self):
         # TODO: It is to be decided if this view is still needed or not.
 
@@ -90,7 +90,7 @@ class StakeholderReview(BaseReview):
 
         return result
 
-    @view_config(route_name='stakeholders_review_versions_html', renderer='lmkp:templates/review_versions.mak', permission='moderate')
+    @view_config(route_name='stakeholders_review_versions_html', renderer='lmkp:templates/old_review_versions.mak', permission='moderate')
     def review_stakeholder_html(self):
         # TODO: It is to be decided if this view is still needed or not.
         """

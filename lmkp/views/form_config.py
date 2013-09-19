@@ -3,6 +3,7 @@ import copy
 import deform
 from pyramid.i18n import get_localizer
 import yaml
+import os
 import datetime
 
 from lmkp.config import locale_profile_directory_path
@@ -143,6 +144,15 @@ class ConfigCategoryList(object):
                             keys.append(t.getKey())
         return keys
 
+    def getFirstCategoryId(self):
+        """
+        Return the ID of the first category of the list
+        """
+        categories = sorted(self.getCategories(), key=lambda c: c.getOrder())
+        if len(categories) > 0:
+            return categories[0].getId()
+        return 0
+
     def getMainkeyWithGeometry(self):
         """
         Return a list with the names of all main keys of taggroups which can
@@ -230,8 +240,7 @@ class ConfigCategoryList(object):
             if key == k.getName():
                 # The current key is valid.
                 key_is_valid = True
-                if (k.getType().lower() == 'dropdown'
-                    or k.getType().lower() == 'checkbox'):
+                if k.getType().lower() in ['dropdown', 'checkbox', 'inputtoken']:
                     # If there are predefined values for this key, check if the
                     # value belongs to this key.
                     tag = self.findTagByKey(k)
@@ -265,6 +274,24 @@ class ConfigCategoryList(object):
                     for t in tg.getTags():
                         if t.getInvolvementOverview() is not None:
                             keyNames.append([t.getKey().getTranslatedName(), t.getInvolvementOverview()])
+        return keyNames
+
+    def getMapSymbolKeyNames(self):
+        """
+        Return the names of the keys which have a value set for mapSymbol in the
+        configuration yaml.
+        Returns an array where each entry is an array with
+        - name of the key (translated)
+        - name of the key (original)
+        - mapsymbol data (usually an order number)
+        """
+        keyNames = []
+        for cat in self.getCategories():
+            for thmg in cat.getThematicgroups():
+                for tg in thmg.getTaggroups():
+                    for t in tg.getTags():
+                        if t.getMapSymbol() is not None:
+                            keyNames.append([t.getKey().getTranslatedName(), t.getKey().getName(), t.getMapSymbol()])
         return keyNames
 
 class ConfigCategory(object):
@@ -358,7 +385,7 @@ class ConfigCategory(object):
             name=str(self.getId()),
             title=title
         )
-        for thg in sorted(self.getThematicgroups(), key=lambda thmg: thmg.order):
+        for thg in sorted(self.getThematicgroups(), key=lambda thmg: thmg.getOrder()):
             # Get the Form for each Thematicgroup
             thg_form = thg.getForm(request)
             thg_form.missing = colander.null
@@ -491,7 +518,7 @@ class ConfigThematicgroup(object):
             mapWidget = getMapWidget(self)
             thg_form.add(mapWidget)
 
-        for tg in self.getTaggroups():
+        for tg in sorted(self.getTaggroups(), key=lambda tg: tg.getOrder()):
             # Get the Form for each Taggroup
             tg_form = tg.getForm(request)
             name = str(tg.getId())
@@ -583,6 +610,7 @@ class ConfigTaggroup(object):
         self.tags = []
         self.repeatable = False
         self.geometry = False
+        self.order = 9999
 
     def getId(self):
         """
@@ -639,6 +667,18 @@ class ConfigTaggroup(object):
         Return a boolean whether this taggroup can have a geometry or not.
         """
         return self.geometry is True
+
+    def setOrder(self, order):
+        """
+        Set the order of this taggroup.
+        """
+        self.order = order
+
+    def getOrder(self):
+        """
+        Return the order of this taggroup.
+        """
+        return self.order
 
     def hasKey(self, key):
         """
@@ -713,6 +753,7 @@ class ConfigTag(object):
         self.mandatory = False
         self.desired = False
         self.involvementOverview = None
+        self.mapSymbol = None
         self.filterable = False
 
     def setKey(self, key):
@@ -777,6 +818,18 @@ class ConfigTag(object):
         """
         return self.involvementOverview
 
+    def setMapSymbol(self, symbol):
+        """
+        Set the value for map symbol.
+        """
+        self.mapSymbol = symbol
+
+    def getMapSymbol(self):
+        """
+        Return the value set in map symbole.
+        """
+        return self.mapSymbol
+
     def setFilterable(self, filterable):
         """
         Set if this tag should be used in the filters or not.
@@ -815,13 +868,26 @@ class ConfigTag(object):
             if key.getTranslatedHelptext() is not None else key.getHelptext())
         desired = self.getDesired()
         # Decide which type of form to add
-        if type.lower() == 'dropdown' and len(self.getValues()) > 0:
+        if ((type.lower() == 'dropdown' and len(self.getValues()) > 0)
+            or type.lower() == 'integerdropdown'):
             # Dropdown
             # Prepare the choices for keys with predefined values
             choiceslist = [('', '- ' + _('Select') + ' -')]
-            for v in sorted(self.getValues(),
-                key=lambda val: val.getOrderValue()):
-                choiceslist.append((v.getName(), v.getTranslation()))
+            if type.lower() == 'dropdown':
+                for v in sorted(self.getValues(),
+                    key=lambda val: val.getOrderValue()):
+                    choiceslist.append((v.getName(), v.getTranslation()))
+            else:
+                # Integer dropdown
+                dropdownRange = self.getKey().getValidator()
+                if isinstance(dropdownRange, list) and len(dropdownRange) == 2:
+                    try:
+                        dropdownRangeInt = [int(d) for d in dropdownRange]
+                    except ValueError:
+                        dropdownRangeInt = None
+                    if dropdownRangeInt is not None:
+                        for v in range(dropdownRangeInt[0], dropdownRangeInt[1]+1):
+                            choiceslist.append((v, v))
             choices = tuple(choiceslist)
             form = colander.SchemaNode(
                 colander.String(),
@@ -834,20 +900,36 @@ class ConfigTag(object):
                 name=name,
                 title=title
             )
-        elif type.lower() == 'checkbox' and len(self.getValues()) > 0:
-            # Checkbox
+        elif type.lower() in ['checkbox', 'inputtoken'] and len(self.getValues()) > 0:
+            # Checkbox or Input Token
             # Prepare the choices for keys with predefined values
             choices = []
             for v in sorted(self.getValues(),
                 key=lambda val: val.getOrderValue()):
                 choices.append((v.getName(), v.getTranslation()))
-            form = colander.SchemaNode(
-                colander.Set(),
-                widget=CustomCheckboxWidget(
+            if type.lower() == 'checkbox':
+                # Checkbox
+                widget = CustomCheckboxWidget(
                     values=tuple(choices),
                     helptext=helptext,
                     desired=desired
-                ),
+                )
+            else:
+                # Input Token
+                deform.widget.default_resource_registry.set_js_resources(
+                    'inputtoken', None, '../static/v2/form_inputtoken.js'
+                )
+                deform.widget.default_resource_registry.set_css_resources(
+                    'inputtoken', None, '../static/v2/form_inputtoken.css'
+                )
+                widget = CustomInputTokenWidget(
+                    values=tuple(choices),
+                    helptext=helptext,
+                    desired=desired
+                )
+            form = colander.SchemaNode(
+                colander.Set(),
+                widget=widget,
                 name=name,
                 title=title
             )
@@ -1449,7 +1531,9 @@ def getValidKeyTypes():
         'text',
         'date',
         'string',
-        'file'
+        'file',
+        'inputtoken',
+        'integerdropdown'
     ]
 
 def getCategoryList(request, itemType, **kwargs):
@@ -1480,8 +1564,7 @@ def getCategoryList(request, itemType, **kwargs):
     else:
         filename = NEW_ACTIVITY_YAML
 
-    yaml_stream = open("%s/%s"
-        % (profile_directory_path(request), filename), 'r')
+    yaml_stream = open(os.path.join(profile_directory_path(request), filename), 'r')
     yaml_config = yaml.load(yaml_stream)
 
     categorylist = ConfigCategoryList()
@@ -1582,21 +1665,23 @@ def getCategoryList(request, itemType, **kwargs):
                             if 'maintag' in key_config:
                                 taggroup.setMaintag(tag)
 
-                            if ('involvementoverview' in key_config):
+                            if 'involvementoverview' in key_config:
                                 tag.setInvolvementOverview(key_config['involvementoverview'])
+
+                            if 'mapsymbol' in key_config:
+                                tag.setMapSymbol(key_config['mapsymbol'])
 
                             if ('filterable' in key_config
                                 and key_config['filterable'] is True):
                                 tag.setFilterable(True)
 
-                            # If the values are predefined and they are not set
-                            # already (defined explicitly in YAML), then get the
-                            # values from the value config csv.
-                            if (configKey.getType().lower() == 'dropdown'
-                                or configKey.getType().lower() == 'checkbox'):
-                                for v in configValues.\
-                                    findValuesByFkkey(configKey.getId()):
-                                    tag.addValue(v)
+                        # If the values are predefined and they are not set
+                        # already (defined explicitly in YAML), then get the
+                        # values from the value config csv.
+                        if configKey.getType().lower() in ['dropdown', 'checkbox', 'inputtoken']:
+                            for v in configValues.\
+                                findValuesByFkkey(configKey.getId()):
+                                tag.addValue(v)
 
                         taggroup.addTag(tag)
 
@@ -1607,6 +1692,9 @@ def getCategoryList(request, itemType, **kwargs):
 
                         if key_id == 'geometry' and key_config is True:
                             taggroup.setGeometry(True)
+
+                        if key_id == 'order' and key_config is not None:
+                            taggroup.setOrder(key_config)
 
                 if taggroup.getMaintag() is None:
                     emptymaintag.append(taggroup)
@@ -1710,8 +1798,8 @@ def getCategoryList(request, itemType, **kwargs):
                                 tag.getKey().setValidator(
                                     key_config['validator'])
 
-                            if (configKey.getType().lower() == 'dropdown'
-                                or configKey.getType().lower() == 'checkbox'):
+                            if (configKey.getType().lower() in
+                                ['dropdown', 'checkbox', 'inputtoken']):
                                 for v in configValues.findValuesByFkkey(
                                     configKey.getId()):
                                     tag.addValue(v)
@@ -1857,6 +1945,80 @@ class NumberSpinnerWidget(CustomWidget):
         if pstruct in ('', colander.null):
             return colander.null
         return pstruct
+
+class CustomInputTokenWidget(CustomWidget):
+    """
+    Custom Deform widget. Search for an item to add it to the list of selected
+    items.
+    Can be seen as a replacement of very long checkbox lists and also works a
+    lot like checkbox (saving and extracting tg_id)
+    """
+    template = 'inputtoken'
+    readonly_template = 'readonly/inputtoken'
+    values = ()
+    separator = '|'
+    requirements = ( ('inputtoken', None), )
+
+    def serialize(self, field, cstruct, **kw):
+        if cstruct in (colander.null, None):
+            cstruct = ()
+        readonly = kw.get('readonly', self.readonly)
+        values = kw.get('values', self.values)
+
+        template = readonly and self.readonly_template or self.template
+
+        # The data needs to be prepared before showing in the form. Because an
+        # Input Token can only contain one real value, the tg_id needs to be
+        # stored in the inner (submit) value of the Token.
+        formdata = []
+        for c in cstruct:
+            # Transform tuples to list to access them more easily
+            valuelist = list(values)
+            newname = None
+            for i, (name, title) in enumerate(valuelist):
+                # If the form is readonly, the title is relevant. For the normal
+                # form, the name is relevant.
+                if readonly and title == c[0] or not readonly and name == c[0]:
+                    # Update the (internal) name of the values
+                    newname = '%s%s%s' % (c[1], self.separator, name)
+                    valuelist[i] = (newname, title)
+
+            # Transform the list back to tuples
+            values = tuple(valuelist)
+            if newname is not None:
+                formdata.append(newname)
+
+        kw['values'] = values
+        tmpl_values = self.get_template_values(field, formdata, kw)
+
+        return field.renderer(template, **tmpl_values)
+
+    def deserialize(self, field, pstruct):
+        if pstruct is colander.null:
+            return colander.null
+        if isinstance(pstruct, deform.compat.string_types):
+            return (pstruct,)
+
+        # When submitted, additional data provided by the token (old tg_id)
+        # needs to be extracted and stored.
+        ret = []
+        for p in pstruct:
+            # Default values (if no tg_id set)
+            old_tg_id = None
+            n = p
+
+            if self.separator in p:
+                # If a tg_id is set, separate it from the name and store it
+                separatorposition = p.find(self.separator)
+                n = p[separatorposition+1:]
+                old_tg_id = p[:separatorposition]
+
+            for (name, title) in self.values:
+                # Look for the name and set the old tg_id if available.
+                if name == n:
+                    ret.append((n, old_tg_id))
+
+        return tuple(ret)
 
 class CustomCheckboxWidget(CustomWidget):
     """

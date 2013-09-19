@@ -2,6 +2,7 @@ import colander
 from datetime import datetime
 from datetime import timedelta
 import deform
+from lmkp.config import getTemplatePath
 from lmkp.models.database_objects import Group
 from lmkp.models.database_objects import Profile
 from lmkp.models.database_objects import User
@@ -71,7 +72,7 @@ def _user_already_exists(node, value):
 
 class UserView(BaseView):
 
-    @view_config(route_name='user_self_registration', renderer='lmkp:templates/user_registration.mak')
+    @view_config(route_name='user_self_registration')
     def register(self):
         """
         Returns and process user self registration form.
@@ -148,11 +149,14 @@ class UserView(BaseView):
             "lastname": new_user.lastname,
             "activation_link": "http://%s/users/activate?uuid=%s&username=%s" % (self.request.environ['HTTP_HOST'], activation_uuid, new_user.username)
             }
-            email_text = render('lmkp:templates/emails/activation.mak', activation_dict, request=self.request)
+            email_text = render(getTemplatePath(self.request, 'emails/account_activation.mak'),
+                activation_dict,
+            self.request)
 
-            self._send_email([email_field], _(u"The Land Observatory: Activate your Account"), email_text)
+            self._send_email([email_field], _(u"Activate your Account"), email_text)
 
-            return render_to_response('lmkp:templates/user_registration_success.mak', {}, request=self.request)
+            return render_to_response(getTemplatePath(self.request, 'users/registration_success.mak'), {
+            }, self.request)
 
         ret = self._render_form(form, success=succeed)
 
@@ -162,6 +166,11 @@ class UserView(BaseView):
             self._handle_parameters()
             ret['profile'] = get_current_profile(self.request)
             ret['locale'] = get_current_locale(self.request)
+
+            # Render the return values
+            return render_to_response(getTemplatePath(self.request, 'users/registration_form.mak'),
+                ret,
+            self.request)
 
         return ret
 
@@ -202,7 +211,7 @@ class UserView(BaseView):
             'js_links':reqts['js'],
             }
 
-    @view_config(route_name='user_activation', renderer='lmkp:templates/activation_successful.mak')
+    @view_config(route_name='user_activation')
     def activate(self):
         """
         """
@@ -241,7 +250,9 @@ class UserView(BaseView):
 
         # Send an email to all moderators of the profile in which the user
         # registered.
-        email_text = render('lmkp:templates/emails/approval.mak', approval_dict, request=self.request)
+        email_text = render(getTemplatePath(self.request, 'emails/account_approval_request.mak'),
+            approval_dict,
+            request=self.request)
 
         # Determine profile. Each user should only have one profile when 
         # registering!
@@ -279,9 +290,11 @@ class UserView(BaseView):
                          "The Land Observatory: User %s requests approval" % user.username,
                          email_text)
 
-        return {"username": user.username}
+        return render_to_response(getTemplatePath(self.request, 'users/activation_successful.mak'), {
+            'username': user.username
+        }, self.request)
 
-    @view_config(route_name="user_approve", renderer="lmkp:templates/user_approval.mak", permission="moderate")
+    @view_config(route_name="user_approve", permission="moderate")
     def approve(self):
         """
         User moderation: approve newly activated users.
@@ -306,7 +319,9 @@ class UserView(BaseView):
         "host": "http://%s" % self.request.environ['HTTP_HOST']
         }
 
-        email_text = render('lmkp:templates/emails/confirmation.mak', conf_dict, request=self.request)  
+        email_text = render(getTemplatePath(self.request, 'emails/account_approval_confirmation.mak'),
+            conf_dict,
+            request=self.request)
 
         # Send the email
         self._send_email([user.email],
@@ -314,9 +329,11 @@ class UserView(BaseView):
                          email_text)
 
         # Return the username to the template
-        return {"username": user_username}
+        return render_to_response(getTemplatePath(self.request, 'users/approval_successful.mak'), {
+            'username': user_username
+        }, self.request)
 
-    @view_config(route_name='user_account', renderer='lmkp:templates/user_account.mak', permission='edit')
+    @view_config(route_name='user_account', permission='edit')
     def account(self):
         """
         Shows user account details to registered users.
@@ -389,8 +406,10 @@ class UserView(BaseView):
 
             return Response('<div id="thanks">Thanks!</div>')
             
-
-        return self._render_form(form, success=succeed, appstruct=data)
+        return render_to_response(getTemplatePath(self.request, 'users/account_form.mak'),
+            self._render_form(form, success=succeed, appstruct=data),
+            self.request
+        )
 
     def _get_available_profiles(self):
         """
@@ -510,14 +529,6 @@ def user_update(request):
             ret['msg'] = 'There is no user with this username.'
             return ret
     return ret
-
-# TODO: Find out if this is still needed. If not, also delete template. 
-@view_config(route_name='user_profile', renderer='lmkp:templates/user.mak')
-def get_user_profile(request):
-    username = authenticated_userid(request)
-    if username != request.matchdict['userid']:
-        raise HTTPForbidden
-    return {}
 
 @view_config(route_name='add_user', renderer='json', permission='administer')
 def add_user(request):
