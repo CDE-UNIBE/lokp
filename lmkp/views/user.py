@@ -339,50 +339,59 @@ class UserView(BaseView):
         Shows user account details to registered users.
         """
 
-        userid = authenticated_userid(self.request)
+        _ = self.request.translate
 
-        locale_name = get_locale_name(self.request)
+        userid = authenticated_userid(self.request)
 
         # Define a colander Schema for the self registration
         class Schema(colander.Schema):
-            _LOCALE_ = colander.SchemaNode(colander.String(),
-                                           widget=deform.widget.HiddenWidget(),
-                                           default=locale_name)
-            profile = colander.SchemaNode(colander.String(),
-                                          widget=deform.widget.SelectWidget(values=self._get_available_profiles()))
-            username = colander.SchemaNode(colander.String(),
-                                           validator=_user_already_exists,
-                                           widget=deform.widget.TextInputWidget(readonly=True),
-                                           missing=None,
-                                           description='User name')
-            password = colander.SchemaNode(colander.String(),
-                                           validator=colander.Length(min=5),
-                                           missing=None,
-                                           widget=deform.widget.CheckedPasswordWidget(size=20),
-                                           description='Type your password and confirm it')
-            firstname = colander.SchemaNode(colander.String(),
-                                            missing=None,
-                                            description='First name')
-            lastname = colander.SchemaNode(colander.String(),
-                                           missing=None,
-                                           description='Last name')
-            email = colander.SchemaNode(colander.String(),
-                                        missing=None,
-                                        widget=deform.widget.TextInputWidget(readonly=True),
-                                        description="Valid email",
-                                        validator=_is_valid_email)
+            username = colander.SchemaNode(
+                colander.String(),
+                missing = None,
+                widget = deform.widget.TextInputWidget(
+                    readonly = True,
+                    readonly_template = 'readonly/customTextinputReadonly'
+                ),
+                title = _('Username')
+            )
+            password = colander.SchemaNode(
+                colander.String(),
+                validator = colander.Length(min=5),
+                widget = deform.widget.CheckedPasswordWidget(size=20),
+                title = _('Password')
+            )
+            firstname = colander.SchemaNode(
+                colander.String(),
+                missing = None,
+                title = _('First Name')
+            )
+            lastname = colander.SchemaNode(
+                colander.String(),
+                missing = None,
+                title = _('Last Name')
+            )
+            email = colander.SchemaNode(
+                colander.String(),
+                missing = None,
+                widget = deform.widget.TextInputWidget(
+                    readonly = True,
+                    readonly_template = 'readonly/customTextinputReadonly'
+                ),
+                title = _('Valid Email'),
+            )
+
         schema = Schema()
+        deform.Form.set_default_renderer(mako_renderer)
         form = deform.Form(schema, buttons=(deform.Button(title=_(u'Update')),), use_ajax=True)
 
         # Get the user data
         user = Session.query(User).filter(User.username == userid).first()
 
         data = {
-        "profile": user.profiles[0].code,
-        "username": user.username,
-        "firstname": user.firstname,
-        "lastname": user.lastname,
-        "email": user.email
+            'username': user.username,
+            'firstname': user.firstname,
+            'lastname': user.lastname,
+            'email': user.email
         }
 
         def succeed():
@@ -404,12 +413,21 @@ class UserView(BaseView):
             # Set the user profile
             user.profiles = [selected_profile]
 
-            return Response('<div id="thanks">Thanks!</div>')
-            
-        return render_to_response(getTemplatePath(self.request, 'users/account_form.mak'),
-            self._render_form(form, success=succeed, appstruct=data),
-            self.request
-        )
+            return Response('<p>%s</p>' % _('Your user settings were updated.'))
+
+        ret = self._render_form(form, success=succeed, appstruct=data)
+
+        if not isinstance(ret, Response):
+            self._handle_parameters()
+            ret['profile'] = get_current_profile(self.request)
+            ret['locale'] = get_current_locale(self.request)
+
+            return render_to_response(getTemplatePath(self.request, 'users/account_form.mak'),
+                ret,
+                self.request
+            )
+
+        return ret
 
     def _get_available_profiles(self):
         """
