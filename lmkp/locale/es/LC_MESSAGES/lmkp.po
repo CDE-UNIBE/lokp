@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-09-19 10:35+0200\n"
+"POT-Creation-Date: 2013-09-19 15:17+0200\n"
 "PO-Revision-Date: 2013-09-19 10:30+0100\n"
 "Last-Translator: Lukas Vonlanthen <lukas.vonlanthen@cde.unibe.ch>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -1152,23 +1152,23 @@ msgstr "Traducción actualizada"
 msgid "Added translation"
 msgstr "Traducción añadida"
 
-#: lmkp/views/user.py:94
+#: lmkp/views/user.py:94 lmkp/views/user.py:355
 msgid "Username"
 msgstr "Usuario"
 
-#: lmkp/views/user.py:98
+#: lmkp/views/user.py:98 lmkp/views/user.py:361
 msgid "Password"
 msgstr "Contraseña"
 
-#: lmkp/views/user.py:101
+#: lmkp/views/user.py:101 lmkp/views/user.py:366
 msgid "First Name"
 msgstr "Nombre"
 
-#: lmkp/views/user.py:104
+#: lmkp/views/user.py:104 lmkp/views/user.py:371
 msgid "Last Name"
 msgstr "Apellido"
 
-#: lmkp/views/user.py:107
+#: lmkp/views/user.py:107 lmkp/views/user.py:380
 msgid "Valid Email"
 msgstr "E-mail válido"
 
@@ -1176,9 +1176,13 @@ msgstr "E-mail válido"
 msgid "Activate your Account"
 msgstr ""
 
-#: lmkp/views/user.py:375
+#: lmkp/views/user.py:385
 msgid "Update"
 msgstr "Actualizar"
+
+#: lmkp/views/user.py:416
+msgid "Your user settings were updated."
+msgstr ""
 
 #: lmkp/views/viewers.py:28
 msgid "Login"
@@ -1187,7 +1191,4 @@ msgstr "Iniciar sesión"
 #: lmkp/views/viewers.py:29
 msgid "Register"
 msgstr "Registro"
-
-#~ msgid "Investors"
-#~ msgstr "Inversores"
 

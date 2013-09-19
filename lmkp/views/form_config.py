@@ -1356,7 +1356,7 @@ def getInvolvementWidget(mappingName, template, readonlyTemplate, overviewKeys,
         invForm.add(colander.SchemaNode(
             colander.String(),
             widget=deform.widget.TextInputWidget(
-                template='readonly/custom_textinput_readonly'
+                template='readonly/customTextinputReadonly'
             ),
             name=keyName,
             title=keyName,

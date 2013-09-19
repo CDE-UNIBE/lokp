@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: LMKP 0.61\n"
+"Project-Id-Version: LMKP 0.7\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-09-19 10:35+0200\n"
+"POT-Creation-Date: 2013-09-19 15:17+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1092,23 +1092,23 @@ msgstr ""
 msgid "Added translation"
 msgstr ""
 
-#: lmkp/views/user.py:94
+#: lmkp/views/user.py:94 lmkp/views/user.py:355
 msgid "Username"
 msgstr ""
 
-#: lmkp/views/user.py:98
+#: lmkp/views/user.py:98 lmkp/views/user.py:361
 msgid "Password"
 msgstr ""
 
-#: lmkp/views/user.py:101
+#: lmkp/views/user.py:101 lmkp/views/user.py:366
 msgid "First Name"
 msgstr ""
 
-#: lmkp/views/user.py:104
+#: lmkp/views/user.py:104 lmkp/views/user.py:371
 msgid "Last Name"
 msgstr ""
 
-#: lmkp/views/user.py:107
+#: lmkp/views/user.py:107 lmkp/views/user.py:380
 msgid "Valid Email"
 msgstr ""
 
@@ -1116,8 +1116,12 @@ msgstr ""
 msgid "Activate your Account"
 msgstr ""
 
-#: lmkp/views/user.py:375
+#: lmkp/views/user.py:385
 msgid "Update"
+msgstr ""
+
+#: lmkp/views/user.py:416
+msgid "Your user settings were updated."
 msgstr ""
 
 #: lmkp/views/viewers.py:28

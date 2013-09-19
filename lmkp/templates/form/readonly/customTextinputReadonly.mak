@@ -1,6 +1,6 @@
 <div class="row-fluid">
     <div class="span4">
-        <p>${field.name}</p>
+        <p>${field.title}</p>
     </div>
     <div class="span6">
         <input
