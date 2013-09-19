@@ -1,4 +1,4 @@
-<%inherit file="lmkp:templates/base.mak" />
+<%inherit file="lmkp:templates/ext_base.mak" />
 
 <%def name="head_tags()">
 <title>${_("Land Observatory")} - ${_("Review")}</title>
