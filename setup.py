@@ -34,7 +34,7 @@ requires = [
     ]
 
 setup(name='LMKP',
-      version='0.7',
+      version='0.71',
       description='The Land Observatory',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
