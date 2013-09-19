@@ -458,7 +458,7 @@ def review(request):
         filter(profile_filters).\
         first()
     if activity is None:
-        raise HTTPUnauthorized(_('The Deal was not found or is not situated within the user\'s profiles'))
+        raise HTTPUnauthorized(_('The Activity was not found or is not situated within the user\'s profiles'))
 
     # If review decision is 'approved', make sure that all mandatory fields are
     # there, except if it is to be deleted
@@ -516,17 +516,18 @@ def create(request):
 
     response = {}
 
-    # TODO: complete translation here. Also: All server responses in Ext?
+    # TODO: Do we still need translations here? Who is using this function
+    # (since it is not Ext anymore)?
 
     if ids is not None:
         response['data'] = [i.to_json() for i in ids]
         response['total'] = len(response['data'])
         response['created'] = True
-        response['msg'] = _('The Deal was successfully created.')
+        response['msg'] = 'The Activity was successfully created.'
         request.response.status = 201
     else:
         response['created'] = False
-        response['msg'] = _('No Deal was created.')
+        response['msg'] = 'No Deal was created.'
         request.response.status = 200
 
     return response

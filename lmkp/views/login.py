@@ -112,7 +112,7 @@ class LoginView(BaseView):
             'user': user.username,
             'new_password': new_password
         }, self.request)
-        self._send_email([user.email], _(u"Land Observatory - Password reset"), body)
+        self._send_email([user.email], _(u"Password reset"), body)
 
         msg = _(u"Password reset was successful. An email containing the new password has been sent to your email address.")
         msg += "<br/><a href=\"%s\">" % self.request.route_url('login_form')

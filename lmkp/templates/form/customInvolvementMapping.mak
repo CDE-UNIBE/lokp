@@ -23,7 +23,7 @@ ${field.end_mapping()}
             style="display:none;"
         % endif
         >
-        ${_('Select Investor')}
+        ${_('Select Stakeholder')}
     </a>
 
     <a
@@ -35,7 +35,7 @@ ${field.end_mapping()}
             style="display:none;"
         % endif
         >
-        ${_('Remove Investor')}
+        ${_('Remove Stakeholder')}
     </a>
 </p>
 

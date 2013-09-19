@@ -153,7 +153,7 @@ class UserView(BaseView):
                 activation_dict,
             self.request)
 
-            self._send_email([email_field], _(u"The Land Observatory: Activate your Account"), email_text)
+            self._send_email([email_field], _(u"Activate your Account"), email_text)
 
             return render_to_response(getTemplatePath(self.request, 'users/registration_success.mak'), {
             }, self.request)

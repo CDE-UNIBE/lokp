@@ -1328,7 +1328,7 @@ class ActivityProtocol3(Protocol):
                 outerjoin(A_Value, A_Tag.fk_value == A_Value.id).\
                 filter(A_Key.key.in_(attrs))
 
-            if lang.id != 1:
+            if lang is not None and lang.id != 1:
                 key_translation, value_translation = self._get_translatedKV(lang,
                     A_Key, A_Value)
                 query = query.add_columns(value_translation.c.value_translated)

@@ -469,7 +469,7 @@ def review(request):
         filter(Stakeholder.version == request.POST['version']).\
         first()
     if stakeholder is None:
-        raise HTTPUnauthorized(_('The Deal was not found'))
+        raise HTTPUnauthorized(_('The Activity was not found'))
 
     # If review decision is 'approved', make sure that all mandatory fields are
     # there, except if it is to be deleted
@@ -525,7 +525,8 @@ def create(request):
 
     ids = stakeholder_protocol3.create(request)
 
-    # TODO: complete translation here. Also: All server responses in Ext?
+    # TODO: Do we still need translations here? Who is using this function
+    # (since it is not Ext anymore)?
 
     response = {}
 
@@ -533,11 +534,11 @@ def create(request):
         response['data'] = [i.to_json() for i in ids]
         response['total'] = len(response['data'])
         response['created'] = True
-        response['msg'] = _('The Stakeholder was successfully created.')
+        response['msg'] = 'The Stakeholder was successfully created.'
         request.response.status = 201
     else:
         response['created'] = False
-        response['msg'] = _('No Stakeholder was created.')
+        response['msg'] = 'No Stakeholder was created.'
         request.response.status = 200
 
     return response

@@ -8,12 +8,14 @@ import datetime
 
 from lmkp.views.form_config import *
 from lmkp.models.meta import DBSession as Session
+from lmkp.config import getTemplatePath
 
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPFound
 from pyramid.path import AssetResolver
 from pyramid.threadlocal import get_current_request
 from pyramid.view import view_config
+from pyramid.renderers import render
 
 log = logging.getLogger(__name__)
 
@@ -41,20 +43,8 @@ def renderForm(request, itemType, **kwargs):
 
     _ = request.translate
 
-    # TODO: Translation
-    activity = _('Deal')
-    noticeTitle = _('Notice')
-    notice1 = _('Unsaved data of this item was found in the session. You may continue to edit this form.')
-    notice2 = _('Unsaved data from another form %s was found in the session and will be deleted if you continue to edit this form.')
-    action1 = _('Click here to delete the session data to clear the form.')
-    action2 = _('See the unsaved changes of this Deal and submit it.')
-    successTitle = _('Success')
-    dealSuccess = _('The Deal was successfully created or updated. It is now pending and needs to be reviewed by a moderator before it is publicly visible.')
-    dealLink = _('View the Deal.')
     emptyTitle = _('Empty Form')
     emptyText = _('You submitted an empty form or did not make any changes.')
-    stakeholderSuccess = _('The Stakeholder was successfully created or updated. It is not pending and needs to be reviewed by a moderator before it is publicly visible.')
-    stakeholderLink = _('View the Stakeholder')
     errorTitle = _('Error')
 
     itemJson = kwargs.get('itemJson', None)
@@ -250,13 +240,11 @@ def renderForm(request, itemType, **kwargs):
                         success, feedback = doActivityUpdate(request, diff)
 
                         if success is True:
-                            feedbackMessage = ('<h3 class="text-success">%s</h3><p>%s</p><p><a href="%s">%s</a></p>'
-                                % (
-                                    successTitle,
-                                    dealSuccess,
-                                    request.route_url('activities_read_one', output='html', uid=feedback),
-                                    dealLink
-                                ))
+                            feedbackMessage = render(
+                                getTemplatePath(request, 'parts/messages/activity_created_success.mak'),
+                                {'url': request.route_url('activities_read_one', output='html', uid=feedback)},
+                                request
+                            )
 
                             # Clear the session
                             doClearFormSessionData(request)
@@ -284,13 +272,11 @@ def renderForm(request, itemType, **kwargs):
                         success, js, identifier = doStakeholderUpdate(request, diff)
 
                         if success is True:
-                            feedbackMessage = ('<h3 class="text-success">%s</h3><p>%s</p><p><a href="%s">%s</a></p>'
-                                % (
-                                    successTitle,
-                                    stakeholderSuccess,
-                                    request.route_url('stakeholders_read_one', output='html', uid=identifier),
-                                    stakeholderLink
-                                ))
+                            feedbackMessage = render(
+                                getTemplatePath(request, 'parts/messages/stakeholder_created_success.mak'),
+                                {'url': request.route_url('stakeholders_read_one', output='html', uid=identifier)},
+                                request
+                            )
                             feedbackData = js
 
                         else:
@@ -366,7 +352,12 @@ def renderForm(request, itemType, **kwargs):
                     # user that session was used.
 
                     url = request.route_url('form_clear_session', _query={'url':request.url})
-                    session.flash('<strong>%s</strong>: %s<br/><a href="%s">%s</a>' % (noticeTitle, notice1, url, action1))
+                    msg = render(
+                        getTemplatePath(request, 'parts/messages/unsaved_data_same_form.mak'),
+                        {'url': url},
+                        request
+                    )
+                    session.flash(msg)
 
             else:
                 # The item in the session is not the same as the item provided.
@@ -375,9 +366,10 @@ def renderForm(request, itemType, **kwargs):
                     newCategory)
 
                 # Inform the user that there is data in the session.
+                item_type = 'activities'
                 item_name = (sessionActivity['id'][:6]
                     if sessionActivity['id'] != colander.null
-                    else 'New Activity')
+                    else '')
                 if sessionActivity['id'] != colander.null:
                     item_url = request.route_url('activities_read_one',
                         output='form', uid=sessionActivity['id'])
@@ -385,12 +377,16 @@ def renderForm(request, itemType, **kwargs):
                     item_url = request.route_url('activities_read_many',
                         output='form')
 
-                try:
-                    notice2 = notice2 % '(%s %s)' % (activity, item_name)
-                except TypeError:
-                    pass
-
-                session.flash('<strong>%s</strong>: %s<br/><a href="%s">%s</a>' % (noticeTitle, notice2, item_url, action2));
+                msg = render(
+                        getTemplatePath(request, 'parts/messages/unsaved_data_different_form.mak'),
+                        {
+                            'url': item_url,
+                            'name': item_name,
+                            'type': item_type
+                        },
+                        request
+                    )
+                session.flash(msg)
 
         elif itemType == 'activities' and itemJson is None and 'activity' in session:
             # No item was provided (create form) but some data was found in the
@@ -400,9 +396,10 @@ def renderForm(request, itemType, **kwargs):
                 and session['activity']['version'] != colander.null):
                 # The item in the session is not new. Show empty form data
                 # (already defined) and inform the user.
+                item_type = 'activities'
                 item_name = (session['activity']['id'][:6]
                     if session['activity']['id'] != colander.null
-                    else 'Unknown Activity')
+                    else _('Unknown Activity'))
                 if session['activity']['id'] != colander.null:
                     item_url = request.route_url('activities_read_one',
                         output='form', uid=session['activity']['id'])
@@ -410,12 +407,16 @@ def renderForm(request, itemType, **kwargs):
                     item_url = request.route_url('activities_read_many',
                         output='form')
 
-                try:
-                    notice2 = notice2 % '(%s %s)' % (activity, item_name)
-                except TypeError:
-                    pass
-
-                session.flash('<strong>%s</strong>: %s<br/><a href="%s">%s</a>' % (noticeTitle, notice2, item_url, action2));
+                msg = render(
+                        getTemplatePath(request, 'parts/messages/unsaved_data_different_form.mak'),
+                        {
+                            'url': item_url,
+                            'name': item_name,
+                            'type': item_type
+                        },
+                        request
+                    )
+                session.flash(msg)
 
             else:
                 # Use the data in the session to populate the form.
@@ -426,7 +427,12 @@ def renderForm(request, itemType, **kwargs):
                     # If the form is rendered for the first time, inform the
                     # user that session was used.
                     url = request.route_url('form_clear_session', _query={'url':request.url})
-                    session.flash('<strong>%s</strong>: %s<br/><a href="%s">%s</a>' % (noticeTitle, notice1, url, action1))
+                    msg = render(
+                        getTemplatePath(request, 'parts/messages/unsaved_data_same_form.mak'),
+                        {'url': url},
+                        request
+                    )
+                    session.flash(msg)
 
         elif itemType == 'stakeholders' and itemJson is not None:
             # An item was provided to show in the form (edit form)
@@ -1698,11 +1704,15 @@ def mako_renderer(tmpl_name, **kw):
     It seems to be necessary to locate the templates by using the asset
     resolver.
     """
-    resolver = lmkpAssetResolver.resolve('templates/form/%s.mak' % tmpl_name)
+    request = get_current_request()
+    # Redirect base form templates to customized templates
+    if tmpl_name in ['form', 'readonly/form']:
+        resolver = lmkpAssetResolver.resolve(getTemplatePath(request, 'form/%s.mak' % tmpl_name))
+    else:
+        resolver = lmkpAssetResolver.resolve('templates/form/%s.mak' % tmpl_name)
     template = Template(filename=resolver.abspath())
 
     # Add the request to the keywords so it is available in the templates.
-    request = get_current_request()
     kw['request'] = request
     kw['_'] = request.translate
 

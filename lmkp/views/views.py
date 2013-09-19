@@ -10,6 +10,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.response import Response
 from pyramid.renderers import render_to_response
+from pyramid.renderers import render
 from pyramid.view import view_config
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
@@ -494,10 +495,14 @@ def getActiveFilters(request):
                 continue
 
             if queryparts[0] == 'a':
-                itemName = _('Deals')
+                itemName = render(
+                    getTemplatePath(request, 'parts/items/activity.mak'), {}, request
+                )
                 configList = aList
             elif queryparts[0] == 'sh':
-                itemName = _('Investors')
+                itemName = render(
+                    getTemplatePath(request, 'parts/items/stakeholder.mak'), {}, request
+                )
                 configList = shList
             else:
                 continue
