@@ -20,6 +20,7 @@ from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.i18n import TranslationStringFactory
 from pyramid.renderers import render_to_response
+from pyramid.response import Response
 from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
 from pyramid.security import has_permission
@@ -253,6 +254,7 @@ def read_many(request):
     elif output_format == 'form':
         # This is used to display a new and empty form for a Stakeholder. It is
         # to be used to embed the form into an existing page.
+        # TODO: Embedded not used anymore
         embedded = request.params.get('embedded', False)
         if embedded:
             return render_to_response(
@@ -261,9 +263,15 @@ def read_many(request):
                 request
             )
         else:
+            newInvolvement = request.params.get('inv', None)
+            templateValues = renderForm(request, 'stakeholders', inv=newInvolvement)
+            if isinstance(templateValues, Response):
+                return templateValues
+            templateValues['profile'] = get_current_profile(request)
+            templateValues['locale'] = get_current_locale(request)
             return render_to_response(
                 getTemplatePath(request, 'stakeholders/form.mak'),
-                renderForm(request, 'stakeholders', embedded=False),
+                templateValues,
                 request
             )
     else:

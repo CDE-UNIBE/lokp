@@ -26,6 +26,8 @@ ${field.end_mapping()}
         ${_('Select Stakeholder')}
     </a>
 
+    <button id="create_involvement" class="btn btn-small btn-primary" value="createinvolvement" name="createinvolvement_${field.name}">${_('Create')}</button>
+
     <a
         id="remove-stakeholder-${field.oid}"
         href=""
