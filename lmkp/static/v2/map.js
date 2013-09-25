@@ -206,94 +206,98 @@ $(document).ready(function() {
     // selectable after adding them to the map)
     var featureLayers = [];
 
-    // Get the data with a jQuery AJAX request
-    $.get('/activities/geojson?attrs=' + mapCriteria[1], function(data) {
-
-        // Define a geojson format needed to read the features
-        var geojsonFormat = new OpenLayers.Format.GeoJSON({
-          'internalProjection': new OpenLayers.Projection("EPSG:900913"),
-          'externalProjection': new OpenLayers.Projection("EPSG:4326")
-        });
-
-        // Read and loop all the features, add them to the correct group
-        var features = geojsonFormat.read(data);
-        $.each(features, function() {
-
-            // Make sure the mapCriteria is present in the feature
-            if (!this.attributes[mapCriteria[1]]) return;
-
-            // Make sure the mapCriteria exists in the list of available groups
-            if (!mapFeatures[this.attributes[mapCriteria[1]]]) return;
-
-            // Add it to the group
-            mapFeatures[this.attributes[mapCriteria[1]]].push(this);
-        });
-
-        var legendExplanation = [
-            '<div class="legendExplanation">',
-            tForDealsGroupedBy, ': ',
-            '<strong>', mapCriteria[0], '</strong>',
-            '</div>'
-        ].join('');
-        $("#map-legend-list").append(legendExplanation);
-
-        // Give each group a different color
-        var colorIndex = 0;
-
-        // Loop the groups of features
-        for (var l in mapFeatures) {
-
-            // Create a clustering strategy for each with the features already
-            // available
-            var clusterStrategy = new OpenLayers.Strategy.Cluster({
-                distance: 30,
-                features: mapFeatures[l]
+    // Get the data with a jQuery AJAX request. To prevent IE from caching, use
+    // $.ajax instead of $.get so the parameter "cache=false" can be set.
+    $.ajax({
+        url: '/activities/geojson?attrs=' + mapCriteria[1],
+        cache: false,
+        success: function(data) {
+            // Define a geojson format needed to read the features
+            var geojsonFormat = new OpenLayers.Format.GeoJSON({
+              'internalProjection': new OpenLayers.Projection("EPSG:900913"),
+              'externalProjection': new OpenLayers.Projection("EPSG:4326")
             });
 
-            // Create the layer
-            var featureLayer = new OpenLayers.Layer.Vector(l, {
-                strategies: [
-                    clusterStrategy
-                ],
-                styleMap: new OpenLayers.StyleMap({
-                    // Get the style based on the current color
-                    'default': getStyle(colorIndex),
-                    'select': new OpenLayers.Style({
-                        fontColor: '#000000',
-                        fillColor: '#00ffff',
-                        strokeColor: '#00ffff'
-                    })
-                }),
-                eventListeners: {
-                    'featureselected': onFeatureSelected,
-                    'featureunselected': onFeatureUnselected
-                }
+            // Read and loop all the features, add them to the correct group
+            var features = geojsonFormat.read(data);
+            $.each(features, function() {
+
+                // Make sure the mapCriteria is present in the feature
+                if (!this.attributes[mapCriteria[1]]) return;
+
+                // Make sure the mapCriteria exists in the list of available groups
+                if (!mapFeatures[this.attributes[mapCriteria[1]]]) return;
+
+                // Add it to the group
+                mapFeatures[this.attributes[mapCriteria[1]]].push(this);
             });
-            // Add the layer to the map and to the list of layers
-            map.addLayer(featureLayer);
-            featureLayers.push(featureLayer);
 
-            // Do the initial clustering of the features
-            clusterStrategy.cluster();
-
-            // Write a legend entry for the group
-            var legendTemplate = [
-                '<li class="legendEntry">',
-                '<div class="vectorLegendSymbol" style="background-color: ' + getColor(colorIndex) + ';">',
-                '</div>',
-                l,
-                '</li>'
+            var legendExplanation = [
+                '<div class="legendExplanation">',
+                tForDealsGroupedBy, ': ',
+                '<strong>', mapCriteria[0], '</strong>',
+                '</div>'
             ].join('');
-            $("#map-legend-list").append(legendTemplate);
+            $("#map-legend-list").append(legendExplanation);
 
-            colorIndex++;
+            // Give each group a different color
+            var colorIndex = 0;
+
+            // Loop the groups of features
+            for (var l in mapFeatures) {
+
+                // Create a clustering strategy for each with the features already
+                // available
+                var clusterStrategy = new OpenLayers.Strategy.Cluster({
+                    distance: 30,
+                    features: mapFeatures[l]
+                });
+
+                // Create the layer
+                var featureLayer = new OpenLayers.Layer.Vector(l, {
+                    strategies: [
+                        clusterStrategy
+                    ],
+                    styleMap: new OpenLayers.StyleMap({
+                        // Get the style based on the current color
+                        'default': getStyle(colorIndex),
+                        'select': new OpenLayers.Style({
+                            fontColor: '#000000',
+                            fillColor: '#00ffff',
+                            strokeColor: '#00ffff'
+                        })
+                    }),
+                    eventListeners: {
+                        'featureselected': onFeatureSelected,
+                        'featureunselected': onFeatureUnselected
+                    }
+                });
+                // Add the layer to the map and to the list of layers
+                map.addLayer(featureLayer);
+                featureLayers.push(featureLayer);
+
+                // Do the initial clustering of the features
+                clusterStrategy.cluster();
+
+                // Write a legend entry for the group
+                var legendTemplate = [
+                    '<li class="legendEntry">',
+                    '<div class="vectorLegendSymbol" style="background-color: ' + getColor(colorIndex) + ';">',
+                    '</div>',
+                    l,
+                    '</li>'
+                ].join('');
+                $("#map-legend-list").append(legendTemplate);
+
+                colorIndex++;
+            }
+
+            // Create the SelectFeature control, add it for each feature layer and
+            // activate it
+            var selectControl = new OpenLayers.Control.SelectFeature(featureLayers);
+            map.addControl(selectControl);
+            selectControl.activate();
         }
-
-        // Create the SelectFeature control, add it for each feature layer and
-        // activate it
-        var selectControl = new OpenLayers.Control.SelectFeature(featureLayers);
-        map.addControl(selectControl);
-        selectControl.activate();
     });
 
     // Loop the context layers and append it to the context layers menu
