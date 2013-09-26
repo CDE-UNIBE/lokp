@@ -601,7 +601,7 @@ def addCreatedInvolvementToSession(request, session, itemType, invName, created)
         return False
     sessionCat = session[itemType]['form'][str(cat.getId())]
 
-    thmg = configList.findThematicgroupByInvolvement(invName)
+    thmg = configList.findThematicgroupByInvolvementName(invName)
     if thmg is None or str(thmg.getId()) not in sessionCat:
         return False
     sessionThmg = sessionCat[str(thmg.getId())]
@@ -619,19 +619,32 @@ def addCreatedInvolvementToSession(request, session, itemType, invName, created)
         return False
     newInv['role_id'] = configRoles[0].getId()
 
-    invAdded = False
-    for i, inv in enumerate(sessionInv):
-        # Try to use the first empty entry (no version, id and role)
-        if (inv['version'] != colander.null or inv['id'] != colander.null
-            or inv['role_id'] != colander.null):
-            continue
-        sessionInv[i] = newInv
-        invAdded = True
+    if isinstance(sessionInv, dict):
+        # The involvemnt is not repeatable, there is only one which is to be
+        # replaced
+        sessionInv = newInv
 
-    if invAdded is False:
-        # If the involvement was not added (because no empty entry was found),
-        # add it to the end of the list
-        sessionInv.append(newInv)
+    elif isinstance(sessionInv, list):
+        # The involvements are repeatable.
+        invAdded = False
+        for i, inv in enumerate(sessionInv):
+            # Try to use the first empty entry (no version, id and role)
+            if (inv['version'] != colander.null or inv['id'] != colander.null
+                or inv['role_id'] != colander.null):
+                continue
+            sessionInv[i] = newInv
+            invAdded = True
+
+        if invAdded is False:
+            # If the involvement was not added (because no empty entry was found),
+            # add it to the end of the list
+            sessionInv.append(newInv)
+
+    else:
+        return False
+
+    # Update the session
+    session[itemType]['form'][str(cat.getId())][str(thmg.getId())][invName] = sessionInv
 
     log.debug('Added involvement to session: %s' % newInv)
 
@@ -655,26 +668,6 @@ def renderReadonlyForm(request, itemType, itemJson):
     ))
     for cat in configCategoryList.getCategories():
         schema.add(cat.getForm(request))
-
-    if itemType == 'stakeholders':
-        # For Stakeholders, the readonly detail view should also contain the
-        # involvements which are not part of the edit form so we need to add it
-        # explicitely.
-
-        activitiesCategoryList = getCategoryList(request, 'activities')
-        overviewKeys = [k[0] for k in activitiesCategoryList.getInvolvementOverviewKeyNames()]
-
-        mappingNames = ['primaryinvestors', 'secondaryinvestors']
-
-        for mn in mappingNames:
-            schema.add(getInvolvementWidget(
-                mn,
-                'customInvolvementMapping',
-                'readonly/customInvolvementMappingActivity',
-                overviewKeys,
-                True,
-                ''
-            ))
 
     form = deform.Form(schema)
     data = getFormdataFromItemjson(request, itemJson, itemType, readOnly=True)
@@ -983,6 +976,11 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
 
     mapAdded = False
 
+    if itemType == 'activities':
+        otherItemType = 'stakeholders'
+    else:
+        otherItemType = 'activities'
+
     # TODO: Translation
     unknownString = 'Unknown'
 
@@ -1038,102 +1036,36 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
         # Have a look at the involvements
         involvements = itemJson['involvements']
 
-        if itemType == 'activities':
-            # Activities: The involvements of an activity generally consist of
-            # one Primary Investor and multiple Secondary Investors.
+        otherCategoryList = getCategoryList(request, otherItemType)
+        invOverviewKeys = [k[0] for k in otherCategoryList.getInvolvementOverviewKeyNames()]
 
-            # Collect the involvements and if they are primary or secondary
-            # investors.
-            primaryinvestor = None
-            secondaryinvestors = []
-            for i in involvements:
+        for inv in involvements:
 
-                if 'role_id' not in i:
-                    # The role_id should always be there. If not, skip.
-                    continue
+            if 'role_id' not in inv:
+                continue
 
-                if i['role_id'] == 6 and primaryinvestor is None:
-                    # If there is more than one primary investor, only the first one
-                    # is treated as primary investor, all others as secondary.
-                    primaryinvestor = i
+            invCat, invThmg = categorylist.getGroupsByRoleId(inv['role_id'])
+            if invCat is None or invThmg is None:
+                continue
+
+            invConfig = invThmg.getInvolvement()
+            invData = _getInvolvementData(inv, invOverviewKeys)
+
+            if str(invCat.getId()) not in data:
+                data[str(invCat.getId())] = {}
+            dataCat = data[str(invCat.getId())]
+
+            if str(invThmg.getId()) not in dataCat:
+                dataCat[str(invThmg.getId())] = {}
+            dataThmg = dataCat[str(invThmg.getId())]
+
+            if invConfig.getRepeatable() is True:
+                if invConfig.getName() in dataThmg and len(dataThmg[invConfig.getName()]) > 0:
+                    dataThmg[invConfig.getName()].append(invData)
                 else:
-                    secondaryinvestors.append(i)
-
-            # The configuration of the other side of the involvement is needed to
-            # know which fields are to be used for the overview display of the
-            # involvement.
-            otherItemType = 'stakeholders'
-            otherCategoryList = getCategoryList(request, otherItemType)
-            keyNames = [k[0] for k in otherCategoryList.getInvolvementOverviewKeyNames()]
-
-            cat = {}
-
-            # Primary investor
-            f = _getInvolvementData(primaryinvestor, keyNames)
-            thmg = categorylist.findThematicgroupByInvolvement('primaryinvestor')
-            if f is not None and thmg is not None:
-                cat[str(thmg.getId())] = {
-                    'primaryinvestor': f
-                }
-
-            # Secondary investors
-            thmg = categorylist.findThematicgroupByInvolvement('secondaryinvestor')
-            siForm = []
-            for si in secondaryinvestors:
-                f = _getInvolvementData(si, keyNames)
-                if f is not None:
-                    siForm.append(f)
-            if len(siForm) > 0 and thmg is not None:
-                cat[str(thmg.getId())] = {
-                    'secondaryinvestor': siForm
-                }
-
-            cat_id = (categorylist.getInvolvementCategoryIds()[0]
-                if category is None else str(category))
-
-            data[cat_id] = cat
-
-        else:
-            # Stakeholders. There can be multiple Primary Investors and multiple
-            # Secondary Investors.
-
-            # Collect the involvements and if they are primary or secondary
-            # investors
-            primaryinvestors = []
-            secondaryinvestors = []
-            for i in involvements:
-
-                if 'role_id' not in i:
-                    # The role_id should always be there.
-                    continue
-
-                if i['role_id'] == 6:
-                    primaryinvestors.append(i)
-                else:
-                    secondaryinvestors.append(i)
-
-            # The configuration of the other side of the involvement is needed to
-            # know which fields are to be used for the overview display of the
-            # involvement.
-            otherItemType = 'activities'
-            otherCategoryList = getCategoryList(request, otherItemType)
-            keyNames = [k[0] for k in otherCategoryList.getInvolvementOverviewKeyNames()]
-
-            cat = {}
-
-            piForm = []
-            for pi in primaryinvestors:
-                f = _getInvolvementData(pi, keyNames)
-                if f is not None:
-                    piForm.append(f)
-            data['primaryinvestors'] = piForm
-
-            siForm = []
-            for si in secondaryinvestors:
-                f = _getInvolvementData(si, keyNames)
-                if f is not None:
-                    siForm.append(f)
-            data['secondaryinvestors'] = siForm
+                    dataThmg[invConfig.getName()] = [invData]
+            else:
+                dataThmg[invConfig.getName()] = invData
 
     for taggroup in itemJson['taggroups']:
 

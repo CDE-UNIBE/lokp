@@ -193,7 +193,7 @@ class ConfigCategoryList(object):
                     return c
         return None
 
-    def findThematicgroupByInvolvement(self, involvementData):
+    def findThematicgroupByInvolvementName(self, involvementName):
         """
         Find and return the thematic group which contains a given involvement
         data.
@@ -201,9 +201,25 @@ class ConfigCategoryList(object):
         for cat in self.getCategories():
             for thg in cat.getThematicgroups():
                 if (thg.getInvolvement() is not None
-                    and thg.getInvolvement().getName() == involvementData):
+                    and thg.getInvolvement().getName() == involvementName):
                     return thg
         return None
+
+    def getGroupsByRoleId(self, roleId):
+        """
+        Find and return
+        - Category
+        - Thematic Group
+        containing an Involvement based on the Involvement's role.
+        """
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                inv = thg.getInvolvement()
+                if inv is None:
+                    continue
+                if inv.findRoleById(roleId) is not None:
+                    return cat, thg
+        return None, None
 
     def getInvolvementCategoryIds(self):
         """
@@ -557,31 +573,11 @@ class ConfigThematicgroup(object):
         if self.getInvolvement() is not None:
             # If there is some involvement data in this thematic group, get the
             # corresponding involvement widget and add it to the form.
-            inv = self.getInvolvement()
-
-            # Involvements can only be edited from Activity side. For
-            # Stakeholders, the Involvement Widget is added when creating the
-            # readonly form (function renderReadonlyForm in form.py).
-            mappingName = inv.getName()
-            # TODO: name is important, sequence should not be based on name
-            if mappingName == 'primaryinvestor':
-                sequence = False
-                addItemText = '' # Does not matter
-            else:
-                sequence = True
-                # TODO: Translation
-                addItemText = 'Add Secondary Investor'
-
-            shCategoryList = getCategoryList(request, 'stakeholders')
-            overviewKeys = [k[0] for k in shCategoryList.getInvolvementOverviewKeyNames()]
-
             shortForm = getInvolvementWidget(
-                mappingName,
+                request,
+                self.getInvolvement(),
                 'customInvolvementMapping',
-                'readonly/customInvolvementMappingStakeholder',
-                overviewKeys,
-                sequence,
-                addItemText
+                'readonly/customInvolvementMappingStakeholder'
             )
 
             thg_form.add(shortForm)
@@ -1351,15 +1347,23 @@ class ConfigInvolvement(object):
     A class representing an the configuration of an Involvement.
     """
 
-    def __init__(self, name):
+    def __init__(self, name, itemType):
         self.name = name
+        self.itemType = itemType
         self.roles = []
+        self.repeatable = False
 
     def getName(self):
         """
         Returns the name of the Involvement
         """
         return self.name
+
+    def getItemType(self):
+        """
+        Returns the ItemType (activities/stakeholders) of this Involvement
+        """
+        return self.itemType
 
     def addRole(self, role):
         """
@@ -1374,7 +1378,7 @@ class ConfigInvolvement(object):
         Find and return an Involvement Role by its id.
         """
         for r in self.getRoles():
-            if r.getId() == str(id):
+            if str(r.getId()) == str(id):
                 return r
         return None
 
@@ -1383,6 +1387,18 @@ class ConfigInvolvement(object):
         Return all the Involvement Roles
         """
         return self.roles
+
+    def setRepeatable(self, repeatable):
+        """
+        Set the Involvement to repeatable or not
+        """
+        self.repeatable = repeatable is True
+
+    def getRepeatable(self):
+        """
+        Return a boolean if the Involvement is repeatable or not
+        """
+        return self.repeatable is True
 
 def getMapWidget(thematicgroup):
     """
@@ -1418,18 +1434,19 @@ def getMapWidget(thematicgroup):
 
     return mapWidget
 
-def getInvolvementWidget(mappingName, template, readonlyTemplate, overviewKeys,
-    sequence=False, addItemText=''):
+def getInvolvementWidget(request, configInvolvement, template, readonlyTemplate, addItemText=''):
     """
     Return a widget to be used to display the involvements in the form.
     """
+    categoryList = getCategoryList(request, configInvolvement.getItemType())
+    overviewKeys = [k[0] for k in categoryList.getInvolvementOverviewKeyNames()]
     invForm = colander.SchemaNode(
         colander.Mapping(),
         widget=deform.widget.MappingWidget(
             template=template,
             readonly_template=readonlyTemplate
         ),
-        name=mappingName,
+        name=configInvolvement.getName(),
         title=''
     )
 
@@ -1469,7 +1486,7 @@ def getInvolvementWidget(mappingName, template, readonlyTemplate, overviewKeys,
             missing = colander.null
         ))
 
-    if sequence is False:
+    if configInvolvement.getRepeatable() is False:
         # If no sequence is required, return the node as it is
         return invForm
 
@@ -1484,7 +1501,7 @@ def getInvolvementWidget(mappingName, template, readonlyTemplate, overviewKeys,
             ),
             missing=colander.null,
             default=[colander.null],
-            name=mappingName,
+            name=configInvolvement.getName(),
             title=''
         )
 
@@ -1686,8 +1703,10 @@ def getCategoryList(request, itemType, **kwargs):
     # Load the yaml
     if itemType == 'stakeholders':
         filename = NEW_STAKEHOLDER_YAML
+        otherItemType = 'activities'
     else:
         filename = NEW_ACTIVITY_YAML
+        otherItemType = 'stakeholders'
 
     yaml_stream = open(os.path.join(profile_directory_path(request), filename), 'r')
     yaml_config = yaml.load(yaml_stream)
@@ -1738,13 +1757,16 @@ def getCategoryList(request, itemType, **kwargs):
                 if tgroup_id == 'involvement':
                     # Involvement configuration
                     if 'name' in tags:
-                        inv = ConfigInvolvement(tags['name'])
+                        inv = ConfigInvolvement(tags['name'], otherItemType)
                     else:
                         continue
 
                     if 'roles' in tags and len(tags['roles']) > 0:
                         for r in tags['roles']:
                             inv.addRole(configInvolvementRoles.findRoleById(r))
+
+                    if 'repeat' in tags and tags['repeat'] is True:
+                        inv.setRepeatable(True)
 
                     thematicgroup.setInvolvement(inv)
                     continue
