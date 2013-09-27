@@ -233,6 +233,15 @@ class ConfigCategoryList(object):
                     categories.append(str(cat.getId()))
         return categories
 
+    def getInvolvementThematicgroupIds(self):
+
+        thematicgroups = []
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                if thg.getInvolvement() is not None:
+                    thematicgroups.append(str(thg.getId()))
+        return thematicgroups
+
     def getMapCategoryIds(self):
         """
         Find and return the IDs of all categories containing some kind of map.
@@ -401,7 +410,7 @@ class ConfigCategory(object):
         """
         return self.order
 
-    def getForm(self, request):
+    def getForm(self, request, readonly=False):
         """
         Prepare the form node for this category, append the forms of its
         thematic groups and return it.
@@ -415,7 +424,7 @@ class ConfigCategory(object):
         )
         for thg in sorted(self.getThematicgroups(), key=lambda thmg: thmg.getOrder()):
             # Get the Form for each Thematicgroup
-            thg_form = thg.getForm(request)
+            thg_form = thg.getForm(request, readonly)
             thg_form.missing = colander.null
             thg_form.name = str(thg.getId())
             cat_form.add(thg_form)
@@ -529,7 +538,7 @@ class ConfigThematicgroup(object):
         """
         return self.mapData
 
-    def getForm(self, request):
+    def getForm(self, request, readonly=False):
         """
         Prepare the form node for this thematic group, append the forms of its
         taggroups and return it.
@@ -573,9 +582,15 @@ class ConfigThematicgroup(object):
         if self.getInvolvement() is not None:
             # If there is some involvement data in this thematic group, get the
             # corresponding involvement widget and add it to the form.
-            shortForm = getInvolvementWidget(request, self.getInvolvement())
 
-            thg_form.add(shortForm)
+            # (So far,) Involvements can only be added from the Activity side.
+            # Therefore, for Stakeholders (itemType of involvement = activities)
+            # add the Involvements widget only if in readonly mode
+            if (self.getInvolvement().getItemType() != 'activities'
+                or readonly is True):
+                shortForm = getInvolvementWidget(request, self.getInvolvement())
+
+                thg_form.add(shortForm)
 
         return thg_form
 

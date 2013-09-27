@@ -296,95 +296,93 @@ def renderForm(request, itemType, **kwargs):
                 posted_formid = request.POST['__formid__']
 
                 # Activity
-                if (posted_formid == 'activityform'
-                    and 'activities' in session and 'form' in session['activities']):
-                    formdata = copy.copy(session['activities']['form'])
+                if posted_formid not in ['activityform', 'stakeholderform']:
+                    # TODO: Is this the correct way to return an error message?
+                    feedbackMessage = '<h3 class="text-error">%s</h3>: Unknown form' % errorTitle
+                    return {
+                        'form': feedbackMessage,
+                        'css_links': [],
+                        'js_links': [],
+                        'js': None,
+                        'success': False
+                    }
 
-                    log.debug('The complete formdata as in the session: %s' % formdata)
+                if itemType not in session or 'form' not in session[itemType]:
+                    # TODO: Is this the correct way to return an error message?
+                    feedbackMessage = 'Session not active'
+                    return {
+                        'form': feedbackMessage,
+                        'css_links': [],
+                        'js_links': [],
+                        'js': None,
+                        'success': False
+                    }
 
-                    diff = formdataToDiff(request, formdata, itemType)
+                formdata = copy.copy(session[itemType]['form'])
 
-                    log.debug('The diff to create/update the activity: %s' % diff)
+                log.debug('The complete formdata as in the session: %s' % formdata)
 
-                    if diff is None:
-                        return {
-                            'form': '<h3 class="text-info">%s</h3><p>%s</p>' % (emptyTitle, emptyText),
-                            'css_links': [],
-                            'js_links': [],
-                            'js': None,
-                            'success': False
-                        }
+                diff = formdataToDiff(request, formdata, itemType)
 
-                    success, feedback = doActivityUpdate(request, diff)
+                log.debug('The diff to create/update the activity: %s' % diff)
 
-                    if success is True:
-                        feedbackMessage = render(
-                            getTemplatePath(request, 'parts/messages/activity_created_success.mak'),
-                            {'url': request.route_url('activities_read_one', output='html', uid=feedback)},
-                            request
-                        )
+                if diff is None:
+                    # TODO: Is this the correct way to return an error message?
+                    return {
+                        'form': '<h3 class="text-info">%s</h3><p>%s</p>' % (emptyTitle, emptyText),
+                        'css_links': [],
+                        'js_links': [],
+                        'js': None,
+                        'success': False
+                    }
 
-                        # Clear the session
-                        doClearFormSessionData(request, 'activities', 'form')
+                # Create or update the Item
+                success, returnValues = doUpdate(request, itemType, diff)
+
+                if success is True:
+
+                    # Clear the session
+                    doClearFormSessionData(request, itemType, 'form')
+
+                    if (otherItemType in session
+                        and 'camefrom' in session[otherItemType]):
+                        # The form was submitted "indirectly"
+
+                        camefrom = session[otherItemType]['camefrom']
+
+                        # Clear the camefrom flag
+                        doClearFormSessionData(request, otherItemType, 'camefrom')
+
+                        addToSession = addCreatedInvolvementToSession(request, session, otherItemType, camefrom['inv'], returnValues)
+                        if addToSession is True:
+                            # TODO: Translation (template)
+                            msg = 'Success: The item was created and added as involvement.'
+                            session.flash(msg)
+
+                        # Route to the other form again.
+                        if itemType == 'activities':
+                            url = request.route_url('stakeholders_read_many', output='form', _query={'inv': camefrom['inv']})
+                        else:
+                            url = request.route_url('activities_read_many', output='form', _query={'inv': camefrom['inv']})
+
+                        return HTTPFound(url)
 
                     else:
-                        feedbackMessage = '<h3 class="text-error">%s</h3>: %s' % (errorTitle, feedback)
-
-                # Stakeholder
-                elif (posted_formid == 'stakeholderform'
-                    and 'stakeholders' in session and 'form' in session['stakeholders']):
-                    formdata = copy.copy(session['stakeholders']['form'])
-
-                    log.debug('The complete formdata as in the session: %s' % formdata)
-
-                    diff = formdataToDiff(request, formdata, itemType)
-
-                    log.debug('The diff to create/update the stakeholder: %s' % diff)
-
-                    if diff is None:
-                        return {
-                            'form': '<h3 class="text-info">%s</h3><p>%s</p>' % (emptyTitle, emptyText),
-                            'css_links': [],
-                            'js_links': [],
-                            'js': None,
-                            'success': False
-                        }
-
-                    # Create or update the Stakeholder
-                    success, js, identifier = doStakeholderUpdate(request, diff)
-
-                    if success is True:
-
-                        # Clear the session
-                        doClearFormSessionData(request, 'stakeholders', 'form')
-
-                        if otherItemType in session and 'camefrom' in session[otherItemType]:
-                            camefrom = session[otherItemType]['camefrom']
-
-                            doClearFormSessionData(request, otherItemType, 'camefrom')
-
-                            y = addCreatedInvolvementToSession(request, session, otherItemType, camefrom['inv'], js)
-                            if y is True:
-                                msg = 'Success: The item was created and added as involvement.'
-                                session.flash(msg)
-
-                            url = request.route_url('activities_read_many', output='form', _query={'inv': camefrom['inv']})
-                            return HTTPFound(url)
-
-                        else:
-
+                        if itemType == 'activities':
                             feedbackMessage = render(
-                                getTemplatePath(request, 'parts/messages/stakeholder_created_success.mak'),
-                                {'url': request.route_url('stakeholders_read_one', output='html', uid=identifier)},
+                                getTemplatePath(request, 'parts/messages/activity_created_success.mak'),
+                                {'url': request.route_url('activities_read_one', output='html', uid=returnValues['id'])},
                                 request
                             )
-                        feedbackData = js
-
-                    else:
-                        feedbackMessage = '<h3 class="text-error">%s</h3>%s' % (errorTitle, js)
+                        else:
+                            feedbackMessage = render(
+                                getTemplatePath(request, 'parts/messages/stakeholder_created_success.mak'),
+                                {'url': request.route_url('stakeholders_read_one', output='html', uid=returnValues['id'])},
+                                request
+                            )
 
                 else:
-                    feedbackMessage = '<h3 class="text-error">%s</h3>: Unknown form' % errorTitle
+                    feedbackMessage = '<h3 class="text-error">%s</h3>%s' % (errorTitle, returnValues)
 
                 return {
                     'form': feedbackMessage,
@@ -628,9 +626,8 @@ def addCreatedInvolvementToSession(request, session, itemType, invName, created)
         # The involvements are repeatable.
         invAdded = False
         for i, inv in enumerate(sessionInv):
-            # Try to use the first empty entry (no version, id and role)
-            if (inv['version'] != colander.null or inv['id'] != colander.null
-                or inv['role_id'] != colander.null):
+            # Try to use the first empty entry (no version or id)
+            if inv['version'] != colander.null or inv['id'] != colander.null:
                 continue
             sessionInv[i] = newInv
             invAdded = True
@@ -667,7 +664,7 @@ def renderReadonlyForm(request, itemType, itemJson):
         missing = colander.null
     ))
     for cat in configCategoryList.getCategories():
-        schema.add(cat.getForm(request))
+        schema.add(cat.getForm(request, readonly=True))
 
     form = deform.Form(schema)
     data = getFormdataFromItemjson(request, itemJson, itemType, readOnly=True)
@@ -728,66 +725,49 @@ def doClearFormSessionData(request, item, attr):
     if item in request.session and attr in request.session[item]:
         del(request.session[item][attr])
 
-def doActivityUpdate(request, diff):
+def doUpdate(request, itemType, diff):
     """
-    Function to do the update / create of an Activity.
-    Returns a boolean indicating the success of the update and an additional
-    variable, being either the error message (success == False) or the
-    identifier of the newly create Activity (success == True)
+    Function to do the update / create of an Activity or a Stakeholder.
+    Returns
+    - a boolean indicating the success of the update
+    - either a dict with some return values of the newly created item (if
+      success is true) or an error message (if success if false)
     """
-    from lmkp.views.activity_protocol3 import ActivityProtocol3
-    protocol = ActivityProtocol3(Session)
+    if itemType not in ['activities', 'stakeholders']:
+        return False, 'Not a valid Item'
 
-    # Use the protocol to create/update the Activity
+    _ = request.translate
+
+    if itemType == 'activities':
+        from lmkp.views.activity_protocol3 import ActivityProtocol3
+        protocol = ActivityProtocol3(Session)
+    else:
+        from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
+        protocol = StakeholderProtocol3(Session)
+
+    # Use the protocol to create/update the Item
     ids = protocol.create(request, data=diff)
 
     if ids is None or len(ids) != 1:
-        # TODO: Translation
-        return False, 'The Activity could not be created or updated.'
+        return False, _('The Item could not be created or updated.')
 
-    activity = ids[0]
+    item = ids[0]
 
-    return True, activity.identifier
-
-def doStakeholderUpdate(request, diff):
-    """
-    Function to do the update / create of a Stakeholder.
-    Returns a boolean indicating the success of the update and an additional
-    variable (js)
-    If the update was successful, 'success' is True and 'js' contains a JS dict
-    variable (stakeholderdata) which contains some information about the created
-    Stakeholder verison.
-    If the update ws not successful, 'success' is False and 'js' contains an
-    error message.
-    """
-    from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
-    protocol = StakeholderProtocol3(Session)
-
-    # Use the protocol to create/update the Stakeholder
-    ids = protocol.create(request, data=diff)
-
-    if ids is None or len(ids) != 1:
-        # TODO: Translation
-        return False, 'The Stakeholder could not be created or updated.', None
-
-    stakeholder = ids[0]
-
-    # Now we need to re-collect the values for the feedback to the user. This is
-    # especially important if the form is embedded.
+    # Query the Item again to put together the return values. This is needed if
+    # the created Item is to be used directly as an involvement.
 
     # Use the protocol to query the created item
-    shFeature = protocol.read_one_by_version(request,
-        stakeholder.identifier, stakeholder.version)
+    feature = protocol.read_one_by_version(request,
+        item.identifier, item.version)
 
-    if shFeature is None:
-        return False, 'The Stakeholder was created but not found.', None
+    if feature is None:
+        return False, _('The Item was created but not found.'), None
 
-    # TODO: Translation
-    unknownString = 'Unknown'
+    unknownString = _('Unknown')
 
-    # We need to know which fields of the stakeholder are used to populate the
-    # display fields in the involvement overview.
-    categorylist = getCategoryList(request, 'stakeholders')
+    # We need to know which fields of the Item are used to populate the display
+    # fields in the involvement overview.
+    categorylist = getCategoryList(request, itemType)
 
     # Set all values to 'unknown' first
     keyValues = []
@@ -796,7 +776,7 @@ def doStakeholderUpdate(request, diff):
         keyValues.append([k, unknownString])
 
     # Update the value if available
-    for tg in shFeature.get_taggroups():
+    for tg in feature.get_taggroups():
         for k in keyValues:
             if tg.get_tag_by_key(k[0]) is not None:
                 k[1] = tg.get_tag_by_key(k[0]).get_value()
@@ -805,10 +785,11 @@ def doStakeholderUpdate(request, diff):
     for k in keyValues:
         returnDict[k[0]] = k[1]
 
-    returnDict['version'] = stakeholder.version
-    returnDict['id'] = str(stakeholder.identifier)
+    # Add the version and the id to the dict as well
+    returnDict['version'] = item.version
+    returnDict['id'] = str(item.identifier)
 
-    return True, returnDict, stakeholder.identifier
+    return True, returnDict
 
 def addHiddenFields(schema, itemType, embedded=False):
     """
@@ -1389,94 +1370,6 @@ def formdataToDiff(request, newform, itemType):
     # Loop the categories of the form
     for (cat, thmgrps) in newform.iteritems():
 
-        if cat in categorylist.getInvolvementCategoryIds():
-
-            # The form division between primaryinvestor and secondaryinvestor
-            # is ignored if there already is a role_id available (because for
-            # example if there are multiple primary investors they are also
-            # shown as secondary investors).
-            # In a first step, collect all the involvements there are in the new
-            # form and the involvements that were in the oldform. Use them only
-            # if they have an id, a version and a role_id.
-            newInvolvements = []
-            oldInvolvements = []
-
-            for (thmgrp, involvements) in thmgrps.iteritems():
-                if 'primaryinvestor' in involvements:
-                    i = involvements['primaryinvestor']
-                    if ('id' in i and i['id'] != colander.null
-                        and 'version' in i and i['version'] != colander.null
-                        and 'role_id' in i):
-                        if i['role_id'] == colander.null:
-                            i['role_id'] = 6
-                        newInvolvements.append(i)
-
-                elif 'secondaryinvestor' in involvements:
-                    for i in involvements['secondaryinvestor']:
-                        if ('id' in i and i['id'] != colander.null
-                            and 'version' in i and i['version'] != colander.null
-                            and 'role_id' in i):
-                            if i['role_id'] == colander.null:
-                                i['role_id'] = 7
-                            newInvolvements.append(i)
-
-            for (oldCat, oldThmgrps) in oldform.iteritems():
-                if oldCat == 'involvements' or oldCat in categorylist.getInvolvementCategoryIds():
-                    for (thmgrp, involvements) in oldThmgrps.iteritems():
-                        if 'primaryinvestor' in involvements:
-                            i = involvements['primaryinvestor']
-                            if ('id' in i and i['id'] != colander.null
-                                and 'version' in i
-                                and i['version'] != colander.null
-                                and 'role_id' in i):
-                                if i['role_id'] == colander.null:
-                                    i['role_id'] = 6
-                                oldInvolvements.append(i)
-                        elif 'secondaryinvestor' in involvements:
-                            for i in involvements['secondaryinvestor']:
-                                if ('id' in i and i['id'] != colander.null
-                                    and 'version' in i
-                                    and i['version'] != colander.null
-                                    and 'role_id' in i):
-                                    if i['role_id'] == colander.null:
-                                        i['role_id'] = 7
-                                    oldInvolvements.append(i)
-
-            # Loop the new involvements and try to find them in the old
-            # involvements (based on their identifier, version and role_id). If
-            # they are found, remove them from the list of old involvements. If
-            # they are not found, mark them as newly added.
-            for ni in newInvolvements:
-                found = False
-
-                for oi in oldInvolvements:
-
-                    if (ni['id'] == oi['id'] and ni['version'] == oi['version']
-                        and ni['role_id'] == oi['role_id']):
-                        found = True
-                        oldInvolvements.remove(oi)
-                        break
-
-                if found is False:
-                    # Involvement is new
-                    involvementdiffs.append({
-                        'id': ni['id'],
-                        'version': ni['version'],
-                        'role': ni['role_id'],
-                        'op': 'add'
-                    })
-
-            # Loop the remaining old involvements and mark them as deleted.
-            for oi in oldInvolvements:
-                involvementdiffs.append({
-                    'id': oi['id'],
-                    'version': oi['version'],
-                    'role': oi['role_id'],
-                    'op': 'delete'
-                })
-
-            continue
-
         try:
             thmgrpsitems = thmgrps.iteritems()
         except AttributeError:
@@ -1484,6 +1377,95 @@ def formdataToDiff(request, newform, itemType):
 
         # Loop the thematic groups of the category
         for (thmgrp, tgroups) in thmgrpsitems:
+
+            if thmgrp in categorylist.getInvolvementThematicgroupIds():
+
+                # The form division between primaryinvestor and secondaryinvestor
+                # is ignored if there already is a role_id available (because for
+                # example if there are multiple primary investors they are also
+                # shown as secondary investors).
+                # In a first step, collect all the involvements there are in the new
+                # form and the involvements that were in the oldform. Use them only
+                # if they have an id, a version and a role_id.
+                newInvolvements = []
+                oldInvolvements = []
+
+                for (tgrp, involvements) in tgroups.iteritems():
+                    if 'primaryinvestor' in involvements:
+                        i = involvements['primaryinvestor']
+                        if ('id' in i and i['id'] != colander.null
+                            and 'version' in i and i['version'] != colander.null
+                            and 'role_id' in i):
+                            if i['role_id'] == colander.null:
+                                i['role_id'] = 6
+                            newInvolvements.append(i)
+
+                    elif 'secondaryinvestor' in involvements:
+                        for i in involvements['secondaryinvestor']:
+                            if ('id' in i and i['id'] != colander.null
+                                and 'version' in i and i['version'] != colander.null
+                                and 'role_id' in i):
+                                if i['role_id'] == colander.null:
+                                    i['role_id'] = 7
+                                newInvolvements.append(i)
+
+                for (oldCat, oldThmgrps) in oldform.iteritems():
+                    if oldCat == 'involvements' or oldCat in categorylist.getInvolvementCategoryIds():
+                        for (tgrp, involvements) in oldThmgrps.iteritems():
+                            if 'primaryinvestor' in involvements:
+                                i = involvements['primaryinvestor']
+                                if ('id' in i and i['id'] != colander.null
+                                    and 'version' in i
+                                    and i['version'] != colander.null
+                                    and 'role_id' in i):
+                                    if i['role_id'] == colander.null:
+                                        i['role_id'] = 6
+                                    oldInvolvements.append(i)
+                            elif 'secondaryinvestor' in involvements:
+                                for i in involvements['secondaryinvestor']:
+                                    if ('id' in i and i['id'] != colander.null
+                                        and 'version' in i
+                                        and i['version'] != colander.null
+                                        and 'role_id' in i):
+                                        if i['role_id'] == colander.null:
+                                            i['role_id'] = 7
+                                        oldInvolvements.append(i)
+
+                # Loop the new involvements and try to find them in the old
+                # involvements (based on their identifier, version and role_id). If
+                # they are found, remove them from the list of old involvements. If
+                # they are not found, mark them as newly added.
+                for ni in newInvolvements:
+                    found = False
+
+                    for oi in oldInvolvements:
+
+                        if (ni['id'] == oi['id'] and ni['version'] == oi['version']
+                            and ni['role_id'] == oi['role_id']):
+                            found = True
+                            oldInvolvements.remove(oi)
+                            break
+
+                    if found is False:
+                        # Involvement is new
+                        involvementdiffs.append({
+                            'id': ni['id'],
+                            'version': ni['version'],
+                            'role': ni['role_id'],
+                            'op': 'add'
+                        })
+
+                # Loop the remaining old involvements and mark them as deleted.
+                for oi in oldInvolvements:
+                    involvementdiffs.append({
+                        'id': oi['id'],
+                        'version': oi['version'],
+                        'role': oi['role_id'],
+                        'op': 'delete'
+                    })
+
+                continue
+
             # Loop the tags of each taggroup
             for (tgroup, tags) in tgroups.iteritems():
 
