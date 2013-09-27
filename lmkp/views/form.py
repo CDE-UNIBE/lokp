@@ -1051,6 +1051,13 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             invConfig = invThmg.getInvolvement()
             invData = _getInvolvementData(inv, invOverviewKeys)
 
+            if readOnly and 'role_id' in invData:
+                # For readonly forms, we need to populate the role_name with the
+                # name of the Stakeholder_Role
+                invRole = invConfig.findRoleById(invData['role_id'])
+                if invRole is not None:
+                    invData['role_name'] = invRole.getName()
+
             if str(invCat.getId()) not in data:
                 data[str(invCat.getId())] = {}
             dataCat = data[str(invCat.getId())]

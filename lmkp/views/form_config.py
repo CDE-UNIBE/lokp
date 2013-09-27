@@ -573,12 +573,7 @@ class ConfigThematicgroup(object):
         if self.getInvolvement() is not None:
             # If there is some involvement data in this thematic group, get the
             # corresponding involvement widget and add it to the form.
-            shortForm = getInvolvementWidget(
-                request,
-                self.getInvolvement(),
-                'customInvolvementMapping',
-                'readonly/customInvolvementMappingStakeholder'
-            )
+            shortForm = getInvolvementWidget(request, self.getInvolvement())
 
             thg_form.add(shortForm)
 
@@ -1434,12 +1429,21 @@ def getMapWidget(thematicgroup):
 
     return mapWidget
 
-def getInvolvementWidget(request, configInvolvement, template, readonlyTemplate, addItemText=''):
+def getInvolvementWidget(request, configInvolvement):
     """
     Return a widget to be used to display the involvements in the form.
     """
+    _ = request.translate
+
     categoryList = getCategoryList(request, configInvolvement.getItemType())
     overviewKeys = [k[0] for k in categoryList.getInvolvementOverviewKeyNames()]
+
+    template = 'customInvolvementMapping'
+    if configInvolvement.getItemType() == 'stakeholders':
+        readonlyTemplate = 'readonly/customInvolvementMappingStakeholder'
+    else:
+        readonlyTemplate = 'readonly/customInvolvementMappingActivity'
+
     invForm = colander.SchemaNode(
         colander.Mapping(),
         widget=deform.widget.MappingWidget(
@@ -1455,6 +1459,13 @@ def getInvolvementWidget(request, configInvolvement, template, readonlyTemplate,
     invForm.add(colander.SchemaNode(
         colander.String(),
         widget=deform.widget.TextInputWidget(template='hidden'),
+        name='role_name',
+        title='',
+        missing = colander.null
+    ))
+    invForm.add(colander.SchemaNode(
+        colander.String(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
         name='id',
         title='',
         missing = colander.null
@@ -1463,13 +1474,6 @@ def getInvolvementWidget(request, configInvolvement, template, readonlyTemplate,
         colander.Int(),
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='version',
-        title='',
-        missing = colander.null
-    ))
-    invForm.add(colander.SchemaNode(
-        colander.Int(),
-        widget=deform.widget.TextInputWidget(template='hidden'),
-        name='role_id',
         title='',
         missing = colander.null
     ))
@@ -1486,6 +1490,21 @@ def getInvolvementWidget(request, configInvolvement, template, readonlyTemplate,
             missing = colander.null
         ))
 
+    choicesList = []
+    for v in configInvolvement.getRoles():
+        choicesList.append((v.getId(), v.getName()))
+    choices = tuple(choicesList)
+    invForm.add(colander.SchemaNode(
+        colander.String(),
+        missing=colander.null,
+        validator=colander.OneOf([str(c[0]) for c in choices]),
+        widget=CustomSelectWidget(
+            values=choices
+        ),
+        name='role_id',
+        title=_('Stakeholder Role')
+    ))
+
     if configInvolvement.getRepeatable() is False:
         # If no sequence is required, return the node as it is
         return invForm
@@ -1497,7 +1516,7 @@ def getInvolvementWidget(request, configInvolvement, template, readonlyTemplate,
             invForm,
             widget=deform.widget.SequenceWidget(
                 min_len = 1,
-                add_subitem_text_template = addItemText,
+                add_subitem_text_template = '',
             ),
             missing=colander.null,
             default=[colander.null],
