@@ -117,18 +117,21 @@ class ConfigCategoryList(object):
                         keys.append(t.getKey().getName())
         return keys
 
-    def getDesiredKeyNames(self):
+    def getDesiredKeyNames(self, translated=False):
         """
-        Return a list with the names (translated) of all main keys in all
-        categories.
+        Return a list with the names (translated or not) of all desired and
+        mandatory (!) keys in all categories.
         """
         desiredkeys = []
         for cat in self.getCategories():
             for thg in cat.getThematicgroups():
                 for tg in thg.getTaggroups():
                     for t in tg.getTags():
-                        if t.getDesired() is True:
-                            desiredkeys.append(t.getKey().getTranslatedName())
+                        if t.getDesired() is True or t.getMandatory() is True:
+                            if translated is True:
+                                desiredkeys.append(t.getKey().getTranslatedName())
+                            else:
+                                desiredkeys.append(t.getKey().getName())
         return desiredkeys
 
     def getFilterableKeys(self):

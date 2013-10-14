@@ -349,7 +349,7 @@ def renderForm(request, itemType, **kwargs):
                         # The form was submitted "indirectly"
 
                         camefrom = session[otherItemType]['camefrom']
-
+                        
                         # Clear the camefrom flag
                         doClearFormSessionData(request, otherItemType, 'camefrom')
 
@@ -1218,6 +1218,17 @@ def formdataToDiff(request, newform, itemType):
     - itemType: activities / stakeholders
     """
 
+    def _addInvolvementDictToList(invList, invDict):
+        """
+        Append an involvement in dict-form to a list of involvements.
+        Add it only if it does not contain null values.
+        """
+        if ('id' in invDict and invDict['id'] != colander.null
+            and 'version' in invDict and invDict['version'] != colander.null
+            and 'role_id' in invDict and invDict['role_id'] != colander.null):
+            invList.append(invDict)
+        return invList
+
     def _findRemoveTgByCategoryThematicgroupTgid(form, category, thematicgroup,
         tg_id, checkbox=False):
         """
@@ -1380,10 +1391,6 @@ def formdataToDiff(request, newform, itemType):
 
             if thmgrp in categorylist.getInvolvementThematicgroupIds():
 
-                # The form division between primaryinvestor and secondaryinvestor
-                # is ignored if there already is a role_id available (because for
-                # example if there are multiple primary investors they are also
-                # shown as secondary investors).
                 # In a first step, collect all the involvements there are in the new
                 # form and the involvements that were in the oldform. Use them only
                 # if they have an id, a version and a role_id.
@@ -1391,45 +1398,26 @@ def formdataToDiff(request, newform, itemType):
                 oldInvolvements = []
 
                 for (tgrp, involvements) in tgroups.iteritems():
-                    if 'primaryinvestor' in involvements:
-                        i = involvements['primaryinvestor']
-                        if ('id' in i and i['id'] != colander.null
-                            and 'version' in i and i['version'] != colander.null
-                            and 'role_id' in i):
-                            if i['role_id'] == colander.null:
-                                i['role_id'] = 6
-                            newInvolvements.append(i)
 
-                    elif 'secondaryinvestor' in involvements:
-                        for i in involvements['secondaryinvestor']:
-                            if ('id' in i and i['id'] != colander.null
-                                and 'version' in i and i['version'] != colander.null
-                                and 'role_id' in i):
-                                if i['role_id'] == colander.null:
-                                    i['role_id'] = 7
-                                newInvolvements.append(i)
+                    if isinstance(involvements, dict):
+                        newInvolvements = _addInvolvementDictToList(newInvolvements, involvements)
 
-                for (oldCat, oldThmgrps) in oldform.iteritems():
-                    if oldCat == 'involvements' or oldCat in categorylist.getInvolvementCategoryIds():
-                        for (tgrp, involvements) in oldThmgrps.iteritems():
-                            if 'primaryinvestor' in involvements:
-                                i = involvements['primaryinvestor']
-                                if ('id' in i and i['id'] != colander.null
-                                    and 'version' in i
-                                    and i['version'] != colander.null
-                                    and 'role_id' in i):
-                                    if i['role_id'] == colander.null:
-                                        i['role_id'] = 6
-                                    oldInvolvements.append(i)
-                            elif 'secondaryinvestor' in involvements:
-                                for i in involvements['secondaryinvestor']:
-                                    if ('id' in i and i['id'] != colander.null
-                                        and 'version' in i
-                                        and i['version'] != colander.null
-                                        and 'role_id' in i):
-                                        if i['role_id'] == colander.null:
-                                            i['role_id'] = 7
-                                        oldInvolvements.append(i)
+                    elif isinstance(involvements, list):
+                        for i in involvements:
+                            newInvolvements = _addInvolvementDictToList(newInvolvements, i)
+
+                # Collect the old involvement data from the original form with
+                # the same category and thematic group.
+                if (str(cat) in oldform and str(thmgrp) in oldform[str(cat)]):
+                    oldInvgrp = oldform[str(cat)][str(thmgrp)]
+
+                    for (invName, invData) in oldInvgrp.iteritems():
+                        if isinstance(invData, dict):
+                            oldInvolvements = _addInvolvementDictToList(oldInvolvements, invData)
+
+                        elif isinstance(invData, list):
+                            for i in invData:
+                                oldInvolvements = _addInvolvementDictToList(oldInvolvements, i)
 
                 # Loop the new involvements and try to find them in the old
                 # involvements (based on their identifier, version and role_id). If
