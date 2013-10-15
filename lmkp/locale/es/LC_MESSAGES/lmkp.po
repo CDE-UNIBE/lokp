@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-09-19 15:17+0200\n"
+"POT-Creation-Date: 2013-10-15 15:31+0200\n"
 "PO-Revision-Date: 2013-09-19 10:30+0100\n"
 "Last-Translator: Lukas Vonlanthen <lukas.vonlanthen@cde.unibe.ch>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -34,9 +34,7 @@ msgstr "[Demo]"
 #: lmkp/templates/ext_moderation.mak:41 lmkp/templates/ext_translation.mak:37
 #: lmkp/templates/old_compare_versions.mak:48
 #: lmkp/templates/old_embedded.mak:35 lmkp/templates/old_review_versions.mak:33
-#: lmkp/templates/form/customFileDisplay.mak:42
-#: lmkp/templates/form/customInvolvementMapping.mak:51
-#: lmkp/views/translation.py:162
+#: lmkp/templates/form/customFileDisplay.mak:42 lmkp/views/translation.py:162
 msgid "Loading ..."
 msgstr "Cargando ..."
 
@@ -181,15 +179,6 @@ msgstr "No"
 msgid "No file uploaded yet"
 msgstr "Ningún archivo ha sido cargado aún"
 
-#: lmkp/templates/form/customInvolvementMapping.mak:26
-#: lmkp/views/translation.py:237
-msgid "Select Stakeholder"
-msgstr "Seleccionar Inversor"
-
-#: lmkp/templates/form/customInvolvementMapping.mak:38
-msgid "Remove Stakeholder"
-msgstr "Remover este Inversor"
-
 #: lmkp/templates/form/customMapMapping.mak:42
 msgid "Set the location."
 msgstr ""
@@ -263,7 +252,7 @@ msgstr "Subir"
 msgid "Success"
 msgstr "Correcto"
 
-#: lmkp/templates/form/form_fileupload_embedded.mak:105 lmkp/views/form.py:48
+#: lmkp/templates/form/form_fileupload_embedded.mak:105 lmkp/views/form.py:73
 msgid "Error"
 msgstr "Error"
 
@@ -292,25 +281,14 @@ msgid "Download this file"
 msgstr "Descargar este archivo"
 
 #: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:5
-#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:11
 msgid "Involvement as"
 msgstr "Participar como"
 
-#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:5
-#: lmkp/templates/form/readonly/customInvolvementMappingStakeholder.mak:5
-msgid "Primary Investor"
-msgstr "Inversor Primario"
-
-#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:11
-#: lmkp/templates/form/readonly/customInvolvementMappingStakeholder.mak:11
-msgid "Secondary Investor"
-msgstr "Inversor(es) Secundario(s)"
-
-#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:20
+#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:14
 msgid "View Deal"
 msgstr "Ver Caso"
 
-#: lmkp/templates/form/readonly/customInvolvementMappingStakeholder.mak:20
+#: lmkp/templates/form/readonly/customInvolvementMappingStakeholder.mak:14
 msgid "View Stakeholder"
 msgstr "Ver Inversor"
 
@@ -322,23 +300,23 @@ msgstr "Número total de"
 msgid "per page"
 msgstr "Por página"
 
-#: lmkp/views/activities.py:444 lmkp/views/stakeholders.py:459
+#: lmkp/views/activities.py:449 lmkp/views/stakeholders.py:467
 msgid "User is not logged in."
 msgstr "El usuario no está conectado"
 
-#: lmkp/views/activities.py:447 lmkp/views/stakeholders.py:462
+#: lmkp/views/activities.py:452 lmkp/views/stakeholders.py:470
 msgid "User has no permissions to add a review."
 msgstr "El usuario no tiene permisos para añadir una revisión"
 
-#: lmkp/views/activities.py:454
+#: lmkp/views/activities.py:459
 msgid "User has no profile attached"
 msgstr "El usuario no tiene un perfil registrado"
 
-#: lmkp/views/activities.py:461
+#: lmkp/views/activities.py:466
 msgid "The Activity was not found or is not situated within the user's profiles"
 msgstr "El caso no se encuentra o no se ubica dentro del perfil del usuario"
 
-#: lmkp/views/activities.py:485 lmkp/views/stakeholders.py:496
+#: lmkp/views/activities.py:490 lmkp/views/stakeholders.py:504
 msgid "Not all mandatory keys are provided"
 msgstr "No se proporcionaron todos los elementos obligatorios"
 
@@ -390,25 +368,45 @@ msgstr "Perfil muy amplio"
 msgid "File was successfully uploaded"
 msgstr "Perfil fue cargado exitosamente"
 
-#: lmkp/views/form.py:46
+#: lmkp/views/form.py:71
 msgid "Empty Form"
 msgstr "Formulario vacío"
 
-#: lmkp/views/form.py:47
+#: lmkp/views/form.py:72
 msgid "You submitted an empty form or did not make any changes."
 msgstr "Ingresaste un formulario vacío o no hiciste cambio alguno"
 
-#: lmkp/views/form.py:402
-msgid "Unknown Activity"
+#: lmkp/views/form.py:508
+#, fuzzy
+#| msgid "Unknown"
+msgid "Unknown Item"
+msgstr "Desconocido"
+
+#: lmkp/views/form.py:752
+msgid "The Item could not be created or updated."
 msgstr ""
 
-#: lmkp/views/form.py:740 lmkp/views/translation.py:114
+#: lmkp/views/form.py:764
+msgid "The Item was created but not found."
+msgstr ""
+
+#: lmkp/views/form.py:766 lmkp/views/translation.py:175
+msgid "Unknown"
+msgstr "Desconocido"
+
+#: lmkp/views/form.py:879 lmkp/views/translation.py:114
 msgid "Submit"
 msgstr "Entregar información"
 
-#: lmkp/views/form_config.py:875
+#: lmkp/views/form_config.py:899
 msgid "Select"
 msgstr "Seleccionar"
+
+#: lmkp/views/form_config.py:1526
+#, fuzzy
+#| msgid "Stakeholders"
+msgid "Stakeholder Role"
+msgstr "Inversores"
 
 #: lmkp/views/login.py:57
 msgid "Login failed! Please try again."
@@ -482,7 +480,7 @@ msgstr "El archivo parece ser incorrecto (identificador no encontrado)"
 msgid "Review successful."
 msgstr "Revisión correcta"
 
-#: lmkp/views/stakeholders.py:472
+#: lmkp/views/stakeholders.py:480
 msgid "The Activity was not found"
 msgstr ""
 
@@ -826,10 +824,6 @@ msgstr "Etiquetas (Tags)"
 msgid "Timestamp"
 msgstr "Fecha"
 
-#: lmkp/views/translation.py:175
-msgid "Unknown"
-msgstr "Desconocido"
-
 #: lmkp/views/translation.py:176
 msgid "User"
 msgstr "Usuario"
@@ -1016,6 +1010,10 @@ msgstr "Revisar versiones de Inversores {0}"
 msgid "Search Stakeholder"
 msgstr "Buscar Inversor"
 
+#: lmkp/views/translation.py:237
+msgid "Select Stakeholder"
+msgstr "Seleccionar Inversor"
+
 #: lmkp/views/translation.py:238
 msgid "Stakeholders"
 msgstr "Inversores"
@@ -1191,4 +1189,16 @@ msgstr "Iniciar sesión"
 #: lmkp/views/viewers.py:29
 msgid "Register"
 msgstr "Registro"
+
+#~ msgid "Remove Stakeholder"
+#~ msgstr "Remover este Inversor"
+
+#~ msgid "Primary Investor"
+#~ msgstr "Inversor Primario"
+
+#~ msgid "Secondary Investor"
+#~ msgstr "Inversor(es) Secundario(s)"
+
+#~ msgid "Unknown Activity"
+#~ msgstr ""
 
