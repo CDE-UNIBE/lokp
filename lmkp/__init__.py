@@ -289,7 +289,7 @@ def main(global_config, ** settings):
     config.add_route('user_account', '/users/account')
     config.add_route('user_approve', '/users/approve')
 
-    config.add_route('form_clear_session', '/form/clearsession')
+    config.add_route('form_clear_session', '/form/clearsession/{item}/{attr}')
 
     # A WMS proxy
     config.add_route('wms_proxy', '/geoserver/lo/wms', request_method='GET')

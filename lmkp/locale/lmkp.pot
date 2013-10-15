@@ -8,7 +8,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LMKP 0.72\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+<<<<<<< HEAD
 "POT-Creation-Date: 2013-09-27 08:43+0200\n"
+=======
+"POT-Creation-Date: 2013-10-15 15:31+0200\n"
+>>>>>>> feature/shform
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,9 +42,7 @@ msgstr ""
 #: lmkp/templates/ext_moderation.mak:41 lmkp/templates/ext_translation.mak:37
 #: lmkp/templates/old_compare_versions.mak:48 lmkp/templates/old_embedded.mak:35
 #: lmkp/templates/old_review_versions.mak:33
-#: lmkp/templates/form/customFileDisplay.mak:42
-#: lmkp/templates/form/customInvolvementMapping.mak:51
-#: lmkp/views/translation.py:162
+#: lmkp/templates/form/customFileDisplay.mak:42 lmkp/views/translation.py:162
 msgid "Loading ..."
 msgstr ""
 
@@ -169,15 +171,6 @@ msgstr ""
 msgid "No file uploaded yet"
 msgstr ""
 
-#: lmkp/templates/form/customInvolvementMapping.mak:26
-#: lmkp/views/translation.py:237
-msgid "Select Stakeholder"
-msgstr ""
-
-#: lmkp/templates/form/customInvolvementMapping.mak:38
-msgid "Remove Stakeholder"
-msgstr ""
-
 #: lmkp/templates/form/customMapMapping.mak:42
 msgid "Set the location."
 msgstr ""
@@ -246,7 +239,7 @@ msgstr ""
 msgid "Success"
 msgstr ""
 
-#: lmkp/templates/form/form_fileupload_embedded.mak:105 lmkp/views/form.py:48
+#: lmkp/templates/form/form_fileupload_embedded.mak:105 lmkp/views/form.py:73
 msgid "Error"
 msgstr ""
 
@@ -271,25 +264,14 @@ msgid "Download this file"
 msgstr ""
 
 #: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:5
-#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:11
 msgid "Involvement as"
 msgstr ""
 
-#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:5
-#: lmkp/templates/form/readonly/customInvolvementMappingStakeholder.mak:5
-msgid "Primary Investor"
-msgstr ""
-
-#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:11
-#: lmkp/templates/form/readonly/customInvolvementMappingStakeholder.mak:11
-msgid "Secondary Investor"
-msgstr ""
-
-#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:20
+#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:14
 msgid "View Deal"
 msgstr ""
 
-#: lmkp/templates/form/readonly/customInvolvementMappingStakeholder.mak:20
+#: lmkp/templates/form/readonly/customInvolvementMappingStakeholder.mak:14
 msgid "View Stakeholder"
 msgstr ""
 
@@ -301,23 +283,23 @@ msgstr ""
 msgid "per page"
 msgstr ""
 
-#: lmkp/views/activities.py:444 lmkp/views/stakeholders.py:459
+#: lmkp/views/activities.py:449 lmkp/views/stakeholders.py:467
 msgid "User is not logged in."
 msgstr ""
 
-#: lmkp/views/activities.py:447 lmkp/views/stakeholders.py:462
+#: lmkp/views/activities.py:452 lmkp/views/stakeholders.py:470
 msgid "User has no permissions to add a review."
 msgstr ""
 
-#: lmkp/views/activities.py:454
+#: lmkp/views/activities.py:459
 msgid "User has no profile attached"
 msgstr ""
 
-#: lmkp/views/activities.py:461
+#: lmkp/views/activities.py:466
 msgid "The Activity was not found or is not situated within the user's profiles"
 msgstr ""
 
-#: lmkp/views/activities.py:485 lmkp/views/stakeholders.py:496
+#: lmkp/views/activities.py:490 lmkp/views/stakeholders.py:504
 msgid "Not all mandatory keys are provided"
 msgstr ""
 
@@ -369,24 +351,40 @@ msgstr ""
 msgid "File was successfully uploaded"
 msgstr ""
 
-#: lmkp/views/form.py:46
+#: lmkp/views/form.py:71
 msgid "Empty Form"
 msgstr ""
 
-#: lmkp/views/form.py:47
+#: lmkp/views/form.py:72
 msgid "You submitted an empty form or did not make any changes."
 msgstr ""
 
-#: lmkp/views/form.py:402
-msgid "Unknown Activity"
+#: lmkp/views/form.py:508
+msgid "Unknown Item"
 msgstr ""
 
-#: lmkp/views/form.py:740 lmkp/views/translation.py:114
+#: lmkp/views/form.py:752
+msgid "The Item could not be created or updated."
+msgstr ""
+
+#: lmkp/views/form.py:764
+msgid "The Item was created but not found."
+msgstr ""
+
+#: lmkp/views/form.py:766 lmkp/views/translation.py:175
+msgid "Unknown"
+msgstr ""
+
+#: lmkp/views/form.py:879 lmkp/views/translation.py:114
 msgid "Submit"
 msgstr ""
 
-#: lmkp/views/form_config.py:875
+#: lmkp/views/form_config.py:899
 msgid "Select"
+msgstr ""
+
+#: lmkp/views/form_config.py:1526
+msgid "Stakeholder Role"
 msgstr ""
 
 #: lmkp/views/login.py:57
@@ -453,7 +451,7 @@ msgstr ""
 msgid "Review successful."
 msgstr ""
 
-#: lmkp/views/stakeholders.py:472
+#: lmkp/views/stakeholders.py:480
 msgid "The Activity was not found"
 msgstr ""
 
@@ -789,10 +787,6 @@ msgstr ""
 msgid "Timestamp"
 msgstr ""
 
-#: lmkp/views/translation.py:175
-msgid "Unknown"
-msgstr ""
-
 #: lmkp/views/translation.py:176
 msgid "User"
 msgstr ""
@@ -966,6 +960,10 @@ msgstr ""
 
 #: lmkp/views/translation.py:236
 msgid "Search Stakeholder"
+msgstr ""
+
+#: lmkp/views/translation.py:237
+msgid "Select Stakeholder"
 msgstr ""
 
 #: lmkp/views/translation.py:238

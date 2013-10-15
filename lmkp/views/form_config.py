@@ -117,18 +117,21 @@ class ConfigCategoryList(object):
                         keys.append(t.getKey().getName())
         return keys
 
-    def getDesiredKeyNames(self):
+    def getDesiredKeyNames(self, translated=False):
         """
-        Return a list with the names (translated) of all main keys in all
-        categories.
+        Return a list with the names (translated or not) of all desired and
+        mandatory (!) keys in all categories.
         """
         desiredkeys = []
         for cat in self.getCategories():
             for thg in cat.getThematicgroups():
                 for tg in thg.getTaggroups():
                     for t in tg.getTags():
-                        if t.getDesired() is True:
-                            desiredkeys.append(t.getKey().getTranslatedName())
+                        if t.getDesired() is True or t.getMandatory() is True:
+                            if translated is True:
+                                desiredkeys.append(t.getKey().getTranslatedName())
+                            else:
+                                desiredkeys.append(t.getKey().getName())
         return desiredkeys
 
     def getFilterableKeys(self):
@@ -181,17 +184,45 @@ class ConfigCategoryList(object):
                         return c.getId(), thg.getId(), tg
         return None, None, None
 
-    def findThematicgroupByInvolvement(self, involvementData):
+    def findCategoryByInvolvementName(self, involvementName):
+        """
+        Find and return the category which contains an involvement with the
+        given name
+        """
+        for c in self.getCategories():
+            for thg in c.getThematicgroups():
+                if (thg.getInvolvement() is not None
+                    and thg.getInvolvement().getName() == involvementName):
+                    return c
+        return None
+
+    def findThematicgroupByInvolvementName(self, involvementName):
         """
         Find and return the thematic group which contains a given involvement
         data.
         """
-        thematicgroup = None
         for cat in self.getCategories():
             for thg in cat.getThematicgroups():
-                if thg.getInvolvementData() == involvementData:
-                    thematicgroup = thg
-        return thematicgroup
+                if (thg.getInvolvement() is not None
+                    and thg.getInvolvement().getName() == involvementName):
+                    return thg
+        return None
+
+    def getGroupsByRoleId(self, roleId):
+        """
+        Find and return
+        - Category
+        - Thematic Group
+        containing an Involvement based on the Involvement's role.
+        """
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                inv = thg.getInvolvement()
+                if inv is None:
+                    continue
+                if inv.findRoleById(roleId) is not None:
+                    return cat, thg
+        return None, None
 
     def getInvolvementCategoryIds(self):
         """
@@ -201,9 +232,18 @@ class ConfigCategoryList(object):
         categories = []
         for cat in self.getCategories():
             for thg in cat.getThematicgroups():
-                if thg.getInvolvementData() is not None:
+                if thg.getInvolvement() is not None:
                     categories.append(str(cat.getId()))
         return categories
+
+    def getInvolvementThematicgroupIds(self):
+
+        thematicgroups = []
+        for cat in self.getCategories():
+            for thg in cat.getThematicgroups():
+                if thg.getInvolvement() is not None:
+                    thematicgroups.append(str(thg.getId()))
+        return thematicgroups
 
     def getMapCategoryIds(self):
         """
@@ -373,7 +413,7 @@ class ConfigCategory(object):
         """
         return self.order
 
-    def getForm(self, request):
+    def getForm(self, request, readonly=False):
         """
         Prepare the form node for this category, append the forms of its
         thematic groups and return it.
@@ -387,7 +427,7 @@ class ConfigCategory(object):
         )
         for thg in sorted(self.getThematicgroups(), key=lambda thmg: thmg.getOrder()):
             # Get the Form for each Thematicgroup
-            thg_form = thg.getForm(request)
+            thg_form = thg.getForm(request, readonly)
             thg_form.missing = colander.null
             thg_form.name = str(thg.getId())
             cat_form.add(thg_form)
@@ -407,7 +447,7 @@ class ConfigThematicgroup(object):
         self.translation = translation
         self.order = 9999
         self.taggroups = []
-        self.involvementData = None
+        self.involvement = None
         self.mapData = None
 
     def getId(self):
@@ -476,17 +516,18 @@ class ConfigThematicgroup(object):
         """
         return self.order
 
-    def setInvolvementData(self, involvementData):
+    def setInvolvement(self, involvement):
         """
-        Set the involvement data of this thematic group.
+        Set the involvement of this thematic group.
         """
-        self.involvementData = involvementData
+        if isinstance(involvement, ConfigInvolvement):
+            self.involvement = involvement
 
-    def getInvolvementData(self):
+    def getInvolvement(self):
         """
-        Return the involvement data of this thematic group.
+        Return the involvement of this thematic group.
         """
-        return self.involvementData
+        return self.involvement
 
     def setMapData(self, mapData):
         """
@@ -500,7 +541,7 @@ class ConfigThematicgroup(object):
         """
         return self.mapData
 
-    def getForm(self, request):
+    def getForm(self, request, readonly=False):
         """
         Prepare the form node for this thematic group, append the forms of its
         taggroups and return it.
@@ -541,35 +582,18 @@ class ConfigThematicgroup(object):
                     title=''
                 ))
 
-        if self.getInvolvementData() is not None:
+        if self.getInvolvement() is not None:
             # If there is some involvement data in this thematic group, get the
             # corresponding involvement widget and add it to the form.
 
-            # Involvements can only be edited from Activity side. For
-            # Stakeholders, the Involvement Widget is added when creating the
-            # readonly form (function renderReadonlyForm in form.py).
-            mappingName = self.getInvolvementData()
-            if mappingName == 'primaryinvestor':
-                sequence = False
-                addItemText = '' # Does not matter
-            else:
-                sequence = True
-                # TODO: Translation
-                addItemText = 'Add Secondary Investor'
+            # (So far,) Involvements can only be added from the Activity side.
+            # Therefore, for Stakeholders (itemType of involvement = activities)
+            # add the Involvements widget only if in readonly mode
+            if (self.getInvolvement().getItemType() != 'activities'
+                or readonly is True):
+                shortForm = getInvolvementWidget(request, self.getInvolvement())
 
-            shCategoryList = getCategoryList(request, 'stakeholders')
-            overviewKeys = [k[0] for k in shCategoryList.getInvolvementOverviewKeyNames()]
-
-            shortForm = getInvolvementWidget(
-                mappingName,
-                'customInvolvementMapping',
-                'readonly/customInvolvementMappingStakeholder',
-                overviewKeys,
-                sequence,
-                addItemText
-            )
-
-            thg_form.add(shortForm)
+                thg_form.add(shortForm)
 
         return thg_form
 
@@ -1278,6 +1302,117 @@ class ConfigValue(object):
             return self.getOrder()
         return self.getTranslation()
 
+class ConfigInvolvementRoleList(object):
+    """
+    A class representing a list of Involvement Roles.
+    """
+
+    def __init__(self):
+        self.roles = []
+
+    def addRole(self, role):
+        """
+        Add a new Involvement Role to the list. Add each only once.
+        """
+        if (isinstance(role, ConfigInvolvementRole)
+            and self.findRoleById(role.getId()) is None):
+            self.roles.append(role)
+
+    def getRoles(self):
+        """
+        Get all the Involvement Roles.
+        """
+        return self.roles
+
+    def findRoleById(self, id):
+        """
+        Find and return a role by its id.
+        """
+        for r in self.getRoles():
+            if str(r.getId()) == str(id):
+                return r
+        return None
+
+class ConfigInvolvementRole(object):
+    """
+    A class representing an Involvement Role object as defined in the database.
+    It corresponds to the database table "Stakeholder_Role".
+    """
+
+    def __init__(self, id, name):
+        self.id = id
+        self.name = name
+
+    def getId(self):
+        """
+        Return the ID of the Involvement Role
+        """
+        return self.id
+
+    def getName(self):
+        """
+        Return the name of the Involvement Role
+        """
+        return self.name
+
+class ConfigInvolvement(object):
+    """
+    A class representing an the configuration of an Involvement.
+    """
+
+    def __init__(self, name, itemType):
+        self.name = name
+        self.itemType = itemType
+        self.roles = []
+        self.repeatable = False
+
+    def getName(self):
+        """
+        Returns the name of the Involvement
+        """
+        return self.name
+
+    def getItemType(self):
+        """
+        Returns the ItemType (activities/stakeholders) of this Involvement
+        """
+        return self.itemType
+
+    def addRole(self, role):
+        """
+        Add a new Involvement Role
+        """
+        if (isinstance(role, ConfigInvolvementRole)
+            and self.findRoleById(role.getId()) is None):
+            self.roles.append(role)
+
+    def findRoleById(self, id):
+        """
+        Find and return an Involvement Role by its id.
+        """
+        for r in self.getRoles():
+            if str(r.getId()) == str(id):
+                return r
+        return None
+
+    def getRoles(self):
+        """
+        Return all the Involvement Roles
+        """
+        return self.roles
+
+    def setRepeatable(self, repeatable):
+        """
+        Set the Involvement to repeatable or not
+        """
+        self.repeatable = repeatable is True
+
+    def getRepeatable(self):
+        """
+        Return a boolean if the Involvement is repeatable or not
+        """
+        return self.repeatable is True
+
 def getMapWidget(thematicgroup):
     """
     Return a widget to be used to display the map in the form.
@@ -1312,23 +1447,43 @@ def getMapWidget(thematicgroup):
 
     return mapWidget
 
-def getInvolvementWidget(mappingName, template, readonlyTemplate, overviewKeys,
-    sequence=False, addItemText=''):
+def getInvolvementWidget(request, configInvolvement):
     """
     Return a widget to be used to display the involvements in the form.
     """
+    _ = request.translate
+
+    categoryList = getCategoryList(request, configInvolvement.getItemType())
+    overviewKeys = [k[0] for k in categoryList.getInvolvementOverviewKeyNames()]
+
+    template = 'customInvolvementMapping'
+    if configInvolvement.getItemType() == 'stakeholders':
+        readonlyTemplate = 'readonly/customInvolvementMappingStakeholder'
+    else:
+        readonlyTemplate = 'readonly/customInvolvementMappingActivity'
+
+    deform.widget.default_resource_registry.set_js_resources(
+        'involvementwidget', None, '../static/v2/form_involvement.js'
+    )
     invForm = colander.SchemaNode(
         colander.Mapping(),
-        widget=deform.widget.MappingWidget(
+        widget=CustomInvolvementWidget(
             template=template,
             readonly_template=readonlyTemplate
         ),
-        name=mappingName,
+        name=configInvolvement.getName(),
         title=''
     )
 
     # Add all the hidden fields which are required to keep track of the
     # involvements.
+    invForm.add(colander.SchemaNode(
+        colander.String(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='role_name',
+        title='',
+        missing = colander.null
+    ))
     invForm.add(colander.SchemaNode(
         colander.String(),
         widget=deform.widget.TextInputWidget(template='hidden'),
@@ -1340,13 +1495,6 @@ def getInvolvementWidget(mappingName, template, readonlyTemplate, overviewKeys,
         colander.Int(),
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='version',
-        title='',
-        missing = colander.null
-    ))
-    invForm.add(colander.SchemaNode(
-        colander.Int(),
-        widget=deform.widget.TextInputWidget(template='hidden'),
-        name='role_id',
         title='',
         missing = colander.null
     ))
@@ -1363,7 +1511,22 @@ def getInvolvementWidget(mappingName, template, readonlyTemplate, overviewKeys,
             missing = colander.null
         ))
 
-    if sequence is False:
+    choicesList = []
+    for v in configInvolvement.getRoles():
+        choicesList.append((v.getId(), v.getName()))
+    choices = tuple(choicesList)
+    invForm.add(colander.SchemaNode(
+        colander.String(),
+        missing=colander.null,
+        validator=colander.OneOf([str(c[0]) for c in choices]),
+        widget=CustomSelectWidget(
+            values=choices
+        ),
+        name='role_id',
+        title=_('Stakeholder Role')
+    ))
+
+    if configInvolvement.getRepeatable() is False:
         # If no sequence is required, return the node as it is
         return invForm
 
@@ -1374,11 +1537,11 @@ def getInvolvementWidget(mappingName, template, readonlyTemplate, overviewKeys,
             invForm,
             widget=deform.widget.SequenceWidget(
                 min_len = 1,
-                add_subitem_text_template = addItemText,
+                add_subitem_text_template = '',
             ),
             missing=colander.null,
             default=[colander.null],
-            name=mappingName,
+            name=configInvolvement.getName(),
             title=''
         )
 
@@ -1480,6 +1643,24 @@ def getConfigValueList(request, itemType, **kwargs):
 
     return configValues
 
+def getConfigInvolvementRoleList(request, **kwargs):
+    """
+    Function to collect and return all the involvement roles from the database.
+    """
+    # TODO: Translation
+
+    configRoles = ConfigInvolvementRoleList()
+
+    # Query the config values from database
+    roles = Session.query(
+            Stakeholder_Role.id,
+            Stakeholder_Role.name
+        )
+    for r in roles.all():
+        configRoles.addRole(ConfigInvolvementRole(r.id, r.name))
+
+    return configRoles
+
 def getConfigCategoryList(request, itemType, **kwargs):
     """
     Function to collect and return all the categories from the database. It
@@ -1546,6 +1727,7 @@ def getCategoryList(request, itemType, **kwargs):
     configKeys = getConfigKeyList(request, itemType, **kwargs)
     configValues = getConfigValueList(request, itemType, **kwargs)
     configCategories = getConfigCategoryList(request, itemType, **kwargs)
+    configInvolvementRoles = getConfigInvolvementRoleList(request, **kwargs)
 
     # Do some first test on the keys: Check that each type is defined correctly
     unknowntypes = []
@@ -1561,8 +1743,10 @@ def getCategoryList(request, itemType, **kwargs):
     # Load the yaml
     if itemType == 'stakeholders':
         filename = NEW_STAKEHOLDER_YAML
+        otherItemType = 'activities'
     else:
         filename = NEW_ACTIVITY_YAML
+        otherItemType = 'stakeholders'
 
     yaml_stream = open(os.path.join(profile_directory_path(request), filename), 'r')
     yaml_config = yaml.load(yaml_stream)
@@ -1611,7 +1795,20 @@ def getCategoryList(request, itemType, **kwargs):
                     continue
 
                 if tgroup_id == 'involvement':
-                    thematicgroup.setInvolvementData(tags)
+                    # Involvement configuration
+                    if 'name' in tags:
+                        inv = ConfigInvolvement(tags['name'], otherItemType)
+                    else:
+                        continue
+
+                    if 'roles' in tags and len(tags['roles']) > 0:
+                        for r in tags['roles']:
+                            inv.addRole(configInvolvementRoles.findRoleById(r))
+
+                    if 'repeat' in tags and tags['repeat'] is True:
+                        inv.setRepeatable(True)
+
+                    thematicgroup.setInvolvement(inv)
                     continue
 
                 if tgroup_id == 'map':
@@ -1827,7 +2024,7 @@ def getCategoryList(request, itemType, **kwargs):
 
     # Keys not found
     if len(unknownkeys) > 0:
-        raise NameError('One or more keys were not found in CSV file: %s'
+        raise NameError('One or more keys were not found in the database: %s'
             % ', '.join(unknownkeys))
 
     # Tags where the maintag is not found
@@ -1898,6 +2095,12 @@ class CustomTextInputWidget(deform.widget.TextInputWidget):
     """
     def get_template_values(self, field, cstruct, kw):
         return custom_get_template_values(self, field, cstruct, kw)
+
+class CustomInvolvementWidget(deform.widget.MappingWidget):
+    """
+    Custom widget only used to specify additional requirements.
+    """
+    requirements = ( ('involvementwidget', None), )
 
 def custom_get_template_values(self, field, cstruct, kw):
     """

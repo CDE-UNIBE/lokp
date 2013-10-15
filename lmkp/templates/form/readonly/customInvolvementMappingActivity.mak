@@ -1,17 +1,11 @@
 % for child in field:
-    % if field.name == 'primaryinvestors' and child.name == 'role_id':
+    % if child.name == 'role_name':
         <div class="span12">
             <h5 class="green">
-                ${_('Involvement as')} ${_('Primary Investor')}
+                ${_('Involvement as')} ${child.cstruct}
             </h5>
         </div>
-    % elif field.name == 'secondaryinvestors' and child.name == 'role_id':
-        <div class="span12">
-            <h5 class="green">
-                ${_('Involvement as')} ${_('Secondary Investor')}
-            </h5>
-        </div>
-    % else:
+    % elif child.name != 'role_id':
         ${child.render_template(field.widget.readonly_item_template)}
     % endif
 % endfor
