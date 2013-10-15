@@ -1462,9 +1462,12 @@ def getInvolvementWidget(request, configInvolvement):
     else:
         readonlyTemplate = 'readonly/customInvolvementMappingActivity'
 
+    deform.widget.default_resource_registry.set_js_resources(
+        'involvementwidget', None, '../static/v2/form_involvement.js'
+    )
     invForm = colander.SchemaNode(
         colander.Mapping(),
-        widget=deform.widget.MappingWidget(
+        widget=CustomInvolvementWidget(
             template=template,
             readonly_template=readonlyTemplate
         ),
@@ -2092,6 +2095,12 @@ class CustomTextInputWidget(deform.widget.TextInputWidget):
     """
     def get_template_values(self, field, cstruct, kw):
         return custom_get_template_values(self, field, cstruct, kw)
+
+class CustomInvolvementWidget(deform.widget.MappingWidget):
+    """
+    Custom widget only used to specify additional requirements.
+    """
+    requirements = ( ('involvementwidget', None), )
 
 def custom_get_template_values(self, field, cstruct, kw):
     """
