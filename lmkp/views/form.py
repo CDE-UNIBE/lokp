@@ -1452,8 +1452,6 @@ def formdataToDiff(request, newform, itemType):
                         'op': 'delete'
                     })
 
-                continue
-
             # Loop the tags of each taggroup
             for (tgroup, tags) in tgroups.iteritems():
 
