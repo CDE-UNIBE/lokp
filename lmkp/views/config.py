@@ -114,6 +114,20 @@ def get_mandatory_keys(request, item, translated=False):
         configList = getCategoryList(request, 'stakeholders')
     return configList.getDesiredKeyNames(translated=translated)
 
+def getGridColumnKeys(request, itemType):
+    """
+    Return the keys used for the grid columns in the order specified in the
+    configuration yaml.
+    It returns an array where each entry contains
+    - the original key name (used for ordering the column)
+    - the translated key name (for display purposes)
+    """
+    categoryList = getCategoryList(request, itemType)
+    keys = []
+    for key in sorted(categoryList.getGridColumnKeyNames(), key=lambda k: k[2]):
+        keys.append([key[0], key[1]])
+    return keys
+
 #def get_current_keys(request, item, profile):
 #    """
 #    Returns a list of all keys (original, no translation) of a given profile

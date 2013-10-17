@@ -316,6 +316,28 @@ class ConfigCategoryList(object):
                             keyNames.append([t.getKey().getTranslatedName(), t.getInvolvementOverview()])
         return keyNames
 
+    def getGridColumnKeyNames(self):
+        """
+        Return the names of the keys of all tags which should appear as grid
+        column along with the value for gridcolumn in the configuration yaml.
+        Returns an array where each entry is an array with
+        - original name of the key
+        - translated name of the key
+        - gridcolumn data (usually an order number)
+        """
+        keyNames = []
+        for cat in self.getCategories():
+            for thmg in cat.getThematicgroups():
+                for tg in thmg.getTaggroups():
+                    for t in tg.getTags():
+                        if t.getGridColumn() is not None:
+                            keyNames.append([
+                                t.getKey().getName(),
+                                t.getKey().getTranslatedName(),
+                                t.getGridColumn()
+                            ])
+        return keyNames
+
     def getMapSymbolKeyNames(self):
         """
         Return the names of the keys which have a value set for mapSymbol in the
@@ -777,6 +799,7 @@ class ConfigTag(object):
         self.mandatory = False
         self.desired = False
         self.involvementOverview = None
+        self.gridColumn = None
         self.mapSymbol = None
         self.filterable = False
 
@@ -841,6 +864,18 @@ class ConfigTag(object):
         Return the value set in involvement overview.
         """
         return self.involvementOverview
+
+    def setGridColumn(self, column):
+        """
+        Set the value for the grid column.
+        """
+        self.gridColumn = column
+
+    def getGridColumn(self):
+        """
+        Return the value set in grid column.
+        """
+        return self.gridColumn
 
     def setMapSymbol(self, symbol):
         """
@@ -1864,6 +1899,9 @@ def getCategoryList(request, itemType, **kwargs):
 
                             if 'involvementoverview' in key_config:
                                 tag.setInvolvementOverview(key_config['involvementoverview'])
+
+                            if 'gridcolumn' in key_config:
+                                tag.setGridColumn(key_config['gridcolumn'])
 
                             if 'mapsymbol' in key_config:
                                 tag.setMapSymbol(key_config['mapsymbol'])
