@@ -12,11 +12,12 @@
         lmkpAssetResolver = AssetResolver('lmkp')
         resolver = lmkpAssetResolver.resolve('templates/map/mapform.mak')
         template = Template(filename=resolver.abspath())
-        coords = None if cstruct['lon'] == colander.null or cstruct['lat'] == colander.null else [cstruct['lon'], cstruct['lat']]
+        geometry = None if cstruct['geometry'] == colander.null else cstruct['geometry']
+        editmode = None if cstruct['editmode'] == colander.null else cstruct['editmode']
         _ = request.translate
     %>
 
-    ${template.render(request=request, coords=coords)}
+    ${template.render(request=request, geometry=geometry, editmode=editmode)}
 
     % if field.errormsg:
         <li class="errorLi">

@@ -8,31 +8,27 @@
 <script type="text/javascript">
 
     var bbox = null;
-    % if coords:
-        var pointIsSet = true;
-        var coords = ${coords};
+    var coordsSet = false;
+    % if geometry:
+        var coordsSet = true;
+        var geometry = ${geometry | n};
         var zoomlevel = 13;
-    % else:
-        var pointIsSet = false;
+    % elif '_LOCATION_' in request.cookies:
         ## Try to get the coordinates from the _LOCATION_ cookie
-        % if '_LOCATION_' in request.cookies:
-            var location_cookie = $.cookie('_LOCATION_');
-            if (location_cookie) {
-                var bbox_arr = location_cookie.split(',');
-                if (bbox_arr.length == 4) {
-                    var bbox = new OpenLayers.Bounds(bbox_arr);
-                }
+        var location_cookie = $.cookie('_LOCATION_');
+        if (location_cookie) {
+            var bbox_arr = location_cookie.split(',');
+            if (bbox_arr.length == 4) {
+                var bbox = new OpenLayers.Bounds(bbox_arr);
             }
-        % endif
-        ## Fallback: Show the whole world
-        var coords = [0, 0];
-        var zoomlevel = 1;
+        }
     % endif
 
     % if readonly:
         var readonly = true;
     % else:
         var readonly = false;
+        var editmode = '${editmode}';
     % endif
 
 </script>

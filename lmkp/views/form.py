@@ -6,6 +6,7 @@ from mako.template import Template
 #from datetime import datetime
 import datetime
 import calendar
+import simplejson as json
 
 from lmkp.views.form_config import *
 from lmkp.models.meta import DBSession as Session
@@ -673,12 +674,11 @@ def renderReadonlyForm(request, itemType, itemJson):
     data['statusId'] = statusId
     html = form.render(data, readonly=True)
 
-    coords = (itemJson['geometry']['coordinates'] if 'geometry' in itemJson
-        and 'coordinates' in itemJson['geometry'] else None)
+    geometry = json.dumps(itemJson['geometry']) if 'geometry' in itemJson else None
 
     return {
         'form': html,
-        'coords': coords
+        'geometry': geometry
     }
 
 def structHasOnlyNullValues(cstruct, depth=0):
@@ -1161,10 +1161,19 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
                 if ('coordinates' in geometry
                     and isinstance(geometry['coordinates'], list)
                     and len(geometry['coordinates']) == 2):
+
+#                    geometry = {
+#                        'type': 'MultiPoint',
+#                        'coordinates': [
+#                            [15.574214458465647, 11.178401873711785],
+#                            [15.474214458465647, 11.178401873711785],
+#                            [15.574214458465647, 11.278401873711785]
+#                        ]
+#                    }
+
                     mapAdded = True
                     data[cat][thmg]['map'] = {
-                        'lon': geometry['coordinates'][0],
-                        'lat': geometry['coordinates'][1]
+                        'geometry': geometry
                     }
 
     # Map
@@ -1197,8 +1206,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
                 and isinstance(geometry['coordinates'], list)
                 and len(geometry['coordinates']) == 2):
                 data[catId][thmgId]['map'] = {
-                    'lon': geometry['coordinates'][0],
-                    'lat': geometry['coordinates'][1]
+                    'geometry': geometry
                 }
 
     log.debug('Formdata created by ItemJSON: %s' % data)
@@ -1452,31 +1460,33 @@ def formdataToDiff(request, newform, itemType):
                         'op': 'delete'
                     })
 
+            if thmgrp in categorylist.getMapThematicgroupIds():
+                # Map data
+
+                cfgThmg = categorylist.findThematicgroupById(thmgrp)
+
+                for (tgrp, map) in tgroups.iteritems():
+
+                    if tgrp != cfgThmg.getMap().getName():
+                        continue
+
+                    oldgeom = None
+                    if (cat in oldform and thmgrp in oldform[cat]
+                        and cfgThmg.getMap().getName() in oldform[cat][thmgrp]):
+                        oldgeom = oldform[cat][thmgrp][cfgThmg.getMap().getName()]
+
+                    geometry = (map['geometry'] if 'geometry' in map and map['geometry'] != colander.null else None)
+
+                    if geometry is None:
+                        continue
+
+                    geometry = json.loads(geometry)
+
+                    if oldgeom is None or geometry != oldgeom['geometry']:
+                        geometrydiff = geometry
+
             # Loop the tags of each taggroup
             for (tgroup, tags) in tgroups.iteritems():
-
-                # TODO: The parameter 'map' is defined in the yaml (map: map)
-                # and therefore rather static. Should this be made more dynamic?
-                if tgroup == 'map':
-
-                    oldpoint = None
-                    if (cat in oldform and thmgrp in oldform[cat]
-                        and 'map' in oldform[cat][thmgrp]):
-                        oldpoint = oldform[cat][thmgrp]['map']
-
-                    lon = (tags['lon'] if 'lon' in tags
-                        and tags['lon'] != colander.null else None)
-                    lat = (tags['lat'] if 'lat' in tags
-                        and tags['lat'] != colander.null else None)
-
-                    if lon is not None and lat is not None:
-                        if (oldpoint is None or lon != oldpoint['lon']
-                            or lat != oldpoint['lat']):
-
-                            geometrydiff = {
-                                'type': 'Point',
-                                'coordinates': [lon, lat]
-                            }
 
                 # Transform all to list so they can be treated all the same
                 if not isinstance(tags, list):

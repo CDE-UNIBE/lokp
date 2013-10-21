@@ -8,14 +8,27 @@
 var geographicProjection = new OpenLayers.Projection("EPSG:4326");
 var sphericalMercatorProjection = new OpenLayers.Projection("EPSG:900913");
 var map;
+var geojsonFormat = new OpenLayers.Format.GeoJSON({
+    'internalProjection': sphericalMercatorProjection,
+    'externalProjection': geographicProjection
+});
 
 $(document).ready(function() {
     var layers = getBaseLayers();
-
-    markerLayer = new OpenLayers.Layer.Markers("Points", {
-        'calculateInRange': function() { return true; }
+    var geometryLayer = new OpenLayers.Layer.Vector('Geometry', {
+        styleMap: new OpenLayers.StyleMap({
+            'default': OpenLayers.Util.applyDefaults({
+                externalGraphic: '/static/img/pin_darkred.png',
+                graphicHeight: 25,
+                graphicOpacity: 0.8,
+                graphicYOffset: -25
+            }, OpenLayers.Feature.Vector.style["default"])
+        }),
+        eventListeners: {
+            'featureadded': updateFormCoordinates
+        }
     });
-    layers.push(markerLayer);
+    layers.push(geometryLayer);
 
     map = new OpenLayers.Map('googleMapNotFull', {
         displayProjection: geographicProjection,
@@ -32,15 +45,18 @@ $(document).ready(function() {
         layers: layers
     });
 
-    if (bbox) {
-        map.zoomToExtent(bbox, true);
+    if (coordsSet === true) {
+        geometryLayer.addFeatures(geojsonFormat.read(geometry));
+        // Zoom to the feature
+        map.zoomToExtent(geometryLayer.getDataExtent());
+        // Adjust zoom level
+        map.zoomTo(Math.min(zoomlevel, map.getZoom()-1));
     } else {
-        var coordsTransformed = new OpenLayers.LonLat(coords[0], coords[1])
-            .transform(geographicProjection,sphericalMercatorProjection);
-        map.setCenter(coordsTransformed, zoomlevel);
-    }
-    if (pointIsSet) {
-        markerLayer.addMarker(getMarker(coordsTransformed));
+        if (bbox) {
+            map.zoomToExtent(bbox, true);
+        } else {
+            map.zoomToMaxExtent();
+        }
     }
 
     if (!readonly) {
@@ -48,7 +64,7 @@ $(document).ready(function() {
 
         map.events.register('click', map, function(e) {
             var position = map.getLonLatFromPixel(e.xy);
-            setMapMarker(position);
+            addToMap(position);
         });
 
         // Listen to 'paste' events on the coordinate field
@@ -64,28 +80,43 @@ $(document).ready(function() {
  * Set a marker on the map at the given position and store the coordinates in
  * the hidden field.
  */
-function setMapMarker(position) {
-
-    var markerLayer = map.getLayersByName('Points');
-    if (markerLayer.length == 0) return;
-    markerLayer = markerLayer[0];
-
-    // Set a new marker on the map
-    markerLayer.clearMarkers();
-    markerLayer.addMarker(getMarker(position));
-
-    // Store the new coordinates for form submission
-    var coords = position.clone().transform(sphericalMercatorProjection, geographicProjection)
-    var lon = $('input[name=lon]');
-    if (lon && lon.length == 1) {
-        $(lon[0]).val(coords.lon);
-    }
-    var lat = $('input[name=lat]');
-    if (lat && lat.length == 1) {
-        $(lat[0]).val(coords.lat);
+function addToMap(lonlat) {
+    if (lonlat.CLASS_NAME != 'OpenLayers.LonLat') return;
+    var layers = map.getLayersByName('Geometry');
+    if (layers.length == 0) return;
+    var geometryLayer = layers[0];
+    var p = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat);
+    var f = new OpenLayers.Feature.Vector(p);
+    if (editmode === 'singlepoint') {
+        geometryLayer.destroyFeatures();
+        geometryLayer.addFeatures([f]);
     }
 }
 
+/**
+ * Update the form field containing the coordinates based on the feature in the
+ * geometry layer.
+ */
+function updateFormCoordinates(event) {
+    var feature;
+    if (event && event.feature && event.feature.geometry) {
+        feature = event.feature;
+    } else {
+        var layers = map.getLayersByName('Geometry');
+        if (layers.length == 0) return;
+        var geometryLayer = layers[0];
+        if (!geometryLayer.features || geometryLayer.features.length != 1
+            || !geometryLayer.features[0].geometry) return;
+        feature = geometryLayer.features[0];
+    }
+    var field = $('input[name=geometry]');
+    if (field.length != 1) return;
+    $(field[0]).val(geojsonFormat.write(feature.geometry));
+}
+
+/**
+ * Return the base layers of the map.
+ */
 function getBaseLayers(){
 
     var layers = [];
@@ -130,14 +161,6 @@ function getBaseLayers(){
         }));
 
     return layers;
-}
-
-function getMarker(coords) {
-    var size = new OpenLayers.Size(25,25);
-    var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
-    // Icon by: http://www.iconbeast.com
-    var icon = new OpenLayers.Icon('/static/img/pin_darkred.png',size,offset);
-    return new OpenLayers.Marker(coords, icon);
 }
 
 /**
@@ -242,7 +265,7 @@ function parseCoordinates() {
         );
 
         // Set the marker and zoom to it.
-        setMapMarker(lonlatTransformed);
+        addToMap(lonlatTransformed);
         map.setCenter(lonlatTransformed);
 
         showParseFeedback(tForSuccess, 'success');
@@ -252,6 +275,9 @@ function parseCoordinates() {
     return false;
 }
 
+/**
+ * Function to show or hide the div to parse coordinates.
+ */
 function triggerCoordinatesDiv() {
     var coordinatesDiv = $('#coordinates-div');
     if (coordinatesDiv.is(':visible')) {
@@ -261,6 +287,9 @@ function triggerCoordinatesDiv() {
     }
 }
 
+/**
+ * Show a feedback after parsing the entered coordinates.
+ */
 function showParseFeedback(msg, textStyle) {
     var msgField = $('#map-coords-message');
     msgField.html([

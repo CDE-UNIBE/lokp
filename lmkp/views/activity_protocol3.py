@@ -1749,7 +1749,7 @@ class ActivityProtocol3(Protocol):
             try:
                 geometrytype = shape.geom_type
             except:
-                raise HTTPBadRequest(detail="Invalid geometry type, needs to be a point")
+                raise HTTPBadRequest(detail="Invalid geometry type.")
 
 #            if geometrytype != 'Point':
 #                raise HTTPBadRequest(detail="Wrong geometry type, needs to be a point")
