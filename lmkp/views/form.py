@@ -1156,25 +1156,10 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             # therefore rather static. Should this be made more dynamic?
             if (cat in data and thmg in data[cat]
                 and 'map' not in data[cat][thmg] and 'geometry' in itemJson):
-                geometry = itemJson['geometry']
-                # Make sure the geometry is valid
-                if ('coordinates' in geometry
-                    and isinstance(geometry['coordinates'], list)
-                    and len(geometry['coordinates']) == 2):
-
-#                    geometry = {
-#                        'type': 'MultiPoint',
-#                        'coordinates': [
-#                            [15.574214458465647, 11.178401873711785],
-#                            [15.474214458465647, 11.178401873711785],
-#                            [15.574214458465647, 11.278401873711785]
-#                        ]
-#                    }
-
-                    mapAdded = True
-                    data[cat][thmg]['map'] = {
-                        'geometry': geometry
-                    }
+                mapAdded = True
+                data[cat][thmg]['map'] = {
+                    'geometry': json.dumps(itemJson['geometry'])
+                }
 
     # Map
     if (category is not None and str(category) in categorylist.getMapCategoryIds()
@@ -1200,14 +1185,9 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             if thmgId not in data[catId]:
                 data[catId][thmgId] = {}
 
-            geometry = itemJson['geometry']
-            # Make sure the geometry is valid
-            if ('coordinates' in geometry
-                and isinstance(geometry['coordinates'], list)
-                and len(geometry['coordinates']) == 2):
-                data[catId][thmgId]['map'] = {
-                    'geometry': geometry
-                }
+            data[catId][thmgId]['map'] = {
+                'geometry': json.dumps(itemJson['geometry'])
+            }
 
     log.debug('Formdata created by ItemJSON: %s' % data)
 
@@ -1474,6 +1454,7 @@ def formdataToDiff(request, newform, itemType):
                     if (cat in oldform and thmgrp in oldform[cat]
                         and cfgThmg.getMap().getName() in oldform[cat][thmgrp]):
                         oldgeom = oldform[cat][thmgrp][cfgThmg.getMap().getName()]
+                        oldgeometry = json.loads(oldgeom['geometry'])
 
                     geometry = (map['geometry'] if 'geometry' in map and map['geometry'] != colander.null else None)
 
@@ -1482,7 +1463,7 @@ def formdataToDiff(request, newform, itemType):
 
                     geometry = json.loads(geometry)
 
-                    if oldgeom is None or geometry != oldgeom['geometry']:
+                    if oldgeom is None or cmp(oldgeometry, geometry) != 0:
                         geometrydiff = geometry
 
             # Loop the tags of each taggroup

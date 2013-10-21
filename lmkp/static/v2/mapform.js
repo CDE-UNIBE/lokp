@@ -86,10 +86,25 @@ function addToMap(lonlat) {
     if (layers.length == 0) return;
     var geometryLayer = layers[0];
     var p = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat);
-    var f = new OpenLayers.Feature.Vector(p);
     if (editmode === 'singlepoint') {
         geometryLayer.destroyFeatures();
-        geometryLayer.addFeatures([f]);
+        geometryLayer.addFeatures([new OpenLayers.Feature.Vector(p)]);
+    } else if (editmode === 'multipoints') {
+        var f = geometryLayer.features[0];
+        var mp;
+        if (f) {
+            mp = f.geometry.clone();
+            if (mp.CLASS_NAME === 'OpenLayers.Geometry.Point') {
+                var sp = mp.clone();
+                mp = new OpenLayers.Geometry.MultiPoint();
+                mp.addPoint(sp);
+            }
+        } else {
+            mp = new OpenLayers.Geometry.MultiPoint();
+        }
+        mp.addPoint(p);
+        geometryLayer.destroyFeatures();
+        geometryLayer.addFeatures([new OpenLayers.Feature.Vector(mp)])
     }
 }
 

@@ -1407,12 +1407,29 @@ class ConfigMap(object):
 
     def __init__(self, name):
         self.name = name
+        self.mode = 'singlepoint'
 
     def getName(self):
         """
         Returns the name of the map
         """
         return self.name
+
+    def setMode(self, mode):
+        """
+        Set the mode of the map
+        """
+        if mode in [
+            'singlepoint',
+            'multipoints'
+        ]:
+            self.mode = mode
+
+    def getMode(self):
+        """
+        Returns the mode of the map
+        """
+        return self.mode
 
 class ConfigInvolvement(object):
     """
@@ -1501,7 +1518,7 @@ def getMapWidget(thematicgroup):
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='editmode',
         title='editmode',
-        default='singlepoint'
+        default=thematicgroup.getMap().getMode()
     ))
 
     return mapWidget
@@ -1874,6 +1891,9 @@ def getCategoryList(request, itemType, **kwargs):
                     # Map configuration
                     if 'name' in tags:
                         map = ConfigMap(tags['name'])
+
+                    if 'mode' in tags:
+                        map.setMode(tags['mode'])
 
                     thematicgroup.setMap(map)
                     continue
