@@ -97,8 +97,13 @@ $(document).ready(function() {
     // Show the main tags from all taggroups in the basic-data overlay box
     var onFeatureSelected = function(event){
         var feature = event.feature;
-        if(feature.cluster.length == 1){
-            var f = feature.cluster[0];
+        var f;
+        if (!feature.cluster) {
+            f = feature;
+        } else if (feature.cluster.length == 1) {
+            f = feature.cluster[0];
+        }
+        if (f) {
             var activityId = f.data.activity_identifier;
             var shortId = activityId.split("-")[0]
             $("#deal-shortid-span").html('<a href="/activities/html/' + activityId + '"># ' + shortId + '</a>');
@@ -250,6 +255,7 @@ $(document).ready(function() {
                 // available
                 var clusterStrategy = new OpenLayers.Strategy.Cluster({
                     distance: 30,
+                    threshold: 2,
                     features: mapFeatures[l]
                 });
 
@@ -563,30 +569,33 @@ function getStyle(index) {
     var fillOpacity = 1;
 
     var strokeOpacity = function(feature){
-        if(feature.attributes.count == 1){
-            var f = feature.cluster[0];
-            if(f.attributes.status == "pending"){
-                return 1;
-            }
+        var f;
+        if (feature.attributes.count == 1) {
+            f = feature.cluster[0];
+        } else if (!feature.attributes.count) {
+            f = feature;
+        }
+        if (f && f.attributes.status === 'pending') {
+            return 1;
         }
         return 0.5;
     };
 
-    var strokeWidth = function(feature){
-        if(feature.attributes.count == 1){
-            var f = feature.cluster[0];
-            if(f.attributes.status == "pending"){
-                return 2;
-            }
+    var strokeWidth = function(feature) {
+        var f;
+        if (feature.attributes.count == 1) {
+            f = feature.cluster[0];
+        } else if (!feature.attributes.count) {
+            f = feature;
+        }
+        if (f && f.attributes.status === 'pending') {
+            return 2;
         }
         return 5;
     };
 
     // Calculates the radius for clustered features
     var radius = function(feature) {
-        if (feature.fid == 258) {
-            console.log(feature);
-        }
         if (!feature.attributes.count || feature.attributes.count == 1) {
             return 6;
         } else {
@@ -595,36 +604,49 @@ function getStyle(index) {
     }
 
     // Returns the number of clustered features, which is used to label the clusters.
-    var label = function(feature){
-        if(feature.attributes.count > 1){
+    var label = function(feature) {
+        if (feature.attributes.count > 1) {
             return feature.attributes.count;
         } else {
-            return "";
+            return '';
         }
     }
 
     // Use circles for clustered features and a triangle to symbolize singe features
-    var graphicName = function(feature){
-        if(feature.attributes.count == 1){
-            return "triangle";
+    var graphicName = function(feature) {
+        if (feature.attributes.count === 1 || !feature.attributes.count) {
+            return 'triangle';
         } else {
-            return "circle";
+            return 'circle';
         }
+    }
+
+    var fillColor = function(feature) {
+        var f;
+        if (feature.attributes.count == 1) {
+            f = feature.cluster[0];
+        } else if (!feature.attributes.count) {
+            f = feature;
+        }
+        if (f && f.attributes.status == 'pending') {
+            return '#ffffff';
+        }
+        return getColor(index);
     }
 
     var style = new OpenLayers.Style(
         {
-            graphicName: "${graphicName}",
-            fontColor: "#ffffff",
-            fontSize: "9px",
-            label: "${label}",
-            pointRadius: "${radius}",
+            graphicName: '${graphicName}',
+            fontColor: '#ffffff',
+            fontSize: '9px',
+            label: '${label}',
+            pointRadius: '${radius}',
             rotation: 180.0,
-            fillColor: "${fillColor}",
+            fillColor: '${fillColor}',
             fillOpacity: fillOpacity,
             strokeColor: getColor(index),
-            strokeOpacity: "${strokeOpacity}",
-            strokeWidth: "${strokeWidth}"
+            strokeOpacity: '${strokeOpacity}',
+            strokeWidth: '${strokeWidth}'
         }, {
             context: {
                 graphicName: graphicName,
@@ -632,15 +654,7 @@ function getStyle(index) {
                 radius: radius,
                 strokeOpacity: strokeOpacity,
                 strokeWidth: strokeWidth,
-                fillColor: function(feature) {
-                    if (feature.attributes.count == 1) {
-                        var f = feature.cluster[0];
-                        if (f.attributes.status == "pending") {
-                            return "#ffffff";
-                        }
-                    }
-                    return getColor(index);
-                }
+                fillColor: fillColor
             }
         });
     return style;

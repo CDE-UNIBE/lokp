@@ -1531,10 +1531,7 @@ class ActivityProtocol3(Protocol):
             feature = {}
 
             geom = wkb.loads(str(g.geom_wkb))
-            geometry = {}
-            geometry['type'] = 'Point'
-            geometry['coordinates'] = [geom.x, geom.y]
-            feature['geometry'] = geometry
+            feature['geometry'] = json.loads(geojson.dumps(geom))
 
             properties = {
                 'status': status_name,
