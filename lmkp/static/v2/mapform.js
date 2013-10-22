@@ -7,28 +7,42 @@
 
 var geographicProjection = new OpenLayers.Projection("EPSG:4326");
 var sphericalMercatorProjection = new OpenLayers.Projection("EPSG:900913");
-var map;
 var geojsonFormat = new OpenLayers.Format.GeoJSON({
     'internalProjection': sphericalMercatorProjection,
     'externalProjection': geographicProjection
 });
+var map,
+    selectCtrl,
+    geometryLayer,
+    removeLayer;
 
 $(document).ready(function() {
+    var markerStyle = new OpenLayers.StyleMap({
+        'default': OpenLayers.Util.applyDefaults({
+            externalGraphic: '/static/img/pin_darkred.png',
+            graphicHeight: 25,
+            graphicOpacity: 0.8,
+            graphicYOffset: -25
+        }, OpenLayers.Feature.Vector.style["default"])
+    })
+
     var layers = getBaseLayers();
-    var geometryLayer = new OpenLayers.Layer.Vector('Geometry', {
-        styleMap: new OpenLayers.StyleMap({
-            'default': OpenLayers.Util.applyDefaults({
-                externalGraphic: '/static/img/pin_darkred.png',
-                graphicHeight: 25,
-                graphicOpacity: 0.8,
-                graphicYOffset: -25
-            }, OpenLayers.Feature.Vector.style["default"])
-        }),
+
+    geometryLayer = new OpenLayers.Layer.Vector('Geometry', {
+        styleMap: markerStyle,
         eventListeners: {
             'featureadded': updateFormCoordinates
         }
     });
     layers.push(geometryLayer);
+
+    removeLayer = new OpenLayers.Layer.Vector('RemovePoints', {
+        styleMap: markerStyle,
+        eventListeners: {
+            'featureselected': removeFeature
+        }
+    });
+    layers.push(removeLayer);
 
     map = new OpenLayers.Map('googleMapNotFull', {
         displayProjection: geographicProjection,
@@ -62,9 +76,16 @@ $(document).ready(function() {
     if (!readonly) {
         $('#googleMapNotFull').css('cursor', "crosshair");
 
+        selectCtrl = new OpenLayers.Control.SelectFeature(removeLayer);
+        map.addControl(selectCtrl);
+
+        toggleMode('add');
+
         map.events.register('click', map, function(e) {
-            var position = map.getLonLatFromPixel(e.xy);
-            addToMap(position);
+            if (geometryLayer.getVisibility()) {
+                var position = map.getLonLatFromPixel(e.xy);
+                addToMap(position);
+            }
         });
 
         // Listen to 'paste' events on the coordinate field
@@ -74,7 +95,58 @@ $(document).ready(function() {
             }, 50);
         });
     }
+
+    $('#btn-add-point').click(function() {
+        toggleMode('add');
+    });
+    $('#btn-remove-point').click(function() {
+        toggleMode('remove');
+    });
 });
+
+function toggleMode(mode) {
+    if (mode === 'add') {
+        removeLayer.setVisibility(false);
+        geometryLayer.setVisibility(true);
+        selectCtrl.deactivate();
+    } else if (mode === 'remove') {
+        geometryLayer.setVisibility(false);
+        removeLayer.setVisibility(true);
+        removeLayer.destroyFeatures();
+        var f = geometryLayer.features[0];
+        if (f) {
+            var mp = f.geometry.clone();
+            if (mp.CLASS_NAME === 'OpenLayers.Geometry.Point') {
+                var sp = mp.clone();
+                mp = new OpenLayers.Geometry.MultiPoint();
+                mp.addPoint(sp);
+            }
+            var points = mp.components;
+            $.each(points, function() {
+                removeLayer.addFeatures([new OpenLayers.Feature.Vector(this)]);
+            });
+        }
+        selectCtrl.activate();
+    }
+}
+
+function removeFeature(e) {
+    var of = e.feature;
+    var og = of.geometry;
+    of.layer.removeFeatures([of]);
+    var nf = geometryLayer.features[0];
+    var g = nf.geometry;
+    var ng = g.clone();
+    $.each(ng.components, function() {
+        if (this.CLASS_NAME && this.CLASS_NAME === 'OpenLayers.Geometry.Point'
+            && this.equals(og)) {
+            ng.removePoint(this);
+            return;
+        }
+    });
+    geometryLayer.destroyFeatures();
+    geometryLayer.addFeatures([new OpenLayers.Feature.Vector(ng)]);
+}
 
 /**
  * Set a marker on the map at the given position and store the coordinates in
@@ -82,9 +154,6 @@ $(document).ready(function() {
  */
 function addToMap(lonlat) {
     if (lonlat.CLASS_NAME != 'OpenLayers.LonLat') return;
-    var layers = map.getLayersByName('Geometry');
-    if (layers.length == 0) return;
-    var geometryLayer = layers[0];
     var p = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat);
     if (editmode === 'singlepoint') {
         geometryLayer.destroyFeatures();
@@ -126,7 +195,11 @@ function updateFormCoordinates(event) {
     }
     var field = $('input[name=geometry]');
     if (field.length != 1) return;
-    $(field[0]).val(geojsonFormat.write(feature.geometry));
+    if (feature.geometry.components && feature.geometry.components.length == 0) {
+        $(field[0]).val('');
+    } else {
+        $(field[0]).val(geojsonFormat.write(feature.geometry));
+    }
 }
 
 /**

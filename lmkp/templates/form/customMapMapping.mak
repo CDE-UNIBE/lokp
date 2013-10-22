@@ -1,21 +1,33 @@
+<%
+    from mako.template import Template
+    from pyramid.path import AssetResolver
+    import colander
+    lmkpAssetResolver = AssetResolver('lmkp')
+    resolver = lmkpAssetResolver.resolve('templates/map/mapform.mak')
+    template = Template(filename=resolver.abspath())
+    geometry = None if cstruct['geometry'] == colander.null else cstruct['geometry']
+    editmode = None if cstruct['editmode'] == colander.null else cstruct['editmode']
+    _ = request.translate
+%>
 
     % if field.title:
         <legend>${field.title}</legend>
     % endif
 
+    % if editmode == 'multipoints':
+        <div class="btn-toolbar map-form-toolbar">
+            <div class="btn-group">
+                <a class="btn"><i class="icon-zoom-in"></i></a>
+                <a class="btn"><i class="icon-zoom-out"></i></a>
+            </div>
+            <div class="btn-group" data-toggle="buttons-radio">
+                <a class="btn active" id="btn-add-point"><i class="icon-plus"></i></a>
+                <a class="btn" id="btn-remove-point"><i class="icon-minus"></i></a>
+            </div>
+        </div>
+    % endif
+    
     <div id="googleMapNotFull" style="height:300px;"></div>
-
-    <%
-        from mako.template import Template
-        from pyramid.path import AssetResolver
-        import colander
-        lmkpAssetResolver = AssetResolver('lmkp')
-        resolver = lmkpAssetResolver.resolve('templates/map/mapform.mak')
-        template = Template(filename=resolver.abspath())
-        geometry = None if cstruct['geometry'] == colander.null else cstruct['geometry']
-        editmode = None if cstruct['editmode'] == colander.null else cstruct['editmode']
-        _ = request.translate
-    %>
 
     ${template.render(request=request, geometry=geometry, editmode=editmode)}
 
