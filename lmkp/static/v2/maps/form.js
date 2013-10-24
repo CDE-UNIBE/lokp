@@ -95,7 +95,13 @@ $(document).ready(function() {
 
     $('.form-map-menu-toggle').click(function() {
         $('#form-map-menu-content').toggle();
-        $('.form-map-menu').toggleClass('active');
+        var m = $('.form-map-menu');
+        m.toggleClass('active');
+        if (m.hasClass('active')) {
+            $(this).button('close');
+        } else {
+            $(this).button('reset');
+        }
         return false;
     });
 
@@ -114,10 +120,6 @@ $(document).ready(function() {
     }
 
     if (!readonly) {
-
-        if (editmode === 'singlepoint') {
-            $('#googleMapNotFull').css('cursor', "crosshair");
-        }
 
         selectCtrl = new OpenLayers.Control.SelectFeature(removeLayer);
         map.addControl(selectCtrl);
@@ -150,6 +152,12 @@ $(document).ready(function() {
         container: 'body'
     });
 
+    $('.ttip-bottom').tooltip({
+        container: 'body',
+        placement: 'bottom'
+    });
+
+    initializeMapSearch(map);
 });
 
 function toggleMode(mode) {

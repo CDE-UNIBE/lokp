@@ -13,6 +13,69 @@ $('.baseMapOptions').change(function(e) {
 });
 
 /**
+ * Initialize the spatial search functionality.
+ * Requires an input field with id="search" and name="q".
+ */
+function initializeMapSearch() {
+    // Add a marker layer, which is used in the location search
+    var markers = new OpenLayers.Layer.Markers( "Markers" );
+    map.addLayer(markers);
+    var rows = new Array();
+    $("#search").typeahead({
+        items: 5,
+        minLength: 3,
+        source: function( query , process ) {
+            $.get("/search", {
+                q: query,
+                epsg: 900913
+            },
+            function(response) {
+                rows = new Array();
+                if(response.success){
+                    for(var i = 0; i < response.data.length; i++){
+                        var row = response.data[i];
+                        rows.push(row);
+                    }
+                }
+
+                var results = $.map(rows, function(row) {
+                    return row.name;
+                });
+
+                process(results);
+            } );
+        },
+        updater: function(item){
+            var loc = new Array();
+            $.each(rows, function(row){
+                if(rows[row].name == item){
+                    loc.push(rows[row])
+                }
+            });
+
+            var selectedLocation = loc[0];
+            var pos = new OpenLayers.LonLat(selectedLocation.geometry.coordinates[0], selectedLocation.geometry.coordinates[1]);
+
+            markers.clearMarkers();
+            map.setCenter(pos, 14);
+
+            var size = new OpenLayers.Size(27,27);
+            var offset = new OpenLayers.Pixel(-(size.w/2), -(size.h/2));
+            var icon = new OpenLayers.Icon('/static/img/glyphicons_185_screenshot.png', size, offset);
+            var m = new OpenLayers.Marker(pos, icon);
+            m.events.register('click', m, function(event) {
+                markers.removeMarker(m);
+            });
+            markers.addMarker(m);
+
+            return loc[0].name;
+        }
+    }).click(function() {
+        $(this).select();
+    });
+}
+
+/**
  * Return the base layers of the map.
  */
 function getBaseLayers() {
