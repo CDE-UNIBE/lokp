@@ -54,9 +54,49 @@ $(document).ready(function() {
                     enableKinetic: true
                 }
             }),
-            new OpenLayers.Control.PanZoom()
+            new OpenLayers.Control.Zoom({
+                zoomInId: 'btn-zoom-in',
+                zoomOutId: 'btn-zoom-out'
+            })
         ],
         layers: layers
+    });
+    setBaseLayerByName(map, 'satelliteMap');
+
+    // Loop the context layers and append it to the context layers menu
+    for (var c in contextLayers) {
+        var layerName = contextLayers[c].name;
+        var t = [
+            '<li>',
+            '<div class="checkbox-modified-small">',
+            '<input class="input-top" type="checkbox" value="' + layerName + '" id="checkbox' + layerName + '">',
+            '<label for="checkbox' + layerName + '"></label>',
+            '</div>',
+            '<p class="context-layers-description">',
+            layerName,
+            '</p>',
+            '</li>'
+        ].join('');
+        $("#context-layers-list").append(t);
+    }
+
+    /**
+     * EVENTS
+     */
+
+    // Toggle the visibility of the context layers
+    $(".input-top").click(function(event){
+        if (event.target.value) {
+            setContextLayerByName(map, event.target.value, event.target.checked);
+        }
+    });
+
+    map.addLayers(contextLayers);
+
+    $('.form-map-menu-toggle').click(function() {
+        $('#form-map-menu-content').toggle();
+        $('.form-map-menu').toggleClass('active');
+        return false;
     });
 
     if (coordsSet === true) {
@@ -74,7 +114,10 @@ $(document).ready(function() {
     }
 
     if (!readonly) {
-        $('#googleMapNotFull').css('cursor', "crosshair");
+
+        if (editmode === 'singlepoint') {
+            $('#googleMapNotFull').css('cursor', "crosshair");
+        }
 
         selectCtrl = new OpenLayers.Control.SelectFeature(removeLayer);
         map.addControl(selectCtrl);
@@ -102,6 +145,11 @@ $(document).ready(function() {
     $('#btn-remove-point').click(function() {
         toggleMode('remove');
     });
+
+    $('.ttip').tooltip({
+        container: 'body'
+    });
+
 });
 
 function toggleMode(mode) {
@@ -200,55 +248,6 @@ function updateFormCoordinates(event) {
     } else {
         $(field[0]).val(geojsonFormat.write(feature.geometry));
     }
-}
-
-/**
- * Return the base layers of the map.
- */
-function getBaseLayers(){
-
-    var layers = [];
-
-    // Try to get the Google Satellite layer
-    try {
-        layers.push(new OpenLayers.Layer.Google("satelliteMap", {
-            type: google.maps.MapTypeId.HYBRID,
-            numZoomLevels: 22
-        }));
-
-        layers.push(new OpenLayers.Layer.Google("terrainMap", {
-            type: google.maps.MapTypeId.TERRAIN
-        }));
-    // else get backup layers that don't block the application in case there
-    // is no internet connection.
-    } catch(error) {
-        layers.push(new OpenLayers.Layer.OSM("satelliteMap", [
-            "http://oatile1.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
-            "http://oatile2.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
-            "http://oatile3.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
-            "http://oatile4.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg"
-            ],{
-                attribution: "<p>Tiles Courtesy of <a href=\"http://www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"http://developer.mapquest.com/content/osm/mq_logo.png\"></p>",
-                isBaseLayer: true,
-                sphericalMercator: true,
-                projection: new OpenLayers.Projection("EPSG:900913")
-            }));
-    }
-
-    layers.push(new OpenLayers.Layer.OSM("streetMap", [
-        "http://otile1.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
-        "http://otile2.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
-        "http://otile3.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
-        "http://otile4.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg"
-        ],{
-            attribution: "<p>Tiles Courtesy of <a href=\"http://www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"http://developer.mapquest.com/content/osm/mq_logo.png\"></p>",
-            isBaseLayer: true,
-            sphericalMercator: true,
-            projection: sphericalMercatorProjection,
-            transitionEffect: "resize"
-        }));
-
-    return layers;
 }
 
 /**

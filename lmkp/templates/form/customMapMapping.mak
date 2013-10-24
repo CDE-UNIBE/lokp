@@ -14,20 +14,58 @@
         <legend>${field.title}</legend>
     % endif
 
-    % if editmode == 'multipoints':
-        <div class="btn-toolbar map-form-toolbar">
-            <div class="btn-group">
-                <a class="btn"><i class="icon-zoom-in"></i></a>
-                <a class="btn"><i class="icon-zoom-out"></i></a>
+    <div id="googleMapNotFull" style="height:300px;">
+
+        % if editmode == 'multipoints':
+            <div class="form-map-edit pull-right">
+                <div class="btn-group pull-right" data-toggle="buttons-radio">
+                    <a class="btn btn-mini active ttip" id="btn-add-point" data-toggle="tooltip" title="${_('Add a new point to the map')}"><i class="icon-plus"></i></a>
+                    <a class="btn btn-mini ttip" id="btn-remove-point" data-toggle="tooltip" title="${_('Remove a point from the map')}"><i class="icon-minus"></i></a>
+                    <a class="btn btn-mini btn-danger disabled ttip"><i class="icon-pencil"></i></a>
+                </div>
             </div>
-            <div class="btn-group" data-toggle="buttons-radio">
-                <a class="btn active" id="btn-add-point"><i class="icon-plus"></i></a>
-                <a class="btn" id="btn-remove-point"><i class="icon-minus"></i></a>
+        % endif
+
+        <div class="form-map-menu pull-right">
+            <button type="button" class="btn btn-mini pull-right form-map-menu-toggle ttip" data-toggle="button tooltip" title="${_('Turn layers on and off')}"><i class="icon-cog"></i></button>
+            <div class="accordion" id="form-map-menu-content">
+                <!-- Base layers -->
+                <div class="accordion-group">
+                    <h6>
+                        <a class="accordion-toggle" data-toggle="collapse" data-parent="#form-map-menu-content" href="#baseLayers">
+                            <b class="caret"></b>${_('Base layers')}
+                        </a>
+                    </h6>
+                    <div id="baseLayers" class="accordion-body collapse">
+                        <ul>
+                            <li>
+                                <label class="radio inline"><input type="radio" class="baseMapOptions" name="baseMapOptions" id="streetMapOption" value="streetMap" />${_('Street Map')}</label>
+                            </li>
+                            <li>
+                                <label class="radio inline"><input type="radio" class="baseMapOptions" name="baseMapOptions" id="satelliteMapOption" value="satelliteMap" checked="checked" />${_('Satellite Imagery')}</label>
+                            </li>
+                            <li>
+                                <label class="radio inline"><input type="radio" class="baseMapOptions" name="baseMapOptions" id="terrainMapOption" value="terrainMap" />${_('Terrain Map')}</label>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Context layers -->
+                <div class="accordion-group">
+                    <h6>
+                        <a class="accordion-toggle" data-toggle="collapse" data-parent="#form-map-menu-content" href="#contextLayers">
+                            <b class="caret"></b>${_('Context layers')}
+                        </a>
+                    </h6>
+                    <div id="contextLayers" class="accordion-body collapse">
+                        <ul id="context-layers-list">
+                              <!-- Placeholder for context layers entries -->
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
-    % endif
-    
-    <div id="googleMapNotFull" style="height:300px;"></div>
+    </div>
 
     ${template.render(request=request, geometry=geometry, editmode=editmode)}
 
