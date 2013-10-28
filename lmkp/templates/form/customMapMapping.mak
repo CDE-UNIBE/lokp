@@ -70,7 +70,7 @@
         </div>
     </div>
 
-    ${template.render(request=request, geometry=geometry, editmode=editmode)}
+    ${template.render(request=request, geometry=geometry, editmode=editmode, _=_)}
 
     % if field.errormsg:
         <li class="errorLi">

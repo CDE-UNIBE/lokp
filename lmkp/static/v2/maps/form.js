@@ -3,6 +3,15 @@
  * translated in template):
  * tForSuccess
  * tForInvalidFormat
+ *
+ *
+ * For Map Content (Activities)
+ * mapValues
+ * mapCriteria
+ * aKeys
+ * shKeys
+ *
+ * tForDealsGroupedBy
  */
 
 var geographicProjection = new OpenLayers.Projection("EPSG:4326");
@@ -11,12 +20,17 @@ var geojsonFormat = new OpenLayers.Format.GeoJSON({
     'internalProjection': sphericalMercatorProjection,
     'externalProjection': geographicProjection
 });
-var map,
-    selectCtrl,
+var selectCtrl,
     geometryLayer,
     removeLayer;
 
 $(document).ready(function() {
+
+    /**
+     * Map and layers
+     */
+    var layers = getBaseLayers();
+
     var markerStyle = new OpenLayers.StyleMap({
         'default': OpenLayers.Util.applyDefaults({
             externalGraphic: '/static/img/pin_darkred.png',
@@ -25,17 +39,6 @@ $(document).ready(function() {
             graphicYOffset: -25
         }, OpenLayers.Feature.Vector.style["default"])
     })
-
-    var layers = getBaseLayers();
-
-    geometryLayer = new OpenLayers.Layer.Vector('Geometry', {
-        styleMap: markerStyle,
-        eventListeners: {
-            'featureadded': updateFormCoordinates
-        }
-    });
-    layers.push(geometryLayer);
-
     removeLayer = new OpenLayers.Layer.Vector('RemovePoints', {
         styleMap: markerStyle,
         eventListeners: {
@@ -43,6 +46,13 @@ $(document).ready(function() {
         }
     });
     layers.push(removeLayer);
+    geometryLayer = new OpenLayers.Layer.Vector('Geometry', {
+        styleMap: markerStyle,
+        eventListeners: {
+            'featureadded': updateFormCoordinates
+        }
+    });
+    layers.push(geometryLayer);
 
     map = new OpenLayers.Map('googleMapNotFull', {
         displayProjection: geographicProjection,
@@ -62,36 +72,15 @@ $(document).ready(function() {
         layers: layers
     });
     setBaseLayerByName(map, 'satelliteMap');
-
-    // Loop the context layers and append it to the context layers menu
-    for (var c in contextLayers) {
-        var layerName = contextLayers[c].name;
-        var t = [
-            '<li>',
-            '<div class="checkbox-modified-small">',
-            '<input class="input-top" type="checkbox" value="' + layerName + '" id="checkbox' + layerName + '">',
-            '<label for="checkbox' + layerName + '"></label>',
-            '</div>',
-            '<p class="context-layers-description">',
-            layerName,
-            '</p>',
-            '</li>'
-        ].join('');
-        $("#context-layers-list").append(t);
-    }
+    initializeMapContent(false, false);
+    initializeContextLayers();
 
     /**
-     * EVENTS
+     * Map Events
      */
-
-    // Toggle the visibility of the context layers
-    $(".input-top").click(function(event){
-        if (event.target.value) {
-            setContextLayerByName(map, event.target.value, event.target.checked);
-        }
-    });
-
-    map.addLayers(contextLayers);
+     initializeBaseLayerControl();
+     initializeContextLayerControl();
+     initializeMapSearch();
 
     $('.form-map-menu-toggle').click(function() {
         $('#form-map-menu-content').toggle();
@@ -156,8 +145,6 @@ $(document).ready(function() {
         container: 'body',
         placement: 'bottom'
     });
-
-    initializeMapSearch(map);
 });
 
 function toggleMode(mode) {
