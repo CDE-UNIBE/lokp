@@ -102,7 +102,7 @@ function initializeMapSearch() {
  * - <h6 class="deal-headline"></h6>
  * - <ul id="taggroups-ul">
  */
-function initializeMapContent(cluster, interactive) {
+function initializeMapContent(cluster, interactive, visible) {
 
     // Test if the values defined in template are available
     if (typeof mapValues === 'undefined') {
@@ -208,6 +208,10 @@ function initializeMapContent(cluster, interactive) {
                         'featureselected': onFeatureSelected,
                         'featureunselected': onFeatureUnselected
                     });
+                }
+
+                if (visible === false) {
+                    featureLayer.setVisibility(false);
                 }
 
                 // Add the layer to the map and to the list of layers
@@ -498,6 +502,17 @@ function setContextLayerByName(map, name, checked) {
     }
 }
 
+/**
+ * Set all the content (Activity) layers to visible or not.
+ */
+function toggleContentLayers(visible) {
+    $.each(map.getLayersByClass("OpenLayers.Layer.Vector"), function() {
+        var nonContentLayers = ['RemovePoints', 'Geometry'];
+        if ($.inArray(this.name, nonContentLayers) == -1) {
+            this.setVisibility(visible);
+        }
+    });
+}
 
 /**
  * Function to get the style of a clustered layer based on a color index.

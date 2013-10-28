@@ -1,10 +1,13 @@
 <%
     from mako.template import Template
     from pyramid.path import AssetResolver
+    from lmkp.config import getTemplatePath
     import colander
     lmkpAssetResolver = AssetResolver('lmkp')
     resolver = lmkpAssetResolver.resolve('templates/map/mapform.mak')
     template = Template(filename=resolver.abspath())
+    activitiesResolver = lmkpAssetResolver.resolve(getTemplatePath(request, 'parts/items/activities.mak'))
+    activitiesTemplate = Template(filename=activitiesResolver.abspath())
     geometry = None if cstruct['geometry'] == colander.null else cstruct['geometry']
     editmode = None if cstruct['editmode'] == colander.null else cstruct['editmode']
     _ = request.translate
@@ -63,6 +66,30 @@
                             <ul id="context-layers-list">
                                   <!-- Placeholder for context layers entries -->
                             </ul>
+                        </div>
+                    </div>
+                    <!-- Activity layers -->
+                    <div class="accordion-group">
+                        <h6>
+                            <a class="accordion-toggle" data-toggle="collapse" data-parent="#form-map-menu-content" href="#activityLayers">
+                                <b class="caret"></b>${activitiesTemplate.render(request=request, _=_)}
+                            </a>
+                        </h6>
+                        <div id="activityLayers" class="accordion-body collapse">
+                            <ul>
+                                <li>
+                                    <div class="checkbox-modified-small">
+                                        <input type="checkbox" id="activityLayerToggle" class="input-top">
+                                        <label for="activityLayerToggle"></label>
+                                    </div>
+                                    <p class="context-layers-description">
+                                        ${_('Show on map')}
+                                    </p>
+                                </li>
+                            </ul>
+                            <div id="map-legend-list">
+                                <!-- Placeholder for legend -->
+                            </div>
                         </div>
                     </div>
                 </div>

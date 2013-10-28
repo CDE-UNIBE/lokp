@@ -72,7 +72,7 @@ $(document).ready(function() {
         layers: layers
     });
     setBaseLayerByName(map, 'satelliteMap');
-    initializeMapContent(false, false);
+    initializeMapContent(false, false, false);
     initializeContextLayers();
 
     /**
@@ -144,6 +144,12 @@ $(document).ready(function() {
     $('.ttip-bottom').tooltip({
         container: 'body',
         placement: 'bottom'
+    });
+
+    $('#activityLayerToggle').change(function(e) {
+        if (e.target.value) {
+            toggleContentLayers(e.target.checked);
+        }
     });
 });
 
