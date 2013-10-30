@@ -1337,12 +1337,12 @@ class Protocol(object):
                     if 'stakeholders' in old_diff:
                         old_diff['stakeholders'].append(new_inv)
                     else:
-                        old_diff['stakeholders'] = new_inv
+                        old_diff['stakeholders'] = [new_inv]
 
             else:
                 # If no involvements in old_diff, add the one from the new_inv
                 # as it is
-                old_diff['stakeholders'] = new_inv
+                old_diff['stakeholders'] = [new_inv]
 
 #                log.debug('Added new involvement diff: %s' % new_inv)
 
@@ -1438,6 +1438,8 @@ class Protocol(object):
                     else:
                         old_diff['taggroups'] = [new_tg]
 
+#                    log.debug('Added new taggroup diff (after not finding it): %s' % new_tg)
+
             else:
                 # If no taggroups yet in old_diff, add the one from the new_tg
                 # as it is
@@ -1488,14 +1490,14 @@ class Protocol(object):
                     rel_keys = []
                     # Have a look at each tag in rel_tg
                     for rel_t in rel_tg['tags']:
-                        rel_tags[rel_t['key']] = rel_t['value']
+                        rel_tags[rel_t['key']] = unicode(rel_t['value'])
                         rel_keys.append(rel_t['key'])
                     found_tg_id = None
                     for f_tg in feature.get_taggroups():
                         if found_tg_id is None:
                             f_tags = {}
                             for f_t in f_tg.get_tags():
-                                f_tags[f_t.get_key()] = f_t.get_value()
+                                f_tags[f_t.get_key()] = unicode(f_t.get_value())
                             if (len(set(rel_tags.items()) & set(f_tags.items()))
                                 == len(rel_keys)):
                                 found_tg_id = f_tg.get_tg_id()
@@ -1537,7 +1539,7 @@ class Protocol(object):
         if self.categoryList is None:
 
 #            log.debug('Created a new ConfigCategoryList object of type %s' % itemType)
-            
+
             self.categoryList = getCategoryList(request, itemType)
 
         # Trim white spaces
