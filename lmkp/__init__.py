@@ -298,6 +298,9 @@ def main(global_config, ** settings):
     # Changeset protocol, query the changeset
     config.add_route('changesets_read', '/changesets')
 
+    # A route to the sitemap.xml
+    config.add_route('sitemap', '/sitemap.xml')
+
     # Evaluation
     config.add_route('evaluation_json', '/evaluation/{temp}')
     # Some (hopefully) nice charts from the evalution
