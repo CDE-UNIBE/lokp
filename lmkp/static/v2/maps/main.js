@@ -26,6 +26,15 @@
 
 $(document).ready(function() {
 
+    // Collect any active filters (both A and SH)
+    var filterParams = [], hash;
+    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    for (var i = 0; i < hashes.length; i++) {
+        if (hashes[i].lastIndexOf('a__', 0) === 0 || hashes[i].lastIndexOf('sh__', 0) === 0) {
+            filterParams.push(hashes[i]);
+        }
+    }
+
     /**
      * Map and layers
      */
@@ -47,7 +56,7 @@ $(document).ready(function() {
             'moveend': storeMapExtent
         }
     });
-    initializeMapContent(true, true);
+    initializeMapContent(true, true, true, filterParams);
     initializeContextLayers();
 
     // Check if a location cookie is set. If yes, center the map to this location.

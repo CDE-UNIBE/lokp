@@ -102,7 +102,7 @@ function initializeMapSearch() {
  * - <h6 class="deal-headline"></h6>
  * - <ul id="taggroups-ul">
  */
-function initializeMapContent(cluster, interactive, visible) {
+function initializeMapContent(cluster, interactive, visible, filterParams) {
 
     // Test if the values defined in template are available
     if (typeof mapValues === 'undefined') {
@@ -110,6 +110,9 @@ function initializeMapContent(cluster, interactive, visible) {
     }
     if (typeof mapCriteria === 'undefined' || mapCriteria.length != 3) {
         return;
+    }
+    if (typeof filterParams === 'undefined') {
+        filterParams = [];
     }
 
     /**
@@ -133,7 +136,7 @@ function initializeMapContent(cluster, interactive, visible) {
     // Get the data with a jQuery AJAX request. To prevent IE from caching, use
     // $.ajax instead of $.get so the parameter "cache=false" can be set.
     $.ajax({
-        url: '/activities/geojson?attrs=' + mapCriteria[1],
+        url: '/activities/geojson?' + $.merge(['attrs=' + mapCriteria[1]], filterParams).join('&'),
         cache: false,
         success: function(data) {
             // Define a geojson format needed to read the features
