@@ -14,7 +14,7 @@ from geoalchemy.functions import functions
 #@view_defaults(request_method='GET')
 class EvaluationView(BaseView):
 
-    @view_config(route_name='charts', renderer='lmkp:templates/charts.mak')
+    @view_config(route_name='charts', renderer='lmkp:templates/ext_charts.mak')
     def show_charts(self):
 
         self._handle_parameters()

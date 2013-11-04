@@ -6,8 +6,10 @@ from lmkp.views.protocol import *
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.translation import get_translated_status
 from lmkp.views.translation import statusMap
+from lmkp.views.form_config import getCategoryList
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.i18n import get_localizer
 from shapely.geometry import asShape
 from shapely.geometry.polygon import Polygon
@@ -61,27 +63,25 @@ class ActivityFeature3(Feature):
     def getOtherMappedClass(self):
         return Stakeholder
 
-    def to_tags(self):
+    def to_tags(self, request):
+        """
+        Return a short representation in tag form (array of keys/values) of the
+        most important attributes of the feature (as defined in the yaml as
+        'involvementoverview')
+        """
 
-        repr = []
-        c = []
-        a = []
-        i = []
-        for tg in self._taggroups:
+        categoryList = getCategoryList(request, 'activities')
+        overviewkeys = categoryList.getInvolvementOverviewKeyNames()
+        overviewtags = [{'key': k[0], 'value': []} for k in overviewkeys]
 
-            for t in tg.get_tags():
-                if t.get_key() == 'Country':
-                    c.append(t.get_value())
-                if t.get_key() == 'Intended area (ha)':
-                    a.append(t.get_value())
-                if t.get_key() == 'Intention of Investment':
-                    i.append(t.get_value())
+        for rettag in overviewtags:
+            for tg in self._taggroups:
+                for t in tg.get_tags():
+                    if t.get_key() == rettag['key']:
+                        rettag['value'].append(t.get_value())
+            rettag['value'] = ', '.join(rettag['value'])
 
-        repr.append({"key": "Country", 'value': ','.join(c)})
-        repr.append({"key": "Intended area (ha)", 'value': ','.join(a)})
-        repr.append({"key": "Intention of Investment", 'value': ','.join(i)})
-
-        return repr
+        return overviewtags
 
     def get_geometry(self):
         return self._geometry
@@ -213,7 +213,11 @@ class ActivityProtocol3(Protocol):
         if len(ids) > 0:
             # At least one Activity was created
             changeset_diff = {'activities': activity_diffs}
-            changeset.diff = json.dumps(changeset_diff)
+            try:
+                changeset.diff = json.dumps(changeset_diff)
+            except TypeError:
+                log.error('Changeset JSON Error with the following diff: %s' % changeset_diff)
+                return None
 
             return ids
 
@@ -376,15 +380,15 @@ class ActivityProtocol3(Protocol):
         }
 
 
-    def read_many_by_stakeholder(self, request, uid, public=True, **kwargs):
+    def read_many_by_stakeholders(self, request, uids, public=True, **kwargs):
         """
         Valid kwargs:
         - limit
         - offset
         """
 
-        relevant_activities = self._get_relevant_activities_by_stakeholder(
-                                                                           request, uid, public_query=public)
+        relevant_activities = self._get_relevant_activities_by_stakeholders(
+            request, uids, public_query=public)
 
         # Determine if and how detailed Involvements are to be displayed.
         # Default is: 'full'
@@ -395,12 +399,11 @@ class ActivityProtocol3(Protocol):
         limit = kwargs.get('limit', self._get_limit(request))
         offset = kwargs.get('offset', self._get_offset(request))
 
-        query, count = self._query_many(
-                                        request, relevant_activities, limit=limit, offset=offset,
-                                        involvements=inv_details != 'none')
+        query, count = self._query_many(request, relevant_activities,
+            limit=limit, offset=offset, involvements=inv_details != 'none')
 
-        activities = self._query_to_activities(
-                                               request, query, involvements=inv_details, public_query=public)
+        activities = self._query_to_activities(request, query,
+            involvements=inv_details, public_query=public)
 
         return {
             'total': count,
@@ -417,10 +420,17 @@ class ActivityProtocol3(Protocol):
         limit = self._get_limit(request)
         offset = self._get_offset(request)
 
-        query = self._query_geojson(relevant_activities, limit=limit,
-                                    offset=offset)
+        # Get the additional attributes for the geojson query
+        attrs = []
+        queryAttrs = request.params.get('attrs', None)
 
-        return self._query_to_geojson(query)
+        if queryAttrs is not None:
+            attrs = queryAttrs.split(',')
+
+        query = self._query_geojson(request, relevant_activities, limit=limit,
+            offset=offset, attrs=attrs)
+
+        return self._query_to_geojson(query, attrs)
 
     def _get_relevant_activities_one_by_version(self, uid, version):
         # Create relevant Activities
@@ -906,7 +916,7 @@ class ActivityProtocol3(Protocol):
 
         return relevant_activities
 
-    def _get_relevant_activities_by_stakeholder(self, request, uid,
+    def _get_relevant_activities_by_stakeholders(self, request, uids,
                                                 public_query=False):
 
         logged_in, is_moderator = self._get_user_status(
@@ -915,8 +925,16 @@ class ActivityProtocol3(Protocol):
         # Use StakeholderProtocol to query the Stakeholder versions
         # corresponding to given uid
         sp = StakeholderProtocol3(self.Session)
-        relevant_stakeholders = sp._get_relevant_stakeholders_one(request,
-                                                                  uid=uid, public_query=public_query)
+
+        if len(uids) == 1:
+            # Query only 1 Stakeholder
+            relevant_stakeholders = sp._get_relevant_stakeholders_one(request,
+              uid=uids[0], public_query=public_query)
+        elif isinstance(uids, list):
+            raise HTTPBadRequest(detail='Not yet supported')
+        else:
+            raise HTTPNotFound()
+
         relevant_stakeholders = relevant_stakeholders.\
             subquery()
 
@@ -1272,7 +1290,8 @@ class ActivityProtocol3(Protocol):
         else:
             return query
 
-    def _query_geojson(self, relevant_activities, limit=None, offset=None):
+    def _query_geojson(self, request, relevant_activities, limit=None,
+        offset=None, attrs=[]):
 
         # Apply limit and offset
         if limit is not None:
@@ -1282,6 +1301,8 @@ class ActivityProtocol3(Protocol):
 
         # Create query
         relevant_activities = relevant_activities.subquery()
+        # Caution: If you change something here (add or remove columns), adapt
+        # the number in function _query_to_geojson as well!
         query = self.Session.query(
                                    Activity.id.label('id'),
                                    Activity.point.label('geometry'),
@@ -1293,6 +1314,29 @@ class ActivityProtocol3(Protocol):
             join(relevant_activities,
                  relevant_activities.c.order_id == Activity.id).\
             join(Status)
+
+        if len(attrs) > 0:
+            localizer = get_localizer(request)
+            lang = self.Session.query(Language).\
+                filter(Language.locale == localizer.locale_name).\
+                first()
+
+            query = query.\
+                outerjoin(A_Tag_Group, Activity.id == A_Tag_Group.fk_activity).\
+                outerjoin(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
+                outerjoin(A_Key, A_Tag.fk_key == A_Key.id).\
+                outerjoin(A_Value, A_Tag.fk_value == A_Value.id).\
+                filter(A_Key.key.in_(attrs))
+
+            if lang is not None and lang.id != 1:
+                key_translation, value_translation = self._get_translatedKV(lang,
+                    A_Key, A_Value)
+                query = query.add_columns(value_translation.c.value_translated)
+                query = query.outerjoin(value_translation,
+                    value_translation.c.value_original_id == A_Value.id)
+
+            else:
+                query = query.add_columns(A_Value.value)
 
         return query
 
@@ -1479,9 +1523,10 @@ class ActivityProtocol3(Protocol):
 
         return activities
 
-    def _query_to_geojson(self, query):
+    def _query_to_geojson(self, query, additionalKeys=[]):
 
-        def _create_feature(id, g, identifier, status_id, status_name, version):
+        def _create_feature(id, g, identifier, status_id, status_name, version,
+            keys, values):
             """
             Small helper function to create a new Feature
             """
@@ -1499,6 +1544,8 @@ class ActivityProtocol3(Protocol):
                 'activity_identifier': str(identifier),
                 'version': int(version)
             }
+            for i, k in enumerate(keys):
+                properties[k] = values[i]
             feature['properties'] = properties
 
             # Doppelt genaeht haelt besser
@@ -1513,16 +1560,18 @@ class ActivityProtocol3(Protocol):
         featureCollection['type'] = 'FeatureCollection'
 
         for q in query.all():
-            featureCollection['features'].append(
-                                                 _create_feature(
-                                                 q.id,
-                                                 q.geometry,
-                                                 q.identifier,
-                                                 q.status_id,
-                                                 q.status_name,
-                                                 q.version
-                                                 )
-                                                 )
+            additionalValues = []
+            # Caution: This number is strongly correlated with the number of
+            # columns set when creating the query in function _query_geojson
+            # above.
+            if len(q) > 6 and len(additionalKeys) > 0:
+                additionalValues = q[6:]
+            if len(additionalKeys) != len(additionalValues):
+                additionalKeys = []
+                additionalValues = []
+            featureCollection['features'].append(_create_feature(q.id,
+                q.geometry, q.identifier, q.status_id, q.status_name, q.version,
+                additionalKeys, additionalValues))
 
         return featureCollection
 

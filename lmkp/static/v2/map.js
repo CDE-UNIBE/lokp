@@ -11,6 +11,7 @@
  * tForMoredeals
  * tForNodealselected
  * tForSelecteddeals
+ * tForDealsGroupedBy
  */
 
 $(document).ready(function() {
@@ -88,105 +89,10 @@ $(document).ready(function() {
                 $.cookie("_LOCATION_", extent.toString(), {
                     expires: 7
                 });
-            /*var ext  = map.getExtent();
-                activitiesLayer.protocol.read({
-                    params: {
-                        epsg: 900913,
-                        bbox: ext.left + "," + ext.bottom + "," + ext.right + "," + ext.top,
-                        limit: 500
-                    },
-                    url: "/activities/geojson"
-                });*/
             }
         },
         projection: sphericalMercatorProjection
     });
-
-    /**
-    var rules = [
-    // Rule for active Activities
-    new OpenLayers.Rule({
-        title: "Active Activities",
-        filter: new OpenLayers.Filter.Comparison({
-            property: 'status',
-            type: OpenLayers.Filter.Comparison.EQUAL_TO,
-            value: 'active'
-        }),
-        symbolizer: {
-            graphicName: "circle",
-            pointRadius: 7,
-            fillColor: "#bd0026",
-            fillOpacity: fillOpacity,
-            strokeColor: "#bd0026",
-            strokeWidth: 1
-        }
-    }), new OpenLayers.Rule({
-        title: "Pending Activities",
-        filter: new OpenLayers.Filter.Comparison({
-            property: 'status',
-            type: OpenLayers.Filter.Comparison.EQUAL_TO,
-            value: 'pending'
-        }),
-        symbolizer: {
-            graphicName: "triangle",
-            pointRadius: 7,
-            fillColor: "#ffa07a",
-            fillOpacity: fillOpacity,
-            strokeColor: "#ff6100",
-            strokeWidth: 1
-        }
-    })
-    ];
-     **/
-
-    var fillOpacity = 1;
-   
-    var strokeOpacity = function(feature){
-        if(feature.attributes.count == 1){
-            var f = feature.cluster[0];
-            if(f.attributes.status == "pending"){
-                return 1;
-            }
-        }
-        return 0.5;
-    };
-
-    var strokeWidth = function(feature){
-        if(feature.attributes.count == 1){
-            var f = feature.cluster[0];
-            if(f.attributes.status == "pending"){
-                return 2;
-            }
-        }
-        return 5;
-    };
-
-    // Calculates the radius for clustered features
-    var radius = function(feature){
-        if(feature.attributes.count == 1){
-            return 6;
-        } else {
-            return Math.min(feature.attributes.count, 12) + 5;
-        }
-    }
-
-    // Returns the number of clustered features, which is used to label the clusters.
-    var label = function(feature){
-        if(feature.attributes.count > 1){
-            return feature.attributes.count;
-        } else {
-            return "";
-        }
-    }
-
-    // Use circles for clustered features and a triangle to symbolize singe features
-    var graphicName = function(feature){
-        if(feature.attributes.count == 1){
-            return "triangle";
-        } else {
-            return "circle";
-        }
-    }
 
     // Show the main tags from all taggroups in the basic-data overlay box
     var onFeatureSelected = function(event){
@@ -201,7 +107,7 @@ $(document).ready(function() {
                 var a = r.data[0];
                 var tgs = a.hasOwnProperty('taggroups') ? a.taggroups : [];
                 var invs = a.hasOwnProperty('involvements') ? a.involvements : [];
-                
+
                 $("#taggroups-ul" ).empty();
                 $.each(tgs, function() {
                     var v;
@@ -211,7 +117,7 @@ $(document).ready(function() {
                         $( "#taggroups-ul" ).append( "<li><p><span class=\"bolder\">" + this.main_tag.key + ": </span>" + v + "</p></li>" );
                     }
                 });
-                
+
                 var involvements = [];
                 $.each(invs, function() {
                     var sh = this.data;
@@ -274,383 +180,151 @@ $(document).ready(function() {
         $(".basic-data").append('<ul id="taggroups-ul"><li><p>' + tForNodealselected + '</p></li></ul>');
     }
 
-    // Vector layer that contains all deals whose intention of investment is agriculture
-    var agricultureDealsLayer = new OpenLayers.Layer.Vector('Agricultural deals', {
-        eventListeners: {
-            "featureselected": onFeatureSelected,
-            "featureunselected": onFeatureUnselected
-        },
-        isBaseLayer: false,
-        maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34,
-            20037508.34, 20037508.34),
-        protocol: new OpenLayers.Protocol.HTTP({
-            format: new OpenLayers.Format.GeoJSON({
-                externalProjection: geographicProjection,
-                internalProjection: sphericalMercatorProjection
-            }),
-            url: "/activities/geojson?" + $.merge(["a__Intention of Investment__like=Agriculture"], filterParams).join('&')
-        }),
-        sphericalMercator: true,
-        strategies: [
-        new OpenLayers.Strategy.Fixed(),
-        new OpenLayers.Strategy.Cluster({
-            distance: 30
-        })
-        ],
-        /*styleMap: new OpenLayers.StyleMap({
-            "default": new OpenLayers.Style({}, {
-                rules: rules
-            }),
-            "select": new OpenLayers.Style({
-                fillColor: '#00ffff',
-                fillOpacity: 0.8,
-                strokeColor: '#006666'
-            })
-        })*/
-        styleMap: new OpenLayers.StyleMap({
-            "default":new OpenLayers.Style({
-                graphicName: "${graphicName}",
-                fontColor: "#ffffff",
-                fontSize: "9px",
-                label: "${label}",
-                pointRadius: "${radius}",
-                rotation: 180.0,
-                fillColor: "${fillColor}",
-                fillOpacity: fillOpacity,
-                strokeColor: "#006600",
-                strokeOpacity: "${strokeOpacity}",
-                strokeWidth: "${strokeWidth}"
-            }, {
-                context: {
-                    graphicName: graphicName,
-                    label: label,
-                    radius: radius,
-                    strokeOpacity: strokeOpacity,
-                    strokeWidth: strokeWidth,
-                    fillColor: function(feature){
-                        if(feature.attributes.count == 1){
-                            var f = feature.cluster[0];
-                            if(f.attributes.status == "pending"){
-                                return "#ffffff";
-                            }
-                        }
-                        return "#006600";
-                    }
-                }
-            }),
-            "select": new OpenLayers.Style({
-                fontColor: "#000000",
-                fillColor: "#00ffff",
-                strokeColor: "#00ffff"
-            })
-        })
-    });
+    // Test if the values defined in template are available
+    if (typeof mapValues === 'undefined') {
+        mapValues = [];
+    }
+    if (typeof mapCriteria === 'undefined' || mapCriteria.length != 3) {
+        mapCriteria = ['', '', 1];
+    }
 
-    // Vector layer that contains all deals whose intention of investment is forestry
-    var forestryDealsLayer = new OpenLayers.Layer.Vector('Forestry deals', {
-        eventListeners: {
-            "featureselected": onFeatureSelected,
-            "featureunselected": onFeatureUnselected
-        },
-        isBaseLayer: false,
-        maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34,
-            20037508.34, 20037508.34),
-        protocol: new OpenLayers.Protocol.HTTP({
-            format: new OpenLayers.Format.GeoJSON({
-                externalProjection: geographicProjection,
-                internalProjection: sphericalMercatorProjection
-            }),
-            params: {
-                "a__Intention of Investment__like": "Forestry"
-            },
-            url: "/activities/geojson?" + $.merge(["a__Intention of Investment__like=Forestry"], filterParams).join('&')
-        }),
-        sphericalMercator: true,
-        strategies: [
-        new OpenLayers.Strategy.Fixed(),
-        new OpenLayers.Strategy.Cluster({
-            distance: 30
-        })
-        ],
-        styleMap: new OpenLayers.StyleMap({
-            "default":new OpenLayers.Style({
-                fillColor: "${fillColor}",
-                fillOpacity: fillOpacity,
-                fontColor: "#ffffff",
-                fontSize: "9px",
-                graphicName: "${graphicName}",
-                label: "${label}",
-                pointRadius: "${radius}",
-                rotation: 180.0,
-                strokeColor: "#916100",
-                strokeOpacity: "${strokeOpacity}",
-                strokeWidth: "${strokeWidth}"
-            }, {
-                context: {
-                    graphicName: graphicName,
-                    label: label,
-                    radius: radius,
-                    strokeOpacity: strokeOpacity,
-                    strokeWidth: strokeWidth,
-                    fillColor: function(feature){
-                        if(feature.attributes.count == 1){
-                            var f = feature.cluster[0];
-                            if(f.attributes.status == "pending"){
-                                return "#ffffff";
-                            }
-                        }
-                        return "#916100";
-                    }
-                }
-            }),
-            "select": new OpenLayers.Style({
-                fillColor: "#00ffff",
-                fontColor: "#000000",
-                strokeColor: "#00ffff"
-            })
-        })
-    });
+    /**
+     * Map symbolization
+     * Approach: Use only one geojson request to query all the features. Loop
+     * through the features and group them based on the value of the map
+     * criteria. Create a layer for each group, add the correct group of 
+     * features to it and add the layer to the map.
+     */
 
-    // Vector layer that contains all deals whose intention of investment is mining
-    var miningDealsLayer = new OpenLayers.Layer.Vector('Mining deals', {
-        eventListeners: {
-            "featureselected": onFeatureSelected,
-            "featureunselected": onFeatureUnselected
-        },
-        isBaseLayer: false,
-        maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34,
-            20037508.34, 20037508.34),
-        protocol: new OpenLayers.Protocol.HTTP({
-            format: new OpenLayers.Format.GeoJSON({
-                externalProjection: geographicProjection,
-                internalProjection: sphericalMercatorProjection
-            }),
-            url: "/activities/geojson?" + $.merge(["a__Intention of Investment__like=Mining"], filterParams).join('&')
-        }),
-        sphericalMercator: true,
-        strategies: [
-        new OpenLayers.Strategy.Fixed(),
-        new OpenLayers.Strategy.Cluster({
-            distance: 30
-        })
-        ],
-        styleMap: new OpenLayers.StyleMap({
-            "default":new OpenLayers.Style({
-                fillColor: "${fillColor}",
-                fillOpacity: fillOpacity,
-                fontColor: "#ffffff",
-                fontSize: "9px",
-                graphicName: "${graphicName}",
-                label: "${label}",
-                pointRadius: "${radius}",
-                rotation: 180.0,
-                strokeColor: "#5a5a5a",
-                strokeOpacity: "${strokeOpacity}",
-                strokeWidth: "${strokeWidth}"
-            }, {
-                context: {
-                    graphicName: graphicName,
-                    label: label,
-                    radius: radius,
-                    strokeOpacity: strokeOpacity,
-                    strokeWidth: strokeWidth,
-                    fillColor: function(feature){
-                        if(feature.attributes.count == 1){
-                            var f = feature.cluster[0];
-                            if(f.attributes.status == "pending"){
-                                return "#ffffff";
-                            }
-                        }
-                        return "#5a5a5a";
-                    }
-                }
-            }),
-            "select": new OpenLayers.Style({
-                fontColor: "#000000",
-                fillColor: "#00ffff",
-                strokeColor: "#00ffff"
-            })
-        })
-    });
+    // Prepare to collect all the features based on the map criteria
+    var mapFeatures = {};
+    for (var v in mapValues) {
+        mapFeatures[mapValues[v]] = [];
+    }
 
-    // Vector layer that contains all deals whose intention of investment is tourism
-    var tourismDealsLayer = new OpenLayers.Layer.Vector('Tourism deals', {
-        eventListeners: {
-            "featureselected": onFeatureSelected,
-            "featureunselected": onFeatureUnselected
-        },
-        isBaseLayer: false,
-        maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34,
-            20037508.34, 20037508.34),
-        protocol: new OpenLayers.Protocol.HTTP({
-            format: new OpenLayers.Format.GeoJSON({
-                externalProjection: geographicProjection,
-                internalProjection: sphericalMercatorProjection
-            }),
-            url: "/activities/geojson?" + $.merge(["a__Intention of Investment__like=Tourism"], filterParams).join('&')
-        }),
-        sphericalMercator: true,
-        strategies: [
-        new OpenLayers.Strategy.Fixed(),
-        new OpenLayers.Strategy.Cluster({
-            distance: 30
-        })
-        ],
-        styleMap: new OpenLayers.StyleMap({
-            "default":new OpenLayers.Style({
-                fillColor: "${fillColor}",
-                fillOpacity: fillOpacity,
-                fontColor: "#ffffff",
-                fontSize: "9px",
-                graphicName: "${graphicName}",
-                label: "${label}",
-                pointRadius: "${radius}",
-                rotation: 180.0,
-                strokeColor: "#bd0026",
-                strokeOpacity: "${strokeOpacity}",
-                strokeWidth: "${strokeWidth}"
-            }, {
-                context: {
-                    graphicName: graphicName,
-                    label: label,
-                    radius: radius,
-                    strokeOpacity: strokeOpacity,
-                    strokeWidth: strokeWidth,
-                    fillColor: function(feature){
-                        if(feature.attributes.count == 1){
-                            var f = feature.cluster[0];
-                            if(f.attributes.status == "pending"){
-                                return "#ffffff";
-                            }
-                        }
-                        return "#bd0026";
-                    }
-                }
-            }),
-            "select": new OpenLayers.Style({
-                fontColor: "#000000",
-                fillColor: "#00ffff",
-                strokeColor: "#00ffff"
-            })
-        })
-    });
+    // Also collect all the created layers in an array (needed to make them
+    // selectable after adding them to the map)
+    var featureLayers = [];
 
-    // Vector layer that contains all deals with other intentions of investment
-    var otherDealsLayer = new OpenLayers.Layer.Vector('Other deals', {
-        eventListeners: {
-            "featureselected": onFeatureSelected,
-            "featureunselected": onFeatureUnselected
-        },
-        isBaseLayer: false,
-        maxExtent: new OpenLayers.Bounds(-20037508.34, -20037508.34,
-            20037508.34, 20037508.34),
-        protocol: new OpenLayers.Protocol.HTTP({
-            format: new OpenLayers.Format.GeoJSON({
-                externalProjection: geographicProjection,
-                internalProjection: sphericalMercatorProjection
-            }),
-            url: "/activities/geojson?" + $.merge(["a__Intention of Investment__like=Other"], filterParams).join('&')
-        }),
-        sphericalMercator: true,
-        strategies: [
-        new OpenLayers.Strategy.Fixed(),
-        new OpenLayers.Strategy.Cluster({
-            distance: 30
-        })
-        ],
-        styleMap: new OpenLayers.StyleMap({
-            "default":new OpenLayers.Style({
-                fillColor: "${fillColor}",
-                fillOpacity: fillOpacity,
-                fontColor: "#ffffff",
-                fontSize: "9px",
-                graphicName: "${graphicName}",
-                label: "${label}",
-                pointRadius: "${radius}",
-                rotation: 180.0,
-                strokeColor: "#04089B",
-                strokeOpacity: "${strokeOpacity}",
-                strokeWidth: "${strokeWidth}"
-            }, {
-                context: {
-                    graphicName: graphicName,
-                    label: label,
-                    radius: radius,
-                    strokeOpacity: strokeOpacity,
-                    strokeWidth: strokeWidth,
-                    fillColor: function(feature){
-                        if(feature.attributes.count == 1){
-                            var f = feature.cluster[0];
-                            if(f.attributes.status == "pending"){
-                                return "#ffffff";
-                            }
-                        }
-                        return "#04089B";
+    // Get the data with a jQuery AJAX request. To prevent IE from caching, use
+    // $.ajax instead of $.get so the parameter "cache=false" can be set.
+    $.ajax({
+        url: '/activities/geojson?attrs=' + mapCriteria[1],
+        cache: false,
+        success: function(data) {
+            // Define a geojson format needed to read the features
+            var geojsonFormat = new OpenLayers.Format.GeoJSON({
+              'internalProjection': new OpenLayers.Projection("EPSG:900913"),
+              'externalProjection': new OpenLayers.Projection("EPSG:4326")
+            });
+
+            // Read and loop all the features, add them to the correct group
+            var features = geojsonFormat.read(data);
+            $.each(features, function() {
+
+                // Make sure the mapCriteria is present in the feature
+                if (!this.attributes[mapCriteria[1]]) return;
+
+                // Make sure the mapCriteria exists in the list of available groups
+                if (!mapFeatures[this.attributes[mapCriteria[1]]]) return;
+
+                // Add it to the group
+                mapFeatures[this.attributes[mapCriteria[1]]].push(this);
+            });
+
+            var legendExplanation = [
+                '<div class="legendExplanation">',
+                tForDealsGroupedBy, ': ',
+                '<strong>', mapCriteria[0], '</strong>',
+                '</div>'
+            ].join('');
+            $("#map-legend-list").append(legendExplanation);
+
+            // Give each group a different color
+            var colorIndex = 0;
+
+            // Loop the groups of features
+            for (var l in mapFeatures) {
+
+                // Create a clustering strategy for each with the features already
+                // available
+                var clusterStrategy = new OpenLayers.Strategy.Cluster({
+                    distance: 30,
+                    features: mapFeatures[l]
+                });
+
+                // Create the layer
+                var featureLayer = new OpenLayers.Layer.Vector(l, {
+                    strategies: [
+                        clusterStrategy
+                    ],
+                    styleMap: new OpenLayers.StyleMap({
+                        // Get the style based on the current color
+                        'default': getStyle(colorIndex),
+                        'select': new OpenLayers.Style({
+                            fontColor: '#000000',
+                            fillColor: '#00ffff',
+                            strokeColor: '#00ffff'
+                        })
+                    }),
+                    eventListeners: {
+                        'featureselected': onFeatureSelected,
+                        'featureunselected': onFeatureUnselected
                     }
-                }
-            }),
-            "select": new OpenLayers.Style({
-                fillColor: "#00ffff",
-                fontColor: "#000000",
-                strokeColor: "#00ffff"
-            })
-        })
+                });
+                // Add the layer to the map and to the list of layers
+                map.addLayer(featureLayer);
+                featureLayers.push(featureLayer);
+
+                // Do the initial clustering of the features
+                clusterStrategy.cluster();
+
+                // Write a legend entry for the group
+                var legendTemplate = [
+                    '<li class="legendEntry">',
+                    '<div class="vectorLegendSymbol" style="background-color: ' + getColor(colorIndex) + ';">',
+                    '</div>',
+                    l,
+                    '</li>'
+                ].join('');
+                $("#map-legend-list").append(legendTemplate);
+
+                colorIndex++;
+            }
+
+            // Create the SelectFeature control, add it for each feature layer and
+            // activate it
+            var selectControl = new OpenLayers.Control.SelectFeature(featureLayers);
+            map.addControl(selectControl);
+            selectControl.activate();
+        }
     });
 
     // Loop the context layers and append it to the context layers menu
-    for(var i = 0; i < contextLayers.length; i++){
-        var l = contextLayers[i];
-
-        var layerName = contextLayers[i].name;
-
-        var t = "\n\
-<li>\n\
-<div class=\"checkbox-modified-small\">\n\
-<input class=\"input-top\" type=\"checkbox\" value=\"" + layerName + "\" id=\"checkbox" + layerName + "\">\n\
-<label for=\"checkbox" + layerName + "\"></label>\n\
-</div>\n\
-<p class=\"context-layers-description\">" + layerName + "&nbsp;<i class=\"icon-exclamation-sign pointer\" onClick=\"javascript:showContextLegend('" + layerName + "')\"></i>\n\
-</p>\n\
-</li>";
+    for (var c in contextLayers) {
+        var layerName = contextLayers[c].name;
+        var t = [
+            '<li>',
+            '<div class="checkbox-modified-small">',
+            '<input class="input-top" type="checkbox" value="' + layerName + '" id="checkbox' + layerName + '">',
+            '<label for="checkbox' + layerName + '"></label>',
+            '</div>',
+            '<p class="context-layers-description">',
+            layerName + '&nbsp;',
+            '<i class="icon-exclamation-sign pointer" onClick="javascript:showContextLegend(\'' + layerName + '\');">',
+            '</i>',
+            '</p>',
+            '</li>'
+        ].join('');
         $("#context-layers-list").append(t);
     }
 
     // Add the context layers to the map
     map.addLayers(contextLayers);
-    // Add also the deals layers to the map
-    var vectorLayers = [agricultureDealsLayer,
-    forestryDealsLayer,
-    miningDealsLayer,
-    tourismDealsLayer,
-    otherDealsLayer
-    ];
-    map.addLayers(vectorLayers);
-
-    for(var i = 0; i < vectorLayers.length; i++){
-        var l = vectorLayers[i];
-
-        var color = l.options.styleMap.styles.default.defaultStyle.strokeColor;
-
-        var legendTemplate = "<li class=\"legendEntry\"><div class=\"vectorLegendSymbol\" style=\"background-color: " + color + ";\"></div>" + l.name + "</li>";
-
-        $("#map-legend-list").append(legendTemplate);
-    }
 
     // Add a marker layer, which is used in the location search
     var markers = new OpenLayers.Layer.Markers( "Markers" );
     map.addLayer(markers);
-
-    // Create the SelectFeature control __after__ adding the layers to the map!
-    var selectControl = new OpenLayers.Control.SelectFeature([
-        agricultureDealsLayer,
-        forestryDealsLayer,
-        miningDealsLayer,
-        tourismDealsLayer,
-        otherDealsLayer
-        ]);
-    // Add the control to the map and activate it
-    map.addControl(selectControl);
-    selectControl.activate();
 
     // Check if a location cookie is set. If yes, center the map to this location.
     // If no cookie is set, zoom the map to the extent of the current profile
@@ -665,8 +339,12 @@ $(document).ready(function() {
         var f = new OpenLayers.Format.GeoJSON();
         // Variable profilePolygon is a GeoJSON geometry
         var profileExtent = f.read(profilePolygon, "Geometry");
-        // Reproject the extent to spherical mercator projection and zoom the map to its extent
-        map.zoomToExtent(profileExtent.transform(geographicProjection, sphericalMercatorProjection).getBounds(), true);
+        if (profileExtent) {
+            // Reproject the extent to spherical mercator projection and zoom the map to its extent
+            map.zoomToExtent(profileExtent.transform(geographicProjection, sphericalMercatorProjection).getBounds(), true);
+        } else {
+            map.zoomToMaxExtent();
+        }
     }
 
     /**** events ****/
@@ -720,7 +398,7 @@ $(document).ready(function() {
                     loc.push(rows[row])
                 }
             });
-            
+
             var selectedLocation = loc[0];
             var pos = new OpenLayers.LonLat(selectedLocation.geometry.coordinates[0], selectedLocation.geometry.coordinates[1]);
 
@@ -735,7 +413,7 @@ $(document).ready(function() {
                 console.log("event");
             });
             markers.addMarker(m);
-            
+
             return loc[0].name;
         }
     });
@@ -853,7 +531,7 @@ function showContextLegend(layerName) {
                 $('#contextLegendImgLoading').hide();
                 return false;
             }
-        });   
+        });
     });
     return false;
 }
@@ -873,4 +551,122 @@ function addCommas(nStr) {
         x1 = x1.replace(rgx, '$1' + ',' + '$2');
     }
     return x1 + x2;
+}
+
+/**
+ * Function to get the style of a clustered layer based on a color index.
+ * Returns an OpenLayers.Style object
+ */
+function getStyle(index) {
+
+    // Define some style variables
+    var fillOpacity = 1;
+
+    var strokeOpacity = function(feature){
+        if(feature.attributes.count == 1){
+            var f = feature.cluster[0];
+            if(f.attributes.status == "pending"){
+                return 1;
+            }
+        }
+        return 0.5;
+    };
+
+    var strokeWidth = function(feature){
+        if(feature.attributes.count == 1){
+            var f = feature.cluster[0];
+            if(f.attributes.status == "pending"){
+                return 2;
+            }
+        }
+        return 5;
+    };
+
+    // Calculates the radius for clustered features
+    var radius = function(feature) {
+        if (feature.fid == 258) {
+            console.log(feature);
+        }
+        if (!feature.attributes.count || feature.attributes.count == 1) {
+            return 6;
+        } else {
+            return Math.min(feature.attributes.count, 12) + 5;
+        }
+    }
+
+    // Returns the number of clustered features, which is used to label the clusters.
+    var label = function(feature){
+        if(feature.attributes.count > 1){
+            return feature.attributes.count;
+        } else {
+            return "";
+        }
+    }
+
+    // Use circles for clustered features and a triangle to symbolize singe features
+    var graphicName = function(feature){
+        if(feature.attributes.count == 1){
+            return "triangle";
+        } else {
+            return "circle";
+        }
+    }
+
+    var style = new OpenLayers.Style(
+        {
+            graphicName: "${graphicName}",
+            fontColor: "#ffffff",
+            fontSize: "9px",
+            label: "${label}",
+            pointRadius: "${radius}",
+            rotation: 180.0,
+            fillColor: "${fillColor}",
+            fillOpacity: fillOpacity,
+            strokeColor: getColor(index),
+            strokeOpacity: "${strokeOpacity}",
+            strokeWidth: "${strokeWidth}"
+        }, {
+            context: {
+                graphicName: graphicName,
+                label: label,
+                radius: radius,
+                strokeOpacity: strokeOpacity,
+                strokeWidth: strokeWidth,
+                fillColor: function(feature) {
+                    if (feature.attributes.count == 1) {
+                        var f = feature.cluster[0];
+                        if (f.attributes.status == "pending") {
+                            return "#ffffff";
+                        }
+                    }
+                    return getColor(index);
+                }
+            }
+        });
+    return style;
+}
+
+/**
+ * Function to get a color from a predefined list of available colors based on
+ * an index.
+ * Returns a hexadecimal string representation of a color.
+ */
+function getColor(index) {
+    var colors = [
+        '#1d6914',
+        '#575757',
+        '#2a4bd7',
+        '#ad2323',
+        '#814a19',
+        '#8126c0',
+        '#81c57a',
+        '#9dafff',
+        '#29d0d0',
+        '#ff9233',
+        '#ffee33',
+        '#e9debb',
+        '#ffcdf3',
+        '#a0a0a0'
+    ];
+    return colors[index%colors.length];
 }

@@ -1,5 +1,6 @@
 from lmkp.models.database_objects import *
 from lmkp.views.protocol import *
+from lmkp.views.form_config import getCategoryList
 import logging
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.i18n import get_localizer
@@ -22,23 +23,25 @@ class StakeholderFeature3(Feature):
     def getOtherMappedClass(self):
         return Activity
 
-    def to_tags(self):
+    def to_tags(self, request):
+        """
+        Return a short representation in tag form (array of keys/values) of the
+        most important attributes of the feature (as defined in the yaml as
+        'involvementoverview')
+        """
 
-        repr = []
-        c = []
-        n = []
-        for tg in self._taggroups:
+        categoryList = getCategoryList(request, 'stakeholders')
+        overviewkeys = categoryList.getInvolvementOverviewKeyNames()
+        overviewtags = [{'key': k[0], 'value': []} for k in overviewkeys]
 
-            for t in tg.get_tags():
-                if t.get_key() == 'Country of origin':
-                    c.append(t.get_value())
-                if t.get_key() == 'Name':
-                    n.append(t.get_value())
+        for rettag in overviewtags:
+            for tg in self._taggroups:
+                for t in tg.get_tags():
+                    if t.get_key() == rettag['key']:
+                        rettag['value'].append(t.get_value())
+            rettag['value'] = ', '.join(rettag['value'])
 
-        repr.append({"key": "Country of origin", 'value': ','.join(c)})
-        repr.append({"key": "Name", 'value': ','.join(n)})
-
-        return repr
+        return overviewtags
 
 class StakeholderProtocol3(Protocol):
 
@@ -94,7 +97,11 @@ class StakeholderProtocol3(Protocol):
         if len(ids) > 0:
             # At least one Stakeholder was created
             changeset_diff = {'stakeholders': stakeholder_diffs}
-            changeset.diff = json.dumps(changeset_diff)
+            try:
+                changeset.diff = json.dumps(changeset_diff)
+            except TypeError:
+                log.error('Changeset JSON Error with the following diff: %s' % changeset_diff)
+                return None
 
             return ids
 
@@ -254,15 +261,16 @@ class StakeholderProtocol3(Protocol):
             'data': data
         }
 
-    def read_many_by_activity(self, request, uid, public=True, **kwargs):
+    def read_many_by_activities(self, request, public=True, **kwargs):
         """
         Valid kwargs:
         - limit
         - offset
+        - uids (array)
         """
 
-        relevant_stakeholders = self._get_relevant_stakeholders_by_activity(
-                                                                            request, uid, public_query=public)
+        relevant_stakeholders = self._get_relevant_stakeholders_by_activities(
+            request, public_query=public, uids=kwargs.get('uids', []))
 
         # Determine if and how detailed Involvements are to be displayed.
         # Default is: 'full'
@@ -273,12 +281,11 @@ class StakeholderProtocol3(Protocol):
         limit = kwargs.get('limit', self._get_limit(request))
         offset = kwargs.get('offset', self._get_offset(request))
 
-        query, count = self._query_many(
-                                        request, relevant_stakeholders, limit=limit, offset=offset,
-                                        involvements=inv_details != 'none')
+        query, count = self._query_many(request, relevant_stakeholders,
+            limit=limit, offset=offset, involvements=inv_details != 'none')
 
-        stakeholders = self._query_to_stakeholders(
-                                                   request, query, involvements=inv_details, public_query=public)
+        stakeholders = self._query_to_stakeholders(request, query,
+            involvements=inv_details, public_query=public)
 
         return {
             'total': count,
@@ -747,18 +754,27 @@ class StakeholderProtocol3(Protocol):
 
         return relevant_stakeholders
 
-    def _get_relevant_stakeholders_by_activity(self, request, uid,
-                                               public_query=False):
+    def _get_relevant_stakeholders_by_activities(self, request,
+        public_query=False, uids=[]):
 
-        logged_in, is_moderator = self._get_user_status(
-                                                        effective_principals(request))
+        logged_in, is_moderator = self._get_user_status(effective_principals(
+            request))
 
         # Use ActivityProtocol to query the Activity versions corresponding to
-        # given uid
+        # the current request
         from lmkp.views.activity_protocol3 import ActivityProtocol3
         ap = ActivityProtocol3(self.Session)
-        relevant_activities = ap._get_relevant_activities_one(request, uid=uid,
-                                                              public_query=public_query)
+
+        if len(uids) == 0:
+            # Query many Activities (no UIDs specified)
+            relevant_activities = ap._get_relevant_activities_many(request,
+                public_query=public_query)
+        elif len(uids) == 1:
+            # Query only 1 Activity
+            relevant_activities = ap._get_relevant_activities_one(request,
+                uid=uids[0], public_query=public_query)
+        else:
+            raise HTTPBadRequest(detail='Not yet supported')
 
         relevant_activities = relevant_activities.\
             subquery()

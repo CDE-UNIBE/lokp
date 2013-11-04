@@ -25,7 +25,7 @@ class ActivityReview(BaseReview):
         super(ActivityReview, self).__init__(request)
         self.protocol = ActivityProtocol3(Session)
 
-    @view_config(route_name='activities_moderate_item', renderer='lmkp:templates/moderation.mak', permission='moderate')
+    @view_config(route_name='activities_moderate_item', renderer='lmkp:templates/ext_moderation.mak', permission='moderate')
     def activities_moderate_item(self):
 
         self._handle_parameters()
@@ -54,7 +54,7 @@ class ActivityReview(BaseReview):
             'identifier': uid
         }
 
-    @action(name='html', renderer='lmkp:templates/compare_versions.mak')
+    @action(name='html', renderer='lmkp:templates/old_compare_versions.mak')
     def compare_html(self):
         # TODO: It is to be decided if this view is still needed or not.
 
@@ -91,7 +91,7 @@ class ActivityReview(BaseReview):
 
         return result
 
-    @view_config(route_name='activities_review_versions_html', renderer='lmkp:templates/review_versions.mak', permission='moderate')
+    @view_config(route_name='activities_review_versions_html', renderer='lmkp:templates/old_review_versions.mak', permission='moderate')
     def review_activity_html(self):
         # TODO: It is to be decided if this view is still needed or not.
         """
@@ -146,7 +146,7 @@ class ActivityReview(BaseReview):
             pending_feature = self.protocol.read_one_by_version(
                 self.request, uid, pending_version
             )
-            pending_feature.mark_complete(get_mandatory_keys(self.request, 'a'))
+            pending_feature.mark_complete(get_mandatory_keys(self.request, 'a', True))
             missing_keys = pending_feature._missing_keys
 
             if len(missing_keys) > 0:

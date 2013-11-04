@@ -10,6 +10,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.response import Response
 from pyramid.renderers import render_to_response
+from pyramid.renderers import render
 from pyramid.view import view_config
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
@@ -18,6 +19,7 @@ from urllib import urlencode
 from lmkp.views.profile import get_current_profile
 from lmkp.views.profile import get_current_locale
 from lmkp.views.form_config import getCategoryList
+from lmkp.config import getTemplatePath
 import re
 
 log = logging.getLogger(__name__)
@@ -131,7 +133,7 @@ class MainView(BaseView):
     def profile_global(self):
         return change_profile(self.request, 'global')
 
-    @view_config(route_name='index', renderer='lmkp:templates/landing_page.mak')
+    @view_config(route_name='index')
     def index(self):
         """
         Returns the main HTML page
@@ -139,17 +141,20 @@ class MainView(BaseView):
 
         self._handle_parameters()
 
-        return {
+        return render_to_response(getTemplatePath(self.request, 'landing_page.mak'), {
             'profile': get_current_profile(self.request),
             'locale': get_current_locale(self.request)
-        }
+        }, self.request)
 
-    @view_config(route_name='map_view', renderer='lmkp:templates/map_view.mak')
+    @view_config(route_name='map_view')
     def map_view(self):
 
         self._handle_parameters()
 
-        return {"profile": get_current_profile(self.request), "locale": get_current_locale(self.request)}
+        return render_to_response(getTemplatePath(self.request, 'map_view.mak'), {
+            'profile': get_current_profile(self.request),
+            'locale': get_current_locale(self.request)
+        }, self.request)
 
     @view_config(route_name='grid_view')
     def grid_view(self):
@@ -168,7 +173,7 @@ class MainView(BaseView):
             output='html', _query=qp)
         )
 
-    @view_config(route_name='charts_view', renderer='lmkp:templates/charts_view.mak')
+    @view_config(route_name='charts_view')
     def charts_view(self):
 
         self._handle_parameters()
@@ -176,39 +181,42 @@ class MainView(BaseView):
         # TEMP
         return HTTPFound(location=self.request.route_url('charts_overview'))
 
-        return {"profile": get_current_profile(self.request), "locale": get_current_locale(self.request)}
+        return render_to_response(getTemplatePath(self.request, 'charts_view.mak'), {
+            'profile': get_current_profile(self.request),
+            'locale': get_current_locale(self.request)
+        }, self.request)
 
-    @view_config(route_name='about_view', renderer='lmkp:templates/about_view.mak')
+    @view_config(route_name='about_view')
     def about_view(self):
 
         self._handle_parameters()
 
-        return {
+        return render_to_response(getTemplatePath(self.request, 'about_view.mak'), {
             'profile': get_current_profile(self.request),
             'locale': get_current_locale(self.request)
-        }
+        }, self.request)
 
-    @view_config(route_name='faq_view', renderer='lmkp:templates/faq_view.mak')
+    @view_config(route_name='faq_view')
     def faq_view(self):
 
         self._handle_parameters()
 
-        return {
+        return render_to_response(getTemplatePath(self.request, 'faq_view.mak'), {
             'profile': get_current_profile(self.request),
             'locale': get_current_locale(self.request)
-        }
+        }, self.request)
 
-    @view_config(route_name='partners_view', renderer='lmkp:templates/partners_view.mak')
+    @view_config(route_name='partners_view')
     def partners_view(self):
 
         self._handle_parameters()
 
-        return {
+        return render_to_response(getTemplatePath(self.request, 'partners_view.mak'), {
             'profile': get_current_profile(self.request),
             'locale': get_current_locale(self.request)
-        }
+        }, self.request)
 
-    @view_config(route_name='embedded_index', renderer='lmkp:templates/embedded.mak')
+    @view_config(route_name='embedded_index', renderer='lmkp:templates/old_embedded.mak')
     def embedded_version(self):
         """
         Returns a version of the Land Observatory that can be embedded in other
@@ -271,7 +279,7 @@ class MainView(BaseView):
 
         return Response(html, content_type='text/html', status_int=200)
 
-    @view_config(route_name='moderation_html', renderer='lmkp:templates/moderation.mak', permission='moderate')
+    @view_config(route_name='moderation_html', renderer='lmkp:templates/ext_moderation.mak', permission='moderate')
     def moderation_html(self):
         """
         Returns the moderation HTML page
@@ -285,7 +293,7 @@ class MainView(BaseView):
             'identifier': ''
         }
 
-    @view_config(route_name='translation', renderer='lmkp:templates/translation.mak', permission='translate')
+    @view_config(route_name='translation', renderer='lmkp:templates/ext_translation.mak', permission='translate')
     def translation(self):
         """
         Returns the translation HTML page
@@ -295,7 +303,7 @@ class MainView(BaseView):
 
         return {}
 
-    @view_config(route_name='administration', renderer='lmkp:templates/administration.mak', permission='administer')
+    @view_config(route_name='administration', renderer='lmkp:templates/ext_administration.mak', permission='administer')
     def administration(self):
         """
         Returns the administration HTML page
@@ -305,7 +313,7 @@ class MainView(BaseView):
 
         return {}
 
-    @view_config(route_name='privileges_test', renderer='lmkp:templates/privilegestest.mak')
+    @view_config(route_name='privileges_test', renderer='lmkp:templates/old_privilegestest.mak')
     def privileges_test(self):
         """
         Simple view to output the current privileges
@@ -353,6 +361,17 @@ def getQueryString(url, **kwargs):
     scheme, netloc, path, query_string, fragment = urlsplit(url)
     qp = parse_qs(query_string)
 
+    # Always remove 'epsg' as it is not needed (map is stored in cookie)
+    if 'epsg' in qp: del(qp['epsg'])
+
+    # Always remove 'bbox' if it is not set to 'profile' (bbox of map is stored
+    # in cookie)
+    if 'bbox' in qp and 'profile' not in qp['bbox']:
+        del(qp['bbox'])
+
+    # Always remove 'page'
+    if 'page' in qp: del(qp['page'])
+
     # Remove
     for d in remove:
         if d in qp:
@@ -369,7 +388,10 @@ def getQueryString(url, **kwargs):
     returnWhat = kwargs.pop('ret', 'fullUrl')
 
     if returnWhat == 'queryString':
-        return new_query_string
+        if len(qp) == 0:
+            return ''
+        # Return only the query string (with leading '?')
+        return '%s%s' % ('?', new_query_string)
 
     return urlunsplit((scheme, netloc, path, new_query_string, fragment))
 
@@ -413,6 +435,27 @@ def getOverviewKeys(request):
         getCategoryList(request, 'stakeholders').getInvolvementOverviewKeyNames()
     )
 
+def getMapSymbolKeys(request):
+    """
+    Return a list with the keys which are used for the map symbols.
+    Each entry of the array has
+    - name of the key (translated)
+    - name of the key (original)
+    - mapsymbol data (usually an order number)
+    If there is an attribute set, it is moved to the top of the list with the
+    help of the order number
+    """
+    mapSymbolKeys = getCategoryList(request, 'activities').getMapSymbolKeyNames()
+
+    attrs = request.params.get('attrs', None)
+
+    if attrs is not None:
+        for m in mapSymbolKeys:
+            if m[1] in attrs:
+                m[2] = 0
+
+    return sorted(mapSymbolKeys, key=lambda k: k[2])
+
 def getActiveFilters(request):
     """
     Get the active filters of a request in a list.
@@ -452,10 +495,14 @@ def getActiveFilters(request):
                 continue
 
             if queryparts[0] == 'a':
-                itemName = _('Deals')
+                itemName = render(
+                    getTemplatePath(request, 'parts/items/activity.mak'), {}, request
+                )
                 configList = aList
             elif queryparts[0] == 'sh':
-                itemName = _('Investors')
+                itemName = render(
+                    getTemplatePath(request, 'parts/items/stakeholder.mak'), {}, request
+                )
                 configList = shList
             else:
                 continue
@@ -484,7 +531,7 @@ def getActiveFilters(request):
     return filters
 
 @view_config(route_name='filterValues', renderer='json')
-def getFilterValuesForKey(request):
+def getFilterValuesForKey(request, predefinedType=None, predefinedKey=None):
     """
     Return a JSON representation of all the values for a given key.
     The JSON array contains an array for each entry with:
@@ -492,8 +539,8 @@ def getFilterValuesForKey(request):
     - [1]: The internal name
     """
 
-    type = request.params.get('type', None)
-    key = request.params.get('key', None)
+    type = request.params.get('type', predefinedType)
+    key = request.params.get('key', predefinedKey)
 
     if type is None:
         return {

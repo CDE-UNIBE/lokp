@@ -876,7 +876,7 @@ class Protocol(object):
                         filter(mappedClass.identifier == item.identifier).\
                         filter(mappedClass.version == item.version).\
                         first()
-                    json_diff = json.loads(diff_query.diff.replace('\'', '"'))
+                    json_diff = json.loads(diff_query.diff)
 
                 # Cut to the part of the diff which is relevant for this item
                 relevant_diff = None
@@ -1337,12 +1337,12 @@ class Protocol(object):
                     if 'stakeholders' in old_diff:
                         old_diff['stakeholders'].append(new_inv)
                     else:
-                        old_diff['stakeholders'] = new_inv
+                        old_diff['stakeholders'] = [new_inv]
 
             else:
                 # If no involvements in old_diff, add the one from the new_inv
                 # as it is
-                old_diff['stakeholders'] = new_inv
+                old_diff['stakeholders'] = [new_inv]
 
 #                log.debug('Added new involvement diff: %s' % new_inv)
 
@@ -1386,7 +1386,10 @@ class Protocol(object):
                             for new_t in new_tg['tags']:
                                 # Loop through the tags of the new diff
 
-                                # If there is a tag previously added (old_t['op'] == 'add') and now to be deleted again (new_t['op'] == 'delete'), then remove it
+                                # If there is a tag previously added
+                                # (old_t['op'] == 'add') and now to be deleted
+                                # again (new_t['op'] == 'delete'), then remove
+                                # it
                                 if (new_t['op'] == 'delete'
                                     and old_t['op'] == 'add'
                                     and new_t['key'] == old_t['key']
@@ -1396,8 +1399,9 @@ class Protocol(object):
                                     tags_to_delete.append(old_t)
 
                                 else:
-                                    # Add new diff
-                                    tags_to_add.append(new_t)
+                                    # Add new diff (add it only once)
+                                    if new_t not in tags_to_add:
+                                        tags_to_add.append(new_t)
 
                         changedMainTag = None
                         for tdt in tags_to_delete:
@@ -1417,7 +1421,8 @@ class Protocol(object):
                             # If the main_tag was removed, store the new value
                             # of it as new main_tag
                             if (changedMainTag is not None
-                                and unicode(changedMainTag['key']) == unicode(tda['key'])):
+                                and unicode(changedMainTag['key']) == unicode(tda['key'])
+                                and tda['op'] == 'add'):
                                 old_tg['main_tag']['value'] = tda['value']
 
 #                            log.debug('Added new tag diff: %s' % tda)
@@ -1432,6 +1437,8 @@ class Protocol(object):
                         old_diff['taggroups'].append(new_tg)
                     else:
                         old_diff['taggroups'] = [new_tg]
+
+#                    log.debug('Added new taggroup diff (after not finding it): %s' % new_tg)
 
             else:
                 # If no taggroups yet in old_diff, add the one from the new_tg
@@ -1483,14 +1490,14 @@ class Protocol(object):
                     rel_keys = []
                     # Have a look at each tag in rel_tg
                     for rel_t in rel_tg['tags']:
-                        rel_tags[rel_t['key']] = rel_t['value']
+                        rel_tags[rel_t['key']] = unicode(rel_t['value'])
                         rel_keys.append(rel_t['key'])
                     found_tg_id = None
                     for f_tg in feature.get_taggroups():
                         if found_tg_id is None:
                             f_tags = {}
                             for f_t in f_tg.get_tags():
-                                f_tags[f_t.get_key()] = f_t.get_value()
+                                f_tags[f_t.get_key()] = unicode(f_t.get_value())
                             if (len(set(rel_tags.items()) & set(f_tags.items()))
                                 == len(rel_keys)):
                                 found_tg_id = f_tg.get_tg_id()
@@ -1532,7 +1539,7 @@ class Protocol(object):
         if self.categoryList is None:
 
 #            log.debug('Created a new ConfigCategoryList object of type %s' % itemType)
-            
+
             self.categoryList = getCategoryList(request, itemType)
 
         # Trim white spaces
@@ -1586,11 +1593,30 @@ class Protocol(object):
         except:
             pass
 
-        # If the value is not yet in the database, create a new value
-        v = self.Session.query(Value_Item).\
+        v = None
+        # For checkboxes or dropdowns, values are transmitted in English but the
+        # current language is set to something else than the first Language
+        # (English).
+        # Instead of falsly inserting these values as "translations" in the
+        # current language, we need to link them to the original value in the
+        # database.
+        # To do this, check if there is an original with the same value and
+        # belonging to the same key as provided.
+        origValue = self.Session.query(Value_Item).\
             filter(Value_Item.value == unicode(value)).\
-            filter(Value_Item.fk_language == lang_fk).\
+            filter(Value_Item.fk_language == 1).\
+            filter(Value_Item.key == k).\
             first()
+
+        if origValue is not None:
+            v = origValue
+
+        # If the value is not yet in the database, create a new value
+        if v is None:
+            v = self.Session.query(Value_Item).\
+                filter(Value_Item.value == unicode(value)).\
+                filter(Value_Item.fk_language == lang_fk).\
+                first()
         if v is None:
 
             # FILES!

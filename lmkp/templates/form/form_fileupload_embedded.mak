@@ -29,6 +29,8 @@
 
         <h3 class="fileUploadTitle">${_('File upload')}</h3>
 
+        <p><em>${_('Important: All the uploaded files will be publicly visible! You should not upload confidential data.')}</em></p>
+
         <p><em>${_('Please note that the file upload may take a while depending on your Internet connection.')}</em></p>
 
         <p><strong>${_('Valid files')}</strong>: ${', '.join(fileExtensions)}</p>

@@ -74,7 +74,6 @@ def main(argv=sys.argv):
     with transaction.manager:
         # language
         lang1 = _addIfNotExists_ID(Language(id=1, english_name='English', local_name='English', locale='en'))
-        lang2 = _addIfNotExists_ID(Language(id=2, english_name='Codes', local_name='Codes', locale='code'))
         # status
         status1 = _addIfNotExists_ID(Status(id=1, name='pending', description='Review pending. Not published yet.'))
         status2 = _addIfNotExists_ID(Status(id=2, name='active', description='Reviewed and accepted. Currently published.'))
@@ -82,9 +81,6 @@ def main(argv=sys.argv):
         status4 = _addIfNotExists_ID(Status(id=4, name='deleted', description='Deleted. Not published anymore.'))
         status5 = _addIfNotExists_ID(Status(id=5, name='rejected', description='Reviewed and rejected. Never published.'))
         status6 = _addIfNotExists_ID(Status(id=6, name='edited', description='Edited. Previously pending.'))
-        # stakeholder roles
-        sh_role6 = _addIfNotExists_ID(Stakeholder_Role(id=6, name='Primary Investor'))
-        sh_role7 = _addIfNotExists_ID(Stakeholder_Role(id=7, name='Secondary Investor'))
         # permissions
         permission1 = _addIfNotExists_ID(Permission(id=1, name='administer', description='Can add key/values and do batch translations.'))
         permission2 = _addIfNotExists_ID(Permission(id=2, name='moderate', description='Can make review decisions on reported information.'))
@@ -122,14 +118,6 @@ def main(argv=sys.argv):
         # connected with profile1 (global)
         #user3 = _addIfNotExists_NoIDUnique(User(username='user3', password='pw', email='user3@cde.unibe.ch'), User.username, 'user3')
         #user3.groups.append(group3)
-        # Profile
-        profile1 = _addIfNotExists_NoIDUnique(Profile(code='global', geometry=None), Profile.code, 'global')
-        if profile1 is not None:
-            profile1.users = [user1] #, user2]
-
-        # institution_types
-        it1 = _addIfNotExists_ID(Institution_Type(id=1, name='CSO'))
-        it2 = _addIfNotExists_ID(Institution_Type(id=2, name='Government'))
 
 def _addIfNotExists_ID(object):
     q = DBSession.query(object.__mapper__).get(object.id)

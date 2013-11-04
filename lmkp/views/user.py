@@ -2,6 +2,7 @@ import colander
 from datetime import datetime
 from datetime import timedelta
 import deform
+from lmkp.config import getTemplatePath
 from lmkp.models.database_objects import Group
 from lmkp.models.database_objects import Profile
 from lmkp.models.database_objects import User
@@ -9,6 +10,8 @@ from lmkp.models.database_objects import users_groups
 from lmkp.models.database_objects import users_profiles
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.profile import _processProfile
+from lmkp.views.profile import get_current_profile
+from lmkp.views.profile import get_current_locale
 from lmkp.views.views import BaseView
 import psycopg2.tz
 from mako.template import Template
@@ -69,7 +72,7 @@ def _user_already_exists(node, value):
 
 class UserView(BaseView):
 
-    @view_config(route_name='user_self_registration', renderer='lmkp:templates/user_registration.mak')
+    @view_config(route_name='user_self_registration')
     def register(self):
         """
         Returns and process user self registration form.
@@ -146,13 +149,30 @@ class UserView(BaseView):
             "lastname": new_user.lastname,
             "activation_link": "http://%s/users/activate?uuid=%s&username=%s" % (self.request.environ['HTTP_HOST'], activation_uuid, new_user.username)
             }
-            email_text = render('lmkp:templates/emails/activation.mak', activation_dict, request=self.request)
+            email_text = render(getTemplatePath(self.request, 'emails/account_activation.mak'),
+                activation_dict,
+            self.request)
 
-            self._send_email([email_field], _(u"The Land Observatory: Activate your Account"), email_text)
+            self._send_email([email_field], _(u"Activate your Account"), email_text)
 
-            return render_to_response('lmkp:templates/user_registration_success.mak', {}, request=self.request)
+            return render_to_response(getTemplatePath(self.request, 'users/registration_success.mak'), {
+            }, self.request)
 
-        return self._render_form(form, success=succeed)
+        ret = self._render_form(form, success=succeed)
+
+        # 'ret' is a Response object if the form was submitted with success. In
+        # this case, it is not possible to add any parameters to it.
+        if not isinstance(ret, Response):
+            self._handle_parameters()
+            ret['profile'] = get_current_profile(self.request)
+            ret['locale'] = get_current_locale(self.request)
+
+            # Render the return values
+            return render_to_response(getTemplatePath(self.request, 'users/registration_form.mak'),
+                ret,
+            self.request)
+
+        return ret
 
     def _render_form(self, form, appstruct=colander.null, submitted='submit', success=None, readonly=False):
         """
@@ -191,7 +211,7 @@ class UserView(BaseView):
             'js_links':reqts['js'],
             }
 
-    @view_config(route_name='user_activation', renderer='lmkp:templates/activation_successful.mak')
+    @view_config(route_name='user_activation')
     def activate(self):
         """
         """
@@ -230,7 +250,9 @@ class UserView(BaseView):
 
         # Send an email to all moderators of the profile in which the user
         # registered.
-        email_text = render('lmkp:templates/emails/approval.mak', approval_dict, request=self.request)
+        email_text = render(getTemplatePath(self.request, 'emails/account_approval_request.mak'),
+            approval_dict,
+            request=self.request)
 
         # Determine profile. Each user should only have one profile when 
         # registering!
@@ -268,9 +290,11 @@ class UserView(BaseView):
                          "The Land Observatory: User %s requests approval" % user.username,
                          email_text)
 
-        return {"username": user.username}
+        return render_to_response(getTemplatePath(self.request, 'users/activation_successful.mak'), {
+            'username': user.username
+        }, self.request)
 
-    @view_config(route_name="user_approve", renderer="lmkp:templates/user_approval.mak", permission="moderate")
+    @view_config(route_name="user_approve", permission="moderate")
     def approve(self):
         """
         User moderation: approve newly activated users.
@@ -295,7 +319,9 @@ class UserView(BaseView):
         "host": "http://%s" % self.request.environ['HTTP_HOST']
         }
 
-        email_text = render('lmkp:templates/emails/confirmation.mak', conf_dict, request=self.request)  
+        email_text = render(getTemplatePath(self.request, 'emails/account_approval_confirmation.mak'),
+            conf_dict,
+            request=self.request)
 
         # Send the email
         self._send_email([user.email],
@@ -303,58 +329,69 @@ class UserView(BaseView):
                          email_text)
 
         # Return the username to the template
-        return {"username": user_username}
+        return render_to_response(getTemplatePath(self.request, 'users/approval_successful.mak'), {
+            'username': user_username
+        }, self.request)
 
-    @view_config(route_name='user_account', renderer='lmkp:templates/user_account.mak', permission='edit')
+    @view_config(route_name='user_account', permission='edit')
     def account(self):
         """
         Shows user account details to registered users.
         """
 
-        userid = authenticated_userid(self.request)
+        _ = self.request.translate
 
-        locale_name = get_locale_name(self.request)
+        userid = authenticated_userid(self.request)
 
         # Define a colander Schema for the self registration
         class Schema(colander.Schema):
-            _LOCALE_ = colander.SchemaNode(colander.String(),
-                                           widget=deform.widget.HiddenWidget(),
-                                           default=locale_name)
-            profile = colander.SchemaNode(colander.String(),
-                                          widget=deform.widget.SelectWidget(values=self._get_available_profiles()))
-            username = colander.SchemaNode(colander.String(),
-                                           validator=_user_already_exists,
-                                           widget=deform.widget.TextInputWidget(readonly=True),
-                                           missing=None,
-                                           description='User name')
-            password = colander.SchemaNode(colander.String(),
-                                           validator=colander.Length(min=5),
-                                           missing=None,
-                                           widget=deform.widget.CheckedPasswordWidget(size=20),
-                                           description='Type your password and confirm it')
-            firstname = colander.SchemaNode(colander.String(),
-                                            missing=None,
-                                            description='First name')
-            lastname = colander.SchemaNode(colander.String(),
-                                           missing=None,
-                                           description='Last name')
-            email = colander.SchemaNode(colander.String(),
-                                        missing=None,
-                                        widget=deform.widget.TextInputWidget(readonly=True),
-                                        description="Valid email",
-                                        validator=_is_valid_email)
+            username = colander.SchemaNode(
+                colander.String(),
+                missing = None,
+                widget = deform.widget.TextInputWidget(
+                    readonly = True,
+                    readonly_template = 'readonly/customTextinputReadonly'
+                ),
+                title = _('Username')
+            )
+            password = colander.SchemaNode(
+                colander.String(),
+                validator = colander.Length(min=5),
+                widget = deform.widget.CheckedPasswordWidget(size=20),
+                title = _('Password')
+            )
+            firstname = colander.SchemaNode(
+                colander.String(),
+                missing = None,
+                title = _('First Name')
+            )
+            lastname = colander.SchemaNode(
+                colander.String(),
+                missing = None,
+                title = _('Last Name')
+            )
+            email = colander.SchemaNode(
+                colander.String(),
+                missing = None,
+                widget = deform.widget.TextInputWidget(
+                    readonly = True,
+                    readonly_template = 'readonly/customTextinputReadonly'
+                ),
+                title = _('Valid Email'),
+            )
+
         schema = Schema()
+        deform.Form.set_default_renderer(mako_renderer)
         form = deform.Form(schema, buttons=(deform.Button(title=_(u'Update')),), use_ajax=True)
 
         # Get the user data
         user = Session.query(User).filter(User.username == userid).first()
 
         data = {
-        "profile": user.profiles[0].code,
-        "username": user.username,
-        "firstname": user.firstname,
-        "lastname": user.lastname,
-        "email": user.email
+            'username': user.username,
+            'firstname': user.firstname,
+            'lastname': user.lastname,
+            'email': user.email
         }
 
         def succeed():
@@ -376,10 +413,21 @@ class UserView(BaseView):
             # Set the user profile
             user.profiles = [selected_profile]
 
-            return Response('<div id="thanks">Thanks!</div>')
-            
+            return Response('<p>%s</p>' % _('Your user settings were updated.'))
 
-        return self._render_form(form, success=succeed, appstruct=data)
+        ret = self._render_form(form, success=succeed, appstruct=data)
+
+        if not isinstance(ret, Response):
+            self._handle_parameters()
+            ret['profile'] = get_current_profile(self.request)
+            ret['locale'] = get_current_locale(self.request)
+
+            return render_to_response(getTemplatePath(self.request, 'users/account_form.mak'),
+                ret,
+                self.request
+            )
+
+        return ret
 
     def _get_available_profiles(self):
         """
@@ -499,14 +547,6 @@ def user_update(request):
             ret['msg'] = 'There is no user with this username.'
             return ret
     return ret
-
-# TODO: Find out if this is still needed. If not, also delete template. 
-@view_config(route_name='user_profile', renderer='lmkp:templates/user.mak')
-def get_user_profile(request):
-    username = authenticated_userid(request)
-    if username != request.matchdict['userid']:
-        raise HTTPForbidden
-    return {}
 
 @view_config(route_name='add_user', renderer='json', permission='administer')
 def add_user(request):

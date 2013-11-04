@@ -15,7 +15,7 @@ $('#activitygrid tbody>tr').click(function() {
     if (!itemType) return;
 
     var otherType = (itemType == 'stakeholders') ? 'activities' : 'stakeholders';
-    var byThis = (itemType == 'stakeholders') ? 'bystakeholder' : 'byactivity';
+    var byThis = (itemType == 'stakeholders') ? 'bystakeholders' : 'byactivities';
     var url = '/' + [otherType, byThis, 'html', identifier].join('/');
 
     if ($('div.show-investors.visible-phone').is(':visible')) {
@@ -24,7 +24,8 @@ $('#activitygrid tbody>tr').click(function() {
     } else {
         // Show a popup
         var popup = $('.show-investors-wrapper');
-        var position = $(this).position().top - $('#activitygrid').position().top - 5;
+        var position = $(this).position().top - $('#activitygrid').position().top 
+            + (($(this).height() - popup.height())/2) + 2;
         popup.removeClass('hidden').css({'margin-top': position});
         popup.find('a').attr('href', url);
     }

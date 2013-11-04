@@ -39,7 +39,7 @@
         % for msg in field.error.messages():
             ## Special error message for map
             % if field.name == 'lon':
-                ${_('The location of the deal is required. Please select a point on the map before continuing.')}
+                ${_('The location is required. Please select a point on the map before continuing.')}
             % else:
                 <p
                     % if msg.index==0:
