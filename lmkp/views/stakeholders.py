@@ -252,8 +252,10 @@ def read_many(request):
         }, request)
 
     elif output_format == 'form':
-        # This is used to display a new and empty form for a Stakeholder. It is
-        # to be used to embed the form into an existing page.
+        # This is used to display a new and empty form for a Stakeholder.
+        if request.user is None:
+            # Make sure the user is logged in
+            raise HTTPForbidden()
         # TODO: Embedded not used anymore
         embedded = request.params.get('embedded', False)
         if embedded:
@@ -383,6 +385,9 @@ def read_one(request):
                         )
         return HTTPNotFound()
     elif output_format == 'form':
+        if request.user is None:
+            # Make sure the user is logged in
+            raise HTTPForbidden()
         # Query the Stakeholders with the given identifier
         stakeholders = stakeholder_protocol3.read_one(request, uid=uid,
             public=False, translate=False)

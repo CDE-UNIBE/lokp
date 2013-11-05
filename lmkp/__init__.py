@@ -270,7 +270,6 @@ def main(global_config, ** settings):
     config.add_route('moderator_toolbar_config', '/app/view/ModeratorToolbar.js')
 
     config.add_route('context_layers', '/app/view/layers.js')
-    config.add_route('context_layers2', '/app/view/layers2.js')
     # Return a json with all available profiles from disk
     config.add_route('profile_store', '/profiles/all')
 

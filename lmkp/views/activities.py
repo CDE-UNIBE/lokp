@@ -103,6 +103,9 @@ def read_many(request):
 
     elif output_format == 'form':
         # This is used to display a new and empty form for an Activity
+        if request.user is None:
+            # Make sure the user is logged in
+            raise HTTPForbidden()
         newInvolvement = request.params.get('inv', None)
         templateValues = renderForm(request, 'activities', inv=newInvolvement)
         if isinstance(templateValues, Response):
@@ -341,6 +344,9 @@ def read_one(request):
                         )
         return HTTPNotFound()
     elif output_format == 'form':
+        if request.user is None:
+            # Make sure the user is logged in
+            raise HTTPForbidden()
         # Query the Activities wih the given identifier
         activities = activity_protocol3.read_one(request, uid=uid, public=False,
             translate=False)

@@ -43,10 +43,19 @@ class ConfigCategoryList(object):
         """
         Find and return a category by its id.
         """
-        # TODO: Try to speed up (?) by looking directly using the index
-        for c in self.categories:
-            if str(c.getId()) == str(id):
-                return c
+        for cat in self.getCategories():
+            if str(cat.getId()) == str(id):
+                return cat
+        return None
+
+    def findThematicgroupById(self, id):
+        """
+        Find and return a thematic group by its id.
+        """
+        for cat in self.getCategories():
+            for thmg in cat.getThematicgroups():
+                if str(thmg.getId()) == str(id):
+                    return thmg
         return None
 
     def getAllTags(self):
@@ -252,7 +261,7 @@ class ConfigCategoryList(object):
         categories = []
         for cat in self.getCategories():
             for thg in cat.getThematicgroups():
-                if thg.getMapData() is not None:
+                if thg.getMap() is not None:
                     categories.append(str(cat.getId()))
         return categories
 
@@ -264,7 +273,7 @@ class ConfigCategoryList(object):
         thematicgroups = []
         for cat in self.getCategories():
             for thg in cat.getThematicgroups():
-                if thg.getMapData() is not None:
+                if thg.getMap() is not None:
                     thematicgroups.append(str(thg.getId()))
         return thematicgroups
 
@@ -470,7 +479,7 @@ class ConfigThematicgroup(object):
         self.order = 9999
         self.taggroups = []
         self.involvement = None
-        self.mapData = None
+        self.map = None
 
     def getId(self):
         """
@@ -551,17 +560,18 @@ class ConfigThematicgroup(object):
         """
         return self.involvement
 
-    def setMapData(self, mapData):
+    def setMap(self, map):
         """
-        Set the map data of this thematic group.
+        Set the map of this thematic group.
         """
-        self.mapData = mapData
+        if isinstance(map, ConfigMap):
+            self.map = map
 
-    def getMapData(self):
+    def getMap(self):
         """
-        Return the involvement data of this thematic group.
+        Return the map of this thematic group.
         """
-        return self.mapData
+        return self.map
 
     def getForm(self, request, readonly=False):
         """
@@ -575,7 +585,7 @@ class ConfigThematicgroup(object):
             title=title
         )
 
-        if self.getMapData() is not None:
+        if self.getMap() is not None:
             # If there is some map data in this thematic group, get the widget
             # and add it to the form.
             mapWidget = getMapWidget(self)
@@ -1390,9 +1400,40 @@ class ConfigInvolvementRole(object):
         """
         return self.name
 
+class ConfigMap(object):
+    """
+    A class representing the configuration of the map.
+    """
+
+    def __init__(self, name):
+        self.name = name
+        self.mode = 'singlepoint'
+
+    def getName(self):
+        """
+        Returns the name of the map
+        """
+        return self.name
+
+    def setMode(self, mode):
+        """
+        Set the mode of the map
+        """
+        if mode in [
+            'singlepoint',
+            'multipoints'
+        ]:
+            self.mode = mode
+
+    def getMode(self):
+        """
+        Returns the mode of the map
+        """
+        return self.mode
+
 class ConfigInvolvement(object):
     """
-    A class representing an the configuration of an Involvement.
+    A class representing the configuration of an Involvement.
     """
 
     def __init__(self, name, itemType):
@@ -1461,23 +1502,23 @@ def getMapWidget(thematicgroup):
         widget=deform.widget.MappingWidget(
             template='customMapMapping'
         ),
-        name=thematicgroup.getMapData(),
+        name=thematicgroup.getMap().getName(),
         title=''
     )
 
     mapWidget.add(colander.SchemaNode(
-        colander.Float(),
+        colander.String(),
         widget=deform.widget.TextInputWidget(template='hidden'),
-        name='lon',
-        title='lon'
+        name='geometry',
+        title='geometry'
     ))
 
     mapWidget.add(colander.SchemaNode(
-        colander.Float(),
+        colander.String(),
         widget=deform.widget.TextInputWidget(template='hidden'),
-        name='lat',
-        title='lat',
-        missing=''
+        name='editmode',
+        title='editmode',
+        default=thematicgroup.getMap().getMode()
     ))
 
     return mapWidget
@@ -1847,7 +1888,14 @@ def getCategoryList(request, itemType, **kwargs):
                     continue
 
                 if tgroup_id == 'map':
-                    thematicgroup.setMapData(tags)
+                    # Map configuration
+                    if 'name' in tags:
+                        map = ConfigMap(tags['name'])
+
+                    if 'mode' in tags:
+                        map.setMode(tags['mode'])
+
+                    thematicgroup.setMap(map)
                     continue
 
                 # Create a taggroup out of it
