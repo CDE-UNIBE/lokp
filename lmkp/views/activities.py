@@ -360,6 +360,8 @@ def read_one(request):
                         version = str(a['version'])
                     if str(a['version']) == version:
                         templateValues = renderForm(request, 'activities', itemJson=a)
+                        if isinstance(templateValues, Response):
+                            return templateValues
                         templateValues['profile'] = get_current_profile(request)
                         templateValues['locale'] = get_current_locale(request)
                         return render_to_response(
