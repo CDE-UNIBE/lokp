@@ -784,7 +784,7 @@ class ConfigTaggroup(object):
         """
         mainkey = self.getMaintag().getKey().getName()
         # If the maintag is empty, ...
-        if value[mainkey] == colander.null:
+        if value[mainkey] in [colander.null, set()]:
             # ... check if one of the other values is set
             hasOtherValuesSet = False
             for (k, v) in value.iteritems():

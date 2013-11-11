@@ -1787,7 +1787,7 @@ class ActivityProtocol3(Protocol):
 
         # Populate the Tag Groups
         for i, taggroup in enumerate(activity_dict['taggroups']):
-
+            
             db_tg = A_Tag_Group(i + 1)
             new_activity.tag_groups.append(db_tg)
 
@@ -1827,6 +1827,12 @@ class ActivityProtocol3(Protocol):
                         db_tg.main_tag = a_tag
                 except AttributeError:
                     pass
+
+            # Check that a Main Tag was set.
+            # If none was set (if it did not match any of the keys of the 
+            # taggroup), raise an error.
+            if db_tg.main_tag is None:
+                raise HTTPBadRequest(detail='Invalid Main Tag provided. The Taggroup %s has no valid Main Tag' % taggroup)
 
             # If available, try to handle the geometry of a taggroup
             try:
