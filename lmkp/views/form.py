@@ -65,27 +65,12 @@ def renderForm(request, itemType, **kwargs):
 
     # Get the kwargs
     itemJson = kwargs.get('itemJson', None)
-    embedded = kwargs.get('embedded', False)
     newInvolvement = kwargs.get('inv', None)
 
     _ = request.translate
     emptyTitle = _('Empty Form')
     emptyText = _('You submitted an empty form or did not make any changes.')
     errorTitle = _('Error')
-
-    # TODO
-    # If an embedded Stakeholder form is submitted, the itemType is still
-    # 'activities' although the submitted __formid__ hints at Stakeholders.
-    if (itemType == 'activities' and '__formid__' in request.POST
-        and request.POST['__formid__'] == 'stakeholderform'):
-        itemType = 'stakeholders'
-
-    # TODO
-    # If an embedded Stakeholder form is submitted with errors, the 'embedded'
-    # keyword is not set. Instead, a hidden parameter 'embedded' inside the form
-    # can be used to know it is embedded (and AJAX should be used again)
-    if 'embedded' in request.POST:
-        embedded = True
 
     # Activity or Stakeholder
     if itemType == 'activities':
@@ -116,24 +101,6 @@ def renderForm(request, itemType, **kwargs):
             if p == 'category':
                 oldCategory = request.POST[p]
                 break
-
-    # TODO
-    if embedded is True:
-        # An embedded stakeholder form is submitted using AJAX. After the form
-        # was submitted, populate the fields of the Activity form with the
-        # involvement data. A html span element with a unique id is used to mark
-        # the fieldset where the values are to be inserted.
-        ajaxOptions = """
-        {
-            success: function (rText, sText, xhr, form) {
-                $('#stakeholderFormLoading').hide();
-                if (typeof stakeholderdata !== 'undefined') {
-                    setInvolvementContent(stakeholderdata);
-                }
-                return false;
-            }
-        }
-        """
 
     # Get the configuration of the categories (as defined in the config yaml)
     configCategoryList = getCategoryList(request, itemType)
@@ -188,7 +155,7 @@ def renderForm(request, itemType, **kwargs):
 
         # Prepare a form with the submitted category
         oldschema = addHiddenFields(colander.SchemaNode(colander.Mapping()),
-            itemType, embedded=embedded)
+            itemType)
         oldCat = configCategoryList.findCategoryById(oldCategory)
         if oldCat is not None:
             oldschema.add(oldCat.getForm(request))
@@ -201,13 +168,7 @@ def renderForm(request, itemType, **kwargs):
             buttons = getFormButtons(request, categoryListButtons, oldCategory,
             showSessionCategories=showSessionCategories)
 
-        # TODO
-        if embedded is True:
-            # If the form is embedded, use AJAX to submit it.
-            form = deform.Form(oldschema, buttons=buttons, formid=formid,
-                use_ajax=True, ajax_options=ajaxOptions)
-        else:
-            form = deform.Form(oldschema, buttons=buttons, formid=formid)
+        form = deform.Form(oldschema, buttons=buttons, formid=formid)
 
         try:
             # Try to validate the form
@@ -282,6 +243,12 @@ def renderForm(request, itemType, **kwargs):
                     'inv': createInvolvement
                 }
                 if itemType == 'activities':
+                    msg = render(
+                        getTemplatePath(request, 'parts/messages/stakeholder_form_through_involvement.mak'),
+                        {'url': request.route_url('activities_read_many', output='form', _query={'inv': createInvolvement})},
+                        request
+                    )
+                    session.flash(msg)
                     url = request.route_url('stakeholders_read_many', output='form')
                 else:
                     url = request.route_url('activities_read_many', output='form')
@@ -356,8 +323,11 @@ def renderForm(request, itemType, **kwargs):
 
                         addToSession = addCreatedInvolvementToSession(request, session, otherItemType, camefrom['inv'], returnValues)
                         if addToSession is True:
-                            # TODO: Translation (template)
-                            msg = 'Success: The item was created and added as involvement.'
+                            msg = render(
+                                getTemplatePath(request, 'parts/messages/stakeholder_created_through_involvement.mak'),
+                                {},
+                                request
+                            )
                             session.flash(msg)
 
                         # Route to the other form again.
@@ -397,7 +367,7 @@ def renderForm(request, itemType, **kwargs):
         # If nothing was submitted or the captured form data was stored
         # correctly, create a form with the (new) current category.
         newschema = addHiddenFields(colander.SchemaNode(colander.Mapping()),
-            itemType, embedded=embedded)
+            itemType)
         newCat = configCategoryList.findCategoryById(newCategory)
         if newCat is not None:
             newschema.add(newCat.getForm(request))
@@ -409,13 +379,7 @@ def renderForm(request, itemType, **kwargs):
         buttons = getFormButtons(request, categoryListButtons, newCategory,
             showSessionCategories=showSessionCategories)
 
-        # TODO
-        if embedded is True:
-            # If the form is embedded, use AJAX to submit it.
-            form = deform.Form(newschema, buttons=buttons, formid=formid,
-                use_ajax=True, ajax_options=ajaxOptions)
-        else:
-            form = deform.Form(newschema, buttons=buttons, formid=formid)
+        form = deform.Form(newschema, buttons=buttons, formid=formid)
 
         # The form contains empty data by default
         data = {'category': newCategory}
@@ -791,15 +755,14 @@ def doUpdate(request, itemType, diff):
 
     return True, returnDict
 
-def addHiddenFields(schema, itemType, embedded=False):
+def addHiddenFields(schema, itemType):
     """
     Function to add hidden fields (for meta data of the item) to a form schema.
     Fields are added for:
     - id (the identifier of the item)
     - version (the version being edited)
     - category (the category of the form which is being edited)
-    [- embedded]: When submitting an embedded form with AJAX, it is necessary to
-    re-render this form in embedded mode (to use AJAX again on submission)
+    - itemType
     """
     # For some reason, the deform.widget.HiddenWidget() does not seem to work.
     # Instead, the TextInputWidget is used with the hidden template.
@@ -832,15 +795,6 @@ def addHiddenFields(schema, itemType, embedded=False):
         missing = colander.null,
         default = itemType
     ))
-    if embedded is True:
-        schema.add(colander.SchemaNode(
-            colander.Boolean(),
-            widget=deform.widget.TextInputWidget(template='hidden'),
-            name='embedded',
-            title='',
-            missing = False
-        ))
-
     return schema
 
 def getFormButtons(request, categorylist, currentCategory=None, **kwargs):
@@ -1288,10 +1242,6 @@ def formdataToDiff(request, newform, itemType):
     if 'category' in newform:
         # The category is not needed
         del newform['category']
-
-    if 'embedded' in newform:
-        # Embedded indicator is to be removed
-        del newform['embedded']
 
     if 'itemType' in newform:
         # ItemType is not needed

@@ -243,7 +243,7 @@ def main(global_config, ** settings):
     """
     Files
     """
-    # Embedded form to upload a form
+    # Embedded form to upload a file
     config.add_route('file_upload_form_embedded', '/files/form')
     # Show or download a file
     config.add_route('file_view', '/files/{action}/{identifier}')
