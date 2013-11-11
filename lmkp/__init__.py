@@ -243,7 +243,7 @@ def main(global_config, ** settings):
     """
     Files
     """
-    # Embedded form to upload a form
+    # Embedded form to upload a file
     config.add_route('file_upload_form_embedded', '/files/form')
     # Show or download a file
     config.add_route('file_view', '/files/{action}/{identifier}')
@@ -270,7 +270,6 @@ def main(global_config, ** settings):
     config.add_route('moderator_toolbar_config', '/app/view/ModeratorToolbar.js')
 
     config.add_route('context_layers', '/app/view/layers.js')
-    config.add_route('context_layers2', '/app/view/layers2.js')
     # Return a json with all available profiles from disk
     config.add_route('profile_store', '/profiles/all')
 
@@ -289,7 +288,7 @@ def main(global_config, ** settings):
     config.add_route('user_account', '/users/account')
     config.add_route('user_approve', '/users/approve')
 
-    config.add_route('form_clear_session', '/form/clearsession')
+    config.add_route('form_clear_session', '/form/clearsession/{item}/{attr}')
 
     # A WMS proxy
     config.add_route('wms_proxy', '/geoserver/lo/wms', request_method='GET')
@@ -297,6 +296,9 @@ def main(global_config, ** settings):
 
     # Changeset protocol, query the changeset
     config.add_route('changesets_read', '/changesets')
+
+    # A route to the sitemap.xml
+    config.add_route('sitemap', '/sitemap.xml')
 
     # Evaluation
     config.add_route('evaluation_json', '/evaluation/{temp}')

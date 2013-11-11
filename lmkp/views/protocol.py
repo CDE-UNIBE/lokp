@@ -1524,6 +1524,10 @@ class Protocol(object):
 
 #            log.debug('Diff after doing involvement merges:\n%s' % rel_diff)
 
+        # Merge (or rather replace) geometry (only for Activities)
+        if mappedClass == Activity and 'geometry' in new_diff:
+            rel_diff['geometry'] = new_diff['geometry']
+
         log.debug('Diff after recalculation:\n%s' % rel_diff)
 
         return rel_diff

@@ -100,9 +100,7 @@ class ActivityFeature3(Feature):
         geometry = None
         try:
             geom = wkb.loads(str(self._geometry.geom_wkb))
-            geometry = {}
-            geometry['type'] = 'Point'
-            geometry['coordinates'] = [geom.x, geom.y]
+            geometry = json.loads(geojson.dumps(geom))
         except AttributeError:
             pass
 
@@ -1533,10 +1531,7 @@ class ActivityProtocol3(Protocol):
             feature = {}
 
             geom = wkb.loads(str(g.geom_wkb))
-            geometry = {}
-            geometry['type'] = 'Point'
-            geometry['coordinates'] = [geom.x, geom.y]
-            feature['geometry'] = geometry
+            feature['geometry'] = json.loads(geojson.dumps(geom))
 
             properties = {
                 'status': status_name,
@@ -1749,14 +1744,16 @@ class ActivityProtocol3(Protocol):
             try:
                 geometrytype = shape.geom_type
             except:
-                raise HTTPBadRequest(detail="Invalid geometry type, needs to be a point")
+                raise HTTPBadRequest(detail="Invalid geometry type.")
 
-#            if geometrytype != 'Point':
-#                raise HTTPBadRequest(detail="Wrong geometry type, needs to be a point")
+            if geometrytype == 'MultiPoint':
+                g = shape.wkt
+            else:
+                g = shape.representative_point().wkt
 
             # Create a new activity and add representative point to the activity
             new_activity = Activity(activity_identifier=identifier,
-                                    version=version, point=shape.representative_point().wkt)
+                                    version=version, point=g)
         else:
             # Activities cannot be created if they do not have a geometry
             raise HTTPBadRequest(detail="No geometry provided!")
@@ -1790,7 +1787,7 @@ class ActivityProtocol3(Protocol):
 
         # Populate the Tag Groups
         for i, taggroup in enumerate(activity_dict['taggroups']):
-
+            
             db_tg = A_Tag_Group(i + 1)
             new_activity.tag_groups.append(db_tg)
 
@@ -1830,6 +1827,12 @@ class ActivityProtocol3(Protocol):
                         db_tg.main_tag = a_tag
                 except AttributeError:
                     pass
+
+            # Check that a Main Tag was set.
+            # If none was set (if it did not match any of the keys of the 
+            # taggroup), raise an error.
+            if db_tg.main_tag is None:
+                raise HTTPBadRequest(detail='Invalid Main Tag provided. The Taggroup %s has no valid Main Tag' % taggroup)
 
             # If available, try to handle the geometry of a taggroup
             try:
@@ -1920,9 +1923,17 @@ class ActivityProtocol3(Protocol):
         if 'geometry' in activity_dict:
             geojson_obj = geojson.loads(json.dumps(activity_dict['geometry']),
                                         object_hook=geojson.GeoJSON.to_instance)
-            geojson_shape = asShape(geojson_obj)
+            new_geom = asShape(geojson_obj)
 
-            new_geom = geojson_shape.representative_point().wkt
+            try:
+                geometrytype = new_geom.geom_type
+            except:
+                raise HTTPBadRequest(detail="Invalid geometry type.")
+
+            if geometrytype == 'MultiPoint':
+                new_geom = new_geom.wkt
+            else:
+                new_geom = new_geom.representative_point().wkt
 
         # Create new Activity
         new_activity = Activity(activity_identifier=old_activity.identifier,

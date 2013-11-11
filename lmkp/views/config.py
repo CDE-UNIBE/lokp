@@ -109,58 +109,24 @@ def merge_profiles(global_config, locale_config):
 
 def get_mandatory_keys(request, item, translated=False):
     if item == 'a':
-        config_yaml = ACTIVITY_YAML
+        configList = getCategoryList(request, 'activities')
     elif item == 'sh':
-        config_yaml = STAKEHOLDER_YAML
+        configList = getCategoryList(request, 'stakeholders')
+    return configList.getDesiredKeyNames(translated=translated)
 
-    # Read the global configuration file
-    global_stream = open("%s/%s" % (profile_directory_path(request), config_yaml), 'r')
-    global_config = yaml.load(global_stream)
-
-    if 'fields' not in global_config:
-        return None
-
-    fields = global_config['fields']
-
+def getGridColumnKeys(request, itemType):
+    """
+    Return the keys used for the grid columns in the order specified in the
+    configuration yaml.
+    It returns an array where each entry contains
+    - the original key name (used for ordering the column)
+    - the translated key name (for display purposes)
+    """
+    categoryList = getCategoryList(request, itemType)
     keys = []
-    if 'mandatory' in fields:
-        for (name, config) in fields['mandatory'].iteritems():
-            keys.append(name)
-
-    if len(keys) > 0:
-
-        if translated:
-            # Translate before returning
-            localizer = get_localizer(request)
-            translatedKeys = Session.query(
-                                           A_Key.fk_key.label('original_id'),
-                                           A_Key.key.label('translation')
-                                           ).\
-                join(Language).\
-                filter(Language.locale == localizer.locale_name).\
-                subquery()
-
-            queryKeys = Session.query(
-                                      A_Key.key.label('original'),
-                                      translatedKeys.c.translation.label('translation')
-                                      ).\
-                filter(A_Key.key.in_(keys)).\
-                filter(A_Key.original == None).\
-                outerjoin(translatedKeys, translatedKeys.c.original_id == A_Key.id)
-
-            translated_keys = []
-            for k in queryKeys.all():
-                if k.translation:
-                    translated_keys.append(k.translation)
-                else:
-                    translated_keys.append(k.original)
-
-            return translated_keys
-
-        # Return original keys
-        return keys
-
-    return None
+    for key in sorted(categoryList.getGridColumnKeyNames(), key=lambda k: k[2]):
+        keys.append([key[0], key[1]])
+    return keys
 
 #def get_current_keys(request, item, profile):
 #    """

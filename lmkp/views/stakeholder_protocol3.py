@@ -1426,8 +1426,6 @@ class StakeholderProtocol3(Protocol):
             except KeyError:
                 raise HTTPBadRequest(detail="No Main Tag provided. Taggroup %s has no taggroup." % taggroup)
 
-            # TODO: End of replace
-
             # Loop all tags within a tag group
             for tag in taggroup['tags']:
 
@@ -1452,6 +1450,12 @@ class StakeholderProtocol3(Protocol):
                         db_tg.main_tag = sh_tag
                 except AttributeError:
                     pass
+
+            # Check that a Main Tag was set.
+            # If none was set (if it did not match any of the keys of the 
+            # taggroup), raise an error.
+            if db_tg.main_tag is None:
+                raise HTTPBadRequest(detail='Invalid Main Tag provided. The Taggroup %s has no valid Main Tag' % taggroup)
 
         return new_stakeholder
 
