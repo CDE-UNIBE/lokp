@@ -256,26 +256,17 @@ def read_many(request):
         if request.user is None:
             # Make sure the user is logged in
             raise HTTPForbidden()
-        # TODO: Embedded not used anymore
-        embedded = request.params.get('embedded', False)
-        if embedded:
-            return render_to_response(
-                getTemplatePath(request, 'stakeholders/form_embedded.mak'),
-                renderForm(request, 'stakeholders', embedded=True),
-                request
-            )
-        else:
-            newInvolvement = request.params.get('inv', None)
-            templateValues = renderForm(request, 'stakeholders', inv=newInvolvement)
-            if isinstance(templateValues, Response):
-                return templateValues
-            templateValues['profile'] = get_current_profile(request)
-            templateValues['locale'] = get_current_locale(request)
-            return render_to_response(
-                getTemplatePath(request, 'stakeholders/form.mak'),
-                templateValues,
-                request
-            )
+        newInvolvement = request.params.get('inv', None)
+        templateValues = renderForm(request, 'stakeholders', inv=newInvolvement)
+        if isinstance(templateValues, Response):
+            return templateValues
+        templateValues['profile'] = get_current_profile(request)
+        templateValues['locale'] = get_current_locale(request)
+        return render_to_response(
+            getTemplatePath(request, 'stakeholders/form.mak'),
+            templateValues,
+            request
+        )
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()

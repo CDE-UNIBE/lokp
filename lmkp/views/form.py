@@ -72,13 +72,6 @@ def renderForm(request, itemType, **kwargs):
     emptyText = _('You submitted an empty form or did not make any changes.')
     errorTitle = _('Error')
 
-    # TODO
-    # If an embedded Stakeholder form is submitted, the itemType is still
-    # 'activities' although the submitted __formid__ hints at Stakeholders.
-    if (itemType == 'activities' and '__formid__' in request.POST
-        and request.POST['__formid__'] == 'stakeholderform'):
-        itemType = 'stakeholders'
-
     # Activity or Stakeholder
     if itemType == 'activities':
         # The initial category of the form
@@ -250,6 +243,12 @@ def renderForm(request, itemType, **kwargs):
                     'inv': createInvolvement
                 }
                 if itemType == 'activities':
+                    msg = render(
+                        getTemplatePath(request, 'parts/messages/stakeholder_form_through_involvement.mak'),
+                        {'url': request.route_url('activities_read_many', output='form', _query={'inv': createInvolvement})},
+                        request
+                    )
+                    session.flash(msg)
                     url = request.route_url('stakeholders_read_many', output='form')
                 else:
                     url = request.route_url('activities_read_many', output='form')
@@ -324,8 +323,11 @@ def renderForm(request, itemType, **kwargs):
 
                         addToSession = addCreatedInvolvementToSession(request, session, otherItemType, camefrom['inv'], returnValues)
                         if addToSession is True:
-                            # TODO: Translation (template)
-                            msg = 'Success: The item was created and added as involvement.'
+                            msg = render(
+                                getTemplatePath(request, 'parts/messages/stakeholder_created_through_involvement.mak'),
+                                {},
+                                request
+                            )
                             session.flash(msg)
 
                         # Route to the other form again.
@@ -760,8 +762,7 @@ def addHiddenFields(schema, itemType):
     - id (the identifier of the item)
     - version (the version being edited)
     - category (the category of the form which is being edited)
-    [- embedded]: When submitting an embedded form with AJAX, it is necessary to
-    re-render this form in embedded mode (to use AJAX again on submission)
+    - itemType
     """
     # For some reason, the deform.widget.HiddenWidget() does not seem to work.
     # Instead, the TextInputWidget is used with the hidden template.
@@ -1241,10 +1242,6 @@ def formdataToDiff(request, newform, itemType):
     if 'category' in newform:
         # The category is not needed
         del newform['category']
-
-    if 'embedded' in newform:
-        # Embedded indicator is to be removed
-        del newform['embedded']
 
     if 'itemType' in newform:
         # ItemType is not needed
