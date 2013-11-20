@@ -645,6 +645,155 @@ def renderReadonlyForm(request, itemType, itemJson):
         'geometry': geometry
     }
 
+def renderReadonlyCompareForm(request, itemType, refFeature, newFeature):
+    """
+    Return a rendered form used for comparison (for comparison or review 
+    purposes).
+    """
+    
+    deform.Form.set_default_renderer(mako_renderer_compare)
+    configCategoryList = getCategoryList(request, itemType)
+    
+    schema = addHiddenFields(colander.SchemaNode(colander.Mapping()), itemType)
+    for cat in configCategoryList.getCategories():
+        schema.add(cat.getForm(request, readonly=True, compare=True))
+    
+    form = deform.Form(schema)
+    
+    refData = {}
+    if refFeature is not None:
+        refData = getFormdataFromItemjson(request, refFeature.to_table(request),
+            'activities', readOnly=True)
+    
+    newData = {}
+    if newFeature is not None:
+        newData = getFormdataFromItemjson(request, newFeature.to_table(request), 
+            'activities', readOnly=True)
+    
+    data = mergeFormdata(refData, newData)
+    html = form.render(data, readonly=True)
+    
+    # TODO: Geometry (only for activities!)
+    geometry = ''
+
+    return {
+        'form': html,
+        'geometry': geometry
+    }
+
+
+def mergeFormdata(ref, new):
+    """
+    Merge two formdatas to create a single formdata which can be used in a 
+    compareForm as rendered by the function renderReadonlyCompareForm.
+    The formdata has the following structure:
+    '1': {
+        '5': {
+            'ref_1': [
+                {
+                    'tg_id': 0,
+                    '[A] Integerfield 1': 1, 
+                    '[A] Numberfield 2': 2,
+                    'change': 'change'
+                }
+            ], 
+            'new_1': [
+                {
+                    'tg_id': 0,
+                    '[A] Integerfield 1': 3, 
+                    '[A] Numberfield 2': 4,
+                    'change': 'change'
+                }
+            ],
+            'change': 'change'
+        },
+        'change': 'change'
+    }
+    """
+    
+    def _addPrefixToEachTaggroup(data, prefix):
+        """
+        Adds a prefix to each taggroup in the form:
+        [PREFIX]_[ID]
+        """
+        new_data = {}
+        for cat_id, cat in data.iteritems():
+            if cat_id in ['category', 'version', 'id']:
+                continue
+            new_cat = {}
+            for thmg_id, thmg in cat.iteritems():
+                new_thmg = {}
+                for tg_id, tg in thmg.iteritems():
+                    new_thmg['%s_%s' % (prefix, tg_id)] = tg
+                new_cat[thmg_id] = new_thmg
+            new_data[cat_id] = new_cat
+        return new_data
+    
+    def _mergeDicts(a, b, path=None):
+        """
+        Merge one dict in another.
+        http://stackoverflow.com/a/7205107/841644
+        """
+        if path is None: path = []
+        for key in b:
+            if key in a:
+                if isinstance(a[key], dict) and isinstance(b[key], dict):
+                    _mergeDicts(a[key], b[key], path + [str(key)])
+                elif a[key] == b[key]:
+                    pass # same leaf value
+                else:
+                    raise Exception('Conflict at %s' % '.'.join(path + [str(key)]))
+            else:
+                a[key] = b[key]
+        return a
+    
+    # Mark all taggroups of the two versions with 'ref' or 'new' respectively.
+    # Then merge the two dicts.
+    merged = _mergeDicts(_addPrefixToEachTaggroup(ref, 'ref'), 
+        _addPrefixToEachTaggroup(new, 'new'))
+    
+    # Mark each thematicgroup and category which have changes in them. Also make
+    # sure that each taggroups missing in one version receive a flag so they are
+    # displayed as well in the form table.
+    for cat_id, cat in merged.iteritems():
+        catChanged = False
+        for thmg_id, thmg in cat.iteritems():
+            thmgChanged = False
+            missingTgs = []
+            for tg_id, tg in thmg.iteritems():
+                prefix, id = tg_id.split('_')
+                if prefix == 'ref':
+                    otherTaggroup = '%s_%s' % ('new', id)
+                else:
+                    otherTaggroup = '%s_%s' % ('ref', id)
+                if otherTaggroup not in thmg:
+                    missingTgs.append(otherTaggroup)
+                if isinstance(tg, dict):
+                    if otherTaggroup not in thmg or thmg[otherTaggroup] != tg:
+                        tg['change'] = 'change'
+                        thmgChanged = True
+                elif isinstance(tg, list):
+                    if otherTaggroup not in thmg:
+                        for t in tg:
+                            t['change'] = 'change'
+                            thmgChanged = True
+                    else:
+                        for t in tg:
+                            if t not in thmg[otherTaggroup]:
+                                t['change'] = 'change'
+                                thmgChanged = True
+            for mT in missingTgs:
+                thmg[mT] = {'change': 'change'}
+            if thmgChanged is True:
+                thmg['change'] = 'change'
+                catChanged = True
+        if catChanged is True:
+            cat['change'] = 'change'
+    
+    log.debug('Merged formdata: %s' % merged)
+    
+    return merged
+
 def structHasOnlyNullValues(cstruct, depth=0):
     """
     Recursive function checking if the 'struct' value of a form only contains
@@ -1100,7 +1249,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             # current form.
             if category is None or cat == str(category):
                 data[cat] = {thmg: {tgid: tagsdata}}
-
+                
         # Map: Look only if the category contains a thematic group which has a
         # map.
         if (cat in categorylist.getMapCategoryIds()
@@ -1144,7 +1293,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             }
 
     log.debug('Formdata created by ItemJSON: %s' % data)
-
+    
     return data
 
 def formdataToDiff(request, newform, itemType):
@@ -1723,6 +1872,26 @@ def mako_renderer(tmpl_name, **kw):
         resolver = lmkpAssetResolver.resolve(getTemplatePath(request, 'form/%s.mak' % tmpl_name))
     else:
         resolver = lmkpAssetResolver.resolve('templates/form/%s.mak' % tmpl_name)
+    template = Template(filename=resolver.abspath())
+
+    # Add the request to the keywords so it is available in the templates.
+    kw['request'] = request
+    kw['_'] = request.translate
+
+    return template.render(**kw)
+
+def mako_renderer_compare(tmpl_name, **kw):
+    """
+    A helper function to use the mako rendering engine.
+    It seems to be necessary to locate the templates by using the asset
+    resolver.
+    """
+    request = get_current_request()
+    # Redirect base form templates to customized templates
+    if tmpl_name in ['readonly/form', 'customInvolvementMapping']:
+        resolver = lmkpAssetResolver.resolve(getTemplatePath(request, 'review/%s.mak' % tmpl_name))
+    else:
+        resolver = lmkpAssetResolver.resolve('templates/review/%s.mak' % tmpl_name)
     template = Template(filename=resolver.abspath())
 
     # Add the request to the keywords so it is available in the templates.

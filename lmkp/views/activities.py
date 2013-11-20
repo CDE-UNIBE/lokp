@@ -20,9 +20,11 @@ from pyramid.security import has_permission
 from pyramid.view import view_config
 import yaml
 
+from lmkp.views.activity_review import ActivityReview
 from lmkp.renderers.renderers import translate_key
 from lmkp.views.form import renderForm
 from lmkp.views.form import renderReadonlyForm
+from lmkp.views.form import renderReadonlyCompareForm
 from lmkp.views.form import checkValidItemjson
 from lmkp.views.form_config import getCategoryList
 from lmkp.views.profile import get_current_profile
@@ -370,6 +372,27 @@ def read_one(request):
                             request
                         )
         return HTTPNotFound()
+    elif output_format == 'review':
+        # TODO: Compare which versions?
+        review = ActivityReview(request)
+        ref_version_number, new_version_number = review._get_valid_versions(
+            Activity, uid
+        )
+        activities = review.get_comparison(Activity, uid, ref_version_number, 
+            new_version_number)
+        templateValues = renderReadonlyCompareForm(request, 'activities', 
+            activities[0], activities[1])
+#        if activities[1] is not None:
+#            activities[1].mark_complete(get_mandatory_keys(request, 'a', True))
+#            print "***"
+#            print activities[1]._missing_keys
+        templateValues['profile'] = get_current_profile(request)
+        templateValues['locale'] = get_current_locale(request)
+        return render_to_response(
+            getTemplatePath(request, 'activities/review.mak'),
+            templateValues,
+            request
+        )
     elif output_format == 'formtest':
         # Test if an Activity is valid according to the form configuration
         activities = activity_protocol3.read_one(request, uid=uid, public=False,

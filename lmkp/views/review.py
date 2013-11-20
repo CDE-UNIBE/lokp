@@ -572,7 +572,7 @@ class BaseReview(BaseView):
         versions = self.request.matchdict.get('versions')
         try:
             ref_version = int(versions[0])
-        except IndexError:
+        except (IndexError, TypeError):
             #
             ref_version = active_version if active_version is not None else 0
         except ValueError as e:
@@ -580,7 +580,7 @@ class BaseReview(BaseView):
 
         try:
             new_version = int(versions[1])
-        except IndexError:
+        except (IndexError, TypeError):
             if pending_version is not None:
                 new_version = pending_version
             elif active_version is not None:
@@ -709,6 +709,10 @@ class BaseReview(BaseView):
             mappedClass, uid, ref_version_number, new_version_number
         )
         metadata['recalculated'] = recalculated
+
+        return [ref_object, new_object]
+    
+        # TODO: Obsolete
 
         result = dict(
             self._compare_taggroups(ref_object, new_object).items() +
