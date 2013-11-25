@@ -572,17 +572,13 @@ def review(request):
                     raise HTTPBadRequest(_('Not all mandatory keys are provided'))
 
     # The user can add a review
-    ret = activity_protocol3._add_review(
-        request, activity, Activity, user, review_decision, review_comment
-    )
+    ret = activity_protocol3._add_review(request, activity, Activity, user, 
+        review_decision, review_comment)
     
     if 'success' not in ret:
         raise HTTPBadRequest(_('Unknown error'))
     
-    if ret['success'] is True:
-        request.session.flash(ret['msg'])
-    else:
-        request.session.flash(ret['msg'])
+    request.session.flash(ret['msg'])
 
     if review_decision == 1:
         return HTTPFound(location=request.route_url('activities_read_one', 
@@ -590,8 +586,6 @@ def review(request):
     else:
         return HTTPFound(location=request.route_url('activities_read_one',
             output='history', uid=activity.identifier))
-
-    return ret
 
 @view_config(route_name='activities_create', renderer='json')
 def create(request):

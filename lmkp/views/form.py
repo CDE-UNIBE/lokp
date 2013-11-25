@@ -667,12 +667,12 @@ def renderReadonlyCompareForm(request, itemType, refFeature, newFeature,
     refData = {}
     if refFeature is not None:
         refData = getFormdataFromItemjson(request, refFeature.to_table(request),
-            'activities', readOnly=True)
+            itemType, readOnly=True)
     
     newData = {}
     if newFeature is not None:
         newData = getFormdataFromItemjson(request, newFeature.to_table(request), 
-            'activities', readOnly=True, compareFeature=newFeature)
+            itemType, readOnly=True, compareFeature=newFeature)
         
         if review is True and 'reviewable' in newData:
             reviewable = newData['reviewable']
