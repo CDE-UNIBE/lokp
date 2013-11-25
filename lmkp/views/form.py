@@ -673,8 +673,20 @@ def renderReadonlyCompareForm(request, itemType, refFeature, newFeature):
     data = mergeFormdata(refData, newData)
     html = form.render(data, readonly=True)
     
-    # TODO: Geometry (only for activities!)
-    geometry = ''
+    # TODO: Taggroup geometries!
+    geometry = None
+    if itemType == 'activities':
+        newGeometry = newFeature.get_geometry() if newFeature is not None else None
+        refGeometry = refFeature.get_geometry() if refFeature is not None else None
+        
+        geometry = json.dumps({
+            'ref': {
+                'geometry': refGeometry
+            },
+            'new': {
+                'geometry': newGeometry
+            },
+        })
 
     return {
         'form': html,
@@ -767,11 +779,14 @@ def mergeFormdata(ref, new):
                 else:
                     otherTaggroup = '%s_%s' % ('ref', id)
                 if otherTaggroup not in thmg:
-                    missingTgs.append(otherTaggroup)
+                    missingTgs.append((otherTaggroup, tg))
                 if isinstance(tg, dict):
                     if otherTaggroup not in thmg or thmg[otherTaggroup] != tg:
                         tg['change'] = 'change'
-                        thmgChanged = True
+                        # Changes in the map "taggroup" should not mark the
+                        # whole thematic group as changed.
+                        if id != 'map':
+                            thmgChanged = True
                 elif isinstance(tg, list):
                     if otherTaggroup not in thmg:
                         for t in tg:
@@ -782,8 +797,11 @@ def mergeFormdata(ref, new):
                             if t not in thmg[otherTaggroup]:
                                 t['change'] = 'change'
                                 thmgChanged = True
-            for mT in missingTgs:
-                thmg[mT] = {'change': 'change'}
+            for missingTaggroup, oldTg in missingTgs:
+                if isinstance(oldTg, dict):
+                    thmg[missingTaggroup] = {'change': 'change'}
+                elif isinstance(oldTg, list):
+                    thmg[missingTaggroup] = [{'change': 'change'}]
             if thmgChanged is True:
                 thmg['change'] = 'change'
                 catChanged = True
@@ -1831,7 +1849,8 @@ def formdataToDiff(request, newform, itemType):
                                     'tg_id': taggroupid,
                                     'tags': [{
                                         'key': k,
-                                        'value': value
+                                        'value': value,
+                                        'op': 'delete'
                                     }]
                                 })
 

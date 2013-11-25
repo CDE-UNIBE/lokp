@@ -711,15 +711,3 @@ class BaseReview(BaseView):
         metadata['recalculated'] = recalculated
 
         return [ref_object, new_object]
-    
-        # TODO: Obsolete
-
-        result = dict(
-            self._compare_taggroups(ref_object, new_object).items() +
-            {'metadata': metadata}.items() +
-            {'versions': self._get_available_versions(
-                mappedClass, uid, review=review)
-            }.items()
-        )
-
-        return result

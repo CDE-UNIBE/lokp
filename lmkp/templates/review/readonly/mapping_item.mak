@@ -21,13 +21,14 @@
             change = 'change' in cstruct and cstruct['change'] != colander.null
             cls = 'accordion-heading category'
             clsBody = 'row-fluid accordion-body collapse'
+            chevronClass = 'icon-chevron-down'
             if change:
                 cls += ' change'
                 clsBody += ' in'
+                chevronClass = 'icon-chevron-up'
         %>
         
         <div class="row-fluid accordion accordion-group">
-            
             <div class="${cls}">
                 <div class="span6">
                     % if change:
@@ -36,7 +37,7 @@
                     % if not hasOnlyNullValues:
                     <a class="accordion-toggle" data-toggle="collapse" href="#collapse-${field.name}">
                         ${field.title}
-                        <i class="icon-chevron-down"></i>
+                        <i class="${chevronClass}"></i>
                     </a>
                     % else:
                     <span class="emptyCategory">
@@ -70,32 +71,28 @@
         <%
             change = 'change' in cstruct and cstruct['change'] != colander.null
             cls = 'span6 grid-area'
-            clsBody = 'row-fluid accordion-body collapse'
             if change:
                 cls += ' change'
-                clsBody += ' in'
         %>
         
         <div class="row-fluid accordion-group">
             <div class="accordion-heading">
                 <div class="${cls}">
-                    <a class="accordion-toggle" data-toggle="collapse" href="#collapse-${field.name}">
+                    <a class="accordion-toggle disableClick">
                         <h5 class="green">
                             ${field.title}
-                            <i class="icon-chevron-down"></i>
                         </h5>
                     </a>
                 </div>
                 <div class="${cls}">
-                    <a class="accordion-toggle" data-toggle="collapse" href="#collapse-${field.name}">
+                    <a class="accordion-toggle disableClick">
                         <h5 class="green">
                             ${field.title}
-                            <i class="icon-chevron-down"></i>
                         </h5>
                     </a>
                 </div>
             </div>
-            <div id="collapse-${field.name}" class="${clsBody}">
+            <div id="collapse-${field.name}" class="row-fluid accordion-body collapse in">
                 <div class="accordion inner">
                     ${field.serialize(cstruct, readonly=True)}
                 </div>

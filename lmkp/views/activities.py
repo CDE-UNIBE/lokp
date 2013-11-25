@@ -9,6 +9,7 @@ import logging
 import urllib
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPForbidden
+from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPUnauthorized
 from pyramid.i18n import get_localizer
@@ -30,6 +31,7 @@ from lmkp.views.form_config import getCategoryList
 from lmkp.views.profile import get_current_profile
 from lmkp.views.profile import get_current_locale
 from lmkp.views.views import BaseView
+from lmkp.authentication import checkUserPrivileges
 
 log = logging.getLogger(__name__)
 
@@ -372,7 +374,12 @@ def read_one(request):
                             request
                         )
         return HTTPNotFound()
-    elif output_format == 'review':
+    elif output_format in ['review', 'compare']:
+        if output_format == 'review':
+            # Only moderators can see the review page.
+            isLoggedIn, isModerator = checkUserPrivileges(request)
+            if isLoggedIn is False or isModerator is False:
+                raise HTTPForbidden()
         # TODO: Compare which versions?
         review = ActivityReview(request)
         ref_version_number, new_version_number = review._get_valid_versions(
@@ -382,14 +389,48 @@ def read_one(request):
             new_version_number)
         templateValues = renderReadonlyCompareForm(request, 'activities', 
             activities[0], activities[1])
-#        if activities[1] is not None:
-#            activities[1].mark_complete(get_mandatory_keys(request, 'a', True))
-#            print "***"
-#            print activities[1]._missing_keys
+        # Collect metadata for the reference version
+        refMetadata = {}
+        if activities[0] is not None:
+            refMetadata = activities[0].get_metadata()
+        # Collect metadata and missing keys for the new version
+        newMetadata = {}
+        missingKeys = []
+        if activities[1] is not None:
+            activities[1].mark_complete(get_mandatory_keys(request, 'a', True))
+            missingKeys = activities[1]._missing_keys
+            newMetadata = activities[1].get_metadata()
+            
+        templateValues.update({
+            'identifier': uid,
+            'refVersion': ref_version_number,
+            'refMetadata': refMetadata,
+            'newVersion': new_version_number,
+            'newMetadata': newMetadata,
+            'missingKeys': missingKeys,
+            'profile': get_current_profile(request),
+            'locale': get_current_locale(request)
+        })
+        
+        if output_format == 'review':
+            return render_to_response(
+                getTemplatePath(request, 'activities/review.mak'),
+                templateValues,
+                request
+            )
+        else:
+            return render_to_response(
+                getTemplatePath(request, 'activities/compare.mak'),
+                templateValues,
+                request
+            )
+    elif output_format == 'history':
+        # TODO
+        templateValues = {}
         templateValues['profile'] = get_current_profile(request)
         templateValues['locale'] = get_current_locale(request)
         return render_to_response(
-            getTemplatePath(request, 'activities/review.mak'),
+            getTemplatePath(request, 'activities/history.mak'),
             templateValues,
             request
         )
@@ -471,7 +512,7 @@ def review(request):
     """
     Insert a review decision for a pending Activity
     """
-
+    
     _ = request.translate
 
     # Check if the user is logged in and he/she has sufficient user rights
@@ -498,11 +539,16 @@ def review(request):
 
     # If review decision is 'approved', make sure that all mandatory fields are
     # there, except if it is to be deleted
-    try:
-        review_decision = int(request.POST['review_decision'])
-    except:
-        review_decision = None
-
+    review_decision = request.POST['review_decision']
+    if review_decision == 'approve':
+        review_decision = 1
+    elif review_decision == 'reject':
+        review_decision = 2
+    else:
+        raise HTTPBadRequest(_('No valid review decision'))
+    
+    review_comment = request.POST['review_comment']
+    
     if review_decision == 1: # Approved
         # Only check for mandatory keys if new version is not to be deleted
         # (has no tag groups)
@@ -522,8 +568,23 @@ def review(request):
 
     # The user can add a review
     ret = activity_protocol3._add_review(
-        request, activity, Activity, user
+        request, activity, Activity, user, review_decision, review_comment
     )
+    
+    if 'success' not in ret:
+        raise HTTPBadRequest(_('Unknown error'))
+    
+    if ret['success'] is True:
+        request.session.flash(ret['msg'])
+    else:
+        request.session.flash(ret['msg'])
+
+    if review_decision == 1:
+        return HTTPFound(location=request.route_url('activities_read_one', 
+            output='html', uid=activity.identifier, _query={'v': activity.version}))
+    else:
+        return HTTPFound(location=request.route_url('activities_read_one',
+            output='history', uid=activity.identifier))
 
     return ret
 

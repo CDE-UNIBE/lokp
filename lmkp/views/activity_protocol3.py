@@ -84,7 +84,13 @@ class ActivityFeature3(Feature):
         return overviewtags
 
     def get_geometry(self):
-        return self._geometry
+        geometry = None
+        try:
+            geom = wkb.loads(str(self._geometry.geom_wkb))
+            geometry = json.loads(geojson.dumps(geom))
+        except AttributeError:
+            pass
+        return geometry
 
     def to_table(self, request):
         """

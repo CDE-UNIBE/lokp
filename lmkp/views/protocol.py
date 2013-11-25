@@ -604,8 +604,8 @@ class Protocol(object):
 
         return False
 
-    def _add_review(self, request, item, mappedClass, user,
-        implicit = False):
+    def _add_review(self, request, item, mappedClass, user, review_decision, 
+        review_comment, implicit = False):
         """
         Add a review decision
         item: {Database object} (Activity or Stakeholder)
@@ -647,20 +647,6 @@ class Protocol(object):
         else:
             ret['msg'] = _('Unknown object to review.')
             return ret
-
-        # Collect POST values
-        review_decision = request.POST['review_decision']
-        if review_decision is None:
-            ret['msg'] = _('Review decision not provided.')
-            return ret
-        try:
-            review_decision = int(review_decision)
-        except:
-            ret['msg'] = _('Unknown review decision')
-            return ret
-        review_comment = None
-        if (request.POST['comment_textarea'] != ''):
-            review_comment = request.POST['comment_textarea']
 
         # TODO: Also delegate involvement review if rejected (review_decision == 2)
 
@@ -780,6 +766,8 @@ class Protocol(object):
                     sh,
                     Stakeholder,
                     user,
+                    review_decision,
+                    review_comment,
                     implicit = True
                 )
 
@@ -1913,6 +1901,18 @@ class Feature(object):
     def remove_taggroup(self, taggroup):
         if taggroup in self.get_taggroups():
             self.get_taggroups().remove(taggroup)
+            
+    def get_metadata(self):
+        """
+        Return a dict with some metadata
+        """
+        return {
+            'version': self._version,
+            'status': self._status,
+            'statusId': self._status_id,
+            'timestamp': datetime.datetime.strftime(self._timestamp, '%Y-%m-%d %H:%M:%S'),
+            'username': self._user_name,
+        }
 
     def mark_complete(self, mandatory_keys):
         """
