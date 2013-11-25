@@ -49,7 +49,7 @@
                     % if not hasOnlyNullValues:
                     <a class="accordion-toggle" data-toggle="collapse" href="#collapse-${field.name}">
                         ${field.title}
-                        <i class="icon-chevron-down"></i>
+                        <i class="${chevronClass}"></i>
                     </a>
                     % else:
                     <span class="emptyCategory">

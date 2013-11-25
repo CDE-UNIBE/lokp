@@ -11,6 +11,7 @@ import simplejson as json
 from lmkp.views.form_config import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.config import getTemplatePath
+from lmkp.views.activity_review import ActivityReview
 
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPFound
@@ -645,11 +646,14 @@ def renderReadonlyForm(request, itemType, itemJson):
         'geometry': geometry
     }
 
-def renderReadonlyCompareForm(request, itemType, refFeature, newFeature):
+def renderReadonlyCompareForm(request, itemType, refFeature, newFeature, 
+    review=False):
     """
     Return a rendered form used for comparison (for comparison or review 
     purposes).
     """
+    _ = request.translate
+    reviewableMessage = None
     
     deform.Form.set_default_renderer(mako_renderer_compare)
     configCategoryList = getCategoryList(request, itemType)
@@ -668,7 +672,14 @@ def renderReadonlyCompareForm(request, itemType, refFeature, newFeature):
     newData = {}
     if newFeature is not None:
         newData = getFormdataFromItemjson(request, newFeature.to_table(request), 
-            'activities', readOnly=True)
+            'activities', readOnly=True, compareFeature=newFeature)
+        
+        if review is True and 'reviewable' in newData:
+            reviewable = newData['reviewable']
+            if reviewable == -2:
+                reviewableMessage = _('At least one of the involvements prevents automatic revision. Please review these involvements separately.')
+            elif reviewable < 0:
+                reviewableMessage = 'Something went wrong.'
     
     data = mergeFormdata(refData, newData)
     html = form.render(data, readonly=True)
@@ -690,7 +701,8 @@ def renderReadonlyCompareForm(request, itemType, refFeature, newFeature):
 
     return {
         'form': html,
-        'geometry': geometry
+        'geometry': geometry,
+        'reviewableMessage': reviewableMessage
     }
 
 
@@ -730,7 +742,7 @@ def mergeFormdata(ref, new):
         """
         new_data = {}
         for cat_id, cat in data.iteritems():
-            if cat_id in ['category', 'version', 'id']:
+            if cat_id in ['category', 'version', 'id', 'reviewable']:
                 continue
             new_cat = {}
             for thmg_id, thmg in cat.iteritems():
@@ -1075,6 +1087,9 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
     """
 
     readOnly = kwargs.get('readOnly', False)
+    compareFeature = kwargs.get('compareFeature', None)
+    if compareFeature is not None:
+        review = ActivityReview(request)
 
     mapAdded = False
 
@@ -1117,6 +1132,17 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
         fields['id'] = data['id']
         fields['version'] = involvementData['version']
         fields['role_id'] = involvementData['role_id']
+        
+        if compareFeature is not None:
+            reviewable = 0
+            inv = compareFeature.find_involvement_by_guid(data['id'])
+            
+            if inv is not None:
+                reviewable = review._review_check_involvement(
+                    inv._feature.getMappedClass(), inv._feature.get_guid(),
+                    inv._feature.get_version())
+            
+            fields['reviewable'] = reviewable
 
         return fields
 
@@ -1152,6 +1178,8 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
 
             invConfig = invThmg.getInvolvement()
             invData = _getInvolvementData(inv, invOverviewKeys)
+            if 'reviewable' in invData:
+                data['reviewable'] = invData['reviewable']
 
             if readOnly and 'role_id' in invData:
                 # For readonly forms, we need to populate the role_name with the

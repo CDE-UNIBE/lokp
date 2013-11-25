@@ -388,7 +388,7 @@ def read_one(request):
         activities = review.get_comparison(Activity, uid, ref_version_number, 
             new_version_number)
         templateValues = renderReadonlyCompareForm(request, 'activities', 
-            activities[0], activities[1])
+            activities[0], activities[1], review=output_format=='review')
         # Collect metadata for the reference version
         refMetadata = {}
         if activities[0] is not None:
@@ -396,10 +396,14 @@ def read_one(request):
         # Collect metadata and missing keys for the new version
         newMetadata = {}
         missingKeys = []
+        reviewable = False
         if activities[1] is not None:
             activities[1].mark_complete(get_mandatory_keys(request, 'a', True))
             missingKeys = activities[1]._missing_keys
             newMetadata = activities[1].get_metadata()
+            
+            reviewable = (len(missingKeys) == 0 and 
+                templateValues['reviewableMessage'] is None)
             
         templateValues.update({
             'identifier': uid,
@@ -408,6 +412,7 @@ def read_one(request):
             'newVersion': new_version_number,
             'newMetadata': newMetadata,
             'missingKeys': missingKeys,
+            'reviewable': reviewable,
             'profile': get_current_profile(request),
             'locale': get_current_locale(request)
         })

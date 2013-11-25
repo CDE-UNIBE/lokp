@@ -683,12 +683,14 @@ class ConfigThematicgroup(object):
             # add the Involvements widget only if in readonly mode
             if (self.getInvolvement().getItemType() != 'activities'
                 or readonly is True):
-                shortForm = getInvolvementWidget(request, self.getInvolvement())
+                shortForm = getInvolvementWidget(request, self.getInvolvement(),
+                    compare=compare)
                 if compare is True:
                     shortForm.name = 'ref_%s' % shortForm.name
                     thg_form.add(shortForm)
 
-                    newShortForm = getInvolvementWidget(request, self.getInvolvement())
+                    newShortForm = getInvolvementWidget(request, 
+                        self.getInvolvement(), compare=compare)
                     newShortForm.name = 'new_%s' % newShortForm.name
                     thg_form.add(newShortForm)
                 else:
@@ -1590,7 +1592,7 @@ def getMapWidget(thematicgroup):
 
     return mapWidget
 
-def getInvolvementWidget(request, configInvolvement):
+def getInvolvementWidget(request, configInvolvement, compare=False):
     """
     Return a widget to be used to display the involvements in the form.
     """
@@ -1668,6 +1670,22 @@ def getInvolvementWidget(request, configInvolvement):
         name='role_id',
         title=_('Stakeholder Role')
     ))
+    
+    if compare is True:
+        invForm.add(colander.SchemaNode(
+            colander.String(),
+            name='change',
+            title='',
+            default=colander.null,
+            widget=deform.widget.HiddenWidget()
+        ))
+        invForm.add(colander.SchemaNode(
+            colander.String(),
+            name='reviewable',
+            title='',
+            default=colander.null,
+            widget=deform.widget.HiddenWidget()
+        ))
 
     if configInvolvement.getRepeatable() is False:
         # If no sequence is required, return the node as it is
