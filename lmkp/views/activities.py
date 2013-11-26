@@ -32,6 +32,7 @@ from lmkp.views.profile import get_current_profile
 from lmkp.views.profile import get_current_locale
 from lmkp.views.views import BaseView
 from lmkp.authentication import checkUserPrivileges
+from lmkp.views.translation import get_translated_status
 
 log = logging.getLogger(__name__)
 
@@ -380,13 +381,48 @@ def read_one(request):
             isLoggedIn, isModerator = checkUserPrivileges(request)
             if isLoggedIn is False or isModerator is False:
                 raise HTTPForbidden()
-        # TODO: Compare which versions?
+        
         review = ActivityReview(request)
-        ref_version_number, new_version_number = review._get_valid_versions(
-            Activity, uid
-        )
-        activities = review.get_comparison(Activity, uid, ref_version_number, 
-            new_version_number)
+        availableVersions = None
+        defaultRefVersion, defaultNewVersion = review._get_valid_versions(
+            Activity, uid)
+            
+        refVersion = request.params.get('ref', None)
+        if refVersion is not None:
+            try:
+                refVersion = int(refVersion)
+            except ValueError:
+                refVersion = None
+        if refVersion is None or output_format == 'review':
+            # No reference version indicated, use the default one
+            # Also use the default one for review because it cannot be changed.
+            refVersion = defaultRefVersion
+        else:
+            availableVersions = review._get_available_versions(Activity, uid, 
+                review=output_format=='review')
+            # Check if the indicated reference version is valid
+            if refVersion not in [v.get('version') for v in availableVersions]:
+                refVersion = defaultRefVersion
+        
+        newVersion = request.params.get('new', None)
+        if newVersion is not None:
+            try:
+                newVersion = int(newVersion)
+            except ValueError:
+                newVersion = None
+        if newVersion is None:
+            # No new version indicated, use the default one
+            newVersion = defaultNewVersion
+        else:
+            if availableVersions is None:
+                availableVersions = review._get_available_versions(Activity, 
+                    uid, review=output_format=='review')
+            # Check if the indicated new version is valid
+            if newVersion not in [v.get('version') for v in availableVersions]:
+                newVersion = defaultNewVersion
+        
+        activities = review.get_comparison(Activity, uid, refVersion, 
+            newVersion)
         templateValues = renderReadonlyCompareForm(request, 'activities', 
             activities[0], activities[1], review=output_format=='review')
         # Collect metadata for the reference version
@@ -404,12 +440,22 @@ def read_one(request):
             
             reviewable = (len(missingKeys) == 0 and 
                 templateValues['reviewableMessage'] is None)
-            
+        
+        if output_format == 'review':
+            pendingVersions = []
+            if availableVersions is None:
+                availableVersions = review._get_available_versions(Activity, 
+                    uid, review=output_format=='review')
+            for v in sorted(availableVersions, key=lambda v:v.get('version')):
+                if v.get('status') == 1:
+                    pendingVersions.append(v.get('version'))
+            templateValues['pendingVersions'] = pendingVersions
+        
         templateValues.update({
             'identifier': uid,
-            'refVersion': ref_version_number,
+            'refVersion': refVersion,
             'refMetadata': refMetadata,
-            'newVersion': new_version_number,
+            'newVersion': newVersion,
             'newMetadata': newMetadata,
             'missingKeys': missingKeys,
             'reviewable': reviewable,
@@ -430,10 +476,26 @@ def read_one(request):
                 request
             )
     elif output_format == 'history':
-        # TODO
-        templateValues = {}
-        templateValues['profile'] = get_current_profile(request)
-        templateValues['locale'] = get_current_locale(request)
+        isLoggedIn, isModerator = checkUserPrivileges(request)
+        activities, count = activity_protocol3.read_one_history(
+            request, uid=uid)
+        activeVersion = None
+        for a in activities:
+            if 'statusName' in a:
+                a['statusName'] = get_translated_status(request, a['statusName'])
+            if a.get('statusId') == 2:
+                activeVersion = a.get('version')
+        
+        templateValues = {
+            'versions': activities,
+            'count': count,
+            'activeVersion': activeVersion,
+            'isModerator': isModerator
+        }
+        templateValues.update({
+            'profile': get_current_profile(request),
+            'locale': get_current_locale(request)
+        })
         return render_to_response(
             getTemplatePath(request, 'activities/history.mak'),
             templateValues,

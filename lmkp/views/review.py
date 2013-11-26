@@ -1,25 +1,20 @@
 from geoalchemy import functions
 from lmkp.models.database_objects import Activity
 from lmkp.models.database_objects import Changeset
-from lmkp.models.database_objects import Involvement
 from lmkp.models.database_objects import Profile
 from lmkp.models.database_objects import Stakeholder
 from lmkp.models.database_objects import Status
 from lmkp.models.database_objects import User
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.config import get_mandatory_keys
-from lmkp.views.translation import statusMap
 from lmkp.views.views import BaseView
 import logging
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPBadRequest
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import not_
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.functions import min
-import string
 import json
 
 log = logging.getLogger(__name__)
@@ -258,6 +253,7 @@ class BaseReview(BaseView):
         elif mappedClass == Activity:
             """
             The Activity cannot be reviewed from Stakeholder side
+            [-3]
             """
 
             return -3

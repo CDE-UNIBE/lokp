@@ -444,7 +444,7 @@ class ConfigCategory(object):
         """
         return self.order
 
-    def getForm(self, request, readonly=False, compare=False):
+    def getForm(self, request, readonly=False, compare=''):
         """
         Prepare the form node for this category, append the forms of its
         thematic groups and return it.
@@ -458,7 +458,7 @@ class ConfigCategory(object):
             name=str(self.getId()),
             title=title
         )
-        if compare is True:
+        if compare is not '':
             cat_form.add(colander.SchemaNode(
                 colander.String(),
                 name='change',
@@ -583,7 +583,7 @@ class ConfigThematicgroup(object):
         """
         return self.map
 
-    def getForm(self, request, readonly=False, compare=False):
+    def getForm(self, request, readonly=False, compare=''):
         """
         Prepare the form node for this thematic group, append the forms of its
         taggroups and return it.
@@ -598,7 +598,7 @@ class ConfigThematicgroup(object):
             title=title
         )
         
-        if compare is True:
+        if compare is not '':
             thg_form.add(colander.SchemaNode(
                 colander.String(),
                 name='change',
@@ -617,7 +617,7 @@ class ConfigThematicgroup(object):
             # Get the Form for each Taggroup
             tg_form = tg.getForm(request)
             name = str(tg.getId())
-            if compare is True:
+            if compare is not '':
                 tg_form.add(colander.SchemaNode(
                     colander.String(),
                     name='change',
@@ -645,7 +645,7 @@ class ConfigThematicgroup(object):
                     title=''
                 ))
             
-            if compare is True:
+            if compare is not '':
                 tg_form = tg.getForm(request)
                 tg_form.add(colander.SchemaNode(
                     colander.String(),
@@ -685,7 +685,7 @@ class ConfigThematicgroup(object):
                 or readonly is True):
                 shortForm = getInvolvementWidget(request, self.getInvolvement(),
                     compare=compare)
-                if compare is True:
+                if compare is not '':
                     shortForm.name = 'ref_%s' % shortForm.name
                     thg_form.add(shortForm)
 
@@ -1592,7 +1592,7 @@ def getMapWidget(thematicgroup):
 
     return mapWidget
 
-def getInvolvementWidget(request, configInvolvement, compare=False):
+def getInvolvementWidget(request, configInvolvement, compare=''):
     """
     Return a widget to be used to display the involvements in the form.
     """
@@ -1671,7 +1671,7 @@ def getInvolvementWidget(request, configInvolvement, compare=False):
         title=_('Stakeholder Role')
     ))
     
-    if compare is True:
+    if compare is not '':
         invForm.add(colander.SchemaNode(
             colander.String(),
             name='change',
@@ -1679,13 +1679,14 @@ def getInvolvementWidget(request, configInvolvement, compare=False):
             default=colander.null,
             widget=deform.widget.HiddenWidget()
         ))
-        invForm.add(colander.SchemaNode(
-            colander.String(),
-            name='reviewable',
-            title='',
-            default=colander.null,
-            widget=deform.widget.HiddenWidget()
-        ))
+        if compare == 'review':
+            invForm.add(colander.SchemaNode(
+                colander.String(),
+                name='reviewable',
+                title='',
+                default=colander.null,
+                widget=deform.widget.HiddenWidget()
+            ))
 
     if configInvolvement.getRepeatable() is False:
         # If no sequence is required, return the node as it is

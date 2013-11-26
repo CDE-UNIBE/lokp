@@ -12,6 +12,7 @@ from lmkp.views.form_config import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.config import getTemplatePath
 from lmkp.views.activity_review import ActivityReview
+from lmkp.views.stakeholder_review import StakeholderReview
 
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPFound
@@ -658,9 +659,10 @@ def renderReadonlyCompareForm(request, itemType, refFeature, newFeature,
     deform.Form.set_default_renderer(mako_renderer_compare)
     configCategoryList = getCategoryList(request, itemType)
     
+    compareMode = 'review' if review is True else 'compare'
     schema = addHiddenFields(colander.SchemaNode(colander.Mapping()), itemType)
     for cat in configCategoryList.getCategories():
-        schema.add(cat.getForm(request, readonly=True, compare=True))
+        schema.add(cat.getForm(request, readonly=True, compare=compareMode))
     
     form = deform.Form(schema)
     
@@ -678,6 +680,8 @@ def renderReadonlyCompareForm(request, itemType, refFeature, newFeature,
             reviewable = newData['reviewable']
             if reviewable == -2:
                 reviewableMessage = _('At least one of the involvements prevents automatic revision. Please review these involvements separately.')
+            elif reviewable == -3:
+                reviewableMessage = _('This version contains changed involvements which prevent automatic revision. Please review these involvements.')
             elif reviewable < 0:
                 reviewableMessage = 'Something went wrong.'
     
@@ -1089,7 +1093,10 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
     readOnly = kwargs.get('readOnly', False)
     compareFeature = kwargs.get('compareFeature', None)
     if compareFeature is not None:
-        review = ActivityReview(request)
+        if itemType == 'activities':
+            review = ActivityReview(request)
+        else:
+            review = StakeholderReview(request)
 
     mapAdded = False
 

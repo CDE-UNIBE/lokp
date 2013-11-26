@@ -16,6 +16,7 @@ from lmkp.views.views import BaseView
 from lmkp.models.database_objects import *
 from lmkp.authentication import checkUserPrivileges
 from lmkp.views.stakeholder_review import StakeholderReview
+from lmkp.views.translation import get_translated_status
 import logging
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPUnauthorized
@@ -413,13 +414,48 @@ def read_one(request):
             isLoggedIn, isModerator = checkUserPrivileges(request)
             if isLoggedIn is False or isModerator is False:
                 raise HTTPForbidden()
-        # TODO: Compare which versions?
+
         review = StakeholderReview(request)
-        ref_version_number, new_version_number = review._get_valid_versions(
-            Stakeholder, uid
-        )
-        stakeholders = review.get_comparison(Stakeholder, uid, 
-            ref_version_number, new_version_number)
+        availableVersions = None
+        defaultRefVersion, defaultNewVersion = review._get_valid_versions(
+            Stakeholder, uid)
+            
+        refVersion = request.params.get('ref', None)
+        if refVersion is not None:
+            try:
+                refVersion = int(refVersion)
+            except ValueError:
+                refVersion = None
+        if refVersion is None or output_format == 'review':
+            # No reference version indicated, use the default one
+            # Also use the default one for review because it cannot be changed.
+            refVersion = defaultRefVersion
+        else:
+            availableVersions = review._get_available_versions(Stakeholder, uid, 
+                review=output_format=='review')
+            # Check if the indicated reference version is valid
+            if refVersion not in [v.get('version') for v in availableVersions]:
+                refVersion = defaultRefVersion
+        
+        newVersion = request.params.get('new', None)
+        if newVersion is not None:
+            try:
+                newVersion = int(newVersion)
+            except ValueError:
+                newVersion = None
+        if newVersion is None:
+            # No new version indicated, use the default one
+            newVersion = defaultNewVersion
+        else:
+            if availableVersions is None:
+                availableVersions = review._get_available_versions(Stakeholder, 
+                    uid, review=output_format=='review')
+            # Check if the indicated new version is valid
+            if newVersion not in [v.get('version') for v in availableVersions]:
+                newVersion = defaultNewVersion
+                
+        stakeholders = review.get_comparison(Stakeholder, uid, refVersion, 
+            newVersion)
         templateValues = renderReadonlyCompareForm(request, 'stakeholders', 
             stakeholders[0], stakeholders[1], review=output_format=='review')
         # Collect metadata for the reference version
@@ -438,11 +474,21 @@ def read_one(request):
             reviewable = (len(missingKeys) == 0 and 
                 templateValues['reviewableMessage'] is None)
             
+        if output_format == 'review':
+            pendingVersions = []
+            if availableVersions is None:
+                availableVersions = review._get_available_versions(Stakeholder, 
+                    uid, review=output_format=='review')
+            for v in sorted(availableVersions, key=lambda v:v.get('version')):
+                if v.get('status') == 1:
+                    pendingVersions.append(v.get('version'))
+            templateValues['pendingVersions'] = pendingVersions
+            
         templateValues.update({
             'identifier': uid,
-            'refVersion': ref_version_number,
+            'refVersion': refVersion,
             'refMetadata': refMetadata,
-            'newVersion': new_version_number,
+            'newVersion': newVersion,
             'newMetadata': newMetadata,
             'missingKeys': missingKeys,
             'reviewable': reviewable,
@@ -462,6 +508,30 @@ def read_one(request):
                 templateValues,
                 request
             )
+    elif output_format == 'history':
+        isLoggedIn, isModerator = checkUserPrivileges(request)
+        stakeholders, count = stakeholder_protocol3.read_one_history(
+            request, uid=uid)
+        activeVersion = None
+        for sh in stakeholders:
+            if 'statusName' in sh:
+                sh['statusName'] = get_translated_status(request, sh['statusName'])
+            if sh.get('statusId') == 2:
+                activeVersion = sh.get('version')
+        
+        templateValues = {
+            'versions': stakeholders,
+            'count': count,
+            'activeVersion': activeVersion,
+            'isModerator': isModerator
+        }
+        templateValues.update({
+            'profile': get_current_profile(request),
+            'locale': get_current_locale(request)
+        })
+        return render_to_response(
+            getTemplatePath(request, 'stakeholders/history.mak'), 
+            templateValues, request)
     elif output_format == 'formtest':
         # Test if a Stakeholder is valid according to the form configuration
         stakeholders = stakeholder_protocol3.read_one(request, uid=uid,
