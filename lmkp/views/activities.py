@@ -439,6 +439,7 @@ def read_one(request):
             newMetadata = activities[1].get_metadata()
             
             reviewable = (len(missingKeys) == 0 and 
+                'reviewableMessage' in templateValues and
                 templateValues['reviewableMessage'] is None)
         
         if output_format == 'review':
