@@ -635,6 +635,24 @@ def renderReadonlyForm(request, itemType, itemJson):
 
     form = deform.Form(schema)
     data = getFormdataFromItemjson(request, itemJson, itemType, readOnly=True)
+    
+    if data == {}:
+        # If no formdata is available, it is very likely that the form has some
+        # errors. In this case show an error message.
+        errorList = checkValidItemjson(configCategoryList, itemJson, output='list')
+        if len(errorList) > 0:
+            url = None
+            if 'id' in itemJson:
+                url = request.route_url('activities_read_one', output='history', uid=itemJson['id'])
+            errorMsg = render(
+                        getTemplatePath(request, 'parts/messages/item_requested_not_valid.mak'),
+                        {'url': url},
+                        request
+                    )
+            return {
+                'form': errorMsg
+            }
+    
     data['itemType'] = itemType
     statusId = itemJson['status_id'] if 'status_id' in itemJson else colander.null
     data['statusId'] = statusId
@@ -665,16 +683,21 @@ def renderReadonlyCompareForm(request, itemType, refFeature, newFeature,
         schema.add(cat.getForm(request, readonly=True, compare=compareMode))
     
     form = deform.Form(schema)
+    validComparison = True
     
     refData = {}
     if refFeature is not None:
         refData = getFormdataFromItemjson(request, refFeature.to_table(request),
             itemType, readOnly=True)
+        if refData == {}:
+            validComparison = False
     
     newData = {}
     if newFeature is not None:
         newData = getFormdataFromItemjson(request, newFeature.to_table(request), 
             itemType, readOnly=True, compareFeature=newFeature)
+        if newData == {}:
+            validComparison = False
         
         if review is True and 'reviewable' in newData:
             reviewable = newData['reviewable']
@@ -684,6 +707,23 @@ def renderReadonlyCompareForm(request, itemType, refFeature, newFeature,
                 reviewableMessage = _('This version contains changed involvements which prevent automatic revision. Please review these involvements.')
             elif reviewable < 0:
                 reviewableMessage = 'Something went wrong.'
+    
+    if validComparison is False:
+        # If no formdata is available, it is very likely that the form has some
+        # errors. In this case show an error message.
+        url = None
+        if refFeature is not None:
+            url = request.route_url('activities_read_one', output='history', uid=refFeature.get_guid())
+        elif newFeature is not None:
+            url = request.route_url('activities_read_one', output='history', uid=newFeature.get_guid())
+        errorMsg = render(
+            getTemplatePath(request, 'parts/messages/comparison_not_valid.mak'),
+            {'url': url},
+            request
+        )
+        return {
+            'error': errorMsg
+        }
     
     data = mergeFormdata(refData, newData)
     html = form.render(data, readonly=True)
@@ -797,7 +837,25 @@ def mergeFormdata(ref, new):
                 if otherTaggroup not in thmg:
                     missingTgs.append((otherTaggroup, tg))
                 if isinstance(tg, dict):
-                    if otherTaggroup not in thmg or thmg[otherTaggroup] != tg:
+                    changed = False
+                    if otherTaggroup not in thmg:
+                        # Taggroup did not exist previously
+                        changed = True
+                    else:
+                        # Check contents of taggroup to see if it changed
+                        diff1 = set(tg.keys()) - set(thmg[otherTaggroup].keys())
+                        if 'reviewable' in diff1:
+                            diff1.remove('reviewable')
+                        if 'change' in diff1:
+                            diff1.remove('change')
+                        diff2 = set(thmg[otherTaggroup].keys()) - set(tg.keys())
+                        if 'reviewable' in diff2:
+                            diff2.remove('reviewable')
+                        if 'change' in diff2:
+                            diff2.remove('change')
+                        if len(diff1) + len(diff2) > 0:
+                            changed = True
+                    if changed is True:
                         tg['change'] = 'change'
                         # Changes in the map "taggroup" should not mark the
                         # whole thematic group as changed.

@@ -614,7 +614,7 @@ class BaseReview(BaseView):
             for item_diff in diff[diff_keyword]:
                 if ('id' in item_diff and item_diff['id'] is not None
                     and item_diff['id'] == item.get_guid()):
-
+                        
                     # Apply the diff to show a preview of the new version
                     new_item = self.protocol._apply_diff(
                         self.request,
@@ -650,8 +650,6 @@ class BaseReview(BaseView):
         Function to do the actual comparison and return a json
         """
 
-        recalculated = False
-
         if (ref_version_number == 0
             or (new_version_number == 1 and ref_version_number == 1)):
             ref_object = None
@@ -659,7 +657,7 @@ class BaseReview(BaseView):
         else:
             # Get the reference object
             ref_object = self.protocol.read_one_by_version(
-                self.request, uid, ref_version_number
+                self.request, uid, ref_version_number, translate=False
             )
 
         # Check to see if the new version is based directly on the ref version
@@ -677,7 +675,7 @@ class BaseReview(BaseView):
             and new_previous_version.previous_version == ref_version_number)):
             # Show the new version as it is in the database
             new_object = self.protocol.read_one_by_version(
-                self.request, uid, new_version_number
+                self.request, uid, new_version_number, translate=False
             )
         else:
             # Query the diff of the new version to apply to the ref version
@@ -692,18 +690,10 @@ class BaseReview(BaseView):
 
             # Get the reference object
             new_object = self.protocol.read_one_by_version(
-                self.request, uid, ref_version_number
+                self.request, uid, ref_version_number, translate=False
             )
 
             # Apply the diff to the ref_object
             new_object = self.recalc(mappedClass, new_object, new_diff)
-
-            recalculated = True
-
-        # Request also the metadata
-        metadata = self._get_metadata(
-            mappedClass, uid, ref_version_number, new_version_number
-        )
-        metadata['recalculated'] = recalculated
 
         return [ref_object, new_object]
