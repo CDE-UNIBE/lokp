@@ -330,7 +330,7 @@ def renderForm(request, itemType, **kwargs):
                                 {},
                                 request
                             )
-                            session.flash(msg)
+                            session.flash(msg, 'success')
 
                         # Route to the other form again.
                         if itemType == 'activities':
@@ -1424,7 +1424,7 @@ def formdataToDiff(request, newform, itemType):
                                                     # value of key to null.
                                                     t[k] = colander.null
                                             
-                                            return form, True
+                                                return form, True # Return
         return form, None
 
     identifier = colander.null

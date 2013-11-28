@@ -57,5 +57,8 @@
     var mapCriteria = ${json.dumps(mapCriteria) | n};
 
     var tForDealsGroupedBy = '${_("Map symbols are based on")}';
+    % if compare is True:
+    var tForChangesInThisSection = '${_("There are changes in this section")}';
+    % endif
 
 </script>

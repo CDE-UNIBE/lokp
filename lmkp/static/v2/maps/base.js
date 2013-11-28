@@ -382,6 +382,7 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
 
 /**
  * Initialize the context layers of the map.
+ * {showLegend}: true to display a link to show the legend
  *
  * Necessary variables:
  * - contextLayers
@@ -389,7 +390,7 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
  * Required HTML elements:
  * - <ul id="context-layers-list">
  */
-function initializeContextLayers() {
+function initializeContextLayers(showLegend) {
     // Loop the context layers and append it to the context layers menu
     for (var c in contextLayers) {
         var layerName = contextLayers[c].name;
@@ -400,13 +401,20 @@ function initializeContextLayers() {
             '<label for="checkbox' + layerName + '"></label>',
             '</div>',
             '<p class="context-layers-description">',
-            layerName + '&nbsp;',
-            '<i class="icon-exclamation-sign pointer" onClick="javascript:showContextLegend(\'' + layerName + '\');">',
-            '</i>',
+            layerName
+        ];
+        if (showLegend === true) {
+            t.push(
+                '&nbsp;',
+                '<i class="icon-exclamation-sign pointer" onClick="javascript:showContextLegend(\'' + layerName + '\');">',
+                '</i>'
+            );
+        }
+        t.push(
             '</p>',
             '</li>'
-        ].join('');
-        $("#context-layers-list").append(t);
+        );
+        $("#context-layers-list").append(t.join(''));
     }
     // Add the context layers to the map
     map.addLayers(contextLayers);

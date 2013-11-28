@@ -6,6 +6,7 @@
  * shKeys
  *
  * tForDealsGroupedBy
+ * tForChangesInThisSection
  */
 
 var geographicProjection = new OpenLayers.Projection("EPSG:4326");
@@ -109,7 +110,7 @@ $(document).ready(function() {
         
         if (JSON.stringify(refGeometry) !== JSON.stringify(newGeometry)) {
             $('#form-map-compare-heading').addClass('change')
-                .children('div').prepend('<i class="icon-exclamation-sign"></i>');
+                .children('div').prepend('<i class="icon-exclamation-sign ttip pointer" data-toggle="tooltip" data-original-title="' + tForChangesInThisSection + '"></i>');
             $('#collapse-map').collapse();
         }
         

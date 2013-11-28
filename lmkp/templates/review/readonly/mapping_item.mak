@@ -32,7 +32,7 @@
             <div class="${cls}">
                 <div class="span6">
                     % if change:
-                        <i class="icon-exclamation-sign"></i>
+                        <i class="icon-exclamation-sign ttip pointer" data-toggle="tooltip" data-original-title="${_('There are changes in this section')}"></i>
                     % endif
                     % if not hasOnlyNullValues:
                     <a class="accordion-toggle" data-toggle="collapse" href="#collapse-${field.name}">
@@ -104,28 +104,23 @@
     
         <%
             change = 'change' in cstruct and cstruct['change'] != colander.null
-            cls = 'span6 taggroup-content deal-moderate-col'
+            if isinstance(cstruct, list):
+                cls = 'span6 deal-moderate-col-wrap deal-moderate-col'
+            else:
+                cls = 'span6 taggroup-content deal-moderate-col'
             if change:
                 cls += ' change'
         %>
     
         % if field.name.startswith('ref_'):
         <div class="row-fluid deal-moderate-col-wrap">
-            % if not isinstance(cstruct, list):
-                <div class="${cls}">
-                    ${field.serialize(cstruct, readonly=True)}
-                </div>
-            % else:
+            <div class="${cls}">
                 ${field.serialize(cstruct, readonly=True)}
-            % endif
+            </div>
         % else:
-            % if not isinstance(cstruct, list) and len(cstruct) > 1:
-                <div class="${cls}">
-                    ${field.serialize(cstruct, readonly=True)}
-                </div>
-            % else:
+            <div class="${cls}">
                 ${field.serialize(cstruct, readonly=True)}
-            % endif
+            </div>
         </div>
         % endif
 

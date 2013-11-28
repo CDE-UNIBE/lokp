@@ -640,14 +640,13 @@ def review(request):
     if 'success' not in ret:
         raise HTTPBadRequest(_('Unknown error'))
     
-    request.session.flash(ret['msg'])
-
-    if review_decision == 1:
-        return HTTPFound(location=request.route_url('activities_read_one', 
-            output='html', uid=activity.identifier, _query={'v': activity.version}))
+    if ret['success'] is True:
+        request.session.flash(ret['msg'], 'success')
     else:
-        return HTTPFound(location=request.route_url('activities_read_one',
-            output='history', uid=activity.identifier))
+        request.session.flash(ret['msg'], 'error')
+
+    return HTTPFound(location=request.route_url('activities_read_one',
+        output='history', uid=activity.identifier))
 
 @view_config(route_name='activities_create', renderer='json')
 def create(request):

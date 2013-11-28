@@ -25,6 +25,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPFound
 from pyramid.i18n import TranslationStringFactory
 from pyramid.renderers import render_to_response
+from pyramid.renderers import render
 from pyramid.response import Response
 from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
@@ -415,6 +416,8 @@ def read_one(request):
             if isLoggedIn is False or isModerator is False:
                 raise HTTPForbidden()
 
+        camefrom = request.params.get('camefrom', '')
+        
         review = StakeholderReview(request)
         availableVersions = None
         defaultRefVersion, defaultNewVersion = review._get_valid_versions(
@@ -492,6 +495,7 @@ def read_one(request):
             'newMetadata': newMetadata,
             'missingKeys': missingKeys,
             'reviewable': reviewable,
+            'camefrom': camefrom,
             'profile': get_current_profile(request),
             'locale': get_current_locale(request)
         })
@@ -617,6 +621,7 @@ def review(request):
         raise HTTPBadRequest(_('No valid review decision'))
     
     review_comment = request.POST['review_comment']
+    camefrom = request.POST['camefrom']
 
     if review_decision == 1: # Approved
         # Only check for mandatory keys if new version is not to be deleted
@@ -642,15 +647,21 @@ def review(request):
     if 'success' not in ret:
         raise HTTPBadRequest(_('Unknown error'))
     
-    request.session.flash(ret['msg'])
-    
-    if review_decision == 1:
-        return HTTPFound(location=request.route_url('stakeholders_read_one', 
-            output='html', uid=stakeholder.identifier, 
-            _query={'v': stakeholder.version}))
+    if ret['success'] is True:
+        request.session.flash(ret['msg'], 'success')
     else:
-        return HTTPFound(location=request.route_url('stakeholders_read_one',
-            output='history', uid=stakeholder.identifier))
+        request.session.flash(ret['msg'], 'error')
+    
+    if camefrom != '':
+        camefromMsg = render(
+            getTemplatePath(request, 'parts/messages/stakeholder_reviewed_through_involvement.mak'),
+            {'url': request.route_url('activities_read_one', output='review', uid=camefrom)},
+            request
+        )
+        request.session.flash(camefromMsg)
+
+    return HTTPFound(location=request.route_url('stakeholders_read_one',
+        output='history', uid=stakeholder.identifier))
 
 @view_config(route_name='stakeholders_create', renderer='json')
 def create(request):
