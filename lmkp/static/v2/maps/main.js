@@ -57,7 +57,7 @@ $(document).ready(function() {
         }
     });
     initializeMapContent(true, true, true, filterParams);
-    initializeContextLayers();
+    initializeContextLayers(true);
 
     // Check if a location cookie is set. If yes, center the map to this location.
     // If no cookie is set, zoom the map to the extent of the current profile

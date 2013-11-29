@@ -11,6 +11,8 @@ import simplejson as json
 from lmkp.views.form_config import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.config import getTemplatePath
+from lmkp.views.activity_review import ActivityReview
+from lmkp.views.stakeholder_review import StakeholderReview
 
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPFound
@@ -328,7 +330,7 @@ def renderForm(request, itemType, **kwargs):
                                 {},
                                 request
                             )
-                            session.flash(msg)
+                            session.flash(msg, 'success')
 
                         # Route to the other form again.
                         if itemType == 'activities':
@@ -633,6 +635,25 @@ def renderReadonlyForm(request, itemType, itemJson):
 
     form = deform.Form(schema)
     data = getFormdataFromItemjson(request, itemJson, itemType, readOnly=True)
+    
+    if data == {}:
+        # If no formdata is available, it is very likely that the form has some
+        # errors. In this case show an error message.
+        errorList = checkValidItemjson(configCategoryList, itemJson, output='list')
+        if len(errorList) > 0:
+            url = None
+            routeName = 'activities_read_one' if itemType == 'activities' else 'stakeholders_read_one'
+            if 'id' in itemJson:
+                url = request.route_url(routeName, output='history', uid=itemJson['id'])
+            errorMsg = render(
+                        getTemplatePath(request, 'parts/messages/item_requested_not_valid.mak'),
+                        {'url': url},
+                        request
+                    )
+            return {
+                'form': errorMsg
+            }
+    
     data['itemType'] = itemType
     statusId = itemJson['status_id'] if 'status_id' in itemJson else colander.null
     data['statusId'] = statusId
@@ -644,6 +665,228 @@ def renderReadonlyForm(request, itemType, itemJson):
         'form': html,
         'geometry': geometry
     }
+
+def renderReadonlyCompareForm(request, itemType, refFeature, newFeature, 
+    review=False):
+    """
+    Return a rendered form used for comparison (for comparison or review 
+    purposes).
+    """
+    _ = request.translate
+    reviewableMessage = None
+    
+    deform.Form.set_default_renderer(mako_renderer_compare)
+    configCategoryList = getCategoryList(request, itemType)
+    
+    compareMode = 'review' if review is True else 'compare'
+    schema = addHiddenFields(colander.SchemaNode(colander.Mapping()), itemType)
+    for cat in configCategoryList.getCategories():
+        schema.add(cat.getForm(request, readonly=True, compare=compareMode))
+    
+    form = deform.Form(schema)
+    validComparison = True
+    
+    refData = {}
+    if refFeature is not None:
+        refData = getFormdataFromItemjson(request, refFeature.to_table(request),
+            itemType, readOnly=True)
+        if refData == {}:
+            validComparison = False
+    
+    newData = {}
+    if newFeature is not None:
+        newData = getFormdataFromItemjson(request, newFeature.to_table(request), 
+            itemType, readOnly=True, compareFeature=newFeature)
+        if newData == {}:
+            validComparison = False
+        
+        if review is True and 'reviewable' in newData:
+            reviewable = newData['reviewable']
+            if reviewable == -2:
+                reviewableMessage = _('At least one of the involvements prevents automatic revision. Please review these involvements separately.')
+            elif reviewable == -3:
+                reviewableMessage = _('This version contains changed involvements which prevent automatic revision. Please review these involvements.')
+            elif reviewable < 0:
+                reviewableMessage = 'Something went wrong.'
+    
+    if validComparison is False:
+        # If no formdata is available, it is very likely that the form has some
+        # errors. In this case show an error message.
+        url = None
+        routeName = 'activities_read_one' if itemType == 'activities' else 'stakeholders_read_one'
+        if refFeature is not None:
+            url = request.route_url(routeName, output='history', uid=refFeature.get_guid())
+        elif newFeature is not None:
+            url = request.route_url(routeName, output='history', uid=newFeature.get_guid())
+        errorMsg = render(
+            getTemplatePath(request, 'parts/messages/comparison_not_valid.mak'),
+            {'url': url},
+            request
+        )
+        return {
+            'error': errorMsg
+        }
+    
+    data = mergeFormdata(refData, newData)
+    html = form.render(data, readonly=True)
+    
+    # TODO: Taggroup geometries!
+    geometry = None
+    if itemType == 'activities':
+        newGeometry = newFeature.get_geometry() if newFeature is not None else None
+        refGeometry = refFeature.get_geometry() if refFeature is not None else None
+        
+        geometry = json.dumps({
+            'ref': {
+                'geometry': refGeometry
+            },
+            'new': {
+                'geometry': newGeometry
+            },
+        })
+
+    return {
+        'form': html,
+        'geometry': geometry,
+        'reviewableMessage': reviewableMessage
+    }
+
+
+def mergeFormdata(ref, new):
+    """
+    Merge two formdatas to create a single formdata which can be used in a 
+    compareForm as rendered by the function renderReadonlyCompareForm.
+    The formdata has the following structure:
+    '1': {
+        '5': {
+            'ref_1': [
+                {
+                    'tg_id': 0,
+                    '[A] Integerfield 1': 1, 
+                    '[A] Numberfield 2': 2,
+                    'change': 'change'
+                }
+            ], 
+            'new_1': [
+                {
+                    'tg_id': 0,
+                    '[A] Integerfield 1': 3, 
+                    '[A] Numberfield 2': 4,
+                    'change': 'change'
+                }
+            ],
+            'change': 'change'
+        },
+        'change': 'change'
+    }
+    """
+    
+    def _addPrefixToEachTaggroup(data, prefix):
+        """
+        Adds a prefix to each taggroup in the form:
+        [PREFIX]_[ID]
+        """
+        new_data = {}
+        for cat_id, cat in data.iteritems():
+            if cat_id in ['category', 'version', 'id', 'reviewable']:
+                continue
+            new_cat = {}
+            for thmg_id, thmg in cat.iteritems():
+                new_thmg = {}
+                for tg_id, tg in thmg.iteritems():
+                    new_thmg['%s_%s' % (prefix, tg_id)] = tg
+                new_cat[thmg_id] = new_thmg
+            new_data[cat_id] = new_cat
+        return new_data
+    
+    def _mergeDicts(a, b, path=None):
+        """
+        Merge one dict in another.
+        http://stackoverflow.com/a/7205107/841644
+        """
+        if path is None: path = []
+        for key in b:
+            if key in a:
+                if isinstance(a[key], dict) and isinstance(b[key], dict):
+                    _mergeDicts(a[key], b[key], path + [str(key)])
+                elif a[key] == b[key]:
+                    pass # same leaf value
+                else:
+                    raise Exception('Conflict at %s' % '.'.join(path + [str(key)]))
+            else:
+                a[key] = b[key]
+        return a
+    
+    # Mark all taggroups of the two versions with 'ref' or 'new' respectively.
+    # Then merge the two dicts.
+    merged = _mergeDicts(_addPrefixToEachTaggroup(ref, 'ref'), 
+        _addPrefixToEachTaggroup(new, 'new'))
+    
+    # Mark each thematicgroup and category which have changes in them. Also make
+    # sure that each taggroups missing in one version receive a flag so they are
+    # displayed as well in the form table.
+    for cat_id, cat in merged.iteritems():
+        catChanged = False
+        for thmg_id, thmg in cat.iteritems():
+            thmgChanged = False
+            missingTgs = []
+            for tg_id, tg in thmg.iteritems():
+                prefix, id = tg_id.split('_')
+                if prefix == 'ref':
+                    otherTaggroup = '%s_%s' % ('new', id)
+                else:
+                    otherTaggroup = '%s_%s' % ('ref', id)
+                if otherTaggroup not in thmg:
+                    missingTgs.append((otherTaggroup, tg))
+                if isinstance(tg, dict):
+                    changed = False
+                    if otherTaggroup not in thmg:
+                        # Taggroup did not exist previously
+                        changed = True
+                    else:
+                        # Check contents of taggroup to see if it changed
+                        diff1 = set(tg.keys()) - set(thmg[otherTaggroup].keys())
+                        if 'reviewable' in diff1:
+                            diff1.remove('reviewable')
+                        if 'change' in diff1:
+                            diff1.remove('change')
+                        diff2 = set(thmg[otherTaggroup].keys()) - set(tg.keys())
+                        if 'reviewable' in diff2:
+                            diff2.remove('reviewable')
+                        if 'change' in diff2:
+                            diff2.remove('change')
+                        if len(diff1) + len(diff2) > 0:
+                            changed = True
+                    if changed is True:
+                        tg['change'] = 'change'
+                        # Changes in the map "taggroup" should not mark the
+                        # whole thematic group as changed.
+                        if id != 'map':
+                            thmgChanged = True
+                elif isinstance(tg, list):
+                    if otherTaggroup not in thmg:
+                        for t in tg:
+                            t['change'] = 'change'
+                            thmgChanged = True
+                    else:
+                        for t in tg:
+                            if t not in thmg[otherTaggroup]:
+                                t['change'] = 'change'
+                                thmgChanged = True
+            for missingTaggroup, oldTg in missingTgs:
+                if isinstance(oldTg, dict):
+                    thmg[missingTaggroup] = {'change': 'change'}
+                elif isinstance(oldTg, list):
+                    thmg[missingTaggroup] = [{'change': 'change'}]
+            if thmgChanged is True:
+                thmg['change'] = 'change'
+                catChanged = True
+        if catChanged is True:
+            cat['change'] = 'change'
+    
+    log.debug('Merged formdata: %s' % merged)
+    
+    return merged
 
 def structHasOnlyNullValues(cstruct, depth=0):
     """
@@ -908,6 +1151,12 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
     """
 
     readOnly = kwargs.get('readOnly', False)
+    compareFeature = kwargs.get('compareFeature', None)
+    if compareFeature is not None:
+        if itemType == 'activities':
+            review = ActivityReview(request)
+        else:
+            review = StakeholderReview(request)
 
     mapAdded = False
 
@@ -950,6 +1199,17 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
         fields['id'] = data['id']
         fields['version'] = involvementData['version']
         fields['role_id'] = involvementData['role_id']
+        
+        if compareFeature is not None:
+            reviewable = 0
+            inv = compareFeature.find_involvement_by_guid(data['id'])
+            
+            if inv is not None:
+                reviewable = review._review_check_involvement(
+                    inv._feature.getMappedClass(), inv._feature.get_guid(),
+                    inv._feature.get_version())
+            
+            fields['reviewable'] = reviewable
 
         return fields
 
@@ -985,6 +1245,8 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
 
             invConfig = invThmg.getInvolvement()
             invData = _getInvolvementData(inv, invOverviewKeys)
+            if 'reviewable' in invData:
+                data['reviewable'] = invData['reviewable']
 
             if readOnly and 'role_id' in invData:
                 # For readonly forms, we need to populate the role_name with the
@@ -1100,7 +1362,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             # current form.
             if category is None or cat == str(category):
                 data[cat] = {thmg: {tgid: tagsdata}}
-
+                
         # Map: Look only if the category contains a thematic group which has a
         # map.
         if (cat in categorylist.getMapCategoryIds()
@@ -1144,7 +1406,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             }
 
     log.debug('Formdata created by ItemJSON: %s' % data)
-
+    
     return data
 
 def formdataToDiff(request, newform, itemType):
@@ -1222,7 +1484,7 @@ def formdataToDiff(request, newform, itemType):
                                                     # value of key to null.
                                                     t[k] = colander.null
                                             
-                                            return form, True
+                                                return form, True # Return
         return form, None
 
     identifier = colander.null
@@ -1682,7 +1944,8 @@ def formdataToDiff(request, newform, itemType):
                                     'tg_id': taggroupid,
                                     'tags': [{
                                         'key': k,
-                                        'value': value
+                                        'value': value,
+                                        'op': 'delete'
                                     }]
                                 })
 
@@ -1723,6 +1986,26 @@ def mako_renderer(tmpl_name, **kw):
         resolver = lmkpAssetResolver.resolve(getTemplatePath(request, 'form/%s.mak' % tmpl_name))
     else:
         resolver = lmkpAssetResolver.resolve('templates/form/%s.mak' % tmpl_name)
+    template = Template(filename=resolver.abspath())
+
+    # Add the request to the keywords so it is available in the templates.
+    kw['request'] = request
+    kw['_'] = request.translate
+
+    return template.render(**kw)
+
+def mako_renderer_compare(tmpl_name, **kw):
+    """
+    A helper function to use the mako rendering engine.
+    It seems to be necessary to locate the templates by using the asset
+    resolver.
+    """
+    request = get_current_request()
+    # Redirect base form templates to customized templates
+    if tmpl_name in ['readonly/form', 'customInvolvementMapping']:
+        resolver = lmkpAssetResolver.resolve(getTemplatePath(request, 'review/%s.mak' % tmpl_name))
+    else:
+        resolver = lmkpAssetResolver.resolve('templates/review/%s.mak' % tmpl_name)
     template = Template(filename=resolver.abspath())
 
     # Add the request to the keywords so it is available in the templates.

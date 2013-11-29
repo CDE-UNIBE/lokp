@@ -84,7 +84,13 @@ class ActivityFeature3(Feature):
         return overviewtags
 
     def get_geometry(self):
-        return self._geometry
+        geometry = None
+        try:
+            geom = wkb.loads(str(self._geometry.geom_wkb))
+            geometry = json.loads(geojson.dumps(geom))
+        except AttributeError:
+            pass
+        return geometry
 
     def to_table(self, request):
         """
@@ -267,6 +273,28 @@ class ActivityProtocol3(Protocol):
         else:
             return activities[0]
 
+    def read_one_history(self, request, uid):
+        """
+        Return the history of an Activity. Instead of querying all the 
+        attributes of the Feature, only some relevant information are collected
+        and returned (as a dict, not as a feature!).
+        """
+        
+        relevant_activities = self._get_relevant_activities_one(request, uid)
+        
+        limit = self._get_limit(request)
+        offset = self._get_offset(request)
+        
+        query, count = self._query_history(relevant_activities, 
+            limit=limit, offset=offset)
+        
+        # Order the Activities by version
+        query = query.order_by(desc(Activity.version))
+        
+        activities = self._query_to_history(query)
+        
+        return activities, count
+        
     def read_one(self, request, uid, public=True, **kwargs):
 
         translate = kwargs.get('translate', True)
@@ -1134,6 +1162,40 @@ class ActivityProtocol3(Protocol):
 
         return query, count
 
+    def _query_history(self, relevant_activities, limit=None, 
+        offset=None, return_count=True):
+        
+        # Count
+        if return_count:
+            count = relevant_activities.count()
+        
+        # Apply limit and offset
+        if limit is not None:
+            relevant_activities = relevant_activities.limit(limit)
+        if offset is not None:
+            relevant_activities = relevant_activities.offset(offset)
+        
+        # Create query
+        relevant_activities = relevant_activities.subquery()
+        query = self.Session.query(
+                Activity.activity_identifier.label('identifier'),
+                Activity.version.label('version'),
+                Status.id.label('status_id'),
+                Status.name.label('status'),
+                Changeset.timestamp.label('timestamp'),
+                User.username.label('user_name')
+            ).\
+            join(relevant_activities, 
+                relevant_activities.c.order_id == Activity.id).\
+            join(Status).\
+            join(Changeset).\
+            join(User, User.id == Changeset.fk_user)
+    
+        if return_count:
+            return query, count
+        else:
+            return query
+
     def _query_many(self, request, relevant_activities, limit=None, offset=None,
                     involvements=False, return_count=True, metadata=False):
         # Prepare query to translate keys and values
@@ -1337,6 +1399,21 @@ class ActivityProtocol3(Protocol):
                 query = query.add_columns(A_Value.value)
 
         return query
+
+    def _query_to_history(self, query):
+        
+        # Put the Activities together
+        activities = []
+        for q in query.all():
+            activities.append({
+                'identifier': str(q.identifier),
+                'version': q.version,
+                'statusId': q.status_id,
+                'statusName': q.status,
+                'timestamp': datetime.datetime.strftime(q.timestamp, '%Y-%m-%d %H:%M:%S'),
+                'username': q.user_name
+            })
+        return activities
 
     def _query_to_activities(self, request, query, involvements='none',
                              public_query=False, **kwargs):
