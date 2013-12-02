@@ -627,6 +627,11 @@ class StakeholderProtocol3(Protocol):
                                                    Stakeholder.stakeholder_identifier
                                                    )
 
+        # Add a status filter if there is one set
+        if request.params.get('status', None) is not None:
+            relevant_stakeholders = relevant_stakeholders.\
+                filter(Stakeholder.fk_status.in_(status_filter))
+
         # Join Stakeholders with TagGroups
         if filter_subqueries is not None:
             # If a filter was provided, join with filtered subqueries
@@ -646,14 +651,6 @@ class StakeholderProtocol3(Protocol):
         # Filter by timestamp
         # @TODO: do it!
         timestamp_filter = None
-
-        # TODO: Status filter?
-        """
-        # Apply status filter (only if timestamp filter is not set)
-        if status_filter is not None and timestamp_filter is None:
-            relevant_stakeholders = relevant_stakeholders.\
-                filter(Stakeholder.fk_status.in_(status_filter))
-        """
 
         # Decide which version a user can see.
         # - Public (not logged in) always see active versions.

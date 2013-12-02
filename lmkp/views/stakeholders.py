@@ -156,6 +156,8 @@ def by_activities(request):
             public=False, uids=uids, limit=pageSize,
             offset=pageSize*page-pageSize)
 
+        isLoggedIn, isModerator = checkUserPrivileges(request)
+
         return render_to_response(getTemplatePath(request, 'stakeholders/grid.mak'), {
             'data': items['data'] if 'data' in items else [],
             'total': items['total'] if 'total' in items else 0,
@@ -163,8 +165,10 @@ def by_activities(request):
             'locale': get_current_locale(request),
             'spatialfilter': spatialfilter,
             'invfilter': uids,
+            'statusfilter': None,
             'currentpage': page,
-            'pagesize': pageSize
+            'pagesize': pageSize,
+            'isModerator': isModerator
         }, request)
     else:
         # If the output format was not found, raise 404 error
@@ -245,6 +249,9 @@ def read_many(request):
 
         items = stakeholder_protocol3.read_many(request, public=False,
             limit=pageSize, offset=pageSize*page-pageSize)
+        
+        statusFilter = request.params.get('status', None)
+        isLoggedIn, isModerator = checkUserPrivileges(request)
 
         return render_to_response(getTemplatePath(request, 'stakeholders/grid.mak'), {
             'data': items['data'] if 'data' in items else [],
@@ -253,8 +260,10 @@ def read_many(request):
             'locale': get_current_locale(request),
             'spatialfilter': None,
             'invfilter': None,
+            'statusfilter': statusFilter,
             'currentpage': page,
-            'pagesize': pageSize
+            'pagesize': pageSize,
+            'isModerator': isModerator
         }, request)
 
     elif output_format == 'form':

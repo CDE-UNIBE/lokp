@@ -445,9 +445,12 @@ class Protocol(object):
 
     def _get_order_direction(self, request):
         """
-        Return the direction of ordering only if it is set to DESC
+        Return the direction of ordering only if it is set to DESC or if the 
+        order value is not set (in which case it is sorted by timestamp and 
+        should be in descending order)
         """
-        if request.params.get('dir', '').upper() == 'DESC':
+        if (request.params.get('dir', '').upper() == 'DESC' 
+            or request.params.get('order_by', None) is None):
             return 'DESC'
 
     def _get_translatedKV(self, lang, Key, Value):
@@ -473,7 +476,7 @@ class Protocol(object):
           the values by which they will be ordered.
         - a Boolean indicating order values are numbers or not
         """
-        order_key = request.params.get('order_by', None)
+        order_key = request.params.get('order_by', 'timestamp')
         if order_key is not None:
             # Ordering
             if order_key == 'timestamp':

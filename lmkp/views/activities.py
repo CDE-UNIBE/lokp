@@ -95,6 +95,9 @@ def read_many(request):
         items = activity_protocol3.read_many(request, public=False,
             limit=pageSize, offset=pageSize*page-pageSize)
 
+        statusFilter = request.params.get('status', None)
+        isLoggedIn, isModerator = checkUserPrivileges(request)
+
         return render_to_response(getTemplatePath(request, 'activities/grid.mak'), {
             'data': items['data'] if 'data' in items else [],
             'total': items['total'] if 'total' in items else 0,
@@ -102,8 +105,10 @@ def read_many(request):
             'locale': get_current_locale(request),
             'spatialfilter': spatialfilter,
             'invfilter': None,
+            'statusfilter': statusFilter,
             'currentpage': page,
-            'pagesize': pageSize
+            'pagesize': pageSize,
+            'isModerator': isModerator
         }, request)
 
     elif output_format == 'form':
