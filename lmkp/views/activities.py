@@ -384,6 +384,7 @@ def read_one(request):
         
         review = ActivityReview(request)
         availableVersions = None
+        recalculated = False
         defaultRefVersion, defaultNewVersion = review._get_valid_versions(
             Activity, uid)
             
@@ -421,8 +422,22 @@ def read_one(request):
             if newVersion not in [v.get('version') for v in availableVersions]:
                 newVersion = defaultNewVersion
         
-        activities = review.get_comparison(Activity, uid, refVersion, 
-            newVersion)
+        if output_format == 'review':
+            # If the Activities are to be reviewed, only the changes which were
+            # applied to the newVersion are of interest
+            activities, recalculated = review.get_comparison(Activity, uid, 
+                refVersion, newVersion)
+        else:
+            # If the Activities are compared, the versions as they are stored
+            # in the database are of interest, without any recalculation
+            activities = [
+                activity_protocol3.read_one_by_version(request, uid, refVersion,
+                    translate=False
+                ),
+                activity_protocol3.read_one_by_version(request, uid, newVersion,
+                    translate=False
+                )
+            ]
         templateValues = renderReadonlyCompareForm(request, 'activities', 
             activities[0], activities[1], review=output_format=='review')
         # Collect metadata for the reference version
@@ -460,6 +475,7 @@ def read_one(request):
             'newMetadata': newMetadata,
             'missingKeys': missingKeys,
             'reviewable': reviewable,
+            'recalculated': recalculated,
             'profile': get_current_profile(request),
             'locale': get_current_locale(request)
         })

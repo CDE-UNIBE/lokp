@@ -991,6 +991,8 @@ class Protocol(object):
 
             tg_ids.append(db_taggroup.tg_id)
 
+            #TODO: Watch out: Extremely ugly code coming up! Please refactor
+            # this!!
             #TODO: clean up! Also make sure it works for all cases
             #TODO: Handle translations correctly
 
@@ -1170,11 +1172,20 @@ class Protocol(object):
             # If the main tag was deleted and no new one was set, we have to
             # find the new main_tag in the list of tags (it has to have the same
             # key as the old one)
-            if (deleted_maintag is not None and new_taggroup.main_tag is None
-                and len(new_taggroup.tags) > 0):
-                for t in new_taggroup.tags:
-                    if deleted_maintag.key.key == t.key.key:
-                        new_taggroup.main_tag = t
+            if db is True:
+                if (deleted_maintag is not None and new_taggroup.main_tag is None
+                    and len(new_taggroup.tags) > 0):
+                    for t in new_taggroup.tags:
+                        if deleted_maintag.key.key == t.key.key:
+                            new_taggroup.main_tag = t
+            else:
+                if (deleted_maintag is not None 
+                    and new_taggroup._main_tag is None 
+                    and len(new_taggroup._tags) > 0):
+                    
+                    for t in new_taggroup._tags:
+                        if deleted_maintag.key.key == t._key:
+                            new_taggroup._main_tag = t
 
         # Finally new tag groups (without id) need to be added
         # (and loop all again)
@@ -1680,6 +1691,7 @@ class TagGroup(object):
         self._diffFlag = None
         # Geometry (only used for Activity TagGroups)
         self._geometry = None
+        self._main_tag = None
 
     def add_tag(self, tag):
         """
@@ -1736,7 +1748,11 @@ class TagGroup(object):
         tags = []
         for t in self._tags:
             tags.append(t.to_table())
-            if t.get_id() == self._main_tag_id:
+            if (self._main_tag is not None 
+                and self._main_tag.get_key() == t.get_key() 
+                and self._main_tag.get_value() == t.get_value()):
+                main_tag = t.to_table()
+            elif t.get_id() == self._main_tag_id:
                 main_tag = t.to_table()
 
         ret = {

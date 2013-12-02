@@ -649,6 +649,8 @@ class BaseReview(BaseView):
         """
         Function to do the actual comparison and return a json
         """
+        
+        recalculated = False
 
         if (ref_version_number == 0
             or (new_version_number == 1 and ref_version_number == 1)):
@@ -695,5 +697,6 @@ class BaseReview(BaseView):
 
             # Apply the diff to the ref_object
             new_object = self.recalc(mappedClass, new_object, new_diff)
+            recalculated = True
 
-        return [ref_object, new_object]
+        return [ref_object, new_object], recalculated
