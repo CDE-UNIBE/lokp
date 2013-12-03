@@ -25,13 +25,19 @@
  */
 
 $(document).ready(function() {
+    
+    /** Settings **/
+    pointsCluster = true;
+    pointsVisible = true;
+    mapInteractive = true;
+    contextLegendInformation = true;
+    polygonLoadOnStart = false;
 
     // Collect any active filters (both A and SH)
-    var filterParams = [], hash;
     var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
     for (var i = 0; i < hashes.length; i++) {
         if (hashes[i].lastIndexOf('a__', 0) === 0 || hashes[i].lastIndexOf('sh__', 0) === 0) {
-            filterParams.push(hashes[i]);
+            mapFilterParams.push(hashes[i]);
         }
     }
 
@@ -56,16 +62,16 @@ $(document).ready(function() {
             'moveend': storeMapExtent
         }
     });
-    initializeMapContent(true, true, true, filterParams);
-    initializeContextLayers(true);
-    initializePolygonLayers(false, true);
+    initializeMapContent();
+    initializeContextLayers();
+    initializePolygonLayers();
 
     // Check if a location cookie is set. If yes, center the map to this location.
     // If no cookie is set, zoom the map to the extent of the current profile
     var location = $.cookie("_LOCATION_");
     if (location) {
         var arr = location.split(',');
-        if (arr.length == 4) {
+        if (arr.length === 4) {
             var extent = new OpenLayers.Bounds(arr);
             map.zoomToExtent(extent, true);
         }
@@ -111,13 +117,16 @@ $(document).ready(function() {
 
 /**
  * Function to show the legend of a context layer in a modal window.
+ * 
+ * @param {String} layerName
+ * @returns {Boolean} False
  */
 function showContextLegend(layerName) {
 
     // Find the layer in the list of available context layers
     var layer = null;
     $.each(contextLayers, function() {
-        if (this.name == layerName) {
+        if (this.name === layerName) {
             layer = this;
         }
     });
@@ -162,7 +171,8 @@ function showContextLegend(layerName) {
         $xml = $( xmlDoc );
         $xml.find("Layer[queryable='1']").each(function(){
             $layer = $( this );
-            if($layer.find("Name").first().text() == layer.params.LAYERS || $layer.find("Name").first().text() == layer.params.LAYERS.split(":")[1]){
+            if($layer.find("Name").first().text() === layer.params.LAYERS 
+                || $layer.find("Name").first().text() === layer.params.LAYERS.split(":")[1]){
                 var layerAbstract = $layer.find("Abstract").first().text();
                 $("<p>" + layerAbstract + "</p>").insertAfter('#contextLegendContent > p');
                 // Assuming to load and parse the GetCapabilites documents takes

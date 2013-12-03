@@ -9,6 +9,10 @@ var aKeyNames, shKeyNames;
 var geographicProjection = new OpenLayers.Projection("EPSG:4326");
 var sphericalMercatorProjection = new OpenLayers.Projection("EPSG:900913");
 
+var pointsCluster, mapInteractive, pointsVisible, contextLegendInformation,
+    polygonLoadOnStart;
+var mapFilterParams = [];
+
 /**
  * Initialize the spatial search functionality.
  * Requires a text input field with id="search" and name="q".
@@ -45,8 +49,8 @@ function initializeMapSearch() {
         updater: function(item){
             var loc = new Array();
             $.each(rows, function(row){
-                if(rows[row].name == item){
-                    loc.push(rows[row])
+                if(rows[row].name === item){
+                    loc.push(rows[row]);
                 }
             });
 
@@ -73,6 +77,50 @@ function initializeMapSearch() {
 }
 
 /**
+ * Update the map criteria.
+ * Updates the variables mapCriteria and mapValues (ajax query needed to get the
+ * new values for the legend)
+ * 
+ * Required HTML elements:
+ * - <ul id="map-points-list">
+ * - <span id="map-symbolization-name">
+ * 
+ * @param {String} translatedName
+ * @param {String} internalName
+ * @returns {Boolean} False
+ */
+function updateMapCriteria(translatedName, internalName) {
+    
+    $('#map-points-list').css('visibility', 'hidden');
+    $('#map-symbolization-name').html('Loading ...');
+    
+    $.each(map.getLayersByClass("OpenLayers.Layer.Vector"), function() {
+        if ($.inArray(this.name, mapValues) !== -1) {
+            map.removeLayer(this);
+        }
+    });
+    $.ajax({
+        url: '/json/filtervalues',
+        cache: false,
+        data: {
+            type: 'a',
+            key: internalName
+        },
+        success: function(data) {
+            if (data['error']) return;
+            var newMapValues = [];
+            $.each(data, function() {
+                newMapValues.push(this[0]);
+            });
+            mapValues = newMapValues;
+            mapCriteria = [translatedName, internalName, 0];
+            initializeMapContent();
+        }
+    });
+    return false;
+}
+
+/**
  * Initialize the main content (Activities) of the map with its symbolization
  * and select events.
  *
@@ -80,10 +128,6 @@ function initializeMapSearch() {
  * - mapValues
  * - mapCriteria
  * - allMapCriteria
- *
- * Options:
- * - [boolean] cluster
- * - [boolean] interactive (*)
  *
  * (*) Option "interactive" is true:
  * Necessary variables:
@@ -103,16 +147,16 @@ function initializeMapSearch() {
  * - <ul id="taggroups-ul">
  * - <div id="map-deals-symbolization">
  */
-function initializeMapContent(cluster, interactive, visible, filterParams) {
-
+function initializeMapContent() {
+    
     // Test if the values defined in template are available
     if (typeof mapValues === 'undefined') {
         return;
     }
-    if (typeof mapCriteria === 'undefined' || mapCriteria.length != 3) {
+    if (typeof mapCriteria === 'undefined' || mapCriteria.length !== 3) {
         return;
     }
-    if (typeof filterParams === 'undefined') {
+    if (typeof mapFilterParams === 'undefined') {
         filterParams = [];
     }
 
@@ -137,7 +181,7 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
     // Get the data with a jQuery AJAX request. To prevent IE from caching, use
     // $.ajax instead of $.get so the parameter "cache=false" can be set.
     $.ajax({
-        url: '/activities/geojson?' + $.merge(['attrs=' + mapCriteria[1]], filterParams).join('&'),
+        url: '/activities/geojson?' + $.merge(['attrs=' + mapCriteria[1]], mapFilterParams).join('&'),
         cache: false,
         success: function(data) {
             // Define a geojson format needed to read the features
@@ -174,12 +218,15 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
             $.each(allMapCriteria, function() {
                 s.push(
                     '<li>',
-                    '<a href="#' + this[1] + '">' + this[0] + '</a>',
+                    '<a href="#" onclick="javascript:return updateMapCriteria(\'' + this[0] + '\', \'' + this[1] + '\');">' + this[0] + '</a>',
                     '</li>'
                 );
             });
             s.push('</ul>');
             $('#map-deals-symbolization').html(s.join(''));
+            
+            // Empty the legend and show it again in case it was hidden
+            $("#map-points-list").empty().css('visibility', 'visible');
             
             // Give each group a different color
             var colorIndex = 0;
@@ -199,7 +246,7 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
                 });
 
                 // Create the layer
-                if (cluster === false) {
+                if (pointsCluster === false) {
                     featureLayer = new OpenLayers.Layer.Vector(l, {
                         styleMap: styleMap
                     });
@@ -220,14 +267,14 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
                     });
                 }
 
-                if (interactive !== false) {
+                if (mapInteractive !== false) {
                     featureLayer.events.on({
                         'featureselected': onFeatureSelected,
                         'featureunselected': onFeatureUnselected
                     });
                 }
 
-                if (visible === false) {
+                if (pointsVisible === false) {
                     featureLayer.setVisibility(false);
                 }
 
@@ -235,7 +282,7 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
                 map.addLayer(featureLayer);
                 featureLayers.push(featureLayer);
 
-                if (cluster !== false) {
+                if (pointsCluster !== false) {
                     // If clustering is activated, do the initial clustering
                     clusterStrategy.cluster();
                 }
@@ -253,7 +300,7 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
                 colorIndex++;
             }
 
-            if (interactive !== false) {
+            if (mapInteractive !== false) {
                 // Create the SelectFeature control, add it for each feature layer and
                 // activate it
                 addLayersToSelectControl(map, featureLayers);
@@ -273,10 +320,12 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
     /**
      * Functionality to select a feature on the map. Shows the details of
      * the activity in the detail field.
+     * 
+     * @param {OpenLayers.Event} e Select control event.
      */
     var onFeatureSelected = function(e) {
-
-        if (interactive === false) return;
+        
+        if (mapInteractive === false) return;
 
         if (typeof aKeys === 'undefined') {
             return;
@@ -295,12 +344,12 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
         var f;
         if (!feature.cluster) {
             f = feature;
-        } else if (feature.cluster.length == 1) {
+        } else if (feature.cluster.length === 1) {
             f = feature.cluster[0];
         }
         if (f) {
             var activityId = f.data.activity_identifier;
-            var shortId = activityId.split("-")[0]
+            var shortId = activityId.split("-")[0];
             $("#deal-shortid-span").html('<a href="/activities/html/' + activityId + '"># ' + shortId + '</a>');
             $("#taggroups-ul" ).empty().append('<li><p>' + tForLoadingdetails + '</p></li>');
             $.get("/activities/json/" + activityId, function(r){
@@ -340,8 +389,8 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
                     }
                 });
                 if (involvements.length > 0) {
-                    var label = (involvements.length == 1) ? tForInvestor : tForInvestors;
-                    $('#taggroups-ul').append('<li class="inv"><p><span class="bolder">' + label + ': </span>' + involvements.join(', ') + '</p></li>')
+                    var label = (involvements.length === 1) ? tForInvestor : tForInvestors;
+                    $('#taggroups-ul').append('<li class="inv"><p><span class="bolder">' + label + ': </span>' + involvements.join(', ') + '</p></li>');
                 }
             });
         } else {
@@ -355,7 +404,7 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
                 for(var i = 0; i < feature.cluster.length; i++){
                     var f = feature.cluster[i];
                     var activityId = f.data.activity_identifier;
-                    var shortId = activityId.split("-")[0]
+                    var shortId = activityId.split("-")[0];
 
                     header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/" + activityId + '"># ' + shortId + '</a></span></h6>');
                 }
@@ -363,30 +412,33 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
                 for(var i = 0; i < maxFeatures; i++){
                     var f = feature.cluster[i];
                     var activityId = f.data.activity_identifier;
-                    var shortId = activityId.split("-")[0]
+                    var shortId = activityId.split("-")[0];
 
                     header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/" + activityId + '"># ' + shortId + '</a></span></h6>');
                 }
                 header.append("<span>and " + (feature.cluster.length - maxFeatures) + tForMoredeals + "</span>");
             }
         }
-    }
+    };
 
     /**
-     * Functionality to deselect a feature. Resets the detail field.
+     * Functionality to deselect a feature. 
+     * Resets the detail field.
      */
     var onFeatureUnselected = function() {
-        if (interactive === false) return;
+        if (mapInteractive === false) return;
         $("#taggroups-ul").empty();
         $(".basic-data").empty()
             .append("<h6 class=\"deal-headline\">" + tForDeals + " <span id=\"deal-shortid-span\" class=\"underline\">#</span></h6>")
             .append('<ul id="taggroups-ul"><li><p>' + tForNodealselected + '</p></li></ul>');
-    }
+    };
 
     /**
-     * Function to add commas as a separator for thousands to a string containing
-     * numbers.
-     * Returns a formatted string.
+     * Function to add commas as a separator for thousands to a string 
+     * containing numbers.
+     * 
+     * @param {String} nStr String containing numbers.
+     * @returns {String} Formatted string.
      */
     var addCommas = function(nStr) {
         nStr += '';
@@ -398,7 +450,7 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
             x1 = x1.replace(rgx, '$1' + ',' + '$2');
         }
         return x1 + x2;
-    }
+    };
 }
 
 /**
@@ -411,7 +463,7 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
  * Required HTML elements:
  * - <ul id="context-layers-list">
  */
-function initializeContextLayers(showLegend) {
+function initializeContextLayers() {
     // Loop the context layers and append it to the context layers menu
     for (var c in contextLayers) {
         var layerName = contextLayers[c].name;
@@ -424,7 +476,7 @@ function initializeContextLayers(showLegend) {
             '<p class="context-layers-description">',
             layerName
         ];
-        if (showLegend === true) {
+        if (contextLegendInformation === true) {
             t.push(
                 '&nbsp;',
                 '<i class="icon-exclamation-sign pointer" onClick="javascript:showContextLegend(\'' + layerName + '\');">',
@@ -450,12 +502,8 @@ function initializeContextLayers(showLegend) {
  * 
  * Required HTML elements:
  * - <ul id="map-areas-layers-list">
- * 
- * @param {boolean} loadOnStart Whether to load the layers on start or not.
- * @param {boolean} interactive Whether the layers are interactive (showing the
- * details of the feature) or not.
  */
-function initializePolygonLayers(loadOnStart, interactive) {
+function initializePolygonLayers() {
     for (var a in areaNames) {
         var n = areaNames[a];
         var v = n;
@@ -468,7 +516,7 @@ function initializePolygonLayers(loadOnStart, interactive) {
             '<div class="checkbox-modified-small">',
             '<input class="input-top area-layer-checkbox" type="checkbox" value="' + v + '" id="checkbox' + v + '"'
         ];
-        if (loadOnStart === true) {
+        if (polygonLoadOnStart === true) {
             t.push(' checked="checked"');
         }
         t.push(
@@ -476,12 +524,19 @@ function initializePolygonLayers(loadOnStart, interactive) {
             '<label for="checkbox' + v + '"></label>',
             '</div>',
             '<p class="context-layers-description">',
+            '<span class="vectorLegendSymbolSmall" style="',
+                'border: 2px solid ' + getColor(a) + ';',
+            '"><span class="vectorLegendSymbolSmallInside" style="',
+                'background-color: ' + getColor(a) + ';',
+                'opacity: 0.7;',
+                'filter: alpha(opacity=70)',
+            '"></span></span>',
             n,
             '</p>',
             '</li>'
         );
         $('#map-areas-list').append(t.join(''));
-        if (loadOnStart) {
+        if (polygonLoadOnStart === true) {
             setPolygonLayerByName(map, v, true, interactive);
         }
     }
@@ -576,6 +631,9 @@ function initializePolygonLayerControl() {
 
 /**
  * Set a base layer based on its name if it exists.
+ * 
+ * @param {OpenLayers.Map} map
+ * @param {String} name
  */
 function setBaseLayerByName(map, name) {
     var l = map.getLayersByName(name);
@@ -586,6 +644,9 @@ function setBaseLayerByName(map, name) {
 
 /**
  * Set a context layer based on its name if it exists.
+ * @param {OpenLayers.Map} map
+ * @param {String} name
+ * @param {Boolean} checked
  */
 function setContextLayerByName(map, name, checked) {
     var l = map.getLayersByName(name);
@@ -599,11 +660,10 @@ function setContextLayerByName(map, name, checked) {
  * If the layer does not yet exist, the data is queried and it is created.
  * 
  * @param {OpenLayers.Map} map
- * @param {string} name
- * @param {boolean} visible
- * @param {boolean} interactive
+ * @param {String} name
+ * @param {Boolean} visible
  */
-function setPolygonLayerByName(map, name, visible, interactive) {
+function setPolygonLayerByName(map, name, visible) {
     var l = map.getLayersByName(name);
     if (l.length > 0) {
         // The layer exists already, just toggle its visibility.
@@ -613,6 +673,18 @@ function setPolygonLayerByName(map, name, visible, interactive) {
         // Get the data with a jQuery AJAX request. To prevent IE from caching, 
         // use $.ajax instead of $.get so the parameter "cache=false" can be 
         // set.
+        var colorIndex = 0;
+        for (var a in areaNames) {
+            var n = areaNames[a];
+            if ($.isArray(n) && n.length === 2) {
+                n = n[1];
+            }
+            if (n === name) {
+                colorIndex = a;
+                break;
+            }
+        }
+        
         $.ajax({
             url: '/activities/geojson?tg=' + name,
             cache: false,
@@ -626,7 +698,7 @@ function setPolygonLayerByName(map, name, visible, interactive) {
                 // Define a style
                 var styleMap = new OpenLayers.StyleMap({
                     // Get the style based on the current color
-                    'default': getPolygonStyle(2),
+                    'default': getPolygonStyle(colorIndex),
                     'select': new OpenLayers.Style({
                         fontColor: '#000000',
                         fillColor: '#80FFFF',
@@ -639,7 +711,7 @@ function setPolygonLayerByName(map, name, visible, interactive) {
                 });
                 featureLayer.addFeatures(geojsonFormat.read(data));
                 
-                if (interactive !== false) {
+                if (mapInteractive !== false) {
                     featureLayer.events.on({
                         'featureselected': onFeatureSelected,
                         'featureunselected': onFeatureUnselected
@@ -649,7 +721,7 @@ function setPolygonLayerByName(map, name, visible, interactive) {
                 // Add the layer to the map and to the list of layers
                 map.addLayer(featureLayer);
 
-                if (interactive !== false) {
+                if (mapInteractive !== false) {
                     addLayersToSelectControl(map, [featureLayer]);
                 }
             }
@@ -669,6 +741,8 @@ function setPolygonLayerByName(map, name, visible, interactive) {
 
 /**
  * Set all the content (Activity) layers to visible or not.
+ * 
+ * @param {Boolean} visible
  */
 function toggleContentLayers(visible) {
     $.each(map.getLayersByClass("OpenLayers.Layer.Vector"), function() {
@@ -681,6 +755,9 @@ function toggleContentLayers(visible) {
 /**
  * Function to get the style of a clustered layer based on a color index.
  * Returns an OpenLayers.Style object
+ *
+ * @param {Integer} index
+ * @returns {OpenLayers.Style}
  */
 function getPointStyle(index) {
 
@@ -689,7 +766,7 @@ function getPointStyle(index) {
 
     var strokeOpacity = function(feature){
         var f;
-        if (feature.attributes.count == 1) {
+        if (feature.attributes.count === 1) {
             f = feature.cluster[0];
         } else if (!feature.attributes.count) {
             f = feature;
@@ -702,7 +779,7 @@ function getPointStyle(index) {
 
     var strokeWidth = function(feature) {
         var f;
-        if (feature.attributes.count == 1) {
+        if (feature.attributes.count === 1) {
             f = feature.cluster[0];
         } else if (!feature.attributes.count) {
             f = feature;
@@ -715,12 +792,12 @@ function getPointStyle(index) {
 
     // Calculates the radius for clustered features
     var radius = function(feature) {
-        if (!feature.attributes.count || feature.attributes.count == 1) {
+        if (!feature.attributes.count || feature.attributes.count === 1) {
             return 6;
         } else {
             return Math.min(feature.attributes.count, 12) + 5;
         }
-    }
+    };
 
     // Returns the number of clustered features, which is used to label the clusters.
     var label = function(feature) {
@@ -729,7 +806,7 @@ function getPointStyle(index) {
         } else {
             return '';
         }
-    }
+    };
 
     // Use circles for clustered features and a triangle to symbolize singe features
     var graphicName = function(feature) {
@@ -738,20 +815,20 @@ function getPointStyle(index) {
         } else {
             return 'circle';
         }
-    }
+    };
 
     var fillColor = function(feature) {
         var f;
-        if (feature.attributes.count == 1) {
+        if (feature.attributes.count === 1) {
             f = feature.cluster[0];
         } else if (!feature.attributes.count) {
             f = feature;
         }
-        if (f && f.attributes.status == 'pending') {
+        if (f && f.attributes.status === 'pending') {
             return '#ffffff';
         }
         return getColor(index);
-    }
+    };
 
     var style = new OpenLayers.Style(
         {
@@ -807,7 +884,9 @@ function getPolygonStyle(index) {
 /**
  * Function to get a color from a predefined list of available colors based on
  * an index.
- * Returns a hexadecimal string representation of a color.
+ * 
+ * @param {type} index
+ * @returns {String} A hexadecimal string representation of a color.
  */
 function getColor(index) {
     var colors = [
