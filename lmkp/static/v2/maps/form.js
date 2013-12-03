@@ -145,12 +145,6 @@ $(document).ready(function() {
         container: 'body',
         placement: 'bottom'
     });
-
-    $('#activityLayerToggle').change(function(e) {
-        if (e.target.value) {
-            toggleContentLayers(e.target.checked);
-        }
-    });
 });
 
 function toggleMode(mode) {

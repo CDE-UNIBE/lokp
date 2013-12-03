@@ -58,6 +58,7 @@ $(document).ready(function() {
     });
     initializeMapContent(true, true, true, filterParams);
     initializeContextLayers(true);
+    initializePolygonLayers(false, true);
 
     // Check if a location cookie is set. If yes, center the map to this location.
     // If no cookie is set, zoom the map to the extent of the current profile
@@ -85,33 +86,26 @@ $(document).ready(function() {
      */
     initializeBaseLayerControl();
     initializeContextLayerControl();
+    initializePolygonLayerControl();
     initializeMapSearch();
 
     /**
      * GUI Events: Legend
      */
 
+    // Deals up/down
+    $('.map-deals').click(function() {
+        $('.map-deals-content').slideToggle();
+    });
+
     // Base-layers up/down
     $('.base-layers').click(function() {
-        $('.base-layers-content').slideToggle();
+       $('.base-layers-content').slideToggle();
     });
 
     // Context-layers up/down
     $('.context-layers').click(function() {
         $('.context-layers-content').slideToggle();
-    });
-
-    // Map legend up/down
-    var legendCounter = 1; // Open by default
-    $('.map-legend').click(function() {
-        legendCounter++;
-        $('.map-legend-content').slideToggle(function() {
-            if (legendCounter % 2 == 0) {
-                $('.map-legend').css('margin-bottom', '15px');
-            } else {
-                $('.map-legend').css('margin-bottom', '5px');
-            }
-        });
     });
 });
 

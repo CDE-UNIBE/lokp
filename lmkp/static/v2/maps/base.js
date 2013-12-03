@@ -79,6 +79,7 @@ function initializeMapSearch() {
  * Necessary variables:
  * - mapValues
  * - mapCriteria
+ * - allMapCriteria
  *
  * Options:
  * - [boolean] cluster
@@ -95,12 +96,12 @@ function initializeMapSearch() {
  * - tForMoredeals
  * - tForDeals
  * - tForNodealselected
- * - tForDealsGroupedBy
  * HTML elements:
- * - <div id="map-legend-list">
+ * - <div id="map-point-list">
  * - <div class="basic-data">
  * - <h6 class="deal-headline"></h6>
  * - <ul id="taggroups-ul">
+ * - <div id="map-deals-symbolization">
  */
 function initializeMapContent(cluster, interactive, visible, filterParams) {
 
@@ -159,14 +160,27 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
                 mapFeatures[this.attributes[mapCriteria[1]]].push(this);
             });
 
-            var legendExplanation = [
-                '<div class="legendExplanation">',
-                tForDealsGroupedBy, ': ',
-                '<strong>', mapCriteria[0], '</strong>',
-                '</div>'
-            ].join('');
-            $("#map-legend-list").append(legendExplanation);
-
+            // Add the symbolization dropdown and its content
+            var s = [];
+            s.push(
+                '<a class="dropdown-toggle blacktemp map-point-symbol-dropdown" href="#" data-toggle="dropdown">',
+                '<span id="map-symbolization-name">',
+                mapCriteria[0],
+                '</span>',
+                '&nbsp;<b class="caret"></b>',
+                '</a>',
+                '<ul class="dropdown-menu map-point-symbol-drodpown-menu">'
+            );
+            $.each(allMapCriteria, function() {
+                s.push(
+                    '<li>',
+                    '<a href="#' + this[1] + '">' + this[0] + '</a>',
+                    '</li>'
+                );
+            });
+            s.push('</ul>');
+            $('#map-deals-symbolization').html(s.join(''));
+            
             // Give each group a different color
             var colorIndex = 0;
 
@@ -176,7 +190,7 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
 
                 var styleMap = new OpenLayers.StyleMap({
                     // Get the style based on the current color
-                    'default': getStyle(colorIndex),
+                    'default': getPointStyle(colorIndex),
                     'select': new OpenLayers.Style({
                         fontColor: '#000000',
                         fillColor: '#00ffff',
@@ -234,7 +248,7 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
                     l,
                     '</li>'
                 ].join('');
-                $("#map-legend-list").append(legendTemplate);
+                $("#map-points-list").append(legendTemplate);
 
                 colorIndex++;
             }
@@ -242,10 +256,17 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
             if (interactive !== false) {
                 // Create the SelectFeature control, add it for each feature layer and
                 // activate it
-                var selectControl = new OpenLayers.Control.SelectFeature(featureLayers);
-                map.addControl(selectControl);
-                selectControl.activate();
+                addLayersToSelectControl(map, featureLayers);
             }
+            
+            $('#activityLayerToggle').change(function(e) {
+                if (e.target.value) {
+                    toggleContentLayers(e.target.checked);
+                }
+            });
+            
+            // CSS fixes
+            $('.map-deals-content').css('margin-bottom', '15px');
         }
     });
 
@@ -397,7 +418,7 @@ function initializeContextLayers(showLegend) {
         var t = [
             '<li>',
             '<div class="checkbox-modified-small">',
-            '<input class="input-top" type="checkbox" value="' + layerName + '" id="checkbox' + layerName + '">',
+            '<input class="input-top context-layer-checkbox" type="checkbox" value="' + layerName + '" id="checkbox' + layerName + '">',
             '<label for="checkbox' + layerName + '"></label>',
             '</div>',
             '<p class="context-layers-description">',
@@ -418,6 +439,52 @@ function initializeContextLayers(showLegend) {
     }
     // Add the context layers to the map
     map.addLayers(contextLayers);
+}
+
+/**
+ * Function to initialize the polygon layers.
+ * Writes the legend for the polygon layers and creates the layers if desired.
+ * 
+ * Necessary variables:
+ * - areaNames
+ * 
+ * Required HTML elements:
+ * - <ul id="map-areas-layers-list">
+ * 
+ * @param {boolean} loadOnStart Whether to load the layers on start or not.
+ * @param {boolean} interactive Whether the layers are interactive (showing the
+ * details of the feature) or not.
+ */
+function initializePolygonLayers(loadOnStart, interactive) {
+    for (var a in areaNames) {
+        var n = areaNames[a];
+        var v = n;
+        if ($.isArray(n) && n.length === 2) {
+            v = n[1];
+            n = n[0];
+        }
+        var t = [
+            '<li>',
+            '<div class="checkbox-modified-small">',
+            '<input class="input-top area-layer-checkbox" type="checkbox" value="' + v + '" id="checkbox' + v + '"'
+        ];
+        if (loadOnStart === true) {
+            t.push(' checked="checked"');
+        }
+        t.push(
+            '>',
+            '<label for="checkbox' + v + '"></label>',
+            '</div>',
+            '<p class="context-layers-description">',
+            n,
+            '</p>',
+            '</li>'
+        );
+        $('#map-areas-list').append(t.join(''));
+        if (loadOnStart) {
+            setPolygonLayerByName(map, v, true, interactive);
+        }
+    }
 }
 
 /**
@@ -483,12 +550,26 @@ function initializeBaseLayerControl() {
  * Initialize the functionality to turn context layers on and off.
  *
  * Required HTML elements:
- * - checkbox input fields with class="input-top"
+ * - checkbox input fields with class="context-layer-checkbox"
  */
 function initializeContextLayerControl() {
-    $(".input-top").click(function(event){
-        if (event.target.value) {
-            setContextLayerByName(map, event.target.value, event.target.checked);
+    $('.context-layer-checkbox').click(function(e) {
+        if (e.target.value) {
+            setContextLayerByName(map, e.target.value, e.target.checked);
+        }
+    });
+}
+
+/**
+ * Initialize the functionality to turn polygon layers on and off.
+ * 
+ * Required HTML elements:
+ * - checkbox input fields with class="area-layer-checkbox"
+ */
+function initializePolygonLayerControl() {
+    $('.area-layer-checkbox').click(function(e) {
+        if (e.target.value) {
+            setPolygonLayerByName(map, e.target.value, e.target.checked);
         }
     });
 }
@@ -514,12 +595,84 @@ function setContextLayerByName(map, name, checked) {
 }
 
 /**
+ * Set a polygon layer based on its name.
+ * If the layer does not yet exist, the data is queried and it is created.
+ * 
+ * @param {OpenLayers.Map} map
+ * @param {string} name
+ * @param {boolean} visible
+ * @param {boolean} interactive
+ */
+function setPolygonLayerByName(map, name, visible, interactive) {
+    var l = map.getLayersByName(name);
+    if (l.length > 0) {
+        // The layer exists already, just toggle its visibility.
+        l[0].setVisibility(visible);
+    } else if (visible === true) {
+        // The layer does not yet exist and needs to be created first.
+        // Get the data with a jQuery AJAX request. To prevent IE from caching, 
+        // use $.ajax instead of $.get so the parameter "cache=false" can be 
+        // set.
+        $.ajax({
+            url: '/activities/geojson?tg=' + name,
+            cache: false,
+            success: function(data) {
+                // Define a geojson format needed to read the features
+                var geojsonFormat = new OpenLayers.Format.GeoJSON({
+                  'internalProjection': sphericalMercatorProjection,
+                  'externalProjection': geographicProjection
+                });
+
+                // Define a style
+                var styleMap = new OpenLayers.StyleMap({
+                    // Get the style based on the current color
+                    'default': getPolygonStyle(2),
+                    'select': new OpenLayers.Style({
+                        fontColor: '#000000',
+                        fillColor: '#80FFFF',
+                        strokeColor: '#00ffff'
+                    })
+                });
+                
+                var featureLayer = new OpenLayers.Layer.Vector(name, {
+                    styleMap: styleMap
+                });
+                featureLayer.addFeatures(geojsonFormat.read(data));
+                
+                if (interactive !== false) {
+                    featureLayer.events.on({
+                        'featureselected': onFeatureSelected,
+                        'featureunselected': onFeatureUnselected
+                    });
+                }
+
+                // Add the layer to the map and to the list of layers
+                map.addLayer(featureLayer);
+
+                if (interactive !== false) {
+                    addLayersToSelectControl(map, [featureLayer]);
+                }
+            }
+        });
+    }
+    
+    var onFeatureSelected = function(e) {
+        // TODO
+        console.log(e);
+    };
+    
+    var onFeatureUnselected = function(e) {
+        // TODO
+        console.log(e);
+    };
+}
+
+/**
  * Set all the content (Activity) layers to visible or not.
  */
 function toggleContentLayers(visible) {
     $.each(map.getLayersByClass("OpenLayers.Layer.Vector"), function() {
-        var nonContentLayers = ['RemovePoints', 'Geometry'];
-        if ($.inArray(this.name, nonContentLayers) == -1) {
+        if ($.inArray(this.name, mapValues) !== -1) {
             this.setVisibility(visible);
         }
     });
@@ -529,7 +682,7 @@ function toggleContentLayers(visible) {
  * Function to get the style of a clustered layer based on a color index.
  * Returns an OpenLayers.Style object
  */
-function getStyle(index) {
+function getPointStyle(index) {
 
     // Define some style variables
     var fillOpacity = 1;
@@ -627,6 +780,31 @@ function getStyle(index) {
 }
 
 /**
+ * Create and return the style for the polygons.
+ * 
+ * @param {int} index
+ * @returns {OpenLayers.Style}
+ */
+function getPolygonStyle(index) {
+    
+    var fillColor = function(feature) {
+        return getColor(index);
+    };
+    
+    var style = new OpenLayers.Style({
+        fillColor: '${fillColor}',
+        fillOpacity: 0.7,
+        strokeColor: '${fillColor}',
+        strokeOpacity: 1
+    }, {
+        context: {
+            fillColor: fillColor
+        }
+    });
+    return style;
+}
+
+/**
  * Function to get a color from a predefined list of available colors based on
  * an index.
  * Returns a hexadecimal string representation of a color.
@@ -658,4 +836,26 @@ function storeMapExtent() {
     $.cookie("_LOCATION_", map.getExtent().toString(), {
         expires: 7
     });
+}
+
+/**
+ * Adds an array of layers to the select control of the map.
+ * If the select control exists already, the new layers are added. If there is
+ * no select control yet, it is created.
+ * 
+ * @param {OpenLayers.Map} map
+ * @param {arrary} layers
+ */
+function addLayersToSelectControl(map, layers) {
+    var selectControls = map.getControlsByClass("OpenLayers.Control.SelectFeature");
+    if (selectControls.length > 0) {
+        // Add the layers to the existing selectable layers.
+        var oldLayers = selectControls[0].layers;
+        selectControls[0].setLayer(oldLayers.concat(layers));
+    } else {
+        // Create a new control on the layers.
+        var selectControl = new OpenLayers.Control.SelectFeature(layers);
+        map.addControl(selectControl);
+        selectControl.activate();
+    }
 }
