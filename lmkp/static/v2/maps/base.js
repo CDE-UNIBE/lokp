@@ -195,13 +195,13 @@ function initializeMapContent() {
             $.each(features, function() {
 
                 // Make sure the mapCriteria is present in the feature
-                if (!this.attributes[mapCriteria[1]]) return;
+                if (!this.attributes[mapCriteria[0]]) return;
 
                 // Make sure the mapCriteria exists in the list of available groups
-                if (!mapFeatures[this.attributes[mapCriteria[1]]]) return;
+                if (!mapFeatures[this.attributes[mapCriteria[0]]]) return;
 
                 // Add it to the group
-                mapFeatures[this.attributes[mapCriteria[1]]].push(this);
+                mapFeatures[this.attributes[mapCriteria[0]]].push(this);
             });
 
             // Add the symbolization dropdown and its content
@@ -319,7 +319,7 @@ function initializeMapContent() {
 
     /**
      * Functionality to select a feature on the map. Shows the details of
-     * the activity in the detail field.
+     * the activity (requested through service) in the detail field.
      * 
      * @param {OpenLayers.Event} e Select control event.
      */
@@ -427,10 +427,7 @@ function initializeMapContent() {
      */
     var onFeatureUnselected = function() {
         if (mapInteractive === false) return;
-        $("#taggroups-ul").empty();
-        $(".basic-data").empty()
-            .append("<h6 class=\"deal-headline\">" + tForDeals + " <span id=\"deal-shortid-span\" class=\"underline\">#</span></h6>")
-            .append('<ul id="taggroups-ul"><li><p>' + tForNodealselected + '</p></li></ul>');
+        clearDetails();
     };
 
     /**
@@ -537,7 +534,7 @@ function initializePolygonLayers() {
         );
         $('#map-areas-list').append(t.join(''));
         if (polygonLoadOnStart === true) {
-            setPolygonLayerByName(map, v, true, interactive);
+            setPolygonLayerByName(map, v, true);
         }
     }
 }
@@ -686,8 +683,12 @@ function setPolygonLayerByName(map, name, visible) {
         }
         
         $.ajax({
-            url: '/activities/geojson?tg=' + name,
+            url: '/activities/geojson',
             cache: false,
+            data: {
+                attrs: name,
+                tggeom: 'true'
+            },
             success: function(data) {
                 // Define a geojson format needed to read the features
                 var geojsonFormat = new OpenLayers.Format.GeoJSON({
@@ -728,14 +729,41 @@ function setPolygonLayerByName(map, name, visible) {
         });
     }
     
+    /**
+     * Functionality to select a feature on the map. Shows the details of the 
+     * polygon in the detail field.
+     * 
+     * @param {OpenLayers.Event} e Select control event.
+     */
     var onFeatureSelected = function(e) {
-        // TODO
-        console.log(e);
+        if (mapInteractive === false) return;
+        var feature = e.feature;
+        if (feature) {
+            var activityId = feature.data.activity_identifier;
+            var shortId = activityId.split('-')[0];
+            $('#deal-shortid-span').html('<a href="/activities/html/' + activityId + '"># ' + shortId + '</a>');
+            $("#taggroups-ul" ).empty();
+            $.each(feature.data, function(key, value) {
+                var ignored = ['status', 'version', 'activity_identifier', 
+                    'status_id'];
+                if ($.inArray(key, ignored) === -1) {
+                    var c = [
+                        '<li><p>',
+                        '<span class="bolder">',
+                        key,
+                        ': </span>',
+                        value,
+                        '</p></li>'
+                    ];
+                    $('#taggroups-ul').append(c.join(''));
+                }
+            });
+        }
     };
     
-    var onFeatureUnselected = function(e) {
-        // TODO
-        console.log(e);
+    var onFeatureUnselected = function() {
+        if (mapInteractive === false) return;
+        clearDetails();
     };
 }
 
@@ -938,3 +966,14 @@ function addLayersToSelectControl(map, layers) {
         selectControl.activate();
     }
 }
+
+/**
+ * Functionality to clear the details panel.
+ */
+function clearDetails() {
+    $("#taggroups-ul").empty();
+    $(".basic-data").empty()
+        .append("<h6 class=\"deal-headline\">" + tForDeals + " <span id=\"deal-shortid-span\" class=\"underline\">#</span></h6>")
+        .append('<ul id="taggroups-ul"><li><p>' + tForNodealselected + '</p></li></ul>');
+}
+
