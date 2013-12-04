@@ -444,10 +444,12 @@ class ConfigCategory(object):
         """
         return self.order
 
-    def getForm(self, request, readonly=False):
+    def getForm(self, request, readonly=False, compare=''):
         """
         Prepare the form node for this category, append the forms of its
         thematic groups and return it.
+        If the form is to be rendered for comparison, a hidden field 'change' is
+        added.
         """
         title = (self.getTranslation() if self.getTranslation() is not None
             else self.getName())
@@ -456,14 +458,22 @@ class ConfigCategory(object):
             name=str(self.getId()),
             title=title
         )
+        if compare is not '':
+            cat_form.add(colander.SchemaNode(
+                colander.String(),
+                name='change',
+                title='',
+                default=colander.null,
+                widget=deform.widget.HiddenWidget()
+            ))
         for thg in sorted(self.getThematicgroups(), key=lambda thmg: thmg.getOrder()):
             # Get the Form for each Thematicgroup
-            thg_form = thg.getForm(request, readonly)
+            thg_form = thg.getForm(request, readonly=readonly, compare=compare)
             thg_form.missing = colander.null
             thg_form.name = str(thg.getId())
             cat_form.add(thg_form)
         return cat_form
-
+        
 class ConfigThematicgroup(object):
     """
     A class representing a Form Thematic Group object as defined in the
@@ -573,10 +583,13 @@ class ConfigThematicgroup(object):
         """
         return self.map
 
-    def getForm(self, request, readonly=False):
+    def getForm(self, request, readonly=False, compare=''):
         """
         Prepare the form node for this thematic group, append the forms of its
         taggroups and return it.
+        If the form is to be rendered for comparison, a hidden field 'change' is
+        added and each taggroup is added twice (once as 'ref_[ID]' and once as
+        'new_[ID]'.
         """
         title = (self.getTranslation() if self.getTranslation() is not None
             else self.getName())
@@ -584,6 +597,15 @@ class ConfigThematicgroup(object):
             colander.Mapping(),
             title=title
         )
+        
+        if compare is not '':
+            thg_form.add(colander.SchemaNode(
+                colander.String(),
+                name='change',
+                title='',
+                default=colander.null,
+                widget=deform.widget.HiddenWidget()
+            ))
 
         if self.getMap() is not None:
             # If there is some map data in this thematic group, get the widget
@@ -595,6 +617,15 @@ class ConfigThematicgroup(object):
             # Get the Form for each Taggroup
             tg_form = tg.getForm(request)
             name = str(tg.getId())
+            if compare is not '':
+                tg_form.add(colander.SchemaNode(
+                    colander.String(),
+                    name='change',
+                    title='',
+                    default=colander.null,
+                    widget=deform.widget.HiddenWidget()
+                ))
+                name = 'ref_%s' % str(tg.getId())
             if tg.getRepeatable() is False:
                 # Add them as single node or ...
                 tg_form.missing = colander.null
@@ -613,6 +644,35 @@ class ConfigThematicgroup(object):
                     name=name,
                     title=''
                 ))
+            
+            if compare is not '':
+                tg_form = tg.getForm(request)
+                tg_form.add(colander.SchemaNode(
+                    colander.String(),
+                    name='change',
+                    title='',
+                    default=colander.null,
+                    widget=deform.widget.HiddenWidget()
+                ))
+                name = 'new_%s' % str(tg.getId())
+                if tg.getRepeatable() is False:
+                    # Add them as single node or ...
+                    tg_form.missing = colander.null
+                    tg_form.name = name
+                    thg_form.add(tg_form)
+                else:
+                    # ... add them as sequence if the taggroup is repeatable.
+                    thg_form.add(colander.SchemaNode(
+                        colander.Sequence(),
+                        tg_form,
+                        missing=colander.null,
+                        default=[colander.null],
+                        widget=deform.widget.SequenceWidget(
+                            min_len=1
+                        ),
+                        name=name,
+                        title=''
+                    ))
 
         if self.getInvolvement() is not None:
             # If there is some involvement data in this thematic group, get the
@@ -623,10 +683,19 @@ class ConfigThematicgroup(object):
             # add the Involvements widget only if in readonly mode
             if (self.getInvolvement().getItemType() != 'activities'
                 or readonly is True):
-                shortForm = getInvolvementWidget(request, self.getInvolvement())
+                shortForm = getInvolvementWidget(request, self.getInvolvement(),
+                    compare=compare)
+                if compare is not '':
+                    shortForm.name = 'ref_%s' % shortForm.name
+                    thg_form.add(shortForm)
 
-                thg_form.add(shortForm)
-
+                    newShortForm = getInvolvementWidget(request, 
+                        self.getInvolvement(), compare=compare)
+                    newShortForm.name = 'new_%s' % newShortForm.name
+                    thg_form.add(newShortForm)
+                else:
+                    thg_form.add(shortForm)
+                
         return thg_form
 
 class ConfigTaggroupList(object):
@@ -1523,7 +1592,7 @@ def getMapWidget(thematicgroup):
 
     return mapWidget
 
-def getInvolvementWidget(request, configInvolvement):
+def getInvolvementWidget(request, configInvolvement, compare=''):
     """
     Return a widget to be used to display the involvements in the form.
     """
@@ -1601,6 +1670,23 @@ def getInvolvementWidget(request, configInvolvement):
         name='role_id',
         title=_('Stakeholder Role')
     ))
+    
+    if compare is not '':
+        invForm.add(colander.SchemaNode(
+            colander.String(),
+            name='change',
+            title='',
+            default=colander.null,
+            widget=deform.widget.HiddenWidget()
+        ))
+        if compare == 'review':
+            invForm.add(colander.SchemaNode(
+                colander.String(),
+                name='reviewable',
+                title='',
+                default=colander.null,
+                widget=deform.widget.HiddenWidget()
+            ))
 
     if configInvolvement.getRepeatable() is False:
         # If no sequence is required, return the node as it is

@@ -151,12 +151,6 @@ def main(global_config, ** settings):
     # Creates a new activity
     config.add_route('activities_create', '/activities', request_method='POST')
 
-    config.add_route('activities_review_versions_html', '/activities/review/html/{uid}*versions')
-    config.add_route('activities_review_versions_json', '/activities/review/json/{uid}*versions')
-    config.add_handler('activities_compare_versions',
-                       '/activities/compare/{action}/{uid}*versions',
-                       'lmkp.views.activity_review.ActivityReview')
-
     # Reviews a pending activity
     config.add_route('activities_review', '/activities/review', request_method='POST')
 
@@ -188,12 +182,6 @@ def main(global_config, ** settings):
     config.add_route('stakeholders_create', '/stakeholders', request_method='POST')
 
     # Reviews a pending stakeholder
-    config.add_route('stakeholders_review_versions_html', '/stakeholders/review/html/{uid}*versions')
-    config.add_route('stakeholders_review_versions_json', '/stakeholders/review/json/{uid}*versions')
-    config.add_handler('stakeholders_compare_versions',
-                       '/stakeholders/compare/{action}/{uid}*versions',
-                       'lmkp.views.stakeholder_review.StakeholderReview')
-    config.add_route('stakeholders_compare', '/stakeholders/compare/{output}/{uid}')
     config.add_route('stakeholders_review', '/stakeholders/review', request_method='POST')
 
     # Read one (special cases)

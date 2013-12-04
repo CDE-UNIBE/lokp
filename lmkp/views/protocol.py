@@ -445,9 +445,12 @@ class Protocol(object):
 
     def _get_order_direction(self, request):
         """
-        Return the direction of ordering only if it is set to DESC
+        Return the direction of ordering only if it is set to DESC or if the 
+        order value is not set (in which case it is sorted by timestamp and 
+        should be in descending order)
         """
-        if request.params.get('dir', '').upper() == 'DESC':
+        if (request.params.get('dir', '').upper() == 'DESC' 
+            or request.params.get('order_by', None) is None):
             return 'DESC'
 
     def _get_translatedKV(self, lang, Key, Value):
@@ -473,7 +476,7 @@ class Protocol(object):
           the values by which they will be ordered.
         - a Boolean indicating order values are numbers or not
         """
-        order_key = request.params.get('order_by', None)
+        order_key = request.params.get('order_by', 'timestamp')
         if order_key is not None:
             # Ordering
             if order_key == 'timestamp':
@@ -604,8 +607,8 @@ class Protocol(object):
 
         return False
 
-    def _add_review(self, request, item, mappedClass, user,
-        implicit = False):
+    def _add_review(self, request, item, mappedClass, user, review_decision, 
+        review_comment, implicit = False):
         """
         Add a review decision
         item: {Database object} (Activity or Stakeholder)
@@ -647,20 +650,6 @@ class Protocol(object):
         else:
             ret['msg'] = _('Unknown object to review.')
             return ret
-
-        # Collect POST values
-        review_decision = request.POST['review_decision']
-        if review_decision is None:
-            ret['msg'] = _('Review decision not provided.')
-            return ret
-        try:
-            review_decision = int(review_decision)
-        except:
-            ret['msg'] = _('Unknown review decision')
-            return ret
-        review_comment = None
-        if (request.POST['comment_textarea'] != ''):
-            review_comment = request.POST['comment_textarea']
 
         # TODO: Also delegate involvement review if rejected (review_decision == 2)
 
@@ -780,6 +769,8 @@ class Protocol(object):
                     sh,
                     Stakeholder,
                     user,
+                    review_decision,
+                    review_comment,
                     implicit = True
                 )
 
@@ -950,14 +941,15 @@ class Protocol(object):
         ret['msg'] = _('Review successful.')
         return ret
 
-    def _apply_diff(self, request, mappedClass, uid, version, diff, item, db):
+    def _apply_diff(self, request, mappedClass, uid, version, diff, item, db, 
+        review=False):
 
         """
         item is either a db item or an activity feature
         diff: a diff concerning only a certain Activity or Stakeholder
         db: boolean
         """
-
+        
 #        print "============================================="
 #        log.debug("diff:\n%s" % diff)
 
@@ -974,6 +966,23 @@ class Protocol(object):
         else:
             return None
 
+        # If the diff is applied for review comparison, set the status of the
+        # new version manually to 'pending'.
+        if review is True:
+            item._status_id = 1
+            item._status = 'pending'
+
+        # Compare the geometry.
+        # This is only relevant if the comparison is not done on database level.
+        # Otherwise the comparison is done earlier.
+        if db is False and 'geometry' in diff:
+            from lmkp.views.form import DictDiffer
+            d = DictDiffer(diff['geometry'], item.get_geometry())
+            geomDiff = d.added().union(d.removed()).union(d.changed())
+            if len(geomDiff) > 0:
+                geojson_obj = geojson.loads(json.dumps(diff['geometry']),
+                                    object_hook=geojson.GeoJSON.to_instance)
+                item._geometry = geojson_obj
 
         if db is False:
             from lmkp.views.protocol import Tag
@@ -1003,6 +1012,8 @@ class Protocol(object):
 
             tg_ids.append(db_taggroup.tg_id)
 
+            #TODO: Watch out: Extremely ugly code coming up! Please refactor
+            # this!!
             #TODO: clean up! Also make sure it works for all cases
             #TODO: Handle translations correctly
 
@@ -1151,7 +1162,7 @@ class Protocol(object):
 #                                    "Tag (%s | %s) was created and added to taggroup."
 #                                    % (tag_dict['key'], tag_dict['value'])
 #                                )
-
+                                
                                 # Set the main tag
                                 if 'main_tag' in taggroup_dict:
                                     if (db is True and
@@ -1182,11 +1193,20 @@ class Protocol(object):
             # If the main tag was deleted and no new one was set, we have to
             # find the new main_tag in the list of tags (it has to have the same
             # key as the old one)
-            if (deleted_maintag is not None and new_taggroup.main_tag is None
-                and len(new_taggroup.tags) > 0):
-                for t in new_taggroup.tags:
-                    if deleted_maintag.key.key == t.key.key:
-                        new_taggroup.main_tag = t
+            if db is True:
+                if (deleted_maintag is not None and new_taggroup.main_tag is None
+                    and len(new_taggroup.tags) > 0):
+                    for t in new_taggroup.tags:
+                        if deleted_maintag.key.key == t.key.key:
+                            new_taggroup.main_tag = t
+            else:
+                if (deleted_maintag is not None 
+                    and new_taggroup._main_tag is None 
+                    and len(new_taggroup._tags) > 0):
+                    
+                    for t in new_taggroup._tags:
+                        if deleted_maintag.key.key == t._key:
+                            new_taggroup._main_tag = t
 
         # Finally new tag groups (without id) need to be added
         # (and loop all again)
@@ -1260,7 +1280,7 @@ class Protocol(object):
 #                                "Tag (%s | %s) was created and added to taggroup."
 #                                % (tag_dict['key'], tag_dict['value'])
 #                            )
-
+                            
                             # Set the main tag
                             if 'main_tag' in taggroup_dict:
                                 if (db is True and
@@ -1692,6 +1712,7 @@ class TagGroup(object):
         self._diffFlag = None
         # Geometry (only used for Activity TagGroups)
         self._geometry = None
+        self._main_tag = None
 
     def add_tag(self, tag):
         """
@@ -1748,7 +1769,11 @@ class TagGroup(object):
         tags = []
         for t in self._tags:
             tags.append(t.to_table())
-            if t.get_id() == self._main_tag_id:
+            if (self._main_tag is not None and main_tag is None
+                and self._main_tag.get_key() == t.get_key() 
+                and self._main_tag.get_value() == t.get_value()):
+                main_tag = t.to_table()
+            elif t.get_id() == self._main_tag_id and main_tag is None:
                 main_tag = t.to_table()
 
         ret = {
@@ -1757,7 +1782,7 @@ class TagGroup(object):
             'main_tag': main_tag,
             'tags': tags
         }
-
+        
         # Geometry
         if self._geometry is not None:
             try:
@@ -1913,6 +1938,18 @@ class Feature(object):
     def remove_taggroup(self, taggroup):
         if taggroup in self.get_taggroups():
             self.get_taggroups().remove(taggroup)
+            
+    def get_metadata(self, request):
+        """
+        Return a dict with some metadata
+        """
+        return {
+            'version': self._version,
+            'status': get_translated_status(request, self._status),
+            'statusId': self._status_id,
+            'timestamp': datetime.datetime.strftime(self._timestamp, '%Y-%m-%d %H:%M:%S'),
+            'username': self._user_name,
+        }
 
     def mark_complete(self, mandatory_keys):
         """

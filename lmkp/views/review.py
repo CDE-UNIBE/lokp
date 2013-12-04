@@ -1,25 +1,20 @@
 from geoalchemy import functions
 from lmkp.models.database_objects import Activity
 from lmkp.models.database_objects import Changeset
-from lmkp.models.database_objects import Involvement
 from lmkp.models.database_objects import Profile
 from lmkp.models.database_objects import Stakeholder
 from lmkp.models.database_objects import Status
 from lmkp.models.database_objects import User
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.config import get_mandatory_keys
-from lmkp.views.translation import statusMap
 from lmkp.views.views import BaseView
 import logging
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPBadRequest
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm.exc import MultipleResultsFound
 from sqlalchemy.sql.expression import and_
 from sqlalchemy.sql.expression import not_
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.functions import min
-import string
 import json
 
 log = logging.getLogger(__name__)
@@ -258,6 +253,7 @@ class BaseReview(BaseView):
         elif mappedClass == Activity:
             """
             The Activity cannot be reviewed from Stakeholder side
+            [-3]
             """
 
             return -3
@@ -572,7 +568,7 @@ class BaseReview(BaseView):
         versions = self.request.matchdict.get('versions')
         try:
             ref_version = int(versions[0])
-        except IndexError:
+        except (IndexError, TypeError):
             #
             ref_version = active_version if active_version is not None else 0
         except ValueError as e:
@@ -580,7 +576,7 @@ class BaseReview(BaseView):
 
         try:
             new_version = int(versions[1])
-        except IndexError:
+        except (IndexError, TypeError):
             if pending_version is not None:
                 new_version = pending_version
             elif active_version is not None:
@@ -618,7 +614,7 @@ class BaseReview(BaseView):
             for item_diff in diff[diff_keyword]:
                 if ('id' in item_diff and item_diff['id'] is not None
                     and item_diff['id'] == item.get_guid()):
-
+                        
                     # Apply the diff to show a preview of the new version
                     new_item = self.protocol._apply_diff(
                         self.request,
@@ -627,7 +623,8 @@ class BaseReview(BaseView):
                         item.get_version(),
                         item_diff,
                         item,
-                        db = False
+                        db = False,
+                        review = True
                     )
 
                     # Also handle involvements
@@ -649,11 +646,11 @@ class BaseReview(BaseView):
         return new_item
 
     def get_comparison(self, mappedClass, uid, ref_version_number,
-        new_version_number, review=False):
+        new_version_number):
         """
         Function to do the actual comparison and return a json
         """
-
+        
         recalculated = False
 
         if (ref_version_number == 0
@@ -663,7 +660,7 @@ class BaseReview(BaseView):
         else:
             # Get the reference object
             ref_object = self.protocol.read_one_by_version(
-                self.request, uid, ref_version_number
+                self.request, uid, ref_version_number, translate=False
             )
 
         # Check to see if the new version is based directly on the ref version
@@ -681,7 +678,7 @@ class BaseReview(BaseView):
             and new_previous_version.previous_version == ref_version_number)):
             # Show the new version as it is in the database
             new_object = self.protocol.read_one_by_version(
-                self.request, uid, new_version_number
+                self.request, uid, new_version_number, translate=False
             )
         else:
             # Query the diff of the new version to apply to the ref version
@@ -696,26 +693,11 @@ class BaseReview(BaseView):
 
             # Get the reference object
             new_object = self.protocol.read_one_by_version(
-                self.request, uid, ref_version_number
+                self.request, uid, ref_version_number, translate=False
             )
 
             # Apply the diff to the ref_object
             new_object = self.recalc(mappedClass, new_object, new_diff)
-
             recalculated = True
 
-        # Request also the metadata
-        metadata = self._get_metadata(
-            mappedClass, uid, ref_version_number, new_version_number
-        )
-        metadata['recalculated'] = recalculated
-
-        result = dict(
-            self._compare_taggroups(ref_object, new_object).items() +
-            {'metadata': metadata}.items() +
-            {'versions': self._get_available_versions(
-                mappedClass, uid, review=review)
-            }.items()
-        )
-
-        return result
+        return [ref_object, new_object], recalculated

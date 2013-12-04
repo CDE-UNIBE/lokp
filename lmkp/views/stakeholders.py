@@ -6,6 +6,7 @@ from lmkp.views.config import get_mandatory_keys
 from lmkp.views.comments import comments_sitekey
 from lmkp.views.form import renderForm
 from lmkp.views.form import renderReadonlyForm
+from lmkp.views.form import renderReadonlyCompareForm
 from lmkp.views.form import checkValidItemjson
 from lmkp.views.form_config import getCategoryList
 from lmkp.views.profile import get_current_profile
@@ -13,13 +14,18 @@ from lmkp.views.profile import get_current_locale
 from lmkp.views.activities import _handle_spatial_parameters
 from lmkp.views.views import BaseView
 from lmkp.models.database_objects import *
+from lmkp.authentication import checkUserPrivileges
+from lmkp.views.stakeholder_review import StakeholderReview
+from lmkp.views.translation import get_translated_status
 import logging
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPUnauthorized
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPFound
 from pyramid.i18n import TranslationStringFactory
 from pyramid.renderers import render_to_response
+from pyramid.renderers import render
 from pyramid.response import Response
 from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
@@ -150,6 +156,8 @@ def by_activities(request):
             public=False, uids=uids, limit=pageSize,
             offset=pageSize*page-pageSize)
 
+        isLoggedIn, isModerator = checkUserPrivileges(request)
+
         return render_to_response(getTemplatePath(request, 'stakeholders/grid.mak'), {
             'data': items['data'] if 'data' in items else [],
             'total': items['total'] if 'total' in items else 0,
@@ -157,8 +165,10 @@ def by_activities(request):
             'locale': get_current_locale(request),
             'spatialfilter': spatialfilter,
             'invfilter': uids,
+            'statusfilter': None,
             'currentpage': page,
-            'pagesize': pageSize
+            'pagesize': pageSize,
+            'isModerator': isModerator
         }, request)
     else:
         # If the output format was not found, raise 404 error
@@ -239,6 +249,9 @@ def read_many(request):
 
         items = stakeholder_protocol3.read_many(request, public=False,
             limit=pageSize, offset=pageSize*page-pageSize)
+        
+        statusFilter = request.params.get('status', None)
+        isLoggedIn, isModerator = checkUserPrivileges(request)
 
         return render_to_response(getTemplatePath(request, 'stakeholders/grid.mak'), {
             'data': items['data'] if 'data' in items else [],
@@ -247,8 +260,10 @@ def read_many(request):
             'locale': get_current_locale(request),
             'spatialfilter': None,
             'invfilter': None,
+            'statusfilter': statusFilter,
             'currentpage': page,
-            'pagesize': pageSize
+            'pagesize': pageSize,
+            'isModerator': isModerator
         }, request)
 
     elif output_format == 'form':
@@ -403,6 +418,150 @@ def read_one(request):
                             request
                         )
         return HTTPNotFound()
+    elif output_format in ['review', 'compare']:
+        if output_format == 'review':
+            # Only moderators can see the review page.
+            isLoggedIn, isModerator = checkUserPrivileges(request)
+            if isLoggedIn is False or isModerator is False:
+                raise HTTPForbidden()
+
+        camefrom = request.params.get('camefrom', '')
+        
+        review = StakeholderReview(request)
+        availableVersions = None
+        recalculated = False
+        defaultRefVersion, defaultNewVersion = review._get_valid_versions(
+            Stakeholder, uid)
+            
+        refVersion = request.params.get('ref', None)
+        if refVersion is not None:
+            try:
+                refVersion = int(refVersion)
+            except ValueError:
+                refVersion = None
+        if refVersion is None or output_format == 'review':
+            # No reference version indicated, use the default one
+            # Also use the default one for review because it cannot be changed.
+            refVersion = defaultRefVersion
+        else:
+            availableVersions = review._get_available_versions(Stakeholder, uid, 
+                review=output_format=='review')
+            # Check if the indicated reference version is valid
+            if refVersion not in [v.get('version') for v in availableVersions]:
+                refVersion = defaultRefVersion
+        
+        newVersion = request.params.get('new', None)
+        if newVersion is not None:
+            try:
+                newVersion = int(newVersion)
+            except ValueError:
+                newVersion = None
+        if newVersion is None:
+            # No new version indicated, use the default one
+            newVersion = defaultNewVersion
+        else:
+            if availableVersions is None:
+                availableVersions = review._get_available_versions(Stakeholder, 
+                    uid, review=output_format=='review')
+            # Check if the indicated new version is valid
+            if newVersion not in [v.get('version') for v in availableVersions]:
+                newVersion = defaultNewVersion
+                
+        if output_format == 'review':
+            # If the Stakeholders are to be reviewed, only the changes which 
+            # were applied to the newVersion are of interest
+            stakeholders, recalculated = review.get_comparison(Stakeholder, uid, 
+                refVersion, newVersion)
+        else:
+            # If the Stakeholders are compared, the versions as they are stored
+            # in the database are of interest, without any recalculation
+            stakeholders = [
+                stakeholder_protocol3.read_one_by_version(request, uid, 
+                    refVersion, translate=False
+                ),
+                stakeholder_protocol3.read_one_by_version(request, uid, 
+                    newVersion, translate=False
+                )
+            ]
+        templateValues = renderReadonlyCompareForm(request, 'stakeholders', 
+            stakeholders[0], stakeholders[1], review=output_format=='review')
+        # Collect metadata for the reference version
+        refMetadata = {}
+        if stakeholders[0] is not None:
+            refMetadata = stakeholders[0].get_metadata(request)
+        # Collect metadata and missing keys for the new version
+        newMetadata = {}
+        missingKeys = []
+        reviewable = False
+        if stakeholders[1] is not None:
+            stakeholders[1].mark_complete(get_mandatory_keys(request, 'sh', True))
+            missingKeys = stakeholders[1]._missing_keys
+            newMetadata = stakeholders[1].get_metadata(request)
+            
+            reviewable = (len(missingKeys) == 0 and 
+                'reviewableMessage' in templateValues and
+                templateValues['reviewableMessage'] is None)
+            
+        if output_format == 'review':
+            pendingVersions = []
+            if availableVersions is None:
+                availableVersions = review._get_available_versions(Stakeholder, 
+                    uid, review=output_format=='review')
+            for v in sorted(availableVersions, key=lambda v:v.get('version')):
+                if v.get('status') == 1:
+                    pendingVersions.append(v.get('version'))
+            templateValues['pendingVersions'] = pendingVersions
+            
+        templateValues.update({
+            'identifier': uid,
+            'refVersion': refVersion,
+            'refMetadata': refMetadata,
+            'newVersion': newVersion,
+            'newMetadata': newMetadata,
+            'missingKeys': missingKeys,
+            'reviewable': reviewable,
+            'recalculated': recalculated,
+            'camefrom': camefrom,
+            'profile': get_current_profile(request),
+            'locale': get_current_locale(request)
+        })
+        
+        if output_format == 'review':
+            return render_to_response(
+                getTemplatePath(request, 'stakeholders/review.mak'),
+                templateValues,
+                request
+            )
+        else:
+            return render_to_response(
+                getTemplatePath(request, 'stakeholders/compare.mak'),
+                templateValues,
+                request
+            )
+    elif output_format == 'history':
+        isLoggedIn, isModerator = checkUserPrivileges(request)
+        stakeholders, count = stakeholder_protocol3.read_one_history(
+            request, uid=uid)
+        activeVersion = None
+        for sh in stakeholders:
+            if 'statusName' in sh:
+                sh['statusName'] = get_translated_status(request, sh['statusName'])
+            if sh.get('statusId') == 2:
+                activeVersion = sh.get('version')
+        
+        templateValues = {
+            'versions': stakeholders,
+            'count': count,
+            'activeVersion': activeVersion,
+            'isModerator': isModerator
+        }
+        templateValues.update({
+            'profile': get_current_profile(request),
+            'locale': get_current_locale(request)
+        })
+        return render_to_response(
+            getTemplatePath(request, 'stakeholders/history.mak'), 
+            templateValues, request)
     elif output_format == 'formtest':
         # Test if a Stakeholder is valid according to the form configuration
         stakeholders = stakeholder_protocol3.read_one(request, uid=uid,
@@ -475,14 +634,20 @@ def review(request):
         filter(Stakeholder.version == request.POST['version']).\
         first()
     if stakeholder is None:
-        raise HTTPUnauthorized(_('The Activity was not found'))
+        raise HTTPUnauthorized(_('The Stakeholder was not found'))
 
     # If review decision is 'approved', make sure that all mandatory fields are
     # there, except if it is to be deleted
-    try:
-        review_decision = int(request.POST['review_decision'])
-    except:
-        review_decision = None
+    review_decision = request.POST['review_decision']
+    if review_decision == 'approve':
+        review_decision = 1
+    elif review_decision == 'reject':
+        review_decision = 2
+    else:
+        raise HTTPBadRequest(_('No valid review decision'))
+    
+    review_comment = request.POST['review_comment']
+    camefrom = request.POST['camefrom']
 
     if review_decision == 1: # Approved
         # Only check for mandatory keys if new version is not to be deleted
@@ -502,10 +667,27 @@ def review(request):
                     raise HTTPBadRequest(_('Not all mandatory keys are provided'))
 
     # The user can add a review
-    ret = stakeholder_protocol3._add_review(
-        request, stakeholder, Stakeholder, user)
+    ret = stakeholder_protocol3._add_review(request, stakeholder, Stakeholder, 
+        user, review_decision, review_comment)
 
-    return ret
+    if 'success' not in ret:
+        raise HTTPBadRequest(_('Unknown error'))
+    
+    if ret['success'] is True:
+        request.session.flash(ret['msg'], 'success')
+    else:
+        request.session.flash(ret['msg'], 'error')
+    
+    if camefrom != '':
+        camefromMsg = render(
+            getTemplatePath(request, 'parts/messages/stakeholder_reviewed_through_involvement.mak'),
+            {'url': request.route_url('activities_read_one', output='review', uid=camefrom)},
+            request
+        )
+        request.session.flash(camefromMsg)
+
+    return HTTPFound(location=request.route_url('stakeholders_read_one',
+        output='history', uid=stakeholder.identifier))
 
 @view_config(route_name='stakeholders_create', renderer='json')
 def create(request):

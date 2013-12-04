@@ -9,6 +9,7 @@ import logging
 import urllib
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPForbidden
+from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPUnauthorized
 from pyramid.i18n import get_localizer
@@ -20,14 +21,18 @@ from pyramid.security import has_permission
 from pyramid.view import view_config
 import yaml
 
+from lmkp.views.activity_review import ActivityReview
 from lmkp.renderers.renderers import translate_key
 from lmkp.views.form import renderForm
 from lmkp.views.form import renderReadonlyForm
+from lmkp.views.form import renderReadonlyCompareForm
 from lmkp.views.form import checkValidItemjson
 from lmkp.views.form_config import getCategoryList
 from lmkp.views.profile import get_current_profile
 from lmkp.views.profile import get_current_locale
 from lmkp.views.views import BaseView
+from lmkp.authentication import checkUserPrivileges
+from lmkp.views.translation import get_translated_status
 
 log = logging.getLogger(__name__)
 
@@ -90,6 +95,9 @@ def read_many(request):
         items = activity_protocol3.read_many(request, public=False,
             limit=pageSize, offset=pageSize*page-pageSize)
 
+        statusFilter = request.params.get('status', None)
+        isLoggedIn, isModerator = checkUserPrivileges(request)
+
         return render_to_response(getTemplatePath(request, 'activities/grid.mak'), {
             'data': items['data'] if 'data' in items else [],
             'total': items['total'] if 'total' in items else 0,
@@ -97,8 +105,10 @@ def read_many(request):
             'locale': get_current_locale(request),
             'spatialfilter': spatialfilter,
             'invfilter': None,
+            'statusfilter': statusFilter,
             'currentpage': page,
-            'pagesize': pageSize
+            'pagesize': pageSize,
+            'isModerator': isModerator
         }, request)
 
     elif output_format == 'form':
@@ -370,6 +380,149 @@ def read_one(request):
                             request
                         )
         return HTTPNotFound()
+    elif output_format in ['review', 'compare']:
+        if output_format == 'review':
+            # Only moderators can see the review page.
+            isLoggedIn, isModerator = checkUserPrivileges(request)
+            if isLoggedIn is False or isModerator is False:
+                raise HTTPForbidden()
+        
+        review = ActivityReview(request)
+        availableVersions = None
+        recalculated = False
+        defaultRefVersion, defaultNewVersion = review._get_valid_versions(
+            Activity, uid)
+            
+        refVersion = request.params.get('ref', None)
+        if refVersion is not None:
+            try:
+                refVersion = int(refVersion)
+            except ValueError:
+                refVersion = None
+        if refVersion is None or output_format == 'review':
+            # No reference version indicated, use the default one
+            # Also use the default one for review because it cannot be changed.
+            refVersion = defaultRefVersion
+        else:
+            availableVersions = review._get_available_versions(Activity, uid, 
+                review=output_format=='review')
+            # Check if the indicated reference version is valid
+            if refVersion not in [v.get('version') for v in availableVersions]:
+                refVersion = defaultRefVersion
+        
+        newVersion = request.params.get('new', None)
+        if newVersion is not None:
+            try:
+                newVersion = int(newVersion)
+            except ValueError:
+                newVersion = None
+        if newVersion is None:
+            # No new version indicated, use the default one
+            newVersion = defaultNewVersion
+        else:
+            if availableVersions is None:
+                availableVersions = review._get_available_versions(Activity, 
+                    uid, review=output_format=='review')
+            # Check if the indicated new version is valid
+            if newVersion not in [v.get('version') for v in availableVersions]:
+                newVersion = defaultNewVersion
+        
+        if output_format == 'review':
+            # If the Activities are to be reviewed, only the changes which were
+            # applied to the newVersion are of interest
+            activities, recalculated = review.get_comparison(Activity, uid, 
+                refVersion, newVersion)
+        else:
+            # If the Activities are compared, the versions as they are stored
+            # in the database are of interest, without any recalculation
+            activities = [
+                activity_protocol3.read_one_by_version(request, uid, refVersion,
+                    translate=False
+                ),
+                activity_protocol3.read_one_by_version(request, uid, newVersion,
+                    translate=False
+                )
+            ]
+        templateValues = renderReadonlyCompareForm(request, 'activities', 
+            activities[0], activities[1], review=output_format=='review')
+        # Collect metadata for the reference version
+        refMetadata = {}
+        if activities[0] is not None:
+            refMetadata = activities[0].get_metadata(request)
+        # Collect metadata and missing keys for the new version
+        newMetadata = {}
+        missingKeys = []
+        reviewable = False
+        if activities[1] is not None:
+            activities[1].mark_complete(get_mandatory_keys(request, 'a', True))
+            missingKeys = activities[1]._missing_keys
+            newMetadata = activities[1].get_metadata(request)
+            
+            reviewable = (len(missingKeys) == 0 and 
+                'reviewableMessage' in templateValues and
+                templateValues['reviewableMessage'] is None)
+        
+        if output_format == 'review':
+            pendingVersions = []
+            if availableVersions is None:
+                availableVersions = review._get_available_versions(Activity, 
+                    uid, review=output_format=='review')
+            for v in sorted(availableVersions, key=lambda v:v.get('version')):
+                if v.get('status') == 1:
+                    pendingVersions.append(v.get('version'))
+            templateValues['pendingVersions'] = pendingVersions
+        
+        templateValues.update({
+            'identifier': uid,
+            'refVersion': refVersion,
+            'refMetadata': refMetadata,
+            'newVersion': newVersion,
+            'newMetadata': newMetadata,
+            'missingKeys': missingKeys,
+            'reviewable': reviewable,
+            'recalculated': recalculated,
+            'profile': get_current_profile(request),
+            'locale': get_current_locale(request)
+        })
+        
+        if output_format == 'review':
+            return render_to_response(
+                getTemplatePath(request, 'activities/review.mak'),
+                templateValues,
+                request
+            )
+        else:
+            return render_to_response(
+                getTemplatePath(request, 'activities/compare.mak'),
+                templateValues,
+                request
+            )
+    elif output_format == 'history':
+        isLoggedIn, isModerator = checkUserPrivileges(request)
+        activities, count = activity_protocol3.read_one_history(
+            request, uid=uid)
+        activeVersion = None
+        for a in activities:
+            if 'statusName' in a:
+                a['statusName'] = get_translated_status(request, a['statusName'])
+            if a.get('statusId') == 2:
+                activeVersion = a.get('version')
+        
+        templateValues = {
+            'versions': activities,
+            'count': count,
+            'activeVersion': activeVersion,
+            'isModerator': isModerator
+        }
+        templateValues.update({
+            'profile': get_current_profile(request),
+            'locale': get_current_locale(request)
+        })
+        return render_to_response(
+            getTemplatePath(request, 'activities/history.mak'),
+            templateValues,
+            request
+        )
     elif output_format == 'formtest':
         # Test if an Activity is valid according to the form configuration
         activities = activity_protocol3.read_one(request, uid=uid, public=False,
@@ -448,7 +601,7 @@ def review(request):
     """
     Insert a review decision for a pending Activity
     """
-
+    
     _ = request.translate
 
     # Check if the user is logged in and he/she has sufficient user rights
@@ -475,11 +628,16 @@ def review(request):
 
     # If review decision is 'approved', make sure that all mandatory fields are
     # there, except if it is to be deleted
-    try:
-        review_decision = int(request.POST['review_decision'])
-    except:
-        review_decision = None
-
+    review_decision = request.POST['review_decision']
+    if review_decision == 'approve':
+        review_decision = 1
+    elif review_decision == 'reject':
+        review_decision = 2
+    else:
+        raise HTTPBadRequest(_('No valid review decision'))
+    
+    review_comment = request.POST['review_comment']
+    
     if review_decision == 1: # Approved
         # Only check for mandatory keys if new version is not to be deleted
         # (has no tag groups)
@@ -498,11 +656,19 @@ def review(request):
                     raise HTTPBadRequest(_('Not all mandatory keys are provided'))
 
     # The user can add a review
-    ret = activity_protocol3._add_review(
-        request, activity, Activity, user
-    )
+    ret = activity_protocol3._add_review(request, activity, Activity, user, 
+        review_decision, review_comment)
+    
+    if 'success' not in ret:
+        raise HTTPBadRequest(_('Unknown error'))
+    
+    if ret['success'] is True:
+        request.session.flash(ret['msg'], 'success')
+    else:
+        request.session.flash(ret['msg'], 'error')
 
-    return ret
+    return HTTPFound(location=request.route_url('activities_read_one',
+        output='history', uid=activity.identifier))
 
 @view_config(route_name='activities_create', renderer='json')
 def create(request):

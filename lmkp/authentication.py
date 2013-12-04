@@ -10,6 +10,7 @@ from lmkp.views.profile import get_current_profile
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import Everyone
 from pyramid.security import Authenticated
+from pyramid.security import effective_principals
 from pyramid.httpexceptions import HTTPUnauthorized
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -87,3 +88,21 @@ class CustomAuthenticationPolicy(AuthTktAuthenticationPolicy):
                 pass
 
         return None
+
+def checkUserPrivileges(request):
+    """
+    Check the priviliges of the current user.
+    Returns a tuple with the following entries:
+    - (boolean or None) User is logged in?
+    - (boolean or None) User has moderation rights (for the current profile)?
+    """
+    principals = effective_principals(request)
+    if principals is not None:
+        return (
+            'system.Authenticated' in principals,
+            'group:moderators' in principals
+        )
+    return (
+        None,
+        None
+    )
