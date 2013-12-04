@@ -488,7 +488,7 @@ def read_one(request):
         # Collect metadata for the reference version
         refMetadata = {}
         if stakeholders[0] is not None:
-            refMetadata = stakeholders[0].get_metadata()
+            refMetadata = stakeholders[0].get_metadata(request)
         # Collect metadata and missing keys for the new version
         newMetadata = {}
         missingKeys = []
@@ -496,7 +496,7 @@ def read_one(request):
         if stakeholders[1] is not None:
             stakeholders[1].mark_complete(get_mandatory_keys(request, 'sh', True))
             missingKeys = stakeholders[1]._missing_keys
-            newMetadata = stakeholders[1].get_metadata()
+            newMetadata = stakeholders[1].get_metadata(request)
             
             reviewable = (len(missingKeys) == 0 and 
                 'reviewableMessage' in templateValues and

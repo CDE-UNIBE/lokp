@@ -1204,7 +1204,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
                 reviewable = review._review_check_involvement(
                     inv._feature.getMappedClass(), inv._feature.get_guid(),
                     inv._feature.get_version())
-            
+                
             fields['reviewable'] = reviewable
 
         return fields
@@ -1242,7 +1242,14 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             invConfig = invThmg.getInvolvement()
             invData = _getInvolvementData(inv, invOverviewKeys)
             if 'reviewable' in invData:
-                data['reviewable'] = invData['reviewable']
+                # For multiple involvements, do not always overwrite the flag
+                # whether an involvement is reviewable or not. As error messages
+                # have a negative code, use the minimal error code of all
+                # involvements.
+                if 'reviewable' in data:
+                    data['reviewable'] = min(data['reviewable'], invData['reviewable'])
+                else:
+                    data['reviewable'] = invData['reviewable']
 
             if readOnly and 'role_id' in invData:
                 # For readonly forms, we need to populate the role_name with the

@@ -623,7 +623,8 @@ class BaseReview(BaseView):
                         item.get_version(),
                         item_diff,
                         item,
-                        db = False
+                        db = False,
+                        review = True
                     )
 
                     # Also handle involvements
@@ -645,7 +646,7 @@ class BaseReview(BaseView):
         return new_item
 
     def get_comparison(self, mappedClass, uid, ref_version_number,
-        new_version_number, review=False):
+        new_version_number):
         """
         Function to do the actual comparison and return a json
         """

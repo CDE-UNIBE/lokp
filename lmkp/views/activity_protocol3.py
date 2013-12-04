@@ -90,8 +90,10 @@ class ActivityFeature3(Feature):
             geometry = json.loads(geojson.dumps(geom))
         except AttributeError:
             pass
+        if isinstance(self._geometry, geojson.geometry.Point):
+            geometry = json.loads(geojson.dumps(self._geometry))
         return geometry
-
+    
     def to_table(self, request):
         """
         Returns a JSON compatible representation of this object

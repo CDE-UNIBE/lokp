@@ -941,14 +941,15 @@ class Protocol(object):
         ret['msg'] = _('Review successful.')
         return ret
 
-    def _apply_diff(self, request, mappedClass, uid, version, diff, item, db):
+    def _apply_diff(self, request, mappedClass, uid, version, diff, item, db, 
+        review=False):
 
         """
         item is either a db item or an activity feature
         diff: a diff concerning only a certain Activity or Stakeholder
         db: boolean
         """
-
+        
 #        print "============================================="
 #        log.debug("diff:\n%s" % diff)
 
@@ -965,6 +966,23 @@ class Protocol(object):
         else:
             return None
 
+        # If the diff is applied for review comparison, set the status of the
+        # new version manually to 'pending'.
+        if review is True:
+            item._status_id = 1
+            item._status = 'pending'
+
+        # Compare the geometry.
+        # This is only relevant if the comparison is not done on database level.
+        # Otherwise the comparison is done earlier.
+        if db is False and 'geometry' in diff:
+            from lmkp.views.form import DictDiffer
+            d = DictDiffer(diff['geometry'], item.get_geometry())
+            geomDiff = d.added().union(d.removed()).union(d.changed())
+            if len(geomDiff) > 0:
+                geojson_obj = geojson.loads(json.dumps(diff['geometry']),
+                                    object_hook=geojson.GeoJSON.to_instance)
+                item._geometry = geojson_obj
 
         if db is False:
             from lmkp.views.protocol import Tag
@@ -1144,7 +1162,7 @@ class Protocol(object):
 #                                    "Tag (%s | %s) was created and added to taggroup."
 #                                    % (tag_dict['key'], tag_dict['value'])
 #                                )
-
+                                
                                 # Set the main tag
                                 if 'main_tag' in taggroup_dict:
                                     if (db is True and
@@ -1262,7 +1280,7 @@ class Protocol(object):
 #                                "Tag (%s | %s) was created and added to taggroup."
 #                                % (tag_dict['key'], tag_dict['value'])
 #                            )
-
+                            
                             # Set the main tag
                             if 'main_tag' in taggroup_dict:
                                 if (db is True and
@@ -1751,11 +1769,11 @@ class TagGroup(object):
         tags = []
         for t in self._tags:
             tags.append(t.to_table())
-            if (self._main_tag is not None 
+            if (self._main_tag is not None and main_tag is None
                 and self._main_tag.get_key() == t.get_key() 
                 and self._main_tag.get_value() == t.get_value()):
                 main_tag = t.to_table()
-            elif t.get_id() == self._main_tag_id:
+            elif t.get_id() == self._main_tag_id and main_tag is None:
                 main_tag = t.to_table()
 
         ret = {
@@ -1764,7 +1782,7 @@ class TagGroup(object):
             'main_tag': main_tag,
             'tags': tags
         }
-
+        
         # Geometry
         if self._geometry is not None:
             try:
@@ -1921,13 +1939,13 @@ class Feature(object):
         if taggroup in self.get_taggroups():
             self.get_taggroups().remove(taggroup)
             
-    def get_metadata(self):
+    def get_metadata(self, request):
         """
         Return a dict with some metadata
         """
         return {
             'version': self._version,
-            'status': self._status,
+            'status': get_translated_status(request, self._status),
             'statusId': self._status_id,
             'timestamp': datetime.datetime.strftime(self._timestamp, '%Y-%m-%d %H:%M:%S'),
             'username': self._user_name,
