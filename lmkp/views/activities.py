@@ -33,6 +33,7 @@ from lmkp.views.profile import get_current_locale
 from lmkp.views.views import BaseView
 from lmkp.authentication import checkUserPrivileges
 from lmkp.views.translation import get_translated_status
+from lmkp.views.translation import get_translated_db_keys
 
 log = logging.getLogger(__name__)
 
@@ -454,8 +455,14 @@ def read_one(request):
         missingKeys = []
         reviewable = False
         if activities[1] is not None:
-            activities[1].mark_complete(get_mandatory_keys(request, 'a', True))
+            activities[1].mark_complete(get_mandatory_keys(request, 'a', False))
             missingKeys = activities[1]._missing_keys
+            localizer = get_localizer(request)
+            if localizer.locale_name != 'en':
+                db_lang = Session.query(Language).filter(Language.locale == localizer.locale_name).first()
+                missingKeys = get_translated_db_keys(A_Key, missingKeys, db_lang)
+                missingKeys = [m[1] for m in missingKeys]
+                
             newMetadata = activities[1].get_metadata(request)
             
             reviewable = (len(missingKeys) == 0 and 

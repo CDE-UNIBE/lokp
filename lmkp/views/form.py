@@ -1592,8 +1592,11 @@ def formdataToDiff(request, newform, itemType):
         # Loop the thematic groups of the category
         for (thmgrp, tgroups) in thmgrpsitems:
 
-            if thmgrp in categorylist.getInvolvementThematicgroupIds():
-
+            if (thmgrp in categorylist.getInvolvementThematicgroupIds() 
+                and itemType != 'stakeholders'):
+                # Important: Involvements can only be changed from the side of
+                # the activities!
+                
                 # In a first step, collect all the involvements there are in the new
                 # form and the involvements that were in the oldform. Use them only
                 # if they have an id, a version and a role_id.
