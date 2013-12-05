@@ -1484,10 +1484,10 @@ class Protocol(object):
                 if 'id' in diff and diff['id'] == str(uid):
                     rel_diff = diff
 
-        if rel_diff is None:
-            return None
-
         log.debug('Diff before recalculation:\n%s' % rel_diff)
+        
+        if rel_diff is None:
+            return old_diff
 
         # The tg_id's are needed to make a meaningful merge of the diffs. If
         # they are not known (eg. when looking at the diff of the very first
@@ -1956,7 +1956,7 @@ class Feature(object):
         Return a list of missing mandatory keys. Return [0] if item is to be
         deleted
         """
-
+        
         # Make a copy of mandatory keys
         mk = mandatory_keys[:]
 

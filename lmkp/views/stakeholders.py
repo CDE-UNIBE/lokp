@@ -17,6 +17,7 @@ from lmkp.models.database_objects import *
 from lmkp.authentication import checkUserPrivileges
 from lmkp.views.stakeholder_review import StakeholderReview
 from lmkp.views.translation import get_translated_status
+from lmkp.views.translation import get_translated_db_keys
 import logging
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPUnauthorized
@@ -494,8 +495,13 @@ def read_one(request):
         missingKeys = []
         reviewable = False
         if stakeholders[1] is not None:
-            stakeholders[1].mark_complete(get_mandatory_keys(request, 'sh', True))
+            stakeholders[1].mark_complete(get_mandatory_keys(request, 'sh', False))
             missingKeys = stakeholders[1]._missing_keys
+            localizer = get_localizer(request)
+            if localizer.locale_name != 'en':
+                db_lang = Session.query(Language).filter(Language.locale == localizer.locale_name).first()
+                missingKeys = get_translated_db_keys(SH_Key, missingKeys, db_lang)
+                missingKeys = [m[1] for m in missingKeys]
             newMetadata = stakeholders[1].get_metadata(request)
             
             reviewable = (len(missingKeys) == 0 and 

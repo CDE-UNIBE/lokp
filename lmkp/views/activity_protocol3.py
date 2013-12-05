@@ -1996,7 +1996,7 @@ class ActivityProtocol3(Protocol):
 
         # Geometry
         new_geom = old_activity.point
-        if 'geometry' in activity_dict:
+        if activity_dict is not None and 'geometry' in activity_dict:
             geojson_obj = geojson.loads(json.dumps(activity_dict['geometry']),
                                         object_hook=geojson.GeoJSON.to_instance)
             new_geom = asShape(geojson_obj)
