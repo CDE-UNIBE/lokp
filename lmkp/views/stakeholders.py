@@ -25,6 +25,7 @@ from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPFound
 from pyramid.i18n import TranslationStringFactory
+from pyramid.i18n import get_localizer
 from pyramid.renderers import render_to_response
 from pyramid.renderers import render
 from pyramid.response import Response
