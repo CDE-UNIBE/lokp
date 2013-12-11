@@ -100,18 +100,24 @@ $(document).ready(function() {
      */
 
     // Deals up/down
+    var mapDealsCounter = 1;
     $('.map-deals').click(function() {
         $('.map-deals-content').slideToggle();
+        toggleChevron(this, mapDealsCounter++);
     });
 
     // Base-layers up/down
+    var baseLayerCounter = 0;
     $('.base-layers').click(function() {
-       $('.base-layers-content').slideToggle();
+        $('.base-layers-content').slideToggle();
+        toggleChevron(this, baseLayerCounter++);
     });
 
     // Context-layers up/down
+    var contextLayerCounter = 0;
     $('.context-layers').click(function() {
         $('.context-layers-content').slideToggle();
+        toggleChevron(this, contextLayerCounter++);
     });
 });
 

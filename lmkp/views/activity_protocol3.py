@@ -296,6 +296,21 @@ class ActivityProtocol3(Protocol):
         
         return activities, count
         
+    def read_one_geojson_by_version(self, request, uid, version, 
+        translate=True):
+        """
+        Return a GeoJSON representation of the geometry taggroups of an Activity
+        version.
+        """
+        
+        relevant_activities = self._get_relevant_activities_one_by_version(uid, 
+            version)
+        
+        query = self._query_taggroup_geojson(request, relevant_activities,
+            translate=translate)
+        
+        return self._query_to_taggroup_geojson(query, translate=translate)
+        
     def read_one(self, request, uid, public=True, **kwargs):
 
         translate = kwargs.get('translate', True)
@@ -1363,8 +1378,63 @@ class ActivityProtocol3(Protocol):
         else:
             return query
 
+    def _query_taggroup_geojson(self, request, relevant_activities, 
+        translate=True):
+        """
+        Query all taggroups of an Activity version which have a geometry
+        """
+        
+        categoryList = getCategoryList(request, 'activities')
+        attrs = categoryList.getMainkeyWithGeometry()
+        origAttrs = [a[1] for a in attrs]
+        
+        relevant_activities = relevant_activities.subquery()
+        
+        query = self.Session.query(
+                Activity.id.label('id'),
+                A_Tag_Group.id.label('tgid'),
+                A_Tag_Group.geometry.label('geometry')
+            ).\
+            join(relevant_activities, 
+                relevant_activities.c.order_id == Activity.id).\
+            outerjoin(A_Tag_Group, Activity.id == A_Tag_Group.fk_activity).\
+            outerjoin(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
+            outerjoin(A_Key, A_Tag.fk_key == A_Key.id).\
+            outerjoin(A_Value, A_Tag.fk_value == A_Value.id).\
+            filter(A_Key.key.in_(origAttrs)).\
+            filter(A_Tag_Group.geometry != None)
+        
+        if translate is True:
+            localizer = get_localizer(request)
+            dbLang = self.Session.query(Language).\
+                filter(Language.locale == localizer.locale_name).\
+                first()
+        
+        if translate is True and dbLang is not None:
+            key_translation, value_translation = self._get_translatedKV(dbLang, 
+                A_Key, A_Value)
+            query = query.add_columns(
+                A_Key.key.label('key'),
+                key_translation.c.key_translated.label('key_translated'),
+                A_Value.value.label('value'), 
+                value_translation.c.value_translated.label('value_translated')
+            )
+            query = query.\
+                outerjoin(key_translation,
+                    key_translation.c.key_original_id == A_Key.id).\
+                outerjoin(value_translation,
+                    value_translation.c.value_original_id == A_Value.id)
+                    
+        else:
+            query = query.add_columns(
+                A_Key.key.label('key'), 
+                A_Value.value.label('value')
+            )
+        
+        return query
+
     def _query_geojson(self, request, relevant_activities, limit=None,
-        offset=None, attrs=[], tggeom=None, dbLang=None, translate=False):
+        offset=None, attrs=[], tggeom=None, dbLang=None, translate=False, translateKeys=False):
 
         # Apply limit and offset
         if limit is not None:
@@ -1613,6 +1683,45 @@ class ActivityProtocol3(Protocol):
                                                             )
 
         return activities
+
+    def _query_to_taggroup_geojson(self, query, translate=True):
+        
+        def _create_feature(id, g, d):
+            """
+            Small helper function to create a new Feature with an id, a geometry
+            and a dict as properties
+            """
+            feature = {}
+            
+            geom = wkb.loads(str(g.geom_wkb))
+            feature['geometry'] = json.loads(geojson.dumps(geom))
+            
+            feature['properties'] = d
+            feature['fid'] = int(id)
+            feature['id'] = int(id)
+            feature['type'] = 'Feature'
+            
+            return feature
+        
+        features = []
+        
+        for q in query.all():
+            
+            k = q.key
+            if translate is True and q.key_translated is not None:
+                k = q.key_translated
+            v = q.value
+            if translate is True and q.value_translated is not None:
+                v = q.value_translated
+            
+            # Activity ID is useless, use the taggroup ID as id
+            features.append(_create_feature(q.tgid, q.geometry, {k: v}))
+        
+        featureCollection = {}
+        featureCollection['features'] = features
+        featureCollection['type'] = 'FeatureCollection'
+
+        return featureCollection
 
     def _query_to_geojson(self, query, attrs=[], tggeom=None):
 

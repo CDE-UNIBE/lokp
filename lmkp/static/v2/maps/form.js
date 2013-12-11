@@ -10,8 +10,6 @@
  * mapCriteria
  * aKeys
  * shKeys
- *
- * tForDealsGroupedBy
  */
 
 var geographicProjection = new OpenLayers.Projection("EPSG:4326");
@@ -25,12 +23,18 @@ var selectCtrl,
     removeLayer;
 
 $(document).ready(function() {
+    
+    /** Settings **/
+    pointsCluster = false;
+    pointsVisible = false;
+    mapInteractive = false;
+    contextLegendInformation = false;
+    polygonLoadOnStart = false;
 
     /**
      * Map and layers
      */
     var layers = getBaseLayers();
-
     var markerStyle = new OpenLayers.StyleMap({
         'default': OpenLayers.Util.applyDefaults({
             externalGraphic: '/static/img/pin_darkred.png',
@@ -72,14 +76,17 @@ $(document).ready(function() {
         layers: layers
     });
     setBaseLayerByName(map, 'satelliteMap');
-    initializeMapContent(false, false, false);
+    initializeThisPolygonContent();
+    initializeMapContent();
     initializeContextLayers();
+    initializePolygonLayers();
 
     /**
      * Map Events
      */
      initializeBaseLayerControl();
      initializeContextLayerControl();
+     initializePolygonLayerControl();
      initializeMapSearch();
 
     $('.form-map-menu-toggle').click(function() {
@@ -96,10 +103,8 @@ $(document).ready(function() {
 
     if (coordsSet === true) {
         geometryLayer.addFeatures(geojsonFormat.read(geometry));
-        // Zoom to the feature
-        map.zoomToExtent(geometryLayer.getDataExtent());
-        // Adjust zoom level
-        map.zoomTo(Math.min(zoomlevel, map.getZoom()-1));
+        // Map is zoomed only after adding any polygon layers to prevent it from
+        // zooming twice.
     } else {
         if (bbox) {
             map.zoomToExtent(bbox, true);
@@ -128,13 +133,20 @@ $(document).ready(function() {
                 parseCoordinates();
             }, 50);
         });
+        
+        $('#btn-add-point').click(function() {
+            toggleMode('add');
+        });
+        $('#btn-remove-point').click(function() {
+            toggleMode('remove');
+        });
     }
-
-    $('#btn-add-point').click(function() {
-        toggleMode('add');
+    
+    $('.collapse').on('show', function() {
+        toggleChevron($(this).parent(), 0);
     });
-    $('#btn-remove-point').click(function() {
-        toggleMode('remove');
+    $('.collapse').on('hide', function() {
+        toggleChevron($(this).parent(), 1);
     });
 
     $('.ttip').tooltip({
@@ -146,6 +158,91 @@ $(document).ready(function() {
         placement: 'bottom'
     });
 });
+
+function initializeThisPolygonContent() {
+    
+    if (version === null || identifier === null) return;
+    
+    $.ajax({
+        url: '/activities/geojson/' + identifier,
+        data: {
+            'v': version
+        },
+        cache: false,
+        success: function(data) {
+            var features = geojsonFormat.read(data);
+            var fLayers = [];
+            
+            if (features.length === 0) {
+                // If there are no polygons, hide the entire section.
+                $('#thisDealSection').hide();
+            } else {
+                // Add the polygon layers in the same order as the areaNames.
+                for (var a in areaNames) {
+
+                    $.each(features, function() {
+
+                        // The name is the first (and only) attribute
+                        for (var n in this.attributes) break;
+
+                        if (n !== areaNames[a]) return;
+
+                        // Add the legend
+                        var t = [];
+                        t.push(
+                            '<li>',
+                            '<div class="checkbox-modified-small">',
+                            '<input class="input-top this-area-layer-checkbox" type="checkbox" value="' + n + '" id="checkboxThis' + n + '" checked="checked">',
+                            '<label for="checkboxThis' + n + '"></label>',
+                            '</div>',
+                            '<p class="context-layers-description">',
+                            '<span class="vectorLegendSymbolSmall" style="',
+                                'border: 2px solid #C26464;',
+                            '"><span class="vectorLegendSymbolSmallInside" style="',
+                                'background-color: ' + getColor(a) + ';',
+                                'opacity: 0.5;',
+                                'filter: alpha(opacity=50)',
+                            '"></span></span>',
+                            n,
+                            '</p>',
+                            '</li>'
+                        );
+                        $('#map-this-areas-list').append(t.join(''));
+
+                        // Add the layer
+                        var styleMap = new OpenLayers.StyleMap({
+                            'default': getPolygonStyle(a, '#C26464')
+                        });
+                        var l = new OpenLayers.Layer.Vector('this'+n, {
+                            styleMap: styleMap
+                        });
+                        l.addFeatures([this]);
+                        map.addLayer(l);
+
+                        fLayers.push(l);
+                    });
+                }
+                
+                $('.this-area-layer-checkbox').click(function(e) {
+                    if (e.target.value) {
+                        setPolygonLayerByName(map, 'this'+e.target.value, e.target.checked);
+                    }
+                });
+                
+            }
+            
+            // Zoom
+            var bbox = geometryLayer.getDataExtent();
+            $.each(fLayers, function() {
+                bbox.extend(this.getDataExtent());
+            });
+            map.zoomToExtent(bbox, true);
+            // Adjust zoom level so points are not zoomed in too much
+            map.zoomTo(Math.min(zoomlevel, map.getZoom()-1));
+        }
+    });
+    
+}
 
 function toggleMode(mode) {
     if (mode === 'add') {
@@ -196,7 +293,7 @@ function removeFeature(e) {
  * the hidden field.
  */
 function addToMap(lonlat) {
-    if (lonlat.CLASS_NAME != 'OpenLayers.LonLat') return;
+    if (lonlat === null || lonlat.CLASS_NAME !== 'OpenLayers.LonLat') return;
     var p = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat);
     if (editmode === 'singlepoint') {
         geometryLayer.destroyFeatures();

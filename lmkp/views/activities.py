@@ -341,6 +341,7 @@ def read_one(request):
 
                         # Append the short uid and the uid to the templates values
                         templateValues['uid'] = uid
+                        templateValues['version'] = version
                         templateValues['shortuid'] = uid.split("-")[0]
                         # Append also the site key from the commenting system
                         templateValues['site_key'] = comments_sitekey(request)['site_key']
@@ -374,6 +375,8 @@ def read_one(request):
                             return templateValues
                         templateValues['profile'] = get_current_profile(request)
                         templateValues['locale'] = get_current_locale(request)
+                        templateValues['uid'] = uid
+                        templateValues['version'] = version
                         return render_to_response(
                             getTemplatePath(request, 'activities/form.mak'),
                             templateValues,
@@ -523,6 +526,15 @@ def read_one(request):
             templateValues,
             request
         )
+    elif output_format == 'geojson':
+        # A version is required
+        version = request.params.get('v', None)
+        if version is None:
+            raise HTTPBadRequest('You must specify a version as parameter ?v=X')
+        translate = request.params.get('translate', 'true').lower() == 'true'
+        activities = activity_protocol3.read_one_geojson_by_version(request, 
+            uid, version, translate=translate)
+        return render_to_response('json', activities, request)
     elif output_format == 'formtest':
         # Test if an Activity is valid according to the form configuration
         activities = activity_protocol3.read_one(request, uid=uid, public=False,
