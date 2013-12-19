@@ -532,6 +532,10 @@ def get_translated_db_keys(mappedClass, db_keys, db_lang):
     """
     Returns a query array with original and translated keys from the database.
     """
+    
+    if len(db_keys) == 0:
+        return None
+    
     translation = aliased(mappedClass)
 
     q = Session.query(

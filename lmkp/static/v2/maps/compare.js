@@ -117,12 +117,6 @@ $(document).ready(function() {
             }
         }
         
-        if (JSON.stringify(refGeometry) !== JSON.stringify(newGeometry)) {
-            $('#form-map-compare-heading').addClass('change')
-                .children('div').prepend('<i class="icon-exclamation-sign ttip pointer" data-toggle="tooltip" data-original-title="' + tForChangesInThisSection + '"></i>');
-            $('#collapse-map').collapse();
-        }
-        
         // Zoom to the feature
         map.zoomToExtent(zoomExtent);
         // Adjust zoom level
@@ -160,6 +154,8 @@ $(document).ready(function() {
 
 
 function initializeThisPolygonContent() {
+    
+    if (refVersion === null || newVersion === null || identifier === null) return;
     
     var handlePolygonContent = function(f, n, a, refOrNew) {
         // Add the legend
@@ -200,8 +196,6 @@ function initializeThisPolygonContent() {
         return l;
     };
     
-    if (refVersion === null || newVersion === null || identifier === null) return;
-    
     $.when(
         $.ajax({
             url: '/activities/geojson/' + identifier,
@@ -226,13 +220,17 @@ function initializeThisPolygonContent() {
             $.each(refFeatures, function() {
                 // The name is the first (and only) attribute
                 for (var n in this.attributes) break;
-                if (n !== areaNames[a]) return;
-                allLayers.push(handlePolygonContent(this, n, a, 'ref'));
+                var an = areaNames[a];
+                if ($.isArray(areaNames[a])) {
+                    an = areaNames[a][0];
+                }
+                if (n !== an) return;
+                allLayers.push(handlePolygonContent(this, n, a, 'new'));
             });
         }
-        $('.ref-area-layer-checkbox').click(function(e) {
+        $('.new-area-layer-checkbox').click(function(e) {
             if (e.target.value) {
-                setPolygonLayerByName(map, 'ref'+e.target.value, e.target.checked);
+                setPolygonLayerByName(map, 'new'+e.target.value, e.target.checked);
             }
         });
         
@@ -242,14 +240,18 @@ function initializeThisPolygonContent() {
             $.each(newFeatures, function() {
                 // The name is the first (and only) attribute
                 for (var n in this.attributes) break;
-                if (n !== areaNames[a]) return;
-                allLayers.push(handlePolygonContent(this, n, a, 'new'));
+                var an = areaNames[a];
+                if ($.isArray(areaNames[a])) {
+                    an = areaNames[a][0];
+                }
+                if (n !== an) return;
+                allLayers.push(handlePolygonContent(this, n, a, 'ref'));
             });
         }
         
-        $('.new-area-layer-checkbox').click(function(e) {
+        $('.ref-area-layer-checkbox').click(function(e) {
             if (e.target.value) {
-                setPolygonLayerByName(map, 'new'+e.target.value, e.target.checked);
+                setPolygonLayerByName(map, 'ref'+e.target.value, e.target.checked);
             }
         });
         

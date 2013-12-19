@@ -263,10 +263,16 @@ class ActivityProtocol3(Protocol):
             request, relevant_activities, involvements=inv_details!='none',
             metadata=True
         )
-
+        
+        fullGeometry = kwargs.get('geometry', False)
+        if fullGeometry is False:
+            fullGeometry = request.params.get('geometry', False)
+        if fullGeometry is not False:
+            fullGeometry = fullGeometry.lower() == 'full'
+        
         activities = self._query_to_activities(
             request, query, involvements=inv_details, public_query=False,
-            translate=translate
+            geom=fullGeometry, translate=translate
         )
 
         if len(activities) == 0:
@@ -1401,8 +1407,10 @@ class ActivityProtocol3(Protocol):
             outerjoin(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
             outerjoin(A_Key, A_Tag.fk_key == A_Key.id).\
             outerjoin(A_Value, A_Tag.fk_value == A_Value.id).\
-            filter(A_Key.key.in_(origAttrs)).\
             filter(A_Tag_Group.geometry != None)
+        
+        if len(origAttrs) > 0:
+            query = query.filter(A_Key.key.in_(origAttrs))
         
         if translate is True:
             localizer = get_localizer(request)
@@ -1464,8 +1472,10 @@ class ActivityProtocol3(Protocol):
                 outerjoin(A_Tag_Group, Activity.id == A_Tag_Group.fk_activity).\
                 outerjoin(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
                 outerjoin(A_Key, A_Tag.fk_key == A_Key.id).\
-                outerjoin(A_Value, A_Tag.fk_value == A_Value.id).\
-                filter(A_Key.key.in_(origAttrs))
+                outerjoin(A_Value, A_Tag.fk_value == A_Value.id)
+            
+            if len(origAttrs) > 0:
+                query = query.filter(A_Key.key.in_(origAttrs))
             
             if translate is not False and dbLang is not None:
                 key_translation, value_translation = self._get_translatedKV(

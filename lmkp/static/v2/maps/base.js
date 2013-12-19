@@ -919,7 +919,7 @@ function getPolygonStyle(index, strokeColor) {
     };
 
     var getStrokeColor = function() {
-        if (strokeColor !== null) {
+        if (strokeColor !== undefined) {
             return strokeColor;
         }
         return getColor(index);

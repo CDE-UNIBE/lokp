@@ -58,7 +58,7 @@
                                 ${activitiesTemplate.render(request=request, _=_)}
                             </a>
                         </h6>
-                        <div id="contentLayers" class="accordion-body collapse in">
+                        <div id="contentLayers" class="accordion-body collapse">
                             <ul>
                                 <li class="contentLayersMainCheckbox">
                                     <div class="checkbox-modified-small">
@@ -145,6 +145,7 @@
                 <span class="required-form-field"></span>
             % endif
             ${_('Set the location')}&nbsp;<span class="helpTooltip icon-question-sign ttip-bottom" data-toggle="tooltip" title="${_('Click on the map to set the location. Please zoom in to set the point as accurately as possible.')}"></span>
+            <p>${_('Please use the QGIS plugin to add or edit polygons.')} <a href="TODO">${_('Read more.')}</a></p>
         </div>
         <div class="span6 text-right">
             <div class="navbar-search pull-right text-left" action="">

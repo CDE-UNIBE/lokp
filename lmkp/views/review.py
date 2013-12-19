@@ -659,7 +659,8 @@ class BaseReview(BaseView):
         else:
             # Get the reference object
             ref_object = self.protocol.read_one_by_version(
-                self.request, uid, ref_version_number, translate=False
+                self.request, uid, ref_version_number, geometry='full', 
+                translate=False
             )
 
         # Check to see if the new version is based directly on the ref version
@@ -677,7 +678,8 @@ class BaseReview(BaseView):
             and new_previous_version.previous_version == ref_version_number)):
             # Show the new version as it is in the database
             new_object = self.protocol.read_one_by_version(
-                self.request, uid, new_version_number, translate=False
+                self.request, uid, new_version_number, geometry='full',
+                translate=False
             )
         else:
             # Query the diff of the new version to apply to the ref version
@@ -692,7 +694,8 @@ class BaseReview(BaseView):
 
             # Get the reference object
             new_object = self.protocol.read_one_by_version(
-                self.request, uid, ref_version_number, translate=False
+                self.request, uid, ref_version_number, geometry='full',
+                translate=False
             )
 
             # Apply the diff to the ref_object

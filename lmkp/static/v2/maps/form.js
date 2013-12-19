@@ -10,6 +10,8 @@
  * mapCriteria
  * aKeys
  * shKeys
+ * areaNames
+ * readonly
  */
 
 var geographicProjection = new OpenLayers.Projection("EPSG:4326");
@@ -42,7 +44,7 @@ $(document).ready(function() {
             graphicOpacity: 0.8,
             graphicYOffset: -25
         }, OpenLayers.Feature.Vector.style["default"])
-    })
+    });
     removeLayer = new OpenLayers.Layer.Vector('RemovePoints', {
         styleMap: markerStyle,
         eventListeners: {
@@ -161,7 +163,8 @@ $(document).ready(function() {
 
 function initializeThisPolygonContent() {
     
-    if (version === null || identifier === null) return;
+    if (version === null || version === 0 || identifier === null 
+        || identifier === '-') return;
     
     $.ajax({
         url: '/activities/geojson/' + identifier,
@@ -185,7 +188,11 @@ function initializeThisPolygonContent() {
                         // The name is the first (and only) attribute
                         for (var n in this.attributes) break;
 
-                        if (n !== areaNames[a]) return;
+                        var an = areaNames[a];
+                        if ($.isArray(areaNames[a])) {
+                            an = areaNames[a][0];
+                        }
+                        if (n !== an) return;
 
                         // Add the legend
                         var t = [];
@@ -229,6 +236,11 @@ function initializeThisPolygonContent() {
                     }
                 });
                 
+                // For the deal details, expand the options so the legend is 
+                // visible.
+                if (readonly === true) {
+                    $('.form-map-menu-toggle').click();
+                }
             }
             
             // Zoom
@@ -291,6 +303,7 @@ function removeFeature(e) {
 /**
  * Set a marker on the map at the given position and store the coordinates in
  * the hidden field.
+ * @param {OpenLayers.LonLat} lonlat
  */
 function addToMap(lonlat) {
     if (lonlat === null || lonlat.CLASS_NAME !== 'OpenLayers.LonLat') return;
@@ -313,13 +326,14 @@ function addToMap(lonlat) {
         }
         mp.addPoint(p);
         geometryLayer.destroyFeatures();
-        geometryLayer.addFeatures([new OpenLayers.Feature.Vector(mp)])
+        geometryLayer.addFeatures([new OpenLayers.Feature.Vector(mp)]);
     }
 }
 
 /**
  * Update the form field containing the coordinates based on the feature in the
  * geometry layer.
+ * @param {OpenLayers.Event} event
  */
 function updateFormCoordinates(event) {
     var feature;
@@ -327,15 +341,15 @@ function updateFormCoordinates(event) {
         feature = event.feature;
     } else {
         var layers = map.getLayersByName('Geometry');
-        if (layers.length == 0) return;
+        if (layers.length === 0) return;
         var geometryLayer = layers[0];
-        if (!geometryLayer.features || geometryLayer.features.length != 1
+        if (!geometryLayer.features || geometryLayer.features.length !== 1
             || !geometryLayer.features[0].geometry) return;
         feature = geometryLayer.features[0];
     }
     var field = $('input[name=geometry]');
-    if (field.length != 1) return;
-    if (feature.geometry.components && feature.geometry.components.length == 0) {
+    if (field.length !== 1) return;
+    if (feature.geometry.components && feature.geometry.components.length === 0) {
         $(field[0]).val('');
     } else {
         $(field[0]).val(geojsonFormat.write(feature.geometry));
@@ -363,13 +377,13 @@ function parseCoordinates() {
     var latsign, longsign, d1, m1, s1, d2, m2, s2;
     var latitude, longitude, lonlat;
 
-    if (coordsFormat == 1) {
+    if (coordsFormat === 1) {
         // 46° 57.1578 N 7° 26.1102 E
         pattern = /(\d+)[%B0\s]+(\d+\.\d+)\s*([NS])[%2C\s]+(\d+)[%B0\s]+(\d+\.\d+)\s*([WE])/i;
         matches = str.match(pattern);
         if (matches) {
-            latsign = (matches[3]=='S') ? -1 : 1;
-            longsign = (matches[6]=='W') ? -1 : 1;
+            latsign = (matches[3]==='S') ? -1 : 1;
+            longsign = (matches[6]==='W') ? -1 : 1;
             d1 = parseFloat(matches[1]);
             m1 = parseFloat(matches[2]);
             d2 = parseFloat(matches[4]);
@@ -378,13 +392,13 @@ function parseCoordinates() {
             longitude = longsign * (d2 + (m2/60.0));
             lonlat = new OpenLayers.LonLat(longitude, latitude);
         }
-    } else if (coordsFormat == 2) {
+    } else if (coordsFormat === 2) {
         // 46° 57' 9.468" N 7° 26' 6.612" E
         pattern = /(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([NS])[%2C\s]+(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([WE])/i;
         matches = str.match(pattern);
         if (matches) {
-            latsign = (matches[4]=='S') ? -1 : 1;
-            longsign = (matches[8]=='W') ? -1 : 1;
+            latsign = (matches[4]==='S') ? -1 : 1;
+            longsign = (matches[8]==='W') ? -1 : 1;
             d1 = parseFloat(matches[1]);
             m1 = parseFloat(matches[2]);
             s1 = parseFloat(matches[3]);
@@ -395,13 +409,13 @@ function parseCoordinates() {
             longitude = longsign * (d2 + (m2/60.0) + (s2/(60.0*60.0)));
             lonlat = new OpenLayers.LonLat(longitude, latitude);
         }
-    } else if (coordsFormat == 3) {
+    } else if (coordsFormat === 3) {
         // N 46° 57.1578 E 7° 26.1102
         pattern = /([NS])\s*(\d+)[%B0\s]+(\d+\.\d+)[%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+\.\d+)/i;
         matches = str.match(pattern);
         if (matches) {
-            latsign = (matches[1]=='S') ? -1 : 1;
-            longsign = (matches[4]=='W') ? -1 : 1;
+            latsign = (matches[1]==='S') ? -1 : 1;
+            longsign = (matches[4]==='W') ? -1 : 1;
             d1 = parseFloat(matches[2]);
             m1 = parseFloat(matches[3]);
             d2 = parseFloat(matches[5]);
@@ -410,13 +424,13 @@ function parseCoordinates() {
             longitude = longsign * (d2 + (m2/60.0));
             lonlat = new OpenLayers.LonLat(longitude, latitude);
         }
-    } else if (coordsFormat == 4) {
+    } else if (coordsFormat === 4) {
         // N 46° 57' 9.468" E 7° 26' 6.612"
         pattern = /([NS])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)/i;
         matches = str.match(pattern);
         if (matches) {
-            latsign = (matches[1]=='S') ? -1 : 1;
-            longsign = (matches[5]=='W') ? -1 : 1;
+            latsign = (matches[1]==='S') ? -1 : 1;
+            longsign = (matches[5]==='W') ? -1 : 1;
             d1 = parseFloat(matches[2]);
             m1 = parseFloat(matches[3]);
             s1 = parseFloat(matches[4]);
@@ -427,7 +441,7 @@ function parseCoordinates() {
             longitude = longsign * (d2 + (m2/60.0) + (s2/(60.0*60.0)));
             lonlat = new OpenLayers.LonLat(longitude, latitude);
         }
-    } else if (coordsFormat == 5) {
+    } else if (coordsFormat === 5) {
         // 46.95263, 7.43517
         pattern = /(\d+\.\d+)[%2C\s]+(\d+\.\d+)/i;
         matches = str.match(pattern);
@@ -436,7 +450,7 @@ function parseCoordinates() {
         }
     }
 
-    if (lonlat != null) {
+    if (lonlat !== null) {
         // Transform the coordinates.
         var lonlatTransformed = lonlat.transform(
             new OpenLayers.Projection("EPSG:4326"),
@@ -468,6 +482,8 @@ function triggerCoordinatesDiv() {
 
 /**
  * Show a feedback after parsing the entered coordinates.
+ * @param {String} msg
+ * @param {String} textStyle
  */
 function showParseFeedback(msg, textStyle) {
     var msgField = $('#map-coords-message');
