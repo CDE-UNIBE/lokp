@@ -9,27 +9,31 @@ var aKeyNames, shKeyNames;
 var geographicProjection = new OpenLayers.Projection("EPSG:4326");
 var sphericalMercatorProjection = new OpenLayers.Projection("EPSG:900913");
 
+var pointsCluster, mapInteractive, pointsVisible, contextLegendInformation,
+        polygonLoadOnStart;
+var mapFilterParams = [];
+
 /**
  * Initialize the spatial search functionality.
  * Requires a text input field with id="search" and name="q".
  */
 function initializeMapSearch() {
     // Add a marker layer, which is used in the location search
-    var markers = new OpenLayers.Layer.Markers( "Markers" );
+    var markers = new OpenLayers.Layer.Markers("Markers");
     map.addLayer(markers);
     var rows = new Array();
     $("#search").typeahead({
         items: 5,
         minLength: 3,
-        source: function( query , process ) {
+        source: function(query, process) {
             $.get("/search", {
                 q: query,
                 epsg: 900913
             },
             function(response) {
                 rows = new Array();
-                if(response.success){
-                    for(var i = 0; i < response.data.length; i++){
+                if (response.success) {
+                    for (var i = 0; i < response.data.length; i++) {
                         var row = response.data[i];
                         rows.push(row);
                     }
@@ -40,13 +44,13 @@ function initializeMapSearch() {
                 });
 
                 process(results);
-            } );
+            });
         },
-        updater: function(item){
+        updater: function(item) {
             var loc = new Array();
-            $.each(rows, function(row){
-                if(rows[row].name == item){
-                    loc.push(rows[row])
+            $.each(rows, function(row) {
+                if (rows[row].name === item) {
+                    loc.push(rows[row]);
                 }
             });
 
@@ -56,8 +60,8 @@ function initializeMapSearch() {
             markers.clearMarkers();
             map.setCenter(pos, 14);
 
-            var size = new OpenLayers.Size(27,27);
-            var offset = new OpenLayers.Pixel(-(size.w/2), -(size.h/2));
+            var size = new OpenLayers.Size(27, 27);
+            var offset = new OpenLayers.Pixel(-(size.w / 2), -(size.h / 2));
             var icon = new OpenLayers.Icon('/static/img/glyphicons_185_screenshot.png', size, offset);
             var m = new OpenLayers.Marker(pos, icon);
             m.events.register('click', m, function(event) {
@@ -73,16 +77,58 @@ function initializeMapSearch() {
 }
 
 /**
+ * Update the map criteria.
+ * Updates the variables mapCriteria and mapValues (ajax query needed to get the
+ * new values for the legend)
+ * 
+ * Required HTML elements:
+ * - <ul id="map-points-list">
+ * - <div id="map-deals-symbolization">
+ * 
+ * @param {String} translatedName
+ * @param {String} internalName
+ * @returns {Boolean} False
+ */
+function updateMapCriteria(translatedName, internalName) {
+
+    $('#map-points-list').css('visibility', 'hidden');
+    $('#map-deals-symbolization').removeClass('open').html('Loading ...');
+
+    $.each(map.getLayersByClass("OpenLayers.Layer.Vector"), function() {
+        if ($.inArray(this.name, mapValues) !== -1) {
+            map.removeLayer(this);
+        }
+    });
+    $.ajax({
+        url: '/json/filtervalues',
+        cache: false,
+        data: {
+            type: 'a',
+            key: internalName
+        },
+        success: function(data) {
+            if (data['error'])
+                return;
+            var newMapValues = [];
+            $.each(data, function() {
+                newMapValues.push(this[0]);
+            });
+            mapValues = newMapValues;
+            mapCriteria = [translatedName, internalName, 0];
+            initializeMapContent();
+        }
+    });
+    return false;
+}
+
+/**
  * Initialize the main content (Activities) of the map with its symbolization
  * and select events.
  *
  * Necessary variables:
  * - mapValues
  * - mapCriteria
- *
- * Options:
- * - [boolean] cluster
- * - [boolean] interactive (*)
+ * - allMapCriteria
  *
  * (*) Option "interactive" is true:
  * Necessary variables:
@@ -95,167 +141,199 @@ function initializeMapSearch() {
  * - tForMoredeals
  * - tForDeals
  * - tForNodealselected
- * - tForDealsGroupedBy
  * HTML elements:
- * - <div id="map-legend-list">
+ * - <div id="map-point-list">
  * - <div class="basic-data">
  * - <h6 class="deal-headline"></h6>
  * - <ul id="taggroups-ul">
+ * - <div id="map-deals-symbolization">
  */
-function initializeMapContent(cluster, interactive, visible, filterParams) {
+function initializeMapContent() {
 
     // Test if the values defined in template are available
     if (typeof mapValues === 'undefined') {
         return;
     }
-    if (typeof mapCriteria === 'undefined' || mapCriteria.length != 3) {
+    if (typeof mapCriteria === 'undefined' || mapCriteria.length !== 3) {
         return;
     }
-    if (typeof filterParams === 'undefined') {
+    if (typeof mapFilterParams === 'undefined') {
         filterParams = [];
     }
 
-    /**
-     * Map symbolization
-     * Approach: Use only one geojson request to query all the features. Loop
-     * through the features and group them based on the value of the map
-     * criteria. Create a layer for each group, add the correct group of
-     * features to it and add the layer to the map.
-     */
+    if (pointsVisible !== false) {
 
-    // Prepare to collect all the features based on the map criteria
-    var mapFeatures = {};
-    for (var v in mapValues) {
-        mapFeatures[mapValues[v]] = [];
-    }
+        /**
+         * Map symbolization
+         * Approach: Use only one geojson request to query all the features. 
+         * Loop through the features and group them based on the value of the 
+         * map criteria. Create a layer for each group, add the correct group of
+         * features to it and add the layer to the map.
+         */
 
-    // Also collect all the created layers in an array (needed to make them
-    // selectable after adding them to the map)
-    var featureLayers = [];
+        // Prepare to collect all the features based on the map criteria
+        var mapFeatures = {};
+        for (var v in mapValues) {
+            mapFeatures[mapValues[v]] = [];
+        }
 
-    // Get the data with a jQuery AJAX request. To prevent IE from caching, use
-    // $.ajax instead of $.get so the parameter "cache=false" can be set.
-    $.ajax({
-        url: '/activities/geojson?' + $.merge(['attrs=' + mapCriteria[1]], filterParams).join('&'),
-        cache: false,
-        success: function(data) {
-            // Define a geojson format needed to read the features
-            var geojsonFormat = new OpenLayers.Format.GeoJSON({
-              'internalProjection': sphericalMercatorProjection,
-              'externalProjection': geographicProjection
-            });
+        // Also collect all the created layers in an array (needed to make them
+        // selectable after adding them to the map)
+        var featureLayers = [];
 
-            // Read and loop all the features, add them to the correct group
-            var features = geojsonFormat.read(data);
-            $.each(features, function() {
-
-                // Make sure the mapCriteria is present in the feature
-                if (!this.attributes[mapCriteria[1]]) return;
-
-                // Make sure the mapCriteria exists in the list of available groups
-                if (!mapFeatures[this.attributes[mapCriteria[1]]]) return;
-
-                // Add it to the group
-                mapFeatures[this.attributes[mapCriteria[1]]].push(this);
-            });
-
-            var legendExplanation = [
-                '<div class="legendExplanation">',
-                tForDealsGroupedBy, ': ',
-                '<strong>', mapCriteria[0], '</strong>',
-                '</div>'
-            ].join('');
-            $("#map-legend-list").append(legendExplanation);
-
-            // Give each group a different color
-            var colorIndex = 0;
-
-            // Loop the groups of features
-            for (var l in mapFeatures) {
-                var featureLayer;
-
-                var styleMap = new OpenLayers.StyleMap({
-                    // Get the style based on the current color
-                    'default': getStyle(colorIndex),
-                    'select': new OpenLayers.Style({
-                        fontColor: '#000000',
-                        fillColor: '#00ffff',
-                        strokeColor: '#00ffff'
-                    })
+        // Get the data with a jQuery AJAX request. To prevent IE from caching, 
+        // use $.ajax instead of $.get so the parameter "cache=false" can be 
+        // set.
+        $.ajax({
+            url: '/activities/geojson?' + $.merge(['attrs=' + mapCriteria[1]], mapFilterParams).join('&'),
+            cache: false,
+            success: function(data) {
+                // Define a geojson format needed to read the features
+                var geojsonFormat = new OpenLayers.Format.GeoJSON({
+                    'internalProjection': sphericalMercatorProjection,
+                    'externalProjection': geographicProjection
                 });
 
-                // Create the layer
-                if (cluster === false) {
-                    featureLayer = new OpenLayers.Layer.Vector(l, {
-                        styleMap: styleMap
+                // Read and loop all the features, add them to the correct group
+                var features = geojsonFormat.read(data);
+                $.each(features, function() {
+
+                    // Make sure the mapCriteria is present in the feature
+                    if (!this.attributes[mapCriteria[0]])
+                        return;
+
+                    // Make sure the mapCriteria exists in the list of available groups
+                    if (!mapFeatures[this.attributes[mapCriteria[0]]])
+                        return;
+
+                    // Add it to the group
+                    mapFeatures[this.attributes[mapCriteria[0]]].push(this);
+                });
+
+                // Add the symbolization dropdown and its content
+                var s = [];
+                s.push(
+                        '<a class="dropdown-toggle blacktemp map-point-symbol-dropdown" href="#" data-toggle="dropdown">',
+                        '<span id="map-symbolization-name">',
+                        mapCriteria[0],
+                        '</span>',
+                        '&nbsp;<b class="caret"></b>',
+                        '</a>',
+                        '<ul class="dropdown-menu map-point-symbol-drodpown-menu">'
+                        );
+                $.each(allMapCriteria, function() {
+                    s.push(
+                            '<li>',
+                            '<a href="#" onclick="javascript:return updateMapCriteria(\'' + this[0] + '\', \'' + this[1] + '\');">' + this[0] + '</a>',
+                            '</li>'
+                            );
+                });
+                s.push('</ul>');
+                $('#map-deals-symbolization').html(s.join(''));
+
+                // Empty the legend and show it again in case it was hidden
+                $("#map-points-list").empty().css('visibility', 'visible');
+
+                // Give each group a different color
+                var colorIndex = 0;
+
+                // Loop the groups of features
+                for (var l in mapFeatures) {
+                    var featureLayer;
+
+                    var styleMap = new OpenLayers.StyleMap({
+                        // Get the style based on the current color
+                        'default': getPointStyle(colorIndex),
+                        'select': new OpenLayers.Style({
+                            fontColor: '#000000',
+                            fillColor: '#00ffff',
+                            strokeColor: '#00ffff'
+                        })
                     });
-                    featureLayer.addFeatures(mapFeatures[l]);
-                } else {
-                    // Create a clustering strategy for each with the features
-                    // already available
-                    var clusterStrategy = new OpenLayers.Strategy.Cluster({
-                        distance: 30,
-                        threshold: 2,
-                        features: mapFeatures[l]
-                    });
-                    featureLayer = new OpenLayers.Layer.Vector(l, {
-                        strategies: [
-                            clusterStrategy
-                        ],
-                        styleMap: styleMap
-                    });
+
+                    // Create the layer
+                    if (pointsCluster === false) {
+                        featureLayer = new OpenLayers.Layer.Vector(l, {
+                            styleMap: styleMap
+                        });
+                        featureLayer.addFeatures(mapFeatures[l]);
+                    } else {
+                        // Create a clustering strategy for each with the 
+                        // features already available
+                        var clusterStrategy = new OpenLayers.Strategy.Cluster({
+                            distance: 30,
+                            threshold: 2,
+                            features: mapFeatures[l]
+                        });
+                        featureLayer = new OpenLayers.Layer.Vector(l, {
+                            strategies: [
+                                clusterStrategy
+                            ],
+                            styleMap: styleMap
+                        });
+                    }
+
+                    if (mapInteractive !== false) {
+                        featureLayer.events.on({
+                            'featureselected': onFeatureSelected,
+                            'featureunselected': onFeatureUnselected
+                        });
+                    }
+
+                    if (pointsVisible === false) {
+                        featureLayer.setVisibility(false);
+                    }
+
+                    // Add the layer to the map and to the list of layers
+                    map.addLayer(featureLayer);
+                    featureLayers.push(featureLayer);
+
+                    if (pointsCluster !== false) {
+                        // If clustering is activated, do the initial clustering
+                        clusterStrategy.cluster();
+                    }
+
+                    // Write a legend entry for the group
+                    var legendTemplate = [
+                        '<li class="legendEntry">',
+                        '<div class="vectorLegendSymbol" style="background-color: ' + getColor(colorIndex) + ';">',
+                        '</div>',
+                        l,
+                        '</li>'
+                    ].join('');
+                    $("#map-points-list").append(legendTemplate);
+
+                    colorIndex++;
                 }
 
-                if (interactive !== false) {
-                    featureLayer.events.on({
-                        'featureselected': onFeatureSelected,
-                        'featureunselected': onFeatureUnselected
-                    });
+                if (mapInteractive !== false) {
+                    // Create the SelectFeature control, add it for each feature
+                    // layer and activate it
+                    addLayersToSelectControl(map, featureLayers);
                 }
-
-                if (visible === false) {
-                    featureLayer.setVisibility(false);
-                }
-
-                // Add the layer to the map and to the list of layers
-                map.addLayer(featureLayer);
-                featureLayers.push(featureLayer);
-
-                if (cluster !== false) {
-                    // If clustering is activated, do the initial clustering
-                    clusterStrategy.cluster();
-                }
-
-                // Write a legend entry for the group
-                var legendTemplate = [
-                    '<li class="legendEntry">',
-                    '<div class="vectorLegendSymbol" style="background-color: ' + getColor(colorIndex) + ';">',
-                    '</div>',
-                    l,
-                    '</li>'
-                ].join('');
-                $("#map-legend-list").append(legendTemplate);
-
-                colorIndex++;
             }
+        });
 
-            if (interactive !== false) {
-                // Create the SelectFeature control, add it for each feature layer and
-                // activate it
-                var selectControl = new OpenLayers.Control.SelectFeature(featureLayers);
-                map.addControl(selectControl);
-                selectControl.activate();
-            }
+    } else {
+        $('#map-deals-symbolization').html(mapCriteria[0]);
+    }
+
+    $('#activityLayerToggle').change(function(e) {
+        if (e.target.value) {
+            toggleContentLayers(e.target.checked);
         }
     });
 
     /**
      * Functionality to select a feature on the map. Shows the details of
-     * the activity in the detail field.
+     * the activity (requested through service) in the detail field.
+     * 
+     * @param {OpenLayers.Event} e Select control event.
      */
     var onFeatureSelected = function(e) {
 
-        if (interactive === false) return;
+        if (mapInteractive === false)
+            return;
 
         if (typeof aKeys === 'undefined') {
             return;
@@ -274,26 +352,27 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
         var f;
         if (!feature.cluster) {
             f = feature;
-        } else if (feature.cluster.length == 1) {
+        } else if (feature.cluster.length === 1) {
             f = feature.cluster[0];
         }
         if (f) {
             var activityId = f.data.activity_identifier;
-            var shortId = activityId.split("-")[0]
+            var shortId = activityId.split("-")[0];
             $("#deal-shortid-span").html('<a href="/activities/html/' + activityId + '"># ' + shortId + '</a>');
-            $("#taggroups-ul" ).empty().append('<li><p>' + tForLoadingdetails + '</p></li>');
-            $.get("/activities/json/" + activityId, function(r){
+            $("#taggroups-ul").empty().append('<li><p>' + tForLoadingdetails + '</p></li>');
+            $.get("/activities/json/" + activityId, function(r) {
                 var a = r.data[0];
                 var tgs = a.hasOwnProperty('taggroups') ? a.taggroups : [];
                 var invs = a.hasOwnProperty('involvements') ? a.involvements : [];
 
-                $("#taggroups-ul" ).empty();
+                $("#taggroups-ul").empty();
                 $.each(tgs, function() {
                     var v;
                     if (this.main_tag && this.main_tag.key && $.inArray(this.main_tag.key, aKeyNames) > -1) {
                         v = this.main_tag.value;
-                        if ($.isNumeric(v)) v = addCommas(v);
-                        $( "#taggroups-ul" ).append( "<li><p><span class=\"bolder\">" + this.main_tag.key + ": </span>" + v + "</p></li>" );
+                        if ($.isNumeric(v))
+                            v = addCommas(v);
+                        $("#taggroups-ul").append("<li><p><span class=\"bolder\">" + this.main_tag.key + ": </span>" + v + "</p></li>");
                     }
                 });
 
@@ -319,8 +398,8 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
                     }
                 });
                 if (involvements.length > 0) {
-                    var label = (involvements.length == 1) ? tForInvestor : tForInvestors;
-                    $('#taggroups-ul').append('<li class="inv"><p><span class="bolder">' + label + ': </span>' + involvements.join(', ') + '</p></li>')
+                    var label = (involvements.length === 1) ? tForInvestor : tForInvestors;
+                    $('#taggroups-ul').append('<li class="inv"><p><span class="bolder">' + label + ': </span>' + involvements.join(', ') + '</p></li>');
                 }
             });
         } else {
@@ -330,42 +409,43 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
 
             // Show at maximum ten deals to prevent a too long basic data box
             var maxFeatures = 10;
-            if(feature.cluster.length <= maxFeatures){
-                for(var i = 0; i < feature.cluster.length; i++){
+            if (feature.cluster.length <= maxFeatures) {
+                for (var i = 0; i < feature.cluster.length; i++) {
                     var f = feature.cluster[i];
                     var activityId = f.data.activity_identifier;
-                    var shortId = activityId.split("-")[0]
+                    var shortId = activityId.split("-")[0];
 
                     header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/" + activityId + '"># ' + shortId + '</a></span></h6>');
                 }
             } else {
-                for(var i = 0; i < maxFeatures; i++){
+                for (var i = 0; i < maxFeatures; i++) {
                     var f = feature.cluster[i];
                     var activityId = f.data.activity_identifier;
-                    var shortId = activityId.split("-")[0]
+                    var shortId = activityId.split("-")[0];
 
                     header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/" + activityId + '"># ' + shortId + '</a></span></h6>');
                 }
                 header.append("<span>and " + (feature.cluster.length - maxFeatures) + tForMoredeals + "</span>");
             }
         }
-    }
+    };
 
     /**
-     * Functionality to deselect a feature. Resets the detail field.
+     * Functionality to deselect a feature. 
+     * Resets the detail field.
      */
     var onFeatureUnselected = function() {
-        if (interactive === false) return;
-        $("#taggroups-ul").empty();
-        $(".basic-data").empty()
-            .append("<h6 class=\"deal-headline\">" + tForDeals + " <span id=\"deal-shortid-span\" class=\"underline\">#</span></h6>")
-            .append('<ul id="taggroups-ul"><li><p>' + tForNodealselected + '</p></li></ul>');
-    }
+        if (mapInteractive === false)
+            return;
+        clearDetails();
+    };
 
     /**
-     * Function to add commas as a separator for thousands to a string containing
-     * numbers.
-     * Returns a formatted string.
+     * Function to add commas as a separator for thousands to a string 
+     * containing numbers.
+     * 
+     * @param {String} nStr String containing numbers.
+     * @returns {String} Formatted string.
      */
     var addCommas = function(nStr) {
         nStr += '';
@@ -377,7 +457,7 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
             x1 = x1.replace(rgx, '$1' + ',' + '$2');
         }
         return x1 + x2;
-    }
+    };
 }
 
 /**
@@ -390,30 +470,30 @@ function initializeMapContent(cluster, interactive, visible, filterParams) {
  * Required HTML elements:
  * - <ul id="context-layers-list">
  */
-function initializeContextLayers(showLegend) {
+function initializeContextLayers() {
     // Loop the context layers and append it to the context layers menu
     for (var c in contextLayers) {
         var layerName = contextLayers[c].name;
         var t = [
             '<li>',
             '<div class="checkbox-modified-small">',
-            '<input class="input-top" type="checkbox" value="' + layerName + '" id="checkbox' + layerName + '">',
+            '<input class="input-top context-layer-checkbox" type="checkbox" value="' + layerName + '" id="checkbox' + layerName + '">',
             '<label for="checkbox' + layerName + '"></label>',
             '</div>',
             '<p class="context-layers-description">',
             layerName
         ];
-        if (showLegend === true) {
+        if (contextLegendInformation === true) {
             t.push(
-                '&nbsp;',
-                '<i class="icon-exclamation-sign pointer" onClick="javascript:showContextLegend(\'' + layerName + '\');">',
-                '</i>'
-            );
+                    '&nbsp;',
+                    '<i class="icon-exclamation-sign pointer" onClick="javascript:showContextLegend(\'' + layerName + '\');">',
+                    '</i>'
+                    );
         }
         t.push(
-            '</p>',
-            '</li>'
-        );
+                '</p>',
+                '</li>'
+                );
         $("#context-layers-list").append(t.join(''));
     }
     // Add the context layers to the map
@@ -421,15 +501,64 @@ function initializeContextLayers(showLegend) {
 }
 
 /**
+ * Function to initialize the polygon layers.
+ * Writes the legend for the polygon layers and creates the layers if desired.
+ * 
+ * Necessary variables:
+ * - areaNames
+ * 
+ * Required HTML elements:
+ * - <ul id="map-areas-layers-list">
+ */
+function initializePolygonLayers() {
+    for (var a in areaNames) {
+        var n = areaNames[a];
+        var v = n;
+        if ($.isArray(n) && n.length === 2) {
+            v = n[1];
+            n = n[0];
+        }
+        var t = [
+            '<li>',
+            '<div class="checkbox-modified-small">',
+            '<input class="input-top area-layer-checkbox" type="checkbox" value="' + v + '" id="checkbox' + v + '"'
+        ];
+        if (polygonLoadOnStart === true) {
+            t.push(' checked="checked"');
+        }
+        t.push(
+                '>',
+                '<label for="checkbox' + v + '"></label>',
+                '</div>',
+                '<p class="context-layers-description">',
+                '<span class="vectorLegendSymbolSmall" style="',
+                'border: 2px solid ' + getColor(a) + ';',
+                '"><span class="vectorLegendSymbolSmallInside" style="',
+                'background-color: ' + getColor(a) + ';',
+                'opacity: 0.5;',
+                'filter: alpha(opacity=50)',
+                '"></span></span>',
+                n,
+                '</p>',
+                '</li>'
+                );
+        $('#map-areas-list').append(t.join(''));
+        if (polygonLoadOnStart === true) {
+            setPolygonLayerByName(map, v, true);
+        }
+    }
+}
+
+/**
  * Return the base layers of the map.
  */
 function getBaseLayers() {
     var layers = [new OpenLayers.Layer.OSM("streetMap", [
-        "http://otile1.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
-        "http://otile2.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
-        "http://otile3.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
-        "http://otile4.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg"
-        ],{
+            "http://otile1.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
+            "http://otile2.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
+            "http://otile3.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
+            "http://otile4.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg"
+        ], {
             attribution: "<p>Tiles Courtesy of <a href=\"http://www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"http://developer.mapquest.com/content/osm/mq_logo.png\"></p>",
             isBaseLayer: true,
             sphericalMercator: true,
@@ -446,20 +575,20 @@ function getBaseLayers() {
         layers.push(new OpenLayers.Layer.Google("terrainMap", {
             type: google.maps.MapTypeId.TERRAIN
         }));
-    // else get backup layers that don't block the application in case there
-    // is no internet connection.
-    } catch(error) {
+        // else get backup layers that don't block the application in case there
+        // is no internet connection.
+    } catch (error) {
         layers.push(new OpenLayers.Layer.OSM("satelliteMap", [
             "http://oatile1.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
             "http://oatile2.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
             "http://oatile3.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
             "http://oatile4.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg"
-            ],{
-                attribution: "<p>Tiles Courtesy of <a href=\"http://www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"http://developer.mapquest.com/content/osm/mq_logo.png\"></p>",
-                isBaseLayer: true,
-                sphericalMercator: true,
-                projection: new OpenLayers.Projection("EPSG:900913")
-            }));
+        ], {
+            attribution: "<p>Tiles Courtesy of <a href=\"http://www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"http://developer.mapquest.com/content/osm/mq_logo.png\"></p>",
+            isBaseLayer: true,
+            sphericalMercator: true,
+            projection: new OpenLayers.Projection("EPSG:900913")
+        }));
     }
     return layers;
 }
@@ -483,18 +612,35 @@ function initializeBaseLayerControl() {
  * Initialize the functionality to turn context layers on and off.
  *
  * Required HTML elements:
- * - checkbox input fields with class="input-top"
+ * - checkbox input fields with class="context-layer-checkbox"
  */
 function initializeContextLayerControl() {
-    $(".input-top").click(function(event){
-        if (event.target.value) {
-            setContextLayerByName(map, event.target.value, event.target.checked);
+    $('.context-layer-checkbox').click(function(e) {
+        if (e.target.value) {
+            setContextLayerByName(map, e.target.value, e.target.checked);
+        }
+    });
+}
+
+/**
+ * Initialize the functionality to turn polygon layers on and off.
+ * 
+ * Required HTML elements:
+ * - checkbox input fields with class="area-layer-checkbox"
+ */
+function initializePolygonLayerControl() {
+    $('.area-layer-checkbox').click(function(e) {
+        if (e.target.value) {
+            setPolygonLayerByName(map, e.target.value, e.target.checked);
         }
     });
 }
 
 /**
  * Set a base layer based on its name if it exists.
+ * 
+ * @param {OpenLayers.Map} map
+ * @param {String} name
  */
 function setBaseLayerByName(map, name) {
     var l = map.getLayersByName(name);
@@ -505,6 +651,9 @@ function setBaseLayerByName(map, name) {
 
 /**
  * Set a context layer based on its name if it exists.
+ * @param {OpenLayers.Map} map
+ * @param {String} name
+ * @param {Boolean} checked
  */
 function setContextLayerByName(map, name, checked) {
     var l = map.getLayersByName(name);
@@ -514,12 +663,139 @@ function setContextLayerByName(map, name, checked) {
 }
 
 /**
+ * Set a polygon layer based on its name.
+ * If the layer does not yet exist, the data is queried and it is created.
+ * 
+ * @param {OpenLayers.Map} map
+ * @param {String} name
+ * @param {Boolean} visible
+ */
+function setPolygonLayerByName(map, name, visible) {
+    var l = map.getLayersByName(name);
+    if (l.length > 0) {
+        // The layer exists already, just toggle its visibility.
+        l[0].setVisibility(visible);
+    } else if (visible === true) {
+        // The layer does not yet exist and needs to be created first.
+        // Get the data with a jQuery AJAX request. To prevent IE from caching, 
+        // use $.ajax instead of $.get so the parameter "cache=false" can be 
+        // set.
+        var colorIndex = 0;
+        for (var a in areaNames) {
+            var n = areaNames[a];
+            if ($.isArray(n) && n.length === 2) {
+                n = n[1];
+            }
+            if (n === name) {
+                colorIndex = a;
+                break;
+            }
+        }
+
+        $.ajax({
+            url: '/activities/geojson',
+            cache: false,
+            data: {
+                attrs: name,
+                tggeom: 'true'
+            },
+            success: function(data) {
+                // Define a geojson format needed to read the features
+                var geojsonFormat = new OpenLayers.Format.GeoJSON({
+                    'internalProjection': sphericalMercatorProjection,
+                    'externalProjection': geographicProjection
+                });
+
+                // Define a style
+                var styleMap = new OpenLayers.StyleMap({
+                    // Get the style based on the current color
+                    'default': getPolygonStyle(colorIndex),
+                    'select': new OpenLayers.Style({
+                        fontColor: '#000000',
+                        fillColor: '#80FFFF',
+                        strokeColor: '#00ffff'
+                    })
+                });
+
+                var featureLayer = new OpenLayers.Layer.Vector(name, {
+                    styleMap: styleMap
+                });
+                featureLayer.addFeatures(geojsonFormat.read(data));
+
+                if (mapInteractive !== false) {
+                    featureLayer.events.on({
+                        'featureselected': onFeatureSelected,
+                        'featureunselected': onFeatureUnselected
+                    });
+                }
+
+                // Add the layer to the map and to the list of layers
+                map.addLayer(featureLayer);
+
+                if (mapInteractive !== false) {
+                    addLayersToSelectControl(map, [featureLayer]);
+                }
+            }
+        });
+    }
+
+    /**
+     * Functionality to select a feature on the map. Shows the details of the 
+     * polygon in the detail field.
+     * 
+     * @param {OpenLayers.Event} e Select control event.
+     */
+    var onFeatureSelected = function(e) {
+        if (mapInteractive === false)
+            return;
+        var feature = e.feature;
+        if (feature) {
+            var activityId = feature.data.activity_identifier;
+            var shortId = activityId.split('-')[0];
+            $('#deal-shortid-span').html('<a href="/activities/html/' + activityId + '"># ' + shortId + '</a>');
+            $("#taggroups-ul").empty();
+            $.each(feature.data, function(key, value) {
+                var ignored = ['status', 'version', 'activity_identifier',
+                    'status_id'];
+                if ($.inArray(key, ignored) === -1) {
+                    var c = [
+                        '<li><p>',
+                        '<span class="bolder">',
+                        key,
+                        ': </span>',
+                        value,
+                        '</p></li>'
+                    ];
+                    $('#taggroups-ul').append(c.join(''));
+                }
+            });
+        }
+    };
+
+    var onFeatureUnselected = function() {
+        if (mapInteractive === false)
+            return;
+        clearDetails();
+    };
+}
+
+/**
  * Set all the content (Activity) layers to visible or not.
+ * 
+ * @param {Boolean} visible
  */
 function toggleContentLayers(visible) {
+
+    if (pointsVisible === false) {
+        // Set the layer visible for the first time. Query the layer data.
+        pointsVisible = true;
+        updateMapCriteria(mapCriteria[0], mapCriteria[1]);
+        $('#map-points-list').show();
+        $('.contentLayersMainCheckbox').css('margin-bottom', 0);
+    }
+
     $.each(map.getLayersByClass("OpenLayers.Layer.Vector"), function() {
-        var nonContentLayers = ['RemovePoints', 'Geometry'];
-        if ($.inArray(this.name, nonContentLayers) == -1) {
+        if ($.inArray(this.name, mapValues) !== -1) {
             this.setVisibility(visible);
         }
     });
@@ -528,15 +804,18 @@ function toggleContentLayers(visible) {
 /**
  * Function to get the style of a clustered layer based on a color index.
  * Returns an OpenLayers.Style object
+ *
+ * @param {Integer} index
+ * @returns {OpenLayers.Style}
  */
-function getStyle(index) {
+function getPointStyle(index) {
 
     // Define some style variables
     var fillOpacity = 1;
 
-    var strokeOpacity = function(feature){
+    var strokeOpacity = function(feature) {
         var f;
-        if (feature.attributes.count == 1) {
+        if (feature.attributes.count === 1) {
             f = feature.cluster[0];
         } else if (!feature.attributes.count) {
             f = feature;
@@ -549,7 +828,7 @@ function getStyle(index) {
 
     var strokeWidth = function(feature) {
         var f;
-        if (feature.attributes.count == 1) {
+        if (feature.attributes.count === 1) {
             f = feature.cluster[0];
         } else if (!feature.attributes.count) {
             f = feature;
@@ -562,12 +841,12 @@ function getStyle(index) {
 
     // Calculates the radius for clustered features
     var radius = function(feature) {
-        if (!feature.attributes.count || feature.attributes.count == 1) {
+        if (!feature.attributes.count || feature.attributes.count === 1) {
             return 6;
         } else {
             return Math.min(feature.attributes.count, 12) + 5;
         }
-    }
+    };
 
     // Returns the number of clustered features, which is used to label the clusters.
     var label = function(feature) {
@@ -576,7 +855,7 @@ function getStyle(index) {
         } else {
             return '';
         }
-    }
+    };
 
     // Use circles for clustered features and a triangle to symbolize singe features
     var graphicName = function(feature) {
@@ -585,51 +864,87 @@ function getStyle(index) {
         } else {
             return 'circle';
         }
-    }
+    };
 
     var fillColor = function(feature) {
         var f;
-        if (feature.attributes.count == 1) {
+        if (feature.attributes.count === 1) {
             f = feature.cluster[0];
         } else if (!feature.attributes.count) {
             f = feature;
         }
-        if (f && f.attributes.status == 'pending') {
+        if (f && f.attributes.status === 'pending') {
             return '#ffffff';
         }
         return getColor(index);
-    }
+    };
 
     var style = new OpenLayers.Style(
-        {
-            graphicName: '${graphicName}',
-            fontColor: '#ffffff',
-            fontSize: '9px',
-            label: '${label}',
-            pointRadius: '${radius}',
-            rotation: 180.0,
-            fillColor: '${fillColor}',
-            fillOpacity: fillOpacity,
-            strokeColor: getColor(index),
-            strokeOpacity: '${strokeOpacity}',
-            strokeWidth: '${strokeWidth}'
-        }, {
-            context: {
-                graphicName: graphicName,
-                label: label,
-                radius: radius,
-                strokeOpacity: strokeOpacity,
-                strokeWidth: strokeWidth,
-                fillColor: fillColor
-            }
-        });
+            {
+                graphicName: '${graphicName}',
+                fontColor: '#ffffff',
+                fontSize: '9px',
+                label: '${label}',
+                pointRadius: '${radius}',
+                rotation: 180.0,
+                fillColor: '${fillColor}',
+                fillOpacity: fillOpacity,
+                strokeColor: getColor(index),
+                strokeOpacity: '${strokeOpacity}',
+                strokeWidth: '${strokeWidth}'
+            }, {
+        context: {
+            graphicName: graphicName,
+            label: label,
+            radius: radius,
+            strokeOpacity: strokeOpacity,
+            strokeWidth: strokeWidth,
+            fillColor: fillColor
+        }
+    });
+    return style;
+}
+
+/**
+ * Create and return the style for the polygons.
+ * 
+ * @param {Integer} index
+ * @param {String} strokeColor The HTML color code of the polygon stroke
+ * @returns {OpenLayers.Style}
+ */
+function getPolygonStyle(index, strokeColor) {
+
+    var fillColor = function() {
+        return getColor(index);
+    };
+
+    var getStrokeColor = function() {
+        if (strokeColor !== undefined) {
+            return strokeColor;
+        }
+        return getColor(index);
+    };
+
+    var style = new OpenLayers.Style({
+        fillColor: '${fillColor}',
+        fillOpacity: 0.5,
+        strokeColor: '${strokeColor}',
+        strokeOpacity: 1
+    }, {
+        context: {
+            fillColor: fillColor,
+            strokeColor: getStrokeColor
+        }
+    });
     return style;
 }
 
 /**
  * Function to get a color from a predefined list of available colors based on
  * an index.
- * Returns a hexadecimal string representation of a color.
+ * 
+ * @param {type} index
+ * @returns {String} A hexadecimal string representation of a color.
  */
 function getColor(index) {
     var colors = [
@@ -648,7 +963,7 @@ function getColor(index) {
         '#ffcdf3',
         '#a0a0a0'
     ];
-    return colors[index%colors.length];
+    return colors[index % colors.length];
 }
 
 /**
@@ -658,4 +973,52 @@ function storeMapExtent() {
     $.cookie("_LOCATION_", map.getExtent().toString(), {
         expires: 7
     });
+}
+
+/**
+ * Adds an array of layers to the select control of the map.
+ * If the select control exists already, the new layers are added. If there is
+ * no select control yet, it is created.
+ * 
+ * @param {OpenLayers.Map} map
+ * @param {arrary} layers
+ */
+function addLayersToSelectControl(map, layers) {
+    var selectControls = map.getControlsByClass("OpenLayers.Control.SelectFeature");
+    if (selectControls.length > 0) {
+        // Add the layers to the existing selectable layers.
+        var oldLayers = selectControls[0].layers;
+        selectControls[0].setLayer(oldLayers.concat(layers));
+    } else {
+        // Create a new control on the layers.
+        var selectControl = new OpenLayers.Control.SelectFeature(layers);
+        map.addControl(selectControl);
+        selectControl.activate();
+    }
+}
+
+/**
+ * Functionality to clear the details panel.
+ */
+function clearDetails() {
+    $("#taggroups-ul").empty();
+    $(".basic-data").empty()
+            .append("<h6 class=\"deal-headline\">" + tForDeals + " <span id=\"deal-shortid-span\" class=\"underline\">#</span></h6>")
+            .append('<ul id="taggroups-ul"><li><p>' + tForNodealselected + '</p></li></ul>');
+}
+
+/**
+ * Function to toggle the chevron of an element.
+ * 
+ * @param {Selector} el The selector of the parent element
+ * @param {Integer} i Even: icon-chevron-right / Uneven: icon-chevron-down
+ */
+function toggleChevron(el, i) {
+    var oldCls = 'icon-chevron-right';
+    var newCls = 'icon-chevron-down';
+    if (i % 2 === 1) {
+        oldCls = 'icon-chevron-down';
+        newCls = 'icon-chevron-right';
+    }
+    $(el).find('.' + oldCls).removeClass(oldCls).addClass(newCls);
 }

@@ -683,6 +683,14 @@ def renderReadonlyCompareForm(request, itemType, refFeature, newFeature,
     for cat in configCategoryList.getCategories():
         schema.add(cat.getForm(request, readonly=True, compare=compareMode))
     
+    schema.add(colander.SchemaNode(
+        colander.String(),
+        widget=deform.widget.HiddenWidget(),
+        name='geomchange',
+        title='',
+        missing = colander.null
+    ))
+    
     form = deform.Form(schema)
     validComparison = True
     
@@ -730,7 +738,6 @@ def renderReadonlyCompareForm(request, itemType, refFeature, newFeature,
     data = mergeFormdata(refData, newData)
     html = form.render(data, readonly=True)
     
-    # TODO: Taggroup geometries!
     geometry = None
     if itemType == 'activities':
         newGeometry = newFeature.get_geometry() if newFeature is not None else None
@@ -825,6 +832,7 @@ def mergeFormdata(ref, new):
     # Mark each thematicgroup and category which have changes in them. Also make
     # sure that each taggroups missing in one version receive a flag so they are
     # displayed as well in the form table.
+    geomChanged = False
     for cat_id, cat in merged.iteritems():
         catChanged = False
         for thmg_id, thmg in cat.iteritems():
@@ -851,6 +859,9 @@ def mergeFormdata(ref, new):
                             diff.remove('reviewable')
                         if 'change' in diff:
                             diff.remove('change')
+                        if 'geometry' in diff:
+                            geomChanged = True
+                            diff.remove('geometry')
                         if len(diff) > 0:
                             changed = True
                     if changed is True:
@@ -866,7 +877,20 @@ def mergeFormdata(ref, new):
                             thmgChanged = True
                     else:
                         for t in tg:
-                            if t not in thmg[otherTaggroup]:
+                            changed = True
+                            for ot in thmg[otherTaggroup]:
+                                d = DictDiffer(t, ot)
+                                diff = d.added().union(d.removed()).union(d.changed())
+                                if 'reviewable' in diff:
+                                    diff.remove('reviewable')
+                                if 'change' in diff:
+                                    diff.remove('change')
+                                if 'geometry' in diff:
+                                    geomChanged = True
+                                    diff.remove('geometry')
+                                if len(diff) == 0:
+                                    changed = False
+                            if changed is True:
                                 t['change'] = 'change'
                                 thmgChanged = True
             for missingTaggroup, oldTg in missingTgs:
@@ -879,6 +903,13 @@ def mergeFormdata(ref, new):
                 catChanged = True
         if catChanged is True:
             cat['change'] = 'change'
+    
+    if ref == {}:
+        # Special case: If there is no previous version, it is assumed that the
+        # geometry has changed in any case.
+        geomChanged = True
+    
+    merged['geomchange'] = 'change' if geomChanged is True else ''
     
     log.debug('Merged formdata: %s' % merged)
     
@@ -1145,7 +1176,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
       {'stakeholders': {...}}
     - itemType: activities / stakeholders
     """
-
+    
     readOnly = kwargs.get('readOnly', False)
     compareFeature = kwargs.get('compareFeature', None)
     if compareFeature is not None:
@@ -1331,9 +1362,12 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
                 else:
                     tagsdata[t['key']] = v
 
+        if 'geometry' in taggroup:
+            tagsdata['geometry'] = taggroup['geometry']
+
         if tg.getRepeatable():
             tagsdata = [tagsdata]
-
+            
         if cat in data:
             # Category already exists, check thematic group
             if thmg in data[cat]:

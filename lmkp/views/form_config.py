@@ -165,7 +165,7 @@ class ConfigCategoryList(object):
             return categories[0].getId()
         return 0
 
-    def getMainkeyWithGeometry(self):
+    def getMainkeyWithGeometry(self, withTranslation=True):
         """
         Return a list with the names of all main keys of taggroups which can
         have a geometry
@@ -175,7 +175,13 @@ class ConfigCategoryList(object):
             for thg in cat.getThematicgroups():
                 for tg in thg.getTaggroups():
                     if tg.getGeometry() is True:
-                        mainkeys.append(tg.getMaintag().getKey().getName())
+                        if withTranslation is True:
+                            mainkeys.append([
+                                tg.getMaintag().getKey().getTranslatedName(),
+                                tg.getMaintag().getKey().getName()
+                            ])
+                        else:
+                            mainkeys.append(tg.getMaintag().getKey().getName())
         return mainkeys
 
     def findCategoryThematicgroupTaggroupByMainkey(self, mainkey):
