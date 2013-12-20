@@ -894,10 +894,13 @@ def mergeFormdata(ref, new):
                                 t['change'] = 'change'
                                 thmgChanged = True
             for missingTaggroup, oldTg in missingTgs:
+                prefix, id = missingTaggroup.split('_')
                 if isinstance(oldTg, dict):
                     thmg[missingTaggroup] = {'change': 'change'}
                 elif isinstance(oldTg, list):
                     thmg[missingTaggroup] = [{'change': 'change'}]
+                if id == 'map' or 'geometry' in oldTg:
+                    geomChanged = True
             if thmgChanged is True:
                 thmg['change'] = 'change'
                 catChanged = True
