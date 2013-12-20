@@ -54,7 +54,7 @@ def form_geomtaggroups(request):
     #       [TRANSLATION, ORIGINAL]
     #   ]
     # }
-    return {'mainkeys': categorylist.getMainkeyWithGeometry(withTranslation=False)}
+    return {'mainkeys': categorylist.getMainkeyWithGeometry(withTranslation=True)}
 
 def getFileUploadValidExtensions(request):
     """
