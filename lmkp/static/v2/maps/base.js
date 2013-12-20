@@ -90,7 +90,7 @@ function initializeMapSearch() {
  * @returns {Boolean} False
  */
 function updateMapCriteria(translatedName, internalName) {
-
+    
     $('#map-points-list').css('visibility', 'hidden');
     $('#map-deals-symbolization').removeClass('open').html('Loading ...');
 
@@ -280,7 +280,10 @@ function initializeMapContent() {
                         });
                     }
 
-                    if (pointsVisible === false) {
+                    // Do not show the layer if the points are not to be visible
+                    // or if the checkbox is not checked.
+                    if (pointsVisible === false || 
+                        $('#activityLayerToggle').prop('checked') === false) {
                         featureLayer.setVisibility(false);
                     }
 
