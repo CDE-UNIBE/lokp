@@ -30,7 +30,8 @@ requires = [
     'recaptcha-client==1.0.6',
     'requests==1.1.0',
     'deform==0.9.7',
-    'pyramid_beaker==0.7'
+    'pyramid_beaker==0.7',
+    'sphinx==1.2'
     ]
 
 setup(name='LMKP',
