@@ -1,0 +1,14 @@
+Services
+========
+
+This section covers the steps necessary to get the LOKP up and running.
+
+Read One
+--------
+
+Read an Activity or a Stakeholder based on its unique identifier (UUID). Multiple versions are returned if they exist, ordered by version number with the newest on top.
+
+Read One (with pending)
+^^^^^^^^^^^^^^^^^^^^^^^
+
+asdf

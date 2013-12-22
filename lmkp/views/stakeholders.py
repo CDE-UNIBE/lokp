@@ -122,6 +122,11 @@ def by_activities(request):
             uids.remove(uid)
 
     if output_format == 'json':
+        # Spatial filter: Show it only if there is no involvement filter (no
+        # deal uid set)
+        spatialfilter = None
+        if len(uids) == 0:
+            spatialfilter = _handle_spatial_parameters(request)
         stakeholders = stakeholder_protocol3.read_many_by_activities(request,
             public=False, uids=uids)
         return render_to_response('json', stakeholders, request)
