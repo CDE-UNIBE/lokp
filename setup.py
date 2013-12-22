@@ -30,6 +30,7 @@ requires = [
     'recaptcha-client==1.0.6',
     'requests==1.1.0',
     'deform==0.9.7',
+    'simplejson',
     'pyramid_beaker==0.7'
     ]
 

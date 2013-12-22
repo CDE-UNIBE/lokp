@@ -23,7 +23,7 @@ lmkp.comments_url = http://localhost:3000/
 ; lmkp/customization/)
 lmkp.customization = lo
 ; Specify the profile subdirectory within the customization directory
-; (lmkp/customization/XYZ/profiles/[lmkp.profiles_dir])
+; (lmkp/customization/[lmkp.customization]/profiles/[lmkp.profiles_dir])
 lmkp.profiles_dir = devel
 
 ; Specify the parameters for file upload
@@ -35,9 +35,6 @@ lmkp.file_mime_extensions = {
     image/png .png
     image/gif .gif
     }
-
-; Specify the Google Analytics tracking ID to be used
-lmkp.tracking_id = 'XX-XXXXXXXX-X'
 
 ; Specify the smtp server used to send mails.
 ; See also http://packages.python.org/pyramid_mailer/ for more options
