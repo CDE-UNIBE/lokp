@@ -1,0 +1,395 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Translation &mdash; LOKP 0.8 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.8',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="LOKP 0.8 documentation" href="index.html" />
+    <link rel="next" title="Introduction" href="services/index.html" />
+    <link rel="prev" title="Customization" href="customization.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="services/index.html" title="Introduction"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="customization.html" title="Customization"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">LOKP 0.8 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="translation">
+<h1>Translation<a class="headerlink" href="#translation" title="Permalink to this headline">¶</a></h1>
+<p>The LOKP is completely translateable. However, it is important to note that
+there are different ways to translate the various strings of the LOKP.</p>
+<p>The strings which appear in the graphical user interface are translated using
+the gettext system based on portable object (.po) files. See <a class="reference external" href="http://en.wikipedia.org/wiki/Gettext">Wikipedia</a> for
+further details. Both the strings of the content-agnostic core platform and
+those of the customization are translated this way.</p>
+<p>The values in the database, eg. the attributes of an Activity and a Stakeholder
+can also be translated. Their translations are stored in the database, which can
+be done automatically in the administration panel.</p>
+<div class="section" id="for-translators">
+<h2>For Translators<a class="headerlink" href="#for-translators" title="Permalink to this headline">¶</a></h2>
+<p>This section is for translators, who were contacted directly by one of the
+developers.</p>
+<div class="section" id="graphical-user-interface">
+<h3>Graphical User Interface<a class="headerlink" href="#graphical-user-interface" title="Permalink to this headline">¶</a></h3>
+<p>The translation of the Graphical User Interface is done using <tt class="docutils literal"><span class="pre">.po</span></tt> files,
+there is one for the core platform and one for the customization. Usually, both
+of these files were sent to you by a developer.</p>
+<p>There are free tools available, which you can use to translate the strings in
+these files. We suggest you use <a class="reference external" href="http://www.poedit.net/">Poedit</a> for the task. Download, install and
+start the program, then open one of the files.</p>
+<p>Select each entry and use the field at the bottom left for the translation (see
+also this <a class="reference external" href="_static/images/poedit.png">screenshot</a>). Once you are done, you can save the file and send it
+back to the developer.</p>
+<div class="topic">
+<p class="topic-title first">Placeholders</p>
+<p>Some strings to translate may contain special characters such as <tt class="docutils literal"><span class="pre">{0}</span></tt>,
+<tt class="docutils literal"><span class="pre">{1}</span></tt> and so on, or <tt class="docutils literal"><span class="pre">%s</span></tt>.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Original</th>
+<th class="head">Translation</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Hello, my name is %s!</td>
+<td>Bonjour, je m&#8217;appelle %s!</td>
+</tr>
+<tr class="row-odd"><td>We have {0} weather today</td>
+<td>Tenemos {0} tiempo hoy</td>
+</tr>
+</tbody>
+</table>
+<p>These are placeholders and should be added unchanged to the translation.</p>
+</div>
+</div>
+<div class="section" id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h3>
+<p>The translation of attributes and categories is done in spreadsheets. There are
+3 different spreadsheets, for Activities, Stakeholders and Categories. You
+should receive them from a developer.</p>
+<p>You can do the translation directly in the spreadsheets and send them back to
+the developer.</p>
+<p>A few things to consider when translating in the spreadsheets:</p>
+<ul class="simple">
+<li>Please use the columns &#8220;Name (translation)&#8221; and &#8220;Helptext (translation)&#8221; for
+translation.</li>
+<li>It may be helpful for the translation to open the form in English to see the
+context of the attributes. If you do not know where to find the form, please
+ask the developer.</li>
+<li>The translations should be as short as possible.</li>
+<li>Please write only in the orange fields.</li>
+<li>Use the &#8220;Additional comments&#8221; column if you have remarks or questions. Please
+do not write questions in the translation field.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="for-developers">
+<h2>For Developers<a class="headerlink" href="#for-developers" title="Permalink to this headline">¶</a></h2>
+<p>This section is for developers of the LOKP and has the aim to describe the steps
+necessary to extract strings for translation, prepare the files for the
+translators and afterwards insert the translations.</p>
+<div class="section" id="during-development">
+<h3>During development<a class="headerlink" href="#during-development" title="Permalink to this headline">¶</a></h3>
+<p class="rubric">Python</p>
+<p>Translation in Python views is done through a <tt class="docutils literal"><span class="pre">TranslationStringFactory</span></tt>,
+which is added as a subscriber to every new request as it is described <a class="reference external" href="http://blog.abourget.net/2011/1/13/pyramid-and-mako:-how-to-do-i18n-the-pylons-way/">here</a>.
+For this reason, there is no need to create a new <tt class="docutils literal"><span class="pre">TranslationStringFactory</span></tt>
+every time, instead the function attached to the request can be used:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">_</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">translate</span>
+<span class="k">print</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;String to translate&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">Templates</p>
+<p>In the templates, the translate function of the request is usually available
+directly, which makes it easy to translate strings in the templates:</p>
+<div class="highlight-python"><pre>${_('String to translate')}</pre>
+</div>
+<p>For further information, please refer to the section on <a class="reference external" href="http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/i18n.html">Internationalization
+and Localization</a> in the Pyramid manual.</p>
+</div>
+<div class="section" id="translate-the-core-platform">
+<h3>Translate the Core Platform<a class="headerlink" href="#translate-the-core-platform" title="Permalink to this headline">¶</a></h3>
+<p class="rubric">Before translation</p>
+<p>Use the following command to extract all the strings marked for translation:</p>
+<div class="highlight-python"><pre>(env) $ python setup.py extract_messages</pre>
+</div>
+<p>This will create or update the <tt class="docutils literal"><span class="pre">lmkp/locale/lmkp.pot</span></tt> file which serves as a
+template for all the <tt class="docutils literal"><span class="pre">.po</span></tt> files in the various languages.</p>
+<p>To update all language files (the <tt class="docutils literal"><span class="pre">.po</span></tt> files), run:</p>
+<div class="highlight-python"><pre>(env) $ python setup.py update_catalog</pre>
+</div>
+<p>After that, the <tt class="docutils literal"><span class="pre">lmkp.po</span></tt> files for all languages are updated. You can now
+send these files to the respective translators for translation.</p>
+<p class="rubric">After translation</p>
+<p>Once the <tt class="docutils literal"><span class="pre">lmkp.po</span></tt> files are translated, you need to compile them for the
+translation to become active. You achieve this by running:</p>
+<div class="highlight-python"><pre>(env) $ python setup.py compile_catalog</pre>
+</div>
+</div>
+<div class="section" id="translate-the-customization">
+<h3>Translate the Customization<a class="headerlink" href="#translate-the-customization" title="Permalink to this headline">¶</a></h3>
+<p>The translation of the strings contained in the customization of the LOKP is a
+bit more complicated because it should exclude the strings already translated in
+the core platform. For this reason, a special <tt class="docutils literal"><span class="pre">setup_custom.py</span></tt> is used which
+needs to be adapted to match the customization to translate.</p>
+<p>This section describes the steps necessary to translate a customization
+<tt class="docutils literal"><span class="pre">[CUSTOM]</span></tt> into a specific language <tt class="docutils literal"><span class="pre">[LOCALE]</span></tt>. For the customization, these
+steps need to be repeated for every single language.</p>
+<p>The accompanying examples illustrate the translation of the <tt class="docutils literal"><span class="pre">lo</span></tt> customization
+into Spanish (<tt class="docutils literal"><span class="pre">es</span></tt>).</p>
+<p class="rubric">Before translation</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Using the unchanged <tt class="docutils literal"><span class="pre">setup_custom.py</span></tt> will extract the messages of <strong>all
+customization folders</strong> situated in <tt class="docutils literal"><span class="pre">lmkp/customization/</span></tt>. If you have
+other customized folders there, adapt your <tt class="docutils literal"><span class="pre">setup_custom.py</span></tt> to include
+only the folder you want to translate.</p>
+</div>
+<p>Extract all the strings marked for translation of the customization and create
+the template <tt class="docutils literal"><span class="pre">.pot</span></tt> file:</p>
+<div class="highlight-python"><pre>(env) $ python setup_custom.py extract_messages -o lmkp/customization/[CUSTOM]/locale/[CUSTOM].pot</pre>
+</div>
+<blockquote class="pull-quote">
+<div><p>Example: Extract all strings of the LO customization:</p>
+<div class="highlight-python"><pre>(env) $ python setup_custom.py extract_messages -o lmkp/customization/lo/locale/lo.pot</pre>
+</div>
+</div></blockquote>
+<p>Update the language file for a language based on the translation template file:</p>
+<div class="highlight-python"><pre>(env) $ python setup_custom.py update_catalog -l [LOCALE] --domain [CUSTOM] -i lmkp/customization/[CUSTOM]/locale/lo.pot -d lmkp/customization/[CUSTOM]/locale</pre>
+</div>
+<blockquote class="pull-quote">
+<div><p>Example: Update the language file of the LO customization for Spanish:</p>
+<div class="highlight-python"><pre>(env) $ python setup_custom.py update_catalog -l es --domain lo -i lmkp/customization/lo/locale/lo.pot -d lmkp/customization/lo/locale</pre>
+</div>
+</div></blockquote>
+<p class="rubric">After translation</p>
+<p>Compile the translated language files:</p>
+<div class="highlight-python"><pre>(env) $ python setup_custom.py compile_catalog -l [LOCALE] --domain [CUSTOM] -d lmkp/customization/[CUSTOM]/locale</pre>
+</div>
+<blockquote class="pull-quote">
+<div><p>Example: Compile the language catalog of the LO customization for Spanish:</p>
+<div class="highlight-python"><pre>(env) $ python setup_custom.py compile_catalog -l es --domain lo -d lmkp/customization/lo/locale</pre>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="translate-the-attributes">
+<h3>Translate the Attributes<a class="headerlink" href="#translate-the-attributes" title="Permalink to this headline">¶</a></h3>
+<p>The attributes are translated directly in the database. There is a script to
+insert multiple (all) translations at once, but it is crucial that they are in
+the correct form to do so. Translators can use a spreadsheet for translations
+which can be converted into a CSV file and handed over to the script in the
+administration panel.</p>
+<p class="rubric">Before translation</p>
+<p>You will need to repeat the following steps 3 times, for Activities,
+Stakeholders and Categories (containing the categories of both Activities and
+Stakeholders)</p>
+<p>You can get a list of all Categories, Activities and Stakeholders through the
+service at <tt class="docutils literal"><span class="pre">/translation/extract/[TYPE]?lang=[LOCALE]</span></tt> where</p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">[TYPE]</span></tt> is one of</dt>
+<dd><ul class="first last simple">
+<li><tt class="docutils literal"><span class="pre">activities</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">stakeholders</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">categories</span></tt></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">[LOCALE]</span></tt> is the locale of the language you&#8217;d like to translate to. This is
+important as the service will also output already translated strings.</p>
+</li>
+</ul>
+<p>Example: <a class="reference external" href="http://www.landobservatory.org/translation/extract/activities?lang=es">/translation/extract/activities?lang=es</a>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Please note that you need translation permissions to access this
+service.</p>
+</div>
+<p>Open one of the templates (either <a class="reference external" href="_static/files/template_keyvalues.xls">template_keyvalues.xls</a> for Activities or
+Stakeholders, or <a class="reference external" href="_static/files/template_categories.xls">template_categories.xls</a> for Categories) and delete all
+existing content. Select the first row and paste the copied values from the
+clipboard. With the first column still selected, use &#8220;Data&#8221; &gt; &#8220;Text to Columns&#8221;
+with Semicolon as separator to spread the data over all columns. Format the
+sheet if needed. In the original format, the translators should only write in
+the cells with an orange background color. You can protect the sheet using
+&#8220;Review&#8221; &gt; &#8220;Protect Sheet&#8221;, which automatically prevents writing to any
+non-orange cell.</p>
+<p>Save the sheets and send them to the translators.</p>
+<p class="rubric">Before translation</p>
+<p>To insert the translations done in a spreadsheet, you need to first open the
+file and copy the following columns to a new document:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>For Keys (do not copy Values!):</dt>
+<dd><ul class="first last simple">
+<li>Name (original)</li>
+<li>Name (translation)</li>
+<li>Helptext (original)</li>
+<li>Helptext (translation)</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>For Values (do not copy Keys!):</dt>
+<dd><ul class="first last simple">
+<li>Name (original)</li>
+<li>Name (translation)</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>For Categories:</dt>
+<dd><ul class="first last simple">
+<li>Name (original)</li>
+<li>Name (translation)</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Save the new document as <tt class="docutils literal"><span class="pre">.csv</span></tt> and convert it to UTF-8 (eg. in Notepad++).
+Also, add a header in the following form:</p>
+<p><tt class="docutils literal"><span class="pre">Description;&quot;;&quot;;Db_Item;lang</span></tt></p>
+<p>where Db_Item is one of <tt class="docutils literal"><span class="pre">A_Key</span></tt>, <tt class="docutils literal"><span class="pre">A_Value</span></tt>, <tt class="docutils literal"><span class="pre">SH_Key</span></tt>, <tt class="docutils literal"><span class="pre">SH_Value</span></tt>,
+<tt class="docutils literal"><span class="pre">Category</span></tt>.</p>
+<p>Copy the file to <tt class="docutils literal"><span class="pre">lmkp/documents/translation</span></tt> and open the administration
+interface to insert the batch translation.</p>
+</div>
+<div class="section" id="add-a-new-language">
+<h3>Add a new language<a class="headerlink" href="#add-a-new-language" title="Permalink to this headline">¶</a></h3>
+<p>If you&#8217;d like to add a new language for translation, you need to create a first
+language file based on the template file. To do so, you can follow these steps.</p>
+<p class="rubric">Core platform</p>
+<p>Create the initial catalog for a language:</p>
+<div class="highlight-python"><pre>(env) $ python setup.py init_catalog -l [LOCALE]</pre>
+</div>
+<p class="rubric">Customization</p>
+<p>Create the initial catalog for a language:</p>
+<div class="highlight-python"><pre>(env) $ python setup_custom.py init_catalog -l [LOCALE] --domain [CUSTOM] -i lmkp/customization/[CUSTOM]/locale/[CUSTOM].pot -d lmkp/customization/[CUSTOM]/locale</pre>
+</div>
+<blockquote class="pull-quote">
+<div><p>Example: Create the initial catalog of the LO customization for Spanish:</p>
+<div class="highlight-python"><pre>(env) $ python setup_custom.py init_catalog -l es --domain lo -i lmkp/customization/lo/locale/lo.pot -d lmkp/customization/lo/locale</pre>
+</div>
+</div></blockquote>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Translation</a><ul>
+<li><a class="reference internal" href="#for-translators">For Translators</a><ul>
+<li><a class="reference internal" href="#graphical-user-interface">Graphical User Interface</a></li>
+<li><a class="reference internal" href="#attributes">Attributes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#for-developers">For Developers</a><ul>
+<li><a class="reference internal" href="#during-development">During development</a></li>
+<li><a class="reference internal" href="#translate-the-core-platform">Translate the Core Platform</a></li>
+<li><a class="reference internal" href="#translate-the-customization">Translate the Customization</a></li>
+<li><a class="reference internal" href="#translate-the-attributes">Translate the Attributes</a></li>
+<li><a class="reference internal" href="#add-a-new-language">Add a new language</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="customization.html"
+                        title="previous chapter">Customization</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="services/index.html"
+                        title="next chapter">Introduction</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/translation.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="services/index.html" title="Introduction"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="customization.html" title="Customization"
+             >previous</a> |</li>
+        <li><a href="index.html">LOKP 0.8 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, CDE, University of Bern.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+  </body>
+</html>

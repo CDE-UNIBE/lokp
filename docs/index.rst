@@ -13,8 +13,9 @@ Contents:
 .. toctree::
    :maxdepth: 2
    
-   install
+   installation
    customization
+   translation
 
 
 Services
@@ -24,9 +25,11 @@ Documentation of the available web services.
 
 .. toctree::
    :maxdepth: 2
-   :glob:
    
-   services/*
+   services/index
+   services/readone
+   services/readmany
+   services/readbyother
 
 Indices and tables
 ==================
