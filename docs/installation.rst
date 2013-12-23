@@ -158,8 +158,8 @@ Database
 
 Please make sure that you have PostgreSQL and PostGIS installed. Create a new
 database user and a new database, with the newly created user as owner and based
-on the postgis_template. In the new database, create the schemas “data” and 
-“context”, both owned by the previously created user.
+on the postgis_template. In the new database, create the schemas "data" and 
+"context", both owned by the previously created user.
 
 Adapt the database settings in the configuration file ``development.ini`` by
 replacing ``username``, ``password`` and ``database``:

@@ -3,7 +3,7 @@ Read By Other
 
 Read many Activities or Stakeholders based on each other.
 
-There are 3 :ref:`read-many-variants` of this service and a number of 
+There are 2 :ref:`read-by-other-variants` of this service and a number of 
 :ref:`read-many-parameters` can be applied.
 
 .. _read-by-other-variants:

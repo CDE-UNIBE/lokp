@@ -6,7 +6,7 @@ setup(name='LMKP_Customization',
         'lmkp/customization': [
             ('sample/**', 'ignore', None),
             ('default/**', 'ignore', None),
-            # Uncomment the customization you'd like to translate
+            # Uncomment or add the customization you'd like to ignore
 #            ('lo/**', 'ignore', None),
 #            ('spm/**', 'ignore', None),
 #            ('testing/**', 'ignore', None),
