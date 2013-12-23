@@ -24,8 +24,8 @@
             % if editmode == 'multipoints':
                 <div class="form-map-edit pull-right">
                     <div class="btn-group pull-right" data-toggle="buttons-radio">
-                        <a class="btn btn-mini active ttip" id="btn-add-point" data-toggle="tooltip" title="${_('Add a location to the deal')}"><i class="icon-plus"></i></a>
-                        <a class="btn btn-mini ttip" id="btn-remove-point" data-toggle="tooltip" title="${_('Remove a location from the deal')}"><i class="icon-minus"></i></a>
+                        <a class="btn btn-mini active ttip" id="btn-add-point" data-toggle="tooltip" title="${_('Add a location to the map')}"><i class="icon-plus"></i></a>
+                        <a class="btn btn-mini ttip" id="btn-remove-point" data-toggle="tooltip" title="${_('Remove a location from the map')}"><i class="icon-minus"></i></a>
                         <a class="btn btn-mini btn-danger disabled ttip disableClick"><i class="icon-pencil"></i></a>
                     </div>
                 </div>

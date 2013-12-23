@@ -281,6 +281,11 @@ Add a new language
 
 If you'd like to add a new language for translation, you need to create a first
 language file based on the template file. To do so, you can follow these steps.
+Please make sure there is an initial template file (``.pot``) available first,
+see above for how to do that.
+
+.. note:: For new languages to appear in the GUI, you need to add them to the
+  database first!
 
 .. rubric:: Core platform
 

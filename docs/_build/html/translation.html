@@ -300,7 +300,14 @@ interface to insert the batch translation.</p>
 <div class="section" id="add-a-new-language">
 <h3>Add a new language<a class="headerlink" href="#add-a-new-language" title="Permalink to this headline">¶</a></h3>
 <p>If you&#8217;d like to add a new language for translation, you need to create a first
-language file based on the template file. To do so, you can follow these steps.</p>
+language file based on the template file. To do so, you can follow these steps.
+Please make sure there is an initial template file (<tt class="docutils literal"><span class="pre">.pot</span></tt>) available first,
+see above for how to do that.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For new languages to appear in the GUI, you need to add them to the
+database first!</p>
+</div>
 <p class="rubric">Core platform</p>
 <p>Create the initial catalog for a language:</p>
 <div class="highlight-python"><pre>(env) $ python setup.py init_catalog -l [LOCALE]</pre>
