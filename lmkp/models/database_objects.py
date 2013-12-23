@@ -335,8 +335,7 @@ class Activity(Base):
     id = Column(Integer, primary_key=True)
     activity_identifier = Column(UUID, nullable=False)
     fk_changeset = Column(Integer, nullable=False)
-    point = GeometryColumn('point', Point(dimension=2, srid=4326,
-                           spatial_index=True))
+    point = GeometryColumn('point', Geometry(dimension=2, srid=4326, spatial_index=True))
     fk_status = Column(Integer, nullable=False)
     version = Column(Integer, nullable=False)
     reliability = Column(Integer)

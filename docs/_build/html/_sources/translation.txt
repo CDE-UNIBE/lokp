@@ -247,7 +247,7 @@ Save the sheets and send them to the translators.
 .. _template_categories.xls: _static/files/template_categories.xls
 
 
-.. rubric:: Before translation
+.. rubric:: After translation
 
 To insert the translations done in a spreadsheet, you need to first open the 
 file and copy the following columns to a new document:
