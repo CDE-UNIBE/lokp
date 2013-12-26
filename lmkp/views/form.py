@@ -653,6 +653,9 @@ def renderReadonlyForm(request, itemType, itemJson):
             return {
                 'form': errorMsg
             }
+
+    if 'category' in data and data['category'] is None:
+        data['category'] = 0
     
     data['itemType'] = itemType
     statusId = itemJson['status_id'] if 'status_id' in itemJson else colander.null
