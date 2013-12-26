@@ -206,20 +206,21 @@ Make sure the customization is correctly defined in the configuration file:
 
 ``lmkp.customization = lo``
 
+See the section on how to configure :ref:`configuration-customization` for more
+information.
 
 .. rubric:: Profiles
 
-Within each customization, there is the possibility to define profiles. This 
-allows for example to use a different profile for the development version and
-for the productive version.
-
-The profiles directory contains the configuration of the categories, keys and
-values which make up Activities and Stakeholders.
+Within each customization, there is the possibility to define the profile 
+directory. It contains the configuration of the categories, keys and values 
+which make up Activities and Stakeholders. 
 
 In the configuration file, you can specify which profile is to be used:
 
 ``lmkp.profiles_dir = devel``
 
+See the section on how to configure :ref:`configuration-profiles` for more
+information.
 
 .. rubric:: Initial data
 
