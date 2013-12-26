@@ -532,6 +532,10 @@ def get_translated_db_keys(mappedClass, db_keys, db_lang):
     """
     Returns a query array with original and translated keys from the database.
     """
+    
+    if len(db_keys) == 0:
+        return []
+    
     translation = aliased(mappedClass)
 
     q = Session.query(
@@ -548,7 +552,7 @@ def get_translated_db_keys(mappedClass, db_keys, db_lang):
         return q
 
     # If nothing found, return None
-    return None
+    return []
 
 # TODO: This does not necessarily belong here. Also, all the stuff needed for
 # each view (languages, profiles, keys, ...) should be loaded in a single

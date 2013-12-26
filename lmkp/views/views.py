@@ -279,19 +279,16 @@ class MainView(BaseView):
 
         return Response(html, content_type='text/html', status_int=200)
 
-    @view_config(route_name='moderation_html', renderer='lmkp:templates/ext_moderation.mak', permission='moderate')
+    @view_config(route_name='moderation_html')
     def moderation_html(self):
         """
-        Returns the moderation HTML page
+        Returns the moderation HTML page.
+        This actually reroutes to the HTML representation of Activities, showing
+        only the pending versions.
         """
 
-        self._handle_parameters()
-
-        return {
-            'openItem': '',
-            'type': '',
-            'identifier': ''
-        }
+        return HTTPFound(location=self.request.route_url('activities_read_many',
+            output='html', _query={'status': 'pending'}))
 
     @view_config(route_name='translation', renderer='lmkp:templates/ext_translation.mak', permission='translate')
     def translation(self):

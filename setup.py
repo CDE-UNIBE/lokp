@@ -30,11 +30,13 @@ requires = [
     'recaptcha-client==1.0.6',
     'requests==1.1.0',
     'deform==0.9.7',
-    'pyramid_beaker==0.7'
+    'simplejson',
+    'pyramid_beaker==0.7',
+    'sphinx==1.2'
     ]
 
 setup(name='LMKP',
-      version='0.77',
+      version='0.8',
       description='The Land Observatory',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[

@@ -24,8 +24,8 @@
             % if editmode == 'multipoints':
                 <div class="form-map-edit pull-right">
                     <div class="btn-group pull-right" data-toggle="buttons-radio">
-                        <a class="btn btn-mini active ttip" id="btn-add-point" data-toggle="tooltip" title="${_('Add a location to the deal')}"><i class="icon-plus"></i></a>
-                        <a class="btn btn-mini ttip" id="btn-remove-point" data-toggle="tooltip" title="${_('Remove a location from the deal')}"><i class="icon-minus"></i></a>
+                        <a class="btn btn-mini active ttip" id="btn-add-point" data-toggle="tooltip" title="${_('Add a location to the map')}"><i class="icon-plus"></i></a>
+                        <a class="btn btn-mini ttip" id="btn-remove-point" data-toggle="tooltip" title="${_('Remove a location from the map')}"><i class="icon-minus"></i></a>
                         <a class="btn btn-mini btn-danger disabled ttip disableClick"><i class="icon-pencil"></i></a>
                     </div>
                 </div>
@@ -34,11 +34,57 @@
             <div class="form-map-menu pull-right">
                 <button type="button" class="btn btn-mini pull-right form-map-menu-toggle ttip" data-close-text="<i class='icon-remove'></i>" data-toggle="tooltip" title="${_('Turn layers on and off')}"><i class="icon-cog"></i></button>
                 <div class="accordion" id="form-map-menu-content">
+                    
+                    <!-- This deal -->
+                    <div id="thisDealSection" class="map-menu-deals accordion-group">
+                        <h6 class="map-deals">
+                            <a class="accordion-toggle" data-toggle="collapse" data-parent="#form-map-menu-content" href="#thisLayer">
+                                <i class="icon-chevron-down"></i>
+                                ${_('This Deal')}
+                            </a>
+                        </h6>
+                        <div id="thisLayer" class="accordion-body collapse in">
+                            <ul id="map-this-areas-list">
+                                <!-- Placeholder for area entries -->
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- All deals -->
+                    <div class="map-menu-deals accordion-group">
+                        <h6 class="map-deals">
+                            <a class="accordion-toggle" data-toggle="collapse" data-parent="#form-map-menu-content" href="#contentLayers">
+                                <i class="icon-chevron-right"></i>
+                                ${activitiesTemplate.render(request=request, _=_)}
+                            </a>
+                        </h6>
+                        <div id="contentLayers" class="accordion-body collapse">
+                            <ul>
+                                <li class="contentLayersMainCheckbox">
+                                    <div class="checkbox-modified-small">
+                                        <input class="input-top" type="checkbox" id="activityLayerToggle">
+                                        <label for="activityLayerToggle"></label>
+                                    </div>
+                                    <div id="map-deals-symbolization" class="dropdown context-layers-description">
+                                        ${_('Loading ...')}
+                                    </div>
+                                    <ul id="map-points-list" class="hide">
+                                        <!-- Placeholder for map points -->
+                                    </ul>
+                                </li>
+                            </ul>
+                            <ul id="map-areas-list">
+                                <!-- Placeholder for area entries -->
+                            </ul>
+                        </div>
+                    </div>
+                        
                     <!-- Base layers -->
                     <div class="accordion-group">
                         <h6>
                             <a class="accordion-toggle" data-toggle="collapse" data-parent="#form-map-menu-content" href="#baseLayers">
-                                <b class="caret"></b>${_('Base layers')}
+                                <i class="icon-chevron-right"></i>
+                                ${_('Base layers')}
                             </a>
                         </h6>
                         <div id="baseLayers" class="accordion-body collapse">
@@ -59,7 +105,8 @@
                     <div class="accordion-group">
                         <h6>
                             <a class="accordion-toggle" data-toggle="collapse" data-parent="#form-map-menu-content" href="#contextLayers">
-                                <b class="caret"></b>${_('Context layers')}
+                                <i class="icon-chevron-right"></i>
+                                ${_('Context layers')}
                             </a>
                         </h6>
                         <div id="contextLayers" class="accordion-body collapse">
@@ -68,35 +115,11 @@
                             </ul>
                         </div>
                     </div>
-                    <!-- Activity layers -->
-                    <div class="accordion-group">
-                        <h6>
-                            <a class="accordion-toggle" data-toggle="collapse" data-parent="#form-map-menu-content" href="#activityLayers">
-                                <b class="caret"></b>${activitiesTemplate.render(request=request, _=_)}
-                            </a>
-                        </h6>
-                        <div id="activityLayers" class="accordion-body collapse">
-                            <ul>
-                                <li>
-                                    <div class="checkbox-modified-small">
-                                        <input type="checkbox" id="activityLayerToggle" class="input-top">
-                                        <label for="activityLayerToggle"></label>
-                                    </div>
-                                    <p class="context-layers-description">
-                                        ${_('Show on map')}
-                                    </p>
-                                </li>
-                            </ul>
-                            <div id="map-legend-list">
-                                <!-- Placeholder for legend -->
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
-
+    
     ${template.render(request=request, geometry=geometry, editmode=editmode, _=_)}
 
     % if field.errormsg:
@@ -122,6 +145,7 @@
                 <span class="required-form-field"></span>
             % endif
             ${_('Set the location')}&nbsp;<span class="helpTooltip icon-question-sign ttip-bottom" data-toggle="tooltip" title="${_('Click on the map to set the location. Please zoom in to set the point as accurately as possible.')}"></span>
+            <p>${_('Please use the QGIS plugin to add or edit polygons.')} <a href="TODO">${_('Read more.')}</a></p>
         </div>
         <div class="span6 text-right">
             <div class="navbar-search pull-right text-left" action="">

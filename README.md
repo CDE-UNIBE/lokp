@@ -1,6 +1,8 @@
 Land Observatory Knowledge Platform
 ===========
 
+Please refer to the documentation found at http://lokp.rtfd.org
+
 Getting Started
 ---------------
 

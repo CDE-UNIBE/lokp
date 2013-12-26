@@ -6,13 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: LMKP 0.72\n"
+"Project-Id-Version: LMKP 0.77\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2013-09-27 08:43+0200\n"
-=======
-"POT-Creation-Date: 2013-10-15 15:31+0200\n"
->>>>>>> feature/shform
+"POT-Creation-Date: 2013-12-23 12:46+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,7 +38,8 @@ msgstr ""
 #: lmkp/templates/ext_moderation.mak:41 lmkp/templates/ext_translation.mak:37
 #: lmkp/templates/old_compare_versions.mak:48 lmkp/templates/old_embedded.mak:35
 #: lmkp/templates/old_review_versions.mak:33
-#: lmkp/templates/form/customFileDisplay.mak:42 lmkp/views/translation.py:162
+#: lmkp/templates/form/customFileDisplay.mak:42
+#: lmkp/templates/form/customMapMapping.mak:69 lmkp/views/translation.py:162
 msgid "Loading ..."
 msgstr ""
 
@@ -133,8 +130,10 @@ msgstr ""
 msgid "Compare"
 msgstr ""
 
-#: lmkp/templates/old_review_versions.mak:4 lmkp/views/translation.py:112
-#: lmkp/views/translation.py:138
+#: lmkp/templates/old_review_versions.mak:4
+#: lmkp/templates/review/readonly/customInvolvementMappingActivity.mak:24
+#: lmkp/templates/review/readonly/customInvolvementMappingStakeholder.mak:27
+#: lmkp/views/translation.py:112 lmkp/views/translation.py:138
 msgid "Review"
 msgstr ""
 
@@ -144,6 +143,7 @@ msgstr ""
 
 #: lmkp/templates/form/customFileDisplay.mak:43
 #: lmkp/templates/form/readonly/customFileDisplay.mak:14
+#: lmkp/templates/review/readonly/customFileDisplay.mak:15
 msgid "View this file"
 msgstr ""
 
@@ -171,37 +171,95 @@ msgstr ""
 msgid "No file uploaded yet"
 msgstr ""
 
-#: lmkp/templates/form/customMapMapping.mak:42
-msgid "Set the location."
+#: lmkp/templates/form/customMapMapping.mak:27
+msgid "Add a location to the map"
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:28
+msgid "Remove a location from the map"
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:35
+msgid "Turn layers on and off"
 msgstr ""
 
 #: lmkp/templates/form/customMapMapping.mak:43
+msgid "This Deal"
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:87
+msgid "Base layers"
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:93 lmkp/views/translation.py:106
+msgid "Street Map"
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:96 lmkp/views/translation.py:104
+msgid "Satellite Imagery"
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:99 lmkp/views/translation.py:107
+msgid "Terrain Map"
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:109
+msgid "Context layers"
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:147
+msgid "Set the location"
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:147
 msgid ""
 "Click on the map to set the location. Please zoom in to set the point as "
 "accurately as possible."
 msgstr ""
 
-#: lmkp/templates/form/customMapMapping.mak:44
-msgid "Enter coordinates."
+#: lmkp/templates/form/customMapMapping.mak:148
+msgid "Please use the QGIS plugin to add or edit polygons."
 msgstr ""
 
-#: lmkp/templates/form/customMapMapping.mak:47
+#: lmkp/templates/form/customMapMapping.mak:148
+msgid "Read more."
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:152
+msgid "search location"
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:153
+msgid "Start to search for a location by typing in the search field."
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:156
+msgid "Enter coordinates"
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:156
+msgid ""
+"If you have GPS coordinates you can enter them to set the location even more "
+"accurately."
+msgstr ""
+
+#: lmkp/templates/form/customMapMapping.mak:162
 msgid "Success!"
 msgstr ""
 
-#: lmkp/templates/form/customMapMapping.mak:48
+#: lmkp/templates/form/customMapMapping.mak:163
 msgid "Not in a valid format!"
 msgstr ""
 
-#: lmkp/templates/form/customMapMapping.mak:53
+#: lmkp/templates/form/customMapMapping.mak:168
 msgid "Coordinates"
 msgstr ""
 
-#: lmkp/templates/form/customMapMapping.mak:61
+#: lmkp/templates/form/customMapMapping.mak:176
 msgid "Format"
 msgstr ""
 
-#: lmkp/templates/form/customMapMapping.mak:75
+#: lmkp/templates/form/customMapMapping.mak:190
 msgid "Parse"
 msgstr ""
 
@@ -239,7 +297,7 @@ msgstr ""
 msgid "Success"
 msgstr ""
 
-#: lmkp/templates/form/form_fileupload_embedded.mak:105 lmkp/views/form.py:73
+#: lmkp/templates/form/form_fileupload_embedded.mak:105 lmkp/views/form.py:75
 msgid "Error"
 msgstr ""
 
@@ -260,6 +318,7 @@ msgid "The location is required. Please select a point on the map before continu
 msgstr ""
 
 #: lmkp/templates/form/readonly/customFileDisplay.mak:15
+#: lmkp/templates/review/readonly/customFileDisplay.mak:16
 msgid "Download this file"
 msgstr ""
 
@@ -275,6 +334,15 @@ msgstr ""
 msgid "View Stakeholder"
 msgstr ""
 
+#: lmkp/templates/form/readonly/textinput.mak:2
+msgid "Open the link in a new window"
+msgstr ""
+
+#: lmkp/templates/map/mapform.mak:64
+#: lmkp/templates/review/readonly/mapping_item.mak:35
+msgid "There are changes in this section"
+msgstr ""
+
 #: lmkp/templates/parts/pagination.mak:91
 msgid "Total number of"
 msgstr ""
@@ -283,24 +351,32 @@ msgstr ""
 msgid "per page"
 msgstr ""
 
-#: lmkp/views/activities.py:449 lmkp/views/stakeholders.py:467
+#: lmkp/views/activities.py:633 lmkp/views/stakeholders.py:636
 msgid "User is not logged in."
 msgstr ""
 
-#: lmkp/views/activities.py:452 lmkp/views/stakeholders.py:470
+#: lmkp/views/activities.py:636 lmkp/views/stakeholders.py:639
 msgid "User has no permissions to add a review."
 msgstr ""
 
-#: lmkp/views/activities.py:459
+#: lmkp/views/activities.py:643
 msgid "User has no profile attached"
 msgstr ""
 
-#: lmkp/views/activities.py:466
+#: lmkp/views/activities.py:650
 msgid "The Activity was not found or is not situated within the user's profiles"
 msgstr ""
 
-#: lmkp/views/activities.py:490 lmkp/views/stakeholders.py:504
+#: lmkp/views/activities.py:660 lmkp/views/stakeholders.py:659
+msgid "No valid review decision"
+msgstr ""
+
+#: lmkp/views/activities.py:679 lmkp/views/stakeholders.py:679
 msgid "Not all mandatory keys are provided"
+msgstr ""
+
+#: lmkp/views/activities.py:686 lmkp/views/stakeholders.py:686
+msgid "Unknown error"
 msgstr ""
 
 #: lmkp/views/comments.py:72 lmkp/views/comments.py:170
@@ -351,39 +427,51 @@ msgstr ""
 msgid "File was successfully uploaded"
 msgstr ""
 
-#: lmkp/views/form.py:71
+#: lmkp/views/form.py:73
 msgid "Empty Form"
 msgstr ""
 
-#: lmkp/views/form.py:72
+#: lmkp/views/form.py:74
 msgid "You submitted an empty form or did not make any changes."
 msgstr ""
 
-#: lmkp/views/form.py:508
+#: lmkp/views/form.py:475
 msgid "Unknown Item"
 msgstr ""
 
-#: lmkp/views/form.py:752
+#: lmkp/views/form.py:714
+msgid ""
+"At least one of the involvements prevents automatic revision. Please review "
+"these involvements separately."
+msgstr ""
+
+#: lmkp/views/form.py:716
+msgid ""
+"This version contains changed involvements which prevent automatic revision. "
+"Please review these involvements."
+msgstr ""
+
+#: lmkp/views/form.py:989
 msgid "The Item could not be created or updated."
 msgstr ""
 
-#: lmkp/views/form.py:764
+#: lmkp/views/form.py:1001
 msgid "The Item was created but not found."
 msgstr ""
 
-#: lmkp/views/form.py:766 lmkp/views/translation.py:175
+#: lmkp/views/form.py:1003 lmkp/views/translation.py:175
 msgid "Unknown"
 msgstr ""
 
-#: lmkp/views/form.py:879 lmkp/views/translation.py:114
+#: lmkp/views/form.py:1106 lmkp/views/translation.py:114
 msgid "Submit"
 msgstr ""
 
-#: lmkp/views/form_config.py:899
+#: lmkp/views/form_config.py:1019
 msgid "Select"
 msgstr ""
 
-#: lmkp/views/form_config.py:1526
+#: lmkp/views/form_config.py:1677
 msgid "Stakeholder Role"
 msgstr ""
 
@@ -413,46 +501,42 @@ msgstr ""
 msgid "Show user profile"
 msgstr ""
 
-#: lmkp/views/protocol.py:648
+#: lmkp/views/protocol.py:651
 msgid "Unknown object to review."
 msgstr ""
 
-#: lmkp/views/protocol.py:654
-msgid "Review decision not provided."
-msgstr ""
-
-#: lmkp/views/protocol.py:659 lmkp/views/protocol.py:938
-msgid "Unknown review decision"
-msgstr ""
-
-#: lmkp/views/protocol.py:731
+#: lmkp/views/protocol.py:720
 msgid ""
 "At least one of the involved Stakeholders cannot be reviewed. Click on the "
 "icon next to the involvement for further details."
 msgstr ""
 
-#: lmkp/views/protocol.py:733
+#: lmkp/views/protocol.py:722
 msgid ""
 "At least one of the involved Activities cannot be reviewed. Click on the icon"
 " next to the involvement for further details."
 msgstr ""
 
-#: lmkp/views/protocol.py:865
+#: lmkp/views/protocol.py:856
 msgid ""
 "No active version was found to base the review upon. Try to review an earlier"
 " version first."
 msgstr ""
 
-#: lmkp/views/protocol.py:890
+#: lmkp/views/protocol.py:881
 msgid "The diff seems to be incorrect (identifier not found)"
 msgstr ""
 
-#: lmkp/views/protocol.py:950
+#: lmkp/views/protocol.py:929
+msgid "Unknown review decision"
+msgstr ""
+
+#: lmkp/views/protocol.py:941
 msgid "Review successful."
 msgstr ""
 
-#: lmkp/views/stakeholders.py:480
-msgid "The Activity was not found"
+#: lmkp/views/stakeholders.py:649
+msgid "The Stakeholder was not found"
 msgstr ""
 
 #: lmkp/views/translation.py:30
@@ -571,20 +655,8 @@ msgstr ""
 msgid "Context Layers"
 msgstr ""
 
-#: lmkp/views/translation.py:104
-msgid "Satellite Imagery"
-msgstr ""
-
 #: lmkp/views/translation.py:105
 msgid "Show Legend"
-msgstr ""
-
-#: lmkp/views/translation.py:106
-msgid "Street Map"
-msgstr ""
-
-#: lmkp/views/translation.py:107
-msgid "Terrain Map"
 msgstr ""
 
 #: lmkp/views/translation.py:108

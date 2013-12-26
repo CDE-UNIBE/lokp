@@ -64,9 +64,12 @@ def main(global_config, ** settings):
     config.add_translation_dirs(
         'lmkp:locale/',
         'colander:locale/',
-        'deform:locale/',
-        'customization/%s/locale/' % customization
+        'deform:locale/'
     )
+    if customization is not None:
+        config.add_translation_dirs(
+            'customization/%s/locale/' % customization
+        )
 
     # Add event subscribers
     config.add_subscriber(add_renderer_globals, BeforeRender)
@@ -87,7 +90,9 @@ def main(global_config, ** settings):
     config.add_static_view('formstatic', 'deform:static')
 
     # Customization: Add the static customization folder as view
-    config.add_static_view('custom', 'customization/%s/static' % customization, cache_max_age=3600)
+    if customization is not None:
+        config.add_static_view('custom', 'customization/%s/static' % 
+            customization, cache_max_age=3600)
 
     config.add_route('index', '/')
     config.add_route('administration', '/administration')

@@ -1,4 +1,4 @@
-<%page args="readonly=False, compare=False" />
+<%page args="readonly=False, compare=False, identifier=None, version=None" />
 
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3&amp;sensor=false"></script>
 <script src="${request.static_url('lmkp:static/lib/OpenLayers-2.12/OpenLayers.js')}" type="text/javascript"></script>
@@ -14,9 +14,10 @@
 <script type="text/javascript">
 
     <%
-        from lmkp.views.views import getMapSymbolKeys
         from lmkp.views.views import getOverviewKeys
         from lmkp.views.views import getFilterValuesForKey
+        from lmkp.views.views import getMapSymbolKeys
+        from lmkp.views.config import form_geomtaggroups
         import json
 
         aKeys, shKeys = getOverviewKeys(request)
@@ -25,6 +26,7 @@
         mapSymbolValues = [v[0] for v in sorted(getFilterValuesForKey(request,
             predefinedType='a', predefinedKey=mapCriteria[1]),
             key=lambda value: value[1])]
+        geomTaggroups = form_geomtaggroups(request)
     %>
 
     var bbox = null;
@@ -55,8 +57,9 @@
     var shKeys = ${json.dumps(shKeys) | n};
     var mapValues = ${json.dumps(mapSymbolValues) | n};
     var mapCriteria = ${json.dumps(mapCriteria) | n};
-
-    var tForDealsGroupedBy = '${_("Map symbols are based on")}';
+    var areaNames = ${json.dumps(geomTaggroups['mainkeys']) | n};
+    var allMapCriteria = ${json.dumps(mapSymbols) | n};
+    
     % if compare is True:
     var tForChangesInThisSection = '${_("There are changes in this section")}';
     % endif

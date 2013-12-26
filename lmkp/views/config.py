@@ -45,7 +45,16 @@ def form_geomtaggroups(request):
     geometries as defined in the configuration yaml.
     """
     categorylist = getCategoryList(request, 'activities')
-    return {'mainkeys': categorylist.getMainkeyWithGeometry()}
+    # TODO: Once the QGIS-Plugin is adapted to match the new output of this
+    # function, remove the parameter (withTranslation=False) from the function 
+    # call below.
+    # The new output is as follows:
+    # {
+    #   'mainkeys': [
+    #       [TRANSLATION, ORIGINAL]
+    #   ]
+    # }
+    return {'mainkeys': categorylist.getMainkeyWithGeometry(withTranslation=True)}
 
 def getFileUploadValidExtensions(request):
     """

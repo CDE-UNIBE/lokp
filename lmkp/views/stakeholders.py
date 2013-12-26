@@ -122,6 +122,11 @@ def by_activities(request):
             uids.remove(uid)
 
     if output_format == 'json':
+        # Spatial filter: Show it only if there is no involvement filter (no
+        # deal uid set)
+        spatialfilter = None
+        if len(uids) == 0:
+            spatialfilter = _handle_spatial_parameters(request)
         stakeholders = stakeholder_protocol3.read_many_by_activities(request,
             public=False, uids=uids)
         return render_to_response('json', stakeholders, request)
@@ -134,7 +139,7 @@ def by_activities(request):
         page = request.params.get('page', 1)
         try:
             page = int(page)
-        except TypeError:
+        except:
             page = 1
         page = max(page, 1) # Page should be >= 1
 
@@ -142,7 +147,7 @@ def by_activities(request):
         pageSize = request.params.get('pagesize', 10)
         try:
             pageSize = int(pageSize)
-        except TypeError:
+        except:
             pageSize = 10
         pageSize = max(pageSize, 1) # Page size should be >= 1
         pageSize = min(pageSize, 50) # Page size should be <= 50
@@ -236,7 +241,7 @@ def read_many(request):
         page = request.params.get('page', 1)
         try:
             page = int(page)
-        except TypeError:
+        except:
             page = 1
         page = max(page, 1) # Page should be >= 1
 
@@ -244,7 +249,7 @@ def read_many(request):
         pageSize = request.params.get('pagesize', 10)
         try:
             pageSize = int(pageSize)
-        except TypeError:
+        except:
             pageSize = 10
         pageSize = max(pageSize, 1) # Page size should be >= 1
         pageSize = min(pageSize, 50) # Page size should be <= 50
@@ -439,7 +444,7 @@ def read_one(request):
         if refVersion is not None:
             try:
                 refVersion = int(refVersion)
-            except ValueError:
+            except:
                 refVersion = None
         if refVersion is None or output_format == 'review':
             # No reference version indicated, use the default one
@@ -456,7 +461,7 @@ def read_one(request):
         if newVersion is not None:
             try:
                 newVersion = int(newVersion)
-            except ValueError:
+            except:
                 newVersion = None
         if newVersion is None:
             # No new version indicated, use the default one
@@ -677,7 +682,7 @@ def review(request):
     ret = stakeholder_protocol3._add_review(request, stakeholder, Stakeholder, 
         user, review_decision, review_comment)
 
-    if 'success' not in ret:
+    if 'success' not in ret or ret['success'] is False and 'msg' not in ret:
         raise HTTPBadRequest(_('Unknown error'))
     
     if ret['success'] is True:

@@ -40,3 +40,6 @@ activities.json
 stakeholders.json
 # Ignore LMKP egg
 LMKP.egg-info/
+
+# Ignore documentation builds
+/docs/_build/*
