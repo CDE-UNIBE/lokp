@@ -12,6 +12,7 @@ from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPUnauthorized
+from pyramid.httpexceptions import HTTPInternalServerError
 from pyramid.i18n import get_localizer
 from pyramid.renderers import render_to_response
 from pyramid.response import Response
@@ -20,6 +21,7 @@ from pyramid.security import authenticated_userid
 from pyramid.security import has_permission
 from pyramid.view import view_config
 import yaml
+import json
 
 from lmkp.views.activity_review import ActivityReview
 from lmkp.renderers.renderers import translate_key
@@ -561,6 +563,52 @@ def read_one(request):
                         return render_to_response('json',
                         checkValidItemjson(categorylist, a), request)
         return HTTPNotFound()
+    # Output the areal statistics for the requested activity based on the
+    # Web Processing Service
+    elif output_format == 'statistics':
+
+        # Show the details of an Activity by rendering the form in readonly
+        # mode.
+        activities = activity_protocol3.read_one(request, uid=uid, public=False,
+            translate=False)
+
+        activity = activities['data'][0]
+        coords = activity['geometry']['coordinates']
+
+        try:
+            wps_host = request.registry.settings['lmkp.base_wps']
+        except KeyError:
+            raise HTTPNotFound("External Web Processing Service is not configured.")
+
+        wps_parameters = {
+        "ServiceProvider": "",
+        "metapath": "",
+        "Service": "WPS",
+        "Request": "Execute",
+        "Version": "1.0.0",
+        "Identifier": "BufferStatistics",
+        "DataInputs": "lon=%s;lat=%s;epsg=4326" % (coords[0], coords[1]),
+        "RawDataOutput": 'bufferstatistics@mimeType=application/json'
+        }
+
+        if not wps_host.endswith("?"):
+            wps_host = "%s?" % wps_host
+        for k, v in wps_parameters.items():
+            wps_host = "%s%s=%s&" % (wps_host, k, v)
+
+        log.debug("Accessing: %s" % wps_host)
+
+        try:
+            handle = urllib.urlopen(wps_host)
+        except IOError:
+            return HTTPInternalServerError("Remote server not accessible.")
+        data = json.loads(handle.read())
+        data['uid'] = uid
+        return render_to_response(
+            getTemplatePath(request, 'activities/statistics.mak'),
+            data,
+            request
+        )
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
