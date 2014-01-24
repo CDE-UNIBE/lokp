@@ -33,6 +33,7 @@ from lmkp.views.form import checkValidItemjson
 from lmkp.views.form_config import getCategoryList
 from lmkp.views.profile import get_current_profile
 from lmkp.views.profile import get_current_locale
+from lmkp.views.profile import get_spatial_accuracy_map
 from lmkp.views.views import BaseView
 from lmkp.authentication import checkUserPrivileges
 from lmkp.views.translation import get_translated_status
@@ -568,6 +569,22 @@ def read_one(request):
     # Web Processing Service
     elif output_format == 'statistics':
 
+        # Try to get the base URL to the web processing service which provides
+        # the areal statistics.
+        # If no web processing service is configured, it is assumed that the
+        # platform does not provide the areal statistics
+        try:
+            wps_host = request.registry.settings['lmkp.base_wps']
+        except KeyError:
+            raise HTTPNotFound()
+
+        spatial_accuracy_map = get_spatial_accuracy_map(request)
+
+        # Check if the spatial accuracy map is configured in the application.yml
+        # file
+        if spatial_accuracy_map is None:
+            raise HTTPNotFound()
+
         # Show the details of an Activity by rendering the form in readonly
         # mode.
         activities = activity_protocol3.read_one(request, uid=uid, public=False,
@@ -579,18 +596,8 @@ def read_one(request):
         for taggroup in activity['taggroups']:
             if taggroup['main_tag']['key'] == _(u"Spatial Accuracy"):
                 spatial_accuracy = taggroup['main_tag']['value']
-                buffer = {
-                _(u"better than 100m"): 100,
-                _(u"100m to 1km"): 500,
-                _(u"1km to 10km"): 5000,
-                _(u"10km to 100km"): 50000,
-                _(u"worse than 100km"): 500000
-                }[spatial_accuracy]
 
-        try:
-            wps_host = request.registry.settings['lmkp.base_wps']
-        except KeyError:
-            raise HTTPNotFound("External Web Processing Service is not configured.")
+                buffer = spatial_accuracy_map[spatial_accuracy]
 
         wps_parameters = {
         "ServiceProvider": "",
