@@ -1,6 +1,10 @@
-import colander
 from datetime import datetime
 from datetime import timedelta
+import logging
+import re
+import uuid
+
+import colander
 import deform
 from lmkp.config import getTemplatePath
 from lmkp.models.database_objects import Group
@@ -10,11 +14,11 @@ from lmkp.models.database_objects import users_groups
 from lmkp.models.database_objects import users_profiles
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.profile import _processProfile
-from lmkp.views.profile import get_current_profile
 from lmkp.views.profile import get_current_locale
+from lmkp.views.profile import get_current_profile
 from lmkp.views.views import BaseView
-import psycopg2.tz
 from mako.template import Template
+import psycopg2.tz
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.i18n import TranslationStringFactory
@@ -28,13 +32,9 @@ from pyramid.security import authenticated_userid
 from pyramid.security import has_permission
 from pyramid.threadlocal import get_current_request
 from pyramid.view import view_config
-import re
 from sqlalchemy import and_
 from sqlalchemy import func
 from sqlalchemy.orm.exc import NoResultFound
-import uuid
-import logging
-from lmkp.views.profile import get_current_profile
 
 log = logging.getLogger(__name__)
 
@@ -83,12 +83,12 @@ class UserView(BaseView):
         # Define a colander Schema for the self registration
         class Schema(colander.Schema):
             profile = colander.SchemaNode(colander.String(),
-                widget=deform.widget.TextInputWidget(template='hidden'),
-                name='profile',
-                title='Profile',
-                default=get_current_profile(self.request),
-                missing='global'
-                )
+                                          widget=deform.widget.TextInputWidget(template='hidden'),
+                                          name='profile',
+                                          title='Profile',
+                                          default=get_current_profile(self.request),
+                                          missing='global'
+                                          )
             username = colander.SchemaNode(colander.String(),
                                            validator=_user_already_exists,
                                            title=_('Username'))
@@ -108,7 +108,7 @@ class UserView(BaseView):
                                         validator=_is_valid_email)
         schema = Schema()
         deform.Form.set_default_renderer(mako_renderer)
-        form = deform.Form(schema, buttons=('submit',))
+        form = deform.Form(schema, buttons=('submit', ))
 
         def succeed():
             """
@@ -150,13 +150,13 @@ class UserView(BaseView):
             "activation_link": "http://%s/users/activate?uuid=%s&username=%s" % (self.request.environ['HTTP_HOST'], activation_uuid, new_user.username)
             }
             email_text = render(getTemplatePath(self.request, 'emails/account_activation.mak'),
-                activation_dict,
-            self.request)
+                                activation_dict,
+                                self.request)
 
             self._send_email([email_field], _(u"Activate your Account"), email_text)
 
             return render_to_response(getTemplatePath(self.request, 'users/registration_success.mak'), {
-            }, self.request)
+                                      }, self.request)
 
         ret = self._render_form(form, success=succeed)
 
@@ -169,8 +169,8 @@ class UserView(BaseView):
 
             # Render the return values
             return render_to_response(getTemplatePath(self.request, 'users/registration_form.mak'),
-                ret,
-            self.request)
+                                      ret,
+                                      self.request)
 
         return ret
 
@@ -251,8 +251,8 @@ class UserView(BaseView):
         # Send an email to all moderators of the profile in which the user
         # registered.
         email_text = render(getTemplatePath(self.request, 'emails/account_approval_request.mak'),
-            approval_dict,
-            request=self.request)
+                            approval_dict,
+                            request=self.request)
 
         # Determine profile. Each user should only have one profile when 
         # registering!
@@ -291,8 +291,8 @@ class UserView(BaseView):
                          email_text)
 
         return render_to_response(getTemplatePath(self.request, 'users/activation_successful.mak'), {
-            'username': user.username
-        }, self.request)
+                                  'username': user.username
+                                  }, self.request)
 
     @view_config(route_name="user_approve", permission="moderate")
     def approve(self):
@@ -320,8 +320,8 @@ class UserView(BaseView):
         }
 
         email_text = render(getTemplatePath(self.request, 'emails/account_approval_confirmation.mak'),
-            conf_dict,
-            request=self.request)
+                            conf_dict,
+                            request=self.request)
 
         # Send the email
         self._send_email([user.email],
@@ -330,8 +330,8 @@ class UserView(BaseView):
 
         # Return the username to the template
         return render_to_response(getTemplatePath(self.request, 'users/approval_successful.mak'), {
-            'username': user_username
-        }, self.request)
+                                  'username': user_username
+                                  }, self.request)
 
     @view_config(route_name='user_account', permission='edit')
     def account(self):
@@ -346,43 +346,43 @@ class UserView(BaseView):
         # Define a colander Schema for the self registration
         class Schema(colander.Schema):
             username = colander.SchemaNode(
-                colander.String(),
-                missing = None,
-                widget = deform.widget.TextInputWidget(
-                    readonly = True,
-                    readonly_template = 'readonly/customTextinputReadonly'
-                ),
-                title = _('Username')
-            )
+                                           colander.String(),
+                                           missing=None,
+                                           widget=deform.widget.TextInputWidget(
+                                           readonly=True,
+                                           readonly_template='readonly/customTextinputReadonly'
+                                           ),
+                                           title=_('Username')
+                                           )
             password = colander.SchemaNode(
-                colander.String(),
-                validator = colander.Length(min=5),
-                widget = deform.widget.CheckedPasswordWidget(size=20),
-                title = _('Password')
-            )
+                                           colander.String(),
+                                           validator=colander.Length(min=5),
+                                           widget=deform.widget.CheckedPasswordWidget(size=20),
+                                           title=_('Password')
+                                           )
             firstname = colander.SchemaNode(
-                colander.String(),
-                missing = None,
-                title = _('First Name')
-            )
+                                            colander.String(),
+                                            missing=None,
+                                            title=_('First Name')
+                                            )
             lastname = colander.SchemaNode(
-                colander.String(),
-                missing = None,
-                title = _('Last Name')
-            )
+                                           colander.String(),
+                                           missing=None,
+                                           title=_('Last Name')
+                                           )
             email = colander.SchemaNode(
-                colander.String(),
-                missing = None,
-                widget = deform.widget.TextInputWidget(
-                    readonly = True,
-                    readonly_template = 'readonly/customTextinputReadonly'
-                ),
-                title = _('Valid Email'),
-            )
+                                        colander.String(),
+                                        missing=None,
+                                        widget=deform.widget.TextInputWidget(
+                                        readonly=True,
+                                        readonly_template='readonly/customTextinputReadonly'
+                                        ),
+                                        title=_('Valid Email'),
+                                        )
 
         schema = Schema()
         deform.Form.set_default_renderer(mako_renderer)
-        form = deform.Form(schema, buttons=(deform.Button(title=_(u'Update')),), use_ajax=True)
+        form = deform.Form(schema, buttons=(deform.Button(title=_(u'Update')), ), use_ajax=True)
 
         # Get the user data
         user = Session.query(User).filter(User.username == userid).first()
@@ -423,9 +423,9 @@ class UserView(BaseView):
             ret['locale'] = get_current_locale(self.request)
 
             return render_to_response(getTemplatePath(self.request, 'users/account_form.mak'),
-                ret,
-                self.request
-            )
+                                      ret,
+                                      self.request
+                                      )
 
         return ret
 
@@ -584,7 +584,14 @@ def add_user(request):
         raise HTTPBadRequest("Invalid group parameter")
 
     if not _user_exists(User.username, username):
-        new_user = User(username=username, password=password, email=email)
+        # Create an activation uuid
+        activation_uuid = uuid.uuid4()
+        # Create a new user
+        new_user = User(username=username,
+                        password=password,
+                        email=email,
+                        activation_uuid=activation_uuid,
+                        registration_timestamp=datetime.now())
         new_user.groups = groups
         return {"success": True, "msg": "New user created successfully."}
     else:
@@ -597,7 +604,7 @@ def _user_exists(filterColumn, filterAttr):
 
     return False
 
-def mako_renderer(tmpl_name, **kw):
+def mako_renderer(tmpl_name, ** kw):
     """
     A helper function to use the mako rendering engine.
     It seems to be necessary to locate the templates by using the asset
@@ -614,4 +621,4 @@ def mako_renderer(tmpl_name, **kw):
     request = get_current_request()
     kw['request'] = request
 
-    return template.render(**kw)
+    return template.render( ** kw)
