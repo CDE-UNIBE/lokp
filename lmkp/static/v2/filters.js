@@ -89,7 +89,7 @@ function selectKey(keyTranslated, keyName, keyType, itemType) {
         }, function(data) {
             var menu = $('<ul class="dropdown-menu pull-right" role="menu"></ul>');
             $.each(data, function(i, d) {
-                menu.append('<li><a href="#" onClick="javascript:selectValue(\'' + d[0] + '\', \'' + d[1] + '\')">' + d[0] + '</a></li>')
+                menu.append('<li><a href="#" onClick="javascript:selectValue(\'' + d[0].replace("'", "\\'") + '\', \'' + d[1].replace("'", "\\'") + '\')">' + d[0] + '</a></li>')
             });
             $('#new-filter-value-box').append(menu);
         });
