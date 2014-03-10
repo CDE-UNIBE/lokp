@@ -17,10 +17,13 @@ function removeInvolvement(btn) {
     return false;
 }
 
-function createSearch(inputId, tForUnknown, tForToomanyresults, tForNothingfound, queryUrl, searchPrefix, keys) {
+function createSearch(inputId, tForUnknown, tForToomanyresults, tForNothingfound, queryUrl, searchPrefix, keys, rawKeys) {
 
     var inputField = $('#' + inputId);
+    // This is the translated name key
     var nameKey = getKeyNames(keys)[0];
+    // Not translated key name used to query the involvements
+    var rawNameKey = getKeyNames(rawKeys)[0];
     var fieldset = inputField.parents().eq(5);
 
     // If there is an initial involvement, hide the "select"-button
@@ -41,7 +44,8 @@ function createSearch(inputId, tForUnknown, tForToomanyresults, tForNothingfound
         source: function(request, response) {
             var ajaxData = {};
             ajaxData['limit'] = 11;
-            ajaxData[searchPrefix + '__' + nameKey + '__ilike'] = request.term
+            // Use the raw i.e. English name key to query the database
+            ajaxData[searchPrefix + '__' + rawNameKey + '__ilike'] = request.term
             $.ajax({
                 url: queryUrl,
                 dataType: 'json',

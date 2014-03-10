@@ -331,6 +331,24 @@ class ConfigCategoryList(object):
                             keyNames.append([t.getKey().getTranslatedName(), t.getInvolvementOverview()])
         return keyNames
 
+    def getInvolvementOverviewRawKeyNames(self):
+        """
+        Return the names of the keys of all tags which should appear in the
+        involvement overview along with the value for involvementoverview in the
+        configuration yaml.
+        Returns an array where each entry is an array with
+        - name of the key ** NOT translated **
+        - involvementoverview data (usually an order number)
+        """
+        keyNames = []
+        for cat in self.getCategories():
+            for thmg in cat.getThematicgroups():
+                for tg in thmg.getTaggroups():
+                    for t in tg.getTags():
+                        if t.getInvolvementOverview() is not None:
+                            keyNames.append([t.getKey().getName(), t.getInvolvementOverview()])
+        return keyNames
+
     def getGridColumnKeyNames(self):
         """
         Return the names of the keys of all tags which should appear as grid

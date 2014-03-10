@@ -432,6 +432,19 @@ def getOverviewKeys(request):
         getCategoryList(request, 'stakeholders').getInvolvementOverviewKeyNames()
     )
 
+def getOverviewRawKeys(request):
+    """
+    Return two lists (the first for Activities, the second for Stakeholders)
+    with the keys which are to be used in the involvement overview. Because
+    these are the keys of the other side, the first one actually contains the
+    keys for Stakeholders, the second one the keys for Activities!
+    These keys are not translated.
+    """
+    return (
+        getCategoryList(request, 'activities').getInvolvementOverviewRawKeyNames(),
+        getCategoryList(request, 'stakeholders').getInvolvementOverviewRawKeyNames()
+    )
+
 def getMapSymbolKeys(request):
     """
     Return a list with the keys which are used for the map symbols.
