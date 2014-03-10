@@ -224,7 +224,7 @@ function initializeMapContent() {
                 $.each(allMapCriteria, function() {
                     s.push(
                             '<li>',
-                            '<a href="#" onclick="javascript:return updateMapCriteria(\'' + this[0] + '\', \'' + this[1] + '\');">' + this[0] + '</a>',
+                            '<a href="#" onclick="javascript:return updateMapCriteria(\'' + this[0].replace("'", "\\'") + '\', \'' + this[1].replace("'", "\\'") + '\');">' + this[0] + '</a>',
                             '</li>'
                             );
                 });
