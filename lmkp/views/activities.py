@@ -164,6 +164,8 @@ def read_many_public(request):
     elif output_format == 'geojson':
         activities = activity_protocol3.read_many_geojson(request, public=True)
         return render_to_response('json', activities, request)
+    elif output_format == 'latest':
+        return render_to_response('lmkp:templates/rss.mak', activity_protocol3.read_many_public_latest(request), request)
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
