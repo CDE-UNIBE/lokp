@@ -517,32 +517,6 @@ def read_one(request):
                                       templateValues,
                                       request
                                       )
-    elif output_format == 'history':
-        isLoggedIn, isModerator = checkUserPrivileges(request)
-        activities, count = activity_protocol3.read_one_history(
-                                                                request, uid=uid)
-        activeVersion = None
-        for a in activities:
-            if 'statusName' in a:
-                a['statusName'] = get_translated_status(request, a['statusName'])
-            if a.get('statusId') == 2:
-                activeVersion = a.get('version')
-        
-        templateValues = {
-            'versions': activities,
-            'count': count,
-            'activeVersion': activeVersion,
-            'isModerator': isModerator
-        }
-        templateValues.update({
-                              'profile': get_current_profile(request),
-                              'locale': get_current_locale(request)
-                              })
-        return render_to_response(
-                                  getTemplatePath(request, 'activities/history.mak'),
-                                  templateValues,
-                                  request
-                                  )
     elif output_format == 'geojson':
         # A version is required
         version = request.params.get('v', None)
@@ -634,6 +608,62 @@ def read_one(request):
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
+
+@view_config(route_name='activities_read_one_history')
+def read_one_history(request):
+    # Handle the parameters (locale, profile)
+    bv = BaseView(request)
+    bv._handle_parameters()
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'html'
+
+    uid = request.matchdict.get('uid', None)
+    if check_valid_uuid(uid) is not True:
+        raise HTTPNotFound()
+
+    isLoggedIn, isModerator = checkUserPrivileges(request)
+    activities, count = activity_protocol3.read_one_history(
+                                                            request, uid=uid)
+    activeVersion = None
+    for a in activities:
+        if 'statusName' in a:
+            a['statusName'] = get_translated_status(request, a['statusName'])
+        if a.get('statusId') == 2:
+            activeVersion = a.get('version')
+
+    templateValues = {
+        'versions': activities,
+        'count': count,
+        'activeVersion': activeVersion,
+        'isModerator': isModerator
+    }
+    templateValues.update({
+                          'profile': get_current_profile(request),
+                          'locale': get_current_locale(request)
+                          })
+
+    print "*************************************************3"
+    print templateValues
+
+    if output_format == 'html':
+        return render_to_response(
+                                  getTemplatePath(request, 'activities/history.mak'),
+                                  templateValues,
+                                  request
+                                  )
+
+    if output_format == 'rss':
+        return render_to_response(
+                          getTemplatePath(request, 'activities/history_rss.mak'),
+                          templateValues,
+                          request
+                          )
+
+    else:
+        raise HTTPNotFound("Requested output format is not supported.")
 
 @view_config(route_name='activities_read_one_public')
 def read_one_public(request):

@@ -177,6 +177,9 @@ def main(global_config, ** settings):
     # Read one
     config.add_route('activities_read_one', '/activities/{output}/{uid}')
 
+    # Read one history
+    config.add_route('activities_read_one_history', '/activities/history/{output}/{uid}')
+
     """
     Stakeholders
     """
