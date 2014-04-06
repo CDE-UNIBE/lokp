@@ -164,8 +164,6 @@ def read_many_public(request):
     elif output_format == 'geojson':
         activities = activity_protocol3.read_many_geojson(request, public=True)
         return render_to_response('json', activities, request)
-    elif output_format == 'latest':
-        return render_to_response('lmkp:templates/rss.mak', activity_protocol3.read_many_public_latest(request), request)
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
@@ -645,25 +643,17 @@ def read_one_history(request):
                           'locale': get_current_locale(request)
                           })
 
-    print "*************************************************3"
-    print templateValues
-
     if output_format == 'html':
-        return render_to_response(
-                                  getTemplatePath(request, 'activities/history.mak'),
-                                  templateValues,
-                                  request
-                                  )
+        template = 'activities/history.mak'
 
-    if output_format == 'rss':
-        return render_to_response(
-                          getTemplatePath(request, 'activities/history_rss.mak'),
-                          templateValues,
-                          request
-                          )
+    elif output_format == 'rss':
+        template = 'activities/history_rss.mak'
 
     else:
         raise HTTPNotFound("Requested output format is not supported.")
+
+    return render_to_response(getTemplatePath(request, template),
+                            templateValues, request)
 
 @view_config(route_name='activities_read_one_public')
 def read_one_public(request):
@@ -790,8 +780,8 @@ def review(request):
     else:
         request.session.flash(ret['msg'], 'error')
 
-    return HTTPFound(location=request.route_url('activities_read_one',
-                     output='history', uid=activity.identifier))
+    return HTTPFound(location=request.route_url('activities_read_one_history',
+                     output='html', uid=activity.identifier))
 
 @view_config(route_name='activities_create', renderer='json')
 def create(request):

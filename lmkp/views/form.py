@@ -642,9 +642,9 @@ def renderReadonlyForm(request, itemType, itemJson):
         errorList = checkValidItemjson(configCategoryList, itemJson, output='list')
         if len(errorList) > 0:
             url = None
-            routeName = 'activities_read_one' if itemType == 'activities' else 'stakeholders_read_one'
+            routeName = 'activities_read_one_history' if itemType == 'activities' else 'stakeholders_read_one_history'
             if 'id' in itemJson:
-                url = request.route_url(routeName, output='history', uid=itemJson['id'])
+                url = request.route_url(routeName, output='html', uid=itemJson['id'])
             errorMsg = render(
                         getTemplatePath(request, 'parts/messages/item_requested_not_valid.mak'),
                         {'url': url},
@@ -724,11 +724,11 @@ def renderReadonlyCompareForm(request, itemType, refFeature, newFeature,
         # If no formdata is available, it is very likely that the form has some
         # errors. In this case show an error message.
         url = None
-        routeName = 'activities_read_one' if itemType == 'activities' else 'stakeholders_read_one'
+        routeName = 'activities_read_one_history' if itemType == 'activities' else 'stakeholders_read_one_history'
         if refFeature is not None:
-            url = request.route_url(routeName, output='history', uid=refFeature.get_guid())
+            url = request.route_url(routeName, output='html', uid=refFeature.get_guid())
         elif newFeature is not None:
-            url = request.route_url(routeName, output='history', uid=newFeature.get_guid())
+            url = request.route_url(routeName, output='html', uid=newFeature.get_guid())
         errorMsg = render(
             getTemplatePath(request, 'parts/messages/comparison_not_valid.mak'),
             {'url': url},
