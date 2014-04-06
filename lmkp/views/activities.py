@@ -164,8 +164,6 @@ def read_many_public(request):
     elif output_format == 'geojson':
         activities = activity_protocol3.read_many_geojson(request, public=True)
         return render_to_response('json', activities, request)
-    elif output_format == 'latest':
-        return render_to_response('lmkp:templates/rss.mak', activity_protocol3.read_many_public_latest(request), request)
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
@@ -517,32 +515,6 @@ def read_one(request):
                                       templateValues,
                                       request
                                       )
-    elif output_format == 'history':
-        isLoggedIn, isModerator = checkUserPrivileges(request)
-        activities, count = activity_protocol3.read_one_history(
-                                                                request, uid=uid)
-        activeVersion = None
-        for a in activities:
-            if 'statusName' in a:
-                a['statusName'] = get_translated_status(request, a['statusName'])
-            if a.get('statusId') == 2:
-                activeVersion = a.get('version')
-        
-        templateValues = {
-            'versions': activities,
-            'count': count,
-            'activeVersion': activeVersion,
-            'isModerator': isModerator
-        }
-        templateValues.update({
-                              'profile': get_current_profile(request),
-                              'locale': get_current_locale(request)
-                              })
-        return render_to_response(
-                                  getTemplatePath(request, 'activities/history.mak'),
-                                  templateValues,
-                                  request
-                                  )
     elif output_format == 'geojson':
         # A version is required
         version = request.params.get('v', None)
@@ -634,6 +606,54 @@ def read_one(request):
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
+
+@view_config(route_name='activities_read_one_history')
+def read_one_history(request):
+    # Handle the parameters (locale, profile)
+    bv = BaseView(request)
+    bv._handle_parameters()
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'html'
+
+    uid = request.matchdict.get('uid', None)
+    if check_valid_uuid(uid) is not True:
+        raise HTTPNotFound()
+
+    isLoggedIn, isModerator = checkUserPrivileges(request)
+    activities, count = activity_protocol3.read_one_history(
+                                                            request, uid=uid)
+    activeVersion = None
+    for a in activities:
+        if 'statusName' in a:
+            a['statusName'] = get_translated_status(request, a['statusName'])
+        if a.get('statusId') == 2:
+            activeVersion = a.get('version')
+
+    templateValues = {
+        'versions': activities,
+        'count': count,
+        'activeVersion': activeVersion,
+        'isModerator': isModerator
+    }
+    templateValues.update({
+                          'profile': get_current_profile(request),
+                          'locale': get_current_locale(request)
+                          })
+
+    if output_format == 'html':
+        template = 'activities/history.mak'
+
+    elif output_format == 'rss':
+        template = 'activities/history_rss.mak'
+
+    else:
+        raise HTTPNotFound("Requested output format is not supported.")
+
+    return render_to_response(getTemplatePath(request, template),
+                            templateValues, request)
 
 @view_config(route_name='activities_read_one_public')
 def read_one_public(request):
@@ -760,8 +780,8 @@ def review(request):
     else:
         request.session.flash(ret['msg'], 'error')
 
-    return HTTPFound(location=request.route_url('activities_read_one',
-                     output='history', uid=activity.identifier))
+    return HTTPFound(location=request.route_url('activities_read_one_history',
+                     output='html', uid=activity.identifier))
 
 @view_config(route_name='activities_create', renderer='json')
 def create(request):
