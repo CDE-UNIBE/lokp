@@ -24,6 +24,8 @@ def read_latest(request):
 
     if output_format == 'rss':
         template = 'changesets/latest_rss.mak'
+    elif output_format == 'html':
+        template = 'changesets/latest_html.mak'
     else:
         raise HTTPNotFound("Requested output format is not supported.")
 

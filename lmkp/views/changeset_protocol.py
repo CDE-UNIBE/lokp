@@ -79,7 +79,7 @@ class ChangesetProtocol(object):
             short_uuid = str(i.identifier).split("-")[0]
             if i.type == 'activity':
                 activity_link = request.route_url("activities_read_one", output="html", uid=i.identifier, _query={"v": i.version})
-                description_text = "Activity <a href=\"%s\">%s</a> has been updated by user \"%s\" on %s to version %s" \
+                description_text = "Activity <a href=\"%s\">%s</a> has been updated by user \"%s\" on %s to version&nbsp;%s" \
                     % (activity_link, short_uuid, i.username, formatted_timestamp, i.version),
                 items.append({
                              "title":  "Activity %s updated to version %s" % (short_uuid, i.version),
@@ -91,7 +91,7 @@ class ChangesetProtocol(object):
                              })
             elif i.type == 'stakeholder':
                 stakeholder_link = request.route_url("stakeholders_read_one", output="html", uid=i.identifier, _query={"v": i.version})
-                description_text = "Investor <a href=\"%s\">%s</a> has been updated by user \"%s\" on %s to version %s" \
+                description_text = "Investor <a href=\"%s\">%s</a> has been updated by user \"%s\" on %s to version&nbsp;%s" \
                     % (stakeholder_link, short_uuid, i.username, formatted_timestamp, i.version),
                 items.append({
                              "title":  "Investor %s updated to version %s" % (short_uuid, i.version),
@@ -102,9 +102,7 @@ class ChangesetProtocol(object):
                              "pubDate": formatted_timestamp
                              })
         return {
-            "title": "Latest changes on the Landobservatory",
             "link": request.route_url("changesets_read_latest", output="rss"),
-            "description": "Shows the latest changes on the Landobservatory",
             "image": {
                 "url": '/custom/img/logo.png',
                 "title": "landobservatory.org",
