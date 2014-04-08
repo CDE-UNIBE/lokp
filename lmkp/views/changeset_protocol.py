@@ -1,12 +1,11 @@
+from geoalchemy.functions import functions
+from lmkp.models.database_objects import *
+from lmkp.views.config import get_current_profile
 from lmkp.models.database_objects import *
 import logging
-from lmkp.models.database_objects import *
 from sqlalchemy.sql import literal_column
-from sqlalchemy.sql.expression import column
 from sqlalchemy.sql.expression import desc
 from sqlalchemy.sql.expression import or_
-from sqlalchemy.sql.expression import select
-from sqlalchemy.sql.expression import union
 
 log = logging.getLogger(__name__)
 
@@ -59,23 +58,36 @@ class ChangesetProtocol(object):
         activities_sub_query = self.Session.query(Activity.activity_identifier.label("identifier"), Activity.version, Changeset.timestamp, Changeset.fk_user).\
             join(Changeset).\
             filter(or_(Activity.fk_status == 2, Activity.fk_status == 3)).\
+            filter(self._get_profile_filter(request)).\
             order_by(desc(Changeset.timestamp)).limit(max_limit).subquery(name="sub_act")
 
         activities_query = self.Session.query(activities_sub_query, User.username).\
             join(User).order_by(desc(activities_sub_query.c.timestamp)).subquery(name="act")
 
-        stakeholder_sub_query = self.Session.query(Stakeholder.stakeholder_identifier.label("identifier"), Stakeholder.version, Changeset.timestamp, Changeset.fk_user).\
-            join(Changeset).\
+        # All active and inactive stakeholders
+        stakeholder_active = self.Session.query(Stakeholder).\
             filter(or_(Stakeholder.fk_status == 2, Stakeholder.fk_status == 3)).\
+            subquery("st_active")
+
+        # Query all stakeholder that have at least one involvement in the current profile
+        stakeholder_in_profile = self.Session.query(stakeholder_active).\
+            join(Involvement).join(Activity).filter(self._get_profile_filter(request)).\
+            distinct().subquery()
+
+        # Get the five latest stakeholder by changeset
+        stakeholder_sub_query = self.Session.query(stakeholder_in_profile.c.stakeholder_identifier.label("identifier"),\
+            stakeholder_in_profile.c.version, Changeset.timestamp, Changeset.fk_user).\
+            join(Changeset, Changeset.id == stakeholder_in_profile.c.fk_changeset).\
             order_by(desc(Changeset.timestamp)).limit(max_limit).subquery(name="sub_st")
 
+        # Join the resulting set to the user table
         stakeholder_query = self.Session.query(stakeholder_sub_query, User.username).\
             join(User).order_by(desc(stakeholder_sub_query.c.timestamp)).subquery(name="st")
 
         for i in self.Session.query(activities_query, literal_column("\'activity\'").label("type")).\
             union(self.Session.query(stakeholder_query, literal_column("\'stakeholder\'").label("type"))).\
             order_by(desc(activities_query.c.timestamp)).all():
-            formatted_timestamp = i.timestamp.strftime("%a, %w %b %Y %H:%M:%S")
+            formatted_timestamp = i.timestamp.strftime("%a, %d %b %Y %H:%M:%S")
             short_uuid = str(i.identifier).split("-")[0]
             if i.type == 'activity':
                 activity_link = request.route_url("activities_read_one", output="html", uid=i.identifier, _query={"v": i.version})
@@ -111,10 +123,28 @@ class ChangesetProtocol(object):
             "items": items
         }
 
+    def _get_profile_filter(self, request):
+        """
+        Return a spatial filter based on the profile boundary of the current
+        profile which is queried from the database.
+        Copied from the ActivityProtocol3
+        """
+
+        profile = self.Session.query(Profile).\
+            filter(Profile.code == get_current_profile(request)).\
+            first()
+
+        if profile is None:
+            return (Activity.id == 0)
+
+        return functions.intersects(
+            Activity.point, profile.geometry
+        )
+
     def _filter_user(self, request):
         """
-                    Returns a filter with the requested user or None
-                    """
+        Returns a filter with the requested user or None
+        """
         user = request.params.get('user', None)
         if user is not None:
             return User.username == user
@@ -123,16 +153,16 @@ class ChangesetProtocol(object):
 
     def _filter_status(self, request):
         """
-                    Returns a filter with the requested status or None
-                    """
+        Returns a filter with the requested status or None
+        """
         status = request.params.get('status', None)
         if status is not None:
             return Status.name == status
 
     def _limit_changesets(self, request):
         """
-                    Returns a limit or None
-                    """
+        Returns a limit or None
+        """
 
         limit = request.params.get('limit', None)
         if limit is not None:
