@@ -298,6 +298,8 @@ def main(global_config, ** settings):
 
     # Show a list of latest changesets
     config.add_route('changesets_read_latest', '/changesets/latest/{output}')
+    # Show a list of changesets by a user
+    config.add_route('changesets_read_byuser', '/changesets/{username}/{output}')
 
     # A route to the sitemap.xml
     config.add_route('sitemap', '/sitemap.xml')
