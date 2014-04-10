@@ -84,13 +84,16 @@ class ChangesetProtocol(object):
         stakeholder_query = self.Session.query(stakeholder_sub_query, User.username).\
             join(User).order_by(desc(stakeholder_sub_query.c.timestamp)).subquery(name="st")
 
-        for i in self.Session.query(activities_query, literal_column("\'activity\'").label("type")).\
+        query = self.Session.query(activities_query, literal_column("\'activity\'").label("type")).\
             union(self.Session.query(stakeholder_query, literal_column("\'stakeholder\'").label("type"))).\
-            order_by(desc(activities_query.c.timestamp)).\
-            order_by(desc(activities_query.c.version)).\
-            offset((page-1)*pagesize).limit(pagesize).all():
+            order_by(desc(activities_query.c.timestamp)).order_by(desc(activities_query.c.version))
+
+        for i in query.offset((page-1)*pagesize).limit(pagesize).all():
             formatted_timestamp = i.timestamp.strftime("%a, %d %b %Y %H:%M:%S")
             short_uuid = str(i.identifier).split("-")[0].upper()
+            user_link = request.route_url("changesets_read_byuser", username=i.username, output="html")
+            if pagesize != 10:
+                user_link = request.route_url("changesets_read_byuser", username=i.username, output="html", _query=(("pagesize", pagesize),))
             if i.type == 'activity':
                 activity_link = request.route_url("activities_read_one", output="html", uid=i.identifier, _query={"v": i.version})
                 description_text = """
@@ -98,7 +101,7 @@ class ChangesetProtocol(object):
                 <a href=\"%s\">%s</a> on %s to version&nbsp;%s
                 """ % (activity_link,\
                         short_uuid,\
-                        request.route_url("changesets_read_byuser", username=i.username, output="html"),\
+                        user_link,\
                         i.username,\
                         formatted_timestamp,\
                         i.version),
@@ -117,7 +120,7 @@ class ChangesetProtocol(object):
                 <a href=\"%s\">%s</a> on %s to version&nbsp;%s
                 """ % (stakeholder_link,\
                         short_uuid,\
-                        request.route_url("changesets_read_byuser", username=i.username, output="html"),\
+                        user_link,\
                         i.username,\
                         formatted_timestamp,\
                         i.version),
@@ -136,7 +139,10 @@ class ChangesetProtocol(object):
                 "title": "landobservatory.org",
                 "link": request.route_url("index")
             },
-            "items": items
+            "items": items,
+            "totalitems": query.count(),
+            "currentpage": page,
+            "pagesize": pagesize
         }
 
     def read_many_byuser(self, request):
@@ -150,8 +156,6 @@ class ChangesetProtocol(object):
             raise HTTPNotFound("Requested user does not exist.")
 
         items = []
-
-        max_limit = 25
 
         activities_sub_query = self.Session.query(Activity.activity_identifier.label("identifier"), Activity.version, Changeset.timestamp, Changeset.fk_user).\
             join(Changeset).\
@@ -175,11 +179,11 @@ class ChangesetProtocol(object):
         stakeholder_query = self.Session.query(stakeholder_sub_query, User.username).\
             join(User).filter(User.username == username).subquery(name="st")
 
-        for i in self.Session.query(activities_query, literal_column("\'activity\'").label("type")).\
+        query = self.Session.query(activities_query, literal_column("\'activity\'").label("type")).\
             union(self.Session.query(stakeholder_query, literal_column("\'stakeholder\'").label("type"))).\
-            order_by(desc(activities_query.c.timestamp)).\
-            order_by(desc(activities_query.c.version)).\
-            offset((page-1)*pagesize).limit(pagesize).all():
+            order_by(desc(activities_query.c.timestamp)).order_by(desc(activities_query.c.version))
+
+        for i in query.offset((page-1)*pagesize).limit(pagesize).all():
             formatted_timestamp = i.timestamp.strftime("%a, %d %b %Y %H:%M:%S")
             short_uuid = str(i.identifier).split("-")[0].upper()
             if i.type == 'activity':
@@ -214,7 +218,10 @@ class ChangesetProtocol(object):
                 "link": request.route_url("index")
             },
             "items": items,
-            "username": username
+            "username": username,
+            "totalitems": query.count(),
+            "pagesize": pagesize,
+            "currentpage": page
         }
 
         return {}
