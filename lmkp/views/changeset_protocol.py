@@ -146,6 +146,8 @@ class ChangesetProtocol(object):
         }
 
     def read_many_byuser(self, request):
+        """
+        """
 
         username = request.matchdict['username']
 
@@ -184,39 +186,14 @@ class ChangesetProtocol(object):
             order_by(desc(activities_query.c.timestamp)).order_by(desc(activities_query.c.version))
 
         for i in query.offset((page-1)*pagesize).limit(pagesize).all():
-            formatted_timestamp = i.timestamp.strftime("%a, %d %b %Y %H:%M:%S")
-            short_uuid = str(i.identifier).split("-")[0].upper()
-            if i.type == 'activity':
-                activity_link = request.route_url("activities_read_one", output="html", uid=i.identifier, _query={"v": i.version})
-                description_text = "Update of deal <a href=\"%s\">#%s</a> on %s to version&nbsp;%s" \
-                    % (activity_link, short_uuid, formatted_timestamp, i.version),
-                items.append({
-                             "title":  "Activity %s updated to version %s" % (short_uuid, i.version),
-                             "description": unicode(description_text[0]),
-                             "link": activity_link,
-                             "author": i.username,
-                             "guid": "%s?v=%s" % (i.identifier, i.version),
-                             "pubDate": formatted_timestamp
-                             })
-            elif i.type == 'stakeholder':
-                stakeholder_link = request.route_url("stakeholders_read_one", output="html", uid=i.identifier, _query={"v": i.version})
-                description_text = "Update of investor <a href=\"%s\">#%s</a> on %s to version&nbsp;%s" \
-                    % (stakeholder_link, short_uuid, formatted_timestamp, i.version),
-                items.append({
-                             "title":  "Investor %s updated to version %s" % (short_uuid, i.version),
-                             "description": unicode(description_text[0]),
-                             "link": stakeholder_link,
-                             "author": i.username,
-                             "guid": "%s?v=%s" % (i.identifier, i.version),
-                             "pubDate": formatted_timestamp
-                             })
+            items.append({
+            "type": i.type,
+            "author": i.username,
+            "timestamp": i.timestamp,
+            "version": i.version,
+            "identifier": str(i.identifier)
+            })                            
         return {
-            "link": request.route_url("changesets_read_latest", output="rss"),
-            "image": {
-                "url": '/custom/img/logo.png',
-                "title": "landobservatory.org",
-                "link": request.route_url("index")
-            },
             "items": items,
             "username": username,
             "totalitems": query.count(),
