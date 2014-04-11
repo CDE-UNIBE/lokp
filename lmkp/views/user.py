@@ -382,7 +382,7 @@ class UserView(BaseView):
 
         schema = Schema()
         deform.Form.set_default_renderer(mako_renderer)
-        form = deform.Form(schema, buttons=(deform.Button(title=_(u'Update')), ), use_ajax=True)
+        form = deform.Form(schema, buttons=(deform.Button(title=_(u'Update'), css_class='btn btn-primary'), ), use_ajax=True)
 
         # Get the user data
         user = Session.query(User).filter(User.username == userid).first()
@@ -413,7 +413,7 @@ class UserView(BaseView):
             # Set the user profile
             user.profiles = [selected_profile]
 
-            return Response('<p>%s</p>' % _('Your user settings were updated.'))
+            return Response('<div class="alert alert-success">%s</div>' % _('Your user settings were updated.'))
 
         ret = self._render_form(form, success=succeed, appstruct=data)
 
@@ -421,6 +421,7 @@ class UserView(BaseView):
             self._handle_parameters()
             ret['profile'] = get_current_profile(self.request)
             ret['locale'] = get_current_locale(self.request)
+            ret['username'] = user.username
 
             return render_to_response(getTemplatePath(self.request, 'users/account_form.mak'),
                                       ret,
