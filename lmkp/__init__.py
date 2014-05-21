@@ -5,6 +5,7 @@ from lmkp.models.meta import DBSession
 from lmkp.renderers.renderers import GeoJsonRenderer
 from lmkp.renderers.renderers import JavaScriptRenderer
 from lmkp.renderers.renderers import JsonRenderer
+from lmkp.renderers.renderers import CSVRenderer
 from lmkp.security import group_finder
 from lmkp.subscribers import add_localizer
 from lmkp.subscribers import add_renderer_globals
@@ -86,12 +87,13 @@ def main(global_config, ** settings):
     #config.add_route('taggroups_model', 'static/app/model/TagGroup.js')
     #config.add_renderer('geojson', GeoJSON())
     config.add_renderer('geojson', GeoJsonRenderer())
+    config.add_renderer('csv', CSVRenderer())
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_static_view('formstatic', 'deform:static')
 
     # Customization: Add the static customization folder as view
     if customization is not None:
-        config.add_static_view('custom', 'customization/%s/static' % 
+        config.add_static_view('custom', 'customization/%s/static' %
             customization, cache_max_age=3600)
 
     config.add_route('index', '/')
@@ -240,6 +242,11 @@ def main(global_config, ** settings):
     config.add_route('file_upload_form_embedded', '/files/form')
     # Show or download a file
     config.add_route('file_view', '/files/{action}/{identifier}')
+
+    """
+    Download
+    """
+    config.add_route('download_all', '/download')
 
     """
     Translation
