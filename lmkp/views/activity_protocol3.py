@@ -798,7 +798,6 @@ class ActivityProtocol3(Protocol):
         ''public_query'': If set to true, no pending queries are made. Defaults
           to 'False'
         """
-
         logged_in, is_moderator = self._get_user_status(
                                                         effective_principals(request))
 
