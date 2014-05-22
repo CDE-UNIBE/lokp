@@ -257,7 +257,7 @@ class ActivityProtocol3(Protocol):
         dbLang = self.Session.query(Language).\
             filter(Language.locale == localizer.locale_name).\
             first()
-        query = self.Session.query(distinct(A_Key.key)).filter(A_Key.fk_language==dbLang.id)
+        query = self.Session.query(distinct(A_Key.key)).filter(A_Key.fk_language==dbLang.id).order_by(A_Key.key)
         return {
             'total': query.count(),
             'data': [k[0] for k in query.all()]
