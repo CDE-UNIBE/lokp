@@ -99,6 +99,7 @@ def downloadAll(request):
     HEADER = HEADER + ["Investor: %s" % sv for sv in sh_keys]
     for i in range(1, max_involvements + 1):
         HEADER = HEADER + ["%i. Secondary Investor: %s" % (i, sv) for sv in sh_keys]
+    HEADER = [unicode(h).encode("utf-8") for h in HEADER]
     result = {
         "header": HEADER,
         "rows": rows,
