@@ -1,9 +1,11 @@
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol3 import ActivityProtocol3
+from lmkp.views.activities import _handle_spatial_parameters
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.views import BaseView
 
+from urlparse import parse_qs, urlsplit, urlunsplit
 import logging
 from pyramid.view import view_config
 
@@ -24,10 +26,15 @@ def downloadAll(request):
     # Handle the parameters (locale, profile)
     bv = BaseView(request)
     bv._handle_parameters()
-
+    # get all keys for heading line
     a_keys = activity_protocol3.read_all_keys(request)["data"]
     sh_keys = stakeholder_protocol3.read_all_keys(request)["data"]
     sh_values_empty = [None]*len(sh_keys)
+
+    # spatial filter
+    _handle_spatial_parameters(request)
+
+
     activities = activity_protocol3.read_many(request, public=False, offset=0, limit=9999)
     rows = []
     value, year = None, None
