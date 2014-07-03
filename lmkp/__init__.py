@@ -25,9 +25,14 @@ import transaction
 def main(global_config, ** settings):
     """ This function returns a Pyramid WSGI application.
     """
+    
+    # Used when called through Tests
+    if 'settings' in settings:
+        settings = settings['settings']
+        
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
-
+    
     # Transform the list of valid file mime extensions from the ini file into a
     # python dict.
     # http://pyramid.readthedocs.org/en/latest/narr/environment.html#adding-a-custom-setting

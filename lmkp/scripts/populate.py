@@ -28,6 +28,31 @@ def main(argv=sys.argv):
     DBSession.configure(bind=engine)
     Base.metadata.create_all(engine)
     
+    _populate(engine, settings)
+
+def _addIfNotExists_ID(object):
+    q = DBSession.query(object.__mapper__).get(object.id)
+    if q is None:
+        # object does not yet exist -> create
+        DBSession.add(object)
+        return object
+    else:
+        return q
+
+def _addIfNotExists_NoIDUnique(object, filterColumn, filterAttr):
+    try:
+        q = DBSession.query(User).filter(filterColumn == filterAttr).one()
+        return q
+    except NoResultFound:
+        return object
+    except MultipleResultsFound:
+        return None
+
+def _populate(engine, settings):
+    """
+    Populate the database with some initial values and triggers.
+    """
+    
     # add triggers
     engine.execute("CREATE OR REPLACE FUNCTION data.check_uniqueVersionActive() RETURNS TRIGGER AS $check_uniqueVersionActive$ \
                         DECLARE \
@@ -118,21 +143,3 @@ def main(argv=sys.argv):
         # connected with profile1 (global)
         #user3 = _addIfNotExists_NoIDUnique(User(username='user3', password='pw', email='user3@cde.unibe.ch'), User.username, 'user3')
         #user3.groups.append(group3)
-
-def _addIfNotExists_ID(object):
-    q = DBSession.query(object.__mapper__).get(object.id)
-    if q is None:
-        # object does not yet exist -> create
-        DBSession.add(object)
-        return object
-    else:
-        return q
-
-def _addIfNotExists_NoIDUnique(object, filterColumn, filterAttr):
-    try:
-        q = DBSession.query(User).filter(filterColumn == filterAttr).one()
-        return q
-    except NoResultFound:
-        return object
-    except MultipleResultsFound:
-        return None
