@@ -12,7 +12,7 @@ from selenium import webdriver
 @pytest.fixture(scope='session')
 def connection(request):
     
-    config_uri = 'test.ini'
+    config_uri = 'unit_tests.ini'
     settings = get_appsettings(config_uri)
     engine = engine_from_config(settings, 'sqlalchemy.')
     
