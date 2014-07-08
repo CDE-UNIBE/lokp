@@ -713,6 +713,11 @@ def read_one_active(request):
 def review(request):
     """
     Insert a review decision for a pending Activity
+    Required POST attributes:
+    - identifier (string, uid)
+    - version (int)
+    - review_decision (string): approve / reject
+    - review_comment (string): nullable
     """
     
     _ = request.translate

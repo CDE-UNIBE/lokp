@@ -2,16 +2,21 @@
 # http://blog.lostpropertyhq.com/testing-with-sqlalchemy-and-pytest/
 
 import pytest
-from lmkp.models import meta
 import os
-from sqlalchemy import engine_from_config
+from pyramid.paster import get_app
 from pyramid.paster import get_appsettings
+from sqlalchemy import engine_from_config
+from webtest import TestApp
+
 from lmkp.scripts.populate import _populate
-from selenium import webdriver
+from lmkp.models import meta
+
 
 @pytest.fixture(scope='session')
 def connection(request):
-    
+    """
+    Fixture to set up a database connection and create the tables.
+    """
     config_uri = 'unit_tests.ini'
     settings = get_appsettings(config_uri)
     engine = engine_from_config(settings, 'sqlalchemy.')
@@ -30,11 +35,16 @@ def connection(request):
 
 @pytest.fixture
 def db_session(request, connection):
+    """
+    Fixture to roll back the database after tests. Also populates database with
+    initial keys, values and other data.
+    """
     from transaction import abort
     trans = connection.begin()
     
     here = os.path.dirname(__file__)
-    location = os.path.join(here, 'lmkp', 'customization', 'testing', 'scripts', 'populate_keyvalues.sql')
+    location = os.path.join(here, 'lmkp', 'customization', 'testing', 'scripts',
+        'populate_keyvalues.sql')
     
     sql_file = open(location, 'r')
     sql_query = sql_file.read()
@@ -47,17 +57,11 @@ def db_session(request, connection):
     from lmkp.models.meta import DBSession
     return DBSession
 
-
-browsers = {
-    'firefox': webdriver.Firefox,
-#    'chrome': webdriver.Chrome,
-}
-
-@pytest.fixture
-def driver(request):
-    #b = browsers[request.param]()
-    b = browsers['firefox']()
-
-    request.addfinalizer(lambda *args: b.quit())
-
-    return b
+@pytest.fixture(scope='function')
+def app(request, db_session):
+    """
+    Use this fixture to retreive a TestApp object which can be used as self.app
+    in the test functions.
+    """
+    request.cls.app = TestApp(get_app('unit_tests.ini'))
+    return request
