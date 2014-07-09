@@ -1237,7 +1237,9 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             reviewable = 0
             inv = compareFeature.find_involvement_by_guid(data['id'])
             
-            if inv is not None:
+            # Check if the involvement is reviewable. This is only important if
+            # the version on the other side is pending.
+            if inv is not None and inv.get_status() == 1:
                 reviewable = review._review_check_involvement(
                     inv._feature.getMappedClass(), inv._feature.get_guid(),
                     inv._feature.get_version())

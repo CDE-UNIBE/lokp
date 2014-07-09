@@ -32,7 +32,9 @@ requires = [
     'deform==0.9.7',
     'simplejson',
     'pyramid_beaker==0.7',
-    'sphinx==1.2'
+    'sphinx==1.2',
+    'pytest==2.5.2',
+    'selenium==2.42.1',
     ]
 
 setup(name='LMKP',
