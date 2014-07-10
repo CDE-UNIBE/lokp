@@ -25,9 +25,14 @@ import transaction
 def main(global_config, ** settings):
     """ This function returns a Pyramid WSGI application.
     """
+    
+    # Used when called through Tests
+    if 'settings' in settings:
+        settings = settings['settings']
+        
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
-
+    
     # Transform the list of valid file mime extensions from the ini file into a
     # python dict.
     # http://pyramid.readthedocs.org/en/latest/narr/environment.html#adding-a-custom-setting
@@ -177,6 +182,9 @@ def main(global_config, ** settings):
     # Read one
     config.add_route('activities_read_one', '/activities/{output}/{uid}')
 
+    # Read one history
+    config.add_route('activities_read_one_history', '/activities/history/{output}/{uid}')
+
     """
     Stakeholders
     """
@@ -208,6 +216,9 @@ def main(global_config, ** settings):
 
     # Read one
     config.add_route('stakeholders_read_one', '/stakeholders/{output}/{uid}')
+
+    # Read one history
+    config.add_route('stakeholders_read_one_history', '/stakeholders/history/{output}/{uid}')
 
     """
     Comments
@@ -289,6 +300,11 @@ def main(global_config, ** settings):
 
     # Changeset protocol, query the changeset
     config.add_route('changesets_read', '/changesets')
+
+    # Show a list of latest changesets
+    config.add_route('changesets_read_latest', '/changesets/latest/{output}')
+    # Show a list of changesets by a user
+    config.add_route('changesets_read_byuser', '/changesets/{username}/{output}')
 
     # A route to the sitemap.xml
     config.add_route('sitemap', '/sitemap.xml')

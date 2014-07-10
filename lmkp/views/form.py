@@ -64,7 +64,7 @@ def renderForm(request, itemType, **kwargs):
     """
     Render the form for either Activity or Stakeholder
     """
-
+    
     # Get the kwargs
     itemJson = kwargs.get('itemJson', None)
     newInvolvement = kwargs.get('inv', None)
@@ -642,9 +642,9 @@ def renderReadonlyForm(request, itemType, itemJson):
         errorList = checkValidItemjson(configCategoryList, itemJson, output='list')
         if len(errorList) > 0:
             url = None
-            routeName = 'activities_read_one' if itemType == 'activities' else 'stakeholders_read_one'
+            routeName = 'activities_read_one_history' if itemType == 'activities' else 'stakeholders_read_one_history'
             if 'id' in itemJson:
-                url = request.route_url(routeName, output='history', uid=itemJson['id'])
+                url = request.route_url(routeName, output='html', uid=itemJson['id'])
             errorMsg = render(
                         getTemplatePath(request, 'parts/messages/item_requested_not_valid.mak'),
                         {'url': url},
@@ -724,11 +724,11 @@ def renderReadonlyCompareForm(request, itemType, refFeature, newFeature,
         # If no formdata is available, it is very likely that the form has some
         # errors. In this case show an error message.
         url = None
-        routeName = 'activities_read_one' if itemType == 'activities' else 'stakeholders_read_one'
+        routeName = 'activities_read_one_history' if itemType == 'activities' else 'stakeholders_read_one_history'
         if refFeature is not None:
-            url = request.route_url(routeName, output='history', uid=refFeature.get_guid())
+            url = request.route_url(routeName, output='html', uid=refFeature.get_guid())
         elif newFeature is not None:
-            url = request.route_url(routeName, output='history', uid=newFeature.get_guid())
+            url = request.route_url(routeName, output='html', uid=newFeature.get_guid())
         errorMsg = render(
             getTemplatePath(request, 'parts/messages/comparison_not_valid.mak'),
             {'url': url},
@@ -1237,7 +1237,9 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             reviewable = 0
             inv = compareFeature.find_involvement_by_guid(data['id'])
             
-            if inv is not None:
+            # Check if the involvement is reviewable. This is only important if
+            # the version on the other side is pending.
+            if inv is not None and inv.get_status() == 1:
                 reviewable = review._review_check_involvement(
                     inv._feature.getMappedClass(), inv._feature.get_guid(),
                     inv._feature.get_version())
@@ -1312,7 +1314,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
                 dataThmg[invConfig.getName()] = invData
 
     for taggroup in itemJson['taggroups']:
-
+        
         # Get the category and thematic group based on the maintag
         mt = taggroup['main_tag']
 
@@ -1811,11 +1813,12 @@ def formdataToDiff(request, newform, itemType):
                                         'key': k,
                                         'value': oldtaggroup[k]
                                     })
-
+                                    
                         # Put together diff for the taggroup
                         if len(deletedtags) > 0 or len(addedtags) > 0:
                             tagdiffs = []
                             for dt in deletedtags:
+                                del(oldtaggroup[dt['key']])
                                 tagdiffs.append({
                                     'key': dt['key'],
                                     'value': dt['value'],
@@ -1827,10 +1830,16 @@ def formdataToDiff(request, newform, itemType):
                                     'value': at['value'],
                                     'op': 'add'
                                 })
-                            taggroupdiffs.append({
+                            tgdiff = {
                                 'tg_id': t['tg_id'],
                                 'tags': tagdiffs
-                            })
+                            }
+                            # If there are no tags left in the old taggroup, 
+                            # mark the entire taggroup diff to be deleted.
+                            del(oldtaggroup['tg_id'])
+                            if len(addedtags) == 0 and len(deletedtags) > 0 and oldtaggroup == {}:
+                                tgdiff['op'] = 'delete'
+                            taggroupdiffs.append(tgdiff)
 
                     else:
                         # Taggroup has no tg_id. It is either a new taggroup to
