@@ -64,7 +64,7 @@ def renderForm(request, itemType, **kwargs):
     """
     Render the form for either Activity or Stakeholder
     """
-
+    
     # Get the kwargs
     itemJson = kwargs.get('itemJson', None)
     newInvolvement = kwargs.get('inv', None)
@@ -1314,7 +1314,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
                 dataThmg[invConfig.getName()] = invData
 
     for taggroup in itemJson['taggroups']:
-
+        
         # Get the category and thematic group based on the maintag
         mt = taggroup['main_tag']
 
@@ -1813,11 +1813,12 @@ def formdataToDiff(request, newform, itemType):
                                         'key': k,
                                         'value': oldtaggroup[k]
                                     })
-
+                                    
                         # Put together diff for the taggroup
                         if len(deletedtags) > 0 or len(addedtags) > 0:
                             tagdiffs = []
                             for dt in deletedtags:
+                                del(oldtaggroup[dt['key']])
                                 tagdiffs.append({
                                     'key': dt['key'],
                                     'value': dt['value'],
@@ -1829,10 +1830,16 @@ def formdataToDiff(request, newform, itemType):
                                     'value': at['value'],
                                     'op': 'add'
                                 })
-                            taggroupdiffs.append({
+                            tgdiff = {
                                 'tg_id': t['tg_id'],
                                 'tags': tagdiffs
-                            })
+                            }
+                            # If there are no tags left in the old taggroup, 
+                            # mark the entire taggroup diff to be deleted.
+                            del(oldtaggroup['tg_id'])
+                            if len(addedtags) == 0 and len(deletedtags) > 0 and oldtaggroup == {}:
+                                tgdiff['op'] = 'delete'
+                            taggroupdiffs.append(tgdiff)
 
                     else:
                         # Taggroup has no tg_id. It is either a new taggroup to
