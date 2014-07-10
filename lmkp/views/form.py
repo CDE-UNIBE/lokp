@@ -33,7 +33,7 @@ def form_clear_session(request):
     """
 
     # Enter a date to delete all sessions older than the given date (in UTC).
-    newSessionDate = datetime.datetime(2013, 11, 5, 8, 0)
+    newSessionDate = datetime.datetime(2014, 7, 10, 15, 0)
 
     if request.session is not None and '_creation_time' in request.session:
         creationtime = request.session['_creation_time']
