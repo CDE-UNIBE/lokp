@@ -301,7 +301,7 @@ class ConfigCategoryList(object):
                     tag = self.findTagByKey(k)
                     if tag is not None:
                         for v in tag.getValues():
-                            if str(value) == v.getName():
+                            if unicode(value) == v.getName():
                                 value_is_valid = True
                 else:
                     # If the key has no predefined values, the given value is
