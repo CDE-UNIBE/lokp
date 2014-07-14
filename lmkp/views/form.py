@@ -2037,7 +2037,11 @@ def mako_renderer(tmpl_name, **kw):
     """
     request = get_current_request()
     # Redirect base form templates to customized templates
-    if tmpl_name in ['form', 'readonly/form', 'customInvolvementMapping']:
+    if tmpl_name in [
+        'form', 'readonly/form', 'customInvolvementMapping', 
+        'readonly/customInvolvementMappingStakeholder',
+        'readonly/customInvolvementMappingActivity'
+        ]:
         resolver = lmkpAssetResolver.resolve(getTemplatePath(request, 'form/%s.mak' % tmpl_name))
     else:
         resolver = lmkpAssetResolver.resolve('templates/form/%s.mak' % tmpl_name)

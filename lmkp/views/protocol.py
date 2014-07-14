@@ -35,6 +35,7 @@ from sqlalchemy import func
 import yaml
 import collections
 from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.renderers import render
 from pyramid.security import unauthenticated_userid
 from pyramid.security import effective_principals
 from pyramid.i18n import get_localizer
@@ -45,6 +46,7 @@ from shapely.geometry import asShape
 
 from lmkp.views.translation import statusMap
 from lmkp.views.translation import get_translated_status
+from lmkp.config import getTemplatePath
 
 log = logging.getLogger(__name__)
 
@@ -717,9 +719,23 @@ class Protocol(object):
 
                 if reviewPossible is not True:
                     if reviewPossible == -2:
-                        ret['msg'] = _('At least one of the involved Stakeholders cannot be reviewed. Click on the icon next to the involvement for further details.')
+                        ret['msg'] = render(
+                            getTemplatePath(
+                                request, 
+                                'parts/messages/one_of_involved_stakeholders_cannot_be_reviewed.mak'
+                            ), 
+                            {}, 
+                            request
+                        )
                     elif reviewPossible == -3:
-                        ret['msg'] = _('At least one of the involved Activities cannot be reviewed. Click on the icon next to the involvement for further details.')
+                        ret['msg'] = render(
+                            getTemplatePath(
+                                request, 
+                                'parts/messages/one_of_involved_activities_cannot_be_reviewed.mak'
+                            ), 
+                            {}, 
+                            request
+                        )
                     return ret
 
             # Do a review for all the involvements
