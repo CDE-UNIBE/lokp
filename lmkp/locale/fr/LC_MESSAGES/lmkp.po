@@ -1,8 +1,9 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: LOKP\n"
+"Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-12-23 12:46+0100\n"
+"POT-Creation-Date: 2014-07-14 09:11+0200\n"
 "PO-Revision-Date: 2014-03-13 10:31+0100\n"
 "Last-Translator: Adrian Weber <adrian.weber@cde.unibe.ch>\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -12,15 +13,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
 
-#: lmkp/templates/ext_administration.mak:21
-#: lmkp/templates/ext_base.mak:55
-#: lmkp/templates/ext_base.mak:58
-#: lmkp/templates/ext_charts.mak:16
-#: lmkp/templates/ext_moderation.mak:18
-#: lmkp/templates/ext_translation.mak:21
+#: lmkp/templates/ext_administration.mak:21 lmkp/templates/ext_base.mak:55
+#: lmkp/templates/ext_base.mak:58 lmkp/templates/ext_charts.mak:16
+#: lmkp/templates/ext_moderation.mak:18 lmkp/templates/ext_translation.mak:21
 #: lmkp/templates/old_compare_versions.mak:11
-#: lmkp/templates/old_embedded.mak:10
-#: lmkp/templates/old_review_versions.mak:4
+#: lmkp/templates/old_embedded.mak:10 lmkp/templates/old_review_versions.mak:4
 msgid "Land Observatory"
 msgstr "Observatoires des transactions foncières "
 
@@ -28,29 +25,40 @@ msgstr "Observatoires des transactions foncières "
 msgid "Administration"
 msgstr "Administration"
 
-#: lmkp/templates/ext_administration.mak:23
-#: lmkp/templates/ext_base.mak:60
-#: lmkp/templates/ext_moderation.mak:20
-#: lmkp/templates/ext_translation.mak:23
+#: lmkp/templates/ext_administration.mak:23 lmkp/templates/ext_base.mak:60
+#: lmkp/templates/ext_moderation.mak:20 lmkp/templates/ext_translation.mak:23
 msgid "[Demo]"
 msgstr "[Démonstration]"
 
-#: lmkp/templates/ext_administration.mak:37
-#: lmkp/templates/ext_charts.mak:35
-#: lmkp/templates/ext_moderation.mak:41
-#: lmkp/templates/ext_translation.mak:37
+#: lmkp/templates/ext_administration.mak:37 lmkp/templates/ext_charts.mak:35
+#: lmkp/templates/ext_moderation.mak:41 lmkp/templates/ext_translation.mak:37
 #: lmkp/templates/old_compare_versions.mak:48
-#: lmkp/templates/old_embedded.mak:35
-#: lmkp/templates/old_review_versions.mak:33
+#: lmkp/templates/old_embedded.mak:35 lmkp/templates/old_review_versions.mak:33
 #: lmkp/templates/form/customFileDisplay.mak:42
-#: lmkp/templates/form/customMapMapping.mak:69
-#: lmkp/views/translation.py:162
+#: lmkp/templates/form/customMapMapping.mak:69 lmkp/views/translation.py:162
 msgid "Loading ..."
 msgstr "Chargement ..."
 
 #: lmkp/templates/ext_base.mak:64
-msgid "The Land Observatory will make information on large-scale land acquisition transparent and accessible through an interactive, map-based platform. We are piloting the project in five countries, with partners and governments who will work to open government data, crowdsource and help customize local observatories. Updated information on land will benefit citizens, but also governments and companies interested in sustainability."
-msgstr "L'Obsevatoire des transactions foncières a pour objectif de rendre l'information sur les appropriations foncières à grande échelle transparente et accessible grâce une plateforme interactive et basée sur des cartes thématiques.Nous menons ce projet dans 5 pays, en partenariat avec la société civile et les gouvernements, afin de favoriser la publication de données issues des services publics, la collecte  d'informations multisources et une conception adaptée des observatoires locaux. Ces informations régulièrement mises à jour sur ces transactions bénéficient aux citoyens mais également aux governements et aux entreprises qui s'engagent dans le développement durable. "
+msgid ""
+"The Land Observatory will make information on large-scale land "
+"acquisition transparent and accessible through an interactive, map-based "
+"platform. We are piloting the project in five countries, with partners "
+"and governments who will work to open government data, crowdsource and "
+"help customize local observatories. Updated information on land will "
+"benefit citizens, but also governments and companies interested in "
+"sustainability."
+msgstr ""
+"L'Obsevatoire des transactions foncières a pour objectif de rendre "
+"l'information sur les appropriations foncières à grande échelle "
+"transparente et accessible grâce une plateforme interactive et basée sur "
+"des cartes thématiques.Nous menons ce projet dans 5 pays, en partenariat "
+"avec la société civile et les gouvernements, afin de favoriser la "
+"publication de données issues des services publics, la collecte  "
+"d'informations multisources et une conception adaptée des observatoires "
+"locaux. Ces informations régulièrement mises à jour sur ces transactions "
+"bénéficient aux citoyens mais également aux governements et aux "
+"entreprises qui s'engagent dans le développement durable. "
 
 #: lmkp/templates/ext_base.mak:67
 msgid "The pilot project is coordinated by the"
@@ -82,7 +90,9 @@ msgstr ", et co-financé par d'autres programmes du CDE et de l'ILC."
 
 #: lmkp/templates/ext_base.mak:75
 msgid "Please send your questions and feedback on the Observatory to: "
-msgstr "Veuillez transmettre s'il vous plaît vos questions et commentaires sur l'Observatoire à : "
+msgstr ""
+"Veuillez transmettre s'il vous plaît vos questions et commentaires sur "
+"l'Observatoire à : "
 
 #: lmkp/templates/ext_charts.mak:16
 msgid "Charts"
@@ -93,8 +103,12 @@ msgid "Heat map for Cambodia and Laos"
 msgstr "Cartes des températures au Cambodge et au Laos"
 
 #: lmkp/templates/ext_charts.mak:41
-msgid "Distribution of land related deals in Cambodia and for Champasak and Attapeu province in Laos."
-msgstr "Répartition des transactions foncières au Cambodge et au Laos (provinces de Champasak et Attapeu)."
+msgid ""
+"Distribution of land related deals in Cambodia and for Champasak and "
+"Attapeu province in Laos."
+msgstr ""
+"Répartition des transactions foncières au Cambodge et au Laos (provinces "
+"de Champasak et Attapeu)."
 
 #: lmkp/templates/ext_charts.mak:42
 msgid "Data for Cambodia are provided by the website"
@@ -102,27 +116,31 @@ msgstr "Les données pour le Cambodge sont fournies par le site internet "
 
 #: lmkp/templates/ext_charts.mak:44
 msgid "Data for Laos are based on the landconcessions database."
-msgstr "Les données pour le Laos sont issues de la base de données des concessions foncières, qualifiée \"landconcession data base\"."
+msgstr ""
+"Les données pour le Laos sont issues de la base de données des "
+"concessions foncières, qualifiée \"landconcession data base\"."
 
 #: lmkp/templates/ext_charts.mak:49
 msgid "Distribution of activities worldwide"
 msgstr "Répartition mondiale des transactions foncières par secteur d'activités  "
 
 #: lmkp/templates/ext_charts.mak:51
-msgid "Worldwide distribution of land related deals based on the Landmatrix database available at"
-msgstr "Distribution mondiale des transactions foncières d'après la base de données de la Landmatrix, disponible à "
+msgid ""
+"Worldwide distribution of land related deals based on the Landmatrix "
+"database available at"
+msgstr ""
+"Distribution mondiale des transactions foncières d'après la base de "
+"données de la Landmatrix, disponible à "
 
 #: lmkp/templates/ext_moderation.mak:18
 msgid "Moderation"
 msgstr "Modération "
 
-#: lmkp/templates/ext_translation.mak:21
-#: lmkp/views/translation.py:303
+#: lmkp/templates/ext_translation.mak:21 lmkp/views/translation.py:303
 msgid "Translation"
 msgstr "Traduction"
 
-#: lmkp/templates/old_compare_versions.mak:11
-#: lmkp/views/translation.py:95
+#: lmkp/templates/old_compare_versions.mak:11 lmkp/views/translation.py:95
 #: lmkp/views/translation.py:122
 msgid "Compare"
 msgstr "Comparer"
@@ -130,8 +148,7 @@ msgstr "Comparer"
 #: lmkp/templates/old_review_versions.mak:4
 #: lmkp/templates/review/readonly/customInvolvementMappingActivity.mak:24
 #: lmkp/templates/review/readonly/customInvolvementMappingStakeholder.mak:27
-#: lmkp/views/translation.py:112
-#: lmkp/views/translation.py:138
+#: lmkp/views/translation.py:112 lmkp/views/translation.py:138
 msgid "Review"
 msgstr "Vérifier"
 
@@ -157,13 +174,11 @@ msgstr "Avertissement"
 msgid "Are you sure you want to delete this file?"
 msgstr "Etes-vous sûr(e)s de vouloir supprimer ce dossier ?"
 
-#: lmkp/templates/form/customFileDisplay.mak:47
-#: lmkp/views/translation.py:116
+#: lmkp/templates/form/customFileDisplay.mak:47 lmkp/views/translation.py:116
 msgid "Yes"
 msgstr "Oui"
 
-#: lmkp/templates/form/customFileDisplay.mak:48
-#: lmkp/views/translation.py:109
+#: lmkp/templates/form/customFileDisplay.mak:48 lmkp/views/translation.py:109
 msgid "No"
 msgstr "Non"
 
@@ -188,38 +203,36 @@ msgid "This Deal"
 msgstr ""
 
 #: lmkp/templates/form/customMapMapping.mak:87
-#| msgid "Base Layers"
 msgid "Base layers"
 msgstr "Cartes de base"
 
-#: lmkp/templates/form/customMapMapping.mak:93
-#: lmkp/views/translation.py:106
+#: lmkp/templates/form/customMapMapping.mak:93 lmkp/views/translation.py:106
 msgid "Street Map"
 msgstr "Carte routière"
 
-#: lmkp/templates/form/customMapMapping.mak:96
-#: lmkp/views/translation.py:104
+#: lmkp/templates/form/customMapMapping.mak:96 lmkp/views/translation.py:104
 msgid "Satellite Imagery"
 msgstr "Image satellite"
 
-#: lmkp/templates/form/customMapMapping.mak:99
-#: lmkp/views/translation.py:107
+#: lmkp/templates/form/customMapMapping.mak:99 lmkp/views/translation.py:107
 msgid "Terrain Map"
 msgstr "Carte des reliefs"
 
 #: lmkp/templates/form/customMapMapping.mak:109
-#| msgid "Context Layers"
 msgid "Context layers"
 msgstr "Couches thématiques"
 
 #: lmkp/templates/form/customMapMapping.mak:147
-#| msgid "Set the location."
 msgid "Set the location"
 msgstr "Choisissez la localité"
 
 #: lmkp/templates/form/customMapMapping.mak:147
-msgid "Click on the map to set the location. Please zoom in to set the point as accurately as possible."
-msgstr "Cliquer sur la carte pour préciser une localisation. Veuillez zoomer pour positionner le point le plus précisément possible."
+msgid ""
+"Click on the map to set the location. Please zoom in to set the point as "
+"accurately as possible."
+msgstr ""
+"Cliquer sur la carte pour préciser une localisation. Veuillez zoomer pour"
+" positionner le point le plus précisément possible."
 
 #: lmkp/templates/form/customMapMapping.mak:148
 msgid "Please use the QGIS plugin to add or edit polygons."
@@ -231,7 +244,6 @@ msgstr "Plus d’informations"
 
 #: lmkp/templates/form/customMapMapping.mak:152
 #, fuzzy
-#| msgid "Set the location."
 msgid "search location"
 msgstr "Préciser la localisation"
 
@@ -240,12 +252,13 @@ msgid "Start to search for a location by typing in the search field."
 msgstr ""
 
 #: lmkp/templates/form/customMapMapping.mak:156
-#| msgid "Enter coordinates."
 msgid "Enter coordinates"
 msgstr "Entrez des coordonnées"
 
 #: lmkp/templates/form/customMapMapping.mak:156
-msgid "If you have GPS coordinates you can enter them to set the location even more accurately."
+msgid ""
+"If you have GPS coordinates you can enter them to set the location even "
+"more accurately."
 msgstr ""
 
 #: lmkp/templates/form/customMapMapping.mak:162
@@ -273,12 +286,18 @@ msgid "File upload"
 msgstr "Télecharger fichier"
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:32
-msgid "Important: All the uploaded files will be publicly visible! You should not upload confidential data."
+msgid ""
+"Important: All the uploaded files will be publicly visible! You should "
+"not upload confidential data."
 msgstr ""
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:34
-msgid "Please note that the file upload may take a while depending on your Internet connection."
-msgstr "Veuilez prendre en compte s'il vous plaît que le téléchargment peut être plus ou moins lent selon la qualité de votre connexion internet."
+msgid ""
+"Please note that the file upload may take a while depending on your "
+"Internet connection."
+msgstr ""
+"Veuilez prendre en compte s'il vous plaît que le téléchargment peut être "
+"plus ou moins lent selon la qualité de votre connexion internet."
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:36
 msgid "Valid files"
@@ -298,14 +317,15 @@ msgstr "Télécharger"
 msgid "Success"
 msgstr "Validé"
 
-#: lmkp/templates/form/form_fileupload_embedded.mak:105
-#: lmkp/views/form.py:75
+#: lmkp/templates/form/form_fileupload_embedded.mak:105 lmkp/views/form.py:75
 msgid "Error"
 msgstr "Erreur"
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:161
 msgid "The file is being uploaded. Please do not close this window!"
-msgstr "Le dossier est en train d'être téléchargé. S'il vous plaît ne fermer pas cette fenêtre."
+msgstr ""
+"Le dossier est en train d'être téléchargé. S'il vous plaît ne fermer pas "
+"cette fenêtre."
 
 #: lmkp/templates/form/inputtoken.mak:20
 msgid "Type in the textfield to search and select values."
@@ -316,8 +336,12 @@ msgid "Type * to show all possible values."
 msgstr ""
 
 #: lmkp/templates/form/mapping_item.mak:42
-msgid "The location is required. Please select a point on the map before continuing."
-msgstr "La localisation est nécessaire. Veuillez s'il vous plaît sélectionner un point sur la carte avant de continuer."
+msgid ""
+"The location is required. Please select a point on the map before "
+"continuing."
+msgstr ""
+"La localisation est nécessaire. Veuillez s'il vous plaît sélectionner un "
+"point sur la carte avant de continuer."
 
 #: lmkp/templates/form/readonly/customFileDisplay.mak:15
 #: lmkp/templates/review/readonly/customFileDisplay.mak:16
@@ -353,45 +377,41 @@ msgstr "Nombre total de"
 msgid "per page"
 msgstr "par page"
 
-#: lmkp/views/activities.py:633
-#: lmkp/views/stakeholders.py:636
+#: lmkp/views/activities.py:571
+msgid "Spatial Accuracy"
+msgstr ""
+
+#: lmkp/views/activities.py:728 lmkp/views/stakeholders.py:666
 msgid "User is not logged in."
 msgstr "L'utilisateur n'est pas connecté."
 
-#: lmkp/views/activities.py:636
-#: lmkp/views/stakeholders.py:639
+#: lmkp/views/activities.py:731 lmkp/views/stakeholders.py:669
 msgid "User has no permissions to add a review."
 msgstr "L'utilisateur n'a pas la possibilité d'ajouter des commentaires. "
 
-#: lmkp/views/activities.py:643
+#: lmkp/views/activities.py:738
 msgid "User has no profile attached"
 msgstr "L'utilisateur n'a pas de profil correspondant."
 
-#: lmkp/views/activities.py:650
+#: lmkp/views/activities.py:745
 msgid "The Activity was not found or is not situated within the user's profiles"
 msgstr "La transaction n'a pas été trouvé"
 
-#: lmkp/views/activities.py:660
-#: lmkp/views/stakeholders.py:659
+#: lmkp/views/activities.py:755 lmkp/views/stakeholders.py:689
 #, fuzzy
-#| msgid "Unknown review decision"
 msgid "No valid review decision"
 msgstr "La décision associée à la vérification est inconnue"
 
-#: lmkp/views/activities.py:679
-#: lmkp/views/stakeholders.py:679
+#: lmkp/views/activities.py:774 lmkp/views/stakeholders.py:709
 msgid "Not all mandatory keys are provided"
 msgstr "Les caractéristiques clés et obligatoires n'ont pas été fournies"
 
-#: lmkp/views/activities.py:686
-#: lmkp/views/stakeholders.py:686
+#: lmkp/views/activities.py:781 lmkp/views/stakeholders.py:716
 #, fuzzy
-#| msgid "Unknown"
 msgid "Unknown error"
 msgstr "Inconnu"
 
-#: lmkp/views/comments.py:72
-#: lmkp/views/comments.py:170
+#: lmkp/views/comments.py:72 lmkp/views/comments.py:170
 msgid "Object not found."
 msgstr "Objet non trouvé."
 
@@ -407,13 +427,11 @@ msgstr "Commentaire inséré avec succès."
 msgid "Comment successfully deleted."
 msgstr "Commentaire supprimé avec succès."
 
-#: lmkp/views/editors.py:25
-#: lmkp/views/moderators.py:30
+#: lmkp/views/editors.py:25 lmkp/views/moderators.py:30
 msgid "Logged in as:"
 msgstr "Connecté en tant que:"
 
-#: lmkp/views/editors.py:27
-#: lmkp/views/moderators.py:32
+#: lmkp/views/editors.py:27 lmkp/views/moderators.py:32
 msgid "Logout"
 msgstr "Déconnectez-vous"
 
@@ -447,70 +465,63 @@ msgstr "Formulaire vide"
 
 #: lmkp/views/form.py:74
 msgid "You submitted an empty form or did not make any changes."
-msgstr "Vous avez soumis un formulaire vide ou vous n'avez pas apporté de changement."
+msgstr ""
+"Vous avez soumis un formulaire vide ou vous n'avez pas apporté de "
+"changement."
 
 #: lmkp/views/form.py:475
 #, fuzzy
-#| msgid "Unknown Activity"
 msgid "Unknown Item"
 msgstr "Object inconnu"
 
-#: lmkp/views/form.py:714
-msgid "At least one of the involvements prevents automatic revision. Please review these involvements separately."
+#: lmkp/views/form.py:717
+msgid ""
+"At least one of the involvements prevents automatic revision. Please "
+"review these involvements separately."
 msgstr ""
 
-#: lmkp/views/form.py:716
-msgid "This version contains changed involvements which prevent automatic revision. Please review these involvements."
+#: lmkp/views/form.py:719
+msgid ""
+"This version contains changed involvements which prevent automatic "
+"revision. Please review these involvements."
 msgstr ""
 
-#: lmkp/views/form.py:989
+#: lmkp/views/form.py:992
 msgid "The Item could not be created or updated."
 msgstr ""
 
-#: lmkp/views/form.py:1001
+#: lmkp/views/form.py:1004
 #, fuzzy
-#| msgid "The Activity was not found"
 msgid "The Item was created but not found."
 msgstr "La transaction n'a pas été trouvée."
 
-#: lmkp/views/form.py:1003
-#: lmkp/views/translation.py:175
+#: lmkp/views/form.py:1006 lmkp/views/translation.py:175
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: lmkp/views/form.py:1106
-#: lmkp/views/translation.py:114
+#: lmkp/views/form.py:1109 lmkp/views/translation.py:114
 msgid "Submit"
 msgstr "Soumettre"
 
-#: lmkp/views/form_config.py:1019
+#: lmkp/views/form_config.py:1037
 msgid "Select"
 msgstr "Sélectionner"
 
-#: lmkp/views/form_config.py:1677
-#| msgid "Stakeholders"
+#: lmkp/views/form_config.py:1695
 msgid "Stakeholder Role"
 msgstr "Rôle d’investisseur"
 
-#: lmkp/views/login.py:57
+#: lmkp/views/login.py:58
 msgid "Login failed! Please try again."
 msgstr "La connexion a échoué ! Veuillez s'il vous plaît essayer à nouveau."
 
-#: lmkp/views/login.py:106
+#: lmkp/views/login.py:107
 msgid "No registered user found with this email address."
 msgstr "Aucun utilisateur n'est enregistré à cette adresse"
 
-#: lmkp/views/login.py:115
+#: lmkp/views/login.py:119
 msgid "Password reset"
 msgstr "Réinitialiser mot de passe"
-
-#: lmkp/views/login.py:117
-msgid "Password reset was successful. An email containing the new password has been sent to your email address."
-msgstr "La réinitialisation du mot de passe a été faite avec succès. Un e-mail contenant le nouveau mot de passe a été envoyé à votre adresse e-mail."
-
-#: lmkp/views/login.py:119
-msgid "Proceed to the login page"
-msgstr "Rendez-vous à la page de connexion"
 
 #: lmkp/views/moderators.py:31
 msgid "Show user profile"
@@ -521,16 +532,29 @@ msgid "Unknown object to review."
 msgstr "Object inconnu à la vérification"
 
 #: lmkp/views/protocol.py:720
-msgid "At least one of the involved Stakeholders cannot be reviewed. Click on the icon next to the involvement for further details."
-msgstr "Au moins un des investisseurs impliqués ne peut pas être vérifié. Cliquez sur l'icône proche du \"niveau d'implication\" pour obtenir plus de détails."
+msgid ""
+"At least one of the involved Stakeholders cannot be reviewed. Click on "
+"the icon next to the involvement for further details."
+msgstr ""
+"Au moins un des investisseurs impliqués ne peut pas être vérifié. Cliquez"
+" sur l'icône proche du \"niveau d'implication\" pour obtenir plus de "
+"détails."
 
 #: lmkp/views/protocol.py:722
-msgid "At least one of the involved Activities cannot be reviewed. Click on the icon next to the involvement for further details."
-msgstr "Au moins des activités ne peut être vérifié. Cliquez sur l'icône proche du \"niveau d'implication\" pour plus de détails. "
+msgid ""
+"At least one of the involved Activities cannot be reviewed. Click on the "
+"icon next to the involvement for further details."
+msgstr ""
+"Au moins des activités ne peut être vérifié. Cliquez sur l'icône proche "
+"du \"niveau d'implication\" pour plus de détails. "
 
 #: lmkp/views/protocol.py:856
-msgid "No active version was found to base the review upon. Try to review an earlier version first."
-msgstr "Aucune version active n'a été trouvée pour procéder à la vérification. Essayez s'il vous plaît de vérifier d'abord une version plus récente. "
+msgid ""
+"No active version was found to base the review upon. Try to review an "
+"earlier version first."
+msgstr ""
+"Aucune version active n'a été trouvée pour procéder à la vérification. "
+"Essayez s'il vous plaît de vérifier d'abord une version plus récente. "
 
 #: lmkp/views/protocol.py:881
 msgid "The diff seems to be incorrect (identifier not found)"
@@ -544,9 +568,8 @@ msgstr "La décision associée à la vérification est inconnue"
 msgid "Review successful."
 msgstr "Vérification réussie."
 
-#: lmkp/views/stakeholders.py:649
+#: lmkp/views/stakeholders.py:679
 #, fuzzy
-#| msgid "No Stakeholders found"
 msgid "The Stakeholder was not found"
 msgstr "Aucun profil d'investisseur trouvé."
 
@@ -566,8 +589,7 @@ msgstr "inactive"
 msgid "deleted"
 msgstr "supprimé"
 
-#: lmkp/views/translation.py:34
-#: lmkp/views/translation.py:41
+#: lmkp/views/translation.py:34 lmkp/views/translation.py:41
 msgid "rejected"
 msgstr "rejeté"
 
@@ -643,8 +665,7 @@ msgstr "Fermer"
 msgid "Continue"
 msgstr "Continuer"
 
-#: lmkp/views/translation.py:97
-#: lmkp/views/translation.py:100
+#: lmkp/views/translation.py:97 lmkp/views/translation.py:100
 msgid "Delete"
 msgstr "Supprimer"
 
@@ -680,8 +701,7 @@ msgstr "Suivant"
 msgid "OK"
 msgstr "OK"
 
-#: lmkp/views/translation.py:111
-#: lmkp/views/translation.py:136
+#: lmkp/views/translation.py:111 lmkp/views/translation.py:136
 msgid "Refresh"
 msgstr "Actualiser"
 
@@ -739,7 +759,9 @@ msgstr "Enlever ce profil investisseur"
 
 #: lmkp/views/translation.py:139
 msgid "Involvement can not be reviewed. Click for more information."
-msgstr "Le niveau d'implication ne pas être vérifié. Cliquez pour plus d'informations."
+msgstr ""
+"Le niveau d'implication ne pas être vérifié. Cliquez pour plus "
+"d'informations."
 
 #: lmkp/views/translation.py:140
 msgid "Involvement can be reviewed"
@@ -765,30 +787,45 @@ msgstr "Anonyme"
 msgid "Clear Selection"
 msgstr "Effacer la sélection"
 
-#: lmkp/views/translation.py:148
-#: lmkp/views/translation.py:167
+#: lmkp/views/translation.py:148 lmkp/views/translation.py:167
 msgid "Please confirm"
 msgstr "Veuillez confirmer s'il vous plaït"
 
 #: lmkp/views/translation.py:149
-msgid "You are seeing a {0} version, which needs to be reviewed before it is publicly visible."
-msgstr "Vous êtes en train de consultez une version {0}, cette dernière doit être vérifiée avec d'être visible par tous. "
+msgid ""
+"You are seeing a {0} version, which needs to be reviewed before it is "
+"publicly visible."
+msgstr ""
+"Vous êtes en train de consultez une version {0}, cette dernière doit être"
+" vérifiée avec d'être visible par tous. "
 
 #: lmkp/views/translation.py:150
-msgid "You are seeing an {0} version, which was previously active and publicly visible."
-msgstr "Vous consultez ici une version {0} qui était auparavant publique et active. "
+msgid ""
+"You are seeing an {0} version, which was previously active and publicly "
+"visible."
+msgstr ""
+"Vous consultez ici une version {0} qui était auparavant publique et "
+"active. "
 
 #: lmkp/views/translation.py:151
-msgid "You are seeing a {0} version, which was previously active and publicly visible."
-msgstr "Vous consultez ici une version {0} qui était auparavant publique et active. "
+msgid ""
+"You are seeing a {0} version, which was previously active and publicly "
+"visible."
+msgstr ""
+"Vous consultez ici une version {0} qui était auparavant publique et "
+"active. "
 
 #: lmkp/views/translation.py:152
 msgid "You are seeing a {0} version, which was never publicly visible."
 msgstr "Vous consultez ici une version {0} qui n'a jamais été publique. "
 
 #: lmkp/views/translation.py:153
-msgid "You are seeing an {0} version, which was edited by a moderator and was never publicly visible."
-msgstr "Vous consultez ici une version {0} qui a été édité par un modérateur mais qui n'a jamais été publique.  "
+msgid ""
+"You are seeing an {0} version, which was edited by a moderator and was "
+"never publicly visible."
+msgstr ""
+"Vous consultez ici une version {0} qui a été édité par un modérateur mais"
+" qui n'a jamais été publique.  "
 
 #: lmkp/views/translation.py:154
 msgid "Date"
@@ -916,11 +953,15 @@ msgstr "Etape 1 : veuillez s'il vous plaît préciser la localisation "
 
 #: lmkp/views/translation.py:202
 msgid "You may either select a point on the map or enter some coordinates."
-msgstr "Vous pouvez soit sélectionner un point soit entrer les coordonnées géographiques."
+msgstr ""
+"Vous pouvez soit sélectionner un point soit entrer les coordonnées "
+"géographiques."
 
 #: lmkp/views/translation.py:203
 msgid "You can drag and drop the point. Once you are done, click \"Continue\"."
-msgstr "Vous pouvez déplacer le point en le faisant glisser. Une fois cela fait, cliquez sur \"continuer\". "
+msgstr ""
+"Vous pouvez déplacer le point en le faisant glisser. Une fois cela fait, "
+"cliquez sur \"continuer\". "
 
 #: lmkp/views/translation.py:204
 msgid "New Deal"
@@ -948,7 +989,9 @@ msgstr "Versions en attente des transactions"
 
 #: lmkp/views/translation.py:210
 msgid "This deal has pending changes. Click to review them in a popup window."
-msgstr "Cette transaction est en cours de changement. Cliquez ici pour vérifier cela dans la fenêtre qui s'affichera."
+msgstr ""
+"Cette transaction est en cours de changement. Cliquez ici pour vérifier "
+"cela dans la fenêtre qui s'affichera."
 
 #: lmkp/views/translation.py:211
 msgid "Review versions of Deal {0}"
@@ -1003,8 +1046,15 @@ msgid "Filter Stakeholders"
 msgstr "Flitrer par profil d'investisseurs"
 
 #: lmkp/views/translation.py:228
-msgid "No associated Stakeholders so far. You can search and select a Stakeholder using the Search field below. Or you can create a new Stakeholder by clicking on the button above."
-msgstr "Aucun profil d'investisseur n'est associé jusqu'à présent. Vous pouvez chercher et sélectionner un profil d'investisseur en utilisant l'icône \"rechercher\" ci-dessous ou vous pouvez créer un nouveau profil d'investisseur en cliquant sur le bouton ci-dessus. "
+msgid ""
+"No associated Stakeholders so far. You can search and select a "
+"Stakeholder using the Search field below. Or you can create a new "
+"Stakeholder by clicking on the button above."
+msgstr ""
+"Aucun profil d'investisseur n'est associé jusqu'à présent. Vous pouvez "
+"chercher et sélectionner un profil d'investisseur en utilisant l'icône "
+"\"rechercher\" ci-dessous ou vous pouvez créer un nouveau profil "
+"d'investisseur en cliquant sur le bouton ci-dessus. "
 
 #: lmkp/views/translation.py:229
 msgid "No Stakeholders found"
@@ -1027,8 +1077,12 @@ msgid "Pending versions of Stakeholders"
 msgstr "Versions en attente des profils d'investisseur {0} - {1} et {2}"
 
 #: lmkp/views/translation.py:234
-msgid "This stakeholder has pending changes. Click to review them in a popup window."
-msgstr "Ce profil d'investisseur est en cours de changement. Cliquez pour le vérifier dans la fenêtre qui s'affichera. "
+msgid ""
+"This stakeholder has pending changes. Click to review them in a popup "
+"window."
+msgstr ""
+"Ce profil d'investisseur est en cours de changement. Cliquez pour le "
+"vérifier dans la fenêtre qui s'affichera. "
 
 #: lmkp/views/translation.py:235
 msgid "Review versions of Stakeholder {0}"
@@ -1047,23 +1101,39 @@ msgid "Stakeholders"
 msgstr "Investisseurs"
 
 #: lmkp/views/translation.py:261
-msgid "Approving this version will create a new version. (further additional information to come)"
-msgstr "Approuver cette version creera une nouvelle version (information supplémentaire à venir)"
+msgid ""
+"Approving this version will create a new version. (further additional "
+"information to come)"
+msgstr ""
+"Approuver cette version creera une nouvelle version (information "
+"supplémentaire à venir)"
 
 #: lmkp/views/translation.py:262
 msgid "These changes are based on a version which is not the active version."
-msgstr "Ces changements sont basés sur une version qui n'est pas la version active. "
+msgstr ""
+"Ces changements sont basés sur une version qui n'est pas la version "
+"active. "
 
 #: lmkp/views/translation.py:263
-msgid "There are some mandatory keys missing. The item cannot be approved without these keys. Please click the \"edit\" button to add the missing keys."
-msgstr "Des variables obligatoires sont manquantes. Aucun enregistrement ne peut être fait si toutes les variables obligatoires ne sont pas remplies. Veulliez s'il vous plaît cliquer sur \"Editer\" pour ajouter les variables manquantes. "
+msgid ""
+"There are some mandatory keys missing. The item cannot be approved "
+"without these keys. Please click the \"edit\" button to add the missing "
+"keys."
+msgstr ""
+"Des variables obligatoires sont manquantes. Aucun enregistrement ne peut "
+"être fait si toutes les variables obligatoires ne sont pas remplies. "
+"Veulliez s'il vous plaît cliquer sur \"Editer\" pour ajouter les "
+"variables manquantes. "
 
 #: lmkp/views/translation.py:266
 msgid "Review Deal"
 msgstr "Vérifier une transaction"
 
 #: lmkp/views/translation.py:267
-msgid "The Activity of this involvement cannot be reviewed from the Stakeholder's side. Please review the Activity to approve or reject this involvement."
+msgid ""
+"The Activity of this involvement cannot be reviewed from the "
+"Stakeholder's side. Please review the Activity to approve or reject this "
+"involvement."
 msgstr ""
 
 #: lmkp/views/translation.py:268
@@ -1091,8 +1161,13 @@ msgid "Show pending changes"
 msgstr "Afficher les changements en attente"
 
 #: lmkp/views/translation.py:274
-msgid "The Stakeholder of this involvement has no active version and cannot be set active. Please review the Stakeholder first."
-msgstr "Le profil investisseur associé à ce niveau d'implication n'avait pas de version active et ne peut pas être activé. Veuillez s'il vous plait vérifier le profil de l'investisseur en premier."
+msgid ""
+"The Stakeholder of this involvement has no active version and cannot be "
+"set active. Please review the Stakeholder first."
+msgstr ""
+"Le profil investisseur associé à ce niveau d'implication n'avait pas de "
+"version active et ne peut pas être activé. Veuillez s'il vous plait "
+"vérifier le profil de l'investisseur en premier."
 
 #: lmkp/views/translation.py:296
 msgid "Add translation"
@@ -1150,38 +1225,31 @@ msgstr "Gestion de l'utilisateur"
 msgid "Translation not successful"
 msgstr "La traduction n'a pas aboutie"
 
-#: lmkp/views/translation.py:476
-#: lmkp/views/translation.py:503
+#: lmkp/views/translation.py:476 lmkp/views/translation.py:503
 msgid "Updated translation"
 msgstr "Mettre à jour la traduction"
 
-#: lmkp/views/translation.py:484
-#: lmkp/views/translation.py:511
+#: lmkp/views/translation.py:484 lmkp/views/translation.py:511
 msgid "Added translation"
 msgstr "traduction supplémentaire "
 
-#: lmkp/views/user.py:94
-#: lmkp/views/user.py:355
+#: lmkp/views/user.py:94 lmkp/views/user.py:355
 msgid "Username"
 msgstr "Nom d'utilisateur"
 
-#: lmkp/views/user.py:98
-#: lmkp/views/user.py:361
+#: lmkp/views/user.py:98 lmkp/views/user.py:361
 msgid "Password"
 msgstr "Mot de passe"
 
-#: lmkp/views/user.py:101
-#: lmkp/views/user.py:366
+#: lmkp/views/user.py:101 lmkp/views/user.py:366
 msgid "First Name"
 msgstr "Prénom"
 
-#: lmkp/views/user.py:104
-#: lmkp/views/user.py:371
+#: lmkp/views/user.py:104 lmkp/views/user.py:371
 msgid "Last Name"
 msgstr "Nom"
 
-#: lmkp/views/user.py:107
-#: lmkp/views/user.py:380
+#: lmkp/views/user.py:107 lmkp/views/user.py:380
 msgid "Valid Email"
 msgstr "Adresse e-mail "
 
@@ -1205,14 +1273,17 @@ msgstr "Connecter"
 msgid "Register"
 msgstr "Enregistrer"
 
-#~ msgid "Remove Stakeholder"
-#~ msgstr "Effacer un investisseur"
+#~ msgid ""
+#~ "Password reset was successful. An email"
+#~ " containing the new password has been"
+#~ " sent to your email address."
+#~ msgstr ""
+#~ "La réinitialisation du mot de passe "
+#~ "a été faite avec succès. Un e-mail"
+#~ " contenant le nouveau mot de passe"
+#~ " a été envoyé à votre adresse "
+#~ "e-mail."
 
-#~ msgid "Primary Investor"
-#~ msgstr "Investisseur primaire"
+#~ msgid "Proceed to the login page"
+#~ msgstr "Rendez-vous à la page de connexion"
 
-#~ msgid "Secondary Investor"
-#~ msgstr "Investisseur secondaire"
-
-#~ msgid "Review decision not provided."
-#~ msgstr "La décision associée à la vérification n'a pas encore été prise"

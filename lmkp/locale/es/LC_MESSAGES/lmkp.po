@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-12-23 12:46+0100\n"
+"POT-Creation-Date: 2014-07-14 09:11+0200\n"
 "PO-Revision-Date: 2013-09-19 10:30+0100\n"
 "Last-Translator: Lukas Vonlanthen <lukas.vonlanthen@cde.unibe.ch>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -201,7 +201,6 @@ msgstr ""
 
 #: lmkp/templates/form/customMapMapping.mak:87
 #, fuzzy
-#| msgid "Base Layers"
 msgid "Base layers"
 msgstr "Capas de base"
 
@@ -219,7 +218,6 @@ msgstr "Mapa del terreno"
 
 #: lmkp/templates/form/customMapMapping.mak:109
 #, fuzzy
-#| msgid "Context Layers"
 msgid "Context layers"
 msgstr "Capas de contexto"
 
@@ -246,7 +244,6 @@ msgstr ""
 
 #: lmkp/templates/form/customMapMapping.mak:152
 #, fuzzy
-#| msgid "Clear Selection"
 msgid "search location"
 msgstr "Borrar selecciÃ³n"
 
@@ -378,35 +375,37 @@ msgstr "NÃºmero total de"
 msgid "per page"
 msgstr "Por pÃ¡gina"
 
-#: lmkp/views/activities.py:633 lmkp/views/stakeholders.py:636
+#: lmkp/views/activities.py:571
+msgid "Spatial Accuracy"
+msgstr ""
+
+#: lmkp/views/activities.py:728 lmkp/views/stakeholders.py:666
 msgid "User is not logged in."
 msgstr "El usuario no estÃ¡ conectado"
 
-#: lmkp/views/activities.py:636 lmkp/views/stakeholders.py:639
+#: lmkp/views/activities.py:731 lmkp/views/stakeholders.py:669
 msgid "User has no permissions to add a review."
 msgstr "El usuario no tiene permisos para aÃ±adir una revisiÃ³n"
 
-#: lmkp/views/activities.py:643
+#: lmkp/views/activities.py:738
 msgid "User has no profile attached"
 msgstr "El usuario no tiene un perfil registrado"
 
-#: lmkp/views/activities.py:650
+#: lmkp/views/activities.py:745
 msgid "The Activity was not found or is not situated within the user's profiles"
 msgstr "El caso no se encuentra o no se ubica dentro del perfil del usuario"
 
-#: lmkp/views/activities.py:660 lmkp/views/stakeholders.py:659
+#: lmkp/views/activities.py:755 lmkp/views/stakeholders.py:689
 #, fuzzy
-#| msgid "Unknown review decision"
 msgid "No valid review decision"
 msgstr "DecisiÃ³n de revisiÃ³n desconocida"
 
-#: lmkp/views/activities.py:679 lmkp/views/stakeholders.py:679
+#: lmkp/views/activities.py:774 lmkp/views/stakeholders.py:709
 msgid "Not all mandatory keys are provided"
 msgstr "No se proporcionaron todos los elementos obligatorios"
 
-#: lmkp/views/activities.py:686 lmkp/views/stakeholders.py:686
+#: lmkp/views/activities.py:781 lmkp/views/stakeholders.py:716
 #, fuzzy
-#| msgid "Unknown Item"
 msgid "Unknown error"
 msgstr "Desconocido"
 
@@ -471,66 +470,54 @@ msgstr "Ingresaste un formulario vacÃ­o o no hiciste cambio alguno"
 msgid "Unknown Item"
 msgstr "Desconocido"
 
-#: lmkp/views/form.py:714
+#: lmkp/views/form.py:717
 msgid ""
 "At least one of the involvements prevents automatic revision. Please "
 "review these involvements separately."
 msgstr ""
 
-#: lmkp/views/form.py:716
+#: lmkp/views/form.py:719
 msgid ""
 "This version contains changed involvements which prevent automatic "
 "revision. Please review these involvements."
 msgstr ""
 
-#: lmkp/views/form.py:989
+#: lmkp/views/form.py:992
 msgid "The Item could not be created or updated."
 msgstr ""
 
-#: lmkp/views/form.py:1001
+#: lmkp/views/form.py:1004
 msgid "The Item was created but not found."
 msgstr ""
 
-#: lmkp/views/form.py:1003 lmkp/views/translation.py:175
+#: lmkp/views/form.py:1006 lmkp/views/translation.py:175
 msgid "Unknown"
 msgstr "Desconocido"
 
-#: lmkp/views/form.py:1106 lmkp/views/translation.py:114
+#: lmkp/views/form.py:1109 lmkp/views/translation.py:114
 msgid "Submit"
 msgstr "Entregar informaciÃ³n"
 
-#: lmkp/views/form_config.py:1019
+#: lmkp/views/form_config.py:1037
 msgid "Select"
 msgstr "Seleccionar"
 
-#: lmkp/views/form_config.py:1677
+#: lmkp/views/form_config.py:1695
 #, fuzzy
 msgid "Stakeholder Role"
 msgstr "Inversores"
 
-#: lmkp/views/login.py:57
+#: lmkp/views/login.py:58
 msgid "Login failed! Please try again."
 msgstr "Error en el Acceso. Por favor intenta de nuevo"
 
-#: lmkp/views/login.py:106
+#: lmkp/views/login.py:107
 msgid "No registered user found with this email address."
 msgstr "No se encuentra registrado un usuario con este correo electrÃ³nico"
 
-#: lmkp/views/login.py:115
+#: lmkp/views/login.py:119
 msgid "Password reset"
 msgstr ""
-
-#: lmkp/views/login.py:117
-msgid ""
-"Password reset was successful. An email containing the new password has "
-"been sent to your email address."
-msgstr ""
-"Cambio de clave exitoso. Un e-mail conteniendo la nueva clave ha sido "
-"enviado a tu direcciÃ³n de correo electrÃ³nico"
-
-#: lmkp/views/login.py:119
-msgid "Proceed to the login page"
-msgstr "Ir a la pÃ¡gina de inicio de sesiÃ³n"
 
 #: lmkp/views/moderators.py:31
 msgid "Show user profile"
@@ -576,9 +563,8 @@ msgstr "DecisiÃ³n de revisiÃ³n desconocida"
 msgid "Review successful."
 msgstr "RevisiÃ³n correcta"
 
-#: lmkp/views/stakeholders.py:649
+#: lmkp/views/stakeholders.py:679
 #, fuzzy
-#| msgid "No Stakeholders found"
 msgid "The Stakeholder was not found"
 msgstr "No se hallaron Inversores"
 
@@ -1278,15 +1264,16 @@ msgstr "Iniciar sesiÃ³n"
 msgid "Register"
 msgstr "Registro"
 
-#~ msgid "Set the location."
+#~ msgid ""
+#~ "Password reset was successful. An email"
+#~ " containing the new password has been"
+#~ " sent to your email address."
 #~ msgstr ""
+#~ "Cambio de clave exitoso. Un e-mail "
+#~ "conteniendo la nueva clave ha sido "
+#~ "enviado a tu direcciÃ³n de correo "
+#~ "electrÃ³nico"
 
-#~ msgid "Enter coordinates."
-#~ msgstr ""
-
-#~ msgid "Review decision not provided."
-#~ msgstr "DecisiÃ³n de revisiÃ³n no prevista"
-
-#~ msgid "The Activity was not found"
-#~ msgstr ""
+#~ msgid "Proceed to the login page"
+#~ msgstr "Ir a la pÃ¡gina de inicio de sesiÃ³n"
 

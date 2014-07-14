@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-12-23 12:46+0100\n"
+"POT-Creation-Date: 2014-07-14 09:11+0200\n"
 "PO-Revision-Date: 2013-08-14 08:21+0100\n"
 "Last-Translator: Lukas Vonlanthen <lukas.vonlanthen@cde.unibe.ch>\n"
 "Language-Team: th <LL@li.org>\n"
@@ -189,7 +189,6 @@ msgstr ""
 
 #: lmkp/templates/form/customMapMapping.mak:87
 #, fuzzy
-#| msgid "Base Layers"
 msgid "Base layers"
 msgstr "这仅仅是一个测试。"
 
@@ -207,13 +206,11 @@ msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/form/customMapMapping.mak:109
 #, fuzzy
-#| msgid "Context Layers"
 msgid "Context layers"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/templates/form/customMapMapping.mak:147
 #, fuzzy
-#| msgid "Set the location."
 msgid "Set the location"
 msgstr "这仅仅是一个测试。"
 
@@ -234,7 +231,6 @@ msgstr ""
 
 #: lmkp/templates/form/customMapMapping.mak:152
 #, fuzzy
-#| msgid "Set the location."
 msgid "search location"
 msgstr "这仅仅是一个测试。"
 
@@ -369,36 +365,38 @@ msgstr "这仅仅是一个测试。"
 msgid "per page"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/activities.py:633 lmkp/views/stakeholders.py:636
+#: lmkp/views/activities.py:571
+msgid "Spatial Accuracy"
+msgstr ""
+
+#: lmkp/views/activities.py:728 lmkp/views/stakeholders.py:666
 msgid "User is not logged in."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/activities.py:636 lmkp/views/stakeholders.py:639
+#: lmkp/views/activities.py:731 lmkp/views/stakeholders.py:669
 msgid "User has no permissions to add a review."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/activities.py:643
+#: lmkp/views/activities.py:738
 msgid "User has no profile attached"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/activities.py:650
+#: lmkp/views/activities.py:745
 #, fuzzy
 msgid "The Activity was not found or is not situated within the user's profiles"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/activities.py:660 lmkp/views/stakeholders.py:659
+#: lmkp/views/activities.py:755 lmkp/views/stakeholders.py:689
 #, fuzzy
-#| msgid "Unknown review decision"
 msgid "No valid review decision"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/activities.py:679 lmkp/views/stakeholders.py:679
+#: lmkp/views/activities.py:774 lmkp/views/stakeholders.py:709
 msgid "Not all mandatory keys are provided"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/activities.py:686 lmkp/views/stakeholders.py:686
+#: lmkp/views/activities.py:781 lmkp/views/stakeholders.py:716
 #, fuzzy
-#| msgid "Unknown Item"
 msgid "Unknown error"
 msgstr "这仅仅是一个测试。"
 
@@ -463,65 +461,55 @@ msgstr "这仅仅是一个测试。"
 msgid "Unknown Item"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/form.py:714
+#: lmkp/views/form.py:717
 msgid ""
 "At least one of the involvements prevents automatic revision. Please "
 "review these involvements separately."
 msgstr ""
 
-#: lmkp/views/form.py:716
+#: lmkp/views/form.py:719
 msgid ""
 "This version contains changed involvements which prevent automatic "
 "revision. Please review these involvements."
 msgstr ""
 
-#: lmkp/views/form.py:989
+#: lmkp/views/form.py:992
 msgid "The Item could not be created or updated."
 msgstr ""
 
-#: lmkp/views/form.py:1001
+#: lmkp/views/form.py:1004
 #, fuzzy
 msgid "The Item was created but not found."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/form.py:1003 lmkp/views/translation.py:175
+#: lmkp/views/form.py:1006 lmkp/views/translation.py:175
 msgid "Unknown"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/form.py:1106 lmkp/views/translation.py:114
+#: lmkp/views/form.py:1109 lmkp/views/translation.py:114
 msgid "Submit"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/form_config.py:1019
+#: lmkp/views/form_config.py:1037
 msgid "Select"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/form_config.py:1677
+#: lmkp/views/form_config.py:1695
 #, fuzzy
 msgid "Stakeholder Role"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/login.py:57
+#: lmkp/views/login.py:58
 msgid "Login failed! Please try again."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/login.py:106
+#: lmkp/views/login.py:107
 msgid "No registered user found with this email address."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/login.py:115
+#: lmkp/views/login.py:119
 #, fuzzy
 msgid "Password reset"
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/login.py:117
-msgid ""
-"Password reset was successful. An email containing the new password has "
-"been sent to your email address."
-msgstr "这仅仅是一个测试。"
-
-#: lmkp/views/login.py:119
-msgid "Proceed to the login page"
 msgstr "这仅仅是一个测试。"
 
 #: lmkp/views/moderators.py:31
@@ -562,9 +550,8 @@ msgstr "这仅仅是一个测试。"
 msgid "Review successful."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/stakeholders.py:649
+#: lmkp/views/stakeholders.py:679
 #, fuzzy
-#| msgid "No Stakeholders found"
 msgid "The Stakeholder was not found"
 msgstr "这仅仅是一个测试。"
 
@@ -1236,12 +1223,12 @@ msgstr "这仅仅是一个测试。"
 msgid "Register"
 msgstr "这仅仅是一个测试。"
 
-#~ msgid "Enter coordinates."
-#~ msgstr ""
-
-#~ msgid "Review decision not provided."
+#~ msgid ""
+#~ "Password reset was successful. An email"
+#~ " containing the new password has been"
+#~ " sent to your email address."
 #~ msgstr "这仅仅是一个测试。"
 
-#~ msgid "The Activity was not found"
+#~ msgid "Proceed to the login page"
 #~ msgstr "这仅仅是一个测试。"
 

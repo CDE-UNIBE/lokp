@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-12-23 12:46+0100\n"
+"POT-Creation-Date: 2014-07-14 09:11+0200\n"
 "PO-Revision-Date: 2013-08-14 08:21+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: lo <LL@li.org>\n"
@@ -350,31 +350,35 @@ msgstr ""
 msgid "per page"
 msgstr ""
 
-#: lmkp/views/activities.py:633 lmkp/views/stakeholders.py:636
+#: lmkp/views/activities.py:571
+msgid "Spatial Accuracy"
+msgstr ""
+
+#: lmkp/views/activities.py:728 lmkp/views/stakeholders.py:666
 msgid "User is not logged in."
 msgstr ""
 
-#: lmkp/views/activities.py:636 lmkp/views/stakeholders.py:639
+#: lmkp/views/activities.py:731 lmkp/views/stakeholders.py:669
 msgid "User has no permissions to add a review."
 msgstr ""
 
-#: lmkp/views/activities.py:643
+#: lmkp/views/activities.py:738
 msgid "User has no profile attached"
 msgstr ""
 
-#: lmkp/views/activities.py:650
+#: lmkp/views/activities.py:745
 msgid "The Activity was not found or is not situated within the user's profiles"
 msgstr ""
 
-#: lmkp/views/activities.py:660 lmkp/views/stakeholders.py:659
+#: lmkp/views/activities.py:755 lmkp/views/stakeholders.py:689
 msgid "No valid review decision"
 msgstr ""
 
-#: lmkp/views/activities.py:679 lmkp/views/stakeholders.py:679
+#: lmkp/views/activities.py:774 lmkp/views/stakeholders.py:709
 msgid "Not all mandatory keys are provided"
 msgstr ""
 
-#: lmkp/views/activities.py:686 lmkp/views/stakeholders.py:686
+#: lmkp/views/activities.py:781 lmkp/views/stakeholders.py:716
 msgid "Unknown error"
 msgstr ""
 
@@ -438,62 +442,52 @@ msgstr ""
 msgid "Unknown Item"
 msgstr ""
 
-#: lmkp/views/form.py:714
+#: lmkp/views/form.py:717
 msgid ""
 "At least one of the involvements prevents automatic revision. Please "
 "review these involvements separately."
 msgstr ""
 
-#: lmkp/views/form.py:716
+#: lmkp/views/form.py:719
 msgid ""
 "This version contains changed involvements which prevent automatic "
 "revision. Please review these involvements."
 msgstr ""
 
-#: lmkp/views/form.py:989
+#: lmkp/views/form.py:992
 msgid "The Item could not be created or updated."
 msgstr ""
 
-#: lmkp/views/form.py:1001
+#: lmkp/views/form.py:1004
 msgid "The Item was created but not found."
 msgstr ""
 
-#: lmkp/views/form.py:1003 lmkp/views/translation.py:175
+#: lmkp/views/form.py:1006 lmkp/views/translation.py:175
 msgid "Unknown"
 msgstr ""
 
-#: lmkp/views/form.py:1106 lmkp/views/translation.py:114
+#: lmkp/views/form.py:1109 lmkp/views/translation.py:114
 msgid "Submit"
 msgstr ""
 
-#: lmkp/views/form_config.py:1019
+#: lmkp/views/form_config.py:1037
 msgid "Select"
 msgstr ""
 
-#: lmkp/views/form_config.py:1677
+#: lmkp/views/form_config.py:1695
 msgid "Stakeholder Role"
 msgstr ""
 
-#: lmkp/views/login.py:57
+#: lmkp/views/login.py:58
 msgid "Login failed! Please try again."
 msgstr ""
 
-#: lmkp/views/login.py:106
+#: lmkp/views/login.py:107
 msgid "No registered user found with this email address."
 msgstr ""
 
-#: lmkp/views/login.py:115
-msgid "Password reset"
-msgstr ""
-
-#: lmkp/views/login.py:117
-msgid ""
-"Password reset was successful. An email containing the new password has "
-"been sent to your email address."
-msgstr ""
-
 #: lmkp/views/login.py:119
-msgid "Proceed to the login page"
+msgid "Password reset"
 msgstr ""
 
 #: lmkp/views/moderators.py:31
@@ -534,7 +528,7 @@ msgstr ""
 msgid "Review successful."
 msgstr ""
 
-#: lmkp/views/stakeholders.py:649
+#: lmkp/views/stakeholders.py:679
 msgid "The Stakeholder was not found"
 msgstr ""
 
@@ -1205,15 +1199,12 @@ msgstr ""
 msgid "Register"
 msgstr ""
 
-#~ msgid "Set the location."
+#~ msgid ""
+#~ "Password reset was successful. An email"
+#~ " containing the new password has been"
+#~ " sent to your email address."
 #~ msgstr ""
 
-#~ msgid "Enter coordinates."
-#~ msgstr ""
-
-#~ msgid "Review decision not provided."
-#~ msgstr ""
-
-#~ msgid "The Activity was not found"
+#~ msgid "Proceed to the login page"
 #~ msgstr ""
 

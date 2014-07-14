@@ -178,7 +178,7 @@ the template ``.pot`` file::
 
 Update the language file for a language based on the translation template file::
 
-    (env) $ python setup_custom.py update_catalog -l [LOCALE] --domain [CUSTOM] -i lmkp/customization/[CUSTOM]/locale/lo.pot -d lmkp/customization/[CUSTOM]/locale
+    (env) $ python setup_custom.py update_catalog -l [LOCALE] --domain [CUSTOM] -i lmkp/customization/[CUSTOM]/locale/[CUSTOM].pot -d lmkp/customization/[CUSTOM]/locale
 
 .. pull-quote::
 
