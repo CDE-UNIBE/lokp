@@ -742,7 +742,7 @@ def review(request):
         filter(profile_filters).\
         first()
     if activity is None:
-        raise HTTPUnauthorized(_('The Activity was not found or is not situated within the user\'s profiles'))
+        raise HTTPUnauthorized(_("The Item was not found or is not situated within the user's profiles"))
 
     # If review decision is 'approved', make sure that all mandatory fields are
     # there, except if it is to be deleted
