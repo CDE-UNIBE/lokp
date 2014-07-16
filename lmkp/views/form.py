@@ -1238,8 +1238,8 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             inv = compareFeature.find_involvement_by_guid(data['id'])
             
             # Check if the involvement is reviewable. This is only important if
-            # the version on the other side is pending.
-            if inv is not None and inv.get_status() == 1:
+            # the version on the other side is pending or edited.
+            if inv is not None and inv.get_status() in [1, 6]:
                 reviewable = review._review_check_involvement(
                     inv._feature.getMappedClass(), inv._feature.get_guid(),
                     inv._feature.get_version())
@@ -2037,7 +2037,11 @@ def mako_renderer(tmpl_name, **kw):
     """
     request = get_current_request()
     # Redirect base form templates to customized templates
-    if tmpl_name in ['form', 'readonly/form', 'customInvolvementMapping']:
+    if tmpl_name in [
+        'form', 'readonly/form', 'customInvolvementMapping', 
+        'readonly/customInvolvementMappingStakeholder',
+        'readonly/customInvolvementMappingActivity'
+        ]:
         resolver = lmkpAssetResolver.resolve(getTemplatePath(request, 'form/%s.mak' % tmpl_name))
     else:
         resolver = lmkpAssetResolver.resolve('templates/form/%s.mak' % tmpl_name)

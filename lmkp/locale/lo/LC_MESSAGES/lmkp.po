@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-12-23 12:46+0100\n"
+"POT-Creation-Date: 2014-07-14 13:55+0200\n"
 "PO-Revision-Date: 2013-08-14 08:21+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: lo <LL@li.org>\n"
@@ -14,8 +14,8 @@ msgstr ""
 "Generated-By: Babel 0.9.6\n"
 
 #: lmkp/templates/ext_administration.mak:21 lmkp/templates/ext_base.mak:55
-#: lmkp/templates/ext_base.mak:58 lmkp/templates/ext_charts.mak:16
-#: lmkp/templates/ext_moderation.mak:18 lmkp/templates/ext_translation.mak:21
+#: lmkp/templates/ext_base.mak:58 lmkp/templates/ext_moderation.mak:18
+#: lmkp/templates/ext_translation.mak:21
 #: lmkp/templates/old_compare_versions.mak:11
 #: lmkp/templates/old_embedded.mak:10 lmkp/templates/old_review_versions.mak:4
 msgid "Land Observatory"
@@ -30,12 +30,12 @@ msgstr ""
 msgid "[Demo]"
 msgstr ""
 
-#: lmkp/templates/ext_administration.mak:37 lmkp/templates/ext_charts.mak:35
+#: lmkp/templates/ext_administration.mak:37
 #: lmkp/templates/ext_moderation.mak:41 lmkp/templates/ext_translation.mak:37
 #: lmkp/templates/old_compare_versions.mak:48
 #: lmkp/templates/old_embedded.mak:35 lmkp/templates/old_review_versions.mak:33
 #: lmkp/templates/form/customFileDisplay.mak:42
-#: lmkp/templates/form/customMapMapping.mak:69 lmkp/views/translation.py:162
+#: lmkp/templates/form/customMapMapping.mak:69
 msgid "Loading ..."
 msgstr ""
 
@@ -82,55 +82,21 @@ msgstr ""
 msgid "Please send your questions and feedback on the Observatory to: "
 msgstr ""
 
-#: lmkp/templates/ext_charts.mak:16
-msgid "Charts"
-msgstr ""
-
-#: lmkp/templates/ext_charts.mak:39
-msgid "Heat map for Cambodia and Laos"
-msgstr ""
-
-#: lmkp/templates/ext_charts.mak:41
-msgid ""
-"Distribution of land related deals in Cambodia and for Champasak and "
-"Attapeu province in Laos."
-msgstr ""
-
-#: lmkp/templates/ext_charts.mak:42
-msgid "Data for Cambodia are provided by the website"
-msgstr ""
-
-#: lmkp/templates/ext_charts.mak:44
-msgid "Data for Laos are based on the landconcessions database."
-msgstr ""
-
-#: lmkp/templates/ext_charts.mak:49
-msgid "Distribution of activities worldwide"
-msgstr ""
-
-#: lmkp/templates/ext_charts.mak:51
-msgid ""
-"Worldwide distribution of land related deals based on the Landmatrix "
-"database available at"
-msgstr ""
-
 #: lmkp/templates/ext_moderation.mak:18
 msgid "Moderation"
 msgstr ""
 
-#: lmkp/templates/ext_translation.mak:21 lmkp/views/translation.py:303
+#: lmkp/templates/ext_translation.mak:21
 msgid "Translation"
 msgstr ""
 
-#: lmkp/templates/old_compare_versions.mak:11 lmkp/views/translation.py:95
-#: lmkp/views/translation.py:122
+#: lmkp/templates/old_compare_versions.mak:11
 msgid "Compare"
 msgstr ""
 
 #: lmkp/templates/old_review_versions.mak:4
 #: lmkp/templates/review/readonly/customInvolvementMappingActivity.mak:24
 #: lmkp/templates/review/readonly/customInvolvementMappingStakeholder.mak:27
-#: lmkp/views/translation.py:112 lmkp/views/translation.py:138
 msgid "Review"
 msgstr ""
 
@@ -156,11 +122,11 @@ msgstr ""
 msgid "Are you sure you want to delete this file?"
 msgstr ""
 
-#: lmkp/templates/form/customFileDisplay.mak:47 lmkp/views/translation.py:116
+#: lmkp/templates/form/customFileDisplay.mak:47
 msgid "Yes"
 msgstr ""
 
-#: lmkp/templates/form/customFileDisplay.mak:48 lmkp/views/translation.py:109
+#: lmkp/templates/form/customFileDisplay.mak:48
 msgid "No"
 msgstr ""
 
@@ -188,15 +154,15 @@ msgstr ""
 msgid "Base layers"
 msgstr ""
 
-#: lmkp/templates/form/customMapMapping.mak:93 lmkp/views/translation.py:106
+#: lmkp/templates/form/customMapMapping.mak:93
 msgid "Street Map"
 msgstr ""
 
-#: lmkp/templates/form/customMapMapping.mak:96 lmkp/views/translation.py:104
+#: lmkp/templates/form/customMapMapping.mak:96
 msgid "Satellite Imagery"
 msgstr ""
 
-#: lmkp/templates/form/customMapMapping.mak:99 lmkp/views/translation.py:107
+#: lmkp/templates/form/customMapMapping.mak:99
 msgid "Terrain Map"
 msgstr ""
 
@@ -285,12 +251,10 @@ msgid "Maximum file size"
 msgstr ""
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:67
-#: lmkp/views/translation.py:115
 msgid "Upload"
 msgstr ""
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:104
-#: lmkp/views/translation.py:192
 msgid "Success"
 msgstr ""
 
@@ -321,18 +285,6 @@ msgstr ""
 msgid "Download this file"
 msgstr ""
 
-#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:5
-msgid "Involvement as"
-msgstr ""
-
-#: lmkp/templates/form/readonly/customInvolvementMappingActivity.mak:14
-msgid "View Deal"
-msgstr ""
-
-#: lmkp/templates/form/readonly/customInvolvementMappingStakeholder.mak:14
-msgid "View Stakeholder"
-msgstr ""
-
 #: lmkp/templates/form/readonly/textinput.mak:2
 msgid "Open the link in a new window"
 msgstr ""
@@ -350,31 +302,35 @@ msgstr ""
 msgid "per page"
 msgstr ""
 
-#: lmkp/views/activities.py:633 lmkp/views/stakeholders.py:636
+#: lmkp/views/activities.py:571
+msgid "Spatial Accuracy"
+msgstr ""
+
+#: lmkp/views/activities.py:728 lmkp/views/stakeholders.py:666
 msgid "User is not logged in."
 msgstr ""
 
-#: lmkp/views/activities.py:636 lmkp/views/stakeholders.py:639
+#: lmkp/views/activities.py:731 lmkp/views/stakeholders.py:669
 msgid "User has no permissions to add a review."
 msgstr ""
 
-#: lmkp/views/activities.py:643
+#: lmkp/views/activities.py:738
 msgid "User has no profile attached"
 msgstr ""
 
-#: lmkp/views/activities.py:650
-msgid "The Activity was not found or is not situated within the user's profiles"
+#: lmkp/views/activities.py:745
+msgid "The Item was not found or is not situated within the user's profiles"
 msgstr ""
 
-#: lmkp/views/activities.py:660 lmkp/views/stakeholders.py:659
+#: lmkp/views/activities.py:755 lmkp/views/stakeholders.py:689
 msgid "No valid review decision"
 msgstr ""
 
-#: lmkp/views/activities.py:679 lmkp/views/stakeholders.py:679
+#: lmkp/views/activities.py:774 lmkp/views/stakeholders.py:709
 msgid "Not all mandatory keys are provided"
 msgstr ""
 
-#: lmkp/views/activities.py:686 lmkp/views/stakeholders.py:686
+#: lmkp/views/activities.py:781 lmkp/views/stakeholders.py:716
 msgid "Unknown error"
 msgstr ""
 
@@ -438,104 +394,78 @@ msgstr ""
 msgid "Unknown Item"
 msgstr ""
 
-#: lmkp/views/form.py:714
+#: lmkp/views/form.py:717
 msgid ""
 "At least one of the involvements prevents automatic revision. Please "
 "review these involvements separately."
 msgstr ""
 
-#: lmkp/views/form.py:716
+#: lmkp/views/form.py:719
 msgid ""
 "This version contains changed involvements which prevent automatic "
 "revision. Please review these involvements."
 msgstr ""
 
-#: lmkp/views/form.py:989
+#: lmkp/views/form.py:992
 msgid "The Item could not be created or updated."
 msgstr ""
 
-#: lmkp/views/form.py:1001
+#: lmkp/views/form.py:1004
 msgid "The Item was created but not found."
 msgstr ""
 
-#: lmkp/views/form.py:1003 lmkp/views/translation.py:175
+#: lmkp/views/form.py:1006
 msgid "Unknown"
 msgstr ""
 
-#: lmkp/views/form.py:1106 lmkp/views/translation.py:114
+#: lmkp/views/form.py:1109
 msgid "Submit"
 msgstr ""
 
-#: lmkp/views/form_config.py:1019
+#: lmkp/views/form_config.py:1039
 msgid "Select"
 msgstr ""
 
-#: lmkp/views/form_config.py:1677
-msgid "Stakeholder Role"
-msgstr ""
-
-#: lmkp/views/login.py:57
+#: lmkp/views/login.py:58
 msgid "Login failed! Please try again."
 msgstr ""
 
-#: lmkp/views/login.py:106
+#: lmkp/views/login.py:107
 msgid "No registered user found with this email address."
 msgstr ""
 
-#: lmkp/views/login.py:115
-msgid "Password reset"
-msgstr ""
-
-#: lmkp/views/login.py:117
-msgid ""
-"Password reset was successful. An email containing the new password has "
-"been sent to your email address."
-msgstr ""
-
 #: lmkp/views/login.py:119
-msgid "Proceed to the login page"
+msgid "Password reset"
 msgstr ""
 
 #: lmkp/views/moderators.py:31
 msgid "Show user profile"
 msgstr ""
 
-#: lmkp/views/protocol.py:651
+#: lmkp/views/protocol.py:653
 msgid "Unknown object to review."
 msgstr ""
 
-#: lmkp/views/protocol.py:720
-msgid ""
-"At least one of the involved Stakeholders cannot be reviewed. Click on "
-"the icon next to the involvement for further details."
-msgstr ""
-
-#: lmkp/views/protocol.py:722
-msgid ""
-"At least one of the involved Activities cannot be reviewed. Click on the "
-"icon next to the involvement for further details."
-msgstr ""
-
-#: lmkp/views/protocol.py:856
+#: lmkp/views/protocol.py:872
 msgid ""
 "No active version was found to base the review upon. Try to review an "
 "earlier version first."
 msgstr ""
 
-#: lmkp/views/protocol.py:881
+#: lmkp/views/protocol.py:897
 msgid "The diff seems to be incorrect (identifier not found)"
 msgstr ""
 
-#: lmkp/views/protocol.py:929
+#: lmkp/views/protocol.py:945
 msgid "Unknown review decision"
 msgstr ""
 
-#: lmkp/views/protocol.py:941
+#: lmkp/views/protocol.py:957
 msgid "Review successful."
 msgstr ""
 
-#: lmkp/views/stakeholders.py:649
-msgid "The Stakeholder was not found"
+#: lmkp/views/stakeholders.py:679
+msgid "The Item was not found"
 msgstr ""
 
 #: lmkp/views/translation.py:30
@@ -590,569 +520,6 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: lmkp/views/translation.py:86
-msgid "Add attribute filter"
-msgstr ""
-
-#: lmkp/views/translation.py:87
-msgid "Add more specific information"
-msgstr ""
-
-#: lmkp/views/translation.py:88
-msgid "Add further information"
-msgstr ""
-
-#: lmkp/views/translation.py:89
-msgid "Add time filter"
-msgstr ""
-
-#: lmkp/views/translation.py:90
-msgid "Back"
-msgstr ""
-
-#: lmkp/views/translation.py:91
-msgid "Browse"
-msgstr ""
-
-#: lmkp/views/translation.py:92
-msgid "Cancel"
-msgstr ""
-
-#: lmkp/views/translation.py:93
-msgid "Clear"
-msgstr ""
-
-#: lmkp/views/translation.py:94
-msgid "Close"
-msgstr ""
-
-#: lmkp/views/translation.py:96
-msgid "Continue"
-msgstr ""
-
-#: lmkp/views/translation.py:97 lmkp/views/translation.py:100
-msgid "Delete"
-msgstr ""
-
-#: lmkp/views/translation.py:98
-msgid "Edit"
-msgstr ""
-
-#: lmkp/views/translation.py:99
-msgid "Activate"
-msgstr ""
-
-#: lmkp/views/translation.py:101
-msgid "Link"
-msgstr ""
-
-#: lmkp/views/translation.py:102
-msgid "Base Layers"
-msgstr ""
-
-#: lmkp/views/translation.py:103
-msgid "Context Layers"
-msgstr ""
-
-#: lmkp/views/translation.py:105
-msgid "Show Legend"
-msgstr ""
-
-#: lmkp/views/translation.py:108
-msgid "Next"
-msgstr ""
-
-#: lmkp/views/translation.py:110
-msgid "OK"
-msgstr ""
-
-#: lmkp/views/translation.py:111 lmkp/views/translation.py:136
-msgid "Refresh"
-msgstr ""
-
-#: lmkp/views/translation.py:113
-msgid "Save"
-msgstr ""
-
-#: lmkp/views/translation.py:119
-msgid "Add a filter based on attribute"
-msgstr ""
-
-#: lmkp/views/translation.py:120
-msgid "Add a filter based on time"
-msgstr ""
-
-#: lmkp/views/translation.py:121
-msgid "Close Window"
-msgstr ""
-
-#: lmkp/views/translation.py:123
-msgid "Delete file"
-msgstr ""
-
-#: lmkp/views/translation.py:124
-msgid "Download file"
-msgstr ""
-
-#: lmkp/views/translation.py:125
-msgid "Edit file"
-msgstr ""
-
-#: lmkp/views/translation.py:126
-msgid "Click to activate this filter"
-msgstr ""
-
-#: lmkp/views/translation.py:127
-msgid "Click to delete this filter"
-msgstr ""
-
-#: lmkp/views/translation.py:128
-msgid "Permament link to current view"
-msgstr ""
-
-#: lmkp/views/translation.py:134
-msgid "Missing mandatory key!"
-msgstr ""
-
-#: lmkp/views/translation.py:135
-msgid "It is possible that not all attributes are shown here!"
-msgstr ""
-
-#: lmkp/views/translation.py:137
-msgid "Remove this stakeholder"
-msgstr ""
-
-#: lmkp/views/translation.py:139
-msgid "Involvement can not be reviewed. Click for more information."
-msgstr ""
-
-#: lmkp/views/translation.py:140
-msgid "Involvement can be reviewed"
-msgstr ""
-
-#: lmkp/views/translation.py:141
-msgid "Submit Review"
-msgstr ""
-
-#: lmkp/views/translation.py:142
-msgid "Upload a new file"
-msgstr ""
-
-#: lmkp/views/translation.py:143
-msgid "View file"
-msgstr ""
-
-#: lmkp/views/translation.py:146
-msgid "Anonymous"
-msgstr ""
-
-#: lmkp/views/translation.py:147
-msgid "Clear Selection"
-msgstr ""
-
-#: lmkp/views/translation.py:148 lmkp/views/translation.py:167
-msgid "Please confirm"
-msgstr ""
-
-#: lmkp/views/translation.py:149
-msgid ""
-"You are seeing a {0} version, which needs to be reviewed before it is "
-"publicly visible."
-msgstr ""
-
-#: lmkp/views/translation.py:150
-msgid ""
-"You are seeing an {0} version, which was previously active and publicly "
-"visible."
-msgstr ""
-
-#: lmkp/views/translation.py:151
-msgid ""
-"You are seeing a {0} version, which was previously active and publicly "
-"visible."
-msgstr ""
-
-#: lmkp/views/translation.py:152
-msgid "You are seeing a {0} version, which was never publicly visible."
-msgstr ""
-
-#: lmkp/views/translation.py:153
-msgid ""
-"You are seeing an {0} version, which was edited by a moderator and was "
-"never publicly visible."
-msgstr ""
-
-#: lmkp/views/translation.py:154
-msgid "Date"
-msgstr ""
-
-#: lmkp/views/translation.py:155
-msgid "Delete all Filters"
-msgstr ""
-
-#: lmkp/views/translation.py:156
-msgid "Details"
-msgstr ""
-
-#: lmkp/views/translation.py:157
-msgid "Filter ({0} active)"
-msgstr ""
-
-#: lmkp/views/translation.py:158
-msgid "History"
-msgstr ""
-
-#: lmkp/views/translation.py:159
-msgid "ID"
-msgstr ""
-
-#: lmkp/views/translation.py:160
-msgid "Language"
-msgstr ""
-
-#: lmkp/views/translation.py:161
-msgid "Last change"
-msgstr ""
-
-#: lmkp/views/translation.py:163
-msgid "No attributes to show"
-msgstr ""
-
-#: lmkp/views/translation.py:164
-msgid "Overview"
-msgstr ""
-
-#: lmkp/views/translation.py:165
-msgid "of {0}"
-msgstr ""
-
-#: lmkp/views/translation.py:166
-msgid "Page"
-msgstr ""
-
-#: lmkp/views/translation.py:168
-msgid "Previous Version"
-msgstr ""
-
-#: lmkp/views/translation.py:169
-msgid "Profile"
-msgstr ""
-
-#: lmkp/views/translation.py:170
-msgid "Search"
-msgstr ""
-
-#: lmkp/views/translation.py:171
-msgid "Show Details"
-msgstr ""
-
-#: lmkp/views/translation.py:172
-msgid "Show pending versions"
-msgstr ""
-
-#: lmkp/views/translation.py:173
-msgid "Taggroups"
-msgstr ""
-
-#: lmkp/views/translation.py:174
-msgid "Timestamp"
-msgstr ""
-
-#: lmkp/views/translation.py:176
-msgid "User"
-msgstr ""
-
-#: lmkp/views/translation.py:177
-msgid "Version"
-msgstr ""
-
-#: lmkp/views/translation.py:178
-msgid "Versions pending"
-msgstr ""
-
-#: lmkp/views/translation.py:181
-msgid "Failure"
-msgstr ""
-
-#: lmkp/views/translation.py:182
-msgid "Information"
-msgstr ""
-
-#: lmkp/views/translation.py:195
-msgid "Add new Deal"
-msgstr ""
-
-#: lmkp/views/translation.py:196
-msgid "Deal Attributes"
-msgstr ""
-
-#: lmkp/views/translation.py:197
-msgid "Compare versions of Deal {0}"
-msgstr ""
-
-#: lmkp/views/translation.py:198
-msgid "Details on Deal"
-msgstr ""
-
-#: lmkp/views/translation.py:199
-msgid "Edit Deal (version {0})"
-msgstr ""
-
-#: lmkp/views/translation.py:200
-msgid "Filter Deal"
-msgstr ""
-
-#: lmkp/views/translation.py:201
-msgid "Step 1: Please specify the location."
-msgstr ""
-
-#: lmkp/views/translation.py:202
-msgid "You may either select a point on the map or enter some coordinates."
-msgstr ""
-
-#: lmkp/views/translation.py:203
-msgid "You can drag and drop the point. Once you are done, click \"Continue\"."
-msgstr ""
-
-#: lmkp/views/translation.py:204
-msgid "New Deal"
-msgstr ""
-
-#: lmkp/views/translation.py:205
-msgid "No Deals found"
-msgstr ""
-
-#: lmkp/views/translation.py:206
-msgid "Displaying Deals {0} - {1} of {2}"
-msgstr ""
-
-#: lmkp/views/translation.py:207
-msgid "No pending Deals to display"
-msgstr ""
-
-#: lmkp/views/translation.py:208
-msgid "Displaying pending Deals {0} - {1} of {2}"
-msgstr ""
-
-#: lmkp/views/translation.py:209
-msgid "Pending versions of Deals"
-msgstr ""
-
-#: lmkp/views/translation.py:210
-msgid "This deal has pending changes. Click to review them in a popup window."
-msgstr ""
-
-#: lmkp/views/translation.py:211
-msgid "Review versions of Deal {0}"
-msgstr ""
-
-#: lmkp/views/translation.py:212
-msgid "Deals"
-msgstr ""
-
-#: lmkp/views/translation.py:215
-msgid "Edit this involvement"
-msgstr ""
-
-#: lmkp/views/translation.py:216
-msgid "Role"
-msgstr ""
-
-#: lmkp/views/translation.py:217
-msgid "Involvements"
-msgstr ""
-
-#: lmkp/views/translation.py:220
-msgid "Add Stakeholders"
-msgstr ""
-
-#: lmkp/views/translation.py:221
-msgid "Associated Stakeholders"
-msgstr ""
-
-#: lmkp/views/translation.py:222
-msgid "Stakeholder Attributes"
-msgstr ""
-
-#: lmkp/views/translation.py:223
-msgid "Compare versions of Stakeholder {0}"
-msgstr ""
-
-#: lmkp/views/translation.py:224
-msgid "Create new Stakeholder"
-msgstr ""
-
-#: lmkp/views/translation.py:225
-msgid "Details on Stakeholder "
-msgstr ""
-
-#: lmkp/views/translation.py:226
-msgid "Edit Stakeholder (version {0})"
-msgstr ""
-
-#: lmkp/views/translation.py:227
-msgid "Filter Stakeholders"
-msgstr ""
-
-#: lmkp/views/translation.py:228
-msgid ""
-"No associated Stakeholders so far. You can search and select a "
-"Stakeholder using the Search field below. Or you can create a new "
-"Stakeholder by clicking on the button above."
-msgstr ""
-
-#: lmkp/views/translation.py:229
-msgid "No Stakeholders found"
-msgstr ""
-
-#: lmkp/views/translation.py:230
-msgid "Displaying Stakeholders {0} - {1} of {2}"
-msgstr ""
-
-#: lmkp/views/translation.py:231
-msgid "No pending Stakeholders to display"
-msgstr ""
-
-#: lmkp/views/translation.py:232
-msgid "Displaying pending Stakeholders {0} - {1} of {2}"
-msgstr ""
-
-#: lmkp/views/translation.py:233
-msgid "Pending versions of Stakeholders"
-msgstr ""
-
-#: lmkp/views/translation.py:234
-msgid ""
-"This stakeholder has pending changes. Click to review them in a popup "
-"window."
-msgstr ""
-
-#: lmkp/views/translation.py:235
-msgid "Review versions of Stakeholder {0}"
-msgstr ""
-
-#: lmkp/views/translation.py:236
-msgid "Search Stakeholder"
-msgstr ""
-
-#: lmkp/views/translation.py:237
-msgid "Select Stakeholder"
-msgstr ""
-
-#: lmkp/views/translation.py:238
-msgid "Stakeholders"
-msgstr ""
-
-#: lmkp/views/translation.py:261
-msgid ""
-"Approving this version will create a new version. (further additional "
-"information to come)"
-msgstr ""
-
-#: lmkp/views/translation.py:262
-msgid "These changes are based on a version which is not the active version."
-msgstr ""
-
-#: lmkp/views/translation.py:263
-msgid ""
-"There are some mandatory keys missing. The item cannot be approved "
-"without these keys. Please click the \"edit\" button to add the missing "
-"keys."
-msgstr ""
-
-#: lmkp/views/translation.py:266
-msgid "Review Deal"
-msgstr ""
-
-#: lmkp/views/translation.py:267
-msgid ""
-"The Activity of this involvement cannot be reviewed from the "
-"Stakeholder's side. Please review the Activity to approve or reject this "
-"involvement."
-msgstr ""
-
-#: lmkp/views/translation.py:268
-msgid "Review Comment"
-msgstr ""
-
-#: lmkp/views/translation.py:269
-msgid "Review Decision"
-msgstr ""
-
-#: lmkp/views/translation.py:270
-msgid "Review not possible"
-msgstr ""
-
-#: lmkp/views/translation.py:271
-msgid "Review pending changes"
-msgstr ""
-
-#: lmkp/views/translation.py:272
-msgid "Review Stakeholder"
-msgstr ""
-
-#: lmkp/views/translation.py:273
-msgid "Show pending changes"
-msgstr ""
-
-#: lmkp/views/translation.py:274
-msgid ""
-"The Stakeholder of this involvement has no active version and cannot be "
-"set active. Please review the Stakeholder first."
-msgstr ""
-
-#: lmkp/views/translation.py:296
-msgid "Add translation"
-msgstr ""
-
-#: lmkp/views/translation.py:297
-msgid "Edit translation"
-msgstr ""
-
-#: lmkp/views/translation.py:298
-msgid "Global attribute"
-msgstr ""
-
-#: lmkp/views/translation.py:299
-msgid "Key or Value"
-msgstr ""
-
-#: lmkp/views/translation.py:300
-msgid "Mandatory"
-msgstr ""
-
-#: lmkp/views/translation.py:301
-msgid "Original"
-msgstr ""
-
-#: lmkp/views/translation.py:302
-msgid "Original is already in English"
-msgstr ""
-
-#: lmkp/views/translation.py:306
-msgid "Add all to Database"
-msgstr ""
-
-#: lmkp/views/translation.py:307
-msgid "Batch translation"
-msgstr ""
-
-#: lmkp/views/translation.py:308
-msgid "Is in Database"
-msgstr ""
-
-#: lmkp/views/translation.py:309
-msgid "Languages"
-msgstr ""
-
-#: lmkp/views/translation.py:310
-msgid "Profiles"
-msgstr ""
-
-#: lmkp/views/translation.py:311
-msgid "User management"
-msgstr ""
-
 #: lmkp/views/translation.py:455
 msgid "Translation not successful"
 msgstr ""
@@ -1204,16 +571,4 @@ msgstr ""
 #: lmkp/views/viewers.py:29
 msgid "Register"
 msgstr ""
-
-#~ msgid "Set the location."
-#~ msgstr ""
-
-#~ msgid "Enter coordinates."
-#~ msgstr ""
-
-#~ msgid "Review decision not provided."
-#~ msgstr ""
-
-#~ msgid "The Activity was not found"
-#~ msgstr ""
 

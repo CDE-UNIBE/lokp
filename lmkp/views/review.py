@@ -639,6 +639,22 @@ class BaseReview(BaseView):
                         None,
                         db = False
                     )
+                    
+        elif (diff_keyword == 'stakeholders' and other_diff_keyword in diff):
+            for other_item_diff in diff[other_diff_keyword]:
+                if diff_keyword in other_item_diff:
+                    for item_diff in other_item_diff[diff_keyword]:
+                        if (item_diff['id'] is not None and item_diff['id'] == item.get_guid()):
+                            self.protocol._handle_involvements(
+                                self.request,
+                                item,
+                                new_item,
+                                diff,
+                                None,
+                                implicit=True,
+                                db=False,
+                                fromReview=True
+                            )
 
         if new_item is None:
             new_item = item

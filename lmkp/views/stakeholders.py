@@ -676,7 +676,7 @@ def review(request):
         filter(Stakeholder.version == request.POST['version']).\
         first()
     if stakeholder is None:
-        raise HTTPUnauthorized(_('The Stakeholder was not found'))
+        raise HTTPUnauthorized(_('The Item was not found'))
 
     # If review decision is 'approved', make sure that all mandatory fields are
     # there, except if it is to be deleted

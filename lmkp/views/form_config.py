@@ -2,12 +2,14 @@ import colander
 import copy
 import deform
 from pyramid.i18n import get_localizer
+from pyramid.renderers import render
 import yaml
 import os
 import datetime
 
 from lmkp.config import locale_profile_directory_path
 from lmkp.config import profile_directory_path
+from lmkp.config import getTemplatePath
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.config import NEW_ACTIVITY_YAML
@@ -1684,6 +1686,14 @@ def getInvolvementWidget(request, configInvolvement, compare=''):
     for v in configInvolvement.getRoles():
         choicesList.append((v.getId(), v.getName()))
     choices = tuple(choicesList)
+    shRole = render(
+        getTemplatePath(
+            request, 
+            'parts/items/stakeholder_role.mak'
+        ), 
+        {}, 
+        request
+    )
     invForm.add(colander.SchemaNode(
         colander.String(),
         missing=colander.null,
@@ -1692,7 +1702,7 @@ def getInvolvementWidget(request, configInvolvement, compare=''):
             values=choices
         ),
         name='role_id',
-        title=_('Stakeholder Role')
+        title=shRole
     ))
     
     if compare is not '':
