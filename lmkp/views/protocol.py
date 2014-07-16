@@ -704,7 +704,7 @@ class Protocol(object):
 
             if review_decision == 1 or mappedClass == Stakeholder:
                 # Approved. Normally check reviewable only for approval.
-                # Exception for Stakeholders: Activiites through involvements
+                # Exception for Stakeholders: Activities through involvements
                 # can always only be reviewed from Activity side.
 
                 # First check if a review can be done for all the involvements
@@ -756,6 +756,49 @@ class Protocol(object):
                         filter(Activity.identifier == item.identifier).\
                         filter(Activity.version == item.version).\
                         first()
+                    
+                    if sh is None:
+                        # If the Stakeholder was not found, it is possible that
+                        # it is based on a edited version. In this case, try to
+                        # find the Stakeholder with the same changeset as the
+                        # Activity
+                        # TODO: Actually, this might be the better way to find
+                        # involved stakeholders?
+                        sh = self.Session.query(Stakeholder).\
+                            join(Involvement).\
+                            join(Activity).\
+                            filter(Stakeholder.identifier == ai['identifier']).\
+                            filter(Activity.identifier == item.identifier).\
+                            filter(Stakeholder.fk_status == 1).\
+                            filter(Activity.version == item.version).\
+                            filter(Stakeholder.changeset == item.changeset).\
+                            first()
+                            
+                    if sh is None:
+                        # If the Stakeholder was still not found, it might be
+                        # because the Activity was edited in the meantime and
+                        # changeset is not linked to the Stakeholder anymore. In
+                        # this case, try to find an older changeset of the
+                        # Activity which links it to the Stakeholder.
+                        # TODO
+                        shQ = self.Session.query(Stakeholder).\
+                            join(Involvement).\
+                            join(Activity).\
+                            filter(Stakeholder.identifier == ai['identifier']).\
+                            filter(Activity.identifier == item.identifier).\
+                            filter(Stakeholder.fk_status == 1).\
+                            all()
+                            
+                        cQ = self.Session.query(Changeset).\
+                            join(Activity).\
+                            filter(Activity.identifier == item.identifier).\
+                            all()
+                        
+                        for c in cQ:
+                            for s in shQ:
+                                if s.changeset == c:
+                                    sh = s
+                            
                 elif ai['op'] == 'delete':
                     # If an involvement was deleted, it is obviously not
                     # possible to find the version through the involvement.
@@ -810,7 +853,7 @@ class Protocol(object):
                 filter(mappedClass.identifier == item.identifier).\
                 filter(mappedClass.version == item.previous_version).\
                 first()
-
+            
             # Query the active version of the item (review always happens
             # against the active version)
             ref_version = self.Session.query(
@@ -819,6 +862,13 @@ class Protocol(object):
                 filter(mappedClass.identifier == item.identifier).\
                 filter(mappedClass.fk_status == statusArray.index('active')+1).\
                 first()
+
+            # TODO: Nasty hack if the a new involvement is added to a now edited
+            # stakeholder version
+            if (previous_version is not None and previous_version.fk_status == 3
+                and mappedClass == Stakeholder and implicit is True):
+                previous_version = ref_version
+                ref_version = item
 
             if (empty_item is True or previous_version is None
                 or previous_version.fk_status == statusArray.index('active')+1):
