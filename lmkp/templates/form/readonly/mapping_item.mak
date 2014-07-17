@@ -15,9 +15,22 @@
         ## The map container was already rendered by the initial form item so it
         ## appears right on top.
 
-    % elif depth >= 2:
-        ## Category or Thematic Group
+    % elif depth == 3:
+        ## Category
         ${field.serialize(cstruct, readonly=True)}
+
+    % elif depth == 2:
+        ## Thematic Group
+        % if field.title == '':
+            ${field.serialize(cstruct, readonly=True)}
+        % else:
+            <div class="row-fluid thmgtitle">
+                <div class="span12 grid-area">
+                    <h5 class="green">${field.title}</h5>
+                </div>
+                ${field.serialize(cstruct, readonly=True)}
+            </div>
+        % endif
 
     % elif depth == 1:
         ## Taggroup

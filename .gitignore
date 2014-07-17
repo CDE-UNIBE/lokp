@@ -13,11 +13,6 @@
 # Ignore Pyramid log folder
 /logs/
 
-# Ignore Application YAML configuration files
-/profiles/
-/profiles-production/
-*.yml
-
 # Ignore packages
 *.egg
 *.egg-info
