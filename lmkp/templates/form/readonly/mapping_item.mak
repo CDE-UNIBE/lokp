@@ -25,7 +25,7 @@
             ${field.serialize(cstruct, readonly=True)}
         % else:
             <div class="row-fluid thmgtitle">
-                <div class="span12 grid-area">
+                <div class="span9 grid-area">
                     <h5 class="green">${field.title}</h5>
                 </div>
                 ${field.serialize(cstruct, readonly=True)}
