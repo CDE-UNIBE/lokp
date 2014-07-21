@@ -71,6 +71,10 @@ The basic structure of the configuration YAMLs (``new_activity.yml`` and
           # (optional) Provide an order number to fix the sequence of the 
           # subcategories.
           order: 1
+          # (optional) Indicate if the name of this Subcategory should appear in
+          # the details page of an Activity or a Stakeholder.
+          # Default is false.
+          showindetails: true
           # (optional) The map settings if this thematic group contains a map. 
           # Currently, only one map per configuration is valid.
           map:

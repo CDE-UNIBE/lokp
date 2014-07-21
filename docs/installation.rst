@@ -206,8 +206,7 @@ Make sure the customization is correctly defined in the configuration file:
 
 ``lmkp.customization = lo``
 
-See the section on how to configure :ref:`configuration-customization` for more
-information.
+See the section on the `Configuration`_ for more information.
 
 .. rubric:: Profiles
 
@@ -219,8 +218,7 @@ In the configuration file, you can specify which profile is to be used:
 
 ``lmkp.profiles_dir = devel``
 
-See the section on how to configure :ref:`configuration-profiles` for more
-information.
+See the section on the `Configuration`_ for more information.
 
 .. rubric:: Initial data
 
@@ -286,3 +284,5 @@ good point of reference for further information.
 
 .. _installation guide: https://pyramid.readthedocs.org/en/latest/narr/install.html
 
+
+.. _Configuration: configuration.html
