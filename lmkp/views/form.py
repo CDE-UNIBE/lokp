@@ -630,7 +630,8 @@ def renderReadonlyForm(request, itemType, itemJson):
         title='',
         missing = colander.null
     ))
-    for cat in configCategoryList.getCategories():
+    for cat in sorted(configCategoryList.getCategories(),
+        key=lambda cat: cat.order):
         schema.add(cat.getForm(request, readonly=True))
 
     form = deform.Form(schema)
