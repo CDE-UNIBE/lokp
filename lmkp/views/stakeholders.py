@@ -650,6 +650,12 @@ def read_one_public(request):
 def review(request):
     """
     Insert a review decision for a pending Stakeholder
+    Required POST attributes:
+    - identifier (string, uid)
+    - version (int)
+    - review_decision (string): approve / reject
+    - review_comment (string): nullable
+    - camefrom: uid of the Activity
     """
 
     _ = request.translate
@@ -670,7 +676,7 @@ def review(request):
         filter(Stakeholder.version == request.POST['version']).\
         first()
     if stakeholder is None:
-        raise HTTPUnauthorized(_('The Stakeholder was not found'))
+        raise HTTPUnauthorized(_('The Item was not found'))
 
     # If review decision is 'approved', make sure that all mandatory fields are
     # there, except if it is to be deleted
@@ -682,8 +688,8 @@ def review(request):
     else:
         raise HTTPBadRequest(_('No valid review decision'))
     
-    review_comment = request.POST['review_comment']
-    camefrom = request.POST['camefrom']
+    review_comment = request.POST.get('review_comment', '')
+    camefrom = request.POST.get('camefrom', '')
 
     if review_decision == 1: # Approved
         # Only check for mandatory keys if new version is not to be deleted

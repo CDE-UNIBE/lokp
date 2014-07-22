@@ -28,7 +28,7 @@
                     % if field.widget.css_class:
                         class="${field.widget.css_class}"
                     % endif
-                    % if cstruct == value:
+                    % if unicode(cstruct) == unicode(value):
                         selected="selected"
                     % endif
                 >${description}</option>

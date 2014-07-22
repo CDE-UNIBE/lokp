@@ -33,7 +33,7 @@ def form_clear_session(request):
     """
 
     # Enter a date to delete all sessions older than the given date (in UTC).
-    newSessionDate = datetime.datetime(2013, 11, 5, 8, 0)
+    newSessionDate = datetime.datetime(2014, 7, 10, 15, 0)
 
     if request.session is not None and '_creation_time' in request.session:
         creationtime = request.session['_creation_time']
@@ -64,7 +64,7 @@ def renderForm(request, itemType, **kwargs):
     """
     Render the form for either Activity or Stakeholder
     """
-
+    
     # Get the kwargs
     itemJson = kwargs.get('itemJson', None)
     newInvolvement = kwargs.get('inv', None)
@@ -630,7 +630,8 @@ def renderReadonlyForm(request, itemType, itemJson):
         title='',
         missing = colander.null
     ))
-    for cat in configCategoryList.getCategories():
+    for cat in sorted(configCategoryList.getCategories(),
+        key=lambda cat: cat.order):
         schema.add(cat.getForm(request, readonly=True))
 
     form = deform.Form(schema)
@@ -1237,7 +1238,9 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             reviewable = 0
             inv = compareFeature.find_involvement_by_guid(data['id'])
             
-            if inv is not None:
+            # Check if the involvement is reviewable. This is only important if
+            # the version on the other side is pending or edited.
+            if inv is not None and inv.get_status() in [1, 6]:
                 reviewable = review._review_check_involvement(
                     inv._feature.getMappedClass(), inv._feature.get_guid(),
                     inv._feature.get_version())
@@ -1312,7 +1315,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
                 dataThmg[invConfig.getName()] = invData
 
     for taggroup in itemJson['taggroups']:
-
+        
         # Get the category and thematic group based on the maintag
         mt = taggroup['main_tag']
 
@@ -1811,11 +1814,12 @@ def formdataToDiff(request, newform, itemType):
                                         'key': k,
                                         'value': oldtaggroup[k]
                                     })
-
+                                    
                         # Put together diff for the taggroup
                         if len(deletedtags) > 0 or len(addedtags) > 0:
                             tagdiffs = []
                             for dt in deletedtags:
+                                del(oldtaggroup[dt['key']])
                                 tagdiffs.append({
                                     'key': dt['key'],
                                     'value': dt['value'],
@@ -1827,10 +1831,16 @@ def formdataToDiff(request, newform, itemType):
                                     'value': at['value'],
                                     'op': 'add'
                                 })
-                            taggroupdiffs.append({
+                            tgdiff = {
                                 'tg_id': t['tg_id'],
                                 'tags': tagdiffs
-                            })
+                            }
+                            # If there are no tags left in the old taggroup, 
+                            # mark the entire taggroup diff to be deleted.
+                            del(oldtaggroup['tg_id'])
+                            if len(addedtags) == 0 and len(deletedtags) > 0 and oldtaggroup == {}:
+                                tgdiff['op'] = 'delete'
+                            taggroupdiffs.append(tgdiff)
 
                     else:
                         # Taggroup has no tg_id. It is either a new taggroup to
@@ -2028,7 +2038,11 @@ def mako_renderer(tmpl_name, **kw):
     """
     request = get_current_request()
     # Redirect base form templates to customized templates
-    if tmpl_name in ['form', 'readonly/form', 'customInvolvementMapping']:
+    if tmpl_name in [
+        'form', 'readonly/form', 'customInvolvementMapping', 
+        'readonly/customInvolvementMappingStakeholder',
+        'readonly/customInvolvementMappingActivity'
+        ]:
         resolver = lmkpAssetResolver.resolve(getTemplatePath(request, 'form/%s.mak' % tmpl_name))
     else:
         resolver = lmkpAssetResolver.resolve('templates/form/%s.mak' % tmpl_name)
