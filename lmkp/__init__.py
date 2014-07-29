@@ -146,6 +146,7 @@ def main(global_config, ** settings):
     config.add_route("grid_view", "/grid")
     config.add_route('about_view', '/about')
     config.add_route('faq_view', '/faq')
+    config.add_route('showcases_view', '/showcases')
     config.add_route('partners_view', '/partners')
 
     # Charts
