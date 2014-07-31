@@ -207,7 +207,7 @@ class MainView(BaseView):
         }, self.request)
         
     @view_config(route_name='showcases_view')
-    def faq_view(self):
+    def showcases_view(self):
 
         self._handle_parameters()
 
