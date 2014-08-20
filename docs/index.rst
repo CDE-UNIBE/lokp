@@ -12,11 +12,12 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-   
+
    installation
    configuration
    customization
    translation
+   qgis
 
 
 Services
@@ -26,7 +27,7 @@ Documentation of the available web services.
 
 .. toctree::
    :maxdepth: 2
-   
+
    services/index
    services/readone
    services/readmany
