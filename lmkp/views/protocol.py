@@ -447,11 +447,11 @@ class Protocol(object):
 
     def _get_order_direction(self, request):
         """
-        Return the direction of ordering only if it is set to DESC or if the 
-        order value is not set (in which case it is sorted by timestamp and 
+        Return the direction of ordering only if it is set to DESC or if the
+        order value is not set (in which case it is sorted by timestamp and
         should be in descending order)
         """
-        if (request.params.get('dir', '').upper() == 'DESC' 
+        if (request.params.get('dir', '').upper() == 'DESC'
             or request.params.get('order_by', None) is None):
             return 'DESC'
 
@@ -609,7 +609,7 @@ class Protocol(object):
 
         return False
 
-    def _add_review(self, request, item, mappedClass, user, review_decision, 
+    def _add_review(self, request, item, mappedClass, user, review_decision,
         review_comment, implicit = False):
         """
         Add a review decision
@@ -721,19 +721,19 @@ class Protocol(object):
                     if reviewPossible == -2:
                         ret['msg'] = render(
                             getTemplatePath(
-                                request, 
+                                request,
                                 'parts/messages/one_of_involved_stakeholders_cannot_be_reviewed.mak'
-                            ), 
-                            {}, 
+                            ),
+                            {},
                             request
                         )
                     elif reviewPossible == -3:
                         ret['msg'] = render(
                             getTemplatePath(
-                                request, 
+                                request,
                                 'parts/messages/one_of_involved_activities_cannot_be_reviewed.mak'
-                            ), 
-                            {}, 
+                            ),
+                            {},
                             request
                         )
                     return ret
@@ -756,7 +756,7 @@ class Protocol(object):
                         filter(Activity.identifier == item.identifier).\
                         filter(Activity.version == item.version).\
                         first()
-                    
+
                     if sh is None:
                         # If the Stakeholder was not found, it is possible that
                         # it is based on a edited version. In this case, try to
@@ -773,7 +773,7 @@ class Protocol(object):
                             filter(Activity.version == item.version).\
                             filter(Stakeholder.changeset == item.changeset).\
                             first()
-                            
+
                     if sh is None:
                         # If the Stakeholder was still not found, it might be
                         # because the Activity was edited in the meantime and
@@ -788,17 +788,17 @@ class Protocol(object):
                             filter(Activity.identifier == item.identifier).\
                             filter(Stakeholder.fk_status == 1).\
                             all()
-                            
+
                         cQ = self.Session.query(Changeset).\
                             join(Activity).\
                             filter(Activity.identifier == item.identifier).\
                             all()
-                        
+
                         for c in cQ:
                             for s in shQ:
                                 if s.changeset == c:
                                     sh = s
-                            
+
                 elif ai['op'] == 'delete':
                     # If an involvement was deleted, it is obviously not
                     # possible to find the version through the involvement.
@@ -853,7 +853,7 @@ class Protocol(object):
                 filter(mappedClass.identifier == item.identifier).\
                 filter(mappedClass.version == item.previous_version).\
                 first()
-            
+
             # Query the active version of the item (review always happens
             # against the active version)
             ref_version = self.Session.query(
@@ -1007,7 +1007,7 @@ class Protocol(object):
         ret['msg'] = _('Review successful.')
         return ret
 
-    def _apply_diff(self, request, mappedClass, uid, version, diff, item, db, 
+    def _apply_diff(self, request, mappedClass, uid, version, diff, item, db,
         review=False):
 
         """
@@ -1015,7 +1015,7 @@ class Protocol(object):
         diff: a diff concerning only a certain Activity or Stakeholder
         db: boolean
         """
-        
+
 #        print "============================================="
 #        log.debug("diff:\n%s" % diff)
 
@@ -1228,7 +1228,7 @@ class Protocol(object):
 #                                    "Tag (%s | %s) was created and added to taggroup."
 #                                    % (tag_dict['key'], tag_dict['value'])
 #                                )
-                                
+
                                 # Set the main tag
                                 if 'main_tag' in taggroup_dict:
                                     if (db is True and
@@ -1266,10 +1266,10 @@ class Protocol(object):
                         if deleted_maintag.key.key == t.key.key:
                             new_taggroup.main_tag = t
             else:
-                if (deleted_maintag is not None 
-                    and new_taggroup._main_tag is None 
+                if (deleted_maintag is not None
+                    and new_taggroup._main_tag is None
                     and len(new_taggroup._tags) > 0):
-                    
+
                     for t in new_taggroup._tags:
                         if deleted_maintag.key.key == t._key:
                             new_taggroup._main_tag = t
@@ -1346,7 +1346,7 @@ class Protocol(object):
 #                                "Tag (%s | %s) was created and added to taggroup."
 #                                % (tag_dict['key'], tag_dict['value'])
 #                            )
-                            
+
                             # Set the main tag
                             if 'main_tag' in taggroup_dict:
                                 if (db is True and
@@ -1450,8 +1450,8 @@ class Protocol(object):
                         and old_tg['tg_id'] == new_tg['tg_id']):
                         # An existing taggroup diff has further changes
 
-#                        log.debug('Merging diff of taggroups. Old taggroup diff:\n%s\nNew taggroup diff:\n%s'
-#                            % (old_tg, new_tg))
+                        # log.debug('Merging diff of taggroups. Old taggroup diff:\n%s\nNew taggroup diff:\n%s'
+                            # % (old_tg, new_tg))
 
                         # If the whole taggroup is to be deleted, no need to
                         # continue. Set the operator, delete main_tag and any
@@ -1499,7 +1499,7 @@ class Protocol(object):
                                 and unicode(old_tg['main_tag']['value']) == unicode(tdt['value'])):
                                 changedMainTag = tdt
 
-#                            log.debug('Removed old tag diff: %s' % tdt)
+                            # log.debug('Removed old tag diff: %s' % tdt)
 
                         for tda in tags_to_add:
                             old_tg['tags'].append(tda)
@@ -1511,7 +1511,7 @@ class Protocol(object):
                                 and tda['op'] == 'add'):
                                 old_tg['main_tag']['value'] = tda['value']
 
-#                            log.debug('Added new tag diff: %s' % tda)
+                            # log.debug('Added new tag diff: %s' % tda)
 
                         new_taggroup_processed = True
 
@@ -1524,14 +1524,14 @@ class Protocol(object):
                     else:
                         old_diff['taggroups'] = [new_tg]
 
-#                    log.debug('Added new taggroup diff (after not finding it): %s' % new_tg)
+                    # log.debug('Added new taggroup diff (after not finding it): %s' % new_tg)
 
             else:
                 # If no taggroups yet in old_diff, add the one from the new_tg
                 # as it is
                 old_diff['taggroups'] = [new_tg]
 
-#                log.debug('Added new taggroup diff: %s' % new_tg)
+                # log.debug('Added new taggroup diff: %s' % new_tg)
 
             return old_diff
 
@@ -1551,7 +1551,7 @@ class Protocol(object):
                     rel_diff = diff
 
         log.debug('Diff before recalculation:\n%s' % rel_diff)
-        
+
         if rel_diff is None:
             return old_diff
 
@@ -1567,7 +1567,7 @@ class Protocol(object):
                         # Query the feature
                         # TODO: Does this still work in different languages?
                         feature = self.read_one_by_version(request, uid,
-                            old_version)
+                            old_version, translate=False)
 
                     # Try to find the tg_id of the rel_tg. All the tags of
                     # rel_tg need to be found in the same taggroup of the
@@ -1589,16 +1589,18 @@ class Protocol(object):
                                 found_tg_id = f_tg.get_tg_id()
                     if found_tg_id is not None:
                         rel_tg['tg_id'] = found_tg_id
+                    else:
+                        raise Exception('tg_id not found! No tg_id found for taggroup "%s"' % rel_tg)
 
         # Merge taggroups
         if 'taggroups' in new_diff:
 
-#            log.debug('Diff before doing taggroup merges:\n%s' % rel_diff)
+            # log.debug('Diff before doing taggroup merges:\n%s' % rel_diff)
 
             for new_tg in new_diff['taggroups']:
                 rel_diff = _merge_taggroups(rel_diff, new_tg)
 
-#            log.debug('Diff after doing taggroup merges:\n%s' % rel_diff)
+            # log.debug('Diff after doing taggroup merges:\n%s' % rel_diff)
 
         # Merge involvements (only for Stakeholders)
         if mappedClass == Activity and 'stakeholders' in new_diff:
@@ -1836,7 +1838,7 @@ class TagGroup(object):
         for t in self._tags:
             tags.append(t.to_table())
             if (self._main_tag is not None and main_tag is None
-                and self._main_tag.get_key() == t.get_key() 
+                and self._main_tag.get_key() == t.get_key()
                 and self._main_tag.get_value() == t.get_value()):
                 main_tag = t.to_table()
             elif t.get_id() == self._main_tag_id and main_tag is None:
@@ -1848,7 +1850,7 @@ class TagGroup(object):
             'main_tag': main_tag,
             'tags': tags
         }
-        
+
         # Geometry
         if self._geometry is not None:
             try:
@@ -2004,7 +2006,7 @@ class Feature(object):
     def remove_taggroup(self, taggroup):
         if taggroup in self.get_taggroups():
             self.get_taggroups().remove(taggroup)
-            
+
     def get_metadata(self, request):
         """
         Return a dict with some metadata
@@ -2022,7 +2024,7 @@ class Feature(object):
         Return a list of missing mandatory keys. Return [0] if item is to be
         deleted
         """
-        
+
         # Make a copy of mandatory keys
         mk = mandatory_keys[:]
 
