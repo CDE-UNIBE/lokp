@@ -34,7 +34,7 @@
             <div class="form-map-menu pull-right">
                 <button type="button" class="btn btn-mini pull-right form-map-menu-toggle ttip" data-close-text="<i class='icon-remove'></i>" data-toggle="tooltip" title="${_('Turn layers on and off')}"><i class="icon-cog"></i></button>
                 <div class="accordion" id="form-map-menu-content">
-                    
+
                     <!-- This deal -->
                     <div id="thisDealSection" class="map-menu-deals accordion-group">
                         <h6 class="map-deals">
@@ -49,7 +49,7 @@
                             </ul>
                         </div>
                     </div>
-                    
+
                     <!-- All deals -->
                     <div class="map-menu-deals accordion-group">
                         <h6 class="map-deals">
@@ -78,7 +78,7 @@
                             </ul>
                         </div>
                     </div>
-                        
+
                     <!-- Base layers -->
                     <div class="accordion-group">
                         <h6>
@@ -119,7 +119,7 @@
             </div>
         </div>
     </div>
-    
+
     ${template.render(request=request, geometry=geometry, editmode=editmode, _=_)}
 
     % if field.errormsg:
@@ -145,7 +145,7 @@
                 <span class="required-form-field"></span>
             % endif
             ${_('Set the location')}&nbsp;<span class="helpTooltip icon-question-sign ttip-bottom" data-toggle="tooltip" title="${_('Click on the map to set the location. Please zoom in to set the point as accurately as possible.')}"></span>
-            <p>${_('Please use the QGIS plugin to add or edit polygons.')} <a href="TODO">${_('Read more.')}</a></p>
+            <p>${_('Please use the QGIS plugin to add or edit polygons.')} <a href="http://lokp.readthedocs.org/en/latest/qgis.html" target="_blank">${_('Read more.')}</a></p>
         </div>
         <div class="span6 text-right">
             <div class="navbar-search pull-right text-left" action="">
@@ -157,7 +157,7 @@
             </div>
         </div>
     </div>
-        
+
     <script type="text/javascript">
         var tForSuccess = "${_('Success!')}";
         var tForInvalidFormat = "${_('Not in a valid format!')}";
