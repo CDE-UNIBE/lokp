@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-07-14 13:55+0200\n"
+"POT-Creation-Date: 2014-08-26 15:14+0200\n"
 "PO-Revision-Date: 2013-08-14 08:21+0100\n"
 "Last-Translator: Lukas Vonlanthen <lukas.vonlanthen@cde.unibe.ch>\n"
 "Language-Team: th <LL@li.org>\n"
@@ -413,36 +413,36 @@ msgstr "这仅仅是一个测试。"
 msgid "Unknown Item"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/form.py:717
+#: lmkp/views/form.py:718
 msgid ""
 "At least one of the involvements prevents automatic revision. Please "
 "review these involvements separately."
 msgstr ""
 
-#: lmkp/views/form.py:719
+#: lmkp/views/form.py:720
 msgid ""
 "This version contains changed involvements which prevent automatic "
 "revision. Please review these involvements."
 msgstr ""
 
-#: lmkp/views/form.py:992
+#: lmkp/views/form.py:993
 msgid "The Item could not be created or updated."
 msgstr ""
 
-#: lmkp/views/form.py:1004
+#: lmkp/views/form.py:1005
 #, fuzzy
 msgid "The Item was created but not found."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/form.py:1006
+#: lmkp/views/form.py:1007
 msgid "Unknown"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/form.py:1109
+#: lmkp/views/form.py:1110
 msgid "Submit"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/form_config.py:1039
+#: lmkp/views/form_config.py:1056
 msgid "Select"
 msgstr "这仅仅是一个测试。"
 
@@ -463,25 +463,25 @@ msgstr "这仅仅是一个测试。"
 msgid "Show user profile"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/protocol.py:653
+#: lmkp/views/protocol.py:652
 msgid "Unknown object to review."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/protocol.py:872
+#: lmkp/views/protocol.py:960
 msgid ""
 "No active version was found to base the review upon. Try to review an "
 "earlier version first."
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/protocol.py:897
+#: lmkp/views/protocol.py:985
 msgid "The diff seems to be incorrect (identifier not found)"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/protocol.py:945
+#: lmkp/views/protocol.py:1033
 msgid "Unknown review decision"
 msgstr "这仅仅是一个测试。"
 
-#: lmkp/views/protocol.py:957
+#: lmkp/views/protocol.py:1045
 msgid "Review successful."
 msgstr "这仅仅是一个测试。"
 
