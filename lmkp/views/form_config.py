@@ -10,10 +10,16 @@ import datetime
 from lmkp.config import locale_profile_directory_path
 from lmkp.config import profile_directory_path
 from lmkp.config import getTemplatePath
-from lmkp.models.database_objects import *
+from lmkp.models.database_objects import (
+    A_Key,
+    A_Value,
+    Category,
+    Language,
+    SH_Key,
+    SH_Value,
+    Stakeholder_Role,
+)
 from lmkp.models.meta import DBSession as Session
-from lmkp.views.config import NEW_ACTIVITY_YAML
-from lmkp.views.config import NEW_STAKEHOLDER_YAML
 
 import logging
 log = logging.getLogger(__name__)
@@ -499,7 +505,7 @@ class ConfigCategory(object):
             thg_form.name = str(thg.getId())
             cat_form.add(thg_form)
         return cat_form
-        
+
 class ConfigThematicgroup(object):
     """
     A class representing a Form Thematic Group object as defined in the
@@ -566,7 +572,7 @@ class ConfigThematicgroup(object):
         else:
             return self.name
 
-    def setTranslation(self):
+    def setTranslation(self, translation):
         """
         Set the translation of this category.
         """
@@ -640,7 +646,7 @@ class ConfigThematicgroup(object):
             colander.Mapping(),
             title=title
         )
-        
+
         if compare is not '':
             thg_form.add(colander.SchemaNode(
                 colander.String(),
@@ -687,7 +693,7 @@ class ConfigThematicgroup(object):
                     name=name,
                     title=''
                 ))
-            
+
             if compare is not '':
                 tg_form = tg.getForm(request)
                 tg_form.add(colander.SchemaNode(
@@ -732,13 +738,13 @@ class ConfigThematicgroup(object):
                     shortForm.name = 'ref_%s' % shortForm.name
                     thg_form.add(shortForm)
 
-                    newShortForm = getInvolvementWidget(request, 
+                    newShortForm = getInvolvementWidget(request,
                         self.getInvolvement(), compare=compare)
                     newShortForm.name = 'new_%s' % newShortForm.name
                     thg_form.add(newShortForm)
                 else:
                     thg_form.add(shortForm)
-                
+
         return thg_form
 
 class ConfigTaggroupList(object):
@@ -1639,8 +1645,6 @@ def getInvolvementWidget(request, configInvolvement, compare=''):
     """
     Return a widget to be used to display the involvements in the form.
     """
-    _ = request.translate
-
     categoryList = getCategoryList(request, configInvolvement.getItemType())
     overviewKeys = [k[0] for k in categoryList.getInvolvementOverviewKeyNames()]
 
@@ -1705,10 +1709,10 @@ def getInvolvementWidget(request, configInvolvement, compare=''):
     choices = tuple(choicesList)
     shRole = render(
         getTemplatePath(
-            request, 
+            request,
             'parts/items/stakeholder_role.mak'
-        ), 
-        {}, 
+        ),
+        {},
         request
     )
     invForm.add(colander.SchemaNode(
@@ -1721,7 +1725,7 @@ def getInvolvementWidget(request, configInvolvement, compare=''):
         name='role_id',
         title=shRole
     ))
-    
+
     if compare is not '':
         invForm.add(colander.SchemaNode(
             colander.String(),
@@ -1955,9 +1959,11 @@ def getCategoryList(request, itemType, **kwargs):
 
     # Load the yaml
     if itemType == 'stakeholders':
+        NEW_STAKEHOLDER_YAML = 'new_stakeholder.yml'
         filename = NEW_STAKEHOLDER_YAML
         otherItemType = 'activities'
     else:
+        NEW_ACTIVITY_YAML = 'new_activity.yml'
         filename = NEW_ACTIVITY_YAML
         otherItemType = 'stakeholders'
 
@@ -2006,7 +2012,7 @@ def getCategoryList(request, itemType, **kwargs):
                 if tgroup_id == 'order':
                     thematicgroup.setOrder(tags)
                     continue
-                
+
                 if tgroup_id == 'showindetails':
                     thematicgroup.setShowInDetails(tags)
                     continue

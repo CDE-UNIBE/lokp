@@ -1,4 +1,10 @@
-from lmkp.models.database_objects import *
+from lmkp.models.database_objects import (
+    A_Key,
+    A_Tag,
+    A_Tag_Group,
+    Activity,
+    Language,
+)
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.comments import comments_sitekey
@@ -21,7 +27,6 @@ from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
 from pyramid.security import has_permission
 from pyramid.view import view_config
-import yaml
 import json
 
 from lmkp.views.activity_review import ActivityReview
@@ -398,13 +403,13 @@ def read_one(request):
             isLoggedIn, isModerator = checkUserPrivileges(request)
             if isLoggedIn is False or isModerator is False:
                 raise HTTPForbidden()
-        
+
         review = ActivityReview(request)
         availableVersions = None
         recalculated = False
         defaultRefVersion, defaultNewVersion = review._get_valid_versions(
                                                                           Activity, uid)
-            
+
         refVersion = request.params.get('ref', None)
         if refVersion is not None:
             try:
@@ -416,12 +421,12 @@ def read_one(request):
             # Also use the default one for review because it cannot be changed.
             refVersion = defaultRefVersion
         else:
-            availableVersions = review._get_available_versions(Activity, uid, 
+            availableVersions = review._get_available_versions(Activity, uid,
                                                                review=output_format == 'review')
             # Check if the indicated reference version is valid
             if refVersion not in [v.get('version') for v in availableVersions]:
                 refVersion = defaultRefVersion
-        
+
         newVersion = request.params.get('new', None)
         if newVersion is not None:
             try:
@@ -433,16 +438,16 @@ def read_one(request):
             newVersion = defaultNewVersion
         else:
             if availableVersions is None:
-                availableVersions = review._get_available_versions(Activity, 
+                availableVersions = review._get_available_versions(Activity,
                                                                    uid, review=output_format == 'review')
             # Check if the indicated new version is valid
             if newVersion not in [v.get('version') for v in availableVersions]:
                 newVersion = defaultNewVersion
-        
+
         if output_format == 'review':
             # If the Activities are to be reviewed, only the changes which were
             # applied to the newVersion are of interest
-            activities, recalculated = review.get_comparison(Activity, uid, 
+            activities, recalculated = review.get_comparison(Activity, uid,
                                                              refVersion, newVersion)
         else:
             # If the Activities are compared, the versions as they are stored
@@ -455,7 +460,7 @@ def read_one(request):
                                                        geometry='full', translate=False
                                                        )
             ]
-        templateValues = renderReadonlyCompareForm(request, 'activities', 
+        templateValues = renderReadonlyCompareForm(request, 'activities',
                                                    activities[0], activities[1], review=output_format == 'review')
         # Collect metadata for the reference version
         refMetadata = {}
@@ -473,23 +478,23 @@ def read_one(request):
                 db_lang = Session.query(Language).filter(Language.locale == localizer.locale_name).first()
                 missingKeys = get_translated_db_keys(A_Key, missingKeys, db_lang)
                 missingKeys = [m[1] for m in missingKeys]
-                
+
             newMetadata = activities[1].get_metadata(request)
-            
-            reviewable = (len(missingKeys) == 0 and 
+
+            reviewable = (len(missingKeys) == 0 and
                           'reviewableMessage' in templateValues and
                           templateValues['reviewableMessage'] is None)
-        
+
         if output_format == 'review':
             pendingVersions = []
             if availableVersions is None:
-                availableVersions = review._get_available_versions(Activity, 
+                availableVersions = review._get_available_versions(Activity,
                                                                    uid, review=output_format == 'review')
             for v in sorted(availableVersions, key=lambda v:v.get('version')):
                 if v.get('status') == 1:
                     pendingVersions.append(v.get('version'))
             templateValues['pendingVersions'] = pendingVersions
-        
+
         templateValues.update({
                               'identifier': uid,
                               'refVersion': refVersion,
@@ -502,7 +507,7 @@ def read_one(request):
                               'profile': get_current_profile(request),
                               'locale': get_current_locale(request)
                               })
-        
+
         if output_format == 'review':
             return render_to_response(
                                       getTemplatePath(request, 'activities/review.mak'),
@@ -521,7 +526,7 @@ def read_one(request):
         if version is None:
             raise HTTPBadRequest('You must specify a version as parameter ?v=X')
         translate = request.params.get('translate', 'true').lower() == 'true'
-        activities = activity_protocol3.read_one_geojson_by_version(request, 
+        activities = activity_protocol3.read_one_geojson_by_version(request,
                                                                     uid, version, translate=translate)
         return render_to_response('json', activities, request)
     elif output_format == 'formtest':
@@ -719,7 +724,7 @@ def review(request):
     - review_decision (string): approve / reject
     - review_comment (string): nullable
     """
-    
+
     _ = request.translate
 
     # Check if the user is logged in and he/she has sufficient user rights
@@ -753,9 +758,9 @@ def review(request):
         review_decision = 2
     else:
         raise HTTPBadRequest(_('No valid review decision'))
-    
+
     review_comment = request.POST['review_comment']
-    
+
     if review_decision == 1: # Approved
         # Only check for mandatory keys if new version is not to be deleted
         # (has no tag groups)
@@ -774,12 +779,12 @@ def review(request):
                     raise HTTPBadRequest(_('Not all mandatory keys are provided'))
 
     # The user can add a review
-    ret = activity_protocol3._add_review(request, activity, Activity, user, 
+    ret = activity_protocol3._add_review(request, activity, Activity, user,
                                          review_decision, review_comment)
-    
+
     if 'success' not in ret or ret['success'] is False and 'msg' not in ret:
         raise HTTPBadRequest(_('Unknown error'))
-    
+
     if ret['success'] is True:
         request.session.flash(ret['msg'], 'success')
     else:
@@ -798,9 +803,6 @@ def create(request):
     curl -u "user1:pw" -d @addNewActivity.json -H "Content-Type: application/json" http://localhost:6543/activities
 
     """
-
-    _ = request.translate
-
     # Check if the user is logged in and he/she has sufficient user rights
     userid = request.user.username if request.user is not None else None
 
@@ -828,91 +830,6 @@ def create(request):
         request.response.status = 200
 
     return response
-
-#@view_config(route_name='taggroups_model', renderer='string')
-def model(request):
-    # TODO: This is probably not needed anymore.
-    """
-    Controller that returns a dynamically generated JavaScript that builds the
-    client-side TagGroup model, which is related (belongsTo / hasMany) to the
-    static Activity model. The model is set up based on the defined mandatory
-    and optional field in the configuration yaml file.
-    """
-    def _merge_config(parent_key, global_config, locale_config):
-        """
-        Merges two configuration dictionaries together
-        """
-
-        try:
-            for key, value in locale_config.items():
-                try:
-                    # If the value has items it's a dict, if not raise an error
-                    value.items()
-                    # Do not overwrite mandatory or optional keys in the global
-                    # config. If the key is not in the global config, append it
-                    # to the configuration
-                    if parent_key == 'mandatory' or parent_key == 'optional':
-                        if key not in global_config:
-                            _merge_config(key, global_config[key], locale_config[key])
-                        # else if the key is in global_config do nothing
-                    else:
-                        _merge_config(key, global_config[key], locale_config[key])
-                except:
-                    global_config[key] = locale_config[key]
-        # Handle the AttributeError if the locale config file is empty
-        except AttributeError:
-            pass
-
-    object = {}
-
-    object['extend'] = 'Ext.data.Model'
-    object['belongsTo'] = 'Lmkp.model.Activity'
-
-    # Get a stream of the config yaml file to extract the fields
-    stream = open(config_file_path(), 'r')
-
-    # Read the global configuration file
-    global_stream = open(config_file_path(request), 'r')
-    global_config = yaml.load(global_stream)
-
-    # Read the localized configuration file
-    try:
-        locale_stream = open(locale_config_file_path(request), 'r')
-        locale_config = yaml.load(locale_stream)
-
-        # If there is a localized config file then merge it with the global one
-        _merge_config(None, global_config, locale_config)
-
-    except IOError:
-        # No localized configuration file found!
-        pass
-
-    fields = []
-    fieldsConfig = global_config['application']['fields']
-
-    # language is needed because fields are to be displayed translated
-    localizer = get_localizer(request)
-    lang = Session.query(Language).filter(Language.locale == localizer.locale_name).first()
-    if lang is None:
-        lang = Language(1, 'English', 'English', 'en')
-
-    # First process the mandatory fields
-    for (name, config) in fieldsConfig['mandatory'].iteritems():
-        o = _get_extjs_config(name, config, lang)
-        if o is not None:
-            o['mandatory'] = 1
-            fields.append(o)
-    # Then process also the optional fields
-    for (name, config) in fieldsConfig['optional'].iteritems():
-        o = _get_extjs_config(name, config, lang)
-        if o is not None:
-            fields.append(o)
-
-    fields.append({'name': 'id', 'type': 'string'})
-
-    object['fields'] = fields
-
-    return "Ext.define('Lmkp.model.TagGroup', %s);" % object
 
 def _check_difference(new, old, localizer=None):
 
@@ -1008,37 +925,6 @@ def _get_extjs_config(name, config, language):
     fieldConfig['type'] = type
 
     return fieldConfig
-
-
-def _get_config_fields():
-    # TODO: Is this still needed?
-    log.debug('DO NOT DELETE ME!!!')
-    """
-    Return a list of mandatory and optional fields extracted from the application
-    configuration file (yaml)
-    """
-    # Get a stream of the config yaml file to extract the fields
-    stream = open(config_file_path(), 'r')
-
-    # Read the config stream
-    yamlConfig = yaml.load(stream)
-
-    # Get all (mandatory and optional) fields
-    yamlFields = yamlConfig['application']['fields']
-
-    # New list that holds the fields
-    fields = []
-
-    # First process the mandatory fields
-    for name in yamlFields['mandatory']:
-        fields.append(name)
-    # Then process also the optional fields
-    for name in yamlFields['optional']:
-        fields.append(name)
-
-    log.info(fields)
-
-    return fields
 
 def _handle_spatial_parameters(request):
     """

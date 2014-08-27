@@ -46,7 +46,7 @@ def form_geomtaggroups(request):
     """
     categorylist = getCategoryList(request, 'activities')
     # TODO: Once the QGIS-Plugin is adapted to match the new output of this
-    # function, remove the parameter (withTranslation=False) from the function 
+    # function, remove the parameter (withTranslation=False) from the function
     # call below.
     # The new output is as follows:
     # {
