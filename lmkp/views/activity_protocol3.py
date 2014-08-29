@@ -472,46 +472,6 @@ class ActivityProtocol3(Protocol):
             'data': [a.to_table(request) for a in activities]
         }
 
-    def read_many_public_latest(self, request):
-
-        items = []
-
-        sub_query = self.Session.query(Activity.activity_identifier, Activity.version, Changeset.timestamp, Changeset.fk_user).\
-            join(Changeset).\
-            filter(or_(Activity.fk_status == 2, Activity.fk_status == 3)).\
-            order_by(desc(Changeset.timestamp)).limit(10).subquery()
-
-        query = self.Session.query(sub_query, User.username).\
-            join(User).order_by(desc(sub_query.c.timestamp))
-
-        for i in query.all():
-            formatted_timestamp = i.timestamp.strftime("%a, %w %b %Y %H:%M:%S")
-            short_uuid = str(i.activity_identifier).split("-")[0]
-            activity_link = request.route_url("activities_read_one", output="html", uid=i.activity_identifier, _query={"v": i.version})
-            description_text = "Activity <a href=\"%s\">%s</a> has been updated by user \"%s\" on %s to version %s" \
-                % (activity_link, short_uuid, i.username, formatted_timestamp, i.version),
-            items.append({
-                         "title":  "Activity %s updated to version %s" % (short_uuid, i.version),
-                         "description": unicode(description_text[0]),
-                         "link": activity_link,
-                         "author": i.username,
-                         "guid": "%s?v=%s" % (i.activity_identifier, i.version),
-                         "pubDate": formatted_timestamp
-                         })
-
-        return {
-            "title": "Latest changes on the Landobservatory",
-            "link": request.route_url("activities_public_read_many", output="latest"),
-            "description": "Shows the latest changes on the Landobservatory",
-            "image": {
-                "url": '/custom/img/logo.png',
-                "title": "landobservatory.org",
-                "link": request.route_url("index")
-            },
-            "items": items
-        }
-
-
     def read_many_geojson(self, request, public=True):
 
         relevant_activities = self._get_relevant_activities_many(request,

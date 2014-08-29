@@ -367,7 +367,7 @@ class Activity(Base):
         self.point = point
         self.timestamp_review = timestamp_review
         self.comment_review = comment_review
-
+        
     def __repr__(self):
         """
         if self.point is None:
@@ -947,4 +947,3 @@ class Geonames(Base):
     #            (self.id, self.name, self.asciiname, self.alternatenames)
     #            )
 
-GeometryDDL(Activity.__table__)

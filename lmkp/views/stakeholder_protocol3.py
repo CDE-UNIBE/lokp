@@ -1811,6 +1811,32 @@ class StakeholderProtocol3(Protocol):
                                     created_version.version,
                                     a.get_status_id()
                                 ))
+                
+                elif (kwargs.pop('fromReview', False) is True 
+                    and 'activities' in inv_change and 
+                    inv_change['activities'] is not None):
+                    """
+                    Show an updated version of the Stakeholder which contains a
+                    new involvement. The changeset focuses on the Activity.
+                    """
+                    a = inv_change['activities'][0]
+                    
+                    role = None
+                    for inv in a['stakeholders']:
+                        if inv['id'] == old_version.get_guid():
+                            role = self.Session.query(Stakeholder_Role).\
+                                get(inv['role'])
+                    
+                    ao = ap.read_one_by_version(request, a['id'], a['version'])
+                    
+                    old_version.add_involvement(Inv(
+                        ao.get_guid(),
+                        ao,
+                        role.name,
+                        role.id,
+                        ao.get_version(),
+                        ao.get_status_id()
+                    ))
 
         # Also push Activity where involvements were deleted to new version
         if implicit is not True:

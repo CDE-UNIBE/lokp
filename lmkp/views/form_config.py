@@ -2,12 +2,14 @@ import colander
 import copy
 import deform
 from pyramid.i18n import get_localizer
+from pyramid.renderers import render
 import yaml
 import os
 import datetime
 
 from lmkp.config import locale_profile_directory_path
 from lmkp.config import profile_directory_path
+from lmkp.config import getTemplatePath
 from lmkp.models.database_objects import *
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.config import NEW_ACTIVITY_YAML
@@ -514,6 +516,7 @@ class ConfigThematicgroup(object):
         self.taggroups = []
         self.involvement = None
         self.map = None
+        self.showInDetails = False
 
     def getId(self):
         """
@@ -607,6 +610,18 @@ class ConfigThematicgroup(object):
         """
         return self.map
 
+    def setShowInDetails(self, bool):
+        """
+        Set the boolean if this thematic group is to be shown in details.
+        """
+        self.showInDetails = bool
+
+    def getShowInDetails(self):
+        """
+        Return the boolean if this thematic group is to be shown in details.
+        """
+        return self.showInDetails
+
     def getForm(self, request, readonly=False, compare=''):
         """
         Prepare the form node for this thematic group, append the forms of its
@@ -617,6 +632,10 @@ class ConfigThematicgroup(object):
         """
         title = (self.getTranslation() if self.getTranslation() is not None
             else self.getName())
+        # For the details (readonly=True), add the title of the thematic group
+        # only if specified in the configuration.
+        if readonly is True and self.getShowInDetails() is False:
+            title = ''
         thg_form = colander.SchemaNode(
             colander.Mapping(),
             title=title
@@ -1684,6 +1703,14 @@ def getInvolvementWidget(request, configInvolvement, compare=''):
     for v in configInvolvement.getRoles():
         choicesList.append((v.getId(), v.getName()))
     choices = tuple(choicesList)
+    shRole = render(
+        getTemplatePath(
+            request, 
+            'parts/items/stakeholder_role.mak'
+        ), 
+        {}, 
+        request
+    )
     invForm.add(colander.SchemaNode(
         colander.String(),
         missing=colander.null,
@@ -1692,7 +1719,7 @@ def getInvolvementWidget(request, configInvolvement, compare=''):
             values=choices
         ),
         name='role_id',
-        title=_('Stakeholder Role')
+        title=shRole
     ))
     
     if compare is not '':
@@ -1978,6 +2005,10 @@ def getCategoryList(request, itemType, **kwargs):
 
                 if tgroup_id == 'order':
                     thematicgroup.setOrder(tags)
+                    continue
+                
+                if tgroup_id == 'showindetails':
+                    thematicgroup.setShowInDetails(tags)
                     continue
 
                 if tgroup_id == 'involvement':

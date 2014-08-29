@@ -13,7 +13,7 @@ else:
     use_js_builds = False
 
 %>
-<title>${_("Land Observatory")} - ${_("Charts")}</title>
+<title>Land Observatory Charts</title>
 <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
 % if isinstance(has_permission('administer', request.context, request), ACLAllowed):
 <script type="text/javascript" src="${request.route_url('moderator_toolbar_config')}"></script>
@@ -32,23 +32,23 @@ else:
 
 <div id="loading-mask" style="width: 100%; height: 100%;">
     <div style="position: absolute; top: 50%; right: 50%">
-        <img src="${request.static_url('lmkp:static/img/spinner.gif')}" alt="${_('Loading ...')} ..."/>
+        <img src="${request.static_url('lmkp:static/img/spinner.gif')}" alt="Loading ..."/>
     </div>
 </div>
 <div id="heatmap-div">
-    <h2>${_("Heat map for Cambodia and Laos")}</h2>
+    <h2>Heat map for Cambodia and Laos</h2>
     <p>
-        ${_("Distribution of land related deals in Cambodia and for Champasak and Attapeu province in Laos.")}<br/>
-        ${_("Data for Cambodia are provided by the website")}
+        Distribution of land related deals in Cambodia and for Champasak and Attapeu province in Laos.<br/>
+        Data for Cambodia are provided by the website
         <a href="http://www.opendevelopmentcambodia.net">www.opendevelopmentcambodia.net</a>.
-        ${_("Data for Laos are based on the landconcessions database.")}
+        Data for Laos are based on the landconcessions database.
     </p>
     <p>
         <img src="${request.static_url('lmkp:static/img/activities_la_kh.png')}" alt="Distribution of activities in Cambodia and Laos (partly)"/>
     </p>
-    <h2>${_("Distribution of activities worldwide")}</h2>
+    <h2>Distribution of activities worldwide</h2>
     <p>
-        ${_("Worldwide distribution of land related deals based on the Landmatrix database available at")}
+        Worldwide distribution of land related deals based on the Landmatrix database available at
         <a href="http://www.landportal.info/landmatrix">
             www.landportal.info/landmatrix
         </a>

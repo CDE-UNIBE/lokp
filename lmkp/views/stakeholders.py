@@ -550,30 +550,6 @@ def read_one(request):
                 templateValues,
                 request
             )
-    elif output_format == 'history':
-        isLoggedIn, isModerator = checkUserPrivileges(request)
-        stakeholders, count = stakeholder_protocol3.read_one_history(
-            request, uid=uid)
-        activeVersion = None
-        for sh in stakeholders:
-            if 'statusName' in sh:
-                sh['statusName'] = get_translated_status(request, sh['statusName'])
-            if sh.get('statusId') == 2:
-                activeVersion = sh.get('version')
-        
-        templateValues = {
-            'versions': stakeholders,
-            'count': count,
-            'activeVersion': activeVersion,
-            'isModerator': isModerator
-        }
-        templateValues.update({
-            'profile': get_current_profile(request),
-            'locale': get_current_locale(request)
-        })
-        return render_to_response(
-            getTemplatePath(request, 'stakeholders/history.mak'), 
-            templateValues, request)
     elif output_format == 'formtest':
         # Test if a Stakeholder is valid according to the form configuration
         stakeholders = stakeholder_protocol3.read_one(request, uid=uid,
@@ -593,6 +569,54 @@ def read_one(request):
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
+
+@view_config(route_name='stakeholders_read_one_history')
+def read_one_history(request):
+    # Handle the parameters (locale, profile)
+    bv = BaseView(request)
+    bv._handle_parameters()
+
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'html'
+
+    uid = request.matchdict.get('uid', None)
+    if check_valid_uuid(uid) is not True:
+        raise HTTPNotFound()
+    isLoggedIn, isModerator = checkUserPrivileges(request)
+    stakeholders, count = stakeholder_protocol3.read_one_history(
+        request, uid=uid)
+    activeVersion = None
+    for sh in stakeholders:
+        if 'statusName' in sh:
+            sh['statusName'] = get_translated_status(request, sh['statusName'])
+        if sh.get('statusId') == 2:
+            activeVersion = sh.get('version')
+
+    templateValues = {
+        'versions': stakeholders,
+        'count': count,
+        'activeVersion': activeVersion,
+        'isModerator': isModerator
+    }
+    templateValues.update({
+        'profile': get_current_profile(request),
+        'locale': get_current_locale(request)
+    })
+
+    if output_format == 'html':
+        template = 'stakeholders/history.mak'
+
+    # RSS feed output
+    elif output_format == 'rss':
+        template = 'stakeholders/history_rss.mak'
+
+    else:
+        raise HTTPNotFound("Requested output format is not supported.")
+
+    return render_to_response(getTemplatePath(request, template),
+                            templateValues, request)
 
 @view_config(route_name='stakeholders_read_one_public')
 def read_one_public(request):
@@ -626,6 +650,12 @@ def read_one_public(request):
 def review(request):
     """
     Insert a review decision for a pending Stakeholder
+    Required POST attributes:
+    - identifier (string, uid)
+    - version (int)
+    - review_decision (string): approve / reject
+    - review_comment (string): nullable
+    - camefrom: uid of the Activity
     """
 
     _ = request.translate
@@ -646,7 +676,7 @@ def review(request):
         filter(Stakeholder.version == request.POST['version']).\
         first()
     if stakeholder is None:
-        raise HTTPUnauthorized(_('The Stakeholder was not found'))
+        raise HTTPUnauthorized(_('The Item was not found'))
 
     # If review decision is 'approved', make sure that all mandatory fields are
     # there, except if it is to be deleted
@@ -658,8 +688,8 @@ def review(request):
     else:
         raise HTTPBadRequest(_('No valid review decision'))
     
-    review_comment = request.POST['review_comment']
-    camefrom = request.POST['camefrom']
+    review_comment = request.POST.get('review_comment', '')
+    camefrom = request.POST.get('camefrom', '')
 
     if review_decision == 1: # Approved
         # Only check for mandatory keys if new version is not to be deleted
@@ -698,8 +728,8 @@ def review(request):
         )
         request.session.flash(camefromMsg)
 
-    return HTTPFound(location=request.route_url('stakeholders_read_one',
-        output='history', uid=stakeholder.identifier))
+    return HTTPFound(location=request.route_url('stakeholders_read_one_history',
+        output='html', uid=stakeholder.identifier))
 
 @view_config(route_name='stakeholders_create', renderer='json')
 def create(request):

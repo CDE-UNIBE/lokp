@@ -32,18 +32,20 @@ requires = [
     'deform==0.9.7',
     'simplejson',
     'pyramid_beaker==0.7',
-    'sphinx==1.2'
-    ]
+    'sphinx==1.2',
+    'pytest==2.5.2',
+    'selenium==2.42.1',
+]
 
 setup(name='LMKP',
-      version='0.8.2',
+      version='0.8.8',
       description='The Land Observatory',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
-      "Programming Language :: Python",
-      "Framework :: Pylons",
-      "Topic :: Internet :: WWW/HTTP",
-      "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+          "Programming Language :: Python",
+          "Framework :: Pylons",
+          "Topic :: Internet :: WWW/HTTP",
+          "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
       ],
       author='Centre for Development and Environment, University of Bern',
       author_email='',

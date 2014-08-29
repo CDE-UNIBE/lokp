@@ -4,11 +4,12 @@ __author__ = "Adrian Weber, Centre for Development and Environment, University o
 __date__ = "$Jan 20, 2012 10:39:24 AM$"
 
 from datetime import timedelta
+import logging
+
+from lmkp.config import getTemplatePath
 from lmkp.models.database_objects import User
 from lmkp.models.meta import DBSession
 from lmkp.views.views import BaseView
-from lmkp.config import getTemplatePath
-import logging
 from pyramid.httpexceptions import HTTPFound
 from pyramid.i18n import TranslationStringFactory
 from pyramid.renderers import render
@@ -56,9 +57,9 @@ class LoginView(BaseView):
                 headers = forget(self.request)
                 msg = _(u"Login failed! Please try again.")
                 return render_to_response(getTemplatePath(self.request, 'login_form.mak'), {
-                    'came_from': came_from,
-                    'warning': msg
-                }, self.request)
+                                          'came_from': came_from,
+                                          'warning': msg
+                                          }, self.request)
 
         return HTTPFound(location=came_from, headers=headers)
 
@@ -82,9 +83,9 @@ class LoginView(BaseView):
             return HTTPFound(location=came_from)
         
         return render_to_response(getTemplatePath(self.request, 'login_form.mak'), {
-            'came_from': came_from,
-            'warning': None
-        }, self.request)
+                                  'came_from': came_from,
+                                  'warning': None
+                                  }, self.request)
 
     @view_config(route_name='reset', renderer='json')
     def reset(self):
@@ -99,12 +100,15 @@ class LoginView(BaseView):
         if "system.Authenticated" in principals:
             return HTTPFound(location=came_from)
 
-        email = self.request.params.get('email')
+        username = self.request.params.get("username")
 
-        user = DBSession.query(User).filter(User.email == email).first()
+        user = DBSession.query(User).filter(User.username == username).first()
         if user is None:
             msg = _(u"No registered user found with this email address.")
-            return {'success': False, 'msg': msg}
+            return render_to_response(getTemplatePath(self.request, 'users/reset_password_form.mak'), {
+                                      'came_from': came_from,
+                                      'warning': msg
+                                      }, self.request)
 
         new_password = user.set_new_password()
 
@@ -114,12 +118,8 @@ class LoginView(BaseView):
         }, self.request)
         self._send_email([user.email], _(u"Password reset"), body)
 
-        msg = _(u"Password reset was successful. An email containing the new password has been sent to your email address.")
-        msg += "<br/><a href=\"%s\">" % self.request.route_url('login_form')
-        msg += _(u"Proceed to the login page")
-        msg += "</a>."
+        return render_to_response(getTemplatePath(self.request, 'users/reset_password_success.mak'), {}, self.request)
 
-        return {'success': True, 'msg': msg}
 
     @view_config(route_name='reset_form')
     def reset_form(self):
@@ -127,8 +127,9 @@ class LoginView(BaseView):
         came_from = self.request.params.get('came_from', None)
 
         return render_to_response(getTemplatePath(self.request, 'users/reset_password_form.mak'), {
-            'came_from': came_from
-        }, self.request)
+                                  'came_from': came_from,
+                                  "warning": None
+                                  }, self.request)
 
     @view_config(route_name='logout')
     def logout(self):

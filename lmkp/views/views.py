@@ -205,6 +205,16 @@ class MainView(BaseView):
             'profile': get_current_profile(self.request),
             'locale': get_current_locale(self.request)
         }, self.request)
+        
+    @view_config(route_name='showcases_view')
+    def showcases_view(self):
+
+        self._handle_parameters()
+
+        return render_to_response(getTemplatePath(self.request, 'showcases_view.mak'), {
+            'profile': get_current_profile(self.request),
+            'locale': get_current_locale(self.request)
+        }, self.request)
 
     @view_config(route_name='partners_view')
     def partners_view(self):
