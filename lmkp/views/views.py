@@ -205,7 +205,7 @@ class MainView(BaseView):
             'profile': get_current_profile(self.request),
             'locale': get_current_locale(self.request)
         }, self.request)
-        
+
     @view_config(route_name='showcases_view')
     def showcases_view(self):
 
@@ -607,3 +607,31 @@ def getFilterValuesForKey(request, predefinedType=None, predefinedKey=None):
         ])
 
     return ret
+
+
+def get_output_format(request):
+    # Default output format is JSON.
+    try:
+        output_format = request.matchdict['output']
+    except KeyError:
+        output_format = 'json'
+    return output_format
+
+def get_page_parameters(request):
+    # Get page parameter from request and make sure it is valid
+    page = request.params.get('page', 1)
+    try:
+        page = int(page)
+    except:
+        page = 1
+    page = max(page, 1)  # Page should be >= 1
+
+    # Get pagesize parameter from request and make sure it is valid
+    pageSize = request.params.get('pagesize', 10)
+    try:
+        pageSize = int(pageSize)
+    except:
+        pageSize = 10
+    pageSize = max(pageSize, 1)  # Page size should be >= 1
+    pageSize = min(pageSize, 50)  # Page size should be <= 50
+    return page, pageSize

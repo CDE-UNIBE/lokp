@@ -1,3 +1,32 @@
+import json
+import logging
+import urllib
+from pyramid.httpexceptions import (
+    HTTPBadRequest,
+    HTTPForbidden,
+    HTTPFound,
+    HTTPInternalServerError,
+    HTTPNotFound,
+    HTTPUnauthorized,
+)
+from pyramid.i18n import (
+    get_localizer,
+    TranslationStringFactory,
+)
+from pyramid.renderers import render_to_response
+from pyramid.response import Response
+from pyramid.security import (
+    ACLAllowed,
+    authenticated_userid,
+    has_permission,
+)
+from pyramid.view import view_config
+
+from lmkp.authentication import checkUserPrivileges
+from lmkp.config import (
+    check_valid_uuid,
+    getTemplatePath,
+)
 from lmkp.models.database_objects import (
     A_Key,
     A_Tag,
@@ -6,147 +35,131 @@ from lmkp.models.database_objects import (
     Language,
 )
 from lmkp.models.meta import DBSession as Session
+from lmkp.renderers.renderers import translate_key
 from lmkp.views.activity_protocol3 import ActivityProtocol3
+from lmkp.views.activity_review import ActivityReview
 from lmkp.views.comments import comments_sitekey
 from lmkp.views.config import get_mandatory_keys
-from lmkp.config import check_valid_uuid
-from lmkp.config import getTemplatePath
-import logging
-import urllib
-from pyramid.httpexceptions import HTTPBadRequest
-from pyramid.httpexceptions import HTTPForbidden
-from pyramid.httpexceptions import HTTPFound
-from pyramid.httpexceptions import HTTPNotFound
-from pyramid.httpexceptions import HTTPUnauthorized
-from pyramid.httpexceptions import HTTPInternalServerError
-from pyramid.i18n import get_localizer
-from pyramid.i18n import TranslationStringFactory
-from pyramid.renderers import render_to_response
-from pyramid.response import Response
-from pyramid.security import ACLAllowed
-from pyramid.security import authenticated_userid
-from pyramid.security import has_permission
-from pyramid.view import view_config
-import json
-
-from lmkp.views.activity_review import ActivityReview
-from lmkp.renderers.renderers import translate_key
-from lmkp.views.form import renderForm
-from lmkp.views.form import renderReadonlyForm
-from lmkp.views.form import renderReadonlyCompareForm
-from lmkp.views.form import checkValidItemjson
+from lmkp.views.form import (
+    renderForm,
+    renderReadonlyForm,
+    renderReadonlyCompareForm,
+    checkValidItemjson,
+)
 from lmkp.views.form_config import getCategoryList
-from lmkp.views.profile import get_current_profile
-from lmkp.views.profile import get_current_locale
-from lmkp.views.profile import get_spatial_accuracy_map
-from lmkp.views.views import BaseView
-from lmkp.authentication import checkUserPrivileges
-from lmkp.views.translation import get_translated_status
-from lmkp.views.translation import get_translated_db_keys
+from lmkp.views.profile import (
+    get_current_locale,
+    get_current_profile,
+    get_spatial_accuracy_map,
+)
+from lmkp.views.translation import (
+    get_translated_status,
+    get_translated_db_keys,
+)
+from lmkp.views.views import (
+    BaseView,
+    get_output_format,
+    get_page_parameters,
+)
 
 log = logging.getLogger(__name__)
-
 _ = TranslationStringFactory('lmkp')
+activity_protocol = ActivityProtocol3(Session)
 
-activity_protocol3 = ActivityProtocol3(Session)
 
-def get_timestamp(request):
-    """
-    Gets the timestamp from the request url and returns it
-    """
-    pass
+class ActivityView(BaseView):
 
-@view_config(route_name='activities_read_many')
-def read_many(request):
-    """
-    Read many, returns also pending Activities by currently logged in user and
-    all pending Activities if logged in as moderator.
-    Default output format: JSON
-    """
-
-    # Handle the parameters (locale, profile)
-    bv = BaseView(request)
-    bv._handle_parameters()
-
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'json'
-
-    if output_format == 'json':
-        activities = activity_protocol3.read_many(request, public=False)
-        return render_to_response('json', activities, request)
-    elif output_format == 'html':
+    @view_config(route_name='activities_read_many')
+    def read_many(self):
         """
-        Show a HTML representation of the Activities in a grid.
+        Return many Activities.
+
+        For each Activity, only one version is visible, always the
+        latest visible version to the current user. This means that
+        logged in users can see their own pending versions and
+        moderators of the current profile can see pending versions as
+        well.
+
+        By default, the Activities are ordered with the Activity having
+        the most recent change being on top.
+
+        The output format is provided through the Matchdict of the URL
+        pattern (/activities/{output}).
+        Default output format is JSON.
+
+        Request parameters:
+            page (int):
+            pagesize (int):
+            status (str):
+
+        Returns:
+            HTTPResponse. Either a HTML or a JSON response.
         """
 
-        # Get page parameter from request and make sure it is valid
-        page = request.params.get('page', 1)
-        try:
-            page = int(page)
-        except:
-            page = 1
-        page = max(page, 1) # Page should be >= 1
+        request = self.request
 
-        # Get pagesize parameter from request and make sure it is valid
-        pageSize = request.params.get('pagesize', 10)
-        try:
-            pageSize = int(pageSize)
-        except:
-            pageSize = 10
-        pageSize = max(pageSize, 1) # Page size should be >= 1
-        pageSize = min(pageSize, 50) # Page size should be <= 50
+        # Handle the parameters (locale, profile).
+        self._handle_parameters()
 
-        # Spatial filter
-        spatialfilter = _handle_spatial_parameters(request)
+        output_format = get_output_format(self.request)
 
-        # Query the items with the protocol
-        items = activity_protocol3.read_many(request, public=False,
-                                    limit=pageSize, offset=pageSize*page-pageSize)
+        if output_format == 'json':
+            activities = activity_protocol.read_many(request, public=False)
+            return render_to_response('json', activities, request)
+        elif output_format == 'html':
+            page, page_size = get_page_parameters(self.request)
+            spatialfilter = _handle_spatial_parameters(request)
+            items = activity_protocol.read_many(
+                request, public=False, limit=page_size,
+                offset=page_size * page - page_size)
 
-        statusFilter = request.params.get('status', None)
-        isLoggedIn, isModerator = checkUserPrivileges(request)
+            status_filter = request.params.get('status', None)
+            isLoggedIn, isModerator = checkUserPrivileges(request)
 
-        return render_to_response(getTemplatePath(request, 'activities/grid.mak'), {
-                                  'data': items['data'] if 'data' in items else [],
-                                  'total': items['total'] if 'total' in items else 0,
+            return render_to_response(
+                getTemplatePath(request, 'activities/grid.mak'),
+                {
+                    'data': items['data'] if 'data' in items else [],
+                    'total': items['total'] if 'total' in items else 0,
+                    'profile': get_current_profile(request),
+                    'locale': get_current_locale(request),
+                    'spatialfilter': spatialfilter,
+                    'invfilter': None,
+                    'statusfilter': status_filter,
+                    'currentpage': page,
+                    'pagesize': page_size,
+                    'isModerator': isModerator
+                },
+                request)
+
+        elif output_format == 'form':
+            # This is used to display a new and empty form for an Activity
+            if request.user is None:
+                # Make sure the user is logged in
+                raise HTTPForbidden()
+            newInvolvement = request.params.get('inv', None)
+            templateValues = renderForm(
+                request, 'activities', inv=newInvolvement)
+            if isinstance(templateValues, Response):
+                return templateValues
+            templateValues.update({
+                                  'uid': '-',
+                                  'version': 0,
                                   'profile': get_current_profile(request),
-                                  'locale': get_current_locale(request),
-                                  'spatialfilter': spatialfilter,
-                                  'invfilter': None,
-                                  'statusfilter': statusFilter,
-                                  'currentpage': page,
-                                  'pagesize': pageSize,
-                                  'isModerator': isModerator
-                                  }, request)
+                                  'locale': get_current_locale(request)
+                                  })
+            return render_to_response(
+                getTemplatePath(request, 'activities/form.mak'),
+                templateValues,
+                request)
+        elif output_format == 'geojson':
+            activities = activity_protocol.read_many_geojson(
+                request, public=False)
+            return render_to_response('json', activities, request)
+        else:
+            # If the output format was not found, raise 404 error
+            raise HTTPNotFound()
 
-    elif output_format == 'form':
-        # This is used to display a new and empty form for an Activity
-        if request.user is None:
-            # Make sure the user is logged in
-            raise HTTPForbidden()
-        newInvolvement = request.params.get('inv', None)
-        templateValues = renderForm(request, 'activities', inv=newInvolvement)
-        if isinstance(templateValues, Response):
-            return templateValues
-        templateValues.update({
-                              'uid': '-',
-                              'version': 0,
-                              'profile': get_current_profile(request),
-                              'locale': get_current_locale(request)
-                              })
-        return render_to_response(
-                                  getTemplatePath(request, 'activities/form.mak'),
-                                  templateValues,
-                                  request
-                                  )
-    elif output_format == 'geojson':
-        activities = activity_protocol3.read_many_geojson(request, public=False)
-        return render_to_response('json', activities, request)
-    else:
-        # If the output format was not found, raise 404 error
-        raise HTTPNotFound()
 
 @view_config(route_name='activities_public_read_many')
 def read_many_public(request):
@@ -161,22 +174,24 @@ def read_many_public(request):
         output_format = 'json'
 
     if output_format == 'json':
-        activities = activity_protocol3.read_many(request, public=True)
+        activities = activity_protocol.read_many(request, public=True)
         return render_to_response('json', activities, request)
     elif output_format == 'html':
         #@TODO
         return render_to_response('json', {'HTML': 'Coming soon'}, request)
     elif output_format == 'geojson':
-        activities = activity_protocol3.read_many_geojson(request, public=True)
+        activities = activity_protocol.read_many_geojson(request, public=True)
         return render_to_response('json', activities, request)
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
 
+
 @view_config(route_name='activities_read_many_pending', permission='moderate')
 def read_many_pending(request):
     """
-    Read many pending Activities based on the profile attached to the moderator.
+    Read many pending Activities based on the profile attached to the
+    moderator.
     Default output format: JSON
     """
 
@@ -186,7 +201,7 @@ def read_many_pending(request):
         output_format = 'json'
 
     if output_format == 'json':
-        activities = activity_protocol3.read_many_pending(request)
+        activities = activity_protocol.read_many_pending(request)
         return render_to_response('json', activities, request)
     elif output_format == 'html':
         #@TODO
@@ -194,6 +209,7 @@ def read_many_pending(request):
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
+
 
 @view_config(route_name='activities_bystakeholders')
 def by_stakeholders(request):
@@ -226,12 +242,13 @@ def by_stakeholders(request):
         raise HTTPNotFound()
 
     if output_format == 'json':
-        activities = activity_protocol3.read_many_by_stakeholders(request,
-                                                                  uids=uids, public=False)
+        activities = activity_protocol.read_many_by_stakeholders(
+            request, uids=uids, public=False)
         return render_to_response('json', activities, request)
     elif output_format == 'html':
         """
-        Show a HTML representation of the Activities of a Stakeholder in a grid.
+        Show a HTML representation of the Activities of a Stakeholder in
+        a grid.
         """
 
         # Get page parameter from request and make sure it is valid
@@ -240,7 +257,7 @@ def by_stakeholders(request):
             page = int(page)
         except:
             page = 1
-        page = max(page, 1) # Page should be >= 1
+        page = max(page, 1)  # Page should be >= 1
 
         # Get pagesize parameter from request and make sure it is valid
         pageSize = request.params.get('pagesize', 10)
@@ -248,30 +265,35 @@ def by_stakeholders(request):
             pageSize = int(pageSize)
         except:
             pageSize = 10
-        pageSize = max(pageSize, 1) # Page size should be >= 1
-        pageSize = min(pageSize, 50) # Page size should be <= 50
+        pageSize = max(pageSize, 1)  # Page size should be >= 1
+        pageSize = min(pageSize, 50)  # Page size should be <= 50
 
         # No spatial filter is used if the activities are filtered by a
         # stakeholder
         spatialfilter = None
 
         # Query the items with the protocol
-        items = activity_protocol3.read_many_by_stakeholders(request, uids=uids,
-                                                             public=False, limit=pageSize, offset=pageSize * page-pageSize)
+        items = activity_protocol.read_many_by_stakeholders(
+            request, uids=uids, public=False, limit=pageSize,
+            offset=pageSize * page - pageSize)
 
-        return render_to_response(getTemplatePath(request, 'activities/grid.mak'), {
-                                  'data': items['data'] if 'data' in items else [],
-                                  'total': items['total'] if 'total' in items else 0,
-                                  'profile': get_current_profile(request),
-                                  'locale': get_current_locale(request),
-                                  'spatialfilter': spatialfilter,
-                                  'invfilter': uids,
-                                  'currentpage': page,
-                                  'pagesize': pageSize
-                                  }, request)
+        return render_to_response(
+            getTemplatePath(request, 'activities/grid.mak'),
+            {
+                'data': items['data'] if 'data' in items else [],
+                'total': items['total'] if 'total' in items else 0,
+                'profile': get_current_profile(request),
+                'locale': get_current_locale(request),
+                'spatialfilter': spatialfilter,
+                'invfilter': uids,
+                'currentpage': page,
+                'pagesize': pageSize
+            },
+            request)
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
+
 
 @view_config(route_name='activities_bystakeholders_public')
 def by_stakeholders_public(request):
@@ -300,8 +322,8 @@ def by_stakeholders_public(request):
         raise HTTPNotFound()
 
     if output_format == 'json':
-        activities = activity_protocol3.read_many_by_stakeholders(request,
-                                                                  uids=uids, public=True)
+        activities = activity_protocol.read_many_by_stakeholders(
+            request, uids=uids, public=True)
         return render_to_response('json', activities, request)
     elif output_format == 'html':
         #@TODO
@@ -310,12 +332,13 @@ def by_stakeholders_public(request):
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
 
+
 @view_config(route_name='activities_read_one')
 def read_one(request):
     """
-    Read one Activity based on ID and return all versions of this Activity. Also
-    return pending versions by currently logged in user and all pending versions
-    of this Activity if logged in as moderator.
+    Read one Activity based on ID and return all versions of this
+    Activity. Also return pending versions by currently logged in user
+    and all pending versions of this Activity if logged in as moderator.
     Default output format: JSON
     """
 
@@ -333,15 +356,17 @@ def read_one(request):
         raise HTTPNotFound()
 
     if output_format == 'json':
-        activities = activity_protocol3.read_one(request, uid=uid, public=False)
+        activities = activity_protocol.read_one(
+            request, uid=uid, public=False)
         return render_to_response('json', activities, request)
     elif output_format == 'html':
         # Show the details of an Activity by rendering the form in readonly
         # mode.
-        activities = activity_protocol3.read_one(request, uid=uid, public=False,
-                                                 translate=False)
+        activities = activity_protocol.read_one(
+            request, uid=uid, public=False, translate=False)
         version = request.params.get('v', None)
-        if activities and 'data' in activities and len(activities['data']) != 0:
+        if (activities and 'data' in activities
+                and len(activities['data']) != 0):
             for a in activities['data']:
                 if 'version' in a:
                     if version is None:
@@ -349,34 +374,38 @@ def read_one(request):
                         # version visible to the user
                         version = str(a['version'])
                     if str(a['version']) == version:
-                        templateValues = renderReadonlyForm(request, 'activities', a)
-                        templateValues['profile'] = get_current_profile(request)
+                        templateValues = renderReadonlyForm(
+                            request, 'activities', a)
+                        templateValues['profile'] = get_current_profile(
+                            request)
                         templateValues['locale'] = get_current_locale(request)
 
-                        # Append the short uid and the uid to the templates values
+                        # Append the short uid and the uid to the templates
+                        # values
                         templateValues['uid'] = uid
                         templateValues['version'] = version
                         templateValues['shortuid'] = uid.split("-")[0]
                         # Append also the site key from the commenting system
-                        templateValues['site_key'] = comments_sitekey(request)['site_key']
+                        templateValues['site_key'] = comments_sitekey(
+                            request)['site_key']
                         # and the url of the commenting system
-                        templateValues['comments_url'] = request.registry.settings['lmkp.comments_url']
+                        templateValues['comments_url'] = \
+                            request.registry.settings['lmkp.comments_url']
 
                         return render_to_response(
-                                                  getTemplatePath(request, 'activities/details.mak'),
-                                                  templateValues,
-                                                  request
-                                                  )
+                            getTemplatePath(request, 'activities/details.mak'),
+                            templateValues, request)
         return HTTPNotFound()
     elif output_format == 'form':
         if request.user is None:
             # Make sure the user is logged in
             raise HTTPForbidden()
         # Query the Activities wih the given identifier
-        activities = activity_protocol3.read_one(request, uid=uid, public=False,
-                                                 translate=False)
+        activities = activity_protocol.read_one(
+            request, uid=uid, public=False, translate=False)
         version = request.params.get('v', None)
-        if activities and 'data' in activities and len(activities['data']) != 0:
+        if (activities and 'data' in activities
+                and len(activities['data']) != 0):
             for a in activities['data']:
                 if 'version' in a:
                     if version is None:
@@ -384,18 +413,18 @@ def read_one(request):
                         # version visible to the user
                         version = str(a['version'])
                     if str(a['version']) == version:
-                        templateValues = renderForm(request, 'activities', itemJson=a)
+                        templateValues = renderForm(
+                            request, 'activities', itemJson=a)
                         if isinstance(templateValues, Response):
                             return templateValues
-                        templateValues['profile'] = get_current_profile(request)
+                        templateValues['profile'] = get_current_profile(
+                            request)
                         templateValues['locale'] = get_current_locale(request)
                         templateValues['uid'] = uid
                         templateValues['version'] = version
                         return render_to_response(
-                                                  getTemplatePath(request, 'activities/form.mak'),
-                                                  templateValues,
-                                                  request
-                                                  )
+                            getTemplatePath(request, 'activities/form.mak'),
+                            templateValues, request)
         return HTTPNotFound()
     elif output_format in ['review', 'compare']:
         if output_format == 'review':
@@ -408,7 +437,7 @@ def read_one(request):
         availableVersions = None
         recalculated = False
         defaultRefVersion, defaultNewVersion = review._get_valid_versions(
-                                                                          Activity, uid)
+            Activity, uid)
 
         refVersion = request.params.get('ref', None)
         if refVersion is not None:
@@ -421,8 +450,8 @@ def read_one(request):
             # Also use the default one for review because it cannot be changed.
             refVersion = defaultRefVersion
         else:
-            availableVersions = review._get_available_versions(Activity, uid,
-                                                               review=output_format == 'review')
+            availableVersions = review._get_available_versions(
+                Activity, uid, review=output_format == 'review')
             # Check if the indicated reference version is valid
             if refVersion not in [v.get('version') for v in availableVersions]:
                 refVersion = defaultRefVersion
@@ -438,8 +467,8 @@ def read_one(request):
             newVersion = defaultNewVersion
         else:
             if availableVersions is None:
-                availableVersions = review._get_available_versions(Activity,
-                                                                   uid, review=output_format == 'review')
+                availableVersions = review._get_available_versions(
+                    Activity, uid, review=output_format == 'review')
             # Check if the indicated new version is valid
             if newVersion not in [v.get('version') for v in availableVersions]:
                 newVersion = defaultNewVersion
@@ -447,21 +476,21 @@ def read_one(request):
         if output_format == 'review':
             # If the Activities are to be reviewed, only the changes which were
             # applied to the newVersion are of interest
-            activities, recalculated = review.get_comparison(Activity, uid,
-                                                             refVersion, newVersion)
+            activities, recalculated = review.get_comparison(
+                Activity, uid, refVersion, newVersion)
         else:
             # If the Activities are compared, the versions as they are stored
             # in the database are of interest, without any recalculation
             activities = [
-                activity_protocol3.read_one_by_version(request, uid, refVersion,
-                                                       geometry='full', translate=False
-                                                       ),
-                activity_protocol3.read_one_by_version(request, uid, newVersion,
-                                                       geometry='full', translate=False
-                                                       )
+                activity_protocol.read_one_by_version(
+                    request, uid, refVersion, geometry='full',
+                    translate=False),
+                activity_protocol.read_one_by_version(
+                    request, uid, newVersion, geometry='full', translate=False)
             ]
-        templateValues = renderReadonlyCompareForm(request, 'activities',
-                                                   activities[0], activities[1], review=output_format == 'review')
+        templateValues = renderReadonlyCompareForm(
+            request, 'activities', activities[0], activities[1],
+            review=output_format == 'review')
         # Collect metadata for the reference version
         refMetadata = {}
         if activities[0] is not None:
@@ -471,12 +500,15 @@ def read_one(request):
         missingKeys = []
         reviewable = False
         if activities[1] is not None:
-            activities[1].mark_complete(get_mandatory_keys(request, 'a', False))
+            activities[1].mark_complete(get_mandatory_keys(
+                request, 'a', False))
             missingKeys = activities[1]._missing_keys
             localizer = get_localizer(request)
             if localizer.locale_name != 'en':
-                db_lang = Session.query(Language).filter(Language.locale == localizer.locale_name).first()
-                missingKeys = get_translated_db_keys(A_Key, missingKeys, db_lang)
+                db_lang = Session.query(Language).filter(
+                    Language.locale == localizer.locale_name).first()
+                missingKeys = get_translated_db_keys(
+                    A_Key, missingKeys, db_lang)
                 missingKeys = [m[1] for m in missingKeys]
 
             newMetadata = activities[1].get_metadata(request)
@@ -488,9 +520,9 @@ def read_one(request):
         if output_format == 'review':
             pendingVersions = []
             if availableVersions is None:
-                availableVersions = review._get_available_versions(Activity,
-                                                                   uid, review=output_format == 'review')
-            for v in sorted(availableVersions, key=lambda v:v.get('version')):
+                availableVersions = review._get_available_versions(
+                    Activity, uid, review=output_format == 'review')
+            for v in sorted(availableVersions, key=lambda v: v.get('version')):
                 if v.get('status') == 1:
                     pendingVersions.append(v.get('version'))
             templateValues['pendingVersions'] = pendingVersions
@@ -510,39 +542,38 @@ def read_one(request):
 
         if output_format == 'review':
             return render_to_response(
-                                      getTemplatePath(request, 'activities/review.mak'),
-                                      templateValues,
-                                      request
-                                      )
+                getTemplatePath(request, 'activities/review.mak'),
+                templateValues, request)
         else:
             return render_to_response(
-                                      getTemplatePath(request, 'activities/compare.mak'),
-                                      templateValues,
-                                      request
-                                      )
+                getTemplatePath(request, 'activities/compare.mak'),
+                templateValues, request)
     elif output_format == 'geojson':
         # A version is required
         version = request.params.get('v', None)
         if version is None:
-            raise HTTPBadRequest('You must specify a version as parameter ?v=X')
+            raise HTTPBadRequest(
+                'You must specify a version as parameter ?v=X')
         translate = request.params.get('translate', 'true').lower() == 'true'
-        activities = activity_protocol3.read_one_geojson_by_version(request,
-                                                                    uid, version, translate=translate)
+        activities = activity_protocol.read_one_geojson_by_version(
+            request, uid, version, translate=translate)
         return render_to_response('json', activities, request)
     elif output_format == 'formtest':
         # Test if an Activity is valid according to the form configuration
-        activities = activity_protocol3.read_one(request, uid=uid, public=False,
-                                                 translate=False)
+        activities = activity_protocol.read_one(
+            request, uid=uid, public=False, translate=False)
         version = request.params.get('v', None)
-        if activities and 'data' in activities and len(activities['data']) != 0:
+        if (activities and 'data' in activities
+                and len(activities['data']) != 0):
             for a in activities['data']:
                 if 'version' in a:
                     if version is None:
                         version = str(a['version'])
                     if str(a['version']) == version:
                         categorylist = getCategoryList(request, 'activities')
-                        return render_to_response('json',
-                                                  checkValidItemjson(categorylist, a), request)
+                        return render_to_response(
+                            'json',
+                            checkValidItemjson(categorylist, a), request)
         return HTTPNotFound()
     # Output the areal statistics for the requested activity based on the
     # Web Processing Service
@@ -559,15 +590,15 @@ def read_one(request):
 
         spatial_accuracy_map = get_spatial_accuracy_map(request)
 
-        # Check if the spatial accuracy map is configured in the application.yml
-        # file
+        # Check if the spatial accuracy map is configured in the application.
+        # yml file
         if spatial_accuracy_map is None:
             raise HTTPNotFound()
 
         # Show the details of an Activity by rendering the form in readonly
         # mode.
-        activities = activity_protocol3.read_one(request, uid=uid, public=False,
-                                                 translate=False)
+        activities = activity_protocol.read_one(
+            request, uid=uid, public=False, translate=False)
 
         activity = activities['data'][0]
         coords = activity['geometry']['coordinates']
@@ -579,14 +610,15 @@ def read_one(request):
                 buffer = spatial_accuracy_map[spatial_accuracy]
 
         wps_parameters = {
-        "ServiceProvider": "",
-        "metapath": "",
-        "Service": "WPS",
-        "Request": "Execute",
-        "Version": "1.0.0",
-        "Identifier": "BufferStatistics",
-        "DataInputs": "lon=%s;lat=%s;epsg=4326;buffer=%s" % (coords[0], coords[1], buffer),
-        "RawDataOutput": 'bufferstatistics@mimeType=application/json'
+            "ServiceProvider": "",
+            "metapath": "",
+            "Service": "WPS",
+            "Request": "Execute",
+            "Version": "1.0.0",
+            "Identifier": "BufferStatistics",
+            "DataInputs": "lon=%s;lat=%s;epsg=4326;buffer=%s" % (
+                coords[0], coords[1], buffer),
+            "RawDataOutput": 'bufferstatistics@mimeType=application/json'
         }
 
         if not wps_host.endswith("?"):
@@ -604,13 +636,12 @@ def read_one(request):
         templateValues['uid'] = uid
         templateValues['shortuid'] = uid.split("-")[0]
         return render_to_response(
-                                  getTemplatePath(request, 'activities/statistics.mak'),
-                                  templateValues,
-                                  request
-                                  )
+            getTemplatePath(request, 'activities/statistics.mak'),
+            templateValues, request)
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
+
 
 @view_config(route_name='activities_read_one_history')
 def read_one_history(request):
@@ -628,8 +659,8 @@ def read_one_history(request):
         raise HTTPNotFound()
 
     isLoggedIn, isModerator = checkUserPrivileges(request)
-    activities, count = activity_protocol3.read_one_history(
-                                                            request, uid=uid)
+    activities, count = activity_protocol.read_one_history(
+        request, uid=uid)
     activeVersion = None
     for a in activities:
         if 'statusName' in a:
@@ -657,8 +688,9 @@ def read_one_history(request):
     else:
         raise HTTPNotFound("Requested output format is not supported.")
 
-    return render_to_response(getTemplatePath(request, template),
-                            templateValues, request)
+    return render_to_response(
+        getTemplatePath(request, template), templateValues, request)
+
 
 @view_config(route_name='activities_read_one_public')
 def read_one_public(request):
@@ -678,7 +710,7 @@ def read_one_public(request):
         output_format = 'json'
 
     if output_format == 'json':
-        activities = activity_protocol3.read_one(request, uid=uid, public=True)
+        activities = activity_protocol.read_one(request, uid=uid, public=True)
         return render_to_response('json', activities, request)
     elif output_format == 'html':
         #@TODO
@@ -686,6 +718,7 @@ def read_one_public(request):
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
+
 
 @view_config(route_name='activities_read_one_active')
 def read_one_active(request):
@@ -705,7 +738,7 @@ def read_one_active(request):
         raise HTTPNotFound()
 
     if output_format == 'json':
-        activities = activity_protocol3.read_one_active(request, uid=uid)
+        activities = activity_protocol.read_one_active(request, uid=uid)
         return render_to_response('json', activities, request)
     elif output_format == 'html':
         #@TODO
@@ -713,6 +746,7 @@ def read_one_active(request):
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
+
 
 @view_config(route_name='activities_review', renderer='json')
 def review(request):
@@ -734,11 +768,10 @@ def review(request):
     if not isinstance(has_permission('moderate', request.context, request),
                       ACLAllowed):
         raise HTTPUnauthorized(_('User has no permissions to add a review.'))
-    #user = Session.query(User).filter(User.username == authenticated_userid(request)).first()
     user = request.user
 
     # Check for profile
-    profile_filters = activity_protocol3._get_spatial_moderator_filter(request)
+    profile_filters = activity_protocol._get_spatial_moderator_filter(request)
     if profile_filters is None:
         raise HTTPBadRequest(_('User has no profile attached'))
     activity = Session.query(Activity).\
@@ -747,7 +780,9 @@ def review(request):
         filter(profile_filters).\
         first()
     if activity is None:
-        raise HTTPUnauthorized(_("The Item was not found or is not situated within the user's profiles"))
+        raise HTTPUnauthorized(_(
+            "The Item was not found or is not situated within the user's "
+            "profiles"))
 
     # If review decision is 'approved', make sure that all mandatory fields are
     # there, except if it is to be deleted
@@ -761,7 +796,7 @@ def review(request):
 
     review_comment = request.POST['review_comment']
 
-    if review_decision == 1: # Approved
+    if review_decision == 1:  # Approved
         # Only check for mandatory keys if new version is not to be deleted
         # (has no tag groups)
         if len(activity.tag_groups) > 0:
@@ -776,11 +811,12 @@ def review(request):
                 keys.append(k.key)
             for mk in mandatory_keys:
                 if mk not in keys:
-                    raise HTTPBadRequest(_('Not all mandatory keys are provided'))
+                    raise HTTPBadRequest(_(
+                        'Not all mandatory keys are provided'))
 
     # The user can add a review
-    ret = activity_protocol3._add_review(request, activity, Activity, user,
-                                         review_decision, review_comment)
+    ret = activity_protocol._add_review(
+        request, activity, Activity, user, review_decision, review_comment)
 
     if 'success' not in ret or ret['success'] is False and 'msg' not in ret:
         raise HTTPBadRequest(_('Unknown error'))
@@ -793,6 +829,7 @@ def review(request):
     return HTTPFound(location=request.route_url('activities_read_one_history',
                      output='html', uid=activity.identifier))
 
+
 @view_config(route_name='activities_create', renderer='json')
 def create(request):
     """
@@ -800,7 +837,8 @@ def create(request):
     Implements the create functionality (HTTP POST) in the CRUD model
 
     Test the POST request e.g. with
-    curl -u "user1:pw" -d @addNewActivity.json -H "Content-Type: application/json" http://localhost:6543/activities
+    curl -u "user1:pw" -d @addNewActivity.json -H "Content-Type:
+        application/json" http://localhost:6543/activities
 
     """
     # Check if the user is logged in and he/she has sufficient user rights
@@ -808,10 +846,11 @@ def create(request):
 
     if userid is None:
         raise HTTPForbidden()
-    if not isinstance(has_permission('edit', request.context, request), ACLAllowed):
+    if not isinstance(
+            has_permission('edit', request.context, request), ACLAllowed):
         raise HTTPForbidden()
 
-    ids = activity_protocol3.create(request)
+    ids = activity_protocol.create(request)
 
     response = {}
 
@@ -831,16 +870,17 @@ def create(request):
 
     return response
 
+
 def _check_difference(new, old, localizer=None):
 
-    changes = {} # to collect the changes
+    changes = {}  # to collect the changes
 
-    # not all attributes are of interest when looking at the difference between two versions
+    # not all attributes are of interest when looking at the difference
+    # between two versions
     # @todo: geometry needs to be processed differently, not yet implemented
-    ignored = ['geometry', 'timestamp', 'id', 'version', 'username', 'userid', 'source',
-        'activity_identifier', 'modified', 'new', 'deleted']
-
-
+    ignored = [
+        'geometry', 'timestamp', 'id', 'version', 'username', 'userid',
+        'source', 'activity_identifier', 'modified', 'new', 'deleted']
 
     # do comparison based on new version, loop through attributes
     if new is not None:
@@ -849,24 +889,31 @@ def _check_difference(new, old, localizer=None):
             if obj not in ignored:
                 # there is no older version (all attributes are new)
                 if old is None:
-                    # for some reason (?), attribute (although it will be set in later versions)
-                    # can already be there (set to None) - we don't want it yet
+                    # for some reason (?), attribute (although it will be set
+                    # in later versions) can already be there (set to None) -
+                    # we don't want it yet
                     if new.__dict__[obj] is not None:
-                        changes[str(translate_key(None, localizer, obj))] = 'new' # attribute is new
+                        changes[str(translate_key(None, localizer, obj))] = \
+                            'new'  # attribute is new
                 # there exists an older version
                 else:
                     # attribute is not in older version
                     if obj not in old.__dict__:
-                        changes[str(translate_key(None, localizer, obj))] = 'new' # attribute is new
+                        changes[str(translate_key(None, localizer, obj))] = \
+                            'new'  # attribute is new
                     # attribute is already in older version
                     else:
-                        # for some reason (?), attribute can already be there in older versions
-                        # (set to None). this should be treated as if attribute was not there yet
-                        if old.__dict__[obj] is None and new.__dict__[obj] is not None:
-                            changes[str(translate_key(None, localizer, obj))] = 'new' # attribute is 'new'
+                        # for some reason (?), attribute can already be there
+                        # in older versions (set to None). this should be
+                        # treated as if attribute was not there yet
+                        if (old.__dict__[obj] is None
+                                and new.__dict__[obj] is not None):
+                            changes[str(translate_key(None, localizer, obj))] \
+                                = 'new'  # attribute is 'new'
                         # check if attribute is the same in both versions
                         elif new.__dict__[obj] != old.__dict__[obj]:
-                            changes[str(translate_key(None, localizer, obj))] = 'modified' # attribute was modified
+                            changes[str(translate_key(None, localizer, obj))] \
+                                = 'modified'  # attribute was modified
 
     # do comparison based on old version
     if old is not None:
@@ -875,23 +922,12 @@ def _check_difference(new, old, localizer=None):
             if obj not in ignored and new is not None:
                 # check if attribute is not there anymore in new version
                 if obj not in new.__dict__:
-                    changes[str(translate_key(None, localizer, obj))] = 'deleted' # attribute was deleted
+                    changes[str(translate_key(None, localizer, obj))] = \
+                        'deleted'  # attribute was deleted
 
-    if new is not None: # when deleted
+    if new is not None:  # when deleted
         new.changes = changes
     return new
-
-#def _history_get_changeset_details(object):
-#    """
-#    Appends details from Changeset of an ActivityProtocol object based on the ID of the activity
-#    and returns this object.
-#    """
-#    if object.id is not None:
-#        changeset = Session.query(A_Changeset).filter(A_Changeset.fk_activity == object.id).first()
-#        object.userid = changeset.user.id
-#        object.username = changeset.user.username
-#        object.source = changeset.source
-#        return object
 
 
 def _get_extjs_config(name, config, language):
@@ -899,13 +935,17 @@ def _get_extjs_config(name, config, language):
     fieldConfig = {}
 
     # check if translated name is available
-    originalKey = Session.query(A_Key.id).filter(A_Key.key == name).filter(A_Key.fk_a_key == None).first()
+    originalKey = Session.query(A_Key.id).filter(A_Key.key == name).filter(
+        A_Key.fk_a_key == None).first()
 
-    # if no original value is found in DB, return None (this cannot be selected)
+    # if no original value is found in DB, return None (this cannot be
+    # selected)
     if not originalKey:
         return None
 
-    translatedName = Session.query(A_Key).filter(A_Key.fk_a_key == originalKey).filter(A_Key.language == language).first()
+    translatedName = Session.query(A_Key).filter(
+        A_Key.fk_a_key == originalKey).filter(
+            A_Key.language == language).first()
 
     if translatedName:
         fieldConfig['name'] = str(translatedName.key)
@@ -926,6 +966,7 @@ def _get_extjs_config(name, config, language):
 
     return fieldConfig
 
+
 def _handle_spatial_parameters(request):
     """
     Get the spatial extent of a request. The different options are checked in
@@ -935,7 +976,8 @@ def _handle_spatial_parameters(request):
       boundary as bbox.
     - cookie _LOCATION_: if no bbox parameter was provided in GET, look for the
       map cookie to use as bbox.
-    - profile boundary: if no GET parameter was provided and no cookie was found
+    - profile boundary: if no GET parameter was provided and no cookie was
+      found
       use the profile boundary as bbox.
     """
 

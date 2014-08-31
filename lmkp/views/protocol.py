@@ -1057,6 +1057,10 @@ class Protocol(object):
                     status='active'
                 )
 
+                # Also handle the involvements to copy existing involvements.
+                self._handle_involvements(
+                    request, ref_version, new_version, None, changeset)
+
                 #TODO: handle returned diff correctly
 
                 if len(reviewed_involvements) > 0:
