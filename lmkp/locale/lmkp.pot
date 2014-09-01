@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: LMKP 0.8.3\n"
+"Project-Id-Version: LMKP 0.8.8\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-07-14 13:55+0200\n"
+"POT-Creation-Date: 2014-08-26 15:14+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -393,35 +393,35 @@ msgstr ""
 msgid "Unknown Item"
 msgstr ""
 
-#: lmkp/views/form.py:717
+#: lmkp/views/form.py:718
 msgid ""
 "At least one of the involvements prevents automatic revision. Please review "
 "these involvements separately."
 msgstr ""
 
-#: lmkp/views/form.py:719
+#: lmkp/views/form.py:720
 msgid ""
 "This version contains changed involvements which prevent automatic revision. "
 "Please review these involvements."
 msgstr ""
 
-#: lmkp/views/form.py:992
+#: lmkp/views/form.py:993
 msgid "The Item could not be created or updated."
 msgstr ""
 
-#: lmkp/views/form.py:1004
+#: lmkp/views/form.py:1005
 msgid "The Item was created but not found."
 msgstr ""
 
-#: lmkp/views/form.py:1006
+#: lmkp/views/form.py:1007
 msgid "Unknown"
 msgstr ""
 
-#: lmkp/views/form.py:1109
+#: lmkp/views/form.py:1110
 msgid "Submit"
 msgstr ""
 
-#: lmkp/views/form_config.py:1039
+#: lmkp/views/form_config.py:1056
 msgid "Select"
 msgstr ""
 
@@ -441,25 +441,25 @@ msgstr ""
 msgid "Show user profile"
 msgstr ""
 
-#: lmkp/views/protocol.py:653
+#: lmkp/views/protocol.py:652
 msgid "Unknown object to review."
 msgstr ""
 
-#: lmkp/views/protocol.py:872
+#: lmkp/views/protocol.py:960
 msgid ""
 "No active version was found to base the review upon. Try to review an earlier"
 " version first."
 msgstr ""
 
-#: lmkp/views/protocol.py:897
+#: lmkp/views/protocol.py:985
 msgid "The diff seems to be incorrect (identifier not found)"
 msgstr ""
 
-#: lmkp/views/protocol.py:945
+#: lmkp/views/protocol.py:1033
 msgid "Unknown review decision"
 msgstr ""
 
-#: lmkp/views/protocol.py:957
+#: lmkp/views/protocol.py:1045
 msgid "Review successful."
 msgstr ""
 

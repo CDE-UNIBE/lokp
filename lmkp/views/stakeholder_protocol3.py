@@ -1,21 +1,55 @@
-from lmkp.models.database_objects import *
-from lmkp.views.protocol import *
-from lmkp.views.form_config import getCategoryList
+import datetime
+import json
 import logging
+import uuid
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.i18n import get_localizer
-from pyramid.security import authenticated_userid
-from sqlalchemy.sql.expression import and_
-from sqlalchemy.sql.expression import asc
-from sqlalchemy.sql.expression import cast
-from sqlalchemy.sql.expression import desc
-from sqlalchemy.sql.expression import not_
-from sqlalchemy.sql.expression import or_
-from sqlalchemy.sql.expression import select
-from sqlalchemy import distinct
+from pyramid.security import (
+    authenticated_userid,
+    effective_principals,
+)
+from sqlalchemy import (
+    func,
+    distinct,
+)
+from sqlalchemy.sql.expression import (
+    and_,
+    asc,
+    cast,
+    desc,
+    not_,
+    or_,
+    select,
+)
+from sqlalchemy.types import Float
+
+from lmkp.models.database_objects import (
+    Activity,
+    Changeset,
+    Institution,
+    Involvement,
+    Language,
+    SH_Key,
+    SH_Value,
+    SH_Tag,
+    SH_Tag_Group,
+    Stakeholder,
+    Stakeholder_Role,
+    Status,
+    User,
+)
+from lmkp.views.form_config import getCategoryList
+from lmkp.views.protocol import (
+    Feature,
+    Inv,
+    Protocol,
+    Tag,
+    TagGroup,
+)
 
 
 log = logging.getLogger(__name__)
+
 
 class StakeholderFeature3(Feature):
 
@@ -44,6 +78,7 @@ class StakeholderFeature3(Feature):
             rettag['value'] = ', '.join(rettag['value'])
 
         return overviewtags
+
 
 class StakeholderProtocol3(Protocol):
 
@@ -102,7 +137,9 @@ class StakeholderProtocol3(Protocol):
             try:
                 changeset.diff = json.dumps(changeset_diff)
             except TypeError:
-                log.error('Changeset JSON Error with the following diff: %s' % changeset_diff)
+                log.error(
+                    'Changeset JSON Error with the following diff: %s'
+                    % changeset_diff)
                 return None
 
             return ids
@@ -116,7 +153,8 @@ class StakeholderProtocol3(Protocol):
         dbLang = self.Session.query(Language).\
             filter(Language.locale == localizer.locale_name).\
             first()
-        query = self.Session.query(distinct(SH_Key.key)).filter(SH_Key.fk_language==dbLang.id).order_by(SH_Key.key)
+        query = self.Session.query(distinct(SH_Key.key)).filter(
+            SH_Key.fk_language == dbLang.id).order_by(SH_Key.key)
         return {
             'total': query.count(),
             'data': [k[0] for k in query.all()]
@@ -133,8 +171,8 @@ class StakeholderProtocol3(Protocol):
         query, count = self._query_many(request, relevant_stakeholders,
                                         involvements=inv_details != 'none')
 
-        stakeholders = self._query_to_stakeholders(request, query,
-                                                   involvements=inv_details, public_query=True)
+        stakeholders = self._query_to_stakeholders(
+            request, query, involvements=inv_details, public_query=True)
 
         return {
             'total': count,
@@ -145,14 +183,15 @@ class StakeholderProtocol3(Protocol):
 
         translate = kwargs.get('translate', True)
 
-        relevant_stakeholders = self._get_relevant_stakeholders_one_by_version(uid, version)
+        relevant_stakeholders = self._get_relevant_stakeholders_one_by_version(
+            uid, version)
 
         # Determine if and how detailed Involvements are to be displayed.
         # Default is: 'full'
         inv_details = request.params.get('involvements', 'full')
 
         query, count = self._query_many(
-            request, relevant_stakeholders, involvements=inv_details!='none',
+            request, relevant_stakeholders, involvements=inv_details != 'none',
             metadata=True
         )
 
@@ -173,13 +212,14 @@ class StakeholderProtocol3(Protocol):
         and returned (as a dict, not as a feature!).
         """
 
-        relevant_stakeholders = self._get_relevant_stakeholders_one(request, uid)
+        relevant_stakeholders = self._get_relevant_stakeholders_one(
+            request, uid)
 
         limit = self._get_limit(request)
         offset = self._get_offset(request)
 
-        query, count = self._query_history(relevant_stakeholders,
-            limit=limit, offset=offset)
+        query, count = self._query_history(
+            relevant_stakeholders, limit=limit, offset=offset)
 
         # Order the Stakeholder by version
         query = query.order_by(desc(Stakeholder.version))
@@ -195,8 +235,8 @@ class StakeholderProtocol3(Protocol):
 
         translate = kwargs.get('translate', True)
 
-        relevant_stakeholders = self._get_relevant_stakeholders_one(request,
-                                                                    uid, public_query=public)
+        relevant_stakeholders = self._get_relevant_stakeholders_one(
+            request, uid, public_query=public)
 
         # Determine if and how detailed Involvements are to be displayed.
         # Default is: 'full'
@@ -215,8 +255,9 @@ class StakeholderProtocol3(Protocol):
         # Order the Stakeholder by version
         query = query.order_by(desc(Stakeholder.version))
 
-        stakeholders = self._query_to_stakeholders(request, query,
-            involvements=inv_details, public_query=public, translate=translate)
+        stakeholders = self._query_to_stakeholders(
+            request, query, involvements=inv_details, public_query=public,
+            translate=translate)
 
         return {
             'total': count,
@@ -231,7 +272,7 @@ class StakeholderProtocol3(Protocol):
         """
 
         relevant_stakeholders = self._get_relevant_stakeholders_many(
-                                                                     request, public_query=public)
+            request, public_query=public)
 
         # Determine if and how detailed Involvements are to be displayed.
         # Default is: 'full'
@@ -243,11 +284,11 @@ class StakeholderProtocol3(Protocol):
         offset = kwargs.get('offset', self._get_offset(request))
 
         query, count = self._query_many(
-                                        request, relevant_stakeholders, limit=limit, offset=offset,
-                                        involvements=inv_details != 'none')
+            request, relevant_stakeholders, limit=limit, offset=offset,
+            involvements=inv_details != 'none')
 
         stakeholders = self._query_to_stakeholders(
-                                                   request, query, involvements=inv_details, public_query=public)
+            request, query, involvements=inv_details, public_query=public)
 
         return {
             'total': count,
@@ -256,7 +297,8 @@ class StakeholderProtocol3(Protocol):
 
     def read_many_pending(self, request):
 
-        relevant_stakeholders = self._get_relevant_stakeholders_pending(request)
+        relevant_stakeholders = self._get_relevant_stakeholders_pending(
+            request)
 
         # Get limit and offset from request.
         # Defaults: limit = None / offset = 0
@@ -276,8 +318,8 @@ class StakeholderProtocol3(Protocol):
 
             # For each stakeholder, query how many pending there are
             pending_count_query = self.Session.query(
-                    Stakeholder.id
-                ).\
+                Stakeholder.id
+            ).\
                 join(Changeset).\
                 filter(Stakeholder.identifier == sh.get_guid()).\
                 filter(Stakeholder.fk_status == 1).\
@@ -316,11 +358,12 @@ class StakeholderProtocol3(Protocol):
         limit = kwargs.get('limit', self._get_limit(request))
         offset = kwargs.get('offset', self._get_offset(request))
 
-        query, count = self._query_many(request, relevant_stakeholders,
-            limit=limit, offset=offset, involvements=inv_details != 'none')
+        query, count = self._query_many(
+            request, relevant_stakeholders, limit=limit, offset=offset,
+            involvements=inv_details != 'none')
 
-        stakeholders = self._query_to_stakeholders(request, query,
-            involvements=inv_details, public_query=public)
+        stakeholders = self._query_to_stakeholders(
+            request, query, involvements=inv_details, public_query=public)
 
         return {
             'total': count,
@@ -331,11 +374,11 @@ class StakeholderProtocol3(Protocol):
 
         # Create relevant Stakeholders
         relevant_stakeholders = self.Session.query(
-                                                   Stakeholder.id.label('order_id'),
-                                                   func.char_length('').label('order_value'),
-                                                   Stakeholder.fk_status,
-                                                   Stakeholder.stakeholder_identifier
-                                                   ).\
+            Stakeholder.id.label('order_id'),
+            func.char_length('').label('order_value'),
+            Stakeholder.fk_status,
+            Stakeholder.stakeholder_identifier
+        ).\
             outerjoin(SH_Tag_Group).\
             filter(Stakeholder.stakeholder_identifier == uid).\
             filter(Stakeholder.fk_status == 2).\
@@ -347,11 +390,11 @@ class StakeholderProtocol3(Protocol):
     def _get_relevant_stakeholders_one_by_version(self, uid, version):
         # Create relevant Stakeholders
         relevant_stakeholders = self.Session.query(
-                                                   Stakeholder.id.label('order_id'),
-                                                   func.char_length('').label('order_value'),
-                                                   Stakeholder.fk_status,
-                                                   Stakeholder.stakeholder_identifier
-                                                   ).\
+            Stakeholder.id.label('order_id'),
+            func.char_length('').label('order_value'),
+            Stakeholder.fk_status,
+            Stakeholder.stakeholder_identifier
+        ).\
             outerjoin(SH_Tag_Group).\
             filter(Stakeholder.stakeholder_identifier == uid).\
             filter(Stakeholder.version == version).\
@@ -360,35 +403,34 @@ class StakeholderProtocol3(Protocol):
 
         return relevant_stakeholders
 
-
     def _get_relevant_stakeholders_one(self, request, uid, public_query=False):
         """
         """
 
         logged_in, is_moderator = self._get_user_status(
-                                                        effective_principals(request))
+            effective_principals(request))
 
         # Prepare dummy order query
         order_query = self.Session.query(
-                                         Stakeholder.id,
-                                         func.char_length('').label('value') # Dummy value
-                                         ).\
+            Stakeholder.id,
+            func.char_length('').label('value')  # Dummy value
+        ).\
             subquery()
 
         # Prepare status filter
         status_filter = self.Session.query(
-                                           Status.id
-                                           ).\
+            Status.id
+        ).\
             filter(or_(* self._get_status_detail(request, public_query)))
 
         # Create relevant Stakeholders
         relevant_stakeholders = self.Session.query(
-                                                   Stakeholder.id.label('order_id'),
-                                                   order_query.c.value.label('order_value'),
-                                                   Stakeholder.fk_status,
-                                                   Stakeholder.stakeholder_identifier,
-                                                   Stakeholder.version
-                                                   )
+            Stakeholder.id.label('order_id'),
+            order_query.c.value.label('order_value'),
+            Stakeholder.fk_status,
+            Stakeholder.stakeholder_identifier,
+            Stakeholder.version
+        )
 
         # Filter by UID
         relevant_stakeholders = relevant_stakeholders.\
@@ -417,12 +459,12 @@ class StakeholderProtocol3(Protocol):
                                else None)
 
             pending_stakeholders = self.Session.query(
-                                                      Stakeholder.id.label('order_id'),
-                                                      order_query.c.value.label('order_value'),
-                                                      Stakeholder.fk_status,
-                                                      Stakeholder.stakeholder_identifier,
-                                                      Stakeholder.version
-                                                      )
+                Stakeholder.id.label('order_id'),
+                order_query.c.value.label('order_value'),
+                Stakeholder.fk_status,
+                Stakeholder.stakeholder_identifier,
+                Stakeholder.version
+            )
 
             pending_stakeholders = pending_stakeholders.\
                 join(Changeset).\
@@ -455,22 +497,20 @@ class StakeholderProtocol3(Protocol):
         dict_filter = []
         for d in dicts:
             dict_filter.append(and_(
-                               Stakeholder.stakeholder_identifier == d['identifier'],
-                               Stakeholder.version == d['version']
-                               ))
+                Stakeholder.stakeholder_identifier == d['identifier'],
+                Stakeholder.version == d['version']))
 
         # Prepare order: Get the order from request
         order_query, order_numbers = self._get_order(
-                                                     request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value
-                                                     )
+            request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value)
 
         # Create relevant Stakeholders
         relevant_stakeholders = self.Session.query(
-                                                   Stakeholder.id.label('order_id'),
-                                                   order_query.c.value.label('order_value'),
-                                                   Stakeholder.fk_status,
-                                                   Stakeholder.stakeholder_identifier
-                                                   )
+            Stakeholder.id.label('order_id'),
+            order_query.c.value.label('order_value'),
+            Stakeholder.fk_status,
+            Stakeholder.stakeholder_identifier
+        )
 
         # Dict filter
         relevant_stakeholders = relevant_stakeholders.filter(or_(*dict_filter))
@@ -479,8 +519,9 @@ class StakeholderProtocol3(Protocol):
         relevant_stakeholders = relevant_stakeholders.\
             outerjoin(SH_Tag_Group).\
             outerjoin(order_query, order_query.c.id == Stakeholder.id).\
-            group_by(Stakeholder.id, order_query.c.value, Stakeholder.fk_status,
-                     Stakeholder.stakeholder_identifier)
+            group_by(
+                Stakeholder.id, order_query.c.value, Stakeholder.fk_status,
+                Stakeholder.stakeholder_identifier)
 
         # Do the ordering
         if order_numbers is not None:
@@ -489,21 +530,21 @@ class StakeholderProtocol3(Protocol):
                 if order_numbers is True:
                     # Order by numbers: Cast values to float
                     relevant_stakeholders = relevant_stakeholders.order_by(
-                                                                           desc(cast(order_query.c.value, Float)))
+                        desc(cast(order_query.c.value, Float)))
                 else:
                     # Order alphabetically
                     relevant_stakeholders = relevant_stakeholders.order_by(
-                                                                           desc(order_query.c.value))
+                        desc(order_query.c.value))
             else:
                 # Ascending
                 if order_numbers is True:
                     # Order by numbers: Cast values to float
                     relevant_stakeholders = relevant_stakeholders.order_by(
-                                                                           asc(cast(order_query.c.value, Float)))
+                        asc(cast(order_query.c.value, Float)))
                 else:
                     # Order alphabetically
                     relevant_stakeholders = relevant_stakeholders.order_by(
-                                                                           asc(order_query.c.value))
+                        asc(order_query.c.value))
 
         return relevant_stakeholders
 
@@ -515,31 +556,32 @@ class StakeholderProtocol3(Protocol):
 
         # TODO: So far, ordering only by timestamp (using dummy order_query)
         order_query = self.Session.query(
-                Stakeholder.id,
-                Stakeholder.timestamp_entry.label('value') # Dummy value
-            ).\
+            Stakeholder.id,
+            Stakeholder.timestamp_entry.label('value')  # Dummy value
+        ).\
             subquery()
 
         # Prepare the query to find out the oldest pending version of each
         oldest_pending_stakeholder = self.Session.query(
-                Stakeholder.stakeholder_identifier,
-                func.min(Stakeholder.version).label('min_version')
-            ).\
+            Stakeholder.stakeholder_identifier,
+            func.min(Stakeholder.version).label('min_version')
+        ).\
             filter(Stakeholder.fk_status == 1).\
             group_by(Stakeholder.stakeholder_identifier).\
             subquery()
 
         # Create relevant Stakeholders
         relevant_stakeholders = self.Session.query(
-                Stakeholder.id.label('order_id'),
-                order_query.c.value.label('order_value'),
-                Stakeholder.fk_status,
-                Stakeholder.stakeholder_identifier
-            ).\
+            Stakeholder.id.label('order_id'),
+            order_query.c.value.label('order_value'),
+            Stakeholder.fk_status,
+            Stakeholder.stakeholder_identifier
+        ).\
             join(oldest_pending_stakeholder, and_(
-                oldest_pending_stakeholder.c.min_version == Stakeholder.version,
+                oldest_pending_stakeholder.c.min_version
+                == Stakeholder.version,
                 oldest_pending_stakeholder.c.stakeholder_identifier
-                    == Stakeholder.stakeholder_identifier
+                == Stakeholder.stakeholder_identifier
             )).\
             join(Changeset).\
             outerjoin(SH_Tag_Group).\
@@ -562,13 +604,13 @@ class StakeholderProtocol3(Protocol):
         """
 
         logged_in, is_moderator = self._get_user_status(
-                                                        effective_principals(request))
+            effective_principals(request))
 
         # Filter: If no custom filter was provided, get filters from request
         if filter is None:
             status_filter = self.Session.query(
-                                               Status.id
-                                               ).\
+                Status.id
+            ).\
                 filter(or_(* self._get_status(request)))
             (a_tag_filter, a_filter_length, sh_tag_filter, sh_filter_length
              ) = self._filter(request)
@@ -596,8 +638,8 @@ class StakeholderProtocol3(Protocol):
                 # Collect the Stakeholder IDs for each filter
                 taggroups_sq = x.subquery()
                 single_subquery = self.Session.query(
-                                                     Stakeholder.id.label('sh_filter_id')
-                                                     ).\
+                    Stakeholder.id.label('sh_filter_id')
+                ).\
                     join(SH_Tag_Group).\
                     join(taggroups_sq,
                          taggroups_sq.c.sh_filter_tg_id == SH_Tag_Group.id)
@@ -609,14 +651,14 @@ class StakeholderProtocol3(Protocol):
         else:
             # AND
             filter_subqueries = self.Session.query(
-                                                   Stakeholder.id.label('sh_filter_id')
-                                                   )
+                Stakeholder.id.label('sh_filter_id')
+            )
             for x in sh_tag_filter:
                 # Collect the Stakeholder IDs for each filter
                 taggroups_sq = x.subquery()
                 single_subquery = self.Session.query(
-                                                     Stakeholder.id.label('sh_filter_id')
-                                                     ).\
+                    Stakeholder.id.label('sh_filter_id')
+                ).\
                     join(SH_Tag_Group).\
                     join(taggroups_sq,
                          taggroups_sq.c.sh_filter_tg_id == SH_Tag_Group.id).\
@@ -629,16 +671,15 @@ class StakeholderProtocol3(Protocol):
 
         # Prepare order: Get the order from request
         order_query, order_numbers = self._get_order(
-                                                     request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value
-                                                     )
+            request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value)
 
         # Create relevant Stakeholders
         relevant_stakeholders = self.Session.query(
-                                                   Stakeholder.id.label('order_id'),
-                                                   order_query.c.value.label('order_value'),
-                                                   Stakeholder.fk_status,
-                                                   Stakeholder.stakeholder_identifier
-                                                   )
+            Stakeholder.id.label('order_id'),
+            order_query.c.value.label('order_value'),
+            Stakeholder.fk_status,
+            Stakeholder.stakeholder_identifier
+        )
 
         # Add a status filter if there is one set
         if request.params.get('status', None) is not None:
@@ -663,13 +704,14 @@ class StakeholderProtocol3(Protocol):
 
         # Filter by timestamp
         # @TODO: do it!
-        timestamp_filter = None
+        # timestamp_filter = None
 
         # Decide which version a user can see.
         # - Public (not logged in) always see active versions.
         # - Logged in users see their own pending versions, as long as they are
         #   newer than the active version.
-        # - Moderators see all pending versions, as long as they are newer than the active
+        # - Moderators see all pending versions, as long as they are newer
+        # than the active
         #   version.
 
         if logged_in and public_query is False:
@@ -677,9 +719,9 @@ class StakeholderProtocol3(Protocol):
 
             # Find the latest version for each Stakeholder, which is either ...
             latest_visible_version = self.Session.query(
-                    Stakeholder.stakeholder_identifier.label('identifier'),
-                    func.max(Stakeholder.version).label('max_version')
-                ).\
+                Stakeholder.stakeholder_identifier.label('identifier'),
+                func.max(Stakeholder.version).label('max_version')
+            ).\
                 join(Changeset)
 
             # ... active
@@ -709,7 +751,7 @@ class StakeholderProtocol3(Protocol):
             relevant_stakeholders = relevant_stakeholders.\
                 join(latest_visible_version, and_(
                     latest_visible_version.c.identifier
-                        == Stakeholder.identifier,
+                    == Stakeholder.identifier,
                     latest_visible_version.c.max_version == Stakeholder.version
                 ))
 
@@ -720,8 +762,9 @@ class StakeholderProtocol3(Protocol):
                 filter(Stakeholder.fk_status == 2)
 
         relevant_stakeholders = relevant_stakeholders.\
-            group_by(Stakeholder.id, order_query.c.value, Stakeholder.fk_status,
-                     Stakeholder.stakeholder_identifier)
+            group_by(
+                Stakeholder.id, order_query.c.value, Stakeholder.fk_status,
+                Stakeholder.stakeholder_identifier)
 
         # Filter based on Activity attributes
         if a_filter_length > 0:
@@ -735,7 +778,7 @@ class StakeholderProtocol3(Protocol):
             from lmkp.views.activity_protocol3 import ActivityProtocol3
             ap = ActivityProtocol3(self.Session)
             rel_a = ap._get_relevant_activities_many(
-                                                     request, filter=a_filter_dict)
+                request, filter=a_filter_dict)
             a_query = ap._query_only_id(rel_a)
             #a_query, c = ap._query(request, filter=a_filter_dict)
             a_subquery = a_query.subquery()
@@ -744,13 +787,13 @@ class StakeholderProtocol3(Protocol):
                 relevant_stakeholders = relevant_stakeholders.\
                     union(self.Session.query(
                           Stakeholder.id.label('order_id'),
-                          func.char_length('').label('order_value'), # dummy
+                          func.char_length('').label('order_value'),  # dummy
                           Stakeholder.fk_status,
                           Stakeholder.stakeholder_identifier
-                          ).\
-                          join(Involvement).\
+                          ).
+                          join(Involvement).
                           join(a_subquery, a_subquery.c.id
-                          == Involvement.fk_activity).\
+                          == Involvement.fk_activity).
                           group_by(Stakeholder.id)
                           )
             else:
@@ -768,26 +811,26 @@ class StakeholderProtocol3(Protocol):
                 if order_numbers is True:
                     # Order by numbers: Cast values to float
                     relevant_stakeholders = relevant_stakeholders.order_by(
-                                                                           desc(cast(order_query.c.value, Float)))
+                        desc(cast(order_query.c.value, Float)))
                 else:
                     # Order alphabetically
                     relevant_stakeholders = relevant_stakeholders.order_by(
-                                                                           desc(order_query.c.value))
+                        desc(order_query.c.value))
             else:
                 # Ascending
                 if order_numbers is True:
                     # Order by numbers: Cast values to float
                     relevant_stakeholders = relevant_stakeholders.order_by(
-                                                                           asc(cast(order_query.c.value, Float)))
+                        asc(cast(order_query.c.value, Float)))
                 else:
                     # Order alphabetically
                     relevant_stakeholders = relevant_stakeholders.order_by(
-                                                                           asc(order_query.c.value))
+                        asc(order_query.c.value))
 
         return relevant_stakeholders
 
-    def _get_relevant_stakeholders_by_activities(self, request,
-        public_query=False, uids=[]):
+    def _get_relevant_stakeholders_by_activities(
+            self, request, public_query=False, uids=[]):
 
         logged_in, is_moderator = self._get_user_status(effective_principals(
             request))
@@ -799,12 +842,12 @@ class StakeholderProtocol3(Protocol):
 
         if len(uids) == 0:
             # Query many Activities (no UIDs specified)
-            relevant_activities = ap._get_relevant_activities_many(request,
-                public_query=public_query)
+            relevant_activities = ap._get_relevant_activities_many(
+                request, public_query=public_query)
         elif len(uids) == 1:
             # Query only 1 Activity
-            relevant_activities = ap._get_relevant_activities_one(request,
-                uid=uids[0], public_query=public_query)
+            relevant_activities = ap._get_relevant_activities_one(
+                request, uid=uids[0], public_query=public_query)
         else:
             raise HTTPBadRequest(detail='Not yet supported')
 
@@ -813,22 +856,21 @@ class StakeholderProtocol3(Protocol):
 
         # Prepare status filter
         status_filter = self.Session.query(
-                                           Status.id
-                                           ).\
+            Status.id
+        ).\
             filter(or_(* self._get_status(request)))
 
         # Prepare order: Get the order from request
         order_query, order_numbers = self._get_order(
-                                                     request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value
-                                                     )
+            request, Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value)
 
         # Create relevant Stakeholders
         relevant_stakeholders = self.Session.query(
-                                                   Stakeholder.id.label('order_id'),
-                                                   order_query.c.value.label('order_value'),
-                                                   Stakeholder.fk_status,
-                                                   Stakeholder.stakeholder_identifier
-                                                   )
+            Stakeholder.id.label('order_id'),
+            order_query.c.value.label('order_value'),
+            Stakeholder.fk_status,
+            Stakeholder.stakeholder_identifier
+        )
 
         # Filter trough Involvements to only take Stakeholders involved with
         # relevant Activity
@@ -851,15 +893,16 @@ class StakeholderProtocol3(Protocol):
             # It is necessary to first find out, if there are Stakeholders
             # pending and if yes, which is the latest version
             latest_pending_stakeholders = self.Session.query(
-                                                             Stakeholder.stakeholder_identifier,
-                                                             func.max(Stakeholder.version).label('max_version')
-                                                             ).\
+                Stakeholder.stakeholder_identifier,
+                func.max(Stakeholder.version).label('max_version')
+            ).\
                 join(Changeset).\
-                filter(or_(Stakeholder.fk_status == 1, Stakeholder.fk_status == 2))
+                filter(or_(
+                    Stakeholder.fk_status == 1, Stakeholder.fk_status == 2))
 
             if not is_moderator:
-                # If current user is not a moderator, only show pending versions
-                # done by himself
+                # If current user is not a moderator, only show pending
+                # versions done by himself
                 latest_pending_stakeholders = latest_pending_stakeholders.\
                     filter(Changeset.fk_user == request.user.id)
 
@@ -869,11 +912,11 @@ class StakeholderProtocol3(Protocol):
 
             # Collect other information about pending Stakeholders (order, ...)
             pending_stakeholders = self.Session.query(
-                                                      Stakeholder.id.label('order_id'),
-                                                      order_query.c.value.label('order_value'),
-                                                      Stakeholder.fk_status,
-                                                      Stakeholder.stakeholder_identifier
-                                                      ).\
+                Stakeholder.id.label('order_id'),
+                order_query.c.value.label('order_value'),
+                Stakeholder.fk_status,
+                Stakeholder.stakeholder_identifier
+            ).\
                 join(latest_pending_stakeholders, and_(
                      latest_pending_stakeholders.c.max_version
                      == Stakeholder.version,
@@ -881,8 +924,8 @@ class StakeholderProtocol3(Protocol):
                      == Stakeholder.stakeholder_identifier
                      ))
 
-            # Filter trough Involvements to only take Stakeholders involved with
-            # relevant Activities
+            # Filter trough Involvements to only take Stakeholders involved
+            # with relevant Activities
             pending_stakeholders = pending_stakeholders.\
                 join(Involvement).\
                 filter(Involvement.fk_activity.in_(
@@ -896,20 +939,21 @@ class StakeholderProtocol3(Protocol):
                 group_by(Stakeholder.stakeholder_identifier, Stakeholder.id,
                          order_query.c.value)
 
-            # Filter out the active Stakeholders if they have a pending version.
-            # Then union with pending Stakeholders.
+            # Filter out the active Stakeholders if they have a pending
+            # version. Then union with pending Stakeholders.
             relevant_stakeholders = relevant_stakeholders.filter(
-                                                                 not_(Stakeholder.stakeholder_identifier.in_(
-                                                                 select([pending_stakeholders.subquery().\
-                                                                 c.stakeholder_identifier])
-                                                                 ))
-                                                                 )
+                not_(Stakeholder.stakeholder_identifier.in_(
+                    select([pending_stakeholders.subquery().c.
+                            stakeholder_identifier])
+                ))
+            )
             relevant_stakeholders = pending_stakeholders.union(
-                                                               relevant_stakeholders)
+                relevant_stakeholders)
 
         relevant_stakeholders = relevant_stakeholders.\
-            group_by(Stakeholder.id, order_query.c.value, Stakeholder.fk_status,
-                     Stakeholder.stakeholder_identifier)
+            group_by(
+                Stakeholder.id, order_query.c.value, Stakeholder.fk_status,
+                Stakeholder.stakeholder_identifier)
 
         # Do the ordering
         if order_numbers is not None:
@@ -918,44 +962,43 @@ class StakeholderProtocol3(Protocol):
                 if order_numbers is True:
                     # Order by numbers: Cast values to float
                     relevant_stakeholders = relevant_stakeholders.order_by(
-                                                                           desc(cast(order_query.c.value, Float)))
+                        desc(cast(order_query.c.value, Float)))
                 else:
                     # Order alphabetically
                     relevant_stakeholders = relevant_stakeholders.order_by(
-                                                                           desc(order_query.c.value))
+                        desc(order_query.c.value))
             else:
                 # Ascending
                 if order_numbers is True:
                     # Order by numbers: Cast values to float
                     relevant_stakeholders = relevant_stakeholders.order_by(
-                                                                           asc(cast(order_query.c.value, Float)))
+                        asc(cast(order_query.c.value, Float)))
                 else:
                     # Order alphabetically
                     relevant_stakeholders = relevant_stakeholders.order_by(
-                                                                           asc(order_query.c.value))
+                        asc(order_query.c.value))
 
         return relevant_stakeholders
-
 
     def _query_only_id(self, relevant_stakeholders):
         # Create query
         relevant_stakeholders = relevant_stakeholders.subquery()
         query = self.Session.query(
-                                   Stakeholder.id.label('id')
-                                   ).\
+            Stakeholder.id.label('id')
+        ).\
             join(relevant_stakeholders,
                  relevant_stakeholders.c.order_id == Stakeholder.id)
 
         return query
 
-    def _query_pending(self, request, relevant_stakeholders, limit=None,
-        offset=None):
+    def _query_pending(
+            self, request, relevant_stakeholders, limit=None, offset=None):
 
         # Prepare query to translate keys and values
         localizer = get_localizer(request)
         lang = self.Session.query(
-                Language
-            ).\
+            Language
+        ).\
             filter(Language.locale == localizer.locale_name).\
             first()
         key_translation, value_translation = self._get_translatedKV(
@@ -973,22 +1016,22 @@ class StakeholderProtocol3(Protocol):
         # Create query
         relevant_stakeholders = relevant_stakeholders.subquery()
         query = self.Session.query(
-                                   Stakeholder.id.label('id'),
-                                   Stakeholder.stakeholder_identifier.label('identifier'),
-                                   Stakeholder.version.label('version'),
-                                   Status.id.label('status_id'),
-                                   Status.name.label('status'),
-                                   Changeset.timestamp.label('timestamp'),
-                                   SH_Tag_Group.id.label('taggroup'),
-                                   SH_Tag_Group.tg_id.label('tg_id'),
-                                   SH_Tag_Group.fk_sh_tag.label('main_tag'),
-                                   SH_Tag.id.label('tag'),
-                                   SH_Key.key.label('key'),
-                                   SH_Value.value.label('value'),
-                                   key_translation.c.key_translated.label('key_translated'),
-                                   value_translation.c.value_translated.label('value_translated'),
-                                   relevant_stakeholders.c.order_value.label('order_value')
-                                   ).\
+            Stakeholder.id.label('id'),
+            Stakeholder.stakeholder_identifier.label('identifier'),
+            Stakeholder.version.label('version'),
+            Status.id.label('status_id'),
+            Status.name.label('status'),
+            Changeset.timestamp.label('timestamp'),
+            SH_Tag_Group.id.label('taggroup'),
+            SH_Tag_Group.tg_id.label('tg_id'),
+            SH_Tag_Group.fk_sh_tag.label('main_tag'),
+            SH_Tag.id.label('tag'),
+            SH_Key.key.label('key'),
+            SH_Value.value.label('value'),
+            key_translation.c.key_translated.label('key_translated'),
+            value_translation.c.value_translated.label('value_translated'),
+            relevant_stakeholders.c.order_value.label('order_value')
+        ).\
             join(relevant_stakeholders,
                  relevant_stakeholders.c.order_id == Stakeholder.id).\
             join(Status).\
@@ -1008,8 +1051,9 @@ class StakeholderProtocol3(Protocol):
 
         return query, count
 
-    def _query_history(self, relevant_stakeholders, limit=None,
-        offset=None, return_count=True):
+    def _query_history(
+            self, relevant_stakeholders, limit=None, offset=None,
+            return_count=True):
 
         # Count
         if return_count:
@@ -1024,14 +1068,15 @@ class StakeholderProtocol3(Protocol):
         # Create query
         relevant_stakeholders = relevant_stakeholders.subquery()
         query = self.Session.query(
-                Stakeholder.stakeholder_identifier.label('identifier'),
-                Stakeholder.version.label('version'),
-                Status.id.label('status_id'),
-                Status.name.label('status'),
-                Changeset.timestamp.label('timestamp'),
-                User.username.label('user_name')
-            ).\
-            join(relevant_stakeholders,
+            Stakeholder.stakeholder_identifier.label('identifier'),
+            Stakeholder.version.label('version'),
+            Status.id.label('status_id'),
+            Status.name.label('status'),
+            Changeset.timestamp.label('timestamp'),
+            User.username.label('user_name')
+        ).\
+            join(
+                relevant_stakeholders,
                 relevant_stakeholders.c.order_id == Stakeholder.id).\
             join(Status).\
             join(Changeset).\
@@ -1042,14 +1087,14 @@ class StakeholderProtocol3(Protocol):
         else:
             return query
 
-    def _query_many(self, request, relevant_stakeholders, limit=None,
-                    offset=None, involvements=False, return_count=True,
-                    metadata=False):
+    def _query_many(
+            self, request, relevant_stakeholders, limit=None, offset=None,
+            involvements=False, return_count=True, metadata=False):
         # Prepare query to translate keys and values
         localizer = get_localizer(request)
         lang = self.Session.query(
-                Language
-            ).\
+            Language
+        ).\
             filter(Language.locale == localizer.locale_name).\
             first()
         key_translation, value_translation = self._get_translatedKV(
@@ -1069,22 +1114,22 @@ class StakeholderProtocol3(Protocol):
         # Create query
         relevant_stakeholders = relevant_stakeholders.subquery()
         query = self.Session.query(
-                                   Stakeholder.id.label('id'),
-                                   Stakeholder.stakeholder_identifier.label('identifier'),
-                                   Stakeholder.version.label('version'),
-                                   Status.id.label('status_id'),
-                                   Status.name.label('status'),
-                                   Changeset.timestamp.label('timestamp'),
-                                   SH_Tag_Group.id.label('taggroup'),
-                                   SH_Tag_Group.tg_id.label('tg_id'),
-                                   SH_Tag_Group.fk_sh_tag.label('main_tag'),
-                                   SH_Tag.id.label('tag'),
-                                   SH_Key.key.label('key'),
-                                   SH_Value.value.label('value'),
-                                   key_translation.c.key_translated.label('key_translated'),
-                                   value_translation.c.value_translated.label('value_translated'),
-                                   relevant_stakeholders.c.order_value.label('order_value')
-                                   ).\
+            Stakeholder.id.label('id'),
+            Stakeholder.stakeholder_identifier.label('identifier'),
+            Stakeholder.version.label('version'),
+            Status.id.label('status_id'),
+            Status.name.label('status'),
+            Changeset.timestamp.label('timestamp'),
+            SH_Tag_Group.id.label('taggroup'),
+            SH_Tag_Group.tg_id.label('tg_id'),
+            SH_Tag_Group.fk_sh_tag.label('main_tag'),
+            SH_Tag.id.label('tag'),
+            SH_Key.key.label('key'),
+            SH_Value.value.label('value'),
+            key_translation.c.key_translated.label('key_translated'),
+            value_translation.c.value_translated.label('value_translated'),
+            relevant_stakeholders.c.order_value.label('order_value')
+        ).\
             join(relevant_stakeholders,
                  relevant_stakeholders.c.order_id == Stakeholder.id).\
             join(Status).\
@@ -1106,9 +1151,11 @@ class StakeholderProtocol3(Protocol):
         )
         if order_query is not None:
             if self._get_order_direction(request) == 'DESC':
-                query = query.order_by(desc(relevant_stakeholders.c.order_value))
+                query = query.order_by(
+                    desc(relevant_stakeholders.c.order_value))
             else:
-                query = query.order_by(asc(relevant_stakeholders.c.order_value))
+                query = query.order_by(
+                    asc(relevant_stakeholders.c.order_value))
 
         if metadata:
             query = query.add_columns(
@@ -1123,52 +1170,57 @@ class StakeholderProtocol3(Protocol):
                 Institution.url.label('institution_url'),
                 Institution.logo_url.label('institution_logo'),
             ).\
-            outerjoin(User, User.id == Changeset.fk_user).\
-            outerjoin(Institution)
+                outerjoin(User, User.id == Changeset.fk_user).\
+                outerjoin(Institution)
 
         if involvements:
             inv_status_filter = self.Session.query(
-                                                   Status.id
-                                                   ).\
+                Status.id
+            ).\
                 filter(or_(* self._get_involvement_status(request)))
 
             # Additional filter to select only the latest (pending or not)
             # Activity involved with the relevant Stakeholders
             latest_filter = self.Session.query(
-                    Activity.activity_identifier,
-                    func.max(Activity.version).label('max_version')
-                ).\
+                Activity.activity_identifier,
+                Involvement.fk_stakeholder,
+                func.max(Activity.version).label('max_version')
+            ).\
                 join(Involvement).\
-                join(relevant_stakeholders,
-                    relevant_stakeholders.c.order_id
-                        == Involvement.fk_stakeholder).\
-                group_by(Activity.activity_identifier).\
+                join(
+                    relevant_stakeholders, relevant_stakeholders.c.order_id
+                    == Involvement.fk_stakeholder).\
+                group_by(
+                    Activity.activity_identifier, Involvement.fk_stakeholder).\
                 subquery()
 
             inv_status = self.Session.query(
-                                            Activity.id.label('activity_id'),
-                                            Activity.activity_identifier.label('activity_identifier'),
-                                            Activity.fk_status.label('activity_status'),
-                                            Activity.version.label('activity_version'),
-                                            Activity.fk_changeset.label('changeset_id')
-                                            ).\
+                Activity.id.label('activity_id'),
+                Activity.activity_identifier.label('activity_identifier'),
+                Activity.fk_status.label('activity_status'),
+                Activity.version.label('activity_version'),
+                Activity.fk_changeset.label('changeset_id')
+            ).\
                 filter(Activity.fk_status.in_(inv_status_filter)).\
+                join(Involvement).\
                 join(latest_filter, and_(
                     latest_filter.c.max_version == Activity.version,
                     latest_filter.c.activity_identifier
-                        == Activity.activity_identifier
+                    == Activity.activity_identifier,
+                    latest_filter.c.fk_stakeholder
+                    == Involvement.fk_stakeholder
                 )).\
                 subquery()
             inv_query = self.Session.query(
-                                           Involvement.fk_stakeholder.label('stakeholder_id'),
-                                           Stakeholder_Role.id.label('role_id'),
-                                           Stakeholder_Role.name.label('role_name'),
-                                           Changeset.fk_user.label('activity_user_id'),
-                                           inv_status.c.activity_identifier.\
-                                           label('activity_identifier'),
-                                           inv_status.c.activity_status.label('activity_status'),
-                                           inv_status.c.activity_version.label('activity_version')
-                                           ).\
+                Involvement.fk_stakeholder.label('stakeholder_id'),
+                Stakeholder_Role.id.label('role_id'),
+                Stakeholder_Role.name.label('role_name'),
+                Changeset.fk_user.label('activity_user_id'),
+                inv_status.c.activity_identifier.label(
+                    'activity_identifier'),
+                inv_status.c.activity_status.label('activity_status'),
+                inv_status.c.activity_version.label('activity_version')
+            ).\
                 join(inv_status,
                      inv_status.c.activity_id == Involvement.fk_activity).\
                 join(Changeset, Changeset.id == inv_status.c.changeset_id).\
@@ -1177,16 +1229,17 @@ class StakeholderProtocol3(Protocol):
 
             query = query.\
                 add_columns(
-                            inv_query.c.activity_identifier.\
-                            label('activity_identifier'),
-                            inv_query.c.role_name.label('stakeholder_role'),
-                            inv_query.c.role_id.label('stakeholder_role_id'),
-                            inv_query.c.activity_status.label('activity_status'),
-                            inv_query.c.activity_version.label('activity_version'),
-                            inv_query.c.activity_user_id.label('activity_user_id')
-                            ).\
-                outerjoin(inv_query,
-                          inv_query.c.stakeholder_id == Stakeholder.id)
+                    inv_query.c.activity_identifier.
+                    label('activity_identifier'),
+                    inv_query.c.role_name.label('stakeholder_role'),
+                    inv_query.c.role_id.label('stakeholder_role_id'),
+                    inv_query.c.activity_status.label('activity_status'),
+                    inv_query.c.activity_version.label('activity_version'),
+                    inv_query.c.activity_user_id.label('activity_user_id')
+                ).\
+                outerjoin(
+                    inv_query,
+                    inv_query.c.stakeholder_id == Stakeholder.id)
 
         if return_count:
             return query, count
@@ -1203,18 +1256,20 @@ class StakeholderProtocol3(Protocol):
                 'version': q.version,
                 'statusId': q.status_id,
                 'statusName': q.status,
-                'timestamp': datetime.datetime.strftime(q.timestamp, '%Y-%m-%d %H:%M:%S'),
+                'timestamp': datetime.datetime.strftime(
+                    q.timestamp, '%Y-%m-%d %H:%M:%S'),
                 'username': q.user_name
             })
         return stakeholders
 
-    def _query_to_stakeholders(self, request, query,
-                               involvements='none', public_query=False, **kwargs):
+    def _query_to_stakeholders(
+            self, request, query, involvements='none', public_query=False,
+            **kwargs):
 
         translate = kwargs.get('translate', True)
 
         logged_in, is_moderator = self._get_user_status(
-                                                        effective_principals(request))
+            effective_principals(request))
 
         # Put the Stakeholders together
         stakeholders = []
@@ -1224,49 +1279,53 @@ class StakeholderProtocol3(Protocol):
             identifier = str(q.identifier)
             taggroup_id = int(q.taggroup) if q.taggroup is not None else None
             key = (q.key_translated if q.key_translated is not None
-                and translate is not False else q.key)
+                   and translate is not False else q.key)
             value = (q.value_translated if q.value_translated is not None
-                and translate is not False else q.value)
+                     and translate is not False else q.value)
 
             # Use UID and version to find existing Feature or create a new one
             stakeholder = None
             for sh in stakeholders:
                 if (sh.get_guid() == identifier and sh.get_version()
-                    == q.version):
+                        == q.version):
                     if not isinstance(q.order_value, int):
                         if sh.get_order_value() == q.order_value:
                             stakeholder = sh
                     else:
                         stakeholder = sh
 
-            if stakeholder == None:
+            if stakeholder is None:
                 # Handle optional metadata correctly
-                previous_version = q.previous_version if hasattr(q, 'previous_version') else None
-                user_privacy = q.user_privacy if hasattr(q, 'user_privacy') else None
+                previous_version = q.previous_version if hasattr(
+                    q, 'previous_version') else None
+                user_privacy = q.user_privacy if hasattr(
+                    q, 'user_privacy') else None
                 user_id = q.user_id if hasattr(q, 'user_id') else None
                 user_name = q.user_name if hasattr(q, 'user_name') else None
-                user_firstname = q.user_firstname if hasattr(q, 'user_firstname') else None
-                user_lastname = q.user_lastname if hasattr(q, 'user_lastname') else None
-                institution_id = q.institution_id if hasattr(q, 'institution_id') else None
-                institution_name = q.institution_name if hasattr(q, 'institution_name') else None
-                institution_url = q.institution_url if hasattr(q, 'institution_url') else None
-                institution_logo = q.institution_logo if hasattr(q, 'institution_logo') else None
+                user_firstname = q.user_firstname if hasattr(
+                    q, 'user_firstname') else None
+                user_lastname = q.user_lastname if hasattr(
+                    q, 'user_lastname') else None
+                institution_id = q.institution_id if hasattr(
+                    q, 'institution_id') else None
+                institution_name = q.institution_name if hasattr(
+                    q, 'institution_name') else None
+                institution_url = q.institution_url if hasattr(
+                    q, 'institution_url') else None
+                institution_logo = q.institution_logo if hasattr(
+                    q, 'institution_logo') else None
 
                 stakeholder = StakeholderFeature3(
-                                      identifier, q.order_value, version=q.version,
-                                      timestamp=q.timestamp, status=q.status,
-                                      status_id=q.status_id,
-                                      user_privacy=user_privacy,
-                                      user_id=user_id,
-                                      user_name=user_name,
-                                      user_firstname=user_firstname,
-                                      user_lastname=user_lastname,
-                                      institution_id=institution_id,
-                                      institution_name=institution_name,
-                                      institution_url=institution_url,
-                                      institution_logo=institution_logo,
-                                      previous_version=previous_version
-                                      )
+                    identifier, q.order_value, version=q.version,
+                    timestamp=q.timestamp, status=q.status,
+                    status_id=q.status_id, user_privacy=user_privacy,
+                    user_id=user_id, user_name=user_name,
+                    user_firstname=user_firstname, user_lastname=user_lastname,
+                    institution_id=institution_id,
+                    institution_name=institution_name,
+                    institution_url=institution_url,
+                    institution_logo=institution_logo,
+                    previous_version=previous_version)
                 stakeholders.append(stakeholder)
 
             # Check if current Tag Group is already present in the Stakeholder
@@ -1294,41 +1353,28 @@ class StakeholderProtocol3(Protocol):
                         if q.activity_status == 1:
                             for p_i in stakeholder._involvements:
                                 if (p_i.get_guid() == q.activity_identifier
-                                    and p_i.get_status() == 1):
+                                        and p_i.get_status() == 1):
                                     if p_i.get_version() > q.activity_version:
                                         newer_pending_exists = True
                                     else:
                                         stakeholder.remove_involvement(p_i)
 
-                        # Flag indicating if Involvement to this Activity is not
-                        # yet found ('none') or not to be added ('false')
+                        # Flag indicating if Involvement to this Activity is
+                        # not yet found ('none') or not to be added ('false')
                         inv = self._flag_add_involvement(
-                                                         stakeholder,
-                                                         q.status_id,
-                                                         q.activity_status,
-                                                         q.activity_identifier,
-                                                         q.activity_version,
-                                                         q.activity_user_id,
-                                                         q.stakeholder_role,
-                                                         request_user_id,
-                                                         public_query,
-                                                         logged_in,
-                                                         is_moderator
-                                                         )
+                            stakeholder, q.status_id, q.activity_status,
+                            q.activity_identifier, q.activity_version,
+                            q.activity_user_id, q.stakeholder_role,
+                            request_user_id, public_query, logged_in,
+                            is_moderator)
 
                         if inv is None and newer_pending_exists is False:
                             # Create new Involvement and add it to Stakeholder
                             # Default: only basic information about Involvement
-                            stakeholder.add_involvement(
-                                                        Inv(
-                                                        q.activity_identifier,
-                                                        None,
-                                                        q.stakeholder_role,
-                                                        q.stakeholder_role_id,
-                                                        q.activity_version,
-                                                        q.activity_status
-                                                        )
-                                                        )
+                            stakeholder.add_involvement(Inv(
+                                q.activity_identifier, None,
+                                q.stakeholder_role, q.stakeholder_role_id,
+                                q.activity_version, q.activity_status))
 
                 except ValueError:
                     pass
@@ -1352,7 +1398,7 @@ class StakeholderProtocol3(Protocol):
             from lmkp.views.activity_protocol3 import ActivityProtocol3
             ap = ActivityProtocol3(self.Session)
             relevant_activities = ap._get_relevant_activities_dict(
-                                                                   request, inv_dicts)
+                request, inv_dicts)
 
             a_query = ap._query_many(request, relevant_activities,
                                      involvements=False, return_count=False)
@@ -1366,25 +1412,20 @@ class StakeholderProtocol3(Protocol):
                     activity = None
                     for a in activities:
                         if (str(a.get_guid()) == str(i.get_guid())
-                            and a.get_version() == i.get_version()):
+                                and a.get_version() == i.get_version()):
                             activity = a
 
                     if activity is not None:
                         # If Activity was found, replace Involvement with full
                         # details
                         stakeholder._involvements[index] = Inv(
-                                                               i.get_guid(),
-                                                               activity,
-                                                               i.get_role(),
-                                                               i.get_role_id(),
-                                                               i.get_version(),
-                                                               i.get_status()
-                                                               )
+                            i.get_guid(), activity, i.get_role(),
+                            i.get_role_id(), i.get_version(), i.get_status())
 
         return stakeholders
 
-    def _handle_stakeholder(self, request, stakeholder_dict, changeset,
-                            status='pending'):
+    def _handle_stakeholder(
+            self, request, stakeholder_dict, changeset, status='pending'):
         """
         Handles a single Stakeholder and decides whether to create a new
         Stakeholder or update an existing one.
@@ -1395,9 +1436,11 @@ class StakeholderProtocol3(Protocol):
                               if 'activities' in stakeholder_dict
                               else None)
         implicit_inv_change = (True
-                               if involvement_change is not None
-                               and 'implicit_involvement_update' in stakeholder_dict
-                               and stakeholder_dict['implicit_involvement_update'] is True
+                               if involvement_change is not None and
+                               'implicit_involvement_update' in
+                               stakeholder_dict and
+                               stakeholder_dict['implicit_involvement_update']
+                               is True
                                else False)
 
         create_new = False
@@ -1442,13 +1485,14 @@ class StakeholderProtocol3(Protocol):
             )
 
             # Handle also the involvements
-            self._handle_involvements(request, db_sh, updated_stakeholder,
-                                      involvement_change, changeset, implicit_inv_change)
+            self._handle_involvements(
+                request, db_sh, updated_stakeholder, involvement_change,
+                changeset, implicit_inv_change)
 
             return updated_stakeholder, return_diff
 
-    def _create_stakeholder(self, request, stakeholder_dict, changeset,
-                            ** kwargs):
+    def _create_stakeholder(
+            self, request, stakeholder_dict, changeset, ** kwargs):
         """
         Creates a new Stakeholder. Allowed keyword arguments:
         'identifier'
@@ -1468,8 +1512,8 @@ class StakeholderProtocol3(Protocol):
         version = 1
 
         # Create a new stakeholder
-        new_stakeholder = Stakeholder(stakeholder_identifier=identifier,
-                                      version=version)
+        new_stakeholder = Stakeholder(
+            stakeholder_identifier=identifier, version=version)
 
         # Status (default: 'pending')
         status = 'pending'
@@ -1504,7 +1548,9 @@ class StakeholderProtocol3(Protocol):
                 main_tag_key = main_tag['key']
                 main_tag_value = main_tag['value']
             except KeyError:
-                raise HTTPBadRequest(detail="No Main Tag provided. Taggroup %s has no taggroup." % taggroup)
+                raise HTTPBadRequest(
+                    detail="No Main Tag provided. Taggroup %s has no taggroup."
+                    % taggroup)
 
             # Loop all tags within a tag group
             for tag in taggroup['tags']:
@@ -1519,14 +1565,15 @@ class StakeholderProtocol3(Protocol):
                 key = tag['key']
                 value = tag['value']
 
-                sh_tag = self._create_tag(request, db_tg.tags, key, value,
-                                          SH_Tag, SH_Key, SH_Value)
+                sh_tag = self._create_tag(
+                    request, db_tg.tags, key, value, SH_Tag, SH_Key, SH_Value)
 
-                # Check if the current tag is the main tag of this tag group. If
-                # yes, set the main_tag attribute to this tag
+                # Check if the current tag is the main tag of this tag group.
+                # If yes, set the main_tag attribute to this tag
                 try:
-                    if (sh_tag.key.key == main_tag_key
-                        and unicode(sh_tag.value.value) == unicode(main_tag_value)):
+                    if (sh_tag.key.key == main_tag_key and
+                            unicode(sh_tag.value.value)
+                            == unicode(main_tag_value)):
                         db_tg.main_tag = sh_tag
                 except AttributeError:
                     pass
@@ -1535,12 +1582,15 @@ class StakeholderProtocol3(Protocol):
             # If none was set (if it did not match any of the keys of the
             # taggroup), raise an error.
             if db_tg.main_tag is None:
-                raise HTTPBadRequest(detail='Invalid Main Tag provided. The Taggroup %s has no valid Main Tag' % taggroup)
+                raise HTTPBadRequest(
+                    detail='Invalid Main Tag provided. The Taggroup %s has no '
+                    'valid Main Tag' % taggroup)
 
         return new_stakeholder
 
-    def _update_object(self, request, old_stakeholder, stakeholder_dict,
-                            changeset, ** kwargs):
+    def _update_object(
+            self, request, old_stakeholder, stakeholder_dict, changeset,
+            ** kwargs):
         """
         Update a Stakeholder. The basic idea is to deep copy the previous
         version and decide for each tag if it is to be deleted or not. At the
@@ -1553,17 +1603,18 @@ class StakeholderProtocol3(Protocol):
 
         # Query the previous version of the edited pending version
         ref_version = self.Session.query(
-                Stakeholder
-            ).\
+            Stakeholder
+        ).\
             filter(Stakeholder.identifier == old_stakeholder.identifier).\
             filter(Stakeholder.version == old_stakeholder.previous_version).\
             first()
 
-        if (not (ref_version is None and 'stakeholders' not in stakeholder_dict)
-            and old_stakeholder.fk_status == 1):
-            # If changes were made to a pending version, this pending version is
-            # set to 'edited' and the newly created version contains also the
-            # changes of the edited version. To do this, a new diff is
+        if (not (ref_version is None
+                 and 'stakeholders' not in stakeholder_dict)
+                and old_stakeholder.fk_status == 1):
+            # If changes were made to a pending version, this pending version
+            # is set to 'edited' and the newly created version contains also
+            # the changes of the edited version. To do this, a new diff is
             # calculated which is then applied to the previous version of the
             # edited pending version.
 
@@ -1590,19 +1641,20 @@ class StakeholderProtocol3(Protocol):
             return_diff = stakeholder_dict
 
             if ref_version is None:
-                # If there is no previous version, the edited pending version is
-                # brand new.
+                # If there is no previous version, the edited pending version
+                # is brand new.
                 previous_version = None
             else:
-                # Use the previous version of the edited pending version as base
-                # to apply the diff on
+                # Use the previous version of the edited pending version as
+                # base to apply the diff on
                 old_stakeholder = ref_version
                 previous_version = old_stakeholder.version
 
         else:
             previous_version = old_stakeholder.version
 
-        # Query latest version of current Stakeholder (used to increase version)
+        # Query latest version of current Stakeholder (used to increase
+        # version)
         latest_version = self.Session.query(Stakeholder).\
             filter(Stakeholder.stakeholder_identifier
                    == old_stakeholder.identifier).\
@@ -1633,7 +1685,8 @@ class StakeholderProtocol3(Protocol):
         # Add it to the database
         self.Session.add(new_stakeholder)
 
-        log.debug('Applying diff:\n%s\nto version %s of stakeholder %s'
+        log.debug(
+            'Applying diff:\n%s\nto version %s of stakeholder %s'
             % (stakeholder_dict, previous_version, old_stakeholder.identifier))
 
         sh = self._apply_diff(
@@ -1643,13 +1696,14 @@ class StakeholderProtocol3(Protocol):
             previous_version,
             stakeholder_dict,
             new_stakeholder,
-            db = True
+            db=True
         )
 
         return sh, return_diff
 
-    def _handle_involvements(self, request, old_version, new_version,
-                             inv_change, changeset, implicit=False, **kwargs):
+    def _handle_involvements(
+            self, request, old_version, new_version, inv_change, changeset,
+            implicit=False, **kwargs):
         """
         Handle the involvements of a Stakeholder.
         - Stakeholder update: copy old involvements
@@ -1667,37 +1721,40 @@ class StakeholderProtocol3(Protocol):
         # involvements.
         db_object = kwargs.pop('db_object', None)
 
-        # db: Boolean to specify if the involvements are to be inserted into the
-        # database or just be attached to a Stakeholder feature
+        # db: Boolean to specify if the involvements are to be inserted into
+        # the database or just be attached to a Stakeholder feature
         db = kwargs.pop('db', True)
 
         # Use the ActivityProtocol to handle things
         ap = ActivityProtocol3(self.Session)
 
-        # It is important to keep track of all the Activities where involvements
-        # were deleted because they need to be pushed to a new version as well
-        awdi_id = [] # = Activities with deleted involvements
+        # It is important to keep track of all the Activities where
+        # involvements were deleted because they need to be pushed to a new
+        # version as well
+        awdi_id = []  # = Activities with deleted involvements
         awdi_version = []
         awdi_role = []
         # Copy old involvements if existing
         if old_version is not None:
-            old_involvements = (old_version.involvements if db is True
+            old_involvements = (
+                old_version.involvements if db is True
                 else old_version.get_involvements())
             for oi in old_involvements:
-                # Check if involvement is to be removed (op == delete), in which
-                # case do not copy it
+                # Check if involvement is to be removed (op == delete), in
+                # which case do not copy it
                 remove = False
                 if inv_change is not None:
                     for i in inv_change:
                         oi_activity_identifier = (
                             str(oi.activity.activity_identifier)
                             if db is True else oi._feature.get_guid())
-                        oi_role_id = (oi.stakeholder_role.id if db is True
+                        oi_role_id = (
+                            oi.stakeholder_role.id if db is True
                             else oi.get_role_id())
                         if ('id' in i and str(i['id']) ==
                             oi_activity_identifier and
                             'op' in i and i['op'] == 'delete' and 'role' in i
-                            and i['role'] == oi_role_id):
+                                and i['role'] == oi_role_id):
                             # Set flag to NOT copy this involvement
                             remove = True
                             # Add identifier and version of Activity to list
@@ -1708,7 +1765,8 @@ class StakeholderProtocol3(Protocol):
                                 awdi_role.append(i['role'])
                 # Also: only copy involvements if status of Activity is
                 # 'pending' or 'active'
-                oi_status_id = (oi.activity.status.id if db is True
+                oi_status_id = (
+                    oi.activity.status.id if db is True
                     else oi._feature.get_status_id())
                 if remove is not True and oi_status_id < 3:
                     # Copy involvement
@@ -1729,7 +1787,7 @@ class StakeholderProtocol3(Protocol):
         if inv_change is not None:
             for i in inv_change:
                 if ('op' in i and i['op'] == 'add' and
-                    'id' in i and 'role' in i and 'version' in i):
+                        'id' in i and 'role' in i and 'version' in i):
                     # Query database to find role and previous version of
                     # Activity
                     role_db = self.Session.query(Stakeholder_Role).\
@@ -1740,10 +1798,11 @@ class StakeholderProtocol3(Protocol):
                         first()
                     if old_a_db is not None:
                         # If the same Activity also has some involvements
-                        # deleted, remove it from the list (do not push Activity
-                        # twice)
+                        # deleted, remove it from the list (do not push
+                        # Activity twice)
                         try:
-                            x = awdi_id.index(str(old_a_db.activity_identifier))
+                            x = awdi_id.index(
+                                str(old_a_db.activity_identifier))
                             awdi_id.pop(x)
                             awdi_version.pop(x)
                             awdi_role.pop(x)
@@ -1781,16 +1840,18 @@ class StakeholderProtocol3(Protocol):
                             # actually is this 'new' version.
 
                             # Query the version this changeset created
-                            changeset_part = str(self._convert_utf8(inv_change))
+                            changeset_part = str(
+                                self._convert_utf8(inv_change))
                             created_version = self.Session.query(
-                                    Activity.version
-                                ).\
+                                Activity.version
+                            ).\
                                 join(Changeset).\
                                 filter(Activity.identifier
-                                    == old_a_db.activity_identifier).\
+                                       == old_a_db.activity_identifier).\
                                 filter(Activity.previous_version
-                                    == old_a_db.version).\
-                                filter(Changeset.diff.contains(changeset_part)).\
+                                       == old_a_db.version).\
+                                filter(
+                                    Changeset.diff.contains(changeset_part)).\
                                 first()
 
                             if created_version is not None:
@@ -1811,24 +1872,24 @@ class StakeholderProtocol3(Protocol):
                                     created_version.version,
                                     a.get_status_id()
                                 ))
-                
-                elif (kwargs.pop('fromReview', False) is True 
-                    and 'activities' in inv_change and 
-                    inv_change['activities'] is not None):
+
+                elif (kwargs.pop('fromReview', False) is True
+                        and 'activities' in inv_change and
+                        inv_change['activities'] is not None):
                     """
                     Show an updated version of the Stakeholder which contains a
                     new involvement. The changeset focuses on the Activity.
                     """
                     a = inv_change['activities'][0]
-                    
+
                     role = None
                     for inv in a['stakeholders']:
                         if inv['id'] == old_version.get_guid():
                             role = self.Session.query(Stakeholder_Role).\
                                 get(inv['role'])
-                    
+
                     ao = ap.read_one_by_version(request, a['id'], a['version'])
-                    
+
                     old_version.add_involvement(Inv(
                         ao.get_guid(),
                         ao,
@@ -1863,7 +1924,8 @@ class StakeholderProtocol3(Protocol):
                     if db_object is not None:
                         new_a = db_object
                     else:
-                        new_a, new_diff = ap._handle_activity(request, a_dict, changeset)
+                        new_a, new_diff = ap._handle_activity(
+                            request, a_dict, changeset)
                 else:
                     # TODO
-                    blablablablalba
+                    raise Exception('This still needs to be implemented.')
