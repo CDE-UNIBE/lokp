@@ -12,6 +12,8 @@ from sqlalchemy.sql.expression import desc
 from sqlalchemy.sql.expression import not_
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.expression import select
+from sqlalchemy import distinct
+
 
 log = logging.getLogger(__name__)
 
@@ -109,6 +111,17 @@ class StakeholderProtocol3(Protocol):
             # No Stakeholder was created
             return None
 
+    def read_all_keys(self, request):
+        localizer = get_localizer(request)
+        dbLang = self.Session.query(Language).\
+            filter(Language.locale == localizer.locale_name).\
+            first()
+        query = self.Session.query(distinct(SH_Key.key)).filter(SH_Key.fk_language==dbLang.id).order_by(SH_Key.key)
+        return {
+            'total': query.count(),
+            'data': [k[0] for k in query.all()]
+        }
+
     def read_one_active(self, request, uid):
 
         relevant_stakeholders = self._get_relevant_stakeholders_one_active(uid)
@@ -159,20 +172,20 @@ class StakeholderProtocol3(Protocol):
         attributes of the Feature, only some relevant information are collected
         and returned (as a dict, not as a feature!).
         """
-        
+
         relevant_stakeholders = self._get_relevant_stakeholders_one(request, uid)
-        
+
         limit = self._get_limit(request)
         offset = self._get_offset(request)
-        
-        query, count = self._query_history(relevant_stakeholders, 
+
+        query, count = self._query_history(relevant_stakeholders,
             limit=limit, offset=offset)
-        
+
         # Order the Stakeholder by version
         query = query.order_by(desc(Stakeholder.version))
-        
+
         stakeholders = self._query_to_history(query)
-        
+
         return stakeholders, count
 
     def read_one(self, request, uid, public=True, **kwargs):
@@ -995,19 +1008,19 @@ class StakeholderProtocol3(Protocol):
 
         return query, count
 
-    def _query_history(self, relevant_stakeholders, limit=None, 
+    def _query_history(self, relevant_stakeholders, limit=None,
         offset=None, return_count=True):
-        
+
         # Count
         if return_count:
             count = relevant_stakeholders.count()
-        
+
         # Apply limit and offset
         if limit is not None:
             relevant_stakeholders = relevant_stakeholders.limit(limit)
         if offset is not None:
             relevant_stakeholders = relevant_stakeholders.offset(offset)
-        
+
         # Create query
         relevant_stakeholders = relevant_stakeholders.subquery()
         query = self.Session.query(
@@ -1018,12 +1031,12 @@ class StakeholderProtocol3(Protocol):
                 Changeset.timestamp.label('timestamp'),
                 User.username.label('user_name')
             ).\
-            join(relevant_stakeholders, 
+            join(relevant_stakeholders,
                 relevant_stakeholders.c.order_id == Stakeholder.id).\
             join(Status).\
             join(Changeset).\
             join(User, User.id == Changeset.fk_user)
-    
+
         if return_count:
             return query, count
         else:
@@ -1181,7 +1194,7 @@ class StakeholderProtocol3(Protocol):
             return query
 
     def _query_to_history(self, query):
-        
+
         # Put the Stakeholders together
         stakeholders = []
         for q in query.all():
@@ -1519,7 +1532,7 @@ class StakeholderProtocol3(Protocol):
                     pass
 
             # Check that a Main Tag was set.
-            # If none was set (if it did not match any of the keys of the 
+            # If none was set (if it did not match any of the keys of the
             # taggroup), raise an error.
             if db_tg.main_tag is None:
                 raise HTTPBadRequest(detail='Invalid Main Tag provided. The Taggroup %s has no valid Main Tag' % taggroup)

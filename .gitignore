@@ -38,3 +38,7 @@ LMKP.egg-info/
 
 # Ignore documentation builds
 /docs/_build/*
+
+# Ignore sublime project files
+*.sublime-project
+*.sublime-workspace
