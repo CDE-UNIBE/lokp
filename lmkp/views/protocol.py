@@ -1,54 +1,57 @@
+import collections
+import datetime
+import geojson
+import json
 import logging
-from lmkp.config import locale_profile_directory_path
-from lmkp.config import profile_directory_path
-from lmkp.models.database_objects import Activity
-from lmkp.models.database_objects import A_Key
-from lmkp.models.database_objects import A_Tag
-from lmkp.models.database_objects import A_Tag_Group
-from lmkp.models.database_objects import A_Value
-from lmkp.models.database_objects import Changeset
-from lmkp.models.database_objects import Group
-from lmkp.models.database_objects import Involvement
-from lmkp.models.database_objects import Language
-from lmkp.models.database_objects import Permission
-from lmkp.models.database_objects import SH_Key
-from lmkp.models.database_objects import SH_Tag
-from lmkp.models.database_objects import SH_Tag_Group
-from lmkp.models.database_objects import SH_Value
-from lmkp.models.database_objects import Stakeholder
-from lmkp.models.database_objects import Stakeholder_Role
-from lmkp.models.database_objects import Status
-from lmkp.views.config import merge_profiles
-from lmkp.views.config import ACTIVITY_YAML
-from lmkp.views.config import STAKEHOLDER_YAML
-from lmkp.views.files import check_file_location_name
-from lmkp.views.form_config import getCategoryList
-from lmkp.models.database_objects import User
+
+from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.i18n import get_localizer
+from pyramid.renderers import render
+from pyramid.security import (
+    effective_principals,
+    unauthenticated_userid,
+)
 from shapely import wkb
 from shapely.geometry import mapping as asGeoJSON
-from sqlalchemy.sql.expression import cast
-from sqlalchemy.sql.expression import and_
-from sqlalchemy.sql.expression import between
-from sqlalchemy.types import Float
-import datetime
-from sqlalchemy import func
-import yaml
-import collections
-from pyramid.httpexceptions import HTTPBadRequest
-from pyramid.renderers import render
-from pyramid.security import unauthenticated_userid
-from pyramid.security import effective_principals
-from pyramid.i18n import get_localizer
-from lmkp.views.review import BaseReview
-import json
-import geojson
 from shapely.geometry import asShape
+from sqlalchemy.sql.expression import (
+    cast,
+    and_,
+    between,
+)
+from sqlalchemy.types import Float
+from sqlalchemy import func
 
+from lmkp.config import getTemplatePath
+from lmkp.models.database_objects import (
+    A_Key,
+    A_Tag,
+    A_Tag_Group,
+    A_Value,
+    Activity,
+    Changeset,
+    Group,
+    Involvement,
+    Language,
+    Permission,
+    SH_Key,
+    SH_Tag,
+    SH_Tag_Group,
+    SH_Value,
+    Stakeholder,
+    Stakeholder_Role,
+    Status,
+    User,
+)
+from lmkp.views.files import check_file_location_name
+from lmkp.views.form_config import getCategoryList
+from lmkp.views.review import BaseReview
 from lmkp.views.translation import statusMap
 from lmkp.views.translation import get_translated_status
-from lmkp.config import getTemplatePath
+
 
 log = logging.getLogger(__name__)
+
 
 class Protocol(object):
     """
@@ -78,9 +81,9 @@ class Protocol(object):
 
             # Subquery to get latest version for each identifier at given time
             version_subquery = self.Session.query(
-                    AorSH.identifier.label('timestamp_identifier'),
-                    func.max(AorSH.version).label('timestamp_version')
-                ).\
+                AorSH.identifier.label('timestamp_identifier'),
+                func.max(AorSH.version).label('timestamp_version')
+            ).\
                 join(Changeset).\
                 join(Status).\
                 filter(Changeset.timestamp <= t).\
@@ -90,11 +93,11 @@ class Protocol(object):
 
             # Join the latest version again with itself to get its ID
             timestamp_subquery = self.Session.query(
-                    AorSH.id.label('timestamp_id')
-                ).\
+                AorSH.id.label('timestamp_id')
+            ).\
                 join(version_subquery, and_(
                     version_subquery.c.timestamp_identifier
-                        == AorSH.identifier,
+                    == AorSH.identifier,
                     version_subquery.c.timestamp_version == AorSH.version)).\
                 subquery()
 
@@ -191,7 +194,6 @@ class Protocol(object):
             ret.append(Status.name == 'edited')
         return ret
 
-
     def _get_status(self, request, from_history=False):
         """
         Returns an ClauseElement array of requested activity status.
@@ -208,8 +210,8 @@ class Protocol(object):
 
         try:
             status = statusParameter.split(',')
-            # Hard coded list of possible activity statii. Not very nice ... But more
-            # performant than requesting the database
+            # Hard coded list of possible activity statii. Not very nice ...
+            # But more performant than querying the database
             arr = []
             for s in status:
                 if s in statusMap:
@@ -247,19 +249,17 @@ class Protocol(object):
         ]
 
         if logged_in:
-            statuses.append(
-                Status.name == 'pending'
-            )
-
+            statuses.append(Status.name == 'pending')
+            statuses.append(Status.name == 'edited')
 
         #log.debug("Involvement statuses [array]:\n%s" % statuses)
 
         return statuses
 
-    def _flag_add_involvement(self, this_object, this_status_id,
-        other_status_id, other_identifier, other_version, other_user_id,
-        stakeholder_role, request_user_id, public_query, logged_in,
-        is_moderator):
+    def _flag_add_involvement(
+            self, this_object, this_status_id, other_status_id,
+            other_identifier, other_version, other_user_id, stakeholder_role,
+            request_user_id, public_query, logged_in, is_moderator):
         """
         Decide whether to attach an Involvement (to the _other_ object) to a
         Feature (to _this_ object).
@@ -305,21 +305,21 @@ class Protocol(object):
             if inv is not None:
                 # Check if current Involvement has a different Role than the
                 # Involvement already existing
-                inv = this_object.find_involvement_by_role(other_identifier,
-                    stakeholder_role)
+                inv = this_object.find_involvement_by_role(
+                    other_identifier, stakeholder_role)
                 if inv is not None:
-                    # Check if current Involvement points to a different Feature
-                    # version than the Involvement already existing
-                    inv = this_object.find_involvement(other_identifier,
-                        stakeholder_role, other_version)
+                    # Check if current Involvement points to a different
+                    # Feature version than the Involvement already existing
+                    inv = this_object.find_involvement(
+                        other_identifier, stakeholder_role, other_version)
                     if inv is not None:
                         # If the current Involvement is 'active' and the
                         # previous Involvement was 'inactive', replace the
                         # previous Involvement
                         if (other_status_id == 2 and
                             this_object.find_involvement_by_role(
-                                other_identifier, stakeholder_role).get_status()
-                                == 3):
+                                other_identifier, stakeholder_role).
+                                get_status() == 3):
                             this_object.remove_involvement(
                                 this_object.find_involvement_by_role(
                                     other_identifier, stakeholder_role))
@@ -338,7 +338,6 @@ class Protocol(object):
         mark_complete = request.params.get('mark_complete', None)
 
         return mark_complete is not None and mark_complete == 'true'
-
 
     def _filter(self, request):
         """
@@ -375,7 +374,8 @@ class Protocol(object):
             }
 
             str_map = {
-                # See http://www.postgresql.org/docs/9.1/static/functions-matching.html#FUNCTIONS-POSIX-REGEXP
+                # See http://www.postgresql.org/docs/9.1/static/functions-
+                # matching.html#FUNCTIONS-POSIX-REGEXP
                 'like': v.value.op("~")(value),
                 'ilike': v.value.op("~*")(value),
                 'nlike': v.value.op("!~")(value),
@@ -414,8 +414,8 @@ class Protocol(object):
                 values = request.params[k].split(',')
                 for v in values:
                     q = self.Session.query(
-                            A_Tag.fk_a_tag_group.label('a_filter_tg_id')
-                        ).\
+                        A_Tag.fk_a_tag_group.label('a_filter_tg_id')
+                    ).\
                         join(A_Key, A_Key.id == A_Tag.fk_key).\
                         join(A_Value, A_Value.id == A_Tag.fk_value).\
                         filter(A_Key.key == col).\
@@ -427,8 +427,8 @@ class Protocol(object):
                 values = request.params[k].split(',')
                 for v in values:
                     q = self.Session.query(
-                            SH_Tag.fk_sh_tag_group.label('sh_filter_tg_id')
-                        ).\
+                        SH_Tag.fk_sh_tag_group.label('sh_filter_tg_id')
+                    ).\
                         join(SH_Key, SH_Key.id == SH_Tag.fk_key).\
                         join(SH_Value, SH_Value.id == SH_Tag.fk_value).\
                         filter(SH_Key.key == col).\
@@ -436,8 +436,9 @@ class Protocol(object):
                         filter(__get_filter_expression(prefix, v, op))
                     sh_filter_expr.append(q)
 
-        return (a_filter_expr, len(a_filter_expr),
-            sh_filter_expr, len(sh_filter_expr))
+        return (
+            a_filter_expr, len(a_filter_expr), sh_filter_expr,
+            len(sh_filter_expr))
 
     def _get_logical_operator(self, request):
         """
@@ -452,7 +453,7 @@ class Protocol(object):
         should be in descending order)
         """
         if (request.params.get('dir', '').upper() == 'DESC'
-            or request.params.get('order_by', None) is None):
+                or request.params.get('order_by', None) is None):
             return 'DESC'
 
     def _get_translatedKV(self, lang, Key, Value):
@@ -461,14 +462,18 @@ class Protocol(object):
         - a SubQuery with a list of all translated keys
         - a SubQuery with a list of all translated values
         """
-        key_query = self.Session.query(Key.fk_key.label("key_original_id"),
-                                Key.key.label("key_translated")).\
-                    filter(Key.language == lang).\
-                    subquery()
-        value_query = self.Session.query(Value.fk_value.label("value_original_id"),
-                                 Value.value.label("value_translated")).\
-                     filter(Value.language == lang).\
-                     subquery()
+        key_query = self.Session.query(
+            Key.fk_key.label("key_original_id"),
+            Key.key.label("key_translated")
+        ).\
+            filter(Key.language == lang).\
+            subquery()
+        value_query = self.Session.query(
+            Value.fk_value.label("value_original_id"),
+            Value.value.label("value_translated")
+        ).\
+            filter(Value.language == lang).\
+            subquery()
         return key_query, value_query
 
     def _get_order(self, request, Mapped_Class, Tag_Group, Tag, Key, Value):
@@ -486,43 +491,46 @@ class Protocol(object):
                     Mapped_Class.id,
                     Changeset.timestamp.label('value')
                 ).\
-                join(Changeset).\
-                subquery()
+                    join(Changeset).\
+                    subquery()
                 return q, False
             else:
                 # Query to order number values (cast to Float)
                 q_number = self.Session.query(
                     Mapped_Class.id,
-                    cast(Value.value, Float).label('value')).\
-                join(Tag_Group).\
-                join(Tag, Tag.fk_tag_group == Tag_Group.id).\
-                join(Value, Value.id == Tag.fk_value).\
-                join(Key, Key.id == Tag.fk_key).\
-                filter(Key.key.like(order_key))
+                    cast(Value.value, Float).label('value')
+                ).\
+                    join(Tag_Group).\
+                    join(Tag, Tag.fk_tag_group == Tag_Group.id).\
+                    join(Value, Value.id == Tag.fk_value).\
+                    join(Key, Key.id == Tag.fk_key).\
+                    filter(Key.key.like(order_key))
                 # Query to order string values
                 q_text = self.Session.query(
                     Mapped_Class.id,
-                    Value.value.label('value')).\
-                join(Tag_Group).\
-                join(Tag, Tag.fk_tag_group == Tag_Group.id).\
-                join(Value, Value.id == Tag.fk_value).\
-                join(Key, Key.id == Tag.fk_key).\
-                filter(Key.key.like(order_key))
+                    Value.value.label('value')
+                ).\
+                    join(Tag_Group).\
+                    join(Tag, Tag.fk_tag_group == Tag_Group.id).\
+                    join(Value, Value.id == Tag.fk_value).\
+                    join(Key, Key.id == Tag.fk_key).\
+                    filter(Key.key.like(order_key))
 
                 # Try to query numbered values and cast them
                 try:
-                    x = q_number.all()
+                    __ = q_number.all()
                     return q_number.subquery(), True
                 except:
-                    # Rolling back of Session is needed to completely erase error thrown above
+                    # Rolling back of Session is needed to completely erase
+                    # error thrown above
                     self.Session.rollback()
                     return q_text.subquery(), False
         else:
             # No ordering, use dummy value
             q_no_order = self.Session.query(
-                    Mapped_Class.id,
-                    func.char_length('').label('value') # Dummy value
-                )
+                Mapped_Class.id,
+                func.char_length('').label('value')  # Dummy value
+            )
             return q_no_order.subquery(), None
 
         return None, None
@@ -609,8 +617,9 @@ class Protocol(object):
 
         return False
 
-    def _add_review(self, request, item, mappedClass, user, review_decision,
-        review_comment, implicit = False):
+    def _add_review(
+            self, request, item, mappedClass, user, review_decision,
+            review_comment, implicit=False, next_status=None):
         """
         Add a review decision
         item: {Database object} (Activity or Stakeholder)
@@ -653,16 +662,16 @@ class Protocol(object):
             ret['msg'] = _('Unknown object to review.')
             return ret
 
-        # TODO: Also delegate involvement review if rejected (review_decision == 2)
-
+        # TODO: Also delegate involvement review if rejected (review_decision
+        # == 2)
 
         # Try to also review any affected involvement.
         if implicit is False:
 
             # Query the diff
             diff_query = self.Session.query(
-                    Changeset.diff
-                ).\
+                Changeset.diff
+            ).\
                 join(mappedClass).\
                 filter(mappedClass.identifier == item.identifier).\
                 filter(mappedClass.version == item.version).\
@@ -675,11 +684,11 @@ class Protocol(object):
             if mappedClass == Activity and 'activities' in json_diff:
                 for a_diff in json_diff['activities']:
                     if ('id' in a_diff and a_diff['id'] == str(item.identifier)
-                        and 'stakeholders' in a_diff):
+                            and 'stakeholders' in a_diff):
                         for sh_diff in a_diff['stakeholders']:
-                            version = (sh_diff['version']
-                                    if 'version' in sh_diff
-                                    else None)
+                            version = (
+                                sh_diff['version'] if 'version' in sh_diff
+                                else None)
                             affected_involvements.append({
                                 'identifier': sh_diff['id'],
                                 'version': version,
@@ -688,9 +697,12 @@ class Protocol(object):
             elif mappedClass == Stakeholder and 'activities' in json_diff:
                 for a_diff in json_diff['activities']:
                     if 'id' in a_diff and 'stakeholders' in a_diff:
-                        version = (a_diff['version'] if 'version' in a_diff else None)
+                        version = (
+                            a_diff['version'] if 'version' in a_diff else None)
                         for sh_diff in a_diff['stakeholders']:
-                            if 'id' in sh_diff and sh_diff['id'] == str(item.identifier):
+                            if (
+                                'id' in sh_diff
+                                    and sh_diff['id'] == str(item.identifier)):
                                 affected_involvements.append({
                                     'identifier': a_diff['id'],
                                     'version': version,
@@ -698,7 +710,7 @@ class Protocol(object):
                                 })
 
             log.debug('%s affected involvements found: %s'
-                % (len(affected_involvements), affected_involvements))
+                      % (len(affected_involvements), affected_involvements))
 
             basereview = BaseReview(request)
 
@@ -710,9 +722,13 @@ class Protocol(object):
                 # First check if a review can be done for all the involvements
                 reviewPossible = True
                 for ai in affected_involvements:
+                    if 'op' in ai and ai['op'] == 'delete':
+                        # It must be possible to review if there was a removed
+                        # involvement to a non-active stakeholder
+                        continue
                     reviewable = basereview._review_check_involvement(
-                            otherMappedClass, ai['identifier'], ai['version']
-                        )
+                        otherMappedClass, ai['identifier'], ai['version']
+                    )
                     if reviewPossible is True and reviewable > 0:
                         continue
                     reviewPossible = reviewable
@@ -722,7 +738,8 @@ class Protocol(object):
                         ret['msg'] = render(
                             getTemplatePath(
                                 request,
-                                'parts/messages/one_of_involved_stakeholders_cannot_be_reviewed.mak'
+                                'parts/messages/one_of_involved_stakeholders'
+                                '_cannot_be_reviewed.mak'
                             ),
                             {},
                             request
@@ -731,7 +748,8 @@ class Protocol(object):
                         ret['msg'] = render(
                             getTemplatePath(
                                 request,
-                                'parts/messages/one_of_involved_activities_cannot_be_reviewed.mak'
+                                'parts/messages/one_of_involved_activities'
+                                '_cannot_be_reviewed.mak'
                             ),
                             {},
                             request
@@ -740,15 +758,16 @@ class Protocol(object):
 
             # Do a review for all the involvements
             for ai in affected_involvements:
+                next_status = None
 
                 # Query the Stakeholder version that was created by the
                 # involvement
                 if ai['op'] == 'add':
-                    # If a new involvement was added, it is possible to find the
-                    # exact version through the involvement.
+                    # If a new involvement was added, it is possible to find
+                    # the exact version through the involvement.
                     sh = self.Session.query(
-                            Stakeholder
-                        ).\
+                        Stakeholder
+                    ).\
                         join(Involvement).\
                         join(Activity).\
                         filter(Stakeholder.identifier == ai['identifier']).\
@@ -767,7 +786,8 @@ class Protocol(object):
                         sh = self.Session.query(Stakeholder).\
                             join(Involvement).\
                             join(Activity).\
-                            filter(Stakeholder.identifier == ai['identifier']).\
+                            filter(
+                                Stakeholder.identifier == ai['identifier']).\
                             filter(Activity.identifier == item.identifier).\
                             filter(Stakeholder.fk_status == 1).\
                             filter(Activity.version == item.version).\
@@ -777,14 +797,15 @@ class Protocol(object):
                     if sh is None:
                         # If the Stakeholder was still not found, it might be
                         # because the Activity was edited in the meantime and
-                        # changeset is not linked to the Stakeholder anymore. In
-                        # this case, try to find an older changeset of the
+                        # changeset is not linked to the Stakeholder anymore.
+                        # In this case, try to find an older changeset of the
                         # Activity which links it to the Stakeholder.
                         # TODO
                         shQ = self.Session.query(Stakeholder).\
                             join(Involvement).\
                             join(Activity).\
-                            filter(Stakeholder.identifier == ai['identifier']).\
+                            filter(
+                                Stakeholder.identifier == ai['identifier']).\
                             filter(Activity.identifier == item.identifier).\
                             filter(Stakeholder.fk_status == 1).\
                             all()
@@ -802,25 +823,73 @@ class Protocol(object):
                 elif ai['op'] == 'delete':
                     # If an involvement was deleted, it is obviously not
                     # possible to find the version through the involvement.
-                    # Instead, we must try to find it through its identifier and
-                    # version ...
+                    # Instead, we must try to find it through its identifier
+                    # and version ...
                     # TODO: Is this enough to find the version or do we need
                     # additional indicators (changeset.diff?)
                     sh = self.Session.query(
-                            Stakeholder
-                        ).\
+                        Stakeholder
+                    ).\
                         filter(Stakeholder.identifier == ai['identifier']).\
                         filter(Stakeholder.previous_version == ai['version']).\
                         first()
 
-                if sh is None:
-                    log.debug('One of the Stakeholders to review was not found.')
-                    continue
-#                    ret['msg'] = _('One of the Stakeholders to review was not found.')
-#                    return ret
+                    if sh is None:
+                        # If no Stakeholder was found, try to find him through
+                        # the changesets as it is possible that the versions
+                        # are not linked anymore through the involvements.
 
-                log.debug('Reviewing involvement: Stakeholder with identifier %s, version %s and status %s'
-                        % (sh.identifier, sh.version, sh.fk_status))
+                        # Query the previous version of the current version.
+                        previous_version_subquery = self.Session.query(
+                            Stakeholder.previous_version
+                        ).\
+                            filter(
+                                Stakeholder.identifier == ai['identifier']).\
+                            filter(Stakeholder.version == ai['version']).\
+                            subquery()
+
+                        # Query all other versions based on this previous
+                        # version
+                        other_versions = self.Session.query(Stakeholder).\
+                            filter(
+                                Stakeholder.identifier == ai['identifier']
+                            ).\
+                            join(previous_version_subquery,
+                                 previous_version_subquery.c.previous_version
+                                 == Stakeholder.previous_version).\
+                            all()
+
+                        for other_version in other_versions:
+                            changeset = json.loads(
+                                other_version.changeset.diff)
+                            if ('activities' not in changeset
+                                    or type(
+                                        changeset['activities']) is not list):
+                                continue
+                            for a_changeset in changeset['activities']:
+                                if 'stakeholders' not in a_changeset:
+                                    continue
+                                inv_changesets = a_changeset['stakeholders']
+                                for inv_changeset in inv_changesets:
+                                    if ('id' not in inv_changeset
+                                            or inv_changeset['id']
+                                            != ai['identifier'] or 'op' not in
+                                            inv_changeset
+                                            or inv_changeset['op']
+                                            != 'delete'):
+                                        continue
+                                    sh = other_version
+                                    next_status = 'edited'
+                                    break
+
+                if sh is None:
+                    log.debug('One of the Stakeholders to review was not '
+                              'found.')
+                    asdf
+
+                log.debug('Reviewing involvement: Stakeholder with identifier '
+                          '%s, version %s and status %s'
+                          % (sh.identifier, sh.version, sh.fk_status))
 
                 # Do a review, but implicitely
                 reviewed_inv = self._add_review(
@@ -830,7 +899,8 @@ class Protocol(object):
                     user,
                     review_decision,
                     review_comment,
-                    implicit = True
+                    implicit=True,
+                    next_status=next_status
                 )
 
                 reviewed_involvements.append(reviewed_inv)
@@ -848,8 +918,8 @@ class Protocol(object):
 
             # Query the previous version of the item
             previous_version = self.Session.query(
-                    mappedClass
-                ).\
+                mappedClass
+            ).\
                 filter(mappedClass.identifier == item.identifier).\
                 filter(mappedClass.version == item.previous_version).\
                 first()
@@ -857,69 +927,89 @@ class Protocol(object):
             # Query the active version of the item (review always happens
             # against the active version)
             ref_version = self.Session.query(
-                    mappedClass
-                ).\
+                mappedClass
+            ).\
                 filter(mappedClass.identifier == item.identifier).\
-                filter(mappedClass.fk_status == statusArray.index('active')+1).\
+                filter(
+                    mappedClass.fk_status == statusArray.index('active')+1).\
                 first()
 
-            # TODO: Nasty hack if the a new involvement is added to a now edited
-            # stakeholder version
-            if (previous_version is not None and previous_version.fk_status == 3
-                and mappedClass == Stakeholder and implicit is True):
+            # TODO: Nasty hack if the a new involvement is added to a now
+            # edited stakeholder version
+            if (previous_version is not None
+                    and previous_version.fk_status == 3
+                    and mappedClass == Stakeholder and implicit is True):
                 previous_version = ref_version
                 ref_version = item
 
-            if (empty_item is True or previous_version is None
-                or previous_version.fk_status == statusArray.index('active')+1):
+            if (mappedClass == Stakeholder and implicit is True
+                    and next_status == 'edited'):
+                # Another nasty hack to set approved removals of involvements
+                # on Stakeholder side to "edited".
+                item.fk_status = statusArray.index('edited')+1
+
+            elif (empty_item is True or previous_version is None
+                    or previous_version.fk_status
+                    == statusArray.index('active')+1):
                 # There is no previous version (the item is brand new) or it is
                 # based directly on the active version.
 
                 # If there is a previous active version, set it to 'inactive'
                 if previous_version:
-                    previous_version.fk_status = statusArray.index('inactive')+1
+                    previous_version.fk_status = statusArray.index(
+                        'inactive')+1
 
                 if empty_item is True:
                     # Set the status of the item to 'deleted'
                     item.fk_status = statusArray.index('deleted') + 1
 
-                    log.debug('Set version %s of %s with identifier %s to "deleted"'
-                        % (item.version, mappedClass.__table__.name, item.identifier))
+                    log.debug(
+                        'Set version %s of %s with identifier %s to "deleted"'
+                        % (item.version, mappedClass.__table__.name,
+                            item.identifier))
 
                 else:
                     # Set the status of the item to 'active'
                     item.fk_status = statusArray.index('active')+1
 
-                    log.debug('Set version %s of %s with identifier %s to "active"'
-                        % (item.version, mappedClass.__table__.name, item.identifier))
+                    log.debug(
+                        'Set version %s of %s with identifier %s to "active"'
+                        % (item.version, mappedClass.__table__.name,
+                            item.identifier))
 
             elif ref_version is None and mappedClass == Stakeholder:
                 # For stakeholders, editing a pending version not always sets
                 # the older version to 'edited'. This can lead to the situation
                 # that the version to accept is based on another version.
-                # Normally, this version should be recalculated but there exists
-                # no active version yet.
+                # Normally, this version should be recalculated but there
+                # exists no active version yet.
                 # In this case just set the version to review to 'active'.
 
                 if empty_item is True:
                     # Set the status of the item to 'deleted'
                     item.fk_status = statusArray.index('deleted') + 1
 
-                    log.debug('Set version %s of %s with identifier %s to "deleted"'
-                        % (item.version, mappedClass.__table__.name, item.identifier))
+                    log.debug(
+                        'Set version %s of %s with identifier %s to "deleted"'
+                        % (item.version, mappedClass.__table__.name,
+                            item.identifier))
 
                 else:
                     # Set the status of the item to 'active'
                     item.fk_status = statusArray.index('active')+1
 
-                    log.debug('Set version %s of %s with identifier %s to "active"'
-                        % (item.version, mappedClass.__table__.name, item.identifier))
+                    log.debug(
+                        'Set version %s of %s with identifier %s to "active"'
+                        % (item.version, mappedClass.__table__.name,
+                            item.identifier))
 
             else:
                 # Recalculation of the item is needed.
 
                 if ref_version is None:
-                    ret['msg'] = _('No active version was found to base the review upon. Try to review an earlier version first.')
+                    ret['msg'] = _(
+                        'No active version was found to base the review upon. '
+                        'Try to review an earlier version first.')
                     return ret
 
                 # Query the diff. If it is already available (queried while
@@ -927,8 +1017,8 @@ class Protocol(object):
                 if json_diff is None:
                     # Query the diff
                     diff_query = self.Session.query(
-                            Changeset.diff
-                        ).\
+                        Changeset.diff
+                    ).\
                         join(mappedClass).\
                         filter(mappedClass.identifier == item.identifier).\
                         filter(mappedClass.version == item.version).\
@@ -938,13 +1028,15 @@ class Protocol(object):
                 # Cut to the part of the diff which is relevant for this item
                 relevant_diff = None
                 if (diff_keyword in json_diff and
-                    json_diff[diff_keyword] is not None):
+                        json_diff[diff_keyword] is not None):
                     for diff in json_diff[diff_keyword]:
                         if 'id' in diff and diff['id'] == str(item.identifier):
                             relevant_diff = diff
 
                 if relevant_diff is None:
-                    ret['msg'] = _('The diff seems to be incorrect (identifier not found)')
+                    ret['msg'] = _(
+                        'The diff seems to be incorrect (identifier not '
+                        'found)')
                     return ret
 
                 # Set the reference version to 'inactive'
@@ -965,11 +1057,16 @@ class Protocol(object):
                     status='active'
                 )
 
+                # Also handle the involvements to copy existing involvements.
+                self._handle_involvements(
+                    request, ref_version, new_version, None, changeset)
+
                 #TODO: handle returned diff correctly
 
                 if len(reviewed_involvements) > 0:
                     # Attach the involvements which were reviewed earlier
-                    inv_diff = (relevant_diff[other_diff_keyword]
+                    inv_diff = (
+                        relevant_diff[other_diff_keyword]
                         if other_diff_keyword in relevant_diff
                         else None)
                     for inv in reviewed_involvements:
@@ -979,12 +1076,15 @@ class Protocol(object):
                             new_version,
                             inv_diff,
                             changeset,
-                            implicit = True,
-                            db_object = inv
+                            implicit=True,
+                            db_object=inv
                         )
 
-                log.debug('Created new version out of version %s of %s with identifier %s'
-                        % (item.version, mappedClass.__table__.name, item.identifier))
+                log.debug(
+                    'Created new version out of version %s of %s with '
+                    'identifier %s'
+                    % (item.version, mappedClass.__table__.name,
+                        item.identifier))
 
         elif review_decision == 2:
             # Rejected: Do not modify previous version and set new version to
@@ -1007,8 +1107,9 @@ class Protocol(object):
         ret['msg'] = _('Review successful.')
         return ret
 
-    def _apply_diff(self, request, mappedClass, uid, version, diff, item, db,
-        review=False):
+    def _apply_diff(
+            self, request, mappedClass, uid, version, diff, item, db,
+            review=False):
 
         """
         item is either a db item or an activity feature
@@ -1039,15 +1140,16 @@ class Protocol(object):
             item._status = 'pending'
 
         # Compare the geometry.
-        # This is only relevant if the comparison is not done on database level.
-        # Otherwise the comparison is done earlier.
+        # This is only relevant if the comparison is not done on database
+        # level. Otherwise the comparison is done earlier.
         if db is False and 'geometry' in diff:
             from lmkp.views.form import DictDiffer
             d = DictDiffer(diff['geometry'], item.get_geometry())
             geomDiff = d.added().union(d.removed()).union(d.changed())
             if len(geomDiff) > 0:
-                geojson_obj = geojson.loads(json.dumps(diff['geometry']),
-                                    object_hook=geojson.GeoJSON.to_instance)
+                geojson_obj = geojson.loads(
+                    json.dumps(diff['geometry']),
+                    object_hook=geojson.GeoJSON.to_instance)
                 item._geometry = geojson_obj
 
         if db is False:
@@ -1057,12 +1159,11 @@ class Protocol(object):
             # Reset taggroups
             item._taggroups = []
 
-
         # Loop the tag groups from the previous version to check if they were
         # modified
         db_taggroup_query = self.Session.query(
-                Db_Tag_Group
-            ).\
+            Db_Tag_Group
+        ).\
             join(mappedClass).\
             filter(mappedClass.identifier == uid).\
             filter(mappedClass.version == version).\
@@ -1100,7 +1201,7 @@ class Protocol(object):
                     # Copy the old geometry of the taggroup (even if 'none')
                     new_taggroup.geometry = db_taggroup.geometry
             else:
-                new_taggroup = TagGroup(tg_id = db_taggroup.tg_id)
+                new_taggroup = TagGroup(tg_id=db_taggroup.tg_id)
 
             # Step 1: Loop the existing tags
             for db_tag in db_taggroup.tags:
@@ -1115,46 +1216,58 @@ class Protocol(object):
                 if diff is not None and 'taggroups' in diff:
                     for taggroup_dict in diff['taggroups']:
                         if ('tg_id' in taggroup_dict and
-                            taggroup_dict['tg_id'] == db_taggroup.tg_id):
+                                taggroup_dict['tg_id'] == db_taggroup.tg_id):
 
                             # Overwrite the geometry of the taggroup if it is
                             # set
                             if ('geometry' in taggroup_dict
-                                and mappedClass == Activity and db is True):
+                                    and mappedClass == Activity
+                                    and db is True):
                                 tg_geom_diff = taggroup_dict['geometry']
                                 if tg_geom_diff == {}:
                                     # Empty geometry: Set it to 'none'
                                     new_taggroup.geometry = None
                                 else:
-                                    tg_geom = geojson.loads(json.dumps(tg_geom_diff),
-                                        object_hook = geojson.GeoJSON.to_instance)
+                                    tg_geom = geojson.loads(
+                                        json.dumps(tg_geom_diff),
+                                        object_hook=
+                                        geojson.GeoJSON.to_instance)
                                     try:
                                         # Make sure it is a valid type
                                         tg_shape = asShape(tg_geom)
                                         geometrytype = tg_shape.geom_type
                                     except:
-                                        raise HTTPBadRequest(detail="Invalid geometry type of taggroup")
-                                    # Store the geometry only if it is a polygon
-                                    # or multipolygon
+                                        raise HTTPBadRequest(
+                                            detail="Invalid geometry type of "
+                                                   "taggroup")
+                                    # Store the geometry only if it is a
+                                    # polygon or multipolygon
                                     if (geometrytype == 'Polygon'
-                                        or geometrytype == 'MultiPolygon'):
+                                            or geometrytype == 'MultiPolygon'):
                                         new_taggroup.geometry = tg_shape.wkt
                                     else:
-                                        raise HTTPBadRequest(detail='Invalid geometry type of taggroup: Only Polygon or MultiPolygon is supported.')
+                                        raise HTTPBadRequest(
+                                            detail='Invalid geometry type of '
+                                                   'taggroup: Only Polygon or '
+                                                   'MultiPolygon is '
+                                                   'supported.')
 
                             # Check which tags we have to edit
                             for tag_dict in taggroup_dict['tags']:
                                 if 'op' not in tag_dict:
-                                    raise HTTPBadRequest(detail='Each tag needs to have an operator (add/edit)')
+                                    raise HTTPBadRequest(
+                                        detail='Each tag needs to have an '
+                                               'operator (add/edit)')
                                 # Make sure it is exactly this tag (same key)
                                 # and it is to be deleted.
                                 if (tag_dict['op'] == 'delete'
-                                    and db_tag.key.key and tag_dict['key']
-                                    and db_tag.key.key == tag_dict['key']):
+                                        and db_tag.key.key and tag_dict['key']
+                                        and db_tag.key.key == tag_dict['key']):
 
-#                                    log.debug(
-#                                        "Tag is deleted (not copied) from taggroup."
-#                                    )
+                                    # log.debug(
+                                    #     "Tag is deleted (not copied) from "
+                                    #     "taggroup."
+                                    # )
 
                                     if db_taggroup.main_tag == db_tag:
                                         deleted_maintag = db_tag
@@ -1189,9 +1302,9 @@ class Protocol(object):
 
                     if taggroupadded is False:
                         # It is necessary to add taggroup to database
-                        # immediately, otherwise SQLAlchemy tries to do this the
-                        # next time a tag is created and throws an error because
-                        # of assumingly null values
+                        # immediately, otherwise SQLAlchemy tries to do this
+                        # the next time a tag is created and throws an error
+                        # because of assumingly null values
                         if db is True:
                             item.tag_groups.append(new_taggroup)
                         else:
@@ -1208,10 +1321,11 @@ class Protocol(object):
             if diff is not None and 'taggroups' in diff:
                 for taggroup_dict in diff['taggroups']:
                     if ('tg_id' in taggroup_dict and
-                        taggroup_dict['tg_id'] == db_taggroup.tg_id):
+                            taggroup_dict['tg_id'] == db_taggroup.tg_id):
                         # Taggroup of dict is already in DB
                         for tag_dict in taggroup_dict['tags']:
-                            if 'id' not in tag_dict and tag_dict['op'] == 'add':
+                            if ('id' not in tag_dict
+                                    and tag_dict['op'] == 'add'):
                                 if db is True:
                                     new_tag = self._create_tag(
                                         request, new_taggroup.tags,
@@ -1220,14 +1334,16 @@ class Protocol(object):
                                     )
                                 else:
                                     new_tag = Tag(
-                                        None, tag_dict['key'], tag_dict['value']
+                                        None, tag_dict['key'],
+                                        tag_dict['value']
                                     )
                                     new_taggroup.add_tag(new_tag)
 
-#                                log.debug(
-#                                    "Tag (%s | %s) was created and added to taggroup."
-#                                    % (tag_dict['key'], tag_dict['value'])
-#                                )
+                                # log.debug(
+                                #     "Tag (%s | %s) was created and added to "
+                                #     "taggroup."
+                                #     % (tag_dict['key'], tag_dict['value'])
+                                # )
 
                                 # Set the main tag
                                 if 'main_tag' in taggroup_dict:
@@ -1238,10 +1354,10 @@ class Protocol(object):
                                             new_tag.value.value):
                                         new_taggroup.main_tag = new_tag
                                     elif (db is False and
-                                        taggroup_dict['main_tag']['key'] ==
+                                            taggroup_dict['main_tag']['key'] ==
                                             new_tag.get_key() and
-                                        taggroup_dict['main_tag']['value'] ==
-                                            new_tag.get_value()):
+                                            taggroup_dict['main_tag']['value']
+                                            == new_tag.get_value()):
                                         new_taggroup._main_tag = new_tag
 
                             # If taggroups were not added to database yet, then
@@ -1249,26 +1365,27 @@ class Protocol(object):
                             # version if they have any tags in them (which is
                             # not the case if they were deleted).
                             if (db is True and len(new_taggroup.tags) > 0
-                                and taggroupadded is False):
+                                    and taggroupadded is False):
                                 item.tag_groups.append(new_taggroup)
                             elif (db is False
-                                and len(new_taggroup.get_tags()) > 0
-                                and taggroupadded is False):
+                                    and len(new_taggroup.get_tags()) > 0
+                                    and taggroupadded is False):
                                 item.add_taggroup(new_taggroup)
 
             # If the main tag was deleted and no new one was set, we have to
-            # find the new main_tag in the list of tags (it has to have the same
-            # key as the old one)
+            # find the new main_tag in the list of tags (it has to have the
+            # same key as the old one)
             if db is True:
-                if (deleted_maintag is not None and new_taggroup.main_tag is None
-                    and len(new_taggroup.tags) > 0):
+                if (deleted_maintag is not None
+                        and new_taggroup.main_tag is None
+                        and len(new_taggroup.tags) > 0):
                     for t in new_taggroup.tags:
                         if deleted_maintag.key.key == t.key.key:
                             new_taggroup.main_tag = t
             else:
                 if (deleted_maintag is not None
-                    and new_taggroup._main_tag is None
-                    and len(new_taggroup._tags) > 0):
+                        and new_taggroup._main_tag is None
+                        and len(new_taggroup._tags) > 0):
 
                     for t in new_taggroup._tags:
                         if deleted_maintag.key.key == t._key:
@@ -1283,41 +1400,44 @@ class Protocol(object):
                 tg_id = None
 
                 if ('tg_id' in taggroup_dict and
-                    taggroup_dict['tg_id'] not in tg_ids and
-                    ('op' not in taggroup_dict or
-                    ('op' in taggroup_dict
-                    and taggroup_dict['op'] != 'delete'))):
+                        taggroup_dict['tg_id'] not in tg_ids and
+                        ('op' not in taggroup_dict or
+                        ('op' in taggroup_dict
+                            and taggroup_dict['op'] != 'delete'))):
                     # Taggroup of dict has a tg_id, but does not yet exist for
                     # the current version. It can be treated as if new but with
                     # an existing tg_id
                     tg_id = taggroup_dict['tg_id']
 
-#                    print "---------------------------------------------"
-#                    log.debug(
-#                        "Currently looking at a taggroup with tg_id %s which does not yet exist for the old version"
-#                        % (tg_id)
-#                    )
+                    # print "---------------------------------------------"
+                    # log.debug(
+                    #     "Currently looking at a taggroup with tg_id %s "
+                    #     "which does not yet exist for the old version"
+                    #     % (tg_id)
+                    # )
 
                 if (('tg_id' not in taggroup_dict
                     or ('tg_id' in taggroup_dict and
                     taggroup_dict['tg_id'] is None))
-                    and taggroup_dict['op'] == 'add'):
+                        and taggroup_dict['op'] == 'add'):
                     # Taggroup of dict has no tg_id and does not yet exist at
                     # all for the current item.
 
                     # Find next empty tg_id (over all versions)
-                    tg_id_q = self.Session.query(func.max(Db_Tag_Group.tg_id)).\
+                    tg_id_q = self.Session.query(
+                        func.max(Db_Tag_Group.tg_id)).\
                         join(mappedClass).\
                         filter(mappedClass.identifier
                                == uid).\
                         first()
                     tg_id = tg_id_q[0] + 1
 
-#                    print "---------------------------------------------"
-#                    log.debug(
-#                        "Currently looking at a brand new taggroup with tg_id %s"
-#                        % (tg_id)
-#                    )
+                    # print "---------------------------------------------"
+                    # log.debug(
+                    #     "Currently looking at a brand new taggroup with "
+                    #     "tg_id %s"
+                    #     % (tg_id)
+                    # )
 
                 if (tg_id is not None):
 
@@ -1325,7 +1445,7 @@ class Protocol(object):
                         new_taggroup = Db_Tag_Group(tg_id)
                         item.tag_groups.append(new_taggroup)
                     else:
-                        new_taggroup = TagGroup(tg_id = tg_id)
+                        new_taggroup = TagGroup(tg_id=tg_id)
                         item.add_taggroup(new_taggroup)
                     for tag_dict in taggroup_dict['tags']:
 
@@ -1333,8 +1453,9 @@ class Protocol(object):
 
                             if db is True:
                                 new_tag = self._create_tag(
-                                    request, new_taggroup.tags, tag_dict['key'],
-                                    tag_dict['value'], Db_Tag, Db_Key, Db_Value
+                                    request, new_taggroup.tags,
+                                    tag_dict['key'], tag_dict['value'],
+                                    Db_Tag, Db_Key, Db_Value
                                 )
                             else:
                                 new_tag = Tag(
@@ -1342,33 +1463,35 @@ class Protocol(object):
                                 )
                                 new_taggroup.add_tag(new_tag)
 
-#                            log.debug(
-#                                "Tag (%s | %s) was created and added to taggroup."
-#                                % (tag_dict['key'], tag_dict['value'])
-#                            )
+                            # log.debug(
+                            #     "Tag (%s | %s) was created and added to "
+                            #     "taggroup."
+                            #     % (tag_dict['key'], tag_dict['value'])
+                            # )
 
                             # Set the main tag
                             if 'main_tag' in taggroup_dict:
                                 if (db is True and
-                                    unicode(taggroup_dict['main_tag']['key']) ==
-                                        unicode(new_tag.key.key) and
-                                    unicode(taggroup_dict['main_tag']['value']) ==
-                                        unicode(new_tag.value.value)):
+                                    unicode(taggroup_dict['main_tag']['key'])
+                                    == unicode(new_tag.key.key) and
+                                    unicode(taggroup_dict['main_tag']['value'])
+                                        == unicode(new_tag.value.value)):
                                     new_taggroup.main_tag = new_tag
                                 elif (db is False and
-                                    unicode(taggroup_dict['main_tag']['key']) ==
-                                        unicode(new_tag.get_key()) and
-                                    unicode(taggroup_dict['main_tag']['value']) ==
-                                        unicode(new_tag.get_value())):
+                                        unicode(
+                                            taggroup_dict['main_tag']['key'])
+                                        == unicode(new_tag.get_key()) and
+                                        unicode(
+                                            taggroup_dict['main_tag']['value'])
+                                        == unicode(new_tag.get_value())):
                                     new_taggroup._main_tag = new_tag
 
 #        print "============================================="
 
         return item
 
-
-    def recalculate_diffs(self, request, mappedClass, uid, old_version,
-        new_diff, old_diff):
+    def recalculate_diffs(
+            self, request, mappedClass, uid, old_version, new_diff, old_diff):
         """
         request: The request
         uid: The identifier of the object
@@ -1404,17 +1527,20 @@ class Protocol(object):
                 for old_inv in old_diff['stakeholders']:
 
                     if ('id' in old_inv and 'id' in new_inv
-                        and old_inv['id'] == new_inv['id']):
+                            and old_inv['id'] == new_inv['id']):
 
-                        # TODO: Is this simple replacement enough?
-                        if new_inv['op'] == 'delete' and old_inv['op'] == 'add':
-                            # Replace
-                            old_inv = new_inv
+                        # Replace the changesets so the involvement is now
+                        # marked as "deleted"
+                        if (new_inv['op'] == 'delete'
+                                and old_inv['op'] == 'add'):
+                            old_diff['stakeholders'].remove(old_inv)
+                            old_diff['stakeholders'].append(new_inv)
 
-#                            log.debug('Replaced old involvement (%s) with new involvement (%s)' % (old_inv, new_inv))
+                            # log.debug(
+                            #     'Replaced old involvement (%s) with new '
+                            #     'involvement (%s)' % (old_inv, new_inv))
 
                             new_involvements_processed = True
-
 
                 if new_involvements_processed is False:
                     # New involvements did not affect any of the already
@@ -1430,7 +1556,7 @@ class Protocol(object):
                 # as it is
                 old_diff['stakeholders'] = [new_inv]
 
-#                log.debug('Added new involvement diff: %s' % new_inv)
+                # log.debug('Added new involvement diff: %s' % new_inv)
 
             return old_diff
 
@@ -1442,21 +1568,24 @@ class Protocol(object):
 
             if 'taggroups' in old_diff:
                 # Loop the taggroups of the old diff to find if some of the
-                # changes of the new diff are made to taggroups already modified
-                # by the old diff
+                # changes of the new diff are made to taggroups already
+                # modified by the old diff
                 new_taggroup_processed = False
                 for old_tg in old_diff['taggroups']:
                     if ('tg_id' in old_tg and 'tg_id' in new_tg
-                        and old_tg['tg_id'] == new_tg['tg_id']):
+                            and old_tg['tg_id'] == new_tg['tg_id']):
                         # An existing taggroup diff has further changes
 
-                        # log.debug('Merging diff of taggroups. Old taggroup diff:\n%s\nNew taggroup diff:\n%s'
-                            # % (old_tg, new_tg))
+                        # log.debug(
+                        #     'Merging diff of taggroups. Old taggroup '
+                        #     'diff:\n%s\nNew taggroup diff:\n%s'
+                        #     % (old_tg, new_tg))
 
                         # If the whole taggroup is to be deleted, no need to
                         # continue. Set the operator, delete main_tag and any
                         # old tags
-                        deleteTaggroup = 'op' in new_tg and new_tg['op'] == 'delete'
+                        deleteTaggroup = (
+                            'op' in new_tg and new_tg['op'] == 'delete')
                         if deleteTaggroup:
                             old_tg['op'] = 'delete'
                             del old_tg['main_tag']
@@ -1495,8 +1624,10 @@ class Protocol(object):
 
                             # Check if the removed tag was the main_tag.
                             if ('main_tag' in old_tg
-                                and unicode(old_tg['main_tag']['key']) == unicode(tdt['key'])
-                                and unicode(old_tg['main_tag']['value']) == unicode(tdt['value'])):
+                                    and unicode(old_tg['main_tag']['key']) ==
+                                    unicode(tdt['key'])
+                                    and unicode(old_tg['main_tag']['value']) ==
+                                    unicode(tdt['value'])):
                                 changedMainTag = tdt
 
                             # log.debug('Removed old tag diff: %s' % tdt)
@@ -1507,8 +1638,9 @@ class Protocol(object):
                             # If the main_tag was removed, store the new value
                             # of it as new main_tag
                             if (changedMainTag is not None
-                                and unicode(changedMainTag['key']) == unicode(tda['key'])
-                                and tda['op'] == 'add'):
+                                and unicode(changedMainTag['key']) ==
+                                unicode(tda['key'])
+                                    and tda['op'] == 'add'):
                                 old_tg['main_tag']['value'] = tda['value']
 
                             # log.debug('Added new tag diff: %s' % tda)
@@ -1517,14 +1649,16 @@ class Protocol(object):
 
                 if new_taggroup_processed is False or 'tg_id' not in new_tg:
                     # New taggroup did not affect any of the already modified
-                    # taggroups or it has no tg_id. It is therefore assumed that
-                    # it is brand new and is added to the old diff.
+                    # taggroups or it has no tg_id. It is therefore assumed
+                    # that it is brand new and is added to the old diff.
                     if 'taggroups' in old_diff:
                         old_diff['taggroups'].append(new_tg)
                     else:
                         old_diff['taggroups'] = [new_tg]
 
-                    # log.debug('Added new taggroup diff (after not finding it): %s' % new_tg)
+                    # log.debug(
+                    #     'Added new taggroup diff (after not finding it): %s'
+                    #     % new_tg)
 
             else:
                 # If no taggroups yet in old_diff, add the one from the new_tg
@@ -1566,8 +1700,8 @@ class Protocol(object):
                     if feature is None:
                         # Query the feature
                         # TODO: Does this still work in different languages?
-                        feature = self.read_one_by_version(request, uid,
-                            old_version, translate=False)
+                        feature = self.read_one_by_version(
+                            request, uid, old_version, translate=False)
 
                     # Try to find the tg_id of the rel_tg. All the tags of
                     # rel_tg need to be found in the same taggroup of the
@@ -1583,14 +1717,17 @@ class Protocol(object):
                         if found_tg_id is None:
                             f_tags = {}
                             for f_t in f_tg.get_tags():
-                                f_tags[f_t.get_key()] = unicode(f_t.get_value())
-                            if (len(set(rel_tags.items()) & set(f_tags.items()))
-                                == len(rel_keys)):
+                                f_tags[f_t.get_key()] = unicode(
+                                    f_t.get_value())
+                            if (len(set(rel_tags.items()) &
+                                    set(f_tags.items())) == len(rel_keys)):
                                 found_tg_id = f_tg.get_tg_id()
                     if found_tg_id is not None:
                         rel_tg['tg_id'] = found_tg_id
                     else:
-                        raise Exception('tg_id not found! No tg_id found for taggroup "%s"' % rel_tg)
+                        raise Exception(
+                            'tg_id not found! No tg_id found for taggroup "%s"'
+                            % rel_tg)
 
         # Merge taggroups
         if 'taggroups' in new_diff:
@@ -1630,7 +1767,9 @@ class Protocol(object):
 
         if self.categoryList is None:
 
-#            log.debug('Created a new ConfigCategoryList object of type %s' % itemType)
+            # log.debug(
+            #     'Created a new ConfigCategoryList object of type %s'
+            #     % itemType)
 
             self.categoryList = getCategoryList(request, itemType)
 
@@ -1642,8 +1781,9 @@ class Protocol(object):
 
         return self.categoryList.checkValidKeyValue(key, value)
 
-    def _create_tag(self, request, parent, key, value, Tag_Item, Key_Item,
-        Value_Item):
+    def _create_tag(
+            self, request, parent, key, value, Tag_Item, Key_Item,
+            Value_Item):
         """
         Creates a new SQLAlchemy tag object and appends it to the parent list.
         """
@@ -1658,22 +1798,22 @@ class Protocol(object):
         # Validate the key and value pair with the configuration file
         if not self._key_value_is_valid(request, itemType, key, value):
             self.Session.rollback()
-            raise HTTPBadRequest("Key: %s or Value: %s is not valid." %
-                (key, value))
+            raise HTTPBadRequest(
+                "Key: %s or Value: %s is not valid." % (key, value))
 
-        # The key has to be already in the database. The key is supposed to have
-        # no fk_language.
+        # The key has to be already in the database. The key is supposed to
+        # have no fk_language.
         k = self.Session.query(
-                Key_Item
-            ).\
+            Key_Item
+        ).\
             filter(Key_Item.key == key).\
             filter(Key_Item.fk_language == None).\
             first()
 
         localizer = get_localizer(request)
         language = self.Session.query(
-                Language
-            ).\
+            Language
+        ).\
             filter(Language.locale == localizer.locale_name).\
             first()
         lang_fk = language.id if language is not None else 1
@@ -1686,8 +1826,8 @@ class Protocol(object):
             pass
 
         v = None
-        # For checkboxes or dropdowns, values are transmitted in English but the
-        # current language is set to something else than the first Language
+        # For checkboxes or dropdowns, values are transmitted in English but
+        # the current language is set to something else than the first Language
         # (English).
         # Instead of falsly inserting these values as "translations" in the
         # current language, we need to link them to the original value in the
@@ -1744,6 +1884,7 @@ class Protocol(object):
         else:
             return data
 
+
 class Tag(object):
 
     def __init__(self, id, key, value):
@@ -1762,6 +1903,7 @@ class Tag(object):
 
     def to_table(self):
         return {'id': self._id, 'key': self._key, 'value': self._value}
+
 
 class TagGroup(object):
 
@@ -1839,7 +1981,7 @@ class TagGroup(object):
             tags.append(t.to_table())
             if (self._main_tag is not None and main_tag is None
                 and self._main_tag.get_key() == t.get_key()
-                and self._main_tag.get_value() == t.get_value()):
+                    and self._main_tag.get_value() == t.get_value()):
                 main_tag = t.to_table()
             elif t.get_id() == self._main_tag_id and main_tag is None:
                 main_tag = t.to_table()
@@ -1860,6 +2002,7 @@ class TagGroup(object):
                 pass
 
         return ret
+
 
 class Inv(object):
 
@@ -1904,10 +2047,11 @@ class Inv(object):
                 'status_id': self._status_id
             }
 
+
 class Feature(object):
 
     def __init__(self, guid, order_value, version=None, status=None,
-        status_id=None, timestamp=None, diff_info=None, ** kwargs):
+                 status_id=None, timestamp=None, diff_info=None, ** kwargs):
         self._taggroups = []
         self._involvements = []
         self._guid = guid
@@ -1960,7 +2104,7 @@ class Feature(object):
     def find_involvement(self, guid, role, version):
         for i in self._involvements:
             if (str(i.get_guid()) == str(guid) and i.get_role() == role and
-                i.get_version() == version):
+                    i.get_version() == version):
                 return i
         return None
 
@@ -2015,7 +2159,8 @@ class Feature(object):
             'version': self._version,
             'status': get_translated_status(request, self._status),
             'statusId': self._status_id,
-            'timestamp': datetime.datetime.strftime(self._timestamp, '%Y-%m-%d %H:%M:%S'),
+            'timestamp': datetime.datetime.strftime(
+                self._timestamp, '%Y-%m-%d %H:%M:%S'),
             'username': self._user_name,
         }
 
@@ -2040,7 +2185,8 @@ class Feature(object):
             if len(self.get_taggroups()) > 0:
                 if len(self.get_taggroups()[0].get_tags()) > 0:
                     if (self.get_taggroups()[0].get_tags()[0].get_key() is None
-                        and self.get_taggroups()[0].get_tags()[0].get_value() is None):
+                        and self.get_taggroups()[0].get_tags()[0].get_value()
+                            is None):
                         mk = [0]
 
         self._missing_keys = mk
@@ -2087,8 +2233,8 @@ class Feature(object):
             pending = []
             for p in self._pending:
                 pending.append(p.to_table(request))
-            ret['pending'] = sorted(pending, key=lambda k: k['version'],
-                reverse=True)
+            ret['pending'] = sorted(
+                pending, key=lambda k: k['version'], reverse=True)
         if self._missing_keys is not None:
             ret['missing_keys'] = self._missing_keys
 
@@ -2144,40 +2290,51 @@ class Feature(object):
             diff_new = []
             # Loop through TagGroups of current version
             for tg in self._taggroups:
-                # Special case: Item was deleted, then the taggroup has only one empty tag: Do not mark this as new attribute.
+                # Special case: Item was deleted, then the taggroup has only
+                # one empty tag: Do not mark this as new attribute.
                 if (len(tg.get_tags()) == 1
                     and tg.get_tags()[0].get_key() is None
-                    and tg.get_tags()[0].get_value() is None):
+                        and tg.get_tags()[0].get_value() is None):
                     pass
                 else:
-                    # Indicator (None, False or TagGroup) to check if all Tags were found in the same TagGroup
+                    # Indicator (None, False or TagGroup) to check if all Tags
+                    # were found in the same TagGroup
                     foundinsametaggroup = None
                     # Loop through Tags of current version
                     for t in tg.get_tags():
-                        # Indicator (True or False) to flag if a Tag was found in the previous version
+                        # Indicator (True or False) to flag if a Tag was found
+                        # in the previous version
                         newtag_found = False
-                        # Variable to store the old TagGroup where a Tag was found
+                        # Variable to store the old TagGroup where a Tag was
+                        # found
                         foundintaggroup = None
-                        # Try to find the same Tag in previous version by looping through TagGroups of previous version
+                        # Try to find the same Tag in previous version by
+                        # looping through TagGroups of previous version
                         for tg_old in previous.get_taggroups():
-                            # Only look at old TagGroups that were not yet found
+                            # Only look at old TagGroups that were not yet
+                            # found
                             if tg_old.getDiffFlag() is not True:
                                 # Loop through Tags of previous version
                                 for t_old in tg_old.get_tags():
-                                    # Compare Key and Value of current and previous Tag
-                                    if t.get_key() == t_old.get_key() \
-                                        and t.get_value() == t_old.get_value():
-                                        # Tag is found in previous version, set indicator and store TagGroup
+                                    # Compare Key and Value of current and
+                                    # previous Tag
+                                    if (t.get_key() == t_old.get_key()
+                                        and t.get_value()
+                                            == t_old.get_value()):
+                                        # Tag is found in previous version,
+                                        # set indicator and store TagGroup
                                         newtag_found = True
                                         foundintaggroup = tg_old
                                         break
 
                         # Tag was found in old Tags
                         if newtag_found is True:
-                            # For the first tag of a TagGroup, store the old TagGroup
+                            # For the first tag of a TagGroup, store the old
+                            # TagGroup
                             if foundinsametaggroup is None:
                                 foundinsametaggroup = foundintaggroup
-                            # Check if the found Tag is not in the same TagGroup as the others
+                            # Check if the found Tag is not in the same
+                            # TagGroup as the others
                             elif foundintaggroup != foundinsametaggroup:
                                 foundinsametaggroup = False
                         # Tag was not found after looping through all old Tags
@@ -2213,7 +2370,7 @@ class Feature(object):
                 newinv_found = False
                 for invo in previous._involvements:
                     if (invn.get_guid() == invo.get_guid() and
-                        invn.get_role() == invo.get_role()):
+                            invn.get_role() == invo.get_role()):
                         newinv_found = True
                         break
                 if newinv_found is not True:
@@ -2226,9 +2383,9 @@ class Feature(object):
                 oldinv_found = False
                 for invn in self._involvements:
                     if (invo.get_guid() == invn.get_guid() and
-                        invo.get_role() == invn.get_role()):
-                            oldinv_found = True
-                            break
+                            invo.get_role() == invn.get_role()):
+                        oldinv_found = True
+                        break
                 if oldinv_found is not True:
                     inv_old.append(invo.to_table(request))
 
@@ -2246,9 +2403,6 @@ class Feature(object):
             # Only add diff object if not empty
             if diff_object != {}:
                 self._diff_info['diff'] = diff_object
-
-    def get_guid(self):
-        return self._guid
 
     def get_order_value(self):
         return self._order_value

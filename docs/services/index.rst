@@ -1,11 +1,9 @@
 Introduction
 ============
 
-The data for the LOKP can be accessed and queried through REST services. This 
+The data for the LOKP can be accessed and queried through REST services. This
 also permits external applications to communicate with the LOKP data, as it can
 be seen for example in the QGIS plugin.
-
-Only JSON!
 
 
 .. _services-output-formats:
@@ -19,8 +17,8 @@ requesting a service.
 .. rubric:: Available output services
 
 * ``JSON``: A JSON representation
-* ``HTML``: The HTML representation of an Activity or a Stakeholder. This is 
-    basically the detail view.
+* ``HTML``: The HTML representation of an Activity or a Stakeholder. This
+returns a rendered template which is basically the grid or the detail view.
 
 
 .. rubric:: Available services

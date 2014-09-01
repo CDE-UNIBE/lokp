@@ -614,7 +614,7 @@ class BaseReview(BaseView):
             for item_diff in diff[diff_keyword]:
                 if ('id' in item_diff and item_diff['id'] is not None
                     and item_diff['id'] == item.get_guid()):
-                        
+
                     # Apply the diff to show a preview of the new version
                     new_item = self.protocol._apply_diff(
                         self.request,
@@ -639,7 +639,7 @@ class BaseReview(BaseView):
                         None,
                         db = False
                     )
-                    
+
         elif (diff_keyword == 'stakeholders' and other_diff_keyword in diff):
             for other_item_diff in diff[other_diff_keyword]:
                 if diff_keyword in other_item_diff:
@@ -666,7 +666,7 @@ class BaseReview(BaseView):
         """
         Function to do the actual comparison and return a json
         """
-        
+
         recalculated = False
 
         if (ref_version_number == 0
@@ -676,7 +676,7 @@ class BaseReview(BaseView):
         else:
             # Get the reference object
             ref_object = self.protocol.read_one_by_version(
-                self.request, uid, ref_version_number, geometry='full', 
+                self.request, uid, ref_version_number, geometry='full',
                 translate=False
             )
 

@@ -1,18 +1,17 @@
+
 msgid ""
 msgstr ""
-"Project-Id-Version: LOKP\n"
+"Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-07-14 13:55+0200\n"
+"POT-Creation-Date: 2014-08-26 15:14+0200\n"
 "PO-Revision-Date: 2014-07-14 14:25+0100\n"
 "Last-Translator: Lukas Vonlanthen <lukas.vonlanthen@cde.unibe.ch>\n"
 "Language-Team: es <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.6\n"
-"X-Generator: Poedit 1.5.4\n"
-"Language: es\n"
 
 #: lmkp/templates/ext_administration.mak:21 lmkp/templates/ext_base.mak:55
 #: lmkp/templates/ext_base.mak:58 lmkp/templates/ext_moderation.mak:18
@@ -34,8 +33,7 @@ msgstr "[Demo]"
 #: lmkp/templates/ext_administration.mak:37
 #: lmkp/templates/ext_moderation.mak:41 lmkp/templates/ext_translation.mak:37
 #: lmkp/templates/old_compare_versions.mak:48
-#: lmkp/templates/old_embedded.mak:35
-#: lmkp/templates/old_review_versions.mak:33
+#: lmkp/templates/old_embedded.mak:35 lmkp/templates/old_review_versions.mak:33
 #: lmkp/templates/form/customFileDisplay.mak:42
 #: lmkp/templates/form/customMapMapping.mak:69
 msgid "Loading ..."
@@ -43,21 +41,23 @@ msgstr "Cargando ..."
 
 #: lmkp/templates/ext_base.mak:64
 msgid ""
-"The Land Observatory will make information on large-scale land acquisition "
-"transparent and accessible through an interactive, map-based platform. We "
-"are piloting the project in five countries, with partners and governments "
-"who will work to open government data, crowdsource and help customize local "
-"observatories. Updated information on land will benefit citizens, but also "
-"governments and companies interested in sustainability."
+"The Land Observatory will make information on large-scale land "
+"acquisition transparent and accessible through an interactive, map-based "
+"platform. We are piloting the project in five countries, with partners "
+"and governments who will work to open government data, crowdsource and "
+"help customize local observatories. Updated information on land will "
+"benefit citizens, but also governments and companies interested in "
+"sustainability."
 msgstr ""
-"El Observatorio de Adquisiciones de Tierra hará transparente y accesible la "
-"información sobre adquisiciones masivas de tierra a través de una plataforma "
-"interactiva basada en el mapeo de las mismas. Estamos piloteando el proyecto "
-"en cinco países, con organizaciones aliadas y gobiernos quienes trabajarán "
-"para aperturar la data oficial, \"crowdsourcing\" y apoyo en adecuar los "
-"observatorios a la realidad de cada país. La información actualizada sobre "
-"adquisiciones masivas de tierra beneficiará a la ciudadanía, pero también a "
-"los gobiernos y empresas interesadas en la sostenibilidad del proyecto."
+"El Observatorio de Adquisiciones de Tierra hará transparente y accesible "
+"la información sobre adquisiciones masivas de tierra a través de una "
+"plataforma interactiva basada en el mapeo de las mismas. Estamos "
+"piloteando el proyecto en cinco países, con organizaciones aliadas y "
+"gobiernos quienes trabajarán para aperturar la data oficial, "
+"\"crowdsourcing\" y apoyo en adecuar los observatorios a la realidad de "
+"cada país. La información actualizada sobre adquisiciones masivas de "
+"tierra beneficiará a la ciudadanía, pero también a los gobiernos y "
+"empresas interesadas en la sostenibilidad del proyecto."
 
 #: lmkp/templates/ext_base.mak:67
 msgid "The pilot project is coordinated by the"
@@ -89,8 +89,7 @@ msgstr ", con la cofinanciación de otros programas de ILC y CDE."
 
 #: lmkp/templates/ext_base.mak:75
 msgid "Please send your questions and feedback on the Observatory to: "
-msgstr ""
-"Por favor, envíanos tus preguntas y comentarios sobre el Obervatorio a:"
+msgstr "Por favor, envíanos tus preguntas y comentarios sobre el Obervatorio a:"
 
 #: lmkp/templates/ext_moderation.mak:18
 msgid "Moderation"
@@ -189,9 +188,9 @@ msgid ""
 "Click on the map to set the location. Please zoom in to set the point as "
 "accurately as possible."
 msgstr ""
-"Dar click en el mapa para visualizar la localización del Caso. Por favor, "
-"acercar la imagen para ubicar el punto y asegurarlo con la mayor precisión "
-"posible. "
+"Dar click en el mapa para visualizar la localización del Caso. Por favor,"
+" acercar la imagen para ubicar el punto y asegurarlo con la mayor "
+"precisión posible. "
 
 #: lmkp/templates/form/customMapMapping.mak:148
 msgid "Please use the QGIS plugin to add or edit polygons."
@@ -215,8 +214,8 @@ msgstr ""
 
 #: lmkp/templates/form/customMapMapping.mak:156
 msgid ""
-"If you have GPS coordinates you can enter them to set the location even more "
-"accurately."
+"If you have GPS coordinates you can enter them to set the location even "
+"more accurately."
 msgstr ""
 
 #: lmkp/templates/form/customMapMapping.mak:162
@@ -245,17 +244,17 @@ msgstr "Archivo cargado"
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:32
 msgid ""
-"Important: All the uploaded files will be publicly visible! You should not "
-"upload confidential data."
+"Important: All the uploaded files will be publicly visible! You should "
+"not upload confidential data."
 msgstr ""
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:34
 msgid ""
-"Please note that the file upload may take a while depending on your Internet "
-"connection."
+"Please note that the file upload may take a while depending on your "
+"Internet connection."
 msgstr ""
-"Por favor, tenga en cuenta que la carga del archivo puede tomar unos minutos "
-"dependiendo de su conexión de internet"
+"Por favor, tenga en cuenta que la carga del archivo puede tomar unos "
+"minutos dependiendo de su conexión de internet"
 
 #: lmkp/templates/form/form_fileupload_embedded.mak:36
 msgid "Valid files"
@@ -291,10 +290,11 @@ msgstr ""
 
 #: lmkp/templates/form/mapping_item.mak:42
 msgid ""
-"The location is required. Please select a point on the map before continuing."
+"The location is required. Please select a point on the map before "
+"continuing."
 msgstr ""
-"La ubicación del caso es requerida. Por favor selecciona un punto en el mapa "
-"antes de continuar"
+"La ubicación del caso es requerida. Por favor selecciona un punto en el "
+"mapa antes de continuar"
 
 #: lmkp/templates/form/readonly/customFileDisplay.mak:15
 #: lmkp/templates/review/readonly/customFileDisplay.mak:16
@@ -410,35 +410,35 @@ msgstr "Ingresaste un formulario vacío o no hiciste cambio alguno"
 msgid "Unknown Item"
 msgstr "Desconocido"
 
-#: lmkp/views/form.py:717
+#: lmkp/views/form.py:718
 msgid ""
-"At least one of the involvements prevents automatic revision. Please review "
-"these involvements separately."
+"At least one of the involvements prevents automatic revision. Please "
+"review these involvements separately."
 msgstr ""
 
-#: lmkp/views/form.py:719
+#: lmkp/views/form.py:720
 msgid ""
-"This version contains changed involvements which prevent automatic revision. "
-"Please review these involvements."
+"This version contains changed involvements which prevent automatic "
+"revision. Please review these involvements."
 msgstr ""
 
-#: lmkp/views/form.py:992
+#: lmkp/views/form.py:993
 msgid "The Item could not be created or updated."
 msgstr ""
 
-#: lmkp/views/form.py:1004
+#: lmkp/views/form.py:1005
 msgid "The Item was created but not found."
 msgstr ""
 
-#: lmkp/views/form.py:1006
+#: lmkp/views/form.py:1007
 msgid "Unknown"
 msgstr "Desconocido"
 
-#: lmkp/views/form.py:1109
+#: lmkp/views/form.py:1110
 msgid "Submit"
 msgstr "Entregar información"
 
-#: lmkp/views/form_config.py:1039
+#: lmkp/views/form_config.py:1056
 msgid "Select"
 msgstr "Seleccionar"
 
@@ -458,11 +458,11 @@ msgstr ""
 msgid "Show user profile"
 msgstr "Mostrar perfil de usuario"
 
-#: lmkp/views/protocol.py:653
+#: lmkp/views/protocol.py:652
 msgid "Unknown object to review."
 msgstr "Objeto desconocido a ser revisado"
 
-#: lmkp/views/protocol.py:872
+#: lmkp/views/protocol.py:960
 msgid ""
 "No active version was found to base the review upon. Try to review an "
 "earlier version first."
@@ -470,15 +470,15 @@ msgstr ""
 "Ninguna versión activa fue encontrada que sustente la revisión. Intentar "
 "revisar primero en una versión anterior."
 
-#: lmkp/views/protocol.py:897
+#: lmkp/views/protocol.py:985
 msgid "The diff seems to be incorrect (identifier not found)"
 msgstr "El archivo parece ser incorrecto (identificador no encontrado)"
 
-#: lmkp/views/protocol.py:945
+#: lmkp/views/protocol.py:1033
 msgid "Unknown review decision"
 msgstr "Decisión de revisión desconocida"
 
-#: lmkp/views/protocol.py:957
+#: lmkp/views/protocol.py:1045
 msgid "Review successful."
 msgstr "Revisión correcta"
 
@@ -589,3 +589,4 @@ msgstr "Iniciar sesión"
 #: lmkp/views/viewers.py:29
 msgid "Register"
 msgstr "Registro"
+
