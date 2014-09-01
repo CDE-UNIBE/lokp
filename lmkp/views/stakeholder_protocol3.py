@@ -8,7 +8,10 @@ from pyramid.security import (
     authenticated_userid,
     effective_principals,
 )
-from sqlalchemy import func
+from sqlalchemy import (
+    func,
+    distinct,
+)
 from sqlalchemy.sql.expression import (
     and_,
     asc,
@@ -144,6 +147,18 @@ class StakeholderProtocol3(Protocol):
         else:
             # No Stakeholder was created
             return None
+
+    def read_all_keys(self, request):
+        localizer = get_localizer(request)
+        dbLang = self.Session.query(Language).\
+            filter(Language.locale == localizer.locale_name).\
+            first()
+        query = self.Session.query(distinct(SH_Key.key)).filter(
+            SH_Key.fk_language == dbLang.id).order_by(SH_Key.key)
+        return {
+            'total': query.count(),
+            'data': [k[0] for k in query.all()]
+        }
 
     def read_one_active(self, request, uid):
 

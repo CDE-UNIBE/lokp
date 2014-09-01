@@ -608,7 +608,6 @@ def getFilterValuesForKey(request, predefinedType=None, predefinedKey=None):
 
     return ret
 
-
 def get_output_format(request):
     # Default output format is JSON.
     try:

@@ -1,3 +1,6 @@
+import StringIO
+import csv
+
 from geojson.codec import GeoJSONEncoder
 from geojson.mapping import to_mapping
 from lmkp.models.database_objects import *
@@ -60,7 +63,7 @@ class JsonRenderer(object):
     def __call__(self, info):
 
         def _render(value, system):
-            
+
             # Get the request and set the response content type to JSON
             request = system.get('request')
             if request is not None:
@@ -76,7 +79,7 @@ class JsonRenderer(object):
                 """
 
                 def default(self, obj):
-                    
+
                     feature = {}
                     for d in obj.__dict__:
 
@@ -106,7 +109,7 @@ class JsonRenderer(object):
                                         feature[key] = translate_value(request, localizer, unicode(obj.__dict__[d]))
                                     except:
                                         pass
-                                    
+
                     return feature
 
             return json.dumps(value, cls=ActivityFeatureEncoder)
@@ -141,7 +144,7 @@ class GeoJsonRenderer(object):
                             'json': ret}
             return ret
         return _render
-    
+
 
 class JavaScriptRenderer(object):
     def __call__(self, info):
@@ -155,5 +158,23 @@ class JavaScriptRenderer(object):
                 response.content_type = 'application/javascript'
 
             return value
+
+        return _render
+
+
+class CSVRenderer(object):
+    def __call__(self, info):
+
+        def _render(value, system):
+
+            fout = StringIO.StringIO()
+            writer = csv.writer(fout, delimiter=';', quoting=csv.QUOTE_ALL)
+            writer.writerow(value['header'])
+            writer.writerows(value['rows'])
+
+            resp = system['request'].response
+            resp.content_type = 'text/csv'
+            resp.content_disposition = 'attachment;filename="report.csv"'
+            return fout.getvalue()
 
         return _render

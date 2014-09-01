@@ -15,7 +15,10 @@ from pyramid.security import (
 from shapely import wkb
 from shapely.geometry import asShape
 from shapely.geometry.polygon import Polygon
-from sqlalchemy import func
+from sqlalchemy import (
+    func,
+    distinct,
+)
 from sqlalchemy.sql.expression import (
     and_,
     asc,
@@ -284,6 +287,18 @@ class ActivityProtocol3(Protocol):
         return {
             'total': count,
             'data': [a.to_table(request) for a in activities]
+        }
+
+    def read_all_keys(self, request):
+        localizer = get_localizer(request)
+        dbLang = self.Session.query(Language).\
+            filter(Language.locale == localizer.locale_name).\
+            first()
+        query = self.Session.query(distinct(A_Key.key)).filter(
+            A_Key.fk_language == dbLang.id).order_by(A_Key.key)
+        return {
+            'total': query.count(),
+            'data': [k[0] for k in query.all()]
         }
 
     def read_one_by_version(self, request, uid, version, **kwargs):
@@ -781,7 +796,6 @@ class ActivityProtocol3(Protocol):
         ''public_query'': If set to true, no pending queries are made. Defaults
           to 'False'
         """
-
         logged_in, is_moderator = self._get_user_status(
             effective_principals(request))
 
