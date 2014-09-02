@@ -4,6 +4,10 @@ from lmkp.models.meta import DBSession as Session
 from lmkp.views.activities import _handle_spatial_parameters
 from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.form_config import getCategoryList
+from lmkp.views.protocol import (
+    get_main_keys_from_item_json,
+    get_value_by_key_from_item_json,
+)
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.views import BaseView
 
@@ -33,12 +37,12 @@ def to_table(request, involvements=True):
 
     config_taggroups = []
     max_involvements = 0
+
+    # Collect the taggroups based on the form configuration.
     category_list = getCategoryList(request, 'activities')
     for config_taggroup in category_list.getAllTaggroups():
-        repeat = config_taggroup.getRepeatable()
-        tg = {
-            'keys': [],
-            'repeat': repeat,
+        config_taggroup_entry = {
+            'repeat': config_taggroup.getRepeatable(),
             'count': 0,
             'main_key': config_taggroup.getMaintag().getKey().
             getTranslatedName()
@@ -46,28 +50,29 @@ def to_table(request, involvements=True):
         keys = []
         for tag in config_taggroup.getTags():
             keys.append(tag.getKey().getTranslatedName())
-        tg['keys'] = keys[::-1]
-        config_taggroups.append(tg)
+        config_taggroup_entry['keys'] = keys[::-1]
+        config_taggroups.append(config_taggroup_entry)
 
+    # Apply the spatial filter and query the Activities with the protocol.
     _handle_spatial_parameters(request)
     activities = activity_protocol.read_many(request, public=True)
 
-    # Count how many times each taggroup appears.
+    # Find out how many times each taggroup appears. This defines how many
+    # columns are needed in the table.
     for activity in activities.get('data', []):
 
-        # Collect all main keys of the current Activity and count them
-        activity_main_keys = []
-        for activity_taggroup in activity.get('taggroups', []):
-            main_key = activity_taggroup['main_tag']['key']
+        # Taggroups (based on their maintags) of the Activity
+        current_main_keys = []
+        for main_key in get_main_keys_from_item_json(activity):
             main_key_already_found = next(
-                (i for i in activity_main_keys if i['key'] == main_key), None)
+                (i for i in current_main_keys if i['key'] == main_key), None)
             if main_key_already_found:
                 main_key_already_found['count'] += 1
             else:
-                activity_main_keys.append({'key': main_key, 'count': 1})
+                current_main_keys.append({'key': main_key, 'count': 1})
 
         # Compare it to the previous maximum count
-        for activity_main_key in activity_main_keys:
+        for activity_main_key in current_main_keys:
             config_main_key = next((
                 i for i in config_taggroups if i['main_key']
                 == activity_main_key['key']), None)
@@ -135,12 +140,8 @@ def to_table(request, involvements=True):
                 inv_data = [None] * len(involvement_header)
                 for i, config_sh_key in enumerate(
                         involvement_header[:len(involvement_header) - 2]):
-                    for sh_taggroup in involvement.get('data', {}).get(
-                            'taggroups', []):
-                        sh_key = next((i for i in sh_taggroup.get(
-                            'tags', []) if i['key'] == config_sh_key), None)
-                        if sh_key:
-                            inv_data[i] = sh_key['value']
+                    inv_data[i] = get_value_by_key_from_item_json(
+                        involvement.get('data', {}), config_sh_key)
 
                 inv_data[len(inv_data) - 2] = involvement.get('role', None)
                 inv_data[len(inv_data) - 1] = involvement.get('data', {}).get(
