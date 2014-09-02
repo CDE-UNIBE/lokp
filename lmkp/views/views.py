@@ -1,5 +1,7 @@
 from datetime import timedelta
-from lmkp.models.database_objects import *
+from lmkp.models.database_objects import (
+    Profile,
+)
 from lmkp.models.meta import DBSession
 import logging
 import urllib
@@ -24,13 +26,16 @@ import re
 
 log = logging.getLogger(__name__)
 
+
 class BaseView(object):
     """
-    Base class for all view classes that need to be aware of the requested locale.
+    Base class for all view classes that need to be aware of the
+    requested locale.
     """
 
     def __init__(self, request):
         self.request = request
+        self._handle_parameters()
 
     def _handle_parameters(self):
 
@@ -47,7 +52,8 @@ class BaseView(object):
         # Check if language (_LOCALE_) is set
         if self.request is not None:
             if '_LOCALE_' in self.request.params:
-                response.set_cookie('_LOCALE_', self.request.params.get('_LOCALE_'), timedelta(days=90))
+                response.set_cookie('_LOCALE_', self.request.params.get(
+                    '_LOCALE_'), timedelta(days=90))
             elif '_LOCALE_' in self.request.cookies:
                 pass
 
@@ -56,7 +62,8 @@ class BaseView(object):
             if '_PROFILE_' in self.request.params:
                 # Set the profile cookie
                 profile_code = self.request.params.get('_PROFILE_')
-                response.set_cookie('_PROFILE_', profile_code, timedelta(days=90))
+                response.set_cookie(
+                    '_PROFILE_', profile_code, timedelta(days=90))
 
                 # Update _LOCATION_ from cookies to profile geometry bbox
                 # retrieved from database
@@ -67,8 +74,8 @@ class BaseView(object):
                 if profile_db is not None:
                     # Calculate and transform bounding box
                     bbox = DBSession.scalar(geofunctions.envelope(
-                            geofunctions.transform(profile_db.geometry, '900913')
-                        ).wkt)
+                        geofunctions.transform(
+                            profile_db.geometry, '900913')).wkt)
 
                     geojson = utils.from_wkt(bbox)
 
@@ -76,9 +83,11 @@ class BaseView(object):
                     p1 = coords[0]
                     p2 = coords[2]
 
-                    l = '%s,%s' % (','.join([str(x) for x in p1]), ','.join([str(x) for x in p2]))
+                    l = '%s,%s' % (','.join([str(x) for x in p1]),
+                        ','.join([str(x) for x in p2]))
 
-                    response.set_cookie('_LOCATION_', urllib.quote(l), timedelta(days=90))
+                    response.set_cookie(
+                        '_LOCATION_', urllib.quote(l), timedelta(days=90))
 
             elif '_PROFILE_' in self.request.cookies:
                 # Profile already set, leave it
@@ -89,13 +98,14 @@ class BaseView(object):
 
     def _send_email(self, recipients, subject, body):
         """
-        Sends an email message to all recipients using the SMTP host and default
-        sender configured in the .ini file.
+        Sends an email message to all recipients using the SMTP host and
+        default sender configured in the .ini file.
         """
 
         mailer = get_mailer(self.request)
         message = Message(subject=subject, recipients=recipients, body=body)
         mailer.send(message)
+
 
 def change_profile(request, profile):
     """
@@ -110,6 +120,7 @@ def change_profile(request, profile):
         response.delete_cookie('_LOCATION_')
 
     return response
+
 
 class MainView(BaseView):
 
@@ -141,37 +152,43 @@ class MainView(BaseView):
 
         self._handle_parameters()
 
-        return render_to_response(getTemplatePath(self.request, 'landing_page.mak'), {
-            'profile': get_current_profile(self.request),
-            'locale': get_current_locale(self.request)
-        }, self.request)
+        return render_to_response(
+            getTemplatePath(self.request, 'landing_page.mak'),
+            {
+                'profile': get_current_profile(self.request),
+                'locale': get_current_locale(self.request)
+            },
+            self.request)
 
     @view_config(route_name='map_view')
     def map_view(self):
 
         self._handle_parameters()
 
-        return render_to_response(getTemplatePath(self.request, 'map_view.mak'), {
-            'profile': get_current_profile(self.request),
-            'locale': get_current_locale(self.request)
-        }, self.request)
+        return render_to_response(
+            getTemplatePath(self.request, 'map_view.mak'),
+            {
+                'profile': get_current_profile(self.request),
+                'locale': get_current_locale(self.request)
+            },
+            self.request)
 
     @view_config(route_name='grid_view')
     def grid_view(self):
         """
-        This view is basically only a redirect to the read_many view of the
-        Activities. Keep query parameters so for example filters are also active
-        in grid.
+        This view is basically only a redirect to the read_many view of
+        the Activities. Keep query parameters so for example filters are
+        also active in grid.
         """
 
         # Extract query_strings from url
-        scheme, netloc, path, query_string, fragment = urlsplit(self.request.url)
+        scheme, netloc, path, query_string, fragment = urlsplit(
+            self.request.url)
         qp = parse_qs(query_string)
 
         return HTTPFound(
-            location=self.request.route_url('activities_read_many',
-            output='html', _query=qp)
-        )
+            location=self.request.route_url(
+                'activities_read_many', output='html', _query=qp))
 
     @view_config(route_name='charts_view')
     def charts_view(self):
@@ -181,64 +198,82 @@ class MainView(BaseView):
         # TEMP
         return HTTPFound(location=self.request.route_url('charts_overview'))
 
-        return render_to_response(getTemplatePath(self.request, 'charts_view.mak'), {
-            'profile': get_current_profile(self.request),
-            'locale': get_current_locale(self.request)
-        }, self.request)
+        return render_to_response(
+            getTemplatePath(self.request, 'charts_view.mak'),
+            {
+                'profile': get_current_profile(self.request),
+                'locale': get_current_locale(self.request)
+            },
+            self.request)
 
     @view_config(route_name='about_view')
     def about_view(self):
 
         self._handle_parameters()
 
-        return render_to_response(getTemplatePath(self.request, 'about_view.mak'), {
-            'profile': get_current_profile(self.request),
-            'locale': get_current_locale(self.request)
-        }, self.request)
+        return render_to_response(
+            getTemplatePath(self.request, 'about_view.mak'),
+            {
+                'profile': get_current_profile(self.request),
+                'locale': get_current_locale(self.request)
+            },
+            self.request)
 
     @view_config(route_name='faq_view')
     def faq_view(self):
 
         self._handle_parameters()
 
-        return render_to_response(getTemplatePath(self.request, 'faq_view.mak'), {
-            'profile': get_current_profile(self.request),
-            'locale': get_current_locale(self.request)
-        }, self.request)
+        return render_to_response(
+            getTemplatePath(self.request, 'faq_view.mak'),
+            {
+                'profile': get_current_profile(self.request),
+                'locale': get_current_locale(self.request)
+            },
+            self.request)
 
     @view_config(route_name='showcases_view')
     def showcases_view(self):
 
         self._handle_parameters()
 
-        return render_to_response(getTemplatePath(self.request, 'showcases_view.mak'), {
-            'profile': get_current_profile(self.request),
-            'locale': get_current_locale(self.request)
-        }, self.request)
+        return render_to_response(
+            getTemplatePath(self.request, 'showcases_view.mak'),
+            {
+                'profile': get_current_profile(self.request),
+                'locale': get_current_locale(self.request)
+            },
+            self.request)
 
     @view_config(route_name='partners_view')
     def partners_view(self):
 
         self._handle_parameters()
 
-        return render_to_response(getTemplatePath(self.request, 'partners_view.mak'), {
-            'profile': get_current_profile(self.request),
-            'locale': get_current_locale(self.request)
-        }, self.request)
+        return render_to_response(
+            getTemplatePath(self.request, 'partners_view.mak'),
+            {
+                'profile': get_current_profile(self.request),
+                'locale': get_current_locale(self.request)
+            },
+            self.request)
 
-    @view_config(route_name='embedded_index', renderer='lmkp:templates/old_embedded.mak')
+    @view_config(route_name='embedded_index',
+                 renderer='lmkp:templates/old_embedded.mak')
     def embedded_version(self):
         """
-        Returns a version of the Land Observatory that can be embedded in other
-        website or land portals. The main (and currently the only) difference to
-        the normal index view is the missing combobox to select another profile.
+        Returns a version of the Land Observatory that can be embedded
+        in other website or land portals. The main (and currently the
+        only) difference to the normal index view is the missing
+        combobox to select another profile.
         """
 
         # Get the requested profile from the URL
         profile = self.request.matchdict.get('profile', 'global')
 
-        # Custom handling of the standard parameters: don't use method _handle_parameters
-        # since we get the profile parameter from the routing and not as URL parameter.
+        # Custom handling of the standard parameters: don't use method
+        # _handle_parameters since we get the profile parameter from the
+        # routing and not as URL parameter.
         if self.request is not None:
             response = self.request.response
             # Manipulate the cookies of the request object to make sure, that
@@ -246,11 +281,13 @@ class MainView(BaseView):
             # profile.
             self.request.cookies['_PROFILE_'] = profile
             # Set the cookie with a validity of three months
-            self.request.response.set_cookie('_PROFILE_', profile, timedelta(days=90))
+            self.request.response.set_cookie(
+                '_PROFILE_', profile, timedelta(days=90))
 
             # Check if language (_LOCALE_) is set
             if '_LOCALE_' in self.request.params:
-                response.set_cookie('_LOCALE_', self.request.params.get('_LOCALE_'), timedelta(days=90))
+                response.set_cookie('_LOCALE_', self.request.params.get(
+                    '_LOCALE_'), timedelta(days=90))
             elif '_LOCALE_' in self.request.cookies:
                 pass
 
@@ -259,8 +296,9 @@ class MainView(BaseView):
     @view_config(route_name='enclosing_demo_site')
     def enclosing_demo_site(self):
         """
-        This view provides a *very* simple example how the Land Observatory can
-        be embedded in any website with a fixed profile and a hidden profile combobox.
+        This view provides a *very* simple example how the Land
+        Observatory can be embedded in any website with a fixed profile
+        and a hidden profile combobox.
         """
 
         html = """
@@ -271,15 +309,17 @@ class MainView(BaseView):
     <body>
         <div style="width: 100%;">
             <div style="height: 10%;">
-                This is a very basic example of how to embed the Land Observatory
-                platform in a custom website using a HTML iframe:
+                This is a very basic example of how to embed the Land
+                Observatory platform in a custom website using a HTML iframe:
                 <pre>
-&lt;iframe style="height: 90%; width: 100%; border: 0;" src="http://localhost:6543/embedded/Madagascar?_LOCALE_=fr"&gt;
+&lt;iframe style="height: 90%; width: 100%; border: 0;"
+src="http://localhost:6543/embedded/Madagascar?_LOCALE_=fr"&gt;
 &lt;/iframe&gt;
                 </pre>
             </div>
             <div>
-                <iframe style="height: 90%; width: 100%; border: 0;" src="http://localhost:6543/embedded/Madagascar?_LOCALE_=fr">
+                <iframe style="height: 90%; width: 100%; border: 0;"
+                src="http://localhost:6543/embedded/Madagascar?_LOCALE_=fr">
                 </iframe>
             </div>
         </div>
@@ -293,14 +333,17 @@ class MainView(BaseView):
     def moderation_html(self):
         """
         Returns the moderation HTML page.
-        This actually reroutes to the HTML representation of Activities, showing
-        only the pending versions.
+        This actually reroutes to the HTML representation of Activities,
+        showing only the pending versions.
         """
 
-        return HTTPFound(location=self.request.route_url('activities_read_many',
-            output='html', _query={'status': 'pending'}))
+        return HTTPFound(location=self.request.route_url(
+            'activities_read_many', output='html',
+            _query={'status': 'pending'}))
 
-    @view_config(route_name='translation', renderer='lmkp:templates/ext_translation.mak', permission='translate')
+    @view_config(
+        route_name='translation',
+        renderer='lmkp:templates/ext_translation.mak', permission='translate')
     def translation(self):
         """
         Returns the translation HTML page
@@ -310,7 +353,10 @@ class MainView(BaseView):
 
         return {}
 
-    @view_config(route_name='administration', renderer='lmkp:templates/ext_administration.mak', permission='administer')
+    @view_config(
+        route_name='administration',
+        renderer='lmkp:templates/ext_administration.mak',
+        permission='administer')
     def administration(self):
         """
         Returns the administration HTML page
@@ -320,7 +366,9 @@ class MainView(BaseView):
 
         return {}
 
-    @view_config(route_name='privileges_test', renderer='lmkp:templates/old_privilegestest.mak')
+    @view_config(
+        route_name='privileges_test',
+        renderer='lmkp:templates/old_privilegestest.mak')
     def privileges_test(self):
         """
         Simple view to output the current privileges
@@ -345,16 +393,17 @@ class MainView(BaseView):
 
         raise HTTPBadRequest("Host not allowed.")
 
+
 def getQueryString(url, **kwargs):
     """
     Function to update the query parameters of a given URL.
     kwargs:
-    - add: array of tuples with key and value to add to the URL. If the key
-      already exists, it will be replaced with the new value.
+    - add: array of tuples with key and value to add to the URL. If the
+      key already exists, it will be replaced with the new value.
       Example: add=[('page', 1)]
     - remove: array of keys to remove from the URL.
-    - ret: fullUrl (default) / queryString. Use 'queryString' to return only the
-      query string instead of the full URL.
+    - ret: fullUrl (default) / queryString. Use 'queryString' to return
+      only the query string instead of the full URL.
     """
 
     if 'add' not in kwargs and 'remove' not in kwargs and 'ret' not in kwargs:
@@ -369,7 +418,8 @@ def getQueryString(url, **kwargs):
     qp = parse_qs(query_string)
 
     # Always remove 'epsg' as it is not needed (map is stored in cookie)
-    if 'epsg' in qp: del(qp['epsg'])
+    if 'epsg' in qp:
+        del(qp['epsg'])
 
     # Always remove 'bbox' if it is not set to 'profile' (bbox of map is stored
     # in cookie)
@@ -377,7 +427,8 @@ def getQueryString(url, **kwargs):
         del(qp['bbox'])
 
     # Always remove 'page'
-    if 'page' in qp: del(qp['page'])
+    if 'page' in qp:
+        del(qp['page'])
 
     # Remove
     for d in remove:
@@ -401,6 +452,7 @@ def getQueryString(url, **kwargs):
         return '%s%s' % ('?', new_query_string)
 
     return urlunsplit((scheme, netloc, path, new_query_string, fragment))
+
 
 def getFilterKeys(request):
     """
@@ -430,6 +482,7 @@ def getFilterKeys(request):
 
     return aList, shList
 
+
 def getOverviewKeys(request):
     """
     Return two lists (the first for Activities, the second for Stakeholders)
@@ -438,9 +491,12 @@ def getOverviewKeys(request):
     keys for Stakeholders, the second one the keys for Activities!
     """
     return (
-        getCategoryList(request, 'activities').getInvolvementOverviewKeyNames(),
-        getCategoryList(request, 'stakeholders').getInvolvementOverviewKeyNames()
+        getCategoryList(
+            request, 'activities').getInvolvementOverviewKeyNames(),
+        getCategoryList(
+            request, 'stakeholders').getInvolvementOverviewKeyNames()
     )
+
 
 def getOverviewRawKeys(request):
     """
@@ -451,9 +507,12 @@ def getOverviewRawKeys(request):
     These keys are not translated.
     """
     return (
-        getCategoryList(request, 'activities').getInvolvementOverviewRawKeyNames(),
-        getCategoryList(request, 'stakeholders').getInvolvementOverviewRawKeyNames()
+        getCategoryList(
+            request, 'activities').getInvolvementOverviewRawKeyNames(),
+        getCategoryList(
+            request, 'stakeholders').getInvolvementOverviewRawKeyNames()
     )
+
 
 def getMapSymbolKeys(request):
     """
@@ -465,7 +524,8 @@ def getMapSymbolKeys(request):
     If there is an attribute set, it is moved to the top of the list with the
     help of the order number
     """
-    mapSymbolKeys = getCategoryList(request, 'activities').getMapSymbolKeyNames()
+    mapSymbolKeys = getCategoryList(
+        request, 'activities').getMapSymbolKeyNames()
 
     attrs = request.params.get('attrs', None)
 
@@ -476,6 +536,7 @@ def getMapSymbolKeys(request):
 
     return sorted(mapSymbolKeys, key=lambda k: k[2])
 
+
 def getActiveFilters(request):
     """
     Get the active filters of a request in a list.
@@ -483,8 +544,6 @@ def getActiveFilters(request):
     - [0]: the query string as provided in the parameter
     - [1]: a clean text representation (translated) of the filter
     """
-
-    _ = request.translate
 
     # Map the operators
     operators = {
@@ -516,12 +575,14 @@ def getActiveFilters(request):
 
             if queryparts[0] == 'a':
                 itemName = render(
-                    getTemplatePath(request, 'parts/items/activity.mak'), {}, request
+                    getTemplatePath(
+                        request, 'parts/items/activity.mak'), {}, request
                 )
                 configList = aList
             elif queryparts[0] == 'sh':
                 itemName = render(
-                    getTemplatePath(request, 'parts/items/stakeholder.mak'), {}, request
+                    getTemplatePath(
+                        request, 'parts/items/stakeholder.mak'), {}, request
                 )
                 configList = shList
             else:
@@ -544,11 +605,13 @@ def getActiveFilters(request):
                     if valueObject is not None:
                         displayValue = valueObject.getTranslation()
                 q_string = '%s=%s' % (q, v)
-                q_display = ('(%s) %s %s %s' % (itemName, displayKey,
-                    operators[op], displayValue))
+                q_display = (
+                    '(%s) %s %s %s'
+                    % (itemName, displayKey, operators[op], displayValue))
                 filters.append([q_string, q_display])
 
     return filters
+
 
 @view_config(route_name='filterValues', renderer='json')
 def getFilterValuesForKey(request, predefinedType=None, predefinedKey=None):
@@ -608,6 +671,7 @@ def getFilterValuesForKey(request, predefinedType=None, predefinedKey=None):
 
     return ret
 
+
 def get_output_format(request):
     # Default output format is JSON.
     try:
@@ -615,6 +679,7 @@ def get_output_format(request):
     except KeyError:
         output_format = 'json'
     return output_format
+
 
 def get_page_parameters(request):
     # Get page parameter from request and make sure it is valid

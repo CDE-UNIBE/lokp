@@ -98,9 +98,6 @@ class ActivityView(BaseView):
 
         request = self.request
 
-        # Handle the parameters (locale, profile).
-        self._handle_parameters()
-
         output_format = get_output_format(self.request)
 
         if output_format == 'json':

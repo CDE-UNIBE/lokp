@@ -1667,8 +1667,10 @@ class ActivityProtocol3(Protocol):
                 try:
                     if q.stakeholder_identifier is not None:
 
-                        request_user_id = (request.user.id if request.user is
-                                           not None else None)
+                        try:
+                            request_user_id = request.user.id
+                        except AttributeError:
+                            request_user_id = None
 
                         # Only proceed if
                         # If there are multiple pending versions of the same
@@ -1810,7 +1812,8 @@ class ActivityProtocol3(Protocol):
             }
             for i, k in enumerate(keys):
                 key = k[1]
-                value = values[i+1] if values[i+1] is not None else values[i]
+                value = (
+                    values[i + 1] if values[i + 1] is not None else values[i])
                 properties[key] = value
             feature['properties'] = properties
 
@@ -1833,9 +1836,9 @@ class ActivityProtocol3(Protocol):
             if len(q) > 6 and len(attrs) > 0:
                 additionalValues = q[6:]
 
-            if ((tggeom is not None and len(attrs)*2+1
+            if ((tggeom is not None and len(attrs) * 2 + 1
                     != len(additionalValues))
-                    or (tggeom is None and len(attrs)*2 !=
+                    or (tggeom is None and len(attrs) * 2 !=
                         len(additionalValues))):
                 # If the additionalKeys and additionalValues do not match,
                 # ignore them completely.

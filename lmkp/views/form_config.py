@@ -66,6 +66,18 @@ class ConfigCategoryList(object):
                     return thmg
         return None
 
+    def getAllTaggroups(self):
+        """
+        Return them sorted.
+        """
+        taggroups = []
+        for cat in sorted(self.getCategories(), key=lambda c: c.getOrder()):
+            for thg in sorted(
+                cat.getThematicgroups(), key=lambda t: t.getOrder()):
+                taggroups.extend(sorted(
+                    thg.getTaggroups(), key=lambda tg: tg.getOrder()))
+        return taggroups
+
     def getAllTags(self):
         tags = []
         for cat in self.getCategories():
