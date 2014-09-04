@@ -20,6 +20,7 @@ from lmkp.models.database_objects import (
     Stakeholder_Role,
 )
 from lmkp.models.meta import DBSession as Session
+from lmkp.utils import validate_item_type
 
 import logging
 log = logging.getLogger(__name__)
@@ -1952,6 +1953,9 @@ def getCategoryList(request, itemType, **kwargs):
     categories which can be used to create the form.
     itemType: activities / stakeholders
     """
+    if itemType not in ['activities', 'stakeholders']:
+        itemType = validate_item_type(itemType)
+        itemType = 'activities' if itemType == 'a' else 'stakeholders'
     # Scan the configuration files for keys, values and categories
     configKeys = getConfigKeyList(request, itemType, **kwargs)
     configValues = getConfigValueList(request, itemType, **kwargs)

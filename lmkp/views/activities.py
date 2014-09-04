@@ -149,10 +149,18 @@ class ActivityView(BaseView):
                 getTemplatePath(request, 'activities/form.mak'),
                 templateValues,
                 request)
+
         elif output_format == 'geojson':
             activities = activity_protocol.read_many_geojson(
                 request, public=False)
             return render_to_response('json', activities, request)
+
+        elif output_format == 'csv':
+            from lmkp.views.download import to_flat_table
+            header, rows = to_flat_table(self.request, 'activities')
+            return render_to_response(
+                'csv', {'header': header, 'rows': rows}, request)
+
         else:
             # If the output format was not found, raise 404 error
             raise HTTPNotFound()
