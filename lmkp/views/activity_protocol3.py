@@ -432,8 +432,10 @@ class ActivityProtocol3(Protocol):
             request, relevant_activities, limit=limit, offset=offset,
             involvements=inv_details != 'none')
 
+        translate = kwargs.get('translate', True)
         activities = self._query_to_activities(
-            request, query, involvements=inv_details, public_query=public)
+            request, query, involvements=inv_details, public_query=public,
+            translate=translate)
 
         return {
             'total': count,

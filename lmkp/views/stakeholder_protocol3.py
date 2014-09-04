@@ -287,8 +287,10 @@ class StakeholderProtocol3(Protocol):
             request, relevant_stakeholders, limit=limit, offset=offset,
             involvements=inv_details != 'none')
 
+        translate = kwargs.get('translate', True)
         stakeholders = self._query_to_stakeholders(
-            request, query, involvements=inv_details, public_query=public)
+            request, query, involvements=inv_details, public_query=public,
+            translate=translate)
 
         return {
             'total': count,
