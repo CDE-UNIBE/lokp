@@ -7,6 +7,7 @@ from lmkp.views.form_config import getCategoryList
 from lmkp.views.protocol import (
     get_main_keys_from_item_json,
     get_value_by_key_from_item_json,
+    get_value_by_key_from_taggroup_json,
 )
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.views import BaseView
@@ -40,38 +41,30 @@ def to_table(request, involvements=True):
 
     # Collect the taggroups based on the form configuration.
     category_list = getCategoryList(request, 'activities')
+
+    config_taggroups = []
     for config_taggroup in category_list.getAllTaggroups():
-        # A Taggroup is also treated as repeatable if its main key is either
-        # one of Dropdown, Checkbox, InputToken
-        repeat = (config_taggroup.getRepeatable()
-                  or config_taggroup.getMaintag().getKey().getType().lower() in
-                  ['dropdown', 'checkbox', 'inputtoken'])
         config_taggroup_entry = {
-            'repeat': repeat,
             'count': 0,
-            'main_key': config_taggroup.getMaintag().getKey().
-            getTranslatedName(),
-            'original': config_taggroup.getMaintag().getKey().getName(),
-            'use_original': False
+            'config': config_taggroup,
+            'main_key': config_taggroup.getMaintag().getKey().getName()
         }
-        keys = []
-        for tag in config_taggroup.getTags():
-            keys.append(tag.getKey().getTranslatedName())
-        config_taggroup_entry['keys'] = keys[::-1]
         config_taggroups.append(config_taggroup_entry)
 
     # Apply the spatial filter and query the Activities with the protocol.
+    # Important: Query the Activities with the original database language! This
+    # prevents errors when different main keys (eg. "Remark") have the exact
+    # same translation. Instead, the translation happens when filling the row
+    # with the help of the configs.
     _handle_spatial_parameters(request)
-    activities = activity_protocol.read_many(request, public=True)
-    # print activities
-    original_activities = activity_protocol.read_many(
+    activities = activity_protocol.read_many(
         request, public=True, translate=False)
 
-    # Find out how many times each taggroup appears. This defines how many
+    # Find out how many times each taggroup occurs. This defines how many
     # columns are needed in the table.
-    for activity in original_activities.get('data', []):
+    for activity in activities.get('data', []):
 
-        # Taggroups (based on their maintags) of the Activity
+        # Taggroups: Identified by their main tags.
         current_main_keys = []
         for main_key in get_main_keys_from_item_json(activity):
             main_key_already_found = next(
@@ -80,17 +73,15 @@ def to_table(request, involvements=True):
                 main_key_already_found['count'] += 1
             else:
                 current_main_keys.append({'key': main_key, 'count': 1})
-
-        # Compare it to the previous maximum count
-        for activity_main_key in current_main_keys:
+        for main_key in current_main_keys:
             config_main_key = next((
-                i for i in config_taggroups if i['original']
-                == activity_main_key['key']), None)
+                i for i in config_taggroups if i['main_key']
+                == main_key['key']), None)
             if config_main_key is not None:
                 config_main_key['count'] = max(
-                    config_main_key['count'], activity_main_key['count'])
+                    config_main_key['count'], main_key['count'])
 
-        # Also count involvements
+        # Involvements
         if involvements:
             max_involvements = max(max_involvements, len(
                 activity.get('involvements', [])))
@@ -98,26 +89,30 @@ def to_table(request, involvements=True):
     # Create the headers
     header = []
     header.extend(ACTIVITY_HEADER)
-    for config_taggroup in config_taggroups:
-        for i in range(max(config_taggroup.get('count'), 1)):
-            for a_key in config_taggroup.get('keys', []):
+    for config_taggroup_entry in config_taggroups:
+        config_taggroup = config_taggroup_entry.get('config')
+        config_mainkey = config_taggroup.getMaintag().getKey()
+        for i in range(max(config_taggroup_entry.get('count'), 1)):
 
-                key_name = a_key
-                if len(config_taggroup.get('keys', [])) > 1:
+            for config_tag in sorted(
+                    config_taggroup.getTags(),
+                    key=lambda t: t != config_taggroup.getMaintag()):
+
+                key_name = config_tag.getKey().getTranslatedName()
+
+                # If the taggroup contains multiple tags, add the main key as
+                # prefix
+                if len(config_taggroup.getTags()) > 1:
                     key_name = '%s_%s' % (
-                        config_taggroup.get('main_key'), key_name)
-                if config_taggroup.get('repeat'):
+                        config_mainkey.getTranslatedName(), key_name)
+
+                # If the taggroup is repeated, add a number as suffix.
+                if (config_taggroup.getRepeatable()
+                        or config_mainkey.getType().lower() in
+                        ['dropdown', 'checkbox', 'inputtoken']):
                     key_name = '%s_%s' % (key_name, i + 1)
 
-                if key_name in header:
-                    # Also use the original for the key already in the header
-                    c = next((cf for cf in config_taggroups if cf['main_key']
-                              == key_name), None)
-                    c['use_original'] = True
-                    key_name = config_taggroup.get('original')
-                    config_taggroup['use_original'] = True
-
-                header.append(unicode("%s" % key_name).encode('"utf-8'))
+                header.append(unicode("%s" % key_name).encode('utf-8'))
     if involvements:
         sh_category_list = getCategoryList(request, 'stakeholders')
         sh_keys = [
@@ -126,65 +121,95 @@ def to_table(request, involvements=True):
         involvement_header = sh_keys + ['inv_role', 'inv_id']
         for i in range(max_involvements):
             for inv_header in involvement_header:
-                header.append('%s_%s' % (inv_header, i + 1))
+                inv_key_name = '%s_%s' % (inv_header, i + 1)
+                header.append(unicode("%s" % inv_key_name).encode('utf-8'))
 
+    # Create the rows
     rows = []
     for activity in activities.get('data', []):
         row = []
+
+        # Metadata
         for key in ACTIVITY_HEADER:
             if key == 'geometry':
                 row.append(",".join(
                     map(str, activity.get(key, {}).get("coordinates", []))))
             else:
                 row.append(activity.get(key, None))
-        for config_taggroup in config_taggroups:
-            taggroups = []
+
+        # Taggroups
+        for config_taggroup_entry in config_taggroups:
+            found_taggroups = []
+            config_taggroup = config_taggroup_entry.get('config')
+            config_mainkey = config_taggroup.getMaintag().getKey()
+
             for taggroup in activity.get('taggroups', []):
-                if taggroup['main_tag']['key'] != config_taggroup['main_key']:
+
+                if taggroup['main_tag']['key'] != config_mainkey.getName():
                     continue
 
-                if config_taggroup.get('use_original') and len(taggroups) > 0:
-                    continue
+                for config_tag in sorted(
+                        config_taggroup.getTags(),
+                        key=lambda t: t != config_taggroup.getMaintag()):
 
-                for a_key in config_taggroup.get('keys', []):
-                    value = None
-                    for tag in taggroup.get('tags', []):
-                        if config_taggroup.get('use_original'):
-                            original_activity = next((
-                                a for a in
-                                original_activities.get('data', []) if a['id']
-                                == activity['id']), None)
-                            value = get_value_by_key_from_item_json(
-                                original_activity, config_taggroup.get(
-                                    'original'))
-                            break
-                        elif tag.get('key', None) == a_key:
-                            value = tag.get('value', None)
-                    taggroups.append(unicode("%s" % value).encode("utf-8"))
+                    value = get_value_by_key_from_taggroup_json(
+                        taggroup, config_tag.getKey().getName())
+
+                    for config_value in config_tag.getValues():
+                        if config_value.getName() == value:
+                            value = config_value.getTranslation()
+
+                    if (config_tag.getKey().getType().lower() == 'file'
+                            and value):
+                        # Uploaded files are displayed with a URL to view the
+                        # file
+                        files = []
+                        try:
+                            for v in value.split(','):
+                                filename = unicode(
+                                    '%s' % v.split('|')[0]).encode('utf-8')
+                                url = request.route_url(
+                                    'file_view', action='view',
+                                    identifier=v.split('|')[1])
+                                files.append('%s (%s)' % (filename, url))
+                            value = '|'.join(files)
+                        except:
+                            pass
+
+                    if not value:
+                        value = ''
+
+                    found_taggroups.append(
+                        unicode("%s" % value).encode("utf-8"))
 
             # Fill up the rest of the values with None
-            length = max(config_taggroup.get('count'), 1) * len(
-                config_taggroup.get('keys'))
-            taggroups.extend([None] * (length - len(taggroups)))
+            taggroup_length = max(config_taggroup_entry.get('count'), 1) * len(
+                config_taggroup.getTags())
+            found_taggroups.extend(
+                [None] * (taggroup_length - len(found_taggroups)))
 
-            row.extend(taggroups)
+            row.extend(found_taggroups)
 
+        # Involvements
         if involvements:
             inv_row = []
-            for involvement in sorted(
-                activity.get('involvements', []),
-                    key=lambda i: i.get('role_id', 0)):
+            for involvement in sorted(activity.get('involvements', []),
+                                      key=lambda i: i.get('role_id', 0)):
                 inv_data = [None] * len(involvement_header)
+
+                # Overview keys
                 for i, config_sh_key in enumerate(
                         involvement_header[:len(involvement_header) - 2]):
                     inv_value = get_value_by_key_from_item_json(
                         involvement.get('data', {}), config_sh_key)
                     inv_data[i] = unicode("%s" % inv_value).encode("utf-8")
 
+                # Metadata
                 inv_data[len(inv_data) - 2] = involvement.get('role', None)
                 inv_data[len(inv_data) - 1] = involvement.get('data', {}).get(
                     'id', None)
                 inv_row.extend(inv_data)
+
             # Fill the rest with None
             inv_row.extend([None] * (
                 len(involvement_header) * max_involvements - len(inv_row)))

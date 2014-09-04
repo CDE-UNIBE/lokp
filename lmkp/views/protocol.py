@@ -2420,7 +2420,8 @@ def get_value_by_key_from_item_json(item_json, key):
     .. important::
 
        This function only returns the value of the first occurence of
-       the key in a tag.
+       the key. However, there may be further Taggroups containing the
+       same key.
 
     Args:
         item_json (dict): The complete json of an Activity or a
@@ -2462,3 +2463,14 @@ def get_main_keys_from_item_json(item_json):
         if main_key:
             main_keys.append(main_key)
     return main_keys
+
+
+def get_value_by_key_from_taggroup_json(taggroup_json, key):
+    if not isinstance(taggroup_json, dict):
+        return None
+    found_tag = next((
+        tag for tag in taggroup_json.get('tags', []) if tag['key'] == key),
+        None)
+    if found_tag:
+        return found_tag['value']
+    return None
