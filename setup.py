@@ -35,6 +35,7 @@ requires = [
     'sphinx==1.2',
     'pytest==2.5.2',
     'selenium==2.42.1',
+    'mock==1.0.1',
 ]
 
 setup(name='LMKP',

@@ -2409,3 +2409,68 @@ class Feature(object):
 
     def get_previous_version(self):
         return self._previous_version
+
+
+def get_value_by_key_from_item_json(item_json, key):
+    """
+    Returns the value of a tag found by its key in the complete json
+    (a Python dict) of an Activity or a Stakeholder as created by the
+    Protocol.
+
+    .. important::
+
+       This function only returns the value of the first occurence of
+       the key. However, there may be further Taggroups containing the
+       same key.
+
+    Args:
+        item_json (dict): The complete json of an Activity or a
+            Stakeholder as created by the Protocol.
+        key (str): The key to search inside the tags.
+
+    Returns:
+        str or None. The value of the tag if found, None if the key was
+            not found or if the json is invalid.
+    """
+    if not isinstance(item_json, dict):
+        return None
+    for taggroup in item_json.get('taggroups', []):
+        found_tag = next((tag for tag in taggroup.get('tags', []) if tag['key']
+            == key), None)
+        if found_tag:
+            return found_tag['value']
+    return None
+
+
+def get_main_keys_from_item_json(item_json):
+    """
+    Returns the keys of all main tags found in the complete json (a
+    Python dict) of an Activity or a Stakeholder as created by the
+    Protocol.
+
+    Args:
+        item_json (dict): The complete json of an Activity or a
+            Stakeholder as created by the Protocol.
+
+    Returns:
+        list. A list with all main keys of the item json.
+    """
+    main_keys = []
+    if not isinstance(item_json, dict):
+        return main_keys
+    for taggroup in item_json.get('taggroups', []):
+        main_key = taggroup.get('main_tag', {}).get('key', None)
+        if main_key:
+            main_keys.append(main_key)
+    return main_keys
+
+
+def get_value_by_key_from_taggroup_json(taggroup_json, key):
+    if not isinstance(taggroup_json, dict):
+        return None
+    found_tag = next((
+        tag for tag in taggroup_json.get('tags', []) if tag['key'] == key),
+        None)
+    if found_tag:
+        return found_tag['value']
+    return None

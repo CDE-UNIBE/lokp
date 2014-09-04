@@ -4,6 +4,7 @@ from lmkp.config import getTemplatePath
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.config import get_mandatory_keys
 from lmkp.views.comments import comments_sitekey
+from lmkp.views.download import to_flat_table
 from lmkp.views.form import renderForm
 from lmkp.views.form import renderReadonlyForm
 from lmkp.views.form import renderReadonlyCompareForm
@@ -256,7 +257,7 @@ def read_many(request):
 
         items = stakeholder_protocol3.read_many(request, public=False,
             limit=pageSize, offset=pageSize*page-pageSize)
-        
+
         statusFilter = request.params.get('status', None)
         isLoggedIn, isModerator = checkUserPrivileges(request)
 
@@ -289,6 +290,12 @@ def read_many(request):
             templateValues,
             request
         )
+
+    elif output_format == 'csv':
+        header, rows = to_flat_table(request, 'stakeholders')
+        return render_to_response(
+            'csv', {'header': header, 'rows': rows}, request)
+
     else:
         # If the output format was not found, raise 404 error
         raise HTTPNotFound()
@@ -433,13 +440,13 @@ def read_one(request):
                 raise HTTPForbidden()
 
         camefrom = request.params.get('camefrom', '')
-        
+
         review = StakeholderReview(request)
         availableVersions = None
         recalculated = False
         defaultRefVersion, defaultNewVersion = review._get_valid_versions(
             Stakeholder, uid)
-            
+
         refVersion = request.params.get('ref', None)
         if refVersion is not None:
             try:
@@ -451,12 +458,12 @@ def read_one(request):
             # Also use the default one for review because it cannot be changed.
             refVersion = defaultRefVersion
         else:
-            availableVersions = review._get_available_versions(Stakeholder, uid, 
+            availableVersions = review._get_available_versions(Stakeholder, uid,
                 review=output_format=='review')
             # Check if the indicated reference version is valid
             if refVersion not in [v.get('version') for v in availableVersions]:
                 refVersion = defaultRefVersion
-        
+
         newVersion = request.params.get('new', None)
         if newVersion is not None:
             try:
@@ -468,29 +475,29 @@ def read_one(request):
             newVersion = defaultNewVersion
         else:
             if availableVersions is None:
-                availableVersions = review._get_available_versions(Stakeholder, 
+                availableVersions = review._get_available_versions(Stakeholder,
                     uid, review=output_format=='review')
             # Check if the indicated new version is valid
             if newVersion not in [v.get('version') for v in availableVersions]:
                 newVersion = defaultNewVersion
-                
+
         if output_format == 'review':
-            # If the Stakeholders are to be reviewed, only the changes which 
+            # If the Stakeholders are to be reviewed, only the changes which
             # were applied to the newVersion are of interest
-            stakeholders, recalculated = review.get_comparison(Stakeholder, uid, 
+            stakeholders, recalculated = review.get_comparison(Stakeholder, uid,
                 refVersion, newVersion)
         else:
             # If the Stakeholders are compared, the versions as they are stored
             # in the database are of interest, without any recalculation
             stakeholders = [
-                stakeholder_protocol3.read_one_by_version(request, uid, 
+                stakeholder_protocol3.read_one_by_version(request, uid,
                     refVersion, translate=False
                 ),
-                stakeholder_protocol3.read_one_by_version(request, uid, 
+                stakeholder_protocol3.read_one_by_version(request, uid,
                     newVersion, translate=False
                 )
             ]
-        templateValues = renderReadonlyCompareForm(request, 'stakeholders', 
+        templateValues = renderReadonlyCompareForm(request, 'stakeholders',
             stakeholders[0], stakeholders[1], review=output_format=='review')
         # Collect metadata for the reference version
         refMetadata = {}
@@ -509,21 +516,21 @@ def read_one(request):
                 missingKeys = get_translated_db_keys(SH_Key, missingKeys, db_lang)
                 missingKeys = [m[1] for m in missingKeys]
             newMetadata = stakeholders[1].get_metadata(request)
-            
-            reviewable = (len(missingKeys) == 0 and 
+
+            reviewable = (len(missingKeys) == 0 and
                 'reviewableMessage' in templateValues and
                 templateValues['reviewableMessage'] is None)
-            
+
         if output_format == 'review':
             pendingVersions = []
             if availableVersions is None:
-                availableVersions = review._get_available_versions(Stakeholder, 
+                availableVersions = review._get_available_versions(Stakeholder,
                     uid, review=output_format=='review')
             for v in sorted(availableVersions, key=lambda v:v.get('version')):
                 if v.get('status') == 1:
                     pendingVersions.append(v.get('version'))
             templateValues['pendingVersions'] = pendingVersions
-            
+
         templateValues.update({
             'identifier': uid,
             'refVersion': refVersion,
@@ -537,7 +544,7 @@ def read_one(request):
             'profile': get_current_profile(request),
             'locale': get_current_locale(request)
         })
-        
+
         if output_format == 'review':
             return render_to_response(
                 getTemplatePath(request, 'stakeholders/review.mak'),
@@ -687,7 +694,7 @@ def review(request):
         review_decision = 2
     else:
         raise HTTPBadRequest(_('No valid review decision'))
-    
+
     review_comment = request.POST.get('review_comment', '')
     camefrom = request.POST.get('camefrom', '')
 
@@ -709,17 +716,17 @@ def review(request):
                     raise HTTPBadRequest(_('Not all mandatory keys are provided'))
 
     # The user can add a review
-    ret = stakeholder_protocol3._add_review(request, stakeholder, Stakeholder, 
+    ret = stakeholder_protocol3._add_review(request, stakeholder, Stakeholder,
         user, review_decision, review_comment)
 
     if 'success' not in ret or ret['success'] is False and 'msg' not in ret:
         raise HTTPBadRequest(_('Unknown error'))
-    
+
     if ret['success'] is True:
         request.session.flash(ret['msg'], 'success')
     else:
         request.session.flash(ret['msg'], 'error')
-    
+
     if camefrom != '':
         camefromMsg = render(
             getTemplatePath(request, 'parts/messages/stakeholder_reviewed_through_involvement.mak'),
