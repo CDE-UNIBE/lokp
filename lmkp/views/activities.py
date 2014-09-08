@@ -40,6 +40,7 @@ from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.activity_review import ActivityReview
 from lmkp.views.comments import comments_sitekey
 from lmkp.views.config import get_mandatory_keys
+from lmkp.views.download import DownloadView
 from lmkp.views.form import (
     renderForm,
     renderReadonlyForm,
@@ -155,11 +156,10 @@ class ActivityView(BaseView):
                 request, public=False)
             return render_to_response('json', activities, request)
 
-        elif output_format == 'csv':
-            from lmkp.views.download import to_flat_table
-            header, rows = to_flat_table(self.request, 'activities')
-            return render_to_response(
-                'csv', {'header': header, 'rows': rows}, request)
+        elif output_format == 'download':
+            # The download overview page
+            download_view = DownloadView(self.request)
+            return download_view.download_customize('activities')
 
         else:
             # If the output format was not found, raise 404 error

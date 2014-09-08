@@ -4,7 +4,7 @@ from lmkp.config import getTemplatePath
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.config import get_mandatory_keys
 from lmkp.views.comments import comments_sitekey
-from lmkp.views.download import to_flat_table
+from lmkp.views.download import DownloadView
 from lmkp.views.form import renderForm
 from lmkp.views.form import renderReadonlyForm
 from lmkp.views.form import renderReadonlyCompareForm
@@ -291,10 +291,10 @@ def read_many(request):
             request
         )
 
-    elif output_format == 'csv':
-        header, rows = to_flat_table(request, 'stakeholders')
-        return render_to_response(
-            'csv', {'header': header, 'rows': rows}, request)
+    elif output_format == 'download':
+        # The download overview page
+        download_view = DownloadView(request)
+        return download_view.download_customize('stakeholders')
 
     else:
         # If the output format was not found, raise 404 error

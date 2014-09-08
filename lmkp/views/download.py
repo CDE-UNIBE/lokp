@@ -1,24 +1,31 @@
+from pyramid.renderers import render_to_response
+from pyramid.view import view_config
+
+from lmkp.config import getTemplatePath
 from lmkp.models.meta import DBSession as Session
 from lmkp.utils import validate_item_type
-from lmkp.views.activities import _handle_spatial_parameters
 from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.form_config import getCategoryList
+from lmkp.views.profile import get_current_profile
+from lmkp.views.profile import get_current_locale
 from lmkp.views.protocol import (
     get_main_keys_from_item_json,
     get_value_by_key_from_item_json,
     get_value_by_key_from_taggroup_json,
 )
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
+from lmkp.views.views import BaseView
 
 
 activity_protocol = ActivityProtocol3(Session)
 stakeholder_protocol = StakeholderProtocol3(Session)
 
 
-def to_flat_table(request, item_type, involvements=True):
+def to_flat_table(request, item_type, involvements=True, columns=[]):
 
     item_type = validate_item_type(item_type)
     if item_type == 'a':
+        from lmkp.views.activities import _handle_spatial_parameters
         _handle_spatial_parameters(request)
         protocol = activity_protocol
         other_item_type = validate_item_type('sh')
@@ -87,6 +94,10 @@ def to_flat_table(request, item_type, involvements=True):
             for config_tag in sorted(
                     config_taggroup.getTags(),
                     key=lambda t: t != config_taggroup.getMaintag()):
+
+                if (columns and config_tag.getKey().getName() not in columns):
+                    continue
+
                 key_name = config_tag.getKey().getTranslatedName()
                 # If the taggroup contains multiple tags, add the main key as
                 # prefix
@@ -100,6 +111,13 @@ def to_flat_table(request, item_type, involvements=True):
                     key_name = '%s_%s' % (key_name, i + 1)
 
                 header.append(unicode("%s" % key_name).encode('utf-8'))
+
+                if columns:
+                    try:
+                        config_taggroup_entry['columns'].append(key_name)
+                    except KeyError:
+                        config_taggroup_entry['columns'] = [key_name]
+
     if involvements:
         inv_keys = [
             i[0] for i in getCategoryList(
@@ -139,6 +157,10 @@ def to_flat_table(request, item_type, involvements=True):
                         config_taggroup.getTags(),
                         key=lambda t: t != config_taggroup.getMaintag()):
 
+                    if (columns and config_tag.getKey().getName()
+                            not in columns):
+                        continue
+
                     value = get_value_by_key_from_taggroup_json(
                         taggroup, config_tag.getKey().getName())
 
@@ -170,8 +192,15 @@ def to_flat_table(request, item_type, involvements=True):
                         unicode("%s" % value).encode("utf-8"))
 
             # Fill up the rest of the values with None
-            taggroup_length = max(config_taggroup_entry.get('count'), 1) * len(
-                config_taggroup.getTags())
+            if columns:
+                try:
+                    taggroup_length = len(config_taggroup_entry['columns'])
+                except KeyError:
+                    taggroup_length = 0
+            else:
+                taggroup_length = max(
+                    config_taggroup_entry.get('count'), 1) * len(
+                        config_taggroup.getTags())
             found_taggroups.extend(
                 [None] * (taggroup_length - len(found_taggroups)))
 
@@ -180,8 +209,9 @@ def to_flat_table(request, item_type, involvements=True):
         # Involvements
         if involvements:
             inv_row = []
-            for involvement in sorted(item.get('involvements', []),
-                                      key=lambda i: i.get('role_id', 0)):
+            for involvement in sorted(
+                item.get('involvements', []), key=lambda i: (
+                    i.get('role_id'), i.get('timestamp'))):
                 inv_data = [None] * len(involvement_header)
 
                 # Overview keys
@@ -205,3 +235,62 @@ def to_flat_table(request, item_type, involvements=True):
         rows.append(row)
 
     return header, rows
+
+
+class DownloadView(BaseView):
+
+    @view_config(route_name='download')
+    def download(self):
+        """
+
+        """
+        return render_to_response(
+            getTemplatePath(self.request, 'download_view.mak'),
+            {
+                'profile': get_current_profile(self.request),
+                'locale': get_current_locale(self.request)
+            },
+            self.request)
+
+    def download_customize(self, item_type):
+        """
+
+        """
+        item_type = validate_item_type(item_type)
+
+        if self.request.POST:
+            format = self.request.POST.get('format', 'csv')
+            involvements = True
+            try:
+                involvements = int(self.request.POST.get('involvements', 1))
+            except ValueError:
+                pass
+            attributes = self.request.POST.getall('attributes')
+            if format == 'csv':
+                header, rows = to_flat_table(
+                    self.request, item_type, involvements=involvements,
+                    columns=attributes)
+                return render_to_response(
+                    'csv', {'header': header, 'rows': rows}, self.request)
+
+        # Order matters: The first entry is the default value.
+        formats = [
+            ('csv', 'CSV'),
+        ]
+        attributes = []
+        for config_key in getCategoryList(
+                self.request, item_type).getAllKeys():
+            attributes.append((
+                config_key.getName(), config_key.getTranslatedName()))
+        if item_type == 'a':
+            template = getTemplatePath(self.request, 'activities/download.mak')
+        else:
+            template = getTemplatePath(
+                self.request, 'stakeholders/download.mak')
+        template_values = {
+            'profile': get_current_profile(self.request),
+            'locale': get_current_locale(self.request),
+            'formats': formats,
+            'attributes': attributes
+        }
+        return render_to_response(template, template_values, self.request)

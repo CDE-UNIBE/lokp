@@ -128,10 +128,12 @@ class ConfigCategoryList(object):
         Return a list with all keys in all categories
         """
         keys = []
-        for cat in self.getCategories():
-            for thg in cat.getThematicgroups():
-                for tg in thg.getTaggroups():
-                    for t in tg.getTags():
+        for cat in sorted(self.getCategories(), key=lambda c: c.getOrder()):
+            for thg in sorted(
+                cat.getThematicgroups(), key=lambda t: t.getOrder()):
+                for tg in sorted(
+                    thg.getTaggroups(), key=lambda tg: tg.getOrder()):
+                    for t in sorted(tg.getTags(), key=lambda t: t != tg.getMaintag()):
                         keys.append(t.getKey())
         return keys
 

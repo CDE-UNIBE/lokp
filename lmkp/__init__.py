@@ -23,20 +23,22 @@ from pyramid.settings import aslist
 from sqlalchemy import engine_from_config
 import transaction
 
+
 def main(global_config, ** settings):
     """ This function returns a Pyramid WSGI application.
     """
-    
+
     # Used when called through Tests
     if 'settings' in settings:
         settings = settings['settings']
-        
+
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
-    
+
     # Transform the list of valid file mime extensions from the ini file into a
     # python dict.
-    # http://pyramid.readthedocs.org/en/latest/narr/environment.html#adding-a-custom-setting
+    # http://pyramid.readthedocs.org/en/latest/narr/environment.html#adding-a-
+    # custom-setting
     file_mime_extensions = {}
     for fme in aslist(settings.get('lmkp.file_mime_extensions', {}), False):
         fme_entry = fme.split(' ')
@@ -51,7 +53,8 @@ def main(global_config, ** settings):
     customization = getCustomizationName(settings)
 
     # Authentication policy
-    authnPolicy = CustomAuthenticationPolicy('9ZbfPv Ez-eV8LeTJVNjUhQf FXWBBi_cWKn2fqnpz3PA', callback=group_finder)
+    authnPolicy = CustomAuthenticationPolicy(
+        '9ZbfPv Ez-eV8LeTJVNjUhQf FXWBBi_cWKn2fqnpz3PA', callback=group_finder)
     # Authorization policy
     authzPolicy = ACLAuthorizationPolicy()
 
@@ -98,8 +101,9 @@ def main(global_config, ** settings):
 
     # Customization: Add the static customization folder as view
     if customization is not None:
-        config.add_static_view('custom', 'customization/%s/static' %
-            customization, cache_max_age=3600)
+        config.add_static_view(
+            'custom', 'customization/%s/static' % customization,
+            cache_max_age=3600)
 
     config.add_route('index', '/')
     config.add_route('administration', '/administration')
@@ -119,7 +123,8 @@ def main(global_config, ** settings):
     config.add_route('yaml_translate_activities', '/config/scan/activities')
     config.add_route('yaml_add_activity_fields', '/config/add/activities')
 
-    config.add_route('yaml_translate_stakeholders', '/config/scan/stakeholders')
+    config.add_route(
+        'yaml_translate_stakeholders', '/config/scan/stakeholders')
     config.add_route('yaml_add_stakeholder_fields', '/config/add/stakeholders')
 
     config.add_route('config', '/config/form/{parameter}')
@@ -165,28 +170,38 @@ def main(global_config, ** settings):
     config.add_route('activities_create', '/activities', request_method='POST')
 
     # Reviews a pending activity
-    config.add_route('activities_review', '/activities/review', request_method='POST')
+    config.add_route(
+        'activities_review', '/activities/review', request_method='POST')
 
     # Read one (special cases)
-    config.add_route('activities_read_one_active', '/activities/active/{output}/{uid}')
-    config.add_route('activities_read_one_public', '/activities/public/{output}/{uid}')
+    config.add_route(
+        'activities_read_one_active', '/activities/active/{output}/{uid}')
+    config.add_route(
+        'activities_read_one_public', '/activities/public/{output}/{uid}')
 
     # By Stakeholder
-    config.add_route('activities_bystakeholders', '/activities/bystakeholders/{output}/{uids}')
-    config.add_route('activities_bystakeholders_public', '/activities/bystakeholders/public/{output}/{uids}')
+    config.add_route(
+        'activities_bystakeholders',
+        '/activities/bystakeholders/{output}/{uids}')
+    config.add_route(
+        'activities_bystakeholders_public',
+        '/activities/bystakeholders/public/{output}/{uids}')
 
     # Read pending
-    config.add_route('activities_read_many_pending', '/activities/pending/{output}')
+    config.add_route(
+        'activities_read_many_pending', '/activities/pending/{output}')
 
     # Read many
-    config.add_route('activities_public_read_many', '/activities/public/{output}')
+    config.add_route(
+        'activities_public_read_many', '/activities/public/{output}')
     config.add_route('activities_read_many', '/activities/{output}')
 
     # Read one
     config.add_route('activities_read_one', '/activities/{output}/{uid}')
 
     # Read one history
-    config.add_route('activities_read_one_history', '/activities/history/{output}/{uid}')
+    config.add_route(
+        'activities_read_one_history', '/activities/history/{output}/{uid}')
 
     """
     Stakeholders
@@ -195,33 +210,48 @@ def main(global_config, ** settings):
     # Order matters!
 
     # Creates a new stakeholder
-    config.add_route('stakeholders_create', '/stakeholders', request_method='POST')
+    config.add_route(
+        'stakeholders_create', '/stakeholders', request_method='POST')
 
     # Reviews a pending stakeholder
-    config.add_route('stakeholders_review', '/stakeholders/review', request_method='POST')
+    config.add_route(
+        'stakeholders_review', '/stakeholders/review', request_method='POST')
 
     # Read one (special cases)
-    config.add_route('stakeholders_read_one_active', '/stakeholders/active/{output}/{uid}')
-    config.add_route('stakeholders_read_one_public', '/stakeholders/public/{output}/{uid}')
+    config.add_route(
+        'stakeholders_read_one_active', '/stakeholders/active/{output}/{uid}')
+    config.add_route(
+        'stakeholders_read_one_public', '/stakeholders/public/{output}/{uid}')
 
     # By Activities
-    config.add_route('stakeholders_byactivities_all', '/stakeholders/byactivities/{output}')
-    config.add_route('stakeholders_byactivities_all_public', '/stakeholders/byactivities/public/{output}')
-    config.add_route('stakeholders_byactivities', '/stakeholders/byactivities/{output}/{uids}')
-    config.add_route('stakeholders_byactivities_public', '/stakeholders/byactivities/public/{output}/{uids}')
+    config.add_route(
+        'stakeholders_byactivities_all', '/stakeholders/byactivities/{output}')
+    config.add_route(
+        'stakeholders_byactivities_all_public',
+        '/stakeholders/byactivities/public/{output}')
+    config.add_route(
+        'stakeholders_byactivities',
+        '/stakeholders/byactivities/{output}/{uids}')
+    config.add_route(
+        'stakeholders_byactivities_public',
+        '/stakeholders/byactivities/public/{output}/{uids}')
 
     # Read pending
-    config.add_route('stakeholders_read_many_pending', '/stakeholders/pending/{output}')
+    config.add_route(
+        'stakeholders_read_many_pending', '/stakeholders/pending/{output}')
 
     # Read many
     config.add_route('stakeholders_read_many', '/stakeholders/{output}')
-    config.add_route('stakeholders_read_many_public', '/stakeholders/public/{output}')
+    config.add_route(
+        'stakeholders_read_many_public', '/stakeholders/public/{output}')
 
     # Read one
     config.add_route('stakeholders_read_one', '/stakeholders/{output}/{uid}')
 
     # Read one history
-    config.add_route('stakeholders_read_one_history', '/stakeholders/history/{output}/{uid}')
+    config.add_route(
+        'stakeholders_read_one_history',
+        '/stakeholders/history/{output}/{uid}')
 
     """
     Comments
@@ -241,8 +271,10 @@ def main(global_config, ** settings):
     config.add_route('moderation_html', '/moderation')
 
     # Directly jump to the moderation of a given object
-    config.add_route('activities_moderate_item', '/moderation/activities/{uid}')
-    config.add_route('stakeholders_moderate_item', '/moderation/stakeholders/{uid}')
+    config.add_route(
+        'activities_moderate_item', '/moderation/activities/{uid}')
+    config.add_route(
+        'stakeholders_moderate_item', '/moderation/stakeholders/{uid}')
 
     # Tests (not intended for public)
     config.add_route('moderation_tests', '/moderation/ug6uWaef2')
@@ -258,12 +290,13 @@ def main(global_config, ** settings):
     """
     Download
     """
-    config.add_route('download_all', '/download')
+    config.add_route('download', '/download')
 
     """
     Translation
     """
-    # A controller that returns the translation needed in the ExtJS user interface
+    # A controller that returns the translation needed in the ExtJS user
+    # interface
     config.add_route('ui_translation', '/lang')
     # Return a json with all available languages from DB
     config.add_route('language_store', '/lang/all')
@@ -274,19 +307,22 @@ def main(global_config, ** settings):
     # Do a batch translation based on a file
     config.add_route('translation_batch', '/translation/batch')
     # Extract the translatable strings of the database
-    config.add_route('extractDatabaseTranslation', '/translation/extract/{type}')
+    config.add_route(
+        'extractDatabaseTranslation', '/translation/extract/{type}')
 
     # A view that returns an editing toolbar configuration object
     config.add_route('edit_toolbar_config', '/app/view/EditToolbar.js')
     config.add_route('view_toolbar_config', '/app/view/ViewToolbar.js')
-    config.add_route('moderator_toolbar_config', '/app/view/ModeratorToolbar.js')
+    config.add_route(
+        'moderator_toolbar_config', '/app/view/ModeratorToolbar.js')
 
     config.add_route('context_layers', '/app/view/layers.js')
     # Return a json with all available profiles from disk
     config.add_route('profile_store', '/profiles/all')
 
     # An user profile page (maybe not needed anymore?)
-    # [inserted ../profile/.. to link, otherwise could be conflicting with some usernames ('update', 'json')]
+    # [inserted ../profile/.. to link, otherwise could be conflicting with
+    # some usernames ('update', 'json')]
     config.add_route('user_profile', '/users/profile/{userid}')
     # A json representation of user information
     config.add_route('user_profile_json', '/users/json/{userid}')
@@ -312,7 +348,8 @@ def main(global_config, ** settings):
     # Show a list of latest changesets
     config.add_route('changesets_read_latest', '/changesets/latest/{output}')
     # Show a list of changesets by a user
-    config.add_route('changesets_read_byuser', '/changesets/{username}/{output}')
+    config.add_route(
+        'changesets_read_byuser', '/changesets/{username}/{output}')
 
     # A route to the sitemap.xml
     config.add_route('sitemap', '/sitemap.xml')
@@ -329,7 +366,8 @@ def main(global_config, ** settings):
     config.add_route('lao_read_stakeholders', '/read/lao/stakeholders')
     config.add_route('set_lao_active', '/read/lao/active')
 
-    config.add_route('cambodia_read_stakeholders', '/read/cambodia/stakeholders')
+    config.add_route(
+        'cambodia_read_stakeholders', '/read/cambodia/stakeholders')
     config.add_route('cambodia_read_activities', '/read/cambodia/activities')
 
     # Add a route to search locations
@@ -345,25 +383,30 @@ def main(global_config, ** settings):
     config.scan()
     return config.make_wsgi_app()
 
+
 def _update_admin_user(Session, settings):
     """
-    Reads the init settings at application start up and sets or add the admin
-    user with the set password.
-    The necessary setting keys are \"lmkp.admin_password\" and \"lmkp.admin_email\".
+    Reads the init settings at application start up and sets or add the
+    admin user with the set password.
+    The necessary setting keys are "lmkp.admin_password" and
+    "lmkp.admin_email".
     """
 
     try:
         pw = settings['lmkp.admin_password']
         email = settings['lmkp.admin_email']
     except KeyError:
-        raise Exception('\"lmkp.admin_password\" or \"lmkp.admin_email\" setting is missing in configuration file.')
+        raise Exception(
+            '"lmkp.admin_password" or "lmkp.admin_email" setting are missing '
+            'in configuration file.')
 
     # Try to get the admin user from the database
     admin_user = Session.query(User).filter(User.username == 'admin').first()
 
     if admin_user == None:
 
-        admin_group = Session.query(Group).filter(Group.name == 'administrators').first()
+        admin_group = Session.query(Group).filter(
+            Group.name == 'administrators').first()
         admin_user = User(username='admin', password=pw, email=email)
         admin_user.groups.append(admin_group)
         Session.add(admin_user)
@@ -373,4 +416,3 @@ def _update_admin_user(Session, settings):
         admin_user.email = email
 
     transaction.commit()
-
