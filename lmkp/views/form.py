@@ -1,29 +1,30 @@
+import calendar
 import colander
 import copy
+import datetime
 import deform
 import logging
-from mako.template import Template
-#from datetime import datetime
-import datetime
-import calendar
 import simplejson as json
-
-from lmkp.views.form_config import *
-from lmkp.models.meta import DBSession as Session
-from lmkp.config import getTemplatePath
-from lmkp.views.activity_review import ActivityReview
-from lmkp.views.stakeholder_review import StakeholderReview
-
-from pyramid.httpexceptions import HTTPBadRequest
-from pyramid.httpexceptions import HTTPFound
+from mako.template import Template
+from pyramid.httpexceptions import (
+    HTTPBadRequest,
+    HTTPFound,
+)
 from pyramid.path import AssetResolver
+from pyramid.renderers import render
 from pyramid.threadlocal import get_current_request
 from pyramid.view import view_config
-from pyramid.renderers import render
+
+from lmkp.config import getTemplatePath
+from lmkp.models.meta import DBSession as Session
+from lmkp.views.activity_review import ActivityReview
+from lmkp.views.form_config import getCategoryList
+from lmkp.views.stakeholder_review import StakeholderReview
+
 
 log = logging.getLogger(__name__)
-
 lmkpAssetResolver = AssetResolver('lmkp')
+
 
 @view_config(route_name='form_clear_session')
 def form_clear_session(request):
@@ -45,7 +46,7 @@ def form_clear_session(request):
         item = request.matchdict['item']
         attr = request.matchdict['attr']
         if (item in ['activities', 'stakeholders']
-            and attr in ['all', 'form', 'camefrom', 'created']):
+                and attr in ['all', 'form', 'camefrom', 'created']):
             # Clear the session
             doClearFormSessionData(request, item, attr)
 
@@ -60,11 +61,12 @@ def form_clear_session(request):
     # Else redirect home
     return HTTPFound(request.route_url('index'))
 
+
 def renderForm(request, itemType, **kwargs):
     """
     Render the form for either Activity or Stakeholder
     """
-    
+
     # Get the kwargs
     itemJson = kwargs.get('itemJson', None)
     newInvolvement = kwargs.get('inv', None)
@@ -84,7 +86,8 @@ def renderForm(request, itemType, **kwargs):
         formid = 'stakeholderform'
         otherItemType = 'activities'
     else:
-        raise HTTPBadRequest('Unknown itemType (neither "activities" nor "stakeholders")')
+        raise HTTPBadRequest(
+            'Unknown itemType (neither "activities" nor "stakeholders")')
 
     session = request.session
     oldCategory = None
@@ -94,8 +97,8 @@ def renderForm(request, itemType, **kwargs):
     # Use a different template rendering engine (mako instead of chameleon)
     deform.Form.set_default_renderer(mako_renderer)
 
-    # Check if anything was submitted at all. If so, remember which category was
-    # the one submitted.
+    # Check if anything was submitted at all. If so, remember which category
+    # was the one submitted.
     formSubmit = False
     if request.POST != {}:
         formSubmit = True
@@ -111,7 +114,8 @@ def renderForm(request, itemType, **kwargs):
     # new Involvement, use the category of the Involvement. Else use the first
     # category of the configuration.
     if newInvolvement is not None:
-        newInvCat = configCategoryList.findCategoryByInvolvementName(newInvolvement)
+        newInvCat = configCategoryList.findCategoryByInvolvementName(
+            newInvolvement)
         if newInvCat is not None:
             newCategory = newInvCat.getId()
         else:
@@ -119,12 +123,13 @@ def renderForm(request, itemType, **kwargs):
     else:
         newCategory = configCategoryList.getFirstCategoryId()
 
-    # Collect a list with id and names of all available categories which will be
-    # used to create the buttons
+    # Collect a list with id and names of all available categories which will
+    # be used to create the buttons
     categoryListButtons = []
-    for cat in sorted(configCategoryList.getCategories(),
-        key=lambda cat: cat.order):
-        displayName = (cat.getTranslation() if cat.getTranslation() is not None
+    for cat in sorted(
+            configCategoryList.getCategories(), key=lambda cat: cat.order):
+        displayName = (
+            cat.getTranslation() if cat.getTranslation() is not None
             else cat.getName())
         categoryListButtons.append((cat.getId(), displayName))
 
@@ -133,13 +138,13 @@ def renderForm(request, itemType, **kwargs):
     # Some sort of data used for feedback. Can be Javascript or something else
     feedbackData = None
 
-    # Handle form submission: This can also be just the "submission" of a single
-    # category which does not submit the item but stores the information of the
-    # submitted category in the session.
+    # Handle form submission: This can also be just the "submission" of a
+    # single category which does not submit the item but stores the
+    # information of the submitted category in the session.
     for p in request.POST:
 
         if (not (p.startswith('step_') or p == 'submit'
-            or p.startswith('createinvolvement_'))):
+                 or p.startswith('createinvolvement_'))):
             continue
 
         createInvolvement = False
@@ -156,8 +161,8 @@ def renderForm(request, itemType, **kwargs):
         # submitted.
 
         # Prepare a form with the submitted category
-        oldschema = addHiddenFields(colander.SchemaNode(colander.Mapping()),
-            itemType)
+        oldschema = addHiddenFields(
+            colander.SchemaNode(colander.Mapping()), itemType)
         oldCat = configCategoryList.findCategoryById(oldCategory)
         if oldCat is not None:
             oldschema.add(oldCat.getForm(request))
@@ -165,10 +170,11 @@ def renderForm(request, itemType, **kwargs):
             if (itemJson is None or (itemType in session
                 and 'form' in session[itemType]
                 and 'id' in session[itemType]['form']
-                and session[itemType]['form']['id'] == itemJson['id'])):
+                    and session[itemType]['form']['id'] == itemJson['id'])):
                 showSessionCategories = itemType
-            buttons = getFormButtons(request, categoryListButtons, oldCategory,
-            showSessionCategories=showSessionCategories)
+            buttons = getFormButtons(
+                request, categoryListButtons, oldCategory,
+                showSessionCategories=showSessionCategories)
 
         form = deform.Form(oldschema, buttons=buttons, formid=formid)
 
@@ -192,13 +198,14 @@ def renderForm(request, itemType, **kwargs):
                 sessionItem = session[itemType]['form']
                 if (captured['id'] == sessionItem['id']
                     and captured['version'] == sessionItem['version']
-                    and oldCategory in captured):
+                        and oldCategory in captured):
                     # It is the same item as already in the session, add or
                     # overwrite the form data.
                     updatedCategory = captured[oldCategory]
                     sessionItem[oldCategory] = updatedCategory
 
-                    log.debug('Updated session item: Category %s' % oldCategory)
+                    log.debug(
+                        'Updated session item: Category %s' % oldCategory)
 
                 else:
                     # A different item is already in the session. It will be
@@ -238,7 +245,8 @@ def renderForm(request, itemType, **kwargs):
                     print "*************************"
                     print "*************************"
                     print "*************************"
-                itemId = '' if itemJson is None or 'id' not in itemJson else itemJson['id']
+                itemId = '' if itemJson is None or 'id' not in itemJson \
+                    else itemJson['id']
                 session[itemType]['camefrom'] = {
                     'id': itemId,
                     'timestamp': datetime.datetime.now(),
@@ -246,18 +254,27 @@ def renderForm(request, itemType, **kwargs):
                 }
                 if itemType == 'activities':
                     msg = render(
-                        getTemplatePath(request, 'parts/messages/stakeholder_form_through_involvement.mak'),
-                        {'url': request.route_url('activities_read_many', output='form', _query={'inv': createInvolvement})},
+                        getTemplatePath(
+                            request,
+                            'parts/messages/stakeholder_form_through_'
+                            'involvement.mak'),
+                        {
+                            'url': request.route_url(
+                                'activities_read_many', output='form',
+                                _query={'inv': createInvolvement})
+                        },
                         request
                     )
                     session.flash(msg)
-                    url = request.route_url('stakeholders_read_many', output='form')
+                    url = request.route_url(
+                        'stakeholders_read_many', output='form')
                 else:
-                    url = request.route_url('activities_read_many', output='form')
+                    url = request.route_url(
+                        'activities_read_many', output='form')
 
                 # Redirect to the other form.
                 return HTTPFound(url)
-            
+
             if p == 'submit':
                 # The final submit button was clicked. Calculate the diff,
                 # delete the session data and redirect to a confirm page.
@@ -268,7 +285,8 @@ def renderForm(request, itemType, **kwargs):
                 # Activity
                 if posted_formid not in ['activityform', 'stakeholderform']:
                     # TODO: Is this the correct way to return an error message?
-                    feedbackMessage = '<h3 class="text-error">%s</h3>: Unknown form' % errorTitle
+                    feedbackMessage = '<h3 class="text-error">%s</h3>: Unknown'
+                    ' form' % errorTitle
                     return {
                         'form': feedbackMessage,
                         'css_links': [],
@@ -290,7 +308,8 @@ def renderForm(request, itemType, **kwargs):
 
                 formdata = copy.copy(session[itemType]['form'])
 
-                log.debug('The complete formdata as in the session: %s' % formdata)
+                log.debug(
+                    'The complete formdata as in the session: %s' % formdata)
 
                 diff = formdataToDiff(request, formdata, itemType)
 
@@ -299,7 +318,8 @@ def renderForm(request, itemType, **kwargs):
                 if diff is None:
                     # TODO: Is this the correct way to return an error message?
                     return {
-                        'form': '<h3 class="text-info">%s</h3><p>%s</p>' % (emptyTitle, emptyText),
+                        'form': '<h3 class="text-info">%s</h3><p>%s</p>' % (
+                            emptyTitle, emptyText),
                         'css_links': [],
                         'js_links': [],
                         'js': None,
@@ -315,18 +335,24 @@ def renderForm(request, itemType, **kwargs):
                     doClearFormSessionData(request, itemType, 'form')
 
                     if (otherItemType in session
-                        and 'camefrom' in session[otherItemType]):
+                            and 'camefrom' in session[otherItemType]):
                         # The form was submitted "indirectly"
 
                         camefrom = session[otherItemType]['camefrom']
-                        
-                        # Clear the camefrom flag
-                        doClearFormSessionData(request, otherItemType, 'camefrom')
 
-                        addToSession = addCreatedInvolvementToSession(request, session, otherItemType, camefrom['inv'], returnValues)
+                        # Clear the camefrom flag
+                        doClearFormSessionData(
+                            request, otherItemType, 'camefrom')
+
+                        addToSession = addCreatedInvolvementToSession(
+                            request, session, otherItemType, camefrom['inv'],
+                            returnValues)
                         if addToSession is True:
                             msg = render(
-                                getTemplatePath(request, 'parts/messages/stakeholder_created_through_involvement.mak'),
+                                getTemplatePath(
+                                    request,
+                                    'parts/messages/stakeholder_created_'
+                                    'through_involvement.mak'),
                                 {},
                                 request
                             )
@@ -334,28 +360,45 @@ def renderForm(request, itemType, **kwargs):
 
                         # Route to the other form again.
                         if itemType == 'activities':
-                            url = request.route_url('stakeholders_read_many', output='form', _query={'inv': camefrom['inv']})
+                            url = request.route_url(
+                                'stakeholders_read_many', output='form',
+                                _query={'inv': camefrom['inv']})
                         else:
-                            url = request.route_url('activities_read_many', output='form', _query={'inv': camefrom['inv']})
+                            url = request.route_url(
+                                'activities_read_many', output='form',
+                                _query={'inv': camefrom['inv']})
 
                         return HTTPFound(url)
 
                     else:
                         if itemType == 'activities':
                             feedbackMessage = render(
-                                getTemplatePath(request, 'parts/messages/activity_created_success.mak'),
-                                {'url': request.route_url('activities_read_one', output='html', uid=returnValues['id'])},
+                                getTemplatePath(
+                                    request,
+                                    'parts/messages/activity_created_'
+                                    'success.mak'),
+                                {
+                                    'url': request.route_url(
+                                        'activities_read_one', output='html',
+                                        uid=returnValues['id'])},
                                 request
                             )
                         else:
                             feedbackMessage = render(
-                                getTemplatePath(request, 'parts/messages/stakeholder_created_success.mak'),
-                                {'url': request.route_url('stakeholders_read_one', output='html', uid=returnValues['id'])},
+                                getTemplatePath(
+                                    request,
+                                    'parts/messages/stakeholder_created_'
+                                    'success.mak'),
+                                {
+                                    'url': request.route_url(
+                                        'stakeholders_read_one', output='html',
+                                        uid=returnValues['id'])},
                                 request
                             )
 
                 else:
-                    feedbackMessage = '<h3 class="text-error">%s</h3>%s' % (errorTitle, returnValues)
+                    feedbackMessage = '<h3 class="text-error">%s</h3>%s' % (
+                        errorTitle, returnValues)
 
                 return {
                     'form': feedbackMessage,
@@ -368,17 +411,18 @@ def renderForm(request, itemType, **kwargs):
     if formHasErrors is False:
         # If nothing was submitted or the captured form data was stored
         # correctly, create a form with the (new) current category.
-        newschema = addHiddenFields(colander.SchemaNode(colander.Mapping()),
-            itemType)
+        newschema = addHiddenFields(
+            colander.SchemaNode(colander.Mapping()), itemType)
         newCat = configCategoryList.findCategoryById(newCategory)
         if newCat is not None:
             newschema.add(newCat.getForm(request))
         showSessionCategories = None
         if (itemJson is None or (itemType in session
             and 'id' in session[itemType]
-            and session[itemType]['id'] == itemJson['id'])):
+                and session[itemType]['id'] == itemJson['id'])):
             showSessionCategories = itemType
-        buttons = getFormButtons(request, categoryListButtons, newCategory,
+        buttons = getFormButtons(
+            request, categoryListButtons, newCategory,
             showSessionCategories=showSessionCategories)
 
         form = deform.Form(newschema, buttons=buttons, formid=formid)
@@ -392,35 +436,40 @@ def renderForm(request, itemType, **kwargs):
             sessionItem = copy.copy(session[itemType]['form'])
 
         if itemJson is not None and itemType not in session:
-            # An item was provided to show in the form (edit form) and no values
-            # are in the session yet.
+            # An item was provided to show in the form (edit form) and no
+            # values are in the session yet.
             # Simply show the data of the provided item in the form.
-            data = getFormdataFromItemjson(request, itemJson, itemType,
-                newCategory)
+            data = getFormdataFromItemjson(
+                request, itemJson, itemType, newCategory)
         elif itemJson is not None and sessionItem is not None:
-            # An item was provided to show in the form (edit form) and there are
-            # some values in the session.
+            # An item was provided to show in the form (edit form) and there
+            # are some values in the session.
 
             if (itemJson['id'] == sessionItem['id']
-                and itemJson['version'] == sessionItem['version']):
+                    and itemJson['version'] == sessionItem['version']):
                 # The item in the session and the item provided are the same.
                 if str(newCategory) in sessionItem:
-                    # The current category of the form is already in the session
-                    # so we display this data.
+                    # The current category of the form is already in the
+                    # session so we display this data.
                     sessionItem['category'] = newCategory
                     data = sessionItem
                 else:
-                    # The current category of the form is not yet in the session
-                    # so we use the data of the itemjson to populate the form.
-                    data = getFormdataFromItemjson(request, itemJson, itemType,
-                        newCategory)
+                    # The current category of the form is not yet in the
+                    # session so we use the data of the itemjson to populate
+                    # the form.
+                    data = getFormdataFromItemjson(
+                        request, itemJson, itemType, newCategory)
                 if formSubmit is False:
                     # If the form is rendered for the first time, inform the
                     # user that session was used.
 
-                    url = request.route_url('form_clear_session', item=itemType, attr='form', _query={'url':request.url})
+                    url = request.route_url(
+                        'form_clear_session', item=itemType, attr='form',
+                        _query={'url': request.url})
                     msg = render(
-                        getTemplatePath(request, 'parts/messages/unsaved_data_same_form.mak'),
+                        getTemplatePath(
+                            request,
+                            'parts/messages/unsaved_data_same_form.mak'),
                         {'url': url},
                         request
                     )
@@ -429,37 +478,40 @@ def renderForm(request, itemType, **kwargs):
             else:
                 # The item in the session is not the same as the item provided.
                 # Use the itemjson to populate the form
-                data = getFormdataFromItemjson(request, itemJson, itemType,
-                    newCategory)
+                data = getFormdataFromItemjson(
+                    request, itemJson, itemType, newCategory)
 
                 # Inform the user that there is data in the session.
-                item_name = (sessionItem['id'][:6]
-                    if sessionItem['id'] != colander.null
-                    else '')
+                item_name = sessionItem['id'][:6] \
+                    if sessionItem['id'] != colander.null else ''
                 if sessionItem['id'] != colander.null:
                     if itemType == 'activities':
-                        item_url = request.route_url('activities_read_one',
-                            output='form', uid=sessionItem['id'])
+                        item_url = request.route_url(
+                            'activities_read_one', output='form',
+                            uid=sessionItem['id'])
                     elif itemType == 'stakeholders':
-                        item_url = request.route_url('stakeholders_read_one',
-                            output='form', uid=sessionItem['id'])
+                        item_url = request.route_url(
+                            'stakeholders_read_one', output='form',
+                            uid=sessionItem['id'])
                 else:
                     if itemType == 'activities':
-                        item_url = request.route_url('activities_read_many',
-                            output='form')
+                        item_url = request.route_url(
+                            'activities_read_many', output='form')
                     elif itemType == 'stakeholders':
-                        item_url = request.route_url('stakeholders_read_many',
-                            output='form')
+                        item_url = request.route_url(
+                            'stakeholders_read_many', output='form')
 
                 msg = render(
-                        getTemplatePath(request, 'parts/messages/unsaved_data_different_form.mak'),
-                        {
-                            'url': item_url,
-                            'name': item_name,
-                            'type': itemType
-                        },
-                        request
-                    )
+                    getTemplatePath(
+                        request,
+                        'parts/messages/unsaved_data_different_form.mak'),
+                    {
+                        'url': item_url,
+                        'name': item_name,
+                        'type': itemType
+                    },
+                    request
+                )
                 session.flash(msg)
 
         elif itemJson is None and sessionItem is not None:
@@ -467,36 +519,40 @@ def renderForm(request, itemType, **kwargs):
             # session.
 
             if (sessionItem['id'] != colander.null
-                and sessionItem['version'] != colander.null):
+                    and sessionItem['version'] != colander.null):
                 # The item in the session is not new. Show empty form data
                 # (already defined) and inform the user.
-                item_name = (sessionItem['id'][:6]
-                    if sessionItem['id'] != colander.null
-                    else _('Unknown Item'))
+                item_name = sessionItem['id'][:6] \
+                    if sessionItem['id'] != colander.null \
+                    else _('Unknown Item')
                 if sessionItem['id'] != colander.null:
                     if itemType == 'activities':
-                        item_url = request.route_url('activities_read_one',
-                            output='form', uid=sessionItem['id'])
+                        item_url = request.route_url(
+                            'activities_read_one', output='form',
+                            uid=sessionItem['id'])
                     elif itemType == 'stakeholders':
-                        item_url = request.route_url('stakeholders_read_one',
-                            output='form', uid=sessionItem['id'])
+                        item_url = request.route_url(
+                            'stakeholders_read_one', output='form',
+                            uid=sessionItem['id'])
                 else:
                     if itemType == 'activities':
-                        item_url = request.route_url('activities_read_many',
-                            output='form')
+                        item_url = request.route_url(
+                            'activities_read_many', output='form')
                     elif itemType == 'stakeholders':
-                        item_url = request.route_url('stakeholders_read_many',
-                            output='form')
+                        item_url = request.route_url(
+                            'stakeholders_read_many', output='form')
 
                 msg = render(
-                        getTemplatePath(request, 'parts/messages/unsaved_data_different_form.mak'),
-                        {
-                            'url': item_url,
-                            'name': item_name,
-                            'type': itemType
-                        },
-                        request
-                    )
+                    getTemplatePath(
+                        request,
+                        'parts/messages/unsaved_data_different_form.mak'),
+                    {
+                        'url': item_url,
+                        'name': item_name,
+                        'type': itemType
+                    },
+                    request
+                )
                 session.flash(msg)
 
             else:
@@ -509,9 +565,13 @@ def renderForm(request, itemType, **kwargs):
 
                 if formSubmit is False and newInvolvement is None:
                     # Inform the user that data from the session is used.
-                    url = request.route_url('form_clear_session', item=itemType, attr='form', _query={'url':request.url})
+                    url = request.route_url(
+                        'form_clear_session', item=itemType, attr='form',
+                        _query={'url': request.url})
                     msg = render(
-                        getTemplatePath(request, 'parts/messages/unsaved_data_same_form.mak'),
+                        getTemplatePath(
+                            request,
+                            'parts/messages/unsaved_data_same_form.mak'),
                         {'url': url},
                         request
                     )
@@ -520,8 +580,8 @@ def renderForm(request, itemType, **kwargs):
         elif itemJson is not None:
             # An item was provided to show in the form (edit form)
             # Simply show the data of the provided item in the form.
-            data = getFormdataFromItemjson(request, itemJson, itemType,
-                newCategory)
+            data = getFormdataFromItemjson(
+                request, itemJson, itemType, newCategory)
 
         else:
             # No itemjson and no sessionitem, do nothing (empty data already
@@ -533,8 +593,8 @@ def renderForm(request, itemType, **kwargs):
         html = form.render(data)
 
     # If the current category contains involvements (eg. to add Stakeholders to
-    # an Activity), show a (initially empty) div which will contain the form for
-    # Stakeholders.
+    # an Activity), show a (initially empty) div which will contain the form
+    # for Stakeholders.
     if str(newCategory) in configCategoryList.getInvolvementCategoryIds():
         html += '<div id="stakeholderformcontainer"></div>'
 
@@ -550,13 +610,16 @@ def renderForm(request, itemType, **kwargs):
         'success': not formHasErrors
     }
 
-def addCreatedInvolvementToSession(request, session, itemType, invName, created):
+
+def addCreatedInvolvementToSession(
+        request, session, itemType, invName, created):
     """
     Add a newly created Involvement to the session so it is accessible when
     switching back to the original form.
     """
 
-    if itemType not in session or 'form' not in session[itemType] or invName is None:
+    if itemType not in session or 'form' not in session[itemType] \
+            or invName is None:
         return False
 
     configList = getCategoryList(request, itemType)
@@ -577,7 +640,8 @@ def addCreatedInvolvementToSession(request, session, itemType, invName, created)
     sessionInv = sessionThmg[invName]
     newInv = created
 
-    # Add a role to the new involvement. By default, use the first one available
+    # Add a role to the new involvement. By default, use the first one
+    # available
     configInv = thmg.getInvolvement()
     configRoles = configInv.getRoles()
     if len(configRoles) < 1:
@@ -600,19 +664,21 @@ def addCreatedInvolvementToSession(request, session, itemType, invName, created)
             invAdded = True
 
         if invAdded is False:
-            # If the involvement was not added (because no empty entry was found),
-            # add it to the end of the list
+            # If the involvement was not added (because no empty entry was
+            # found), add it to the end of the list
             sessionInv.append(newInv)
 
     else:
         return False
 
     # Update the session
-    session[itemType]['form'][str(cat.getId())][str(thmg.getId())][invName] = sessionInv
+    session[itemType]['form'][str(cat.getId())][str(thmg.getId())][invName] = \
+        sessionInv
 
     log.debug('Added involvement to session: %s' % newInv)
 
     return True
+
 
 def renderReadonlyForm(request, itemType, itemJson):
     """
@@ -628,125 +694,144 @@ def renderReadonlyForm(request, itemType, itemJson):
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='statusId',
         title='',
-        missing = colander.null
+        missing=colander.null
     ))
-    for cat in sorted(configCategoryList.getCategories(),
-        key=lambda cat: cat.order):
+    for cat in sorted(
+            configCategoryList.getCategories(), key=lambda cat: cat.order):
         schema.add(cat.getForm(request, readonly=True))
 
     form = deform.Form(schema)
     data = getFormdataFromItemjson(request, itemJson, itemType, readOnly=True)
-    
+
     if data == {}:
         # If no formdata is available, it is very likely that the form has some
         # errors. In this case show an error message.
-        errorList = checkValidItemjson(configCategoryList, itemJson, output='list')
+        errorList = checkValidItemjson(
+            configCategoryList, itemJson, output='list')
         if len(errorList) > 0:
             url = None
-            routeName = 'activities_read_one_history' if itemType == 'activities' else 'stakeholders_read_one_history'
+            routeName = 'activities_read_one_history' \
+                if itemType == 'activities' \
+                else 'stakeholders_read_one_history'
             if 'id' in itemJson:
-                url = request.route_url(routeName, output='html', uid=itemJson['id'])
+                url = request.route_url(
+                    routeName, output='html', uid=itemJson['id'])
             errorMsg = render(
-                        getTemplatePath(request, 'parts/messages/item_requested_not_valid.mak'),
-                        {'url': url},
-                        request
-                    )
+                getTemplatePath(
+                    request, 'parts/messages/item_requested_not_valid.mak'),
+                {'url': url},
+                request
+            )
             return {
                 'form': errorMsg
             }
 
     if 'category' in data and data['category'] is None:
         data['category'] = 0
-    
+
     data['itemType'] = itemType
-    statusId = itemJson['status_id'] if 'status_id' in itemJson else colander.null
+    statusId = itemJson['status_id'] if 'status_id' in itemJson \
+        else colander.null
     data['statusId'] = statusId
     html = form.render(data, readonly=True)
 
-    geometry = json.dumps(itemJson['geometry']) if 'geometry' in itemJson else None
+    geometry = json.dumps(
+        itemJson['geometry']) if 'geometry' in itemJson else None
 
     return {
         'form': html,
         'geometry': geometry
     }
 
-def renderReadonlyCompareForm(request, itemType, refFeature, newFeature, 
-    review=False):
+
+def renderReadonlyCompareForm(
+        request, itemType, refFeature, newFeature, review=False):
     """
-    Return a rendered form used for comparison (for comparison or review 
+    Return a rendered form used for comparison (for comparison or review
     purposes).
     """
     _ = request.translate
     reviewableMessage = None
-    
+
     deform.Form.set_default_renderer(mako_renderer_compare)
     configCategoryList = getCategoryList(request, itemType)
-    
+
     compareMode = 'review' if review is True else 'compare'
     schema = addHiddenFields(colander.SchemaNode(colander.Mapping()), itemType)
     for cat in configCategoryList.getCategories():
         schema.add(cat.getForm(request, readonly=True, compare=compareMode))
-    
+
     schema.add(colander.SchemaNode(
         colander.String(),
         widget=deform.widget.HiddenWidget(),
         name='geomchange',
         title='',
-        missing = colander.null
+        missing=colander.null
     ))
-    
+
     form = deform.Form(schema)
     validComparison = True
-    
+
     refData = {}
     if refFeature is not None:
-        refData = getFormdataFromItemjson(request, refFeature.to_table(request),
-            itemType, readOnly=True)
+        refData = getFormdataFromItemjson(
+            request, refFeature.to_table(request), itemType, readOnly=True)
         if refData == {}:
             validComparison = False
-    
+
     newData = {}
     if newFeature is not None:
-        newData = getFormdataFromItemjson(request, newFeature.to_table(request), 
-            itemType, readOnly=True, compareFeature=newFeature)
+        newData = getFormdataFromItemjson(
+            request, newFeature.to_table(request), itemType, readOnly=True,
+            compareFeature=newFeature)
         if newData == {}:
             validComparison = False
-        
+
         if review is True and 'reviewable' in newData:
             reviewable = newData['reviewable']
             if reviewable == -2:
-                reviewableMessage = _('At least one of the involvements prevents automatic revision. Please review these involvements separately.')
+                reviewableMessage = _(
+                    'At least one of the involvements prevents automatic '
+                    'revision. Please review these involvements separately.')
             elif reviewable == -3:
-                reviewableMessage = _('This version contains changed involvements which prevent automatic revision. Please review these involvements.')
+                reviewableMessage = _(
+                    'This version contains changed involvements which prevent '
+                    'automatic revision. Please review these involvements.')
             elif reviewable < 0:
                 reviewableMessage = 'Something went wrong.'
-    
+
     if validComparison is False:
         # If no formdata is available, it is very likely that the form has some
         # errors. In this case show an error message.
         url = None
-        routeName = 'activities_read_one_history' if itemType == 'activities' else 'stakeholders_read_one_history'
+        routeName = 'activities_read_one_history' if itemType == 'activities' \
+            else 'stakeholders_read_one_history'
         if refFeature is not None:
-            url = request.route_url(routeName, output='html', uid=refFeature.get_guid())
+            url = request.route_url(
+                routeName, output='html', uid=refFeature.get_guid())
         elif newFeature is not None:
-            url = request.route_url(routeName, output='html', uid=newFeature.get_guid())
+            url = request.route_url(
+                routeName, output='html', uid=newFeature.get_guid())
         errorMsg = render(
-            getTemplatePath(request, 'parts/messages/comparison_not_valid.mak'),
+            getTemplatePath(
+                request, 'parts/messages/comparison_not_valid.mak'),
             {'url': url},
             request
         )
         return {
             'error': errorMsg
         }
-    
+
     data = mergeFormdata(refData, newData)
     html = form.render(data, readonly=True)
-    
+
     geometry = None
     if itemType == 'activities':
-        newGeometry = newFeature.get_geometry() if newFeature is not None else None
-        refGeometry = refFeature.get_geometry() if refFeature is not None else None
-        
+        newGeometry = newFeature.get_geometry() if newFeature is not None \
+            else None
+        refGeometry = refFeature.get_geometry() if refFeature is not None \
+            else None
+
         geometry = json.dumps({
             'ref': {
                 'geometry': refGeometry
@@ -765,7 +850,7 @@ def renderReadonlyCompareForm(request, itemType, refFeature, newFeature,
 
 def mergeFormdata(ref, new):
     """
-    Merge two formdatas to create a single formdata which can be used in a 
+    Merge two formdatas to create a single formdata which can be used in a
     compareForm as rendered by the function renderReadonlyCompareForm.
     The formdata has the following structure:
     '1': {
@@ -773,15 +858,15 @@ def mergeFormdata(ref, new):
             'ref_1': [
                 {
                     'tg_id': 0,
-                    '[A] Integerfield 1': 1, 
+                    '[A] Integerfield 1': 1,
                     '[A] Numberfield 2': 2,
                     'change': 'change'
                 }
-            ], 
+            ],
             'new_1': [
                 {
                     'tg_id': 0,
-                    '[A] Integerfield 1': 3, 
+                    '[A] Integerfield 1': 3,
                     '[A] Numberfield 2': 4,
                     'change': 'change'
                 }
@@ -791,7 +876,7 @@ def mergeFormdata(ref, new):
         'change': 'change'
     }
     """
-    
+
     def _addPrefixToEachTaggroup(data, prefix):
         """
         Adds a prefix to each taggroup in the form:
@@ -809,33 +894,36 @@ def mergeFormdata(ref, new):
                 new_cat[thmg_id] = new_thmg
             new_data[cat_id] = new_cat
         return new_data
-    
+
     def _mergeDicts(a, b, path=None):
         """
         Merge one dict in another.
         http://stackoverflow.com/a/7205107/841644
         """
-        if path is None: path = []
+        if path is None:
+            path = []
         for key in b:
             if key in a:
                 if isinstance(a[key], dict) and isinstance(b[key], dict):
                     _mergeDicts(a[key], b[key], path + [str(key)])
                 elif a[key] == b[key]:
-                    pass # same leaf value
+                    pass  # same leaf value
                 else:
-                    raise Exception('Conflict at %s' % '.'.join(path + [str(key)]))
+                    raise Exception(
+                        'Conflict at %s' % '.'.join(path + [str(key)]))
             else:
                 a[key] = b[key]
         return a
-    
+
     # Mark all taggroups of the two versions with 'ref' or 'new' respectively.
     # Then merge the two dicts.
-    merged = _mergeDicts(_addPrefixToEachTaggroup(ref, 'ref'), 
+    merged = _mergeDicts(
+        _addPrefixToEachTaggroup(ref, 'ref'),
         _addPrefixToEachTaggroup(new, 'new'))
-    
-    # Mark each thematicgroup and category which have changes in them. Also make
-    # sure that each taggroups missing in one version receive a flag so they are
-    # displayed as well in the form table.
+
+    # Mark each thematicgroup and category which have changes in them. Also
+    # make sure that each taggroups missing in one version receive a flag so
+    # they are displayed as well in the form table.
     geomChanged = False
     for cat_id, cat in merged.iteritems():
         catChanged = False
@@ -884,7 +972,8 @@ def mergeFormdata(ref, new):
                             changed = True
                             for ot in thmg[otherTaggroup]:
                                 d = DictDiffer(t, ot)
-                                diff = d.added().union(d.removed()).union(d.changed())
+                                diff = d.added().union(d.removed()).union(
+                                    d.changed())
                                 if 'reviewable' in diff:
                                     diff.remove('reviewable')
                                 if 'change' in diff:
@@ -910,17 +999,18 @@ def mergeFormdata(ref, new):
                 catChanged = True
         if catChanged is True:
             cat['change'] = 'change'
-    
+
     if ref == {}:
         # Special case: If there is no previous version, it is assumed that the
         # geometry has changed in any case.
         geomChanged = True
-    
+
     merged['geomchange'] = 'change' if geomChanged is True else ''
-    
+
     log.debug('Merged formdata: %s' % merged)
-    
+
     return merged
+
 
 def structHasOnlyNullValues(cstruct, depth=0):
     """
@@ -940,7 +1030,7 @@ def structHasOnlyNullValues(cstruct, depth=0):
     elif isinstance(cstruct, dict):
         # A dict. Go one level deeper for each.
         for c in cstruct:
-            a, d = structHasOnlyNullValues(cstruct[c], depth+1)
+            a, d = structHasOnlyNullValues(cstruct[c], depth + 1)
             if newDepth is None:
                 newDepth = d
             else:
@@ -958,6 +1048,7 @@ def structHasOnlyNullValues(cstruct, depth=0):
         allNull = allNull and False
     return allNull, newDepth if newDepth is not None else depth
 
+
 def doClearFormSessionData(request, item, attr):
     """
     Function to clear the session of any form-related data.
@@ -965,6 +1056,7 @@ def doClearFormSessionData(request, item, attr):
     # Clear the session of any form data
     if item in request.session and attr in request.session[item]:
         del(request.session[item][attr])
+
 
 def doUpdate(request, itemType, diff):
     """
@@ -998,8 +1090,8 @@ def doUpdate(request, itemType, diff):
     # the created Item is to be used directly as an involvement.
 
     # Use the protocol to query the created item
-    feature = protocol.read_one_by_version(request,
-        item.identifier, item.version)
+    feature = protocol.read_one_by_version(
+        request, item.identifier, item.version)
 
     if feature is None:
         return False, _('The Item was created but not found.'), None
@@ -1012,7 +1104,8 @@ def doUpdate(request, itemType, diff):
 
     # Set all values to 'unknown' first
     keyValues = []
-    overviewKeys = [o[0] for o in categorylist.getInvolvementOverviewKeyNames()]
+    overviewKeys = [
+        o[0] for o in categorylist.getInvolvementOverviewKeyNames()]
     for k in overviewKeys:
         keyValues.append([k, unknownString])
 
@@ -1032,6 +1125,7 @@ def doUpdate(request, itemType, diff):
 
     return True, returnDict
 
+
 def addHiddenFields(schema, itemType):
     """
     Function to add hidden fields (for meta data of the item) to a form schema.
@@ -1048,31 +1142,32 @@ def addHiddenFields(schema, itemType):
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='id',
         title='',
-        missing = colander.null
+        missing=colander.null
     ))
     schema.add(colander.SchemaNode(
         colander.Int(),
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='version',
         title='',
-        missing = colander.null
+        missing=colander.null
     ))
     schema.add(colander.SchemaNode(
         colander.Int(),
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='category',
         title='',
-        missing = colander.null
+        missing=colander.null
     ))
     schema.add(colander.SchemaNode(
         colander.String(),
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='itemType',
         title='',
-        missing = colander.null,
-        default = itemType
+        missing=colander.null,
+        default=itemType
     ))
     return schema
+
 
 def getFormButtons(request, categorylist, currentCategory=None, **kwargs):
     """
@@ -1103,12 +1198,15 @@ def getFormButtons(request, categorylist, currentCategory=None, **kwargs):
         for cat in categorylist:
             b = deform.Button('step_%s' % str(cat[0]), cat[1], css_class='')
             if str(cat[0]) in sessionCategories:
-                b.css_class='formstepvisited'
-            if currentCategory is not None and str(cat[0]) == str(currentCategory):
-                b.css_class='formstepactive'
+                b.css_class = 'formstepvisited'
+            if currentCategory is not None and str(cat[0]) == str(
+                    currentCategory):
+                b.css_class = 'formstepactive'
             buttons.append(b)
-    buttons.append(deform.Button('submit', _('Submit'), css_class='formsubmit'))
+    buttons.append(
+        deform.Button('submit', _('Submit'), css_class='formsubmit'))
     return buttons
+
 
 def checkValidItemjson(categorylist, itemJson, output='dict'):
     validMainkeys = categorylist.getAllMainkeyNames()
@@ -1121,16 +1219,21 @@ def checkValidItemjson(categorylist, itemJson, output='dict'):
 
         # Make sure the maintag exists and contains values
         if maintag is None or 'key' not in maintag or maintag['key'] is None:
-            errors.append('Undefined Maintag: Maintag of taggroup %s is not defined or has no values.' % taggroup)
+            errors.append(
+                'Undefined Maintag: Maintag of taggroup %s is not defined or '
+                'has no values.' % taggroup)
             continue
 
         # Make sure that the maintag is in the list of valid maintags according
         # to the configuration
         if maintag['key'] not in validMainkeys:
-            errors.append('Invalid Maintag: Maintag (%s) of taggroup %s is not a valid maintag according to the configuration.' % (maintag['key'], taggroup))
+            errors.append(
+                'Invalid Maintag: Maintag (%s) of taggroup %s is not a valid '
+                'maintag according to the configuration.' % (
+                    maintag['key'], taggroup))
 
-        # Make sure that the taggroup contains only one mainkey according to the
-        # configuration
+        # Make sure that the taggroup contains only one mainkey according to
+        # the configuration
         keys = []
         for tag in taggroup['tags']:
             keys.append(tag['key'])
@@ -1141,19 +1244,29 @@ def checkValidItemjson(categorylist, itemJson, output='dict'):
                 mainkeys.append(k)
 
         if len(mainkeys) > 1:
-            errors.append('Too many Mainkeys: The taggroup %s should contain only 1 mainkey according to the configuration. It contains %s: %s' % (taggroup, len(mainkeys), ', '.join(mainkeys)))
+            errors.append(
+                'Too many Mainkeys: The taggroup %s should contain only 1 '
+                'mainkey according to the configuration. It contains %s: %s'
+                % (taggroup, len(mainkeys), ', '.join(mainkeys)))
 
         # Make sure that all the tags are valid keys in the same taggroup
         # according to the configuration
         if len(mainkeys) == 1:
-            catId, thgId, confTaggroup = categorylist.findCategoryThematicgroupTaggroupByMainkey(maintag['key'])
+            catId, thgId, confTaggroup = categorylist.\
+                findCategoryThematicgroupTaggroupByMainkey(maintag['key'])
             if confTaggroup is not None:
                 for k in keys:
                     if confTaggroup.hasKey(k) is False:
-                        errors.append('Wrong key in taggroup: The key %s is not valid in a taggroup with mainkey %s' % (k, maintag['key']))
+                        errors.append(
+                            'Wrong key in taggroup: The key %s is not valid in'
+                            ' a taggroup with mainkey %s' % (
+                                k, maintag['key']))
 
     if len(errors) > 0:
-        log.debug('\n\n==================================\nThe itemJson is not valid according to the yaml configuration. The following errors exist:\n** FORM ERROR ** %s\n==================================\n\n'
+        log.debug(
+            '\n\n==================================\nThe itemJson is not valid'
+            ' according to the yaml configuration. The following errors exist:'
+            '\n** FORM ERROR ** %s\n==================================\n\n'
             % '\n** FORM ERROR ** '.join(errors))
 
     if output == 'dict':
@@ -1170,7 +1283,9 @@ def checkValidItemjson(categorylist, itemJson, output='dict'):
 
     return None
 
-def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs):
+
+def getFormdataFromItemjson(
+        request, itemJson, itemType, category=None, **kwargs):
     """
     Use the JSON representation of a feature (Activity or Stakeholder) to get
     the values in a way the form can handle to display it. This can be used to
@@ -1183,7 +1298,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
       {'stakeholders': {...}}
     - itemType: activities / stakeholders
     """
-    
+
     readOnly = kwargs.get('readOnly', False)
     compareFeature = kwargs.get('compareFeature', None)
     if compareFeature is not None:
@@ -1227,24 +1342,24 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             maintag = tg['main_tag']
             for f in fields:
                 if ('key' in maintag and 'value' in maintag
-                    and maintag['key'] == f):
+                        and maintag['key'] == f):
                     fields[f] = maintag['value']
 
         fields['id'] = data['id']
         fields['version'] = involvementData['version']
         fields['role_id'] = involvementData['role_id']
-        
+
         if compareFeature is not None:
             reviewable = 0
             inv = compareFeature.find_involvement_by_guid(data['id'])
-            
+
             # Check if the involvement is reviewable. This is only important if
             # the version on the other side is pending or edited.
             if inv is not None and inv.get_status() in [1, 6]:
                 reviewable = review._review_check_involvement(
                     inv._feature.getMappedClass(), inv._feature.get_guid(),
                     inv._feature.get_version())
-                
+
             fields['reviewable'] = reviewable
 
         return fields
@@ -1261,14 +1376,16 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
         'category': category
     }
 
-    if ('involvements' in itemJson and (category is None or
-        str(category) in categorylist.getInvolvementCategoryIds())):
+    if ('involvements' in itemJson and (
+        category is None or
+            str(category) in categorylist.getInvolvementCategoryIds())):
 
         # Have a look at the involvements
         involvements = itemJson['involvements']
 
         otherCategoryList = getCategoryList(request, otherItemType)
-        invOverviewKeys = [k[0] for k in otherCategoryList.getInvolvementOverviewKeyNames()]
+        invOverviewKeys = [
+            k[0] for k in otherCategoryList.getInvolvementOverviewKeyNames()]
 
         for inv in involvements:
 
@@ -1283,17 +1400,18 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             invData = _getInvolvementData(inv, invOverviewKeys)
             if 'reviewable' in invData:
                 # For multiple involvements, do not always overwrite the flag
-                # whether an involvement is reviewable or not. As error messages
-                # have a negative code, use the minimal error code of all
-                # involvements.
+                # whether an involvement is reviewable or not. As error
+                # messages have a negative code, use the minimal error code of
+                # all involvements.
                 if 'reviewable' in data:
-                    data['reviewable'] = min(data['reviewable'], invData['reviewable'])
+                    data['reviewable'] = min(
+                        data['reviewable'], invData['reviewable'])
                 else:
                     data['reviewable'] = invData['reviewable']
 
             if readOnly and 'role_id' in invData:
-                # For readonly forms, we need to populate the role_name with the
-                # name of the Stakeholder_Role
+                # For readonly forms, we need to populate the role_name with
+                # the name of the Stakeholder_Role
                 invRole = invConfig.findRoleById(invData['role_id'])
                 if invRole is not None:
                     invData['role_name'] = invRole.getName()
@@ -1307,7 +1425,8 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             dataThmg = dataCat[str(invThmg.getId())]
 
             if invConfig.getRepeatable() is True:
-                if invConfig.getName() in dataThmg and len(dataThmg[invConfig.getName()]) > 0:
+                if invConfig.getName() in dataThmg and len(
+                        dataThmg[invConfig.getName()]) > 0:
                     dataThmg[invConfig.getName()].append(invData)
                 else:
                     dataThmg[invConfig.getName()] = [invData]
@@ -1315,7 +1434,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
                 dataThmg[invConfig.getName()] = invData
 
     for taggroup in itemJson['taggroups']:
-        
+
         # Get the category and thematic group based on the maintag
         mt = taggroup['main_tag']
 
@@ -1323,8 +1442,8 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             # If the maintag is empty, move on and do not add it to the form
             continue
 
-        cat, thmg, tg = categorylist.findCategoryThematicgroupTaggroupByMainkey(
-            mt['key'])
+        cat, thmg, tg = categorylist.\
+            findCategoryThematicgroupTaggroupByMainkey(mt['key'])
 
         # Treat the id's all as strings
         cat = str(cat)
@@ -1358,11 +1477,12 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
                     if configValue is not None:
                         v = configValue.getTranslation()
 
-                if maintag.getKey().getType().lower() in ['checkbox', 'inputtoken']:
+                if maintag.getKey().getType().lower() in [
+                        'checkbox', 'inputtoken']:
                     # Checkboxes: List of tuples with name and tg_id
                     tagsdata[t['key']] = [(v, taggroup['tg_id'])]
                 elif (configTag is not None
-                    and configTag.getKey().getType().lower() == 'date'):
+                        and configTag.getKey().getType().lower() == 'date'):
                     try:
                         d = datetime.datetime.strptime(v, '%Y-%m-%d')
                         tagsdata[t['key']] = d
@@ -1376,7 +1496,7 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
 
         if tg.getRepeatable():
             tagsdata = [tagsdata]
-            
+
         if cat in data:
             # Category already exists, check thematic group
             if thmg in data[cat]:
@@ -1388,12 +1508,16 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
                     if tg.getRepeatable():
                         # Repeatable: Add the data to the list of taggroups
                         data[cat][thmg][tgid].append(tagsdata[0])
-                    elif (maintag.getKey().getType().lower() in ['checkbox', 'inputtoken']
-                        and t['key'] in data[cat][thmg][tgid]):
+                    elif (maintag.getKey().getType().lower() in [
+                            'checkbox', 'inputtoken']
+                            and t['key'] in data[cat][thmg][tgid]):
                         # Checkboxes: Add the data to the list of tuples
                         data[cat][thmg][tgid][t['key']] += tagsdata[t['key']]
                     else:
-                        log.debug('DUPLICATE TAGGROUP: Taggroup %s in thematic group %s and category %s appears twice although it is not repeatable!' % (tgid, thmg, cat))
+                        log.debug(
+                            'DUPLICATE TAGGROUP: Taggroup %s in thematic group'
+                            ' %s and category %s appears twice although it is '
+                            'not repeatable!' % (tgid, thmg, cat))
                 else:
                     # Taggroup does not exist yet, tags can be added
                     data[cat][thmg][tgid] = tagsdata
@@ -1408,27 +1532,30 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             # current form.
             if category is None or cat == str(category):
                 data[cat] = {thmg: {tgid: tagsdata}}
-                
+
         # Map: Look only if the category contains a thematic group which has a
         # map.
         if (cat in categorylist.getMapCategoryIds()
-            and thmg in categorylist.getMapThematicgroupIds()):
-            # Make sure all the necessary values are there and add it only once.
+                and thmg in categorylist.getMapThematicgroupIds()):
+            # Make sure all the necessary values are there and add it only
+            # once.
             # TODO: The parameter 'map' is defined in the yaml (map: map) and
             # therefore rather static. Should this be made more dynamic?
             if (cat in data and thmg in data[cat]
-                and 'map' not in data[cat][thmg] and 'geometry' in itemJson):
+                    and 'map' not in data[cat][thmg]
+                    and 'geometry' in itemJson):
                 mapAdded = True
                 data[cat][thmg]['map'] = {
                     'geometry': json.dumps(itemJson['geometry'])
                 }
 
     # Map
-    if (category is not None and str(category) in categorylist.getMapCategoryIds()
-        and mapAdded is False):
+    if (category is not None
+            and str(category) in categorylist.getMapCategoryIds()
+            and mapAdded is False):
         # The current category contains a map which has not yet been added to
-        # the form data. This may be the case if there are no other taggroups in
-        # this category or thematic group filled out.
+        # the form data. This may be the case if there are no other taggroups
+        # in this category or thematic group filled out.
         cat = categorylist.findCategoryById(category)
         catId = str(cat.getId())
 
@@ -1452,18 +1579,19 @@ def getFormdataFromItemjson(request, itemJson, itemType, category=None, **kwargs
             }
 
     log.debug('Formdata created by ItemJSON: %s' % data)
-    
+
     return data
+
 
 def formdataToDiff(request, newform, itemType):
     """
     Use the formdata captured on submission of the form and compare it with the
     old version of an object to create a diff which allows to create/update the
     object.
-    Approach: Loop all items of the newform and check if they are new or changed
-    compared to the oldform. If so, add them to diff and set their values to
-    null in the oldform. Any remaining items (with non-null values) of oldform
-    were deleted and need to be added to diff as well.
+    Approach: Loop all items of the newform and check if they are new or
+    changed compared to the oldform. If so, add them to diff and set their
+    values to null in the oldform. Any remaining items (with non-null values)
+    of oldform were deleted and need to be added to diff as well.
     - newform: The form data captured on submission
     - itemType: activities / stakeholders
     """
@@ -1475,12 +1603,13 @@ def formdataToDiff(request, newform, itemType):
         """
         if ('id' in invDict and invDict['id'] != colander.null
             and 'version' in invDict and invDict['version'] != colander.null
-            and 'role_id' in invDict and invDict['role_id'] != colander.null):
+            and 'role_id' in invDict
+                and invDict['role_id'] != colander.null):
             invList.append(invDict)
         return invList
 
-    def _findRemoveTgByCategoryThematicgroupTgid(form, category, thematicgroup,
-        tg_id, checkbox=False):
+    def _findRemoveTgByCategoryThematicgroupTgid(
+            form, category, thematicgroup, tg_id, checkbox=False):
         """
         Helper function to find a taggroup by its category, thematic group and
         tg_id. If it was found, its values in the form are set to null and the
@@ -1495,8 +1624,8 @@ def formdataToDiff(request, newform, itemType):
                     if thmgrp == thematicgroup:
                         # Loop the taggroups of the thematic group
                         for (tgroup, tags) in tgroups.iteritems():
-                            # Transform them all to lists to handle them all the
-                            # same.
+                            # Transform them all to lists to handle them all
+                            # the same.
                             if not isinstance(tags, list):
                                 tags = [tags]
                             # Look at each taggroup and check the tg_id
@@ -1509,8 +1638,9 @@ def formdataToDiff(request, newform, itemType):
                                         # Set the values to null
                                         t[k] = colander.null
                                     return form, ret
-                                elif checkbox is True and ('tg_id' not in t
-                                    or t['tg_id'] == colander.null):
+                                elif checkbox is True and (
+                                        'tg_id' not in t
+                                        or t['tg_id'] == colander.null):
                                     # Checkboxes: The actual taggroups are in a
                                     # list one level further down
                                     for (k, v) in t.iteritems():
@@ -1529,8 +1659,8 @@ def formdataToDiff(request, newform, itemType):
                                                     # taggroup in the list, set
                                                     # value of key to null.
                                                     t[k] = colander.null
-                                            
-                                                return form, True # Return
+
+                                                return form, True  # Return
         return form, None
 
     identifier = colander.null
@@ -1586,10 +1716,10 @@ def formdataToDiff(request, newform, itemType):
             del oldform['category']
 
         if itemType == 'stakeholders':
-            # The form for Stakeholders has involvement fields in them which are
-            # only used for display purposes (since involvements can only be
-            # added on Activity side). We need to remove them before processing
-            # the diff.
+            # The form for Stakeholders has involvement fields in them which
+            # are only used for display purposes (since involvements can only
+            # be added on Activity side). We need to remove them before
+            # processing the diff.
             if 'primaryinvestors' in oldform:
                 del oldform['primaryinvestors']
             if 'secondaryinvestors' in oldform:
@@ -1635,25 +1765,27 @@ def formdataToDiff(request, newform, itemType):
         # Loop the thematic groups of the category
         for (thmgrp, tgroups) in thmgrpsitems:
 
-            if (thmgrp in categorylist.getInvolvementThematicgroupIds() 
-                and itemType != 'stakeholders'):
+            if (thmgrp in categorylist.getInvolvementThematicgroupIds()
+                    and itemType != 'stakeholders'):
                 # Important: Involvements can only be changed from the side of
                 # the activities!
-                
-                # In a first step, collect all the involvements there are in the new
-                # form and the involvements that were in the oldform. Use them only
-                # if they have an id, a version and a role_id.
+
+                # In a first step, collect all the involvements there are in
+                # the new form and the involvements that were in the oldform.
+                # Use them only if they have an id, a version and a role_id.
                 newInvolvements = []
                 oldInvolvements = []
 
                 for (tgrp, involvements) in tgroups.iteritems():
 
                     if isinstance(involvements, dict):
-                        newInvolvements = _addInvolvementDictToList(newInvolvements, involvements)
+                        newInvolvements = _addInvolvementDictToList(
+                            newInvolvements, involvements)
 
                     elif isinstance(involvements, list):
                         for i in involvements:
-                            newInvolvements = _addInvolvementDictToList(newInvolvements, i)
+                            newInvolvements = _addInvolvementDictToList(
+                                newInvolvements, i)
 
                 # Collect the old involvement data from the original form with
                 # the same category and thematic group.
@@ -1662,23 +1794,27 @@ def formdataToDiff(request, newform, itemType):
 
                     for (invName, invData) in oldInvgrp.iteritems():
                         if isinstance(invData, dict):
-                            oldInvolvements = _addInvolvementDictToList(oldInvolvements, invData)
+                            oldInvolvements = _addInvolvementDictToList(
+                                oldInvolvements, invData)
 
                         elif isinstance(invData, list):
                             for i in invData:
-                                oldInvolvements = _addInvolvementDictToList(oldInvolvements, i)
+                                oldInvolvements = _addInvolvementDictToList(
+                                    oldInvolvements, i)
 
                 # Loop the new involvements and try to find them in the old
-                # involvements (based on their identifier, version and role_id). If
-                # they are found, remove them from the list of old involvements. If
-                # they are not found, mark them as newly added.
+                # involvements (based on their identifier, version and
+                # role_id). If they are found, remove them from the list of
+                # old involvements. If they are not found, mark them as newly
+                # added.
                 for ni in newInvolvements:
                     found = False
 
                     for oi in oldInvolvements:
 
-                        if (ni['id'] == oi['id'] and ni['version'] == oi['version']
-                            and ni['role_id'] == oi['role_id']):
+                        if (ni['id'] == oi['id']
+                            and ni['version'] == oi['version']
+                                and ni['role_id'] == oi['role_id']):
                             found = True
                             oldInvolvements.remove(oi)
                             break
@@ -1713,11 +1849,15 @@ def formdataToDiff(request, newform, itemType):
 
                     oldgeom = None
                     if (cat in oldform and thmgrp in oldform[cat]
-                        and cfgThmg.getMap().getName() in oldform[cat][thmgrp]):
-                        oldgeom = oldform[cat][thmgrp][cfgThmg.getMap().getName()]
+                            and cfgThmg.getMap().getName()
+                            in oldform[cat][thmgrp]):
+                        oldgeom = oldform[cat][thmgrp][
+                            cfgThmg.getMap().getName()]
                         oldgeometry = json.loads(oldgeom['geometry'])
 
-                    geometry = (map['geometry'] if 'geometry' in map and map['geometry'] != colander.null else None)
+                    geometry = (
+                        map['geometry'] if 'geometry' in map
+                        and map['geometry'] != colander.null else None)
 
                     if geometry is None:
                         continue
@@ -1739,21 +1879,26 @@ def formdataToDiff(request, newform, itemType):
                         continue
 
                     if t['tg_id'] != colander.null:
-                        # Taggroup was there before because it contains a tg_id.
-                        # Check if it contains changed values.
+                        # Taggroup was there before because it contains a
+                        # tg_id. Check if it contains changed values.
 
                         # Make a copy of the tags because the function to find
                         # and remove below modifies t.
                         t_copy = copy.copy(t)
 
                         # Try to find the taggroup by its tg_id in the oldform
-                        oldform, oldtaggroup = _findRemoveTgByCategoryThematicgroupTgid(
-                            oldform, cat, thmgrp, t['tg_id'])
+                        oldform, oldtaggroup = \
+                            _findRemoveTgByCategoryThematicgroupTgid(
+                                oldform, cat, thmgrp, t['tg_id'])
 
                         if oldtaggroup is None:
                             # This should never happen since all tg_ids should
                             # be known.
-                            log.debug('\n\n*** TG_ID NOT FOUND: When trying to find and remove taggroup by tg_id (%s), the taggroup was not found in the old form.\n\n' % t['tg_id'])
+                            log.debug(
+                                '\n\n*** TG_ID NOT FOUND: When trying to find '
+                                'and remove taggroup by tg_id (%s), the '
+                                'taggroup was not found in the old form.\n\n'
+                                % t['tg_id'])
                             continue
 
                         deletedtags = []
@@ -1761,21 +1906,23 @@ def formdataToDiff(request, newform, itemType):
 
                         for (k, v) in t_copy.iteritems():
 
-                            if type(v) == datetime.date or type(v) == datetime.datetime:
+                            if type(v) == datetime.date \
+                                    or type(v) == datetime.datetime:
                                 v = datetime.datetime.strftime(v, '%Y-%m-%d')
 
                             oldv = oldtaggroup[k] if k in oldtaggroup else None
-                            if type(oldv) == datetime.date or type(oldv) == datetime.datetime:
-                                oldv = datetime.datetime.strftime(oldv, '%Y-%m-%d')
-
+                            if type(oldv) == datetime.date \
+                                    or type(oldv) == datetime.datetime:
+                                oldv = datetime.datetime.strftime(
+                                    oldv, '%Y-%m-%d')
 
                             if (k != 'tg_id'):
-                                if (oldv is not None and 
+                                if (oldv is not None and
                                     unicode(v) != unicode(oldv)
-                                    and v != colander.null):
-                                    # Because the form renders values as floats,
-                                    # it is important to compare them correctly
-                                    # with an integer value
+                                        and v != colander.null):
+                                    # Because the form renders values as
+                                    # floats, it is important to compare them
+                                    # correctly with an integer value
                                     try:
                                         if float(oldv) == float(v):
                                             continue
@@ -1796,25 +1943,29 @@ def formdataToDiff(request, newform, itemType):
                                         'value': v
                                     })
                                 elif (k not in oldtaggroup
-                                    and v != colander.null):
-                                    # If a key was not there in the oldform, add
-                                    # it as added.
+                                        and v != colander.null):
+                                    # If a key was not there in the oldform,
+                                    # add it as added.
                                     addedtags.append({
                                         'key': k,
                                         'value': v
                                     })
-                                elif (k in oldtaggroup and unicode(v) != unicode(oldtaggroup[k])
-                                    and v == colander.null):
-                                    # If a key was in the oldform but not in the
-                                    # new one anymore, add it as deleted.
+                                elif (k in oldtaggroup
+                                        and unicode(v) !=
+                                        unicode(oldtaggroup[k])
+                                        and v == colander.null):
+                                    # If a key was in the oldform but not in
+                                    # the new one anymore, add it as deleted.
                                     oldv = oldtaggroup[k]
-                                    if type(oldv) == datetime.date or type(oldv) == datetime.datetime:
-                                        oldv = datetime.datetime.strftime(oldv, '%Y-%m-%d')
+                                    if type(oldv) == datetime.date or type(
+                                            oldv) == datetime.datetime:
+                                        oldv = datetime.datetime.strftime(
+                                            oldv, '%Y-%m-%d')
                                     deletedtags.append({
                                         'key': k,
                                         'value': oldtaggroup[k]
                                     })
-                                    
+
                         # Put together diff for the taggroup
                         if len(deletedtags) > 0 or len(addedtags) > 0:
                             tagdiffs = []
@@ -1835,10 +1986,11 @@ def formdataToDiff(request, newform, itemType):
                                 'tg_id': t['tg_id'],
                                 'tags': tagdiffs
                             }
-                            # If there are no tags left in the old taggroup, 
+                            # If there are no tags left in the old taggroup,
                             # mark the entire taggroup diff to be deleted.
                             del(oldtaggroup['tg_id'])
-                            if len(addedtags) == 0 and len(deletedtags) > 0 and oldtaggroup == {}:
+                            if len(addedtags) == 0 and len(deletedtags) > 0 \
+                                    and oldtaggroup == {}:
                                 tgdiff['op'] = 'delete'
                             taggroupdiffs.append(tgdiff)
 
@@ -1848,8 +2000,8 @@ def formdataToDiff(request, newform, itemType):
                         # of checkboxes (with tg_ids a level lower)
                         # For Checkboxes: Values cannot really change, they can
                         # only be added (if another checkbox is selected, a new
-                        # taggroup is created). If a checkbox was submitted with
-                        # a tg_id, it was there before already.
+                        # taggroup is created). If a checkbox was submitted
+                        # with a tg_id, it was there before already.
                         addedtags = []
                         addedtaggroups = []
                         for (k, v) in t.iteritems():
@@ -1879,15 +2031,27 @@ def formdataToDiff(request, newform, itemType):
                                         else:
                                             # Try to find and remove the
                                             # taggroup in the old form
-                                            oldform, oldtaggroup = _findRemoveTgByCategoryThematicgroupTgid(
-                                                oldform, cat, thmgrp, tg_id, True)
+                                            oldform, oldtaggroup = \
+                                                _findRemoveTgByCategoryThematicgroupTgid(
+                                                    oldform, cat, thmgrp,
+                                                    tg_id, True)
                                             if oldtaggroup is None:
-                                                # This basically should not happen because the tg_id always should be found.
-                                                log.debug('\n\n*** TG_ID NOT FOUND: When trying to find and remove taggroup by tg_id (%s), the taggroup was not found in the old form.\n\n' % tg_id)
+                                                # This basically should not
+                                                # happen because the tg_id
+                                                # always should be found.
+                                                log.debug(
+                                                    '\n\n*** TG_ID NOT FOUND: '
+                                                    'When trying to find and '
+                                                    'remove taggroup by tg_id '
+                                                    '(%s), the taggroup was '
+                                                    'not found in the old '
+                                                    'form.\n\n' % tg_id)
                                 else:
                                     # Write dates as string
-                                    if type(v) == datetime.date or type(v) == datetime.datetime:
-                                        v = datetime.datetime.strftime(v, '%Y-%m-%d')
+                                    if type(v) == datetime.date or \
+                                            type(v) == datetime.datetime:
+                                        v = datetime.datetime.strftime(
+                                            v, '%Y-%m-%d')
 
                                     # No checkbox, simply a new tag
                                     addedtags.append({
@@ -1928,8 +2092,10 @@ def formdataToDiff(request, newform, itemType):
                                 continue
 
                             # Store date maintags also as string
-                            if type(mainvalue) == datetime.date or type(mainvalue) == datetime.datetime:
-                                mainvalue = datetime.datetime.strftime(mainvalue, '%Y-%m-%d')
+                            if type(mainvalue) == datetime.date or type(
+                                    mainvalue) == datetime.datetime:
+                                mainvalue = datetime.datetime.strftime(
+                                    mainvalue, '%Y-%m-%d')
 
                             tagdiffs = []
                             for at in addedtags:
@@ -1966,7 +2132,8 @@ def formdataToDiff(request, newform, itemType):
                         deletedtags = []
                         for (k, v) in t.iteritems():
 
-                            if type(v) == datetime.date or type(v) == datetime.datetime:
+                            if type(v) == datetime.date or \
+                                    type(v) == datetime.datetime:
                                 v = datetime.datetime.strftime(v, '%Y-%m-%d')
 
                             if (k != 'tg_id' and v != colander.null):
@@ -2008,7 +2175,7 @@ def formdataToDiff(request, newform, itemType):
     ret = None
 
     if (len(taggroupdiffs) > 0 or len(involvementdiffs) > 0
-        or geometrydiff is not None):
+            or geometrydiff is not None):
         itemdiff = {}
 
         if len(taggroupdiffs) > 0:
@@ -2030,6 +2197,7 @@ def formdataToDiff(request, newform, itemType):
 
     return ret
 
+
 def mako_renderer(tmpl_name, **kw):
     """
     A helper function to use the mako rendering engine.
@@ -2039,13 +2207,15 @@ def mako_renderer(tmpl_name, **kw):
     request = get_current_request()
     # Redirect base form templates to customized templates
     if tmpl_name in [
-        'form', 'readonly/form', 'customInvolvementMapping', 
-        'readonly/customInvolvementMappingStakeholder',
-        'readonly/customInvolvementMappingActivity'
-        ]:
-        resolver = lmkpAssetResolver.resolve(getTemplatePath(request, 'form/%s.mak' % tmpl_name))
+            'form', 'readonly/form', 'customInvolvementMapping',
+            'readonly/customInvolvementMappingStakeholder',
+            'readonly/customInvolvementMappingActivity'
+    ]:
+        resolver = lmkpAssetResolver.resolve(getTemplatePath(
+            request, 'form/%s.mak' % tmpl_name))
     else:
-        resolver = lmkpAssetResolver.resolve('templates/form/%s.mak' % tmpl_name)
+        resolver = lmkpAssetResolver.resolve(
+            'templates/form/%s.mak' % tmpl_name)
     template = Template(filename=resolver.abspath())
 
     # Add the request to the keywords so it is available in the templates.
@@ -2053,6 +2223,7 @@ def mako_renderer(tmpl_name, **kw):
     kw['_'] = request.translate
 
     return template.render(**kw)
+
 
 def mako_renderer_compare(tmpl_name, **kw):
     """
@@ -2063,9 +2234,11 @@ def mako_renderer_compare(tmpl_name, **kw):
     request = get_current_request()
     # Redirect base form templates to customized templates
     if tmpl_name in ['readonly/form', 'customInvolvementMapping']:
-        resolver = lmkpAssetResolver.resolve(getTemplatePath(request, 'review/%s.mak' % tmpl_name))
+        resolver = lmkpAssetResolver.resolve(getTemplatePath(
+            request, 'review/%s.mak' % tmpl_name))
     else:
-        resolver = lmkpAssetResolver.resolve('templates/review/%s.mak' % tmpl_name)
+        resolver = lmkpAssetResolver.resolve(
+            'templates/review/%s.mak' % tmpl_name)
     template = Template(filename=resolver.abspath())
 
     # Add the request to the keywords so it is available in the templates.
@@ -2073,6 +2246,7 @@ def mako_renderer_compare(tmpl_name, **kw):
     kw['_'] = request.translate
 
     return template.render(**kw)
+
 
 class DictDiffer(object):
     """
@@ -2085,13 +2259,20 @@ class DictDiffer(object):
     """
     def __init__(self, current_dict, past_dict):
         self.current_dict, self.past_dict = current_dict, past_dict
-        self.set_current, self.set_past = set(current_dict.keys()), set(past_dict.keys())
+        self.set_current, self.set_past = set(current_dict.keys()), set(
+            past_dict.keys())
         self.intersect = self.set_current.intersection(self.set_past)
+
     def added(self):
-        return self.set_current - self.intersect 
+        return self.set_current - self.intersect
+
     def removed(self):
-        return self.set_past - self.intersect 
+        return self.set_past - self.intersect
+
     def changed(self):
-        return set(o for o in self.intersect if self.past_dict[o] != self.current_dict[o])
+        return set(o for o in self.intersect
+                   if self.past_dict[o] != self.current_dict[o])
+
     def unchanged(self):
-        return set(o for o in self.intersect if self.past_dict[o] == self.current_dict[o])
+        return set(o for o in self.intersect
+                   if self.past_dict[o] == self.current_dict[o])

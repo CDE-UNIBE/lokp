@@ -1,33 +1,35 @@
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
-__author__ = "Adrian Weber, Centre for Development and Environment, University of Bern"
-__date__ = "$Jan 20, 2012 10:39:24 AM$"
-
 import geojson
-import mimetypes
-from lmkp.config import locale_profile_directory_path
-from lmkp.config import profile_directory_path
-from lmkp.config import valid_mime_extensions
-from lmkp.config import upload_max_file_size
-from lmkp.models.database_objects import A_Key
-from lmkp.models.database_objects import A_Value
-from lmkp.models.database_objects import Language
-from lmkp.models.database_objects import Profile
-from lmkp.models.database_objects import SH_Key
-from lmkp.models.database_objects import SH_Value
-from lmkp.models.meta import DBSession as Session
-from lmkp.views.profile import get_current_profile
-import logging
-from pyramid.httpexceptions import HTTPNotFound
-from pyramid.view import view_config
-import shapely
 import simplejson as json
-from sqlalchemy import func
+import logging
+import mimetypes
+import shapely
 import yaml
+from pyramid.httpexceptions import HTTPNotFound
+from pyramid.i18n import get_localizer
+from pyramid.view import view_config
+from sqlalchemy import func
+
+from lmkp.config import (
+    locale_profile_directory_path,
+    profile_directory_path,
+    upload_max_file_size,
+    valid_mime_extensions,
+)
+from lmkp.models.database_objects import (
+    A_Key,
+    A_Value,
+    Language,
+    Profile,
+    SH_Key,
+    SH_Value,
+)
+from lmkp.models.meta import DBSession as Session
+from lmkp.views.form_config import getCategoryList
+from lmkp.views.profile import get_current_profile
+
 
 log = logging.getLogger(__name__)
 
-from pyramid.i18n import get_localizer
 
 # File names in the locale profile directory
 APPLICATION_YAML = 'application.yml'
@@ -36,7 +38,6 @@ NEW_ACTIVITY_YAML = 'new_activity.yml'
 STAKEHOLDER_YAML = 'stakeholder.yml'
 NEW_STAKEHOLDER_YAML = 'new_stakeholder.yml'
 
-from lmkp.views.form_config import getCategoryList
 
 @view_config(route_name='config_geomtaggroups', renderer='json')
 def form_geomtaggroups(request):
@@ -45,16 +46,10 @@ def form_geomtaggroups(request):
     geometries as defined in the configuration yaml.
     """
     categorylist = getCategoryList(request, 'activities')
-    # TODO: Once the QGIS-Plugin is adapted to match the new output of this
-    # function, remove the parameter (withTranslation=False) from the function
-    # call below.
-    # The new output is as follows:
-    # {
-    #   'mainkeys': [
-    #       [TRANSLATION, ORIGINAL]
-    #   ]
-    # }
-    return {'mainkeys': categorylist.getMainkeyWithGeometry(withTranslation=True)}
+    return {
+        'mainkeys': categorylist.getMainkeyWithGeometry(withTranslation=True)
+    }
+
 
 def getFileUploadValidExtensions(request):
     """
@@ -70,17 +65,19 @@ def getFileUploadValidExtensions(request):
                 extensions.append(knownExtension)
     return sorted(extensions)
 
+
 def getFileUploadMaximumSize(request):
     """
     Return a nicely rendered string of the maximum file size for uploads as
     defined in the ini configuration of the application.
     """
     maxSize = upload_max_file_size(request)
-    if maxSize < (1024*1024):
+    if maxSize < (1024 * 1024):
         maxSize = '%s KB' % (maxSize / 1024)
     else:
-        maxSize = '%s MB' % round(maxSize / (1024*1024.0), 1)
+        maxSize = '%s MB' % round(maxSize / (1024 * 1024.0), 1)
     return maxSize
+
 
 def merge_profiles(global_config, locale_config):
     """
@@ -101,13 +98,17 @@ def merge_profiles(global_config, locale_config):
                     # to the configuration
                     if parent_key == 'mandatory' or parent_key == 'optional':
                         if key not in global_config:
-                            _merge_config(key, global_config[key], locale_config[key])
+                            _merge_config(
+                                key, global_config[key], locale_config[key])
                         # else if the key is in global_config do nothing
                     else:
-                        _merge_config(key, global_config[key], locale_config[key])
+                        _merge_config(
+                            key, global_config[key], locale_config[key])
                 except:
                     # add indicator that field is from local YAML
-                    global_config[key] = {'values': locale_config[key], 'local': True}
+                    global_config[key] = {
+                        'values': locale_config[key], 'local': True
+                    }
         # Handle the AttributeError if the locale config file is empty
         except AttributeError:
             pass
@@ -116,12 +117,14 @@ def merge_profiles(global_config, locale_config):
 
     return global_config
 
+
 def get_mandatory_keys(request, item, translated=False):
     if item == 'a':
         configList = getCategoryList(request, 'activities')
     elif item == 'sh':
         configList = getCategoryList(request, 'stakeholders')
     return configList.getDesiredKeyNames(translated=translated)
+
 
 def getGridColumnKeys(request, itemType):
     """
@@ -133,55 +136,11 @@ def getGridColumnKeys(request, itemType):
     """
     categoryList = getCategoryList(request, itemType)
     keys = []
-    for key in sorted(categoryList.getGridColumnKeyNames(), key=lambda k: k[2]):
+    for key in sorted(
+            categoryList.getGridColumnKeyNames(), key=lambda k: k[2]):
         keys.append([key[0], key[1]])
     return keys
 
-#def get_current_keys(request, item, profile):
-#    """
-#    Returns a list of all keys (original, no translation) of a given profile
-#    (combined with global profile)
-#    """
-#
-#    if item == 'a':
-#        config_yaml = ACTIVITY_YAML
-#    elif item == 'sh':
-#        config_yaml = STAKEHOLDER_YAML
-#
-#    # Read the global configuration file
-#    global_stream = open("%s/%s" % (profile_directory_path(request), config_yaml), 'r')
-#    global_config = yaml.load(global_stream)
-#
-#    # Read the localized configuration file
-#    if profile != 'global':
-#        try:
-#            locale_stream = open("%s/%s" % (locale_profile_directory_path(request), config_yaml), 'r')
-#            locale_config = yaml.load(locale_stream)
-#
-#            # If there is a localized config file then merge it with the global one
-#            global_config = merge_profiles(global_config, locale_config)
-#
-#        except IOError:
-#            # No localized configuration file found!
-#            pass
-#
-#    if 'fields' not in global_config:
-#        return None
-#
-#    fields = global_config['fields']
-#
-#    keys = []
-#    if 'mandatory' in fields:
-#        for (name, config) in fields['mandatory'].iteritems():
-#            keys.append(name)
-#    if 'optional' in fields:
-#        for (name, config) in fields['optional'].iteritems():
-#            keys.append(name)
-#
-#    if len(keys) > 0:
-#        return keys
-#
-#    return None
 
 @view_config(route_name='config', renderer='json')
 def get_config(request):
@@ -206,14 +165,16 @@ def get_config(request):
     else:
         raise HTTPNotFound()
 
-
     # Read the global configuration file
-    global_stream = open("%s/%s" % (profile_directory_path(request), config_yaml), 'r')
+    global_stream = open(
+        "%s/%s" % (profile_directory_path(request), config_yaml), 'r')
     global_config = yaml.load(global_stream)
 
     # Read the localized configuration file
     try:
-        locale_stream = open("%s/%s" % (locale_profile_directory_path(request), config_yaml), 'r')
+        locale_stream = open(
+            "%s/%s" % (locale_profile_directory_path(request), config_yaml),
+            'r')
         locale_config = yaml.load(locale_stream)
 
         # If there is a localized config file then merge it with the global one
@@ -231,7 +192,8 @@ def get_config(request):
 
     # language is needed because fields are to be displayed translated
     localizer = get_localizer(request)
-    lang = Session.query(Language).filter(Language.locale == localizer.locale_name).first()
+    lang = Session.query(Language).filter(
+        Language.locale == localizer.locale_name).first()
     if lang is None:
         lang = Language(1, 'English', 'English', 'en')
 
@@ -243,8 +205,8 @@ def get_config(request):
     # Then process also the optional fields
     if 'optional' in fields:
         for (name, config) in fields['optional'].iteritems():
-            # Don't do a database query for indicators that values are from local
-            # YAML (added during merge_yaml above)
+            # Don't do a database query for indicators that values are from
+            # local YAML (added during merge_yaml above)
             if name == 'local' or name == 'values':
                 pass
             else:
@@ -255,19 +217,25 @@ def get_config(request):
     # Return it sorted
     return sorted(extObject, key=lambda value: value['name'])
 
-@view_config(route_name='yaml_translate_activities', renderer='json', permission='administer')
+
+@view_config(
+    route_name='yaml_translate_activities', renderer='json',
+    permission='administer')
 def yaml_translate_activities(request):
     """
 
     """
 
     # Read the global configuration file
-    global_stream = open("%s/%s" % (profile_directory_path(request), ACTIVITY_YAML), 'r')
+    global_stream = open(
+        "%s/%s" % (profile_directory_path(request), ACTIVITY_YAML), 'r')
     global_config = yaml.load(global_stream)
 
     # Read the localized configuration file
     try:
-        locale_stream = open("%s/%s" % (locale_profile_directory_path(request), ACTIVITY_YAML), 'r')
+        locale_stream = open(
+            "%s/%s" % (locale_profile_directory_path(request), ACTIVITY_YAML),
+            'r')
         locale_config = yaml.load(locale_stream)
 
         # If there is a localized config file then merge it with the global one
@@ -279,16 +247,22 @@ def yaml_translate_activities(request):
 
     return get_translated_keys(request, global_config, A_Key, A_Value)
 
-@view_config(route_name='yaml_translate_stakeholders', renderer='json', permission='administer')
+
+@view_config(
+    route_name='yaml_translate_stakeholders', renderer='json',
+    permission='administer')
 def yaml_translate_stakeholders(request):
 
     # Read the global configuration file
-    global_stream = open("%s/%s" % (profile_directory_path(request), STAKEHOLDER_YAML), 'r')
+    global_stream = open(
+        "%s/%s" % (profile_directory_path(request), STAKEHOLDER_YAML), 'r')
     global_config = yaml.load(global_stream)
 
     # Read the localized configuration file
     try:
-        locale_stream = open("%s/%s.yml" % (locale_profile_directory_path(request), STAKEHOLDER_YAML), 'r')
+        locale_stream = open(
+            "%s/%s.yml" % (
+                locale_profile_directory_path(request), STAKEHOLDER_YAML), 'r')
         locale_config = yaml.load(locale_stream)
 
         # If there is a localized config file then merge it with the global one
@@ -300,6 +274,7 @@ def yaml_translate_stakeholders(request):
 
     return get_translated_keys(request, global_config, SH_Key, SH_Value)
 
+
 def get_translated_keys(request, global_config, Key, Value):
 
     # get keys already in database. their fk_a_key must be None (= original)
@@ -307,9 +282,11 @@ def get_translated_keys(request, global_config, Key, Value):
     for db_key in Session.query(Key.key).filter(Key.fk_key == None).all():
         db_keys.append(db_key.key)
 
-    # get values already in database. their fk_a_value must be None (= original)
+    # get values already in database. their fk_a_value must be None
+    # (= original)
     db_values = []
-    for db_value in Session.query(Value.value).filter(Value.fk_value == None).all():
+    for db_value in Session.query(Value.value).filter(
+            Value.fk_value == None).all():
         db_values.append(db_value.value)
 
     extObject = []
@@ -319,7 +296,8 @@ def get_translated_keys(request, global_config, Key, Value):
 
     localizer = get_localizer(request)
 
-    lang = Session.query(Language).filter(Language.locale == localizer.locale_name).first()
+    lang = Session.query(Language).filter(
+        Language.locale == localizer.locale_name).first()
 
     if lang is None:
         lang = Language(1, 'English', 'English', 'en')
@@ -342,7 +320,8 @@ def get_translated_keys(request, global_config, Key, Value):
         except KeyError:
             pass
 
-        currObject = _get_admin_scan(Key, Value, name, config, lang, False, local)
+        currObject = _get_admin_scan(
+            Key, Value, name, config, lang, False, local)
         extObject.append(currObject)
 
     ret = {}
@@ -350,17 +329,23 @@ def get_translated_keys(request, global_config, Key, Value):
     ret['children'] = extObject
     return ret
 
+
 # @todo: change template used for yaml_add_db (possibly create own)
-@view_config(route_name='yaml_add_activity_fields', renderer='lmkp:templates/sample_values.pt', permission='administer')
+@view_config(
+    route_name='yaml_add_activity_fields',
+    renderer='lmkp:templates/sample_values.pt', permission='administer')
 def yaml_add_activity_fields(request):
 
     # Read the global configuration file
-    global_stream = open("%s/%s" % (profile_directory_path(request), ACTIVITY_YAML), 'r')
+    global_stream = open(
+        "%s/%s" % (profile_directory_path(request), ACTIVITY_YAML), 'r')
     global_config = yaml.load(global_stream)
 
     # Read the localized configuration file
     try:
-        locale_stream = open("%s/%s" % (locale_profile_directory_path(request), ACTIVITY_YAML), 'r')
+        locale_stream = open(
+            "%s/%s" % (locale_profile_directory_path(request), ACTIVITY_YAML),
+            'r')
         locale_config = yaml.load(locale_stream)
 
         # If there is a localized config file then merge it with the global one
@@ -379,11 +364,12 @@ def yaml_add_activity_fields(request):
 
     return ret
 
+
 def _handle_application_config(request):
 
     def __check_geometry(yaml_geom, profile_name):
-        yaml_geom_geojson = geojson.loads(json.dumps(yaml_geom),
-                                          object_hook=geojson.GeoJSON.to_instance)
+        yaml_geom_geojson = geojson.loads(
+            json.dumps(yaml_geom), object_hook=geojson.GeoJSON.to_instance)
         yaml_geom_shape = shapely.geometry.asShape(yaml_geom_geojson)
         # Query database
         db_profile = Session.query(Profile).\
@@ -412,7 +398,7 @@ def _handle_application_config(request):
     app_config = yaml.load(app_stream)
 
     if ('application' in app_config and
-        'geometry' in app_config['application']):
+            'geometry' in app_config['application']):
 
         msg.append(__check_geometry(app_config['application']['geometry'],
                    'global'))
@@ -424,15 +410,17 @@ def _handle_application_config(request):
     # Only continue if a profile was found
     if locale_code is not None:
         try:
-            locale_app_stream = open("%s/%s" %
-                                     (locale_profile_directory_path(request), APPLICATION_YAML), 'r')
+            locale_app_stream = open(
+                "%s/%s" % (
+                    locale_profile_directory_path(request), APPLICATION_YAML),
+                'r')
             locale_app_config = yaml.load(locale_app_stream)
 
             if ('application' in locale_app_config and
-                'geometry' in locale_app_config['application']):
+                    'geometry' in locale_app_config['application']):
 
                 msg.append(__check_geometry(
-                           locale_app_config['application']['geometry'], locale_code))
+                    locale_app_config['application']['geometry'], locale_code))
 
         except IOError:
             # No localized application configuration file found
@@ -440,16 +428,22 @@ def _handle_application_config(request):
 
     return msg
 
-@view_config(route_name='yaml_add_stakeholder_fields', renderer='lmkp:templates/sample_values.pt', permission='administer')
+
+@view_config(
+    route_name='yaml_add_stakeholder_fields',
+    renderer='lmkp:templates/sample_values.pt', permission='administer')
 def yaml_add_stakeholder_fields(request):
 
     # Read the global configuration file
-    global_stream = open("%s/%s" % (profile_directory_path(request), STAKEHOLDER_YAML), 'r')
+    global_stream = open(
+        "%s/%s" % (profile_directory_path(request), STAKEHOLDER_YAML), 'r')
     global_config = yaml.load(global_stream)
 
     # Read the localized configuration file
     try:
-        locale_stream = open("%s/%s" % (locale_profile_directory_path(request), STAKEHOLDER_YAML), 'r')
+        locale_stream = open(
+            "%s/%s" % (
+                locale_profile_directory_path(request), STAKEHOLDER_YAML), 'r')
         locale_config = yaml.load(locale_stream)
 
         # If there is a localized config file then merge it with the global one
@@ -467,6 +461,7 @@ def yaml_add_stakeholder_fields(request):
         ret['messagestack'] += app_scan
 
     return ret
+
 
 def _add_to_db(config, Key, Value):
 
@@ -486,12 +481,15 @@ def _add_to_db(config, Key, Value):
     for db_key in Session.query(Key.key).filter(Key.fk_key == None).all():
         db_keys.append(db_key.key)
 
-    # get values already in database. their fk_sh_value must be None (= original)
+    # get values already in database. their fk_sh_value must be None
+    # (= original)
     db_values = []
-    for db_value in Session.query(Value.value).filter(Value.fk_value == None).all():
+    for db_value in Session.query(Value.value).filter(
+            Value.fk_value == None).all():
         db_values.append(db_value.value)
 
-    config_items = config["fields"]["mandatory"].items() + config["fields"]["optional"].items()
+    config_items = config["fields"]["mandatory"].items() \
+        + config["fields"]["optional"].items()
     for key, value in config_items:
         # check if key is already in database
         if key in db_keys:
@@ -527,21 +525,23 @@ def _add_to_db(config, Key, Value):
                                 # check if value is already in database
                                 if v in db_values:
                                     # value is already there, do nothing
-                                    stack.append('Value already in database: %s' % v)
+                                    stack.append(
+                                        'Value already in database: %s' % v)
                                 else:
                                     # value is not yet in database, insert it
                                     new_value = Value(v)
                                     new_value.language = language
                                     Session.add(new_value)
-                                    stack.append('Value added to database: %s' % v)
+                                    stack.append(
+                                        'Value added to database: %s' % v)
 
     return {'messagestack': stack}
 
 
-"""
-{name} is the original key as in the yaml (in english)
-"""
 def _get_field_config(Key, Value, name, config, language, mandatory=False):
+    """
+    {name} is the original key as in the yaml (in english)
+    """
 
     # Determine XType
     xtype = 'textfield'
@@ -580,18 +580,15 @@ def _get_field_config(Key, Value, name, config, language, mandatory=False):
     else:
         # Not English: Prepare query to translated keys
         keyTranslated = Session.query(
-                                      Key.fk_key.label('original_id'),
-                                      Key.key.label('translated')
-                                      ).\
+            Key.fk_key.label('original_id'), Key.key.label('translated')).\
             filter(Key.language == language).\
             subquery()
 
+        # Use column 'keyorvalue' to separate keys (0) from values (1)
         keys = Session.query(
-                             Key.key.label('original'),
-                             keyTranslated.c.translated.label('translated'),
-                             # Use column 'keyorvalue' to separate keys (0) from values (1)
-                             func.char_length('').label('keyorvalue')
-                             ).\
+            Key.key.label('original'),
+            keyTranslated.c.translated.label('translated'),
+            func.char_length('').label('keyorvalue')).\
             filter(Key.key == name).\
             filter(Key.original == None).\
             outerjoin(keyTranslated, keyTranslated.c.original_id == Key.id)
@@ -607,21 +604,22 @@ def _get_field_config(Key, Value, name, config, language, mandatory=False):
                 all_vals.append(val)
 
             valuesTranslated = Session.query(
-                                             Value.fk_value.label('original_id'),
-                                             Value.value.label('translated')
-                                             ).\
+                Value.fk_value.label('original_id'),
+                Value.value.label('translated')).\
                 filter(Value.language == language).\
                 subquery()
 
+            # Use column 'keyorvalue' to separate keys (0) from values (1)
             values = Session.query(
-                                   Value.value.label('original'),
-                                   valuesTranslated.c.translated.label('translated'),
-                                   # Use column 'keyorvalue' to separate keys (0) from values (1)
-                                   func.char_length(' ').label('keyorvalue')
-                                   ).\
+                Value.value.label('original'),
+                valuesTranslated.c.translated.label('translated'),
+                func.char_length(' ').label('keyorvalue')
+            ).\
                 filter(Value.value.in_(all_vals)).\
                 filter(Value.original == None).\
-                outerjoin(valuesTranslated, valuesTranslated.c.original_id == Value.id)
+                outerjoin(
+                    valuesTranslated,
+                    valuesTranslated.c.original_id == Value.id)
 
             query = keys.union(values)
 
@@ -674,7 +672,8 @@ def _get_field_config(Key, Value, name, config, language, mandatory=False):
     return fieldConfig
 
 
-def _get_admin_scan(Key, Value, name, config, language, mandatory, local=False):
+def _get_admin_scan(
+        Key, Value, name, config, language, mandatory, local=False):
 
     # Create fieldConfig with some obvious return values
     fieldConfig = {
@@ -687,19 +686,19 @@ def _get_admin_scan(Key, Value, name, config, language, mandatory, local=False):
 
     # Prepare subquery for translations
     keyTranslated = Session.query(
-                                  Key.fk_key.label('original_id'),
-                                  Key.key.label('translated')
-                                  ).\
+        Key.fk_key.label('original_id'),
+        Key.key.label('translated')
+    ).\
         filter(Key.language == language).\
         subquery()
 
     # Query keys
+    # Use column 'keyorvalue' to separate keys (0) from values (1)
     keys = Session.query(
-                         Key.key.label('original'),
-                         keyTranslated.c.translated.label('translated'),
-                         # Use column 'keyorvalue' to separate keys (0) from values (1)
-                         func.char_length('').label('keyorvalue')
-                         ).\
+        Key.key.label('original'),
+        keyTranslated.c.translated.label('translated'),
+        func.char_length('').label('keyorvalue')
+    ).\
         filter(Key.key == name).\
         filter(Key.original == None).\
         outerjoin(keyTranslated, keyTranslated.c.original_id == Key.id)
@@ -730,22 +729,23 @@ def _get_admin_scan(Key, Value, name, config, language, mandatory, local=False):
 
         # Prepare subquery for translations
         valuesTranslated = Session.query(
-                                         Value.fk_value.label('original_id'),
-                                         Value.value.label('translated')
-                                         ).\
+            Value.fk_value.label('original_id'),
+            Value.value.label('translated')
+        ).\
             filter(Value.language == language).\
             subquery()
 
         # Query values
+        # Use column 'keyorvalue' to separate keys (0) from values (1)
         values = Session.query(
-                               Value.value.label('original'),
-                               valuesTranslated.c.translated.label('translated'),
-                               # Use column 'keyorvalue' to separate keys (0) from values (1)
-                               func.char_length(' ').label('keyorvalue')
-                               ).\
+            Value.value.label('original'),
+            valuesTranslated.c.translated.label('translated'),
+            func.char_length(' ').label('keyorvalue')
+        ).\
             filter(Value.value.in_(all_vals)).\
             filter(Value.original == None).\
-            outerjoin(valuesTranslated, valuesTranslated.c.original_id == Value.id)
+            outerjoin(
+                valuesTranslated, valuesTranslated.c.original_id == Value.id)
 
         # Union with keys
         query = keys.union(values)
@@ -801,7 +801,7 @@ def _get_admin_scan(Key, Value, name, config, language, mandatory, local=False):
         fieldConfig['exists'] = False
         fieldConfig['value'] = name
         fieldConfig['iconCls'] = 'ico-key'
-        fieldConfig['translation'] = 1 # Not yet translated
+        fieldConfig['translation'] = 1  # Not yet translated
 
     if store:
         # Add values which are not yet inserted to store
@@ -815,7 +815,7 @@ def _get_admin_scan(Key, Value, name, config, language, mandatory, local=False):
             val['local'] = local
             val['leaf'] = True
             val['iconCls'] = 'ico-value'
-            val['translation'] = 1 # Not yet translated
+            val['translation'] = 1  # Not yet translated
             value_store.append(val)
         fieldConfig['children'] = value_store
     else:
@@ -823,10 +823,14 @@ def _get_admin_scan(Key, Value, name, config, language, mandatory, local=False):
 
     return fieldConfig
 
+
 def get_activity_sitekey(request):
     # Read the profile activity configuration file
     try:
-        stream = open("%s/%s" % (locale_profile_directory_path(request), NEW_ACTIVITY_YAML), 'r')
+        stream = open(
+            "%s/%s" % (
+                locale_profile_directory_path(request), NEW_ACTIVITY_YAML),
+            'r')
     except IOError:
         return None
 
@@ -837,10 +841,14 @@ def get_activity_sitekey(request):
     else:
         return None
 
+
 def get_stakeholder_sitekey(request):
     # Read the profile stakeholder configuration file
     try:
-        stream = open("%s/%s" % (locale_profile_directory_path(request), NEW_STAKEHOLDER_YAML), 'r')
+        stream = open(
+            "%s/%s" % (
+                locale_profile_directory_path(request), NEW_STAKEHOLDER_YAML),
+            'r')
     except IOError:
         return None
 

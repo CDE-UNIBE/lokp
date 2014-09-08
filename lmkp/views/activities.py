@@ -97,30 +97,29 @@ class ActivityView(BaseView):
             HTTPResponse. Either a HTML or a JSON response.
         """
 
-        request = self.request
-
         output_format = get_output_format(self.request)
 
         if output_format == 'json':
-            activities = activity_protocol.read_many(request, public=False)
-            return render_to_response('json', activities, request)
+            activities = activity_protocol.read_many(
+                self.request, public=False)
+            return render_to_response('json', activities, self.request)
         elif output_format == 'html':
             page, page_size = get_page_parameters(self.request)
-            spatialfilter = _handle_spatial_parameters(request)
+            spatialfilter = _handle_spatial_parameters(self.request)
             items = activity_protocol.read_many(
-                request, public=False, limit=page_size,
+                self.request, public=False, limit=page_size,
                 offset=page_size * page - page_size)
 
-            status_filter = request.params.get('status', None)
-            isLoggedIn, isModerator = checkUserPrivileges(request)
+            status_filter = self.request.params.get('status', None)
+            isLoggedIn, isModerator = checkUserPrivileges(self.request)
 
             return render_to_response(
-                getTemplatePath(request, 'activities/grid.mak'),
+                getTemplatePath(self.request, 'activities/grid.mak'),
                 {
                     'data': items['data'] if 'data' in items else [],
                     'total': items['total'] if 'total' in items else 0,
-                    'profile': get_current_profile(request),
-                    'locale': get_current_locale(request),
+                    'profile': get_current_profile(self.request),
+                    'locale': get_current_locale(self.request),
                     'spatialfilter': spatialfilter,
                     'invfilter': None,
                     'statusfilter': status_filter,
@@ -128,33 +127,33 @@ class ActivityView(BaseView):
                     'pagesize': page_size,
                     'isModerator': isModerator
                 },
-                request)
+                self.request)
 
         elif output_format == 'form':
             # This is used to display a new and empty form for an Activity
-            if request.user is None:
+            if self.request.user is None:
                 # Make sure the user is logged in
                 raise HTTPForbidden()
-            newInvolvement = request.params.get('inv', None)
+            newInvolvement = self.request.params.get('inv', None)
             templateValues = renderForm(
-                request, 'activities', inv=newInvolvement)
+                self.request, 'activities', inv=newInvolvement)
             if isinstance(templateValues, Response):
                 return templateValues
             templateValues.update({
                                   'uid': '-',
                                   'version': 0,
-                                  'profile': get_current_profile(request),
-                                  'locale': get_current_locale(request)
+                                  'profile': get_current_profile(self.request),
+                                  'locale': get_current_locale(self.request)
                                   })
             return render_to_response(
-                getTemplatePath(request, 'activities/form.mak'),
+                getTemplatePath(self.request, 'activities/form.mak'),
                 templateValues,
-                request)
+                self.request)
 
         elif output_format == 'geojson':
             activities = activity_protocol.read_many_geojson(
-                request, public=False)
-            return render_to_response('json', activities, request)
+                self.request, public=False)
+            return render_to_response('json', activities, self.request)
 
         elif output_format == 'download':
             # The download overview page

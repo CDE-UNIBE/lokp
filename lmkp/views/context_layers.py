@@ -1,6 +1,8 @@
-from lmkp.config import locale_profile_directory_path
-from pyramid.view import view_config
 import yaml
+from pyramid.view import view_config
+
+from lmkp.config import locale_profile_directory_path
+
 
 @view_config(route_name='context_layers', renderer='javascript')
 def get_context_layers(request):
@@ -9,7 +11,8 @@ def get_context_layers(request):
 
     # Read the global configuration file
     try:
-        global_stream = open("%s/%s" % (locale_profile_directory_path(request), 'application.yml'), 'r')
+        global_stream = open("%s/%s" % (
+            locale_profile_directory_path(request), 'application.yml'), 'r')
         config = yaml.load(global_stream)
     except IOError:
         return
@@ -26,12 +29,12 @@ def get_context_layers(request):
 
             for o in layer['wms_options']:
                 for config, value in o.iteritems():
-                    res += "%s: %s,\n" % (config,_cast_type(config, value))
+                    res += "%s: %s,\n" % (config, _cast_type(config, value))
 
             res += "},{\n"
             for o in layer['ol_options']:
                 for config, value in o.iteritems():
-                    res += "%s: %s,\n" % (config,_cast_type(config, value))
+                    res += "%s: %s,\n" % (config, _cast_type(config, value))
 
             res += "}"
             res += "),\n"
@@ -40,9 +43,11 @@ def get_context_layers(request):
 
     return res
 
+
 def _cast_type(config, value):
     if config.lower() == "maxextent":
-        return "new OpenLayers.Bounds(%s, %s, %s, %s)" % (value[0], value[1], value[2], value[3])
+        return "new OpenLayers.Bounds(%s, %s, %s, %s)" % (
+            value[0], value[1], value[2], value[3])
     elif value == True or value == False:
         return str(value).lower()
 

@@ -931,7 +931,7 @@ class Protocol(object):
             ).\
                 filter(mappedClass.identifier == item.identifier).\
                 filter(
-                    mappedClass.fk_status == statusArray.index('active')+1).\
+                    mappedClass.fk_status == statusArray.index('active') + 1).\
                 first()
 
             # TODO: Nasty hack if the a new involvement is added to a now
@@ -946,18 +946,18 @@ class Protocol(object):
                     and next_status == 'edited'):
                 # Another nasty hack to set approved removals of involvements
                 # on Stakeholder side to "edited".
-                item.fk_status = statusArray.index('edited')+1
+                item.fk_status = statusArray.index('edited') + 1
 
             elif (empty_item is True or previous_version is None
                     or previous_version.fk_status
-                    == statusArray.index('active')+1):
+                    == statusArray.index('active') + 1):
                 # There is no previous version (the item is brand new) or it is
                 # based directly on the active version.
 
                 # If there is a previous active version, set it to 'inactive'
                 if previous_version:
                     previous_version.fk_status = statusArray.index(
-                        'inactive')+1
+                        'inactive') + 1
 
                 if empty_item is True:
                     # Set the status of the item to 'deleted'
@@ -970,7 +970,7 @@ class Protocol(object):
 
                 else:
                     # Set the status of the item to 'active'
-                    item.fk_status = statusArray.index('active')+1
+                    item.fk_status = statusArray.index('active') + 1
 
                     log.debug(
                         'Set version %s of %s with identifier %s to "active"'
@@ -996,7 +996,7 @@ class Protocol(object):
 
                 else:
                     # Set the status of the item to 'active'
-                    item.fk_status = statusArray.index('active')+1
+                    item.fk_status = statusArray.index('active') + 1
 
                     log.debug(
                         'Set version %s of %s with identifier %s to "active"'
@@ -1040,10 +1040,10 @@ class Protocol(object):
                     return ret
 
                 # Set the reference version to 'inactive'
-                ref_version.fk_status = statusArray.index('inactive')+1
+                ref_version.fk_status = statusArray.index('inactive') + 1
 
                 # Set the pending version to 'edited'
-                item.fk_status = statusArray.index('edited')+1
+                item.fk_status = statusArray.index('edited') + 1
 
                 # Prepare a changeset
                 changeset = Changeset()
@@ -2435,7 +2435,8 @@ def get_value_by_key_from_item_json(item_json, key):
     if not isinstance(item_json, dict):
         return None
     for taggroup in item_json.get('taggroups', []):
-        found_tag = next((tag for tag in taggroup.get('tags', []) if tag['key']
+        found_tag = next((
+            tag for tag in taggroup.get('tags', []) if tag['key']
             == key), None)
         if found_tag:
             return found_tag['value']

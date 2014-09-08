@@ -3,8 +3,11 @@ from pyramid.renderers import render_to_response
 
 from lmkp.config import getTemplatePath
 from lmkp.views.views import BaseView
-from lmkp.views.profile import get_current_profile
-from lmkp.views.profile import get_current_locale
+from lmkp.views.profile import (
+    get_current_profile,
+    get_current_locale,
+)
+
 
 class ChartsView(BaseView):
 
@@ -27,10 +30,13 @@ class ChartsView(BaseView):
 
         groupedBy = groupedBy if groupedBy in groupableBy else groupableBy[0]
 
-        return render_to_response(getTemplatePath(self.request, 'charts/barchart.mak'), {
-            'profile': get_current_profile(self.request),
-            'locale': get_current_locale(self.request),
-            'groupedBy': groupedBy,
-            'groupableBy': groupableBy,
-            'alert': alert
-        }, self.request)
+        return render_to_response(
+            getTemplatePath(self.request, 'charts/barchart.mak'),
+            {
+                'profile': get_current_profile(self.request),
+                'locale': get_current_locale(self.request),
+                'groupedBy': groupedBy,
+                'groupableBy': groupableBy,
+                'alert': alert
+            },
+            self.request)

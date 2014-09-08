@@ -362,13 +362,7 @@ def main(global_config, ** settings):
     # Yet another test
     config.add_route('privileges_test', '/privileges')
 
-    config.add_route('lao_read_activities', '/read/lao/activities')
-    config.add_route('lao_read_stakeholders', '/read/lao/stakeholders')
     config.add_route('set_lao_active', '/read/lao/active')
-
-    config.add_route(
-        'cambodia_read_stakeholders', '/read/cambodia/stakeholders')
-    config.add_route('cambodia_read_activities', '/read/cambodia/activities')
 
     # Add a route to search locations
     config.add_route('location_search', '/search')

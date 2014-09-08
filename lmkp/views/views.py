@@ -673,16 +673,36 @@ def getFilterValuesForKey(request, predefinedType=None, predefinedKey=None):
 
 
 def get_output_format(request):
-    # Default output format is JSON.
+    """
++    Return the output format as it is defined in the request Matchdict
++    (eg. /activities/{json}/...)
++    The default output format is JSON.
++
++    Args:
++        request (pyramid.request): A Pyramid Request object with a
++        Matchdict.
++
++    Returns:
++        string. The output format.
++    """
     try:
-        output_format = request.matchdict['output']
+        return request.matchdict['output']
     except KeyError:
-        output_format = 'json'
-    return output_format
+        return 'json'
 
 
 def get_page_parameters(request):
-    # Get page parameter from request and make sure it is valid
+    """
++    Return the page parameters from the request.
++
++    Args:
++        request (pyramid.request): A Pyramid Request object with
++        optional parameters `page` and `pagesize`.
++
++    Returns:
++        int. The current page. Defaults to 1.
++        int. The page size. Defaults to 10.
++    """
     page = request.params.get('page', 1)
     try:
         page = int(page)
@@ -690,12 +710,11 @@ def get_page_parameters(request):
         page = 1
     page = max(page, 1)  # Page should be >= 1
 
-    # Get pagesize parameter from request and make sure it is valid
-    pageSize = request.params.get('pagesize', 10)
+    page_size = request.params.get('pagesize', 10)
     try:
-        pageSize = int(pageSize)
+        page_size = int(page_size)
     except:
-        pageSize = 10
-    pageSize = max(pageSize, 1)  # Page size should be >= 1
-    pageSize = min(pageSize, 50)  # Page size should be <= 50
-    return page, pageSize
+        page_size = 10
+    page_size = max(page_size, 1)  # Page size should be >= 1
+    page_size = min(page_size, 50)  # Page size should be <= 50
+    return page, page_size

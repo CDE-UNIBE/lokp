@@ -1,23 +1,30 @@
+import logging
+import json
 from geoalchemy import functions
-from lmkp.models.database_objects import Activity
-from lmkp.models.database_objects import Changeset
-from lmkp.models.database_objects import Profile
-from lmkp.models.database_objects import Stakeholder
-from lmkp.models.database_objects import Status
-from lmkp.models.database_objects import User
+from pyramid.httpexceptions import (
+    HTTPForbidden,
+    HTTPBadRequest,
+)
+from sqlalchemy.sql.expression import (
+    and_,
+    not_,
+    or_,
+)
+from sqlalchemy.sql.functions import min
+
+from lmkp.models.database_objects import (
+    Activity,
+    Changeset,
+    Profile,
+    Stakeholder,
+    User,
+)
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.config import get_mandatory_keys
 from lmkp.views.views import BaseView
-import logging
-from pyramid.httpexceptions import HTTPForbidden
-from pyramid.httpexceptions import HTTPBadRequest
-from sqlalchemy.sql.expression import and_
-from sqlalchemy.sql.expression import not_
-from sqlalchemy.sql.expression import or_
-from sqlalchemy.sql.functions import min
-import json
 
 log = logging.getLogger(__name__)
+
 
 class BaseReview(BaseView):
 
@@ -65,7 +72,8 @@ class BaseReview(BaseView):
 
                     if new_taggroup.get_tag_by_key(t.get_key()) is None:
                         taggroup_has_changed = True
-                    elif new_taggroup.get_tag_by_key(t.get_key()).get_value() != t.get_value():
+                    elif new_taggroup.get_tag_by_key(t.get_key()).get_value() \
+                            != t.get_value():
                         taggroup_has_changed = True
 
                 # Test also the other way round
@@ -84,13 +92,15 @@ class BaseReview(BaseView):
                 for t in old_taggroup.get_tags():
                     old_tags.append({'key': t.get_key(),
                                     'value': t.get_value()})
-                current_row['ref'] = {'class': old_tags_class, 'tags': old_tags}
+                current_row['ref'] = {
+                    'class': old_tags_class, 'tags': old_tags}
                 # Write the new one
                 new_tags = []
                 for t in new_taggroup.get_tags():
                     new_tags.append({'key': t.get_key(),
                                     'value': t.get_value()})
-                current_row['new'] = {'class': new_tags_class, 'tags': new_tags}
+                current_row['new'] = {
+                    'class': new_tags_class, 'tags': new_tags}
 
                 table.append(current_row)
 
@@ -118,7 +128,8 @@ class BaseReview(BaseView):
 
         involvements_table = []
 
-        # Finally compare also the involvments but NOT the tags of the involved stakeholders
+        # Finally compare also the involvments but NOT the tags of the
+        # involved stakeholders
         for inv in old.get_involvements():
 
             new_inv = new.find_involvement_by_guid(inv.get_guid())
@@ -131,7 +142,8 @@ class BaseReview(BaseView):
                 old_tags = []
                 for t in inv._feature.to_tags(self.request):
                     old_tags.append(t)
-                current_row['ref'] = {'class': 'remove involvement', 'tags': old_tags}
+                current_row['ref'] = {
+                    'class': 'remove involvement', 'tags': old_tags}
                 # Write the new one
                 current_row['new'] = {'class': 'involvement', 'tags': []}
 
@@ -145,13 +157,15 @@ class BaseReview(BaseView):
                 old_tags = []
                 for t in inv._feature.to_tags(self.request):
                     old_tags.append(t)
-                current_row['ref'] = {'class': 'remove involvement', 'tags': old_tags}
+                current_row['ref'] = {
+                    'class': 'remove involvement', 'tags': old_tags}
                 # Write the new one
                 new_tags = []
                 new_tags = []
                 for t in new_inv._feature.to_tags(self.request):
                     new_tags.append(t)
-                current_row['new'] = {'class': 'add involvement', 'tags': new_tags}
+                current_row['new'] = {
+                    'class': 'add involvement', 'tags': new_tags}
 
                 involvements_table.append(current_row)
 
@@ -169,7 +183,6 @@ class BaseReview(BaseView):
                 current_row['new'] = {'class': 'involvement', 'tags': new_tags}
 
                 involvements_table.append(current_row)
-
 
         # Find new involvements:
         for inv in new.get_involvements():
@@ -218,7 +231,8 @@ class BaseReview(BaseView):
 
         mappedClass: The class where a review of the version is to be made
           through the involvement
-        identifier: The identifier of the item to review through the involvement
+        identifier: The identifier of the item to review through the
+        involvement
         version: The version of the item to review through the involvement
         """
 
@@ -232,9 +246,7 @@ class BaseReview(BaseView):
             [1] There exists an active version of the Stakeholder.
             """
 
-            q = Session.query(
-                    Stakeholder.fk_status
-                ).\
+            q = Session.query(Stakeholder.fk_status).\
                 filter(Stakeholder.identifier == identifier).\
                 all()
 
@@ -331,10 +343,10 @@ class BaseReview(BaseView):
 
             reviewable = 0
             reviewable = self._review_check_involvement(
-                    inv._feature.getMappedClass(),
-                    inv._feature.get_guid(),
-                    inv._feature.get_version()
-                )
+                inv._feature.getMappedClass(),
+                inv._feature.get_guid(),
+                inv._feature.get_version()
+            )
             current_row['reviewable'] = reviewable
 
             current_row['new'] = {
@@ -358,8 +370,8 @@ class BaseReview(BaseView):
 
         # Get the current active version number
         av = Session.query(
-                mappedClass.version
-            ).\
+            mappedClass.version
+        ).\
             filter(mappedClass.identifier == uid).\
             filter(mappedClass.fk_status == 2).\
             first()
@@ -385,10 +397,10 @@ class BaseReview(BaseView):
         refUsername = newUsername = None
 
         refQuery = Session.query(
-                Changeset.timestamp,
-                User.id.label('userid'),
-                User.username
-            ).\
+            Changeset.timestamp,
+            User.id.label('userid'),
+            User.username
+        ).\
             join(mappedClass).\
             join(User, Changeset.fk_user == User.id).\
             filter(mappedClass.identifier == uid).\
@@ -401,10 +413,10 @@ class BaseReview(BaseView):
             refUsername = refQuery.username
 
         newQuery = Session.query(
-                Changeset.timestamp,
-                User.id.label('userid'),
-                User.username
-            ).\
+            Changeset.timestamp,
+            User.id.label('userid'),
+            User.username
+        ).\
             join(mappedClass).\
             join(User, Changeset.fk_user == User.id).\
             filter(mappedClass.identifier == uid).\
@@ -433,12 +445,12 @@ class BaseReview(BaseView):
 
     def _get_available_versions(self, mappedClass, uid, review=False):
         """
-        Returns an array with all versions that are available to the current
-        user. Moderators get all versions for Stakeholders and Activity if later
-        lies within the moderator's profile. Editors get all active and inactive
-        versions as well as their own edits. Public users only get inactive and
-        active versions.
-        If 'review' is true, only return the active and any pending versions.
+        Returns an array with all versions that are available to the
+        current user. Moderators get all versions for Stakeholders and
+        Activity if  later lies within the moderator's profile. Editors
+        get all active and inactive versions as well as their own edits.
+        Public users only get inactive and active versions. If 'review'
+        is true, only return the active and any pending versions.
         """
 
         def _get_query_for_editors():
@@ -446,84 +458,96 @@ class BaseReview(BaseView):
             Returns a query that selects versions available to editors.
             """
             active_versions = Session.query(
-                    mappedClass.version,
-                    mappedClass.fk_status
-                ).\
+                mappedClass.version,
+                mappedClass.fk_status
+            ).\
                 filter(mappedClass.identifier == uid).\
-                filter(or_(mappedClass.fk_status == 2, mappedClass.fk_status == 3))
+                filter(or_(
+                    mappedClass.fk_status == 2, mappedClass.fk_status == 3))
 
-            own_filters = and_(mappedClass.identifier == uid, \
-                               not_(mappedClass.fk_status == 2), \
-                               not_(mappedClass.fk_status == 3), \
-                               User.username == self.request.user.username)
+            own_filters = and_(
+                mappedClass.identifier == uid,
+                not_(mappedClass.fk_status == 2),
+                not_(mappedClass.fk_status == 3),
+                User.username == self.request.user.username)
             own_versions = Session.query(
-                    mappedClass.version,
-                    mappedClass.fk_status
-                ).\
+                mappedClass.version,
+                mappedClass.fk_status
+            ).\
                 join(Changeset).\
                 join(User).\
                 filter(*own_filters)
             return active_versions.union(own_versions)
 
-
         # Query that selects available versions
         versions_query = None
 
-#        log.debug("effective principals: %s" % self.request.effective_principals)
-
         # An administrator sees in any cases all versions
-        if self.request.effective_principals is not None and 'group:administrators' in self.request.effective_principals:
+        if self.request.effective_principals is not None \
+                and 'group:administrators' in \
+                self.request.effective_principals:
             versions_query = Session.query(
-                    mappedClass.version,
-                    mappedClass.fk_status,
-                    mappedClass.id
-                ).filter(mappedClass.identifier == uid)
+                mappedClass.version,
+                mappedClass.fk_status,
+                mappedClass.id
+            ).filter(mappedClass.identifier == uid)
 
-        # An user with moderator privileges can see all versions within his profile
-        elif self.request.effective_principals is not None and 'group:moderators' in self.request.effective_principals:
+        # An user with moderator privileges can see all versions within his
+        # profile
+        elif self.request.effective_principals is not None and \
+                'group:moderators' in self.request.effective_principals:
 
-            # Try if mappedClass is an Activity and lies within the moderator's profile
+            # Try if mappedClass is an Activity and lies within the
+            # moderator's profile
             try:
                 profile_filters = []
                 # Get all profiles for the current moderator
-                profiles = Session.query(Profile).filter(Profile.users.any(username=self.request.user.username))
+                profiles = Session.query(Profile).filter(
+                    Profile.users.any(username=self.request.user.username))
                 for p in profiles.all():
-                    profile_filters.append(functions.intersects(mappedClass.point, p.geometry))
+                    profile_filters.append(
+                        functions.intersects(mappedClass.point, p.geometry))
 
                 # Check if current Activity is within the moderator's profile
-                count = Session.query(mappedClass).filter(mappedClass.identifier == uid).filter(or_(*profile_filters)).count()
-                # Activity is within the moderator's profile, then show all versions
+                count = Session.query(mappedClass).filter(
+                    mappedClass.identifier == uid).filter(
+                        or_(*profile_filters)).count()
+                # Activity is within the moderator's profile, then show all
+                # versions
                 if count > 0:
                     versions_query = Session.query(
-                            mappedClass.version,
-                            mappedClass.fk_status,
-                            mappedClass.id
-                        ).filter(mappedClass.identifier == uid)
+                        mappedClass.version,
+                        mappedClass.fk_status,
+                        mappedClass.id
+                    ).filter(mappedClass.identifier == uid)
                 # If not the moderator gets normal editor privileges
                 else:
                     versions_query = _get_query_for_editors()
             # In case mappedClass is a Stakeholder, show anyway all versions
             except AttributeError:
                 versions_query = Session.query(
-                        mappedClass.version,
-                        mappedClass.fk_status,
-                        mappedClass.id
-                    ).filter(mappedClass.identifier == uid)
-
-        # An user with at least editor privileges can see all public versions_query
-        # and his own edits
-        elif self.request.effective_principals is not None and 'group:editors' in self.request.effective_principals:
-            versions_query = _get_query_for_editors()
-
-        # Public users i.e. not logged in users see only active and inactive versions
-        else:
-            versions_query = Session.query(
                     mappedClass.version,
                     mappedClass.fk_status,
                     mappedClass.id
-                ).\
+                ).filter(mappedClass.identifier == uid)
+
+        # An user with at least editor privileges can see all public
+        # versions_query and his own edits
+        elif self.request.effective_principals is not None and \
+                'group:editors' in self.request.effective_principals:
+            versions_query = _get_query_for_editors()
+
+        # Public users i.e. not logged in users see only active and inactive
+        # versions
+        else:
+            versions_query = Session.query(
+                mappedClass.version,
+                mappedClass.fk_status,
+                mappedClass.id
+            ).\
                 filter(mappedClass.identifier == uid).\
-                filter(or_(mappedClass.fk_status == 2, mappedClass.fk_status == 3))
+                filter(or_(
+                    mappedClass.fk_status == 2, mappedClass.fk_status == 3))
 
         # Create a list of available versions
         available_versions = []
@@ -533,8 +557,6 @@ class BaseReview(BaseView):
                     'version': i.version,
                     'status': i.fk_status
                 })
-
-#        log.debug("Available Versions for object %s:\n%s" % (uid, available_versions))
 
         return available_versions
 
@@ -561,7 +583,8 @@ class BaseReview(BaseView):
             if av.get('status') == 2:
                 active_version = av.get('version')
             if av.get('status') == 1:
-                if pending_version is None or pending_version > av.get('version'):
+                if pending_version is None or \
+                        pending_version > av.get('version'):
                     pending_version = av.get('version')
 
         # Try to get the versions or set reference and new version
@@ -587,7 +610,8 @@ class BaseReview(BaseView):
             raise HTTPBadRequest("ValueError: %s" % e)
 
         if ((ref_version == 0 and new_version not in v)
-            or (ref_version != 0 and ref_version not in v or new_version not in v)):
+            or (ref_version != 0 and ref_version not in v
+                or new_version not in v)):
             raise HTTPForbidden()
 
         return ref_version, new_version
@@ -610,10 +634,10 @@ class BaseReview(BaseView):
 
         new_item = None
         if (diff_keyword is not None and diff_keyword in diff
-            and diff[diff_keyword] is not None):
+                and diff[diff_keyword] is not None):
             for item_diff in diff[diff_keyword]:
                 if ('id' in item_diff and item_diff['id'] is not None
-                    and item_diff['id'] == item.get_guid()):
+                        and item_diff['id'] == item.get_guid()):
 
                     # Apply the diff to show a preview of the new version
                     new_item = self.protocol._apply_diff(
@@ -623,28 +647,28 @@ class BaseReview(BaseView):
                         item.get_version(),
                         item_diff,
                         item,
-                        db = False,
-                        review = True
+                        db=False,
+                        review=True
                     )
 
                     # Also handle involvements
-                    inv_diff = (item_diff[other_diff_keyword]
-                        if other_diff_keyword in item_diff
-                        else None)
+                    inv_diff = item_diff[other_diff_keyword] if \
+                        other_diff_keyword in item_diff else None
                     self.protocol._handle_involvements(
                         self.request,
                         item,
                         new_item,
                         inv_diff,
                         None,
-                        db = False
+                        db=False
                     )
 
         elif (diff_keyword == 'stakeholders' and other_diff_keyword in diff):
             for other_item_diff in diff[other_diff_keyword]:
                 if diff_keyword in other_item_diff:
                     for item_diff in other_item_diff[diff_keyword]:
-                        if (item_diff['id'] is not None and item_diff['id'] == item.get_guid()):
+                        if item_diff['id'] is not None and \
+                                item_diff['id'] == item.get_guid():
                             self.protocol._handle_involvements(
                                 self.request,
                                 item,
@@ -661,8 +685,8 @@ class BaseReview(BaseView):
 
         return new_item
 
-    def get_comparison(self, mappedClass, uid, ref_version_number,
-        new_version_number):
+    def get_comparison(
+            self, mappedClass, uid, ref_version_number, new_version_number):
         """
         Function to do the actual comparison and return a json
         """
@@ -670,7 +694,7 @@ class BaseReview(BaseView):
         recalculated = False
 
         if (ref_version_number == 0
-            or (new_version_number == 1 and ref_version_number == 1)):
+                or (new_version_number == 1 and ref_version_number == 1)):
             ref_object = None
             ref_version_number = None
         else:
@@ -682,8 +706,8 @@ class BaseReview(BaseView):
 
         # Check to see if the new version is based directly on the ref version
         new_previous_version = Session.query(
-                mappedClass.previous_version
-            ).\
+            mappedClass.previous_version
+        ).\
             filter(mappedClass.identifier == uid).\
             filter(mappedClass.version == new_version_number).\
             first()
@@ -691,8 +715,9 @@ class BaseReview(BaseView):
         if (ref_object is None and new_previous_version is not None or
             new_version_number == 1 or
             ref_version_number == new_version_number or
-            (new_previous_version is not None
-            and new_previous_version.previous_version == ref_version_number)):
+                (new_previous_version is not None
+                    and new_previous_version.previous_version
+                    == ref_version_number)):
             # Show the new version as it is in the database
             new_object = self.protocol.read_one_by_version(
                 self.request, uid, new_version_number, geometry='full',
@@ -701,8 +726,8 @@ class BaseReview(BaseView):
         else:
             # Query the diff of the new version to apply to the ref version
             new_diff_query = Session.query(
-                    Changeset.diff
-                ).\
+                Changeset.diff
+            ).\
                 join(mappedClass).\
                 filter(mappedClass.identifier == uid).\
                 filter(mappedClass.version == new_version_number).\
