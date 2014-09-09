@@ -1,8 +1,5 @@
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
-
-import os.path
 import mimetypes
+import os.path
 import re
 from pyramid.request import Request
 from pyramid.testing import DummyRequest

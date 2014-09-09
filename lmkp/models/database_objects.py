@@ -1,51 +1,63 @@
 import cryptacular.pbkdf2
 import datetime
-from geoalchemy.geometry import Geometry
-from geoalchemy.geometry import GeometryColumn
-from geoalchemy.geometry import GeometryDDL
-from geoalchemy.geometry import Point
-from geoalchemy.geometry import Polygon
-from geoalchemy.utils import from_wkt
 import geojson
-from lmkp.models.meta import Base
-from lmkp.models.meta import DBSession
 import random
-from shapely import wkb
-from sqlalchemy import Boolean
-from sqlalchemy import Column
-from sqlalchemy import DateTime
-from sqlalchemy import ForeignKey
-from sqlalchemy import Integer
-from sqlalchemy import String
-from sqlalchemy import Table
-from sqlalchemy import Text
-from sqlalchemy import Unicode
-from sqlalchemy import and_
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import backref
-from sqlalchemy.orm import column_property
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm import synonym
-from sqlalchemy.orm import validates
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.schema import CheckConstraint
-from sqlalchemy.schema import ForeignKeyConstraint
-from sqlalchemy.schema import PrimaryKeyConstraint
-from sqlalchemy.schema import UniqueConstraint
 import string
 import uuid
+
+from geoalchemy.geometry import (
+    Geometry,
+    GeometryColumn,
+    GeometryDDL,
+    Point,
+    Polygon,
+)
+from geoalchemy.utils import from_wkt
+from shapely import wkb
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    Text,
+    Unicode,
+)
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import (
+    backref,
+    column_property,
+    relationship,
+    synonym,
+)
+from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.schema import (
+    CheckConstraint,
+    ForeignKeyConstraint,
+)
+
+from lmkp.models.meta import (
+    Base,
+    DBSession,
+)
+
+
 crypt = cryptacular.pbkdf2.PBKDF2PasswordManager()
+
+
 def hash_password(password):
     return unicode(crypt.encode(password))
+
 
 class A_Key(Base):
     __tablename__ = 'a_keys'
     __table_args__ = (
-                      ForeignKeyConstraint(['fk_a_key'], ['data.a_keys.id']),
-                      ForeignKeyConstraint(['fk_language'], ['data.languages.id']),
-                      {'schema': 'data'}
-                      )
+        ForeignKeyConstraint(['fk_a_key'], ['data.a_keys.id']),
+        ForeignKeyConstraint(['fk_language'], ['data.languages.id']),
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     fk_a_key = Column(Integer)
     fk_language = Column(Integer)
@@ -62,7 +74,8 @@ class A_Key(Base):
     tags = relationship('A_Tag', backref='key')
     values = relationship('A_Value', backref='key')
 
-    def __init__(self, key, type, helptext=None, description=None, validator=None):
+    def __init__(
+            self, key, type, helptext=None, description=None, validator=None):
         self.key = key
         self.type = type
         self.helptext = helptext
@@ -71,20 +84,19 @@ class A_Key(Base):
 
     def __repr__(self):
         return (
-                '<A_Key> id [ %s ] | fk_a_key [ %s ] | fk_language [ %s ] | key [ %s ]' %
-                (self.id, self.fk_a_key, self.fk_language, self.key)
-                )
+            '<A_Key> id [ %s ] | fk_a_key [ %s ] | fk_language [ %s ] | key [ '
+            '%s ]' % (self.id, self.fk_a_key, self.fk_language, self.key))
 
     def to_json(self):
         return self.key
 
+
 class SH_Key(Base):
     __tablename__ = 'sh_keys'
     __table_args__ = (
-                      ForeignKeyConstraint(['fk_sh_key'], ['data.sh_keys.id']),
-                      ForeignKeyConstraint(['fk_language'], ['data.languages.id']),
-                      {'schema': 'data'}
-                      )
+        ForeignKeyConstraint(['fk_sh_key'], ['data.sh_keys.id']),
+        ForeignKeyConstraint(['fk_language'], ['data.languages.id']),
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     fk_sh_key = Column(Integer)
     fk_language = Column(Integer)
@@ -100,7 +112,8 @@ class SH_Key(Base):
     tags = relationship('SH_Tag', backref='key')
     values = relationship('SH_Value', backref='key')
 
-    def __init__(self, key, type, helptext=None, description=None, validator=None):
+    def __init__(
+            self, key, type, helptext=None, description=None, validator=None):
         self.key = key
         self.type = type
         self.helptext = helptext
@@ -109,18 +122,17 @@ class SH_Key(Base):
 
     def __repr__(self):
         return (
-                '<SH_Key> id [ %s ] | fk_sh_key [ %s ] | fk_language [ %s ] | key [ %s ]' %
-                (self.id, self.fk_sh_key, self.fk_language, self.key)
-                )
+            '<SH_Key> id [ %s ] | fk_sh_key [ %s ] | fk_language [ %s ] | key '
+            '[ %s ]' % (self.id, self.fk_sh_key, self.fk_language, self.key))
+
 
 class A_Value(Base):
     __tablename__ = 'a_values'
     __table_args__ = (
-                      ForeignKeyConstraint(['fk_a_value'], ['data.a_values.id']),
-                      ForeignKeyConstraint(['fk_language'], ['data.languages.id']),
-                      ForeignKeyConstraint(['fk_a_key'], ['data.a_keys.id']),
-                      {'schema': 'data'}
-                      )
+        ForeignKeyConstraint(['fk_a_value'], ['data.a_values.id']),
+        ForeignKeyConstraint(['fk_language'], ['data.languages.id']),
+        ForeignKeyConstraint(['fk_a_key'], ['data.a_keys.id']),
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     fk_a_value = Column(Integer)
     fk_language = Column(Integer, nullable=False)
@@ -140,18 +152,18 @@ class A_Value(Base):
 
     def __repr__(self):
         return (
-                '<A_Value> id [ %s ] | fk_a_value [ %s ] | fk_language [ %s ] | value [ %s ]' %
-                (self.id, self.fk_a_value, self.fk_language, self.value)
-                )
+            '<A_Value> id [ %s ] | fk_a_value [ %s ] | fk_language [ %s ] | '
+            'value [ %s ]' % (
+                self.id, self.fk_a_value, self.fk_language, self.value))
+
 
 class SH_Value(Base):
     __tablename__ = 'sh_values'
     __table_args__ = (
-                      ForeignKeyConstraint(['fk_sh_value'], ['data.sh_values.id']),
-                      ForeignKeyConstraint(['fk_language'], ['data.languages.id']),
-                      ForeignKeyConstraint(['fk_sh_key'], ['data.sh_keys.id']),
-                      {'schema': 'data'}
-                      )
+        ForeignKeyConstraint(['fk_sh_value'], ['data.sh_values.id']),
+        ForeignKeyConstraint(['fk_language'], ['data.languages.id']),
+        ForeignKeyConstraint(['fk_sh_key'], ['data.sh_keys.id']),
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     fk_sh_value = Column(Integer)
     fk_language = Column(Integer, nullable=False)
@@ -171,18 +183,18 @@ class SH_Value(Base):
 
     def __repr__(self):
         return (
-                '<SH_Value> id [ %s ] | fk_sh_value [ %s ] | fk_language [ %s ] | value [ %s ]' %
-                (self.id, self.fk_sh_value, self.fk_language, self.value)
-                )
+            '<SH_Value> id [ %s ] | fk_sh_value [ %s ] | fk_language [ %s ] | '
+            'value [ %s ]' % (
+                self.id, self.fk_sh_value, self.fk_language, self.value))
+
 
 class A_Tag(Base):
     __tablename__ = 'a_tags'
     __table_args__ = (
-                      ForeignKeyConstraint(['fk_a_tag_group'], ['data.a_tag_groups.id']),
-                      ForeignKeyConstraint(['fk_a_key'], ['data.a_keys.id']),
-                      ForeignKeyConstraint(['fk_a_value'], ['data.a_values.id']),
-                      {'schema': 'data'}
-                      )
+        ForeignKeyConstraint(['fk_a_tag_group'], ['data.a_tag_groups.id']),
+        ForeignKeyConstraint(['fk_a_key'], ['data.a_keys.id']),
+        ForeignKeyConstraint(['fk_a_value'], ['data.a_values.id']),
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     fk_a_tag_group = Column(Integer, nullable=False)
     fk_a_key = Column(Integer, nullable=False)
@@ -197,21 +209,21 @@ class A_Tag(Base):
 
     def __repr__(self):
         return (
-                '<A_Tag> id [ %s ] | fk_a_tag_group [ %s ] | fk_a_key [ %s ] | fk_a_value [ %s ]' %
-                (self.id, self.fk_a_tag_group, self.fk_a_key, self.fk_a_value)
-                )
+            '<A_Tag> id [ %s ] | fk_a_tag_group [ %s ] | fk_a_key [ %s ] | '
+            'fk_a_value [ %s ]' % (
+                self.id, self.fk_a_tag_group, self.fk_a_key, self.fk_a_value))
 
     def to_json(self):
         return {'id': self.id, 'key': self.key.key, 'value': self.value.value}
 
+
 class SH_Tag(Base):
     __tablename__ = 'sh_tags'
     __table_args__ = (
-                      ForeignKeyConstraint(['fk_sh_tag_group'], ['data.sh_tag_groups.id']),
-                      ForeignKeyConstraint(['fk_sh_key'], ['data.sh_keys.id']),
-                      ForeignKeyConstraint(['fk_sh_value'], ['data.sh_values.id']),
-                      {'schema': 'data'}
-                      )
+        ForeignKeyConstraint(['fk_sh_tag_group'], ['data.sh_tag_groups.id']),
+        ForeignKeyConstraint(['fk_sh_key'], ['data.sh_keys.id']),
+        ForeignKeyConstraint(['fk_sh_value'], ['data.sh_values.id']),
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     fk_sh_tag_group = Column(Integer, nullable=False)
     fk_sh_key = Column(Integer, nullable=False)
@@ -226,27 +238,28 @@ class SH_Tag(Base):
 
     def __repr__(self):
         return (
-                '<SH_Tag> id [ %s ] | fk_sh_tag_group [ %s ] | fk_sh_key [ %s ] | fk_sh_value [ %s ]' %
-                (self.id, self.fk_sh_tag_group, self.fk_sh_key, self.fk_sh_value)
-                )
+            '<SH_Tag> id [ %s ] | fk_sh_tag_group [ %s ] | fk_sh_key [ %s ] | '
+            'fk_sh_value [ %s ]' % (
+                self.id, self.fk_sh_tag_group, self.fk_sh_key,
+                self.fk_sh_value))
 
     def to_json(self):
         return {'id': self.id, 'key': self.key.key, 'value': self.value.value}
 
+
 class A_Tag_Group(Base):
     __tablename__ = 'a_tag_groups'
     __table_args__ = (
-                      ForeignKeyConstraint(['fk_activity'], ['data.activities.id']),
-                      ForeignKeyConstraint(['fk_a_tag'], ['data.a_tags.id'],
-                      use_alter=True, name='fk_a_tag'),
-                      {'schema': 'data'}
-                      )
+        ForeignKeyConstraint(['fk_activity'], ['data.activities.id']),
+        ForeignKeyConstraint(
+            ['fk_a_tag'], ['data.a_tags.id'], use_alter=True, name='fk_a_tag'),
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     tg_id = Column(Integer, nullable=False)
     fk_activity = Column(Integer, nullable=False)
     fk_a_tag = Column(Integer)
-    geometry = GeometryColumn('geometry',
-                              Geometry(dimension=2, srid=4326, spatial_index=True))
+    geometry = GeometryColumn(
+        'geometry', Geometry(dimension=2, srid=4326, spatial_index=True))
     valid_from = Column(DateTime)
     valid_to = Column(DateTime)
 
@@ -270,29 +283,33 @@ class A_Tag_Group(Base):
         else:
             geom = wkb.loads(str(self.geometry.geom_wkb)).wkt
         return (
-                '<A_Tag_Group> id [ %s ] | tg_id [%s] | fk_activity [ %s ] | fk_a_tag [ %s ] | geometry [ %s ] | valid_from [ %s ] | valid_to [ %s ]' %
-                (self.id, self.tg_id, self.fk_activity, self.fk_a_tag, geom,
-                self.valid_from, self.valid_to)
-                )
+            '<A_Tag_Group> id [ %s ] | tg_id [%s] | fk_activity [ %s ] | '
+            'fk_a_tag [ %s ] | geometry [ %s ] | valid_from [ %s ] | valid_to '
+            '[ %s ]' % (
+                self.id, self.tg_id, self.fk_activity, self.fk_a_tag, geom,
+                self.valid_from, self.valid_to))
 
     def to_json(self):
         geometry = None
         #        if self.geometry is not None:
         #            shape = wkb.loads(str(self.geometry.geom_wkb))
         #            geometry = from_wkt(shape.wkt)
-        return {'id': self.id, 'geometry': geometry, 'tags': [t.to_json() for t
-            in self.tags]}
+        return {
+            'id': self.id,
+            'geometry': geometry,
+            'tags': [t.to_json() for t in self.tags]}
 
 GeometryDDL(A_Tag_Group.__table__)
+
 
 class SH_Tag_Group(Base):
     __tablename__ = 'sh_tag_groups'
     __table_args__ = (
-                      ForeignKeyConstraint(['fk_stakeholder'], ['data.stakeholders.id']),
-                      ForeignKeyConstraint(['fk_sh_tag'], ['data.sh_tags.id'],
-                      use_alter=True, name='fk_sh_tag'),
-                      {'schema': 'data'}
-                      )
+        ForeignKeyConstraint(['fk_stakeholder'], ['data.stakeholders.id']),
+        ForeignKeyConstraint(
+            ['fk_sh_tag'], ['data.sh_tags.id'], use_alter=True,
+            name='fk_sh_tag'),
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     tg_id = Column(Integer, nullable=False)
     fk_stakeholder = Column(Integer, nullable=False)
@@ -315,27 +332,28 @@ class SH_Tag_Group(Base):
 
     def __repr__(self):
         return (
-                '<SH_Tag_Group> id [ %s ] | tg_id [%s] | fk_stakeholder [ %s ] | fk_sh_tag [ %s ] | valid_from [ %s ] | valid_to [ %s ]' %
-                (self.id, self.tg_id, self.fk_stakeholder, self.fk_sh_tag,
-                self.valid_from, self.valid_to)
-                )
+            '<SH_Tag_Group> id [ %s ] | tg_id [%s] | fk_stakeholder [ %s ] | '
+            'fk_sh_tag [ %s ] | valid_from [ %s ] | valid_to [ %s ]' % (
+                self.id, self.tg_id, self.fk_stakeholder, self.fk_sh_tag,
+                self.valid_from, self.valid_to))
 
     def to_json(self):
         return {'id': self.id, 'tags': [t.to_json() for t in self.tags]}
 
+
 class Activity(Base):
     __tablename__ = 'activities'
     __table_args__ = (
-                      ForeignKeyConstraint(['fk_status'], ['data.status.id']),
-                      ForeignKeyConstraint(['fk_changeset'], ['data.changesets.id']),
-                      ForeignKeyConstraint(['fk_user_review'], ['data.users.id']),
-                      ForeignKeyConstraint(['fk_profile'], ['data.profiles.id']),
-                      {'schema': 'data'}
-                      )
+        ForeignKeyConstraint(['fk_status'], ['data.status.id']),
+        ForeignKeyConstraint(['fk_changeset'], ['data.changesets.id']),
+        ForeignKeyConstraint(['fk_user_review'], ['data.users.id']),
+        ForeignKeyConstraint(['fk_profile'], ['data.profiles.id']),
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     activity_identifier = Column(UUID, nullable=False)
     fk_changeset = Column(Integer, nullable=False)
-    point = GeometryColumn('point', Geometry(dimension=2, srid=4326, spatial_index=True))
+    point = GeometryColumn(
+        'point', Geometry(dimension=2, srid=4326, spatial_index=True))
     fk_status = Column(Integer, nullable=False)
     version = Column(Integer, nullable=False)
     reliability = Column(Integer)
@@ -367,7 +385,7 @@ class Activity(Base):
         self.point = point
         self.timestamp_review = timestamp_review
         self.comment_review = comment_review
-        
+
     def __repr__(self):
         """
         if self.point is None:
@@ -377,12 +395,15 @@ class Activity(Base):
         """
         geom = '***'
         return (
-                '<Activity> id [ %s ] | activity_identifier [ %s ] | fk_changeset [ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ] | previous_version [ %s ] | fk_user_review [ %s ] | timestamp_review [ %s ] | comment_review [ %s ] | fk_profile [ %s ]' %
-                (self.id, self.activity_identifier, self.fk_changeset, geom,
+            '<Activity> id [ %s ] | activity_identifier [ %s ] | fk_changeset '
+            '[ %s ] | point [ %s ] | fk_status [ %s ] | version [ %s ] | '
+            'previous_version [ %s ] | fk_user_review [ %s ] | '
+            'timestamp_review [ %s ] | comment_review [ %s ] | fk_profile [ %s'
+            ' ]' % (
+                self.id, self.activity_identifier, self.fk_changeset, geom,
                 self.fk_status, self.version, self.previous_version,
-                self.fk_user_review, self.timestamp_review, self.comment_review,
-                self.fk_profile)
-                )
+                self.fk_user_review, self.timestamp_review,
+                self.comment_review, self.fk_profile))
 
     @property
     def __geo_interface__(self):
@@ -414,14 +435,14 @@ class Activity(Base):
 
 GeometryDDL(Activity.__table__)
 
+
 class Stakeholder(Base):
     __tablename__ = 'stakeholders'
     __table_args__ = (
-                      ForeignKeyConstraint(['fk_status'], ['data.status.id']),
-                      ForeignKeyConstraint(['fk_changeset'], ['data.changesets.id']),
-                      ForeignKeyConstraint(['fk_user_review'], ['data.users.id']),
-                      {'schema': 'data'}
-                      )
+        ForeignKeyConstraint(['fk_status'], ['data.status.id']),
+        ForeignKeyConstraint(['fk_changeset'], ['data.changesets.id']),
+        ForeignKeyConstraint(['fk_user_review'], ['data.users.id']),
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     stakeholder_identifier = Column(UUID, nullable=False)
     fk_changeset = Column(Integer, nullable=False)
@@ -457,11 +478,14 @@ class Stakeholder(Base):
 
     def __repr__(self):
         return (
-                '<Stakeholder> id [ %s ] | stakeholder_identifier [ %s ] | fk_changeset [ %s ] | fk_status [ %s ] | version [ %s ] | previous_version [ %s ] | fk_user_review [ %s ] | timestamp_review [ %s ] | comment_review [ %s ]' %
-                (self.id, self.stakeholder_identifier, self.fk_changeset,
+            '<Stakeholder> id [ %s ] | stakeholder_identifier [ %s ] | '
+            'fk_changeset [ %s ] | fk_status [ %s ] | version [ %s ] | '
+            'previous_version [ %s ] | fk_user_review [ %s ] | '
+            'timestamp_review [ %s ] | comment_review [ %s ]' % (
+                self.id, self.stakeholder_identifier, self.fk_changeset,
                 self.fk_status, self.version, self.previous_version,
-                self.fk_user_review, self.timestamp_review, self.comment_review)
-                )
+                self.fk_user_review, self.timestamp_review,
+                self.comment_review))
 
     def get_comments(self):
         return DBSession.query(Comment).\
@@ -476,12 +500,12 @@ class Stakeholder(Base):
             'taggroups': [t.to_json() for t in self.tag_groups]
         }
 
+
 class Changeset(Base):
     __tablename__ = 'changesets'
     __table_args__ = (
-                      ForeignKeyConstraint(['fk_user'], ['data.users.id']),
-                      {'schema': 'data'}
-                      )
+        ForeignKeyConstraint(['fk_user'], ['data.users.id']),
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     fk_user = Column(Integer, nullable=False)
     timestamp = Column(DateTime, nullable=False)
@@ -498,15 +522,15 @@ class Changeset(Base):
 
     def __repr__(self):
         return (
-                '<Changeset> id [ %s ] | fk_user [ %s ] | timestamp [ %s ] | source [ %s ] | diff [ %s ]' %
-                (self.id, self.fk_user, self.timestamp, self.source, self.diff)
-                )
+            '<Changeset> id [ %s ] | fk_user [ %s ] | timestamp [ %s ] | '
+            'source [ %s ] | diff [ %s ]' % (
+                self.id, self.fk_user, self.timestamp, self.source, self.diff))
+
 
 class Status(Base):
     __tablename__ = 'status'
     __table_args__ = (
-                      {'schema': 'data'}
-                      )
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False, unique=True)
     description = Column(Text)
@@ -521,15 +545,14 @@ class Status(Base):
 
     def __repr__(self):
         return (
-                '<Status> id [ %s ] | name [ %s ] | description [ %s ]' %
-                (self.id, self.name, self.description)
-                )
+            '<Status> id [ %s ] | name [ %s ] | description [ %s ]' % (
+                self.id, self.name, self.description))
+
 
 class Language(Base):
     __tablename__ = 'languages'
     __table_args__ = (
-                      {'schema': 'data'}
-                      )
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     english_name = Column(String(255), nullable=False)
     local_name = Column(String(255), nullable=False)
@@ -549,19 +572,19 @@ class Language(Base):
 
     def __repr__(self):
         return (
-                '<Language> id [ %s ] | english_name [ %s ] | local_name [ %s ] | locale [ %s ]' %
-                (self.id, self.english_name, self.local_name, self.locale)
-                )
+            '<Language> id [ %s ] | english_name [ %s ] | local_name [ %s ] | '
+            'locale [ %s ]' % (
+                self.id, self.english_name, self.local_name, self.locale))
+
 
 class Involvement(Base):
     __tablename__ = 'involvements'
     __table_args__ = (
-                      ForeignKeyConstraint(['fk_activity'], ['data.activities.id']),
-                      ForeignKeyConstraint(['fk_stakeholder'], ['data.stakeholders.id']),
-                      ForeignKeyConstraint(['fk_stakeholder_role'],
-                      ['data.stakeholder_roles.id']),
-                      {'schema': 'data'}
-                      )
+        ForeignKeyConstraint(['fk_activity'], ['data.activities.id']),
+        ForeignKeyConstraint(['fk_stakeholder'], ['data.stakeholders.id']),
+        ForeignKeyConstraint(
+            ['fk_stakeholder_role'], ['data.stakeholder_roles.id']),
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     fk_activity = Column(Integer, nullable=False)
     fk_stakeholder = Column(Integer, nullable=False)
@@ -572,16 +595,16 @@ class Involvement(Base):
 
     def __repr__(self):
         return (
-                '<Involvement> id [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ] | fk_stakeholder_role [ %s ]' %
-                (self.id, self.fk_activity, self.fk_stakeholder,
-                self.fk_stakeholder_role)
-                )
+            '<Involvement> id [ %s ] | fk_activity [ %s ] | fk_stakeholder [ '
+            '%s ] | fk_stakeholder_role [ %s ]' % (
+                self.id, self.fk_activity, self.fk_stakeholder,
+                self.fk_stakeholder_role))
+
 
 class Stakeholder_Role(Base):
     __tablename__ = 'stakeholder_roles'
     __table_args__ = (
-                      {'schema': 'data'}
-                      )
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False, unique=True)
     description = Column(Text)
@@ -595,9 +618,8 @@ class Stakeholder_Role(Base):
 
     def __repr__(self):
         return (
-                '<Stakeholder_Role> id [ %s ] | name [ %s ] | description [ %s ]' %
-                (self.id, self.name, self.description)
-                )
+            '<Stakeholder_Role> id [ %s ] | name [ %s ] | description [ %s ]'
+            % (self.id, self.name, self.description))
 
 users_groups = Table('users_groups', Base.metadata,
                      Column('id', Integer, primary_key=True),
@@ -617,14 +639,17 @@ users_profiles = Table('users_profiles', Base.metadata,
                        schema='data'
                        )
 
+
 class User(Base):
     __tablename__ = 'users'
     __table_args__ = (
-                      ForeignKeyConstraint(['fk_institution'], ['data.institutions.id']),
-                      # Create a constraint to make sure that there is an activation uuid if the user account is not active
-                      CheckConstraint('(data.users.is_active = FALSE) = (data.users.activation_uuid IS NOT NULL)', name="data_users_activation_uuid_not_null"),
-                      {'schema': 'data'}
-                      )
+        ForeignKeyConstraint(['fk_institution'], ['data.institutions.id']),
+        # Create a constraint to make sure that there is an activation uuid if
+        # the user account is not active
+        CheckConstraint(
+            '(data.users.is_active = FALSE) = (data.users.activation_uuid IS '
+            'NOT NULL)', name="data_users_activation_uuid_not_null"),
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     uuid = Column(UUID, nullable=False, unique=True)
     username = Column(String(255), nullable=False, unique=True)
@@ -673,8 +698,11 @@ class User(Base):
         if not user:
             return False
         # Check also if the user is activated and approved
-        active, approved = DBSession.query(cls.is_active, cls.is_approved).filter(cls.username == username).first()
-        # Return True if the password is correct and the user is active and approved
+        active, approved = DBSession.query(
+            cls.is_active, cls.is_approved).filter(
+                cls.username == username).first()
+        # Return True if the password is correct and the user is active and
+        # approved
         return (crypt.check(user.password, password) and active and approved)
 
     def set_new_password(self):
@@ -685,7 +713,9 @@ class User(Base):
         # The password length
         password_length = 12
         # Creates randomly a new password with letters and digits
-        new_password = ''.join([random.choice(string.letters + string.digits) for i in range(password_length)])
+        new_password = ''.join([
+            random.choice(string.letters + string.digits) for i in range(
+                password_length)])
 
         # Set it
         self._set_password(new_password)
@@ -693,9 +723,10 @@ class User(Base):
         # Return the new password uncrypted
         return new_password
 
-    def __init__(self, username, password, email, firstname=None, lastname=None,
-                 privacy=None, is_active=False, activation_uuid=None,
-                 is_approved=False, registration_timestamp=None):
+    def __init__(
+            self, username, password, email, firstname=None, lastname=None,
+            privacy=None, is_active=False, activation_uuid=None,
+            is_approved=False, registration_timestamp=None):
         self.uuid = uuid.uuid4()
         self.username = username
         self.password = password
@@ -710,23 +741,25 @@ class User(Base):
 
     def __repr__(self):
         return (
-                '<User> id [ %s ] | uuid [ %s ] | username [ %s ] | password [ *** ] | email [ %s ]' %
-                (self.id, self.uuid, self.username, self.email)
-                )
+            '<User> id [ %s ] | uuid [ %s ] | username [ %s ] | password [ ***'
+            ' ] | email [ %s ]' % (
+                self.id, self.uuid, self.username, self.email))
 
-groups_permissions = Table('groups_permissions', Base.metadata,
-                           Column('id', Integer, primary_key=True),
-                           Column('fk_group', Integer, ForeignKey('data.groups.id'), nullable=False),
-                           Column('fk_permission', Integer, ForeignKey('data.permissions.id'),
-                           nullable=False),
-                           schema='data'
-                           )
+groups_permissions = Table(
+    'groups_permissions',
+    Base.metadata,
+    Column('id', Integer, primary_key=True),
+    Column('fk_group', Integer, ForeignKey('data.groups.id'), nullable=False),
+    Column(
+        'fk_permission', Integer, ForeignKey('data.permissions.id'),
+        nullable=False),
+    schema='data')
+
 
 class Group(Base):
     __tablename__ = 'groups'
     __table_args__ = (
-                      {'schema': 'data'}
-                      )
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False, unique=True)
     description = Column(Text)
@@ -741,15 +774,14 @@ class Group(Base):
 
     def __repr__(self):
         return (
-                '<Group> id [ %s ] | name [ %s ] | description [ %s ]' %
-                (self.id, self.name, self.description)
-                )
+            '<Group> id [ %s ] | name [ %s ] | description [ %s ]' % (
+                self.id, self.name, self.description))
+
 
 class Permission(Base):
     __tablename__ = 'permissions'
     __table_args__ = (
-                      {'schema': 'data'}
-                      )
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False, unique=True)
     description = Column(Text)
@@ -761,9 +793,9 @@ class Permission(Base):
 
     def __repr__(self):
         return (
-                '<Permission> id [ %s ] | name [ %s ] | description [ %s ]' %
-                (self.id, self.name, self.description)
-                )
+            '<Permission> id [ %s ] | name [ %s ] | description [ %s ]' % (
+                self.id, self.name, self.description))
+
 
 class Profile(Base):
     __tablename__ = 'profiles'
@@ -771,8 +803,7 @@ class Profile(Base):
     id = Column(Integer, primary_key=True)
     code = Column(String(255), nullable=False, unique=True)
     geometry = GeometryColumn(
-                              'polygon', Polygon(dimension=2, srid=4326, spatial_index=True)
-                              )
+        'polygon', Polygon(dimension=2, srid=4326, spatial_index=True))
 
     activities = relationship('Activity', backref='profile')
 
@@ -786,9 +817,8 @@ class Profile(Base):
         else:
             geom = wkb.loads(str(self.geometry.geom_wkb)).wkt
         return (
-                '<Profile> id [ %s ] | code [ %s ] | geometry [ %s ]' %
-                (self.id, self.code, geom)
-                )
+            '<Profile> id [ %s ] | code [ %s ] | geometry [ %s ]' % (
+                self.id, self.code, geom))
 
     def to_json(self):
         geometry = None
@@ -799,12 +829,12 @@ class Profile(Base):
 
 GeometryDDL(Profile.__table__)
 
+
 class Comment(Base):
     __tablename__ = 'comments'
     __table_args__ = (
-                      ForeignKeyConstraint(['fk_user'], ['data.users.id']),
-                      {'schema': 'data'}
-                      )
+        ForeignKeyConstraint(['fk_user'], ['data.users.id']),
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     comment = Column(Text, nullable=False)
     approved = Column(Boolean, nullable=False)
@@ -823,15 +853,16 @@ class Comment(Base):
 
     def __repr__(self):
         return (
-                '<Comment> id [ %s ] | comment [ %s ] | timestamp [ %s ] | fk_user [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ]' %
-                (self.id, self.comment, self.timestamp, self.fk_user,
-                self.fk_activity, self.fk_stakeholder)
-                )
+            '<Comment> id [ %s ] | comment [ %s ] | timestamp [ %s ] | fk_user'
+            ' [ %s ] | fk_activity [ %s ] | fk_stakeholder [ %s ]' % (
+                self.id, self.comment, self.timestamp, self.fk_user,
+                self.fk_activity, self.fk_stakeholder))
 
     def get_activity(self):
         try:
             return DBSession.query(Activity).\
-                filter(Activity.activity_identifier == self.activity_identifier).\
+                filter(
+                    Activity.activity_identifier == self.activity_identifier).\
                 filter(Activity.fk_status == 2).\
                 one()
         except NoResultFound:
@@ -847,12 +878,12 @@ class Comment(Base):
         except NoResultFound:
             return None
 
+
 class Institution(Base):
     __tablename__ = 'institutions'
     __table_args__ = (
-                      ForeignKeyConstraint(['fk_type'], ['data.institution_types.id']),
-                      {'schema': 'data'}
-                      )
+        ForeignKeyConstraint(['fk_type'], ['data.institution_types.id']),
+        {'schema': 'data'})
     id = Column(Integer, primary_key=True)
     fk_type = Column(Integer, nullable=False)
     name = Column(Text, nullable=False)
@@ -871,6 +902,7 @@ class Institution(Base):
         self.logo_url = logo_url
         self.description = description
 
+
 class Institution_Type(Base):
     __tablename__ = 'institution_types'
     __table_args__ = {'schema': 'data'}
@@ -884,6 +916,7 @@ class Institution_Type(Base):
         self.id = id
         self.name = name
         self.description = description
+
 
 class File(Base):
     __tablename__ = 'files'
@@ -902,6 +935,7 @@ class File(Base):
         self.size = size
         self.hash = hash
 
+
 class Category(Base):
     __tablename__ = 'categories'
     __table_args__ = (
@@ -916,10 +950,12 @@ class Category(Base):
     description = Column(Text)
     fk_category = Column(Integer)
 
-    translations = relationship('Category', backref=backref('original',
-        remote_side=[id]))
+    translations = relationship(
+        'Category', backref=backref('original', remote_side=[id]))
 
-    def __init__(self, name, fk_language=None, type=None, description=None, fk_category=None):
+    def __init__(
+            self, name, fk_language=None, type=None, description=None,
+            fk_category=None):
         self.name = name
         self.description = description
         self.fk_language = fk_language
@@ -930,8 +966,7 @@ class Category(Base):
 class Geonames(Base):
     __tablename__ = 'geonames'
     __table_args__ = (
-                      {'schema': 'context'}
-                      )
+        {'schema': 'context'})
 
     id = Column(Integer, primary_key=True)
     name = Column(Text)
@@ -939,11 +974,5 @@ class Geonames(Base):
     alternatenames = Column(Text)
     fcode = Column(Text)
     country = Column(Text)
-    wkb_geometry = GeometryColumn(Point(dimension=2, srid=4326, spatial_index=True))
-
-    #def __repr__(self):
-    #    return (
-    #            '<Geonames> id [ %s ] | name [ %s ] | asciinames [ %s ] | alternatenames [ %s ]' %
-    #            (self.id, self.name, self.asciiname, self.alternatenames)
-    #            )
-
+    wkb_geometry = GeometryColumn(
+        Point(dimension=2, srid=4326, spatial_index=True))
