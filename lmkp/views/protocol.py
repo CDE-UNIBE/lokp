@@ -376,10 +376,12 @@ class Protocol(object):
             str_map = {
                 # See http://www.postgresql.org/docs/9.1/static/functions-
                 # matching.html#FUNCTIONS-POSIX-REGEXP
-                'like': v.value.op("~")(value),
-                'ilike': v.value.op("~*")(value),
-                'nlike': v.value.op("!~")(value),
-                'nilike': v.value.op("!~*")(value)
+                # Update 2014/09/09: Operators like ~ or ~* do not seem to
+                # work correctly. Instead using LIKE and NOT LIKE.
+                'like': v.value.op("LIKE")(value),
+                'ilike': v.value.op("ILIKE")(value),
+                'nlike': v.value.op("NOT LIKE")(value),
+                'nilike': v.value.op("NOT ILIKE")(value)
             }
 
             # number comparison

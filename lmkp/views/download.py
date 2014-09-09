@@ -21,7 +21,7 @@ activity_protocol = ActivityProtocol3(Session)
 stakeholder_protocol = StakeholderProtocol3(Session)
 
 
-def to_flat_table(request, item_type, involvements=True, columns=[]):
+def to_flat_table(request, item_type, involvements='full', columns=[]):
 
     item_type = validate_item_type(item_type)
     if item_type == 'a':
@@ -80,7 +80,7 @@ def to_flat_table(request, item_type, involvements=True, columns=[]):
                     config_main_key['count'], main_key['count'])
 
         # Involvements
-        if involvements:
+        if involvements != 'none':
             max_involvements = max(max_involvements, len(
                 item.get('involvements', [])))
 
@@ -118,7 +118,7 @@ def to_flat_table(request, item_type, involvements=True, columns=[]):
                     except KeyError:
                         config_taggroup_entry['columns'] = [key_name]
 
-    if involvements:
+    if involvements != 'none':
         inv_keys = [
             i[0] for i in getCategoryList(
                 request, other_item_type).getInvolvementOverviewKeyNames()]
@@ -148,7 +148,7 @@ def to_flat_table(request, item_type, involvements=True, columns=[]):
             config_taggroup = config_taggroup_entry.get('config')
             config_mainkey = config_taggroup.getMaintag().getKey()
 
-            for taggroup in item.get('taggroups', []):
+            for taggroup in sorted(item.get('taggroups', []), key=lambda tg: tg.get('tg_id', 0)):
 
                 if taggroup['main_tag']['key'] != config_mainkey.getName():
                     continue
@@ -207,7 +207,7 @@ def to_flat_table(request, item_type, involvements=True, columns=[]):
             row.extend(found_taggroups)
 
         # Involvements
-        if involvements:
+        if involvements != 'none':
             inv_row = []
             for involvement in sorted(
                 item.get('involvements', []), key=lambda i: (
@@ -260,11 +260,7 @@ class DownloadView(BaseView):
 
         if self.request.POST:
             format = self.request.POST.get('format', 'csv')
-            involvements = True
-            try:
-                involvements = int(self.request.POST.get('involvements', 1))
-            except ValueError:
-                pass
+            involvements = self.request.POST.get('involvements', 'full')
             attributes = self.request.POST.getall('attributes')
             if format == 'csv':
                 header, rows = to_flat_table(
