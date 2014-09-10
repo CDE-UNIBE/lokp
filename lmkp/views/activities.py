@@ -70,6 +70,9 @@ activity_protocol = ActivityProtocol3(Session)
 
 
 class ActivityView(BaseView):
+    """
+    This is the main class for viewing :term:`Activities`.
+    """
 
     @view_config(route_name='activities_read_many')
     def read_many(self):

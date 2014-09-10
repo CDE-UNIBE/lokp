@@ -1,3 +1,8 @@
+"""
+:mod:`lmkp.utils` provides some useful helper functions.
+"""
+
+
 def validate_bbox(bbox):
     """
     Tests if a string is a valid bounding box. It is assumed valid if
@@ -9,7 +14,7 @@ def validate_bbox(bbox):
 
     Returns:
         list or None. If valid, a list with 4 float numbers is returned.
-            If not valid, None is returned.
+        If not valid, None is returned.
     """
     try:
         bbox_parts = bbox.split(',')
