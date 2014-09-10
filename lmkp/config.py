@@ -1,21 +1,22 @@
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
-
-import os.path
 import mimetypes
+import os.path
 import re
 from pyramid.request import Request
+from pyramid.testing import DummyRequest
+
 
 def locale_profile_directory_path(request):
     """
-    Returns the absolute path to the profile .yaml file, based on params _PROFILE_ or
-    cookie _PROFILE_
+    Returns the absolute path to the profile .yaml file, based on params
+    _PROFILE_ or cookie _PROFILE_
     """
 
     profiles_dir = request.registry.settings['lmkp.profiles_dir']
     prefix = getCustomizationName(request)
 
-    profiles_path = os.path.join(os.path.dirname(__file__), 'customization', prefix, 'profiles', profiles_dir)
+    profiles_path = os.path.join(
+        os.path.dirname(__file__), 'customization', prefix, 'profiles',
+        profiles_dir)
 
     if '_PROFILE_' in request.params:
         p = os.path.join(profiles_path, request.params['_PROFILE_'])
@@ -28,6 +29,7 @@ def locale_profile_directory_path(request):
 
     return profiles_path
 
+
 def profile_directory_path(request=None):
     """
     Returns the path to the directory containing the profiles
@@ -35,21 +37,25 @@ def profile_directory_path(request=None):
     try:
         profiles_dir = request.registry.settings['lmkp.profiles_dir']
     except KeyError:
-        raise Exception('No profile directory specified! There is no profile '
-            'directory (lmkp.profiles_dir) specified in the application''s '
-            '.ini file!')
-    
+        raise Exception(
+            'No profile directory specified! There is no profile directory '
+            '(lmkp.profiles_dir) specified in the application''s .ini file!')
+
     prefix = getCustomizationName(request)
-    
+
     # Check if such a folder exists
-    profiles_path = os.path.join(os.path.dirname(__file__), 'customization', prefix, 'profiles', profiles_dir)
+    profiles_path = os.path.join(
+        os.path.dirname(__file__), 'customization', prefix, 'profiles',
+        profiles_dir)
     if not os.path.exists(profiles_path):
-        raise Exception('Profile directory not found! The folder for the '
-            'profile (%s) is not found. Make sure it is situated at '
-            'lmkp/customization/%s/profiles/%s.' % (profiles_dir, 
-                prefix, profiles_dir))
-    
+        raise Exception(
+            'Profile directory not found! The folder for the profile (%s) is '
+            'not found. Make sure it is situated at '
+            'lmkp/customization/%s/profiles/%s.' % (profiles_dir, prefix,
+            profiles_dir))
+
     return profiles_path
+
 
 def translation_directory_path():
     """
@@ -57,6 +63,7 @@ def translation_directory_path():
     translation
     """
     return "%s/documents/translation" % os.path.dirname(__file__)
+
 
 def upload_directory_path(request):
     """
@@ -66,6 +73,7 @@ def upload_directory_path(request):
         return request.registry.settings['lmkp.file_upload_dir']
     return None
 
+
 def upload_max_file_size(request):
     """
     Returns the maximum file size (in kilobytes) for uploads.
@@ -73,10 +81,12 @@ def upload_max_file_size(request):
     """
     if 'lmkp.file_upload_max_size' in request.registry.settings:
         try:
-            return int(request.registry.settings['lmkp.file_upload_max_size'])*1024
+            return int(
+                request.registry.settings['lmkp.file_upload_max_size']) * 1024
         except ValueError:
             pass
-    return 5120*1024
+    return 5120 * 1024
+
 
 def valid_mime_extensions(request):
     """
@@ -104,7 +114,8 @@ def valid_mime_extensions(request):
             vfme[mt] = fme[mt]
 
         # Add special types by Internet Explorer
-        # http://msdn.microsoft.com/en-us/library/ms775147%28v=vs.85%29.aspx#_replace
+        # http://msdn.microsoft.com/en-us/library/ms775147%28v=vs.85%29.
+        # aspx#_replace
         if 'image/jpeg' in vfme:
             vfme['image/pjpeg'] = '.jpg'
         if 'image/png' in vfme:
@@ -113,6 +124,7 @@ def valid_mime_extensions(request):
         return vfme
 
     return {}
+
 
 def check_valid_uuid(uuid):
     """
@@ -125,7 +137,7 @@ def check_valid_uuid(uuid):
 def getTemplatePath(request, tplName):
     """
     Get the path to the customized Mako templates. Use the folder name set in
-    the application's ini file or use the default folder name if no 
+    the application's ini file or use the default folder name if no
     customization is specified.
     """
 
@@ -133,13 +145,15 @@ def getTemplatePath(request, tplName):
 
     return 'lmkp:customization/%s/templates/%s' % (prefix, tplName)
 
+
 def getCustomizationName(requestOrSettings):
     """
     Return the name of the customization as defined in the application's ini
     file. If none is specified, an error is raised.
     """
 
-    if isinstance(requestOrSettings, Request):
+    if (isinstance(requestOrSettings, Request)
+            or isinstance(requestOrSettings, DummyRequest)):
         settings = requestOrSettings.registry.settings
     elif isinstance(requestOrSettings, dict):
         settings = requestOrSettings
@@ -148,13 +162,16 @@ def getCustomizationName(requestOrSettings):
     if 'lmkp.customization' in settings:
         customization = settings['lmkp.customization']
     else:
-        raise Exception('No customization specified! There is no customization '
+        raise Exception(
+            'No customization specified! There is no customization '
             '(lmkp.customization) specified in the application''s .ini file!')
 
     # Check if such a folder exists
-    if not os.path.exists(os.path.join(os.path.dirname(__file__), 'customization', customization)):
-        raise Exception('Customization folder not found! The folder for the '
-            'customization (%s) is not found. Make sure it is situated at '
+    if not os.path.exists(os.path.join(
+            os.path.dirname(__file__), 'customization', customization)):
+        raise Exception(
+            'Customization folder not found! The folder for the customization '
+            '(%s) is not found. Make sure it is situated at '
             'lmkp/customization/%s.' % (customization, customization))
 
     return customization

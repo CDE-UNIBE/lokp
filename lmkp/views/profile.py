@@ -1,14 +1,18 @@
-from lmkp.config import profile_directory_path
-from lmkp.config import locale_profile_directory_path
+import geojson
 import os
-from pyramid.view import view_config
+import shapely
 import yaml
+from pyramid.view import view_config
+
+from lmkp.config import (
+    profile_directory_path,
+    locale_profile_directory_path,
+)
 from lmkp.models.meta import DBSession
 from lmkp.models.database_objects import Profile
-import geojson
-import shapely
 
 APPLICATION_YAML = 'application.yml'
+
 
 def get_current_profile(request):
 
@@ -19,6 +23,7 @@ def get_current_profile(request):
 
     return 'global'
 
+
 def get_current_locale(request):
 
     if '_LOCALE_' in request.params:
@@ -28,6 +33,7 @@ def get_current_locale(request):
 
     return 'en'
 
+
 @view_config(route_name='profile_store', renderer='json')
 def profile_store(request):
     """
@@ -35,8 +41,8 @@ def profile_store(request):
     available profiles.
     In order to appear in this list, a profile needs to be a valid YAML (.yml)
     file located in /profiles and it must contain an attribute "name".
-    Furthermore, the profile must be listed in the database. To do this, add its
-    keys and values to the database:
+    Furthermore, the profile must be listed in the database. To do this, add
+    its keys and values to the database:
     - config/add/activities?_PROFILE_=XXX
     - config/add_stakeholders?_PROFILE_=XXX
     This needs to be done even if profile does not contain any additional keys
@@ -66,6 +72,7 @@ def profile_store(request):
 
     return ret
 
+
 def _getCurrentProfileExtent(request):
     """
     Get the extent from current profile. Get it from YAML, which saves a
@@ -88,6 +95,7 @@ def _getCurrentProfileExtent(request):
 
     # No local or global file found
     return 'null'
+
 
 def get_spatial_accuracy_map(request):
     """
@@ -112,27 +120,36 @@ def get_spatial_accuracy_map(request):
             # Translate the spatial accuracy map ...
             # This is the SQL query that needs to be written:
             # SELECT loc.value, eng.value FROM
-            # (SELECT * FROM data.a_values WHERE fk_language = (SELECT id FROM data.languages WHERE locale = 'fr' LIMIT 1)) AS loc JOIN
-            # (SELECT * FROM data.a_values WHERE fk_language = 1 AND "value" IN ('1km to 10km', 'better than 100m')) AS eng
+            # (SELECT * FROM data.a_values WHERE fk_language = (SELECT id FROM
+            # data.languages WHERE locale = 'fr' LIMIT 1)) AS loc JOIN
+            # (SELECT * FROM data.a_values WHERE fk_language = 1 AND "value"
+            # IN ('1km to 10km', 'better than 100m')) AS eng
             # ON loc.fk_a_value = eng.id
             localizer = get_localizer(request)
-            
+
             locale = localizer.locale_name
 
-            fk_lang, = DBSession.query(Language.id).filter(Language.locale == locale).first()
+            fk_lang, = DBSession.query(Language.id).filter(Language.locale ==
+                locale).first()
 
             loc_query = DBSession.query(A_Value.id.label("loc_id"),
                                         A_Value.value.label("loc_value"),
-                                        A_Value.fk_a_value.label("loc_fk_a_value")).filter(A_Value.fk_language == fk_lang).subquery("loc")
+                                        A_Value.fk_a_value.label(
+                                            "loc_fk_a_value")).filter(A_Value.
+            fk_language == fk_lang).subquery("loc")
 
             eng_query = DBSession.query(A_Value.id.label("eng_id"),
                                         A_Value.value.label("eng_value")).\
                                         filter(A_Value.fk_language == 1).\
-                                        filter(A_Value.value.in_(map.keys())).subquery("eng")
+                                        filter(A_Value.value.in_(map.keys())).
+                                        subquery("eng")
 
-            join_query = DBSession.query(loc_query, eng_query).filter(loc_query.c.loc_fk_a_value == eng_query.c.eng_id).subquery("join_tables")
+            join_query = DBSession.query(loc_query, eng_query).filter(
+                loc_query.c.loc_fk_a_value == eng_query.c.eng_id).subquery(
+                "join_tables")
 
-            query = DBSession.query(join_query.c.eng_value, join_query.c.loc_value)
+            query = DBSession.query(join_query.c.eng_value, join_query.c.
+                loc_value)
 
             values_map = {}
             for english, translated in query.all():
@@ -189,4 +206,3 @@ def _processProfile(request, dbProfile, isGlobal=False):
     except IOError:
         # File not found
         return None
-

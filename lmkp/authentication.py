@@ -1,18 +1,18 @@
 from base64 import standard_b64decode
+from pyramid.authentication import AuthTktAuthenticationPolicy
+from pyramid.security import effective_principals
+from pyramid.httpexceptions import HTTPUnauthorized
+from sqlalchemy.orm.exc import NoResultFound
+
 from lmkp.models.database_objects import (
     Profile,
     User,
-    users_profiles
+    users_profiles,
 )
 from lmkp.models.meta import DBSession as Session
 from lmkp.security import group_finder
 from lmkp.views.profile import get_current_profile
-from pyramid.authentication import AuthTktAuthenticationPolicy
-from pyramid.authorization import Everyone
-from pyramid.security import Authenticated
-from pyramid.security import effective_principals
-from pyramid.httpexceptions import HTTPUnauthorized
-from sqlalchemy.orm.exc import NoResultFound
+
 
 class CustomAuthenticationPolicy(AuthTktAuthenticationPolicy):
     """
@@ -34,7 +34,8 @@ class CustomAuthenticationPolicy(AuthTktAuthenticationPolicy):
         # Such request can e.g. come from external clients like a QGIS plugin
         credentials = self._get_basicauth_credentials(request)
         if credentials is not None:
-            if User.check_password(credentials['login'], credentials['password']):
+            if User.check_password(
+                    credentials['login'], credentials['password']):
                 # Return the user id if the login and password are correct
                 return credentials['login']
             else:
@@ -46,7 +47,8 @@ class CustomAuthenticationPolicy(AuthTktAuthenticationPolicy):
         credentials = self._get_basicauth_credentials(request)
         if credentials is not None:
             return credentials['login']
-        return AuthTktAuthenticationPolicy.unauthenticated_userid(self, request)
+        return AuthTktAuthenticationPolicy.unauthenticated_userid(
+            self, request)
 
     def effective_principals(self, request):
         userid = self.authenticated_userid(request)
@@ -58,8 +60,8 @@ class CustomAuthenticationPolicy(AuthTktAuthenticationPolicy):
                 # Try to find the profile in the list of profiles associated to
                 # current user
                 profile_query = Session.query(
-                        Profile.code
-                    ).\
+                    Profile.code
+                ).\
                     join(users_profiles).\
                     join(User).\
                     filter(User.username == userid).\
@@ -82,12 +84,14 @@ class CustomAuthenticationPolicy(AuthTktAuthenticationPolicy):
 
         if authorization is not None:
             try:
-                credentials = standard_b64decode(request.authorization[1]).split(":")
+                credentials = standard_b64decode(
+                    request.authorization[1]).split(":")
                 return {'login': credentials[0], 'password': credentials[1]}
             except TypeError:
                 pass
 
         return None
+
 
 def checkUserPrivileges(request):
     """

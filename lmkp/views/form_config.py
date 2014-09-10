@@ -1,15 +1,18 @@
 import colander
 import copy
+import datetime
 import deform
+import logging
+import os
+import yaml
 from pyramid.i18n import get_localizer
 from pyramid.renderers import render
-import yaml
-import os
-import datetime
 
-from lmkp.config import locale_profile_directory_path
-from lmkp.config import profile_directory_path
-from lmkp.config import getTemplatePath
+from lmkp.config import (
+    locale_profile_directory_path,
+    profile_directory_path,
+    getTemplatePath,
+)
 from lmkp.models.database_objects import (
     A_Key,
     A_Value,
@@ -20,9 +23,10 @@ from lmkp.models.database_objects import (
     Stakeholder_Role,
 )
 from lmkp.models.meta import DBSession as Session
+from lmkp.utils import validate_item_type
 
-import logging
 log = logging.getLogger(__name__)
+
 
 class ConfigCategoryList(object):
     """
@@ -38,7 +42,7 @@ class ConfigCategoryList(object):
         Add a category to the list.
         """
         if (isinstance(category, ConfigCategory)
-            and category not in self.categories):
+                and category not in self.categories):
             self.categories.append(category)
 
     def getCategories(self):
@@ -65,6 +69,18 @@ class ConfigCategoryList(object):
                 if str(thmg.getId()) == str(id):
                     return thmg
         return None
+
+    def getAllTaggroups(self):
+        """
+        Return them sorted.
+        """
+        taggroups = []
+        for cat in sorted(self.getCategories(), key=lambda c: c.getOrder()):
+            for thg in sorted(
+                    cat.getThematicgroups(), key=lambda t: t.getOrder()):
+                taggroups.extend(sorted(
+                    thg.getTaggroups(), key=lambda tg: tg.getOrder()))
+        return taggroups
 
     def getAllTags(self):
         tags = []
@@ -115,10 +131,13 @@ class ConfigCategoryList(object):
         Return a list with all keys in all categories
         """
         keys = []
-        for cat in self.getCategories():
-            for thg in cat.getThematicgroups():
-                for tg in thg.getTaggroups():
-                    for t in tg.getTags():
+        for cat in sorted(self.getCategories(), key=lambda c: c.getOrder()):
+            for thg in sorted(
+                    cat.getThematicgroups(), key=lambda t: t.getOrder()):
+                for tg in sorted(
+                        thg.getTaggroups(), key=lambda tg: tg.getOrder()):
+                    for t in sorted(
+                            tg.getTags(), key=lambda t: t != tg.getMaintag()):
                         keys.append(t.getKey())
         return keys
 
@@ -146,7 +165,8 @@ class ConfigCategoryList(object):
                     for t in tg.getTags():
                         if t.getDesired() is True or t.getMandatory() is True:
                             if translated is True:
-                                desiredkeys.append(t.getKey().getTranslatedName())
+                                desiredkeys.append(
+                                    t.getKey().getTranslatedName())
                             else:
                                 desiredkeys.append(t.getKey().getName())
         return desiredkeys
@@ -215,7 +235,7 @@ class ConfigCategoryList(object):
         for c in self.getCategories():
             for thg in c.getThematicgroups():
                 if (thg.getInvolvement() is not None
-                    and thg.getInvolvement().getName() == involvementName):
+                        and thg.getInvolvement().getName() == involvementName):
                     return c
         return None
 
@@ -227,7 +247,7 @@ class ConfigCategoryList(object):
         for cat in self.getCategories():
             for thg in cat.getThematicgroups():
                 if (thg.getInvolvement() is not None
-                    and thg.getInvolvement().getName() == involvementName):
+                        and thg.getInvolvement().getName() == involvementName):
                     return thg
         return None
 
@@ -303,7 +323,8 @@ class ConfigCategoryList(object):
             if key == k.getName():
                 # The current key is valid.
                 key_is_valid = True
-                if k.getType().lower() in ['dropdown', 'checkbox', 'inputtoken']:
+                if k.getType().lower() in [
+                        'dropdown', 'checkbox', 'inputtoken']:
                     # If there are predefined values for this key, check if the
                     # value belongs to this key.
                     tag = self.findTagByKey(k)
@@ -316,16 +337,14 @@ class ConfigCategoryList(object):
                     # assumed to be valid.
                     value_is_valid = True
 
-#        log.debug('Key (%s) and Value (%s) are valid: %s' % (key, value, key_is_valid and value_is_valid))
-
         # Return only True if key and value are both valid
         return key_is_valid and value_is_valid
 
     def getInvolvementOverviewKeyNames(self):
         """
         Return the names of the keys of all tags which should appear in the
-        involvement overview along with the value for involvementoverview in the
-        configuration yaml.
+        involvement overview along with the value for involvementoverview in
+        the configuration yaml.
         Returns an array where each entry is an array with
         - name of the key (translated)
         - involvementoverview data (usually an order number)
@@ -336,14 +355,16 @@ class ConfigCategoryList(object):
                 for tg in thmg.getTaggroups():
                     for t in tg.getTags():
                         if t.getInvolvementOverview() is not None:
-                            keyNames.append([t.getKey().getTranslatedName(), t.getInvolvementOverview()])
+                            keyNames.append([
+                                t.getKey().getTranslatedName(),
+                                t.getInvolvementOverview()])
         return keyNames
 
     def getInvolvementOverviewRawKeyNames(self):
         """
         Return the names of the keys of all tags which should appear in the
-        involvement overview along with the value for involvementoverview in the
-        configuration yaml.
+        involvement overview along with the value for involvementoverview in
+        the configuration yaml.
         Returns an array where each entry is an array with
         - name of the key ** NOT translated **
         - involvementoverview data (usually an order number)
@@ -354,7 +375,9 @@ class ConfigCategoryList(object):
                 for tg in thmg.getTaggroups():
                     for t in tg.getTags():
                         if t.getInvolvementOverview() is not None:
-                            keyNames.append([t.getKey().getName(), t.getInvolvementOverview()])
+                            keyNames.append([
+                                t.getKey().getName(),
+                                t.getInvolvementOverview()])
         return keyNames
 
     def getGridColumnKeyNames(self):
@@ -381,8 +404,8 @@ class ConfigCategoryList(object):
 
     def getMapSymbolKeyNames(self):
         """
-        Return the names of the keys which have a value set for mapSymbol in the
-        configuration yaml.
+        Return the names of the keys which have a value set for mapSymbol in
+        the configuration yaml.
         Returns an array where each entry is an array with
         - name of the key (translated)
         - name of the key (original)
@@ -394,15 +417,18 @@ class ConfigCategoryList(object):
                 for tg in thmg.getTaggroups():
                     for t in tg.getTags():
                         if t.getMapSymbol() is not None:
-                            keyNames.append([t.getKey().getTranslatedName(), t.getKey().getName(), t.getMapSymbol()])
+                            keyNames.append([
+                                t.getKey().getTranslatedName(),
+                                t.getKey().getName(), t.getMapSymbol()])
         return keyNames
+
 
 class ConfigCategory(object):
     """
     A class representing a Form Category object as defined in the configuration
     file (csv). This is the top container of the form structure, for example
-    'Spatial Data' or 'General Information' and it contains Form Thematic Groups
-    as the next lower form structure.
+    'Spatial Data' or 'General Information' and it contains Form Thematic
+    Groups as the next lower form structure.
     """
 
     def __init__(self, id, name, translation=None):
@@ -446,7 +472,7 @@ class ConfigCategory(object):
         Add a thematic group to this category.
         """
         if (isinstance(thematicgroup, ConfigThematicgroup)
-            and thematicgroup not in self.thematicgroups):
+                and thematicgroup not in self.thematicgroups):
             self.thematicgroups.append(thematicgroup)
 
     def getThematicgroups(self):
@@ -480,11 +506,11 @@ class ConfigCategory(object):
         """
         Prepare the form node for this category, append the forms of its
         thematic groups and return it.
-        If the form is to be rendered for comparison, a hidden field 'change' is
-        added.
+        If the form is to be rendered for comparison, a hidden field 'change'
+        is added.
         """
         title = (self.getTranslation() if self.getTranslation() is not None
-            else self.getName())
+                 else self.getName())
         cat_form = colander.SchemaNode(
             colander.Mapping(),
             name=str(self.getId()),
@@ -498,13 +524,15 @@ class ConfigCategory(object):
                 default=colander.null,
                 widget=deform.widget.HiddenWidget()
             ))
-        for thg in sorted(self.getThematicgroups(), key=lambda thmg: thmg.getOrder()):
+        for thg in sorted(
+                self.getThematicgroups(), key=lambda thmg: thmg.getOrder()):
             # Get the Form for each Thematicgroup
             thg_form = thg.getForm(request, readonly=readonly, compare=compare)
             thg_form.missing = colander.null
             thg_form.name = str(thg.getId())
             cat_form.add(thg_form)
         return cat_form
+
 
 class ConfigThematicgroup(object):
     """
@@ -536,7 +564,7 @@ class ConfigThematicgroup(object):
         Add a taggroup to this thematic group.
         """
         if (isinstance(taggroup, ConfigTaggroup)
-            and taggroup not in self.taggroups):
+                and taggroup not in self.taggroups):
             self.taggroups.append(taggroup)
 
     def getTaggroups(self):
@@ -632,12 +660,12 @@ class ConfigThematicgroup(object):
         """
         Prepare the form node for this thematic group, append the forms of its
         taggroups and return it.
-        If the form is to be rendered for comparison, a hidden field 'change' is
-        added and each taggroup is added twice (once as 'ref_[ID]' and once as
-        'new_[ID]'.
+        If the form is to be rendered for comparison, a hidden field 'change'
+        is added and each taggroup is added twice (once as 'ref_[ID]' and once
+        as 'new_[ID]'.
         """
         title = (self.getTranslation() if self.getTranslation() is not None
-            else self.getName())
+                 else self.getName())
         # For the details (readonly=True), add the title of the thematic group
         # only if specified in the configuration.
         if readonly is True and self.getShowInDetails() is False:
@@ -728,24 +756,25 @@ class ConfigThematicgroup(object):
             # corresponding involvement widget and add it to the form.
 
             # (So far,) Involvements can only be added from the Activity side.
-            # Therefore, for Stakeholders (itemType of involvement = activities)
-            # add the Involvements widget only if in readonly mode
+            # Therefore, for Stakeholders (itemType of involvement =
+            # activities) add the Involvements widget only if in readonly mode
             if (self.getInvolvement().getItemType() != 'activities'
-                or readonly is True):
-                shortForm = getInvolvementWidget(request, self.getInvolvement(),
-                    compare=compare)
+                    or readonly is True):
+                shortForm = getInvolvementWidget(
+                    request, self.getInvolvement(), compare=compare)
                 if compare is not '':
                     shortForm.name = 'ref_%s' % shortForm.name
                     thg_form.add(shortForm)
 
-                    newShortForm = getInvolvementWidget(request,
-                        self.getInvolvement(), compare=compare)
+                    newShortForm = getInvolvementWidget(
+                        request, self.getInvolvement(), compare=compare)
                     newShortForm.name = 'new_%s' % newShortForm.name
                     thg_form.add(newShortForm)
                 else:
                     thg_form.add(shortForm)
 
         return thg_form
+
 
 class ConfigTaggroupList(object):
     """
@@ -760,7 +789,7 @@ class ConfigTaggroupList(object):
         Add a taggroup to the list.
         """
         if (isinstance(taggroup, ConfigTaggroup)
-            and taggroup not in self.taggroups):
+                and taggroup not in self.taggroups):
             self.taggroups.append(taggroup)
 
     def getTaggroups(self):
@@ -768,6 +797,7 @@ class ConfigTaggroupList(object):
         Return all taggroups as a list.
         """
         return self.taggroups
+
 
 class ConfigTaggroup(object):
     """
@@ -888,7 +918,7 @@ class ConfigTaggroup(object):
             widget=deform.widget.TextInputWidget(template='hidden'),
             name='tg_id',
             title='',
-            missing = colander.null
+            missing=colander.null
         ))
         tg_form.validator = self.maintag_validator
         return tg_form
@@ -910,9 +940,10 @@ class ConfigTaggroup(object):
                     hasOtherValuesSet = True
             if hasOtherValuesSet:
                 # TODO: Translation
-                exc = colander.Invalid(form, 'The maintag (%s) cannot be empty!'
-                    % mainkey)
+                exc = colander.Invalid(
+                    form, 'The maintag (%s) cannot be empty!' % mainkey)
                 raise exc
+
 
 class ConfigTag(object):
     """
@@ -1049,20 +1080,20 @@ class ConfigTag(object):
         # Get name and type of key
         name = key.getName()
         title = (key.getTranslatedName() if key.getTranslatedName() is not None
-            else key.getName())
+                 else key.getName())
         type = key.getType()
-        helptext = (key.getTranslatedHelptext()
-            if key.getTranslatedHelptext() is not None else key.getHelptext())
+        helptext = (key.getTranslatedHelptext() if key.getTranslatedHelptext()
+                    is not None else key.getHelptext())
         desired = self.getDesired()
         # Decide which type of form to add
         if ((type.lower() == 'dropdown' and len(self.getValues()) > 0)
-            or type.lower() == 'integerdropdown'):
+                or type.lower() == 'integerdropdown'):
             # Dropdown
             # Prepare the choices for keys with predefined values
             choiceslist = [('', '- ' + _('Select') + ' -')]
             if type.lower() == 'dropdown':
-                for v in sorted(self.getValues(),
-                    key=lambda val: val.getOrderValue()):
+                for v in sorted(
+                        self.getValues(), key=lambda val: val.getOrderValue()):
                     choiceslist.append((v.getName(), v.getTranslation()))
             else:
                 # Integer dropdown
@@ -1073,7 +1104,8 @@ class ConfigTag(object):
                     except ValueError:
                         dropdownRangeInt = None
                     if dropdownRangeInt is not None:
-                        for v in range(dropdownRangeInt[0], dropdownRangeInt[1]+1):
+                        for v in range(
+                                dropdownRangeInt[0], dropdownRangeInt[1] + 1):
                             choiceslist.append((v, v))
             choices = tuple(choiceslist)
             form = colander.SchemaNode(
@@ -1087,12 +1119,13 @@ class ConfigTag(object):
                 name=name,
                 title=title
             )
-        elif type.lower() in ['checkbox', 'inputtoken'] and len(self.getValues()) > 0:
+        elif type.lower() in ['checkbox', 'inputtoken'] and len(
+                self.getValues()) > 0:
             # Checkbox or Input Token
             # Prepare the choices for keys with predefined values
             choices = []
-            for v in sorted(self.getValues(),
-                key=lambda val: val.getOrderValue()):
+            for v in sorted(
+                    self.getValues(), key=lambda val: val.getOrderValue()):
                 choices.append((v.getName(), v.getTranslation()))
             if type.lower() == 'checkbox':
                 # Checkbox
@@ -1122,8 +1155,6 @@ class ConfigTag(object):
             )
         elif type.lower() == 'number' or type.lower() == 'integer':
             # Number or Integer field
-#            deform.widget.default_resource_registry.set_js_resources(
-#                'jqueryspinner',None,'../static/jquery-ui-1.9.2.custom.min.js')
             min = None
             max = None
             val = self.getKey().getValidator()
@@ -1148,11 +1179,6 @@ class ConfigTag(object):
                 colanderType = colander.Int()
             form = colander.SchemaNode(
                 colanderType,
-#                widget=NumberSpinnerWidget(
-#                    options=options,
-#                    helptext=helptext,
-#                    desired=desired
-#                ),
                 widget=CustomTextInputWidget(
                     helptext=helptext,
                     desired=desired
@@ -1221,6 +1247,7 @@ class ConfigTag(object):
                 form.validator = colander.Range(*val)
         return form
 
+
 class ConfigKeyList(object):
     """
     A class representing a list of Form Tags.
@@ -1233,7 +1260,8 @@ class ConfigKeyList(object):
         """
         Add a key to the list.
         """
-        if isinstance(key, ConfigKey) and self.findKeyById(key.getId()) is None:
+        if isinstance(key, ConfigKey) \
+                and self.findKeyById(key.getId()) is None:
             self.keys.append(key)
 
     def getKeys(self):
@@ -1252,14 +1280,16 @@ class ConfigKeyList(object):
                 return k
         return None
 
+
 class ConfigKey(object):
     """
     A class representing a Form Key object as defined in the configuration
     file (csv). This is the lowest structure of the form.
     """
 
-    def __init__(self, id, name, type, helptext, description, validator, t_key,
-        t_helptext, t_description):
+    def __init__(
+            self, id, name, type, helptext, description, validator, t_key,
+            t_helptext, t_description):
         self.id = id
         self.name = name
         self.type = type
@@ -1360,6 +1390,7 @@ class ConfigKey(object):
                 return arr
         return None
 
+
 class ConfigValueList(object):
     """
     A class representing a list of Form Values.
@@ -1373,7 +1404,7 @@ class ConfigValueList(object):
         Add a value to the list.
         """
         if (isinstance(value, ConfigValue)
-            and self.findValueById(value.getId()) is None):
+                and self.findValueById(value.getId()) is None):
             self.values.append(value)
 
     def getValues(self):
@@ -1401,6 +1432,7 @@ class ConfigValueList(object):
             if str(v.getFkkey()) == str(fk_key):
                 values.append(v)
         return values
+
 
 class ConfigValue(object):
     """
@@ -1465,6 +1497,7 @@ class ConfigValue(object):
             return self.getOrder()
         return self.getTranslation()
 
+
 class ConfigInvolvementRoleList(object):
     """
     A class representing a list of Involvement Roles.
@@ -1478,7 +1511,7 @@ class ConfigInvolvementRoleList(object):
         Add a new Involvement Role to the list. Add each only once.
         """
         if (isinstance(role, ConfigInvolvementRole)
-            and self.findRoleById(role.getId()) is None):
+                and self.findRoleById(role.getId()) is None):
             self.roles.append(role)
 
     def getRoles(self):
@@ -1495,6 +1528,7 @@ class ConfigInvolvementRoleList(object):
             if str(r.getId()) == str(id):
                 return r
         return None
+
 
 class ConfigInvolvementRole(object):
     """
@@ -1517,6 +1551,7 @@ class ConfigInvolvementRole(object):
         Return the name of the Involvement Role
         """
         return self.name
+
 
 class ConfigMap(object):
     """
@@ -1549,6 +1584,7 @@ class ConfigMap(object):
         """
         return self.mode
 
+
 class ConfigInvolvement(object):
     """
     A class representing the configuration of an Involvement.
@@ -1577,7 +1613,7 @@ class ConfigInvolvement(object):
         Add a new Involvement Role
         """
         if (isinstance(role, ConfigInvolvementRole)
-            and self.findRoleById(role.getId()) is None):
+                and self.findRoleById(role.getId()) is None):
             self.roles.append(role)
 
     def findRoleById(self, id):
@@ -1607,12 +1643,13 @@ class ConfigInvolvement(object):
         """
         return self.repeatable is True
 
+
 def getMapWidget(thematicgroup):
     """
     Return a widget to be used to display the map in the form.
     The map widget (resp. its hidden lon/lat fields) is mandatory, only one
-    field is marked as mandatory (lon) in order to prevent double error messages
-    if it is missing.
+    field is marked as mandatory (lon) in order to prevent double error
+    messages if it is missing.
     """
 
     mapWidget = colander.SchemaNode(
@@ -1641,12 +1678,14 @@ def getMapWidget(thematicgroup):
 
     return mapWidget
 
+
 def getInvolvementWidget(request, configInvolvement, compare=''):
     """
     Return a widget to be used to display the involvements in the form.
     """
     categoryList = getCategoryList(request, configInvolvement.getItemType())
-    overviewKeys = [k[0] for k in categoryList.getInvolvementOverviewKeyNames()]
+    overviewKeys = [
+        k[0] for k in categoryList.getInvolvementOverviewKeyNames()]
 
     template = 'customInvolvementMapping'
     if configInvolvement.getItemType() == 'stakeholders':
@@ -1674,21 +1713,21 @@ def getInvolvementWidget(request, configInvolvement, compare=''):
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='role_name',
         title='',
-        missing = colander.null
+        missing=colander.null
     ))
     invForm.add(colander.SchemaNode(
         colander.String(),
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='id',
         title='',
-        missing = colander.null
+        missing=colander.null
     ))
     invForm.add(colander.SchemaNode(
         colander.Int(),
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='version',
         title='',
-        missing = colander.null
+        missing=colander.null
     ))
 
     # Then add the display fields used for showing the involvement overview
@@ -1700,7 +1739,7 @@ def getInvolvementWidget(request, configInvolvement, compare=''):
             ),
             name=keyName,
             title=keyName,
-            missing = colander.null
+            missing=colander.null
         ))
 
     choicesList = []
@@ -1753,14 +1792,15 @@ def getInvolvementWidget(request, configInvolvement, compare=''):
             colander.Sequence(),
             invForm,
             widget=deform.widget.SequenceWidget(
-                min_len = 1,
-                add_subitem_text_template = '',
+                min_len=1,
+                add_subitem_text_template='',
             ),
             missing=colander.null,
             default=[colander.null],
             name=configInvolvement.getName(),
             title=''
         )
+
 
 def getConfigKeyList(request, itemType, **kwargs):
     """
@@ -1785,33 +1825,36 @@ def getConfigKeyList(request, itemType, **kwargs):
     if lang is None:
         lang = localizer.locale_name
     translationQuery = Session.query(
-            MappedClass.fk_key.label('original_id'),
-            MappedClass.key.label('t_key'),
-            MappedClass.helptext.label('t_helptext'),
-            MappedClass.description.label('t_description')
-        ).\
+        MappedClass.fk_key.label('original_id'),
+        MappedClass.key.label('t_key'),
+        MappedClass.helptext.label('t_helptext'),
+        MappedClass.description.label('t_description')
+    ).\
         join(Language).\
         filter(Language.locale == lang).\
         subquery()
     keys = Session.query(
-            MappedClass.id,
-            MappedClass.key,
-            MappedClass.type,
-            MappedClass.helptext,
-            MappedClass.description,
-            MappedClass.validator,
-            translationQuery.c.t_key,
-            translationQuery.c.t_helptext,
-            translationQuery.c.t_description
-        ).\
+        MappedClass.id,
+        MappedClass.key,
+        MappedClass.type,
+        MappedClass.helptext,
+        MappedClass.description,
+        MappedClass.validator,
+        translationQuery.c.t_key,
+        translationQuery.c.t_helptext,
+        translationQuery.c.t_description
+    ).\
         filter(MappedClass.fk_language == None).\
-        outerjoin(translationQuery,
+        outerjoin(
+            translationQuery,
             translationQuery.c.original_id == MappedClass.id)
     for k in keys.all():
-        configKeys.addKey(ConfigKey(k.id, k.key, k.type, k.helptext,
-            k.description, k.validator, k.t_key, k.t_helptext, k.t_description))
+        configKeys.addKey(ConfigKey(
+            k.id, k.key, k.type, k.helptext, k.description, k.validator,
+            k.t_key, k.t_helptext, k.t_description))
 
     return configKeys
+
 
 def getConfigValueList(request, itemType, **kwargs):
     """
@@ -1837,28 +1880,29 @@ def getConfigValueList(request, itemType, **kwargs):
     if lang is None:
         lang = localizer.locale_name
     translationQuery = Session.query(
-            MappedClass.fk_value.label('original_id'),
-            MappedClass.value.label('t_value')
-        ).\
+        MappedClass.fk_value.label('original_id'),
+        MappedClass.value.label('t_value')
+    ).\
         join(Language).\
         filter(Language.locale == lang).\
         subquery()
     values = Session.query(
-            MappedClass.id,
-            MappedClass.value,
-            MappedClass.fk_key,
-            MappedClass.order,
-            translationQuery.c.t_value
-        ).\
+        MappedClass.id,
+        MappedClass.value,
+        MappedClass.fk_key,
+        MappedClass.order,
+        translationQuery.c.t_value
+    ).\
         filter(MappedClass.fk_language == 1).\
         filter(MappedClass.fk_key != None).\
-        outerjoin(translationQuery,
-            translationQuery.c.original_id == MappedClass.id)
+        outerjoin(
+            translationQuery, translationQuery.c.original_id == MappedClass.id)
     for v in values.all():
-        configValues.addValue(ConfigValue(v.id, v.value, v.fk_key, v.order,
-            v.t_value))
+        configValues.addValue(ConfigValue(
+            v.id, v.value, v.fk_key, v.order, v.t_value))
 
     return configValues
+
 
 def getConfigInvolvementRoleList(request, **kwargs):
     """
@@ -1870,13 +1914,14 @@ def getConfigInvolvementRoleList(request, **kwargs):
 
     # Query the config values from database
     roles = Session.query(
-            Stakeholder_Role.id,
-            Stakeholder_Role.name
-        )
+        Stakeholder_Role.id,
+        Stakeholder_Role.name
+    )
     for r in roles.all():
         configRoles.addRole(ConfigInvolvementRole(r.id, r.name))
 
     return configRoles
+
 
 def getConfigCategoryList(request, itemType, **kwargs):
     """
@@ -1896,26 +1941,27 @@ def getConfigCategoryList(request, itemType, **kwargs):
     if lang is None:
         lang = localizer.locale_name
     translationQuery = Session.query(
-            Category.fk_category.label('original_id'),
-            Category.name.label('translation')
-        ).\
+        Category.fk_category.label('original_id'),
+        Category.name.label('translation')
+    ).\
         join(Language).\
         filter(Language.locale == lang).\
         subquery()
     categories = Session.query(
-            Category.id,
-            Category.name,
-            translationQuery.c.translation
-        ).\
+        Category.id,
+        Category.name,
+        translationQuery.c.translation
+    ).\
         filter(Category.type == itemType).\
         filter(Category.fk_language == 1).\
-        outerjoin(translationQuery,
-            translationQuery.c.original_id == Category.id)
+        outerjoin(
+            translationQuery, translationQuery.c.original_id == Category.id)
     for cat in categories.all():
-        configCategories.addCategory(ConfigCategory(cat.id, cat.name,
-            cat.translation))
+        configCategories.addCategory(ConfigCategory(
+            cat.id, cat.name, cat.translation))
 
     return configCategories
+
 
 def getValidKeyTypes():
     """
@@ -1934,12 +1980,16 @@ def getValidKeyTypes():
         'integerdropdown'
     ]
 
+
 def getCategoryList(request, itemType, **kwargs):
     """
-    Function to scan through the configuration yaml and put together the list of
-    categories which can be used to create the form.
+    Function to scan through the configuration yaml and put together the list
+    of categories which can be used to create the form.
     itemType: activities / stakeholders
     """
+    if itemType not in ['activities', 'stakeholders']:
+        itemType = validate_item_type(itemType)
+        itemType = 'activities' if itemType == 'a' else 'stakeholders'
     # Scan the configuration files for keys, values and categories
     configKeys = getConfigKeyList(request, itemType, **kwargs)
     configValues = getConfigValueList(request, itemType, **kwargs)
@@ -1954,8 +2004,9 @@ def getCategoryList(request, itemType, **kwargs):
             unknowntypes.append(k.getName())
 
     if len(unknowntypes) > 0:
-        raise NameError('One or more keys have unknown types: %s'
-            % ', '.join(unknowntypes))
+        raise NameError(
+            'One or more keys have unknown types: %s' % ', '.join(
+                unknowntypes))
 
     # Load the yaml
     if itemType == 'stakeholders':
@@ -1967,7 +2018,8 @@ def getCategoryList(request, itemType, **kwargs):
         filename = NEW_ACTIVITY_YAML
         otherItemType = 'stakeholders'
 
-    yaml_stream = open(os.path.join(profile_directory_path(request), filename), 'r')
+    yaml_stream = open(
+        os.path.join(profile_directory_path(request), filename), 'r')
     yaml_config = yaml.load(yaml_stream)
 
     categorylist = ConfigCategoryList()
@@ -2078,11 +2130,11 @@ def getCategoryList(request, itemType, **kwargs):
                                     tag.addValue(configValues.findValueById(v))
 
                             if ('mandatory' in key_config
-                                and key_config['mandatory'] is True):
+                                    and key_config['mandatory'] is True):
                                 tag.setMandatory(True)
 
                             if ('desired' in key_config
-                                and key_config['desired'] is True):
+                                    and key_config['desired'] is True):
                                 tag.setDesired(True)
 
                             if 'validator' in key_config:
@@ -2093,7 +2145,8 @@ def getCategoryList(request, itemType, **kwargs):
                                 taggroup.setMaintag(tag)
 
                             if 'involvementoverview' in key_config:
-                                tag.setInvolvementOverview(key_config['involvementoverview'])
+                                tag.setInvolvementOverview(
+                                    key_config['involvementoverview'])
 
                             if 'gridcolumn' in key_config:
                                 tag.setGridColumn(key_config['gridcolumn'])
@@ -2102,15 +2155,16 @@ def getCategoryList(request, itemType, **kwargs):
                                 tag.setMapSymbol(key_config['mapsymbol'])
 
                             if ('filterable' in key_config
-                                and key_config['filterable'] is True):
+                                    and key_config['filterable'] is True):
                                 tag.setFilterable(True)
 
                         # If the values are predefined and they are not set
                         # already (defined explicitly in YAML), then get the
                         # values from the value config csv.
-                        if configKey.getType().lower() in ['dropdown', 'checkbox', 'inputtoken']:
+                        if configKey.getType().lower() in [
+                                'dropdown', 'checkbox', 'inputtoken']:
                             for v in configValues.\
-                                findValuesByFkkey(configKey.getId()):
+                                    findValuesByFkkey(configKey.getId()):
                                 tag.addValue(v)
 
                         taggroup.addTag(tag)
@@ -2138,17 +2192,18 @@ def getCategoryList(request, itemType, **kwargs):
     # Look for local profiles if there is any local profile set.
     local_yaml_config = None
     if (locale_profile_directory_path(request)
-        != profile_directory_path(request)):
+            != profile_directory_path(request)):
         try:
-            local_yaml_stream = open("%s/%s"
+            local_yaml_stream = open(
+                "%s/%s"
                 % (locale_profile_directory_path(request), filename), 'r')
             local_yaml_config = yaml.load(local_yaml_stream)
         except IOError:
             pass
 
     # Apply the configuration of the local yaml. So far, only additional
-    # categories, taggroups and keys can be defined in the local yaml. It is not
-    # yet possible to remove any categories or keys.
+    # categories, taggroups and keys can be defined in the local yaml. It is
+    # not yet possible to remove any categories or keys.
     if local_yaml_config is not None and 'fields' in local_yaml_config:
 
         # Loop the categories of the local yaml config file
@@ -2159,8 +2214,8 @@ def getCategoryList(request, itemType, **kwargs):
             category = categorylist.findCategoryById(cat_id)
 
             if category is None:
-                # If the category is not in the existing configuration, it needs
-                # to be found in the database
+                # If the category is not in the existing configuration, it
+                # needs to be found in the database
                 category = configCategories.findCategoryById(cat_id)
                 newCategory = True
 
@@ -2229,9 +2284,9 @@ def getCategoryList(request, itemType, **kwargs):
                                     key_config['validator'])
 
                             if (configKey.getType().lower() in
-                                ['dropdown', 'checkbox', 'inputtoken']):
+                                    ['dropdown', 'checkbox', 'inputtoken']):
                                 for v in configValues.findValuesByFkkey(
-                                    configKey.getId()):
+                                        configKey.getId()):
                                     tag.addValue(v)
 
                         taggroup.addTag(tag)
@@ -2257,7 +2312,8 @@ def getCategoryList(request, itemType, **kwargs):
 
     # Keys not found
     if len(unknownkeys) > 0:
-        raise NameError('One or more keys were not found in the database: %s'
+        raise NameError(
+            'One or more keys were not found in the database: %s'
             % ', '.join(unknownkeys))
 
     # Tags where the maintag is not found
@@ -2267,10 +2323,11 @@ def getCategoryList(request, itemType, **kwargs):
         for e in emptymaintag:
             tags = []
             for t in e.getTags():
-                tags.append('%s [%s]'
-                    % (t.getKey().getName(), t.getKey().getId()))
+                tags.append(
+                    '%s [%s]' % (t.getKey().getName(), t.getKey().getId()))
             emptystack.append('Taggroup [%s]' % ', '.join(tags))
-        raise NameError('One or more Taggroups do not have a maintag: %s'
+        raise NameError(
+            'One or more Taggroups do not have a maintag: %s'
             % ', '.join(emptystack))
 
     # Check that each mainkey is unique (is only set once throughout all keys)
@@ -2297,6 +2354,7 @@ class CustomWidget(deform.widget.Widget):
     def get_template_values(self, field, cstruct, kw):
         return custom_get_template_values(self, field, cstruct, kw)
 
+
 class CustomSelectWidget(deform.widget.SelectWidget):
     """
     Overwrite the function get_template_values() with a custom one to add more
@@ -2304,6 +2362,7 @@ class CustomSelectWidget(deform.widget.SelectWidget):
     """
     def get_template_values(self, field, cstruct, kw):
         return custom_get_template_values(self, field, cstruct, kw)
+
 
 class CustomTextAreaWidget(deform.widget.TextAreaWidget):
     """
@@ -2313,6 +2372,7 @@ class CustomTextAreaWidget(deform.widget.TextAreaWidget):
     def get_template_values(self, field, cstruct, kw):
         return custom_get_template_values(self, field, cstruct, kw)
 
+
 class CustomDateInputWidget(deform.widget.DateInputWidget):
     """
     Overwrite the function get_template_values() with a custom one to add more
@@ -2320,6 +2380,7 @@ class CustomDateInputWidget(deform.widget.DateInputWidget):
     """
     def get_template_values(self, field, cstruct, kw):
         return custom_get_template_values(self, field, cstruct, kw)
+
 
 class CustomTextInputWidget(deform.widget.TextInputWidget):
     """
@@ -2329,11 +2390,13 @@ class CustomTextInputWidget(deform.widget.TextInputWidget):
     def get_template_values(self, field, cstruct, kw):
         return custom_get_template_values(self, field, cstruct, kw)
 
+
 class CustomInvolvementWidget(deform.widget.MappingWidget):
     """
     Custom widget only used to specify additional requirements.
     """
-    requirements = ( ('involvementwidget', None), )
+    requirements = (('involvementwidget', None),)
+
 
 def custom_get_template_values(self, field, cstruct, kw):
     """
@@ -2342,7 +2405,7 @@ def custom_get_template_values(self, field, cstruct, kw):
     It appends the keywords 'helptext' and 'desired' to the template values if
     available.
     """
-    values = {'cstruct':cstruct, 'field':field}
+    values = {'cstruct': cstruct, 'field': field}
     values.update(kw)
     values.pop('template', None)
     if 'helptext' in self.__dict__:
@@ -2350,6 +2413,7 @@ def custom_get_template_values(self, field, cstruct, kw):
     if 'desired' in self.__dict__:
         values['desired'] = self.__dict__['desired']
     return values
+
 
 class NumberSpinnerWidget(CustomWidget):
     """
@@ -2361,7 +2425,7 @@ class NumberSpinnerWidget(CustomWidget):
     type_name = 'number'
     size = None
     style = None
-    requirements = ( ('jqueryui', None), ('jqueryspinner', None), )
+    requirements = (('jqueryui', None), ('jqueryspinner', None),)
     default_options = ()
 
     def __init__(self, *args, **kwargs):
@@ -2382,6 +2446,7 @@ class NumberSpinnerWidget(CustomWidget):
             return colander.null
         return pstruct
 
+
 class CustomInputTokenWidget(CustomWidget):
     """
     Custom Deform widget. Search for an item to add it to the list of selected
@@ -2393,7 +2458,7 @@ class CustomInputTokenWidget(CustomWidget):
     readonly_template = 'readonly/inputtoken'
     values = ()
     separator = '|'
-    requirements = ( ('inputtoken', None), )
+    requirements = (('inputtoken', None),)
 
     def serialize(self, field, cstruct, **kw):
         if cstruct in (colander.null, None):
@@ -2412,8 +2477,8 @@ class CustomInputTokenWidget(CustomWidget):
             valuelist = list(values)
             newname = None
             for i, (name, title) in enumerate(valuelist):
-                # If the form is readonly, the title is relevant. For the normal
-                # form, the name is relevant.
+                # If the form is readonly, the title is relevant. For the
+                # normal form, the name is relevant.
                 if readonly and title == c[0] or not readonly and name == c[0]:
                     # Update the (internal) name of the values
                     newname = '%s%s%s' % (c[1], self.separator, name)
@@ -2446,7 +2511,7 @@ class CustomInputTokenWidget(CustomWidget):
             if self.separator in p:
                 # If a tg_id is set, separate it from the name and store it
                 separatorposition = p.find(self.separator)
-                n = p[separatorposition+1:]
+                n = p[separatorposition + 1:]
                 old_tg_id = p[:separatorposition]
 
             for (name, title) in self.values:
@@ -2456,11 +2521,12 @@ class CustomInputTokenWidget(CustomWidget):
 
         return tuple(ret)
 
+
 class CustomCheckboxWidget(CustomWidget):
     """
-    Custom Deform widget. Based very much on the default checkbox choice widget.
-    It allows to save a tg_id to the value before showing the checkboxes and
-    extracts this value again after submission.
+    Custom Deform widget. Based very much on the default checkbox choice
+    widget. It allows to save a tg_id to the value before showing the
+    checkboxes and extracts this value again after submission.
     """
     template = 'checkbox'
     readonly_template = 'readonly/checkbox_choice'
@@ -2476,16 +2542,16 @@ class CustomCheckboxWidget(CustomWidget):
         template = readonly and self.readonly_template or self.template
 
         # The data needs to be prepared before showing in the form. Because a
-        # checkbox can contain only one real value, the tg_id needs to be stored
-        # in the inner (submit) value of the checkbox.
+        # checkbox can contain only one real value, the tg_id needs to be
+        # stored in the inner (submit) value of the checkbox.
         formdata = []
         for c in cstruct:
             # Transform tuples to list to access them more easily
             valuelist = list(values)
             newname = None
             for i, (name, title) in enumerate(valuelist):
-                # If the form is readonly, the title is relevant, for the normal
-                # form the name is relevant.
+                # If the form is readonly, the title is relevant, for the
+                # normal form the name is relevant.
                 if readonly and title == c[0] or not readonly and name == c[0]:
                     # Update the (internal) name of the values
                     newname = '%s%s%s' % (c[1], self.separator, name)
@@ -2518,7 +2584,7 @@ class CustomCheckboxWidget(CustomWidget):
             if self.separator in p:
                 # If a tg_id is set, separate it from the name and store it
                 separatorposition = p.find(self.separator)
-                n = p[separatorposition+1:]
+                n = p[separatorposition + 1:]
                 old_tg_id = p[:separatorposition]
 
             for (name, title) in self.values:

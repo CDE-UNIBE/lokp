@@ -1,14 +1,14 @@
-# To change this template, choose Tools | Templates
-# and open the template in the editor.
-__author__ = "Adrian Weber, Centre for Development and Environment, University of Bern"
-__date__ = "$Jan 20, 2012 10:36:32 AM$"
-
-from lmkp.models.database_objects import Group
-from lmkp.models.database_objects import User
-from lmkp.models.database_objects import users_groups
-from lmkp.models.meta import DBSession as Session
 import logging
+
+from lmkp.models.database_objects import (
+    Group,
+    User,
+    users_groups,
+)
+from lmkp.models.meta import DBSession as Session
+
 log = logging.getLogger(__name__)
+
 
 def group_finder(username, request):
     """
@@ -16,8 +16,8 @@ def group_finder(username, request):
     """
     if username:
         groupQuery = Session.query(
-                Group.name
-            ).\
+            Group.name
+        ).\
             join(users_groups).\
             join(User).\
             filter(User.username == username)

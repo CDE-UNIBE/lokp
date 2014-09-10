@@ -287,8 +287,10 @@ class StakeholderProtocol3(Protocol):
             request, relevant_stakeholders, limit=limit, offset=offset,
             involvements=inv_details != 'none')
 
+        translate = kwargs.get('translate', True)
         stakeholders = self._query_to_stakeholders(
-            request, query, involvements=inv_details, public_query=public)
+            request, query, involvements=inv_details, public_query=public,
+            translate=translate)
 
         return {
             'total': count,
@@ -1346,8 +1348,10 @@ class StakeholderProtocol3(Protocol):
                 try:
                     if q.activity_identifier is not None:
 
-                        request_user_id = (request.user.id if request.user is
-                                           not None else None)
+                        try:
+                            request_user_id = request.user.id
+                        except AttributeError:
+                            request_user_id = None
 
                         newer_pending_exists = False
                         if q.activity_status == 1:

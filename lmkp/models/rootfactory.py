@@ -1,6 +1,7 @@
 from pyramid.security import Allow
 from pyramid.security import Everyone
 
+
 class RootFactory(object):
     """
     Extract __acl__ from database (Tables "groups" and "permissions",
@@ -16,7 +17,8 @@ class RootFactory(object):
     from lmkp.models.meta import DBSession
     from lmkp.models.database_objects import Group
     acl = []
-    acl.append((Allow, Everyone, 'view')) # basic ACE (view permission to Everyone)
+    acl.append((
+        Allow, Everyone, 'view'))  # basic ACE (view permission to Everyone)
     group_query = DBSession.query(Group).all()
     for group in group_query:
         ace_permissions = []
@@ -24,6 +26,6 @@ class RootFactory(object):
             ace_permissions.append(permission.name)
         acl.append((Allow, "group:%s" % group.name, ace_permissions))
     __acl__ = acl
-    
+
     def __init__(self, request):
         pass

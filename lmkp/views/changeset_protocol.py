@@ -1,52 +1,33 @@
-from geoalchemy.functions import functions
-from lmkp.models.database_objects import *
-from lmkp.views.config import get_current_profile
-from lmkp.models.database_objects import *
 import logging
+from geoalchemy.functions import functions
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.sql import literal_column
-from sqlalchemy.sql.expression import desc
-from sqlalchemy.sql.expression import or_
+from sqlalchemy.sql.expression import (
+    desc,
+    or_,
+)
+
+from lmkp.models.database_objects import (
+    Activity,
+    Changeset,
+    Involvement,
+    Profile,
+    Stakeholder,
+    Status,
+    User,
+)
+from lmkp.views.config import get_current_profile
 
 log = logging.getLogger(__name__)
 
+
 class ChangesetProtocol(object):
     """
-    
+
     """
 
     def __init__(self, Session, ** kwargs):
         self.Session = Session
-
-    def read(self, request):
-        """
-        
-        """
-        return {}
-        #TODO: Revamp this!
-        # 2013/02/05: Commented everything to prevent error message.
-
-#        # Join the activity changesets with the activities and the users
-#        a_changesetsJoins = self.Session.query(A_Changeset.source, Activity.activity_identifier.label("activity"), User.username, Status.name).join(A_Changeset.user).join(A_Changeset.activity).join(Status)
-#
-#        # filters first
-#        a_changesetsJoins = a_changesetsJoins.filter(self._filter_user(request)).filter(self._filter_status(request))
-#
-#        # Create a list of activity changesets
-#        activities = []
-#        for i in a_changesetsJoins.limit(self._limit_changesets(request)).offset(self._offset_changesets(request)):
-#            activities.append({'source': i[0], 'activity': str(i[1]), 'user': i[2], 'status': i[3]})
-#        #activities.append({'total': a_changesetsJoins.count()})
-#
-#        # Join the stakeholder changesets with the stakeholders and the users
-#        sh_changesetsJoins = self.Session.query(SH_Changeset.source, Stakeholder.stakeholder_identifier.label("stakeholder"), User.username, Status.name).join(SH_Changeset.user).join(SH_Changeset.stakeholder).join(Status)
-#
-#        # Create a list of stakeholder changesets
-#        stakeholders = []
-#        for i in sh_changesetsJoins.filter(self._filter_user(request)).filter(self._filter_status(request)).limit(self._limit_changesets(request)):
-#            stakeholders.append({'source': i[0], 'stakeholder': str(i[1]), 'user': i[2], 'status': i[3]})
-#
-#        return {'activities': activities, 'activities_count': a_changesetsJoins.count(), 'stakeholders': stakeholders}
 
     def read_many_latest(self, request):
 
@@ -55,83 +36,104 @@ class ChangesetProtocol(object):
         page = int(request.params.get("page", 1))
         pagesize = int(request.params.get("pagesize", 10))
 
-        activities_sub_query = self.Session.query(Activity.activity_identifier.label("identifier"), Activity.version, Changeset.timestamp, Changeset.fk_user).\
+        activities_sub_query = self.Session.query(
+            Activity.activity_identifier.label("identifier"),
+            Activity.version, Changeset.timestamp, Changeset.fk_user).\
             join(Changeset).\
             filter(or_(Activity.fk_status == 2, Activity.fk_status == 3)).\
             filter(self._get_profile_filter(request)).\
             order_by(desc(Changeset.timestamp)).subquery(name="sub_act")
 
-        activities_query = self.Session.query(activities_sub_query, User.username).\
-            join(User).order_by(desc(activities_sub_query.c.timestamp)).subquery(name="act")
+        activities_query = self.Session.query(
+            activities_sub_query, User.username).\
+            join(User).order_by(desc(
+                activities_sub_query.c.timestamp)).subquery(name="act")
 
         # All active and inactive stakeholders
         stakeholder_active = self.Session.query(Stakeholder).\
-            filter(or_(Stakeholder.fk_status == 2, Stakeholder.fk_status == 3)).\
+            filter(or_(
+                Stakeholder.fk_status == 2, Stakeholder.fk_status == 3)).\
             subquery("st_active")
 
-        # Query all stakeholder that have at least one involvement in the current profile
+        # Query all stakeholder that have at least one involvement in the
+        # current profile
         stakeholder_in_profile = self.Session.query(stakeholder_active).\
-            join(Involvement).join(Activity).filter(self._get_profile_filter(request)).\
+            join(Involvement).join(Activity).filter(
+                self._get_profile_filter(request)).\
             distinct().subquery()
 
         # Get the five latest stakeholder by changeset
-        stakeholder_sub_query = self.Session.query(stakeholder_in_profile.c.stakeholder_identifier.label("identifier"), \
-                                                   stakeholder_in_profile.c.version, Changeset.timestamp, Changeset.fk_user).\
-            join(Changeset, Changeset.id == stakeholder_in_profile.c.fk_changeset).\
+        stakeholder_sub_query = self.Session.query(
+            stakeholder_in_profile.c.stakeholder_identifier.label(
+                "identifier"),
+            stakeholder_in_profile.c.version, Changeset.timestamp,
+            Changeset.fk_user).\
+            join(
+                Changeset,
+                Changeset.id == stakeholder_in_profile.c.fk_changeset).\
             order_by(desc(Changeset.timestamp)).subquery(name="sub_st")
 
         # Join the resulting set to the user table
-        stakeholder_query = self.Session.query(stakeholder_sub_query, User.username).\
-            join(User).order_by(desc(stakeholder_sub_query.c.timestamp)).subquery(name="st")
+        stakeholder_query = self.Session.query(
+            stakeholder_sub_query, User.username).\
+            join(User).order_by(desc(
+                stakeholder_sub_query.c.timestamp)).subquery(name="st")
 
-        query = self.Session.query(activities_query, literal_column("\'activity\'").label("type")).\
-            union(self.Session.query(stakeholder_query, literal_column("\'stakeholder\'").label("type"))).\
-            order_by(desc(activities_query.c.timestamp)).order_by(desc(activities_query.c.version))
+        query = self.Session.query(
+            activities_query, literal_column("\'activity\'").label("type")).\
+            union(self.Session.query(
+                stakeholder_query,
+                literal_column("\'stakeholder\'").label("type"))).\
+            order_by(desc(activities_query.c.timestamp)).order_by(
+                desc(activities_query.c.version))
 
-        for i in query.offset((page-1)*pagesize).limit(pagesize).all():
+        for i in query.offset((page - 1) * pagesize).limit(pagesize).all():
             formatted_timestamp = i.timestamp.strftime("%a, %d %b %Y %H:%M:%S")
             short_uuid = str(i.identifier).split("-")[0].upper()
-            user_link = request.route_url("changesets_read_byuser", username=i.username, output="html")
+            user_link = request.route_url(
+                "changesets_read_byuser", username=i.username, output="html")
             if pagesize != 10:
-                user_link = request.route_url("changesets_read_byuser", username=i.username, output="html", _query=(("pagesize", pagesize),))
+                user_link = request.route_url(
+                    "changesets_read_byuser", username=i.username,
+                    output="html", _query=(("pagesize", pagesize),))
             if i.type == 'activity':
-                activity_link = request.route_url("activities_read_one", output="html", uid=i.identifier, _query={"v": i.version})
+                activity_link = request.route_url(
+                    "activities_read_one", output="html", uid=i.identifier,
+                    _query={"v": i.version})
                 description_text = """
                 Deal <a href=\"%s\">#%s</a> has been updated by user
                 <a href=\"%s\">%s</a> on %s to version&nbsp;%s
-                """ % (activity_link,\
-                        short_uuid,\
-                        user_link,\
-                        i.username,\
-                        formatted_timestamp,\
-                        i.version),
+                """ % (
+                    activity_link, short_uuid, user_link, i.username,
+                    formatted_timestamp, i.version),
                 items.append({
-                             "title":  "Activity %s updated to version %s" % (short_uuid, i.version),
-                             "description": unicode(description_text[0]),
-                             "link": activity_link,
-                             "author": i.username,
-                             "guid": "%s?v=%s" % (i.identifier, i.version),
-                             "pubDate": formatted_timestamp
-                             })
+                    "title": "Activity %s updated to version %s" % (
+                        short_uuid, i.version),
+                    "description": unicode(description_text[0]),
+                    "link": activity_link,
+                    "author": i.username,
+                    "guid": "%s?v=%s" % (i.identifier, i.version),
+                    "pubDate": formatted_timestamp
+                })
             elif i.type == 'stakeholder':
-                stakeholder_link = request.route_url("stakeholders_read_one", output="html", uid=i.identifier, _query={"v": i.version})
+                stakeholder_link = request.route_url(
+                    "stakeholders_read_one", output="html", uid=i.identifier,
+                    _query={"v": i.version})
                 description_text = """
                 Investor <a href=\"%s\">#%s</a> has been updated by user
                 <a href=\"%s\">%s</a> on %s to version&nbsp;%s
-                """ % (stakeholder_link,\
-                        short_uuid,\
-                        user_link,\
-                        i.username,\
-                        formatted_timestamp,\
-                        i.version),
+                """ % (
+                    stakeholder_link, short_uuid, user_link, i.username,
+                    formatted_timestamp, i.version),
                 items.append({
-                             "title":  "Investor %s updated to version %s" % (short_uuid, i.version),
-                             "description": unicode(description_text[0]),
-                             "link": stakeholder_link,
-                             "author": i.username,
-                             "guid": "%s?v=%s" % (i.identifier, i.version),
-                             "pubDate": formatted_timestamp
-                             })
+                    "title": "Investor %s updated to version %s" % (
+                        short_uuid, i.version),
+                    "description": unicode(description_text[0]),
+                    "link": stakeholder_link,
+                    "author": i.username,
+                    "guid": "%s?v=%s" % (i.identifier, i.version),
+                    "pubDate": formatted_timestamp
+                })
         return {
             "link": request.route_url("changesets_read_latest", output="rss"),
             "image": {
@@ -154,45 +156,60 @@ class ChangesetProtocol(object):
         page = int(request.params.get("page", 1))
         pagesize = int(request.params.get("pagesize", 10))
 
-        if self.Session.query(User).filter(User.username == username).first() == None:
+        if self.Session.query(User).filter(
+                User.username == username).first() == None:
             raise HTTPNotFound("Requested user does not exist.")
 
         items = []
 
-        activities_sub_query = self.Session.query(Activity.activity_identifier.label("identifier"), Activity.version, Changeset.timestamp, Changeset.fk_user).\
+        activities_sub_query = self.Session.query(
+            Activity.activity_identifier.label("identifier"),
+            Activity.version, Changeset.timestamp, Changeset.fk_user).\
             join(Changeset).\
-            filter(or_(Activity.fk_status == 2, Activity.fk_status == 3)).subquery(name="sub_act")
+            filter(or_(
+                Activity.fk_status == 2,
+                Activity.fk_status == 3)).subquery(name="sub_act")
 
-        activities_query = self.Session.query(activities_sub_query, User.username).\
+        activities_query = self.Session.query(
+            activities_sub_query, User.username).\
             join(User).filter(User.username == username).subquery(name="act")
 
         # All active and inactive stakeholders
         stakeholder_active = self.Session.query(Stakeholder).\
-            filter(or_(Stakeholder.fk_status == 2, Stakeholder.fk_status == 3)).\
+            filter(or_(
+                Stakeholder.fk_status == 2, Stakeholder.fk_status == 3)).\
             subquery("st_active")
 
         # Get the five latest stakeholder by changeset
-        stakeholder_sub_query = self.Session.query(stakeholder_active.c.stakeholder_identifier.label("identifier"), \
-                                                   stakeholder_active.c.version, Changeset.timestamp, Changeset.fk_user).\
-            join(Changeset, Changeset.id == stakeholder_active.c.fk_changeset).\
+        stakeholder_sub_query = self.Session.query(
+            stakeholder_active.c.stakeholder_identifier.label("identifier"),
+            stakeholder_active.c.version, Changeset.timestamp,
+            Changeset.fk_user).\
+            join(
+                Changeset, Changeset.id == stakeholder_active.c.fk_changeset).\
             subquery(name="sub_st")
 
         # Join the resulting set to the user table
-        stakeholder_query = self.Session.query(stakeholder_sub_query, User.username).\
+        stakeholder_query = self.Session.query(
+            stakeholder_sub_query, User.username).\
             join(User).filter(User.username == username).subquery(name="st")
 
-        query = self.Session.query(activities_query, literal_column("\'activity\'").label("type")).\
-            union(self.Session.query(stakeholder_query, literal_column("\'stakeholder\'").label("type"))).\
-            order_by(desc(activities_query.c.timestamp)).order_by(desc(activities_query.c.version))
+        query = self.Session.query(activities_query, literal_column(
+            "\'activity\'").label("type")).\
+            union(self.Session.query(
+                stakeholder_query,
+                literal_column("\'stakeholder\'").label("type"))).\
+            order_by(desc(activities_query.c.timestamp)).order_by(
+                desc(activities_query.c.version))
 
-        for i in query.offset((page-1)*pagesize).limit(pagesize).all():
+        for i in query.offset((page - 1) * pagesize).limit(pagesize).all():
             items.append({
-            "type": i.type,
-            "author": i.username,
-            "timestamp": i.timestamp,
-            "version": i.version,
-            "identifier": str(i.identifier)
-            })                            
+                "type": i.type,
+                "author": i.username,
+                "timestamp": i.timestamp,
+                "version": i.version,
+                "identifier": str(i.identifier)
+            })
         return {
             "items": items,
             "username": username,
@@ -205,10 +222,10 @@ class ChangesetProtocol(object):
 
     def _get_profile_filter(self, request):
         """
-            Return a spatial filter based on the profile boundary of the current
-            profile which is queried from the database.
-            Copied from the ActivityProtocol3
-            """
+        Return a spatial filter based on the profile boundary of the
+        current profile which is queried from the database.
+        Copied from the ActivityProtocol3
+        """
 
         profile = self.Session.query(Profile).\
             filter(Profile.code == get_current_profile(request)).\
@@ -217,9 +234,7 @@ class ChangesetProtocol(object):
         if profile is None:
             return (Activity.id == 0)
 
-        return functions.intersects(
-                                    Activity.point, profile.geometry
-                                    )
+        return functions.intersects(Activity.point, profile.geometry)
 
     def _filter_user(self, request):
         """

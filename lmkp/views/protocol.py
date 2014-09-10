@@ -376,10 +376,12 @@ class Protocol(object):
             str_map = {
                 # See http://www.postgresql.org/docs/9.1/static/functions-
                 # matching.html#FUNCTIONS-POSIX-REGEXP
-                'like': v.value.op("~")(value),
-                'ilike': v.value.op("~*")(value),
-                'nlike': v.value.op("!~")(value),
-                'nilike': v.value.op("!~*")(value)
+                # Update 2014/09/09: Operators like ~ or ~* do not seem to
+                # work correctly. Instead using LIKE and NOT LIKE.
+                'like': v.value.op("LIKE")(value),
+                'ilike': v.value.op("ILIKE")(value),
+                'nlike': v.value.op("NOT LIKE")(value),
+                'nilike': v.value.op("NOT ILIKE")(value)
             }
 
             # number comparison
@@ -776,6 +778,29 @@ class Protocol(object):
                         filter(Activity.version == item.version).\
                         first()
 
+                    # TODO: (Temporary) hack when an edited involvement cannot
+                    # be set to active because there is already an active
+                    # version. In this case, skip processing the involvement
+                    # if they are both based on the same previous_version.
+                    if sh and sh.fk_status == 6:
+                        active_sh = self.Session.query(Stakeholder).\
+                            join(Involvement).\
+                            join(Activity).\
+                            filter(
+                                Stakeholder.identifier == ai['identifier']).\
+                            filter(Stakeholder.fk_status == 2).\
+                            filter(Activity.identifier == item.identifier).\
+                            filter(Activity.version == item.version).\
+                            first()
+
+                        if active_sh and active_sh.previous_version \
+                                == sh.previous_version:
+                            log.debug(
+                                'Stakeholder with identifier %s already has an'
+                                ' active version, skipping it.'
+                                % ai['identifier'])
+                            continue
+
                     if sh is None:
                         # If the Stakeholder was not found, it is possible that
                         # it is based on a edited version. In this case, try to
@@ -931,7 +956,7 @@ class Protocol(object):
             ).\
                 filter(mappedClass.identifier == item.identifier).\
                 filter(
-                    mappedClass.fk_status == statusArray.index('active')+1).\
+                    mappedClass.fk_status == statusArray.index('active') + 1).\
                 first()
 
             # TODO: Nasty hack if the a new involvement is added to a now
@@ -946,18 +971,18 @@ class Protocol(object):
                     and next_status == 'edited'):
                 # Another nasty hack to set approved removals of involvements
                 # on Stakeholder side to "edited".
-                item.fk_status = statusArray.index('edited')+1
+                item.fk_status = statusArray.index('edited') + 1
 
             elif (empty_item is True or previous_version is None
                     or previous_version.fk_status
-                    == statusArray.index('active')+1):
+                    == statusArray.index('active') + 1):
                 # There is no previous version (the item is brand new) or it is
                 # based directly on the active version.
 
                 # If there is a previous active version, set it to 'inactive'
                 if previous_version:
                     previous_version.fk_status = statusArray.index(
-                        'inactive')+1
+                        'inactive') + 1
 
                 if empty_item is True:
                     # Set the status of the item to 'deleted'
@@ -970,7 +995,7 @@ class Protocol(object):
 
                 else:
                     # Set the status of the item to 'active'
-                    item.fk_status = statusArray.index('active')+1
+                    item.fk_status = statusArray.index('active') + 1
 
                     log.debug(
                         'Set version %s of %s with identifier %s to "active"'
@@ -996,7 +1021,7 @@ class Protocol(object):
 
                 else:
                     # Set the status of the item to 'active'
-                    item.fk_status = statusArray.index('active')+1
+                    item.fk_status = statusArray.index('active') + 1
 
                     log.debug(
                         'Set version %s of %s with identifier %s to "active"'
@@ -1040,10 +1065,10 @@ class Protocol(object):
                     return ret
 
                 # Set the reference version to 'inactive'
-                ref_version.fk_status = statusArray.index('inactive')+1
+                ref_version.fk_status = statusArray.index('inactive') + 1
 
                 # Set the pending version to 'edited'
-                item.fk_status = statusArray.index('edited')+1
+                item.fk_status = statusArray.index('edited') + 1
 
                 # Prepare a changeset
                 changeset = Changeset()
@@ -2409,3 +2434,69 @@ class Feature(object):
 
     def get_previous_version(self):
         return self._previous_version
+
+
+def get_value_by_key_from_item_json(item_json, key):
+    """
+    Returns the value of a tag found by its key in the complete json
+    (a Python dict) of an Activity or a Stakeholder as created by the
+    Protocol.
+
+    .. important::
+
+       This function only returns the value of the first occurence of
+       the key. However, there may be further Taggroups containing the
+       same key.
+
+    Args:
+        item_json (dict): The complete json of an Activity or a
+            Stakeholder as created by the Protocol.
+        key (str): The key to search inside the tags.
+
+    Returns:
+        str or None. The value of the tag if found, None if the key was
+            not found or if the json is invalid.
+    """
+    if not isinstance(item_json, dict):
+        return None
+    for taggroup in item_json.get('taggroups', []):
+        found_tag = next((
+            tag for tag in taggroup.get('tags', []) if tag['key']
+            == key), None)
+        if found_tag:
+            return found_tag['value']
+    return None
+
+
+def get_main_keys_from_item_json(item_json):
+    """
+    Returns the keys of all main tags found in the complete json (a
+    Python dict) of an Activity or a Stakeholder as created by the
+    Protocol.
+
+    Args:
+        item_json (dict): The complete json of an Activity or a
+            Stakeholder as created by the Protocol.
+
+    Returns:
+        list. A list with all main keys of the item json.
+    """
+    main_keys = []
+    if not isinstance(item_json, dict):
+        return main_keys
+    for taggroup in item_json.get('taggroups', []):
+        main_key = taggroup.get('main_tag', {}).get('key', None)
+        if main_key:
+            main_keys.append(main_key)
+    return main_keys
+
+
+def get_value_by_key_from_taggroup_json(taggroup_json, key):
+    if not isinstance(taggroup_json, dict):
+        return None
+    found_tag = next((
+        tag for tag in taggroup_json.get('tags', []) if tag['key'] == key),
+        None)
+    if found_tag:
+        return found_tag['value']
+    return None
