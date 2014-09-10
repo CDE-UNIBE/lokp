@@ -61,6 +61,7 @@ from lmkp.views.views import (
     BaseView,
     get_output_format,
     get_page_parameters,
+    get_bbox_parameters,
 )
 
 log = logging.getLogger(__name__)
@@ -105,7 +106,8 @@ class ActivityView(BaseView):
             return render_to_response('json', activities, self.request)
         elif output_format == 'html':
             page, page_size = get_page_parameters(self.request)
-            spatialfilter = _handle_spatial_parameters(self.request)
+            spatialfilter = 'profile' if get_bbox_parameters(
+                self.request)[0] == 'profile' else 'map'
             items = activity_protocol.read_many(
                 self.request, public=False, limit=page_size,
                 offset=page_size * page - page_size)
@@ -969,50 +971,3 @@ def _get_extjs_config(name, config, language):
     fieldConfig['type'] = type
 
     return fieldConfig
-
-
-def _handle_spatial_parameters(request):
-    """
-    Get the spatial extent of a request. The different options are checked in
-    the following order:
-    - request GET parameter {bbox}: use this parameter (handled by protocol) if
-      provided. Special parameter: bbox=profile in which case use the profile
-      boundary as bbox.
-    - cookie _LOCATION_: if no bbox parameter was provided in GET, look for the
-      map cookie to use as bbox.
-    - profile boundary: if no GET parameter was provided and no cookie was
-      found
-      use the profile boundary as bbox.
-    """
-
-    spatialfilter = None
-
-    bboxparam = request.params.get('bbox', None)
-    if bboxparam is not None:
-
-        if bboxparam == 'profile':
-            # Use profile as boundary
-            spatialfilter = 'profile'
-            if 'epsg' in request.GET:
-                del(request.GET['epsg'])
-
-        else:
-            # Use map extent from GET parameter
-            spatialfilter = 'mapextentparam'
-            epsg = request.params.get('epsg', None)
-            if epsg is None:
-                request.GET.add('epsg', '900913')
-    else:
-        # Use map extent from cookie
-        location = request.cookies.get('_LOCATION_')
-        if location is not None:
-            location = urllib.unquote(location)
-            if len(location.split(',')) == 4:
-                spatialfilter = 'mapextentcookie'
-                request.GET.add('bbox', location)
-                request.GET.add('epsg', '900913')
-
-    if spatialfilter is None:
-        spatialfilter = 'profile'
-
-    return spatialfilter

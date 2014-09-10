@@ -4,7 +4,7 @@ import json
 import logging
 import uuid
 from geoalchemy import WKBSpatialElement
-from geoalchemy.functions import functions
+from geoalchemy.functions import functions as geofunctions
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.i18n import get_localizer
@@ -46,6 +46,7 @@ from lmkp.models.database_objects import (
     Status,
     User,
 )
+from lmkp.utils import validate_bbox
 from lmkp.views.form_config import getCategoryList
 from lmkp.views.profile import get_current_profile
 from lmkp.views.protocol import (
@@ -58,6 +59,7 @@ from lmkp.views.protocol import (
 from lmkp.views.translation import get_translated_status
 from lmkp.views.translation import get_translated_db_keys
 from lmkp.views.translation import statusMap
+from lmkp.views.views import get_bbox_parameters
 
 log = logging.getLogger(__name__)
 
@@ -516,7 +518,7 @@ class ActivityProtocol3(Protocol):
     def read_many_geojson(self, request, public=True):
 
         relevant_activities = self._get_relevant_activities_many(
-            request, public_query=public)
+            request, public_query=public, bbox_cookies=False)
 
         # Get limit and offset from request.
         # Defaults: limit = None / offset = 0
@@ -791,8 +793,8 @@ class ActivityProtocol3(Protocol):
 
         return relevant_activities
 
-    def _get_relevant_activities_many(self, request, filter=None,
-                                      public_query=False):
+    def _get_relevant_activities_many(
+            self, request, filter=None, public_query=False, bbox_cookies=True):
         """
         ''filter'': An optional custom filter.
         ''public_query'': If set to true, no pending queries are made. Defaults
@@ -899,7 +901,7 @@ class ActivityProtocol3(Protocol):
 
         # Filter spatially
         relevant_activities = relevant_activities.\
-            filter(self._get_bbox_filter(request))
+            filter(self._get_bbox_filter(request, cookies=bbox_cookies))
 
         # Join Activities with order and group
         relevant_activities = relevant_activities.\
@@ -1867,7 +1869,7 @@ class ActivityProtocol3(Protocol):
             profiles = self.Session.query(Profile).\
                 filter(Profile.users.any(username=userid))
             for p in profiles.all():
-                profile_filters.append(functions.intersects(Activity.point,
+                profile_filters.append(geofunctions.intersects(Activity.point,
                                        p.geometry))
                 if p.code == 'global':
                     profile_filters.append(Activity.point == None)
@@ -1877,48 +1879,56 @@ class ActivityProtocol3(Protocol):
 
         return None
 
-    def _get_bbox_filter(self, request):
+    def _get_bbox_filter(self, request, cookies=True):
         """
-        Return the spatial filter provided by the bbox in the parameters
+        Return a spatial filter for the point of Activities based on the
+        bounding box parameters found in the request.
+
+        If a valid bounding box was found, a GeoAlchemy function
+        intersecting the point geometries of Activities with the
+        bounding box geometry is returned. This function can then be
+        used as a filter in SQLAlchemy.
+
+        Args:
+            request (pyramid.request): A Pyramid Request object.
+
+        Kwargs:
+            cookies (bool): A boolean indicating whether to look for a
+                location cookie as fallback if no request parameters
+                were provided. This argument is passed to the
+                `get_bbox_parameters` function.
+
+        Returns:
+            geoalchemy.functions.intersects or None. A GeoAlchemy
+            function which intersects the points of Activities with the
+            bounding box geometry. None if no valid bounding box was
+            found.
         """
 
-        if request.params.get('bbox', None) is not None:
-            # Create a geometry filter based on a bbox
+        bbox, epsg = get_bbox_parameters(request, cookies=cookies)
+        box = validate_bbox(bbox)
 
-            # Get the EPSG code from the input geometry
-            epsg = functions.srid(Activity.point)
-            try:
-                epsg = int(request.params.get('epsg', 4326))
-            except ValueError:
-                pass
+        if box is None:
+            return None
 
-            bbox = request.params.get('bbox', None)
-            if bbox is not None:
-                try:
-                    box = map(float, bbox.split(','))
-                    geometry = Polygon((
-                                       (box[0], box[1]),
-                                       (box[0], box[3]),
-                                       (box[2], box[3]),
-                                       (box[2], box[1]),
-                                       (box[0], box[1]))
-                                       )
+        geometry = Polygon((
+            (box[0], box[1]),
+            (box[0], box[3]),
+            (box[2], box[3]),
+            (box[2], box[1]),
+            (box[0], box[1])))
 
-                    # Create the intersection geometry
-                    wkb_geometry = WKBSpatialElement(
-                        buffer(geometry.wkb), epsg)
+        # Create the intersection geometry
+        wkb_geometry = WKBSpatialElement(
+            buffer(geometry.wkb), epsg)
 
-                    # Get the SRID used in the Activity class
-                    activity_srid = functions.srid(Activity.point)
+        # Get the SRID used in the Activity class
+        activity_srid = geofunctions.srid(Activity.point)
 
-                    # Return a subquery
-                    return functions.intersects(
-                        Activity.point,
-                        functions.transform(wkb_geometry, activity_srid))
-                except ValueError:
-                    pass
-
-        return None
+        # Return a subquery
+        return geofunctions.intersects(
+            Activity.point,
+            geofunctions.transform(wkb_geometry, activity_srid))
 
     def _get_profile_filter(self, request):
         """
@@ -1933,7 +1943,7 @@ class ActivityProtocol3(Protocol):
         if profile is None:
             return (Activity.id == 0)
 
-        return functions.intersects(
+        return geofunctions.intersects(
             Activity.point, profile.geometry
         )
 

@@ -25,8 +25,6 @@ def to_flat_table(request, item_type, involvements='full', columns=[]):
 
     item_type = validate_item_type(item_type)
     if item_type == 'a':
-        from lmkp.views.activities import _handle_spatial_parameters
-        _handle_spatial_parameters(request)
         protocol = activity_protocol
         other_item_type = validate_item_type('sh')
     else:
@@ -148,7 +146,9 @@ def to_flat_table(request, item_type, involvements='full', columns=[]):
             config_taggroup = config_taggroup_entry.get('config')
             config_mainkey = config_taggroup.getMaintag().getKey()
 
-            for taggroup in sorted(item.get('taggroups', []), key=lambda tg: tg.get('tg_id', 0)):
+            for taggroup in sorted(
+                    item.get('taggroups', []),
+                    key=lambda tg: tg.get('tg_id', 0)):
 
                 if taggroup['main_tag']['key'] != config_mainkey.getName():
                     continue

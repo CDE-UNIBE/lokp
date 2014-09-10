@@ -674,17 +674,17 @@ def getFilterValuesForKey(request, predefinedType=None, predefinedKey=None):
 
 def get_output_format(request):
     """
-+    Return the output format as it is defined in the request Matchdict
-+    (eg. /activities/{json}/...)
-+    The default output format is JSON.
-+
-+    Args:
-+        request (pyramid.request): A Pyramid Request object with a
-+        Matchdict.
-+
-+    Returns:
-+        string. The output format.
-+    """
+    Return the output format as it is defined in the request Matchdict
+    (eg. /activities/{json}/...)
+    The default output format is JSON.
+
+    Args:
+        request (pyramid.request): A Pyramid Request object with a
+        Matchdict.
+
+    Returns:
+        string. The output format.
+    """
     try:
         return request.matchdict['output']
     except KeyError:
@@ -693,16 +693,16 @@ def get_output_format(request):
 
 def get_page_parameters(request):
     """
-+    Return the page parameters from the request.
-+
-+    Args:
-+        request (pyramid.request): A Pyramid Request object with
-+        optional parameters `page` and `pagesize`.
-+
-+    Returns:
-+        int. The current page. Defaults to 1.
-+        int. The page size. Defaults to 10.
-+    """
+    Return the page parameters from the request.
+
+    Args:
+        request (pyramid.request): A Pyramid Request object with
+        optional parameters `page` and `pagesize`.
+
+    Returns:
+        int. The current page. Defaults to 1.
+        int. The page size. Defaults to 10.
+    """
     page = request.params.get('page', 1)
     try:
         page = int(page)
@@ -718,3 +718,32 @@ def get_page_parameters(request):
     page_size = max(page_size, 1)  # Page size should be >= 1
     page_size = min(page_size, 50)  # Page size should be <= 50
     return page, page_size
+
+
+def get_bbox_parameters(request, cookies=True):
+    """
+    Return the bounding box parameters from the request.
+
+    First, parameters in the request are considered. If no parameters
+    are set, the location cookie is used.
+
+    Args:
+        request (pyramid.request): A Pyramid Request object with
+            optional parameters `bbox` and `epsg` or a cookie
+            `_LOCATION_` set.
+
+    Kwargs:
+        cookies (bool): A boolean indicating whether to look for the
+            location cookie as fallback or no.
+
+    Returns:
+        str, str or None, None. Returns the bounding box and epsg
+            parameter if found, None and None if not.
+    """
+    bbox = request.params.get('bbox')
+    epsg = request.params.get('epsg', '900913')
+    if cookies and bbox is None:
+        location = request.cookies.get('_LOCATION_')
+        if location:
+            bbox = urllib.unquote(location)
+    return bbox, epsg

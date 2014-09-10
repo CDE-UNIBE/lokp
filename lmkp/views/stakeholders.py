@@ -1,12 +1,33 @@
 import logging
+from pyramid.httpexceptions import HTTPForbidden
+from pyramid.httpexceptions import HTTPUnauthorized
+from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPFound
+from pyramid.i18n import TranslationStringFactory
+from pyramid.i18n import get_localizer
+from pyramid.renderers import render_to_response
+from pyramid.renderers import render
+from pyramid.response import Response
+from pyramid.security import ACLAllowed
+from pyramid.security import authenticated_userid
+from pyramid.security import has_permission
+from pyramid.view import view_config
 
 from lmkp.authentication import checkUserPrivileges
 from lmkp.config import (
     check_valid_uuid,
     getTemplatePath,
 )
+from lmkp.models.database_objects import (
+    Language,
+    SH_Key,
+    SH_Tag,
+    SH_Tag_Group,
+    Stakeholder,
+    User,
+)
 from lmkp.models.meta import DBSession as Session
-from lmkp.views.activities import _handle_spatial_parameters
 from lmkp.views.comments import comments_sitekey
 from lmkp.views.config import get_mandatory_keys
 from lmkp.views.download import DownloadView
@@ -27,30 +48,11 @@ from lmkp.views.translation import (
     get_translated_status,
     get_translated_db_keys,
 )
-from lmkp.views.views import BaseView
-from lmkp.models.database_objects import (
-    Language,
-    SH_Key,
-    SH_Tag,
-    SH_Tag_Group,
-    Stakeholder,
-    User,
+from lmkp.views.views import (
+    BaseView,
+    get_bbox_parameters,
 )
 
-from pyramid.httpexceptions import HTTPForbidden
-from pyramid.httpexceptions import HTTPUnauthorized
-from pyramid.httpexceptions import HTTPBadRequest
-from pyramid.httpexceptions import HTTPNotFound
-from pyramid.httpexceptions import HTTPFound
-from pyramid.i18n import TranslationStringFactory
-from pyramid.i18n import get_localizer
-from pyramid.renderers import render_to_response
-from pyramid.renderers import render
-from pyramid.response import Response
-from pyramid.security import ACLAllowed
-from pyramid.security import authenticated_userid
-from pyramid.security import has_permission
-from pyramid.view import view_config
 
 log = logging.getLogger(__name__)
 _ = TranslationStringFactory('lmkp')
@@ -145,7 +147,8 @@ def by_activities(request):
         # deal uid set)
         spatialfilter = None
         if len(uids) == 0:
-            spatialfilter = _handle_spatial_parameters(request)
+            spatialfilter = 'profile' if get_bbox_parameters(
+                request)[0] == 'profile' else 'map'
         stakeholders = stakeholder_protocol.read_many_by_activities(
             request, public=False, uids=uids)
         return render_to_response('json', stakeholders, request)
@@ -176,7 +179,8 @@ def by_activities(request):
         # deal uid set)
         spatialfilter = None
         if len(uids) == 0:
-            spatialfilter = _handle_spatial_parameters(request)
+            spatialfilter = 'profile' if get_bbox_parameters(
+                request)[0] == 'profile' else 'map'
 
         # Query the items with the protocol
         items = stakeholder_protocol.read_many_by_activities(
