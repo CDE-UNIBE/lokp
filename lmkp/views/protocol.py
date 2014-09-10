@@ -778,6 +778,29 @@ class Protocol(object):
                         filter(Activity.version == item.version).\
                         first()
 
+                    # TODO: (Temporary) hack when an edited involvement cannot
+                    # be set to active because there is already an active
+                    # version. In this case, skip processing the involvement
+                    # if they are both based on the same previous_version.
+                    if sh and sh.fk_status == 6:
+                        active_sh = self.Session.query(Stakeholder).\
+                            join(Involvement).\
+                            join(Activity).\
+                            filter(
+                                Stakeholder.identifier == ai['identifier']).\
+                            filter(Stakeholder.fk_status == 2).\
+                            filter(Activity.identifier == item.identifier).\
+                            filter(Activity.version == item.version).\
+                            first()
+
+                        if active_sh and active_sh.previous_version \
+                                == sh.previous_version:
+                            log.debug(
+                                'Stakeholder with identifier %s already has an'
+                                ' active version, skipping it.'
+                                % ai['identifier'])
+                            continue
+
                     if sh is None:
                         # If the Stakeholder was not found, it is possible that
                         # it is based on a edited version. In this case, try to
