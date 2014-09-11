@@ -22,7 +22,7 @@ from pyramid.security import (
 )
 from pyramid.view import view_config
 
-from lmkp.authentication import checkUserPrivileges
+from lmkp.authentication import get_user_privileges
 from lmkp.config import (
     check_valid_uuid,
     getTemplatePath,
@@ -59,9 +59,10 @@ from lmkp.views.translation import (
 )
 from lmkp.views.views import (
     BaseView,
+    get_bbox_parameters,
     get_output_format,
     get_page_parameters,
-    get_bbox_parameters,
+    get_status_parameter,
 )
 
 log = logging.getLogger(__name__)
@@ -114,9 +115,7 @@ class ActivityView(BaseView):
             items = activity_protocol.read_many(
                 self.request, public=False, limit=page_size,
                 offset=page_size * page - page_size)
-
-            status_filter = self.request.params.get('status', None)
-            isLoggedIn, isModerator = checkUserPrivileges(self.request)
+            status_filter = get_status_parameter(self.request)
 
             return render_to_response(
                 getTemplatePath(self.request, 'activities/grid.mak'),
@@ -129,8 +128,7 @@ class ActivityView(BaseView):
                     'invfilter': None,
                     'statusfilter': status_filter,
                     'currentpage': page,
-                    'pagesize': page_size,
-                    'isModerator': isModerator
+                    'pagesize': page_size
                 },
                 self.request)
 
@@ -438,7 +436,7 @@ def read_one(request):
     elif output_format in ['review', 'compare']:
         if output_format == 'review':
             # Only moderators can see the review page.
-            isLoggedIn, isModerator = checkUserPrivileges(request)
+            isLoggedIn, isModerator = get_user_privileges(request)
             if isLoggedIn is False or isModerator is False:
                 raise HTTPForbidden()
 
@@ -667,7 +665,7 @@ def read_one_history(request):
     if check_valid_uuid(uid) is not True:
         raise HTTPNotFound()
 
-    isLoggedIn, isModerator = checkUserPrivileges(request)
+    isLoggedIn, isModerator = get_user_privileges(request)
     activities, count = activity_protocol.read_one_history(
         request, uid=uid)
     activeVersion = None

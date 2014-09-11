@@ -10,11 +10,11 @@ def validate_bbox(bbox):
     bounding box is returned as list.
 
     Args:
-        bbox (str): A string containing the bounding box.
+        ``bbox`` (str): A string containing the bounding box.
 
     Returns:
-        list or None. If valid, a list with 4 float numbers is returned.
-        If not valid, None is returned.
+        ``list`` or ``None``. If valid, a list with 4 float numbers is
+        returned. If not valid, None is returned.
     """
     try:
         bbox_parts = bbox.split(',')
@@ -27,18 +27,18 @@ def validate_bbox(bbox):
 
 def validate_item_type(item_type):
     """
-    Tests if a string is a valid item type for either Activities or
-    Stakeholders. Returns a standardized short representation of it if
-    valid.
+    Tests if a string is a valid item type for either :term:`Activities`
+    or :term:`Stakeholders`. Returns a standardized short
+    representation of it if valid.
 
     Args:
-        item_type (str): A string with an item type.
+        ``item_type`` (str): A string with an item type.
 
     Returns:
-        str. A short representation of the item type.
+        ``str``. A short representation of the item type.
 
     Raises:
-        Exception
+        ``Exception``. If the item type is not valid.
     """
     if item_type in ['a', 'activity', 'activities']:
         return 'a'

@@ -398,12 +398,12 @@ def getQueryString(url, **kwargs):
     """
     Function to update the query parameters of a given URL.
     kwargs:
-    - add: array of tuples with key and value to add to the URL. If the
-      key already exists, it will be replaced with the new value.
-      Example: add=[('page', 1)]
-    - remove: array of keys to remove from the URL.
-    - ret: fullUrl (default) / queryString. Use 'queryString' to return
-      only the query string instead of the full URL.
+    add: array of tuples with key and value to add to the URL. If the
+    key already exists, it will be replaced with the new value.
+    Example: add=[('page', 1)]
+    remove: array of keys to remove from the URL.
+    ret: fullUrl (default) / queryString. Use 'queryString' to return
+    only the query string instead of the full URL.
     """
 
     if 'add' not in kwargs and 'remove' not in kwargs and 'ret' not in kwargs:
@@ -679,11 +679,11 @@ def get_output_format(request):
     The default output format is JSON.
 
     Args:
-        request (pyramid.request): A Pyramid Request object with a
+        ``request`` (pyramid.request): A Pyramid Request object with a
         Matchdict.
 
     Returns:
-        string. The output format.
+        ``string``. The output format.
     """
     try:
         return request.matchdict['output']
@@ -693,15 +693,16 @@ def get_output_format(request):
 
 def get_page_parameters(request):
     """
-    Return the page parameters from the request.
+    Return a tuple with the page parameters from the request.
 
     Args:
-        request (pyramid.request): A Pyramid Request object with
-        optional parameters `page` and `pagesize`.
+        ``request`` (pyramid.request): A Pyramid Request object with
+        optional parameters ``page`` and ``pagesize``.
 
     Returns:
-        int. The current page. Defaults to 1.
-        int. The page size. Defaults to 10.
+        ``int``. The current page. Defaults to 1.
+
+        ``int``. The page size. Defaults to 10.
     """
     page = request.params.get('page', 1)
     try:
@@ -722,23 +723,29 @@ def get_page_parameters(request):
 
 def get_bbox_parameters(request, cookies=True):
     """
-    Return the bounding box parameters from the request.
+    Return a tuple with the bounding box parameters from the request.
 
     First, parameters in the request are considered. If no parameters
     are set, the location cookie is used.
 
+    .. important::
+        This function does not validate the bounding box parameters. In
+        order to do this, use the function
+        :class:`lmkp.utils.validate_bbox`.
+
     Args:
-        request (pyramid.request): A Pyramid Request object with
-            optional parameters `bbox` and `epsg` or a cookie
-            `_LOCATION_` set.
+        ``request`` (pyramid.request): A Pyramid Request object with
+        optional parameters ``bbox`` and ``epsg`` or a cookie
+        ``_LOCATION_`` set.
 
     Kwargs:
-        cookies (bool): A boolean indicating whether to look for the
-            location cookie as fallback or no.
+        ``cookies`` (bool): A boolean indicating whether to look for the
+        location cookie as fallback or no.
 
     Returns:
-        str, str or None, None. Returns the bounding box and epsg
-            parameter if found, None and None if not.
+        ``str`` or ``None``. The bounding box or None.
+
+        ``str`` or ``None``. The epsg parameter or None.
     """
     bbox = request.params.get('bbox')
     epsg = request.params.get('epsg', '900913')
@@ -747,3 +754,17 @@ def get_bbox_parameters(request, cookies=True):
         if location:
             bbox = urllib.unquote(location)
     return bbox, epsg
+
+
+def get_status_parameter(request):
+    """
+    Return the status parameter from the request.
+
+    Args:
+        ``request`` (pyramid.request): A Pyramid Request object with
+        optional parameter ``status``.
+
+    Returns:
+        ``str`` or ``None``. The status or None.
+    """
+    return request.params.get('status', None)

@@ -14,7 +14,7 @@ from pyramid.security import authenticated_userid
 from pyramid.security import has_permission
 from pyramid.view import view_config
 
-from lmkp.authentication import checkUserPrivileges
+from lmkp.authentication import get_user_privileges
 from lmkp.config import (
     check_valid_uuid,
     getTemplatePath,
@@ -187,7 +187,7 @@ def by_activities(request):
             request, public=False, uids=uids, limit=pageSize,
             offset=pageSize * page - pageSize)
 
-        isLoggedIn, isModerator = checkUserPrivileges(request)
+        isLoggedIn, isModerator = get_user_privileges(request)
 
         return render_to_response(
             getTemplatePath(request, 'stakeholders/grid.mak'),
@@ -288,7 +288,7 @@ def read_many(request):
             offset=pageSize * page - pageSize)
 
         statusFilter = request.params.get('status', None)
-        isLoggedIn, isModerator = checkUserPrivileges(request)
+        isLoggedIn, isModerator = get_user_privileges(request)
 
         return render_to_response(
             getTemplatePath(request, 'stakeholders/grid.mak'),
@@ -480,7 +480,7 @@ def read_one(request):
     elif output_format in ['review', 'compare']:
         if output_format == 'review':
             # Only moderators can see the review page.
-            isLoggedIn, isModerator = checkUserPrivileges(request)
+            isLoggedIn, isModerator = get_user_privileges(request)
             if isLoggedIn is False or isModerator is False:
                 raise HTTPForbidden()
 
@@ -642,7 +642,7 @@ def read_one_history(request):
     uid = request.matchdict.get('uid', None)
     if check_valid_uuid(uid) is not True:
         raise HTTPNotFound()
-    isLoggedIn, isModerator = checkUserPrivileges(request)
+    isLoggedIn, isModerator = get_user_privileges(request)
     stakeholders, count = stakeholder_protocol.read_one_history(
         request, uid=uid)
     activeVersion = None
