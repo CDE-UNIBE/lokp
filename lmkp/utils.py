@@ -34,8 +34,18 @@ def validate_item_type(item_type):
     Args:
         ``item_type`` (str): A string with an item type.
 
+        Valid item types are:
+
+            ``a``, ``activity``, ``activities`` for :term:`Activities`.
+
+            ``sh``, ``stakeholder``, ``stakeholders`` for :term:`Stakeholders`.
+
     Returns:
-        ``str``. A short representation of the item type.
+        ``str``. A short and standardized representation of the item type.
+
+        ``a`` for :term:`Activities`.
+
+        ``sh`` for :term:`Stakeholders`.
 
     Raises:
         ``Exception``. If the item type is not valid.

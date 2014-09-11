@@ -78,43 +78,56 @@ class ActivityView(BaseView):
     @view_config(route_name='activities_read_many')
     def read_many(self):
         """
-        Return many Activities.
+        Return many :term:`Activities`.
 
-        For each Activity, only one version is visible, always the
-        latest visible version to the current user. This means that
+        For each :term:`Activity`, only one version is visible, always
+        the latest visible version to the current user. This means that
         logged in users can see their own pending versions and
         moderators of the current profile can see pending versions as
         well.
 
-        By default, the Activities are ordered with the Activity having
-        the most recent change being on top.
+        By default, the :term:`Activities` are ordered with the
+        :term:`Activity` having the most recent change being on top.
 
         The output format is provided through the Matchdict of the URL
-        pattern (/activities/{output}).
-        Default output format is JSON.
+        pattern (/activities/{output}). The default output format is
+        JSON. If the output format is not valid, a 404 Response is
+        returned.
 
         Request parameters:
-            page (int):
-            pagesize (int):
-            status (str):
+            ``page`` (int): The page parameter is used to paginate
+            :term:`Items`. In combination with ``pagesize`` it defines
+            the offset.
+
+            ``pagesize`` (int): The pagesize parameter defines how many
+            :term:`Items` are displayed at once. It is used in
+            combination with ``page`` to allow pagination.
+
+            ``status`` (str): Use the status parameter to limit results
+            to displaying only versions with a certain :term:`status`.
 
         Returns:
-            HTTPResponse. Either a HTML or a JSON response.
+            ``HTTPResponse``. Either a HTML or a JSON response.
         """
 
         output_format = get_output_format(self.request)
 
         if output_format == 'json':
-            activities = activity_protocol.read_many(
+
+            items = activity_protocol.read_many(
                 self.request, public=False)
-            return render_to_response('json', activities, self.request)
+
+            return render_to_response('json', items, self.request)
+
         elif output_format == 'html':
+
             page, page_size = get_page_parameters(self.request)
-            spatialfilter = 'profile' if get_bbox_parameters(
-                self.request)[0] == 'profile' else 'map'
             items = activity_protocol.read_many(
                 self.request, public=False, limit=page_size,
                 offset=page_size * page - page_size)
+
+            spatialfilter = 'profile' if get_bbox_parameters(
+                self.request)[0] == 'profile' else 'map'
             status_filter = get_status_parameter(self.request)
 
             return render_to_response(
