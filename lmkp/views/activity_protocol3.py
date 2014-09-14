@@ -48,7 +48,6 @@ from lmkp.models.database_objects import (
 )
 from lmkp.utils import validate_bbox
 from lmkp.views.form_config import getCategoryList
-from lmkp.views.profile import get_current_profile
 from lmkp.views.protocol import (
     Feature,
     Inv,
@@ -59,7 +58,10 @@ from lmkp.views.protocol import (
 from lmkp.views.translation import get_translated_status
 from lmkp.views.translation import get_translated_db_keys
 from lmkp.views.translation import statusMap
-from lmkp.views.views import get_bbox_parameters
+from lmkp.views.views import (
+    get_bbox_parameters,
+    get_current_profile,
+)
 
 log = logging.getLogger(__name__)
 

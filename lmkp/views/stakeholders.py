@@ -38,10 +38,6 @@ from lmkp.views.form import (
     renderReadonlyForm,
 )
 from lmkp.views.form_config import getCategoryList
-from lmkp.views.profile import (
-    get_current_profile,
-    get_current_locale,
-)
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.stakeholder_review import StakeholderReview
 from lmkp.views.translation import (
@@ -51,6 +47,8 @@ from lmkp.views.translation import (
 from lmkp.views.views import (
     BaseView,
     get_bbox_parameters,
+    get_current_locale,
+    get_current_profile,
 )
 
 

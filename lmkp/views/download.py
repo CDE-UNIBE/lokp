@@ -6,15 +6,17 @@ from lmkp.models.meta import DBSession as Session
 from lmkp.utils import validate_item_type
 from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.form_config import getCategoryList
-from lmkp.views.profile import get_current_profile
-from lmkp.views.profile import get_current_locale
 from lmkp.views.protocol import (
     get_main_keys_from_item_json,
     get_value_by_key_from_item_json,
     get_value_by_key_from_taggroup_json,
 )
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
-from lmkp.views.views import BaseView
+from lmkp.views.views import (
+    BaseView,
+    get_current_locale,
+    get_current_profile,
+)
 
 
 activity_protocol = ActivityProtocol3(Session)

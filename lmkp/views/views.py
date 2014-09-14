@@ -18,8 +18,6 @@ from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 from urlparse import parse_qs, urlsplit, urlunsplit
 from urllib import urlencode
-from lmkp.views.profile import get_current_profile
-from lmkp.views.profile import get_current_locale
 from lmkp.views.form_config import getCategoryList
 from lmkp.config import getTemplatePath
 import re
@@ -36,6 +34,26 @@ class BaseView(object):
     def __init__(self, request):
         self.request = request
         self._handle_parameters()
+
+    def get_base_template_values(self):
+        """
+        Return a dict with the base values needed for all HTML views
+        based on the ``customization/{custom}/templates/base.mak``
+        template such as Map View, Grid or Detail View of an
+        :term:`Item` and others.
+
+        Returns:
+            ``dict``. A dict with the values of the base template
+            containing the following values:
+
+                ``profile``: The current profile
+
+                ``locale``: The current locale
+        """
+        return {
+            'profile': get_current_profile(self.request),
+            'locale': get_current_locale(self.request)
+        }
 
     def _handle_parameters(self):
 
@@ -768,3 +786,43 @@ def get_status_parameter(request):
         ``str`` or ``None``. The status or None.
     """
     return request.params.get('status', None)
+
+
+def get_current_profile(request):
+    """
+    Return the currently selected :term:`Profile`.
+
+    First, parameters in the request are considered. If no parameter is
+    set, the profile cookie is used. As a fallback, the global profile
+    is returned.
+
+    Args:
+        ``request`` (pyramid.request): A Pyramid Request object with
+        optional parameter ``_PROFILE_`` or a cookie ``_PROFILE_`` set.
+
+    Returns:
+        ``str``. The name of the :term:`Profile` or ``global`` by
+        default.
+    """
+    return request.params.get(
+        '_PROFILE_', request.cookies.get('_PROFILE_', 'global'))
+
+
+def get_current_locale(request):
+    """
+    Return the currently selected :term:`Locale`.
+
+    First, parameters in the request are considered. If no parameter is
+    set, the locale cookie is used. As a fallback, the default locale
+    ``en`` is returned.
+
+    Args:
+        ``request`` (pyramid.request): A Pyramid Request object with
+        optional parameter ``_LOCALE_`` or a cookie ``_LOCALE_`` set.
+
+    Returns:
+        ``str``. The name of the :term:`Locale` or ``en`` by
+        default.
+    """
+    return request.params.get(
+        '_LOCALE_', request.cookies.get('_LOCALE_', 'en'))

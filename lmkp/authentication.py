@@ -11,7 +11,7 @@ from lmkp.models.database_objects import (
 )
 from lmkp.models.meta import DBSession as Session
 from lmkp.security import group_finder
-from lmkp.views.profile import get_current_profile
+from lmkp.views.views import get_current_profile
 
 
 class CustomAuthenticationPolicy(AuthTktAuthenticationPolicy):

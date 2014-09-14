@@ -48,11 +48,7 @@ from lmkp.views.form import (
     checkValidItemjson,
 )
 from lmkp.views.form_config import getCategoryList
-from lmkp.views.profile import (
-    get_current_locale,
-    get_current_profile,
-    get_spatial_accuracy_map,
-)
+from lmkp.views.profile import get_spatial_accuracy_map
 from lmkp.views.translation import (
     get_translated_status,
     get_translated_db_keys,
@@ -60,6 +56,8 @@ from lmkp.views.translation import (
 from lmkp.views.views import (
     BaseView,
     get_bbox_parameters,
+    get_current_locale,
+    get_current_profile,
     get_output_format,
     get_page_parameters,
     get_status_parameter,
@@ -130,20 +128,20 @@ class ActivityView(BaseView):
                 self.request)[0] == 'profile' else 'map'
             status_filter = get_status_parameter(self.request)
 
+            template_values = self.get_base_template_values()
+            template_values.update({
+                'data': items['data'] if 'data' in items else [],
+                'total': items['total'] if 'total' in items else 0,
+                'spatialfilter': spatialfilter,
+                'invfilter': None,
+                'statusfilter': status_filter,
+                'currentpage': page,
+                'pagesize': page_size
+            })
+
             return render_to_response(
                 getTemplatePath(self.request, 'activities/grid.mak'),
-                {
-                    'data': items['data'] if 'data' in items else [],
-                    'total': items['total'] if 'total' in items else 0,
-                    'profile': get_current_profile(self.request),
-                    'locale': get_current_locale(self.request),
-                    'spatialfilter': spatialfilter,
-                    'invfilter': None,
-                    'statusfilter': status_filter,
-                    'currentpage': page,
-                    'pagesize': page_size
-                },
-                self.request)
+                template_values, self.request)
 
         elif output_format == 'form':
             # This is used to display a new and empty form for an Activity
