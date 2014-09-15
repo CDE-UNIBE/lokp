@@ -1633,7 +1633,7 @@ class StakeholderProtocol3(Protocol):
             # Query the diff of the edited pending version and recalculate it
             # with the recent changes to the pending version
             diff = json.loads(old_stakeholder.changeset.diff)
-            stakeholder_dict = self.recalculate_diffs(
+            stakeholder_dict_recalc = self.recalculate_diffs(
                 request,
                 Stakeholder,
                 old_stakeholder.identifier,
@@ -1641,8 +1641,22 @@ class StakeholderProtocol3(Protocol):
                 stakeholder_dict,
                 diff
             )
+            if stakeholder_dict_recalc == diff:
+                # If the returned dict is exactly the same, it is possible
+                # that the diff is actually an Activity changeset which just
+                # bumped the Stakeholder version trhough the involvement. In
+                # this case, try to find the diff by the ref version.
+                diff = json.loads(ref_version.changeset.diff)
+                stakeholder_dict_recalc = self.recalculate_diffs(
+                    request,
+                    Stakeholder,
+                    ref_version.identifier,
+                    ref_version.version,
+                    stakeholder_dict,
+                    diff
+                )
             # Also store and return the newly calculated diff
-            return_diff = stakeholder_dict
+            return_diff = stakeholder_dict_recalc
 
             if ref_version is None:
                 # If there is no previous version, the edited pending version
@@ -1655,6 +1669,7 @@ class StakeholderProtocol3(Protocol):
                 previous_version = old_stakeholder.version
 
         else:
+            stakeholder_dict_recalc = stakeholder_dict
             previous_version = old_stakeholder.version
 
         # Query latest version of current Stakeholder (used to increase
@@ -1691,14 +1706,15 @@ class StakeholderProtocol3(Protocol):
 
         log.debug(
             'Applying diff:\n%s\nto version %s of stakeholder %s'
-            % (stakeholder_dict, previous_version, old_stakeholder.identifier))
+            % (stakeholder_dict_recalc, previous_version,
+                old_stakeholder.identifier))
 
         sh = self._apply_diff(
             request,
             Stakeholder,
             old_stakeholder.identifier,
             previous_version,
-            stakeholder_dict,
+            stakeholder_dict_recalc,
             new_stakeholder,
             db=True
         )

@@ -724,7 +724,8 @@ class Protocol(object):
                 # First check if a review can be done for all the involvements
                 reviewPossible = True
                 for ai in affected_involvements:
-                    if 'op' in ai and ai['op'] == 'delete':
+                    if 'op' in ai and ai['op'] == 'delete' \
+                            and mappedClass != Stakeholder:
                         # It must be possible to review if there was a removed
                         # involvement to a non-active stakeholder
                         continue
