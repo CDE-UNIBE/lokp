@@ -23,10 +23,8 @@ from pyramid.security import (
 from pyramid.view import view_config
 
 from lmkp.authentication import get_user_privileges
-from lmkp.config import (
-    check_valid_uuid,
-    getTemplatePath,
-)
+from lmkp.config import check_valid_uuid
+from lmkp.custom import get_customized_template_path
 from lmkp.models.database_objects import (
     A_Key,
     A_Tag,
@@ -109,11 +107,19 @@ class ActivityView(BaseView):
         """
 
         output_format = get_output_format(self.request)
+        public = False  # Always show pending versions.
 
         if output_format == 'json':
 
             items = activity_protocol.read_many(
-                self.request, public=False)
+                self.request, public=public)
+
+            return render_to_response('json', items, self.request)
+
+        elif output_format == 'geojson':
+
+            items = activity_protocol.read_many_geojson(
+                self.request, public=public)
 
             return render_to_response('json', items, self.request)
 
@@ -121,7 +127,7 @@ class ActivityView(BaseView):
 
             page, page_size = get_page_parameters(self.request)
             items = activity_protocol.read_many(
-                self.request, public=False, limit=page_size,
+                self.request, public=public, limit=page_size,
                 offset=page_size * page - page_size)
 
             spatialfilter = 'profile' if get_bbox_parameters(
@@ -140,7 +146,8 @@ class ActivityView(BaseView):
             })
 
             return render_to_response(
-                getTemplatePath(self.request, 'activities/grid.mak'),
+                get_customized_template_path(
+                    self.request, 'activities/grid.mak'),
                 template_values, self.request)
 
         elif output_format == 'form':
@@ -160,14 +167,10 @@ class ActivityView(BaseView):
                                   'locale': get_current_locale(self.request)
                                   })
             return render_to_response(
-                getTemplatePath(self.request, 'activities/form.mak'),
+                get_customized_template_path(
+                    self.request, 'activities/form.mak'),
                 templateValues,
                 self.request)
-
-        elif output_format == 'geojson':
-            activities = activity_protocol.read_many_geojson(
-                self.request, public=False)
-            return render_to_response('json', activities, self.request)
 
         elif output_format == 'download':
             # The download overview page
@@ -296,7 +299,7 @@ def by_stakeholders(request):
             offset=pageSize * page - pageSize)
 
         return render_to_response(
-            getTemplatePath(request, 'activities/grid.mak'),
+            get_customized_template_path(request, 'activities/grid.mak'),
             {
                 'data': items['data'] if 'data' in items else [],
                 'total': items['total'] if 'total' in items else 0,
@@ -411,7 +414,8 @@ def read_one(request):
                             request.registry.settings['lmkp.comments_url']
 
                         return render_to_response(
-                            getTemplatePath(request, 'activities/details.mak'),
+                            get_customized_template_path(
+                                request, 'activities/details.mak'),
                             templateValues, request)
         return HTTPNotFound()
     elif output_format == 'form':
@@ -441,7 +445,8 @@ def read_one(request):
                         templateValues['uid'] = uid
                         templateValues['version'] = version
                         return render_to_response(
-                            getTemplatePath(request, 'activities/form.mak'),
+                            get_customized_template_path(
+                                request, 'activities/form.mak'),
                             templateValues, request)
         return HTTPNotFound()
     elif output_format in ['review', 'compare']:
@@ -560,11 +565,12 @@ def read_one(request):
 
         if output_format == 'review':
             return render_to_response(
-                getTemplatePath(request, 'activities/review.mak'),
+                get_customized_template_path(request, 'activities/review.mak'),
                 templateValues, request)
         else:
             return render_to_response(
-                getTemplatePath(request, 'activities/compare.mak'),
+                get_customized_template_path(
+                    request, 'activities/compare.mak'),
                 templateValues, request)
     elif output_format == 'geojson':
         # A version is required
@@ -654,7 +660,7 @@ def read_one(request):
         templateValues['uid'] = uid
         templateValues['shortuid'] = uid.split("-")[0]
         return render_to_response(
-            getTemplatePath(request, 'activities/statistics.mak'),
+            get_customized_template_path(request, 'activities/statistics.mak'),
             templateValues, request)
     else:
         # If the output format was not found, raise 404 error
@@ -707,7 +713,9 @@ def read_one_history(request):
         raise HTTPNotFound("Requested output format is not supported.")
 
     return render_to_response(
-        getTemplatePath(request, template), templateValues, request)
+        get_customized_template_path(
+            request, template),
+        templateValues, request)
 
 
 @view_config(route_name='activities_read_one_public')

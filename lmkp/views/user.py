@@ -30,7 +30,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm.exc import NoResultFound
 
-from lmkp.config import getTemplatePath
+from lmkp.custom import get_customized_template_path
 from lmkp.models.database_objects import (
     Group,
     Profile,
@@ -164,14 +164,15 @@ class UserView(BaseView):
                     new_user.username)
             }
             email_text = render(
-                getTemplatePath(self.request, 'emails/account_activation.mak'),
+                get_customized_template_path(
+                    self.request, 'emails/account_activation.mak'),
                 activation_dict, self.request)
 
             self._send_email(
                 [email_field], _(u"Activate your Account"), email_text)
 
             return render_to_response(
-                getTemplatePath(
+                get_customized_template_path(
                     self.request, 'users/registration_success.mak'),
                 {}, self.request)
 
@@ -186,7 +187,8 @@ class UserView(BaseView):
 
             # Render the return values
             return render_to_response(
-                getTemplatePath(self.request, 'users/registration_form.mak'),
+                get_customized_template_path(
+                    self.request, 'users/registration_form.mak'),
                 ret, self.request)
 
         return ret
@@ -274,7 +276,7 @@ class UserView(BaseView):
         # Send an email to all moderators of the profile in which the user
         # registered.
         email_text = render(
-            getTemplatePath(
+            get_customized_template_path(
                 self.request, 'emails/account_approval_request.mak'),
             approval_dict, request=self.request)
 
@@ -321,7 +323,8 @@ class UserView(BaseView):
             email_text)
 
         return render_to_response(
-            getTemplatePath(self.request, 'users/activation_successful.mak'),
+            get_customized_template_path(
+                self.request, 'users/activation_successful.mak'),
             {
                 'username': user.username
             }, self.request)
@@ -355,7 +358,7 @@ class UserView(BaseView):
         }
 
         email_text = render(
-            getTemplatePath(
+            get_customized_template_path(
                 self.request, 'emails/account_approval_confirmation.mak'),
             conf_dict,
             request=self.request)
@@ -369,7 +372,8 @@ class UserView(BaseView):
 
         # Return the username to the template
         return render_to_response(
-            getTemplatePath(self.request, 'users/approval_successful.mak'),
+            get_customized_template_path(
+                self.request, 'users/approval_successful.mak'),
             {
                 'username': user_username
             }, self.request)
@@ -455,7 +459,8 @@ class UserView(BaseView):
             ret['username'] = user.username
 
             return render_to_response(
-                getTemplatePath(self.request, 'users/account_form.mak'),
+                get_customized_template_path(
+                    self.request, 'users/account_form.mak'),
                 ret, self.request)
 
         return ret

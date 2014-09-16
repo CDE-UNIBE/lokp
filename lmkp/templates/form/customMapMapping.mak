@@ -1,12 +1,12 @@
 <%
     from mako.template import Template
     from pyramid.path import AssetResolver
-    from lmkp.config import getTemplatePath
+    from lmkp.custom import get_customized_template_path
     import colander
     lmkpAssetResolver = AssetResolver('lmkp')
     resolver = lmkpAssetResolver.resolve('templates/map/mapform.mak')
     template = Template(filename=resolver.abspath())
-    activitiesResolver = lmkpAssetResolver.resolve(getTemplatePath(request, 'parts/items/activities.mak'))
+    activitiesResolver = lmkpAssetResolver.resolve(get_customized_template_path(request, 'parts/items/activities.mak'))
     activitiesTemplate = Template(filename=activitiesResolver.abspath())
     geometry = None if cstruct['geometry'] == colander.null else cstruct['geometry']
     editmode = None if cstruct['editmode'] == colander.null else cstruct['editmode']

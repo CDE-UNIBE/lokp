@@ -17,8 +17,8 @@ from pyramid.view import view_config
 from lmkp.authentication import get_user_privileges
 from lmkp.config import (
     check_valid_uuid,
-    getTemplatePath,
 )
+from lmkp.custom import get_customized_template_path
 from lmkp.models.database_objects import (
     Language,
     SH_Key,
@@ -188,7 +188,7 @@ def by_activities(request):
         isLoggedIn, isModerator = get_user_privileges(request)
 
         return render_to_response(
-            getTemplatePath(request, 'stakeholders/grid.mak'),
+            get_customized_template_path(request, 'stakeholders/grid.mak'),
             {
                 'data': items['data'] if 'data' in items else [],
                 'total': items['total'] if 'total' in items else 0,
@@ -289,7 +289,7 @@ def read_many(request):
         isLoggedIn, isModerator = get_user_privileges(request)
 
         return render_to_response(
-            getTemplatePath(request, 'stakeholders/grid.mak'),
+            get_customized_template_path(request, 'stakeholders/grid.mak'),
             {
                 'data': items['data'] if 'data' in items else [],
                 'total': items['total'] if 'total' in items else 0,
@@ -317,7 +317,7 @@ def read_many(request):
         templateValues['profile'] = get_current_profile(request)
         templateValues['locale'] = get_current_locale(request)
         return render_to_response(
-            getTemplatePath(request, 'stakeholders/form.mak'),
+            get_customized_template_path(request, 'stakeholders/form.mak'),
             templateValues,
             request
         )
@@ -439,7 +439,7 @@ def read_one(request):
                             settings['lmkp.comments_url']
 
                         return render_to_response(
-                            getTemplatePath(
+                            get_customized_template_path(
                                 request, 'stakeholders/details.mak'),
                             templateValues,
                             request
@@ -470,7 +470,8 @@ def read_one(request):
                             request)
                         templateValues['locale'] = get_current_locale(request)
                         return render_to_response(
-                            getTemplatePath(request, 'stakeholders/form.mak'),
+                            get_customized_template_path(
+                                request, 'stakeholders/form.mak'),
                             templateValues,
                             request
                         )
@@ -594,13 +595,15 @@ def read_one(request):
 
         if output_format == 'review':
             return render_to_response(
-                getTemplatePath(request, 'stakeholders/review.mak'),
+                get_customized_template_path(
+                    request, 'stakeholders/review.mak'),
                 templateValues,
                 request
             )
         else:
             return render_to_response(
-                getTemplatePath(request, 'stakeholders/compare.mak'),
+                get_customized_template_path(
+                    request, 'stakeholders/compare.mak'),
                 templateValues,
                 request
             )
@@ -672,7 +675,8 @@ def read_one_history(request):
         raise HTTPNotFound("Requested output format is not supported.")
 
     return render_to_response(
-        getTemplatePath(request, template), templateValues, request)
+        get_customized_template_path(request, template), templateValues,
+        request)
 
 
 @view_config(route_name='stakeholders_review', renderer='json')
@@ -754,7 +758,7 @@ def review(request):
 
     if camefrom != '':
         camefromMsg = render(
-            getTemplatePath(
+            get_customized_template_path(
                 request,
                 'parts/messages/stakeholder_reviewed_through_involvement.mak'),
             {

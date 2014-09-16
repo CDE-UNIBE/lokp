@@ -15,7 +15,7 @@ from pyramid.renderers import render
 from pyramid.threadlocal import get_current_request
 from pyramid.view import view_config
 
-from lmkp.config import getTemplatePath
+from lmkp.custom import get_customized_template_path
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.activity_review import ActivityReview
 from lmkp.views.form_config import getCategoryList
@@ -254,7 +254,7 @@ def renderForm(request, itemType, **kwargs):
                 }
                 if itemType == 'activities':
                     msg = render(
-                        getTemplatePath(
+                        get_customized_template_path(
                             request,
                             'parts/messages/stakeholder_form_through_'
                             'involvement.mak'),
@@ -349,7 +349,7 @@ def renderForm(request, itemType, **kwargs):
                             returnValues)
                         if addToSession is True:
                             msg = render(
-                                getTemplatePath(
+                                get_customized_template_path(
                                     request,
                                     'parts/messages/stakeholder_created_'
                                     'through_involvement.mak'),
@@ -373,7 +373,7 @@ def renderForm(request, itemType, **kwargs):
                     else:
                         if itemType == 'activities':
                             feedbackMessage = render(
-                                getTemplatePath(
+                                get_customized_template_path(
                                     request,
                                     'parts/messages/activity_created_'
                                     'success.mak'),
@@ -385,7 +385,7 @@ def renderForm(request, itemType, **kwargs):
                             )
                         else:
                             feedbackMessage = render(
-                                getTemplatePath(
+                                get_customized_template_path(
                                     request,
                                     'parts/messages/stakeholder_created_'
                                     'success.mak'),
@@ -467,7 +467,7 @@ def renderForm(request, itemType, **kwargs):
                         'form_clear_session', item=itemType, attr='form',
                         _query={'url': request.url})
                     msg = render(
-                        getTemplatePath(
+                        get_customized_template_path(
                             request,
                             'parts/messages/unsaved_data_same_form.mak'),
                         {'url': url},
@@ -502,7 +502,7 @@ def renderForm(request, itemType, **kwargs):
                             'stakeholders_read_many', output='form')
 
                 msg = render(
-                    getTemplatePath(
+                    get_customized_template_path(
                         request,
                         'parts/messages/unsaved_data_different_form.mak'),
                     {
@@ -543,7 +543,7 @@ def renderForm(request, itemType, **kwargs):
                             'stakeholders_read_many', output='form')
 
                 msg = render(
-                    getTemplatePath(
+                    get_customized_template_path(
                         request,
                         'parts/messages/unsaved_data_different_form.mak'),
                     {
@@ -569,7 +569,7 @@ def renderForm(request, itemType, **kwargs):
                         'form_clear_session', item=itemType, attr='form',
                         _query={'url': request.url})
                     msg = render(
-                        getTemplatePath(
+                        get_customized_template_path(
                             request,
                             'parts/messages/unsaved_data_same_form.mak'),
                         {'url': url},
@@ -717,7 +717,7 @@ def renderReadonlyForm(request, itemType, itemJson):
                 url = request.route_url(
                     routeName, output='html', uid=itemJson['id'])
             errorMsg = render(
-                getTemplatePath(
+                get_customized_template_path(
                     request, 'parts/messages/item_requested_not_valid.mak'),
                 {'url': url},
                 request
@@ -821,7 +821,7 @@ def renderReadonlyCompareForm(
             url = request.route_url(
                 routeName, output='html', uid=newFeature.get_guid())
         errorMsg = render(
-            getTemplatePath(
+            get_customized_template_path(
                 request, 'parts/messages/comparison_not_valid.mak'),
             {'url': url},
             request
@@ -2223,7 +2223,7 @@ def mako_renderer(tmpl_name, **kw):
             'readonly/customInvolvementMappingStakeholder',
             'readonly/customInvolvementMappingActivity'
     ]:
-        resolver = lmkpAssetResolver.resolve(getTemplatePath(
+        resolver = lmkpAssetResolver.resolve(get_customized_template_path(
             request, 'form/%s.mak' % tmpl_name))
     else:
         resolver = lmkpAssetResolver.resolve(
@@ -2246,7 +2246,7 @@ def mako_renderer_compare(tmpl_name, **kw):
     request = get_current_request()
     # Redirect base form templates to customized templates
     if tmpl_name in ['readonly/form', 'customInvolvementMapping']:
-        resolver = lmkpAssetResolver.resolve(getTemplatePath(
+        resolver = lmkpAssetResolver.resolve(get_customized_template_path(
             request, 'review/%s.mak' % tmpl_name))
     else:
         resolver = lmkpAssetResolver.resolve(

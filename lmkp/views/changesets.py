@@ -3,7 +3,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid.renderers import render_to_response
 from pyramid.view import view_config
 
-from lmkp.config import getTemplatePath
+from lmkp.custom import get_customized_template_path
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.changeset_protocol import ChangesetProtocol
 
@@ -33,8 +33,9 @@ def read_latest(request):
 
     templateValues = changeset_protocol.read_many_latest(request)
 
-    return render_to_response(getTemplatePath(request, template),
-                              templateValues, request)
+    return render_to_response(
+        get_customized_template_path(request, template),
+        templateValues, request)
 
 
 @view_config(route_name='changesets_read_byuser')
@@ -54,5 +55,6 @@ def read_byuser(request):
 
     templateValues = changeset_protocol.read_many_byuser(request)
 
-    return render_to_response(getTemplatePath(request, template),
-                              templateValues, request)
+    return render_to_response(
+        get_customized_template_path(request, template),
+        templateValues, request)

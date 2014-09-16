@@ -35,4 +35,26 @@ Glossary
 
 
    Status
-     Each version of an :term:`Item` has a status ..
+     Each version of an :term:`Item` has a status which is based on the review process and determines the visibility of the version. The following statuses exist: ``pending``, ``active``, ``inactive``, ``deleted``, ``rejected`` and ``edited``.
+
+
+   Profile
+     Profiles are used to allow a specific configuration based on spatial or thematic criteria.
+
+     See `Customization of profiles`_ for more information.
+
+
+   Locale
+     Locales are used to translate both the interface and the database attributes of the LOKP.
+
+     See `Translation`_ for more information.
+
+
+   Pyramid
+     The LOKP is based on the `Pyramid`_ web framework, which is part of the Pylons framework. Please refer to the `Pyramid documentation`_ for further details.
+
+
+.. _Customization of profiles: customization.html#profiles
+.. _Translation: translation.html
+.. _Pyramid: http://www.pylonsproject.org/
+.. _Pyramid documentation: http://pyramid.readthedocs.org/en/latest/
