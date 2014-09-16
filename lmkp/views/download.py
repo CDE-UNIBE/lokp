@@ -6,15 +6,17 @@ from lmkp.models.meta import DBSession as Session
 from lmkp.utils import validate_item_type
 from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.form_config import getCategoryList
-from lmkp.views.profile import get_current_profile
-from lmkp.views.profile import get_current_locale
 from lmkp.views.protocol import (
     get_main_keys_from_item_json,
     get_value_by_key_from_item_json,
     get_value_by_key_from_taggroup_json,
 )
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
-from lmkp.views.views import BaseView
+from lmkp.views.views import (
+    BaseView,
+    get_current_locale,
+    get_current_profile,
+)
 
 
 activity_protocol = ActivityProtocol3(Session)
@@ -25,8 +27,6 @@ def to_flat_table(request, item_type, involvements='full', columns=[]):
 
     item_type = validate_item_type(item_type)
     if item_type == 'a':
-        from lmkp.views.activities import _handle_spatial_parameters
-        _handle_spatial_parameters(request)
         protocol = activity_protocol
         other_item_type = validate_item_type('sh')
     else:
@@ -148,7 +148,9 @@ def to_flat_table(request, item_type, involvements='full', columns=[]):
             config_taggroup = config_taggroup_entry.get('config')
             config_mainkey = config_taggroup.getMaintag().getKey()
 
-            for taggroup in sorted(item.get('taggroups', []), key=lambda tg: tg.get('tg_id', 0)):
+            for taggroup in sorted(
+                    item.get('taggroups', []),
+                    key=lambda tg: tg.get('tg_id', 0)):
 
                 if taggroup['main_tag']['key'] != config_mainkey.getName():
                     continue

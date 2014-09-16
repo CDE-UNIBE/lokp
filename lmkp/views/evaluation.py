@@ -1,7 +1,7 @@
 from datetime import timedelta
 from lmkp.models.database_objects import *
 from lmkp.views.views import BaseView
-from lmkp.views.profile import get_current_profile
+from lmkp.views.views import get_current_profile
 from lmkp.models.meta import DBSession as Session
 from pyramid.view import view_config
 from pyramid.view import view_defaults

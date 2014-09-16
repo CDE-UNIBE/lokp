@@ -11,7 +11,7 @@ from lmkp.models.database_objects import (
 )
 from lmkp.models.meta import DBSession as Session
 from lmkp.security import group_finder
-from lmkp.views.profile import get_current_profile
+from lmkp.views.views import get_current_profile
 
 
 class CustomAuthenticationPolicy(AuthTktAuthenticationPolicy):
@@ -93,20 +93,28 @@ class CustomAuthenticationPolicy(AuthTktAuthenticationPolicy):
         return None
 
 
-def checkUserPrivileges(request):
+def get_user_privileges(request):
     """
-    Check the priviliges of the current user.
-    Returns a tuple with the following entries:
-    - (boolean or None) User is logged in?
-    - (boolean or None) User has moderation rights (for the current profile)?
+    Get the privileges of the current user.
+
+    Returns a tuple indicating if the user is logged in and if the user
+    has moderation rights for the current profile.
+
+    Args:
+        ``request`` (pyramid.request): A Pyramid Request object.
+
+    Returns:
+        ``bool`` or ``None``. Returns ``True`` if the user is logged in,
+        ``False`` or ``None`` if not.
+
+        ``bool`` or ``None``. Returns ``True`` if the user has
+        moderation privileges for the current profile, `False`` or
+        ``None`` if not.
     """
     principals = effective_principals(request)
-    if principals is not None:
+    if principals:
         return (
             'system.Authenticated' in principals,
             'group:moderators' in principals
         )
-    return (
-        None,
-        None
-    )
+    return None, None

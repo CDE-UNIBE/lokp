@@ -10,28 +10,9 @@ from lmkp.config import (
 )
 from lmkp.models.meta import DBSession
 from lmkp.models.database_objects import Profile
+from lmkp.views.views import get_current_profile
 
 APPLICATION_YAML = 'application.yml'
-
-
-def get_current_profile(request):
-
-    if '_PROFILE_' in request.params:
-        return request.params['_PROFILE_']
-    if '_PROFILE_' in request.cookies:
-        return request.cookies['_PROFILE_']
-
-    return 'global'
-
-
-def get_current_locale(request):
-
-    if '_LOCALE_' in request.params:
-        return request.params['_LOCALE_']
-    if '_LOCALE_' in request.cookies:
-        return request.cookies['_LOCALE_']
-
-    return 'en'
 
 
 @view_config(route_name='profile_store', renderer='json')

@@ -33,10 +33,28 @@ Documentation of the available web services.
    services/readmany
    services/readbyother
 
-Indices and tables
+
+API Documentation
+-----------------
+
+Please note that the API Documentation is still under heavy construction.
+
+.. toctree::
+   :maxdepth: 1
+   :glob:
+
+   api/*
+
+
+Index and glossary
 ==================
 
+* :ref:`glossary`
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
 
+.. toctree::
+   :hidden:
+
+   glossary

@@ -18,8 +18,6 @@ from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 from urlparse import parse_qs, urlsplit, urlunsplit
 from urllib import urlencode
-from lmkp.views.profile import get_current_profile
-from lmkp.views.profile import get_current_locale
 from lmkp.views.form_config import getCategoryList
 from lmkp.config import getTemplatePath
 import re
@@ -36,6 +34,26 @@ class BaseView(object):
     def __init__(self, request):
         self.request = request
         self._handle_parameters()
+
+    def get_base_template_values(self):
+        """
+        Return a dict with the base values needed for all HTML views
+        based on the ``customization/{custom}/templates/base.mak``
+        template such as Map View, Grid or Detail View of an
+        :term:`Item` and others.
+
+        Returns:
+            ``dict``. A dict with the values of the base template
+            containing the following values:
+
+                ``profile``: The current profile
+
+                ``locale``: The current locale
+        """
+        return {
+            'profile': get_current_profile(self.request),
+            'locale': get_current_locale(self.request)
+        }
 
     def _handle_parameters(self):
 
@@ -398,12 +416,12 @@ def getQueryString(url, **kwargs):
     """
     Function to update the query parameters of a given URL.
     kwargs:
-    - add: array of tuples with key and value to add to the URL. If the
-      key already exists, it will be replaced with the new value.
-      Example: add=[('page', 1)]
-    - remove: array of keys to remove from the URL.
-    - ret: fullUrl (default) / queryString. Use 'queryString' to return
-      only the query string instead of the full URL.
+    add: array of tuples with key and value to add to the URL. If the
+    key already exists, it will be replaced with the new value.
+    Example: add=[('page', 1)]
+    remove: array of keys to remove from the URL.
+    ret: fullUrl (default) / queryString. Use 'queryString' to return
+    only the query string instead of the full URL.
     """
 
     if 'add' not in kwargs and 'remove' not in kwargs and 'ret' not in kwargs:
@@ -674,17 +692,17 @@ def getFilterValuesForKey(request, predefinedType=None, predefinedKey=None):
 
 def get_output_format(request):
     """
-+    Return the output format as it is defined in the request Matchdict
-+    (eg. /activities/{json}/...)
-+    The default output format is JSON.
-+
-+    Args:
-+        request (pyramid.request): A Pyramid Request object with a
-+        Matchdict.
-+
-+    Returns:
-+        string. The output format.
-+    """
+    Return the output format as it is defined in the request Matchdict
+    (eg. /activities/{json}/...)
+    The default output format is JSON.
+
+    Args:
+        ``request`` (pyramid.request): A Pyramid Request object with a
+        Matchdict.
+
+    Returns:
+        ``string``. The output format.
+    """
     try:
         return request.matchdict['output']
     except KeyError:
@@ -693,16 +711,17 @@ def get_output_format(request):
 
 def get_page_parameters(request):
     """
-+    Return the page parameters from the request.
-+
-+    Args:
-+        request (pyramid.request): A Pyramid Request object with
-+        optional parameters `page` and `pagesize`.
-+
-+    Returns:
-+        int. The current page. Defaults to 1.
-+        int. The page size. Defaults to 10.
-+    """
+    Return a tuple with the page parameters from the request.
+
+    Args:
+        ``request`` (pyramid.request): A Pyramid Request object with
+        optional parameters ``page`` and ``pagesize``.
+
+    Returns:
+        ``int``. The current page. Defaults to 1.
+
+        ``int``. The page size. Defaults to 10.
+    """
     page = request.params.get('page', 1)
     try:
         page = int(page)
@@ -718,3 +737,92 @@ def get_page_parameters(request):
     page_size = max(page_size, 1)  # Page size should be >= 1
     page_size = min(page_size, 50)  # Page size should be <= 50
     return page, page_size
+
+
+def get_bbox_parameters(request, cookies=True):
+    """
+    Return a tuple with the bounding box parameters from the request.
+
+    First, parameters in the request are considered. If no parameters
+    are set, the location cookie is used.
+
+    .. important::
+        This function does not validate the bounding box parameters. In
+        order to do this, use the function
+        :class:`lmkp.utils.validate_bbox`.
+
+    Args:
+        ``request`` (pyramid.request): A Pyramid Request object with
+        optional parameters ``bbox`` and ``epsg`` or a cookie
+        ``_LOCATION_`` set.
+
+    Kwargs:
+        ``cookies`` (bool): A boolean indicating whether to look for the
+        location cookie as fallback or no.
+
+    Returns:
+        ``str`` or ``None``. The bounding box or None.
+
+        ``str`` or ``None``. The epsg parameter or None.
+    """
+    bbox = request.params.get('bbox')
+    epsg = request.params.get('epsg', '900913')
+    if cookies and bbox is None:
+        location = request.cookies.get('_LOCATION_')
+        if location:
+            bbox = urllib.unquote(location)
+    return bbox, epsg
+
+
+def get_status_parameter(request):
+    """
+    Return the status parameter from the request.
+
+    Args:
+        ``request`` (pyramid.request): A Pyramid Request object with
+        optional parameter ``status``.
+
+    Returns:
+        ``str`` or ``None``. The status or None.
+    """
+    return request.params.get('status', None)
+
+
+def get_current_profile(request):
+    """
+    Return the currently selected :term:`Profile`.
+
+    First, parameters in the request are considered. If no parameter is
+    set, the profile cookie is used. As a fallback, the global profile
+    is returned.
+
+    Args:
+        ``request`` (pyramid.request): A Pyramid Request object with
+        optional parameter ``_PROFILE_`` or a cookie ``_PROFILE_`` set.
+
+    Returns:
+        ``str``. The name of the :term:`Profile` or ``global`` by
+        default.
+    """
+    return request.params.get(
+        '_PROFILE_', request.cookies.get('_PROFILE_', 'global'))
+
+
+def get_current_locale(request):
+    """
+    Return the currently selected :term:`Locale`.
+
+    First, parameters in the request are considered. If no parameter is
+    set, the locale cookie is used. As a fallback, the default locale
+    ``en`` is returned.
+
+    Args:
+        ``request`` (pyramid.request): A Pyramid Request object with
+        optional parameter ``_LOCALE_`` or a cookie ``_LOCALE_`` set.
+
+    Returns:
+        ``str``. The name of the :term:`Locale` or ``en`` by
+        default.
+    """
+    return request.params.get(
+        '_LOCALE_', request.cookies.get('_LOCALE_', 'en'))

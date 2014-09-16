@@ -25,7 +25,7 @@ from lmkp.models.database_objects import (
 )
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.form_config import getCategoryList
-from lmkp.views.profile import get_current_profile
+from lmkp.views.views import get_current_profile
 
 
 log = logging.getLogger(__name__)
