@@ -1,42 +1,4 @@
 import logging
-
-from lmkp.authentication import checkUserPrivileges
-from lmkp.config import (
-    check_valid_uuid,
-    getTemplatePath,
-)
-from lmkp.models.meta import DBSession as Session
-from lmkp.views.activities import _handle_spatial_parameters
-from lmkp.views.comments import comments_sitekey
-from lmkp.views.config import get_mandatory_keys
-from lmkp.views.download import DownloadView
-from lmkp.views.form import (
-    checkValidItemjson,
-    renderForm,
-    renderReadonlyCompareForm,
-    renderReadonlyForm,
-)
-from lmkp.views.form_config import getCategoryList
-from lmkp.views.profile import (
-    get_current_profile,
-    get_current_locale,
-)
-from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
-from lmkp.views.stakeholder_review import StakeholderReview
-from lmkp.views.translation import (
-    get_translated_status,
-    get_translated_db_keys,
-)
-from lmkp.views.views import BaseView
-from lmkp.models.database_objects import (
-    Language,
-    SH_Key,
-    SH_Tag,
-    SH_Tag_Group,
-    Stakeholder,
-    User,
-)
-
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPUnauthorized
 from pyramid.httpexceptions import HTTPBadRequest
@@ -51,6 +13,44 @@ from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
 from pyramid.security import has_permission
 from pyramid.view import view_config
+
+from lmkp.authentication import get_user_privileges
+from lmkp.config import (
+    check_valid_uuid,
+    getTemplatePath,
+)
+from lmkp.models.database_objects import (
+    Language,
+    SH_Key,
+    SH_Tag,
+    SH_Tag_Group,
+    Stakeholder,
+    User,
+)
+from lmkp.models.meta import DBSession as Session
+from lmkp.views.comments import comments_sitekey
+from lmkp.views.config import get_mandatory_keys
+from lmkp.views.download import DownloadView
+from lmkp.views.form import (
+    checkValidItemjson,
+    renderForm,
+    renderReadonlyCompareForm,
+    renderReadonlyForm,
+)
+from lmkp.views.form_config import getCategoryList
+from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
+from lmkp.views.stakeholder_review import StakeholderReview
+from lmkp.views.translation import (
+    get_translated_status,
+    get_translated_db_keys,
+)
+from lmkp.views.views import (
+    BaseView,
+    get_bbox_parameters,
+    get_current_locale,
+    get_current_profile,
+)
+
 
 log = logging.getLogger(__name__)
 _ = TranslationStringFactory('lmkp')
@@ -145,7 +145,8 @@ def by_activities(request):
         # deal uid set)
         spatialfilter = None
         if len(uids) == 0:
-            spatialfilter = _handle_spatial_parameters(request)
+            spatialfilter = 'profile' if get_bbox_parameters(
+                request)[0] == 'profile' else 'map'
         stakeholders = stakeholder_protocol.read_many_by_activities(
             request, public=False, uids=uids)
         return render_to_response('json', stakeholders, request)
@@ -176,14 +177,15 @@ def by_activities(request):
         # deal uid set)
         spatialfilter = None
         if len(uids) == 0:
-            spatialfilter = _handle_spatial_parameters(request)
+            spatialfilter = 'profile' if get_bbox_parameters(
+                request)[0] == 'profile' else 'map'
 
         # Query the items with the protocol
         items = stakeholder_protocol.read_many_by_activities(
             request, public=False, uids=uids, limit=pageSize,
             offset=pageSize * page - pageSize)
 
-        isLoggedIn, isModerator = checkUserPrivileges(request)
+        isLoggedIn, isModerator = get_user_privileges(request)
 
         return render_to_response(
             getTemplatePath(request, 'stakeholders/grid.mak'),
@@ -284,7 +286,7 @@ def read_many(request):
             offset=pageSize * page - pageSize)
 
         statusFilter = request.params.get('status', None)
-        isLoggedIn, isModerator = checkUserPrivileges(request)
+        isLoggedIn, isModerator = get_user_privileges(request)
 
         return render_to_response(
             getTemplatePath(request, 'stakeholders/grid.mak'),
@@ -476,7 +478,7 @@ def read_one(request):
     elif output_format in ['review', 'compare']:
         if output_format == 'review':
             # Only moderators can see the review page.
-            isLoggedIn, isModerator = checkUserPrivileges(request)
+            isLoggedIn, isModerator = get_user_privileges(request)
             if isLoggedIn is False or isModerator is False:
                 raise HTTPForbidden()
 
@@ -638,7 +640,7 @@ def read_one_history(request):
     uid = request.matchdict.get('uid', None)
     if check_valid_uuid(uid) is not True:
         raise HTTPNotFound()
-    isLoggedIn, isModerator = checkUserPrivileges(request)
+    isLoggedIn, isModerator = get_user_privileges(request)
     stakeholders, count = stakeholder_protocol.read_one_history(
         request, uid=uid)
     activeVersion = None

@@ -16,7 +16,7 @@ from lmkp.models.database_objects import (
     Status,
     User,
 )
-from lmkp.views.config import get_current_profile
+from lmkp.views.views import get_current_profile
 
 log = logging.getLogger(__name__)
 

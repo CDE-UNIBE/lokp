@@ -2,10 +2,10 @@ from pyramid.view import view_config
 from pyramid.renderers import render_to_response
 
 from lmkp.config import getTemplatePath
-from lmkp.views.views import BaseView
-from lmkp.views.profile import (
-    get_current_profile,
+from lmkp.views.views import (
+    BaseView,
     get_current_locale,
+    get_current_profile,
 )
 
 

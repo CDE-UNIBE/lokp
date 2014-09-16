@@ -800,6 +800,14 @@ def renderReadonlyCompareForm(
             elif reviewable < 0:
                 reviewableMessage = 'Something went wrong.'
 
+        if review is True and 'reviewable' not in newData and refFeature and \
+                newFeature and len(refFeature.get_involvements()) > \
+                len(newFeature.get_involvements()) and \
+                itemType == 'stakeholders':
+            reviewableMessage = _(
+                'At least one of the involvements prevents automatic '
+                'revision. Please review these involvements separately.')
+
     if validComparison is False:
         # If no formdata is available, it is very likely that the form has some
         # errors. In this case show an error message.
@@ -1605,7 +1613,11 @@ def formdataToDiff(request, newform, itemType):
             and 'version' in invDict and invDict['version'] != colander.null
             and 'role_id' in invDict
                 and invDict['role_id'] != colander.null):
-            invList.append(invDict)
+            try:
+                int(invDict['role_id'])
+                invList.append(invDict)
+            except:
+                pass
         return invList
 
     def _findRemoveTgByCategoryThematicgroupTgid(
@@ -1814,7 +1826,7 @@ def formdataToDiff(request, newform, itemType):
 
                         if (ni['id'] == oi['id']
                             and ni['version'] == oi['version']
-                                and ni['role_id'] == oi['role_id']):
+                                and str(ni['role_id']) == str(oi['role_id'])):
                             found = True
                             oldInvolvements.remove(oi)
                             break

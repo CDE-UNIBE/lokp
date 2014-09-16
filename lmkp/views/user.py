@@ -39,12 +39,12 @@ from lmkp.models.database_objects import (
     users_profiles,
 )
 from lmkp.models.meta import DBSession as Session
-from lmkp.views.profile import (
-    _processProfile,
+from lmkp.views.profile import _processProfile
+from lmkp.views.views import (
+    BaseView,
     get_current_locale,
     get_current_profile,
 )
-from lmkp.views.views import BaseView
 
 log = logging.getLogger(__name__)
 _ = TranslationStringFactory('lmkp')

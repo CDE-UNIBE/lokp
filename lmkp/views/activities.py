@@ -22,7 +22,7 @@ from pyramid.security import (
 )
 from pyramid.view import view_config
 
-from lmkp.authentication import checkUserPrivileges
+from lmkp.authentication import get_user_privileges
 from lmkp.config import (
     check_valid_uuid,
     getTemplatePath,
@@ -48,19 +48,19 @@ from lmkp.views.form import (
     checkValidItemjson,
 )
 from lmkp.views.form_config import getCategoryList
-from lmkp.views.profile import (
-    get_current_locale,
-    get_current_profile,
-    get_spatial_accuracy_map,
-)
+from lmkp.views.profile import get_spatial_accuracy_map
 from lmkp.views.translation import (
     get_translated_status,
     get_translated_db_keys,
 )
 from lmkp.views.views import (
     BaseView,
+    get_bbox_parameters,
+    get_current_locale,
+    get_current_profile,
     get_output_format,
     get_page_parameters,
+    get_status_parameter,
 )
 
 log = logging.getLogger(__name__)
@@ -69,65 +69,79 @@ activity_protocol = ActivityProtocol3(Session)
 
 
 class ActivityView(BaseView):
+    """
+    This is the main class for viewing :term:`Activities`.
+    """
 
     @view_config(route_name='activities_read_many')
     def read_many(self):
         """
-        Return many Activities.
+        Return many :term:`Activities`.
 
-        For each Activity, only one version is visible, always the
-        latest visible version to the current user. This means that
+        For each :term:`Activity`, only one version is visible, always
+        the latest visible version to the current user. This means that
         logged in users can see their own pending versions and
         moderators of the current profile can see pending versions as
         well.
 
-        By default, the Activities are ordered with the Activity having
-        the most recent change being on top.
+        By default, the :term:`Activities` are ordered with the
+        :term:`Activity` having the most recent change being on top.
 
         The output format is provided through the Matchdict of the URL
-        pattern (/activities/{output}).
-        Default output format is JSON.
+        pattern (/activities/{output}). The default output format is
+        JSON. If the output format is not valid, a 404 Response is
+        returned.
 
         Request parameters:
-            page (int):
-            pagesize (int):
-            status (str):
+            ``page`` (int): The page parameter is used to paginate
+            :term:`Items`. In combination with ``pagesize`` it defines
+            the offset.
+
+            ``pagesize`` (int): The pagesize parameter defines how many
+            :term:`Items` are displayed at once. It is used in
+            combination with ``page`` to allow pagination.
+
+            ``status`` (str): Use the status parameter to limit results
+            to displaying only versions with a certain :term:`status`.
 
         Returns:
-            HTTPResponse. Either a HTML or a JSON response.
+            ``HTTPResponse``. Either a HTML or a JSON response.
         """
 
         output_format = get_output_format(self.request)
 
         if output_format == 'json':
-            activities = activity_protocol.read_many(
+
+            items = activity_protocol.read_many(
                 self.request, public=False)
-            return render_to_response('json', activities, self.request)
+
+            return render_to_response('json', items, self.request)
+
         elif output_format == 'html':
+
             page, page_size = get_page_parameters(self.request)
-            spatialfilter = _handle_spatial_parameters(self.request)
             items = activity_protocol.read_many(
                 self.request, public=False, limit=page_size,
                 offset=page_size * page - page_size)
 
-            status_filter = self.request.params.get('status', None)
-            isLoggedIn, isModerator = checkUserPrivileges(self.request)
+            spatialfilter = 'profile' if get_bbox_parameters(
+                self.request)[0] == 'profile' else 'map'
+            status_filter = get_status_parameter(self.request)
+
+            template_values = self.get_base_template_values()
+            template_values.update({
+                'data': items['data'] if 'data' in items else [],
+                'total': items['total'] if 'total' in items else 0,
+                'spatialfilter': spatialfilter,
+                'invfilter': None,
+                'statusfilter': status_filter,
+                'currentpage': page,
+                'pagesize': page_size
+            })
 
             return render_to_response(
                 getTemplatePath(self.request, 'activities/grid.mak'),
-                {
-                    'data': items['data'] if 'data' in items else [],
-                    'total': items['total'] if 'total' in items else 0,
-                    'profile': get_current_profile(self.request),
-                    'locale': get_current_locale(self.request),
-                    'spatialfilter': spatialfilter,
-                    'invfilter': None,
-                    'statusfilter': status_filter,
-                    'currentpage': page,
-                    'pagesize': page_size,
-                    'isModerator': isModerator
-                },
-                self.request)
+                template_values, self.request)
 
         elif output_format == 'form':
             # This is used to display a new and empty form for an Activity
@@ -433,7 +447,7 @@ def read_one(request):
     elif output_format in ['review', 'compare']:
         if output_format == 'review':
             # Only moderators can see the review page.
-            isLoggedIn, isModerator = checkUserPrivileges(request)
+            isLoggedIn, isModerator = get_user_privileges(request)
             if isLoggedIn is False or isModerator is False:
                 raise HTTPForbidden()
 
@@ -662,7 +676,7 @@ def read_one_history(request):
     if check_valid_uuid(uid) is not True:
         raise HTTPNotFound()
 
-    isLoggedIn, isModerator = checkUserPrivileges(request)
+    isLoggedIn, isModerator = get_user_privileges(request)
     activities, count = activity_protocol.read_one_history(
         request, uid=uid)
     activeVersion = None
@@ -969,50 +983,3 @@ def _get_extjs_config(name, config, language):
     fieldConfig['type'] = type
 
     return fieldConfig
-
-
-def _handle_spatial_parameters(request):
-    """
-    Get the spatial extent of a request. The different options are checked in
-    the following order:
-    - request GET parameter {bbox}: use this parameter (handled by protocol) if
-      provided. Special parameter: bbox=profile in which case use the profile
-      boundary as bbox.
-    - cookie _LOCATION_: if no bbox parameter was provided in GET, look for the
-      map cookie to use as bbox.
-    - profile boundary: if no GET parameter was provided and no cookie was
-      found
-      use the profile boundary as bbox.
-    """
-
-    spatialfilter = None
-
-    bboxparam = request.params.get('bbox', None)
-    if bboxparam is not None:
-
-        if bboxparam == 'profile':
-            # Use profile as boundary
-            spatialfilter = 'profile'
-            if 'epsg' in request.GET:
-                del(request.GET['epsg'])
-
-        else:
-            # Use map extent from GET parameter
-            spatialfilter = 'mapextentparam'
-            epsg = request.params.get('epsg', None)
-            if epsg is None:
-                request.GET.add('epsg', '900913')
-    else:
-        # Use map extent from cookie
-        location = request.cookies.get('_LOCATION_')
-        if location is not None:
-            location = urllib.unquote(location)
-            if len(location.split(',')) == 4:
-                spatialfilter = 'mapextentcookie'
-                request.GET.add('bbox', location)
-                request.GET.add('epsg', '900913')
-
-    if spatialfilter is None:
-        spatialfilter = 'profile'
-
-    return spatialfilter
