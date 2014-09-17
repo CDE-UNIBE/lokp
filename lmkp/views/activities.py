@@ -376,9 +376,11 @@ def read_one(request):
     if check_valid_uuid(uid) is not True:
         raise HTTPNotFound()
 
+    translate = request.params.get('translate', 'true') == 'true'
+
     if output_format == 'json':
         activities = activity_protocol.read_one(
-            request, uid=uid, public=False)
+            request, uid=uid, public=False, translate=translate)
         return render_to_response('json', activities, request)
     elif output_format == 'html':
         # Show the details of an Activity by rendering the form in readonly

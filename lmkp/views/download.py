@@ -25,12 +25,20 @@ stakeholder_protocol = StakeholderProtocol3(Session)
 
 def to_flat_table(request, item_type, involvements='full', columns=[]):
 
+    # Query the Items with the protocol.
+    # Important: Query the Items with the original database language! This
+    # prevents errors when different main keys (eg. "Remark") have the exact
+    # same translation. Instead, the translation happens when filling the row
+    # with the help of the configs.
     item_type = validate_item_type(item_type)
     if item_type == 'a':
-        protocol = activity_protocol
+        items = activity_protocol.read_many(
+            request, public=True, translate=False)
         other_item_type = validate_item_type('sh')
     else:
-        protocol = stakeholder_protocol
+        # Query Stakeholders through Activities.
+        items = stakeholder_protocol.read_many_by_activities(
+            request, public=True, translate=False)
         other_item_type = validate_item_type('a')
 
     META_HEADER = ['id', 'version', 'timestamp']
@@ -50,13 +58,6 @@ def to_flat_table(request, item_type, involvements='full', columns=[]):
             'main_key': config_taggroup.getMaintag().getKey().getName()
         }
         config_taggroups.append(config_taggroup_entry)
-
-    # Query the Items with the protocol.
-    # Important: Query the Items with the original database language! This
-    # prevents errors when different main keys (eg. "Remark") have the exact
-    # same translation. Instead, the translation happens when filling the row
-    # with the help of the configs.
-    items = protocol.read_many(request, public=True, translate=False)
 
     # Find out how many times each taggroup occurs. This defines how many
     # columns are needed in the table.

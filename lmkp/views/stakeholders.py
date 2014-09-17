@@ -402,9 +402,11 @@ def read_one(request):
     if check_valid_uuid(uid) is not True:
         raise HTTPNotFound()
 
+    translate = request.params.get('translate', 'true') == 'true'
+
     if output_format == 'json':
         stakeholders = stakeholder_protocol.read_one(
-            request, uid=uid, public=False)
+            request, uid=uid, public=False, translate=translate)
         return render_to_response('json', stakeholders, request)
     elif output_format == 'html':
         # Show the details of a Stakeholder by rendering the form in readonly
