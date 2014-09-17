@@ -1,9 +1,11 @@
+.. _read-many:
+
 Read Many
 =========
 
 Read many Activities or Stakeholders.
 
-There are 3 :ref:`read-many-variants` of this service and a number of 
+There are 2 :ref:`read-many-variants` of this service and a number of
 :ref:`read-many-parameters` can be applied.
 
 .. _read-many-variants:
@@ -20,12 +22,12 @@ Variants
 Read Many (with pending)
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Return many Activities or Stakeholders. For each item, only one version is 
+Return many Activities or Stakeholders. For each item, only one version is
 visible, always the latest visible version to the current user.  This means that
 logged in users can see their own pending versions and moderators of the current
 profile can see pending versions as well.
 
-By default, the items are ordered with the item having the most recent change 
+By default, the items are ordered with the item having the most recent change
 being on top.
 
 .. rubric:: URL
@@ -35,7 +37,7 @@ being on top.
     /activities/json?[PARAMETERS]
     /stakeholders/json?[PARAMETERS]
 
-* ``PARAMETERS``: Optional parameters, see :ref:`read-many-parameters` for more 
+* ``PARAMETERS``: Optional parameters, see :ref:`read-many-parameters` for more
   details.
 
 .. rubric:: Examples
@@ -54,7 +56,7 @@ Return many Activities or Stakeholders. For each item, only one version is
 visible, always the latest visible version to the public. This means no pending
 versions are returned, even if the user is logged in.
 
-By default, the items are ordered with the item having the most recent change 
+By default, the items are ordered with the item having the most recent change
 being on top.
 
 .. rubric:: URL
@@ -64,7 +66,7 @@ being on top.
     /activities/public/json?[PARAMETERS]
     /stakeholders/public/json?[PARAMETERS]
 
-* ``PARAMETERS``: Optional parameters, see :ref:`read-many-parameters` for more 
+* ``PARAMETERS``: Optional parameters, see :ref:`read-many-parameters` for more
   details.
 
 .. rubric:: Examples
@@ -81,22 +83,22 @@ being on top.
 Parameters
 ----------
 
-There are a number of query parameters which can also be combined. Please note 
-that not all of the parameters can be set for all variants of the Read Many 
+There are a number of query parameters which can also be combined. Please note
+that not all of the parameters can be set for all variants of the Read Many
 service.
 
 
 Filters: Activities
 ^^^^^^^^^^^^^^^^^^^
 
-``a__[A_Key]__[op]`` (*string*): Filter Activities or Stakeholders (through 
+``a__[A_Key]__[op]`` (*string*): Filter Activities or Stakeholders (through
 involvements) based on Activity attributes.
 
 * ``[A_Key]``: A valid Activity key. Translations are not valid, always use the
   original name.
-* ``[op]``: A filter operator. Possible filter operators are listed in the 
+* ``[op]``: A filter operator. Possible filter operators are listed in the
   tables below.
-  
+
   =======  ====  ===========================
   =======  ====  ===========================
   ``eq``   ==    is equal to
@@ -106,17 +108,17 @@ involvements) based on Activity attributes.
   ``gt``   >     is greater than
   ``gte``  >=    is greater than or equal to
   =======  ====  ===========================
-  
+
   Possible filter operators for **number** values
-  
+
   =========  ====  =============================================
   =========  ====  =============================================
   ``like``   ~     matches regular expression (case sensitive)
   ``ilike``  ~*    matches regular expression (case insensitive)
   =========  ====  =============================================
-  
+
   Possible filter operators for **text** values
-  
+
 .. rubric:: Examples
 
 * `/activities/json?a__Intended%20area%20(ha)__eq=25000 <http://www.landobservatory.org/activities/json?a__Intended%20area%20(ha)__eq=25000&limit=10>`_
@@ -127,14 +129,14 @@ involvements) based on Activity attributes.
 Filters: Stakeholders
 ^^^^^^^^^^^^^^^^^^^^^
 
-``sh__[SH_Key]__[op]`` (*string*): Filter Activities (through involvements) or 
+``sh__[SH_Key]__[op]`` (*string*): Filter Activities (through involvements) or
 Stakeholders based on Stakeholder attributes.
 
-* ``[SH_Key]``: A valid Stakeholder key. Translations are not valid, always use 
+* ``[SH_Key]``: A valid Stakeholder key. Translations are not valid, always use
   the original name.
-* ``[op]``: A filter operator. Possible filter operators are listed in the 
+* ``[op]``: A filter operator. Possible filter operators are listed in the
   tables below.
-  
+
   =======  ====  ===========================
   =======  ====  ===========================
   ``eq``   ==    is equal to
@@ -144,17 +146,17 @@ Stakeholders based on Stakeholder attributes.
   ``gt``   >     is greater than
   ``gte``  >=    is greater than or equal to
   =======  ====  ===========================
-  
+
   Possible filter operators for **number** values
-  
+
   =========  ====  =============================================
   =========  ====  =============================================
   ``like``   ~     matches regular expression (case sensitive)
   ``ilike``  ~*    matches regular expression (case insensitive)
   =========  ====  =============================================
-  
+
   Possible filter operators for **text** values
-  
+
 .. rubric:: Examples
 
 * `/activities/json?sh__Country%20of%20origin__like=Switzerland <http://www.landobservatory.org/activities/json?sh__Country%20of%20origin__like=Switzerland&limit=10>`_
@@ -170,7 +172,7 @@ Stakeholders with multiple filters.
 
 * ``and`` (*default*): All filter criteria must apply
 * ``or``: At least one of the filter criteria must apply
-  
+
 .. rubric:: Examples
 
 * `/activities/json?sh__Name__like=Venture&sh__Country%20of%20origin__like=India&logical_op=and <http://www.landobservatory.org/activities/json?sh__Name__like=Venture&sh__Country%20of%20origin__like=India&logical_op=and&limit=10>`_
@@ -183,10 +185,10 @@ Involvements
 ``involvements`` (*string*): Specify the level of details for the involvements.
 
 Possible values are:
-  
+
 * ``full`` (*default*): Full details with all the taggroups of the involvement.
-* ``short``: A short representation of the involvement, not showing any 
-  taggroups but only some attributes of the involvement itself (id, role, 
+* ``short``: A short representation of the involvement, not showing any
+  taggroups but only some attributes of the involvement itself (id, role,
   status, ...)
 * ``none``: No involvements are shown.
 
@@ -200,12 +202,12 @@ Possible values are:
 Status
 ^^^^^^
 
-``status`` (*string*): Show only versions of Activities or Stakeholders with a 
+``status`` (*string*): Show only versions of Activities or Stakeholders with a
 certain status.
 
 .. note::
 
-   Not every status can be filtered. Primarily of interest is the filter 
+   Not every status can be filtered. Primarily of interest is the filter
    ``status=pending``.
 
 .. rubric:: Examples
@@ -219,7 +221,7 @@ Offset and Limit
 
 ``offset`` (*integer*): The numbers of entries to leave out before showing the
   first.
-  
+
 ``limit`` (*integer*): The numbers of items to show at a time.
 
 .. rubric:: Examples
@@ -230,10 +232,10 @@ Offset and Limit
 Ordering
 ^^^^^^^^
 
-``order_by`` (*string*): The attribute to order the results by. Needs to be a 
-  key of the corresponding Item (Activity Key for /activities, Stakeholder Key 
+``order_by`` (*string*): The attribute to order the results by. Needs to be a
+  key of the corresponding Item (Activity Key for /activities, Stakeholder Key
   for /stakeholders).
-  
+
 ``dir`` (*string*): The direction of the ordering.
 
   Possible values are:
@@ -254,11 +256,11 @@ Bounding Box and Spatial Reference System
 
    This parameter is only valid for Activities.
 
-``bbox`` (*string*): A bounding box to apply a geographic filter to the 
+``bbox`` (*string*): A bounding box to apply a geographic filter to the
   Activities.
 ``epsg`` (*string*): The code of a spatial reference system for the bounding box
   parameter. Best practice: use ``epsg=900913``.
-  
+
 * ``[bbox]``: A bounding box.
 * ``profile``: Use the bounding box of the currently selected profile.
 
