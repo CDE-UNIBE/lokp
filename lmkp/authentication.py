@@ -101,7 +101,7 @@ def get_user_privileges(request):
     has moderation rights for the current profile.
 
     Args:
-        ``request`` (pyramid.request): A Pyramid Request object.
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object.
 
     Returns:
         ``bool`` or ``None``. Returns ``True`` if the user is logged in,

@@ -11,8 +11,8 @@ from pyramid.renderers import render
 from lmkp.config import (
     locale_profile_directory_path,
     profile_directory_path,
-    getTemplatePath,
 )
+from lmkp.custom import get_customized_template_path
 from lmkp.models.database_objects import (
     A_Key,
     A_Value,
@@ -1747,7 +1747,7 @@ def getInvolvementWidget(request, configInvolvement, compare=''):
         choicesList.append((v.getId(), v.getName()))
     choices = tuple(choicesList)
     shRole = render(
-        getTemplatePath(
+        get_customized_template_path(
             request,
             'parts/items/stakeholder_role.mak'
         ),

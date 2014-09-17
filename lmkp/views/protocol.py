@@ -22,7 +22,7 @@ from sqlalchemy.sql.expression import (
 from sqlalchemy.types import Float
 from sqlalchemy import func
 
-from lmkp.config import getTemplatePath
+from lmkp.custom import get_customized_template_path
 from lmkp.models.database_objects import (
     A_Key,
     A_Tag,
@@ -739,7 +739,7 @@ class Protocol(object):
                 if reviewPossible is not True:
                     if reviewPossible == -2:
                         ret['msg'] = render(
-                            getTemplatePath(
+                            get_customized_template_path(
                                 request,
                                 'parts/messages/one_of_involved_stakeholders'
                                 '_cannot_be_reviewed.mak'
@@ -749,7 +749,7 @@ class Protocol(object):
                         )
                     elif reviewPossible == -3:
                         ret['msg'] = render(
-                            getTemplatePath(
+                            get_customized_template_path(
                                 request,
                                 'parts/messages/one_of_involved_activities'
                                 '_cannot_be_reviewed.mak'
@@ -1711,6 +1711,9 @@ class Protocol(object):
                     rel_diff = diff
 
         log.debug('Diff before recalculation:\n%s' % rel_diff)
+
+        if rel_diff is None and diff_keyword == 'stakeholders':
+            rel_diff = {}
 
         if rel_diff is None:
             return old_diff

@@ -1,8 +1,8 @@
 import mimetypes
 import os.path
 import re
-from pyramid.request import Request
-from pyramid.testing import DummyRequest
+
+from lmkp.custom import get_customization_name
 
 
 def locale_profile_directory_path(request):
@@ -12,7 +12,7 @@ def locale_profile_directory_path(request):
     """
 
     profiles_dir = request.registry.settings['lmkp.profiles_dir']
-    prefix = getCustomizationName(request)
+    prefix = get_customization_name(request=request)
 
     profiles_path = os.path.join(
         os.path.dirname(__file__), 'customization', prefix, 'profiles',
@@ -41,7 +41,7 @@ def profile_directory_path(request=None):
             'No profile directory specified! There is no profile directory '
             '(lmkp.profiles_dir) specified in the application''s .ini file!')
 
-    prefix = getCustomizationName(request)
+    prefix = get_customization_name(request=request)
 
     # Check if such a folder exists
     profiles_path = os.path.join(
@@ -132,46 +132,3 @@ def check_valid_uuid(uuid):
     """
     uuid4hex = re.compile('[0-9a-f-]{36}\Z', re.I)
     return uuid4hex.match(uuid) is not None
-
-
-def getTemplatePath(request, tplName):
-    """
-    Get the path to the customized Mako templates. Use the folder name set in
-    the application's ini file or use the default folder name if no
-    customization is specified.
-    """
-
-    prefix = getCustomizationName(request)
-
-    return 'lmkp:customization/%s/templates/%s' % (prefix, tplName)
-
-
-def getCustomizationName(requestOrSettings):
-    """
-    Return the name of the customization as defined in the application's ini
-    file. If none is specified, an error is raised.
-    """
-
-    if (isinstance(requestOrSettings, Request)
-            or isinstance(requestOrSettings, DummyRequest)):
-        settings = requestOrSettings.registry.settings
-    elif isinstance(requestOrSettings, dict):
-        settings = requestOrSettings
-
-    # Check if a customization parameter is set
-    if 'lmkp.customization' in settings:
-        customization = settings['lmkp.customization']
-    else:
-        raise Exception(
-            'No customization specified! There is no customization '
-            '(lmkp.customization) specified in the application''s .ini file!')
-
-    # Check if such a folder exists
-    if not os.path.exists(os.path.join(
-            os.path.dirname(__file__), 'customization', customization)):
-        raise Exception(
-            'Customization folder not found! The folder for the customization '
-            '(%s) is not found. Make sure it is situated at '
-            'lmkp/customization/%s.' % (customization, customization))
-
-    return customization
