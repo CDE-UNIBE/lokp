@@ -14,9 +14,9 @@ from pyramid.security import (
     effective_principals,
 )
 
+from lmkp.custom import get_customization_name
 from lmkp.models.database_objects import User
 from lmkp.models.meta import DBSession as Session
-from lmkp.config import getCustomizationName
 
 log = getLogger(__name__)
 
@@ -48,7 +48,8 @@ def add_localizer(event):
     localizer = get_localizer(request)
 
     # Create the customized TranslationFactory
-    tsf_custom = TranslationStringFactory(getCustomizationName(request))
+    tsf_custom = TranslationStringFactory(
+        get_customization_name(request=request))
 
     def auto_translate(string):
         # Try to translate the string within the [custom] domain

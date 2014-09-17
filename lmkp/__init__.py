@@ -1,4 +1,5 @@
 from lmkp.authentication import CustomAuthenticationPolicy
+from lmkp.custom import get_customization_name
 from lmkp.models.database_objects import Group
 from lmkp.models.database_objects import User
 from lmkp.models.meta import DBSession
@@ -12,7 +13,6 @@ from lmkp.subscribers import add_renderer_globals
 from lmkp.subscribers import add_user
 from lmkp.views.errors import forbidden_view
 from lmkp.views.errors import notfound_view
-from lmkp.config import getCustomizationName
 import papyrus
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid_beaker import session_factory_from_settings
@@ -50,7 +50,7 @@ def main(global_config, ** settings):
     _update_admin_user(DBSession, settings)
 
     # Customization: Determine the name of the customization
-    customization = getCustomizationName(settings)
+    customization = get_customization_name(settings=settings)
 
     # Authentication policy
     authnPolicy = CustomAuthenticationPolicy(

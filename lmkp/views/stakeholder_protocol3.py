@@ -364,8 +364,10 @@ class StakeholderProtocol3(Protocol):
             request, relevant_stakeholders, limit=limit, offset=offset,
             involvements=inv_details != 'none')
 
+        translate = kwargs.get('translate', True)
         stakeholders = self._query_to_stakeholders(
-            request, query, involvements=inv_details, public_query=public)
+            request, query, involvements=inv_details, public_query=public,
+            translate=translate)
 
         return {
             'total': count,
@@ -1614,7 +1616,7 @@ class StakeholderProtocol3(Protocol):
             first()
 
         if (not (ref_version is None
-                 and 'stakeholders' not in stakeholder_dict)
+            and 'stakeholders' not in stakeholder_dict)
                 and old_stakeholder.fk_status == 1):
             # If changes were made to a pending version, this pending version
             # is set to 'edited' and the newly created version contains also
@@ -1641,20 +1643,7 @@ class StakeholderProtocol3(Protocol):
                 stakeholder_dict,
                 diff
             )
-            if stakeholder_dict_recalc == diff:
-                # If the returned dict is exactly the same, it is possible
-                # that the diff is actually an Activity changeset which just
-                # bumped the Stakeholder version trhough the involvement. In
-                # this case, try to find the diff by the ref version.
-                diff = json.loads(ref_version.changeset.diff)
-                stakeholder_dict_recalc = self.recalculate_diffs(
-                    request,
-                    Stakeholder,
-                    ref_version.identifier,
-                    ref_version.version,
-                    stakeholder_dict,
-                    diff
-                )
+
             # Also store and return the newly calculated diff
             return_diff = stakeholder_dict_recalc
 

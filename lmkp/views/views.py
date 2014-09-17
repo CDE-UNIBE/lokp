@@ -1,10 +1,8 @@
-from datetime import timedelta
-from lmkp.models.database_objects import (
-    Profile,
-)
-from lmkp.models.meta import DBSession
+import re
 import logging
 import urllib
+
+from datetime import timedelta
 from geoalchemy.functions import functions as geofunctions
 from geoalchemy import utils
 from pyramid.httpexceptions import HTTPFound
@@ -18,9 +16,12 @@ from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 from urlparse import parse_qs, urlsplit, urlunsplit
 from urllib import urlencode
+
+from lmkp.custom import get_customized_template_path
+from lmkp.models.database_objects import Profile
+from lmkp.models.meta import DBSession
 from lmkp.views.form_config import getCategoryList
-from lmkp.config import getTemplatePath
-import re
+
 
 log = logging.getLogger(__name__)
 
@@ -171,7 +172,7 @@ class MainView(BaseView):
         self._handle_parameters()
 
         return render_to_response(
-            getTemplatePath(self.request, 'landing_page.mak'),
+            get_customized_template_path(self.request, 'landing_page.mak'),
             {
                 'profile': get_current_profile(self.request),
                 'locale': get_current_locale(self.request)
@@ -184,7 +185,7 @@ class MainView(BaseView):
         self._handle_parameters()
 
         return render_to_response(
-            getTemplatePath(self.request, 'map_view.mak'),
+            get_customized_template_path(self.request, 'map_view.mak'),
             {
                 'profile': get_current_profile(self.request),
                 'locale': get_current_locale(self.request)
@@ -217,7 +218,7 @@ class MainView(BaseView):
         return HTTPFound(location=self.request.route_url('charts_overview'))
 
         return render_to_response(
-            getTemplatePath(self.request, 'charts_view.mak'),
+            get_customized_template_path(self.request, 'charts_view.mak'),
             {
                 'profile': get_current_profile(self.request),
                 'locale': get_current_locale(self.request)
@@ -230,7 +231,7 @@ class MainView(BaseView):
         self._handle_parameters()
 
         return render_to_response(
-            getTemplatePath(self.request, 'about_view.mak'),
+            get_customized_template_path(self.request, 'about_view.mak'),
             {
                 'profile': get_current_profile(self.request),
                 'locale': get_current_locale(self.request)
@@ -243,7 +244,7 @@ class MainView(BaseView):
         self._handle_parameters()
 
         return render_to_response(
-            getTemplatePath(self.request, 'faq_view.mak'),
+            get_customized_template_path(self.request, 'faq_view.mak'),
             {
                 'profile': get_current_profile(self.request),
                 'locale': get_current_locale(self.request)
@@ -256,7 +257,7 @@ class MainView(BaseView):
         self._handle_parameters()
 
         return render_to_response(
-            getTemplatePath(self.request, 'showcases_view.mak'),
+            get_customized_template_path(self.request, 'showcases_view.mak'),
             {
                 'profile': get_current_profile(self.request),
                 'locale': get_current_locale(self.request)
@@ -269,7 +270,7 @@ class MainView(BaseView):
         self._handle_parameters()
 
         return render_to_response(
-            getTemplatePath(self.request, 'partners_view.mak'),
+            get_customized_template_path(self.request, 'partners_view.mak'),
             {
                 'profile': get_current_profile(self.request),
                 'locale': get_current_locale(self.request)
@@ -593,13 +594,13 @@ def getActiveFilters(request):
 
             if queryparts[0] == 'a':
                 itemName = render(
-                    getTemplatePath(
+                    get_customized_template_path(
                         request, 'parts/items/activity.mak'), {}, request
                 )
                 configList = aList
             elif queryparts[0] == 'sh':
                 itemName = render(
-                    getTemplatePath(
+                    get_customized_template_path(
                         request, 'parts/items/stakeholder.mak'), {}, request
                 )
                 configList = shList
@@ -697,8 +698,8 @@ def get_output_format(request):
     The default output format is JSON.
 
     Args:
-        ``request`` (pyramid.request): A Pyramid Request object with a
-        Matchdict.
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object
+        with a Matchdict.
 
     Returns:
         ``string``. The output format.
@@ -714,8 +715,8 @@ def get_page_parameters(request):
     Return a tuple with the page parameters from the request.
 
     Args:
-        ``request`` (pyramid.request): A Pyramid Request object with
-        optional parameters ``page`` and ``pagesize``.
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object
+        with optional parameters ``page`` and ``pagesize``.
 
     Returns:
         ``int``. The current page. Defaults to 1.
@@ -752,8 +753,8 @@ def get_bbox_parameters(request, cookies=True):
         :class:`lmkp.utils.validate_bbox`.
 
     Args:
-        ``request`` (pyramid.request): A Pyramid Request object with
-        optional parameters ``bbox`` and ``epsg`` or a cookie
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object
+        with optional parameters ``bbox`` and ``epsg`` or a cookie
         ``_LOCATION_`` set.
 
     Kwargs:
@@ -779,8 +780,8 @@ def get_status_parameter(request):
     Return the status parameter from the request.
 
     Args:
-        ``request`` (pyramid.request): A Pyramid Request object with
-        optional parameter ``status``.
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object
+        with optional parameter ``status``.
 
     Returns:
         ``str`` or ``None``. The status or None.
@@ -797,8 +798,9 @@ def get_current_profile(request):
     is returned.
 
     Args:
-        ``request`` (pyramid.request): A Pyramid Request object with
-        optional parameter ``_PROFILE_`` or a cookie ``_PROFILE_`` set.
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object
+        with optional parameter ``_PROFILE_`` or a cookie ``_PROFILE_``
+        set.
 
     Returns:
         ``str``. The name of the :term:`Profile` or ``global`` by
@@ -817,8 +819,9 @@ def get_current_locale(request):
     ``en`` is returned.
 
     Args:
-        ``request`` (pyramid.request): A Pyramid Request object with
-        optional parameter ``_LOCALE_`` or a cookie ``_LOCALE_`` set.
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object
+        with optional parameter ``_LOCALE_`` or a cookie ``_LOCALE_``
+        set.
 
     Returns:
         ``str``. The name of the :term:`Locale` or ``en`` by

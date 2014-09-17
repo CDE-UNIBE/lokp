@@ -13,7 +13,7 @@ from pyramid.security import (
 )
 from pyramid.view import view_config
 
-from lmkp.config import getTemplatePath
+from lmkp.custom import get_customized_template_path
 from lmkp.models.database_objects import User
 from lmkp.models.meta import DBSession
 from lmkp.views.views import BaseView
@@ -59,7 +59,8 @@ class LoginView(BaseView):
                 headers = forget(self.request)
                 msg = _(u"Login failed! Please try again.")
                 return render_to_response(
-                    getTemplatePath(self.request, 'login_form.mak'),
+                    get_customized_template_path(
+                        self.request, 'login_form.mak'),
                     {
                         'came_from': came_from,
                         'warning': msg
@@ -89,7 +90,7 @@ class LoginView(BaseView):
             return HTTPFound(location=came_from)
 
         return render_to_response(
-            getTemplatePath(self.request, 'login_form.mak'),
+            get_customized_template_path(self.request, 'login_form.mak'),
             {
                 'came_from': came_from,
                 'warning': None
@@ -115,7 +116,7 @@ class LoginView(BaseView):
         if user is None:
             msg = _(u"No registered user found with this email address.")
             return render_to_response(
-                getTemplatePath(
+                get_customized_template_path(
                     self.request, 'users/reset_password_form.mak'),
                 {
                     'came_from': came_from,
@@ -126,7 +127,8 @@ class LoginView(BaseView):
         new_password = user.set_new_password()
 
         body = render(
-            getTemplatePath(self.request, 'emails/reset_password.mak'),
+            get_customized_template_path(
+                self.request, 'emails/reset_password.mak'),
             {
                 'user': user.username,
                 'new_password': new_password
@@ -135,7 +137,8 @@ class LoginView(BaseView):
         self._send_email([user.email], _(u"Password reset"), body)
 
         return render_to_response(
-            getTemplatePath(self.request, 'users/reset_password_success.mak'),
+            get_customized_template_path(
+                self.request, 'users/reset_password_success.mak'),
             {}, self.request)
 
     @view_config(route_name='reset_form')
@@ -144,7 +147,8 @@ class LoginView(BaseView):
         came_from = self.request.params.get('came_from', None)
 
         return render_to_response(
-            getTemplatePath(self.request, 'users/reset_password_form.mak'),
+            get_customized_template_path(
+                self.request, 'users/reset_password_form.mak'),
             {
                 'came_from': came_from,
                 "warning": None
