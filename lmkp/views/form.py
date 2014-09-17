@@ -10,6 +10,7 @@ from pyramid.httpexceptions import (
     HTTPBadRequest,
     HTTPFound,
 )
+from pyramid.i18n import TranslationStringFactory
 from pyramid.path import AssetResolver
 from pyramid.renderers import render
 from pyramid.threadlocal import get_current_request
@@ -24,6 +25,7 @@ from lmkp.views.stakeholder_review import StakeholderReview
 
 log = logging.getLogger(__name__)
 lmkpAssetResolver = AssetResolver('lmkp')
+_ = TranslationStringFactory('lmkp')
 
 
 @view_config(route_name='form_clear_session')
@@ -71,7 +73,6 @@ def renderForm(request, itemType, **kwargs):
     itemJson = kwargs.get('itemJson', None)
     newInvolvement = kwargs.get('inv', None)
 
-    _ = request.translate
     emptyTitle = _('Empty Form')
     emptyText = _('You submitted an empty form or did not make any changes.')
     errorTitle = _('Error')
@@ -750,7 +751,6 @@ def renderReadonlyCompareForm(
     Return a rendered form used for comparison (for comparison or review
     purposes).
     """
-    _ = request.translate
     reviewableMessage = None
 
     deform.Form.set_default_renderer(mako_renderer_compare)
@@ -1077,8 +1077,6 @@ def doUpdate(request, itemType, diff):
     if itemType not in ['activities', 'stakeholders']:
         return False, 'Not a valid Item'
 
-    _ = request.translate
-
     if itemType == 'activities':
         from lmkp.views.activity_protocol3 import ActivityProtocol3
         protocol = ActivityProtocol3(Session)
@@ -1199,7 +1197,6 @@ def getFormButtons(request, categorylist, currentCategory=None, **kwargs):
             except ValueError:
                 pass
 
-    _ = request.translate
     buttons = []
     # Only show categories if there is more than 1 category
     if len(categorylist) > 1:
@@ -2232,7 +2229,7 @@ def mako_renderer(tmpl_name, **kw):
 
     # Add the request to the keywords so it is available in the templates.
     kw['request'] = request
-    kw['_'] = request.translate
+    kw['_'] = _
 
     return template.render(**kw)
 
@@ -2255,7 +2252,7 @@ def mako_renderer_compare(tmpl_name, **kw):
 
     # Add the request to the keywords so it is available in the templates.
     kw['request'] = request
-    kw['_'] = request.translate
+    kw['_'] = _
 
     return template.render(**kw)
 

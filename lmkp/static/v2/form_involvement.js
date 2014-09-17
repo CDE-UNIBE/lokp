@@ -38,14 +38,14 @@ function createSearch(inputId, tForUnknown, tForToomanyresults, tForNothingfound
     }
 
     inputField.autocomplete({
-        minLength: 2,
+        minLength: 4,
         // Use an ajax query as a search (by name). Query 11 results so the last
         // item can be replaced with a message to narrow down the search.
         source: function(request, response) {
             var ajaxData = {};
             ajaxData['limit'] = 11;
             // Use the raw i.e. English name key to query the database
-            ajaxData[searchPrefix + '__' + rawNameKey + '__ilike'] = request.term
+            ajaxData[searchPrefix + '__' + rawNameKey + '__ilike'] = '%' + request.term + '%'
             $.ajax({
                 url: queryUrl,
                 dataType: 'json',

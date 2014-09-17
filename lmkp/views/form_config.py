@@ -5,7 +5,10 @@ import deform
 import logging
 import os
 import yaml
-from pyramid.i18n import get_localizer
+from pyramid.i18n import (
+    get_localizer,
+    TranslationStringFactory,
+)
 from pyramid.renderers import render
 
 from lmkp.config import (
@@ -26,6 +29,7 @@ from lmkp.models.meta import DBSession as Session
 from lmkp.utils import validate_item_type
 
 log = logging.getLogger(__name__)
+_ = TranslationStringFactory('lmkp')
 
 
 class ConfigCategoryList(object):
@@ -1075,7 +1079,6 @@ class ConfigTag(object):
         Prepare the form node for this tag, append the nodes of its keys
         (depending on its type) and return it.
         """
-        _ = request.translate
         key = self.getKey()
         # Get name and type of key
         name = key.getName()
