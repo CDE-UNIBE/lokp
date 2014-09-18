@@ -502,6 +502,15 @@ def getFilterKeys(request):
     return aList, shList
 
 
+def get_default_search_key(request, item_type):
+
+    category_list = getCategoryList(request, item_type)
+    search_key = category_list.get_default_search_key()
+    if search_key:
+        return search_key.getTranslatedName(), search_key.getName()
+    return None, None
+
+
 def getOverviewKeys(request):
     """
     Return two lists (the first for Activities, the second for Stakeholders)

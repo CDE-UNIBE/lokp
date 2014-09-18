@@ -158,6 +158,7 @@ class ActivityView(BaseView):
             spatialfilter = 'profile' if get_bbox_parameters(
                 self.request)[0] == 'profile' else 'map'
             status_filter = get_status_parameter(self.request)
+            __, is_moderator = get_user_privileges(self.request)
 
             template_values = self.get_base_template_values()
             template_values.update({
@@ -167,7 +168,8 @@ class ActivityView(BaseView):
                 'invfilter': None,
                 'statusfilter': status_filter,
                 'currentpage': page,
-                'pagesize': page_size
+                'pagesize': page_size,
+                'is_moderator': is_moderator
             })
 
             return render_to_response(
