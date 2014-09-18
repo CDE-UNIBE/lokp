@@ -187,10 +187,6 @@ def main(global_config, ** settings):
         'activities_bystakeholders_public',
         '/activities/bystakeholders/public/{output}/{uids}')
 
-    # Read pending
-    config.add_route(
-        'activities_read_many_pending', '/activities/pending/{output}')
-
     # Read many
     config.add_route(
         'activities_public_read_many', '/activities/public/{output}')

@@ -199,7 +199,7 @@ def by_activities(request):
                 'statusfilter': None,
                 'currentpage': page,
                 'pagesize': pageSize,
-                'isModerator': isModerator
+                'is_moderator': isModerator
             },
             request)
     else:

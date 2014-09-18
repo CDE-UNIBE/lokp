@@ -69,18 +69,26 @@ activity_protocol = ActivityProtocol3(Session)
 class ActivityView(BaseView):
     """
     This is the main class for viewing :term:`Activities`.
+
+    Inherits from:
+        :class:`lmkp.views.views.BaseView`
     """
 
     @view_config(route_name='activities_read_many')
-    def read_many(self):
+    def read_many(self, public=False):
         """
         Return many :term:`Activities`.
+
+        .. seealso::
+            :ref:`read-many`
 
         For each :term:`Activity`, only one version is visible, always
         the latest visible version to the current user. This means that
         logged in users can see their own pending versions and
         moderators of the current profile can see pending versions as
-        well.
+        well. If you don't want to show pending versions, consider using
+        :class:`lmkp.views.activities.ActivityView.read_many_public`
+        instead.
 
         By default, the :term:`Activities` are ordered with the
         :term:`Activity` having the most recent change being on top.
@@ -89,6 +97,24 @@ class ActivityView(BaseView):
         pattern (/activities/{output}). The default output format is
         JSON. If the output format is not valid, a 404 Response is
         returned.
+
+        The following output formats are supported:
+
+            ``json``: Return the :term:`Activities` as JSON.
+
+            ``geojson``: Return the :term:`Activities` as GeoJSON.
+
+            ``html``: Return the :term:`Activities` as HTML (eg. the
+            `Grid View`)
+
+            ``form``: Returns the form to create a new
+            :term:`Activities`.
+
+            ``download``: Returns the download overview page.
+
+        Args:
+            ``public`` (bool): A boolean indicating whether return only
+            versions visible to the public (eg. pending) or not.
 
         Request parameters:
             ``page`` (int): The page parameter is used to paginate
@@ -107,7 +133,6 @@ class ActivityView(BaseView):
         """
 
         output_format = get_output_format(self.request)
-        public = False  # Always show pending versions.
 
         if output_format == 'json':
 
@@ -133,6 +158,7 @@ class ActivityView(BaseView):
             spatialfilter = 'profile' if get_bbox_parameters(
                 self.request)[0] == 'profile' else 'map'
             status_filter = get_status_parameter(self.request)
+            __, is_moderator = get_user_privileges(self.request)
 
             template_values = self.get_base_template_values()
             template_values.update({
@@ -142,7 +168,8 @@ class ActivityView(BaseView):
                 'invfilter': None,
                 'statusfilter': status_filter,
                 'currentpage': page,
-                'pagesize': page_size
+                'pagesize': page_size,
+                'is_moderator': is_moderator
             })
 
             return render_to_response(
@@ -151,85 +178,92 @@ class ActivityView(BaseView):
                 template_values, self.request)
 
         elif output_format == 'form':
-            # This is used to display a new and empty form for an Activity
-            if self.request.user is None:
-                # Make sure the user is logged in
+
+            is_logged_in, __ = get_user_privileges(self.request)
+            if not is_logged_in:
                 raise HTTPForbidden()
-            newInvolvement = self.request.params.get('inv', None)
-            templateValues = renderForm(
-                self.request, 'activities', inv=newInvolvement)
-            if isinstance(templateValues, Response):
-                return templateValues
-            templateValues.update({
-                                  'uid': '-',
-                                  'version': 0,
-                                  'profile': get_current_profile(self.request),
-                                  'locale': get_current_locale(self.request)
-                                  })
+
+            new_involvement = self.request.params.get('inv', None)
+            template_values = renderForm(
+                self.request, 'activities', inv=new_involvement)
+
+            if isinstance(template_values, Response):
+                return template_values
+
+            template_values.update({
+                'uid': '-',
+                'version': 0,
+                'profile': get_current_profile(self.request),
+                'locale': get_current_locale(self.request)
+            })
+
             return render_to_response(
                 get_customized_template_path(
                     self.request, 'activities/form.mak'),
-                templateValues,
+                template_values,
                 self.request)
 
         elif output_format == 'download':
-            # The download overview page
+
             download_view = DownloadView(self.request)
+
             return download_view.download_customize('activities')
 
         else:
-            # If the output format was not found, raise 404 error
             raise HTTPNotFound()
 
+    @view_config(route_name='activities_public_read_many')
+    def read_many_public(self):
+        """
+        Return many :term:`Activities` which are visible to the public.
 
-@view_config(route_name='activities_public_read_many')
-def read_many_public(request):
-    """
-    Read many, does not return any pending Activities.
-    Default output format: JSON
-    """
+        .. seealso::
+            :ref:`read-many`
 
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'json'
+        In contrary to
+        :class:`lmkp.views.activities.ActivityView.read_many`, no
+        pending versions are returned even if the user is logged in.
 
-    if output_format == 'json':
-        activities = activity_protocol.read_many(request, public=True)
-        return render_to_response('json', activities, request)
-    elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
-    elif output_format == 'geojson':
-        activities = activity_protocol.read_many_geojson(request, public=True)
-        return render_to_response('json', activities, request)
-    else:
-        # If the output format was not found, raise 404 error
-        raise HTTPNotFound()
+        By default, the :term:`Activities` are ordered with the
+        :term:`Activity` having the most recent change being on top.
 
+        The output format is provided through the Matchdict of the URL
+        pattern (/activities/public/{output}). The default output format
+        is JSON. If the output format is not valid, a 404 Response is
+        returned.
 
-@view_config(route_name='activities_read_many_pending', permission='moderate')
-def read_many_pending(request):
-    """
-    Read many pending Activities based on the profile attached to the
-    moderator.
-    Default output format: JSON
-    """
+        The following output formats are supported:
 
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'json'
+            ``json``: Return the :term:`Activities` as JSON.
 
-    if output_format == 'json':
-        activities = activity_protocol.read_many_pending(request)
-        return render_to_response('json', activities, request)
-    elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
-    else:
-        # If the output format was not found, raise 404 error
-        raise HTTPNotFound()
+            ``geojson``: Return the :term:`Activities` as GeoJSON.
+
+            ``html``: Return the :term:`Activities` as HTML (eg. the
+            `Grid View`)
+
+        Request parameters:
+            ``page`` (int): The page parameter is used to paginate
+            :term:`Items`. In combination with ``pagesize`` it defines
+            the offset.
+
+            ``pagesize`` (int): The pagesize parameter defines how many
+            :term:`Items` are displayed at once. It is used in
+            combination with ``page`` to allow pagination.
+
+            ``status`` (str): Use the status parameter to limit results
+            to displaying only versions with a certain :term:`status`.
+
+        Returns:
+            ``HTTPResponse``. Either a HTML or a JSON response.
+        """
+        output_format = get_output_format(self.request)
+
+        if output_format in ['json', 'geojson', 'html']:
+
+            return self.read_many(public=True)
+
+        else:
+            raise HTTPNotFound()
 
 
 @view_config(route_name='activities_bystakeholders')
