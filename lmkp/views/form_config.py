@@ -188,6 +188,15 @@ class ConfigCategoryList(object):
                             keys.append(t.getKey())
         return keys
 
+    def get_default_search_key(self):
+        """
+        Return the key which can be searched by default or None.
+        """
+        for tag in self.getAllTags():
+            if tag.get_default_search():
+                return tag.getKey()
+        return None
+
     def getFirstCategoryId(self):
         """
         Return the ID of the first category of the list
@@ -965,6 +974,7 @@ class ConfigTag(object):
         self.gridColumn = None
         self.mapSymbol = None
         self.filterable = False
+        self.default_search = False
 
     def setKey(self, key):
         """
@@ -1039,6 +1049,12 @@ class ConfigTag(object):
         Return the value set in grid column.
         """
         return self.gridColumn
+
+    def get_default_search(self):
+        return self.default_search is True
+
+    def set_default_search(self, default_search):
+        self.default_search = default_search
 
     def setMapSymbol(self, symbol):
         """
@@ -2160,6 +2176,10 @@ def getCategoryList(request, itemType, **kwargs):
                             if ('filterable' in key_config
                                     and key_config['filterable'] is True):
                                 tag.setFilterable(True)
+
+                            if ('default_search' in key_config
+                                    and key_config['default_search'] is True):
+                                tag.set_default_search(True)
 
                         # If the values are predefined and they are not set
                         # already (defined explicitly in YAML), then get the

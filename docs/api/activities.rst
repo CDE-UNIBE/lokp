@@ -5,4 +5,3 @@
 
   .. autoclass:: ActivityView
      :members:
-     :inherited-members:

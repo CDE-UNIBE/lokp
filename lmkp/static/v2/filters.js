@@ -129,13 +129,13 @@ function selectValue(valueTranslated, valueName) {
  * Function to add a new filter. Collects the values from the form and prepares
  * it to add it as a query parameter.
  */
-function addNewFilter() {
+function addNewFilter(itemtype, key, operator, value) {
 
     // Collect the values
-    var key = $('#new-filter-key-internal').val();
-    var value = $('#new-filter-value-internal').val();
-    var itemtype = $('#new-filter-itemtype').val()
-    var operator = $('#new-filter-operator').val();
+    var key = key ? key : $('#new-filter-key-internal').val();
+    var value = value ? value : $('#new-filter-value-internal').val();
+    var itemtype = itemtype ? itemtype : $('#new-filter-itemtype').val();
+    var operator = operator ? operator : $('#new-filter-operator').val();
 
     if (key && value && operator) {
         // Prepare the query string as object
@@ -221,5 +221,5 @@ function _addOperators(operators) {
  * http://stackoverflow.com/a/4458580/841644
  */
 function _urldecode(str) {
-   return decodeURIComponent((str+'').replace(/\+/g, '%20'));
+    return decodeURIComponent((str+'').replace(/\+/g, '%20'));
 }
