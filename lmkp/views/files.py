@@ -25,7 +25,6 @@ from sqlalchemy.orm.exc import (
 )
 
 from lmkp.config import (
-    check_valid_uuid,
     upload_directory_path,
     upload_max_file_size,
     valid_mime_extensions,
@@ -39,6 +38,7 @@ from lmkp.models.database_objects import (
     File,
 )
 from lmkp.models.meta import DBSession as Session
+from lmkp.utils import validate_uuid
 
 
 lmkpAssetResolver = AssetResolver('lmkp')
@@ -290,7 +290,7 @@ def file_view(request):
         raise HTTPNotFound()
 
     # Check if the identifier is valid
-    if check_valid_uuid(identifier) is False:
+    if validate_uuid(identifier) is False:
         raise HTTPNotFound()
 
     # Try to find necessary information of the file (mime-type)

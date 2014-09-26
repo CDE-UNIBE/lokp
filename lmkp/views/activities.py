@@ -23,7 +23,6 @@ from pyramid.security import (
 from pyramid.view import view_config
 
 from lmkp.authentication import get_user_privileges
-from lmkp.config import check_valid_uuid
 from lmkp.custom import get_customized_template_path
 from lmkp.models.database_objects import (
     A_Key,
@@ -34,6 +33,7 @@ from lmkp.models.database_objects import (
 )
 from lmkp.models.meta import DBSession as Session
 from lmkp.renderers.renderers import translate_key
+from lmkp.utils import validate_uuid
 from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.activity_review import ActivityReview
 from lmkp.views.comments import comments_sitekey
@@ -265,127 +265,124 @@ class ActivityView(BaseView):
         else:
             raise HTTPNotFound()
 
-
-@view_config(route_name='activities_bystakeholders')
-def by_stakeholders(request):
-    """
-    Read many Activities based on a Stakeholder ID. Also return pending
-    Activities by currently logged in user and all pending Activities if logged
-    in as moderator.
-    In contrast to the similar method in views/stakeholders.py, at least one
-    uid has to be specified in the matchdict "uids". To query *all* the
-    Stakeholders, use route "activities_read_many".
-    Default output format: JSON
-    """
-
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'json'
-
-    uids = []
-    uidsMatchdict = request.matchdict.get('uids', None)
-    if uidsMatchdict is not None:
-        uids = uidsMatchdict.split(',')
-
-    # Remove any invalid UIDs
-    for uid in uids:
-        if check_valid_uuid(uid) is not True:
-            uids.remove(uid)
-
-    if len(uids) == 0:
-        raise HTTPNotFound()
-
-    if output_format == 'json':
-        activities = activity_protocol.read_many_by_stakeholders(
-            request, uids=uids, public=False)
-        return render_to_response('json', activities, request)
-    elif output_format == 'html':
+    @view_config(route_name='activities_bystakeholders')
+    def by_stakeholders(self, public=False):
         """
-        Show a HTML representation of the Activities of a Stakeholder in
-        a grid.
+        Return many :term:`Activities` based :term:`Stakeholders`.
+
+        Based on the :term:`UIDs` of one or many :term:`Stakeholders`,
+        all :term:`Activities` in which the :term:`Stakeholder` is
+        involved.
+
+        .. seealso::
+            :ref:`read-many`
+
+        For each :term:`Activity`, only one version is visible, always
+        the latest visible version to the current user. This means that
+        logged in users can see their own pending versions and
+        moderators of the current profile can see pending versions as
+        well. If you don't want to show pending versions, consider using
+        :class:`lmkp.views.activities.ActivityView.by_stakeholder_public`
+        instead.
+
+        By default, the :term:`Activities` are ordered with the
+        :term:`Activity` having the most recent change being on top.
+
+        The output format is provided through the Matchdict of the URL
+        pattern (/activities/public/{output}). The default output format
+        is JSON. If the output format is not valid, a 404 Response is
+        returned.
+
+        The following output formats are supported:
+
+            ``json``: Return the :term:`Activities` as JSON.
+
+            ``html``: Return the :term:`Activities` as HTML (eg. the
+            `Grid View`)
+
+        Request parameters:
+            ``page`` (int): The page parameter is used to paginate
+            :term:`Items`. In combination with ``pagesize`` it defines
+            the offset.
+
+            ``pagesize`` (int): The pagesize parameter defines how many
+            :term:`Items` are displayed at once. It is used in
+            combination with ``page`` to allow pagination.
+
+            ``status`` (str): Use the status parameter to limit results
+            to displaying only versions with a certain :term:`status`.
+
+        Returns:
+            ``HTTPResponse``. Either a HTML or a JSON response.
         """
 
-        # Get page parameter from request and make sure it is valid
-        page = request.params.get('page', 1)
-        try:
-            page = int(page)
-        except:
-            page = 1
-        page = max(page, 1)  # Page should be >= 1
+        output_format = get_output_format(self.request)
 
-        # Get pagesize parameter from request and make sure it is valid
-        pageSize = request.params.get('pagesize', 10)
-        try:
-            pageSize = int(pageSize)
-        except:
-            pageSize = 10
-        pageSize = max(pageSize, 1)  # Page size should be >= 1
-        pageSize = min(pageSize, 50)  # Page size should be <= 50
+        uids = self.request.matchdict.get('uids', '').split(',')
 
-        # No spatial filter is used if the activities are filtered by a
-        # stakeholder
-        spatialfilter = None
+        # Remove any invalid UIDs
+        for uid in uids:
+            if validate_uuid(uid) is not True:
+                uids.remove(uid)
 
-        # Query the items with the protocol
-        items = activity_protocol.read_many_by_stakeholders(
-            request, uids=uids, public=False, limit=pageSize,
-            offset=pageSize * page - pageSize)
+        if len(uids) == 0:
+            raise HTTPNotFound()
 
-        return render_to_response(
-            get_customized_template_path(request, 'activities/grid.mak'),
-            {
+        if output_format == 'json':
+
+            items = activity_protocol.read_many_by_stakeholders(
+                self.request, uids=uids, public=public)
+
+            return render_to_response('json', items, self.request)
+
+        elif output_format == 'html':
+
+            page, page_size = get_page_parameters(self.request)
+
+            # Query the items with the protocol
+            items = activity_protocol.read_many_by_stakeholders(
+                self.request, uids=uids, public=public, limit=page_size,
+                offset=page_size * page - page_size)
+
+            # No spatial filter is used if the Activities are filtered
+            # by a Stakeholder
+            spatialfilter = None
+
+            template_values = self.get_base_template_values()
+            template_values.update({
                 'data': items['data'] if 'data' in items else [],
                 'total': items['total'] if 'total' in items else 0,
-                'profile': get_current_profile(request),
-                'locale': get_current_locale(request),
                 'spatialfilter': spatialfilter,
                 'invfilter': uids,
                 'currentpage': page,
-                'pagesize': pageSize
-            },
-            request)
-    else:
-        # If the output format was not found, raise 404 error
-        raise HTTPNotFound()
+                'pagesize': page_size
+            })
 
+            return render_to_response(
+                get_customized_template_path(
+                    self.request, 'activities/grid.mak'),
+                template_values, self.request)
 
-@view_config(route_name='activities_bystakeholders_public')
-def by_stakeholders_public(request):
-    """
-    Read many Activities based on a Stakeholder ID. Do not return any pending
-    versions.
-    Default output format: JSON
-    """
+        else:
+            # If the output format was not found, raise 404 error
+            raise HTTPNotFound()
 
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'json'
+    @view_config(route_name='activities_bystakeholders_public')
+    def by_stakeholders_public(self):
+        """
+        Read many Activities based on a Stakeholder ID. Do not return
+        any pending
+        versions.
+        Default output format: JSON
+        """
+        output_format = get_output_format(self.request)
 
-    uids = []
-    uidsMatchdict = request.matchdict.get('uids', None)
-    if uidsMatchdict is not None:
-        uids = uidsMatchdict.split(',')
+        if output_format in ['json', 'html']:
 
-    # Remove any invalid UIDs
-    for uid in uids:
-        if check_valid_uuid(uid) is not True:
-            uids.remove(uid)
+            return self.by_stakeholders(public=True)
 
-    if len(uids) == 0:
-        raise HTTPNotFound()
-
-    if output_format == 'json':
-        activities = activity_protocol.read_many_by_stakeholders(
-            request, uids=uids, public=True)
-        return render_to_response('json', activities, request)
-    elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
-    else:
-        # If the output format was not found, raise 404 error
-        raise HTTPNotFound()
+        else:
+            raise HTTPNotFound()
 
 
 @view_config(route_name='activities_read_one')
@@ -407,7 +404,7 @@ def read_one(request):
         output_format = 'json'
 
     uid = request.matchdict.get('uid', None)
-    if check_valid_uuid(uid) is not True:
+    if validate_uuid(uid) is not True:
         raise HTTPNotFound()
 
     translate = request.params.get('translate', 'true') == 'true'
@@ -715,7 +712,7 @@ def read_one_history(request):
         output_format = 'html'
 
     uid = request.matchdict.get('uid', None)
-    if check_valid_uuid(uid) is not True:
+    if validate_uuid(uid) is not True:
         raise HTTPNotFound()
 
     isLoggedIn, isModerator = get_user_privileges(request)
@@ -763,7 +760,7 @@ def read_one_public(request):
     """
 
     uid = request.matchdict.get('uid', None)
-    if check_valid_uuid(uid) is not True:
+    if validate_uuid(uid) is not True:
         raise HTTPNotFound()
 
     try:
@@ -796,7 +793,7 @@ def read_one_active(request):
         output_format = 'json'
 
     uid = request.matchdict.get('uid', None)
-    if check_valid_uuid(uid) is not True:
+    if validate_uuid(uid) is not True:
         raise HTTPNotFound()
 
     if output_format == 'json':

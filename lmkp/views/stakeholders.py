@@ -15,9 +15,6 @@ from pyramid.security import has_permission
 from pyramid.view import view_config
 
 from lmkp.authentication import get_user_privileges
-from lmkp.config import (
-    check_valid_uuid,
-)
 from lmkp.custom import get_customized_template_path
 from lmkp.models.database_objects import (
     Language,
@@ -28,6 +25,7 @@ from lmkp.models.database_objects import (
     User,
 )
 from lmkp.models.meta import DBSession as Session
+from lmkp.utils import validate_uuid
 from lmkp.views.comments import comments_sitekey
 from lmkp.views.config import get_mandatory_keys
 from lmkp.views.download import DownloadView
@@ -71,7 +69,7 @@ def read_one_active(request):
         output_format = 'json'
 
     uid = request.matchdict.get('uid', None)
-    if check_valid_uuid(uid) is not True:
+    if validate_uuid(uid) is not True:
         raise HTTPNotFound()
 
     if output_format == 'json':
@@ -99,7 +97,7 @@ def read_one_public(request):
         output_format = 'json'
 
     uid = request.matchdict.get('uid', None)
-    if check_valid_uuid(uid) is not True:
+    if validate_uuid(uid) is not True:
         raise HTTPNotFound()
 
     if output_format == 'json':
@@ -137,7 +135,7 @@ def by_activities(request):
 
     # Remove any invalid UIDs
     for uid in uids:
-        if check_valid_uuid(uid) is not True:
+        if validate_uuid(uid) is not True:
             uids.remove(uid)
 
     if output_format == 'json':
@@ -228,7 +226,7 @@ def by_activities_public(request):
 
     # Remove any invalid UIDs
     for uid in uids:
-        if check_valid_uuid(uid) is not True:
+        if validate_uuid(uid) is not True:
             uids.remove(uid)
 
     if output_format == 'json':
@@ -300,7 +298,7 @@ def read_many(request):
                 'statusfilter': statusFilter,
                 'currentpage': page,
                 'pagesize': pageSize,
-                'isModerator': isModerator
+                'is_moderator': isModerator
             },
             request)
 
@@ -399,7 +397,7 @@ def read_one(request):
         output_format = 'json'
 
     uid = request.matchdict.get('uid', None)
-    if check_valid_uuid(uid) is not True:
+    if validate_uuid(uid) is not True:
         raise HTTPNotFound()
 
     translate = request.params.get('translate', 'true') == 'true'
@@ -643,7 +641,7 @@ def read_one_history(request):
         output_format = 'html'
 
     uid = request.matchdict.get('uid', None)
-    if check_valid_uuid(uid) is not True:
+    if validate_uuid(uid) is not True:
         raise HTTPNotFound()
     isLoggedIn, isModerator = get_user_privileges(request)
     stakeholders, count = stakeholder_protocol.read_one_history(

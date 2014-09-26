@@ -2,6 +2,8 @@
 :mod:`lmkp.utils` provides some useful helper functions.
 """
 
+import re
+
 
 def validate_bbox(bbox):
     """
@@ -56,3 +58,21 @@ def validate_item_type(item_type):
         return 'sh'
     else:
         raise Exception('"%s" is not a valid item type!' % item_type)
+
+
+def validate_uuid(uuid):
+    """
+    Tests if a string is a valid Universally Unique Identifier
+    (:term:`UUID`). Returns True if the UUID is valid and False
+    otherwise.
+
+    Args:
+        ``uuid`` (str): The string representation of a :term:`UUID`.
+
+    Returns:
+        ``bool``. Whether the :term:`UUID` is valid or not.
+    """
+    if not type(uuid) == str:
+        return False
+    uuid4hex = re.compile('[0-9a-f-]{36}\Z', re.I)
+    return uuid4hex.match(uuid) is not None
