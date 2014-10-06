@@ -3,6 +3,8 @@
 """
 
 import re
+import urllib
+import urlparse
 
 
 def validate_bbox(bbox):
@@ -77,3 +79,52 @@ def validate_uuid(uuid):
         return False
     uuid4hex = re.compile('[0-9a-f-]{36}\Z', re.I)
     return uuid4hex.match(uuid) is not None
+
+
+def handle_query_string(url, add=[], remove=[], return_value='full_url'):
+    """
+    Function to update the query parameters of a given URL.
+    kwargs:
+    add: array of tuples with key and value to add to the URL. If the
+    key already exists, it will be replaced with the new value.
+    Example: add=[('page', 1)]
+    remove: array of keys to remove from the URL.
+    ret: fullUrl (default) / queryString. Use 'queryString' to return
+    only the query string instead of the full URL.
+    """
+
+    # Extract query_strings from url
+    scheme, netloc, path, query_string, fragment = urlparse.urlsplit(url)
+    qp = urlparse.parse_qs(query_string)
+
+    # Always remove 'epsg' as it is not needed (map is stored in cookie)
+    if 'epsg' in qp:
+        del(qp['epsg'])
+
+    # Always remove 'page'
+    if 'page' in qp:
+        del(qp['page'])
+
+    # Always remove 'bbox' if it is not set to 'profile' (bbox of map is stored
+    # in cookie)
+    if 'bbox' in qp and 'profile' not in qp['bbox']:
+        del(qp['bbox'])
+
+    for d in remove:
+        if d in qp:
+            del(qp[d])
+
+    for k, v in add:
+        qp[k] = v
+
+    # Put URL together again and return it
+    new_query_string = urllib.urlencode(qp, doseq=True)
+
+    if return_value == 'query_string':
+        if len(qp) == 0:
+            return ''
+        # Return only the query string (with leading '?')
+        return '%s%s' % ('?', new_query_string)
+
+    return urlparse.urlunsplit((
+        scheme, netloc, path, new_query_string, fragment))

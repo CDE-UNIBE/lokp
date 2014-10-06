@@ -21,7 +21,7 @@
 
 <%
     import math
-    from lmkp.views.views import getQueryString
+    from lmkp.utils import handle_query_string
 
     maxpage = int(math.ceil(float(totalitems)/pagesize))
     endleft = 1 if currentpage > neighboursize + 1 else None
@@ -35,12 +35,12 @@
                 <li class="disabled"><a>&laquo;</a></li>
             % else:
                 <li>
-                    <a href="${getQueryString(request.url, add=[('page', currentpage-1)])}">&laquo;</a>
+                    <a href="${handle_query_string(request.url, add=[('page', currentpage-1)])}">&laquo;</a>
                 </li>
             % endif
             % if endleft:
                 <li>
-                    <a href="${getQueryString(request.url, add=[('page', endleft)])}">${endleft}</a>
+                    <a href="${handle_query_string(request.url, add=[('page', endleft)])}">${endleft}</a>
                 </li>
             % endif
             % if currentpage > neighboursize + 2:
@@ -50,17 +50,17 @@
             % endif
             % for i in range(min(currentpage-neighboursize+1, neighboursize), 0, -1):
                 <li>
-                    <a href="${getQueryString(request.url, add=[('page', currentpage-i)])}">
+                    <a href="${handle_query_string(request.url, add=[('page', currentpage-i)])}">
                         ${currentpage-i}
                     </a>
                 </li>
             % endfor
             <li class="active">
-                <a href="${getQueryString(request.url, add=[('page', currentpage)])}">${currentpage}</a>
+                <a href="${handle_query_string(request.url, add=[('page', currentpage)])}">${currentpage}</a>
             </li>
             % for i in range(min(maxpage-currentpage, neighboursize)):
                 <li>
-                    <a href="${getQueryString(request.url, add=[('page', currentpage+i+1)])}">
+                    <a href="${handle_query_string(request.url, add=[('page', currentpage+i+1)])}">
                         ${currentpage+i+1}
                     </a>
                 </li>
@@ -72,14 +72,14 @@
             % endif
             % if endright:
                 <li>
-                    <a href="${getQueryString(request.url, add=[('page', endright)])}">${endright}</a>
+                    <a href="${handle_query_string(request.url, add=[('page', endright)])}">${endright}</a>
                 </li>
             % endif
             % if currentpage == maxpage:
                 <li class="disabled"><a>&raquo;</a></li>
             % else:
                 <li>
-                    <a href="${getQueryString(request.url, add=[('page', currentpage+1)])}">&raquo;</a>
+                    <a href="${handle_query_string(request.url, add=[('page', currentpage+1)])}">&raquo;</a>
                 </li>
             % endif
 
@@ -99,9 +99,9 @@
             </a>
             <ul class="dropdown-menu pull-right small" role="menu" aria-labelledby="dropdownMenu">
                 <li>
-                    <a href="${getQueryString(request.url, add=[('pagesize', 10)])}">10</a>
-                    <a href="${getQueryString(request.url, add=[('pagesize', 25)])}">25</a>
-                    <a href="${getQueryString(request.url, add=[('pagesize', 50)])}">50</a>
+                    <a href="${handle_query_string(request.url, add=[('pagesize', 10)])}">10</a>
+                    <a href="${handle_query_string(request.url, add=[('pagesize', 25)])}">25</a>
+                    <a href="${handle_query_string(request.url, add=[('pagesize', 50)])}">50</a>
                 </li>
             </ul>
         </div>

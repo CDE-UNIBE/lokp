@@ -33,7 +33,10 @@ from lmkp.models.database_objects import (
 )
 from lmkp.models.meta import DBSession as Session
 from lmkp.renderers.renderers import translate_key
-from lmkp.utils import validate_uuid
+from lmkp.utils import (
+    validate_uuid,
+    handle_query_string
+)
 from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.activity_review import ActivityReview
 from lmkp.views.comments import comments_sitekey
@@ -169,7 +172,8 @@ class ActivityView(BaseView):
                 'statusfilter': status_filter,
                 'currentpage': page,
                 'pagesize': page_size,
-                'is_moderator': is_moderator
+                'is_moderator': is_moderator,
+                'handle_query_string': handle_query_string
             })
 
             return render_to_response(
