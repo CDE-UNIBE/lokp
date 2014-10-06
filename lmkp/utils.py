@@ -67,12 +67,13 @@ def validate_uuid(uuid):
     otherwise.
 
     Args:
-        ``uuid`` (str): The string representation of a :term:`UUID`.
+        ``uuid`` (str, unicode): The string representation of a
+        :term:`UUID`.
 
     Returns:
         ``bool``. Whether the :term:`UUID` is valid or not.
     """
-    if not type(uuid) == str:
+    if not type(uuid) in [str, unicode]:
         return False
     uuid4hex = re.compile('[0-9a-f-]{36}\Z', re.I)
     return uuid4hex.match(uuid) is not None

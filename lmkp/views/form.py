@@ -365,9 +365,16 @@ def renderForm(request, itemType, **kwargs):
                                 'stakeholders_read_many', output='form',
                                 _query={'inv': camefrom['inv']})
                         else:
-                            url = request.route_url(
-                                'activities_read_many', output='form',
-                                _query={'inv': camefrom['inv']})
+                            activity_id = camefrom.get('id')
+                            if activity_id is not None:
+                                url = request.route_url(
+                                    'activities_read_one', output='form',
+                                    uid=activity_id,
+                                    _query={'inv': camefrom['inv']})
+                            else:
+                                url = request.route_url(
+                                    'activities_read_many', output='form',
+                                    _query={'inv': camefrom['inv']})
 
                         return HTTPFound(url)
 
@@ -460,7 +467,7 @@ def renderForm(request, itemType, **kwargs):
                     # the form.
                     data = getFormdataFromItemjson(
                         request, itemJson, itemType, newCategory)
-                if formSubmit is False:
+                if formSubmit is False and request.params.get('inv') is None:
                     # If the form is rendered for the first time, inform the
                     # user that session was used.
 

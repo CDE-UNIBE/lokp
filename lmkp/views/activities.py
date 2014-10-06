@@ -468,8 +468,10 @@ def read_one(request):
                         # version visible to the user
                         version = str(a['version'])
                     if str(a['version']) == version:
+                        new_involvement = request.params.get('inv')
                         templateValues = renderForm(
-                            request, 'activities', itemJson=a)
+                            request, 'activities', itemJson=a,
+                            inv=new_involvement)
                         if isinstance(templateValues, Response):
                             return templateValues
                         templateValues['profile'] = get_current_profile(
