@@ -111,7 +111,7 @@ class ActivityView(BaseView):
             `Grid View`)
 
             ``form``: Returns the form to create a new
-            :term:`Activities`.
+            :term:`Activity`.
 
             ``download``: Returns the download overview page.
 

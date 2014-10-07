@@ -133,3 +133,15 @@ function customAddSequenceItem(protonode, before) {
     before.attr('now_len', old_len + 1);
     //deform.maybeScrollIntoView('#' + anchorid);
 }
+
+function toggleConfirmDelete() {
+    var confirm_div = $('.delete-confirm');
+    var btn = $('.form-button-delete').parent('ul');
+    if (confirm_div.is(':visible')) {
+        confirm_div.hide();
+        btn.show();
+    } else {
+        confirm_div.show();
+        btn.hide();
+    }
+}

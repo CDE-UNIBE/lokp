@@ -83,28 +83,40 @@ def validate_uuid(uuid):
 
 def handle_query_string(url, add=[], remove=[], return_value='full_url'):
     """
-    Function to update the query parameters of a given URL.
-    kwargs:
-    add: array of tuples with key and value to add to the URL. If the
-    key already exists, it will be replaced with the new value.
-    Example: add=[('page', 1)]
-    remove: array of keys to remove from the URL.
-    ret: fullUrl (default) / queryString. Use 'queryString' to return
-    only the query string instead of the full URL.
-    """
+    Update the query string of an URL. Keeps existing, adds or removes
+    query parameters
 
-    # Extract query_strings from url
+    This function can be used to pass certain query parameters (eg.
+    filters) from one view to another, eg. from grid to map view.
+
+    Args:
+        ``url`` (str): The URL, optionally with existing query
+        string
+
+    Kwargs:
+        ``add`` (arr): An array of tuples, each with key and value of
+        query parameters to be added to the URL.
+        Example: ``add=[('page', 1)]``.
+
+        ``remove`` (arr): An array of keys to be removed from the URL's
+        query string.
+
+        ``return_value`` (str): The format of the returned string.
+        Default is ``full_url``, use ``query_string`` to return only the
+        query string.
+
+    Returns:
+        ``str``. The URL or query string with query parameters.
+    """
     scheme, netloc, path, query_string, fragment = urlparse.urlsplit(url)
     qp = urlparse.parse_qs(query_string)
 
     # Always remove 'epsg' as it is not needed (map is stored in cookie)
     if 'epsg' in qp:
         del(qp['epsg'])
-
     # Always remove 'page'
     if 'page' in qp:
         del(qp['page'])
-
     # Always remove 'bbox' if it is not set to 'profile' (bbox of map is stored
     # in cookie)
     if 'bbox' in qp and 'profile' not in qp['bbox']:
@@ -113,18 +125,13 @@ def handle_query_string(url, add=[], remove=[], return_value='full_url'):
     for d in remove:
         if d in qp:
             del(qp[d])
-
     for k, v in add:
         qp[k] = v
 
-    # Put URL together again and return it
     new_query_string = urllib.urlencode(qp, doseq=True)
-
     if return_value == 'query_string':
         if len(qp) == 0:
             return ''
-        # Return only the query string (with leading '?')
         return '%s%s' % ('?', new_query_string)
-
     return urlparse.urlunsplit((
         scheme, netloc, path, new_query_string, fragment))

@@ -1655,7 +1655,7 @@ class ActivityProtocol3(Protocol):
             taggroup = None
             if activity.find_taggroup_by_id(taggroup_id) is not None:
                 taggroup = activity.find_taggroup_by_id(taggroup_id)
-            else:
+            elif key:
                 taggroup = TagGroup(taggroup_id, q.tg_id, q.main_tag)
                 # Set the taggroup geometry if available
                 if geom is True and q.tg_geometry is not None:

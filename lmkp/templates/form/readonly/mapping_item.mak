@@ -12,8 +12,8 @@
 % if not hasOnlyNullValues:
 
     % if field.name == 'map':
-        ## The map container was already rendered by the initial form item so it
-        ## appears right on top.
+        ## The map container was already rendered by the initial form item so
+        ## it appears right on top.
 
     % elif depth == 3:
         ## Category
@@ -38,7 +38,7 @@
             <div class="span9 grid-area">${field.serialize(cstruct, readonly=True)}</div>
         </div>
 
-    % elif field.name not in ['tg_id', 'id', 'category', 'version', 'itemType', 'statusId']:
+    % elif field.name not in ['tg_id', 'id', 'category', 'version', 'itemType', 'statusId', 'taggroup_count']:
         ## Single tag
         <div class="row-fluid">
             <div class="span5">

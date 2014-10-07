@@ -1209,11 +1209,11 @@ class Protocol(object):
             #TODO: clean up! Also make sure it works for all cases
             #TODO: Handle translations correctly
 
-#            print "---------------------------------------------"
-#            log.debug(
-#                "Currently looking at db_taggroup with tg_id: %s"
-#                % db_taggroup.tg_id
-#            )
+            # print "---------------------------------------------"
+            # print (
+            #     "Currently looking at db_taggroup with tg_id: %s"
+            #     % db_taggroup.tg_id
+            # )
 
             # Create a new tag group but don't add it yet to the new activity
             # version. Indicator (taggroupadded) is needed for database items
@@ -1231,10 +1231,10 @@ class Protocol(object):
             # Step 1: Loop the existing tags
             for db_tag in db_taggroup.tags:
 
-#                log.debug(
-#                    "Currently looking at db_tag with key/value:\n%s | %s" %
-#                    (db_tag.key.key, db_tag.value.value)
-#                )
+                # print (
+                #     "Currently looking at db_tag with key/value:\n%s | %s" %
+                #     (db_tag.key.key, db_tag.value.value)
+                # )
 
                 # Before copying the tag, make sure that it is not to delete
                 copy_tag = True
@@ -1289,7 +1289,7 @@ class Protocol(object):
                                         and db_tag.key.key and tag_dict['key']
                                         and db_tag.key.key == tag_dict['key']):
 
-                                    # log.debug(
+                                    # print (
                                     #     "Tag is deleted (not copied) from "
                                     #     "taggroup."
                                     # )
@@ -1314,9 +1314,9 @@ class Protocol(object):
                         new_tag = Tag(db_tag.id, k.key, v.value)
                         new_taggroup.add_tag(new_tag)
 
-#                    log.debug(
-#                        "Tag was copied and added to taggroup."
-#                    )
+                    # print (
+                    #     "Tag was copied and added to taggroup."
+                    # )
 
                     # Set the main tag
                     if db_taggroup.main_tag == db_tag:
@@ -1336,9 +1336,9 @@ class Protocol(object):
                             if len(new_taggroup.get_tags()) > 0:
                                 item.add_taggroup(new_taggroup)
 
-#                        log.debug(
-#                            "Taggroup was added (copied) to item."
-#                        )
+                        # print (
+                        #     "Taggroup was added (copied) to item."
+                        # )
 
                         taggroupadded = True
 
@@ -1364,7 +1364,7 @@ class Protocol(object):
                                     )
                                     new_taggroup.add_tag(new_tag)
 
-                                # log.debug(
+                                # print (
                                 #     "Tag (%s | %s) was created and added to "
                                 #     "taggroup."
                                 #     % (tag_dict['key'], tag_dict['value'])
@@ -1435,7 +1435,7 @@ class Protocol(object):
                     tg_id = taggroup_dict['tg_id']
 
                     # print "---------------------------------------------"
-                    # log.debug(
+                    # print (
                     #     "Currently looking at a taggroup with tg_id %s "
                     #     "which does not yet exist for the old version"
                     #     % (tg_id)
@@ -1458,7 +1458,7 @@ class Protocol(object):
                     tg_id = tg_id_q[0] + 1
 
                     # print "---------------------------------------------"
-                    # log.debug(
+                    # print (
                     #     "Currently looking at a brand new taggroup with "
                     #     "tg_id %s"
                     #     % (tg_id)
@@ -1488,7 +1488,7 @@ class Protocol(object):
                                 )
                                 new_taggroup.add_tag(new_tag)
 
-                            # log.debug(
+                            # print (
                             #     "Tag (%s | %s) was created and added to "
                             #     "taggroup."
                             #     % (tag_dict['key'], tag_dict['value'])
@@ -1511,7 +1511,7 @@ class Protocol(object):
                                         == unicode(new_tag.get_value())):
                                     new_taggroup._main_tag = new_tag
 
-#        print "============================================="
+        # print "============================================="
 
         return item
 
@@ -2210,12 +2210,8 @@ class Feature(object):
         # If all mandatory keys are still there, check if version is pending to
         # be deleted
         if len(mk) == len(mandatory_keys):
-            if len(self.get_taggroups()) > 0:
-                if len(self.get_taggroups()[0].get_tags()) > 0:
-                    if (self.get_taggroups()[0].get_tags()[0].get_key() is None
-                        and self.get_taggroups()[0].get_tags()[0].get_value()
-                            is None):
-                        mk = [0]
+            if len(self.get_taggroups()) == 0:
+                mk = []
 
         self._missing_keys = mk
 

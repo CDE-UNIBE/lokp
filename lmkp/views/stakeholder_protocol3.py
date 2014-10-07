@@ -1336,7 +1336,7 @@ class StakeholderProtocol3(Protocol):
             taggroup = None
             if stakeholder.find_taggroup_by_id(taggroup_id) is not None:
                 taggroup = stakeholder.find_taggroup_by_id(taggroup_id)
-            else:
+            elif key:
                 taggroup = TagGroup(taggroup_id, q.tg_id, q.main_tag)
                 stakeholder.add_taggroup(taggroup)
 
