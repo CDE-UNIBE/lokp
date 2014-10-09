@@ -14,8 +14,8 @@
         </label>
     </div>
     <div class="span8">
-        <input 
-            class="input-style"
+        <input
+            class="input-style span12"
             type="text"
             name="${field.name}"
             value="${cstruct}"

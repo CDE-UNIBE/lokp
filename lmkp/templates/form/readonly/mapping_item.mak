@@ -24,8 +24,8 @@
         % if field.title == '':
             ${field.serialize(cstruct, readonly=True)}
         % else:
-            <div class="row-fluid thmgtitle">
-                <div class="span9 grid-area">
+            <div class="row-fluid thmg-title">
+                <div class="grid-area">
                     <h5 class="green">${field.title}</h5>
                 </div>
                 ${field.serialize(cstruct, readonly=True)}
@@ -35,7 +35,9 @@
     % elif depth == 1:
         ## Taggroup
         <div class="row-fluid">
-            <div class="span9 grid-area">${field.serialize(cstruct, readonly=True)}</div>
+            <div class="grid-area taggroup-details">
+                ${field.serialize(cstruct, readonly=True)}
+            </div>
         </div>
 
     % elif field.name not in ['tg_id', 'id', 'category', 'version', 'itemType', 'statusId', 'taggroup_count']:
@@ -44,9 +46,8 @@
             <div class="span5">
                 <h5 class="green">${field.title}</h5>
             </div>
-            <div class="span2 inactive"></div>
-            <div class="span4">
-                <p class="deal-detail">${field.serialize(cstruct, readonly=True)}</p>
+            <div class="span7">
+                ${field.serialize(cstruct, readonly=True)}
             </div>
         </div>
     % endif

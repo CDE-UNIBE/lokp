@@ -2,10 +2,10 @@
     <div class="span4">
         <p>${field.title}</p>
     </div>
-    <div class="span6">
+    <div class="span8">
         <input
             type="text"
-            class="input-style"
+            class="input-style span12"
             readonly="readonly"
             name="${field.name}"
             value="${cstruct}"
