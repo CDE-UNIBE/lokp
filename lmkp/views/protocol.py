@@ -666,6 +666,12 @@ class Protocol(object):
         # TODO: Also delegate involvement review if rejected (review_decision
         # == 2)
 
+        empty_item = True
+        for tg in item.tag_groups:
+            for t in tg.tags:
+                empty_item = False
+                break
+
         # Try to also review any affected involvement.
         if implicit is False:
 
@@ -910,7 +916,8 @@ class Protocol(object):
                 if sh is None:
                     log.debug('One of the Stakeholders to review was not '
                               'found.')
-                    asdf
+                    raise Exception(
+                        'One of the Stakeholders to review was not found.')
 
                 log.debug('Reviewing involvement: Stakeholder with identifier '
                           '%s, version %s and status %s'
@@ -933,13 +940,6 @@ class Protocol(object):
         # Do the actual review of the current item
         if review_decision == 1:
             # Approved
-
-            # Check if Item was deleted (no more tags)
-            empty_item = True
-            for tg in item.tag_groups:
-                for t in tg.tags:
-                    empty_item = False
-                    break
 
             # Query the previous version of the item
             previous_version = self.Session.query(
@@ -985,6 +985,42 @@ class Protocol(object):
                         'inactive') + 1
 
                 if empty_item is True:
+                    invs = []
+                    if (mappedClass == Stakeholder and
+                            'stakeholders' in json_diff):
+                        for sh_diff in json_diff.get('stakeholders'):
+                            for a_diff in sh_diff.get('activities', []):
+                                invs.append({
+                                    'identifier': a_diff.get('id'),
+                                    'version': a_diff.get('version')
+                                })
+                    for inv in invs:
+                        a = self.Session.query(
+                            Activity
+                        ).\
+                            filter(
+                                Activity.identifier == inv.get('identifier')).\
+                            filter(Activity.previous_version == inv.get(
+                                'version')).\
+                            first()
+
+                        if (a and a.fk_status == statusArray.index(
+                                'pending') + 1):
+                            next_status = 'active'
+                        else:
+                            raise Exception('Involved Activity not found!')
+
+                        self._add_review(
+                            request,
+                            a,
+                            Activity,
+                            user,
+                            review_decision,
+                            review_comment,
+                            implicit=True,
+                            next_status=next_status
+                        )
+
                     # Set the status of the item to 'deleted'
                     item.fk_status = statusArray.index('deleted') + 1
 
@@ -1115,6 +1151,43 @@ class Protocol(object):
             # Rejected: Do not modify previous version and set new version to
             # 'rejected'
             item.fk_status = statusArray.index('rejected') + 1
+
+            if empty_item:
+                invs = []
+                if (mappedClass == Stakeholder and
+                        'stakeholders' in json_diff):
+                    for sh_diff in json_diff.get('stakeholders'):
+                        for a_diff in sh_diff.get('activities', []):
+                            invs.append({
+                                'identifier': a_diff.get('id'),
+                                'version': a_diff.get('version')
+                            })
+                for inv in invs:
+                    a = self.Session.query(
+                        Activity
+                    ).\
+                        filter(
+                            Activity.identifier == inv.get('identifier')).\
+                        filter(Activity.previous_version == inv.get(
+                            'version')).\
+                        first()
+
+                    if (a and a.fk_status == statusArray.index(
+                            'pending') + 1):
+                        next_status = 'rejected'
+                    else:
+                        raise Exception('Involved Activity not found!')
+
+                    self._add_review(
+                        request,
+                        a,
+                        Activity,
+                        user,
+                        review_decision,
+                        review_comment,
+                        implicit=True,
+                        next_status=next_status
+                    )
 
         else:
             ret['msg'] = _('Unknown review decision')

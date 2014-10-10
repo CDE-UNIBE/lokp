@@ -181,7 +181,7 @@ def renderForm(request, itemType, **kwargs):
                 showSessionCategories = itemType
             buttons = getFormButtons(
                 request, categoryListButtons, oldCategory,
-                showSessionCategories=showSessionCategories, itemJson=itemJson)
+                showSessionCategories=showSessionCategories)
 
         form = deform.Form(oldschema, buttons=buttons, formid=formid)
 
@@ -448,7 +448,7 @@ def renderForm(request, itemType, **kwargs):
             showSessionCategories = itemType
         buttons = getFormButtons(
             request, categoryListButtons, newCategory,
-            showSessionCategories=showSessionCategories, itemJson=itemJson)
+            showSessionCategories=showSessionCategories)
 
         form = deform.Form(newschema, buttons=buttons, formid=formid)
 
@@ -1223,7 +1223,6 @@ def getFormButtons(request, categorylist, currentCategory=None, **kwargs):
 
     sessionCategories = []
     sessionKeyword = kwargs.pop('showSessionCategories', None)
-    itemJson = kwargs.pop('itemJson', None)
     if sessionKeyword is not None and sessionKeyword in request.session:
         for c in request.session[sessionKeyword]:
             try:
@@ -1246,9 +1245,6 @@ def getFormButtons(request, categorylist, currentCategory=None, **kwargs):
             buttons.append(b)
     buttons.append(
         deform.Button('submit', _('Submit'), css_class='formsubmit'))
-    if itemJson is not None:
-        buttons.append(
-            deform.Button('delete', _('Delete'), css_class='formdelete'))
     return buttons
 
 
@@ -1638,15 +1634,17 @@ def calculate_deletion_diff(request, item_type):
 
     if validate_item_type(item_type) == 'a':
         protocol = activity_protocol
+        other_item_type = 'stakeholders'
     else:
         protocol = stakeholder_protocol
+        other_item_type = 'activities'
 
     item = protocol.read_one_by_version(
-        request, identifier, version, translate=False)
+        request, identifier, version, translate=False).to_table(request)
 
     # Collect every taggroup and tag, mark all to be deleted.
     taggroups_diff = []
-    for taggroup in item.to_table(request).get('taggroups', []):
+    for taggroup in item.get('taggroups', []):
         tags_diff = []
         for tag in taggroup.get('tags', []):
             tags_diff.append({
@@ -1660,13 +1658,27 @@ def calculate_deletion_diff(request, item_type):
             'op': 'delete'
         })
 
-    return {
+    # Collect every involvement and mark them to be deleted.
+    involvement_diff = []
+    for involvement in item.get('involvements', []):
+        involvement_diff.append({
+            'id': involvement.get('data', {}).get('id'),
+            'version': involvement.get('version'),
+            'role': involvement.get('role_id'),
+            'op': 'delete'
+        })
+
+    diff = {
         item_type: [{
             'taggroups': taggroups_diff,
             'id': identifier,
             'version': version
         }]
     }
+    if involvement_diff:
+        diff[item_type][0][other_item_type] = involvement_diff
+
+    return diff
 
 
 def formdataToDiff(request, newform, itemType):

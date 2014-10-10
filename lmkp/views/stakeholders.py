@@ -757,17 +757,9 @@ def review(request):
         request.session.flash(ret['msg'], 'error')
 
     if camefrom != '':
-        camefromMsg = render(
-            get_customized_template_path(
-                request,
-                'parts/messages/stakeholder_reviewed_through_involvement.mak'),
-            {
-                'url': request.route_url(
-                    'activities_read_one', output='review', uid=camefrom)
-            },
-            request
-        )
-        request.session.flash(camefromMsg)
+        # Redirect back to moderation view of other
+        return HTTPFound(request.route_url(
+            'activities_read_one', output='review', uid=camefrom))
 
     return HTTPFound(location=request.route_url(
         'stakeholders_read_one_history', output='html',
