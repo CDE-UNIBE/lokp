@@ -96,28 +96,31 @@ class ActivityView(BaseView):
         By default, the :term:`Activities` are ordered with the
         :term:`Activity` having the most recent change being on top.
 
-        The output format is provided through the Matchdict of the URL
-        pattern (/activities/{output}). The default output format is
-        JSON. If the output format is not valid, a 404 Response is
-        returned.
-
-        The following output formats are supported:
-
-            ``json``: Return the :term:`Activities` as JSON.
-
-            ``geojson``: Return the :term:`Activities` as GeoJSON.
-
-            ``html``: Return the :term:`Activities` as HTML (eg. the
-            `Grid View`)
-
-            ``form``: Returns the form to create a new
-            :term:`Activity`.
-
-            ``download``: Returns the download overview page.
-
         Args:
-            ``public`` (bool): A boolean indicating whether return only
-            versions visible to the public (eg. pending) or not.
+            ``public`` (bool): A boolean indicating whether to return
+            only versions visible to the public (eg. pending) or not.
+
+        Matchdict parameters:
+
+            ``/activities/{output}``
+
+            ``output`` (str): If the output format is not valid, a 404
+            Response is returned.
+
+            The following output formats are supported:
+
+                ``json``: Return the :term:`Activities` as JSON.
+
+                ``geojson``: Return the :term:`Activities` as GeoJSON.
+
+                ``html``: Return the :term:`Activities` as HTML (eg. the
+                `Grid View`)
+
+                ``form``: Returns the form to create a new
+                :term:`Activity`.
+
+                ``download``: Returns the page to download
+                :term:`Activities`.
 
         Request parameters:
             ``page`` (int): The page parameter is used to paginate
@@ -139,8 +142,7 @@ class ActivityView(BaseView):
 
         if output_format == 'json':
 
-            items = activity_protocol.read_many(
-                self.request, public=public)
+            items = activity_protocol.read_many(self.request, public=public)
 
             return render_to_response('json', items, self.request)
 
@@ -158,7 +160,7 @@ class ActivityView(BaseView):
                 self.request, public=public, limit=page_size,
                 offset=page_size * page - page_size)
 
-            spatialfilter = 'profile' if get_bbox_parameters(
+            spatial_filter = 'profile' if get_bbox_parameters(
                 self.request)[0] == 'profile' else 'map'
             status_filter = get_status_parameter(self.request)
             __, is_moderator = get_user_privileges(self.request)
@@ -167,7 +169,7 @@ class ActivityView(BaseView):
             template_values.update({
                 'data': items['data'] if 'data' in items else [],
                 'total': items['total'] if 'total' in items else 0,
-                'spatialfilter': spatialfilter,
+                'spatialfilter': spatial_filter,
                 'invfilter': None,
                 'statusfilter': status_filter,
                 'currentpage': page,
@@ -204,8 +206,7 @@ class ActivityView(BaseView):
             return render_to_response(
                 get_customized_template_path(
                     self.request, 'activities/form.mak'),
-                template_values,
-                self.request)
+                template_values, self.request)
 
         elif output_format == 'download':
 
@@ -222,40 +223,28 @@ class ActivityView(BaseView):
         Return many :term:`Activities` which are visible to the public.
 
         .. seealso::
-            :ref:`read-many`
+            :class:`lmkp.views.activities.ActivityView.read_many` for
+            details on the request parameters.
 
         In contrary to
         :class:`lmkp.views.activities.ActivityView.read_many`, no
         pending versions are returned even if the user is logged in.
 
-        By default, the :term:`Activities` are ordered with the
-        :term:`Activity` having the most recent change being on top.
+        Matchdict parameters:
 
-        The output format is provided through the Matchdict of the URL
-        pattern (/activities/public/{output}). The default output format
-        is JSON. If the output format is not valid, a 404 Response is
-        returned.
+            ``/activities/public/{output}``
 
-        The following output formats are supported:
+            ``output`` (str): If the output format is not valid, a 404
+            Response is returned.
 
-            ``json``: Return the :term:`Activities` as JSON.
+            The following output formats are supported:
 
-            ``geojson``: Return the :term:`Activities` as GeoJSON.
+                ``json``: Return the :term:`Activities` as JSON.
 
-            ``html``: Return the :term:`Activities` as HTML (eg. the
-            `Grid View`)
+                ``geojson``: Return the :term:`Activities` as GeoJSON.
 
-        Request parameters:
-            ``page`` (int): The page parameter is used to paginate
-            :term:`Items`. In combination with ``pagesize`` it defines
-            the offset.
-
-            ``pagesize`` (int): The pagesize parameter defines how many
-            :term:`Items` are displayed at once. It is used in
-            combination with ``page`` to allow pagination.
-
-            ``status`` (str): Use the status parameter to limit results
-            to displaying only versions with a certain :term:`status`.
+                ``html``: Return the :term:`Activities` as HTML (eg. the
+                `Grid View`)
 
         Returns:
             ``HTTPResponse``. Either a HTML or a JSON response.
@@ -272,11 +261,11 @@ class ActivityView(BaseView):
     @view_config(route_name='activities_bystakeholders')
     def by_stakeholders(self, public=False):
         """
-        Return many :term:`Activities` based :term:`Stakeholders`.
+        Return many :term:`Activities` based on :term:`Stakeholders`.
 
         Based on the :term:`UIDs` of one or many :term:`Stakeholders`,
         all :term:`Activities` in which the :term:`Stakeholder` is
-        involved.
+        involved are returned.
 
         .. seealso::
             :ref:`read-many`
@@ -292,17 +281,26 @@ class ActivityView(BaseView):
         By default, the :term:`Activities` are ordered with the
         :term:`Activity` having the most recent change being on top.
 
-        The output format is provided through the Matchdict of the URL
-        pattern (/activities/public/{output}). The default output format
-        is JSON. If the output format is not valid, a 404 Response is
-        returned.
+        Args:
+            ``public`` (bool): A boolean indicating whether to return
+            only versions visible to the public (eg. pending) or not.
 
-        The following output formats are supported:
+        Matchdict parameters:
 
-            ``json``: Return the :term:`Activities` as JSON.
+            ``/activities/bystakeholders/{output}/{uids}``
 
-            ``html``: Return the :term:`Activities` as HTML (eg. the
-            `Grid View`)
+            ``output`` (str): If the output format is not valid, a 404
+            Response is returned.
+
+            The following output formats are supported:
+
+                ``json``: Return the :term:`Activities` as JSON.
+
+                ``html``: Return the :term:`Activities` as HTML (eg. the
+                `Grid View`)
+
+            ``uids`` (str): A comma-separated list of
+            :term:`Stakeholder` :term:`UIDs`.
 
         Request parameters:
             ``page`` (int): The page parameter is used to paginate
@@ -319,7 +317,6 @@ class ActivityView(BaseView):
         Returns:
             ``HTTPResponse``. Either a HTML or a JSON response.
         """
-
         output_format = get_output_format(self.request)
 
         uids = self.request.matchdict.get('uids', '').split(',')
@@ -343,23 +340,25 @@ class ActivityView(BaseView):
 
             page, page_size = get_page_parameters(self.request)
 
-            # Query the items with the protocol
             items = activity_protocol.read_many_by_stakeholders(
                 self.request, uids=uids, public=public, limit=page_size,
                 offset=page_size * page - page_size)
 
             # No spatial filter is used if the Activities are filtered
             # by a Stakeholder
-            spatialfilter = None
+            spatial_filter = None
+            status_filter = None
 
             template_values = self.get_base_template_values()
             template_values.update({
                 'data': items['data'] if 'data' in items else [],
                 'total': items['total'] if 'total' in items else 0,
-                'spatialfilter': spatialfilter,
+                'spatialfilter': spatial_filter,
                 'invfilter': uids,
+                'statusfilter': status_filter,
                 'currentpage': page,
-                'pagesize': page_size
+                'pagesize': page_size,
+                'handle_query_string': handle_query_string
             })
 
             return render_to_response(
@@ -368,16 +367,37 @@ class ActivityView(BaseView):
                 template_values, self.request)
 
         else:
-            # If the output format was not found, raise 404 error
             raise HTTPNotFound()
 
     @view_config(route_name='activities_bystakeholders_public')
     def by_stakeholders_public(self):
         """
-        Read many Activities based on a Stakeholder ID. Do not return
-        any pending
-        versions.
-        Default output format: JSON
+        Return many :term:`Activities` based on :term:`Stakeholders`.
+
+        Based on the :term:`UIDs` of one or many :term:`Stakeholders`,
+        all :term:`Activities` in which the :term:`Stakeholder` is
+        involved are returned.
+
+        .. seealso::
+            :class:`lmkp.views.activities.ActivityView.by_stakeholders`
+            for more details on the request parameters.
+
+        In contrary to
+        :class:`lmkp.views.activities.ActivityView.by_stakeholders`, no
+        pending versions are returned even if the user is logged in.
+
+        ``output`` (str): If the output format is not valid, a 404
+        Response is returned.
+
+        The following output formats are supported:
+
+            ``json``: Return the :term:`Activities` as JSON.
+
+            ``html``: Return the :term:`Activities` as HTML (eg. the
+            `Grid View`)
+
+        Returns:
+            ``HTTPResponse``. Either a HTML or a JSON response.
         """
         output_format = get_output_format(self.request)
 

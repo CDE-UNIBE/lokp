@@ -25,7 +25,10 @@ from lmkp.models.database_objects import (
     User,
 )
 from lmkp.models.meta import DBSession as Session
-from lmkp.utils import validate_uuid
+from lmkp.utils import (
+    validate_uuid,
+    handle_query_string
+)
 from lmkp.views.comments import comments_sitekey
 from lmkp.views.config import get_mandatory_keys
 from lmkp.views.download import DownloadView
@@ -47,12 +50,359 @@ from lmkp.views.views import (
     get_bbox_parameters,
     get_current_locale,
     get_current_profile,
+    get_output_format,
+    get_page_parameters,
+    get_status_parameter,
 )
 
 
 log = logging.getLogger(__name__)
 _ = TranslationStringFactory('lmkp')
 stakeholder_protocol = StakeholderProtocol3(Session)
+
+
+class StakeholderView(BaseView):
+    """
+    This is the main class for viewing :term:`Stakeholders`.
+
+    Inherits from:
+        :class:`lmkp.views.views.BaseView`
+    """
+
+    @view_config(route_name='stakeholders_read_many')
+    def read_many(self, public=False):
+        """
+        Return many :term:`Stakeholders`.
+
+        .. seealso::
+            :ref:`read-many`
+
+        For each :term:`Stakeholder`, only one version is visible,
+        always the latest visible version to the current user. This
+        means that logged in users can see their own pending versions
+        and moderators of the current profile can see pending versions
+        as well. If you don't want to show pending versions, consider
+        using
+        :class:`lmkp.views.stakeholders.StakeholderView.read_many_public`
+        instead.
+
+        By default, the :term:`Stakeholders` are ordered with the
+        :term:`Stakeholder` having the most recent change being on top.
+
+        Args:
+            ``public`` (bool): A boolean indicating whether to return
+            only versions visible to the public (eg. pending) or not.
+
+        Matchdict parameters:
+
+            ``/stakeholders/{output}``
+
+            ``output`` (str): If the output format is not valid, a 404
+            Response is returned.
+
+            The following output formats are supported:
+
+                ``json``: Return the :term:`Stakeholders` as JSON.
+
+                ``html``: Return the :term:`Stakeholders` as HTML (eg.
+                the `Grid View`)
+
+                ``form``: Returns the form to create a new
+                :term:`Stakeholder`.
+
+                ``download``: Returns the page to download
+                :term:`Stakeholders`.
+
+        Request parameters:
+            ``page`` (int): The page parameter is used to paginate
+            :term:`Items`. In combination with ``pagesize`` it defines
+            the offset.
+
+            ``pagesize`` (int): The pagesize parameter defines how many
+            :term:`Items` are displayed at once. It is used in
+            combination with ``page`` to allow pagination.
+
+            ``status`` (str): Use the status parameter to limit results
+            to displaying only versions with a certain :term:`status`.
+
+        Returns:
+            ``HTTPResponse``. Either a HTML or a JSON response.
+        """
+
+        output_format = get_output_format(self.request)
+
+        if output_format == 'json':
+
+            items = stakeholder_protocol.read_many(self.request, public=False)
+
+            return render_to_response('json', items, self.request)
+
+        elif output_format == 'html':
+
+            page, page_size = get_page_parameters(self.request)
+            items = stakeholder_protocol.read_many(
+                self.request, public=public, limit=page_size,
+                offset=page_size * page - page_size)
+
+            spatial_filter = None
+            status_filter = get_status_parameter(self.request)
+            __, is_moderator = get_user_privileges(self.request)
+
+            template_values = self.get_base_template_values()
+            template_values.update({
+                'data': items['data'] if 'data' in items else [],
+                'total': items['total'] if 'total' in items else 0,
+                'spatialfilter': spatial_filter,
+                'invfilter': None,
+                'statusfilter': status_filter,
+                'currentpage': page,
+                'pagesize': page_size,
+                'is_moderator': is_moderator,
+                'handle_query_string': handle_query_string
+            })
+
+            return render_to_response(
+                get_customized_template_path(
+                    self.request, 'stakeholders/grid.mak'),
+                template_values, self.request)
+
+        elif output_format == 'form':
+
+            is_logged_in, __ = get_user_privileges(self.request)
+            if not is_logged_in:
+                raise HTTPForbidden()
+
+            new_involvement = self.request.params.get('inv', None)
+            template_values = renderForm(
+                self.request, 'stakeholders', inv=new_involvement)
+
+            if isinstance(template_values, Response):
+                return template_values
+
+            template_values.update({
+                'profile': get_current_profile(self.request),
+                'locale': get_current_locale(self.request)
+            })
+
+            return render_to_response(
+                get_customized_template_path(
+                    self.request, 'stakeholders/form.mak'),
+                template_values, self.request
+            )
+
+        elif output_format == 'download':
+
+            download_view = DownloadView(self.request)
+
+            return download_view.download_customize('stakeholders')
+
+        else:
+            raise HTTPNotFound()
+
+    @view_config(route_name='stakeholders_read_many_public')
+    def read_many_public(self):
+        """
+        Return many :term:`Stakeholders` which are visible to the
+        public.
+
+        .. seealso::
+            :class:`lmkp.views.stakeholders.StakeholderView.read_many`
+            for details on the request parameters.
+
+        In contrary to
+        :class:`lmkp.views.stakeholders.StakeholderView.read_many`, no
+        pending versions are returned even if the user is logged in.
+
+        Matchdict parameters:
+
+            ``/stakeholders/public/{output}``
+
+            ``output`` (str): If the output format is not valid, a 404
+            Response is returned.
+
+            The following output formats are supported:
+
+                ``json``: Return the :term:`Stakeholders` as JSON.
+
+                ``html``: Return the :term:`Stakeholders` as HTML (eg.
+                the `Grid View`)
+
+        Returns:
+            ``HTTPResponse``. Either a HTML or a JSON response.
+        """
+        output_format = get_output_format(self.request)
+
+        if output_format in ['json', 'html']:
+
+            return self.read_many(public=True)
+
+        else:
+            raise HTTPNotFound()
+
+    @view_config(route_name='stakeholders_byactivities')
+    @view_config(route_name='stakeholders_byactivities_all')
+    def by_activities(self, public=False):
+        """
+        Return many :term:`Stakeholders` based on :term:`Activities`.
+
+        Based on the :term:`UIDs` of one or many :term:`Activities`,
+        all :term:`Stakeholders` which are involved in the
+        :term:`Activity` are returend.
+
+        .. seealso::
+            :ref:`read-many`
+
+        For each :term:`Stakeholder`, only one version is visible,
+        always the latest visible version to the current user. This
+        means that logged in users can see their own pending versions
+        and moderators of the current profile can see pending versions
+        as well. If you don't want to show pending versions, consider
+        using
+        :class:`lmkp.views.stakeholders.StakeholderView.by_activities_public`
+        instead.
+
+        By default, the :term:`Stakeholders` are ordered with the
+        :term:`Stakeholder` having the most recent change being on top.
+
+        Args:
+            ``public`` (bool): A boolean indicating whether to return
+            only versions visible to the public (eg. pending) or not.
+
+        Matchdict parameters:
+
+            ``/stakeholders/byactivities/{output}`` or
+            ``/stakeholders/byactivities/{output}/{uids}``
+
+            ``output`` (str): If the output format is not valid, a 404
+            Response is returned.
+
+            The following output formats are supported:
+
+                ``json``: Return the :term:`Stakeholders` as JSON.
+
+                ``html``: Return the :term:`Stakeholders` as HTML (eg.
+                the `Grid View`)
+
+            ``uids`` (str): An optional comma-separated list of
+            :term:`Activity` :term:`UIDs`.
+
+        Request parameters:
+            ``page`` (int): The page parameter is used to paginate
+            :term:`Items`. In combination with ``pagesize`` it defines
+            the offset.
+
+            ``pagesize`` (int): The pagesize parameter defines how many
+            :term:`Items` are displayed at once. It is used in
+            combination with ``page`` to allow pagination.
+
+            ``status`` (str): Use the status parameter to limit results
+            to displaying only versions with a certain :term:`status`.
+
+        Returns:
+            ``HTTPResponse``. Either a HTML or a JSON response.
+        """
+        output_format = get_output_format(self.request)
+
+        uids = self.request.matchdict.get('uids', '').split(',')
+
+        # Remove any invalid UIDs
+        for uid in uids:
+            if validate_uuid(uid) is not True:
+                uids.remove(uid)
+
+        if output_format == 'json':
+
+            items = stakeholder_protocol.read_many_by_activities(
+                self.request, public=public, uids=uids)
+
+            return render_to_response('json', items, self.request)
+
+        elif output_format == 'html':
+
+            page, page_size = get_page_parameters(self.request)
+
+            items = stakeholder_protocol.read_many_by_activities(
+                self.request, public=public, uids=uids, limit=page_size,
+                offset=page_size * page - page_size)
+
+            # Show a spatial filter only if there is no involvement
+            # filter (no Activity UID set)
+            spatial_filter = None
+            if len(uids) == 0:
+                spatial_filter = 'profile' if get_bbox_parameters(
+                    self.request)[0] == 'profile' else 'map'
+            status_filter = None
+
+            __, is_moderator = get_user_privileges(self.request)
+
+            template_values = self.get_base_template_values()
+            template_values.update({
+                'data': items['data'] if 'data' in items else [],
+                'total': items['total'] if 'total' in items else 0,
+                'spatialfilter': spatial_filter,
+                'invfilter': uids,
+                'statusfilter': status_filter,
+                'currentpage': page,
+                'pagesize': page_size,
+                'is_moderator': is_moderator,
+                'handle_query_string': handle_query_string
+            })
+
+            return render_to_response(
+                get_customized_template_path(
+                    self.request, 'stakeholders/grid.mak'),
+                template_values, self.request)
+
+        else:
+            raise HTTPNotFound()
+
+    @view_config(route_name='stakeholders_byactivities_public')
+    @view_config(route_name='stakeholders_byactivities_all_public')
+    def by_activities_public(self):
+        """
+        Return many :term:`Stakeholders` based on :term:`Activities`.
+
+        Based on the :term:`UIDs` of one or many :term:`Activities`,
+        all :term:`Stakeholders` which are involved in the
+        :term:`Activity` are returend.
+
+        .. seealso::
+            :class:`lmkp.views.stakeholders.StakeholderView.by_activities`
+            for more details on the request parameters.
+
+        In contrary to
+        :class:`lmkp.views.stakeholders.StakeholderView.by_activities`,
+        no pending versions are returned even if the user is logged in.
+
+        Matchdict parameters:
+
+            ``/stakeholders/byactivities/public/{output}`` or
+            ``/stakeholders/byactivities/public/{output}/{uids}``
+
+            ``output`` (str): If the output format is not valid, a 404
+            Response is returned.
+
+            The following output formats are supported:
+
+                ``json``: Return the :term:`Stakeholders` as JSON.
+
+                ``html``: Return the :term:`Stakeholders` as HTML (eg.
+                the `Grid View`)
+
+            ``uids`` (str): An optional comma-separated list of
+            :term:`Activity` :term:`UIDs`.
+
+        Returns:
+            ``HTTPResponse``. Either a HTML or a JSON response.
+        """
+        output_format = get_output_format(self.request)
+
+        if output_format in ['json', 'html']:
+
+            return self.by_activities(public=True)
+
+        else:
+            raise HTTPNotFound()
 
 
 @view_config(route_name='stakeholders_read_one_active')
@@ -103,248 +453,6 @@ def read_one_public(request):
     if output_format == 'json':
         stakeholders = stakeholder_protocol.read_one(
             request, uid=uid, public=True)
-        return render_to_response('json', stakeholders, request)
-    elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
-    else:
-        # If the output format was not found, raise 404 error
-        raise HTTPNotFound()
-
-
-# Use route stakeholders_by_activities_all if there is no UID specified
-@view_config(route_name='stakeholders_byactivities')
-@view_config(route_name='stakeholders_byactivities_all')
-def by_activities(request):
-    """
-    Read many Stakeholders based on Activities filter params and/or an Actity
-    ID. Also returning Stakeholders by currently logged in user and all pending
-    Stakeholders if logged in as moderator.
-    Default output format: JSON
-    """
-
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'json'
-
-    uids = []
-    uidsMatchdict = request.matchdict.get('uids', None)
-    if uidsMatchdict is not None:
-        uids = uidsMatchdict.split(',')
-
-    # Remove any invalid UIDs
-    for uid in uids:
-        if validate_uuid(uid) is not True:
-            uids.remove(uid)
-
-    if output_format == 'json':
-        # Spatial filter: Show it only if there is no involvement filter (no
-        # deal uid set)
-        spatialfilter = None
-        if len(uids) == 0:
-            spatialfilter = 'profile' if get_bbox_parameters(
-                request)[0] == 'profile' else 'map'
-        stakeholders = stakeholder_protocol.read_many_by_activities(
-            request, public=False, uids=uids)
-        return render_to_response('json', stakeholders, request)
-    elif output_format == 'html':
-        """
-        Show a HTML representation of the Stakeholders of an Activity in
-        a grid.
-        """
-
-        # Get page parameter from request and make sure it is valid
-        page = request.params.get('page', 1)
-        try:
-            page = int(page)
-        except:
-            page = 1
-        page = max(page, 1)  # Page should be >= 1
-
-        # Get pagesize parameter from request and make sure it is valid
-        pageSize = request.params.get('pagesize', 10)
-        try:
-            pageSize = int(pageSize)
-        except:
-            pageSize = 10
-        pageSize = max(pageSize, 1)  # Page size should be >= 1
-        pageSize = min(pageSize, 50)  # Page size should be <= 50
-
-        # Spatial filter: Show it only if there is no involvement filter (no
-        # deal uid set)
-        spatialfilter = None
-        if len(uids) == 0:
-            spatialfilter = 'profile' if get_bbox_parameters(
-                request)[0] == 'profile' else 'map'
-
-        # Query the items with the protocol
-        items = stakeholder_protocol.read_many_by_activities(
-            request, public=False, uids=uids, limit=pageSize,
-            offset=pageSize * page - pageSize)
-
-        isLoggedIn, isModerator = get_user_privileges(request)
-
-        return render_to_response(
-            get_customized_template_path(request, 'stakeholders/grid.mak'),
-            {
-                'data': items['data'] if 'data' in items else [],
-                'total': items['total'] if 'total' in items else 0,
-                'profile': get_current_profile(request),
-                'locale': get_current_locale(request),
-                'spatialfilter': spatialfilter,
-                'invfilter': uids,
-                'statusfilter': None,
-                'currentpage': page,
-                'pagesize': pageSize,
-                'is_moderator': isModerator
-            },
-            request)
-    else:
-        # If the output format was not found, raise 404 error
-        raise HTTPNotFound()
-
-
-@view_config(route_name='stakeholders_byactivities_public')
-@view_config(route_name='stakeholders_byactivities_all_public')
-def by_activities_public(request):
-    """
-    Read many Stakeholders based on Activities filter params and/or an Activity
-    ID. Do not return any pending versions.
-    Default output format: JSON
-    """
-
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'json'
-
-    uids = []
-    uidsMatchdict = request.matchdict.get('uids', None)
-    if uidsMatchdict is not None:
-        uids = uidsMatchdict.split(',')
-
-    # Remove any invalid UIDs
-    for uid in uids:
-        if validate_uuid(uid) is not True:
-            uids.remove(uid)
-
-    if output_format == 'json':
-        stakeholders = stakeholder_protocol.read_many_by_activities(
-            request, uids=uids, public=True)
-        return render_to_response('json', stakeholders, request)
-    elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
-    else:
-        # If the output format was not found, raise 404 error
-        raise HTTPNotFound()
-
-
-@view_config(route_name='stakeholders_read_many')
-def read_many(request):
-    """
-    Read many, returns also pending Stakeholders by currently logged in
-    user and all pending Stakeholders if logged in as moderator.
-    Default output format: JSON
-    """
-
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'json'
-
-    if output_format == 'json':
-        stakeholders = stakeholder_protocol.read_many(request, public=False)
-        return render_to_response('json', stakeholders, request)
-    elif output_format == 'html':
-        """
-        Show a HTML representation of the Stakeholders in a grid.
-        """
-
-        # Get page parameter from request and make sure it is valid
-        page = request.params.get('page', 1)
-        try:
-            page = int(page)
-        except:
-            page = 1
-        page = max(page, 1)  # Page should be >= 1
-
-        # Get pagesize parameter from request and make sure it is valid
-        pageSize = request.params.get('pagesize', 10)
-        try:
-            pageSize = int(pageSize)
-        except:
-            pageSize = 10
-        pageSize = max(pageSize, 1)  # Page size should be >= 1
-        pageSize = min(pageSize, 50)  # Page size should be <= 50
-
-        items = stakeholder_protocol.read_many(
-            request, public=False, limit=pageSize,
-            offset=pageSize * page - pageSize)
-
-        statusFilter = request.params.get('status', None)
-        isLoggedIn, isModerator = get_user_privileges(request)
-
-        return render_to_response(
-            get_customized_template_path(request, 'stakeholders/grid.mak'),
-            {
-                'data': items['data'] if 'data' in items else [],
-                'total': items['total'] if 'total' in items else 0,
-                'profile': get_current_profile(request),
-                'locale': get_current_locale(request),
-                'spatialfilter': None,
-                'invfilter': None,
-                'statusfilter': statusFilter,
-                'currentpage': page,
-                'pagesize': pageSize,
-                'is_moderator': isModerator
-            },
-            request)
-
-    elif output_format == 'form':
-        # This is used to display a new and empty form for a Stakeholder.
-        if request.user is None:
-            # Make sure the user is logged in
-            raise HTTPForbidden()
-        newInvolvement = request.params.get('inv', None)
-        templateValues = renderForm(
-            request, 'stakeholders', inv=newInvolvement)
-        if isinstance(templateValues, Response):
-            return templateValues
-        templateValues['profile'] = get_current_profile(request)
-        templateValues['locale'] = get_current_locale(request)
-        return render_to_response(
-            get_customized_template_path(request, 'stakeholders/form.mak'),
-            templateValues,
-            request
-        )
-
-    elif output_format == 'download':
-        # The download overview page
-        download_view = DownloadView(request)
-        return download_view.download_customize('stakeholders')
-
-    else:
-        # If the output format was not found, raise 404 error
-        raise HTTPNotFound()
-
-
-@view_config(route_name='stakeholders_read_many_public')
-def read_many_public(request):
-    """
-    Read many, returns also pending Stakeholders by currently logged in
-    user and all pending Stakeholders if logged in as moderator.
-    Default output format: JSON
-    """
-
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'json'
-
-    if output_format == 'json':
-        stakeholders = stakeholder_protocol.read_many(request, public=True)
         return render_to_response('json', stakeholders, request)
     elif output_format == 'html':
         #@TODO
