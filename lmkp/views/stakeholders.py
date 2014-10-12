@@ -6,13 +6,13 @@ from pyramid.httpexceptions import (
     HTTPNotFound,
     HTTPUnauthorized,
 )
-from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
 from pyramid.renderers import render_to_response
 from pyramid.response import Response
-from pyramid.security import ACLAllowed
-from pyramid.security import authenticated_userid
-from pyramid.security import has_permission
+from pyramid.security import (
+    ACLAllowed,
+    has_permission,
+)
 from pyramid.view import view_config
 
 from lmkp.authentication import get_user_privileges
@@ -23,7 +23,6 @@ from lmkp.models.database_objects import (
     SH_Tag,
     SH_Tag_Group,
     Stakeholder,
-    User,
 )
 from lmkp.models.meta import DBSession as Session
 from lmkp.utils import (
@@ -565,8 +564,6 @@ class StakeholderView(BaseView):
                 if not is_logged_in or not is_moderator:
                     raise HTTPForbidden()
 
-            camefrom = self.request.params.get('camefrom', '')
-
             review = StakeholderReview(self.request)
             is_review = output_format == 'review'
             available_versions = review._get_available_versions(
@@ -662,7 +659,7 @@ class StakeholderView(BaseView):
                 'missingKeys': missing_keys,
                 'reviewable': reviewable,
                 'recalculated': recalculated,
-                'camefrom': camefrom,
+                'camefrom': self.request.params.get('camefrom', ''),
             })
 
             if output_format == 'review':
