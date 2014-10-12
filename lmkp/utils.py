@@ -81,6 +81,23 @@ def validate_uuid(uuid):
     return uuid4hex.match(uuid) is not None
 
 
+def shorten_uuid(uuid):
+    """
+    Return a short representation of a Universally Unique Identifier (
+    :term:`UUID`).
+
+    Args:
+        ``uuid`` (str): The string representation of a :term:`UUID`.
+
+    Returns:
+        ``str``. A short representation of the :term:`UUID` or an empty
+        string if the :term:`UUID` is not valid.
+    """
+    if validate_uuid(uuid) is True:
+        return uuid.split("-")[0]
+    return ''
+
+
 def handle_query_string(url, add=[], remove=[], return_value='full_url'):
     """
     Update the query string of an URL. Keeps existing, adds or removes

@@ -1,13 +1,14 @@
 import logging
-from pyramid.httpexceptions import HTTPForbidden
-from pyramid.httpexceptions import HTTPUnauthorized
-from pyramid.httpexceptions import HTTPBadRequest
-from pyramid.httpexceptions import HTTPNotFound
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import (
+    HTTPBadRequest,
+    HTTPForbidden,
+    HTTPFound,
+    HTTPNotFound,
+    HTTPUnauthorized,
+)
 from pyramid.i18n import TranslationStringFactory
 from pyramid.i18n import get_localizer
 from pyramid.renderers import render_to_response
-from pyramid.renderers import render
 from pyramid.response import Response
 from pyramid.security import ACLAllowed
 from pyramid.security import authenticated_userid
@@ -25,7 +26,11 @@ from lmkp.models.database_objects import (
     User,
 )
 from lmkp.models.meta import DBSession as Session
-from lmkp.utils import validate_uuid
+from lmkp.utils import (
+    handle_query_string,
+    shorten_uuid,
+    validate_uuid,
+)
 from lmkp.views.comments import comments_sitekey
 from lmkp.views.config import get_mandatory_keys
 from lmkp.views.download import DownloadView
@@ -47,690 +52,871 @@ from lmkp.views.views import (
     get_bbox_parameters,
     get_current_locale,
     get_current_profile,
+    get_output_format,
+    get_page_parameters,
+    get_status_parameter,
 )
 
 
 log = logging.getLogger(__name__)
-_ = TranslationStringFactory('lmkp')
 stakeholder_protocol = StakeholderProtocol3(Session)
 
 
-@view_config(route_name='stakeholders_read_one_active')
-def read_one_active(request):
+class StakeholderView(BaseView):
     """
-    Read one Stakeholder based on ID and return only the active version of the
-    Stakeholder.
-    Default output format: JSON
-    """
+    This is the main class for viewing :term:`Stakeholders`.
 
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'json'
-
-    uid = request.matchdict.get('uid', None)
-    if validate_uuid(uid) is not True:
-        raise HTTPNotFound()
-
-    if output_format == 'json':
-        stakeholders = stakeholder_protocol.read_one_active(request, uid=uid)
-        return render_to_response('json', stakeholders, request)
-    elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
-    else:
-        # If the output format was not found, raise 404 error
-        raise HTTPNotFound()
-
-
-@view_config(route_name='stakeholders_read_one_public')
-def read_one_public(request):
-    """
-    Read one Stakeholder based on ID and return all versions of this
-    Stakeholder. Do not return any pending versions.
-    Default output format: JSON
+    Inherits from:
+        :class:`lmkp.views.views.BaseView`
     """
 
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'json'
-
-    uid = request.matchdict.get('uid', None)
-    if validate_uuid(uid) is not True:
-        raise HTTPNotFound()
-
-    if output_format == 'json':
-        stakeholders = stakeholder_protocol.read_one(
-            request, uid=uid, public=True)
-        return render_to_response('json', stakeholders, request)
-    elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
-    else:
-        # If the output format was not found, raise 404 error
-        raise HTTPNotFound()
-
-
-# Use route stakeholders_by_activities_all if there is no UID specified
-@view_config(route_name='stakeholders_byactivities')
-@view_config(route_name='stakeholders_byactivities_all')
-def by_activities(request):
-    """
-    Read many Stakeholders based on Activities filter params and/or an Actity
-    ID. Also returning Stakeholders by currently logged in user and all pending
-    Stakeholders if logged in as moderator.
-    Default output format: JSON
-    """
-
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'json'
-
-    uids = []
-    uidsMatchdict = request.matchdict.get('uids', None)
-    if uidsMatchdict is not None:
-        uids = uidsMatchdict.split(',')
-
-    # Remove any invalid UIDs
-    for uid in uids:
-        if validate_uuid(uid) is not True:
-            uids.remove(uid)
-
-    if output_format == 'json':
-        # Spatial filter: Show it only if there is no involvement filter (no
-        # deal uid set)
-        spatialfilter = None
-        if len(uids) == 0:
-            spatialfilter = 'profile' if get_bbox_parameters(
-                request)[0] == 'profile' else 'map'
-        stakeholders = stakeholder_protocol.read_many_by_activities(
-            request, public=False, uids=uids)
-        return render_to_response('json', stakeholders, request)
-    elif output_format == 'html':
+    @view_config(route_name='stakeholders_read_many')
+    def read_many(self, public=False):
         """
-        Show a HTML representation of the Stakeholders of an Activity in
-        a grid.
+        Return many :term:`Stakeholders`.
+
+        .. seealso::
+            :ref:`read-many`
+
+        For each :term:`Stakeholder`, only one version is visible,
+        always the latest visible version to the current user. This
+        means that logged in users can see their own pending versions
+        and moderators of the current profile can see pending versions
+        as well. If you don't want to show pending versions, consider
+        using
+        :class:`lmkp.views.stakeholders.StakeholderView.read_many_public`
+        instead.
+
+        By default, the :term:`Stakeholders` are ordered with the
+        :term:`Stakeholder` having the most recent change being on top.
+
+        Args:
+            ``public`` (bool): A boolean indicating whether to return
+            only versions visible to the public (eg. pending) or not.
+
+        Matchdict parameters:
+
+            ``/stakeholders/{output}``
+
+            ``output`` (str): If the output format is not valid, a 404
+            Response is returned.
+
+            The following output formats are supported:
+
+                ``json``: Return the :term:`Stakeholders` as JSON.
+
+                ``html``: Return the :term:`Stakeholders` as HTML (eg.
+                the `Grid View`)
+
+                ``form``: Returns the form to create a new
+                :term:`Stakeholder`.
+
+                ``download``: Returns the page to download
+                :term:`Stakeholders`.
+
+        Request parameters:
+            ``page`` (int): The page parameter is used to paginate
+            :term:`Items`. In combination with ``pagesize`` it defines
+            the offset.
+
+            ``pagesize`` (int): The pagesize parameter defines how many
+            :term:`Items` are displayed at once. It is used in
+            combination with ``page`` to allow pagination.
+
+            ``status`` (str): Use the status parameter to limit results
+            to displaying only versions with a certain :term:`status`.
+
+        Returns:
+            ``HTTPResponse``. Either a HTML or a JSON response.
         """
 
-        # Get page parameter from request and make sure it is valid
-        page = request.params.get('page', 1)
-        try:
-            page = int(page)
-        except:
-            page = 1
-        page = max(page, 1)  # Page should be >= 1
+        output_format = get_output_format(self.request)
 
-        # Get pagesize parameter from request and make sure it is valid
-        pageSize = request.params.get('pagesize', 10)
-        try:
-            pageSize = int(pageSize)
-        except:
-            pageSize = 10
-        pageSize = max(pageSize, 1)  # Page size should be >= 1
-        pageSize = min(pageSize, 50)  # Page size should be <= 50
+        if output_format == 'json':
 
-        # Spatial filter: Show it only if there is no involvement filter (no
-        # deal uid set)
-        spatialfilter = None
-        if len(uids) == 0:
-            spatialfilter = 'profile' if get_bbox_parameters(
-                request)[0] == 'profile' else 'map'
+            items = stakeholder_protocol.read_many(self.request, public=False)
 
-        # Query the items with the protocol
-        items = stakeholder_protocol.read_many_by_activities(
-            request, public=False, uids=uids, limit=pageSize,
-            offset=pageSize * page - pageSize)
+            return render_to_response('json', items, self.request)
 
-        isLoggedIn, isModerator = get_user_privileges(request)
+        elif output_format == 'html':
 
-        return render_to_response(
-            get_customized_template_path(request, 'stakeholders/grid.mak'),
-            {
+            page, page_size = get_page_parameters(self.request)
+            items = stakeholder_protocol.read_many(
+                self.request, public=public, limit=page_size,
+                offset=page_size * page - page_size)
+
+            spatial_filter = None
+            status_filter = get_status_parameter(self.request)
+            __, is_moderator = get_user_privileges(self.request)
+
+            template_values = self.get_base_template_values()
+            template_values.update({
                 'data': items['data'] if 'data' in items else [],
                 'total': items['total'] if 'total' in items else 0,
-                'profile': get_current_profile(request),
-                'locale': get_current_locale(request),
-                'spatialfilter': spatialfilter,
-                'invfilter': uids,
-                'statusfilter': None,
-                'currentpage': page,
-                'pagesize': pageSize,
-                'is_moderator': isModerator
-            },
-            request)
-    else:
-        # If the output format was not found, raise 404 error
-        raise HTTPNotFound()
-
-
-@view_config(route_name='stakeholders_byactivities_public')
-@view_config(route_name='stakeholders_byactivities_all_public')
-def by_activities_public(request):
-    """
-    Read many Stakeholders based on Activities filter params and/or an Activity
-    ID. Do not return any pending versions.
-    Default output format: JSON
-    """
-
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'json'
-
-    uids = []
-    uidsMatchdict = request.matchdict.get('uids', None)
-    if uidsMatchdict is not None:
-        uids = uidsMatchdict.split(',')
-
-    # Remove any invalid UIDs
-    for uid in uids:
-        if validate_uuid(uid) is not True:
-            uids.remove(uid)
-
-    if output_format == 'json':
-        stakeholders = stakeholder_protocol.read_many_by_activities(
-            request, uids=uids, public=True)
-        return render_to_response('json', stakeholders, request)
-    elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
-    else:
-        # If the output format was not found, raise 404 error
-        raise HTTPNotFound()
-
-
-@view_config(route_name='stakeholders_read_many')
-def read_many(request):
-    """
-    Read many, returns also pending Stakeholders by currently logged in
-    user and all pending Stakeholders if logged in as moderator.
-    Default output format: JSON
-    """
-
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'json'
-
-    if output_format == 'json':
-        stakeholders = stakeholder_protocol.read_many(request, public=False)
-        return render_to_response('json', stakeholders, request)
-    elif output_format == 'html':
-        """
-        Show a HTML representation of the Stakeholders in a grid.
-        """
-
-        # Get page parameter from request and make sure it is valid
-        page = request.params.get('page', 1)
-        try:
-            page = int(page)
-        except:
-            page = 1
-        page = max(page, 1)  # Page should be >= 1
-
-        # Get pagesize parameter from request and make sure it is valid
-        pageSize = request.params.get('pagesize', 10)
-        try:
-            pageSize = int(pageSize)
-        except:
-            pageSize = 10
-        pageSize = max(pageSize, 1)  # Page size should be >= 1
-        pageSize = min(pageSize, 50)  # Page size should be <= 50
-
-        items = stakeholder_protocol.read_many(
-            request, public=False, limit=pageSize,
-            offset=pageSize * page - pageSize)
-
-        statusFilter = request.params.get('status', None)
-        isLoggedIn, isModerator = get_user_privileges(request)
-
-        return render_to_response(
-            get_customized_template_path(request, 'stakeholders/grid.mak'),
-            {
-                'data': items['data'] if 'data' in items else [],
-                'total': items['total'] if 'total' in items else 0,
-                'profile': get_current_profile(request),
-                'locale': get_current_locale(request),
-                'spatialfilter': None,
+                'spatialfilter': spatial_filter,
                 'invfilter': None,
-                'statusfilter': statusFilter,
+                'statusfilter': status_filter,
                 'currentpage': page,
-                'pagesize': pageSize,
-                'is_moderator': isModerator
-            },
-            request)
+                'pagesize': page_size,
+                'is_moderator': is_moderator,
+                'handle_query_string': handle_query_string
+            })
 
-    elif output_format == 'form':
-        # This is used to display a new and empty form for a Stakeholder.
-        if request.user is None:
-            # Make sure the user is logged in
-            raise HTTPForbidden()
-        newInvolvement = request.params.get('inv', None)
-        templateValues = renderForm(
-            request, 'stakeholders', inv=newInvolvement)
-        if isinstance(templateValues, Response):
-            return templateValues
-        templateValues['profile'] = get_current_profile(request)
-        templateValues['locale'] = get_current_locale(request)
-        return render_to_response(
-            get_customized_template_path(request, 'stakeholders/form.mak'),
-            templateValues,
-            request
-        )
+            return render_to_response(
+                get_customized_template_path(
+                    self.request, 'stakeholders/grid.mak'),
+                template_values, self.request)
 
-    elif output_format == 'download':
-        # The download overview page
-        download_view = DownloadView(request)
-        return download_view.download_customize('stakeholders')
+        elif output_format == 'form':
 
-    else:
-        # If the output format was not found, raise 404 error
-        raise HTTPNotFound()
-
-
-@view_config(route_name='stakeholders_read_many_public')
-def read_many_public(request):
-    """
-    Read many, returns also pending Stakeholders by currently logged in
-    user and all pending Stakeholders if logged in as moderator.
-    Default output format: JSON
-    """
-
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'json'
-
-    if output_format == 'json':
-        stakeholders = stakeholder_protocol.read_many(request, public=True)
-        return render_to_response('json', stakeholders, request)
-    elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
-    else:
-        # If the output format was not found, raise 404 error
-        raise HTTPNotFound()
-
-
-@view_config(
-    route_name='stakeholders_read_many_pending', permission='moderate')
-def read_many_pending(request):
-    """
-    Read many pending Stakeholders.
-    Default output format: JSON
-    """
-
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'json'
-
-    if output_format == 'json':
-        stakeholders = stakeholder_protocol.read_many_pending(request)
-        return render_to_response('json', stakeholders, request)
-    elif output_format == 'html':
-        #@TODO
-        return render_to_response('json', {'HTML': 'Coming soon'}, request)
-    else:
-        # If the output format was not found, raise 404 error
-        raise HTTPNotFound()
-
-
-@view_config(route_name='stakeholders_read_one')
-def read_one(request):
-    """
-    Read one Stakeholder based on ID and return all versions of this
-    Stakeholder. Also return pending versions by currently logged in user and
-    all pending versions of this Stakeholder if logged in as moderator.
-    Default output format: JSON
-    """
-
-    # Handle the parameters (locale, profile)
-    bv = BaseView(request)
-    bv._handle_parameters()
-
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'json'
-
-    uid = request.matchdict.get('uid', None)
-    if validate_uuid(uid) is not True:
-        raise HTTPNotFound()
-
-    translate = request.params.get('translate', 'true') == 'true'
-
-    if output_format == 'json':
-        stakeholders = stakeholder_protocol.read_one(
-            request, uid=uid, public=False, translate=translate)
-        return render_to_response('json', stakeholders, request)
-    elif output_format == 'html':
-        # Show the details of a Stakeholder by rendering the form in readonly
-        # mode.
-        stakeholders = stakeholder_protocol.read_one(
-            request, uid=uid, public=False, translate=False)
-        version = request.params.get('v', None)
-        if (stakeholders and 'data' in stakeholders
-                and len(stakeholders['data']) != 0):
-            for sh in stakeholders['data']:
-                if 'version' in sh:
-                    if version is None:
-                        # If there is no version provided, show the first
-                        # version visible to the user
-                        version = str(sh['version'])
-                    if str(sh['version']) == version:
-                        templateValues = renderReadonlyForm(
-                            request, 'stakeholders', sh)
-                        templateValues['profile'] = get_current_profile(
-                            request)
-                        templateValues['locale'] = get_current_locale(request)
-
-                        # Append the short uid and the uid to the templates
-                        # values
-                        templateValues['uid'] = uid
-                        templateValues['shortuid'] = uid.split("-")[0]
-                        # Append also the site key from the commenting system
-                        templateValues['site_key'] = comments_sitekey(
-                            request)['site_key']
-                        # and the url of the commenting system
-                        templateValues['comments_url'] = request.registry.\
-                            settings['lmkp.comments_url']
-
-                        return render_to_response(
-                            get_customized_template_path(
-                                request, 'stakeholders/details.mak'),
-                            templateValues,
-                            request
-                        )
-        return HTTPNotFound()
-    elif output_format == 'form':
-        if request.user is None:
-            # Make sure the user is logged in
-            raise HTTPForbidden()
-        # Query the Stakeholders with the given identifier
-        stakeholders = stakeholder_protocol.read_one(
-            request, uid=uid, public=False, translate=False)
-        version = request.params.get('v', None)
-        if (stakeholders and 'data' in stakeholders
-                and len(stakeholders['data']) != 0):
-            for sh in stakeholders['data']:
-                if 'version' in sh:
-                    if version is None:
-                        # If there is no version provided, show the first
-                        # version visible to the user
-                        version = str(sh['version'])
-                    if str(sh['version']) == version:
-                        templateValues = renderForm(
-                            request, 'stakeholders', itemJson=sh)
-                        if isinstance(templateValues, Response):
-                            return templateValues
-                        templateValues['profile'] = get_current_profile(
-                            request)
-                        templateValues['locale'] = get_current_locale(request)
-                        return render_to_response(
-                            get_customized_template_path(
-                                request, 'stakeholders/form.mak'),
-                            templateValues,
-                            request
-                        )
-        return HTTPNotFound()
-    elif output_format in ['review', 'compare']:
-        if output_format == 'review':
-            # Only moderators can see the review page.
-            isLoggedIn, isModerator = get_user_privileges(request)
-            if isLoggedIn is False or isModerator is False:
+            is_logged_in, __ = get_user_privileges(self.request)
+            if not is_logged_in:
                 raise HTTPForbidden()
 
-        camefrom = request.params.get('camefrom', '')
+            new_involvement = self.request.params.get('inv', None)
+            template_values = renderForm(
+                self.request, 'stakeholders', inv=new_involvement)
 
-        review = StakeholderReview(request)
-        availableVersions = None
-        recalculated = False
-        defaultRefVersion, defaultNewVersion = review._get_valid_versions(
-            Stakeholder, uid)
+            if isinstance(template_values, Response):
+                return template_values
 
-        refVersion = request.params.get('ref', None)
-        if refVersion is not None:
+            template_values.update({
+                'profile': get_current_profile(self.request),
+                'locale': get_current_locale(self.request)
+            })
+
+            return render_to_response(
+                get_customized_template_path(
+                    self.request, 'stakeholders/form.mak'),
+                template_values, self.request
+            )
+
+        elif output_format == 'download':
+
+            download_view = DownloadView(self.request)
+
+            return download_view.download_customize('stakeholders')
+
+        else:
+            raise HTTPNotFound()
+
+    @view_config(route_name='stakeholders_read_many_public')
+    def read_many_public(self):
+        """
+        Return many :term:`Stakeholders` which are visible to the
+        public.
+
+        .. seealso::
+            :class:`lmkp.views.stakeholders.StakeholderView.read_many`
+            for details on the request parameters.
+
+        In contrary to
+        :class:`lmkp.views.stakeholders.StakeholderView.read_many`, no
+        pending versions are returned even if the user is logged in.
+
+        Matchdict parameters:
+
+            ``/stakeholders/public/{output}``
+
+            ``output`` (str): If the output format is not valid, a 404
+            Response is returned.
+
+            The following output formats are supported:
+
+                ``json``: Return the :term:`Stakeholders` as JSON.
+
+                ``html``: Return the :term:`Stakeholders` as HTML (eg.
+                the `Grid View`)
+
+        Returns:
+            ``HTTPResponse``. Either a HTML or a JSON response.
+        """
+        output_format = get_output_format(self.request)
+
+        if output_format in ['json', 'html']:
+
+            return self.read_many(public=True)
+
+        else:
+            raise HTTPNotFound()
+
+    @view_config(route_name='stakeholders_byactivities')
+    @view_config(route_name='stakeholders_byactivities_all')
+    def by_activities(self, public=False):
+        """
+        Return many :term:`Stakeholders` based on :term:`Activities`.
+
+        Based on the :term:`UIDs` of one or many :term:`Activities`,
+        all :term:`Stakeholders` which are involved in the
+        :term:`Activity` are returend.
+
+        .. seealso::
+            :ref:`read-many`
+
+        For each :term:`Stakeholder`, only one version is visible,
+        always the latest visible version to the current user. This
+        means that logged in users can see their own pending versions
+        and moderators of the current profile can see pending versions
+        as well. If you don't want to show pending versions, consider
+        using
+        :class:`lmkp.views.stakeholders.StakeholderView.by_activities_public`
+        instead.
+
+        By default, the :term:`Stakeholders` are ordered with the
+        :term:`Stakeholder` having the most recent change being on top.
+
+        Args:
+            ``public`` (bool): A boolean indicating whether to return
+            only versions visible to the public (eg. pending) or not.
+
+        Matchdict parameters:
+
+            ``/stakeholders/byactivities/{output}`` or
+            ``/stakeholders/byactivities/{output}/{uids}``
+
+            ``output`` (str): If the output format is not valid, a 404
+            Response is returned.
+
+            The following output formats are supported:
+
+                ``json``: Return the :term:`Stakeholders` as JSON.
+
+                ``html``: Return the :term:`Stakeholders` as HTML (eg.
+                the `Grid View`)
+
+            ``uids`` (str): An optional comma-separated list of
+            :term:`Activity` :term:`UIDs`.
+
+        Request parameters:
+            ``page`` (int): The page parameter is used to paginate
+            :term:`Items`. In combination with ``pagesize`` it defines
+            the offset.
+
+            ``pagesize`` (int): The pagesize parameter defines how many
+            :term:`Items` are displayed at once. It is used in
+            combination with ``page`` to allow pagination.
+
+            ``status`` (str): Use the status parameter to limit results
+            to displaying only versions with a certain :term:`status`.
+
+        Returns:
+            ``HTTPResponse``. Either a HTML or a JSON response.
+        """
+        output_format = get_output_format(self.request)
+
+        uids = self.request.matchdict.get('uids', '').split(',')
+
+        # Remove any invalid UIDs
+        for uid in uids:
+            if validate_uuid(uid) is not True:
+                uids.remove(uid)
+
+        if output_format == 'json':
+
+            items = stakeholder_protocol.read_many_by_activities(
+                self.request, public=public, uids=uids)
+
+            return render_to_response('json', items, self.request)
+
+        elif output_format == 'html':
+
+            page, page_size = get_page_parameters(self.request)
+
+            items = stakeholder_protocol.read_many_by_activities(
+                self.request, public=public, uids=uids, limit=page_size,
+                offset=page_size * page - page_size)
+
+            # Show a spatial filter only if there is no involvement
+            # filter (no Activity UID set)
+            spatial_filter = None
+            if len(uids) == 0:
+                spatial_filter = 'profile' if get_bbox_parameters(
+                    self.request)[0] == 'profile' else 'map'
+            status_filter = None
+
+            __, is_moderator = get_user_privileges(self.request)
+
+            template_values = self.get_base_template_values()
+            template_values.update({
+                'data': items['data'] if 'data' in items else [],
+                'total': items['total'] if 'total' in items else 0,
+                'spatialfilter': spatial_filter,
+                'invfilter': uids,
+                'statusfilter': status_filter,
+                'currentpage': page,
+                'pagesize': page_size,
+                'is_moderator': is_moderator,
+                'handle_query_string': handle_query_string
+            })
+
+            return render_to_response(
+                get_customized_template_path(
+                    self.request, 'stakeholders/grid.mak'),
+                template_values, self.request)
+
+        else:
+            raise HTTPNotFound()
+
+    @view_config(route_name='stakeholders_byactivities_public')
+    @view_config(route_name='stakeholders_byactivities_all_public')
+    def by_activities_public(self):
+        """
+        Return many :term:`Stakeholders` based on :term:`Activities`.
+
+        Based on the :term:`UIDs` of one or many :term:`Activities`,
+        all :term:`Stakeholders` which are involved in the
+        :term:`Activity` are returend.
+
+        .. seealso::
+            :class:`lmkp.views.stakeholders.StakeholderView.by_activities`
+            for more details on the request parameters.
+
+        In contrary to
+        :class:`lmkp.views.stakeholders.StakeholderView.by_activities`,
+        no pending versions are returned even if the user is logged in.
+
+        Matchdict parameters:
+
+            ``/stakeholders/byactivities/public/{output}`` or
+            ``/stakeholders/byactivities/public/{output}/{uids}``
+
+            ``output`` (str): If the output format is not valid, a 404
+            Response is returned.
+
+            The following output formats are supported:
+
+                ``json``: Return the :term:`Stakeholders` as JSON.
+
+                ``html``: Return the :term:`Stakeholders` as HTML (eg.
+                the `Grid View`)
+
+            ``uids`` (str): An optional comma-separated list of
+            :term:`Activity` :term:`UIDs`.
+
+        Returns:
+            ``HTTPResponse``. Either a HTML or a JSON response.
+        """
+        output_format = get_output_format(self.request)
+
+        if output_format in ['json', 'html']:
+
+            return self.by_activities(public=True)
+
+        else:
+            raise HTTPNotFound()
+
+    @view_config(route_name='stakeholders_read_one')
+    def read_one(self, public=False):
+        """
+        Return one :term:`Stakeholder`.
+
+        .. seealso::
+            :ref:`read-one`
+
+        Read one :term:`Stakeholder` or one version of a
+        :term:`Stakeholder`. By default, this is the latest visible
+        version to the current user. This means that logged in users can
+        see their own pending version and moderators of the current
+        profile can see a pending version as well. If you don't want to
+        see a version pending, consider using
+        :class:`lmkp.views.stakeholders.StakeholderView.read_one_public`
+        instead.
+
+        Args:
+            ``public`` (bool): A boolean indicating to return only a
+            version visible to the public (eg. pending) or not.
+
+        Matchdict parameters:
+
+            ``/stakeholders/{output}/{uid}``
+
+            ``output`` (str): If the output format is not valid, a 404
+            Response is returned.
+
+            The following output formats are supported:
+
+                ``json``: Return the :term:`Stakeholder` as JSON. All
+                versions visible to the current user are returned.
+
+                ``html``: Return the :term:`Stakeholder` as HTML (eg.
+                the `Detail View`).
+
+                ``form``: Returns the form to edit an existing
+                :term:`Stakeholder`.
+
+                ``compare``: Return the page to compare two versions of
+                the :term:`Stakeholder`.
+
+                ``review``: Return the page to review a pending version
+                of a :term:`Stakeholder`.
+
+            ``uid`` (str): An :term:`Stakeholder` :term:`UID`.
+
+        Request parameters:
+            ``translate`` (bool): Return translated values or not. This
+            is only valid for the output format ``json``.
+
+            ``v`` (int): Indicate a specific version to return. This is
+            only valid for the output formats ``html`` and ``form``.
+
+            ``camefrom`` (uid): Only valid for output format ``review``.
+            Indicate a :term:`Activity` to return to after reviewing the
+            :term:`Stakeholder`.
+
+            ``ref`` (int) and ``new`` (int): Indicate specific versions.
+            This is only valid for the output formats ``compare`` and
+            ``review``.
+
+        Returns:
+            ``HTTPResponse``. Either a HTML or a JSON response.
+        """
+        output_format = get_output_format(self.request)
+
+        uid = self.request.matchdict.get('uid', None)
+        if validate_uuid(uid) is not True:
+            raise HTTPNotFound()
+
+        if output_format == 'json':
+
+            translate = self.request.params.get(
+                'translate', 'true').lower() == 'true'
+
+            item = stakeholder_protocol.read_one(
+                self.request, uid=uid, public=public, translate=translate)
+
+            return render_to_response('json', item, self.request)
+
+        elif output_format == 'html':
+
+            version = self.request.params.get('v', None)
+
+            item = stakeholder_protocol.read_one(
+                self.request, uid=uid, public=public, translate=False)
+
+            for i in item.get('data', []):
+
+                item_version = i.get('version')
+                if version is None:
+                    # If there was no version provided, show the first
+                    # version visible to the user
+                    version = str(item_version)
+
+                if str(item_version) == version:
+
+                    template_values = self.get_base_template_values()
+                    template_values.update(renderReadonlyForm(
+                        self.request, 'stakeholders', i))
+                    template_values.update({
+                        'uid': uid,
+                        'shortuid': shorten_uuid(uid),
+                        'version': version,
+                        'site_key': comments_sitekey(self.request)['site_key'],
+                        'comments_url': self.request.registry.settings[
+                            'lmkp.comments_url']
+                    })
+
+                    return render_to_response(
+                        get_customized_template_path(
+                            self.request, 'stakeholders/details.mak'),
+                        template_values, self.request)
+
+            return HTTPNotFound()
+
+        elif output_format == 'form':
+
+            is_logged_in, __ = get_user_privileges(self.request)
+            if not is_logged_in:
+                raise HTTPForbidden()
+
+            version = self.request.params.get('v', None)
+
+            item = stakeholder_protocol.read_one(
+                self.request, uid=uid, public=False, translate=False)
+
+            for i in item.get('data', []):
+
+                item_version = i.get('version')
+                if version is None:
+                    # If there was no version provided, show the first
+                    # version visible to the user
+                    version = str(item_version)
+
+                if str(item_version) == version:
+
+                    template_values = renderForm(
+                        self.request, 'stakeholders', itemJson=i)
+                    if isinstance(template_values, Response):
+                        return template_values
+
+                    template_values.update(self.get_base_template_values())
+
+                    return render_to_response(
+                        get_customized_template_path(
+                            self.request, 'stakeholders/form.mak'),
+                        template_values, self.request)
+
+            return HTTPNotFound()
+
+        elif output_format in ['review', 'compare']:
+
+            if output_format == 'review':
+                # Only moderators can see the review page.
+                is_logged_in, is_moderator = get_user_privileges(self.request)
+                if not is_logged_in or not is_moderator:
+                    raise HTTPForbidden()
+
+            camefrom = self.request.params.get('camefrom', '')
+
+            review = StakeholderReview(self.request)
+            is_review = output_format == 'review'
+            available_versions = review._get_available_versions(
+                Stakeholder, uid, review=is_review)
+            recalculated = False
+            default_ref_version, default_new_version = review.\
+                _get_valid_versions(Stakeholder, uid)
+
             try:
-                refVersion = int(refVersion)
+                ref_version = int(self.request.params.get('ref'))
             except:
-                refVersion = None
-        if refVersion is None or output_format == 'review':
-            # No reference version indicated, use the default one
-            # Also use the default one for review because it cannot be changed.
-            refVersion = defaultRefVersion
-        else:
-            availableVersions = review._get_available_versions(
-                Stakeholder, uid, review=output_format == 'review')
-            # Check if the indicated reference version is valid
-            if refVersion not in [v.get('version') for v in availableVersions]:
-                refVersion = defaultRefVersion
+                ref_version = None
 
-        newVersion = request.params.get('new', None)
-        if newVersion is not None:
+            # For review or if no valid reference version is provided, use the
+            # default reference version.
+            if (output_format == 'review' or ref_version is None
+                    or ref_version not in [
+                        v.get('version') for v in available_versions]):
+                ref_version = default_ref_version
+
             try:
-                newVersion = int(newVersion)
+                new_version = int(self.request.params.get('new'))
             except:
-                newVersion = None
-        if newVersion is None:
-            # No new version indicated, use the default one
-            newVersion = defaultNewVersion
+                new_version = None
+
+            if new_version is None or new_version not in [
+                    v.get('version') for v in available_versions]:
+                new_version = default_new_version
+
+            if output_format == 'review':
+                # If the Items are to be reviewed, only the changes which were
+                # applied to the new_version are of interest
+                items, recalculated = review.get_comparison(
+                    Stakeholder, uid, ref_version, new_version)
+            else:
+                # If the Items are to be compared, the versions as they are
+                # stored in the database are of interest, without any
+                # recalculation
+                items = [
+                    stakeholder_protocol.read_one_by_version(
+                        self.request, uid, ref_version, translate=False
+                    ),
+                    stakeholder_protocol.read_one_by_version(
+                        self.request, uid, new_version, translate=False
+                    )
+                ]
+
+            template_values = renderReadonlyCompareForm(
+                self.request, 'stakeholders', items[0], items[1],
+                review=is_review)
+
+            # Collect the metadata
+            ref_metadata = {}
+            new_metadata = {}
+            missing_keys = []
+            reviewable = False
+            if items[0] is not None:
+                ref_metadata = items[0].get_metadata(self.request)
+            # Collect metadata and missing keys for the new version
+            if items[1] is not None:
+                new_metadata = items[1].get_metadata(self.request)
+
+                items[1].mark_complete(get_mandatory_keys(
+                    self.request, 'sh', False))
+                missing_keys = items[1]._missing_keys
+                localizer = get_localizer(self.request)
+                if localizer.locale_name != 'en':
+                    db_lang = Session.query(Language).filter(
+                        Language.locale == localizer.locale_name).first()
+                    missing_keys = get_translated_db_keys(
+                        SH_Key, missing_keys, db_lang)
+                    missing_keys = [m[1] for m in missing_keys]
+
+                reviewable = (len(missing_keys) == 0 and
+                              'reviewableMessage' in template_values
+                              and template_values['reviewableMessage'] is None)
+
+            if output_format == 'review':
+                pending_versions = []
+                for v in sorted(
+                        available_versions, key=lambda v: v.get('version')):
+                    if v.get('status') == 1:
+                        pending_versions.append(v.get('version'))
+                template_values['pendingVersions'] = pending_versions
+
+            template_values.update(self.get_base_template_values())
+            template_values.update({
+                'identifier': uid,
+                'refVersion': ref_version,
+                'refMetadata': ref_metadata,
+                'newVersion': new_version,
+                'newMetadata': new_metadata,
+                'missingKeys': missing_keys,
+                'reviewable': reviewable,
+                'recalculated': recalculated,
+                'camefrom': camefrom,
+            })
+
+            if output_format == 'review':
+                template = get_customized_template_path(
+                    self.request, 'stakeholders/review.mak')
+            else:
+                template = get_customized_template_path(
+                    self.request, 'stakeholders/compare.mak')
+
+            return render_to_response(template, template_values, self.request)
+
+        elif output_format == 'formtest':
+
+            version = self.request.params.get('v', None)
+
+            # Test if an Item is valid according to the form configuration
+            items = stakeholder_protocol.read_one(
+                self.request, uid=uid, public=False, translate=False)
+
+            for i in item.get('data', []):
+
+                item_version = i.get('version')
+                if version is None:
+                    # If there was no version provided, show the first
+                    # version visible to the user
+                    version = str(item_version)
+
+                if str(item_version) == version:
+
+                    categorylist = getCategoryList(
+                        self.request, 'stakeholders')
+                    return render_to_response(
+                        'json', checkValidItemjson(categorylist, i),
+                        self.request)
+
+            return HTTPNotFound()
+
         else:
-            if availableVersions is None:
-                availableVersions = review._get_available_versions(
-                    Stakeholder, uid, review=output_format == 'review')
-            # Check if the indicated new version is valid
-            if newVersion not in [v.get('version') for v in availableVersions]:
-                newVersion = defaultNewVersion
+            raise HTTPNotFound()
 
-        if output_format == 'review':
-            # If the Stakeholders are to be reviewed, only the changes which
-            # were applied to the newVersion are of interest
-            stakeholders, recalculated = review.get_comparison(
-                Stakeholder, uid, refVersion, newVersion)
+    @view_config(route_name='stakeholders_read_one_public')
+    def read_one_public(self):
+        """
+        Return one :term:`Stakeholder`.
+
+        .. seealso::
+            :class:`lmkp.views.stakeholders.StakeholderView.read_one`
+            for details on the request parameters.
+
+        In contrary to
+        :class:`lmkp.views.stakeholders.StakeholderView.read_one`, no
+        pending versions are returned even if the user is logged in.
+
+        Matchdict parameters:
+
+            ``/stakeholders/public/{output}/{uid}``
+
+            ``output`` (str): If the output format is not valid, a 404
+            Response is returned.
+
+            The following output formats are supported:
+
+                ``json``: Return the :term:`Stakeholder` as JSON. All
+                versions visible to the current user are returned.
+
+                ``html``: Return the :term:`Stakeholder` as HTML (eg. the
+                `Detail View`).
+
+            ``uid`` (str): A :term:`Stakeholder` :term:`UID`.
+
+        Returns:
+            ``HTTPResponse``. Either a HTML or a JSON response.
+        """
+        output_format = get_output_format(self.request)
+
+        uid = self.request.matchdict.get('uid', None)
+        if validate_uuid(uid) is not True:
+            raise HTTPNotFound()
+
+        if output_format in ['json', 'html']:
+
+            return self.read_one(public=True)
+
         else:
-            # If the Stakeholders are compared, the versions as they are stored
-            # in the database are of interest, without any recalculation
-            stakeholders = [
-                stakeholder_protocol.read_one_by_version(
-                    request, uid, refVersion, translate=False
-                ),
-                stakeholder_protocol.read_one_by_version(
-                    request, uid, newVersion, translate=False
-                )
-            ]
-        templateValues = renderReadonlyCompareForm(
-            request, 'stakeholders', stakeholders[0], stakeholders[1],
-            review=output_format == 'review')
-        # Collect metadata for the reference version
-        refMetadata = {}
-        if stakeholders[0] is not None:
-            refMetadata = stakeholders[0].get_metadata(request)
-        # Collect metadata and missing keys for the new version
-        newMetadata = {}
-        missingKeys = []
-        reviewable = False
-        if stakeholders[1] is not None:
-            stakeholders[1].mark_complete(
-                get_mandatory_keys(request, 'sh', False))
-            missingKeys = stakeholders[1]._missing_keys
-            localizer = get_localizer(request)
-            if localizer.locale_name != 'en':
-                db_lang = Session.query(Language).filter(
-                    Language.locale == localizer.locale_name).first()
-                missingKeys = get_translated_db_keys(
-                    SH_Key, missingKeys, db_lang)
-                missingKeys = [m[1] for m in missingKeys]
-            newMetadata = stakeholders[1].get_metadata(request)
+            raise HTTPNotFound()
 
-            reviewable = (
-                len(missingKeys) == 0 and 'reviewableMessage' in templateValues
-                and templateValues['reviewableMessage'] is None)
+    @view_config(route_name='stakeholders_read_one_active')
+    def read_one_active(self):
+        """
+        Return one active :term:`Stakeholder`.
 
-        if output_format == 'review':
-            pendingVersions = []
-            if availableVersions is None:
-                availableVersions = review._get_available_versions(
-                    Stakeholder, uid, review=output_format == 'review')
-            for v in sorted(availableVersions, key=lambda v: v.get('version')):
-                if v.get('status') == 1:
-                    pendingVersions.append(v.get('version'))
-            templateValues['pendingVersions'] = pendingVersions
+        .. seealso::
+            :ref:`read-one`
 
-        templateValues.update({
-            'identifier': uid,
-            'refVersion': refVersion,
-            'refMetadata': refMetadata,
-            'newVersion': newVersion,
-            'newMetadata': newMetadata,
-            'missingKeys': missingKeys,
-            'reviewable': reviewable,
-            'recalculated': recalculated,
-            'camefrom': camefrom,
-            'profile': get_current_profile(request),
-            'locale': get_current_locale(request)
+        Read one active :term:`Stakeholder` version. Only return the active
+        version. If there is no active version, no version is returned.
+
+        Matchdict parameters:
+
+            ``/stakeholders/active/{output}/{uid}``
+
+            ``output`` (str): If the output format is not valid, a 404
+            Response is returned.
+
+            The following output formats are supported:
+
+                ``json``: Return the :term:`Stakeholder` as JSON. All
+                versions visible to the current user are returned.
+
+            ``uid`` (str): A :term:`Stakeholder` :term:`UID`.
+
+        Returns:
+            ``HTTPResponse``. Either a HTML or a JSON response.
+        """
+        output_format = get_output_format(self.request)
+
+        uid = self.request.matchdict.get('uid', None)
+        if validate_uuid(uid) is not True:
+            raise HTTPNotFound()
+
+        if output_format == 'json':
+
+            item = stakeholder_protocol.read_one_active(self.request, uid=uid)
+
+            return render_to_response('json', item, self.request)
+
+        else:
+            raise HTTPNotFound()
+
+    @view_config(route_name='stakeholders_read_one_history')
+    def history(self):
+        """
+        Return the history of an :term:`Stakeholder`.
+
+        Logged in users can see their own pending versions and
+        moderators of the current profile can see pending versions as
+        well.
+
+        By default, the versions are ordered with the most recent
+        changes being on top.
+
+        Matchdict parameters:
+
+            ``/stakeholders/history/{output}/{uid}``
+
+            ``output`` (str): If the output format is not valid, a 404
+            Response is returned.
+
+            The following output formats are supported:
+
+                ``html``: Return the history view as HTML.
+
+                ``rss``: Return history view as RSS feed.
+
+            ``uid`` (str): A :term:`Stakeholder` :term:`UID`.
+
+        Returns:
+            ``HTTPResponse``. Either a HTML or a JSON response.
+        """
+        output_format = get_output_format(self.request)
+
+        uid = self.request.matchdict.get('uid', None)
+        if validate_uuid(uid) is not True:
+            raise HTTPNotFound()
+
+        __, is_moderator = get_user_privileges(self.request)
+        items, count = stakeholder_protocol.read_one_history(
+            self.request, uid=uid)
+
+        active_version = None
+        for i in items:
+            if 'statusName' in i:
+                i['statusName'] = get_translated_status(
+                    self.request, i['statusName'])
+            if i.get('statusId') == 2:
+                active_version = i.get('version')
+
+        template_values = self.get_base_template_values()
+
+        template_values.update({
+            'versions': items,
+            'count': count,
+            'activeVersion': active_version,
+            'isModerator': is_moderator
         })
 
-        if output_format == 'review':
-            return render_to_response(
-                get_customized_template_path(
-                    request, 'stakeholders/review.mak'),
-                templateValues,
-                request
-            )
+        if output_format == 'html':
+            template = get_customized_template_path(
+                self.request, 'stakeholders/history.mak')
+
+        elif output_format == 'rss':
+            template = get_customized_template_path(
+                self.request, 'stakeholders/history_rss.mak')
+
         else:
-            return render_to_response(
-                get_customized_template_path(
-                    request, 'stakeholders/compare.mak'),
-                templateValues,
-                request
-            )
-    elif output_format == 'formtest':
-        # Test if a Stakeholder is valid according to the form configuration
-        stakeholders = stakeholder_protocol.read_one(
-            request, uid=uid, public=False, translate=False)
-        version = request.params.get('v', None)
-        if (stakeholders and 'data' in stakeholders
-                and len(stakeholders['data']) != 0):
-            for sh in stakeholders['data']:
-                if 'version' in sh:
-                    if version is None:
-                        version = str(sh['version'])
-                    if str(sh['version']) == version:
-                        categorylist = getCategoryList(request, 'stakeholders')
-                        return render_to_response(
-                            'json', checkValidItemjson(categorylist, sh),
-                            request)
-        return HTTPNotFound()
-    else:
-        # If the output format was not found, raise 404 error
-        raise HTTPNotFound()
+            raise HTTPNotFound()
 
+        return render_to_response(template, template_values, self.request)
 
-@view_config(route_name='stakeholders_read_one_history')
-def read_one_history(request):
-    # Handle the parameters (locale, profile)
-    bv = BaseView(request)
-    bv._handle_parameters()
+    @view_config(route_name='stakeholders_review', renderer='json')
+    def review(self):
+        """
+        Review a pending :term:`Stakeholder` version.
 
-    try:
-        output_format = request.matchdict['output']
-    except KeyError:
-        output_format = 'html'
+        A review can only be done by moderators.
 
-    uid = request.matchdict.get('uid', None)
-    if validate_uuid(uid) is not True:
-        raise HTTPNotFound()
-    isLoggedIn, isModerator = get_user_privileges(request)
-    stakeholders, count = stakeholder_protocol.read_one_history(
-        request, uid=uid)
-    activeVersion = None
-    for sh in stakeholders:
-        if 'statusName' in sh:
-            sh['statusName'] = get_translated_status(request, sh['statusName'])
-        if sh.get('statusId') == 2:
-            activeVersion = sh.get('version')
+        POST parameters:
 
-    templateValues = {
-        'versions': stakeholders,
-        'count': count,
-        'activeVersion': activeVersion,
-        'isModerator': isModerator
-    }
-    templateValues.update({
-        'profile': get_current_profile(request),
-        'locale': get_current_locale(request)
-    })
+            ``identifier`` (str): An :term:`Stakeholder` :term:`UID`.
 
-    if output_format == 'html':
-        template = 'stakeholders/history.mak'
+            ``version`` (int): The version of the :term:`Stakeholder` to
+            be reviewed
 
-    # RSS feed output
-    elif output_format == 'rss':
-        template = 'stakeholders/history_rss.mak'
+            ``review_decision`` (str): One of ``approve`` or ``reject``.
 
-    else:
-        raise HTTPNotFound("Requested output format is not supported.")
+            ``review_comment`` (str): An optional comment to be stored
+            with the review.
 
-    return render_to_response(
-        get_customized_template_path(request, template), templateValues,
-        request)
+            ``camefrom`` (uid): An optional :term:`Activity` :term:`UID`
+            to return back to after review.
 
+        Returns:
+            ``HTTPResponse``. If the review was successful, the history
+            page of the :term:`Stakeholder` is returned.
+        """
+        is_logged_in, is_moderator = get_user_privileges(self.request)
+        if not is_logged_in:
+            raise HTTPUnauthorized('User is not logged in.')
+        if not is_moderator:
+            raise HTTPUnauthorized(
+                'User has no permissions to add a review.')
 
-@view_config(route_name='stakeholders_review', renderer='json')
-def review(request):
-    """
-    Insert a review decision for a pending Stakeholder
-    Required POST attributes:
-    - identifier (string, uid)
-    - version (int)
-    - review_decision (string): approve / reject
-    - review_comment (string): nullable
-    - camefrom: uid of the Activity
-    """
+        # Query new version of Stakeholder
+        stakeholder = Session.query(Stakeholder).\
+            filter(
+                Stakeholder.stakeholder_identifier == self.request.POST[
+                    'identifier']).\
+            filter(Stakeholder.version == self.request.POST['version']).\
+            first()
+        if stakeholder is None:
+            raise HTTPUnauthorized('The Item was not found')
 
-    _ = request.translate
+        review_decision = self.request.POST['review_decision']
+        if review_decision == 'approve':
+            review_decision = 1
+        elif review_decision == 'reject':
+            review_decision = 2
+        else:
+            raise HTTPBadRequest('No valid review decision')
 
-    # Check if the user is logged in and he/she has sufficient user rights
-    userid = authenticated_userid(request)
-    if userid is None:
-        raise HTTPUnauthorized(_('User is not logged in.'))
-    if not isinstance(
-            has_permission('moderate', request.context, request), ACLAllowed):
-        raise HTTPUnauthorized(_('User has no permissions to add a review.'))
-    user = Session.query(User).filter(
-        User.username == authenticated_userid(request)).first()
-
-    # Query new version of Stakeholder
-    stakeholder = Session.query(Stakeholder).\
-        filter(
-            Stakeholder.stakeholder_identifier == request.POST['identifier']).\
-        filter(Stakeholder.version == request.POST['version']).\
-        first()
-    if stakeholder is None:
-        raise HTTPUnauthorized(_('The Item was not found'))
-
-    # If review decision is 'approved', make sure that all mandatory fields are
-    # there, except if it is to be deleted
-    review_decision = request.POST['review_decision']
-    if review_decision == 'approve':
-        review_decision = 1
-    elif review_decision == 'reject':
-        review_decision = 2
-    else:
-        raise HTTPBadRequest(_('No valid review decision'))
-
-    review_comment = request.POST.get('review_comment', '')
-    camefrom = request.POST.get('camefrom', '')
-
-    if review_decision == 1:  # Approved
-        # Only check for mandatory keys if new version is not to be deleted
-        # (has no tag groups)
-        if len(stakeholder.tag_groups) > 0:
-            mandatory_keys = get_mandatory_keys(request, 'sh')
-            # Query keys
+        # Only check for mandatory keys if the new version is to be approved
+        # and if it is not to be deleted (in which case it has no tag groups)
+        if review_decision == 1 and len(stakeholder.tag_groups) > 0:
+            mandatory_keys = get_mandatory_keys(self.request, 'sh')
             stakeholder_keys = Session.query(SH_Key.key).\
                 join(SH_Tag).\
                 join(SH_Tag_Group, SH_Tag.fk_tag_group == SH_Tag_Group.id).\
@@ -740,68 +926,75 @@ def review(request):
                 keys.append(k.key)
             for mk in mandatory_keys:
                 if mk not in keys:
-                    raise HTTPBadRequest(_(
-                        'Not all mandatory keys are provided'))
+                    raise HTTPBadRequest(
+                        'Not all mandatory keys are provided')
 
-    # The user can add a review
-    ret = stakeholder_protocol._add_review(
-        request, stakeholder, Stakeholder, user, review_decision,
-        review_comment)
+        review = stakeholder_protocol._add_review(
+            self.request, stakeholder, Stakeholder, self.request.user,
+            review_decision, self.request.POST.get('review_comment', ''))
 
-    if 'success' not in ret or ret['success'] is False and 'msg' not in ret:
-        raise HTTPBadRequest(_('Unknown error'))
+        review_success = review.get('success', False)
+        if review_success:
+            self.request.session.flash(review.get('msg'), 'success')
+        else:
+            if review.get('msg') is None:
+                raise HTTPBadRequest('Unknown error')
+            self.request.session.flash(review.get('msg'), 'error')
 
-    if ret['success'] is True:
-        request.session.flash(ret['msg'], 'success')
-    else:
-        request.session.flash(ret['msg'], 'error')
+        # Redirect to moderation view of Activity if camefrom parameter is
+        # available
+        camefrom = self.request.POST.get('camefrom', '')
+        if camefrom != '':
+            return HTTPFound(self.request.route_url(
+                'activities_read_one', output='review', uid=camefrom))
 
-    if camefrom != '':
-        # Redirect back to moderation view of other
-        return HTTPFound(request.route_url(
-            'activities_read_one', output='review', uid=camefrom))
+        return HTTPFound(location=self.request.route_url(
+            'stakeholders_read_one_history', output='html',
+            uid=stakeholder.identifier))
 
-    return HTTPFound(location=request.route_url(
-        'stakeholders_read_one_history', output='html',
-        uid=stakeholder.identifier))
+    @view_config(route_name='stakeholders_create', renderer='json')
+    def create(self):
+        """
+        Create a new version of an :term:`Stakeholder`.
 
+        Only logged in users with edit privileges can create new
+        versions.
 
-@view_config(route_name='stakeholders_create', renderer='json')
-def create(request):
-    """
-    Add a new stakeholder.
-    Implements the create functionality (HTTP POST) in the CRUD model
+        POST parameters:
 
-    Test the POST request e.g. with
-    curl --data @line.json http://localhost:6543/stakeholders
+            ``<body>`` The JSON body must contain the diff to create the
+            new :term:`Stakeholder`.
 
-    """
+        Returns:
+            ``HTTPResponse``. A Response with status code 201 indicates
+            that the :term:`Stakeholder` was successfully created. Status
+            code 200 means that no version was created.
+        """
+        is_logged_in, __ = get_user_privileges(self.request)
 
-    # Check if the user is logged in and he/she has sufficient user rights
-    userid = authenticated_userid(request)
+        if not is_logged_in:
+            raise HTTPForbidden()
+        if not isinstance(has_permission(
+                'edit', self.request.context, self.request), ACLAllowed):
+            raise HTTPForbidden()
 
-    if userid is None:
-        raise HTTPForbidden()
-    if not isinstance(has_permission(
-            'edit', request.context, request), ACLAllowed):
-        raise HTTPForbidden()
+        ids = stakeholder_protocol.create(self.request)
 
-    ids = stakeholder_protocol.create(request)
+        response = {}
+        if ids is not None:
+            data = [i.to_json() for i in ids]
+            response.update({
+                'data': data,
+                'total': len(data),
+                'created': True,
+                'msg': 'The Stakeholder was successfully created.'
+            })
+            self.request.response.status = 201
+        else:
+            response.update({
+                'created': False,
+                'msg': 'No Stakeholder was created.'
+            })
+            self.request.response.status = 200
 
-    # TODO: Do we still need translations here? Who is using this function
-    # (since it is not Ext anymore)?
-
-    response = {}
-
-    if ids is not None:
-        response['data'] = [i.to_json() for i in ids]
-        response['total'] = len(response['data'])
-        response['created'] = True
-        response['msg'] = 'The Stakeholder was successfully created.'
-        request.response.status = 201
-    else:
-        response['created'] = False
-        response['msg'] = 'No Stakeholder was created.'
-        request.response.status = 200
-
-    return response
+        return response

@@ -1686,8 +1686,11 @@ class Protocol(object):
                             'op' in new_tg and new_tg['op'] == 'delete')
                         if deleteTaggroup:
                             old_tg['op'] = 'delete'
-                            del old_tg['main_tag']
-                            del old_tg['tags']
+                            try:
+                                del old_tg['tags']
+                                del old_tg['main_tag']
+                            except KeyError:
+                                pass
                             continue
 
                         tags_to_delete = []

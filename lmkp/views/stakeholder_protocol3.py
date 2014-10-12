@@ -297,49 +297,6 @@ class StakeholderProtocol3(Protocol):
             'data': [sh.to_table(request) for sh in stakeholders]
         }
 
-    def read_many_pending(self, request):
-
-        relevant_stakeholders = self._get_relevant_stakeholders_pending(
-            request)
-
-        # Get limit and offset from request.
-        # Defaults: limit = None / offset = 0
-        limit = self._get_limit(request)
-        offset = self._get_offset(request)
-
-        query, count = self._query_pending(
-            request, relevant_stakeholders, limit=limit, offset=offset
-        )
-
-        stakeholders = self._query_to_stakeholders(
-            request, query, involvements='none'
-        )
-
-        data = []
-        for sh in stakeholders:
-
-            # For each stakeholder, query how many pending there are
-            pending_count_query = self.Session.query(
-                Stakeholder.id
-            ).\
-                join(Changeset).\
-                filter(Stakeholder.identifier == sh.get_guid()).\
-                filter(Stakeholder.fk_status == 1).\
-                filter(Changeset.diff.like('{"stakeholders":%'))
-
-            pending_dict = {
-                'pending_count': pending_count_query.count()
-            }
-
-            data.append(
-                dict(sh.to_table(request).items() + pending_dict.items())
-            )
-
-        return {
-            'total': count,
-            'data': data
-        }
-
     def read_many_by_activities(self, request, public=True, **kwargs):
         """
         Valid kwargs:
@@ -549,53 +506,6 @@ class StakeholderProtocol3(Protocol):
                     # Order alphabetically
                     relevant_stakeholders = relevant_stakeholders.order_by(
                         asc(order_query.c.value))
-
-        return relevant_stakeholders
-
-    def _get_relevant_stakeholders_pending(self, request):
-        """
-        Always query the oldest pending version (minimum version number).
-        No filtering (neither by status, attributes).
-        """
-
-        # TODO: So far, ordering only by timestamp (using dummy order_query)
-        order_query = self.Session.query(
-            Stakeholder.id,
-            Stakeholder.timestamp_entry.label('value')  # Dummy value
-        ).\
-            subquery()
-
-        # Prepare the query to find out the oldest pending version of each
-        oldest_pending_stakeholder = self.Session.query(
-            Stakeholder.stakeholder_identifier,
-            func.min(Stakeholder.version).label('min_version')
-        ).\
-            filter(Stakeholder.fk_status == 1).\
-            group_by(Stakeholder.stakeholder_identifier).\
-            subquery()
-
-        # Create relevant Stakeholders
-        relevant_stakeholders = self.Session.query(
-            Stakeholder.id.label('order_id'),
-            order_query.c.value.label('order_value'),
-            Stakeholder.fk_status,
-            Stakeholder.stakeholder_identifier
-        ).\
-            join(oldest_pending_stakeholder, and_(
-                oldest_pending_stakeholder.c.min_version
-                == Stakeholder.version,
-                oldest_pending_stakeholder.c.stakeholder_identifier
-                == Stakeholder.stakeholder_identifier
-            )).\
-            join(Changeset).\
-            outerjoin(SH_Tag_Group).\
-            outerjoin(order_query, order_query.c.id == Stakeholder.id).\
-            filter(Changeset.diff.like('{"stakeholders":%')).\
-            group_by(Stakeholder.id, order_query.c.value)
-
-        # TODO: Order only by timestamp
-        relevant_stakeholders = relevant_stakeholders.\
-            order_by(desc(Stakeholder.timestamp_entry))
 
         return relevant_stakeholders
 
@@ -994,66 +904,6 @@ class StakeholderProtocol3(Protocol):
                  relevant_stakeholders.c.order_id == Stakeholder.id)
 
         return query
-
-    def _query_pending(
-            self, request, relevant_stakeholders, limit=None, offset=None):
-
-        # Prepare query to translate keys and values
-        localizer = get_localizer(request)
-        lang = self.Session.query(
-            Language
-        ).\
-            filter(Language.locale == localizer.locale_name).\
-            first()
-        key_translation, value_translation = self._get_translatedKV(
-            lang, SH_Key, SH_Value
-        )
-
-        count = relevant_stakeholders.count()
-
-        # Apply limit and offset
-        if limit is not None:
-            relevant_stakeholders = relevant_stakeholders.limit(limit)
-        if offset is not None:
-            relevant_stakeholders = relevant_stakeholders.offset(offset)
-
-        # Create query
-        relevant_stakeholders = relevant_stakeholders.subquery()
-        query = self.Session.query(
-            Stakeholder.id.label('id'),
-            Stakeholder.stakeholder_identifier.label('identifier'),
-            Stakeholder.version.label('version'),
-            Status.id.label('status_id'),
-            Status.name.label('status'),
-            Changeset.timestamp.label('timestamp'),
-            SH_Tag_Group.id.label('taggroup'),
-            SH_Tag_Group.tg_id.label('tg_id'),
-            SH_Tag_Group.fk_sh_tag.label('main_tag'),
-            SH_Tag.id.label('tag'),
-            SH_Key.key.label('key'),
-            SH_Value.value.label('value'),
-            key_translation.c.key_translated.label('key_translated'),
-            value_translation.c.value_translated.label('value_translated'),
-            relevant_stakeholders.c.order_value.label('order_value')
-        ).\
-            join(relevant_stakeholders,
-                 relevant_stakeholders.c.order_id == Stakeholder.id).\
-            join(Status).\
-            join(Changeset).\
-            outerjoin(SH_Tag_Group).\
-            outerjoin(SH_Tag, SH_Tag_Group.id == SH_Tag.fk_sh_tag_group).\
-            outerjoin(SH_Key).\
-            outerjoin(SH_Value, SH_Tag.fk_value == SH_Value.id).\
-            outerjoin(key_translation,
-                      key_translation.c.key_original_id == SH_Key.id).\
-            outerjoin(value_translation,
-                      value_translation.c.value_original_id == SH_Value.id)
-
-        # TODO: So far, order only by timestamp.
-        query = query.\
-            order_by(desc(relevant_stakeholders.c.order_value))
-
-        return query, count
 
     def _query_history(
             self, relevant_stakeholders, limit=None, offset=None,

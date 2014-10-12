@@ -1,9 +1,11 @@
+.. _read-one:
+
 Read One
 ========
 
-Read an Activity or a Stakeholder based on its unique identifier (UUID). 
+Read an Activity or a Stakeholder based on its unique identifier (UUID).
 
-There are 3 :ref:`read-one-variants` of this service and some 
+There are 3 :ref:`read-one-variants` of this service and some
 :ref:`read-one-parameters` can be applied.
 
 
@@ -38,7 +40,7 @@ newest on top.
     /stakeholders/json/[UUID]?[PARAMETERS]
 
 * ``UUID``: The unique identifier (UUID) of the Activity or the Stakeholder.
-* ``PARAMETERS``: Optional parameters, see :ref:`read-one-parameters` for more 
+* ``PARAMETERS``: Optional parameters, see :ref:`read-one-parameters` for more
   details.
 
 .. rubric:: Examples
@@ -68,7 +70,7 @@ newest on top.
     /stakeholders/public/json/[UUID]?[PARAMETERS]
 
 * ``UUID``: The unique identifier (UUID) of the Activity or the Stakeholder.
-* ``PARAMETERS``: Optional parameters, see :ref:`read-one-parameters` for more 
+* ``PARAMETERS``: Optional parameters, see :ref:`read-one-parameters` for more
   details.
 
 .. rubric:: Examples
@@ -94,7 +96,7 @@ available. This service therefore never returns more than 1 version.
     /stakeholders/active/json/[UUID]?[PARAMETERS]
 
 * ``UUID``: The unique identifier (UUID) of the Activity or the Stakeholder.
-* ``PARAMETERS``: Optional parameters, see :ref:`read-one-parameters` for more 
+* ``PARAMETERS``: Optional parameters, see :ref:`read-one-parameters` for more
   details.
 
 .. rubric:: Examples
@@ -119,10 +121,10 @@ Involvements
 ``involvements`` (*string*): Specify the level of details for the involvements.
 
 Possible values are:
-  
+
 * ``full`` (*default*): Full details with all the taggroups of the involvement.
-* ``short``: A short representation of the involvement, not showing any 
-  taggroups but only some attributes of the involvement itself (id, role, 
+* ``short``: A short representation of the involvement, not showing any
+  taggroups but only some attributes of the involvement itself (id, role,
   status, ...)
 * ``none``: No involvements are shown.
 
@@ -140,7 +142,7 @@ Versions
 
    This parameter is not valid for the variant :ref:`read-one-active`.
 
-``versions`` (*comma-separated list of integers*): Query specific versions. If 
+``versions`` (*comma-separated list of integers*): Query specific versions. If
 none of the versions are not found, no results are returned.
 
 .. rubric:: Examples
@@ -156,14 +158,14 @@ Geometry
 
    This parameter is only valid for Activities.
 
-``geometry`` (*string*): Specify the level of details for the geometries of an 
+``geometry`` (*string*): Specify the level of details for the geometries of an
 Activity.
 
 Possible values are:
 
 * ``-`` (*default*): Only the representative (point) geometry of the Activity is
   returned.
-* ``full``: All geometries are returned, meaning that also geometries of the 
+* ``full``: All geometries are returned, meaning that also geometries of the
   taggroups of the Activity are returned where available.
 
 .. rubric:: Examples
