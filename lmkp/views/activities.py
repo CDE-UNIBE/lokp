@@ -473,7 +473,7 @@ class ActivityView(BaseView):
 
             ``inv`` (str): Only valid for output format ``form``.
             Indicate an involvement of the form to return to after
-            creating a new Stakeholder.
+            creating a new :term:`Stakeholder`.
 
             ``ref`` (int) and ``new`` (int): Indicate specific versions.
             This is only valid for the output formats ``compare`` and
@@ -567,7 +567,7 @@ class ActivityView(BaseView):
                 if version is None:
                     # If there was no version provided, show the first
                     # version visible to the user
-                    version = item_version
+                    version = str(item_version)
 
                 if str(item_version) == version:
 
@@ -720,7 +720,7 @@ class ActivityView(BaseView):
                 if version is None:
                     # If there was no version provided, show the first
                     # version visible to the user
-                    version = item_version
+                    version = str(item_version)
 
                 if str(item_version) == version:
 
@@ -793,7 +793,6 @@ class ActivityView(BaseView):
                     self.request, 'activities/statistics.mak'),
                 templateValues, self.request)
         else:
-            # If the output format was not found, raise 404 error
             raise HTTPNotFound()
 
     @view_config(route_name='activities_read_one_public')
@@ -907,7 +906,6 @@ class ActivityView(BaseView):
             The following output formats are supported:
 
                 ``html``: Return the history view as HTML.
-                `Grid View`)
 
                 ``rss``: Return history view as RSS feed.
 
@@ -916,7 +914,6 @@ class ActivityView(BaseView):
         Returns:
             ``HTTPResponse``. Either a HTML or a JSON response.
         """
-
         output_format = get_output_format(self.request)
 
         uid = self.request.matchdict.get('uid', None)
@@ -945,18 +942,17 @@ class ActivityView(BaseView):
         })
 
         if output_format == 'html':
-            template = 'activities/history.mak'
+            template = get_customized_template_path(
+                self.request, 'activities/history.mak')
 
         elif output_format == 'rss':
-            template = 'activities/history_rss.mak'
+            template = get_customized_template_path(
+                self.request, 'activities/history_rss.mak')
 
         else:
             raise HTTPNotFound()
 
-        return render_to_response(
-            get_customized_template_path(
-                self.request, template),
-            template_values, self.request)
+        return render_to_response(template, template_values, self.request)
 
     @view_config(route_name='activities_review', renderer='json')
     def review(self):
@@ -1033,10 +1029,9 @@ class ActivityView(BaseView):
 
         review = activity_protocol._add_review(
             self.request, activity, Activity, self.request.user,
-            review_decision, self.request.POST['review_comment'])
+            review_decision, self.request.POST.get('review_comment', ''))
 
         review_success = review.get('success', False)
-
         if review_success:
             self.request.session.flash(review.get('msg'), 'success')
         else:
@@ -1078,9 +1073,10 @@ class ActivityView(BaseView):
 
         response = {}
         if ids is not None:
+            data = [i.to_json() for i in ids]
             response.update({
-                'data': [i.to_json() for i in ids],
-                'total': len(response['data']),
+                'data': data,
+                'total': len(data),
                 'created': True,
                 'msg': 'The Activity was successfully created.'
             })
@@ -1088,7 +1084,7 @@ class ActivityView(BaseView):
         else:
             response.update({
                 'created': False,
-                'msg': 'No Deal was created.'
+                'msg': 'No Activity was created.'
             })
             self.request.response.status = 200
 
