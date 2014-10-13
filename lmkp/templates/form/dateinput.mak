@@ -15,7 +15,7 @@
     </div>
     <div class="span8">
         <input type="text"
-               class="input-style"
+               class="input-style span12"
                name="${field.name}"
                value="${cstruct}"
                id="${field.oid}"

@@ -446,46 +446,6 @@ class ActivityProtocol3(Protocol):
             'data': [a.to_table(request) for a in activities]
         }
 
-    def read_many_pending(self, request):
-
-        relevant_activities = self._get_relevant_activities_pending(request)
-
-        # Get limit and offset from request.
-        # Defaults: limit = None / offset = 0
-        limit = self._get_limit(request)
-        offset = self._get_offset(request)
-
-        query, count = self._query_pending(
-            request, relevant_activities, limit=limit, offset=offset
-        )
-
-        activities = self._query_to_activities(
-            request, query, involvements='none'
-        )
-
-        data = []
-        for a in activities:
-
-            # For each activity, query how many pending there are
-            pending_count_query = self.Session.query(
-                Activity.id
-            ).\
-                filter(Activity.identifier == a.get_guid()).\
-                filter(Activity.fk_status == 1)
-
-            pending_dict = {
-                'pending_count': pending_count_query.count()
-            }
-
-            data.append(
-                dict(a.to_table(request).items() + pending_dict.items())
-            )
-
-        return {
-            'total': count,
-            'data': data
-        }
-
     def read_many_by_stakeholders(self, request, uids, public=True, **kwargs):
         """
         Valid kwargs:
@@ -746,52 +706,6 @@ class ActivityProtocol3(Protocol):
                     # Order alphabetically
                     relevant_activities = relevant_activities.order_by(
                         asc(order_query.c.value))
-
-        return relevant_activities
-
-    def _get_relevant_activities_pending(self, request):
-        """
-        Always query the oldest pending version (minimum version number).
-        No filtering (neither by status, attributes). Spatial filtering only
-        through profile bounds
-        """
-
-        # TODO: So far, ordering only by timestamp (using dummy order_query)
-        order_query = self.Session.query(
-            Activity.id,
-            Activity.timestamp_entry.label('value')  # Dummy value
-        ).\
-            subquery()
-
-        # Prepare the query to find out the oldest pending version of each
-        oldest_pending_activities = self.Session.query(
-            Activity.activity_identifier,
-            func.min(Activity.version).label('min_version')
-        ).\
-            filter(Activity.fk_status == 1).\
-            group_by(Activity.activity_identifier).\
-            subquery()
-
-        # Create relevant Activities
-        relevant_activities = self.Session.query(
-            Activity.id.label('order_id'),
-            order_query.c.value.label('order_value'),
-            Activity.fk_status,
-            Activity.activity_identifier
-        ).\
-            join(oldest_pending_activities, and_(
-                oldest_pending_activities.c.min_version == Activity.version,
-                oldest_pending_activities.c.activity_identifier
-                == Activity.activity_identifier
-            )).\
-            outerjoin(A_Tag_Group).\
-            outerjoin(order_query, order_query.c.id == Activity.id).\
-            filter(self._get_spatial_moderator_filter(request)).\
-            group_by(Activity.id, order_query.c.value)
-
-        # TODO: Order only by timestamp
-        relevant_activities = relevant_activities.\
-            order_by(desc(Activity.timestamp_entry))
 
         return relevant_activities
 
@@ -1190,67 +1104,6 @@ class ActivityProtocol3(Protocol):
                  relevant_activities.c.order_id == Stakeholder.id)
 
         return query
-
-    def _query_pending(
-            self, request, relevant_activities, limit=None, offset=None):
-
-        # Prepare query to translate keys and values
-        localizer = get_localizer(request)
-        lang = self.Session.query(
-            Language
-        ).\
-            filter(Language.locale == localizer.locale_name).\
-            first()
-        key_translation, value_translation = self._get_translatedKV(
-            lang, A_Key, A_Value
-        )
-
-        count = relevant_activities.count()
-
-        # Apply limit and offset
-        if limit is not None:
-            relevant_activities = relevant_activities.limit(limit)
-        if offset is not None:
-            relevant_activities = relevant_activities.offset(offset)
-
-        # Create query
-        relevant_activities = relevant_activities.subquery()
-        query = self.Session.query(
-            Activity.id.label('id'),
-            Activity.activity_identifier.label('identifier'),
-            Activity.point.label('geometry'),
-            Activity.version.label('version'),
-            Status.id.label('status_id'),
-            Status.name.label('status'),
-            Changeset.timestamp.label('timestamp'),
-            A_Tag_Group.id.label('taggroup'),
-            A_Tag_Group.tg_id.label('tg_id'),
-            A_Tag_Group.fk_a_tag.label('main_tag'),
-            A_Tag.id.label('tag'),
-            A_Key.key.label('key'),
-            A_Value.value.label('value'),
-            key_translation.c.key_translated.label('key_translated'),
-            value_translation.c.value_translated.label('value_translated'),
-            relevant_activities.c.order_value.label('order_value')
-        ).\
-            join(relevant_activities,
-                 relevant_activities.c.order_id == Activity.id).\
-            join(Status).\
-            join(Changeset).\
-            outerjoin(A_Tag_Group).\
-            outerjoin(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
-            outerjoin(A_Key).\
-            outerjoin(A_Value, A_Tag.fk_value == A_Value.id).\
-            outerjoin(key_translation,
-                      key_translation.c.key_original_id == A_Key.id).\
-            outerjoin(value_translation,
-                      value_translation.c.value_original_id == A_Value.id)
-
-        # TODO: So far, order only by timestamp.
-        query = query.\
-            order_by(desc(relevant_activities.c.order_value))
-
-        return query, count
 
     def _query_history(
             self, relevant_activities, limit=None, offset=None,
@@ -1655,7 +1508,7 @@ class ActivityProtocol3(Protocol):
             taggroup = None
             if activity.find_taggroup_by_id(taggroup_id) is not None:
                 taggroup = activity.find_taggroup_by_id(taggroup_id)
-            else:
+            elif key:
                 taggroup = TagGroup(taggroup_id, q.tg_id, q.main_tag)
                 # Set the taggroup geometry if available
                 if geom is True and q.tg_geometry is not None:

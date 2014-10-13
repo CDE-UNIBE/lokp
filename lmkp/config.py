@@ -1,6 +1,5 @@
 import mimetypes
 import os.path
-import re
 
 from lmkp.custom import get_customization_name
 
@@ -124,11 +123,3 @@ def valid_mime_extensions(request):
         return vfme
 
     return {}
-
-
-def check_valid_uuid(uuid):
-    """
-    Check if a given uuid is valid
-    """
-    uuid4hex = re.compile('[0-9a-f-]{36}\Z', re.I)
-    return uuid4hex.match(uuid) is not None

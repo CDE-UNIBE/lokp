@@ -18,14 +18,19 @@ from pyramid.view import view_config
 
 from lmkp.custom import get_customized_template_path
 from lmkp.models.meta import DBSession as Session
+from lmkp.utils import validate_item_type
+from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.activity_review import ActivityReview
 from lmkp.views.form_config import getCategoryList
+from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.stakeholder_review import StakeholderReview
 
 
 log = logging.getLogger(__name__)
 lmkpAssetResolver = AssetResolver('lmkp')
 _ = TranslationStringFactory('lmkp')
+activity_protocol = ActivityProtocol3(Session)
+stakeholder_protocol = StakeholderProtocol3(Session)
 
 
 @view_config(route_name='form_clear_session')
@@ -144,7 +149,7 @@ def renderForm(request, itemType, **kwargs):
     # information of the submitted category in the session.
     for p in request.POST:
 
-        if (not (p.startswith('step_') or p == 'submit'
+        if (not (p.startswith('step_') or p in ['submit', 'delete']
                  or p.startswith('createinvolvement_'))):
             continue
 
@@ -160,6 +165,7 @@ def renderForm(request, itemType, **kwargs):
         # Do a validation of the submitted form data. To do this, it is
         # necessary to recreate a form with the same category that was
         # submitted.
+        buttons = []
 
         # Prepare a form with the submitted category
         oldschema = addHiddenFields(
@@ -179,15 +185,18 @@ def renderForm(request, itemType, **kwargs):
 
         form = deform.Form(oldschema, buttons=buttons, formid=formid)
 
-        try:
-            # Try to validate the form
-            captured = form.validate(request.POST.items())
+        if p == 'delete':
+            captured = {}
+        else:
+            try:
+                # Try to validate the form
+                captured = form.validate(request.POST.items())
 
-        except deform.ValidationFailure as e:
-            # The submitted values contains errors. Render the same form
-            # again with error messages. It will be returned later.
-            html = e.render()
-            formHasErrors = True
+            except deform.ValidationFailure as e:
+                # The submitted values contains errors. Render the same form
+                # again with error messages. It will be returned later.
+                html = e.render()
+                formHasErrors = True
 
         if formHasErrors is False:
             # The form is valid, store the captured data in the session.
@@ -197,8 +206,8 @@ def renderForm(request, itemType, **kwargs):
             if itemType in session and 'form' in session[itemType]:
                 # There is already some data in the session.
                 sessionItem = session[itemType]['form']
-                if (captured['id'] == sessionItem['id']
-                    and captured['version'] == sessionItem['version']
+                if (captured.get('id') == sessionItem.get('id')
+                    and captured.get('version') == sessionItem.get('version')
                         and oldCategory in captured):
                     # It is the same item as already in the session, add or
                     # overwrite the form data.
@@ -276,14 +285,13 @@ def renderForm(request, itemType, **kwargs):
                 # Redirect to the other form.
                 return HTTPFound(url)
 
-            if p == 'submit':
+            if p in ['submit', 'delete']:
                 # The final submit button was clicked. Calculate the diff,
                 # delete the session data and redirect to a confirm page.
 
                 success = False
                 posted_formid = request.POST['__formid__']
 
-                # Activity
                 if posted_formid not in ['activityform', 'stakeholderform']:
                     # TODO: Is this the correct way to return an error message?
                     feedbackMessage = '<h3 class="text-error">%s</h3>: Unknown'
@@ -296,23 +304,32 @@ def renderForm(request, itemType, **kwargs):
                         'success': False
                     }
 
-                if itemType not in session or 'form' not in session[itemType]:
-                    # TODO: Is this the correct way to return an error message?
-                    feedbackMessage = 'Session not active'
-                    return {
-                        'form': feedbackMessage,
-                        'css_links': [],
-                        'js_links': [],
-                        'js': None,
-                        'success': False
-                    }
+                if p == 'delete':
+                    # The Item is to be deleted. Calculate the diff to delete
+                    # all tags
+                    diff = calculate_deletion_diff(request, itemType)
 
-                formdata = copy.copy(session[itemType]['form'])
+                else:
+                    if (itemType not in session
+                            or 'form' not in session[itemType]):
+                        # TODO: Is this the correct way to return an error
+                        # message?
+                        feedbackMessage = 'Session not active'
+                        return {
+                            'form': feedbackMessage,
+                            'css_links': [],
+                            'js_links': [],
+                            'js': None,
+                            'success': False
+                        }
 
-                log.debug(
-                    'The complete formdata as in the session: %s' % formdata)
+                    formdata = copy.copy(session[itemType]['form'])
 
-                diff = formdataToDiff(request, formdata, itemType)
+                    log.debug(
+                        'The complete formdata as in the session: %s'
+                        % formdata)
+
+                    diff = formdataToDiff(request, formdata, itemType)
 
                 log.debug('The diff to create/update the activity: %s' % diff)
 
@@ -365,9 +382,16 @@ def renderForm(request, itemType, **kwargs):
                                 'stakeholders_read_many', output='form',
                                 _query={'inv': camefrom['inv']})
                         else:
-                            url = request.route_url(
-                                'activities_read_many', output='form',
-                                _query={'inv': camefrom['inv']})
+                            activity_id = camefrom.get('id')
+                            if activity_id is not None and activity_id != '':
+                                url = request.route_url(
+                                    'activities_read_one', output='form',
+                                    uid=activity_id,
+                                    _query={'inv': camefrom['inv']})
+                            else:
+                                url = request.route_url(
+                                    'activities_read_many', output='form',
+                                    _query={'inv': camefrom['inv']})
 
                         return HTTPFound(url)
 
@@ -460,7 +484,7 @@ def renderForm(request, itemType, **kwargs):
                     # the form.
                     data = getFormdataFromItemjson(
                         request, itemJson, itemType, newCategory)
-                if formSubmit is False:
+                if formSubmit is False and request.params.get('inv') is None:
                     # If the form is rendered for the first time, inform the
                     # user that session was used.
 
@@ -686,6 +710,11 @@ def renderReadonlyForm(request, itemType, itemJson):
     Function to return a rendered form in readonly mode. The form is based on
     the configuration.
     """
+    taggroup_count = len(itemJson.get('taggroups', []))
+    # Hack to avoid showing involvements of items to be deleted (with no
+    # taggroups)
+    if taggroup_count == 0:
+        itemJson['involvements'] = []
 
     deform.Form.set_default_renderer(mako_renderer)
     configCategoryList = getCategoryList(request, itemType)
@@ -734,6 +763,7 @@ def renderReadonlyForm(request, itemType, itemJson):
     statusId = itemJson['status_id'] if 'status_id' in itemJson \
         else colander.null
     data['statusId'] = statusId
+    data['taggroup_count'] = taggroup_count
     html = form.render(data, readonly=True)
 
     geometry = json.dumps(
@@ -804,9 +834,12 @@ def renderReadonlyCompareForm(
                 newFeature and len(refFeature.get_involvements()) > \
                 len(newFeature.get_involvements()) and \
                 itemType == 'stakeholders':
-            reviewableMessage = _(
-                'At least one of the involvements prevents automatic '
-                'revision. Please review these involvements separately.')
+            # If the Stakeholder is to be deleted (no taggroups), do not show
+            # the warning and enable review
+            if len(newFeature.get_taggroups()) > 0:
+                reviewableMessage = _(
+                    'At least one of the involvements prevents automatic '
+                    'revision. Please review these involvements separately.')
 
     if validComparison is False:
         # If no formdata is available, it is very likely that the form has some
@@ -1078,11 +1111,9 @@ def doUpdate(request, itemType, diff):
         return False, 'Not a valid Item'
 
     if itemType == 'activities':
-        from lmkp.views.activity_protocol3 import ActivityProtocol3
-        protocol = ActivityProtocol3(Session)
+        protocol = activity_protocol
     else:
-        from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
-        protocol = StakeholderProtocol3(Session)
+        protocol = stakeholder_protocol
 
     # Use the protocol to create/update the Item
     ids = protocol.create(request, data=diff)
@@ -1171,6 +1202,13 @@ def addHiddenFields(schema, itemType):
         title='',
         missing=colander.null,
         default=itemType
+    ))
+    schema.add(colander.SchemaNode(
+        colander.Int(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
+        name='taggroup_count',
+        title='',
+        missing=colander.null
     ))
     return schema
 
@@ -1588,6 +1626,64 @@ def getFormdataFromItemjson(
     return data
 
 
+def calculate_deletion_diff(request, item_type):
+
+    identifier = request.POST.get('id')
+    version = request.POST.get('version')
+
+    if not identifier or not version:
+        raise HTTPBadRequest(
+            'Unknown item to delete')
+
+    if validate_item_type(item_type) == 'a':
+        protocol = activity_protocol
+        other_item_type = 'stakeholders'
+    else:
+        protocol = stakeholder_protocol
+        other_item_type = 'activities'
+
+    item = protocol.read_one_by_version(
+        request, identifier, version, translate=False).to_table(request)
+
+    # Collect every taggroup and tag, mark all to be deleted.
+    taggroups_diff = []
+    for taggroup in item.get('taggroups', []):
+        tags_diff = []
+        for tag in taggroup.get('tags', []):
+            tags_diff.append({
+                'key': tag.get('key'),
+                'value': tag.get('value'),
+                'op': 'delete'
+            })
+        taggroups_diff.append({
+            'tg_id': taggroup.get('tg_id'),
+            'tags': tags_diff,
+            'op': 'delete'
+        })
+
+    # Collect every involvement and mark them to be deleted.
+    involvement_diff = []
+    for involvement in item.get('involvements', []):
+        involvement_diff.append({
+            'id': involvement.get('data', {}).get('id'),
+            'version': involvement.get('version'),
+            'role': involvement.get('role_id'),
+            'op': 'delete'
+        })
+
+    diff = {
+        item_type: [{
+            'taggroups': taggroups_diff,
+            'id': identifier,
+            'version': version
+        }]
+    }
+    if involvement_diff:
+        diff[item_type][0][other_item_type] = involvement_diff
+
+    return diff
+
+
 def formdataToDiff(request, newform, itemType):
     """
     Use the formdata captured on submission of the form and compare it with the
@@ -1698,10 +1794,12 @@ def formdataToDiff(request, newform, itemType):
         # statusId is not needed
         del newform['statusId']
 
+    if 'taggroup_count' in newform:
+        del newform['taggroup_count']
+
     if identifier != colander.null and version != colander.null:
 
         # Use the protocol to query the values of the version which was edited
-        from lmkp.models.meta import DBSession as Session
         if itemType == 'stakeholders':
             from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
             protocol = StakeholderProtocol3(Session)

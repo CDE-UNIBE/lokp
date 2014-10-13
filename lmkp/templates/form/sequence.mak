@@ -36,7 +36,7 @@
         ></span>
 
         <div class="form-add-more-icon">
-            <span 
+            <span
                 class="green pointer" id="${field.oid}-seqAdd" onClick="javascript:customAppendSequenceItem(this);">
                 <i class="icon-plus"></i>
             </span>

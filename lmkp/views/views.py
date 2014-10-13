@@ -1,6 +1,7 @@
 import re
 import logging
 import urllib
+import urlparse
 
 from datetime import timedelta
 from geoalchemy.functions import functions as geofunctions
@@ -14,8 +15,6 @@ from pyramid.renderers import render
 from pyramid.view import view_config
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
-from urlparse import parse_qs, urlsplit, urlunsplit
-from urllib import urlencode
 
 from lmkp.custom import get_customized_template_path
 from lmkp.models.database_objects import Profile
@@ -168,16 +167,10 @@ class MainView(BaseView):
         """
         Returns the main HTML page
         """
-
-        self._handle_parameters()
-
+        template_values = self.get_base_template_values()
         return render_to_response(
             get_customized_template_path(self.request, 'landing_page.mak'),
-            {
-                'profile': get_current_profile(self.request),
-                'locale': get_current_locale(self.request)
-            },
-            self.request)
+            template_values, self.request)
 
     @view_config(route_name='map_view')
     def map_view(self):
@@ -201,9 +194,9 @@ class MainView(BaseView):
         """
 
         # Extract query_strings from url
-        scheme, netloc, path, query_string, fragment = urlsplit(
+        scheme, netloc, path, query_string, fragment = urlparse.urlsplit(
             self.request.url)
-        qp = parse_qs(query_string)
+        qp = urlparse.parse_qs(query_string)
 
         return HTTPFound(
             location=self.request.route_url(
@@ -413,66 +406,6 @@ src="http://localhost:6543/embedded/Madagascar?_LOCALE_=fr"&gt;
         raise HTTPBadRequest("Host not allowed.")
 
 
-def getQueryString(url, **kwargs):
-    """
-    Function to update the query parameters of a given URL.
-    kwargs:
-    add: array of tuples with key and value to add to the URL. If the
-    key already exists, it will be replaced with the new value.
-    Example: add=[('page', 1)]
-    remove: array of keys to remove from the URL.
-    ret: fullUrl (default) / queryString. Use 'queryString' to return
-    only the query string instead of the full URL.
-    """
-
-    if 'add' not in kwargs and 'remove' not in kwargs and 'ret' not in kwargs:
-        return url
-
-    # Collect the values to add / remove
-    add = kwargs.pop('add', {})
-    remove = kwargs.pop('remove', [])
-
-    # Extract query_strings from url
-    scheme, netloc, path, query_string, fragment = urlsplit(url)
-    qp = parse_qs(query_string)
-
-    # Always remove 'epsg' as it is not needed (map is stored in cookie)
-    if 'epsg' in qp:
-        del(qp['epsg'])
-
-    # Always remove 'bbox' if it is not set to 'profile' (bbox of map is stored
-    # in cookie)
-    if 'bbox' in qp and 'profile' not in qp['bbox']:
-        del(qp['bbox'])
-
-    # Always remove 'page'
-    if 'page' in qp:
-        del(qp['page'])
-
-    # Remove
-    for d in remove:
-        if d in qp:
-            del(qp[d])
-
-    # Add
-    for k, v in add:
-        qp[k] = v
-
-    # Put URL together again and return it
-    new_query_string = urlencode(qp, doseq=True)
-
-    # What is to be returned?
-    returnWhat = kwargs.pop('ret', 'fullUrl')
-
-    if returnWhat == 'queryString':
-        if len(qp) == 0:
-            return ''
-        # Return only the query string (with leading '?')
-        return '%s%s' % ('?', new_query_string)
-
-    return urlunsplit((scheme, netloc, path, new_query_string, fragment))
-
-
 def getFilterKeys(request):
     """
     Return two lists (the first for Activities, the second for Stakeholders)
@@ -590,8 +523,9 @@ def getActiveFilters(request):
     shList = getCategoryList(request, 'stakeholders')
 
     # Extract query_strings from url
-    scheme, netloc, path, query_string, fragment = urlsplit(request.url)
-    queryparams = parse_qs(query_string)
+    scheme, netloc, path, query_string, fragment = urlparse.urlsplit(
+        request.url)
+    queryparams = urlparse.parse_qs(query_string)
 
     filters = []
     for q in queryparams:

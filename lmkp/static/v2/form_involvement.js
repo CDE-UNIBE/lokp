@@ -24,7 +24,7 @@ function createSearch(inputId, tForUnknown, tForToomanyresults, tForNothingfound
     var nameKey = getKeyNames(keys)[0];
     // Not translated key name used to query the involvements
     var rawNameKey = getKeyNames(rawKeys)[0];
-    var fieldset = inputField.parents().eq(5);
+    var fieldset = inputField.parents().eq(6);
 
     // If there is an initial involvement, hide the "select"-button
     var emptyInvolvement = true;
@@ -140,7 +140,7 @@ function createSearch(inputId, tForUnknown, tForToomanyresults, tForNothingfound
 }
 
 function setInvolvementContent(inputField, involvementdata) {
-    var fieldset = inputField.parents().eq(5);
+    var fieldset = inputField.parents().eq(6);
     for (var d in involvementdata) {
         fieldset.find('input[name="' + d + '"]').val(involvementdata[d]);
     }

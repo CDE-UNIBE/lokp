@@ -15,7 +15,7 @@
     </div>
     <div class="span8">
         <textarea
-            class="input-style"
+            class="input-style span12"
             rows="4"
             id="${field.oid}"
             name="${field.name}">${cstruct}</textarea>

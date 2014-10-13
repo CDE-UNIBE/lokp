@@ -232,10 +232,6 @@ def main(global_config, ** settings):
         'stakeholders_byactivities_public',
         '/stakeholders/byactivities/public/{output}/{uids}')
 
-    # Read pending
-    config.add_route(
-        'stakeholders_read_many_pending', '/stakeholders/pending/{output}')
-
     # Read many
     config.add_route('stakeholders_read_many', '/stakeholders/{output}')
     config.add_route(

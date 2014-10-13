@@ -117,7 +117,9 @@ class UserView(BaseView):
                 validator=_is_valid_email)
         schema = Schema()
         deform.Form.set_default_renderer(mako_renderer)
-        form = deform.Form(schema, buttons=('submit', ))
+        buttons = [deform.Button(
+            'submit', _('Submit'), css_class='btn btn-primary')]
+        form = deform.Form(schema, buttons=buttons)
 
         def succeed():
             """

@@ -17,14 +17,14 @@
         ${field.start_mapping()}
         <label for="${field.oid}">${request.translate('Password')}</label>
         <input
-            class="input-style"
+            class="input-style span12"
             type="password"
             name="${field.name}"
             value="${cstruct}"
             id="${field.oid}" />
         <label for="${field.oid}-confirm">${request.translate('Confirm Password')}</label>
         <input
-            class="input-style"
+            class="input-style span12"
             type="password"
             name="${field.name}-confirm"
             value="${confirm}"

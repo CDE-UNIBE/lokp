@@ -666,6 +666,12 @@ class Protocol(object):
         # TODO: Also delegate involvement review if rejected (review_decision
         # == 2)
 
+        empty_item = True
+        for tg in item.tag_groups:
+            for t in tg.tags:
+                empty_item = False
+                break
+
         # Try to also review any affected involvement.
         if implicit is False:
 
@@ -910,7 +916,8 @@ class Protocol(object):
                 if sh is None:
                     log.debug('One of the Stakeholders to review was not '
                               'found.')
-                    asdf
+                    raise Exception(
+                        'One of the Stakeholders to review was not found.')
 
                 log.debug('Reviewing involvement: Stakeholder with identifier '
                           '%s, version %s and status %s'
@@ -933,13 +940,6 @@ class Protocol(object):
         # Do the actual review of the current item
         if review_decision == 1:
             # Approved
-
-            # Check if Item was deleted (no more tags)
-            empty_item = True
-            for tg in item.tag_groups:
-                for t in tg.tags:
-                    empty_item = False
-                    break
 
             # Query the previous version of the item
             previous_version = self.Session.query(
@@ -985,6 +985,42 @@ class Protocol(object):
                         'inactive') + 1
 
                 if empty_item is True:
+                    invs = []
+                    if (mappedClass == Stakeholder and
+                            'stakeholders' in json_diff):
+                        for sh_diff in json_diff.get('stakeholders'):
+                            for a_diff in sh_diff.get('activities', []):
+                                invs.append({
+                                    'identifier': a_diff.get('id'),
+                                    'version': a_diff.get('version')
+                                })
+                    for inv in invs:
+                        a = self.Session.query(
+                            Activity
+                        ).\
+                            filter(
+                                Activity.identifier == inv.get('identifier')).\
+                            filter(Activity.previous_version == inv.get(
+                                'version')).\
+                            first()
+
+                        if (a and a.fk_status == statusArray.index(
+                                'pending') + 1):
+                            next_status = 'active'
+                        else:
+                            raise Exception('Involved Activity not found!')
+
+                        self._add_review(
+                            request,
+                            a,
+                            Activity,
+                            user,
+                            review_decision,
+                            review_comment,
+                            implicit=True,
+                            next_status=next_status
+                        )
+
                     # Set the status of the item to 'deleted'
                     item.fk_status = statusArray.index('deleted') + 1
 
@@ -1116,6 +1152,43 @@ class Protocol(object):
             # 'rejected'
             item.fk_status = statusArray.index('rejected') + 1
 
+            if empty_item:
+                invs = []
+                if (mappedClass == Stakeholder and
+                        'stakeholders' in json_diff):
+                    for sh_diff in json_diff.get('stakeholders'):
+                        for a_diff in sh_diff.get('activities', []):
+                            invs.append({
+                                'identifier': a_diff.get('id'),
+                                'version': a_diff.get('version')
+                            })
+                for inv in invs:
+                    a = self.Session.query(
+                        Activity
+                    ).\
+                        filter(
+                            Activity.identifier == inv.get('identifier')).\
+                        filter(Activity.previous_version == inv.get(
+                            'version')).\
+                        first()
+
+                    if (a and a.fk_status == statusArray.index(
+                            'pending') + 1):
+                        next_status = 'rejected'
+                    else:
+                        raise Exception('Involved Activity not found!')
+
+                    self._add_review(
+                        request,
+                        a,
+                        Activity,
+                        user,
+                        review_decision,
+                        review_comment,
+                        implicit=True,
+                        next_status=next_status
+                    )
+
         else:
             ret['msg'] = _('Unknown review decision')
             return ret
@@ -1209,11 +1282,11 @@ class Protocol(object):
             #TODO: clean up! Also make sure it works for all cases
             #TODO: Handle translations correctly
 
-#            print "---------------------------------------------"
-#            log.debug(
-#                "Currently looking at db_taggroup with tg_id: %s"
-#                % db_taggroup.tg_id
-#            )
+            # print "---------------------------------------------"
+            # print (
+            #     "Currently looking at db_taggroup with tg_id: %s"
+            #     % db_taggroup.tg_id
+            # )
 
             # Create a new tag group but don't add it yet to the new activity
             # version. Indicator (taggroupadded) is needed for database items
@@ -1231,10 +1304,10 @@ class Protocol(object):
             # Step 1: Loop the existing tags
             for db_tag in db_taggroup.tags:
 
-#                log.debug(
-#                    "Currently looking at db_tag with key/value:\n%s | %s" %
-#                    (db_tag.key.key, db_tag.value.value)
-#                )
+                # print (
+                #     "Currently looking at db_tag with key/value:\n%s | %s" %
+                #     (db_tag.key.key, db_tag.value.value)
+                # )
 
                 # Before copying the tag, make sure that it is not to delete
                 copy_tag = True
@@ -1289,7 +1362,7 @@ class Protocol(object):
                                         and db_tag.key.key and tag_dict['key']
                                         and db_tag.key.key == tag_dict['key']):
 
-                                    # log.debug(
+                                    # print (
                                     #     "Tag is deleted (not copied) from "
                                     #     "taggroup."
                                     # )
@@ -1314,9 +1387,9 @@ class Protocol(object):
                         new_tag = Tag(db_tag.id, k.key, v.value)
                         new_taggroup.add_tag(new_tag)
 
-#                    log.debug(
-#                        "Tag was copied and added to taggroup."
-#                    )
+                    # print (
+                    #     "Tag was copied and added to taggroup."
+                    # )
 
                     # Set the main tag
                     if db_taggroup.main_tag == db_tag:
@@ -1336,9 +1409,9 @@ class Protocol(object):
                             if len(new_taggroup.get_tags()) > 0:
                                 item.add_taggroup(new_taggroup)
 
-#                        log.debug(
-#                            "Taggroup was added (copied) to item."
-#                        )
+                        # print (
+                        #     "Taggroup was added (copied) to item."
+                        # )
 
                         taggroupadded = True
 
@@ -1364,7 +1437,7 @@ class Protocol(object):
                                     )
                                     new_taggroup.add_tag(new_tag)
 
-                                # log.debug(
+                                # print (
                                 #     "Tag (%s | %s) was created and added to "
                                 #     "taggroup."
                                 #     % (tag_dict['key'], tag_dict['value'])
@@ -1435,7 +1508,7 @@ class Protocol(object):
                     tg_id = taggroup_dict['tg_id']
 
                     # print "---------------------------------------------"
-                    # log.debug(
+                    # print (
                     #     "Currently looking at a taggroup with tg_id %s "
                     #     "which does not yet exist for the old version"
                     #     % (tg_id)
@@ -1458,7 +1531,7 @@ class Protocol(object):
                     tg_id = tg_id_q[0] + 1
 
                     # print "---------------------------------------------"
-                    # log.debug(
+                    # print (
                     #     "Currently looking at a brand new taggroup with "
                     #     "tg_id %s"
                     #     % (tg_id)
@@ -1488,7 +1561,7 @@ class Protocol(object):
                                 )
                                 new_taggroup.add_tag(new_tag)
 
-                            # log.debug(
+                            # print (
                             #     "Tag (%s | %s) was created and added to "
                             #     "taggroup."
                             #     % (tag_dict['key'], tag_dict['value'])
@@ -1511,7 +1584,7 @@ class Protocol(object):
                                         == unicode(new_tag.get_value())):
                                     new_taggroup._main_tag = new_tag
 
-#        print "============================================="
+        # print "============================================="
 
         return item
 
@@ -1613,8 +1686,11 @@ class Protocol(object):
                             'op' in new_tg and new_tg['op'] == 'delete')
                         if deleteTaggroup:
                             old_tg['op'] = 'delete'
-                            del old_tg['main_tag']
-                            del old_tg['tags']
+                            try:
+                                del old_tg['tags']
+                                del old_tg['main_tag']
+                            except KeyError:
+                                pass
                             continue
 
                         tags_to_delete = []
@@ -2210,12 +2286,8 @@ class Feature(object):
         # If all mandatory keys are still there, check if version is pending to
         # be deleted
         if len(mk) == len(mandatory_keys):
-            if len(self.get_taggroups()) > 0:
-                if len(self.get_taggroups()[0].get_tags()) > 0:
-                    if (self.get_taggroups()[0].get_tags()[0].get_key() is None
-                        and self.get_taggroups()[0].get_tags()[0].get_value()
-                            is None):
-                        mk = [0]
+            if len(self.get_taggroups()) == 0:
+                mk = []
 
         self._missing_keys = mk
 

@@ -71,8 +71,22 @@ function customAddSequenceItem(protonode, before) {
     var $htmlnode = $(html);
     var $idnodes = $htmlnode.find('[id]');
     var $namednodes = $htmlnode.find('[name]');
+    var $hrefnodes = $htmlnode.find('[data-parent]');
     var genid = deform.randomString(6);
     var idmap = {};
+
+    // replace hrefs containing ``deformField`` and their data-parent
+    // attributes (these are the bootstrap accordions)
+
+    $hrefnodes.each(function(idx, node) {
+        var $node = $(node);
+        var old_dp = $node.attr('data-parent');
+        var new_dp = old_dp.replace(fieldmatch, "deformField$1-" + genid);
+        $node.attr('data-parent', new_dp);
+        var old_href = $node.attr('href');
+        var new_href = old_href.replace(fieldmatch, "deformField$1-" + genid);
+        $node.attr('href', new_href);
+    });
 
     // replace ids containing ``deformField`` and associated label for=
     // items which point at them
@@ -80,20 +94,20 @@ function customAddSequenceItem(protonode, before) {
     $idnodes.each(function(idx, node) {
         var $node = $(node);
         var oldid = $node.attr('id');
-        var newid = oldid.replace(fieldmatch, "deformField$1");
+        var newid = oldid.replace(fieldmatch, "deformField$1-" + genid);
         $node.attr('id', newid);
         idmap[oldid] = newid;
         var labelselector = 'label[for=' + oldid + ']';
         var $fornodes = $htmlnode.find(labelselector);
         $fornodes.attr('for', newid);
-        });
+    });
 
-    // replace names a containing ```deformField`` like we do for ids
+    // replace names a containing ``deformField`` like we do for ids
 
     $namednodes.each(function(idx, node) {
         var $node = $(node);
         var oldname = $node.attr('name');
-        var newname = oldname.replace(fieldmatch, "deformField$1");
+        var newname = oldname.replace(fieldmatch, "deformField$1-" + genid);
         $node.attr('name', newname);
         });
 
@@ -118,4 +132,16 @@ function customAddSequenceItem(protonode, before) {
     var old_len = parseInt(before.attr('now_len')||'0', 10);
     before.attr('now_len', old_len + 1);
     //deform.maybeScrollIntoView('#' + anchorid);
+}
+
+function toggleConfirmDelete() {
+    var confirm_div = $('.delete-confirm');
+    var btn = $('.form-button-delete').parent('ul');
+    if (confirm_div.is(':visible')) {
+        confirm_div.hide();
+        btn.show();
+    } else {
+        confirm_div.show();
+        btn.hide();
+    }
 }

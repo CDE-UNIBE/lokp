@@ -53,7 +53,14 @@ Glossary
    Pyramid
      The LOKP is based on the `Pyramid`_ web framework, which is part of the Pylons framework. Please refer to the `Pyramid documentation`_ for further details.
 
+   Uids
+   Uid
+   UUID
+     The LOKP uses Universally Unique Identifiers (UUID) to identify for example :term:`Activities` or :term:`Stakeholders`. This allows to synchronize data on these items across multiple instances of the LOKP.
 
+     See `Universally unique identifier on Wikipedia`_ for further details.
+
+.. _Universally unique identifier on Wikipedia: http://en.wikipedia.org/wiki/Universally_unique_identifier
 .. _Customization of profiles: customization.html#profiles
 .. _Translation: translation.html
 .. _Pyramid: http://www.pylonsproject.org/

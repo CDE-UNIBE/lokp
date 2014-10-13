@@ -10,18 +10,18 @@
 
 % elif depth == 2:
     ## Thematic Group
-    <div class="row-fluid">
-        <div class="span9 grid-area">
+        <div class="grid-area row-fluid">
             <div class="span4">
                 <h5 class="green">${field.title}</h5>
             </div>
-            ${field.serialize(cstruct)}
+            <div class="span8">
+                ${field.serialize(cstruct)}
+            </div>
         </div>
-    </div>
 
 % elif depth == 1:
     ## Taggroup
-    <div class="span8 taggroup">
+    <div class="row-fluid taggroup">
         ${field.serialize(cstruct)}
     </div>
 
@@ -33,24 +33,17 @@
 
 % if field.error and field.typ.__class__.__name__ != 'Mapping' and len(field.error.messages()) > 0:
     <div class="alert alert-error">
-        <%
-            errstr = 'error-%s' % field.oid
-        %>
         % for msg in field.error.messages():
             ## Special error message for map
             % if field.name == 'lon':
                 ${_('The location is required. Please select a point on the map before continuing.')}
             % else:
-                <p
-                    % if msg.index==0:
-                        id="${errstr}"
-                    % else:
-                        id="${'%s-%s' % (errstr, msg.index)}"
-                    % endif
+                <span
+                        id="error-${field.oid}}"
                     class="${field.widget.error_class}"
                 >
-                ${request.translate(msg)}
-                </p>
+                    ${request.translate(msg)}
+                </span>
             % endif
         % endfor
     </div>

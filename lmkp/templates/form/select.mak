@@ -22,7 +22,7 @@
     </div>
     <div class="span8">
         <select name="${field.name}"
-            id="${field.oid}" class="span8">
+            id="${field.oid}" class="span12">
             % for value,description in field.widget.values:
                 <option value="${value}"
                     % if field.widget.css_class:
@@ -37,8 +37,8 @@
         % if helptext:
             <span class="form_helptext">${helptext}</span>
         % endif
-        </div>
     </div>
+</div>
 
 % if field.widget.multiple:
     <input type="hidden"
