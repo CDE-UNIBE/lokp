@@ -19,11 +19,9 @@ QGIS 2.0 or newer
 
 * `Download QGIS`_, install it and launch *QGIS Desktop*.
 
-* In the *Plugins* menu, select *Manage and Install Plugins...* to open the
-Plugin Manager.
+* In the *Plugins* menu, select *Manage and Install Plugins...* to open the Plugin Manager.
 
-* In the Plugin Manager, select *Settings* on the left and *Add...* a new
-Plugin repository.
+* In the Plugin Manager, select *Settings* on the left and *Add...* a new Plugin repository.
 
 * Enter a Name (eg. ``Land Observatory``) and the following URL:
 
@@ -35,16 +33,19 @@ Plugin repository.
 
 * After clicking *OK*, the Repository is added to your *Plugin repositories*.
 
-* In the Plugin Manager, click *New* on the left and select the *Land
-Observatory Editor 2*. Then click on *Install plugin*.
+* In the Plugin Manager, click *New* on the left and select the *Land Observatory Editor 2*. Then click on *Install plugin*.
 
-* You will see a mesage that the Plugin was installed successfully. You can
-then close the Plugin Manager.
+* You will see a mesage that the Plugin was installed successfully. You can then close the Plugin Manager.
 
   .. image:: _static/images/qgis_plugin_02.png
 
 .. _Download QGIS: http://www.qgis.org/en/site/forusers/download.html
 
+If the plugin was installed correctly, you should see the icon of the Land
+Observatory in the QGIS toolbar.
+
+.. image:: _static/images/qgis_plugin_03.png
+    :width: 1024px
 
 Older QGIS versions
 ^^^^^^^^^^^^^^^^^^^
@@ -55,39 +56,83 @@ but use the following repository URL:
 
 ``http://www.landobservatory.org/qgis/plugins/plugins.xml``
 
-
 Usage
 -----
 
-.. IMPORTANT::
-   You can only add new polygons to Activities which are already in the
-   database. You will first have to create the Activity on the web platform
-   before you can add Polygon data using the QGIS plugin.
+Before editing
+^^^^^^^^^^^^^^
 
-If the plugin was installed correctly, you should see the icon of the Land
-Observatory in the QGIS toolbar.
+It is important to know, that you can add new polyons only to existing land deals.
+In case you have a polygon geometry of a land deal, which is not yet in the database,
+add first a new deal with all required base information to the `web platform`_.
 
-.. image:: _static/images/qgis_plugin_03.png
+Currently polygons are attached to the following area-aware attributes:
 
-Click on this icon to open the Land Observatory Polygon Editor.
+* "Intended area (ha)"
+* "Contract area (ha)"
+* "Current area in operation (ha)"
 
-The plugin will load Activities within the currently visible map extent of
-QGIS. It is therefore recommended to load a layer first before loading the
-Activities. Also make sure that specify the correct Coordinate Reference
-System (CSR): World Geodetic System 1984 (IGNF:WGS84G).
+Open a web browser and make sure the deal which you want to edit has already the attribute where you want
+to attach a new geometry or edit an existing one. If this is not the case you can calculate or estimate the
+area in hectare and add this figure using the web based deal editor.
 
-In the Land Observatory Polygon Editor, adjust the host address if necessary
-and enter the username and password you also use to log in to the host (for
-example http://www.landobservatory.org).
+.. image:: _static/images/deal_platform_1.png
+    :width: 1024px
 
-.. image:: _static/images/qgis_plugin_04.png
+.. _web platform: http://www.landobservatory.org
 
-Then click *Get Activities* to get a list of all Activities. This will query
-the Activities and add them as a new layer called *Land deals representation
-points*.
+Add or edit a new polygon
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Start QGIS and prepare your data and data sources such as Shapefiles, scanned and referenced maps or
+satellite images.
+
+.. image:: _static/images/qgis_opendata.png
+    :width: 1024px
+
+Click on the editor button |LO| located in the plugins toolbar to open the polygon editor.
+
+.. |LO| image:: _static/images/lo-logo.png
+         :width: 16px
+         :height: 16px
+
+The editor start window opens where you enter your login credentials. As host address use always http://www.landobservatory.org.
+Now request all deals within the current map extent with *Get Activities*.
+
+.. image:: _static/images/qgis_editor_startwindow.png
+
+A new point layer named *Land deals representation points* is added to the map canvas. As the name suggests
+it represents all existing land deals as points similar to the map view on the web platform.
+
+.. image:: _static/images/qgis_dealslayer.png
+
+In the next step select exactly one deal to edit using the usual QGIS selection tools.
+
+.. image:: _static/images/qgis_selectdeal.png
+
+Click *Start editing Activity* from the editor window.
+
+.. image:: _static/images/qgis_startediting.png
+
+All available information for the selected land deal is requested and loaded in the editor window.
+
+.. image:: _static/images/qgis_attributeslist.png
+
+Meanwhile a new polygon layer for each existing area-aware attribute is added to the map canvas.
+
+.. image:: _static/images/qgis_polygonlayers.png
+
+Now edit or add new polygons using the usual QGIS editing tools. Use your additional datasources you prepared beforehand. Always properly finish
+editing with *Toggle editing*.
+
+.. NOTE::
+   If you have already digitized geometries in a GIS layer you can copy and paste the geometry from one layer to another.
+
+.. image:: _static/images/qgis_editcurrentarea.png
+
+To upload your changes go back to the editor window and press *Submit Activity*.
 
 .. WARNING::
-   Do not close the window of the plugin before you are done editing the
-   polygon!
+   Do not close the editor window until you get a success message to make sure the upload was successful!
 
-Select a feature of the layer and ... ?
+.. image:: _static/images/qgis_submitactivity.png
