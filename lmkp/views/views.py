@@ -167,16 +167,10 @@ class MainView(BaseView):
         """
         Returns the main HTML page
         """
-
-        self._handle_parameters()
-
+        template_values = self.get_base_template_values()
         return render_to_response(
             get_customized_template_path(self.request, 'landing_page.mak'),
-            {
-                'profile': get_current_profile(self.request),
-                'locale': get_current_locale(self.request)
-            },
-            self.request)
+            template_values, self.request)
 
     @view_config(route_name='map_view')
     def map_view(self):

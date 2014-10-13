@@ -834,9 +834,12 @@ def renderReadonlyCompareForm(
                 newFeature and len(refFeature.get_involvements()) > \
                 len(newFeature.get_involvements()) and \
                 itemType == 'stakeholders':
-            reviewableMessage = _(
-                'At least one of the involvements prevents automatic '
-                'revision. Please review these involvements separately.')
+            # If the Stakeholder is to be deleted (no taggroups), do not show
+            # the warning and enable review
+            if len(newFeature.get_taggroups()) > 0:
+                reviewableMessage = _(
+                    'At least one of the involvements prevents automatic '
+                    'revision. Please review these involvements separately.')
 
     if validComparison is False:
         # If no formdata is available, it is very likely that the form has some
