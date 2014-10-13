@@ -1,6 +1,8 @@
 Land Observatory Knowledge Platform
 ===========
 
+Current version: v0.9.5
+
 Please refer to the documentation found at http://lokp.rtfd.org
 
 Getting Started
@@ -9,7 +11,7 @@ Getting Started
 Switch to the Python virtual environment
 
     source path/to/venv/bin/activate
-    
+
 Move to the directory containg this file
 
     cd <directory containing this file>
@@ -17,7 +19,7 @@ Move to the directory containg this file
 Setup the project and install dependencies in the virtual environment
 
     (venv)user@computer:~/this/directory$ python setup.py develop
-    
+
 Copy configuration sample file and setup custom paths and database connection
 
     cp development.ini.sample development.ini
@@ -34,7 +36,7 @@ or
 Start the server
 
     (venv)user@computer:~/this/directory$ pserve development.ini
-    
+
 Point your browser to [http://localhost:6543/](http://localhost:6543/)
 
 Don't forget to include some profiles and enter some keys and values (for
