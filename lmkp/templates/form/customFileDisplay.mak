@@ -19,7 +19,7 @@
     </div>
     <div class="span8">
 
-        <input 
+        <input
             type="hidden"
             id="${field.oid}"
             class="fileinformations"

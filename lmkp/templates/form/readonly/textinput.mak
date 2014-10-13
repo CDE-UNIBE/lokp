@@ -3,5 +3,8 @@
     <a href="${cstruct}" target="_blank">${cstruct}</a>
 </p>
 % else:
-${cstruct}
+    ${cstruct}
+    % if helptext:
+        (${helptext})
+    % endif
 % endif

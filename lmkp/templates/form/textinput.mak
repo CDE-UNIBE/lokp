@@ -14,6 +14,18 @@
         </label>
     </div>
     <div class="span8">
+        % if helptext:
+        <input
+            class="input-style input-helptext span9"
+            type="text"
+            name="${field.name}"
+            value="${cstruct}"
+            id="${field.oid}"
+            placeholder="" />
+        <span class="truncate ttip span3 truncate-input" data-toggle="tooltip" title="${helptext}">
+            ${helptext}
+        </span>
+        % else:
         <input
             class="input-style span12"
             type="text"
@@ -21,8 +33,6 @@
             value="${cstruct}"
             id="${field.oid}"
             placeholder="" />
-        % if helptext:
-            <div class="input-description">${helptext}</div>
         % endif
     </div>
 </div>
