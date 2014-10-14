@@ -19,6 +19,7 @@ from pyramid_mailer.message import Message
 from lmkp.custom import get_customized_template_path
 from lmkp.models.database_objects import Profile
 from lmkp.models.meta import DBSession
+from lmkp.views.config import get_default_profile
 from lmkp.views.form_config import getCategoryList
 
 
@@ -28,11 +29,12 @@ log = logging.getLogger(__name__)
 class BaseView(object):
     """
     Base class for all view classes that need to be aware of the
-    requested locale.
+    requested locale and profile.
     """
 
     def __init__(self, request):
         self.request = request
+        self.template_values = self.get_base_template_values()
         self._handle_parameters()
 
     def get_base_template_values(self):
@@ -111,8 +113,9 @@ class BaseView(object):
                 # Profile already set, leave it
                 pass
             else:
-                # If no profile is set, set 'global' profile
-                response.set_cookie('_PROFILE_', 'global', timedelta(days=90))
+                # If no profile is set, set the default profile
+                response.set_cookie('_PROFILE_', get_default_profile(
+                    self.request), timedelta(days=90))
 
     def _send_email(self, recipients, subject, body):
         """
@@ -141,6 +144,12 @@ def change_profile(request, profile):
 
 
 class MainView(BaseView):
+    """
+    This is the main class for most HTML views of the LOKP.
+
+    Inherits from:
+        :class:`lmkp.views.views.BaseView`
+    """
 
     @view_config(route_name='profile_cambodia')
     def profile_cambodia(self):
@@ -165,35 +174,45 @@ class MainView(BaseView):
     @view_config(route_name='index')
     def index(self):
         """
-        Returns the main HTML page
+        Returns the root HTML page. This is the landing page, where
+        users can for example select the profile before continuing to
+        the map view.
+
+        :term:`Customized template` used: ``landing_page.mak``.
+
+        Returns:
+            ``HTTPResponse``. A HTML response.
         """
-        template_values = self.get_base_template_values()
         return render_to_response(
             get_customized_template_path(self.request, 'landing_page.mak'),
-            template_values, self.request)
+            self.template_values, self.request)
 
     @view_config(route_name='map_view')
     def map_view(self):
+        """
+        Returns the HTML page with the main map, eg. the Map View.
 
-        self._handle_parameters()
-
+        Returns:
+            ``HTTPResponse``. A HTML response.
+        """
         return render_to_response(
             get_customized_template_path(self.request, 'map_view.mak'),
-            {
-                'profile': get_current_profile(self.request),
-                'locale': get_current_locale(self.request)
-            },
-            self.request)
+            self.template_values, self.request)
 
     @view_config(route_name='grid_view')
     def grid_view(self):
         """
-        This view is basically only a redirect to the read_many view of
-        the Activities. Keep query parameters so for example filters are
-        also active in grid.
-        """
+        Returns the default HTML page with the grid, eg. the Grid View.
 
-        # Extract query_strings from url
+        This view actually returns the default representation of many
+        :term:`Activities`. Query parameters are passed through.
+
+        .. seealso::
+           :class:`lmkp.views.activities.ActivityView.read_many`
+
+        Returns:
+            ``HTTPResponse``. A HTML response.
+        """
         scheme, netloc, path, query_string, fragment = urlparse.urlsplit(
             self.request.url)
         qp = urlparse.parse_qs(query_string)
@@ -204,32 +223,37 @@ class MainView(BaseView):
 
     @view_config(route_name='charts_view')
     def charts_view(self):
+        """
+        Returns the HTML page with the chart, eg. the Chart View.
 
-        self._handle_parameters()
+        For the time being, this view returns the overview view of the
+        Charts.
 
-        # TEMP
+        .. seealso::
+           :class:`lmkp.views.charts.ChartsView.charts_overview`
+
+        Returns:
+            ``HTTPResponse``. A HTML response.
+        """
         return HTTPFound(location=self.request.route_url('charts_overview'))
 
         return render_to_response(
             get_customized_template_path(self.request, 'charts_view.mak'),
-            {
-                'profile': get_current_profile(self.request),
-                'locale': get_current_locale(self.request)
-            },
-            self.request)
+            self.template_values, self.request)
 
     @view_config(route_name='about_view')
     def about_view(self):
+        """
+        Returns the HTML page with the "about" information.
 
-        self._handle_parameters()
+        :term:`Customized template` used: ``about_view.mak``.
 
+        Returns:
+            ``HTTPResponse``. A HTML response.
+        """
         return render_to_response(
             get_customized_template_path(self.request, 'about_view.mak'),
-            {
-                'profile': get_current_profile(self.request),
-                'locale': get_current_locale(self.request)
-            },
-            self.request)
+            self.template_values, self.request)
 
     @view_config(route_name='faq_view')
     def faq_view(self):
@@ -737,8 +761,11 @@ def get_current_profile(request):
     Return the currently selected :term:`Profile`.
 
     First, parameters in the request are considered. If no parameter is
-    set, the profile cookie is used. As a fallback, the global profile
+    set, the profile cookie is used. As a fallback, the default profile
     is returned.
+
+    .. seealso::
+           :class:`lmkp.views.config.get_default_profile`
 
     Args:
         ``request`` (pyramid.request): A :term:`Pyramid` Request object
@@ -746,11 +773,11 @@ def get_current_profile(request):
         set.
 
     Returns:
-        ``str``. The name of the :term:`Profile` or ``global`` by
-        default.
+        ``str``. The name of the :term:`Profile` or the default profile.
     """
     return request.params.get(
-        '_PROFILE_', request.cookies.get('_PROFILE_', 'global'))
+        '_PROFILE_', request.cookies.get(
+            '_PROFILE_', get_default_profile(request)))
 
 
 def get_current_locale(request):

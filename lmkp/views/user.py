@@ -39,6 +39,7 @@ from lmkp.models.database_objects import (
     users_profiles,
 )
 from lmkp.models.meta import DBSession as Session
+from lmkp.views.config import get_default_profile
 from lmkp.views.profile import _processProfile
 from lmkp.views.views import (
     BaseView,
@@ -100,7 +101,8 @@ class UserView(BaseView):
                 colander.String(),
                 widget=deform.widget.TextInputWidget(template='hidden'),
                 name='profile', title='Profile',
-                default=get_current_profile(self.request), missing='global')
+                default=get_current_profile(self.request),
+                missing=get_default_profile(self.request))
             username = colander.SchemaNode(
                 colander.String(), validator=_user_already_exists,
                 title=_('Username'))
@@ -286,7 +288,7 @@ class UserView(BaseView):
         # registering!
         profiles = [p.code for p in user.profiles]
         if len(profiles) == 0:
-            profile = 'global'
+            profile = get_default_profile(self.request)
         else:
             profile = profiles[0]
 
