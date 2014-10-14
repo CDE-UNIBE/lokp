@@ -14,13 +14,6 @@ from geoalchemy.functions import functions
 #@view_defaults(request_method='GET')
 class EvaluationView(BaseView):
 
-    @view_config(route_name='charts', renderer='lmkp:templates/ext_charts.mak')
-    def show_charts(self):
-
-        self._handle_parameters()
-
-        return {}
-
     @view_config(route_name='evaluation_json', renderer='json')
     def evaluation_json(self):
         request = self.request
