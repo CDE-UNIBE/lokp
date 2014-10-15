@@ -432,23 +432,15 @@ class UserView(BaseView):
 
         def succeed():
             # Request all submitted values
-            profile_field = self.request.POST.get("profile")
             firstname_field = self.request.POST.get("firstname")
             lastname_field = self.request.POST.get("lastname")
             password_field = self.request.POST.get("password")
-
-            # Get the selected profile
-            selected_profile = Session.query(Profile).filter(
-                Profile.code == profile_field).first()
 
             # Update user fields
             user.firstname = firstname_field
             user.lastname = lastname_field
             if password_field is not None and password_field != '':
                 user.password = password_field
-
-            # Set the user profile
-            user.profiles = [selected_profile]
 
             return Response(
                 '<div class="alert alert-success">%s</div>' %

@@ -59,7 +59,15 @@
     var mapCriteria = ${json.dumps(mapCriteria) | n};
     var areaNames = ${json.dumps(geomTaggroups['mainkeys']) | n};
     var allMapCriteria = ${json.dumps(mapSymbols) | n};
-    
+
+    if ("custom_area_names" in window) {
+        if (areaNames.length == custom_area_names.length) {
+            for (var i=0; i<areaNames.length; i++) {
+                areaNames[i][0] = custom_area_names[i];
+            }
+        }
+    }
+
     % if compare is True:
     var tForChangesInThisSection = '${_("There are changes in this section")}';
     % endif

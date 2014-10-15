@@ -18,7 +18,7 @@ var refGeometryLayer,
     newGeometryLayer;
 
 $(document).ready(function() {
-    
+
     /** Settings **/
     pointsCluster = false;
     pointsVisible = false;
@@ -56,7 +56,7 @@ $(document).ready(function() {
         styleMap: newMarkerStyle
     });
     layers.push(newGeometryLayer);
-    
+
     map = new OpenLayers.Map('googleMapNotFull', {
         displayProjection: geographicProjection,
         projection: sphericalMercatorProjection,
@@ -100,10 +100,10 @@ $(document).ready(function() {
     });
 
     if (coordsSet === true) {
-        
+
         var refGeometry = geometry.ref;
         var newGeometry = geometry.new;
-        
+
         if (refGeometry.geometry) {
             refGeometryLayer.addFeatures(geojsonFormat.read(refGeometry.geometry));
             var zoomExtent = refGeometryLayer.getDataExtent();
@@ -116,7 +116,7 @@ $(document).ready(function() {
                 zoomExtent.extend(newGeometryLayer.getDataExtent());
             }
         }
-        
+
         // Zoom to the feature
         map.zoomToExtent(zoomExtent);
         // Adjust zoom level
@@ -143,7 +143,7 @@ $(document).ready(function() {
             toggleContentLayers(e.target.checked);
         }
     });
-    
+
     $('#newLayerToggle').change(function(e) {
         newGeometryLayer.display(e.target.checked);
     });
@@ -154,9 +154,9 @@ $(document).ready(function() {
 
 
 function initializeThisPolygonContent() {
-    
+
     if (refVersion === null || newVersion === null || identifier === null) return;
-    
+
     var handlePolygonContent = function(f, n, a, refOrNew) {
         // Add the legend
         var t = [];
@@ -195,7 +195,7 @@ function initializeThisPolygonContent() {
         map.addLayer(l);
         return l;
     };
-    
+
     $.when(
         $.ajax({
             url: '/activities/geojson/' + identifier,
@@ -213,7 +213,7 @@ function initializeThisPolygonContent() {
         })
     ).done(function(a1, a2) {
         var allLayers = [];
-        
+
         var refFeatures = geojsonFormat.read(a1[0]);
         // Add the polygon layers in the same order as the areaNames
         for (var a in areaNames) {
@@ -224,7 +224,13 @@ function initializeThisPolygonContent() {
                 if ($.isArray(areaNames[a])) {
                     an = areaNames[a][0];
                 }
-                if (n !== an) return;
+                if (n !== an) {
+                    if ("custom_area_names" in window) {
+                        n = custom_area_names[a];
+                    } else {
+                        return;
+                    }
+                }
                 allLayers.push(handlePolygonContent(this, n, a, 'new'));
             });
         }
@@ -233,7 +239,7 @@ function initializeThisPolygonContent() {
                 setPolygonLayerByName(map, 'new'+e.target.value, e.target.checked);
             }
         });
-        
+
         var newFeatures = geojsonFormat.read(a2[0]);
         // Add the polygon layers in the same order as the areaNames
         for (var a in areaNames) {
@@ -244,17 +250,23 @@ function initializeThisPolygonContent() {
                 if ($.isArray(areaNames[a])) {
                     an = areaNames[a][0];
                 }
-                if (n !== an) return;
+                if (n !== an) {
+                    if ("custom_area_names" in window) {
+                        n = custom_area_names[a];
+                    } else {
+                        return;
+                    }
+                }
                 allLayers.push(handlePolygonContent(this, n, a, 'ref'));
             });
         }
-        
+
         $('.ref-area-layer-checkbox').click(function(e) {
             if (e.target.value) {
                 setPolygonLayerByName(map, 'ref'+e.target.value, e.target.checked);
             }
         });
-        
+
         // Zoom
         var bbox = refGeometryLayer.getDataExtent();
         bbox.extend(newGeometryLayer.getDataExtent());
