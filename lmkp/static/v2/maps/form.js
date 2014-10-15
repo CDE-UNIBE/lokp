@@ -25,7 +25,7 @@ var selectCtrl,
     removeLayer;
 
 $(document).ready(function() {
-    
+
     /** Settings **/
     pointsCluster = false;
     pointsVisible = false;
@@ -135,7 +135,7 @@ $(document).ready(function() {
                 parseCoordinates();
             }, 50);
         });
-        
+
         $('#btn-add-point').click(function() {
             toggleMode('add');
         });
@@ -143,7 +143,7 @@ $(document).ready(function() {
             toggleMode('remove');
         });
     }
-    
+
     $('.collapse').on('show', function() {
         toggleChevron($(this).parent(), 0);
     });
@@ -162,10 +162,10 @@ $(document).ready(function() {
 });
 
 function initializeThisPolygonContent() {
-    
-    if (version === null || version === 0 || identifier === null 
+
+    if (version === null || version === 0 || identifier === null
         || identifier === '-') return;
-    
+
     $.ajax({
         url: '/activities/geojson/' + identifier,
         data: {
@@ -175,7 +175,7 @@ function initializeThisPolygonContent() {
         success: function(data) {
             var features = geojsonFormat.read(data);
             var fLayers = [];
-            
+
             if (features.length === 0) {
                 // If there are no polygons, hide the entire section.
                 $('#thisDealSection').hide();
@@ -192,7 +192,13 @@ function initializeThisPolygonContent() {
                         if ($.isArray(areaNames[a])) {
                             an = areaNames[a][0];
                         }
-                        if (n !== an) return;
+                        if (n !== an) {
+                            if ("custom_area_names" in window) {
+                                n = custom_area_names[a];
+                            } else {
+                                return;
+                            }
+                        }
 
                         // Add the legend
                         var t = [];
@@ -229,20 +235,20 @@ function initializeThisPolygonContent() {
                         fLayers.push(l);
                     });
                 }
-                
+
                 $('.this-area-layer-checkbox').click(function(e) {
                     if (e.target.value) {
                         setPolygonLayerByName(map, 'this'+e.target.value, e.target.checked);
                     }
                 });
-                
-                // For the deal details, expand the options so the legend is 
+
+                // For the deal details, expand the options so the legend is
                 // visible.
                 if (readonly === true) {
                     $('.form-map-menu-toggle').click();
                 }
             }
-            
+
             // Zoom
             var bbox = geometryLayer.getDataExtent();
             $.each(fLayers, function() {
@@ -253,7 +259,7 @@ function initializeThisPolygonContent() {
             map.zoomTo(Math.min(zoomlevel, map.getZoom()-1));
         }
     });
-    
+
 }
 
 function toggleMode(mode) {
