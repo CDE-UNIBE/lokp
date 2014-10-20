@@ -1,12 +1,9 @@
-from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.renderers import render_to_response
+from pyramid.view import view_config
 
 from lmkp.custom import get_customized_template_path
-from lmkp.views.views import (
-    BaseView,
-    get_current_locale,
-    get_current_profile,
-)
+from lmkp.views.views import BaseView
 
 
 class ChartsView(BaseView):
@@ -14,29 +11,25 @@ class ChartsView(BaseView):
     @view_config(route_name='charts_overview')
     def charts_overview(self):
 
-        self._handle_parameters()
+        return self.charts()
 
-        groupedBy = self.request.params.get('groupby', None)
+    @view_config(route_name='charts')
+    def charts(self):
 
-        # TODO: Make this more dynamic.
-        # TODO: Translation.
-        groupableBy = [
-            'Intention of Investment',
-            'Negotiation Status',
-            'Implementation status'
-        ]
+        chart_type = self.request.matchdict.get('type', 'bars')
+        if chart_type == 'bars':
+            template = 'barchart'
+        else:
+            return HTTPNotFound()
 
-        alert = groupedBy is None
+        attr = self.request.params.get('attr', 0)
 
-        groupedBy = groupedBy if groupedBy in groupableBy else groupableBy[0]
+        template_values = self.template_values
+        template_values.update({
+            'attr': attr
+        })
 
         return render_to_response(
-            get_customized_template_path(self.request, 'charts/barchart.mak'),
-            {
-                'profile': get_current_profile(self.request),
-                'locale': get_current_locale(self.request),
-                'groupedBy': groupedBy,
-                'groupableBy': groupableBy,
-                'alert': alert
-            },
-            self.request)
+            get_customized_template_path(
+                self.request, 'charts/%s.mak' % template),
+            template_values, self.request)
