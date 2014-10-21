@@ -4,6 +4,47 @@ var margin, fontSize, aspectRatio, outerWidth, innerWidth, minOuterHeight,
 
 var current_key = 0;
 
+// Group by buttons
+if (chart_data['groupable'].length > 1) {
+  var group_by_html = [];
+  for (var i=0; i<chart_data['groupable'].length; i++) {
+    var css_class = '';
+    if (i == current_group_key) {
+      css_class = 'active';
+    }
+    group_by_html.push([
+      '<li class="', css_class, '"><a href="?attr=', i, '" ',
+      'data-toggle="tooltip" ',
+      'title="', group_activities_by, ' ', chart_data['groupable'][i], '">',
+      chart_data['groupable'][i],
+      '</a></li>'
+    ].join(''));
+  }
+  $('#group-by-pills').html(group_by_html.join(''));
+}
+
+// Attribute buttons
+if (attribute_names.length > 1) {
+  var attribute_html = [];
+  for (var i=0; i<attribute_names.length; i++) {
+    var css_class = '';
+    if (i == 0) {
+      css_class = ' active';
+    }
+    attribute_html.push([
+      '<button class="btn change-attribute', css_class, '" ',
+      'value="', i, '" data-toggle="tooltip" ',
+      'title="', show_attribute, ' ', attribute_names[i], '">',
+      attribute_names[i],
+      '</button>'
+    ].join(''));
+  }
+  $('#attribute-buttons').html(attribute_html.join(''));
+}
+
+// Title
+$('#group-by-title').html(chart_data["groupable"][current_group_key]);
+
 /**
  * (Re-)Calculate the sizes of the chart.
  */
