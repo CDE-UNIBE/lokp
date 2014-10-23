@@ -91,11 +91,14 @@ def main(global_config, ** settings):
     # Add papyrus includes
     config.include(papyrus.includeme)
     config.include('pyramid_handlers')
-    # Return a JavaScript model
-    #config.add_route('taggroups_model', 'static/app/model/TagGroup.js')
-    #config.add_renderer('geojson', GeoJSON())
+
+    # Renderers
     config.add_renderer('geojson', GeoJsonRenderer())
     config.add_renderer('csv', CSVRenderer())
+    config.add_renderer('json', JsonRenderer())
+    config.add_renderer('javascript', JavaScriptRenderer())
+
+    # Static views
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_static_view('formstatic', 'deform:static')
 
@@ -105,50 +108,9 @@ def main(global_config, ** settings):
             'custom', 'customization/%s/static' % customization,
             cache_max_age=3600)
 
+    # Main views
     config.add_route('index', '/')
     config.add_route('administration', '/administration')
-    config.add_route('login', '/login', request_method='POST')
-    config.add_route('login_form', '/login', request_method='GET')
-    config.add_route('reset', '/reset', request_method='POST')
-    config.add_route('reset_form', '/reset', request_method='GET')
-    config.add_route('logout', '/logout')
-
-    config.add_route('translation', '/translation')
-
-    # Embedded start page
-    config.add_route('embedded_index', '/embedded/{profile}')
-    config.add_route('enclosing_demo_site', '/enclosing_demo_site')
-
-    # Returns configuration parameters as JSON objects
-    config.add_route('yaml_translate_activities', '/config/scan/activities')
-    config.add_route('yaml_add_activity_fields', '/config/add/activities')
-
-    config.add_route(
-        'yaml_translate_stakeholders', '/config/scan/stakeholders')
-    config.add_route('yaml_add_stakeholder_fields', '/config/add/stakeholders')
-
-    config.add_route('config', '/config/form/{parameter}')
-    config.add_route('config_geomtaggroups', '/config/geometrytaggroups')
-
-    # Manage sample values and tests
-    config.add_route('sample_values', '/sample_values/insert')
-    config.add_route('delete_sample_values', '/sample_values/delete')
-    config.add_route('test_sample_values', '/sample_values/test')
-    config.add_route('sample_values_constructed', '/sample_values/constructed')
-
-    # Add a renderer to return ExtJS store configuration objects
-    config.add_renderer('json', JsonRenderer())
-
-    # Add a renderer to return JavaScript files
-    config.add_renderer('javascript', JavaScriptRenderer())
-
-    config.add_route('profile_cambodia', '/cambodia')
-    config.add_route('profile_laos', '/laos')
-    config.add_route('profile_peru', '/peru')
-    config.add_route('profile_madagascar', '/madagascar')
-    config.add_route('profile_global', '/global')
-
-    #
     config.add_route("map_view", "/map")
     config.add_route("grid_view", "/grid")
     config.add_route('about_view', '/about')
@@ -156,9 +118,39 @@ def main(global_config, ** settings):
     config.add_route('showcases_view', '/showcases')
     config.add_route('partners_view', '/partners')
 
+    # Login / Logout
+    config.add_route('login', '/login', request_method='POST')
+    config.add_route('login_form', '/login', request_method='GET')
+    config.add_route('reset', '/reset', request_method='POST')
+    config.add_route('reset_form', '/reset', request_method='GET')
+    config.add_route('logout', '/logout')
+
+    # Translation
+    config.add_route('yaml_translate_activities', '/config/scan/activities')
+    config.add_route('yaml_add_activity_fields', '/config/add/activities')
+    config.add_route(
+        'yaml_translate_stakeholders', '/config/scan/stakeholders')
+    config.add_route('yaml_add_stakeholder_fields', '/config/add/stakeholders')
+
+    # Configuration
+    config.add_route('config', '/config/form/{parameter}')
+    config.add_route('config_geomtaggroups', '/config/geometrytaggroups')
+
+    # Profiles
+    config.add_route('profile_cambodia', '/cambodia')
+    config.add_route('profile_laos', '/laos')
+    config.add_route('profile_peru', '/peru')
+    config.add_route('profile_madagascar', '/madagascar')
+    config.add_route('profile_global', '/global')
+
+    # Evaluation
+    config.add_route('evaluation', '/evaluation', request_method='POST')
+
     # Charts
     config.add_route("charts_view", "/charts")
     config.add_route('charts_overview', '/charts/overview')
+    config.add_route('charts_no_slash', '/charts/{type}*params')
+    config.add_route('charts', '/charts/{type}/*params')
 
     """
     Activities
@@ -262,15 +254,6 @@ def main(global_config, ** settings):
     # Moderation overview
     config.add_route('moderation_html', '/moderation')
 
-    # Directly jump to the moderation of a given object
-    config.add_route(
-        'activities_moderate_item', '/moderation/activities/{uid}')
-    config.add_route(
-        'stakeholders_moderate_item', '/moderation/stakeholders/{uid}')
-
-    # Tests (not intended for public)
-    config.add_route('moderation_tests', '/moderation/ug6uWaef2')
-
     """
     Files
     """
@@ -302,12 +285,6 @@ def main(global_config, ** settings):
     config.add_route(
         'extractDatabaseTranslation', '/translation/extract/{type}')
 
-    # A view that returns an editing toolbar configuration object
-    config.add_route('edit_toolbar_config', '/app/view/EditToolbar.js')
-    config.add_route('view_toolbar_config', '/app/view/ViewToolbar.js')
-    config.add_route(
-        'moderator_toolbar_config', '/app/view/ModeratorToolbar.js')
-
     config.add_route('context_layers', '/app/view/layers.js')
     # Return a json with all available profiles from disk
     config.add_route('profile_store', '/profiles/all')
@@ -315,7 +292,6 @@ def main(global_config, ** settings):
     # An user profile page (maybe not needed anymore?)
     # [inserted ../profile/.. to link, otherwise could be conflicting with
     # some usernames ('update', 'json')]
-    config.add_route('user_profile', '/users/profile/{userid}')
     # A json representation of user information
     config.add_route('user_profile_json', '/users/json/{userid}')
     # Updates the information of a user
@@ -345,16 +321,6 @@ def main(global_config, ** settings):
 
     # A route to the sitemap.xml
     config.add_route('sitemap', '/sitemap.xml')
-
-    # Evaluation
-    config.add_route('evaluation_json', '/evaluation/{temp}')
-    # Some (hopefully) nice charts from the evalution
-    config.add_route('charts', '/charts_old')
-
-    # Yet another test
-    config.add_route('privileges_test', '/privileges')
-
-    config.add_route('set_lao_active', '/read/lao/active')
 
     # Add a route to search locations
     config.add_route('location_search', '/search')

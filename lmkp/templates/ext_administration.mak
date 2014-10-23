@@ -24,7 +24,6 @@ if 'lmkp.mode' in request.registry.settings:
     % endif
 </title>
 <script type="text/javascript" src="${request.route_url('ui_translation')}"></script>
-<script type="text/javascript" src="${request.route_url('edit_toolbar_config')}"></script>
 % if use_js_builds:
 <script type="text/javascript" src="${request.static_url('lmkp:static/administration-ext-all.js')}"></script>
 % endif

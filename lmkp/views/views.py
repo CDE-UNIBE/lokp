@@ -9,7 +9,6 @@ from geoalchemy import utils
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.httpexceptions import HTTPBadRequest
-from pyramid.response import Response
 from pyramid.renderers import render_to_response
 from pyramid.renderers import render
 from pyramid.view import view_config
@@ -19,6 +18,7 @@ from pyramid_mailer.message import Message
 from lmkp.custom import get_customized_template_path
 from lmkp.models.database_objects import Profile
 from lmkp.models.meta import DBSession
+from lmkp.views.config import get_default_profile
 from lmkp.views.form_config import getCategoryList
 
 
@@ -28,11 +28,12 @@ log = logging.getLogger(__name__)
 class BaseView(object):
     """
     Base class for all view classes that need to be aware of the
-    requested locale.
+    requested locale and profile.
     """
 
     def __init__(self, request):
         self.request = request
+        self.template_values = self.get_base_template_values()
         self._handle_parameters()
 
     def get_base_template_values(self):
@@ -111,8 +112,9 @@ class BaseView(object):
                 # Profile already set, leave it
                 pass
             else:
-                # If no profile is set, set 'global' profile
-                response.set_cookie('_PROFILE_', 'global', timedelta(days=90))
+                # If no profile is set, set the default profile
+                response.set_cookie('_PROFILE_', get_default_profile(
+                    self.request), timedelta(days=90))
 
     def _send_email(self, recipients, subject, body):
         """
@@ -141,6 +143,12 @@ def change_profile(request, profile):
 
 
 class MainView(BaseView):
+    """
+    This is the main class for most HTML views of the LOKP.
+
+    Inherits from:
+        :class:`lmkp.views.views.BaseView`
+    """
 
     @view_config(route_name='profile_cambodia')
     def profile_cambodia(self):
@@ -165,35 +173,47 @@ class MainView(BaseView):
     @view_config(route_name='index')
     def index(self):
         """
-        Returns the main HTML page
+        Returns the root HTML page. This is the landing page, where
+        users can for example select the profile before continuing to
+        the map view.
+
+        :term:`Customized template` used: ``landing_page.mak``.
+
+        Returns:
+            ``HTTPResponse``. A HTML response.
         """
-        template_values = self.get_base_template_values()
         return render_to_response(
             get_customized_template_path(self.request, 'landing_page.mak'),
-            template_values, self.request)
+            self.template_values, self.request)
 
     @view_config(route_name='map_view')
     def map_view(self):
+        """
+        Returns the HTML page with the main map, eg. the Map View.
 
-        self._handle_parameters()
+        :term:`Customized template` used: ``map_view.mak``.
 
+        Returns:
+            ``HTTPResponse``. A HTML response.
+        """
         return render_to_response(
             get_customized_template_path(self.request, 'map_view.mak'),
-            {
-                'profile': get_current_profile(self.request),
-                'locale': get_current_locale(self.request)
-            },
-            self.request)
+            self.template_values, self.request)
 
     @view_config(route_name='grid_view')
     def grid_view(self):
         """
-        This view is basically only a redirect to the read_many view of
-        the Activities. Keep query parameters so for example filters are
-        also active in grid.
-        """
+        Returns the default HTML page with the grid, eg. the Grid View.
 
-        # Extract query_strings from url
+        This view actually returns the default representation of many
+        :term:`Activities`. Query parameters are passed through.
+
+        .. seealso::
+           :class:`lmkp.views.activities.ActivityView.read_many`
+
+        Returns:
+            ``HTTPResponse``. A HTML response.
+        """
         scheme, netloc, path, query_string, fragment = urlparse.urlsplit(
             self.request.url)
         qp = urlparse.parse_qs(query_string)
@@ -204,166 +224,97 @@ class MainView(BaseView):
 
     @view_config(route_name='charts_view')
     def charts_view(self):
+        """
+        Returns the HTML page with the chart, eg. the Chart View.
 
-        self._handle_parameters()
+        For the time being, this view returns the overview view of the
+        Charts.
 
-        # TEMP
+        .. seealso::
+           :class:`lmkp.views.charts.ChartsView.charts_overview`
+
+        Returns:
+            ``HTTPResponse``. A HTML response.
+        """
         return HTTPFound(location=self.request.route_url('charts_overview'))
 
         return render_to_response(
             get_customized_template_path(self.request, 'charts_view.mak'),
-            {
-                'profile': get_current_profile(self.request),
-                'locale': get_current_locale(self.request)
-            },
-            self.request)
+            self.template_values, self.request)
 
     @view_config(route_name='about_view')
     def about_view(self):
+        """
+        Returns the HTML page with the "about" information.
 
-        self._handle_parameters()
+        :term:`Customized template` used: ``about_view.mak``.
 
+        Returns:
+            ``HTTPResponse``. A HTML response.
+        """
         return render_to_response(
             get_customized_template_path(self.request, 'about_view.mak'),
-            {
-                'profile': get_current_profile(self.request),
-                'locale': get_current_locale(self.request)
-            },
-            self.request)
+            self.template_values, self.request)
 
     @view_config(route_name='faq_view')
     def faq_view(self):
+        """
+        Returns the HTML page with the FAQ.
 
-        self._handle_parameters()
+        :term:`Customized template` used: ``faq_view.mak``.
 
+        Returns:
+            ``HTTPResponse``. A HTML response.
+        """
         return render_to_response(
             get_customized_template_path(self.request, 'faq_view.mak'),
-            {
-                'profile': get_current_profile(self.request),
-                'locale': get_current_locale(self.request)
-            },
-            self.request)
+            self.template_values, self.request)
 
     @view_config(route_name='showcases_view')
     def showcases_view(self):
+        """
+        Returns the HTML page with the Showcases.
 
-        self._handle_parameters()
+        :term:`Customized template` used: ``showcases_view.mak``.
 
+        Returns:
+            ``HTTPResponse``. A HTML response.
+        """
         return render_to_response(
             get_customized_template_path(self.request, 'showcases_view.mak'),
-            {
-                'profile': get_current_profile(self.request),
-                'locale': get_current_locale(self.request)
-            },
-            self.request)
+            self.template_values, self.request)
 
     @view_config(route_name='partners_view')
     def partners_view(self):
+        """
+        Returns the HTML page with the Partners.
 
-        self._handle_parameters()
+        :term:`Customized template` used: ``partners_view.mak``.
 
+        Returns:
+            ``HTTPResponse``. A HTML response.
+        """
         return render_to_response(
             get_customized_template_path(self.request, 'partners_view.mak'),
-            {
-                'profile': get_current_profile(self.request),
-                'locale': get_current_locale(self.request)
-            },
-            self.request)
-
-    @view_config(route_name='embedded_index',
-                 renderer='lmkp:templates/old_embedded.mak')
-    def embedded_version(self):
-        """
-        Returns a version of the Land Observatory that can be embedded
-        in other website or land portals. The main (and currently the
-        only) difference to the normal index view is the missing
-        combobox to select another profile.
-        """
-
-        # Get the requested profile from the URL
-        profile = self.request.matchdict.get('profile', 'global')
-
-        # Custom handling of the standard parameters: don't use method
-        # _handle_parameters since we get the profile parameter from the
-        # routing and not as URL parameter.
-        if self.request is not None:
-            response = self.request.response
-            # Manipulate the cookies of the request object to make sure, that
-            # method get_current_profile in lmkp.views.profile gets the correct
-            # profile.
-            self.request.cookies['_PROFILE_'] = profile
-            # Set the cookie with a validity of three months
-            self.request.response.set_cookie(
-                '_PROFILE_', profile, timedelta(days=90))
-
-            # Check if language (_LOCALE_) is set
-            if '_LOCALE_' in self.request.params:
-                response.set_cookie('_LOCALE_', self.request.params.get(
-                    '_LOCALE_'), timedelta(days=90))
-            elif '_LOCALE_' in self.request.cookies:
-                pass
-
-        return {}
-
-    @view_config(route_name='enclosing_demo_site')
-    def enclosing_demo_site(self):
-        """
-        This view provides a *very* simple example how the Land
-        Observatory can be embedded in any website with a fixed profile
-        and a hidden profile combobox.
-        """
-
-        html = """
-<html>
-    <head>
-        <title>Embedded Land Observatory</title>
-    </head>
-    <body>
-        <div style="width: 100%;">
-            <div style="height: 10%;">
-                This is a very basic example of how to embed the Land
-                Observatory platform in a custom website using a HTML iframe:
-                <pre>
-&lt;iframe style="height: 90%; width: 100%; border: 0;"
-src="http://localhost:6543/embedded/Madagascar?_LOCALE_=fr"&gt;
-&lt;/iframe&gt;
-                </pre>
-            </div>
-            <div>
-                <iframe style="height: 90%; width: 100%; border: 0;"
-                src="http://localhost:6543/embedded/Madagascar?_LOCALE_=fr">
-                </iframe>
-            </div>
-        </div>
-    </body>
-</html>
-    """
-
-        return Response(html, content_type='text/html', status_int=200)
+            self.template_values, self.request)
 
     @view_config(route_name='moderation_html')
     def moderation_html(self):
         """
-        Returns the moderation HTML page.
-        This actually reroutes to the HTML representation of Activities,
-        showing only the pending versions.
-        """
+        Returns a view for the :term:`Moderators`.
 
+        This view actually returns the default representation of many
+        :term:`Activities`, filtered by status (pending).
+
+        .. seealso::
+           :class:`lmkp.views.activities.ActivityView.read_many`
+
+        Returns:
+            ``HTTPResponse``. A HTML response.
+        """
         return HTTPFound(location=self.request.route_url(
             'activities_read_many', output='html',
             _query={'status': 'pending'}))
-
-    @view_config(
-        route_name='translation',
-        renderer='lmkp:templates/ext_translation.mak', permission='translate')
-    def translation(self):
-        """
-        Returns the translation HTML page
-        """
-
-        self._handle_parameters()
-
-        return {}
 
     @view_config(
         route_name='administration',
@@ -371,19 +322,10 @@ src="http://localhost:6543/embedded/Madagascar?_LOCALE_=fr"&gt;
         permission='administer')
     def administration(self):
         """
-        Returns the administration HTML page
-        """
+        Returns a view for the :term:`Administrators`.
 
-        self._handle_parameters()
-
-        return {}
-
-    @view_config(
-        route_name='privileges_test',
-        renderer='lmkp:templates/old_privilegestest.mak')
-    def privileges_test(self):
-        """
-        Simple view to output the current privileges
+        Returns:
+            ``HTTPResponse``. A HTML response.
         """
         return {}
 
@@ -560,6 +502,9 @@ def getActiveFilters(request):
                 displayKey = tag.getKey().getTranslatedName()
 
             for v in queryparams[q]:
+                v = v.decode('utf-8')
+                q = q.decode('utf-8')
+                displayKey = displayKey.decode('utf-8')
                 # Use translated value for display
                 displayValue = v
                 if tag is not None:
@@ -737,8 +682,11 @@ def get_current_profile(request):
     Return the currently selected :term:`Profile`.
 
     First, parameters in the request are considered. If no parameter is
-    set, the profile cookie is used. As a fallback, the global profile
+    set, the profile cookie is used. As a fallback, the default profile
     is returned.
+
+    .. seealso::
+           :class:`lmkp.views.config.get_default_profile`
 
     Args:
         ``request`` (pyramid.request): A :term:`Pyramid` Request object
@@ -746,11 +694,11 @@ def get_current_profile(request):
         set.
 
     Returns:
-        ``str``. The name of the :term:`Profile` or ``global`` by
-        default.
+        ``str``. The name of the :term:`Profile` or the default profile.
     """
     return request.params.get(
-        '_PROFILE_', request.cookies.get('_PROFILE_', 'global'))
+        '_PROFILE_', request.cookies.get(
+            '_PROFILE_', get_default_profile(request)))
 
 
 def get_current_locale(request):

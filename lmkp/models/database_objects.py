@@ -264,6 +264,7 @@ class A_Tag_Group(Base):
     valid_to = Column(DateTime)
 
     fk_tag = column_property(fk_a_tag)
+    fk_item = column_property(fk_activity)
 
     tags = relationship('A_Tag', backref=backref('tag_group', order_by=id),
                         primaryjoin=id == A_Tag.fk_a_tag_group)
@@ -323,6 +324,7 @@ class SH_Tag_Group(Base):
                             post_update=True)
 
     fk_tag = column_property(fk_sh_tag)
+    fk_item = column_property(fk_stakeholder)
 
     def __init__(self, tg_id, valid_from=None, valid_to=None):
         self.tg_id = tg_id

@@ -44,6 +44,7 @@ Please note that the API Documentation is still under heavy construction.
    :glob:
 
    api/*
+   api/views/*
 
 
 Index and glossary

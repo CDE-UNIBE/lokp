@@ -1,235 +1,352 @@
-var data, currentKey, width, valueKey1, valueKey2, labelKey;
+var data, svg, xScale, xAxis, yScale, yAxis;
+var margin, fontSize, aspectRatio, outerWidth, innerWidth, minOuterHeight,
+    outerHeight, innerHeight;
 
+var current_key = 0;
+
+function updateContent(data) {
+
+  var groupable = chart_data['translate']['keys'];
+  if (data.translate && data.translate.keys) {
+    groupable = data.translate.keys;
+  }
+
+  // Group by buttons
+  if (groupable.length > 1) {
+    var group_by_html = [];
+    for (var i=0; i<groupable.length; i++) {
+      var css_class = '';
+      if (i == group_key) {
+        css_class = 'active';
+      }
+      group_by_html.push([
+        '<li class="', css_class, '"><a href="?attr=', i, '" ',
+        'data-toggle="tooltip" ',
+        'title="', group_activities_by, ' ', groupable[i][0].default, '">',
+        groupable[i][0].default,
+        '</a></li>'
+      ].join(''));
+    }
+    $('#group-by-pills').html(group_by_html.join(''));
+  }
+
+  // Attribute buttons
+  if (attribute_names.length > 1) {
+    var attribute_html = [];
+    for (var i=0; i<attribute_names.length; i++) {
+      var css_class = '';
+      if (i == 0) {
+        css_class = ' active';
+      }
+      attribute_html.push([
+        '<button class="btn change-attribute', css_class, '" ',
+        'value="', i, '" data-toggle="tooltip" ',
+        'title="', show_attribute, ' ', attribute_names[i], '">',
+        attribute_names[i],
+        '</button>'
+      ].join(''));
+    }
+    $('#attribute-buttons').html(attribute_html.join(''));
+  }
+
+  // Title
+  $('#group-by-title').html(groupable[group_key][0].default);
+}
+
+
+/**
+ * (Re-)Calculate the sizes of the chart.
+ */
+function calculateSizes() {
+  margin = {top: 50, right: 0, bottom: 200, left: 100};
+  fontSize = 10;
+  aspectRatio = 0.7; // Ratio Width * Height
+  minOuterHeight = 400;
+  outerWidth = parseInt(d3.select('#chart').style('width'), 10);
+  innerWidth = outerWidth - margin.left - margin.right;
+  outerHeight = Math.max(
+    parseInt(innerWidth * aspectRatio, 10), minOuterHeight);
+  innerHeight = outerHeight - margin.top - margin.bottom;
+}
+
+/**
+ * The main function to create the chart
+ */
 function visualize(data) {
 
-    data = data.data;
+  // Sizes
+  calculateSizes();
 
-    currentKey = valueKey1;
+  // Define Y scale and axis
+  yScale = d3.scale.linear()
+    .domain([0, d3.max(data, function(d) {
+      return getYValue(d, current_key);
+    })])
+    .range([innerHeight, 0])
+    .nice();
+  yAxis = d3.svg.axis()
+    .scale(yScale)
+    .orient('left')
+    .tickPadding(5);
 
-    // Some size constants
-    var chartPaddingTop = 50;
-    var chartPaddingRight = 0;
-    var chartPaddingBottom = 150;
-    var chartPaddingLeft = 100;
-    var fontSize = 10;
-    var labelOffset = 25
+  // Define X scale and axis
+  xScale = d3.scale.ordinal()
+    .domain(data.map(function(d) {
+      return getXValue(d);
+    }))
+    .rangeRoundBands([0, innerWidth], 0.1, 0.3);
+  xAxis = d3.svg.axis()
+    .scale(xScale)
+    .orient('bottom')
+    .tickSize(0);
 
-    // Calculate sizes
-    var chartBottom = height - chartPaddingBottom;
-    var chartRight = width - chartPaddingRight;
+  // Add chart container
+  svg = d3.select("#chart").append("svg")
+    .attr("width", outerWidth)
+    .attr("height", outerHeight)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    // Define Y scale and axis
-    var yScale = d3.scale.linear()
-        .domain([0, d3.max(data, function(d) { return d[currentKey]; })])
-        .range([chartBottom, chartPaddingTop])
-        .nice();
-    var yAxis = d3.svg.axis()
-        .scale(yScale)
-        .orient('left')
-        .tickPadding(5)
+  // Add bars
+  svg.selectAll("bar")
+    .data(data)
+  .enter().append("rect")
+    .attr("x", function(d) {
+      return xScale(getXValue(d));
+    })
+    .attr("width", xScale.rangeBand())
+    .attr("y", function(d) {
+      return yScale(getYValue(d, current_key));
+    })
+    .attr("height", function(d) {
+      return innerHeight - yScale(getYValue(d, current_key));
+    })
+    .attr('class', 'bar')
+    .on('mouseover', function(d) {
+      showValue(d);
+    })
+    .on('mouseout', function(d) {
+      hideValue();
+    });
 
-    // Define X scale and axis
-    var xScale = d3.scale.ordinal()
-        .domain(data.map(function(d) { return d[labelKey] }))
-        .rangeRoundBands([chartPaddingLeft + labelOffset, chartRight], 0.1);
-    var xAxis = d3.svg.axis()
-        .scale(xScale)
-        .orient('bottom')
-        .tickSize(0);
+  // Add Y Axis
+  svg.append("g")
+    .attr("class", "axis yAxis")
+    .call(yAxis)
+  .append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 6)
+    .attr("dy", ".71em")
+    .style("text-anchor", "end")
+    .attr('class', 'yAxisLabel')
+    .text(getYLabel(current_key));
 
-    // Create the graph
-    var svg = d3.select("#graph")
-        .append("svg")
-        .attr("width", width)
-        .attr("height", height)
+  // Add X Axis
+  svg.append("g")
+    .attr("class", "axis xAxis")
+    .attr("transform", "translate(0," + innerHeight + ")")
+    .call(xAxis)
+  .selectAll("text")
+    .style("text-anchor", "end")
+    .attr("transform", 'translate(-5, 2) rotate(-65)' )
+    .on('mouseover', function(d, i) {
+      svg.selectAll("rect.bar")
+        .classed("hover", function(e, j) { return getXValue(e) == d; });
+      showValue(data[i]);
+    })
+    .on('mouseout', function(d) {
+      svg.selectAll("rect.bar")
+        .classed("hover", function(e, j) { return false; });
+      hideValue();
+    });
 
-    // Create bars
+  // Enable Buttons
+  $('button#sortAsc').click(function() {
+    sortChart('asc');
+    sortChart('asc');
+  });
+  $('button#sortDesc').click(function() {
+    sortChart('desc');
+    sortChart('desc');
+  });
+  $('button.change-attribute').click(function() {
+    changeData($(this).attr('value'));
+  });
+
+  // Responsive chart
+  d3.select(window).on('resize', resize);
+
+  /**
+   * Function to change the data of the chart
+   */
+  var changeData = function(key) {
+
+    current_key = key;
+
+    // Update Y scale, axis and label
+    yScale.domain([0, d3.max(data, function(d) {
+      return getYValue(d, current_key);
+    })]);
+    svg.select('.axis.yAxis')
+      .transition()
+      .duration(500)
+      .call(yAxis)
+      .selectAll('text');
+    svg.select('text.yAxisLabel')
+      .text(getYLabel(current_key));
+
+    // Update the bars
     svg.selectAll('rect')
-        .data(data)
-        .enter()
-        .append('rect')
-        .attr('x', function(d) { return xScale(d[labelKey]); })
-        .attr('y', function(d) { return yScale(d[currentKey]); })
-        .attr('width', xScale.rangeBand())
-        .attr('height', function(d) { return chartBottom - yScale(d[currentKey]); })
-        .attr('class', 'bar')
-        .on('mouseover', function(d) {
-            showValue(d);
-        })
-        .on('mouseout', function(d) {
-            hideValue();
-        });
+      .transition()
+      .delay(function(d, i) {
+        return i * 50;
+      })
+      .attr('x', function(d) {
+        return xScale(getXValue(d));
+      })
+      .attr('y', function(d) {
+        return yScale(getYValue(d, current_key));
+      })
+      .attr('width', xScale.rangeBand())
+      .attr('height', function(d) {
+        return innerHeight - yScale(getYValue(d, current_key));
+      })
+      .attr('class', 'bar');
+  }
+}
 
-    // Create the Y axis
-    svg.append('g')
-        .attr('class', 'axis yAxis')
-        .attr('transform', 'translate(' + chartPaddingLeft + ', 0)')
-        .call(yAxis)
-        .append('text')
-        .attr('y', fontSize + 5)
-        .attr('x', -(height/2)+chartPaddingTop)
-        .attr("transform", "rotate(-90)")
-        .style('font-weight', 'bold')
-        .style('text-anchor', 'middle')
-        .attr('class', 'yAxisLabel')
-        .text(currentKey)
+/*
+ * Resize the chart.
+ */
+function resize() {
+  calculateSizes();
 
-    // Create the X axis
-    svg.append('g')
-        .attr('class', 'axis xAxis')
-        .attr('transform', 'translate(0, ' + chartBottom + ')')
-        .call(xAxis)
-        .selectAll('text')
-        .style('text-anchor', 'end')
-        .attr('transform', 'translate(1, 2) rotate(-65)');
+  // Update the chart container
+  d3.select("#chart").select('svg')
+    .attr("width", outerWidth)
+    .attr("height", outerHeight);
 
-    svg.append('g')
-        .attr('class', 'axis xAxis')
-        .attr('transform', 'translate(0, ' + chartBottom + ')')
-        .append('path')
-        .attr('d', 'M' + chartPaddingLeft + ',0V0H' + (chartPaddingLeft + labelOffset) + 'V0')
+  // Update X and Y scales and axis
+  xScale.rangeRoundBands([0, innerWidth], 0.1, 0.3);
+  yScale.range([innerHeight, 0]).nice();
+  svg.select('.axis.xAxis')
+    .attr("transform", "translate(0," + innerHeight + ")")
+    .call(xAxis.orient('bottom'))
+  .selectAll('text')
+    .style('text-anchor', 'end')
+  svg.select('.axis.yAxis')
+    .call(yAxis);
 
-    // Use buttons to sort the graph
-    d3.select('button#sortAsc')
-        .on('click', function() {
-            sortChart('asc');
-        });
-    d3.select('button#sortDesc')
-        .on('click', function() {
-            sortChart('desc');
-        });
+  // Update the bars
+  svg.selectAll('rect')
+    .attr('x', function(d, i) {
+      return xScale(getXValue(d));
+    })
+    .attr("width", xScale.rangeBand())
+    .attr('height', function(d) {
+      return innerHeight - yScale(getYValue(d, current_key));
+    })
+    .attr("y", function(d) {
+      return yScale(getYValue(d, current_key));
+    });
+}
 
-    // Use buttons to change the data of the graph
-    d3.select('button#showCount')
-        .on('click', function() {
-            changeData(valueKey1);
-        });
-    d3.select('button#showSum')
-        .on('click', function() {
-            changeData(valueKey2);
-        });
+ /**
+ * Function to sort the chart.
+ */
+function sortChart(sortDir) {
 
-    /**
-     * Function to show the value of a bar.
-     */
-    var showValue = function(d) {
+  // Update the X scale and axis
+  var newDomain = [];
+  svg.selectAll('rect')
+    .each(function(d) {
+      newDomain.push(getXValue(d));
+    });
+  xScale.domain(newDomain);
+  svg.select('.axis.xAxis')
+    .transition()
+    .duration(1000)
+    .call(xAxis)
+  .selectAll('text')
+    .style('text-anchor', 'end');
 
-        var vHeight = 30;
-        var vPadding = 10;
+  // Update the bars
+  svg.selectAll('rect')
+    .sort(function(a, b) {
+      if (sortDir == 'asc') {
+        return d3.ascending(
+          getYValue(a, current_key), getYValue(b, current_key));
+      } else {
+        return d3.descending(
+          getYValue(a, current_key), getYValue(b, current_key));
+      }
+    })
+    .transition()
+    .delay(function(d, i) {
+      return i * 50;
+    })
+    .duration(1000)
+    .attr('x', function(d, i) {
+      return xScale(getXValue(d));
+    });
+}
 
-        svg.append('rect')
-            .attr('x', xScale(d[labelKey]))
-            .attr('y', yScale(d[currentKey]) - vPadding - vHeight)
-            .attr('width', xScale.rangeBand())
-            .attr('height', vHeight)
-            .attr('class', 'valueShape')
-        svg.append('text')
-            .text(formatNumber(d[currentKey]))
-            .attr('x', xScale(d[labelKey]) + xScale.rangeBand() / 2)
-            .attr('y', yScale(d[currentKey]) - vPadding - (vHeight / 2) + (fontSize / 2))
-            .style('text-anchor','middle')
-            .attr('class', 'valueText');
+/**
+ * Function to show the value of a bar.
+ */
+function showValue(d) {
+  var vHeight = 30;
+  var vPadding = 10;
+  svg.append('rect')
+    .attr('x', xScale(getXValue(d)))
+    .attr('y', yScale(getYValue(d, current_key)) - vPadding - vHeight)
+    .attr('width', xScale.rangeBand())
+    .attr('height', vHeight)
+    .attr('class', 'valueShape');
+  svg.append('text')
+    .text(formatNumber(getYValue(d, current_key)))
+    .attr('x', xScale(getXValue(d)) + xScale.rangeBand() / 2)
+    .attr('y', yScale(getYValue(d, current_key)) - vPadding - (vHeight / 2)
+      + (fontSize / 2))
+    .style('text-anchor','middle')
+    .attr('class', 'valueText');
+}
 
-    }
-
-    /**
-     * Function to hide the value of a bar.
-     */
-    var hideValue = function() {
-        svg.select('rect.valueShape').remove();
-        svg.select('text.valueText').remove();
-    }
-
-    /**
-     * Function to sort the chart.
-     */
-    var sortChart = function(sortDir) {
-
-        // Draw the newly sorted chart
-        svg.selectAll('rect')
-            .sort(function(a, b) {
-                if (sortDir == 'asc') {
-                    return d3.ascending(a[currentKey], b[currentKey]);
-                } else {
-                    return d3.descending(a[currentKey], b[currentKey]);
-                }
-            })
-            .transition()
-            .delay(function(d, i) {
-                return i * 50;
-            })
-            .duration(1000)
-            .attr('x', function(d, i) {
-                return xScale(i);
-            });
-
-        // Store the new domain to update the scale
-        var newDomain = [];
-        svg.selectAll('rect')
-            .each(function(d) {
-                newDomain.push(d[labelKey]);
-            });
-        xScale.domain(newDomain);
-
-        // Draw the axis again
-        svg.select('.axis.xAxis')
-            .transition()
-            .duration(1000)
-            .call(xAxis)
-            .selectAll('text')
-            .style('text-anchor', 'end')
-    }
-
-    /**
-     * Function to change the data of the chart (switches between valueKey1 and
-     * valueKey2) and redraw it, also re-creating y-Axis.
-     */
-    var changeData = function(key) {
-
-        currentKey = key;
-
-        // Change the domain of the yScale
-        yScale.domain([0, d3.max(data, function(d) { return d[key]; })])
-
-        // Update the bars
-        svg.selectAll('rect')
-            .transition()
-            .delay(function(d, i) {
-                return i * 50;
-            })
-            .attr('x', function(d) { return xScale(d[labelKey]); })
-            .attr('y', function(d) { return yScale(d[key]); })
-            .attr('width', xScale.rangeBand())
-            .attr('height', function(d) { return chartBottom - yScale(d[key]); })
-            .attr('class', 'bar');
-
-        // Draw the axis again
-        svg.select('.axis.yAxis')
-            .transition()
-            .duration(500)
-            .call(yAxis)
-            .selectAll('text');
-
-        // Change axis label
-        svg.select('text.yAxisLabel')
-            .text(key);
-    }
-
+/**
+ * Function to hide the value of a bar.
+ */
+function hideValue() {
+  svg.select('rect.valueShape').remove();
+  svg.select('text.valueText').remove();
 }
 
 /**
  * Helper function to return a nicely rendered number string (adds thousands
- * separator)
+ * separator). Also round numbers to 2 decimal places.
  * http://stackoverflow.com/a/2646441/841644
  */
 function formatNumber(nStr) {
-    nStr += '';
-    var x = nStr.split('.');
-    var x1 = x[0];
-    var x2 = x.length > 1 ? '.' + x[1] : '';
-    var rgx = /(\d+)(\d{3})/;
-    while (rgx.test(x1)) {
-        x1 = x1.replace(rgx, '$1' + ',' + '$2');
-    }
-    return x1 + x2;
+  nStr += '';
+  var x = nStr.split('.');
+  var x1 = x[0];
+  var x2 = x.length > 1 ? '.' + x[1] : '';
+  if (x2) {
+    x2 = parseFloat(x2).toFixed(2);
+  }
+  var rgx = /(\d+)(\d{3})/;
+  while (rgx.test(x1)) {
+    x1 = x1.replace(rgx, '$1' + ',' + '$2');
+  }
+  return x1 + x2;
 }
+
+function getYValue(d, i) {
+  return d.values[i].value;
+}
+
+function getYLabel(i) {
+  return attribute_names[i];
+}
+
+function getXValue(d) {
+  return d.group.value.default; }

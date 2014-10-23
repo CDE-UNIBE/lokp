@@ -25,7 +25,6 @@ from lmkp.models.database_objects import (
 )
 from lmkp.models.meta import DBSession as Session
 from lmkp.views.form_config import getCategoryList
-from lmkp.views.views import get_current_profile
 
 
 log = logging.getLogger(__name__)
@@ -405,6 +404,7 @@ def _handle_application_config(request):
 
     # Then check local application configuration if available
     # Try to find the profile in parameters
+    from lmkp.views.views import get_current_profile
     locale_code = get_current_profile(request)
 
     # Only continue if a profile was found
@@ -822,6 +822,35 @@ def _get_admin_scan(
         fieldConfig['leaf'] = True
 
     return fieldConfig
+
+
+def get_default_profile(request):
+    """
+    Return the name of the default profile to be used if no profile was
+    specified.
+
+    Return the default profile as set in the application's configuration
+    YAML (key ``default_profile``). If no default profile is set in the
+    configuration, use ``global`` as default profile.
+
+    Args:
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object.
+
+    Returns:
+        ``str``. The default profile as set in the configuration or
+        ``global``.
+    """
+    default_profile = 'global'
+    try:
+        app_stream = open(
+            "%s/%s" % (profile_directory_path(request), APPLICATION_YAML), 'r')
+    except IOError:
+        return default_profile
+
+    config = yaml.load(app_stream)
+
+    return config.get(
+        'application', {}).get('default_profile', default_profile)
 
 
 def get_activity_sitekey(request):
