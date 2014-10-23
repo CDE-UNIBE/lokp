@@ -143,9 +143,13 @@ def main(global_config, ** settings):
     config.add_route('profile_madagascar', '/madagascar')
     config.add_route('profile_global', '/global')
 
+    # Evaluation
+    config.add_route('evaluation', '/evaluation', request_method='POST')
+
     # Charts
     config.add_route("charts_view", "/charts")
     config.add_route('charts_overview', '/charts/overview')
+    config.add_route('charts', '/charts/{type}')
 
     """
     Activities
@@ -316,9 +320,6 @@ def main(global_config, ** settings):
 
     # A route to the sitemap.xml
     config.add_route('sitemap', '/sitemap.xml')
-
-    # Evaluation
-    config.add_route('evaluation_json', '/evaluation/{temp}')
 
     # Add a route to search locations
     config.add_route('location_search', '/search')

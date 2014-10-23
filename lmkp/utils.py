@@ -54,12 +54,12 @@ def validate_item_type(item_type):
     Raises:
         ``Exception``. If the item type is not valid.
     """
-    if item_type in ['a', 'activity', 'activities']:
-        return 'a'
-    elif item_type in ['sh', 'stakeholder', 'stakeholders']:
-        return 'sh'
-    else:
-        raise Exception('"%s" is not a valid item type!' % item_type)
+    if type(item_type) in [str, unicode]:
+        if item_type.lower() in ['a', 'activity', 'activities']:
+            return 'a'
+        elif item_type.lower() in ['sh', 'stakeholder', 'stakeholders']:
+            return 'sh'
+    raise Exception('"%s" is not a valid item type!' % item_type)
 
 
 def validate_uuid(uuid):

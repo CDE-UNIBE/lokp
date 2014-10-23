@@ -17,8 +17,9 @@
 *.egg
 *.egg-info
 
-# Ignore JavaScript libraries
-lmkp/static/lib/
+# Ignore JavaScript libraries, execpt d3
+lmkp/static/lib/*
+!lmkp/static/lib/d3/
 lmkp/static/lib.tar.gz
 .pydevproject
 .project
