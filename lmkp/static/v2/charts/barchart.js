@@ -4,52 +4,61 @@ var margin, fontSize, aspectRatio, outerWidth, innerWidth, minOuterHeight,
 
 var current_key = 0;
 
-// Group by buttons
-if (chart_data['groupable'].length > 1) {
-  var group_by_html = [];
-  for (var i=0; i<chart_data['groupable'].length; i++) {
-    var css_class = '';
-    if (i == current_group_key) {
-      css_class = 'active';
-    }
-    group_by_html.push([
-      '<li class="', css_class, '"><a href="?attr=', i, '" ',
-      'data-toggle="tooltip" ',
-      'title="', group_activities_by, ' ', chart_data['groupable'][i], '">',
-      chart_data['groupable'][i],
-      '</a></li>'
-    ].join(''));
+function updateContent(data) {
+
+  var groupable = chart_data['translate']['keys'];
+  if (data.translate && data.translate.keys) {
+    groupable = data.translate.keys;
   }
-  $('#group-by-pills').html(group_by_html.join(''));
+
+  // Group by buttons
+  if (groupable.length > 1) {
+    var group_by_html = [];
+    for (var i=0; i<groupable.length; i++) {
+      var css_class = '';
+      if (i == group_key) {
+        css_class = 'active';
+      }
+      group_by_html.push([
+        '<li class="', css_class, '"><a href="?attr=', i, '" ',
+        'data-toggle="tooltip" ',
+        'title="', group_activities_by, ' ', groupable[i][0].default, '">',
+        groupable[i][0].default,
+        '</a></li>'
+      ].join(''));
+    }
+    $('#group-by-pills').html(group_by_html.join(''));
+  }
+
+  // Attribute buttons
+  if (attribute_names.length > 1) {
+    var attribute_html = [];
+    for (var i=0; i<attribute_names.length; i++) {
+      var css_class = '';
+      if (i == 0) {
+        css_class = ' active';
+      }
+      attribute_html.push([
+        '<button class="btn change-attribute', css_class, '" ',
+        'value="', i, '" data-toggle="tooltip" ',
+        'title="', show_attribute, ' ', attribute_names[i], '">',
+        attribute_names[i],
+        '</button>'
+      ].join(''));
+    }
+    $('#attribute-buttons').html(attribute_html.join(''));
+  }
+
+  // Title
+  $('#group-by-title').html(groupable[group_key][0].default);
 }
 
-// Attribute buttons
-if (attribute_names.length > 1) {
-  var attribute_html = [];
-  for (var i=0; i<attribute_names.length; i++) {
-    var css_class = '';
-    if (i == 0) {
-      css_class = ' active';
-    }
-    attribute_html.push([
-      '<button class="btn change-attribute', css_class, '" ',
-      'value="', i, '" data-toggle="tooltip" ',
-      'title="', show_attribute, ' ', attribute_names[i], '">',
-      attribute_names[i],
-      '</button>'
-    ].join(''));
-  }
-  $('#attribute-buttons').html(attribute_html.join(''));
-}
-
-// Title
-$('#group-by-title').html(chart_data["groupable"][current_group_key]);
 
 /**
  * (Re-)Calculate the sizes of the chart.
  */
 function calculateSizes() {
-  margin = {top: 50, right: 0, bottom: 150, left: 100};
+  margin = {top: 50, right: 0, bottom: 200, left: 100};
   fontSize = 10;
   aspectRatio = 0.7; // Ratio Width * Height
   minOuterHeight = 400;
@@ -139,7 +148,17 @@ function visualize(data) {
     .call(xAxis)
   .selectAll("text")
     .style("text-anchor", "end")
-    .attr("transform", 'translate(1, 2) rotate(-65)' );
+    .attr("transform", 'translate(-5, 2) rotate(-65)' )
+    .on('mouseover', function(d, i) {
+      svg.selectAll("rect.bar")
+        .classed("hover", function(e, j) { return getXValue(e) == d; });
+      showValue(data[i]);
+    })
+    .on('mouseout', function(d) {
+      svg.selectAll("rect.bar")
+        .classed("hover", function(e, j) { return false; });
+      hideValue();
+    });
 
   // Enable Buttons
   $('button#sortAsc').click(function() {
@@ -303,7 +322,7 @@ function hideValue() {
 
 /**
  * Helper function to return a nicely rendered number string (adds thousands
- * separator)
+ * separator). Also round numbers to 2 decimal places.
  * http://stackoverflow.com/a/2646441/841644
  */
 function formatNumber(nStr) {
@@ -311,6 +330,9 @@ function formatNumber(nStr) {
   var x = nStr.split('.');
   var x1 = x[0];
   var x2 = x.length > 1 ? '.' + x[1] : '';
+  if (x2) {
+    x2 = parseFloat(x2).toFixed(2);
+  }
   var rgx = /(\d+)(\d{3})/;
   while (rgx.test(x1)) {
     x1 = x1.replace(rgx, '$1' + ',' + '$2');
@@ -319,13 +341,12 @@ function formatNumber(nStr) {
 }
 
 function getYValue(d, i) {
-  return d.attributes[i].value;
+  return d.values[i].value;
 }
 
 function getYLabel(i) {
-    return attribute_names[i];
+  return attribute_names[i];
 }
 
 function getXValue(d) {
-    return d.group_by.value;
-}
+  return d.group.value.default; }
