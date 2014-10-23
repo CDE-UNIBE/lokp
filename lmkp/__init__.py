@@ -149,7 +149,8 @@ def main(global_config, ** settings):
     # Charts
     config.add_route("charts_view", "/charts")
     config.add_route('charts_overview', '/charts/overview')
-    config.add_route('charts', '/charts/{type}')
+    config.add_route('charts_no_slash', '/charts/{type}*params')
+    config.add_route('charts', '/charts/{type}/*params')
 
     """
     Activities

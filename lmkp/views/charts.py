@@ -11,14 +11,21 @@ class ChartsView(BaseView):
     @view_config(route_name='charts_overview')
     def charts_overview(self):
 
-        return self.charts()
+        return render_to_response(
+            get_customized_template_path(self.request, 'charts_view.mak'),
+            self.get_base_template_values(), self.request)
 
     @view_config(route_name='charts')
+    @view_config(route_name='charts_no_slash')
     def charts(self):
 
         chart_type = self.request.matchdict.get('type', 'bars')
         if chart_type == 'bars':
-            template = 'barchart'
+            params = self.request.matchdict.get('params')
+            if params == ('sh',):
+                template = 'barchart_sh'
+            else:
+                template = 'barchart_a'
         else:
             return HTTPNotFound()
 
