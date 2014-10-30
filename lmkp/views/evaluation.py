@@ -148,8 +148,9 @@ class EvaluationView(BaseView):
 
         # Apply profile boundary filter
         if self.db_item == Activity:
+            p = json_data.get('profile', get_current_profile(self.request))
             profile = Session.query(Profile).\
-                filter(Profile.code == get_current_profile(self.request)).\
+                filter(Profile.code == p).\
                 first()
             if profile is not None:
                 q = q.filter(geofunctions.intersects(
