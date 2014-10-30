@@ -504,7 +504,8 @@ def getActiveFilters(request):
             for v in queryparams[q]:
                 v = v.decode('utf-8')
                 q = q.decode('utf-8')
-                displayKey = displayKey.decode('utf-8')
+                if type(displayKey) != unicode:
+                    displayKey = displayKey.decode('utf-8')
                 # Use translated value for display
                 displayValue = v
                 if tag is not None:

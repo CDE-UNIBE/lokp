@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-08-26 15:14+0200\n"
+"POT-Creation-Date: 2014-10-30 15:40+0100\n"
 "PO-Revision-Date: 2014-08-26 14:57+0100\n"
 "Last-Translator: Lukas Vonlanthen <lukas.vonlanthen@cde.unibe.ch>\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -14,10 +14,7 @@ msgstr ""
 "Generated-By: Babel 0.9.6\n"
 
 #: lmkp/templates/ext_administration.mak:21 lmkp/templates/ext_base.mak:55
-#: lmkp/templates/ext_base.mak:58 lmkp/templates/ext_moderation.mak:18
-#: lmkp/templates/ext_translation.mak:21
-#: lmkp/templates/old_compare_versions.mak:11
-#: lmkp/templates/old_embedded.mak:10 lmkp/templates/old_review_versions.mak:4
+#: lmkp/templates/ext_base.mak:58
 msgid "Land Observatory"
 msgstr "Observatoires des transactions foncières "
 
@@ -26,14 +23,10 @@ msgid "Administration"
 msgstr "Administration"
 
 #: lmkp/templates/ext_administration.mak:23 lmkp/templates/ext_base.mak:60
-#: lmkp/templates/ext_moderation.mak:20 lmkp/templates/ext_translation.mak:23
 msgid "[Demo]"
 msgstr "[Démonstration]"
 
-#: lmkp/templates/ext_administration.mak:37
-#: lmkp/templates/ext_moderation.mak:41 lmkp/templates/ext_translation.mak:37
-#: lmkp/templates/old_compare_versions.mak:48
-#: lmkp/templates/old_embedded.mak:35 lmkp/templates/old_review_versions.mak:33
+#: lmkp/templates/ext_administration.mak:36
 #: lmkp/templates/form/customFileDisplay.mak:42
 #: lmkp/templates/form/customMapMapping.mak:69
 msgid "Loading ..."
@@ -93,24 +86,6 @@ msgid "Please send your questions and feedback on the Observatory to: "
 msgstr ""
 "Veuillez transmettre s'il vous plaît vos questions et commentaires sur "
 "l'Observatoire à : "
-
-#: lmkp/templates/ext_moderation.mak:18
-msgid "Moderation"
-msgstr "Modération "
-
-#: lmkp/templates/ext_translation.mak:21
-msgid "Translation"
-msgstr "Traduction"
-
-#: lmkp/templates/old_compare_versions.mak:11
-msgid "Compare"
-msgstr "Comparer"
-
-#: lmkp/templates/old_review_versions.mak:4
-#: lmkp/templates/review/readonly/customInvolvementMappingActivity.mak:24
-#: lmkp/templates/review/readonly/customInvolvementMappingStakeholder.mak:27
-msgid "Review"
-msgstr "Vérifier"
 
 #: lmkp/templates/form/customFileDisplay.mak:35
 msgid "Upload a file"
@@ -280,7 +255,7 @@ msgstr "Télécharger"
 msgid "Success"
 msgstr "Validé"
 
-#: lmkp/templates/form/form_fileupload_embedded.mak:105 lmkp/views/form.py:75
+#: lmkp/templates/form/form_fileupload_embedded.mak:105 lmkp/views/form.py:83
 msgid "Error"
 msgstr "Erreur"
 
@@ -300,7 +275,7 @@ msgstr ""
 msgid "Type * to show all possible values."
 msgstr "Taper * pour voir toutes les valeurs possibles"
 
-#: lmkp/templates/form/mapping_item.mak:42
+#: lmkp/templates/form/mapping_item.mak:39
 msgid ""
 "The location is required. Please select a point on the map before "
 "continuing."
@@ -317,7 +292,7 @@ msgstr "Télécharger ce dossier"
 msgid "Open the link in a new window"
 msgstr "Ouvrir le lien dans une autre fenêtre"
 
-#: lmkp/templates/map/mapform.mak:64
+#: lmkp/templates/map/mapform.mak:72
 #: lmkp/templates/review/readonly/mapping_item.mak:35
 msgid "There are changes in this section"
 msgstr "Il y a eu des changements dans cette section"
@@ -330,101 +305,66 @@ msgstr "Nombre total de"
 msgid "per page"
 msgstr "par page"
 
-#: lmkp/views/activities.py:571
-msgid "Spatial Accuracy"
-msgstr ""
+#: lmkp/templates/review/readonly/customInvolvementMappingActivity.mak:24
+#: lmkp/templates/review/readonly/customInvolvementMappingStakeholder.mak:27
+msgid "Review"
+msgstr "Vérifier"
 
-#: lmkp/views/activities.py:728 lmkp/views/stakeholders.py:666
-msgid "User is not logged in."
-msgstr "L'utilisateur n'est pas connecté."
-
-#: lmkp/views/activities.py:731 lmkp/views/stakeholders.py:669
-msgid "User has no permissions to add a review."
-msgstr "L'utilisateur n'a pas la possibilité d'ajouter des commentaires. "
-
-#: lmkp/views/activities.py:738
-msgid "User has no profile attached"
-msgstr "L'utilisateur n'a pas de profil correspondant."
-
-#: lmkp/views/activities.py:745
-msgid "The Item was not found or is not situated within the user's profiles"
-msgstr "L'object n'a pas été trouvé."
-
-#: lmkp/views/activities.py:755 lmkp/views/stakeholders.py:689
-msgid "No valid review decision"
-msgstr "La décision associée à la vérification est inconnue"
-
-#: lmkp/views/activities.py:774 lmkp/views/stakeholders.py:709
-msgid "Not all mandatory keys are provided"
-msgstr "Les caractéristiques clés et obligatoires n'ont pas été fournies"
-
-#: lmkp/views/activities.py:781 lmkp/views/stakeholders.py:716
-msgid "Unknown error"
-msgstr "Inconnu"
-
-#: lmkp/views/comments.py:72 lmkp/views/comments.py:170
+#: lmkp/views/comments.py:87 lmkp/views/comments.py:188
 msgid "Object not found."
 msgstr "Objet non trouvé."
 
-#: lmkp/views/comments.py:139
+#: lmkp/views/comments.py:155
 msgid "Captcha not correct."
 msgstr "Captcha ne semble pas être correct. "
 
-#: lmkp/views/comments.py:159
+#: lmkp/views/comments.py:177
 msgid "Comment successfully inserted."
 msgstr "Commentaire inséré avec succès."
 
-#: lmkp/views/comments.py:205
+#: lmkp/views/comments.py:225
 msgid "Comment successfully deleted."
 msgstr "Commentaire supprimé avec succès."
 
-#: lmkp/views/editors.py:25 lmkp/views/moderators.py:30
-msgid "Logged in as:"
-msgstr "Connecté en tant que:"
-
-#: lmkp/views/editors.py:27 lmkp/views/moderators.py:32
-msgid "Logout"
-msgstr "Déconnectez-vous"
-
-#: lmkp/views/errors.py:19
+#: lmkp/views/errors.py:39
 msgid "Please login to access:"
 msgstr "Veulliez s'il vous plaît vous connecter pour accéder:"
 
-#: lmkp/views/files.py:164
+#: lmkp/views/files.py:180
 msgid "Not all necessary values were provided."
 msgstr "Les valeurs nécessaires n'ont pas été précisées."
 
-#: lmkp/views/files.py:173
+#: lmkp/views/files.py:189
 msgid "Upload directory not specified or not found."
 msgstr "Les indications de téléchargement n'ont pas été précisées ou trouvées."
 
-#: lmkp/views/files.py:179
+#: lmkp/views/files.py:195
 msgid "File type is not valid."
 msgstr "Le document n'est pas valide."
 
-#: lmkp/views/files.py:185
+#: lmkp/views/files.py:201
 msgid "File is too big."
 msgstr "Le dossier est trop lourd."
 
-#: lmkp/views/files.py:251
+#: lmkp/views/files.py:264
 msgid "File was successfully uploaded"
 msgstr "Le dossier a été téléchargé avec succès."
 
-#: lmkp/views/form.py:73
+#: lmkp/views/form.py:81
 msgid "Empty Form"
 msgstr "Formulaire vide"
 
-#: lmkp/views/form.py:74
+#: lmkp/views/form.py:82
 msgid "You submitted an empty form or did not make any changes."
 msgstr ""
 "Vous avez soumis un formulaire vide ou vous n'avez pas apporté de "
 "changement."
 
-#: lmkp/views/form.py:475
+#: lmkp/views/form.py:552
 msgid "Unknown Item"
 msgstr "Object inconnu"
 
-#: lmkp/views/form.py:718
+#: lmkp/views/form.py:823 lmkp/views/form.py:840
 msgid ""
 "At least one of the involvements prevents automatic revision. Please "
 "review these involvements separately."
@@ -432,7 +372,7 @@ msgstr ""
 "Au moins un ce ces types d'implications empêche une révision automatique."
 " Vérifier ces types d'implication de façon séparée. "
 
-#: lmkp/views/form.py:720
+#: lmkp/views/form.py:827
 msgid ""
 "This version contains changed involvements which prevent automatic "
 "revision. Please review these involvements."
@@ -441,47 +381,43 @@ msgstr ""
 "qui empêchent une révision automatique. Vérifier s'il vous plait ces "
 "types d'implications. "
 
-#: lmkp/views/form.py:993
+#: lmkp/views/form.py:1122
 msgid "The Item could not be created or updated."
 msgstr "L'object n'a pas été trouvé."
 
-#: lmkp/views/form.py:1005
+#: lmkp/views/form.py:1134
 msgid "The Item was created but not found."
 msgstr "L'object n'a pas été trouvé."
 
-#: lmkp/views/form.py:1007
+#: lmkp/views/form.py:1136
 msgid "Unknown"
 msgstr "Inconnu"
 
-#: lmkp/views/form.py:1110
+#: lmkp/views/form.py:1250 lmkp/views/user.py:123
 msgid "Submit"
 msgstr "Soumettre"
 
-#: lmkp/views/form_config.py:1056
+#: lmkp/views/form_config.py:1112
 msgid "Select"
 msgstr "Sélectionner"
 
-#: lmkp/views/login.py:58
+#: lmkp/views/login.py:60
 msgid "Login failed! Please try again."
 msgstr "La connexion a échoué ! Veuillez s'il vous plaît essayer à nouveau."
 
-#: lmkp/views/login.py:107
+#: lmkp/views/login.py:117
 msgid "No registered user found with this email address."
 msgstr "Aucun utilisateur n'est enregistré à cette adresse"
 
-#: lmkp/views/login.py:119
+#: lmkp/views/login.py:137
 msgid "Password reset"
 msgstr "Réinitialiser mot de passe"
 
-#: lmkp/views/moderators.py:31
-msgid "Show user profile"
-msgstr "Consulter le profil de l'utilisateur"
-
-#: lmkp/views/protocol.py:652
+#: lmkp/views/protocol.py:663
 msgid "Unknown object to review."
 msgstr "Object inconnu à la vérification"
 
-#: lmkp/views/protocol.py:960
+#: lmkp/views/protocol.py:1071
 msgid ""
 "No active version was found to base the review upon. Try to review an "
 "earlier version first."
@@ -489,123 +425,162 @@ msgstr ""
 "Aucune version active n'a été trouvée pour procéder à la vérification. "
 "Essayez s'il vous plaît de vérifier d'abord une version plus récente. "
 
-#: lmkp/views/protocol.py:985
+#: lmkp/views/protocol.py:1098
 msgid "The diff seems to be incorrect (identifier not found)"
 msgstr "Le diff semble être incorrect (l'identifiant not trouvé). "
 
-#: lmkp/views/protocol.py:1033
+#: lmkp/views/protocol.py:1193
 msgid "Unknown review decision"
 msgstr "La décision associée à la vérification est inconnue"
 
-#: lmkp/views/protocol.py:1045
+#: lmkp/views/protocol.py:1205
 msgid "Review successful."
 msgstr "Vérification réussie."
 
-#: lmkp/views/stakeholders.py:679
-msgid "The Item was not found"
-msgstr "L'object n'a pas été trouvé."
-
-#: lmkp/views/translation.py:30
+#: lmkp/views/translation.py:31
 msgid "pending"
 msgstr "en attente"
 
-#: lmkp/views/translation.py:31
+#: lmkp/views/translation.py:32
 msgid "active"
 msgstr "active"
 
-#: lmkp/views/translation.py:32
+#: lmkp/views/translation.py:33
 msgid "inactive"
 msgstr "inactive"
 
-#: lmkp/views/translation.py:33
+#: lmkp/views/translation.py:34
 msgid "deleted"
 msgstr "supprimé"
 
-#: lmkp/views/translation.py:34 lmkp/views/translation.py:41
+#: lmkp/views/translation.py:35 lmkp/views/translation.py:42
 msgid "rejected"
 msgstr "rejeté"
 
-#: lmkp/views/translation.py:35
+#: lmkp/views/translation.py:36
 msgid "edited"
 msgstr "edité"
 
-#: lmkp/views/translation.py:40
+#: lmkp/views/translation.py:41
 msgid "approved"
 msgstr "approuvé"
 
-#: lmkp/views/translation.py:46
+#: lmkp/views/translation.py:47
 msgid "Editors"
 msgstr "Editeurs"
 
-#: lmkp/views/translation.py:47
+#: lmkp/views/translation.py:48
 msgid "Moderators"
 msgstr "Modérateurs"
 
-#: lmkp/views/translation.py:48
+#: lmkp/views/translation.py:49
 msgid "Administrators"
 msgstr "Administrateurs"
 
-#: lmkp/views/translation.py:49
+#: lmkp/views/translation.py:50
 msgid "Translators"
 msgstr "Traducteurs"
 
-#: lmkp/views/translation.py:56
+#: lmkp/views/translation.py:58
 msgid "Investor"
 msgstr "Investisseur"
 
-#: lmkp/views/translation.py:67
+#: lmkp/views/translation.py:70
 msgid "Status"
 msgstr "Statut"
 
-#: lmkp/views/translation.py:455
+#: lmkp/views/translation.py:220
 msgid "Translation not successful"
 msgstr "La traduction n'a pas aboutie"
 
-#: lmkp/views/translation.py:476 lmkp/views/translation.py:503
+#: lmkp/views/translation.py:247 lmkp/views/translation.py:278
 msgid "Updated translation"
 msgstr "Mettre à jour la traduction"
 
-#: lmkp/views/translation.py:484 lmkp/views/translation.py:511
+#: lmkp/views/translation.py:255 lmkp/views/translation.py:286
 msgid "Added translation"
 msgstr "traduction supplémentaire "
 
-#: lmkp/views/user.py:94 lmkp/views/user.py:355
+#: lmkp/views/user.py:108 lmkp/views/user.py:402
 msgid "Username"
 msgstr "Nom d'utilisateur"
 
-#: lmkp/views/user.py:98 lmkp/views/user.py:361
+#: lmkp/views/user.py:112 lmkp/views/user.py:406
 msgid "Password"
 msgstr "Mot de passe"
 
-#: lmkp/views/user.py:101 lmkp/views/user.py:366
+#: lmkp/views/user.py:114 lmkp/views/user.py:408
 msgid "First Name"
 msgstr "Prénom"
 
-#: lmkp/views/user.py:104 lmkp/views/user.py:371
+#: lmkp/views/user.py:116 lmkp/views/user.py:410
 msgid "Last Name"
 msgstr "Nom"
 
-#: lmkp/views/user.py:107 lmkp/views/user.py:380
+#: lmkp/views/user.py:118 lmkp/views/user.py:416
 msgid "Valid Email"
 msgstr "Adresse e-mail "
 
-#: lmkp/views/user.py:156
+#: lmkp/views/user.py:176
 msgid "Activate your Account"
 msgstr "Activation de votre compte"
 
-#: lmkp/views/user.py:385
+#: lmkp/views/user.py:421
 msgid "Update"
 msgstr "Mise à jour"
 
-#: lmkp/views/user.py:416
+#: lmkp/views/user.py:447
 msgid "Your user settings were updated."
 msgstr "Les informations de votre compte ont été mises à jour"
 
-#: lmkp/views/viewers.py:28
-msgid "Login"
-msgstr "Connecter"
+#~ msgid "Moderation"
+#~ msgstr "Modération "
 
-#: lmkp/views/viewers.py:29
-msgid "Register"
-msgstr "Enregistrer"
+#~ msgid "Translation"
+#~ msgstr "Traduction"
+
+#~ msgid "Compare"
+#~ msgstr "Comparer"
+
+#~ msgid "Spatial Accuracy"
+#~ msgstr ""
+
+#~ msgid "User is not logged in."
+#~ msgstr "L'utilisateur n'est pas connecté."
+
+#~ msgid "User has no permissions to add a review."
+#~ msgstr "L'utilisateur n'a pas la possibilité d'ajouter des commentaires. "
+
+#~ msgid "User has no profile attached"
+#~ msgstr "L'utilisateur n'a pas de profil correspondant."
+
+#~ msgid "The Item was not found or is not situated within the user's profiles"
+#~ msgstr "L'object n'a pas été trouvé."
+
+#~ msgid "No valid review decision"
+#~ msgstr "La décision associée à la vérification est inconnue"
+
+#~ msgid "Not all mandatory keys are provided"
+#~ msgstr "Les caractéristiques clés et obligatoires n'ont pas été fournies"
+
+#~ msgid "Unknown error"
+#~ msgstr "Inconnu"
+
+#~ msgid "Logged in as:"
+#~ msgstr "Connecté en tant que:"
+
+#~ msgid "Logout"
+#~ msgstr "Déconnectez-vous"
+
+#~ msgid "Show user profile"
+#~ msgstr "Consulter le profil de l'utilisateur"
+
+#~ msgid "The Item was not found"
+#~ msgstr "L'object n'a pas été trouvé."
+
+#~ msgid "Login"
+#~ msgstr "Connecter"
+
+#~ msgid "Register"
+#~ msgstr "Enregistrer"
 

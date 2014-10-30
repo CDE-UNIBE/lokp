@@ -26,6 +26,8 @@ class ChartsView(BaseView):
                 template = 'barchart_sh'
             else:
                 template = 'barchart_a'
+        elif chart_type == 'stackedbars':
+            template = 'stackedbarchart'
         else:
             return HTTPNotFound()
 
