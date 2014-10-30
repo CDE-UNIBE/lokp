@@ -7,9 +7,9 @@ setup(name='LMKP_Customization',
             ('sample/**', 'ignore', None),
             ('default/**', 'ignore', None),
             # Uncomment or add the customization you'd like to ignore
-#            ('lo/**', 'ignore', None),
-#            ('spm/**', 'ignore', None),
-#            ('testing/**', 'ignore', None),
+            # ('lo/**', 'ignore', None),
+            # ('spm/**', 'ignore', None),
+            # ('testing/**', 'ignore', None),
             ('**.mak', 'mako', None),
         ]
     }
