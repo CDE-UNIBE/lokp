@@ -1,8 +1,23 @@
 var data, svg, xScale, xAxis, yScale, yAxis;
-var margin, fontSize, aspectRatio, outerWidth, innerWidth, minOuterHeight,
-    outerHeight, innerHeight;
 
 var current_key = 0;
+
+/**
+ * Size constants
+ */
+var fontSize = 10,
+    minOuterHeight = 500;
+
+/**
+ * Initial sizes needed by d3 to create the chart. These will be
+ * (partly) overwritten.
+ */
+var margin = {top: 50, right: 0, bottom: 0, left: 100},
+    aspectRatio = 0.7, // Ratio Width * Height
+    outerWidth = 100,
+    innerWidth = 50,
+    outerHeight = 100,
+    innerHeight = 50;
 
 function updateContent(data) {
 
@@ -55,13 +70,23 @@ function updateContent(data) {
 
 
 /**
- * (Re-)Calculate the sizes of the chart.
+ * (Re-)Calculate the dimensions of the chart.
  */
-function calculateSizes() {
-  margin = {top: 50, right: 0, bottom: 200, left: 100};
-  fontSize = 10;
-  aspectRatio = 0.7; // Ratio Width * Height
-  minOuterHeight = 400;
+function calculateDimensions() {
+  var marginBottom = 0;
+  var xAxis = d3.selectAll('.xAxis');
+  if (xAxis.node()) {
+    var xAxisEntry = xAxis.selectAll('.tick');
+    xAxisEntry[0].forEach(function(a) {
+      marginBottom = Math.max(marginBottom, a.getBBox().height);
+    });
+  }
+  margin = {
+    top: margin.top,
+    right: margin.right,
+    bottom: marginBottom,
+    left: margin.left
+  };
   outerWidth = parseInt(d3.select('#chart').style('width'), 10);
   innerWidth = outerWidth - margin.left - margin.right;
   outerHeight = Math.max(
@@ -75,7 +100,7 @@ function calculateSizes() {
 function visualize(data) {
 
   // Sizes
-  calculateSizes();
+  calculateDimensions();
 
   // Define Y scale and axis
   yScale = d3.scale.linear()
@@ -148,7 +173,7 @@ function visualize(data) {
     .call(xAxis)
   .selectAll("text")
     .style("text-anchor", "end")
-    .attr("transform", 'translate(-5, 2) rotate(-65)' )
+    .attr("transform", 'translate(-10, 2) rotate(-65)' )
     .on('mouseover', function(d, i) {
       svg.selectAll("rect.bar")
         .classed("hover", function(e, j) { return getXValue(e) == d; });
@@ -172,6 +197,8 @@ function visualize(data) {
   $('button.change-attribute').click(function() {
     changeData($(this).attr('value'));
   });
+
+  resize();
 
   // Responsive chart
   d3.select(window).on('resize', resize);
@@ -219,7 +246,8 @@ function visualize(data) {
  * Resize the chart.
  */
 function resize() {
-  calculateSizes();
+  hideValue();
+  calculateDimensions();
 
   // Update the chart container
   d3.select("#chart").select('svg')
@@ -297,19 +325,27 @@ function sortChart(sortDir) {
 function showValue(d) {
   var vHeight = 30;
   var vPadding = 10;
-  svg.append('rect')
-    .attr('x', xScale(getXValue(d)))
-    .attr('y', yScale(getYValue(d, current_key)) - vPadding - vHeight)
-    .attr('width', xScale.rangeBand())
-    .attr('height', vHeight)
-    .attr('class', 'valueShape');
-  svg.append('text')
+
+  var valueShape = svg.append('rect');
+
+  var valueText = svg.append('text');
+  valueText
     .text(formatNumber(getYValue(d, current_key)))
     .attr('x', xScale(getXValue(d)) + xScale.rangeBand() / 2)
     .attr('y', yScale(getYValue(d, current_key)) - vPadding - (vHeight / 2)
       + (fontSize / 2))
     .style('text-anchor','middle')
     .attr('class', 'valueText');
+
+  var valueTextBbox = valueText[0][0].getBBox();
+  var textPadding = 5;
+
+  valueShape
+    .attr('x', Math.min(xScale(getXValue(d)), valueTextBbox.x-textPadding))
+    .attr('y', yScale(getYValue(d, current_key)) - vPadding - vHeight)
+    .attr('width', Math.max(xScale.rangeBand(), valueTextBbox.width+textPadding*2))
+    .attr('height', vHeight)
+    .attr('class', 'valueShape');
 }
 
 /**
@@ -349,4 +385,5 @@ function getYLabel(i) {
 }
 
 function getXValue(d) {
-  return d.group.value.default; }
+  return d.group.value.default;
+}
