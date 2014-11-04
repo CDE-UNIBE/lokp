@@ -28,6 +28,8 @@ class ChartsView(BaseView):
                 template = 'barchart_a'
         elif chart_type == 'stackedbars':
             template = 'stackedbarchart'
+        elif chart_type == 'map':
+            template = 'mapchart'
         else:
             return HTTPNotFound()
 
