@@ -4,7 +4,10 @@ from sqlalchemy import (
     distinct,
     func,
 )
-from sqlalchemy.sql.expression import cast
+from sqlalchemy.sql.expression import (
+    cast,
+    select,
+)
 from sqlalchemy.types import Float
 
 from lmkp.models.meta import DBSession as Session
@@ -14,6 +17,7 @@ from lmkp.models.database_objects import (
     A_Tag_Group,
     A_Value,
     Activity,
+    Involvement,
     Language,
     Profile,
     SH_Key,
@@ -21,7 +25,6 @@ from lmkp.models.database_objects import (
     SH_Tag_Group,
     SH_Value,
     Stakeholder,
-    Status,
 )
 from lmkp.utils import validate_item_type
 from lmkp.views.activity_protocol3 import ActivityProtocol3
@@ -92,6 +95,14 @@ class EvaluationView(BaseView):
                     ret['msg'] = "Value of 'translate[\'keys\']' needs to be "
                     "an array of arrays."
                     return ret
+        if 'filter' in json_data:
+            # TODO
+            pass
+
+        isInvolvementRequired = self.db_item == Stakeholder
+        for i in json_data.get('filter', {}).get('involvements', []):
+            if len(i) == 2 and i[0] == 'musthave':
+                isInvolvementRequired = i[1]
 
         # Collect all keys to be translated (values are translated in the
         # query)
@@ -143,8 +154,7 @@ class EvaluationView(BaseView):
             q = q.outerjoin(f_sq, f_sq.c.item_id == self.db_item.id)
 
         # Apply status filter (fix: active)
-        fk_status = Session.query(Status.id).filter(Status.name == 'active')
-        q = q.filter(self.db_item.fk_status == fk_status)
+        q = q.filter(self.db_item.fk_status == 2)
 
         # Apply profile boundary filter
         if self.db_item == Activity:
@@ -159,6 +169,31 @@ class EvaluationView(BaseView):
         # Apply grouping and ordering
         q = q.group_by(*groups_columns).\
             order_by(groups_columns[0])
+
+        if isInvolvementRequired:
+            if self.db_item == Stakeholder:
+                inv_subquery = Session.query(
+                    Involvement.fk_stakeholder.label('id')
+                ).\
+                    join(Activity).\
+                    filter(Activity.fk_status == 2)
+                p = json_data.get('profile', get_current_profile(self.request))
+                profile = Session.query(Profile).\
+                    filter(Profile.code == p).\
+                    first()
+                if profile is not None:
+                    inv_subquery = inv_subquery.filter(geofunctions.intersects(
+                        Activity.point, profile.geometry))
+            else:
+                inv_subquery = Session.query(
+                    Involvement.fk_activity.label('id')
+                ).\
+                    join(Stakeholder).\
+                    filter(Stakeholder.fk_status == 2)
+            inv_subquery = inv_subquery.subquery()
+            q = q.filter(self.db_item.id.in_(
+                select([inv_subquery.c.id])
+            ))
 
         data = []
         for res in q.all():
