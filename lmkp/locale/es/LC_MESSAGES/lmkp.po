@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-30 15:40+0100\n"
+"POT-Creation-Date: 2014-11-06 12:12+0100\n"
 "PO-Revision-Date: 2014-07-14 14:25+0100\n"
 "Last-Translator: Lukas Vonlanthen <lukas.vonlanthen@cde.unibe.ch>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -513,55 +513,4 @@ msgstr "Actualizar"
 #: lmkp/views/user.py:447
 msgid "Your user settings were updated."
 msgstr ""
-
-#~ msgid "Moderation"
-#~ msgstr "Moderación"
-
-#~ msgid "Translation"
-#~ msgstr "Traducción"
-
-#~ msgid "Compare"
-#~ msgstr "Compare"
-
-#~ msgid "Spatial Accuracy"
-#~ msgstr ""
-
-#~ msgid "User is not logged in."
-#~ msgstr "El usuario no está conectado"
-
-#~ msgid "User has no permissions to add a review."
-#~ msgstr "El usuario no tiene permisos para añadir una revisión"
-
-#~ msgid "User has no profile attached"
-#~ msgstr "El usuario no tiene un perfil registrado"
-
-#~ msgid "The Item was not found or is not situated within the user's profiles"
-#~ msgstr "El caso no se encuentra o no se ubica dentro del perfil del usuario"
-
-#~ msgid "No valid review decision"
-#~ msgstr "Decisión de revisión desconocida"
-
-#~ msgid "Not all mandatory keys are provided"
-#~ msgstr "No se proporcionaron todos los elementos obligatorios"
-
-#~ msgid "Unknown error"
-#~ msgstr "Desconocido"
-
-#~ msgid "Logged in as:"
-#~ msgstr "Conectado como: "
-
-#~ msgid "Logout"
-#~ msgstr "Cerrar sesión"
-
-#~ msgid "Show user profile"
-#~ msgstr "Mostrar perfil de usuario"
-
-#~ msgid "The Item was not found"
-#~ msgstr ""
-
-#~ msgid "Login"
-#~ msgstr "Iniciar sesión"
-
-#~ msgid "Register"
-#~ msgstr "Registro"
 
