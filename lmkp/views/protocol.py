@@ -699,7 +699,7 @@ class Protocol(object):
                             affected_involvements.append({
                                 'identifier': sh_diff['id'],
                                 'version': version,
-                                'op': sh_diff['op']
+                                'op': sh_diff.get('op')
                             })
             elif mappedClass == Stakeholder and 'activities' in json_diff:
                 for a_diff in json_diff['activities']:
@@ -1004,9 +1004,12 @@ class Protocol(object):
                                 'version')).\
                             first()
 
-                        if (a and a.fk_status == statusArray.index(
-                                'pending') + 1):
+                        if not a:
+                            raise Exception('Involved Activity not found!')
+                        if a.fk_status == statusArray.index('pending') + 1:
                             next_status = 'active'
+                        elif a.fk_status == statusArray.index('edited') + 1:
+                            pass
                         else:
                             raise Exception('Involved Activity not found!')
 
@@ -1215,8 +1218,8 @@ class Protocol(object):
         db: boolean
         """
 
-#        print "============================================="
-#        log.debug("diff:\n%s" % diff)
+        # print "============================================="
+        # log.debug("diff:\n%s" % diff)
 
         if mappedClass == Activity:
             Db_Tag_Group = A_Tag_Group
@@ -1791,7 +1794,7 @@ class Protocol(object):
             rel_diff = {}
 
         if rel_diff is None:
-            return old_diff
+            return new_diff
 
         # The tg_id's are needed to make a meaningful merge of the diffs. If
         # they are not known (eg. when looking at the diff of the very first
