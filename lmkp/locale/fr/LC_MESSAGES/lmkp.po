@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-30 15:40+0100\n"
+"POT-Creation-Date: 2014-11-06 12:12+0100\n"
 "PO-Revision-Date: 2014-08-26 14:57+0100\n"
 "Last-Translator: Lukas Vonlanthen <lukas.vonlanthen@cde.unibe.ch>\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -532,55 +532,4 @@ msgstr "Mise à jour"
 #: lmkp/views/user.py:447
 msgid "Your user settings were updated."
 msgstr "Les informations de votre compte ont été mises à jour"
-
-#~ msgid "Moderation"
-#~ msgstr "Modération "
-
-#~ msgid "Translation"
-#~ msgstr "Traduction"
-
-#~ msgid "Compare"
-#~ msgstr "Comparer"
-
-#~ msgid "Spatial Accuracy"
-#~ msgstr ""
-
-#~ msgid "User is not logged in."
-#~ msgstr "L'utilisateur n'est pas connecté."
-
-#~ msgid "User has no permissions to add a review."
-#~ msgstr "L'utilisateur n'a pas la possibilité d'ajouter des commentaires. "
-
-#~ msgid "User has no profile attached"
-#~ msgstr "L'utilisateur n'a pas de profil correspondant."
-
-#~ msgid "The Item was not found or is not situated within the user's profiles"
-#~ msgstr "L'object n'a pas été trouvé."
-
-#~ msgid "No valid review decision"
-#~ msgstr "La décision associée à la vérification est inconnue"
-
-#~ msgid "Not all mandatory keys are provided"
-#~ msgstr "Les caractéristiques clés et obligatoires n'ont pas été fournies"
-
-#~ msgid "Unknown error"
-#~ msgstr "Inconnu"
-
-#~ msgid "Logged in as:"
-#~ msgstr "Connecté en tant que:"
-
-#~ msgid "Logout"
-#~ msgstr "Déconnectez-vous"
-
-#~ msgid "Show user profile"
-#~ msgstr "Consulter le profil de l'utilisateur"
-
-#~ msgid "The Item was not found"
-#~ msgstr "L'object n'a pas été trouvé."
-
-#~ msgid "Login"
-#~ msgstr "Connecter"
-
-#~ msgid "Register"
-#~ msgstr "Enregistrer"
 

@@ -1,4 +1,0 @@
-Licence
-=======
-
-TO BE DONE!

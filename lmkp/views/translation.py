@@ -332,11 +332,15 @@ def get_translated_db_keys(mappedClass, db_keys, db_lang):
     return []
 
 
-def get_languages():
+def get_languages(all=False):
+    """
+    By default do not return language with locale 'code'
+    """
     # TODO: This does not necessarily belong here. Also, all the stuff needed
     # for each view (languages, profiles, keys, ...) should be loaded in a
     # single request for performance reasons.
-    return Session.query(Language.locale, Language.local_name).all()
+    languages = Session.query(Language.locale, Language.local_name).all()
+    return [l for l in languages if l[0] != 'code']
 
 
 def get_profiles():

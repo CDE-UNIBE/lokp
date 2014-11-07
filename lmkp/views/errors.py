@@ -35,7 +35,7 @@ def forbidden_view(request):
 
     # User is not logged in: show login form
     else:
-        came_from = request.path
+        came_from = request.url
         warning = _(u"Please login to access:")
         warning += "<br/>%s" % came_from
         template_values = view.get_base_template_values()
