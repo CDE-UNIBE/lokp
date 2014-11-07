@@ -25,7 +25,7 @@
  */
 
 $(document).ready(function() {
-    
+
     /** Settings **/
     pointsCluster = true;
     pointsVisible = true;
@@ -119,11 +119,37 @@ $(document).ready(function() {
         $('.context-layers-content').slideToggle();
         toggleChevron(this, contextLayerCounter++);
     });
+
+    // Whole map layers up/down
+    var mapLayersCounter = 0;
+    $('#map-menu-button').click(function() {
+        $('#map-menu-container').slideToggle();
+        toggleChevron(this, mapLayersCounter++, 'up');
+    });
+
+    $(document).ready(function(){
+      if ($(window).width() >= 979){
+        $('#map-menu-container').slideToggle();
+        $('#map-menu-button-container').hide();
+      }
+    });
+
+    $(window).resize(function(){
+      if ($(window).width() >= 979){
+        $('#map-menu-container').show();
+        $('#map-menu-button-container').hide();
+      }
+      if ($(window).width() <= 979){
+        $('#map-menu-container').hide();
+        $('#map-menu-button-container').show();
+      }
+    });
 });
+
 
 /**
  * Function to show the legend of a context layer in a modal window.
- * 
+ *
  * @param {String} layerName
  * @returns {Boolean} False
  */
@@ -177,7 +203,7 @@ function showContextLegend(layerName) {
         $xml = $( xmlDoc );
         $xml.find("Layer[queryable='1']").each(function(){
             $layer = $( this );
-            if($layer.find("Name").first().text() === layer.params.LAYERS 
+            if($layer.find("Name").first().text() === layer.params.LAYERS
                 || $layer.find("Name").first().text() === layer.params.LAYERS.split(":")[1]){
                 var layerAbstract = $layer.find("Abstract").first().text();
                 $("<p>" + layerAbstract + "</p>").insertAfter('#contextLegendContent > p');

@@ -80,17 +80,17 @@ function initializeMapSearch() {
  * Update the map criteria.
  * Updates the variables mapCriteria and mapValues (ajax query needed to get the
  * new values for the legend)
- * 
+ *
  * Required HTML elements:
  * - <ul id="map-points-list">
  * - <div id="map-deals-symbolization">
- * 
+ *
  * @param {String} translatedName
  * @param {String} internalName
  * @returns {Boolean} False
  */
 function updateMapCriteria(translatedName, internalName) {
-    
+
     $('#map-points-list').css('visibility', 'hidden');
     $('#map-deals-symbolization').removeClass('open').html('Loading ...');
 
@@ -165,8 +165,8 @@ function initializeMapContent() {
 
         /**
          * Map symbolization
-         * Approach: Use only one geojson request to query all the features. 
-         * Loop through the features and group them based on the value of the 
+         * Approach: Use only one geojson request to query all the features.
+         * Loop through the features and group them based on the value of the
          * map criteria. Create a layer for each group, add the correct group of
          * features to it and add the layer to the map.
          */
@@ -181,8 +181,8 @@ function initializeMapContent() {
         // selectable after adding them to the map)
         var featureLayers = [];
 
-        // Get the data with a jQuery AJAX request. To prevent IE from caching, 
-        // use $.ajax instead of $.get so the parameter "cache=false" can be 
+        // Get the data with a jQuery AJAX request. To prevent IE from caching,
+        // use $.ajax instead of $.get so the parameter "cache=false" can be
         // set.
         $.ajax({
             url: '/activities/geojson?' + $.merge(['attrs=' + mapCriteria[1]], mapFilterParams).join('&'),
@@ -258,7 +258,7 @@ function initializeMapContent() {
                         });
                         featureLayer.addFeatures(mapFeatures[l]);
                     } else {
-                        // Create a clustering strategy for each with the 
+                        // Create a clustering strategy for each with the
                         // features already available
                         var clusterStrategy = new OpenLayers.Strategy.Cluster({
                             distance: 30,
@@ -282,7 +282,7 @@ function initializeMapContent() {
 
                     // Do not show the layer if the points are not to be visible
                     // or if the checkbox is not checked.
-                    if (pointsVisible === false || 
+                    if (pointsVisible === false ||
                         $('#activityLayerToggle').prop('checked') === false) {
                         featureLayer.setVisibility(false);
                     }
@@ -330,7 +330,7 @@ function initializeMapContent() {
     /**
      * Functionality to select a feature on the map. Shows the details of
      * the activity (requested through service) in the detail field.
-     * 
+     *
      * @param {OpenLayers.Event} e Select control event.
      */
     var onFeatureSelected = function(e) {
@@ -434,7 +434,7 @@ function initializeMapContent() {
     };
 
     /**
-     * Functionality to deselect a feature. 
+     * Functionality to deselect a feature.
      * Resets the detail field.
      */
     var onFeatureUnselected = function() {
@@ -444,9 +444,9 @@ function initializeMapContent() {
     };
 
     /**
-     * Function to add commas as a separator for thousands to a string 
+     * Function to add commas as a separator for thousands to a string
      * containing numbers.
-     * 
+     *
      * @param {String} nStr String containing numbers.
      * @returns {String} Formatted string.
      */
@@ -506,10 +506,10 @@ function initializeContextLayers() {
 /**
  * Function to initialize the polygon layers.
  * Writes the legend for the polygon layers and creates the layers if desired.
- * 
+ *
  * Necessary variables:
  * - areaNames
- * 
+ *
  * Required HTML elements:
  * - <ul id="map-areas-layers-list">
  */
@@ -627,7 +627,7 @@ function initializeContextLayerControl() {
 
 /**
  * Initialize the functionality to turn polygon layers on and off.
- * 
+ *
  * Required HTML elements:
  * - checkbox input fields with class="area-layer-checkbox"
  */
@@ -641,7 +641,7 @@ function initializePolygonLayerControl() {
 
 /**
  * Set a base layer based on its name if it exists.
- * 
+ *
  * @param {OpenLayers.Map} map
  * @param {String} name
  */
@@ -668,7 +668,7 @@ function setContextLayerByName(map, name, checked) {
 /**
  * Set a polygon layer based on its name.
  * If the layer does not yet exist, the data is queried and it is created.
- * 
+ *
  * @param {OpenLayers.Map} map
  * @param {String} name
  * @param {Boolean} visible
@@ -680,8 +680,8 @@ function setPolygonLayerByName(map, name, visible) {
         l[0].setVisibility(visible);
     } else if (visible === true) {
         // The layer does not yet exist and needs to be created first.
-        // Get the data with a jQuery AJAX request. To prevent IE from caching, 
-        // use $.ajax instead of $.get so the parameter "cache=false" can be 
+        // Get the data with a jQuery AJAX request. To prevent IE from caching,
+        // use $.ajax instead of $.get so the parameter "cache=false" can be
         // set.
         var colorIndex = 0;
         for (var a in areaNames) {
@@ -743,9 +743,9 @@ function setPolygonLayerByName(map, name, visible) {
     }
 
     /**
-     * Functionality to select a feature on the map. Shows the details of the 
+     * Functionality to select a feature on the map. Shows the details of the
      * polygon in the detail field.
-     * 
+     *
      * @param {OpenLayers.Event} e Select control event.
      */
     var onFeatureSelected = function(e) {
@@ -784,7 +784,7 @@ function setPolygonLayerByName(map, name, visible) {
 
 /**
  * Set all the content (Activity) layers to visible or not.
- * 
+ *
  * @param {Boolean} visible
  */
 function toggleContentLayers(visible) {
@@ -910,7 +910,7 @@ function getPointStyle(index) {
 
 /**
  * Create and return the style for the polygons.
- * 
+ *
  * @param {Integer} index
  * @param {String} strokeColor The HTML color code of the polygon stroke
  * @returns {OpenLayers.Style}
@@ -945,7 +945,7 @@ function getPolygonStyle(index, strokeColor) {
 /**
  * Function to get a color from a predefined list of available colors based on
  * an index.
- * 
+ *
  * @param {type} index
  * @returns {String} A hexadecimal string representation of a color.
  */
@@ -982,7 +982,7 @@ function storeMapExtent() {
  * Adds an array of layers to the select control of the map.
  * If the select control exists already, the new layers are added. If there is
  * no select control yet, it is created.
- * 
+ *
  * @param {OpenLayers.Map} map
  * @param {arrary} layers
  */
@@ -1012,16 +1012,20 @@ function clearDetails() {
 
 /**
  * Function to toggle the chevron of an element.
- * 
+ *
  * @param {Selector} el The selector of the parent element
  * @param {Integer} i Even: icon-chevron-right / Uneven: icon-chevron-down
+ * @param {String} open The class of the chevron when open (default: right)
+ * @param {String} close The class of the chevron when closed (default: down)
  */
-function toggleChevron(el, i) {
-    var oldCls = 'icon-chevron-right';
-    var newCls = 'icon-chevron-down';
+function toggleChevron(el, i, open, closed) {
+    open = typeof open !== 'undefined' ? open : 'right';
+    closed = typeof closed !== 'undefined' ? closed : 'down';
+    var oldCls = 'icon-chevron-' + open;
+    var newCls = 'icon-chevron-' + closed;
     if (i % 2 === 1) {
-        oldCls = 'icon-chevron-down';
-        newCls = 'icon-chevron-right';
+        oldCls = 'icon-chevron-' + closed;
+        newCls = 'icon-chevron-' + open;
     }
     $(el).find('.' + oldCls).removeClass(oldCls).addClass(newCls);
 }

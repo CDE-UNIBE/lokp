@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-30 15:40+0100\n"
+"POT-Creation-Date: 2014-11-06 12:12+0100\n"
 "PO-Revision-Date: 2013-08-14 08:21+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: lo <LL@li.org>\n"
@@ -495,55 +495,4 @@ msgstr ""
 #: lmkp/views/user.py:447
 msgid "Your user settings were updated."
 msgstr ""
-
-#~ msgid "Moderation"
-#~ msgstr ""
-
-#~ msgid "Translation"
-#~ msgstr ""
-
-#~ msgid "Compare"
-#~ msgstr ""
-
-#~ msgid "Spatial Accuracy"
-#~ msgstr ""
-
-#~ msgid "User is not logged in."
-#~ msgstr ""
-
-#~ msgid "User has no permissions to add a review."
-#~ msgstr ""
-
-#~ msgid "User has no profile attached"
-#~ msgstr ""
-
-#~ msgid "The Item was not found or is not situated within the user's profiles"
-#~ msgstr ""
-
-#~ msgid "No valid review decision"
-#~ msgstr ""
-
-#~ msgid "Not all mandatory keys are provided"
-#~ msgstr ""
-
-#~ msgid "Unknown error"
-#~ msgstr ""
-
-#~ msgid "Logged in as:"
-#~ msgstr ""
-
-#~ msgid "Logout"
-#~ msgstr ""
-
-#~ msgid "Show user profile"
-#~ msgstr ""
-
-#~ msgid "The Item was not found"
-#~ msgstr ""
-
-#~ msgid "Login"
-#~ msgstr ""
-
-#~ msgid "Register"
-#~ msgstr ""
 

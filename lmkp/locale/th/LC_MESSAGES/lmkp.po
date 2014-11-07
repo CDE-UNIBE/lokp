@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  LOKP\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-30 15:40+0100\n"
+"POT-Creation-Date: 2014-11-06 12:12+0100\n"
 "PO-Revision-Date: 2013-08-14 08:21+0100\n"
 "Last-Translator: Lukas Vonlanthen <lukas.vonlanthen@cde.unibe.ch>\n"
 "Language-Team: th <LL@li.org>\n"
@@ -514,55 +514,4 @@ msgstr "这仅仅是一个测试。"
 #: lmkp/views/user.py:447
 msgid "Your user settings were updated."
 msgstr ""
-
-#~ msgid "Moderation"
-#~ msgstr "这仅仅是一个测试。"
-
-#~ msgid "Translation"
-#~ msgstr "这仅仅是一个测试。"
-
-#~ msgid "Compare"
-#~ msgstr "这仅仅是一个测试。"
-
-#~ msgid "Spatial Accuracy"
-#~ msgstr ""
-
-#~ msgid "User is not logged in."
-#~ msgstr "这仅仅是一个测试。"
-
-#~ msgid "User has no permissions to add a review."
-#~ msgstr "这仅仅是一个测试。"
-
-#~ msgid "User has no profile attached"
-#~ msgstr "这仅仅是一个测试。"
-
-#~ msgid "The Item was not found or is not situated within the user's profiles"
-#~ msgstr "这仅仅是一个测试。"
-
-#~ msgid "No valid review decision"
-#~ msgstr "这仅仅是一个测试。"
-
-#~ msgid "Not all mandatory keys are provided"
-#~ msgstr "这仅仅是一个测试。"
-
-#~ msgid "Unknown error"
-#~ msgstr "这仅仅是一个测试。"
-
-#~ msgid "Logged in as:"
-#~ msgstr "这仅仅是一个测试。"
-
-#~ msgid "Logout"
-#~ msgstr "这仅仅是一个测试。"
-
-#~ msgid "Show user profile"
-#~ msgstr "这仅仅是一个测试。"
-
-#~ msgid "The Item was not found"
-#~ msgstr "这仅仅是一个测试。"
-
-#~ msgid "Login"
-#~ msgstr "这仅仅是一个测试。"
-
-#~ msgid "Register"
-#~ msgstr "这仅仅是一个测试。"
 

@@ -23,8 +23,6 @@ Contents:
 Services
 --------
 
-Documentation of the available web services.
-
 .. toctree::
    :maxdepth: 2
 
@@ -34,8 +32,34 @@ Documentation of the available web services.
    services/readbyother
 
 
+License
+-------
+
+The Land Observatory Knowledge Platform is licensed under the `GNU General Public License`_.
+
+.. _GNU General Public License: http://www.gnu.org/licenses/gpl.html
+
+Development
+-----------
+
+Code
+~~~~
+
+The code of the Land Observatory Knowledge Platform can be found on `Github`_.
+
+.. _Github: https://github.com/CDE-UNIBE/lokp
+
+Latest changes
+~~~~~~~~~~~~~~
+
+.. toctree::
+   :maxdepth: 1
+
+   changes
+
+
 API Documentation
------------------
+~~~~~~~~~~~~~~~~~
 
 Please note that the API Documentation is still under heavy construction.
 
