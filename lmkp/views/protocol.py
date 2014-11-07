@@ -767,6 +767,7 @@ class Protocol(object):
             # Do a review for all the involvements
             for ai in affected_involvements:
                 next_status = None
+                sh = None
 
                 # Query the Stakeholder version that was created by the
                 # involvement
@@ -916,8 +917,9 @@ class Protocol(object):
                 if sh is None:
                     log.debug('One of the Stakeholders to review was not '
                               'found.')
-                    raise Exception(
-                        'One of the Stakeholders to review was not found.')
+                    continue
+                    # raise Exception(
+                    #     'One of the Stakeholders to review was not found.')
 
                 log.debug('Reviewing involvement: Stakeholder with identifier '
                           '%s, version %s and status %s'
