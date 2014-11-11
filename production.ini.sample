@@ -12,7 +12,7 @@ pyramid.includes = pyramid_tm
 sqlalchemy.url = postgresql://username:password@localhost:5432/database
 
 lmkp.base_wms = http://cdetux2.unibe.ch/geoserver/lo/wms
-lmkp.base_wps = http://zoo.cdesdi.cde.unibe.ch/zoo_loader.cgi
+lmkp.base_wps = http://zoo.cde.unibe.ch/zoo_loader.cgi
 lmkp.admin_password = admin_password
 lmkp.admin_email = info@cde.unibe.ch
 lmkp.use_js_builds = true
