@@ -2237,14 +2237,6 @@ class ActivityProtocol3(Protocol):
                         # If the same Stakeholder also has some involvements
                         # deleted, remove it from the list (do not push
                         # Stakeholder twice)
-                        try:
-                            x = swdi_id.index(
-                                str(old_sh_db.stakeholder_identifier))
-                            swdi_id.pop(x)
-                            swdi_version.pop(x)
-                            swdi_role.pop(x)
-                        except ValueError:
-                            pass
 
                         if db is True:
                             # Push Stakeholder to new version
@@ -2260,6 +2252,21 @@ class ActivityProtocol3(Protocol):
                                 new_sh, new_diff = sp._handle_stakeholder(
                                     request, sh_dict, changeset
                                 )
+
+                            try:
+                                x = swdi_id.index(
+                                    str(old_sh_db.stakeholder_identifier))
+
+                                for inv in new_sh.involvements:
+                                    if inv.activity == old_version:
+                                        self.Session.delete(inv)
+
+                                swdi_id.pop(x)
+                                swdi_version.pop(x)
+                                swdi_role.pop(x)
+
+                            except ValueError:
+                                pass
 
                             # Create new inolvement
                             inv = Involvement()
