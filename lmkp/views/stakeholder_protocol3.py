@@ -1209,7 +1209,7 @@ class StakeholderProtocol3(Protocol):
                         if q.activity_status == 1:
                             for p_i in stakeholder._involvements:
                                 if (p_i.get_guid() == q.activity_identifier
-                                        and p_i.get_status() == 1):
+                                        and p_i.get_status() in [1, 2]):
                                     if p_i.get_version() > q.activity_version:
                                         newer_pending_exists = True
                                     else:
