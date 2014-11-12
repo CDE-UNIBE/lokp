@@ -1539,7 +1539,7 @@ class ActivityProtocol3(Protocol):
                         if q.stakeholder_status == 1:
                             for p_i in activity._involvements:
                                 if (p_i.get_guid() == q.stakeholder_identifier
-                                        and p_i.get_status() == 1):
+                                        and p_i.get_status() in [1, 2]):
                                     if (p_i.get_version() >
                                             q.stakeholder_version):
                                         newer_pending_exists = True

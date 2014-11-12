@@ -319,10 +319,15 @@ class Protocol(object):
                         if (other_status_id == 2 and
                             this_object.find_involvement_by_role(
                                 other_identifier, stakeholder_role).
-                                get_status() == 3):
+                                get_status() in [3]):
                             this_object.remove_involvement(
                                 this_object.find_involvement_by_role(
                                     other_identifier, stakeholder_role))
+                    else:
+                        x = this_object.find_involvement_by_role(
+                            other_identifier, stakeholder_role)
+                        if x._status_id in [1, 2]:
+                            inv = False
 
         return inv
 
