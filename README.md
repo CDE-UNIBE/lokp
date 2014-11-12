@@ -1,7 +1,7 @@
 Land Observatory Knowledge Platform
 ===========
 
-Current version: v0.9.8a
+Current version: v0.9.8b
 
 Please refer to the documentation found at http://lokp.readthedocs.org.
 
