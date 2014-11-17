@@ -721,3 +721,29 @@ def get_current_locale(request):
     """
     return request.params.get(
         '_LOCALE_', request.cookies.get('_LOCALE_', 'en'))
+
+
+def get_current_attribute_filters(request):
+    """
+    Return the currently active filters on both :term:`Activity` and
+    :term:`Stakeholder` attributes from the request.
+
+    The filters have the form: ``a__Key__eq=Value``.
+
+    Args:
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object
+        with optional filter parameter.
+
+    Returns:
+        ``list``. A list with attribute filters.
+    """
+    filters = []
+    for param in request.params:
+        try:
+            prefix, col, op = param.split('__')
+        except ValueError:
+            continue
+        if prefix not in ['a', 'sh']:
+            continue
+        filters.append((prefix, col, op, request.params[param]))
+    return filters
