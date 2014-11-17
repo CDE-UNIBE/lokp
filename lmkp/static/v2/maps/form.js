@@ -383,7 +383,7 @@ function parseCoordinates() {
     var latsign, longsign, d1, m1, s1, d2, m2, s2;
     var latitude, longitude, lonlat;
 
-    if (coordsFormat === 1) {
+    if (coordsFormat == 1) {
         // 46° 57.1578 N 7° 26.1102 E
         pattern = /(\d+)[%B0\s]+(\d+\.\d+)\s*([NS])[%2C\s]+(\d+)[%B0\s]+(\d+\.\d+)\s*([WE])/i;
         matches = str.match(pattern);
@@ -398,7 +398,7 @@ function parseCoordinates() {
             longitude = longsign * (d2 + (m2/60.0));
             lonlat = new OpenLayers.LonLat(longitude, latitude);
         }
-    } else if (coordsFormat === 2) {
+    } else if (coordsFormat == 2) {
         // 46° 57' 9.468" N 7° 26' 6.612" E
         pattern = /(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([NS])[%2C\s]+(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([WE])/i;
         matches = str.match(pattern);
@@ -415,7 +415,7 @@ function parseCoordinates() {
             longitude = longsign * (d2 + (m2/60.0) + (s2/(60.0*60.0)));
             lonlat = new OpenLayers.LonLat(longitude, latitude);
         }
-    } else if (coordsFormat === 3) {
+    } else if (coordsFormat == 3) {
         // N 46° 57.1578 E 7° 26.1102
         pattern = /([NS])\s*(\d+)[%B0\s]+(\d+\.\d+)[%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+\.\d+)/i;
         matches = str.match(pattern);
@@ -430,7 +430,7 @@ function parseCoordinates() {
             longitude = longsign * (d2 + (m2/60.0));
             lonlat = new OpenLayers.LonLat(longitude, latitude);
         }
-    } else if (coordsFormat === 4) {
+    } else if (coordsFormat == 4) {
         // N 46° 57' 9.468" E 7° 26' 6.612"
         pattern = /([NS])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)/i;
         matches = str.match(pattern);
@@ -447,7 +447,7 @@ function parseCoordinates() {
             longitude = longsign * (d2 + (m2/60.0) + (s2/(60.0*60.0)));
             lonlat = new OpenLayers.LonLat(longitude, latitude);
         }
-    } else if (coordsFormat === 5) {
+    } else if (coordsFormat == 5) {
         // 46.95263, 7.43517
         pattern = /(\d+\.\d+)[%2C\s]+(\d+\.\d+)/i;
         matches = str.match(pattern);
