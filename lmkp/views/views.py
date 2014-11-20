@@ -747,3 +747,65 @@ def get_current_attribute_filters(request):
             continue
         filters.append((prefix, col, op, request.params[param]))
     return filters
+
+
+def get_current_logical_filter_operator(request):
+    """
+    Return the currently active logical filter operator from the request
+    to apply on multiple attribute filters. Valid operators are ``and``
+    (default) and ``or``.
+
+    Args:
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object
+        with optional parameter ``logical_op`` set to either ``and`` or
+        ``or``.
+
+    Returns:
+         ``str``. The logical operator: Either ``and`` (default) or
+         ``or``
+    """
+    default = 'and'
+    op = request.params.get('logical_op', default).lower()
+    if op in ['and', 'or']:
+        return op
+    return default
+
+
+def get_current_order_key(request):
+    """
+    Return the key to order :term:`Items` by. The key should be a valid
+    attribute key for :term:`Activities` or :term:`Stakeholder`. By
+    default, :term:`Items` are ordered by the timestamp of their
+    creation.
+
+    Args:
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object
+        with optional parameter ``order_by`` set.
+
+    Returns:
+        ``str``. The key or ``timestamp`` if none is set.
+    """
+    return request.params.get('order_by', 'timestamp')
+
+
+def get_current_order_direction(request):
+    """
+    Return the direction to order :term:`Items` by from the request.
+    Valid directions are ``asc`` (default) and ``desc``. If the order
+    key is ``timestamp``, the default order direction is ``desc``!
+
+    Args:
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object
+        with optional parameter ``dir`` set.
+
+    Returns:
+         ``str``. The order direction: Either ``asc`` (default) or
+         ``desc``
+    """
+    default = 'asc'
+    if get_current_order_key(request) == 'timestamp':
+        default = 'desc'
+    order = request.params.get('dir', default).lower()
+    if order in ['asc', 'desc']:
+        return order
+    return default

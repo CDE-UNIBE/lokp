@@ -51,7 +51,9 @@ from lmkp.views.translation import get_translated_status
 from lmkp.authentication import get_user_privileges
 from lmkp.views.views import get_status_parameter
 from lmkp.views.views import get_current_attribute_filters
+from lmkp.views.views import get_current_order_key
 from lmkp.models.meta import DBSession as Session
+from lmkp.utils import validate_item_type
 
 # TODO: hard-coded status list
 STATUS_ARRAY = [
@@ -207,74 +209,70 @@ class Protocol(object):
 
         return a_filters, sh_filters
 
-    def _get_order(self, request, Mapped_Class, Tag_Group, Tag, Key, Value):
+    def get_order(self, item_type):
         """
-        Returns
-        - a SubQuery with an ordered list of Activity IDs and
-          the values by which they will be ordered.
-        - a Boolean indicating order values are numbers or not
-        """
-        order_key = request.params.get('order_by', 'timestamp')
-        if order_key is not None:
-            # Ordering
-            if order_key == 'timestamp':
-                q = self.Session.query(
-                    Mapped_Class.id,
-                    Changeset.timestamp.label('value')
-                ).\
-                    join(Changeset).\
-                    subquery()
-                return q, False
-            else:
-                # Query to order number values (cast to Float)
-                q_number = self.Session.query(
-                    Mapped_Class.id,
-                    cast(Value.value, Float).label('value')
-                ).\
-                    join(Tag_Group).\
-                    join(Tag, Tag.fk_tag_group == Tag_Group.id).\
-                    join(Value, Value.id == Tag.fk_value).\
-                    join(Key, Key.id == Tag.fk_key).\
-                    filter(Key.key.like(order_key))
-                # Query to order string values
-                q_text = self.Session.query(
-                    Mapped_Class.id,
-                    Value.value.label('value')
-                ).\
-                    join(Tag_Group).\
-                    join(Tag, Tag.fk_tag_group == Tag_Group.id).\
-                    join(Value, Value.id == Tag.fk_value).\
-                    join(Key, Key.id == Tag.fk_key).\
-                    filter(Key.key.like(order_key))
+        Returns a SQLAlchemy subquery with the :term:`Item` id and the
+        value to order by. If all values are numeric, they are casted
+        to floating point numbers.
 
-                # Try to query numbered values and cast them
-                try:
-                    __ = q_number.all()
-                    return q_number.subquery(), True
-                except:
-                    # Rolling back of Session is needed to completely erase
-                    # error thrown above
-                    self.Session.rollback()
-                    return q_text.subquery(), False
+        Request parameters:
+            ``order_by`` (str): The key to order by.
+
+            .. seealso::
+               :class:`lmkp.views.views.get_current_order_key`
+
+        Args:
+            ``item_type`` (str): The :term:`Item Type` of the
+            :term:`Item`.
+
+        Returns:
+            ``sqlalchemy.sql.expression``. A SQLAlchemy subquery.
+        """
+        if validate_item_type(item_type) == 'a':
+            Item = Activity
+            Taggroup = A_Tag_Group
+            Tag = A_Tag
+            Key = A_Key
+            Value = A_Value
         else:
-            # No ordering, use dummy value
-            q_no_order = self.Session.query(
-                Mapped_Class.id,
-                func.char_length('').label('value')  # Dummy value
-            )
-            return q_no_order.subquery(), None
+            Item = Stakeholder
+            Taggroup = SH_Tag_Group
+            Tag = SH_Tag
+            Key = SH_Key
+            Value = SH_Value
 
-        return None, None
+        order_key = get_current_order_key(self.request)
+        if order_key == 'timestamp':
+            order_query = self.Session.query(
+                Item.id,
+                Changeset.timestamp.label('value')
+            ).\
+                join(Changeset).\
+                subquery()
+            return order_query
 
-    def _get_order_direction(self, request):
-        """
-        Return the direction of ordering only if it is set to DESC or if the
-        order value is not set (in which case it is sorted by timestamp and
-        should be in descending order)
-        """
-        if (request.params.get('dir', '').upper() == 'DESC'
-                or request.params.get('order_by', None) is None):
-            return 'DESC'
+        else:
+            order_query = self.Session.query(
+                Item.id,
+            ).\
+                join(Taggroup).\
+                join(Tag, Tag.fk_tag_group == Taggroup.id).\
+                join(Value, Value.id == Tag.fk_value).\
+                join(Key, Key.id == Tag.fk_key).\
+                filter(Key.key.like(order_key))
+
+            order_query_strings = order_query.add_column(
+                Value.value.label('value'))
+
+            for v in order_query_strings.all():
+                try:
+                    float(v.value)
+                except ValueError:
+                    return order_query_strings.subquery()
+
+            order_query_numbers = order_query.add_column(
+                cast(Value.value, Float).label('value'))
+            return order_query_numbers.subquery()
 
     def _get_limit(self, request):
 
@@ -355,9 +353,3 @@ class Protocol(object):
             None,
             None
         )
-
-    def _get_logical_operator(self, request):
-        """
-        Return the logical operator if set, default is 'and'
-        """
-        return request.params.get("logical_op", "and").lower()

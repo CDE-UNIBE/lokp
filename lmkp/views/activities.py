@@ -132,6 +132,7 @@ class ActivityView(BaseView):
         Returns:
             ``HTTPResponse``. Either a HTML or a JSON response.
         """
+        # TODO
         from lmkp.protocols.activity_protocol import ActivityProtocol
         activity_protocol = ActivityProtocol(self.request)
 

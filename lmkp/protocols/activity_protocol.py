@@ -61,6 +61,9 @@ from lmkp.views.translation import statusMap
 from lmkp.views.views import (
     get_bbox_parameters,
     get_current_profile,
+    get_current_logical_filter_operator,
+    get_status_parameter,
+    get_current_order_direction,
 )
 from lmkp.authentication import get_user_privileges
 from lmkp.protocols.protocol import Protocol
@@ -215,6 +218,7 @@ class ActivityProtocol(Protocol):
         self.Session = Session
         self.request = request
 
+    # TODO: request not necessary
     def read_many(self, request, public=True, **kwargs):
         """
         Valid kwargs:
@@ -257,6 +261,7 @@ class ActivityProtocol(Protocol):
         """
         logged_in, is_moderator = get_user_privileges(self.request)
 
+        # TODO
         # Filter: If no custom filter was provided, get filters from request
         if filter is None:
             a_tag_filters, sh_tag_filters = self.get_attribute_filters()
@@ -270,52 +275,8 @@ class ActivityProtocol(Protocol):
             sh_tag_filters = (
                 filter['sh_tag_filter'] if 'sh_tag_filter' in filter else None)
 
-        # Prepare filter based on Activity attributes
-        filter_subqueries = None
-        if len(a_tag_filters) == 0:
-            # If no filter is provided: pass
-            pass
-        elif self._get_logical_operator(self.request) == 'or':
-            # OR
-            all_subqueries = []
-            for x in a_tag_filters:
-                # Collect the Activity IDs for each filter
-                taggroups_sq = x.subquery()
-                single_subquery = self.Session.query(
-                    Activity.id.label('a_filter_id')
-                ).\
-                    join(A_Tag_Group).\
-                    join(taggroups_sq,
-                         taggroups_sq.c.a_filter_tg_id == A_Tag_Group.id)
-                all_subqueries.append(single_subquery)
-            # Put all found Activity IDs together (UNION)
-            filter_subqueries = all_subqueries[0].\
-                union(* all_subqueries[1:]).\
-                subquery()
-        else:
-            # AND
-            filter_subqueries = self.Session.query(
-                Activity.id.label('a_filter_id')
-            )
-            for x in a_tag_filters:
-                # Collect the Activity IDs for each filter
-                taggroups_sq = x.subquery()
-                single_subquery = self.Session.query(
-                    Activity.id.label('a_filter_id')
-                ).\
-                    join(A_Tag_Group).\
-                    join(taggroups_sq,
-                         taggroups_sq.c.a_filter_tg_id == A_Tag_Group.id).\
-                    subquery()
-                # Join each found Activity ID with previously found IDs
-                filter_subqueries = filter_subqueries.\
-                    join(single_subquery,
-                         single_subquery.c.a_filter_id == Activity.id)
-            filter_subqueries = filter_subqueries.subquery()
-
         # Prepare order: Get the order from request
-        order_query, order_numbers = self._get_order(
-            self.request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value)
+        order_query = self.get_order('a')
 
         # Create relevant Activities
         relevant_activities = self.Session.query(
@@ -326,17 +287,61 @@ class ActivityProtocol(Protocol):
         )
 
         # Add a status filter if there is one set
-        if self.request.params.get('status', None) is not None:
+        if get_status_parameter(self.request) is not None:
             relevant_activities = relevant_activities.\
-                filter(self.get_status_filter())
-                # filter(Activity.fk_status.in_(self.get_status_filters()))
+                filter(self.get_status_filter(Activity))
+
+        # Activity attribute filters
+        filter_subquery = None
+        if len(a_tag_filters) == 0:
+            pass
+        elif get_current_logical_filter_operator(self.request) == 'or':
+            """
+            Logical "or" filter: Use subqueries to collect the IDs of
+            all Activities matching each filter. Perform a SQL UNION
+            based on the first subquery to unite all other subqueries
+            and put all Activity IDs together.
+            """
+            subqueries = []
+            for tag_filter in a_tag_filters:
+                tag_filter_subquery = tag_filter.subquery()
+                subquery = self.Session.query(
+                    Activity.id.label('a_filter_id')
+                ).\
+                    join(A_Tag_Group).\
+                    join(tag_filter_subquery,
+                         tag_filter_subquery.c.a_filter_tg_id
+                         == A_Tag_Group.id)
+                subqueries.append(subquery)
+            filter_subquery = subqueries[0].union(* subqueries[1:]).subquery()
+        else:
+            """
+            Logical "and" filter: Create a subquery by joining every
+            filter subquery.
+            """
+            filter_subquery = self.Session.query(
+                Activity.id.label('a_filter_id')
+            )
+            for tag_filter in a_tag_filters:
+                tag_filter_subquery = tag_filter.subquery()
+                subquery = self.Session.query(
+                    Activity.id.label('a_filter_id')
+                ).\
+                    join(A_Tag_Group).\
+                    join(tag_filter_subquery,
+                         tag_filter_subquery.c.a_filter_tg_id
+                         == A_Tag_Group.id).\
+                    subquery()
+                filter_subquery = filter_subquery.\
+                    join(subquery, subquery.c.a_filter_id == Activity.id)
+            filter_subquery = filter_subquery.subquery()
 
         # Join Activities with TagGroups
-        if filter_subqueries is not None:
+        if filter_subquery is not None:
             # If a filter was provided, join with filtered subqueries
             relevant_activities = relevant_activities.\
-                join(filter_subqueries,
-                     filter_subqueries.c.a_filter_id == Activity.id)
+                join(filter_subquery,
+                     filter_subquery.c.a_filter_id == Activity.id)
         else:
             # If no filter was provided, simply join with A_Tag_Group (outer
             # join to also capture empty Items)
@@ -345,19 +350,15 @@ class ActivityProtocol(Protocol):
 
         # Always filter by profile boundary
         relevant_activities = relevant_activities.\
-            filter(self._get_profile_filter(self.request))
+            filter(self.get_profile_filter())
 
         # Filter spatially
         relevant_activities = relevant_activities.\
-            filter(self._get_bbox_filter(self.request, cookies=bbox_cookies))
+            filter(self.get_bbox_filter(cookies=bbox_cookies))
 
         # Join Activities with order and group
         relevant_activities = relevant_activities.\
             outerjoin(order_query, order_query.c.id == Activity.id)
-
-        # Filter by timestamp
-        # @TODO: do it!
-        # timestamp_filter = None
 
         # Decide which version a user can see.
         # - Public (not logged in) always see active versions.
@@ -367,18 +368,15 @@ class ActivityProtocol(Protocol):
         #   within their profile, as long as they are newer than the active
         #   version.
 
+        # Add pending Activities if allowed and available
         if logged_in and public_query is False:
-            # Logged in
-
-            # Find the latest version for each Activity, which is either ...
-            latest_visible_version = self.Session.query(
-                Activity.activity_identifier.label('identifier'),
-                func.max(Activity.version).label('max_version')
-            ).\
-                join(Changeset)
-
-            # ... active
-            # ... or is pending and has changes by the current user
+            """
+            Find the latest visible version for each Activity. By
+            default, this is the active version. It is the pending
+            version if the changes were made by the current user. Or it
+            is the pending version if the current user is moderator and
+            the version lies within the moderator's profile.
+            """
             visible_version_filters = [
                 Activity.fk_status == 2,
                 and_(
@@ -386,10 +384,7 @@ class ActivityProtocol(Protocol):
                     Changeset.fk_user == self.request.user.id
                 )
             ]
-
-            # ... or (for moderators only) ...
             if is_moderator:
-                # ... is pending and lies within the profile
                 visible_version_filters.append(
                     and_(
                         Activity.fk_status == 1,
@@ -397,7 +392,11 @@ class ActivityProtocol(Protocol):
                     )
                 )
 
-            latest_visible_version = latest_visible_version.\
+            latest_visible_version = self.Session.query(
+                Activity.activity_identifier.label('identifier'),
+                func.max(Activity.version).label('max_version')
+            ).\
+                join(Changeset).\
                 filter(or_(* visible_version_filters)).\
                 group_by(Activity.identifier).\
                 subquery()
@@ -420,6 +419,7 @@ class ActivityProtocol(Protocol):
 
         # Filter based on Stakeholder attributes
         if len(sh_tag_filters) > 0:
+            TODO
             # Prepare a dict to simulate filter for Stakeholders
             sh_filter_dict = {
                 'sh_tag_filter': sh_tag_filters,
@@ -455,27 +455,12 @@ class ActivityProtocol(Protocol):
                     group_by(Activity.id)
 
         # Do the ordering
-        if order_numbers is not None:
-            if self._get_order_direction(self.request) == 'DESC':
-                # Descending
-                if order_numbers is True:
-                    # Order by numbers: Cast values to float
-                    relevant_activities = relevant_activities.order_by(
-                        desc(cast(order_query.c.value, Float)))
-                else:
-                    # Order alphabetically
-                    relevant_activities = relevant_activities.order_by(
-                        desc(order_query.c.value))
-            else:
-                # Ascending
-                if order_numbers is True:
-                    # Order by numbers: Cast values to float
-                    relevant_activities = relevant_activities.order_by(
-                        asc(cast(order_query.c.value, Float)))
-                else:
-                    # Order alphabetically
-                    relevant_activities = relevant_activities.order_by(
-                        asc(order_query.c.value))
+        if get_current_order_direction(self.request) == 'desc':
+            relevant_activities = relevant_activities.order_by(
+                desc(order_query.c.value))
+        else:
+            relevant_activities = relevant_activities.order_by(
+                asc(order_query.c.value))
 
         return relevant_activities
 
@@ -539,14 +524,10 @@ class ActivityProtocol(Protocol):
         # Do the ordering again: A first ordering was done when creating the
         # relevant activities. However, it is necessary to restore this
         # ordering after all the additional data was added through this query.
-        order_query, order_numbers = self._get_order(
-            request, Activity, A_Tag_Group, A_Tag, A_Key, A_Value
-        )
-        if order_query is not None:
-            if self._get_order_direction(request) == 'DESC':
-                query = query.order_by(desc(relevant_activities.c.order_value))
-            else:
-                query = query.order_by(asc(relevant_activities.c.order_value))
+        if get_current_order_direction(request) == 'desc':
+            query = query.order_by(desc(relevant_activities.c.order_value))
+        else:
+            query = query.order_by(asc(relevant_activities.c.order_value))
 
         if metadata:
             query = query.add_columns(
@@ -816,24 +797,28 @@ class ActivityProtocol(Protocol):
 
         return activities
 
-    def _get_profile_filter(self, request):
+    def get_profile_filter(self):
         """
-        Return a spatial filter based on the profile boundary of the current
-        profile which is queried from the database.
-        """
+        Return an GeoAlchemy filter expression based on the profile
+        boundary of the current profile. If no profile is active, a stub
+        expression is returned filtering nothing.
 
+        .. seealso::
+           :class:`lmkp.views.views.get_current_profile`
+
+        Returns:
+            ``sqlalchemy.sql.expression``. A GeoAlchemy expression which
+            can be used as a filter on the :term:`Activity` point
+            geometry.
+        """
         profile = self.Session.query(Profile).\
-            filter(Profile.code == get_current_profile(request)).\
+            filter(Profile.code == get_current_profile(self.request)).\
             first()
-
         if profile is None:
             return (Activity.id == 0)
+        return geofunctions.intersects(Activity.point, profile.geometry)
 
-        return geofunctions.intersects(
-            Activity.point, profile.geometry
-        )
-
-    def _get_bbox_filter(self, request, cookies=True):
+    def get_bbox_filter(self, cookies=True):
         """
         Return a spatial filter for the point of Activities based on the
         bounding box parameters found in the request.
@@ -843,23 +828,22 @@ class ActivityProtocol(Protocol):
         bounding box geometry is returned. This function can then be
         used as a filter in SQLAlchemy.
 
-        Args:
-            request (pyramid.request): A Pyramid Request object.
-
         Kwargs:
-            cookies (bool): A boolean indicating whether to look for a
-                location cookie as fallback if no request parameters
-                were provided. This argument is passed to the
-                `get_bbox_parameters` function.
+            ``cookies`` (bool): A boolean indicating whether to look for
+            a location cookie as fallback if no request parameters were
+            provided. This argument is passed to the
+            `get_bbox_parameters` function.
+
+            .. seealso::
+               :class:`lmkp.views.views.get_bbox_parameters`
 
         Returns:
-            geoalchemy.functions.intersects or None. A GeoAlchemy
-            function which intersects the points of Activities with the
-            bounding box geometry. None if no valid bounding box was
-            found.
+            ``geoalchemy.functions.intersects`` or ``None``. A
+            GeoAlchemy function which intersects the points of
+            Activities with the bounding box geometry. None if no valid
+            bounding box was found.
         """
-
-        bbox, epsg = get_bbox_parameters(request, cookies=cookies)
+        bbox, epsg = get_bbox_parameters(self.request, cookies=cookies)
         box = validate_bbox(bbox)
 
         if box is None:
@@ -879,7 +863,6 @@ class ActivityProtocol(Protocol):
         # Get the SRID used in the Activity class
         activity_srid = geofunctions.srid(Activity.point)
 
-        # Return a subquery
         return geofunctions.intersects(
             Activity.point,
             geofunctions.transform(wkb_geometry, activity_srid))
