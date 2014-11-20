@@ -64,6 +64,7 @@ from lmkp.views.views import (
     get_current_logical_filter_operator,
     get_status_parameter,
     get_current_order_direction,
+    get_current_involvement_details,
 )
 from lmkp.authentication import get_user_privileges
 from lmkp.protocols.protocol import Protocol
@@ -224,28 +225,27 @@ class ActivityProtocol(Protocol):
         Valid kwargs:
         - limit
         - offset
+        - translate
         """
 
         relevant_activities = self.get_relevant_activities_many(
             public_query=public)
 
-        # Determine if and how detailed Involvements are to be displayed.
-        # Default is: 'full'
-        inv_details = request.params.get('involvements', 'full')
+        involvement_details = get_current_involvement_details(request)
 
         # Get limit and offset from request if they are not in kwargs.
         # Defaults: limit = None / offset = 0
         limit = kwargs.get('limit', self._get_limit(request))
         offset = kwargs.get('offset', self._get_offset(request))
 
-        query, count = self._query_many(
-            request, relevant_activities, limit=limit, offset=offset,
-            involvements=inv_details != 'none')
+        query, count = self.query_many(
+            relevant_activities, limit=limit, offset=offset,
+            involvements=involvement_details != 'none')
 
         translate = kwargs.get('translate', True)
         activities = self._query_to_activities(
-            request, query, involvements=inv_details, public_query=public,
-            translate=translate)
+            request, query, involvements=involvement_details,
+            public_query=public, translate=translate)
 
         return {
             'total': count,
@@ -255,6 +255,7 @@ class ActivityProtocol(Protocol):
     def get_relevant_activities_many(
             self, filter=None, public_query=False, bbox_cookies=True):
         """
+        TODO
         ''filter'': An optional custom filter.
         ''public_query'': If set to true, no pending queries are made. Defaults
           to 'False'
@@ -464,19 +465,13 @@ class ActivityProtocol(Protocol):
 
         return relevant_activities
 
-    def _query_many(
-            self, request, relevant_activities, limit=None, offset=None,
+    def query_many(
+            self, relevant_activities, limit=None, offset=None,
             involvements=False, return_count=True, metadata=False):
-        # Prepare query to translate keys and values
-        localizer = get_localizer(request)
-        lang = self.Session.query(
-            Language
-        ).\
-            filter(Language.locale == localizer.locale_name).\
-            first()
-        key_translation, value_translation = self._get_translatedKV(
-            lang, A_Key, A_Value
-        )
+        """
+        TODO
+        """
+        key_translation, value_translation = self.get_translations('a')
 
         # Count
         if return_count:
@@ -524,10 +519,12 @@ class ActivityProtocol(Protocol):
         # Do the ordering again: A first ordering was done when creating the
         # relevant activities. However, it is necessary to restore this
         # ordering after all the additional data was added through this query.
-        if get_current_order_direction(request) == 'desc':
+        if get_current_order_direction(self.request) == 'desc':
             query = query.order_by(desc(relevant_activities.c.order_value))
         else:
             query = query.order_by(asc(relevant_activities.c.order_value))
+
+        TODO
 
         if metadata:
             query = query.add_columns(
@@ -549,7 +546,7 @@ class ActivityProtocol(Protocol):
             inv_status_filter = self.Session.query(
                 Status.id
             ).\
-                filter(or_(* self._get_involvement_status(request)))
+                filter(or_(* self._get_involvement_status(self.request)))
 
             # Additional filter to select only the latest (pending or not)
             # Stakeholder involved with the relevant Activities

@@ -49,9 +49,12 @@ from lmkp.views.review import BaseReview
 from lmkp.views.translation import statusMap
 from lmkp.views.translation import get_translated_status
 from lmkp.authentication import get_user_privileges
-from lmkp.views.views import get_status_parameter
-from lmkp.views.views import get_current_attribute_filters
-from lmkp.views.views import get_current_order_key
+from lmkp.views.views import (
+    get_status_parameter,
+    get_current_locale,
+    get_current_attribute_filters,
+    get_current_order_key,
+)
 from lmkp.models.meta import DBSession as Session
 from lmkp.utils import validate_item_type
 
@@ -274,6 +277,45 @@ class Protocol(object):
                 cast(Value.value, Float).label('value'))
             return order_query_numbers.subquery()
 
+    def get_translations(self, item_type):
+        """
+        Returns two SQLAlchemy subqueries with the translations for the
+        keys and values of the :term:`Item`.
+
+        Args:
+            ``item_type`` (str): The :term:`Item Type` of the
+            :term:`Item`.
+
+        Returns:
+            ``sqlalchemy.sql.expression``. A SQLAlchemy subquery for the
+            keys of the :term:`Item`.
+
+            ``sqlalchemy.sql.expression``. A SQLAlchemy subquery for the
+            values of the :term:`Item`.
+        """
+        if validate_item_type(item_type) == 'a':
+            Key = A_Key
+            Value = A_Value
+        else:
+            Key = SH_Key
+            Value = SH_Value
+        current_locale = get_current_locale(self.request)
+        key_query = self.Session.query(
+            Key.fk_key.label("key_original_id"),
+            Key.key.label("key_translated")
+        ).\
+            join(Language).\
+            filter(Language.locale == current_locale).\
+            subquery()
+        value_query = self.Session.query(
+            Value.fk_value.label("value_original_id"),
+            Value.value.label("value_translated")
+        ).\
+            join(Language).\
+            filter(Language.locale == current_locale).\
+            subquery()
+        return key_query, value_query
+
     def _get_limit(self, request):
 
         limit = request.params.get('limit', None)
@@ -296,26 +338,6 @@ class Protocol(object):
             pass
 
         return 0
-
-    def _get_translatedKV(self, lang, Key, Value):
-        """
-        Returns
-        - a SubQuery with a list of all translated keys
-        - a SubQuery with a list of all translated values
-        """
-        key_query = self.Session.query(
-            Key.fk_key.label("key_original_id"),
-            Key.key.label("key_translated")
-        ).\
-            filter(Key.language == lang).\
-            subquery()
-        value_query = self.Session.query(
-            Value.fk_value.label("value_original_id"),
-            Value.value.label("value_translated")
-        ).\
-            filter(Value.language == lang).\
-            subquery()
-        return key_query, value_query
 
     def _get_involvement_status(self, request):
         """

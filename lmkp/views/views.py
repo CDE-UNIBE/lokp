@@ -809,3 +809,22 @@ def get_current_order_direction(request):
     if order in ['asc', 'desc']:
         return order
     return default
+
+
+def get_current_involvement_details(request):
+    """
+    Return the keyword of how much details of the :term:`Involvements`
+    are to be shown. Valid keywords are ``full`` (default), ``none``.
+
+    Args:
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object
+        with optional parameter ``involvements`` set.
+
+    Returns:
+        ``str``. The key or ``full`` if none is set.
+    """
+    default = 'full'
+    details = request.params.get('involvements', default).lower()
+    if details in ['full', 'none']:
+        return details
+    return default
