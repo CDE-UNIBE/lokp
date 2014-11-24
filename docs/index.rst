@@ -68,6 +68,7 @@ Please note that the API Documentation is still under heavy construction.
    :glob:
 
    api/*
+   api/protocols/*
    api/views/*
 
 

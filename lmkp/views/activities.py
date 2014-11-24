@@ -93,7 +93,7 @@ class ActivityView(BaseView):
 
         Args:
             ``public`` (bool): A boolean indicating whether to return
-            only versions visible to the public (eg. pending) or not.
+            only versions visible to the public (eg. no pending) or not.
 
         Matchdict parameters:
 

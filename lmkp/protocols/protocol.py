@@ -1,28 +1,15 @@
-import collections
-import datetime
-import geojson
-import json
-import logging
-
-from pyramid.httpexceptions import HTTPBadRequest
-from pyramid.i18n import get_localizer
-from pyramid.renderers import render
-from pyramid.security import (
-    effective_principals,
-    unauthenticated_userid,
+from sqlalchemy import (
+    func,
 )
-from shapely import wkb
-from shapely.geometry import mapping as asGeoJSON
-from shapely.geometry import asShape
 from sqlalchemy.sql.expression import (
-    cast,
     and_,
     between,
+    cast,
+    or_,
 )
 from sqlalchemy.types import Float
-from sqlalchemy import func
 
-from lmkp.custom import get_customized_template_path
+from lmkp.authentication import get_user_privileges
 from lmkp.models.database_objects import (
     A_Key,
     A_Tag,
@@ -30,33 +17,22 @@ from lmkp.models.database_objects import (
     A_Value,
     Activity,
     Changeset,
-    Group,
-    Involvement,
     Language,
-    Permission,
     SH_Key,
     SH_Tag,
     SH_Tag_Group,
     SH_Value,
     Stakeholder,
-    Stakeholder_Role,
-    Status,
-    User,
 )
-from lmkp.views.files import check_file_location_name
-from lmkp.views.form_config import getCategoryList
-from lmkp.views.review import BaseReview
-from lmkp.views.translation import statusMap
-from lmkp.views.translation import get_translated_status
-from lmkp.authentication import get_user_privileges
+from lmkp.models.meta import DBSession as Session
+from lmkp.utils import validate_item_type
 from lmkp.views.views import (
     get_status_parameter,
     get_current_locale,
     get_current_attribute_filters,
     get_current_order_key,
 )
-from lmkp.models.meta import DBSession as Session
-from lmkp.utils import validate_item_type
+
 
 # TODO: hard-coded status list
 STATUS_ARRAY = [
@@ -75,44 +51,48 @@ class Protocol(object):
         self.request = request
         self.Session = Session
 
-    def get_status_filter(self, db_object):
+    def get_valid_status_ids(self, context, logged_in, is_moderator):
         """
-        Return an SQLAlchemy filter expression based on the status
-        parameter of the request.
-
-        Pending or edited versions can only be seen by moderators and
-        are not returned otherwise.
+        Return the :term:`status` IDs which are valid within a given
+        context.
 
         Args:
-            ``db_object`` (Model): A SQLAlchemy database model, either
-            :term:`Activity` or :term:`Stakeholder`.
+            ``context`` (str): The context of the query. Possible values
+            are:
 
-        Request parameters:
-             ``status`` (str): A comma-separated list of status names.
+                * ``filter``: Which statuses are valid as status filter
+                  when querying many :term:`Items`. Pending or edited
+                  versions are only visible to moderators.
+
+                * ``involvements``: Which statuses are valid on the
+                  other side of :term:`involvements`. By default, these
+                  are active and inactive versions. For logged in users,
+                  also pending and edited.
+
+            ``logged_in`` (bool): A boolean indicating whether a user is
+            logged in or not.
+
+            ``is_moderator`` (bool): A boolean indicating whether a user
+            is moderator within the current profile or not.
 
         Returns:
-            ``sqlalchemy.sql.expression``. An SQLAlchemy expression
-            corresponding to ``db_object.fk_status in [1,2] which can be
-            used as a filter on the ``db_object``.
-
-            An example of the SQL equivalent of the expression could be:
-            ``data.activities.fk_status IN (1, 2)``
+            ``list``. A list with :term:`status` IDs which are valid
+            within the given context.
         """
-        status_param = get_status_parameter(self.request)
-        logged_in, is_moderator = get_user_privileges(self.request)
-        status_array = []
-        if status_param is not None:
-            for s in status_param.split(','):
-                try:
-                    status_id = STATUS_ARRAY.index(s) + 1
-                except ValueError:
-                    continue
-                if status_id in [1, 6] and not is_moderator:
-                    continue
-                status_array.append(status_id)
-        if len(status_array) == 0:
-            status_array = [2]
-        return db_object.fk_status.in_(status_array)
+        status_ids = [STATUS_ARRAY.index(s) + 1 for s in STATUS_ARRAY]
+        if context == 'filter':
+            if not is_moderator:
+                status_ids.remove(1)
+                status_ids.remove(6)
+
+        if context == 'involvements':
+            status_ids.remove(4)
+            status_ids.remove(5)
+            if not logged_in:
+                status_ids.remove(1)
+                status_ids.remove(6)
+
+        return status_ids
 
     def get_attribute_filters(self):
         """
@@ -339,29 +319,117 @@ class Protocol(object):
 
         return 0
 
-    def _get_involvement_status(self, request):
+    def apply_visible_version_filter(
+            self, item_type, query, public_query=False):
         """
-        Returns a ClauseElement array of statuses used upon involvements.
-        Default value is active.
-        They are based on the following rules:
-        - If not logged in, only show 'active' involvements
+        Apply a filter to a query in order to limit the versions of an
+        :term:`Item` that are visible. The filter is based on the
+        :term:`status` of the :term:`Item` and the following rules
+        apply:
+
+        * **Status filter first**: If a status filter is set and valid,
+          it is considered first (eg. status filter set to ``active``
+          will not return pending versions, even for moderators).
+
+          .. seealso::
+               :class:`lmkp.protocols.protocol.Protocol.get_valid_status_ids`
+               with ``context=filter``.
+
+        * **Public** (not logged in or ``public_query=True``): By
+          default, only active versions are visible. Status filters can
+          be applied within the statuses visible to the public (eg. no
+          pending or rejected versions).
+
+        * **Logged in**: By default, users can see their own pending
+          versions if they are newer than the active version. Status
+          filters can be applied, also on pending or rejected versions.
+
+        * **Moderators**: By default, :term:`moderators` can see pending
+          versions within their profile if they are newer than the
+          active version. Status filters can be applied, also on pending
+          or rejected versions.
+
+        Args:
+            ``item_type`` (str): The :term:`Item Type` of the
+            :term:`Item`.
+
+            ``query`` (sqlalchemy.orm.query.Query): A SQLAlchemy Query
+            object on either :term:`Activities` or :term:`Stakeholders`.
+
+            ``public_query`` (bool): An optional boolean indicating
+            whether to return only versions visible to the public (eg.
+            no pending) or not.
+
+        Returns:
+            ``sqlalchemy.orm.query.Query``. The filtered SQLAlchemy
+            Query.
         """
+        if validate_item_type(item_type) == 'a':
+            Item = Activity
+        else:
+            Item = Stakeholder
 
-        logged_in, is_moderator = self._get_user_status(
-            effective_principals(request))
+        logged_in, is_moderator = get_user_privileges(self.request)
 
-        statuses = [
-            Status.name == 'active',
-            Status.name == 'inactive'
-        ]
+        status_filter_param = get_status_parameter(self.request)
+        status_filter_array = []
+        if status_filter_param is not None:
+            valid_status_ids = self.get_valid_status_ids(
+                'filter', logged_in, is_moderator)
+            for s in status_filter_param.split(','):
+                try:
+                    status_id = STATUS_ARRAY.index(s) + 1
+                except ValueError:
+                    continue
+                if status_id not in valid_status_ids:
+                    continue
+                status_filter_array.append(status_id)
 
-        if logged_in:
-            statuses.append(Status.name == 'pending')
-            statuses.append(Status.name == 'edited')
+        show_pending_in_results = (
+            len(status_filter_array) == 0 or 1 in status_filter_array)
 
-        #log.debug("Involvement statuses [array]:\n%s" % statuses)
+        if show_pending_in_results and logged_in and public_query is False:
+            visible_version_filters = []
 
-        return statuses
+            if len(status_filter_array) == 0 or 2 in status_filter_array:
+                visible_version_filters.append(Item.fk_status == 2)
+
+            visible_version_filters.append(
+                and_(
+                    Item.fk_status == 1,
+                    Changeset.fk_user == self.request.user.id
+                )
+            )
+            if is_moderator and item_type == 'a':
+                visible_version_filters.append(
+                    and_(
+                        Item.fk_status == 1,
+                        self.get_user_spatial_profile_filter()
+                    )
+                )
+
+            latest_visible_version = self.Session.query(
+                Item.identifier.label('identifier'),
+                func.max(Item.version).label('max_version')
+            ).\
+                join(Changeset).\
+                filter(or_(* visible_version_filters)).\
+                group_by(Item.identifier).\
+                subquery()
+
+            query = query.\
+                join(latest_visible_version, and_(
+                    latest_visible_version.c.identifier == Item.identifier,
+                    latest_visible_version.c.max_version == Item.version
+                ))
+
+        elif len(status_filter_array) > 0:
+            query = query.filter(Item.fk_status.in_(status_filter_array))
+
+        else:
+            query = query.filter(Item.fk_status == 2)
+
+        return query
 
     def _get_user_status(self, principals=None):
 

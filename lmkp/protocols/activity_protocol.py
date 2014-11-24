@@ -1,23 +1,15 @@
-import datetime
 import geojson
 import json
-import logging
-import uuid
 from geoalchemy import WKBSpatialElement
 from geoalchemy.functions import functions as geofunctions
-from pyramid.httpexceptions import HTTPBadRequest
-from pyramid.httpexceptions import HTTPNotFound
-from pyramid.i18n import get_localizer
 from pyramid.security import (
     authenticated_userid,
     effective_principals,
 )
 from shapely import wkb
-from shapely.geometry import asShape
 from shapely.geometry.polygon import Polygon
 from sqlalchemy import (
     func,
-    distinct,
 )
 from sqlalchemy.sql.expression import (
     and_,
@@ -26,7 +18,6 @@ from sqlalchemy.sql.expression import (
     desc,
     not_,
     or_,
-    select,
 )
 from sqlalchemy.types import Float
 
@@ -255,10 +246,31 @@ class ActivityProtocol(Protocol):
     def get_relevant_activities_many(
             self, filter=None, public_query=False, bbox_cookies=True):
         """
-        TODO
-        ''filter'': An optional custom filter.
-        ''public_query'': If set to true, no pending queries are made. Defaults
-          to 'False'
+        Get the relevant activities (mainly their IDs) based on the
+        various filters (attributes on both :term:`Activities` and
+        :term:`Stakeholders`, :term:`Status`, :term:`Profile` etc.)
+        which are currently set.
+
+        Args:
+            ``filter`` (dict): An optional dictionary with custom
+            filters, overwriting the ones from the request. (TODO)
+
+            ``public_query`` (bool): An optional boolean indicating
+            whether to return only versions visible to the public (eg.
+            no pending) or not.
+
+            ``bbox_cookies`` (bool): An optional boolean indicating
+            whether to look for a location cookie as fallback if no
+            request parameters were provided. This argument is passed to
+            the `get_bbox_parameters` function.
+
+            .. seealso::
+               :class:`lmkp.views.views.get_bbox_parameters`
+
+        Returns:
+            ``sqlalchemy.orm.query.Query``. A SQLAlchemy Query
+            containing namely the IDs of the filtered (relevant)
+            :term:`Activities`.
         """
         logged_in, is_moderator = get_user_privileges(self.request)
 
@@ -286,11 +298,6 @@ class ActivityProtocol(Protocol):
             Activity.fk_status,
             Activity.activity_identifier
         )
-
-        # Add a status filter if there is one set
-        if get_status_parameter(self.request) is not None:
-            relevant_activities = relevant_activities.\
-                filter(self.get_status_filter(Activity))
 
         # Activity attribute filters
         filter_subquery = None
@@ -361,58 +368,10 @@ class ActivityProtocol(Protocol):
         relevant_activities = relevant_activities.\
             outerjoin(order_query, order_query.c.id == Activity.id)
 
-        # Decide which version a user can see.
-        # - Public (not logged in) always see active versions.
-        # - Logged in users see their own pending versions, as long as they are
-        #   newer than the active version.
-        # - Moderators see their own and other pending versions if they are
-        #   within their profile, as long as they are newer than the active
-        #   version.
-
-        # Add pending Activities if allowed and available
-        if logged_in and public_query is False:
-            """
-            Find the latest visible version for each Activity. By
-            default, this is the active version. It is the pending
-            version if the changes were made by the current user. Or it
-            is the pending version if the current user is moderator and
-            the version lies within the moderator's profile.
-            """
-            visible_version_filters = [
-                Activity.fk_status == 2,
-                and_(
-                    Activity.fk_status == 1,
-                    Changeset.fk_user == self.request.user.id
-                )
-            ]
-            if is_moderator:
-                visible_version_filters.append(
-                    and_(
-                        Activity.fk_status == 1,
-                        self._get_spatial_moderator_filter(self.request)
-                    )
-                )
-
-            latest_visible_version = self.Session.query(
-                Activity.activity_identifier.label('identifier'),
-                func.max(Activity.version).label('max_version')
-            ).\
-                join(Changeset).\
-                filter(or_(* visible_version_filters)).\
-                group_by(Activity.identifier).\
-                subquery()
-
-            relevant_activities = relevant_activities.\
-                join(latest_visible_version, and_(
-                    latest_visible_version.c.identifier == Activity.identifier,
-                    latest_visible_version.c.max_version == Activity.version
-                ))
-
-        else:
-            # Public (not logged in): show only active
-            # TODO: make this more dynamic?
-            relevant_activities = relevant_activities.\
-                filter(Activity.fk_status == 2)
+        # Decide which version is based on status filter and user
+        # privileges.
+        relevant_activities = self.apply_visible_version_filter(
+            'a', relevant_activities, public_query=public_query)
 
         relevant_activities = relevant_activities.\
             group_by(Activity.id, order_query.c.value, Activity.fk_status,
@@ -524,8 +483,6 @@ class ActivityProtocol(Protocol):
         else:
             query = query.order_by(asc(relevant_activities.c.order_value))
 
-        TODO
-
         if metadata:
             query = query.add_columns(
                 Activity.previous_version.label('previous_version'),
@@ -543,10 +500,9 @@ class ActivityProtocol(Protocol):
                 outerjoin(Institution)
 
         if involvements:
-            inv_status_filter = self.Session.query(
-                Status.id
-            ).\
-                filter(or_(* self._get_involvement_status(self.request)))
+            logged_in, is_moderator = get_user_privileges(self.request)
+            involvement_status_ids = self.get_valid_status_ids(
+                'involvements', logged_in, is_moderator)
 
             # Additional filter to select only the latest (pending or not)
             # Stakeholder involved with the relevant Activities
@@ -570,7 +526,7 @@ class ActivityProtocol(Protocol):
                 Stakeholder.version.label('stakeholder_version'),
                 Stakeholder.fk_changeset.label('changeset_id')
             ).\
-                filter(Stakeholder.fk_status.in_(inv_status_filter)).\
+                filter(Stakeholder.fk_status.in_(involvement_status_ids)).\
                 join(Involvement).\
                 join(latest_filter, and_(
                     latest_filter.c.max_version == Stakeholder.version,
@@ -817,8 +773,8 @@ class ActivityProtocol(Protocol):
 
     def get_bbox_filter(self, cookies=True):
         """
-        Return a spatial filter for the point of Activities based on the
-        bounding box parameters found in the request.
+        Return a spatial filter for the point of :term:`Activities`
+        based on the bounding box parameters found in the request.
 
         If a valid bounding box was found, a GeoAlchemy function
         intersecting the point geometries of Activities with the
@@ -864,20 +820,27 @@ class ActivityProtocol(Protocol):
             Activity.point,
             geofunctions.transform(wkb_geometry, activity_srid))
 
-    def _get_spatial_moderator_filter(self, request):
+    def get_user_spatial_profile_filter(self):
         """
-        Create an array of geometry filters based on the user's profile(s)
+        Return the spatial filters for the point of :term:`Activities`
+        based on the profile(s) associated with the current user. If the
+        user has multiple profiles, the spatial filters for each profile
+        are connected with a SQL ``OR`` statement.
+
+        Returns:
+            ``geoalchemy.functions.intersects`` or
+            ``sqlalchemy.sql.expression`` or ``None``. A GeoAlchemy
+            function or multiple joined in a SQLAlchemy expression.
         """
-        userid = request.user.username  # authenticated_userid(request)
+        userid = authenticated_userid(self.request)
 
         profile_filters = []
-
         if userid is not None:
             profiles = self.Session.query(Profile).\
                 filter(Profile.users.any(username=userid))
             for p in profiles.all():
-                profile_filters.append(geofunctions.intersects(Activity.point,
-                                       p.geometry))
+                profile_filters.append(
+                    geofunctions.intersects(Activity.point, p.geometry))
                 if p.code == 'global':
                     profile_filters.append(Activity.point == None)
 
