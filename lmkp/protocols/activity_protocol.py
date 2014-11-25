@@ -40,7 +40,7 @@ from lmkp.models.database_objects import (
 from lmkp.utils import validate_bbox
 from lmkp.views.form_config import getCategoryList
 from lmkp.views.protocol import (
-    Feature,
+    # Feature,
     Inv,
     # Protocol,
     Tag,
@@ -56,162 +56,26 @@ from lmkp.views.views import (
     get_status_parameter,
     get_current_order_direction,
     get_current_involvement_details,
+    get_current_limit,
+    get_current_offset,
 )
 from lmkp.authentication import get_user_privileges
 from lmkp.protocols.protocol import Protocol
 from lmkp.models.meta import DBSession as Session
-
-
-class ActivityFeature3(Feature):
-    """
-    Overwrites the super class Feature and adds the geometry property
-    """
-
-    def __init__(self, guid, order_value, geometry=None, version=None,
-                 status=None, status_id=None, timestamp=None, diff_info=None,
-                 ** kwargs):
-        self._taggroups = []
-        self._involvements = []
-        self._guid = guid
-        self._order_value = order_value
-        self._geometry = geometry
-        self._version = version
-        self._status = status
-        self._status_id = status_id
-        self._timestamp = timestamp
-        self._diff_info = diff_info
-
-        self._previous_version = kwargs.pop('previous_version', None)
-
-        self._user_privacy = kwargs.pop('user_privacy', None)
-        self._user_id = kwargs.pop('user_id', None)
-        self._user_name = kwargs.pop('user_name', None)
-        self._user_firstname = kwargs.pop('user_firstname', None)
-        self._user_lastname = kwargs.pop('user_lastname', None)
-
-        self._institution_id = kwargs.pop('institution_id', None)
-        self._institution_name = kwargs.pop('institution_name', None)
-        self._institution_url = kwargs.pop('institution_url', None)
-        self._institution_logo = kwargs.pop('institution_logo', None)
-
-    def getMappedClass(self):
-        return Activity
-
-    def getOtherMappedClass(self):
-        return Stakeholder
-
-    def to_tags(self, request):
-        """
-        Return a short representation in tag form (array of keys/values) of the
-        most important attributes of the feature (as defined in the yaml as
-        'involvementoverview')
-        """
-
-        categoryList = getCategoryList(request, 'activities')
-        overviewkeys = categoryList.getInvolvementOverviewKeyNames()
-        overviewtags = [{'key': k[0], 'value': []} for k in overviewkeys]
-
-        for rettag in overviewtags:
-            for tg in self._taggroups:
-                for t in tg.get_tags():
-                    if t.get_key() == rettag['key']:
-                        rettag['value'].append(t.get_value())
-            rettag['value'] = ', '.join(rettag['value'])
-
-        return overviewtags
-
-    def get_geometry(self):
-        geometry = None
-        try:
-            geom = wkb.loads(str(self._geometry.geom_wkb))
-            geometry = json.loads(geojson.dumps(geom))
-        except AttributeError:
-            pass
-        if isinstance(self._geometry, geojson.geometry.Point):
-            geometry = json.loads(geojson.dumps(self._geometry))
-        return geometry
-
-    def to_table(self, request):
-        """
-        Returns a JSON compatible representation of this object
-        """
-
-        # Tag Groups
-        tg = []
-        for t in self._taggroups:
-            tg.append(t.to_table())
-
-        # Geometry
-        geometry = None
-        try:
-            geom = wkb.loads(str(self._geometry.geom_wkb))
-            geometry = json.loads(geojson.dumps(geom))
-        except AttributeError:
-            pass
-
-        ret = {
-            'id': self._guid,
-            'taggroups': tg
-        }
-
-        if geometry is not None:
-            ret['geometry'] = geometry
-        if self._version is not None:
-            ret['version'] = self._version
-        if self._status is not None and self._status in statusMap:
-            ret['status'] = get_translated_status(request, self._status)
-        if self._status_id is not None:
-            ret['status_id'] = self._status_id
-        if self._timestamp is not None:
-            ret['timestamp'] = str(self._timestamp)
-
-        if self._previous_version is not None:
-            ret['previous_version'] = self._previous_version
-
-        institution = {}
-        if self._institution_id is not None:
-            institution['id'] = self._institution_id
-        if self._institution_name is not None:
-            institution['name'] = self._institution_name
-        if self._institution_url is not None:
-            institution['url'] = self._institution_url
-        if self._institution_logo is not None:
-            institution['logo'] = self._institution_logo
-        if institution != {}:
-            ret['institution'] = institution
-
-        user = {}
-        if self._user_id is not None:
-            user['id'] = self._user_id
-        if self._user_name is not None:
-            user['username'] = self._user_name
-        # User details based on privacy settings
-        if self._user_privacy is not None and self._user_privacy > 0:
-            if self._user_firstname is not None:
-                user['firstname'] = self._user_firstname
-            if self._user_lastname is not None:
-                user['lastname'] = self._user_lastname
-        if user != {}:
-            ret['user'] = user
-
-        # Involvements
-        if len(self._involvements) != 0:
-            sh = []
-            for i in self._involvements:
-                sh.append(i.to_table(request))
-            ret['involvements'] = sh
-
-        return ret
+from lmkp.protocols.activity_feature import ActivityFeature
 
 
 class ActivityProtocol(Protocol):
+    """
+    TODO
+    """
 
     def __init__(self, request):
         self.Session = Session
         self.request = request
 
     # TODO: request not necessary
-    def read_many(self, request, public=True, **kwargs):
+    def read_many(self, public=True, limit=None, offset=None, translate=True):
         """
         Valid kwargs:
         - limit
@@ -222,25 +86,25 @@ class ActivityProtocol(Protocol):
         relevant_activities = self.get_relevant_activities_many(
             public_query=public)
 
-        involvement_details = get_current_involvement_details(request)
+        involvement_details = get_current_involvement_details(self.request)
+        show_involvements = involvement_details != 'none'
 
-        # Get limit and offset from request if they are not in kwargs.
-        # Defaults: limit = None / offset = 0
-        limit = kwargs.get('limit', self._get_limit(request))
-        offset = kwargs.get('offset', self._get_offset(request))
+        if limit is None:
+            limit = get_current_limit(self.request)
+        if offset is None:
+            offset = get_current_offset(self.request)
 
         query, count = self.query_many(
             relevant_activities, limit=limit, offset=offset,
-            involvements=involvement_details != 'none')
+            with_involvements=show_involvements)
 
-        translate = kwargs.get('translate', True)
-        activities = self._query_to_activities(
-            request, query, involvements=involvement_details,
-            public_query=public, translate=translate)
+        activities = self.query_to_activities(
+            query, involvements=involvement_details, public_query=public,
+            translate=translate)
 
         return {
             'total': count,
-            'data': [a.to_table(request) for a in activities]
+            'data': [a.to_table(self.request) for a in activities]
         }
 
     def get_relevant_activities_many(
@@ -426,11 +290,54 @@ class ActivityProtocol(Protocol):
 
     def query_many(
             self, relevant_activities, limit=None, offset=None,
-            involvements=False, return_count=True, metadata=False):
+            with_involvements=False, return_count=True,
+            with_metadata=False):
         """
-        TODO
+        Get a complete query object for some relevant
+        :term:`Activities`. This does not actually perform a query
+        (except a SQL count if requested) but rather creates and returns
+        a query joining the relevant :term:`Activities` with all its
+        attributes and involvements.
+
+        Args:
+            ``relevant_activities`` (sqlalchemy.orm.query.Query): A
+            SQLAlchemy containing the filtered (relevant)
+            :term:`Activities`.
+
+            .. seealso::
+               :class:`get_relevant_activities_many`
+
+            ``limit`` (int or None): An optional integer with the limit
+            to be applied to the query.
+
+            ``offset`` (int or None): An optional integer with the
+            offset to be applied to the query.
+
+            ``with_involvements`` (bool): An optional boolean indicating
+            whether to include :term:`Involvements` in the query or not.
+            If true, additional columns for the attributes of the
+            :term:`Stakeholders` are added to the query. Defaults to
+            ``false``.
+
+            ``return_count`` (bool): An optional boolean indicating
+            whether to return the count of the query along with the
+            query. The count happens before the limit and offset are
+            applied, it therefore returns the total count of the entire
+            query. Defaults to ``true``.
+
+            ``with_metadata`` (bool): An optional boolean indicating
+            whether to include metadata (eg. about the user and
+            institution creating the version) for the :term:`Activities`
+            or not. Defaults to ``false``.
+
+        Returns:
+            ``sqlalchemy.orm.query.Query``. A SQLAlchemy Query for the
+            :term:`Activities`.
+
+            ``long``. (only if ``return_count=True``) The total count of
+            the query.
         """
-        key_translation, value_translation = self.get_translations('a')
+        key_translation, value_translation = self.get_translation_queries('a')
 
         # Count
         if return_count:
@@ -483,7 +390,7 @@ class ActivityProtocol(Protocol):
         else:
             query = query.order_by(asc(relevant_activities.c.order_value))
 
-        if metadata:
+        if with_metadata is True:
             query = query.add_columns(
                 Activity.previous_version.label('previous_version'),
                 User.id.label('user_id'),
@@ -499,7 +406,7 @@ class ActivityProtocol(Protocol):
                 outerjoin(User, User.id == Changeset.fk_user).\
                 outerjoin(Institution)
 
-        if involvements:
+        if with_involvements is True:
             logged_in, is_moderator = get_user_privileges(self.request)
             involvement_status_ids = self.get_valid_status_ids(
                 'involvements', logged_in, is_moderator)
@@ -552,8 +459,6 @@ class ActivityProtocol(Protocol):
                 join(Stakeholder_Role).\
                 subquery()
 
-            #log.debug("Involvement Query:\n%s" % inv_query)
-
             query = query.\
                 add_columns(
                     inv_query.c.stakeholder_identifier.label(
@@ -573,20 +478,21 @@ class ActivityProtocol(Protocol):
         else:
             return query
 
-    def _query_to_activities(self, request, query, involvements='none',
-                             public_query=False, **kwargs):
+    def query_to_activities(
+            self, query, involvements='none', public_query=False,
+            with_taggroup_geometry=False, translate=True, **kwargs):
+        """
+        Every value of each :term:`Activity` is a line of the query.
+        These attributes have to be collected to form a ActivityFeature.
+        """
 
-        geom = kwargs.get('geom', False)
-        if geom is True:
+        logged_in, is_moderator = get_user_privileges(self.request)
+
+        if with_taggroup_geometry is True:
             query = query.add_columns(
                 A_Tag_Group.geometry.label('tg_geometry')
             )
-        translate = kwargs.get('translate', True)
 
-        logged_in, is_moderator = self._get_user_status(
-            effective_principals(request))
-
-        # Put the Activities together
         activities = []
         for q in query.all():
 
@@ -630,7 +536,7 @@ class ActivityProtocol(Protocol):
                 institution_logo = q.institution_logo if hasattr(
                     q, 'institution_logo') else None
 
-                activity = ActivityFeature3(
+                activity = ActivityFeature(
                     identifier, q.order_value, geometry=q.geometry,
                     version=q.version, status=q.status, status_id=q.status_id,
                     timestamp=q.timestamp, user_privacy=user_privacy,
@@ -650,7 +556,8 @@ class ActivityProtocol(Protocol):
             elif key:
                 taggroup = TagGroup(taggroup_id, q.tg_id, q.main_tag)
                 # Set the taggroup geometry if available
-                if geom is True and q.tg_geometry is not None:
+                if (with_taggroup_geometry is True
+                        and q.tg_geometry is not None):
                     taggroup.set_geometry(q.tg_geometry)
                 activity.add_taggroup(taggroup)
 
@@ -666,7 +573,7 @@ class ActivityProtocol(Protocol):
                     if q.stakeholder_identifier is not None:
 
                         try:
-                            request_user_id = request.user.id
+                            request_user_id = self.request.user.id
                         except AttributeError:
                             request_user_id = None
 
@@ -723,13 +630,13 @@ class ActivityProtocol(Protocol):
             from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
             sp = StakeholderProtocol3(self.Session)
             relevant_stakeholders = sp._get_relevant_stakeholders_dict(
-                request, inv_dicts)
+                self.request, inv_dicts)
 
             sh_query = sp._query_many(
-                request, relevant_stakeholders, involvements=False,
+                self.request, relevant_stakeholders, involvements=False,
                 return_count=False)
             stakeholders = sp._query_to_stakeholders(
-                request, sh_query, involvements='none')
+                self.request, sh_query, involvements='none')
 
             # Loop through all existing Involvements
             for activity in activities:
@@ -781,7 +688,7 @@ class ActivityProtocol(Protocol):
         bounding box geometry is returned. This function can then be
         used as a filter in SQLAlchemy.
 
-        Kwargs:
+        Args:
             ``cookies`` (bool): A boolean indicating whether to look for
             a location cookie as fallback if no request parameters were
             provided. This argument is passed to the

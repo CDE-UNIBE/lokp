@@ -46,6 +46,9 @@ STATUS_ARRAY = [
 
 
 class Protocol(object):
+    """
+    TODO
+    """
 
     def __init__(self, request):
         self.request = request
@@ -257,7 +260,7 @@ class Protocol(object):
                 cast(Value.value, Float).label('value'))
             return order_query_numbers.subquery()
 
-    def get_translations(self, item_type):
+    def get_translation_queries(self, item_type):
         """
         Returns two SQLAlchemy subqueries with the translations for the
         keys and values of the :term:`Item`.
@@ -295,29 +298,6 @@ class Protocol(object):
             filter(Language.locale == current_locale).\
             subquery()
         return key_query, value_query
-
-    def _get_limit(self, request):
-
-        limit = request.params.get('limit', None)
-        if limit is not None:
-            try:
-                return int(limit)
-            except ValueError:
-                pass
-
-        return None
-
-    def _get_offset(self, request):
-        """
-        Returns the requested offset, default value is 0
-        """
-        offset = request.params.get('offset', 0)
-        try:
-            return int(offset)
-        except ValueError:
-            pass
-
-        return 0
 
     def apply_visible_version_filter(
             self, item_type, query, public_query=False):

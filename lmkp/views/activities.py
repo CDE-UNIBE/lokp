@@ -140,7 +140,7 @@ class ActivityView(BaseView):
 
         if output_format == 'json':
 
-            items = activity_protocol.read_many(self.request, public=public)
+            items = activity_protocol.read_many(public=public)
 
             return render_to_response('json', items, self.request)
 
@@ -155,7 +155,7 @@ class ActivityView(BaseView):
 
             page, page_size = get_page_parameters(self.request)
             items = activity_protocol.read_many(
-                self.request, public=public, limit=page_size,
+                public=public, limit=page_size,
                 offset=page_size * page - page_size)
 
             spatial_filter = 'profile' if get_bbox_parameters(

@@ -646,7 +646,6 @@ def get_bbox_parameters(request, cookies=True):
         with optional parameters ``bbox`` and ``epsg`` or a cookie
         ``_LOCATION_`` set.
 
-    Kwargs:
         ``cookies`` (bool): A boolean indicating whether to look for the
         location cookie as fallback or no.
 
@@ -828,3 +827,53 @@ def get_current_involvement_details(request):
     if details in ['full', 'none']:
         return details
     return default
+
+
+def get_current_limit(request):
+    """
+    Return the current limit from the request. The limit indicates how
+    many :term:`Items` are shown at once when querying many. Together
+    with the ``offset`` parameter it allows pagination.
+
+    .. seealso::
+       :class:`lmkp.views.views.get_current_offset`
+
+    Args:
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object
+        with optional parameter ``limit`` set.
+
+    Returns:
+        ``int`` or ``None``. A absolute integer if one was provided in
+        the request, else None.
+    """
+    default = None
+    limit = request.params.get('limit', default)
+    try:
+        return abs(int(limit))
+    except:
+        return default
+
+
+def get_current_offset(request):
+    """
+    Return the current offset from the request. The offset indicates how
+    many :term:`Items` are skipped when querying many. Together with the
+    ``limit`` parameter it allows pagination.
+
+    .. seealso::
+       :class:`lmkp.views.views.get_current_offset`
+
+    Args:
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object
+        with optional parameter ``offset`` set.
+
+    Returns:
+        ``int``. A absolute integer if one was provided in the request
+        or 0 by default.
+    """
+    default = 0
+    offset = request.params.get('offset', default)
+    try:
+        return abs(int(offset))
+    except:
+        return default
