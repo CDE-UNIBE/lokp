@@ -1,3 +1,7 @@
+from pyramid.i18n import (
+    TranslationStringFactory,
+    get_localizer,
+)
 from sqlalchemy import (
     func,
 )
@@ -33,16 +37,71 @@ from lmkp.views.views import (
     get_current_order_key,
 )
 
+_ = TranslationStringFactory('lmkp')
 
 # TODO: hard-coded status list
 STATUS_ARRAY = [
-    'pending',
-    'active',
-    'inactive',
-    'deleted',
-    'rejected',
-    'edited'
+    (1, 'pending', _('pending')),
+    (2, 'active', _('active')),
+    (3, 'inactive', _('inactive')),
+    (4, 'deleted', _('deleted')),
+    (5, 'rejected', _('rejected')),
+    (6, 'edited', _('edited'))
 ]
+
+
+def get_status_ids():
+    """
+    Return every status ID known.
+
+    Returns:
+        ``list``. A list with all status IDs available.
+    """
+    return [s[0] for s in STATUS_ARRAY]
+
+
+def get_status_id_by_code(code):
+    """
+    Return a status ID based on its internal code.
+
+    Args:
+        ``code`` (str): The internal code (eg. ``pending``, ``active``
+        of the status.
+
+    Returns:
+        ``int`` or ``None``. The ID of the status or None if the status
+        was not found.
+    """
+    for s in STATUS_ARRAY:
+        if s[1] == code:
+            return s[0]
+    return None
+
+
+def get_status_name_by_id(id, request=None):
+    """
+    Return the name of a status based on its ID. If ``request`` is
+    provided, the translated name is returned.
+
+    Args:
+        ``id`` (int): The ID of the status.
+
+        ``request`` (pyramid.request): The optional :term:`Pyramid`
+        Request object. If it is provided, the status name is returned
+        translated.
+
+    Returns:
+        ``str`` or ``None``. The (eventually translated) name of the
+        status or None if the status was not found.
+    """
+    for s in STATUS_ARRAY:
+        if s[0] == id:
+            if request is None:
+                return s[2]
+            else:
+                localizer = get_localizer(request)
+                return localizer.translate(s[2])
+    return None
 
 
 class Protocol(object):
@@ -82,7 +141,7 @@ class Protocol(object):
             ``list``. A list with :term:`status` IDs which are valid
             within the given context.
         """
-        status_ids = [STATUS_ARRAY.index(s) + 1 for s in STATUS_ARRAY]
+        status_ids = get_status_ids()
         if context == 'filter':
             if not is_moderator:
                 status_ids.remove(1)
@@ -357,9 +416,8 @@ class Protocol(object):
             valid_status_ids = self.get_valid_status_ids(
                 'filter', logged_in, is_moderator)
             for s in status_filter_param.split(','):
-                try:
-                    status_id = STATUS_ARRAY.index(s) + 1
-                except ValueError:
+                status_id = get_status_id_by_code(s)
+                if status_id is None:
                     continue
                 if status_id not in valid_status_ids:
                     continue

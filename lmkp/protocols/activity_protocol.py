@@ -1,26 +1,16 @@
-import geojson
-import json
 from geoalchemy import WKBSpatialElement
 from geoalchemy.functions import functions as geofunctions
-from pyramid.security import (
-    authenticated_userid,
-    effective_principals,
-)
-from shapely import wkb
+from pyramid.security import authenticated_userid
 from shapely.geometry.polygon import Polygon
-from sqlalchemy import (
-    func,
-)
+from sqlalchemy import func
 from sqlalchemy.sql.expression import (
     and_,
     asc,
-    cast,
     desc,
-    not_,
     or_,
 )
-from sqlalchemy.types import Float
 
+from lmkp.authentication import get_user_privileges
 from lmkp.models.database_objects import (
     A_Key,
     A_Value,
@@ -30,39 +20,32 @@ from lmkp.models.database_objects import (
     Changeset,
     Institution,
     Involvement,
-    Language,
     Profile,
     Stakeholder,
     Stakeholder_Role,
     Status,
     User,
 )
-from lmkp.utils import validate_bbox
-from lmkp.views.form_config import getCategoryList
-from lmkp.views.protocol import (
-    # Feature,
-    Inv,
-    # Protocol,
-    Tag,
-    TagGroup,
+from lmkp.models.meta import DBSession as Session
+from lmkp.protocols.activity_features import (
+    ActivityFeature,
+    ActivityTaggroup,
 )
-from lmkp.views.translation import get_translated_status
-from lmkp.views.translation import get_translated_db_keys
-from lmkp.views.translation import statusMap
+from lmkp.protocols.features import (
+    ItemTag,
+)
+from lmkp.protocols.protocol import Protocol
+from lmkp.utils import validate_bbox
+from lmkp.views.protocol import Inv
 from lmkp.views.views import (
     get_bbox_parameters,
     get_current_profile,
     get_current_logical_filter_operator,
-    get_status_parameter,
     get_current_order_direction,
     get_current_involvement_details,
     get_current_limit,
     get_current_offset,
 )
-from lmkp.authentication import get_user_privileges
-from lmkp.protocols.protocol import Protocol
-from lmkp.models.meta import DBSession as Session
-from lmkp.protocols.activity_feature import ActivityFeature
 
 
 class ActivityProtocol(Protocol):
@@ -98,13 +81,13 @@ class ActivityProtocol(Protocol):
             relevant_activities, limit=limit, offset=offset,
             with_involvements=show_involvements)
 
-        activities = self.query_to_activities(
+        activities = self.query_to_features(
             query, involvements=involvement_details, public_query=public,
-            translate=translate)
+            translate=translate, with_taggroup_geometry=True)
 
         return {
             'total': count,
-            'data': [a.to_table(self.request) for a in activities]
+            'data': [a.to_json(self.request) for a in activities]
         }
 
     def get_relevant_activities_many(
@@ -268,7 +251,7 @@ class ActivityProtocol(Protocol):
                           ).
                           join(Involvement).
                           join(sh_subquery, sh_subquery.c.id ==
-                          Involvement.fk_stakeholder).
+                               Involvement.fk_stakeholder).
                           group_by(Activity.id))
             else:
                 # AND: filter id's of relevant_activities
@@ -478,7 +461,7 @@ class ActivityProtocol(Protocol):
         else:
             return query
 
-    def query_to_activities(
+    def query_to_features(
             self, query, involvements='none', public_query=False,
             with_taggroup_geometry=False, translate=True, **kwargs):
         """
@@ -493,7 +476,7 @@ class ActivityProtocol(Protocol):
                 A_Tag_Group.geometry.label('tg_geometry')
             )
 
-        activities = []
+        features = []
         for q in query.all():
 
             # Prepare values if needed
@@ -506,68 +489,53 @@ class ActivityProtocol(Protocol):
 
             # Use UID and version to find existing ActivityFeature or create a
             # new one
-            activity = None
-            for a in activities:
-                if a.get_guid() == identifier and a.get_version() == q.version:
-                    if not isinstance(q.order_value, int):
-                        if a.get_order_value() == q.order_value:
-                            activity = a
-                    else:
-                        activity = a
+            feature = None
+            for f in features:
+                if (f.identifier == identifier and f.version == q.version
+                        and f.order_value == q.order_value):
+                    feature = f
 
-            if activity is None:
-                # Handle optional metadata correctly
-                previous_version = q.previous_version if hasattr(
-                    q, 'previous_version') else None
-                user_privacy = q.user_privacy if hasattr(
-                    q, 'user_privacy') else None
-                user_id = q.user_id if hasattr(q, 'user_id') else None
-                user_name = q.user_name if hasattr(q, 'user_name') else None
-                user_firstname = q.user_firstname if hasattr(
-                    q, 'user_firstname') else None
-                user_lastname = q.user_lastname if hasattr(
-                    q, 'user_lastname') else None
-                institution_id = q.institution_id if hasattr(
-                    q, 'institution_id') else None
-                institution_name = q.institution_name if hasattr(
-                    q, 'institution_name') else None
-                institution_url = q.institution_url if hasattr(
-                    q, 'institution_url') else None
-                institution_logo = q.institution_logo if hasattr(
-                    q, 'institution_logo') else None
+            if feature is None:
+                feature = ActivityFeature(
+                    identifier, q.order_value, q.version, q.status_id,
+                    q.geometry)
 
-                activity = ActivityFeature(
-                    identifier, q.order_value, geometry=q.geometry,
-                    version=q.version, status=q.status, status_id=q.status_id,
-                    timestamp=q.timestamp, user_privacy=user_privacy,
-                    institution_id=institution_id,
-                    institution_name=institution_name,
-                    institution_url=institution_url,
-                    institution_logo=institution_logo, user_id=user_id,
-                    user_name=user_name, user_firstname=user_firstname,
-                    user_lastname=user_lastname,
-                    previous_version=previous_version)
-                activities.append(activity)
+                # TODO: Create separate function with this
+                feature.status = getattr(q, 'status', None)
+                feature.timestamp = getattr(q, 'timestamp', None)
+                feature.previous_version = getattr(
+                    q, 'previous_version', None)
+                feature.user_id = getattr(q, 'userid', None)
+                feature.user_name = getattr(q, 'user_name', None)
+                feature.user_privacy = getattr(q, 'user_privacy', None)
+                feature.user_firstname = getattr(q, 'user_firstname', None)
+                feature.user_lastname = getattr(q, 'user_lastname', None)
+                feature.institution_id = getattr(q, 'institution_id', None)
+                feature.institution_name = getattr(
+                    q, 'institution_name', None)
+                feature.institution_url = getattr(q, 'institution_url', None)
+                feature.institution_logo = getattr(
+                    q, 'institution_logo', None)
 
-            # Check if current Tag Group is already present in the Activity
-            taggroup = None
-            if activity.find_taggroup_by_id(taggroup_id) is not None:
-                taggroup = activity.find_taggroup_by_id(taggroup_id)
-            elif key:
-                taggroup = TagGroup(taggroup_id, q.tg_id, q.main_tag)
+                features.append(feature)
+
+            # Check if current Tag Group is already present in the Feature
+            taggroup = feature.get_taggroup_by_id(taggroup_id)
+            if taggroup is None and key is not None:
+                taggroup = ActivityTaggroup(taggroup_id, q.tg_id, q.main_tag)
                 # Set the taggroup geometry if available
-                if (with_taggroup_geometry is True
-                        and q.tg_geometry is not None):
-                    taggroup.set_geometry(q.tg_geometry)
-                activity.add_taggroup(taggroup)
+                if with_taggroup_geometry is True:
+                    taggroup.geometry = getattr(q, 'tg_geometry', None)
+                feature.add_taggroup(taggroup)
 
             # Because of Involvements, the same Tags appears for each
             # Involvement, so add it only once to TagGroup
             if taggroup is not None and taggroup.get_tag_by_id(q.tag) is None:
-                taggroup.add_tag(Tag(q.tag, key, value))
+                taggroup.add_tag(ItemTag(q.tag, key, value))
 
             # Involvements
             if involvements != 'none':
+                # TODOs
 
                 try:
                     if q.stakeholder_identifier is not None:
@@ -583,19 +551,19 @@ class ActivityProtocol(Protocol):
                         # version)
                         newer_pending_exists = False
                         if q.stakeholder_status == 1:
-                            for p_i in activity._involvements:
+                            for p_i in feature._involvements:
                                 if (p_i.get_guid() == q.stakeholder_identifier
                                         and p_i.get_status() == 1):
                                     if (p_i.get_version() >
                                             q.stakeholder_version):
                                         newer_pending_exists = True
                                     else:
-                                        activity.remove_involvement(p_i)
+                                        feature.remove_involvement(p_i)
 
                         # Flag indicating if Involvement to this Activity is
                         # not yet found ('none') or not to be added ('false')
                         inv = self._flag_add_involvement(
-                            activity, q.status_id, q.stakeholder_status,
+                            feature, q.status_id, q.stakeholder_status,
                             q.stakeholder_identifier, q.stakeholder_version,
                             q.stakeholder_user_id, q.stakeholder_role,
                             request_user_id, public_query, logged_in,
@@ -604,7 +572,7 @@ class ActivityProtocol(Protocol):
                         if inv is None and newer_pending_exists is False:
                             # Create new Involvement and add it to Activity
                             # Default: only basic information about Involvement
-                            activity.add_involvement(Inv(
+                            feature.add_involvement(Inv(
                                 q.stakeholder_identifier, None,
                                 q.stakeholder_role, q.stakeholder_role_id,
                                 q.stakeholder_version, q.stakeholder_status))
@@ -612,6 +580,8 @@ class ActivityProtocol(Protocol):
                     pass
 
         if involvements == 'full':
+            # TODO
+
             # If full involvements are to be shown, collect the identifiers and
             # versions of each Stakeholder and prepare a dict. Query the
             # details (Tag Groups) of these Stakeholders using the
@@ -619,7 +589,7 @@ class ActivityProtocol(Protocol):
             # them all at once to improve performance.
 
             inv_dicts = []
-            for activity in activities:
+            for activity in features:
                 for i in activity._involvements:
                     inv_dicts.append({
                                      'identifier': i.get_guid(),
@@ -639,7 +609,7 @@ class ActivityProtocol(Protocol):
                 self.request, sh_query, involvements='none')
 
             # Loop through all existing Involvements
-            for activity in activities:
+            for activity in features:
                 for index, i in enumerate(activity._involvements):
                     # Try to find the current Activity in the detailed list
                     stakeholder = None
@@ -655,7 +625,7 @@ class ActivityProtocol(Protocol):
                             i.get_guid(), stakeholder, i.get_role(),
                             i.get_role_id(), i.get_version(), i.get_status())
 
-        return activities
+        return features
 
     def get_profile_filter(self):
         """

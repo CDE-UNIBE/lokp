@@ -2,6 +2,4 @@
 ------------------------------
 
 .. automodule:: lmkp.protocols.protocol
-
-  .. autoclass:: Protocol
-     :members:
+   :members:
