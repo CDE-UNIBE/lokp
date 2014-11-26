@@ -128,12 +128,15 @@ class StakeholderView(BaseView):
         Returns:
             ``HTTPResponse``. Either a HTML or a JSON response.
         """
+        # TODO
+        from lmkp.protocols.stakeholder_protocol import StakeholderProtocol
+        stakeholder_protocol = StakeholderProtocol(self.request)
 
         output_format = get_output_format(self.request)
 
         if output_format == 'json':
 
-            items = stakeholder_protocol.read_many(self.request, public=False)
+            items = stakeholder_protocol.read_many(public_query=False)
 
             return render_to_response('json', items, self.request)
 
@@ -141,7 +144,7 @@ class StakeholderView(BaseView):
 
             page, page_size = get_page_parameters(self.request)
             items = stakeholder_protocol.read_many(
-                self.request, public=public, limit=page_size,
+                public_query=public, limit=page_size,
                 offset=page_size * page - page_size)
 
             spatial_filter = None

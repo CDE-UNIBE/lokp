@@ -26,7 +26,6 @@ from lmkp.models.database_objects import (
     Status,
     User,
 )
-from lmkp.models.meta import DBSession as Session
 from lmkp.protocols.activity_features import (
     ActivityFeature,
     ActivityTaggroup,
@@ -53,21 +52,43 @@ class ActivityProtocol(Protocol):
     TODO
     """
 
-    def __init__(self, request):
-        self.Session = Session
-        self.request = request
-
-    # TODO: request not necessary
-    def read_many(self, public=True, limit=None, offset=None, translate=True):
+    def read_many(
+            self, public_query=True, limit=None, offset=None, translate=True):
         """
-        Valid kwargs:
-        - limit
-        - offset
-        - translate
+        Read many :term:`Activities`. This function handles the query,
+        applies filters, creates and returns the Features.
+
+        Args:
+            ``public_query`` (bool): An optional boolean indicating
+            whether to return only versions visible to the public (eg.
+            no pending) or not.
+
+            ``limit`` (int): An optional limit. If no limit is provided,
+            the one from the request is used if available.
+
+                .. seealso::
+                   :class:`lmkp.views.views.get_current_limit`
+
+            ``offset`` (int): An optional offset. If no offset it
+            provided, the one from the reuqest is used if available.
+
+                .. seealso::
+                   :class:`lmkp.views.views.get_current_offset`
+
+            ``translate`` (bool): An optional boolean indicating whether
+            to return translated values or not. Defaults to ``True``.
+
+        Returns:
+            ``dict``. A dictionary containing the total count of the
+            query and the :term:`Activity` Features in JSON compatible
+            format.
+
+                .. seealso::
+                   :class:`lmkp.protocols.features.ItemFeature.to_json`
         """
 
-        relevant_activities = self.get_relevant_activities_many(
-            public_query=public)
+        relevant_query = self.get_relevant_query_many(
+            public_query=public_query)
 
         involvement_details = get_current_involvement_details(self.request)
         show_involvements = involvement_details != 'none'
@@ -78,25 +99,26 @@ class ActivityProtocol(Protocol):
             offset = get_current_offset(self.request)
 
         query, count = self.query_many(
-            relevant_activities, limit=limit, offset=offset,
+            relevant_query, limit=limit, offset=offset,
             with_involvements=show_involvements)
 
-        activities = self.query_to_features(
-            query, involvements=involvement_details, public_query=public,
-            translate=translate, with_taggroup_geometry=True)
+        features = self.query_to_features(
+            query, involvements=involvement_details, public_query=public_query,
+            translate=translate)
 
         return {
             'total': count,
-            'data': [a.to_json(self.request) for a in activities]
+            'data': [f.to_json(self.request) for f in features]
         }
 
-    def get_relevant_activities_many(
+    def get_relevant_query_many(
             self, filter=None, public_query=False, bbox_cookies=True):
         """
-        Get the relevant activities (mainly their IDs) based on the
-        various filters (attributes on both :term:`Activities` and
-        :term:`Stakeholders`, :term:`Status`, :term:`Profile` etc.)
-        which are currently set.
+        TODO
+        Get a query with the database IDs of relevant :term:`Activities`
+        based on the various filters (attributes on both
+        :term:`Activities` and :term:`Stakeholders`, :term:`Status`,
+        :term:`Profile` etc.) which are currently set.
 
         Args:
             ``filter`` (dict): An optional dictionary with custom
@@ -138,8 +160,7 @@ class ActivityProtocol(Protocol):
         # Prepare order: Get the order from request
         order_query = self.get_order('a')
 
-        # Create relevant Activities
-        relevant_activities = self.Session.query(
+        relevant_query = self.Session.query(
             Activity.id.label('order_id'),
             order_query.c.value.label('order_value'),
             Activity.fk_status,
@@ -194,33 +215,33 @@ class ActivityProtocol(Protocol):
         # Join Activities with TagGroups
         if filter_subquery is not None:
             # If a filter was provided, join with filtered subqueries
-            relevant_activities = relevant_activities.\
+            relevant_query = relevant_query.\
                 join(filter_subquery,
                      filter_subquery.c.a_filter_id == Activity.id)
         else:
             # If no filter was provided, simply join with A_Tag_Group (outer
             # join to also capture empty Items)
-            relevant_activities = relevant_activities.\
+            relevant_query = relevant_query.\
                 outerjoin(A_Tag_Group)
 
         # Always filter by profile boundary
-        relevant_activities = relevant_activities.\
+        relevant_query = relevant_query.\
             filter(self.get_profile_filter())
 
         # Filter spatially
-        relevant_activities = relevant_activities.\
+        relevant_query = relevant_query.\
             filter(self.get_bbox_filter(cookies=bbox_cookies))
 
         # Join Activities with order and group
-        relevant_activities = relevant_activities.\
+        relevant_query = relevant_query.\
             outerjoin(order_query, order_query.c.id == Activity.id)
 
         # Decide which version is based on status filter and user
         # privileges.
-        relevant_activities = self.apply_visible_version_filter(
-            'a', relevant_activities, public_query=public_query)
+        relevant_query = self.apply_visible_version_filter(
+            'a', relevant_query, public_query=public_query)
 
-        relevant_activities = relevant_activities.\
+        relevant_query = relevant_query.\
             group_by(Activity.id, order_query.c.value, Activity.fk_status,
                      Activity.activity_identifier)
 
@@ -241,8 +262,8 @@ class ActivityProtocol(Protocol):
             sh_query = sp._query_only_id(rel_sh)
             sh_subquery = sh_query.subquery()
             if self._get_logical_operator(self.request) == 'or':
-                # OR: use 'union' to add id's to relevant_activities
-                relevant_activities = relevant_activities.\
+                # OR: use 'union' to add id's to relevant_query
+                relevant_query = relevant_query.\
                     union(self.Session.query(
                           Activity.id.label('order_id'),
                           func.char_length('').label('order_value'),  # dummy
@@ -254,8 +275,8 @@ class ActivityProtocol(Protocol):
                                Involvement.fk_stakeholder).
                           group_by(Activity.id))
             else:
-                # AND: filter id's of relevant_activities
-                relevant_activities = relevant_activities.\
+                # AND: filter id's of relevant_query
+                relevant_query = relevant_query.\
                     join(Involvement).\
                     join(sh_subquery, sh_subquery.c.id ==
                          Involvement.fk_stakeholder).\
@@ -263,32 +284,32 @@ class ActivityProtocol(Protocol):
 
         # Do the ordering
         if get_current_order_direction(self.request) == 'desc':
-            relevant_activities = relevant_activities.order_by(
+            relevant_query = relevant_query.order_by(
                 desc(order_query.c.value))
         else:
-            relevant_activities = relevant_activities.order_by(
+            relevant_query = relevant_query.order_by(
                 asc(order_query.c.value))
 
-        return relevant_activities
+        return relevant_query
 
     def query_many(
-            self, relevant_activities, limit=None, offset=None,
+            self, relevant_query, limit=None, offset=None,
             with_involvements=False, return_count=True,
             with_metadata=False):
         """
-        Get a complete query object for some relevant
-        :term:`Activities`. This does not actually perform a query
-        (except a SQL count if requested) but rather creates and returns
-        a query joining the relevant :term:`Activities` with all its
-        attributes and involvements.
+        Extend a subquery of relevant :term:`Activity` IDs to get a
+        complete query object for the :term:`Activities`. This does not
+        actually perform a query (except a SQL count if requested) but
+        rather creates and returns a query joining the relevant IDs with
+        all its attributes and involvements.
 
         Args:
-            ``relevant_activities`` (sqlalchemy.orm.query.Query): A
+            ``relevant_query`` (sqlalchemy.orm.query.Query): A
             SQLAlchemy containing the filtered (relevant)
-            :term:`Activities`.
+            :term:`Activity` IDs.
 
             .. seealso::
-               :class:`get_relevant_activities_many`
+               :class:`get_relevant_query_many`
 
             ``limit`` (int or None): An optional integer with the limit
             to be applied to the query.
@@ -324,16 +345,16 @@ class ActivityProtocol(Protocol):
 
         # Count
         if return_count:
-            count = relevant_activities.count()
+            count = relevant_query.count()
 
         # Apply limit and offset
         if limit is not None:
-            relevant_activities = relevant_activities.limit(limit)
+            relevant_query = relevant_query.limit(limit)
         if offset is not None:
-            relevant_activities = relevant_activities.offset(offset)
+            relevant_query = relevant_query.offset(offset)
 
         # Create query
-        relevant_activities = relevant_activities.subquery()
+        relevant_query = relevant_query.subquery()
         query = self.Session.query(
             Activity.id.label('id'),
             Activity.activity_identifier.label('identifier'),
@@ -350,10 +371,10 @@ class ActivityProtocol(Protocol):
             A_Value.value.label('value'),
             key_translation.c.key_translated.label('key_translated'),
             value_translation.c.value_translated.label('value_translated'),
-            relevant_activities.c.order_value.label('order_value')
+            relevant_query.c.order_value.label('order_value')
         ).\
-            join(relevant_activities,
-                 relevant_activities.c.order_id == Activity.id).\
+            join(relevant_query,
+                 relevant_query.c.order_id == Activity.id).\
             join(Status).\
             join(Changeset).\
             outerjoin(A_Tag_Group).\
@@ -369,9 +390,9 @@ class ActivityProtocol(Protocol):
         # relevant activities. However, it is necessary to restore this
         # ordering after all the additional data was added through this query.
         if get_current_order_direction(self.request) == 'desc':
-            query = query.order_by(desc(relevant_activities.c.order_value))
+            query = query.order_by(desc(relevant_query.c.order_value))
         else:
-            query = query.order_by(asc(relevant_activities.c.order_value))
+            query = query.order_by(asc(relevant_query.c.order_value))
 
         if with_metadata is True:
             query = query.add_columns(
@@ -402,7 +423,7 @@ class ActivityProtocol(Protocol):
                 func.max(Stakeholder.version).label('max_version')
             ).\
                 join(Involvement).\
-                join(relevant_activities, relevant_activities.c.order_id ==
+                join(relevant_query, relevant_query.c.order_id ==
                      Involvement.fk_activity).\
                 group_by(Stakeholder.stakeholder_identifier,
                          Involvement.fk_activity).\
@@ -463,10 +484,11 @@ class ActivityProtocol(Protocol):
 
     def query_to_features(
             self, query, involvements='none', public_query=False,
-            with_taggroup_geometry=False, translate=True, **kwargs):
+            with_taggroup_geometry=False, translate=True):
         """
         Every value of each :term:`Activity` is a line of the query.
         These attributes have to be collected to form a ActivityFeature.
+        TODO
         """
 
         logged_in, is_moderator = get_user_privileges(self.request)
@@ -482,10 +504,13 @@ class ActivityProtocol(Protocol):
             # Prepare values if needed
             identifier = str(q.identifier)
             taggroup_id = int(q.taggroup) if q.taggroup is not None else None
-            key = (q.key_translated if q.key_translated is not None
-                   and translate is not False else q.key)
-            value = (q.value_translated if q.value_translated is not None
-                     and translate is not False else q.value)
+            key = q.key
+            value = q.value
+            if translate is not False:
+                if q.key_translated is not None:
+                    key = q.key_translated
+                if q.value_translated is not False:
+                    value = q.value_translated
 
             # Use UID and version to find existing ActivityFeature or create a
             # new one

@@ -32,8 +32,7 @@ def to_flat_table(request, item_type, involvements='full', columns=[]):
     # with the help of the configs.
     item_type = validate_item_type(item_type)
     if item_type == 'a':
-        items = activity_protocol.read_many(
-            request, public=True, translate=False)
+        items = activity_protocol.read_many(public=True, translate=False)
         other_item_type = validate_item_type('sh')
     else:
         # Query Stakeholders through Activities.
