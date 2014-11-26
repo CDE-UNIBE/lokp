@@ -32,6 +32,7 @@ from lmkp.protocols.activity_features import (
 )
 from lmkp.protocols.features import (
     ItemTag,
+    InvolvementFeature,
 )
 from lmkp.protocols.protocol import Protocol
 from lmkp.utils import validate_bbox
@@ -114,7 +115,6 @@ class ActivityProtocol(Protocol):
     def get_relevant_query_many(
             self, filter=None, public_query=False, bbox_cookies=True):
         """
-        TODO
         Get a query with the database IDs of relevant :term:`Activities`
         based on the various filters (attributes on both
         :term:`Activities` and :term:`Stakeholders`, :term:`Status`,
@@ -174,9 +174,9 @@ class ActivityProtocol(Protocol):
         elif get_current_logical_filter_operator(self.request) == 'or':
             """
             Logical "or" filter: Use subqueries to collect the IDs of
-            all Activities matching each filter. Perform a SQL UNION
-            based on the first subquery to unite all other subqueries
-            and put all Activity IDs together.
+            all Items matching each filter. Perform a SQL UNION based on
+            the first subquery to unite all other subqueries and put all
+            Item IDs together.
             """
             subqueries = []
             for tag_filter in a_tag_filters:
@@ -544,7 +544,7 @@ class ActivityProtocol(Protocol):
 
                 features.append(feature)
 
-            # Check if current Tag Group is already present in the Feature
+            # Check if current Taggroup is already present in the Feature
             taggroup = feature.get_taggroup_by_id(taggroup_id)
             if taggroup is None and key is not None:
                 taggroup = ActivityTaggroup(taggroup_id, q.tg_id, q.main_tag)
@@ -562,7 +562,15 @@ class ActivityProtocol(Protocol):
             if involvements != 'none':
                 # TODOs
 
+                involvement = InvolvementFeature(
+                    q.stakeholder_identifier, q.stakeholder_role_id,
+                    q.stakeholder_role, q.stakeholder_version,
+                    q.stakeholder_status)
+
+                feature.add_or_replace_involvement(involvement)
+
                 try:
+                    asdf
                     if q.stakeholder_identifier is not None:
 
                         try:
@@ -601,7 +609,8 @@ class ActivityProtocol(Protocol):
                                 q.stakeholder_identifier, None,
                                 q.stakeholder_role, q.stakeholder_role_id,
                                 q.stakeholder_version, q.stakeholder_status))
-                except ValueError:
+
+                except:
                     pass
 
         if involvements == 'full':
@@ -609,46 +618,33 @@ class ActivityProtocol(Protocol):
 
             # If full involvements are to be shown, collect the identifiers and
             # versions of each Stakeholder and prepare a dict. Query the
-            # details (Tag Groups) of these Stakeholders using the
-            # ActivityProtocol and replace the existing Involvements. Query
+            # details (Taggroups) of these Stakeholders using the
+            # StakeholderProtocol and replace the existing Involvements. Query
             # them all at once to improve performance.
 
-            inv_dicts = []
-            for activity in features:
-                for i in activity._involvements:
-                    inv_dicts.append({
-                                     'identifier': i.get_guid(),
-                                     'version': i.get_version()
-                                     })
+            involvement_dicts = []
+            for feature in features:
+                for inv in feature.involvements:
+                    involvement_dicts.append({
+                        'identifier': inv.identifier,
+                        'version': inv.version
+                    })
 
             # Use StakeholderProtocol to query the details of the Activities
-            from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
-            sp = StakeholderProtocol3(self.Session)
-            relevant_stakeholders = sp._get_relevant_stakeholders_dict(
-                self.request, inv_dicts)
+            from lmkp.protocols.stakeholder_protocol import StakeholderProtocol
+            sp = StakeholderProtocol(self.request)
+            relevant_query = sp.get_relevant_query_from_list(involvement_dicts)
+            sh_query = sp.query_many(
+                relevant_query, with_involvements=False, return_count=False)
+            sh_features = sp.query_to_features(sh_query, involvements='none')
 
-            sh_query = sp._query_many(
-                self.request, relevant_stakeholders, involvements=False,
-                return_count=False)
-            stakeholders = sp._query_to_stakeholders(
-                self.request, sh_query, involvements='none')
-
-            # Loop through all existing Involvements
-            for activity in features:
-                for index, i in enumerate(activity._involvements):
-                    # Try to find the current Activity in the detailed list
-                    stakeholder = None
-                    for sh in stakeholders:
-                        if (str(sh.get_guid()) == str(i.get_guid())
-                                and sh.get_version() == i.get_version()):
-                            stakeholder = sh
-
-                    if stakeholder is not None:
-                        # If Activity was found, replace Involvement with full
-                        # details
-                        activity._involvements[index] = Inv(
-                            i.get_guid(), stakeholder, i.get_role(),
-                            i.get_role_id(), i.get_version(), i.get_status())
+            # TODO: There might be some improvements possible here
+            for a_feature in features:
+                for sh_feature in sh_features:
+                    inv = a_feature.get_involvement_by_identifier_version(
+                        sh_feature.identifier, sh_feature.version)
+                    if inv is not None:
+                        inv.feature = sh_feature
 
         return features
 

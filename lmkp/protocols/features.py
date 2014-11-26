@@ -5,6 +5,61 @@ from shapely import geometry
 from lmkp.protocols.protocol import get_status_name_by_id
 
 
+class InvolvementFeature(object):
+    """
+    TODO
+    """
+
+    def __init__(self, identifier, role_id, role, version, status_id):
+        self._identifier = str(identifier)
+        self._role_id = role_id
+        self._role = role
+        self._version = version
+        self._status_id = status_id
+
+        self._feature = None
+
+    @property
+    def identifier(self):
+        return self._identifier
+
+    @property
+    def role_id(self):
+        return self._role_id
+
+    @property
+    def role(self):
+        return self._role
+
+    @property
+    def version(self):
+        return self._version
+
+    @property
+    def status_id(self):
+        return self._status_id
+
+    @property
+    def feature(self):
+        return self._feature
+
+    @feature.setter
+    def feature(self, value):
+        self._feature = value
+
+    def to_json(self, request):
+        ret = {
+            'id': self.identifier,
+            'role': self.role,
+            'role_id': self.role_id,
+            'version': self.version,
+            'status_id': self.status_id
+        }
+        if self.feature is not None:
+            ret['data'] = self.feature.to_json(request)
+        return ret
+
+
 class ItemFeature(object):
     """
     TODO
@@ -183,6 +238,17 @@ class ItemFeature(object):
         TODO
         """
         self.involvements.append(inv)
+
+    def get_involvement_by_identifier_version(self, identifier, version):
+        for inv in self.involvements:
+            if inv.identifier == identifier and inv.version == version:
+                return inv
+        return None
+
+    def add_or_replace_involvement(self, inv):
+
+        self.add_involvement(inv)
+
 
     # def remove_involvement(self, involvement):
     #     self._involvements.remove(involvement)
