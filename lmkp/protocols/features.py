@@ -1,7 +1,7 @@
 import datetime
-from shapely import wkb
-from shapely import geometry
+from pyramid.security import authenticated_userid
 
+from lmkp.authentication import get_user_privileges
 from lmkp.protocols.protocol import get_status_name_by_id
 
 
@@ -9,13 +9,15 @@ class InvolvementFeature(object):
     """
     TODO
     """
-
-    def __init__(self, identifier, role_id, role, version, status_id):
+    def __init__(
+            self, identifier, version, status_id, role, role_id,
+            username=None):
         self._identifier = str(identifier)
-        self._role_id = role_id
-        self._role = role
         self._version = version
         self._status_id = status_id
+        self._role_id = role_id
+        self._role = role
+        self._username = username
 
         self._feature = None
 
@@ -40,6 +42,14 @@ class InvolvementFeature(object):
         return self._status_id
 
     @property
+    def username(self):
+        return self._username
+
+    @username.setter
+    def username(self, value):
+        self._username = value
+
+    @property
     def feature(self):
         return self._feature
 
@@ -48,6 +58,25 @@ class InvolvementFeature(object):
         self._feature = value
 
     def to_json(self, request):
+        """
+        Return a JSON compatible representation of the involvement. If
+        :class:`InvolvementFeature.feature` is set, the dict also
+        contains the JSON compatible representation of the :term:`Item`
+        (its Taggroups and Tags).
+
+        .. seealso::
+           :class:`ItemFeature.to_json()`, respectively
+           :class:`lmkp.protocols.activity_features.ActivityFeature.to_json()`
+
+        Args:
+            ``request`` (pyramid.request): A :term:`Pyramid` Request
+            object.
+
+        Returns:
+            ``dict`` A dict containing basic information of the
+            involvement and if available a representation of the
+            :term:`Item` on the other side of the involvement.
+        """
         ret = {
             'id': self.identifier,
             'role': self.role,
@@ -235,20 +264,152 @@ class ItemFeature(object):
 
     def add_involvement(self, inv):
         """
-        TODO
+        Add an involvement to an :term:`Item` to the internal list of
+        involvements.
+
+        .. seealso::
+           This function unconditionally adds the involvement.
+           :class:`add_or_replace_involvement` checks for duplicate and
+           applies rules specifying which involvements are visible to a
+           certain user.
+
+        This function unconditionally adds an involvement. Use
+        :class:`add_or_replace_involvement` if you want to check for
+        duplicates
+
+        Args:
+            ``inv`` (:class:`InvolvementFeature`): The involvement to be
+            added.
         """
-        self.involvements.append(inv)
+        if isinstance(inv, InvolvementFeature):
+            self.involvements.append(inv)
+
+    def remove_involvement(self, inv):
+        """
+        Remove an involvement from the internal list of involvements.
+        Does nothing if the involvement is not found.
+
+        Args:
+            ``inv`` (:class:`InvolvementFeature`): The involvement to be
+            removed.
+        """
+        try:
+            self.involvements.remove(inv)
+        except:
+            pass
+
+    def get_involvement_by_identifier(self, identifier):
+        """
+        Return an involvement based on its identifier.
+
+        Args:
+            ``identifier`` (str): The identifier of the :term:`Item` on
+            the other side of the involvement.
+
+        Returns:
+            :class:`InvolvementFeature` or ``None``. The involvement or
+            None if no involvement with the given identifier was found.
+        """
+        for inv in self.involvements:
+            if inv.identifier == identifier:
+                return inv
+        return None
 
     def get_involvement_by_identifier_version(self, identifier, version):
+        """
+        Return an involvement based on its identifier and version.
+
+        Args:
+            ``identifier`` (str): The identifier of the :term:`Item` on
+            the other side of the involvement.
+
+            ``version`` (id): The version of the :term:`Item` on the
+            other side of the involvement.
+
+        Returns:
+            :class:`InvolvementFeature` or ``None``. The involvement or
+            None if no involvement with the given identifier and version
+            was found.
+        """
         for inv in self.involvements:
             if inv.identifier == identifier and inv.version == version:
                 return inv
         return None
 
-    def add_or_replace_involvement(self, inv):
+    def add_or_replace_involvement(
+            self, inv, request, public_query=False):
+        """
+        Adds an involvement to an :term:`Item` to the internal list of
+        involvements. The involvement may replace another one based on
+        the following rules:
+
+          * Involvements to Items with status ``deleted`` are not added.
+          * For public queries (``public_query=True`` or
+            ``logged_in=False``, involvements to Items with status
+            ``pending``, ``rejected`` or ``edited`` are not added.
+          * If an involvement to the same version of an Item already
+            exists, it is not added again.
+          * For moderators, involvements to ``pending`` Items are added.
+          * For logged in users, involvements to their own ``pending``
+            Items are added.
+          * If there are multiple involvements to different versions of
+            the same Item (within the rules above), only one involvement
+            is added. This is the latest version or the ``active``
+            version if it has newer versions which are not ``pending``
+            versions.
+
+        Args:
+            ``inv`` (:class:`InvolvementFeature`): The involvement to be
+            added.
+
+            ``request`` (pyramid.request): A :term:`Pyramid` Request
+            object.
+
+            ``public_query`` (bool): An optional boolean indicating
+            whether to consider only involvements to Items which are
+            visible to the public (eg. no ``pending``).
+        """
+        if not isinstance(inv, InvolvementFeature):
+            return
+
+        # If the Item has status 4 (deleted), it is never shown.
+        if inv.status_id == 4:
+            return
+
+        logged_in, is_moderator = get_user_privileges(request)
+
+        # If the query is public, do not show Items with status 1
+        # (pending), 5 (rejected) or 6 (edited).
+        if (public_query is True or logged_in is False) \
+                and inv.status_id in [1, 5, 6]:
+            return
+
+        # If an Involvement to the same version of the Item already
+        # exists, do not add the Involvement again.
+        if self.get_involvement_by_identifier_version(
+                inv.identifier, inv.version) is not None:
+            return
+
+        # For moderators can see pending versions and users can see
+        # their own pending versions. Only the latest version (maximum
+        # version) is shown.
+        current_username = authenticated_userid(request)
+        if inv.status_id == 1 and (
+                is_moderator is False or current_username != inv.username):
+            return
+
+        # By default, the latest version is shown. Except if the
+        existing_inv = self.get_involvement_by_identifier(inv.identifier)
+        if existing_inv is not None:
+            if existing_inv.version < inv.version:
+                if existing_inv.status_id == 2 and inv.status_id != 1:
+                    return
+                else:
+                    self.remove_involvement(existing_inv)
+            else:
+                return
 
         self.add_involvement(inv)
-
 
     # def remove_involvement(self, involvement):
     #     self._involvements.remove(involvement)

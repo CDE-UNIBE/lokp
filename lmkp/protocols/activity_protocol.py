@@ -36,7 +36,6 @@ from lmkp.protocols.features import (
 )
 from lmkp.protocols.protocol import Protocol
 from lmkp.utils import validate_bbox
-from lmkp.views.protocol import Inv
 from lmkp.views.views import (
     get_bbox_parameters,
     get_current_profile,
@@ -111,6 +110,57 @@ class ActivityProtocol(Protocol):
             'total': count,
             'data': [f.to_json(self.request) for f in features]
         }
+
+    def get_relevant_query_from_list(self, activity_list):
+        """
+        Get a query with the database IDs of relevant :term:`Activities`
+        based on a list of dicts containing the identifier and version
+        of :term:`Activities`. No additional filters are applied.
+
+        Args:
+            ``activity_list`` (list): A list of dicts. Each dict
+            contains the ``identifier`` and ``version`` of a
+            :term:`Activity`.
+
+        Returns:
+            ``sqlalchemy.orm.query.Query``. A SQLAlchemy Query
+            containing namely the IDs of the filtered (relevant)
+            :term:`Activities`.
+        """
+        # Prepare filters with the dict
+        dict_filter = []
+        for a in activity_list:
+            dict_filter.append(and_(
+                Activity.activity_identifier == a.get('identifier'),
+                Activity.version == a.get('version')))
+
+        # Prepare order: Get the order from request
+        order_query = self.get_order('a')
+
+        relevant_query = self.Session.query(
+            Activity.id.label('order_id'),
+            order_query.c.value.label('order_value'),
+            Activity.fk_status,
+            Activity.activity_identifier
+        ).filter(or_(* dict_filter))
+
+        # Join Stakeholders with Taggroups and order_query, then group it
+        relevant_query = relevant_query.\
+            outerjoin(A_Tag_Group).\
+            outerjoin(order_query, order_query.c.id == Activity.id).\
+            group_by(
+                Activity.id, order_query.c.value, Activity.fk_status,
+                Activity.activity_identifier)
+
+        # Do the ordering
+        if get_current_order_direction(self.request) == 'desc':
+            relevant_query = relevant_query.order_by(
+                desc(order_query.c.value))
+        else:
+            relevant_query = relevant_query.order_by(
+                asc(order_query.c.value))
+
+        return relevant_query
 
     def get_relevant_query_many(
             self, filter=None, public_query=False, bbox_cookies=True):
@@ -450,7 +500,7 @@ class ActivityProtocol(Protocol):
                 Involvement.fk_activity.label('activity_id'),
                 Stakeholder_Role.id.label('role_id'),
                 Stakeholder_Role.name.label('role_name'),
-                Changeset.fk_user.label('stakeholder_user_id'),
+                User.username.label('stakeholder_username'),
                 inv_status.c.stakeholder_identifier.
                 label('stakeholder_identifier'),
                 inv_status.c.stakeholder_status.label('stakeholder_status'),
@@ -460,6 +510,7 @@ class ActivityProtocol(Protocol):
                 join(inv_status, inv_status.c.stakeholder_id ==
                      Involvement.fk_stakeholder).\
                 join(Changeset, Changeset.id == inv_status.c.changeset_id).\
+                join(User, User.id == Changeset.fk_user).\
                 join(Stakeholder_Role).\
                 subquery()
 
@@ -472,8 +523,8 @@ class ActivityProtocol(Protocol):
                     inv_query.c.stakeholder_status.label('stakeholder_status'),
                     inv_query.c.stakeholder_version.label(
                         'stakeholder_version'),
-                    inv_query.c.stakeholder_user_id.label(
-                        'stakeholder_user_id')
+                    inv_query.c.stakeholder_username.label(
+                        'stakeholder_username')
                 ).\
                 outerjoin(inv_query, inv_query.c.activity_id == Activity.id)
 
@@ -525,7 +576,6 @@ class ActivityProtocol(Protocol):
                     identifier, q.order_value, q.version, q.status_id,
                     q.geometry)
 
-                # TODO: Create separate function with this
                 feature.status = getattr(q, 'status', None)
                 feature.timestamp = getattr(q, 'timestamp', None)
                 feature.previous_version = getattr(
@@ -559,69 +609,25 @@ class ActivityProtocol(Protocol):
                 taggroup.add_tag(ItemTag(q.tag, key, value))
 
             # Involvements
-            if involvements != 'none':
-                # TODOs
+            if involvements != 'none' and q.stakeholder_identifier is not None:
 
                 involvement = InvolvementFeature(
-                    q.stakeholder_identifier, q.stakeholder_role_id,
-                    q.stakeholder_role, q.stakeholder_version,
-                    q.stakeholder_status)
+                    q.stakeholder_identifier, q.stakeholder_version,
+                    q.stakeholder_status, q.stakeholder_role,
+                    q.stakeholder_role_id, q.stakeholder_username)
 
-                feature.add_or_replace_involvement(involvement)
-
-                try:
-                    asdf
-                    if q.stakeholder_identifier is not None:
-
-                        try:
-                            request_user_id = self.request.user.id
-                        except AttributeError:
-                            request_user_id = None
-
-                        # Only proceed if
-                        # If there are multiple pending versions of the same
-                        # Stakeholder, show only the latest one (highest
-                        # version)
-                        newer_pending_exists = False
-                        if q.stakeholder_status == 1:
-                            for p_i in feature._involvements:
-                                if (p_i.get_guid() == q.stakeholder_identifier
-                                        and p_i.get_status() == 1):
-                                    if (p_i.get_version() >
-                                            q.stakeholder_version):
-                                        newer_pending_exists = True
-                                    else:
-                                        feature.remove_involvement(p_i)
-
-                        # Flag indicating if Involvement to this Activity is
-                        # not yet found ('none') or not to be added ('false')
-                        inv = self._flag_add_involvement(
-                            feature, q.status_id, q.stakeholder_status,
-                            q.stakeholder_identifier, q.stakeholder_version,
-                            q.stakeholder_user_id, q.stakeholder_role,
-                            request_user_id, public_query, logged_in,
-                            is_moderator)
-
-                        if inv is None and newer_pending_exists is False:
-                            # Create new Involvement and add it to Activity
-                            # Default: only basic information about Involvement
-                            feature.add_involvement(Inv(
-                                q.stakeholder_identifier, None,
-                                q.stakeholder_role, q.stakeholder_role_id,
-                                q.stakeholder_version, q.stakeholder_status))
-
-                except:
-                    pass
+                feature.add_or_replace_involvement(
+                    involvement, self.request, public_query=public_query)
 
         if involvements == 'full':
-            # TODO
-
-            # If full involvements are to be shown, collect the identifiers and
-            # versions of each Stakeholder and prepare a dict. Query the
-            # details (Taggroups) of these Stakeholders using the
-            # StakeholderProtocol and replace the existing Involvements. Query
-            # them all at once to improve performance.
-
+            """
+            If full involvements are to be shown, collect the
+            identifiers and versions of each Stakeholder as dict and
+            prepare a list. Query the details (Taggroups) of these
+            Stakeholders using the StakeholderProtocol and replace the
+            existing Involvements. Query them all at once to improve
+            performance.
+            """
             involvement_dicts = []
             for feature in features:
                 for inv in feature.involvements:
@@ -629,8 +635,6 @@ class ActivityProtocol(Protocol):
                         'identifier': inv.identifier,
                         'version': inv.version
                     })
-
-            # Use StakeholderProtocol to query the details of the Activities
             from lmkp.protocols.stakeholder_protocol import StakeholderProtocol
             sp = StakeholderProtocol(self.request)
             relevant_query = sp.get_relevant_query_from_list(involvement_dicts)
