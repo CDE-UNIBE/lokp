@@ -49,7 +49,11 @@ from lmkp.views.views import (
 
 class ActivityProtocol(Protocol):
     """
-    TODO
+    The ActivityProtocol handles all query and create operations with
+    the :term:`Activities`.
+
+    Inherits from:
+        :class:`lmkp.protocols.protocol.Protocol`
     """
 
     def read_many(
@@ -61,7 +65,7 @@ class ActivityProtocol(Protocol):
         Args:
             ``public_query`` (bool): An optional boolean indicating
             whether to return only versions visible to the public (eg.
-            no pending) or not.
+            no pending) or not. Defaults to``True``.
 
             ``limit`` (int): An optional limit. If no limit is provided,
             the one from the request is used if available.
@@ -86,7 +90,6 @@ class ActivityProtocol(Protocol):
                 .. seealso::
                    :class:`lmkp.protocols.features.ItemFeature.to_json`
         """
-
         relevant_query = self.get_relevant_query_many(
             public_query=public_query)
 
@@ -172,7 +175,9 @@ class ActivityProtocol(Protocol):
 
         Args:
             ``filter`` (dict): An optional dictionary with custom
-            filters, overwriting the ones from the request. (TODO)
+            filters, overwriting the ones from the request. Valid
+            entries for the dict are ``a_tag_filters`` and
+            ``sh_tag_filters``.
 
             ``public_query`` (bool): An optional boolean indicating
             whether to return only versions visible to the public (eg.
@@ -193,19 +198,12 @@ class ActivityProtocol(Protocol):
         """
         logged_in, is_moderator = get_user_privileges(self.request)
 
-        # TODO
         # Filter: If no custom filter was provided, get filters from request
         if filter is None:
             a_tag_filters, sh_tag_filters = self.get_attribute_filters()
         else:
-            status_filter = (filter['status_filter']
-                             if 'status_filter' in filter else None)
-            # TODO: Rename (make sure the filters passed from other
-            # protocol are handled correctly)
-            a_tag_filters = (
-                filter['a_tag_filter'] if 'a_tag_filter' in filter else None)
-            sh_tag_filters = (
-                filter['sh_tag_filter'] if 'sh_tag_filter' in filter else None)
+            a_tag_filters = filter.get('a_tag_filters', [])
+            sh_tag_filters = filter.get('sh_tag_filters', [])
 
         # Prepare order: Get the order from request
         order_query = self.get_order('a')
@@ -297,21 +295,21 @@ class ActivityProtocol(Protocol):
 
         # Filter based on Stakeholder attributes
         if len(sh_tag_filters) > 0:
-            TODO
-            # Prepare a dict to simulate filter for Stakeholders
-            sh_filter_dict = {
-                'sh_tag_filter': sh_tag_filters,
-                'sh_filter_length': len(sh_tag_filters),
-                'status_filter': status_filter
+            """
+            Use the StakeholderProtocol to query the IDs of the
+            Stakeholders which pass the filter. Only the IDs are
+            important, no need to query all the taggroups and tags.
+            """
+            filter_dict = {
+                'sh_tag_filters': sh_tag_filters
             }
-            # Use StakeholderProtocol to query id's of Stakeholders
-            from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
-            sp = StakeholderProtocol3(self.Session)
-            rel_sh = sp._get_relevant_stakeholders_many(
-                self.request, filter=sh_filter_dict)
-            sh_query = sp._query_only_id(rel_sh)
+            from lmkp.protocols.stakeholder_protocol import StakeholderProtocol
+            sp = StakeholderProtocol(self.request)
+            sh_relevant_query = sp.get_relevant_query_many(
+                filter=filter_dict, public_query=public_query)
+            sh_query = sp.query_many_only_id(sh_relevant_query)
             sh_subquery = sh_query.subquery()
-            if self._get_logical_operator(self.request) == 'or':
+            if get_current_logical_filter_operator(self.request) == 'or':
                 # OR: use 'union' to add id's to relevant_query
                 relevant_query = relevant_query.\
                     union(self.Session.query(
@@ -341,6 +339,33 @@ class ActivityProtocol(Protocol):
                 asc(order_query.c.value))
 
         return relevant_query
+
+    def query_many_only_id(self, relevant_query):
+        """
+        Extend a subquery of relevant :term:`Activity` IDs to contain
+        only the IDs of the :term:`Activities`. In contrary to
+        :class:`query_many`, this function does not add any attributes
+        at all.
+
+        Args:
+            ``relevant_query`` (sqlalchemy.orm.query.Query): A
+            SQLAlchemy containing the filtered (relevant)
+            :term:`Activity` IDs.
+
+            .. seealso::
+               :class:`get_relevant_query_many`
+
+        Returns:
+            ``sqlalchemy.orm.query.Query``. A SQLAlchemy Query for the
+            :term:`Activities`.
+        """
+        relevant_query = relevant_query.subquery()
+        query = self.Session.query(
+            Activity.id.label('id')
+        ).\
+            join(relevant_query,
+                 relevant_query.c.order_id == Activity.id)
+        return query
 
     def query_many(
             self, relevant_query, limit=None, offset=None,
@@ -537,11 +562,39 @@ class ActivityProtocol(Protocol):
             self, query, involvements='none', public_query=False,
             with_taggroup_geometry=False, translate=True):
         """
-        Every value of each :term:`Activity` is a line of the query.
-        These attributes have to be collected to form a ActivityFeature.
-        TODO
-        """
+        Transform the query to features. Every value of each
+        :term:`Activity` is a line of the query. These attributes have
+        to be collected to form an ActivityFeature. Also add involvement
+        to the features.
 
+        Args:
+            ``query`` (sqlalchemy.orm.query.Query): A SQLAlchemy Query
+            for the :term:`Activities`.
+
+            ``involvements`` (str): The detail level of the
+            involvements. If ``none``, no involvements are added to the
+            feature. If ``full``, the :term:`Stakeholder` features is
+            added to the involvements. Otherwise, only an involvement
+            with the basic information is added. Defaults to ``none``.
+
+                .. seealso::
+                   :class:`lmkp.views.views.get_current_involvement_details`
+
+            ``public_query`` (bool): An optional boolean indicating
+            whether to return only versions visible to the public (eg.
+            no pending) or not. Defaults to``False``.
+
+            ``with_taggroup_geometry`` (bool): An optional boolean
+            indicating whether to add Taggroup geometries or not.
+            Defaults to ``False``.
+
+            ``translate`` (bool): An optional boolean indicating whether
+            to return translated values or not. Defaults to ``True``.
+
+            Returns:
+            ``list``. A list of
+            :class:`lmkp.protocols.features.ItemFeature`.
+        """
         logged_in, is_moderator = get_user_privileges(self.request)
 
         if with_taggroup_geometry is True:

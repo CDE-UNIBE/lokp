@@ -39,15 +39,47 @@ from lmkp.views.views import (
 
 class StakeholderProtocol(Protocol):
     """
-    TODO
+    The StakeholderProtocol handles all query and create operations with
+    the :term:`Stakeholders`.
+
+    Inherits from:
+        :class:`lmkp.protocols.protocol.Protocol`
     """
 
     def read_many(
             self, public_query=True, limit=None, offset=None, translate=True):
         """
-        TODO
-        """
+        Read many :term:`Stakeholders`. This function handles the query,
+        applies filters, creates and returns the Features.
 
+        Args:
+            ``public_query`` (bool): An optional boolean indicating
+            whether to return only versions visible to the public (eg.
+            no pending) or not. Defaults to``True``.
+
+            ``limit`` (int): An optional limit. If no limit is provided,
+            the one from the request is used if available.
+
+                .. seealso::
+                   :class:`lmkp.views.views.get_current_limit`
+
+            ``offset`` (int): An optional offset. If no offset it
+            provided, the one from the reuqest is used if available.
+
+                .. seealso::
+                   :class:`lmkp.views.views.get_current_offset`
+
+            ``translate`` (bool): An optional boolean indicating whether
+            to return translated values or not. Defaults to ``True``.
+
+        Returns:
+            ``dict``. A dictionary containing the total count of the
+            query and the :term:`Stakeholder` Features in JSON
+            compatible format.
+
+                .. seealso::
+                   :class:`lmkp.protocols.features.ItemFeature.to_json`
+        """
         relevant_query = self.get_relevant_query_many(
             public_query=public_query)
 
@@ -133,7 +165,9 @@ class StakeholderProtocol(Protocol):
 
         Args:
             ``filter`` (dict): An optional dictionary with custom
-            filters, overwriting the ones from the request. (TODO)
+            filters, overwriting the ones from the request. Valid
+            entries for the dict are ``a_tag_filters`` and
+            ``sh_tag_filters``.
 
             ``public_query`` (bool): An optional boolean indicating
             whether to return only versions visible to the public (eg.
@@ -146,19 +180,12 @@ class StakeholderProtocol(Protocol):
         """
         logged_in, is_moderator = get_user_privileges(self.request)
 
-        # TODO
         # Filter: If no custom filter was provided, get filters from request
         if filter is None:
             a_tag_filters, sh_tag_filters = self.get_attribute_filters()
         else:
-            status_filter = (filter['status_filter']
-                             if 'status_filter' in filter else None)
-            # TODO: Rename (make sure the filters passed from other
-            # protocol are handled correctly)
-            a_tag_filters = (
-                filter['a_tag_filter'] if 'a_tag_filter' in filter else None)
-            sh_tag_filters = (
-                filter['sh_tag_filter'] if 'sh_tag_filter' in filter else None)
+            a_tag_filters = filter.get('a_tag_filters', [])
+            sh_tag_filters = filter.get('sh_tag_filters', [])
 
         # Prepare order: Get the order from request
         order_query = self.get_order('sh')
@@ -243,22 +270,21 @@ class StakeholderProtocol(Protocol):
 
         # Filter based on Activity attributes
         if len(a_tag_filters) > 0:
-            TODO
-            # Prepare a dict to simulate filter for Activities
-            a_filter_dict = {
-                'a_tag_filter': a_tag_filters,
-                'a_filter_length': len(a_tag_filters),
-                'status_filter': status_filter
+            """
+            Use the ActivityProtocol to query the IDs of the Activities
+            which pass the filter. Only the IDs are important, no need
+            to query all the taggroups and tags.
+            """
+            filter_dict = {
+                'a_tag_filters': a_tag_filters
             }
-            # Use ActivityProtocol to query id's of Activities
-            from lmkp.views.activity_protocol3 import ActivityProtocol3
-            ap = ActivityProtocol3(self.Session)
-            rel_a = ap._get_relevant_activities_many(
-                self.request, filter=a_filter_dict)
-            a_query = ap._query_only_id(rel_a)
-            #a_query, c = ap._query(request, filter=a_filter_dict)
+            from lmkp.protocols.activity_protocol import ActivityProtocol
+            ap = ActivityProtocol(self.request)
+            a_relevant_query = ap.get_relevant_query_many(
+                filter=filter_dict, public_query=public_query)
+            a_query = ap.query_many_only_id(a_relevant_query)
             a_subquery = a_query.subquery()
-            if self._get_logical_operator(self.request) == 'or':
+            if get_current_logical_filter_operator(self.request) == 'or':
                 # OR: use 'union' to add id's to relevant_stakeholders
                 relevant_query = relevant_query.\
                     union(self.Session.query(
@@ -290,12 +316,81 @@ class StakeholderProtocol(Protocol):
 
         return relevant_query
 
+    def query_many_only_id(self, relevant_query):
+        """
+        Extend a subquery of relevant :term:`Stakeholder` IDs to contain
+        only the IDs of the :term:`Stakeholders`. In contrary to
+        :class:`query_many`, this function does not add any attributes
+        at all.
+
+        Args:
+            ``relevant_query`` (sqlalchemy.orm.query.Query): A
+            SQLAlchemy containing the filtered (relevant)
+            :term:`Stakeholder` IDs.
+
+            .. seealso::
+               :class:`get_relevant_query_many`
+
+        Returns:
+            ``sqlalchemy.orm.query.Query``. A SQLAlchemy Query for the
+            :term:`Stakeholders`.
+        """
+        relevant_query = relevant_query.subquery()
+        query = self.Session.query(
+            Stakeholder.id.label('id')
+        ).\
+            join(relevant_query,
+                 relevant_query.c.order_id == Stakeholder.id)
+        return query
+
     def query_many(
             self, relevant_query, limit=None, offset=None,
             with_involvements=False, return_count=True,
             with_metadata=False):
         """
-        TODO
+        Extend a subquery of relevant :term:`Stakeholder` IDs to get a
+        complete query object for the :term:`Stakeholders`. This does
+        not actually perform a query (except a SQL count if requested)
+        but rather creates and returns a query joining the relevant IDs
+        with all its attributes and involvements.
+
+        Args:
+            ``relevant_query`` (sqlalchemy.orm.query.Query): A
+            SQLAlchemy containing the filtered (relevant)
+            :term:`Stakeholder` IDs.
+
+            .. seealso::
+               :class:`get_relevant_query_many`
+
+            ``limit`` (int or None): An optional integer with the limit
+            to be applied to the query.
+
+            ``offset`` (int or None): An optional integer with the
+            offset to be applied to the query.
+
+            ``with_involvements`` (bool): An optional boolean indicating
+            whether to include :term:`Involvements` in the query or not.
+            If true, additional columns for the attributes of the
+            :term:`Activities` are added to the query. Defaults to
+            ``false``.
+
+            ``return_count`` (bool): An optional boolean indicating
+            whether to return the count of the query along with the
+            query. The count happens before the limit and offset are
+            applied, it therefore returns the total count of the entire
+            query. Defaults to ``true``.
+
+            ``with_metadata`` (bool): An optional boolean indicating
+            whether to include metadata (eg. about the user and
+            institution creating the version) for the
+            :term:`Stakeholders` or not. Defaults to ``false``.
+
+        Returns:
+            ``sqlalchemy.orm.query.Query``. A SQLAlchemy Query for the
+            :term:`Stakeholders`.
+
+            ``long``. (only if ``return_count=True``) The total count of
+            the query.
         """
         key_translation, value_translation = self.get_translation_queries('sh')
 
@@ -442,7 +537,34 @@ class StakeholderProtocol(Protocol):
             self, query, involvements='none', public_query=False,
             translate=True):
         """
-        TODO
+        Transform the query to features. Every value of each
+        :term:`Stakeholder` is a line of the query. These attributes
+        have to be collected to form an StakeholderFeature. Also add
+        involvement to the features.
+
+        Args:
+            ``query`` (sqlalchemy.orm.query.Query): A SQLAlchemy Query
+            for the :term:`Stakeholders`.
+
+            ``involvements`` (str): The detail level of the
+            involvements. If ``none``, no involvements are added to the
+            feature. If ``full``, the :term:`Stakeholder` features is
+            added to the involvements. Otherwise, only an involvement
+            with the basic information is added. Defaults to ``none``.
+
+                .. seealso::
+                   :class:`lmkp.views.views.get_current_involvement_details`
+
+            ``public_query`` (bool): An optional boolean indicating
+            whether to return only versions visible to the public (eg.
+            no pending) or not. Defaults to``False``.
+
+            ``translate`` (bool): An optional boolean indicating whether
+            to return translated values or not. Defaults to ``True``.
+
+        Returns:
+            ``list``. A list of
+            :class:`lmkp.protocols.activity_features.ActivityFeature`.
         """
         logged_in, is_moderator = get_user_privileges(self.request)
 

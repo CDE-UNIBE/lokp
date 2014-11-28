@@ -7,7 +7,11 @@ from lmkp.protocols.protocol import get_status_name_by_id
 
 class InvolvementFeature(object):
     """
-    TODO
+    A feature representing an :term:`Involvement`. It is usually
+    attached to a :class:`lmkp.protocols.features.ItemFeature`. The
+    attributes ``identifier``, ``version`` and ``status_id`` as well as
+    ``feature`` correspond to the :term:`Item` at the other side of the
+    involvement.
     """
     def __init__(
             self, identifier, version, status_id, role, role_id,
@@ -91,7 +95,10 @@ class InvolvementFeature(object):
 
 class ItemFeature(object):
     """
-    TODO
+    The ItemFeature represents an :term:`Item`.
+
+    .. seealso::
+       :class:`lmkp.protocols.activity_features.ActivityFeature`
     """
 
     def __init__(self, identifier, order_value, version, status_id):
@@ -713,7 +720,7 @@ class ItemFeature(object):
 
 class ItemTaggroup(object):
     """
-    TODO
+    Represents a Taggroup of an :term:`Item`.
     """
 
     def __init__(self, id, taggroup_id, main_tag_id):
@@ -854,7 +861,7 @@ class ItemTaggroup(object):
 
 class ItemTag(object):
     """
-    TODO
+    Represents a Tag of an :term:`Item`.
     """
 
     def __init__(self, id, key, value):

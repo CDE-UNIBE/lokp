@@ -106,7 +106,12 @@ def get_status_name_by_id(id, request=None):
 
 class Protocol(object):
     """
-    TODO
+    The Protocol handles all query and create operations with
+    :term:`Activities` and :term:`Stakeholders`.
+
+    .. seealso::
+       :class:`lmkp.protocols.activity_protocol.ActivityProtocol` and
+       :class:`lmkp.protocols.stakeholder_protocol.StakeholderProtocol`
     """
 
     def __init__(self, request):

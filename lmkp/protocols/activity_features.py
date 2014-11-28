@@ -18,8 +18,11 @@ from lmkp.views.translation import statusMap
 
 class ActivityFeature(ItemFeature):
     """
-    TODO
-    Extends the super class Feature and adds the geometry property
+    The ActivityFeature represents an :term:`Activity`. It extends the
+    base class and adds geometry support..
+
+    Extends:
+       :class:`lmkp.protocols.features.ItemFeature`
     """
 
     def __init__(self, identifier, order_value, version, status_id, geometry):
@@ -173,7 +176,11 @@ class ActivityFeature(ItemFeature):
 
 class ActivityTaggroup(ItemTaggroup):
     """
-    TODO
+    The ActivityTaggroup represents an :term:`Activity` Taggroup. It
+    extends the base class and adds geometry support.
+
+    Extends:
+       :class:`lmkp.protocols.features.ItemTaggroup`
     """
 
     def __init__(
