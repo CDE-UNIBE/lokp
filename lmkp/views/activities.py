@@ -30,6 +30,7 @@ from lmkp.models.database_objects import (
     Language,
 )
 from lmkp.models.meta import DBSession as Session
+from lmkp.protocols.activity_protocol import ActivityProtocol
 from lmkp.utils import (
     validate_uuid,
     handle_query_string,
@@ -132,10 +133,7 @@ class ActivityView(BaseView):
         Returns:
             ``HTTPResponse``. Either a HTML or a JSON response.
         """
-        # TODO
-        from lmkp.protocols.activity_protocol import ActivityProtocol
         activity_protocol = ActivityProtocol(self.request)
-
         output_format = get_output_format(self.request)
 
         if output_format == 'json':
@@ -146,8 +144,7 @@ class ActivityView(BaseView):
 
         elif output_format == 'geojson':
 
-            items = activity_protocol.read_many_geojson(
-                self.request, public=public)
+            items = activity_protocol.read_many_geojson(public_query=public)
 
             return render_to_response('json', items, self.request)
 

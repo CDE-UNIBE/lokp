@@ -101,8 +101,9 @@ class ItemFeature(object):
        :class:`lmkp.protocols.activity_features.ActivityFeature`
     """
 
-    def __init__(self, identifier, order_value, version, status_id):
+    def __init__(self, id, identifier, order_value, version, status_id):
 
+        self._id = id
         self._identifier = identifier
         self._version = version
         self._order_value = order_value
@@ -128,6 +129,10 @@ class ItemFeature(object):
         self._diff_info = None
         self._pending = []
         self._missing_keys = None
+
+    @property
+    def id(self):
+        return self._id
 
     @property
     def identifier(self):

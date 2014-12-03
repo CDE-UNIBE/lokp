@@ -20,6 +20,7 @@ from lmkp.models.database_objects import (
     SH_Value,
 )
 from lmkp.models.meta import DBSession as Session
+from lmkp.utils import validate_item_type
 from lmkp.views.form_config import getCategoryList
 
 log = logging.getLogger(__name__)
@@ -806,3 +807,50 @@ def translation_batch(request):
     ret['messages'] = msgStack
 
     return ret
+
+
+def get_translated_keys(item_type, keys, locale):
+    """
+    Return the translations of some :term:`Activity` or
+    :term:`Stakeholder` keys from the database.
+
+    Args:
+        ``item_type`` (str): The :term:`Item Type` of either
+        :term:`Activities` or :term:`Stakeholders`.
+
+        ``keys`` (list): A list with original, untranslated keys.
+
+        ``locale`` (str): The :term:`Locale` to translate the keys to.
+
+    Returns:
+        ``list``. A list with tuples. For each translation, a tuple is
+        added where
+
+            ``[0]`` is the original value
+
+            ``[1]`` is the translation.
+    """
+    if validate_item_type(item_type) == 'a':
+        Key = A_Key
+    else:
+        Key = SH_Key
+
+    if len(keys) == 0:
+        return []
+
+    translation = aliased(Key)
+    query = Session.query(
+        Key.key.label('original'),
+        translation.key.label('translation')
+    ).\
+        join(translation, Key.translations).\
+        join(Language, Language.id == translation.fk_language).\
+        filter(Key.key.in_(keys)).\
+        filter(Key.original == None).\
+        filter(Language.locale == locale).\
+        all()
+
+    if query is not None:
+        return query
+
+    return []

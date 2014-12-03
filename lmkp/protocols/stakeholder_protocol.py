@@ -287,17 +287,22 @@ class StakeholderProtocol(Protocol):
             if get_current_logical_filter_operator(self.request) == 'or':
                 # OR: use 'union' to add id's to relevant_stakeholders
                 relevant_query = relevant_query.\
-                    union(self.Session.query(
-                          Stakeholder.id.label('order_id'),
-                          func.char_length('').label('order_value'),  # dummy
-                          Stakeholder.fk_status,
-                          Stakeholder.stakeholder_identifier
-                          ).
-                          join(Involvement).
-                          join(a_subquery, a_subquery.c.id
-                               == Involvement.fk_activity).
-                          group_by(Stakeholder.id)
-                          )
+                    union(
+                        self.Session.query(
+                            Stakeholder.id.label('order_id'),
+                            Changeset.timestamp.label('order_value'),
+                            Stakeholder.fk_status,
+                            Stakeholder.stakeholder_identifier
+                        ).
+                        join(Changeset).
+                        join(Involvement).
+                        join(
+                            a_subquery, a_subquery.c.id
+                            == Involvement.fk_activity).
+                        group_by(
+                            Stakeholder.id, Changeset.timestamp,
+                            Stakeholder.fk_status,
+                            Stakeholder.stakeholder_identifier))
             else:
                 # AND: filter id's of relevant_query
                 relevant_query = relevant_query.\
@@ -579,7 +584,7 @@ class StakeholderProtocol(Protocol):
             if translate is not False:
                 if q.key_translated is not None:
                     key = q.key_translated
-                if q.value_translated is not False:
+                if q.value_translated is not None:
                     value = q.value_translated
 
             # Use UID and version to find existing Feature or create a new one
@@ -591,7 +596,7 @@ class StakeholderProtocol(Protocol):
 
             if feature is None:
                 feature = ItemFeature(
-                    identifier, q.order_value, q.version, q.status_id)
+                    q.id, identifier, q.order_value, q.version, q.status_id)
 
                 feature.status = getattr(q, 'status', None)
                 feature.timestamp = getattr(q, 'timestamp', None)

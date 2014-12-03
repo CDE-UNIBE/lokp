@@ -877,3 +877,69 @@ def get_current_offset(request):
         return abs(int(offset))
     except:
         return default
+
+
+def get_current_translation_parameter(request):
+    """
+    Return the current translate parameter from the request. Usually
+    indicates whether to translate the response or not.
+
+    Args:
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object
+        with optional parameter ``translate`` set (either to ``true`` or
+        ``false``).
+
+    Returns:
+        ``bool``. A boolean indicating whether the parameter
+        ``translate`` was set and is true or not. Defaults to ``True``
+        even if the parameter is not set.
+    """
+    default = 'true'
+    translate = request.params.get('translate', default).lower()
+    return translate != 'false'
+
+
+def get_current_taggroup_geometry_parameter(request):
+    """
+    Return the current taggroup geometry parameter from the request.
+    Indicates whether to return the geometries of taggroups or not.
+
+    Args:
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object
+        with optional parameter ``taggroup_geometry`` set (either to
+        ``true`` or ``false``). Parameter ``tggeom`` is also supported
+        but with lower priority (not respected if ``taggroup_geometry``
+        is set)
+
+    Returns:
+        ``bool``. A boolean indicating whether the parameter
+        ``taggroup_geometry`` was set and is true or not. Defaults to
+        ``False`` even if the parameter is not set.
+    """
+    default = 'false'
+    taggroup_geometry = request.params.get(
+        'taggroup_geometry', request.params.get('tggeom', default)).lower()
+    return taggroup_geometry == 'true'
+
+
+def get_current_attributes(request):
+    """
+    Return the current attributes parameter from the request. This is
+    used for example to filter the resulting output to contain only the
+    provided attributes.
+
+    Args:
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object
+        with optional parameter ``attributes`` set to a comma-separated
+        list of attributes. Parameter ``attrs`` is also supported
+        but with lower priority (not respected if ``attributes`` is set)
+
+    Returns:
+        ``list``. A list with the attributes or an empty list by
+        default.
+    """
+    attrs = request.params.get('attributes', request.params.get('attrs'))
+    try:
+        return attrs.split(',')
+    except AttributeError:
+        return []

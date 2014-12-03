@@ -12,6 +12,7 @@ from lmkp.protocols.features import (
     ItemFeature,
     ItemTaggroup,
 )
+from lmkp.protocols.protocol import get_status_name_by_id
 from lmkp.views.translation import get_translated_status
 from lmkp.views.translation import statusMap
 
@@ -25,10 +26,13 @@ class ActivityFeature(ItemFeature):
        :class:`lmkp.protocols.features.ItemFeature`
     """
 
-    def __init__(self, identifier, order_value, version, status_id, geometry):
+    def __init__(
+            self, id, identifier, order_value, version, status_id, geometry):
 
-        ItemFeature.__init__(self, identifier, order_value, version, status_id)
+        ItemFeature.__init__(
+            self, id, identifier, order_value, version, status_id)
         self._geometry = geometry
+        self._geojson_properties = {}
 
     @property
     def geometry(self):
@@ -37,6 +41,33 @@ class ActivityFeature(ItemFeature):
     @geometry.setter
     def geometry(self, value):
         self._geometry = value
+
+    @property
+    def geojson_properties(self):
+        return self._geojson_properties
+
+    def set_geojson_property(self, key, value):
+        """
+        Sets an internal ``geojson_property``. This is used to store
+        properties (not entire Taggroups) for the GeoJSON representation
+        of an ActivityFeature.
+
+        Multiple values for the same keys are stored as lists.
+
+        Args:
+            ``key`` (str): The key of the property to store.
+
+            ``value`` (str): The value of the property.
+        """
+        try:
+            existing_key = self.geojson_properties[key]
+            if isinstance(existing_key, list):
+                self._geojson_properties[key].append(value)
+            else:
+                self._geojson_properties[key] = [
+                    self.geojson_properties[key], value]
+        except KeyError:
+            self._geojson_properties[key] = value
 
     # def getMappedClass(self):
     #     return Activity
@@ -99,6 +130,48 @@ class ActivityFeature(ItemFeature):
                 ret['geometry'] = geometry.mapping(geom)
             except:
                 pass
+        return ret
+
+    def to_geojson(self, request):
+        """
+        Return a GeoJSON compatible representation of the
+        ActivityFeature. Sets the geometry and some basic properties
+        (identifier, version, status). If ``geojson_properties`` are
+        available, they are added to the properties.
+
+        Args:
+            ``request`` (pyramid.request): A :term:`Pyramid` Request
+            object.
+
+        Returns:
+            ``dict`` or ``None``. A dict with the geometry and
+            properties of the ActivityFeature. If there is no valid
+            geometry, ``None`` is returned.
+        """
+        if self.geometry is None:
+            return None
+
+        ret = {
+            'id': self.id,
+            'fid': self.id,
+            'type': 'Feature'
+        }
+        try:
+            geom = wkb.loads(str(self.geometry.geom_wkb))
+            ret['geometry'] = geometry.mapping(geom)
+        except:
+            return None
+
+        properties = {
+            'status': get_status_name_by_id(self.status_id, request),
+            'status_id': self.status_id,
+            'activity_identifier': self.identifier,
+            'version': self.version
+        }
+        for k, v in self.geojson_properties.iteritems():
+            properties[k] = v
+        ret['properties'] = properties
+
         return ret
 
     # def to_table(self, request):

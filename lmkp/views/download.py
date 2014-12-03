@@ -2,25 +2,20 @@ from pyramid.renderers import render_to_response
 from pyramid.view import view_config
 
 from lmkp.custom import get_customized_template_path
-from lmkp.models.meta import DBSession as Session
+from lmkp.protocols.activity_protocol import ActivityProtocol
+from lmkp.protocols.stakeholder_protocol import StakeholderProtocol
 from lmkp.utils import validate_item_type
-from lmkp.views.activity_protocol3 import ActivityProtocol3
 from lmkp.views.form_config import getCategoryList
 from lmkp.views.protocol import (
     get_main_keys_from_item_json,
     get_value_by_key_from_item_json,
     get_value_by_key_from_taggroup_json,
 )
-from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.views import (
     BaseView,
     get_current_locale,
     get_current_profile,
 )
-
-
-activity_protocol = ActivityProtocol3(Session)
-stakeholder_protocol = StakeholderProtocol3(Session)
 
 
 def to_flat_table(request, item_type, involvements='full', columns=[]):
@@ -32,12 +27,14 @@ def to_flat_table(request, item_type, involvements='full', columns=[]):
     # with the help of the configs.
     item_type = validate_item_type(item_type)
     if item_type == 'a':
-        items = activity_protocol.read_many(public=True, translate=False)
+        activity_protocol = ActivityProtocol(request)
+        items = activity_protocol.read_many(public_query=True, translate=False)
         other_item_type = validate_item_type('sh')
     else:
         # Query Stakeholders through Activities.
+        stakeholder_protocol = StakeholderProtocol(request)
         items = stakeholder_protocol.read_many_by_activities(
-            request, public=True, translate=False)
+            public_query=True, translate=False)
         other_item_type = validate_item_type('a')
 
     META_HEADER = ['id', 'version', 'timestamp']
@@ -202,7 +199,7 @@ def to_flat_table(request, item_type, involvements='full', columns=[]):
             else:
                 taggroup_length = max(
                     config_taggroup_entry.get('count'), 1) * len(
-                        config_taggroup.getTags())
+                    config_taggroup.getTags())
             found_taggroups.extend(
                 [None] * (taggroup_length - len(found_taggroups)))
 

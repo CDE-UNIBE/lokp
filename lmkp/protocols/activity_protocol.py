@@ -36,6 +36,7 @@ from lmkp.protocols.features import (
 )
 from lmkp.protocols.protocol import Protocol
 from lmkp.utils import validate_bbox
+from lmkp.views.translation import get_translated_keys
 from lmkp.views.views import (
     get_bbox_parameters,
     get_current_profile,
@@ -44,6 +45,10 @@ from lmkp.views.views import (
     get_current_involvement_details,
     get_current_limit,
     get_current_offset,
+    get_current_translation_parameter,
+    get_current_attributes,
+    get_current_locale,
+    get_current_taggroup_geometry_parameter,
 )
 
 
@@ -65,7 +70,7 @@ class ActivityProtocol(Protocol):
         Args:
             ``public_query`` (bool): An optional boolean indicating
             whether to return only versions visible to the public (eg.
-            no pending) or not. Defaults to``True``.
+            no pending) or not. Defaults to ``True``.
 
             ``limit`` (int): An optional limit. If no limit is provided,
             the one from the request is used if available.
@@ -113,6 +118,49 @@ class ActivityProtocol(Protocol):
             'total': count,
             'data': [f.to_json(self.request) for f in features]
         }
+
+    def read_many_geojson(self, public_query=True):
+        """
+        Read many :term:`Activities` and return them in a GeoJSON
+        compatible representation. This function handles the query,
+        applies filters, creates and returns the Features.
+
+        The focus is on a GeoJSON representation and this function does
+        not return full Taggroups, only selected attributes.
+
+        Args:
+            ``public_query`` (bool): An optional boolean indicating
+            whether to return only versions visible to the public (eg.
+            no pending) or not. Defaults to ``True``.
+
+        Returns:
+            ``dict``. A dictionary containing the :term:`Activity`
+            Features in a GeoJSON compatible format.
+
+                .. seealso::
+                   |to_geojson|
+
+        .. |to_geojson| replace::
+           :func:`lmkp.protocols.activity_features.ActivityFeature.to_geojson`
+        """
+        relevant_query = self.get_relevant_query_many(
+            public_query=public_query, bbox_cookies=False)
+
+        limit = get_current_limit(self.request)
+        offset = get_current_offset(self.request)
+        translate = get_current_translation_parameter(self.request)
+        attributes = get_current_attributes(self.request)
+        translated_attributes = get_translated_keys(
+            'a', attributes, get_current_locale(self.request))
+        taggroup_geometry = get_current_taggroup_geometry_parameter(
+            self.request)
+
+        query = self.query_many_geojson(
+            relevant_query, limit=limit, offset=offset,
+            attributes=translated_attributes,
+            taggroup_geometry=taggroup_geometry, translate=translate)
+
+        return self.query_to_geojson(query)
 
     def get_relevant_query_from_list(self, activity_list):
         """
@@ -312,16 +360,21 @@ class ActivityProtocol(Protocol):
             if get_current_logical_filter_operator(self.request) == 'or':
                 # OR: use 'union' to add id's to relevant_query
                 relevant_query = relevant_query.\
-                    union(self.Session.query(
-                          Activity.id.label('order_id'),
-                          func.char_length('').label('order_value'),  # dummy
-                          Activity.fk_status,
-                          Activity.activity_identifier
-                          ).
-                          join(Involvement).
-                          join(sh_subquery, sh_subquery.c.id ==
-                               Involvement.fk_stakeholder).
-                          group_by(Activity.id))
+                    union(
+                        self.Session.query(
+                            Activity.id.label('order_id'),
+                            Changeset.timestamp.label('order_value'),
+                            Activity.fk_status,
+                            Activity.activity_identifier
+                        ).
+                        join(Changeset).
+                        join(Involvement).
+                        join(
+                            sh_subquery, sh_subquery.c.id ==
+                            Involvement.fk_stakeholder).
+                        group_by(
+                            Activity.id, Changeset.timestamp,
+                            Activity.fk_status, Activity.activity_identifier))
             else:
                 # AND: filter id's of relevant_query
                 relevant_query = relevant_query.\
@@ -558,6 +611,106 @@ class ActivityProtocol(Protocol):
         else:
             return query
 
+    def query_many_geojson(
+            self, relevant_query, limit=None, offset=None, attributes=[],
+            taggroup_geometry=False, translate=True):
+        """
+        Extend a subquery of relevant :term:`Activity` IDs to get a
+        complete query object for the GeoJSON representation of
+        :term:`Activities`. This does not perform a query but rather
+        creates a query joining the relevant IDs with the optional
+        attributes.
+
+        Args:
+            ``relevant_query`` (sqlalchemy.orm.query.Query): A
+            SQLAlchemy containing the filtered (relevant)
+            :term:`Activity` IDs.
+
+            .. seealso::
+               :class:`get_relevant_query_many`
+
+            ``limit`` (int or None): An optional integer with the limit
+            to be applied to the query.
+
+            ``offset`` (int or None): An optional integer with the
+            offset to be applied to the query.
+
+            ``attributes`` (list): An optional list with
+            :term:`Activity` attributes to add to the query. By default,
+            the GeoJSON representation does not include any attributes.
+
+            ``taggroup_geometry`` (bool): An optional boolean indicating
+            whether to include the geometries of Taggroups or not.
+            Defaults to ``False``.
+
+            ``translate`` (bool): An optional boolean indicating whether
+            to translate the selected ``attributes`` or not. Defaults to
+            ``True``.
+
+        Returns:
+            ``sqlalchemy.orm.query.Query``. A SQLAlchemy Query for the
+            :term:`Activities`.
+        """
+        # Apply limit and offset
+        if limit is not None:
+            relevant_query = relevant_query.limit(limit)
+        if offset is not None:
+            relevant_query = relevant_query.offset(offset)
+
+        # Create query
+        relevant_query = relevant_query.subquery()
+        query = self.Session.query(
+            Activity.id.label('id'),
+            Activity.point.label('geometry'),
+            Activity.activity_identifier.label('identifier'),
+            Activity.version.label('version'),
+            Status.id.label('status_id'),
+            Status.name.label('status_name')
+        ).\
+            join(relevant_query,
+                 relevant_query.c.order_id == Activity.id).\
+            join(Status)
+
+        if len(attributes) > 0:
+            original_attributes = [a[0] for a in attributes]
+            query = query.\
+                add_columns(
+                    A_Value.value.label('value'),
+                    A_Key.key.label('key')
+                ).\
+                outerjoin(
+                    A_Tag_Group, Activity.id == A_Tag_Group.fk_activity).\
+                outerjoin(A_Tag, A_Tag_Group.id == A_Tag.fk_a_tag_group).\
+                outerjoin(A_Key, A_Tag.fk_key == A_Key.id).\
+                outerjoin(A_Value, A_Tag.fk_value == A_Value.id).\
+                filter(A_Key.key.in_(original_attributes))
+
+            if translate is True:
+                key_translation, value_translation = self.\
+                    get_translation_queries('a')
+                query = query.add_columns(
+                    key_translation.c.key_translated.label('key_translated'),
+                    value_translation.c.value_translated.label(
+                        'value_translated')
+                ).\
+                    outerjoin(
+                        key_translation,
+                        key_translation.c.key_original_id == A_Key.id).\
+                    outerjoin(
+                        value_translation,
+                        value_translation.c.value_original_id == A_Value.id)
+            else:
+                query = query.add_columns(
+                    A_Key.key.label('key_translated'),
+                    A_Value.value.label('value_translated'))
+
+            if taggroup_geometry is True:
+                query = query.\
+                    add_columns(A_Tag_Group.geometry).\
+                    filter(A_Tag_Group.geometry != None)
+
+        return query
+
     def query_to_features(
             self, query, involvements='none', public_query=False,
             with_taggroup_geometry=False, translate=True):
@@ -591,7 +744,7 @@ class ActivityProtocol(Protocol):
             ``translate`` (bool): An optional boolean indicating whether
             to return translated values or not. Defaults to ``True``.
 
-            Returns:
+        Returns:
             ``list``. A list of
             :class:`lmkp.protocols.features.ItemFeature`.
         """
@@ -613,7 +766,7 @@ class ActivityProtocol(Protocol):
             if translate is not False:
                 if q.key_translated is not None:
                     key = q.key_translated
-                if q.value_translated is not False:
+                if q.value_translated is not None:
                     value = q.value_translated
 
             # Use UID and version to find existing ActivityFeature or create a
@@ -626,7 +779,7 @@ class ActivityProtocol(Protocol):
 
             if feature is None:
                 feature = ActivityFeature(
-                    identifier, q.order_value, q.version, q.status_id,
+                    q.id, identifier, q.order_value, q.version, q.status_id,
                     q.geometry)
 
                 feature.status = getattr(q, 'status', None)
@@ -704,6 +857,58 @@ class ActivityProtocol(Protocol):
                         inv.feature = sh_feature
 
         return features
+
+    def query_to_geojson(self, query):
+        """
+        Transform the query to features, respectively their GeoJSON
+        representation.
+
+        Args:
+            ``query`` (sqlalchemy.orm.query.Query): A SQLAlchemy Query
+            for the :term:`Activities`.
+
+        Returns:
+            ``dict``. A GeoJSON compatible representation of the
+            :term:`Activity` features.
+        """
+        features = []
+        for q in query.all():
+            key = None
+            value = None
+            try:
+                key = q.key
+                if q.key_translated is not None:
+                    key = q.key_translated
+                value = q.value
+                if q.value_translated is not None:
+                    value = q.value_translated
+            except AttributeError:
+                pass
+
+            # Use UID and version to find existing ActivityFeature or create a
+            # new one
+            feature = None
+            identifier = str(q.identifier)
+            for f in features:
+                if f.identifier == identifier and f.version == q.version:
+                    feature = f
+
+            if feature is None:
+                feature = ActivityFeature(
+                    q.id, identifier, None, q.version, q.status_id, q.geometry)
+                features.append(feature)
+
+            if key is not None and value is not None:
+                try:
+                    value = float(value)
+                except ValueError:
+                    pass
+                feature.set_geojson_property(key, value)
+
+        return {
+            'type': 'FeatureCollection',
+            'features': [f.to_geojson(self.request) for f in features]
+        }
 
     def get_profile_filter(self):
         """
