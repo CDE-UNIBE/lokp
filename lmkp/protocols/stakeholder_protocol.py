@@ -1,9 +1,11 @@
+from pyramid.httpexceptions import HTTPBadRequest
 from sqlalchemy import func
 from sqlalchemy.sql.expression import (
     and_,
     asc,
     desc,
     or_,
+    select,
 )
 
 from lmkp.authentication import get_user_privileges
@@ -47,7 +49,8 @@ class StakeholderProtocol(Protocol):
     """
 
     def read_many(
-            self, public_query=True, limit=None, offset=None, translate=True):
+            self, public_query=True, limit=None, offset=None, translate=True,
+            other_identifiers=None):
         """
         Read many :term:`Stakeholders`. This function handles the query,
         applies filters, creates and returns the Features.
@@ -72,6 +75,15 @@ class StakeholderProtocol(Protocol):
             ``translate`` (bool): An optional boolean indicating whether
             to return translated values or not. Defaults to ``True``.
 
+            ``other_identifiers`` (list or None): A list of
+            :term:`Activity` identifiers to filter the
+            :term:`Stakeholders` by. If ``None``, no filter is applied.
+            If an empty list is provided, the :term:`Stakeholders` are
+            filtered to show only those involved in currently visible
+            :term:`Activities`. If a list with identifiers is provided,
+            the :term:`Stakeholders` are filtered to include only those
+            involved in these :term:`Activities`. Defaults to ``None``.
+
         Returns:
             ``dict``. A dictionary containing the total count of the
             query and the :term:`Stakeholder` Features in JSON
@@ -81,7 +93,7 @@ class StakeholderProtocol(Protocol):
                    :class:`lmkp.protocols.features.ItemFeature.to_json`
         """
         relevant_query = self.get_relevant_query_many(
-            public_query=public_query)
+            public_query=public_query, other_identifiers=other_identifiers)
 
         involvement_details = get_current_involvement_details(self.request)
         show_involvements = involvement_details != 'none'
@@ -156,7 +168,8 @@ class StakeholderProtocol(Protocol):
 
         return relevant_query
 
-    def get_relevant_query_many(self, filter=None, public_query=False):
+    def get_relevant_query_many(
+            self, filter=None, public_query=False, other_identifiers=None):
         """
         Get a query with the database IDs of relevant
         :term:`Stakeholders` based on the various filters (attributes on
@@ -172,6 +185,15 @@ class StakeholderProtocol(Protocol):
             ``public_query`` (bool): An optional boolean indicating
             whether to return only versions visible to the public (eg.
             no pending) or not.
+
+            ``other_identifiers`` (list or None): A list of
+            :term:`Activity` identifiers to filter the
+            :term:`Stakeholders` by. If ``None``, no filter is applied.
+            If an empty list is provided, the :term:`Stakeholders` are
+            filtered to show only those involved in currently visible
+            :term:`Activities`. If a list with identifiers is provided,
+            the :term:`Stakeholders` are filtered to include only those
+            involved in these :term:`Activities`. Defaults to ``None``.
 
         Returns:
             ``sqlalchemy.orm.query.Query``. A SQLAlchemy Query
@@ -196,6 +218,27 @@ class StakeholderProtocol(Protocol):
             Stakeholder.fk_status,
             Stakeholder.stakeholder_identifier
         )
+
+        if other_identifiers is not None:
+            # Use the ActivityProtocol to query relevant Activities
+            from lmkp.protocols.activity_protocol import ActivityProtocol
+            ap = ActivityProtocol(self.request)
+
+            if len(other_identifiers) == 0:
+                # No identifiers specified, query many
+                relevant_others = ap.get_relevant_query_many(
+                    public_query=public_query)
+            elif len(other_identifiers) == 1:
+                # Query only one
+                raise Exception('TODO')
+            else:
+                raise HTTPBadRequest(detail='Not yet supported')
+
+            relevant_others = relevant_others.subquery()
+            relevant_query = relevant_query.\
+                join(Involvement).\
+                filter(Involvement.fk_activity.in_(
+                    select([relevant_others.c.order_id])))
 
         # Stakeholder attribute filters
         filter_subquery = None

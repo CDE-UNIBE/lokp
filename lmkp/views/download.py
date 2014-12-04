@@ -33,8 +33,8 @@ def to_flat_table(request, item_type, involvements='full', columns=[]):
     else:
         # Query Stakeholders through Activities.
         stakeholder_protocol = StakeholderProtocol(request)
-        items = stakeholder_protocol.read_many_by_activities(
-            public_query=True, translate=False)
+        items = stakeholder_protocol.read_many(
+            public_query=True, translate=False, other_identifiers=[])
         other_item_type = validate_item_type('a')
 
     META_HEADER = ['id', 'version', 'timestamp']

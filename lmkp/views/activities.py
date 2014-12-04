@@ -311,6 +311,7 @@ class ActivityView(BaseView):
         Returns:
             ``HTTPResponse``. Either a HTML or a JSON response.
         """
+        activity_protocol = ActivityProtocol(self.request)
         output_format = get_output_format(self.request)
 
         uids = self.request.matchdict.get('uids', '').split(',')
@@ -325,8 +326,8 @@ class ActivityView(BaseView):
 
         if output_format == 'json':
 
-            items = activity_protocol.read_many_by_stakeholders(
-                self.request, uids=uids, public=public)
+            items = activity_protocol.read_many(
+                other_identifiers=uids, public_query=public)
 
             return render_to_response('json', items, self.request)
 
@@ -334,8 +335,8 @@ class ActivityView(BaseView):
 
             page, page_size = get_page_parameters(self.request)
 
-            items = activity_protocol.read_many_by_stakeholders(
-                self.request, uids=uids, public=public, limit=page_size,
+            items = activity_protocol.read_many(
+                other_identifiers=uids, public_query=public, limit=page_size,
                 offset=page_size * page - page_size)
 
             # No spatial filter is used if the Activities are filtered

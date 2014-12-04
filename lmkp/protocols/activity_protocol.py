@@ -1,5 +1,6 @@
 from geoalchemy import WKBSpatialElement
 from geoalchemy.functions import functions as geofunctions
+from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.security import authenticated_userid
 from shapely.geometry.polygon import Polygon
 from sqlalchemy import func
@@ -8,6 +9,7 @@ from sqlalchemy.sql.expression import (
     asc,
     desc,
     or_,
+    select,
 )
 
 from lmkp.authentication import get_user_privileges
@@ -62,7 +64,8 @@ class ActivityProtocol(Protocol):
     """
 
     def read_many(
-            self, public_query=True, limit=None, offset=None, translate=True):
+            self, public_query=True, limit=None, offset=None, translate=True,
+            other_identifiers=None):
         """
         Read many :term:`Activities`. This function handles the query,
         applies filters, creates and returns the Features.
@@ -87,6 +90,13 @@ class ActivityProtocol(Protocol):
             ``translate`` (bool): An optional boolean indicating whether
             to return translated values or not. Defaults to ``True``.
 
+            ``other_identifiers`` (list or None): A list of
+            :term:`Stakeholder` identifiers to filter the
+            :term:`Activities` by. If ``None``, no filter is applied. If
+            a list with identifiers is provided, the :term:`Activities`
+            are filtered to include only those involved in these
+            :term:`Stakeholders`. Defaults to ``None``.
+
         Returns:
             ``dict``. A dictionary containing the total count of the
             query and the :term:`Activity` Features in JSON compatible
@@ -96,7 +106,7 @@ class ActivityProtocol(Protocol):
                    :class:`lmkp.protocols.features.ItemFeature.to_json`
         """
         relevant_query = self.get_relevant_query_many(
-            public_query=public_query)
+            public_query=public_query, other_identifiers=other_identifiers)
 
         involvement_details = get_current_involvement_details(self.request)
         show_involvements = involvement_details != 'none'
@@ -214,7 +224,8 @@ class ActivityProtocol(Protocol):
         return relevant_query
 
     def get_relevant_query_many(
-            self, filter=None, public_query=False, bbox_cookies=True):
+            self, filter=None, public_query=False, bbox_cookies=True,
+            other_identifiers=None):
         """
         Get a query with the database IDs of relevant :term:`Activities`
         based on the various filters (attributes on both
@@ -239,6 +250,13 @@ class ActivityProtocol(Protocol):
             .. seealso::
                :class:`lmkp.views.views.get_bbox_parameters`
 
+            ``other_identifiers`` (list or None): A list of
+            :term:`Stakeholder` identifiers to filter the
+            :term:`Activities` by. If ``None``, no filter is applied. If
+            a list with identifiers is provided, the :term:`Activities`
+            are filtered to include only those involved in these
+            :term:`Stakeholders`. Defaults to ``None``.
+
         Returns:
             ``sqlalchemy.orm.query.Query``. A SQLAlchemy Query
             containing namely the IDs of the filtered (relevant)
@@ -262,6 +280,24 @@ class ActivityProtocol(Protocol):
             Activity.fk_status,
             Activity.activity_identifier
         )
+
+        if other_identifiers is not None:
+            # Use the StakeholderProtocol to query relevant Stakeholders
+            from lmkp.protocols.stakeholder_protocol import StakeholderProtocol
+            sp = StakeholderProtocol(self.request)
+
+            if len(other_identifiers) == 1:
+                # Query only one
+                relevant_others = None
+                raise Exception('TODO')
+            elif isinstance(other_identifiers, list):
+                raise HTTPBadRequest(detail='Not yet supported')
+
+            relevant_others = relevant_others.subquery()
+            relevant_query = relevant_query.\
+                join(Involvement).\
+                filter(Involvement.fk_stakeholder.in_(
+                    select([relevant_others.c.order_id])))
 
         # Activity attribute filters
         filter_subquery = None

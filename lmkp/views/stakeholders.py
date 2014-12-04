@@ -25,6 +25,7 @@ from lmkp.models.database_objects import (
     Stakeholder,
 )
 from lmkp.models.meta import DBSession as Session
+from lmkp.protocols.stakeholder_protocol import StakeholderProtocol
 from lmkp.utils import (
     handle_query_string,
     shorten_uuid,
@@ -128,10 +129,7 @@ class StakeholderView(BaseView):
         Returns:
             ``HTTPResponse``. Either a HTML or a JSON response.
         """
-        # TODO
-        from lmkp.protocols.stakeholder_protocol import StakeholderProtocol
         stakeholder_protocol = StakeholderProtocol(self.request)
-
         output_format = get_output_format(self.request)
 
         if output_format == 'json':
@@ -304,6 +302,7 @@ class StakeholderView(BaseView):
         Returns:
             ``HTTPResponse``. Either a HTML or a JSON response.
         """
+        stakeholder_protocol = StakeholderProtocol(self.request)
         output_format = get_output_format(self.request)
 
         uids = self.request.matchdict.get('uids', '').split(',')
@@ -315,8 +314,8 @@ class StakeholderView(BaseView):
 
         if output_format == 'json':
 
-            items = stakeholder_protocol.read_many_by_activities(
-                self.request, public=public, uids=uids)
+            items = stakeholder_protocol.read_many(
+                other_identifiers=uids, public_query=public)
 
             return render_to_response('json', items, self.request)
 
@@ -324,8 +323,8 @@ class StakeholderView(BaseView):
 
             page, page_size = get_page_parameters(self.request)
 
-            items = stakeholder_protocol.read_many_by_activities(
-                self.request, public=public, uids=uids, limit=page_size,
+            items = stakeholder_protocol.read_many(
+                other_identifiers=uids, public_query=public, limit=page_size,
                 offset=page_size * page - page_size)
 
             # Show a spatial filter only if there is no involvement
@@ -347,7 +346,6 @@ class StakeholderView(BaseView):
                 'statusfilter': status_filter,
                 'currentpage': page,
                 'pagesize': page_size,
-                'is_moderator': is_moderator,
                 'handle_query_string': handle_query_string
             })
 
