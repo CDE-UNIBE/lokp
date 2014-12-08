@@ -136,6 +136,12 @@ class Protocol(object):
                   are active and inactive versions. For logged in users,
                   also pending and edited.
 
+                * ``history``: Which statuses are valid when viewing the
+                  history of a single :term:`Item`. By default, these
+                  are only active and inactive versions. For moderators,
+                  all other statuses are also valid (geographical filter
+                  needs to be applied manually)
+
             ``logged_in`` (bool): A boolean indicating whether a user is
             logged in or not.
 
@@ -152,12 +158,22 @@ class Protocol(object):
                 status_ids.remove(1)
                 status_ids.remove(6)
 
-        if context == 'involvements':
+        elif context == 'involvements':
             status_ids.remove(4)
             status_ids.remove(5)
             if not logged_in:
                 status_ids.remove(1)
                 status_ids.remove(6)
+
+        elif context == 'history':
+            if not logged_in or not is_moderator:
+                status_ids.remove(1)
+                status_ids.remove(4)
+                status_ids.remove(5)
+                status_ids.remove(6)
+
+        else:
+            raise Exception('Unknown context: %s' % context)
 
         return status_ids
 
@@ -367,16 +383,19 @@ class Protocol(object):
             self, item_type, query, public_query=False):
         """
         Apply a filter to a query in order to limit the versions of an
-        :term:`Item` that are visible. The filter is based on the
-        :term:`status` of the :term:`Item` and the following rules
-        apply:
+        :term:`Item` that are visible. Unlike
+        :func:`apply_many_visible_version_filter`, this function always
+        returns only a single version per :term:`Item`.
+
+        The filter is based on the :term:`status` of the :term:`Item`
+        and the following rules apply:
 
         * **Status filter first**: If a status filter is set and valid,
           it is considered first (eg. status filter set to ``active``
           will not return pending versions, even for moderators).
 
           .. seealso::
-               :class:`lmkp.protocols.protocol.Protocol.get_valid_status_ids`
+               :func:`lmkp.protocols.protocol.Protocol.get_valid_status_ids`
                with ``context=filter``.
 
         * **Public** (not logged in or ``public_query=True``): By
@@ -443,13 +462,16 @@ class Protocol(object):
                     Changeset.fk_user == self.request.user.id
                 )
             )
-            if is_moderator and item_type == 'a':
-                visible_version_filters.append(
-                    and_(
-                        Item.fk_status == 1,
-                        self.get_user_spatial_profile_filter()
+            if is_moderator:
+                if item_type == 'a':
+                    visible_version_filters.append(
+                        and_(
+                            Item.fk_status == 1,
+                            self.get_user_spatial_profile_filter()
+                        )
                     )
-                )
+                else:
+                    visible_version_filters.append(Item.fk_status == 1)
 
             latest_visible_version = self.Session.query(
                 Item.identifier.label('identifier'),
@@ -474,7 +496,99 @@ class Protocol(object):
 
         return query
 
+    def apply_many_visible_version_filter(
+            self, item_type, query, public_query=False):
+        """
+        Apply a filter to a query in order to limit the versions of
+        multiple :term:`Items` (or versions of them) that are visible.
+        Unlike :func:`apply_visible_version_filter`, this function
+        returns multiple versions for the same :term:`Item` and not only
+        a single one.
+
+        The filter is based on the :term:`status` of the versions and
+        the following rules apply:
+
+        * **Status**: Visible statuses are filtered based on the
+          function ``get_valid_status_ids``.
+
+          .. seealso::
+               :func:`lmkp.protocols.protocol.Protocol.get_valid_status_ids`
+               with ``context=history``.
+
+        * **Public** (not logged in or ``public_query=True``): Only
+          active and inactive versions are visible.
+
+        * **Logged in**: Users can see all of their own versions,
+          regardless of their status.
+
+        * **Moderators**: :term:`Moderators` can see all versions within
+          their profile, regardless of their status.
+
+        Args:
+            ``item_type`` (str): The :term:`Item Type` of the
+            :term:`Item`.
+
+            ``query`` (sqlalchemy.orm.query.Query): A SQLAlchemy Query
+            object on either :term:`Activities` or :term:`Stakeholders`.
+
+            ``public_query`` (bool): An optional boolean indicating
+            whether to return only versions visible to the public or
+            not.
+
+        Returns:
+            ``sqlalchemy.orm.query.Query``. The filtered SQLAlchemy
+            Query.
+        """
+        if validate_item_type(item_type) == 'a':
+            Item = Activity
+        else:
+            Item = Stakeholder
+
+        if public_query is True:
+            logged_in, is_moderator = False, False
+        else:
+            logged_in, is_moderator = get_user_privileges(self.request)
+
+        filters = [
+            Item.fk_status.in_(
+                self.get_valid_status_ids('history', False, False))
+        ]
+
+        if logged_in is True:
+            filters.append(Changeset.fk_user == self.request.user.id)
+
+            if is_moderator is True:
+                if item_type == 'a':
+                    filters.append(
+                        and_(
+                            Item.fk_status.in_(
+                                self.get_valid_status_ids(
+                                    'history', logged_in, is_moderator)),
+                            self.get_user_spatial_profile_filter()
+                        )
+                    )
+                else:
+                    filters.append(Item.fk_status.in_(
+                        self.get_valid_status_ids(
+                            'history', logged_in, is_moderator)))
+
+        visible_versions = self.Session.query(
+            Item.identifier.label('identifier'),
+            Item.version.label('version')
+        ).\
+            join(Changeset).\
+            filter(or_(* filters)).\
+            subquery()
+
+        query = query.\
+            join(visible_versions, and_(
+                visible_versions.c.identifier == Item.identifier,
+                visible_versions.c.version == Item.version
+            ))
+        return query
+
     def _get_user_status(self, principals=None):
+        # TODO: Remove
 
         if principals is not None:
             return (

@@ -943,3 +943,24 @@ def get_current_attributes(request):
         return attrs.split(',')
     except AttributeError:
         return []
+
+
+def get_current_version(request):
+    """
+    Return the current version from the request.
+
+    Args:
+        ``request`` (pyramid.request): A :term:`Pyramid` Request object
+        with optional parameter ``version`` set. Parameter ``v`` is also
+        supported but with lower priority (not respected if ``version``
+        is set).
+
+    Returns:
+        ``int``. A absolute integer if one was provided in the request
+        or None by default.
+    """
+    version = request.params.get('version', request.params.get('v'))
+    try:
+        return abs(int(version))
+    except:
+        return None

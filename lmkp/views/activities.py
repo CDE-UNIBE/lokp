@@ -59,6 +59,7 @@ from lmkp.views.views import (
     get_output_format,
     get_page_parameters,
     get_status_parameter,
+    get_current_translation_parameter,
 )
 
 log = logging.getLogger(__name__)
@@ -483,19 +484,18 @@ class ActivityView(BaseView):
         Returns:
             ``HTTPResponse``. Either a HTML or a JSON response.
         """
+        activity_protocol = ActivityProtocol(self.request)
         output_format = get_output_format(self.request)
 
         uid = self.request.matchdict.get('uid', None)
         if validate_uuid(uid) is not True:
             raise HTTPNotFound()
 
+        translate = get_current_translation_parameter(self.request)
         if output_format == 'json':
 
-            translate = self.request.params.get(
-                'translate', 'true').lower() == 'true'
-
             item = activity_protocol.read_one(
-                self.request, uid=uid, public=public, translate=translate)
+                uid=uid, public_query=public, translate=translate)
 
             return render_to_response('json', item, self.request)
 
@@ -517,39 +517,28 @@ class ActivityView(BaseView):
 
         elif output_format == 'html':
 
-            version = self.request.params.get('v', None)
-
             item = activity_protocol.read_one(
-                self.request, uid=uid, public=public, translate=False)
+                uid=uid, public_query=public, translate=False)
 
-            for i in item.get('data', []):
+            if item == {}:
+                return HTTPNotFound()
 
-                item_version = i.get('version')
-                if version is None:
-                    # If there was no version provided, show the first
-                    # version visible to the user
-                    version = str(item_version)
+            template_values = self.get_base_template_values()
+            template_values.update(renderReadonlyForm(
+                self.request, 'activities', item))
+            template_values.update({
+                'uid': uid,
+                'shortuid': shorten_uuid(uid),
+                'version': item.get('version'),
+                'site_key': comments_sitekey(self.request).get('site_key'),
+                'comments_url': self.request.registry.settings[
+                    'lmkp.comments_url']
+            })
 
-                if str(item_version) == version:
-
-                    template_values = self.get_base_template_values()
-                    template_values.update(renderReadonlyForm(
-                        self.request, 'activities', i))
-                    template_values.update({
-                        'uid': uid,
-                        'shortuid': shorten_uuid(uid),
-                        'version': version,
-                        'site_key': comments_sitekey(self.request)['site_key'],
-                        'comments_url': self.request.registry.settings[
-                            'lmkp.comments_url']
-                    })
-
-                    return render_to_response(
-                        get_customized_template_path(
-                            self.request, 'activities/details.mak'),
-                        template_values, self.request)
-
-            return HTTPNotFound()
+            return render_to_response(
+                get_customized_template_path(
+                    self.request, 'activities/details.mak'),
+                template_values, self.request)
 
         elif output_format == 'form':
 

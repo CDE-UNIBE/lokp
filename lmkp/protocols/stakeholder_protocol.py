@@ -36,6 +36,7 @@ from lmkp.views.views import (
     get_current_involvement_details,
     get_current_limit,
     get_current_offset,
+    get_current_version,
 )
 
 
@@ -47,6 +48,52 @@ class StakeholderProtocol(Protocol):
     Inherits from:
         :class:`lmkp.protocols.protocol.Protocol`
     """
+
+    def read_one(self, uid, public_query=True, translate=True):
+        """
+        Read one single :term:`Stakeholder` version: Either latest
+        version visible by the current user or the version indicated if
+        it exists and is visible.This function handles the query,
+        creates and returns the Feature.
+
+        Args:
+            ``uid`` (str): The :term:`UUID` of the :term:`Stakeholder`
+            to query.
+
+            ``public_query`` (bool): An optional boolean indicating
+            whether to return only a version visible to the public (eg.
+            no pending) or not. Defaults to ``True``.
+
+            ``translate`` (bool): An optional boolean indicating whether
+            to return translated values or not. Defaults to ``True``.
+
+        Returns:
+            ``dict``. The :term:`Activity` Feature in JSON compatible
+            format or ``{}`` if no version was found.
+        """
+        version = get_current_version(self.request)
+        relevant_query = self.get_relevant_query_one(
+            uid, version=version, public_query=public_query)
+
+        involvement_details = get_current_involvement_details(self.request)
+        show_involvements = involvement_details != 'none'
+
+        # Limit and offset are fix
+        limit = 1
+        offset = None
+
+        query = self.query_many(
+            relevant_query, limit=limit, offset=offset, return_count=False,
+            with_involvements=show_involvements)
+
+        features = self.query_to_features(
+            query, involvements=involvement_details, public_query=public_query,
+            translate=translate)
+
+        if len(features) == 0:
+            return {}
+
+        return features[0].to_json(self.request)
 
     def read_many(
             self, public_query=True, limit=None, offset=None, translate=True,
@@ -165,6 +212,71 @@ class StakeholderProtocol(Protocol):
         else:
             relevant_query = relevant_query.order_by(
                 asc(order_query.c.value))
+
+        return relevant_query
+
+    def get_relevant_query_one(self, uid, version=None, public_query=False):
+        """
+        Get a query with the database ID of a single relevant
+        :term:`Stakeholder` version.
+
+        Args:
+            ``uid`` (str): The :term:`UUID` of the :term:`Stakeholder`
+            to query.
+
+            ``version`` (int): An optional version of the
+            :term:`Stakeholder` to query. If provided, a filter is set to
+            this version though it may not be visible to the current
+            user because of its status. If set to ``None``, no version
+            filter is applied and the latest visible version is
+            returned. Defaults to ``None``.
+
+            ``public_query`` (bool): An optional boolean indicating
+            whether to return only a version visible to the public (eg.
+            no pending) or not. Defaults to ``True``.
+
+        Returns:
+            ``sqlalchemy.orm.query.Query``. A SQLAlchemy Query
+            containing namely the ID of the filtered (relevant)
+            :term:`Stakeholder`.
+        """
+        # Prepare order: Get the order from request
+        order_query = self.get_order('sh')
+
+        relevant_query = self.Session.query(
+            Stakeholder.id.label('order_id'),
+            order_query.c.value.label('order_value'),
+            Stakeholder.fk_status,
+            Stakeholder.stakeholder_identifier,
+            Stakeholder.version
+        ).\
+            filter(Stakeholder.identifier == uid)
+
+        # Join Stakeholders with TagGroups
+        relevant_query = relevant_query.\
+            outerjoin(SH_Tag_Group)
+
+        # Join Stakeholders with order and group
+        relevant_query = relevant_query.\
+            outerjoin(order_query, order_query.c.id == Stakeholder.id)
+        relevant_query = relevant_query.order_by(asc(order_query.c.value))
+        relevant_query = relevant_query.\
+            group_by(
+                Stakeholder.id, order_query.c.value,
+                Stakeholder.fk_status, Stakeholder.stakeholder_identifier)
+
+        if version is None:
+            # Decide which version is visible by default based on status
+            # filter and user privileges.
+            relevant_query = self.apply_visible_version_filter(
+                'sh', relevant_query, public_query=public_query)
+        else:
+            # Decide which versions are visible and filter out the one
+            # requested.
+            relevant_query = self.apply_many_visible_version_filter(
+                'sh', relevant_query, public_query=public_query)
+            relevant_query = relevant_query.filter(
+                Stakeholder.version == version)
 
         return relevant_query
 

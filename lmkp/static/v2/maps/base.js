@@ -363,8 +363,7 @@ function initializeMapContent() {
             var shortId = activityId.split("-")[0];
             $("#deal-shortid-span").html('<a href="/activities/html/' + activityId + '"># ' + shortId + '</a>');
             $("#taggroups-ul").empty().append('<li><p>' + tForLoadingdetails + '</p></li>');
-            $.get("/activities/json/" + activityId, function(r) {
-                var a = r.data[0];
+            $.get("/activities/json/" + activityId, function(a) {
                 var tgs = a.hasOwnProperty('taggroups') ? a.taggroups : [];
                 var invs = a.hasOwnProperty('involvements') ? a.involvements : [];
 
