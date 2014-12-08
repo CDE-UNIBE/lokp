@@ -68,7 +68,7 @@ class ActivityProtocol(Protocol):
         """
         Read one single :term:`Activity` version: Either latest version
         visible by the current user or the version indicated if it
-        exists and is visible.This function handles the query, creates
+        exists and is visible. This function handles the query, creates
         and returns the Feature.
 
         Args:
@@ -85,6 +85,9 @@ class ActivityProtocol(Protocol):
         Returns:
             ``dict``. The :term:`Activity` Feature in JSON compatible
             format or ``{}`` if no version was found.
+
+            .. seealso::
+               :class:`lmkp.protocols.features.ItemFeature.to_json`
         """
         version = get_current_version(self.request)
         relevant_query = self.get_relevant_query_one(
@@ -110,6 +113,57 @@ class ActivityProtocol(Protocol):
 
         return features[0].to_json(self.request)
 
+    def read_one_geojson(self, uid, public_query=True, translate=True):
+        """
+        Read one single :term:`Activity` version and return it in a
+        GeoJSON compatible representation. The version returned is
+        either the latest visible by the current user or the version
+        indicated if it exists and is visible. This function handles the
+        query, creates and returns the Feature.
+
+        Args:
+            ``uid`` (str): The :term:`UUID` of the :term:`Activity` to
+            query.
+
+            ``public_query`` (bool): An optional boolean indicating
+            whether to return only a version visible to the public (eg.
+            no pending) or not. Defaults to ``True``.
+
+            ``translate`` (bool): An optional boolean indicating whether
+            to return translated values or not. Defaults to ``True``.
+
+        Returns:
+            ``dict``. A dict containing a single :term:`Activity`
+            Feature in a GeoJSON compatible format.
+
+            .. seealso::
+                   |to_geojson_read_one|
+
+        .. |to_geojson_read_one| replace::
+           :func:`lmkp.protocols.activity_features.ActivityFeature.to_geojson`
+        """
+        version = get_current_version(self.request)
+        relevant_query = self.get_relevant_query_one(
+            uid, version=version, public_query=public_query)
+
+        # Limit and offset are fix
+        limit = 1
+        offset = None
+        attributes = get_current_attributes(self.request)
+        translated_attributes = get_translated_keys(
+            'a', attributes, get_current_locale(self.request))
+        taggroup_geometry = get_current_taggroup_geometry_parameter(
+            self.request)
+
+        query = self.query_many_geojson(
+            relevant_query, limit=limit, offset=offset,
+            attributes=translated_attributes,
+            taggroup_geometry=taggroup_geometry, translate=translate)
+
+        features = self.query_to_geojson(query)
+
+        return features
+
     def read_many(
             self, public_query=True, limit=None, offset=None, translate=True,
             other_identifiers=None):
@@ -125,14 +179,14 @@ class ActivityProtocol(Protocol):
             ``limit`` (int): An optional limit. If no limit is provided,
             the one from the request is used if available.
 
-                .. seealso::
-                   :class:`lmkp.views.views.get_current_limit`
+            .. seealso::
+               :class:`lmkp.views.views.get_current_limit`
 
             ``offset`` (int): An optional offset. If no offset it
             provided, the one from the reuqest is used if available.
 
-                .. seealso::
-                   :class:`lmkp.views.views.get_current_offset`
+            .. seealso::
+               :class:`lmkp.views.views.get_current_offset`
 
             ``translate`` (bool): An optional boolean indicating whether
             to return translated values or not. Defaults to ``True``.
@@ -149,8 +203,8 @@ class ActivityProtocol(Protocol):
             query and the :term:`Activity` Features in JSON compatible
             format.
 
-                .. seealso::
-                   :class:`lmkp.protocols.features.ItemFeature.to_json`
+            .. seealso::
+               :class:`lmkp.protocols.features.ItemFeature.to_json`
         """
         relevant_query = self.get_relevant_query_many(
             public_query=public_query, other_identifiers=other_identifiers)
@@ -194,10 +248,10 @@ class ActivityProtocol(Protocol):
             ``dict``. A dictionary containing the :term:`Activity`
             Features in a GeoJSON compatible format.
 
-                .. seealso::
-                   |to_geojson|
+            .. seealso::
+               |to_geojson_read_many|
 
-        .. |to_geojson| replace::
+        .. |to_geojson_read_many| replace::
            :func:`lmkp.protocols.activity_features.ActivityFeature.to_geojson`
         """
         relevant_query = self.get_relevant_query_many(
@@ -876,8 +930,8 @@ class ActivityProtocol(Protocol):
             added to the involvements. Otherwise, only an involvement
             with the basic information is added. Defaults to ``none``.
 
-                .. seealso::
-                   :class:`lmkp.views.views.get_current_involvement_details`
+            .. seealso::
+               :class:`lmkp.views.views.get_current_involvement_details`
 
             ``public_query`` (bool): An optional boolean indicating
             whether to return only versions visible to the public (eg.

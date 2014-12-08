@@ -60,6 +60,7 @@ from lmkp.views.views import (
     get_page_parameters,
     get_status_parameter,
     get_current_translation_parameter,
+    get_current_involvement_parameter,
 )
 
 log = logging.getLogger(__name__)
@@ -495,30 +496,21 @@ class ActivityView(BaseView):
         if output_format == 'json':
 
             item = activity_protocol.read_one(
-                uid=uid, public_query=public, translate=translate)
+                uid, public_query=public, translate=translate)
 
             return render_to_response('json', item, self.request)
 
         elif output_format == 'geojson':
 
-            # A version is required
-            version = self.request.params.get('v', None)
-            if version is None:
-                raise HTTPBadRequest(
-                    'You must specify a version as parameter ?v=X')
-
-            translate = self.request.params.get(
-                'translate', 'true').lower() == 'true'
-
-            item = activity_protocol.read_one_geojson_by_version(
-                self.request, uid, version, translate=translate)
+            item = activity_protocol.read_one_geojson(
+                uid, public_query=public, translate=translate)
 
             return render_to_response('json', item, self.request)
 
         elif output_format == 'html':
 
             item = activity_protocol.read_one(
-                uid=uid, public_query=public, translate=False)
+                uid, public_query=public, translate=False)
 
             if item == {}:
                 return HTTPNotFound()
@@ -546,41 +538,30 @@ class ActivityView(BaseView):
             if not is_logged_in:
                 raise HTTPForbidden()
 
-            version = self.request.params.get('v', None)
-
             item = activity_protocol.read_one(
-                self.request, uid=uid, public=False, translate=False)
+                uid, public_query=False, translate=False)
 
-            for i in item.get('data', []):
+            if item == {}:
+                return HTTPNotFound()
 
-                item_version = i.get('version')
-                if version is None:
-                    # If there was no version provided, show the first
-                    # version visible to the user
-                    version = str(item_version)
+            new_involvement = get_current_involvement_parameter(self.request)
 
-                if str(item_version) == version:
+            template_values = renderForm(
+                self.request, 'activities', itemJson=item,
+                inv=new_involvement)
+            if isinstance(template_values, Response):
+                return template_values
 
-                    new_involvement = self.request.params.get('inv')
+            template_values.update(self.get_base_template_values())
+            template_values.update({
+                'uid': uid,
+                'version': item.get('version')
+            })
 
-                    template_values = renderForm(
-                        self.request, 'activities', itemJson=i,
-                        inv=new_involvement)
-                    if isinstance(template_values, Response):
-                        return template_values
-
-                    template_values.update(self.get_base_template_values())
-                    template_values.update({
-                        'uid': uid,
-                        'version': version
-                    })
-
-                    return render_to_response(
-                        get_customized_template_path(
-                            self.request, 'activities/form.mak'),
-                        template_values, self.request)
-
-            return HTTPNotFound()
+            return render_to_response(
+                get_customized_template_path(
+                    self.request, 'activities/form.mak'),
+                template_values, self.request)
 
         elif output_format in ['review', 'compare']:
 
@@ -824,7 +805,7 @@ class ActivityView(BaseView):
         if validate_uuid(uid) is not True:
             raise HTTPNotFound()
 
-        if output_format in ['json', 'html']:
+        if output_format in ['json', 'html', 'geojson']:
 
             return self.read_one(public=True)
 

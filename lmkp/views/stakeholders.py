@@ -482,14 +482,14 @@ class StakeholderView(BaseView):
         if output_format == 'json':
 
             item = stakeholder_protocol.read_one(
-                uid=uid, public_query=public, translate=translate)
+                uid, public_query=public, translate=translate)
 
             return render_to_response('json', item, self.request)
 
         elif output_format == 'html':
 
             item = stakeholder_protocol.read_one(
-                uid=uid, public_query=public, translate=False)
+                uid, public_query=public, translate=False)
 
             if item == {}:
                 return HTTPNotFound()
@@ -517,32 +517,23 @@ class StakeholderView(BaseView):
             if not is_logged_in:
                 raise HTTPForbidden()
 
-            version = self.request.params.get('v', None)
-
             item = stakeholder_protocol.read_one(
-                self.request, uid=uid, public=False, translate=False)
+                uid, public_query=False, translate=False)
 
-            for i in item.get('data', []):
+            if item == {}:
+                return HTTPNotFound()
 
-                item_version = i.get('version')
-                if version is None:
-                    # If there was no version provided, show the first
-                    # version visible to the user
-                    version = str(item_version)
+            template_values = renderForm(
+                self.request, 'stakeholders', itemJson=item)
+            if isinstance(template_values, Response):
+                return template_values
 
-                if str(item_version) == version:
+            template_values.update(self.get_base_template_values())
 
-                    template_values = renderForm(
-                        self.request, 'stakeholders', itemJson=i)
-                    if isinstance(template_values, Response):
-                        return template_values
-
-                    template_values.update(self.get_base_template_values())
-
-                    return render_to_response(
-                        get_customized_template_path(
-                            self.request, 'stakeholders/form.mak'),
-                        template_values, self.request)
+            return render_to_response(
+                get_customized_template_path(
+                    self.request, 'stakeholders/form.mak'),
+                template_values, self.request)
 
             return HTTPNotFound()
 

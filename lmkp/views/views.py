@@ -964,3 +964,8 @@ def get_current_version(request):
         return abs(int(version))
     except:
         return None
+
+
+def get_current_involvement_parameter(request):
+    # TODO: Complete this function and write tests.
+    return request.params.get('inv')
