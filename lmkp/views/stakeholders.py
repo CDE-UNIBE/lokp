@@ -44,7 +44,6 @@ from lmkp.views.form_config import getCategoryList
 from lmkp.views.stakeholder_protocol3 import StakeholderProtocol3
 from lmkp.views.stakeholder_review import StakeholderReview
 from lmkp.views.translation import (
-    get_translated_status,
     get_translated_db_keys,
 )
 from lmkp.views.views import (
@@ -436,8 +435,8 @@ class StakeholderView(BaseView):
 
             The following output formats are supported:
 
-                ``json``: Return the :term:`Stakeholder` as JSON. All
-                versions visible to the current user are returned.
+                ``json``: Return a single :term:`Stakeholder` version as
+                JSON.
 
                 ``html``: Return the :term:`Stakeholder` as HTML (eg.
                 the `Detail View`).
@@ -791,6 +790,9 @@ class StakeholderView(BaseView):
 
             The following output formats are supported:
 
+                ``json``: Return the history view as JSON. All versions
+                visible to the current user are returned.
+
                 ``html``: Return the history view as HTML.
 
                 ``rss``: Return history view as RSS feed.
@@ -800,45 +802,55 @@ class StakeholderView(BaseView):
         Returns:
             ``HTTPResponse``. Either a HTML or a JSON response.
         """
+        stakeholder_protocol = StakeholderProtocol(self.request)
         output_format = get_output_format(self.request)
 
         uid = self.request.matchdict.get('uid', None)
         if validate_uuid(uid) is not True:
             raise HTTPNotFound()
 
-        __, is_moderator = get_user_privileges(self.request)
-        items, count = stakeholder_protocol.read_one_history(
-            self.request, uid=uid)
+        if output_format == 'json':
+            items = stakeholder_protocol.read_one_history(
+                uid, public_query=False)
+            return render_to_response('json', items, self.request)
 
-        active_version = None
-        for i in items:
-            if 'statusName' in i:
-                i['statusName'] = get_translated_status(
-                    self.request, i['statusName'])
-            if i.get('statusId') == 2:
-                active_version = i.get('version')
+        elif output_format in ['html', 'rss']:
+            # TODO: Query only with metadata?
+            items = stakeholder_protocol.read_one_history(
+                uid, public_query=False)
 
-        template_values = self.get_base_template_values()
+            versions = items.get('data', [])
+            count = items.get('count')
 
-        template_values.update({
-            'versions': items,
-            'count': count,
-            'activeVersion': active_version,
-            'isModerator': is_moderator
-        })
+            __, is_moderator = get_user_privileges(self.request)
 
-        if output_format == 'html':
-            template = get_customized_template_path(
-                self.request, 'stakeholders/history.mak')
+            active_version = None
+            for v in versions:
+                if v.get('status_id') == 2:
+                    active_version = v.get('version')
 
-        elif output_format == 'rss':
-            template = get_customized_template_path(
-                self.request, 'stakeholders/history_rss.mak')
+            template_values = self.get_base_template_values()
+            template_values.update({
+                'versions': versions,
+                'count': count,
+                'active_version': active_version,
+                'is_moderator': is_moderator
+            })
+
+            if output_format == 'html':
+                template = get_customized_template_path(
+                    self.request, 'stakeholders/history.mak')
+
+            elif output_format == 'rss':
+                if len(versions) == 0:
+                    raise HTTPNotFound()
+                template = get_customized_template_path(
+                    self.request, 'stakeholders/history_rss.mak')
+
+            return render_to_response(template, template_values, self.request)
 
         else:
             raise HTTPNotFound()
-
-        return render_to_response(template, template_values, self.request)
 
     @view_config(route_name='stakeholders_review', renderer='json')
     def review(self):

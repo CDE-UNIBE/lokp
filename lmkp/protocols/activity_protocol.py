@@ -64,6 +64,68 @@ class ActivityProtocol(Protocol):
         :class:`lmkp.protocols.protocol.Protocol`
     """
 
+    def read_one_history(
+            self, uid, limit=None, offset=None, public_query=True,
+            translate=True):
+        """
+        Read all visible versions of a :term:`Activity`. This function
+        handles the query, creates and returns the Feature.
+
+        Args:
+            ``uid`` (str): The :term:`UUID` of the :term:`Activity` to
+            query.
+
+            ``limit`` (int): An optional limit. If no limit is provided,
+            the one from the request is used if available.
+
+            .. seealso::
+               :class:`lmkp.views.views.get_current_limit`
+
+            ``offset`` (int): An optional offset. If no offset it
+            provided, the one from the reuqest is used if available.
+
+            .. seealso::
+               :class:`lmkp.views.views.get_current_offset`
+
+            ``public_query`` (bool): An optional boolean indicating
+            whether to return only a version visible to the public (eg.
+            no pending) or not. Defaults to ``True``.
+
+            ``translate`` (bool): An optional boolean indicating whether
+            to return translated values or not. Defaults to ``True``.
+
+        Returns:
+            ``dict``. A dictionary containing the total count of the
+            query and the :term:`Activity` Features in JSON compatible
+            format.
+
+            .. seealso::
+               :class:`lmkp.protocols.features.ItemFeature.to_json`
+        """
+        relevant_query = self.get_relevant_query_one(
+            uid, version=False, public_query=public_query)
+
+        involvement_details = get_current_involvement_details(self.request)
+        show_involvements = involvement_details != 'none'
+
+        if limit is None:
+            limit = get_current_limit(self.request)
+        if offset is None:
+            offset = get_current_offset(self.request)
+
+        query, count = self.query_many(
+            relevant_query, limit=limit, offset=offset,
+            with_involvements=show_involvements, with_metadata=True)
+
+        features = self.query_to_features(
+            query, involvements=involvement_details, public_query=public_query,
+            translate=translate)
+
+        return {
+            'total': count,
+            'data': [f.to_json(self.request) for f in features]
+        }
+
     def read_one(self, uid, public_query=True, translate=True):
         """
         Read one single :term:`Activity` version: Either latest version
@@ -326,19 +388,30 @@ class ActivityProtocol(Protocol):
 
     def get_relevant_query_one(self, uid, version=None, public_query=False):
         """
-        Get a query with the database ID of a single relevant
-        :term:`Activity` version.
+        Get a query with the database ID(s) of a single relevant
+        :term:`Activity`. Usually, a single version (the latest visible
+        by default or the one indicated) is returned. However, this
+        function can also be used to return all visible versions of a
+        single :term:`Activity`.
 
         Args:
             ``uid`` (str): The :term:`UUID` of the :term:`Activity` to
             query.
 
-            ``version`` (int): An optional version of the
-            :term:`Activity` to query. If provided, a filter is set to
-            this version though it may not be visible to the current
-            user because of its status. If set to ``None``, no version
-            filter is applied and the latest visible version is
-            returned. Defaults to ``None``.
+            ``version`` (int or bool or None):
+
+            * ``int``: An optional version of the :term:`Activity` to
+              query. If provided, a filter is set to this version though
+              it may not be visible to the current user because of its
+              status. Returns only a single version.
+
+            * ``bool``: If set to ``False``, no version filter is
+              applied and **all** visible versions of the
+              :term:`Activity` are returned.
+
+            * ``None`` (default): If set to ``None``, no version filter
+              is applied but only a single version (the latest visible)
+              is returned.
 
             ``public_query`` (bool): An optional boolean indicating
             whether to return only a version visible to the public (eg.
@@ -368,7 +441,7 @@ class ActivityProtocol(Protocol):
         # Join Activities with order and group
         relevant_query = relevant_query.\
             outerjoin(order_query, order_query.c.id == Activity.id)
-        relevant_query = relevant_query.order_by(asc(order_query.c.value))
+        relevant_query = relevant_query.order_by(desc(Activity.version))
         relevant_query = relevant_query.\
             group_by(Activity.id, order_query.c.value, Activity.fk_status,
                      Activity.activity_identifier)
@@ -383,7 +456,9 @@ class ActivityProtocol(Protocol):
             # requested.
             relevant_query = self.apply_many_visible_version_filter(
                 'a', relevant_query, public_query=public_query)
-            relevant_query = relevant_query.filter(Activity.version == version)
+            if version is not False:
+                relevant_query = relevant_query.filter(
+                    Activity.version == version)
 
         return relevant_query
 
@@ -616,8 +691,7 @@ class ActivityProtocol(Protocol):
         query = self.Session.query(
             Activity.id.label('id')
         ).\
-            join(relevant_query,
-                 relevant_query.c.order_id == Activity.id)
+            join(relevant_query, relevant_query.c.order_id == Activity.id)
         return query
 
     def query_many(
@@ -986,8 +1060,8 @@ class ActivityProtocol(Protocol):
                 feature.timestamp = getattr(q, 'timestamp', None)
                 feature.previous_version = getattr(
                     q, 'previous_version', None)
-                feature.user_id = getattr(q, 'userid', None)
-                feature.user_name = getattr(q, 'user_name', None)
+                feature.userid = getattr(q, 'user_id', None)
+                feature.username = getattr(q, 'user_name', None)
                 feature.user_privacy = getattr(q, 'user_privacy', None)
                 feature.user_firstname = getattr(q, 'user_firstname', None)
                 feature.user_lastname = getattr(q, 'user_lastname', None)
