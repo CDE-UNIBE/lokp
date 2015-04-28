@@ -9,6 +9,8 @@ from sqlalchemy.sql.expression import (
     select,
 )
 from sqlalchemy.types import Float
+from pyramid.testing import DummyRequest
+from webob.multidict import MultiDict
 
 from lmkp.models.meta import DBSession as Session
 from lmkp.models.database_objects import (
@@ -95,14 +97,31 @@ class EvaluationView(BaseView):
                     ret['msg'] = "Value of 'translate[\'keys\']' needs to be "
                     "an array of arrays."
                     return ret
-        if 'filter' in json_data:
-            # TODO
-            pass
 
-        isInvolvementRequired = self.db_item == Stakeholder
-        for i in json_data.get('filter', {}).get('involvements', []):
-            if len(i) == 2 and i[0] == 'musthave':
-                isInvolvementRequired = i[1]
+        this_filter = []
+        other_filter = []
+        if 'filter' in json_data:
+            params = []
+            for filters in json_data.get('filter', '').split('&'):
+                try:
+                    f = filters.split('=')
+                    if len(f) == 2:
+                        params.append((f[0], f[1]))
+                except:
+                    pass
+            # Simulate a request to send the filters
+            req = DummyRequest()
+            req.params = MultiDict(params)
+            a_tag_filter, __, sh_tag_filter, __ = self.protocol._filter(req)
+            if self.db_item == Activity:
+                this_filter = a_tag_filter
+                other_filter = sh_tag_filter
+            else:
+                this_filter = sh_tag_filter
+                other_filter = a_tag_filter
+
+        isInvolvementRequired = (
+            self.db_item == Stakeholder or len(other_filter) > 0)
 
         # Collect all keys to be translated (values are translated in the
         # query)
@@ -156,6 +175,29 @@ class EvaluationView(BaseView):
         # Apply status filter (fix: active)
         q = q.filter(self.db_item.fk_status == 2)
 
+        # Apply filters
+        filter_subqueries = self.protocol.Session.query(
+            self.db_item.id.label('a_filter_id')
+        )
+        for x in this_filter:
+            # Collect the IDs for each filter
+            taggroups_sq = x.subquery()
+            single_subquery = self.protocol.Session.query(
+                self.db_item.id.label('a_filter_id')
+            ).\
+                join(self.db_taggroup).\
+                join(taggroups_sq,
+                     taggroups_sq.c.a_filter_tg_id == self.db_taggroup.id).\
+                subquery()
+            # Join each found ID with previously found IDs
+            filter_subqueries = filter_subqueries.\
+                join(single_subquery,
+                     single_subquery.c.a_filter_id == self.db_item.id)
+        filter_subqueries = filter_subqueries.subquery()
+        q = q.join(
+            filter_subqueries,
+            filter_subqueries.c.a_filter_id == self.db_item.id)
+
         # Apply profile boundary filter
         if self.db_item == Activity:
             p = json_data.get('profile', get_current_profile(self.request))
@@ -184,12 +226,42 @@ class EvaluationView(BaseView):
                 if profile is not None:
                     inv_subquery = inv_subquery.filter(geofunctions.intersects(
                         Activity.point, profile.geometry))
+                other_db_item = Activity
+                other_db_taggroup = A_Tag_Group
             else:
                 inv_subquery = Session.query(
                     Involvement.fk_activity.label('id')
                 ).\
                     join(Stakeholder).\
                     filter(Stakeholder.fk_status == 2)
+                other_db_item = Stakeholder
+                other_db_taggroup = SH_Tag_Group
+
+            # Apply filters
+            filter_subqueries = self.protocol.Session.query(
+                other_db_item.id.label('a_filter_id')
+            )
+
+            for x in other_filter:
+                # Collect the IDs for each filter
+                taggroups_sq = x.subquery()
+                single_subquery = self.protocol.Session.query(
+                    other_db_item.id.label('a_filter_id')
+                ).\
+                    join(other_db_taggroup).\
+                    join(taggroups_sq,
+                         taggroups_sq.c.a_filter_tg_id == other_db_taggroup.id).\
+                    subquery()
+                # Join each found ID with previously found IDs
+                filter_subqueries = filter_subqueries.\
+                    join(single_subquery,
+                         single_subquery.c.a_filter_id == other_db_item.id)
+
+            filter_subqueries = filter_subqueries.subquery()
+            inv_subquery = inv_subquery.join(
+                filter_subqueries,
+                filter_subqueries.c.a_filter_id == other_db_item.id)
+
             inv_subquery = inv_subquery.subquery()
             q = q.filter(self.db_item.id.in_(
                 select([inv_subquery.c.id])
