@@ -30,6 +30,7 @@ Services
    services/readone
    services/readmany
    services/readbyother
+   services/evaluation
 
 
 License
