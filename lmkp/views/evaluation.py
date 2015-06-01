@@ -245,13 +245,22 @@ class EvaluationView(BaseView):
             for x in other_filter:
                 # Collect the IDs for each filter
                 taggroups_sq = x.subquery()
-                single_subquery = self.protocol.Session.query(
-                    other_db_item.id.label('a_filter_id')
-                ).\
-                    join(other_db_taggroup).\
-                    join(taggroups_sq,
-                         taggroups_sq.c.a_filter_tg_id == other_db_taggroup.id).\
-                    subquery()
+                try:
+                    single_subquery = self.protocol.Session.query(
+                        other_db_item.id.label('a_filter_id')
+                    ).\
+                        join(other_db_taggroup).\
+                        join(taggroups_sq,
+                             taggroups_sq.c.a_filter_tg_id == other_db_taggroup.id).\
+                        subquery()
+                except AttributeError:
+                    single_subquery = self.protocol.Session.query(
+                        other_db_item.id.label('a_filter_id')
+                    ).\
+                        join(other_db_taggroup).\
+                        join(taggroups_sq,
+                             taggroups_sq.c.sh_filter_tg_id == other_db_taggroup.id).\
+                        subquery()
                 # Join each found ID with previously found IDs
                 filter_subqueries = filter_subqueries.\
                     join(single_subquery,
