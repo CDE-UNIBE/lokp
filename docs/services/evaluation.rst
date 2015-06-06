@@ -100,6 +100,19 @@ the filter query string as in the URL when applying a filter in the list
 or on the map.
 
 
+``a_ids``
+~~~~~~~~~
+
+(Optional). Optional array of Activity identifiers to filter the results
+by.
+
+
+``sh_ids``
+~~~~~~~~~~
+
+(Optional). Optional array of Stakeholder identifiers to filter the
+results by.
+
 
 Examples
 --------
@@ -200,4 +213,25 @@ Example with filter::
       "Country of origin"
     ],
     "filter": "a__Intended area (ha)__gt=300000&a__Intention of Investment__like=Agriculture"
+  }
+
+
+Example with filter by Activity ID::
+
+  {
+    "item": "Stakeholder",
+    "attributes": {
+      "Stakeholder": "count"
+    },
+    "translate": {
+      "keys": [
+        [
+          "Country of origin"
+        ]
+      ]
+    },
+    "group_by": [
+      "Country of origin"
+    ],
+    "a_ids": ["28363cf0-f150-4da9-a0fb-da4ea0a2de52"]
   }
