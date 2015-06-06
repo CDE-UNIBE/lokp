@@ -97,6 +97,30 @@ class EvaluationView(BaseView):
                     ret['msg'] = "Value of 'translate[\'keys\']' needs to be "
                     "an array of arrays."
                     return ret
+        a_ids = json_data.get('a_ids', [])
+        if not isinstance(a_ids, list):
+            ret['msg'] = "Parameter 'a_ids' needs to be an array."
+            return ret
+            for i in a_ids:
+                if not isinstance(i, str):
+                    ret['msg'] = "Entries of parameter 'a_ids' need to be "
+                    "strings (the UUIDs of Activities)"
+                    return ret
+        sh_ids = json_data.get('sh_ids', [])
+        if not isinstance(sh_ids, list):
+            ret['msg'] = "Parameter 'sh_ids' needs to be an array."
+            return ret
+            for i in sh_ids:
+                if not isinstance(i, str):
+                    ret['msg'] = "Entries of parameter 'sh_ids' need to be "
+                    "strings (the UUIDs of Stakeholders)"
+                    return ret
+        if self.db_item == Activity:
+            this_id_filter = a_ids
+            other_id_filter = sh_ids
+        else:
+            this_id_filter = sh_ids
+            other_id_filter = a_ids
 
         this_filter = []
         other_filter = []
@@ -121,7 +145,8 @@ class EvaluationView(BaseView):
                 other_filter = a_tag_filter
 
         isInvolvementRequired = (
-            self.db_item == Stakeholder or len(other_filter) > 0)
+            self.db_item == Stakeholder
+            or len(other_filter) + len(other_id_filter) > 0)
 
         # Collect all keys to be translated (values are translated in the
         # query)
@@ -174,6 +199,9 @@ class EvaluationView(BaseView):
 
         # Apply status filter (fix: active)
         q = q.filter(self.db_item.fk_status == 2)
+
+        if (this_id_filter):
+            q = q.filter(self.db_item.identifier.in_(this_id_filter))
 
         # Apply filters
         filter_subqueries = self.protocol.Session.query(
@@ -236,6 +264,10 @@ class EvaluationView(BaseView):
                     filter(Stakeholder.fk_status == 2)
                 other_db_item = Stakeholder
                 other_db_taggroup = SH_Tag_Group
+
+            if (other_id_filter):
+                inv_subquery = inv_subquery.filter(
+                    other_db_item.identifier.in_(other_id_filter))
 
             # Apply filters
             filter_subqueries = self.protocol.Session.query(
