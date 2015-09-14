@@ -141,6 +141,7 @@ def main(global_config, ** settings):
     config.add_route('profile_laos', '/laos')
     config.add_route('profile_peru', '/peru')
     config.add_route('profile_madagascar', '/madagascar')
+    config.add_route('profile_myanmar', '/myanmar')
     config.add_route('profile_global', '/global')
 
     # Evaluation
