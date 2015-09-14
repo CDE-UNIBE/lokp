@@ -157,6 +157,10 @@ class MainView(BaseView):
     @view_config(route_name='profile_laos')
     def profile_laos(self):
         return change_profile(self.request, 'laos')
+    
+    @view_config(route_name='profile_myanmar')
+    def profile_myanmar(self):
+        return change_profile(self.request, 'myanmar')
 
     @view_config(route_name='profile_peru')
     def profile_peru(self):
