@@ -17,6 +17,7 @@ lmkp.admin_password = admin_password
 lmkp.admin_email = info@cde.unibe.ch
 lmkp.use_js_builds = true
 lmkp.comments_url = http://localhost:3000/
+lmkp.google_maps_api_key = API_KEY
 
 ; Customization
 ; Specify the name of the customization directory (as it lies in
