@@ -7,18 +7,20 @@ README = open(os.path.join(here, 'README.md')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
-    'pyramid==1.3',
+    'pyramid_mako',
+    'pyramid_chameleon',
+    'pyramid==1.5',
     'pyramid_handlers==0.5',
     'pyramid_mailer==0.10',
     'SQLAlchemy==0.7.6',
     'GeoAlchemy==0.7.1',
     'transaction==1.2.0',
     'pyramid_tm==0.4',
-    'pyramid_debugtoolbar==1.0.2',
+    'pyramid_debugtoolbar==3.0.4',
     'zope.sqlalchemy==0.7',
     'waitress==0.8.1',
     'papyrus==0.8.1',
-    'Mako==0.6',
+    'Mako==0.8',
     'WebTest==1.3.4',
     'cryptacular',
     'Babel==0.9.6',
