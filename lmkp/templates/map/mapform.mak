@@ -1,6 +1,5 @@
 <%page args="readonly=False, compare=False, identifier=None, version=None" />
 
-<script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3&amp;sensor=false"></script>
 <script src="${request.static_url('lmkp:static/lib/OpenLayers-2.12/OpenLayers.js')}" type="text/javascript"></script>
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=${str(request.registry.settings.get('lmkp.google_maps_api_key'))}"></script>
 <script type="text/javascript" src="${request.route_url('context_layers')}"></script>

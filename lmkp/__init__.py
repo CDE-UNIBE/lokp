@@ -28,6 +28,7 @@ def main(global_config, ** settings):
     """ This function returns a Pyramid WSGI application.
     """
 
+
     # Used when called through Tests
     if 'settings' in settings:
         settings = settings['settings']
@@ -67,6 +68,9 @@ def main(global_config, ** settings):
     config.set_authorization_policy(authzPolicy)
 
     config.include('pyramid_beaker')
+
+    config.include('pyramid_mako')
+    config.include('pyramid_chameleon')
 
     # Add the directories that include the translations, also include the
     # translation directory for the customization
