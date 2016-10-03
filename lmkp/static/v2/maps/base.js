@@ -143,7 +143,7 @@ function updateMapCriteria(translatedName, internalName) {
  * - tForNodealselected
  * HTML elements:
  * - <div id="map-point-list">
- * - <div class="basic-data">
+ * - <div class="deal-data">
  * - <h6 class="deal-headline"></h6>
  * - <ul id="taggroups-ul">
  * - <div id="map-deals-symbolization">
@@ -405,10 +405,11 @@ function initializeMapContent() {
                     $('#taggroups-ul').append('<li class="inv"><p><span class="bolder">' + label + ': </span>' + involvements.join(', ') + '</p></li>');
                 }
             });
+            jQuery('html,body').animate({scrollTop: jQuery('#window_right').offset().top}, 1000);
         } else {
-            $(".basic-data").empty();
+            $(".deal-data").empty();
             // Create a list of selected deals, when selecting several deals
-            var header = $(".basic-data").append("<h6 class=\"deal-headline\">" + tForSelecteddeals + "</h6>");
+            var header = $(".deal-data").append("<h5 class=\"deal-headline text-primary-color\">" + tForSelecteddeals + "</h5>");
 
             // Show at maximum ten deals to prevent a too long basic data box
             var maxFeatures = 10;
@@ -1002,8 +1003,8 @@ function addLayersToSelectControl(map, layers) {
  */
 function clearDetails() {
     $("#taggroups-ul").empty();
-    $(".basic-data").empty()
-            .append("<h6 class=\"deal-headline\">" + tForDeals + " <span id=\"deal-shortid-span\" class=\"underline\">#</span></h6>")
+    $(".deal-data").empty()
+            .append("<h5 class=\"deal-headline text-primary-color\">" + tForDeals + " <span id=\"deal-shortid-span\" class=\"underline\">#</span></h5>")
             .append('<ul id="taggroups-ul"><li><p>' + tForNodealselected + '</p></li></ul>');
 }
 

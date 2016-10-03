@@ -133,7 +133,7 @@ class StakeholderView(BaseView):
 
         if output_format == 'json':
 
-            items = stakeholder_protocol.read_many(self.request, public=False)
+            items = stakeholder_protocol.read_many(self.request, public=False, )
 
             return render_to_response('json', items, self.request)
 
