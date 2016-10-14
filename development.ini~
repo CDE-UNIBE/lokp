@@ -1,0 +1,101 @@
+[app:main]
+use = egg:LMKP
+
+pyramid.reload_templates = true
+pyramid.debug_authorization = false
+pyramid.debug_notfound = false
+pyramid.debug_routematch = false
+pyramid.debug_templates = true
+pyramid.default_locale_name = en
+pyramid.includes = pyramid_debugtoolbar
+                   pyramid_tm
+
+sqlalchemy.url = postgresql://lokp_user:postgres@localhost:5432/lokp_db
+
+lmkp.base_wms = http://cdetux2.unibe.ch/geoserver/lo/wms
+lmkp.base_wps = http://zoo.cde.unibe.ch/zoo_loader.cgi
+lmkp.admin_password = admin_password
+lmkp.admin_email = info@cde.unibe.ch
+lmkp.use_js_builds = false
+lmkp.comments_url = http://localhost:3000/
+lmkp.google_maps_api_key = API_KEY
+
+; Customization
+; Specify the name of the customization directory (as it lies in
+; lmkp/customization/)
+lmkp.customization = omm
+; Specify the profile subdirectory within the customization directory
+; (lmkp/customization/[lmkp.customization]/profiles/[lmkp.profiles_dir])
+lmkp.profiles_dir = devel
+
+; Specify the parameters for file upload
+; Upload directory, maximum file size, allowed mime-types and file extensions.
+lmkp.file_upload_dir = /files
+lmkp.file_upload_max_size = 5120 ; in kilobytes, default is 5120 (5 MB)
+lmkp.file_mime_extensions = {
+    image/jpeg .jpg
+    image/png .png
+    image/gif .gif
+    }
+
+; Specify the smtp server used to send mails.
+; See also http://packages.python.org/pyramid_mailer/ for more options
+mail.host = smtp.example.com
+mail.default_sender = info@example.com
+
+; TODO: Documentation of these settings
+# pyramid_beaker settings
+session.type = file
+session.data_dir = %(here)s/data/sessions/data
+session.lock_dir = %(here)s/data/sessions/lock
+session.key = somekey
+session.secret = somesecret
+session.cookie_on_exception = true
+
+; Specify the running mode of the application if desired
+; lmkp.mode = demo
+# "lmkp.mode = demo" shows [Demo] flag and login credentials on login page.
+
+[server:main]
+use = egg:waitress#main
+host = 0.0.0.0
+port = 6543
+
+# Begin logging configuration
+
+[loggers]
+keys = root, lmkp, sqlalchemy
+
+[handlers]
+keys = console
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = INFO
+handlers = console
+
+[logger_lmkp]
+level = DEBUG
+handlers =
+qualname = lmkp
+
+[logger_sqlalchemy]
+level = INFO
+handlers =
+qualname = sqlalchemy.engine
+# "level = INFO" logs SQL queries.
+# "level = DEBUG" logs SQL queries and results.
+# "level = WARN" logs neither.  (Recommended for production systems.)
+
+[handler_console]
+class = StreamHandler
+args = (sys.stderr,)
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s
+
+# End logging configuration
