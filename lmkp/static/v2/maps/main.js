@@ -179,11 +179,11 @@ function showContextLegend(layerName) {
     var imgUrl = layer.url + '?' + $.param(imgParams);
 
     // Set the content: Image is hidden first while loading indicator is shown
-    $('#mapModalHeader').html(tForLegend);
+    //$('#mapModalHeader').html(tForLegend);
     $('#mapModalBody').html('<div id="contextLegendImgLoading" style="text-align: center;"><img src="/static/img/ajax-loader-green.gif" alt="' + tForLoading + '" height="55" width="54"></div><div id="contextLegendContent" class="hide"><p>' + tForLegendforcontextlayer + ' <strong>' + layerName + '</strong>:</p><img id="contextLegendImg" src="' + imgUrl + '"></div>');
 
     // Show the model window
-    $('#mapModal').modal();
+    //$('#mapModal').modal();
 
     // Once the image is loaded, hide the loading indicator and show the image
     /*$('#contextLegendImg').load(function() {

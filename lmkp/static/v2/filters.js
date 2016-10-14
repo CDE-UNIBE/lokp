@@ -25,14 +25,14 @@ var filterOperators = {
     ]
 }
 
-$(function() {
+
     var filterCounter = 0;
 
     /**
      * Functionality when clicking the link to open/close the filter area.
      */
     $('.filter_area_openclose').click(function() {
-        $('.filter_area').slideToggle();
+        $('.filter_area').css("display","inline");
         filterCounter++;
 
         // closed
@@ -45,8 +45,10 @@ $(function() {
         // openend
         else {
             $(this).find('span').hide();
-            $(this).find('i').removeClass().addClass('icon-double-angle-up pointer');
-            $(this).css('border-top', 'double 3px #BDBDBD');
+            //$(this).find('i').removeClass().addClass('icon-double-angle-up pointer');
+            //$(this).css('border-top', 'double 3px #BDBDBD');
+            $(this).find('i').hide();
+            $(this).css('border', 'none');
         }
     });
 
@@ -58,7 +60,7 @@ $(function() {
     if ($('.active-filter').length) {
         $('.filter_area_openclose').click();
     }
-});
+
 
 /**
  * Function called when selecting a new key in the dropdown. Puts the translated
@@ -69,8 +71,10 @@ $(function() {
 function selectKey(keyTranslated, keyName, keyType, itemType) {
 
     // Set the value of the selected key in the field.
-    $('#new-filter-key').val(keyTranslated);
+    //$('#new-filter-key').val(keyTranslated);
+    document.getElementById("new-filter-key").innerHTML = String(keyTranslated) + '<i class="material-icons right">arrow_drop_down</i>';
     $('#new-filter-key-internal').val(keyName);
+    //document.getElementById("new-filter-key-internal").innerHTML = String(keyName);
 
     /**
      * TODO: Make this more dynamic (consider the following use case: A user
@@ -80,16 +84,21 @@ function selectKey(keyTranslated, keyName, keyType, itemType) {
 
     // Update the value field.
     if (keyType != 'dropdown' && keyType != 'checkbox') {
-        $('#new-filter-value-box').replaceWith('<div id="new-filter-value-box" class="btn-group"><input id="new-filter-value-internal" type="text" class="filter-value" placeholder="' + tForValue + '" /></div>');
+        $('#new-filter-value-box').replaceWith('<div id="new-filter-value-box"  action="" style="height: 25px; line-height: 25px; margin: 18px; width: 80%;"><input id="new-filter-value-internal" type="text" style="height: 20px; line-height: 20px;" class="filter-value" placeholder="' + tForValue + '" /></div>');
     } else {
-        $('#new-filter-value-box').replaceWith('<div id="new-filter-value-box" class="btn-group input-append"><input id="new-filter-value" class="select-value" type="text" placeholder="' + tForValue + '" /><button class="btn select_btn_filter_right dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></button><input id="new-filter-value-internal" type="hidden" value=""/></div>');
+        $('#new-filter-value-box').replaceWith('' +
+            '<div id="new-filter-value-box">' +
+                //'<input id="new-filter-value" class="select-value" type="text" placeholder="' + tForValue + '" />' +
+                '<a id="new-filter-value-dd" class="dropdown-button btn btn select_btn_filter_right" href="#" data-activates="dropdown3" style="width: 80%;">Value<i class="material-icons right">arrow_drop_down</i></a>' +
+                '<input id="new-filter-value-internal" type="hidden" value=""/>' +
+            '</div>');
         $.get('/json/filtervalues', {
             type: itemType,
             key: keyName
         }, function(data) {
-            var menu = $('<ul class="dropdown-menu pull-right" role="menu"></ul>');
+            var menu = $('<ul id="dropdown3" class="dropdown-content"></ul>');
             $.each(data, function(i, d) {
-                menu.append('<li><a href="#" onClick="javascript:selectValue(\'' + d[0].replace("'", "\\'") + '\', \'' + d[1].replace("'", "\\'") + '\')">' + d[0] + '</a></li>')
+                menu.append('<li><a href="#" style="line-height: 50px; height: 50px;" onClick="javascript:selectValue(\'' + d[0].replace("'", "\\'") + '\', \'' + d[1].replace("'", "\\'") + '\')">' + d[0] + '</a></li>')
             });
             $('#new-filter-value-box').append(menu);
         });
@@ -104,6 +113,11 @@ function selectKey(keyTranslated, keyName, keyType, itemType) {
     }
     _addOperators(operators);
 
+    var myVar = setInterval(myTimer ,1000);
+    function myTimer() {
+        initializeDropdown();
+    }
+
     return false;
 }
 
@@ -112,7 +126,8 @@ function selectKey(keyTranslated, keyName, keyType, itemType) {
  * in the display field.
  */
 function selectOperator(display, operator) {
-    $('#new-filter-operator-display').html(display);
+    //$('#new-filter-operator-display').html(display);
+    document.getElementById("new-filter-operator-display").innerHTML = String(display) + '<i class="material-icons right">arrow_drop_down</i>';
     $('#new-filter-operator').val(operator);
 }
 
@@ -122,6 +137,7 @@ function selectOperator(display, operator) {
  */
 function selectValue(valueTranslated, valueName) {
     $('#new-filter-value').val(valueTranslated);
+    document.getElementById("new-filter-value-dd").innerHTML = String(valueTranslated) + '<i class="material-icons right">arrow_drop_down</i>';
     $('#new-filter-value-internal').val(valueName);
 }
 
@@ -136,6 +152,11 @@ function addNewFilter(itemtype, key, operator, value) {
     var value = value ? value : $('#new-filter-value-internal').val();
     var itemtype = itemtype ? itemtype : $('#new-filter-itemtype').val();
     var operator = operator ? operator : $('#new-filter-operator').val();
+
+    console.log('key: ' + key);
+    console.log('value: ' + value);
+    console.log('itemtype: ' + itemtype);
+    console.log('operator: ' + operator);
 
     if (key && value && operator) {
         // Prepare the query string as object
@@ -209,10 +230,11 @@ function _addOperators(operators) {
     $.each(operators, function(i, o) {
         if (i == 0) {
             // Set the first operator
-            $('#new-filter-operator-display').html(operators[0][0]);
+            //$('#new-filter-operator-display').html(operators[0][0]);
+            document.getElementById("new-filter-operator-display").innerHTML = String(operators[0][0]) + '<i class="material-icons right">arrow_drop_down</i>';
             $('#new-filter-operator').val(operators[0][1]);
         }
-        operatorDropdown.append('<li><a href="#" onClick="javascript:selectOperator(\'' + o[0] + '\', \'' + o[1] + '\')">' + o[0] + '</a></li>');
+        operatorDropdown.append('<li><a href="#" style="line-height: 50px; height: 50px;" onClick="javascript:selectOperator(\'' + o[0] + '\', \'' + o[1] + '\')">' + o[0] + '</a></li>');
     });
 }
 

@@ -213,13 +213,14 @@ function initializeMapContent() {
                 // Add the symbolization dropdown and its content
                 var s = [];
                 s.push(
-                        '<a class="dropdown-toggle blacktemp map-point-symbol-dropdown" href="#" data-toggle="dropdown">',
+                        '<a class="dropdown-button" href="#" data-activates="map-symbolization-dropdown" style="margin: 0; padding: 0; line-height: 22px; height: 22px;">',
                         '<span id="map-symbolization-name">',
                         mapCriteria[0],
                         '</span>',
-                        '&nbsp;<b class="caret"></b>',
+                        '<i class="material-icons right" style="line-height: 22px;">arrow_drop_down</i>',
                         '</a>',
-                        '<ul class="dropdown-menu map-point-symbol-drodpown-menu">'
+                        '</span>',
+                        '<ul id="map-symbolization-dropdown" class="dropdown-content" style="width: 500px;">'
                         );
                 $.each(allMapCriteria, function() {
                     s.push(
@@ -230,6 +231,7 @@ function initializeMapContent() {
                 });
                 s.push('</ul>');
                 $('#map-deals-symbolization').html(s.join(''));
+                initializeDropdown();
 
                 // Empty the legend and show it again in case it was hidden
                 $("#map-points-list").empty().css('visibility', 'visible');
@@ -298,7 +300,7 @@ function initializeMapContent() {
 
                     // Write a legend entry for the group
                     var legendTemplate = [
-                        '<li class="legendEntry">',
+                        '<li style="line-height: 15px;">',
                         '<div class="vectorLegendSymbol" style="background-color: ' + getColor(colorIndex) + ';">',
                         '</div>',
                         l,
@@ -412,7 +414,7 @@ function initializeMapContent() {
             var header = $(".deal-data").append("<h5 class=\"deal-headline text-primary-color\">" + tForSelecteddeals + "</h5>");
 
             // Show at maximum ten deals to prevent a too long basic data box
-            var maxFeatures = 10;
+            var maxFeatures = 5;
             if (feature.cluster.length <= maxFeatures) {
                 for (var i = 0; i < feature.cluster.length; i++) {
                     var f = feature.cluster[i];
@@ -479,24 +481,21 @@ function initializeContextLayers() {
     for (var c in contextLayers) {
         var layerName = contextLayers[c].name;
         var t = [
-            '<li>',
-            '<div class="checkbox-modified-small">',
+            '<p style="padding-top: 0; padding-bottom: 0;">',
             '<input class="input-top context-layer-checkbox" type="checkbox" value="' + layerName + '" id="checkbox' + layerName + '">',
-            '<label for="checkbox' + layerName + '"></label>',
-            '</div>',
-            '<p class="context-layers-description">',
-            layerName
+            '<label class="text-primary-color" for="checkbox' + layerName + '">',
+            layerName,
+            '</label>'
         ];
         if (contextLegendInformation === true) {
             t.push(
                     '&nbsp;',
-                    '<i class="icon-exclamation-sign pointer" onClick="javascript:showContextLegend(\'' + layerName + '\');">',
+                    '<i class="icon-exclamation-sign pointer text-accent-color" onClick="javascript:showContextLegend(\'' + layerName + '\');">',
                     '</i>'
                     );
         }
         t.push(
-                '</p>',
-                '</li>'
+                '</p>'
                 );
         $("#context-layers-list").append(t.join(''));
     }
@@ -523,18 +522,15 @@ function initializePolygonLayers() {
             n = n[0];
         }
         var t = [
-            '<li>',
-            '<div class="checkbox-modified-small">',
-            '<input class="input-top area-layer-checkbox" type="checkbox" value="' + v + '" id="checkbox' + v + '"'
+            '<p style="padding-top: 0; padding-bottom: 0;">',
+            '<input class="input-top area-layer-checkbox" type="checkbox" value="' + v + '" id="checkbox' + v + '"',
         ];
         if (polygonLoadOnStart === true) {
             t.push(' checked="checked"');
         }
         t.push(
                 '>',
-                '<label for="checkbox' + v + '"></label>',
-                '</div>',
-                '<p class="context-layers-description">',
+                '<label class="text-primary-color" for="checkbox' + v + '">',
                 '<span class="vectorLegendSymbolSmall" style="',
                 'border: 2px solid ' + getColor(a) + ';',
                 '"><span class="vectorLegendSymbolSmallInside" style="',
@@ -543,9 +539,9 @@ function initializePolygonLayers() {
                 'filter: alpha(opacity=50)',
                 '"></span></span>',
                 n,
-                '</p>',
-                '</li>'
-                );
+                '</label>',
+                '</p>'
+        );
         $('#map-areas-list').append(t.join(''));
         if (polygonLoadOnStart === true) {
             setPolygonLayerByName(map, v, true);

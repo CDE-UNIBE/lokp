@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/lmkp/customization/omm/templates/base.mak" line="400" />
+    <bookmark url="file://$PROJECT_DIR$/lmkp/customization/omm/templates/base.mak" line="403" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="404e9797-1f4f-4980-a2d3-702bffe7bb0c" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lmkp/static/v2/filters.js" afterPath="$PROJECT_DIR$/lmkp/static/v2/filters.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lmkp/static/v2/maps/base.js" afterPath="$PROJECT_DIR$/lmkp/static/v2/maps/base.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lmkp/views/stakeholders.py" afterPath="$PROJECT_DIR$/lmkp/views/stakeholders.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lmkp/static/v2/maps/main.js" afterPath="$PROJECT_DIR$/lmkp/static/v2/maps/main.js" />
     </list>
     <ignored path="lokp.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -30,12 +32,19 @@
       <file leaf-file-name="base.mak" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/base.mak">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="792">
-              <caret line="408" column="46" selection-start-line="408" selection-start-column="46" selection-end-line="408" selection-end-column="46" />
-              <folding>
-                <element signature="n#style#0;n#div#0;n#div#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#div#0;n#footer#0;n#body#0;n#html#0;n#!!top" expanded="true" />
-              </folding>
+            <state relative-caret-position="297">
+              <caret line="347" column="8" selection-start-line="347" selection-start-column="8" selection-end-line="347" selection-end-column="8" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="mapform.mak" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lmkp/templates/map/mapform.mak">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="90">
+              <caret line="6" column="106" selection-start-line="6" selection-start-column="106" selection-end-line="6" selection-end-column="106" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -43,23 +52,9 @@
       <file leaf-file-name="map_view.mak" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/map_view.mak">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="388">
-              <caret line="155" column="32" selection-start-line="155" selection-start-column="32" selection-end-line="155" selection-end-column="32" />
-              <folding>
-                <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#div#1;n#div#0;n#div#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#div#2;n#div#0;n#div#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#a#0;n#div#2;n#div#0;n#div#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#a#1;n#div#2;n#div#0;n#div#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#div#0;n#div#1;n#div#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#div#0;n#div#0;n#div#1;n#div#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#div#1;n#div#0;n#div#1;n#div#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#div#1;n#div#1;n#div#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#div#0;n#div#1;n#div#1;n#div#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#img#0;n#div#0;n#div#1;n#div#1;n#div#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#div#1;n#div#1;n#div#1;n#div#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#div#1;n#!!top" expanded="true" />
-              </folding>
+            <state relative-caret-position="328">
+              <caret line="128" column="23" selection-start-line="128" selection-start-column="17" selection-end-line="128" selection-end-column="23" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -67,12 +62,57 @@
       <file leaf-file-name="base.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lmkp/static/v2/maps/base.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="605">
-              <caret line="1006" column="24" selection-start-line="1006" selection-start-column="24" selection-end-line="1006" selection-end-column="24" />
+            <state relative-caret-position="1010">
+              <caret line="1025" column="0" selection-start-line="1025" selection-start-column="0" selection-end-line="1025" selection-end-column="0" />
               <folding>
-                <marker date="1475492504264" expanded="true" signature="7134:7140" ph=" " />
-                <marker date="1475492504264" expanded="true" signature="10860:10907" ph="..." />
+                <marker date="1476453963466" expanded="true" signature="6961:7016" ph="..." />
+                <marker date="1476453963466" expanded="true" signature="7222:7240" ph="..." />
+                <marker date="1476453963466" expanded="true" signature="7424:7437" ph="..." />
+                <marker date="1476453963466" expanded="true" signature="10979:10997" ph="..." />
+                <marker date="1476453963466" expanded="true" signature="11066:11113" ph="..." />
+                <marker date="1476453963466" expanded="true" signature="18180:18214" ph="..." />
+                <marker date="1476453963466" expanded="true" signature="19496:19530" ph="..." />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="showcases_view.mak" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/showcases_view.mak">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-872">
+              <caret line="27" column="26" selection-start-line="27" selection-start-column="26" selection-end-line="27" selection-end-column="72" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="base_no_menu.mak" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/base_no_menu.mak">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="746">
+              <caret line="184" column="61" selection-start-line="184" selection-start-column="61" selection-end-line="184" selection-end-column="61" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="form.mak" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/form/readonly/form.mak">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="210">
+              <caret line="14" column="39" selection-start-line="14" selection-start-column="39" selection-end-line="14" selection-end-column="39" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="main.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/static/js/main.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="150">
+              <caret line="10" column="32" selection-start-line="10" selection-start-column="32" selection-end-line="10" selection-end-column="32" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -80,9 +120,25 @@
       <file leaf-file-name="custom.css" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/static/css/custom.css">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
+            <state relative-caret-position="15">
               <caret line="933" column="11" selection-start-line="933" selection-start-column="11" selection-end-line="933" selection-end-column="11" />
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="filters.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lmkp/static/v2/filters.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="945">
+              <caret line="141" column="1" selection-start-line="141" selection-start-column="1" selection-end-line="141" selection-end-column="1" />
+              <folding>
+                <marker date="1476198734522" expanded="true" signature="2711:2769" ph="..." />
+                <marker date="1476198734522" expanded="true" signature="2828:2860" ph="..." />
+                <marker date="1476198734522" expanded="true" signature="3303:3314" ph="..." />
+                <marker date="1476198734522" expanded="true" signature="3778:3810" ph="..." />
+                <marker date="1476198734522" expanded="true" signature="8473:8505" ph="..." />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -95,9 +151,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/lmkp/customization/lo/templates/landing_page.mak" />
-        <option value="$PROJECT_DIR$/lmkp/customization/lo/templates/base_no_menu.mak" />
-        <option value="$PROJECT_DIR$/lmkp/customization/lo/static/css/custom.css" />
         <option value="$PROJECT_DIR$/lmkp/customization/omm/templates/landing_page.mak" />
         <option value="$PROJECT_DIR$/lmkp/customization/omm/templates/activities/compare.mak" />
         <option value="$PROJECT_DIR$/lmkp/customization/omm/templates/activities/details.mak" />
@@ -138,13 +191,16 @@
         <option value="$PROJECT_DIR$/lmkp/customization/omm/templates/activities/download.mak" />
         <option value="$PROJECT_DIR$/lmkp/customization/omm/templates/stakeholders/download.mak" />
         <option value="$PROJECT_DIR$/lmkp/customization/lo/templates/base.mak" />
-        <option value="$PROJECT_DIR$/lmkp/customization/omm/templates/base_no_menu.mak" />
         <option value="$PROJECT_DIR$/lmkp/customization/lo/templates/map_view.mak" />
         <option value="$PROJECT_DIR$/lmkp/views/stakeholders.py" />
         <option value="$PROJECT_DIR$/lmkp/views/stakeholder_protocol3.py" />
-        <option value="$PROJECT_DIR$/lmkp/customization/omm/templates/base.mak" />
         <option value="$PROJECT_DIR$/lmkp/customization/omm/static/css/custom.css" />
         <option value="$PROJECT_DIR$/lmkp/customization/omm/templates/map_view.mak" />
+        <option value="$PROJECT_DIR$/lmkp/customization/omm/static/js/main.js" />
+        <option value="$PROJECT_DIR$/lmkp/customization/omm/templates/base_no_menu.mak" />
+        <option value="$PROJECT_DIR$/lmkp/templates/map/mapform.mak" />
+        <option value="$PROJECT_DIR$/lmkp/customization/omm/templates/base.mak" />
+        <option value="$PROJECT_DIR$/lmkp/static/v2/filters.js" />
         <option value="$PROJECT_DIR$/lmkp/static/v2/maps/base.js" />
       </list>
     </option>
@@ -186,6 +242,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scratches" />
       <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
@@ -234,6 +291,46 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="views" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="lokp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="lokp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="lmkp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="templates" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="lokp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="lokp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="lmkp" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="templates" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="map" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -321,57 +418,8 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="lokp" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="lokp" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="lmkp" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="customization" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="omm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="lokp" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="lokp" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="lmkp" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="customization" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="omm" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="templates" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
         </subPane>
       </pane>
-      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -673,9 +721,9 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="24" width="1855" height="1176" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17520216" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17520216" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32970026" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -711,55 +759,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/form/readonly/customInvolvementMappingStakeholder.mak">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/form/readonly/form.mak">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/parts/filter.mak">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/parts/items/activities.mak">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/parts/items/activity.mak">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/parts/items/stakeholder.mak">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/parts/items/stakeholder_role.mak">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/parts/messages/activity_created_success.mak">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -974,7 +973,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="368">
           <caret line="1369" column="16" selection-start-line="1369" selection-start-column="16" selection-end-line="1369" selection-end-column="16" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1024,76 +1022,122 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1320">
           <caret line="144" column="52" selection-start-line="143" selection-start-column="45" selection-end-line="144" selection-end-column="52" />
-          <folding>
-            <element signature="e#0#14#0" expanded="false" />
-          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/development.ini">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/static/js/main.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="10" column="32" selection-start-line="10" selection-start-column="32" selection-end-line="10" selection-end-column="32" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/showcases_view.mak">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
+        <state relative-caret-position="-872">
           <caret line="27" column="26" selection-start-line="27" selection-start-column="26" selection-end-line="27" selection-end-column="72" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/form/readonly/form.mak">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="14" column="39" selection-start-line="14" selection-start-column="39" selection-end-line="14" selection-end-column="39" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/base_no_menu.mak">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="267">
-          <caret line="168" column="35" selection-start-line="168" selection-start-column="35" selection-end-line="168" selection-end-column="35" />
+        <state relative-caret-position="746">
+          <caret line="184" column="61" selection-start-line="184" selection-start-column="61" selection-end-line="184" selection-end-column="61" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/static/css/custom.css">
+    <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/static/js/vendor/materialize.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="933" column="11" selection-start-line="933" selection-start-column="11" selection-end-line="933" selection-end-column="11" />
+        <state relative-caret-position="346">
+          <caret line="232" column="199" selection-start-line="232" selection-start-column="195" selection-end-line="232" selection-end-column="199" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/static/js/vendor/typeahead.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="1" column="12" selection-start-line="1" selection-start-column="3" selection-end-line="1" selection-end-column="12" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/map_view.mak">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="388">
-          <caret line="155" column="32" selection-start-line="155" selection-start-column="32" selection-end-line="155" selection-end-column="32" />
-          <folding>
-            <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#1;n#div#0;n#div#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#2;n#div#0;n#div#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#a#0;n#div#2;n#div#0;n#div#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#a#1;n#div#2;n#div#0;n#div#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#0;n#div#1;n#div#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#0;n#div#0;n#div#1;n#div#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#1;n#div#0;n#div#1;n#div#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#1;n#div#1;n#div#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#0;n#div#1;n#div#1;n#div#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#img#0;n#div#0;n#div#1;n#div#1;n#div#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#1;n#div#1;n#div#1;n#div#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#1;n#!!top" expanded="true" />
-          </folding>
+        <state relative-caret-position="328">
+          <caret line="128" column="23" selection-start-line="128" selection-start-column="17" selection-end-line="128" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lmkp/templates/map/mapform.mak">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="90">
+          <caret line="6" column="106" selection-start-line="6" selection-start-column="106" selection-end-line="6" selection-end-column="106" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/base.mak">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="792">
-          <caret line="408" column="46" selection-start-line="408" selection-start-column="46" selection-end-line="408" selection-end-column="46" />
+        <state relative-caret-position="297">
+          <caret line="347" column="8" selection-start-line="347" selection-start-column="8" selection-end-line="347" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/static/css/custom.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="933" column="11" selection-start-line="933" selection-start-column="11" selection-end-line="933" selection-end-column="11" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lmkp/static/v2/filters.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="945">
+          <caret line="141" column="1" selection-start-line="141" selection-start-column="1" selection-end-line="141" selection-end-column="1" />
           <folding>
-            <element signature="n#style#0;n#div#0;n#div#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#0;n#footer#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+            <marker date="1476198734522" expanded="true" signature="2711:2769" ph="..." />
+            <marker date="1476198734522" expanded="true" signature="2828:2860" ph="..." />
+            <marker date="1476198734522" expanded="true" signature="3303:3314" ph="..." />
+            <marker date="1476198734522" expanded="true" signature="3778:3810" ph="..." />
+            <marker date="1476198734522" expanded="true" signature="8473:8505" ph="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lmkp/static/v2/maps/base.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="605">
-          <caret line="1006" column="24" selection-start-line="1006" selection-start-column="24" selection-end-line="1006" selection-end-column="24" />
+        <state relative-caret-position="1010">
+          <caret line="1025" column="0" selection-start-line="1025" selection-start-column="0" selection-end-line="1025" selection-end-column="0" />
           <folding>
-            <marker date="1475492504264" expanded="true" signature="7134:7140" ph=" " />
-            <marker date="1475492504264" expanded="true" signature="10860:10907" ph="..." />
+            <marker date="1476453963466" expanded="true" signature="6961:7016" ph="..." />
+            <marker date="1476453963466" expanded="true" signature="7222:7240" ph="..." />
+            <marker date="1476453963466" expanded="true" signature="7424:7437" ph="..." />
+            <marker date="1476453963466" expanded="true" signature="10979:10997" ph="..." />
+            <marker date="1476453963466" expanded="true" signature="11066:11113" ph="..." />
+            <marker date="1476453963466" expanded="true" signature="18180:18214" ph="..." />
+            <marker date="1476453963466" expanded="true" signature="19496:19530" ph="..." />
           </folding>
         </state>
       </provider>
