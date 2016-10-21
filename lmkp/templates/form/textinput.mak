@@ -1,6 +1,19 @@
-<div class="row-fluid">
-    <div class="span4">
-        <label for="${field.oid}">
+<div class="row">
+    <div class="input-field col s12">
+        % if helptext:
+        <input
+            class="input-style input-helptext span9 "
+            type="text"
+            name="${field.name}"
+            value="${cstruct}"
+            id="${field.oid}"
+            placeholder="" />
+        <span class="truncate ttip span3 truncate-input" data-toggle="tooltip" title="${helptext}">
+            ${helptext}
+        </span>
+
+        % else:
+            <label for="${field.oid}">
             % if field.title:
                 ${field.title}
             % elif field.name:
@@ -12,28 +25,18 @@
                 <span class="desired-form-field"></span>
             % endif
         </label>
-    </div>
-    <div class="span8">
-        % if helptext:
-        <input
-            class="input-style input-helptext span9"
-            type="text"
-            name="${field.name}"
-            value="${cstruct}"
-            id="${field.oid}"
-            placeholder="" />
-        <span class="truncate ttip span3 truncate-input" data-toggle="tooltip" title="${helptext}">
-            ${helptext}
-        </span>
-        % else:
         <input
             class="input-style span12"
             type="text"
             name="${field.name}"
             value="${cstruct}"
-            id="${field.oid}"
-            placeholder="" />
+            % if field.required:
+               required=""
+                aria-required="true"
+            % endif
+            id="${field.oid}"/>
         % endif
+
     </div>
 </div>
 

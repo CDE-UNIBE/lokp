@@ -25,10 +25,11 @@ $('#itemgrid tbody>tr').on('click', function() {
   var other = (itemType == 'stakeholders') ? 'activities' : 'stakeholders';
   var by = (itemType == 'stakeholders') ? 'bystakeholders' : 'byactivities';
   var url = '/' + [other, by, 'html', identifier].join('/');
+  window.location.href = url;
 
-  $('#itemgrid tbody>tr').not(this).tooltip('hide');
+  /*$('#itemgrid tbody>tr').not(this).tooltip('hide');
   $(this).tooltip('toggle');
-  $('.tooltip a').attr('href', url);
+  $('.tooltip a').attr('href', url);*/
 });
 
 $(window).resize(function() {

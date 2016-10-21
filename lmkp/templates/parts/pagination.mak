@@ -28,25 +28,7 @@
     endright = maxpage if (currentpage + neighboursize < maxpage) else None
 %>
 
-## Pagination
-<div class="col s3">
-
-    <div id="gridview_dropdown" class="dropdown">
-        <a class='dropdown-button btn' data-toggle="dropdown" href='#' data-activates='dropdown1'>${itemsname} ${_('per page')}: ${pagesize}</a>
-        <ul id='dropdown1' class='dropdown-content'>
-            <li><a href="${handle_query_string(request.url, add=[('pagesize', 10)])}">10</a></li>
-            <li><a href="${handle_query_string(request.url, add=[('pagesize', 25)])}">25</a></li>
-            <li><a href="${handle_query_string(request.url, add=[('pagesize', 50)])}">50</a></li>
-          </ul>
-    </div>
-
-    ## Deals per Page
-    <div>
-        ${_('Total number of')} ${itemsname}: <strong>${totalitems}</strong>
-    </div>
-</div>
-
-<div class="col s6">
+<div id="pagination" class="col s6 linearize-level-1">
   <ul class="pagination center">
     % if currentpage == 1:
         <li class="disabled"><a href="#!"><i class="material-icons">chevron_left</i></a></li>
@@ -109,4 +91,22 @@
   </ul>
 </div>
 
+<div class="col s3">
 
+    <div class="dropdown">
+        ${itemsname} ${_('per page')}:
+        <a id="btn-small" class='dropdown-button btn' data-toggle="dropdown" href='#' data-activates='dropdown1'>
+             <i class="material-icons right">arrow_drop_down</i>${pagesize}
+        </a>
+        <ul id='dropdown1' class='dropdown-content'>
+            <li><a href="${handle_query_string(request.url, add=[('pagesize', 10)])}">10</a></li>
+            <li><a href="${handle_query_string(request.url, add=[('pagesize', 25)])}">25</a></li>
+            <li><a href="${handle_query_string(request.url, add=[('pagesize', 50)])}">50</a></li>
+          </ul>
+    </div>
+
+    ## Deals per Page
+    <div>
+        ${_('Total number of')} ${itemsname}: <strong>${totalitems}</strong>
+    </div>
+</div>
