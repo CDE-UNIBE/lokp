@@ -44,9 +44,9 @@
         ## Single tag
         <div class="row-fluid">
             <div class="span5">
-                <h5 class="green">${field.title}</h5>
+                <h5 class="dealview_item_titel text-accent-color">${field.title}</h5>
             </div>
-            <div class="span7">
+            <div class="dealview_item_attribute">
                 ${field.serialize(cstruct, readonly=True)}
             </div>
         </div>
