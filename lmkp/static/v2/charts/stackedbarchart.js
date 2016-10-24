@@ -69,6 +69,7 @@ function updateContent(data) {
 
   // Title
   $('#group-by-title').html(groupable[group_key][1].default + ' / ' + groupable[group_key][0].default);
+  $('#group-by-dropdown-title').html(groupable[group_key][1].default + ' / ' + groupable[group_key][0].default);
 }
 
 
