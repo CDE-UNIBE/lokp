@@ -2,10 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="404e9797-1f4f-4980-a2d3-702bffe7bb0c" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/lokp.iml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="" />
     </list>
     <ignored path="lokp.iws" />
@@ -28,12 +24,6 @@
     <option name="SORT_POSITIONED" value="false" />
     <option name="SHOW_TABLE_DETAILS" value="true" />
     <option name="SHOW_EMPTY_GROUPS" value="false" />
-    <PATH>
-      <PATH_ELEMENT>
-        <option name="myItemId" />
-        <option name="myItemType" value="com.intellij.database.view.DatabaseStructure$Root" />
-      </PATH_ELEMENT>
-    </PATH>
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FavoritesManager">
@@ -71,11 +61,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="base.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="base.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lmkp/static/v2/maps/base.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="401">
-              <caret line="992" column="33" selection-start-line="992" selection-start-column="33" selection-end-line="992" selection-end-column="33" />
+            <state relative-caret-position="296">
+              <caret line="985" column="60" selection-start-line="985" selection-start-column="60" selection-end-line="985" selection-end-column="60" />
               <folding>
                 <marker date="1477997883513" expanded="true" signature="6961:7016" ph="..." />
                 <marker date="1477997883513" expanded="true" signature="7222:7240" ph="..." />
@@ -89,11 +79,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="showcases_view.mak" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/showcases_view.mak">
+      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="405">
-              <caret line="27" column="26" selection-start-line="27" selection-start-column="26" selection-end-line="27" selection-end-column="72" />
+            <state relative-caret-position="600">
+              <caret line="45" column="0" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -147,7 +137,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/lmkp/customization/omm/templates/activities/compare.mak" />
         <option value="$PROJECT_DIR$/lmkp/customization/omm/templates/activities/details.mak" />
         <option value="$PROJECT_DIR$/lmkp/customization/omm/templates/activities/form.mak" />
         <option value="$PROJECT_DIR$/lmkp/customization/omm/templates/activities/grid.mak" />
@@ -198,6 +187,7 @@
         <option value="$PROJECT_DIR$/lmkp/static/v2/filters.js" />
         <option value="$PROJECT_DIR$/lmkp/static/v2/maps/base.js" />
         <option value="$PROJECT_DIR$/.idea/workspace.xml" />
+        <option value="$PROJECT_DIR$/.gitignore" />
       </list>
     </option>
   </component>
@@ -554,6 +544,14 @@
       <option name="presentableId" value="Default" />
       <updated>1471851375497</updated>
     </task>
+    <task id="LOCAL-00001" summary="Do not include IDE files">
+      <created>1477998174660</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1477998174660</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -583,18 +581,15 @@
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Do not include IDE files" />
+    <option name="LAST_COMMIT_MESSAGE" value="Do not include IDE files" />
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/parts/messages/stakeholder_form_through_involvement.mak">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lmkp/customization/omm/templates/parts/messages/unsaved_data_same_form.mak">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -940,18 +935,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="435">
-          <caret line="29" column="10" selection-start-line="29" selection-start-column="10" selection-end-line="29" selection-end-column="10" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lmkp/static/v2/maps/base.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="401">
-          <caret line="992" column="33" selection-start-line="992" selection-start-column="33" selection-end-line="992" selection-end-column="33" />
+        <state relative-caret-position="296">
+          <caret line="985" column="60" selection-start-line="985" selection-start-column="60" selection-end-line="985" selection-end-column="60" />
           <folding>
             <marker date="1477997883513" expanded="true" signature="6961:7016" ph="..." />
             <marker date="1477997883513" expanded="true" signature="7222:7240" ph="..." />
@@ -961,6 +948,22 @@
             <marker date="1477997883513" expanded="true" signature="18180:18214" ph="..." />
             <marker date="1477997883513" expanded="true" signature="19496:19530" ph="..." />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="22" column="10" selection-start-line="22" selection-start-column="10" selection-end-line="22" selection-end-column="10" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="600">
+          <caret line="45" column="0" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
