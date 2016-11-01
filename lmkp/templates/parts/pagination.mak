@@ -28,82 +28,85 @@
     endright = maxpage if (currentpage + neighboursize < maxpage) else None
 %>
 
-<div class="row-fluid">
-    <div class="pagination text-center">
-        <ul>
-            % if currentpage == 1:
-                <li class="disabled"><a>&laquo;</a></li>
-            % else:
-                <li>
-                    <a href="${handle_query_string(request.url, add=[('page', currentpage-1)])}">&laquo;</a>
-                </li>
-            % endif
-            % if endleft:
-                <li>
-                    <a href="${handle_query_string(request.url, add=[('page', endleft)])}">${endleft}</a>
-                </li>
-            % endif
-            % if currentpage > neighboursize + 2:
-                <li class="disabled">
-                    <a>...</a>
-                </li>
-            % endif
-            % for i in range(min(currentpage-neighboursize+1, neighboursize), 0, -1):
-                <li>
-                    <a href="${handle_query_string(request.url, add=[('page', currentpage-i)])}">
-                        ${currentpage-i}
-                    </a>
-                </li>
-            % endfor
-            <li class="active">
-                <a href="${handle_query_string(request.url, add=[('page', currentpage)])}">${currentpage}</a>
-            </li>
-            % for i in range(min(maxpage-currentpage, neighboursize)):
-                <li>
-                    <a href="${handle_query_string(request.url, add=[('page', currentpage+i+1)])}">
-                        ${currentpage+i+1}
-                    </a>
-                </li>
-            % endfor
-            % if currentpage+neighboursize+1 < maxpage:
-                <li class="disabled">
-                    <a>...</a>
-                </li>
-            % endif
-            % if endright:
-                <li>
-                    <a href="${handle_query_string(request.url, add=[('page', endright)])}">${endright}</a>
-                </li>
-            % endif
-            % if currentpage == maxpage:
-                <li class="disabled"><a>&raquo;</a></li>
-            % else:
-                <li>
-                    <a href="${handle_query_string(request.url, add=[('page', currentpage+1)])}">&raquo;</a>
-                </li>
-            % endif
+<div id="pagination" class="col s6 linearize-level-1">
+  <ul class="pagination center">
+    % if currentpage == 1:
+        <li class="disabled"><a href="#!"><i class="material-icons">chevron_left</i></a></li>
+    % else:
+        <li class="waves-effect">
+            <a href="${handle_query_string(request.url, add=[('page', currentpage-1)])}"><i class="material-icons">chevron_left</i></a>
+        </li>
+    % endif
+    % if endleft:
+        <li class="waves-effect">
+            <a href="${handle_query_string(request.url, add=[('page', endleft)])}">${endleft}</a>
+        </li>
+    % endif
+    % if currentpage > neighboursize + 2:
+        <li class="disabled">
+            <a>...</a>
+        </li>
+    % endif
 
-        </ul>
-    </div>
-</div>
-<div class="row-fluid">
-    <div class="span4">
-        ${_('Total number of')} ${itemsname}: <strong>${totalitems}</strong>
-    </div>
-    <div class="span4 offset4 text-right">
-        <div class="dropdown">
-            ${itemsname} ${_('per page')}:
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                ${pagesize}
-                <b class="caret"></b>
+
+    % for i in range(min(currentpage-neighboursize+1, neighboursize), 0, -1):
+        <li class="waves-effect">
+            <a href="${handle_query_string(request.url, add=[('page', currentpage-i)])}">
+                ${currentpage-i}
             </a>
-            <ul class="dropdown-menu pull-right small" role="menu" aria-labelledby="dropdownMenu">
-                <li>
-                    <a href="${handle_query_string(request.url, add=[('pagesize', 10)])}">10</a>
-                    <a href="${handle_query_string(request.url, add=[('pagesize', 25)])}">25</a>
-                    <a href="${handle_query_string(request.url, add=[('pagesize', 50)])}">50</a>
-                </li>
-            </ul>
-        </div>
+        </li>
+    % endfor
+
+    <li class="active accent-background-color">
+        <a href="${handle_query_string(request.url, add=[('page', currentpage)])}">${currentpage}</a>
+    </li>
+
+    % for i in range(min(maxpage-currentpage, neighboursize)):
+        <li class="waves-effect">
+            <a href="${handle_query_string(request.url, add=[('page', currentpage+i+1)])}">
+                ${currentpage+i+1}
+            </a>
+        </li>
+    % endfor
+
+    % if currentpage+neighboursize+1 < maxpage:
+        <li class="disabled">
+            <a>...</a>
+        </li>
+    % endif
+
+    % if endright:
+        <li class="waves-effect">
+            <a href="${handle_query_string(request.url, add=[('page', endright)])}">${endright}</a>
+        </li>
+    % endif
+
+    % if currentpage == maxpage:
+        <li class="disabled"><a><i class="material-icons">chevron_right</i></a>
+    % else:
+        <li class="waves-effect">
+            <a href="${handle_query_string(request.url, add=[('page', currentpage+1)])}"><i class="material-icons">chevron_right</i></a>
+        </li>
+    % endif
+  </ul>
+</div>
+
+<div class="col s3">
+
+    <div class="dropdown">
+        ${itemsname} ${_('per page')}:
+        <a id="btn-small" class='dropdown-button btn' data-toggle="dropdown" href='#' data-activates='dropdown1'>
+             <i class="material-icons right">arrow_drop_down</i>${pagesize}
+        </a>
+        <ul id='dropdown1' class='dropdown-content'>
+            <li><a href="${handle_query_string(request.url, add=[('pagesize', 10)])}">10</a></li>
+            <li><a href="${handle_query_string(request.url, add=[('pagesize', 25)])}">25</a></li>
+            <li><a href="${handle_query_string(request.url, add=[('pagesize', 50)])}">50</a></li>
+          </ul>
+    </div>
+
+    ## Deals per Page
+    <div>
+        ${_('Total number of')} ${itemsname}: <strong>${totalitems}</strong>
     </div>
 </div>

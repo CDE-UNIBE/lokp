@@ -52,6 +52,8 @@ function updateContent(data) {
       var css_class = '';
       if (i == 0) {
         css_class = ' active';
+      } else {
+        css_class = ' inactive';
       }
       attribute_html.push([
         '<button class="btn change-attribute', css_class, '" ',
@@ -63,9 +65,10 @@ function updateContent(data) {
     }
     $('#attribute-buttons').html(attribute_html.join(''));
   }
-
   // Title
   $('#group-by-title').html(groupable[group_key][0].default);
+  $('#group-by-dropdown-title').html(groupable[group_key][0].default);
+
 }
 
 
@@ -186,16 +189,18 @@ function visualize(data) {
     });
 
   // Enable Buttons
-  $('button#sortAsc').click(function() {
+  $('a#sortAsc').click(function() {
     sortChart('asc');
     sortChart('asc');
   });
-  $('button#sortDesc').click(function() {
+  $('a#sortDesc').click(function() {
     sortChart('desc');
     sortChart('desc');
   });
   $('button.change-attribute').click(function() {
     changeData($(this).attr('value'));
+    $('button.change-attribute').addClass("inactive");
+    $(this).removeClass("inactive");
   });
 
   resize();
