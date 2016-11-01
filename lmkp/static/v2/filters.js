@@ -153,11 +153,6 @@ function addNewFilter(itemtype, key, operator, value) {
     var itemtype = itemtype ? itemtype : $('#new-filter-itemtype').val();
     var operator = operator ? operator : $('#new-filter-operator').val();
 
-    console.log('key: ' + key);
-    console.log('value: ' + value);
-    console.log('itemtype: ' + itemtype);
-    console.log('operator: ' + operator);
-
     if (key && value && operator) {
         // Prepare the query string as object
         var filterstring = itemtype + '__' + key + '__' + operator;
