@@ -43,3 +43,5 @@ LMKP.egg-info/
 # Ignore sublime project files
 *.sublime-project
 *.sublime-workspace
+
+.idea/*
