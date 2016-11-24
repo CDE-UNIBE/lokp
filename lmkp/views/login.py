@@ -16,7 +16,10 @@ from pyramid.view import view_config
 from lmkp.custom import get_customized_template_path
 from lmkp.models.database_objects import User
 from lmkp.models.meta import DBSession
-from lmkp.views.views import BaseView
+from lmkp.views.views import (
+    BaseView,
+    get_output_format
+)
 
 _ = TranslationStringFactory('lmkp')
 
@@ -34,6 +37,7 @@ class LoginView(BaseView):
         """
         Login controller
         """
+        output_format = get_output_format(self.request)
         login_url = self.request.route_url('login')
         referrer = self.request.path
         if referrer == login_url:
@@ -54,10 +58,14 @@ class LoginView(BaseView):
                 headers = remember(
                     self.request, login,
                     max_age=timedelta(days=30).total_seconds())
+                if output_format == 'json':
+                    return {'login': 'successful'}
             else:
                 log.debug('Login failed')
                 headers = forget(self.request)
                 msg = _(u"Login failed! Please try again.")
+                if output_format == 'json':
+                    return {'login' : 'failed'}
                 return render_to_response(
                     get_customized_template_path(
                         self.request, 'login_form.mak'),
