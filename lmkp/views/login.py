@@ -88,11 +88,11 @@ class LoginView(BaseView):
             headers = remember(
                 self.request, login,
                 max_age=timedelta(days=30).total_seconds())
-            return render_to_response('json', {'login': 'successful'}, self.request)
+            return render_to_response('json', {'login': 'true'}, self.request)
         else:
             log.debug('Login failed')
             headers = forget(self.request)
-            return render_to_response('json', {'login': 'failed'}, self.request)
+            return render_to_response('json', {'login': 'false'}, self.request)
 
 
     @view_config(route_name='login_form')
