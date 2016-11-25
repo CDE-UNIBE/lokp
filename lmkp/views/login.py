@@ -79,8 +79,9 @@ class LoginView(BaseView):
         # Prevent an empty header if /login is directly requested (should
         # actually never happen)
         headers = []
-        login = self.request.params['login']
-        password = self.request.params['password']
+        body = self.request.json_body
+        login = body['login']
+        password = body['password']
 
         if User.check_password(login, password):
             log.debug('Login succeed')
