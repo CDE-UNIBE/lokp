@@ -69,7 +69,7 @@ class LoginView(BaseView):
 
         return HTTPFound(location=came_from, headers=headers)
 
-    @view_config(route_name='login_json')
+    @view_config(route_name='login_json', renderer='json')
     def login_json(self):
         """
         Login controller
@@ -89,11 +89,11 @@ class LoginView(BaseView):
                 self.request, login,
                 max_age=timedelta(days=30).total_seconds())
             self.request.response.headerlist.extend(headers)
-            return render_to_response('json', {'login': 'true'}, self.request)
+            return {'login': 'true'}
         else:
             log.debug('Login failed')
             headers = forget(self.request)
-            return render_to_response('json', {'login': 'false'}, self.request)
+            return {'login': 'false'}
 
 
 
