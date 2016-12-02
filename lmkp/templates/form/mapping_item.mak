@@ -12,7 +12,7 @@
     ## Thematic Group
         <div class="grid-area row-fluid">
             <div class="span4">
-                <h5 class="green">${field.title}</h5>
+                <h5 class="dealview_titel_investor text-accent-color">${field.title}</h5>
             </div>
             <div class="span8">
                 ${field.serialize(cstruct)}

@@ -2,13 +2,13 @@
     <div class="input-field col s12">
         % if helptext:
         <input
-            class="input-style input-helptext span9 "
+            class="input-style input-helptext col s9 "
             type="text"
             name="${field.name}"
             value="${cstruct}"
             id="${field.oid}"
             placeholder="" />
-        <span class="truncate ttip span3 truncate-input" data-toggle="tooltip" title="${helptext}">
+        <span class="truncate ttip col s3 truncate-input" data-toggle="tooltip" title="${helptext}">
             ${helptext}
         </span>
 
@@ -26,7 +26,7 @@
             % endif
         </label>
         <input
-            class="input-style span12"
+            class="input-style col s12"
             type="text"
             name="${field.name}"
             value="${cstruct}"

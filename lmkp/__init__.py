@@ -124,6 +124,7 @@ def main(global_config, ** settings):
 
     # Login / Logout
     config.add_route('login', '/login', request_method='POST')
+    config.add_route('login_json', '/login/json', request_method='POST')
     config.add_route('login_form', '/login', request_method='GET')
     config.add_route('reset', '/reset', request_method='POST')
     config.add_route('reset_form', '/reset', request_method='GET')

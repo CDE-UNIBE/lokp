@@ -1,5 +1,5 @@
-<div class="row-fluid">
-    <div class="span4">
+<div class="row">
+    <div class="col s12">
         <label for="${field.oid}">
             % if field.title:
                 ${field.title}
@@ -13,9 +13,9 @@
             % endif
         </label>
     </div>
-    <div class="span8">
+    <div class="col s12">
         <textarea
-            class="input-style span12"
+            class="input-style materialize-textarea"
             rows="4"
             id="${field.oid}"
             name="${field.name}">${cstruct}</textarea>
