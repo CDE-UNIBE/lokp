@@ -1,6 +1,18 @@
 <div class="row">
     <div class="input-field col s12">
         % if helptext:
+        <label for="${field.oid}">
+            % if field.title:
+                ${field.title}
+            % elif field.name:
+                ${field.name}
+            % endif
+            % if field.required:
+                <span class="required-form-field"></span>
+            % elif desired:
+                <span class="desired-form-field"></span>
+            % endif
+        </label>
         <input
             class="input-style input-helptext col s9 "
             type="text"
