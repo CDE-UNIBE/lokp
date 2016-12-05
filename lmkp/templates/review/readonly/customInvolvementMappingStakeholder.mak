@@ -10,7 +10,7 @@
         %>
         % if child.name == 'role_name':
             <div class="span12">
-                <h5 class="green">
+                <h5 class="compareinvestortitle text-accent-color">
                     ${child.cstruct}
                 </h5>
             </div>

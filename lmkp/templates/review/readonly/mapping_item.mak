@@ -19,37 +19,40 @@
         
         <%
             change = 'change' in cstruct and cstruct['change'] != colander.null
-            cls = 'accordion-heading category'
-            clsBody = 'row-fluid accordion-body collapse'
-            chevronClass = 'icon-chevron-down'
+            cls = 'collapsible-header category row'
+            clsBody = 'row collapsible-body collapse'
+            chevronClass = 'expand_more'
             if change:
                 cls += ' change'
                 clsBody += ' in'
-                chevronClass = 'icon-chevron-up'
+                chevronClass = 'expand_less'
         %>
         
-        <div class="row-fluid accordion accordion-group">
+        <ul class="row accordion comparedetailcontainer collapsible" data-collapsible="accordion">
+            <li>
             <div class="${cls}">
-                <div class="span6">
+                <div class="col s6">
+                    <div class="customheaderleft">
                     % if change:
                         <i class="icon-exclamation-sign ttip pointer" data-toggle="tooltip" data-original-title="${_('There are changes in this section')}"></i>
                     % endif
                     % if not hasOnlyNullValues:
-                    <a class="accordion-toggle" data-toggle="collapse" href="#collapse-${field.name}">
+                    <a class="accordion-toggle text-accent-color" data-toggle="collapse" href="#collapse-${field.name}">
                         ${field.title}
-                        <i class="${chevronClass}"></i>
+                        <i class="material-icons text-accent-color right">${chevronClass}</i>
                     </a>
                     % else:
                     <span class="emptyCategory">
                         ${field.title}
                     </span>
                     % endif
+                    </div>
                 </div>
-                <div class="span6">
+                <div class=" col s6 customheaderright">
                     % if not hasOnlyNullValues:
-                    <a class="accordion-toggle" data-toggle="collapse" href="#collapse-${field.name}">
+                    <a class="accordion-toggle text-accent-color" data-toggle="collapse" href="#collapse-${field.name}">
                         ${field.title}
-                        <i class="${chevronClass}"></i>
+                        <i class="material-icons text-accent-color right">${chevronClass}</i>
                     </a>
                     % else:
                     <span class="emptyCategory">
@@ -58,12 +61,14 @@
                     % endif
                 </div>
             </div>
+
             <div id="collapse-${field.name}" class="${clsBody}">
                 <div class="accordion inner">
                     ${field.serialize(cstruct, readonly=True)}
                 </div>
             </div>
-        </div>
+            </li>
+        </ul>
 
     % elif depth == 2 and not hasOnlyNullValues:
         ## Thematic Group
@@ -75,24 +80,16 @@
                 cls += ' change'
         %>
         
-        <div class="row-fluid accordion-group">
-            <div class="accordion-heading">
-                <div class="${cls}">
-                    <a class="accordion-toggle disableClick">
-                        <h5 class="green">
-                            ${field.title}
-                        </h5>
-                    </a>
+        <div class="row accordion-group">
+            <div class="row">
+                <div class="col s6 trennstrich">
+                    <div class="${cls}"></div>
                 </div>
-                <div class="${cls}">
-                    <a class="accordion-toggle disableClick">
-                        <h5 class="green">
-                            ${field.title}
-                        </h5>
-                    </a>
+                <div class="col s6 trennstrich">
+                    <div class="${cls}"></div>
                 </div>
             </div>
-            <div id="collapse-${field.name}" class="row-fluid accordion-body collapse in">
+            <div id="collapse-${field.name}" class="row accordion-body collapse in">
                 <div class="accordion inner">
                     ${field.serialize(cstruct, readonly=True)}
                 </div>
@@ -105,15 +102,15 @@
         <%
             change = 'change' in cstruct and cstruct['change'] != colander.null
             if isinstance(cstruct, list):
-                cls = 'span6 deal-moderate-col-wrap deal-moderate-col'
+                cls = 'col s6 row taggroup-content'
             else:
-                cls = 'span6 taggroup-content deal-moderate-col'
+                cls = 'col s6 row taggroup-content'
             if change:
                 cls += ' change'
         %>
     
         % if field.name.startswith('ref_'):
-        <div class="row-fluid deal-moderate-col-wrap">
+        <div class="row deal-moderate-col-wrap">
             <div class="${cls}">
                 ${field.serialize(cstruct, readonly=True)}
             </div>
@@ -126,12 +123,12 @@
 
     % elif field.name not in ['tg_id', 'id', 'category', 'version', 'itemType', 'change'] and not hasOnlyNullValues:
         ## Single tag
-        <div class="row-fluid">
-            <div class="span5">
+        <div class="row compareitem">
+            <div class="col s5 versioncomparetitle text-accent-color">
                 ${field.title}
             </div>
             <div class="span2 inactive"></div>
-            <div class="span4">
+            <div class="col s4">
                 <p class="deal-detail">
                     ${field.serialize(cstruct, readonly=True)}
                 </p>
