@@ -18,8 +18,7 @@
             type="text"
             name="${field.name}"
             value="${cstruct}"
-            id="${field.oid}"
-            placeholder="" />
+            id="${field.oid}"/>
         <span class="truncate ttip col s3 truncate-input" data-toggle="tooltip" title="${helptext}">
             ${helptext}
         </span>
@@ -38,7 +37,7 @@
             % endif
         </label>
         <input
-            class="input-style col s12"
+            class="input-style col s9"
             type="text"
             name="${field.name}"
             value="${cstruct}"

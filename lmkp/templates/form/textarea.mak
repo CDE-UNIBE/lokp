@@ -1,5 +1,5 @@
 <div class="row">
-    <div class="col s12">
+    <div class="col s9">
         <label for="${field.oid}">
             % if field.title:
                 ${field.title}
@@ -13,7 +13,7 @@
             % endif
         </label>
     </div>
-    <div class="col s12">
+    <div class="col s9">
         <textarea
             class="input-style materialize-textarea"
             rows="4"
