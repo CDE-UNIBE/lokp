@@ -155,3 +155,11 @@ span.ui-spinner input {
 	/* need to fix icons sprite */
 	background-position:-65px -16px;
 }
+
+/* Messages in Deal Form */
+.text-success {
+	color: green;
+}
+.text-error {
+	color: red;
+}
