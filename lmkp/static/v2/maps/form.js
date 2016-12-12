@@ -367,14 +367,13 @@ function updateFormCoordinates(event) {
  * Coordinates are assumed to always be in WGS84.
  */
 function parseCoordinates() {
-
     var coordsField = $('#map-coords-field').val();
     var coordsFormat = $('#map-coords-format').val();
 
     // Regex inspiration by: http://www.nearby.org.uk/tests/geotools2.js
 
     // It seems to be necessary to escape the values. Otherwise, the degree
-    // symbol (°) is not recognized.
+    // symbol (ï¿½) is not recognized.
     var str = escape(coordsField);
     // However, we do need to replace the spaces again do prevent regex error.
     str = str.replace(/%20/g, ' ');
@@ -384,7 +383,7 @@ function parseCoordinates() {
     var latitude, longitude, lonlat;
 
     if (coordsFormat == 1) {
-        // 46° 57.1578 N 7° 26.1102 E
+        // 46ï¿½ 57.1578 N 7ï¿½ 26.1102 E
         pattern = /(\d+)[%B0\s]+(\d+\.\d+)\s*([NS])[%2C\s]+(\d+)[%B0\s]+(\d+\.\d+)\s*([WE])/i;
         matches = str.match(pattern);
         if (matches) {
@@ -399,7 +398,7 @@ function parseCoordinates() {
             lonlat = new OpenLayers.LonLat(longitude, latitude);
         }
     } else if (coordsFormat == 2) {
-        // 46° 57' 9.468" N 7° 26' 6.612" E
+        // 46ï¿½ 57' 9.468" N 7ï¿½ 26' 6.612" E
         pattern = /(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([NS])[%2C\s]+(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([WE])/i;
         matches = str.match(pattern);
         if (matches) {
@@ -416,7 +415,7 @@ function parseCoordinates() {
             lonlat = new OpenLayers.LonLat(longitude, latitude);
         }
     } else if (coordsFormat == 3) {
-        // N 46° 57.1578 E 7° 26.1102
+        // N 46ï¿½ 57.1578 E 7ï¿½ 26.1102
         pattern = /([NS])\s*(\d+)[%B0\s]+(\d+\.\d+)[%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+\.\d+)/i;
         matches = str.match(pattern);
         if (matches) {
@@ -431,7 +430,7 @@ function parseCoordinates() {
             lonlat = new OpenLayers.LonLat(longitude, latitude);
         }
     } else if (coordsFormat == 4) {
-        // N 46° 57' 9.468" E 7° 26' 6.612"
+        // N 46ï¿½ 57' 9.468" E 7ï¿½ 26' 6.612"
         pattern = /([NS])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)/i;
         matches = str.match(pattern);
         if (matches) {
@@ -479,10 +478,10 @@ function parseCoordinates() {
  */
 function triggerCoordinatesDiv() {
     var coordinatesDiv = $('#coordinates-div');
-    if (coordinatesDiv.is(':visible')) {
-        coordinatesDiv.hide();
-    } else {
+    if (coordinatesDiv.is(':hidden')) {
         coordinatesDiv.show();
+    } else {
+        coordinatesDiv.hide();
     }
 }
 
@@ -493,6 +492,7 @@ function triggerCoordinatesDiv() {
  */
 function showParseFeedback(msg, textStyle) {
     var msgField = $('#map-coords-message');
+
     msgField.html([
         '<span class="text-',
         textStyle,
