@@ -163,3 +163,6 @@ span.ui-spinner input {
 .text-error {
 	color: red;
 }
+.text-success-large {
+	color: teal;
+}

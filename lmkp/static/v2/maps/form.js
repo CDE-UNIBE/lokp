@@ -454,7 +454,7 @@ function parseCoordinates() {
             lonlat = new OpenLayers.LonLat(matches[2], matches[1]);
         }
     }
-    
+
     if (lonlat != null) {
         // Transform the coordinates.
         var lonlatTransformed = lonlat.transform(
