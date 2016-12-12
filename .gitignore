@@ -45,3 +45,6 @@ LMKP.egg-info/
 *.sublime-workspace
 
 .idea/*
+
+# Ignore session data and locks
+data/sessions/
