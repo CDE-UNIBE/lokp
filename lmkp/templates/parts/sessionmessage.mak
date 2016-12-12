@@ -13,33 +13,47 @@
 ## Error queue
 % if request.session.peek_flash('error'):
     % for message in request.session.pop_flash('error'):
-        <div class="alert alert-block alert-error">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            <% context.write(message) %>
+        <div class="row">
+          <div class="col s12">
+            <div class="card-panel red">
+              <span class="white-text"><% context.write(message) %></span><i class="material-icon right">close</i>
+            </div>
+          </div>
         </div>
     % endfor
 % endif
 ## Success queue
 % if request.session.peek_flash('success'):
     % for message in request.session.pop_flash('success'):
-        <div class="alert alert-block alert-success">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            <% context.write(message) %>
+        <div class="row">
+          <div class="col s12">
+            <div class="card-panel teal">
+                <span class="white-text"><% context.write(message) %></span>
+                <i class="material-icon right" style="margin-top: -50px;">close</i>
+            </div>
+          </div>
         </div>
     % endfor
 % endif
 ## Default queue
 % if request.session.peek_flash() or request.session.peek_flash('notice'):
     % for message in request.session.pop_flash():
-        <div class="alert alert-block">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            <% context.write(message) %>
+        <div class="row">
+          <div class="col s12">
+            <div class="card-panel teal">
+                <span class="white-text"><% context.write(message) %></span>
+                <i class="material-icons right white-text" style="margin-top: -20px; cursor: pointer;" onclick="this.parentNode.parentNode.parentNode.style.display = 'none';">close</i>
+            </div>
+          </div>
         </div>
     % endfor
     % for message in request.session.pop_flash('notice'):
-        <div class="alert alert-block">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            <% context.write(message) %>
+        <div class="row">
+          <div class="col s12">
+            <div class="card-panel teal">
+              <span class="white-text"><% context.write(message) %></span>
+            </div>
+          </div>
         </div>
     % endfor
 % endif

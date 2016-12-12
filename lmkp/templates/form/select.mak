@@ -5,8 +5,8 @@
     />
 % endif
 
-<div class="row-fluid">
-    <div class="span4">
+<div class="row">
+    <div class="col s12">
         <label for="${field.oid}">
             % if field.title:
                 ${field.title}
@@ -20,7 +20,7 @@
             % endif
         </label>
     </div>
-    <div class="span8">
+    <div class="col s9">
         <select name="${field.name}"
             id="${field.oid}" class="span12">
             % for value,description in field.widget.values:
