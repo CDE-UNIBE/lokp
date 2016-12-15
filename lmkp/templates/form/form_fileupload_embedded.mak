@@ -39,8 +39,6 @@
 
     </div>
 
-    <hr class="grey" />
-
     % for child in field.children:
         ${child.render_template(field.widget.item_template)}
     % endfor
@@ -55,14 +53,14 @@
 
             <li
                 % if button.name == 'submit':
-                    style="background-color:gray;"
+                    style="background-color:teal;"
                 % endif
                 >
                 <button
                     id="${field.formid + button.name}"
                     name="${button.name}"
                     value="${button.value}"
-                    class="btnText ${button.css_class}"
+                    class="btnText ${button.css_class} btn-flat"
                     onclick="showLoadingIndicator(this);">
                     ${_('Upload')}
                 </button>
