@@ -396,7 +396,6 @@ function initializeMapContent() {
                     }
                 });
 
-                console.log(crops);
                 if (crops.length > 0) {
                     for (var i = 0; i < crops.length; i++) {
                         if (i == (crops.length-1)) {
