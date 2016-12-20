@@ -350,8 +350,10 @@ function initializeMapContent() {
         // For Activities, only use the first two keys of overview
         aKeyNames = getKeyNames(aKeys).slice(0, 2);
         // For Stakeholders, only use the first key of overview
-        shKeyNames = getKeyNames(shKeys).slice(0, 1);
+        shKeyNames = getKeyNames(shKeys);
         var shReprString = shKeyNames[0];
+        var shReprString2 = shKeyNames[1];
+
 
         var feature = e.feature;
         var f;
@@ -361,9 +363,14 @@ function initializeMapContent() {
             f = feature.cluster[0];
         }
         if (f) {
+            $(".deal-data").empty().append('<h5 class="deal-headline">Deal<span id="deal-shortid-span" class="underline">#</span></h5><ul id="taggroups-ul" class="text-primary-color"></ul>');
+            $(".deal-data-footer").empty();
             var activityId = f.data.activity_identifier;
             var shortId = activityId.split("-")[0];
-            $("#deal-shortid-span").html('<a href="/activities/html/' + activityId + '"># ' + shortId + '</a>');
+            $("#deal-shortid-span").html(
+                '<a href="/activities/html/' + activityId + '">' +
+                    '# ' + shortId +
+                '</a>');
             $("#taggroups-ul").empty().append('<li><p>' + tForLoadingdetails + '</p></li>');
             $.get("/activities/json/" + activityId, function(r) {
                 var a = r.data[0];
@@ -410,18 +417,70 @@ function initializeMapContent() {
             jQuery('html,body').animate({scrollTop: jQuery('#window_right').offset().top}, 1000);
         } else {
             $(".deal-data").empty();
+            $(".deal-data-footer").empty();
             // Create a list of selected deals, when selecting several deals
             var header = $(".deal-data").append("<h5 class=\"deal-headline text-primary-color\">" + tForSelecteddeals + "</h5>");
+            var footer = $(".deal-data-footer").append("");
 
             // Show at maximum ten deals to prevent a too long basic data box
-            var maxFeatures = 5;
+            var maxFeatures = 3;
             if (feature.cluster.length <= maxFeatures) {
                 for (var i = 0; i < feature.cluster.length; i++) {
                     var f = feature.cluster[i];
                     var activityId = f.data.activity_identifier;
                     var shortId = activityId.split("-")[0];
 
-                    header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/" + activityId + '"># ' + shortId + '</a></span></h6>');
+
+                    $.get("/activities/json/" + activityId, function(r) {
+                        var a = r.data[0];
+                        var tgs = a.hasOwnProperty('taggroups') ? a.taggroups : [];
+                        var invs = a.hasOwnProperty('involvements') ? a.involvements : [];
+
+                        header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/" + activityId + '">' +
+                        'Deal <span style="color:grey; font-size: 11px;">#' + shortId + '</span></a></span>' +
+                        '</h6>');
+
+                        $.each(tgs, function() {
+                            var v;
+                            if (this.main_tag && this.main_tag.key && this.main_tag.key == 'Intention of Investment') {
+                                v = this.main_tag.value;
+                                if ($.isNumeric(v))
+                                    v = addCommas(v);
+                                header.append('<p style="font-size: 11px;"><span>' + this.main_tag.key + ': </span>' + v + '</p>');
+                            }
+                        });
+
+
+                        //get the investor/s name
+                        var involvements = [];
+                        $.each(invs, function() {
+                            var sh = this.data;
+                            var sh_tgs = sh.hasOwnProperty('taggroups') ? sh.taggroups : [];
+
+                            if (shReprString !== null && shReprString2 !== null) {
+                                var s = shReprString;
+                                var s2 = shReprString2;
+                                $.each(sh_tgs, function() {
+                                    if (this.main_tag && this.main_tag.key) {
+                                        s = s.replace(this.main_tag.key, this.main_tag.value);
+                                        s2 = s2.replace(this.main_tag.key, this.main_tag.value);
+                                    }
+                                });
+                                involvements.push(s);
+                                involvements.push(s2);
+                            } else {
+                                $.each(sh_tgs, function() {
+                                    if (this.main_tag && this.main_tag.key && $.inArray(this.main_tag.key, shKeyNames) > -1) {
+                                        $('.inv').append('<div><span class="bolder">' + this.main_tag.key + ': </span>' + this.main_tag.value + '</div>');
+                                    }
+                                });
+                            }
+                        });
+                        if (involvements.length > 0) {
+                            var label = (involvements.length === 1) ? tForInvestor : tForInvestors;
+                            header.append('<p style="font-size: 11px;"><span>' + label + ': </span>' + involvements.join(', ') + '</p>');
+                        }
+                    });
                 }
             } else {
                 for (var i = 0; i < maxFeatures; i++) {
@@ -429,9 +488,58 @@ function initializeMapContent() {
                     var activityId = f.data.activity_identifier;
                     var shortId = activityId.split("-")[0];
 
-                    header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/" + activityId + '"># ' + shortId + '</a></span></h6>');
+                    $.get("/activities/json/" + activityId, function(r) {
+                        var a = r.data[0];
+                        var tgs = a.hasOwnProperty('taggroups') ? a.taggroups : [];
+                        var invs = a.hasOwnProperty('involvements') ? a.involvements : [];
+
+                        header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/" + activityId + '">' +
+                        'Deal <span style="color:grey; font-size: 11px;">#' + shortId + '</span></a></span>' +
+                        '</h6>');
+
+                        $.each(tgs, function() {
+                            var v;
+                            if (this.main_tag && this.main_tag.key && this.main_tag.key == 'Intention of Investment') {
+                                v = this.main_tag.value;
+                                if ($.isNumeric(v))
+                                    v = addCommas(v);
+                                header.append('<p style="font-size: 11px;"><span>' + this.main_tag.key + ': </span>' + v + '</p>');
+                            }
+                        });
+
+
+                        //get the investor/s name
+                        var involvements = [];
+                        $.each(invs, function() {
+                            var sh = this.data;
+                            var sh_tgs = sh.hasOwnProperty('taggroups') ? sh.taggroups : [];
+
+                            if (shReprString !== null && shReprString2 !== null) {
+                                var s = shReprString;
+                                var s2 = shReprString2;
+                                $.each(sh_tgs, function() {
+                                    if (this.main_tag && this.main_tag.key) {
+                                        s = s.replace(this.main_tag.key, this.main_tag.value);
+                                        s2 = s2.replace(this.main_tag.key, this.main_tag.value);
+                                    }
+                                });
+                                involvements.push(s);
+                                involvements.push(s2);
+                            } else {
+                                $.each(sh_tgs, function() {
+                                    if (this.main_tag && this.main_tag.key && $.inArray(this.main_tag.key, shKeyNames) > -1) {
+                                        $('.inv').append('<div><span class="bolder">' + this.main_tag.key + ': </span>' + this.main_tag.value + '</div>');
+                                    }
+                                });
+                            }
+                        });
+                        if (involvements.length > 0) {
+                            var label = (involvements.length === 1) ? tForInvestor : tForInvestors;
+                            header.append('<p style="font-size: 11px;"><span>' + label + ': </span>' + involvements.join(', ') + '</p>');
+                        }
+                    });
                 }
-                header.append("<span>and " + (feature.cluster.length - maxFeatures) + tForMoredeals + "</span>");
+                footer.append("<span>and " + (feature.cluster.length - maxFeatures) + tForMoredeals + "</span>");
             }
         }
     };
@@ -999,6 +1107,7 @@ function addLayersToSelectControl(map, layers) {
  */
 function clearDetails() {
     $("#taggroups-ul").empty();
+    $(".deal-data-footer").empty();
     $(".deal-data").empty()
             .append("<h5 class=\"deal-headline text-primary-color\">" + tForDeals + " <span id=\"deal-shortid-span\" class=\"underline\">#</span></h5>")
             .append('<ul id="taggroups-ul"><li><p>' + tForNodealselected + '</p></li></ul>');
