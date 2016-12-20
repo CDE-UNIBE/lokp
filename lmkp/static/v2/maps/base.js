@@ -363,7 +363,7 @@ function initializeMapContent() {
             f = feature.cluster[0];
         }
         if (f) {
-            $(".deal-data").empty().append('<h5 class="deal-headline">Deal<span id="deal-shortid-span" class="underline">#</span></h5><ul id="taggroups-ul" class="text-primary-color"></ul>');
+            $(".deal-data").empty().append('<h5 class="deal-headline">Deal <span id="deal-shortid-span" class="underline" style="color:grey; font-size: 13px;">#</span></h5><ul id="taggroups-ul" class="text-primary-color"></ul>');
             $(".deal-data-footer").empty();
             var activityId = f.data.activity_identifier;
             var shortId = activityId.split("-")[0];
