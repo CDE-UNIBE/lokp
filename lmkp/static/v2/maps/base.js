@@ -377,33 +377,59 @@ function initializeMapContent() {
                 var tgs = a.hasOwnProperty('taggroups') ? a.taggroups : [];
                 var invs = a.hasOwnProperty('involvements') ? a.involvements : [];
 
+                var crops = [];
+                var cropsstring = '<p><span class=\"bolder\">Crops: </span>';
+
                 $("#taggroups-ul").empty();
                 $.each(tgs, function() {
                     var v;
-                    if (this.main_tag && this.main_tag.key && $.inArray(this.main_tag.key, aKeyNames) > -1) {
+                    if (this.main_tag && this.main_tag.key && (this.main_tag.key == 'Intention of Investment' || this.main_tag.key == 'Crop' || this.main_tag.key == 'Intended area (ha)')) {
                         v = this.main_tag.value;
-                        if ($.isNumeric(v))
-                            v = addCommas(v);
-                        $("#taggroups-ul").append("<li><p><span class=\"bolder\">" + this.main_tag.key + ": </span>" + v + "</p></li>");
+                        if (this.main_tag.key == 'Crop') {
+                            crops.push(this.main_tag.value);
+                        }
+                        else {
+                            if ($.isNumeric(v))
+                                v = addCommas(v);
+                            $("#taggroups-ul").append("<li><p><span class=\"bolder\">" + this.main_tag.key + ": </span>" + v + "</p></li>");
+                        }
                     }
                 });
+
+                console.log(crops);
+                if (crops.length > 0) {
+                    for (var i = 0; i < crops.length; i++) {
+                        if (i == (crops.length-1)) {
+                            cropsstring = cropsstring + crops[i];
+                        }
+                        else {
+                            cropsstring = cropsstring + crops[i]+ ', ';
+                        }
+                    }
+                    cropsstring = cropsstring + '</span></p>';
+                    $("#taggroups-ul").append(cropsstring);
+                }
 
                 var involvements = [];
                 $.each(invs, function() {
                     var sh = this.data;
                     var sh_tgs = sh.hasOwnProperty('taggroups') ? sh.taggroups : [];
 
-                    if (shReprString !== null) {
+
+                    if (shReprString !== null && shReprString2 !== null) {
                         var s = shReprString;
+                        var s2 = shReprString2;
                         $.each(sh_tgs, function() {
-                            if (this.main_tag && this.main_tag.key && $.inArray(this.main_tag.key, shKeyNames) > -1) {
+                            if (this.main_tag && this.main_tag.key) {
                                 s = s.replace(this.main_tag.key, this.main_tag.value);
+                                s2 = s2.replace(this.main_tag.key, this.main_tag.value);
                             }
                         });
                         involvements.push(s);
+                        involvements.push(s2);
                     } else {
                         $.each(sh_tgs, function() {
-                            if (this.main_tag && this.main_tag.key && $.inArray(this.main_tag.key, shKeyNames) > -1) {
+                            if (this.main_tag && this.main_tag.key && (this.main_tag.key == 'Intention of Investment' || this.main_tag.key == 'Crop' || this.main_tag.key == 'Intended area (ha)')) {
                                 $('.inv').append('<div><span class="bolder">' + this.main_tag.key + ': </span>' + this.main_tag.value + '</div>');
                             }
                         });
@@ -440,15 +466,35 @@ function initializeMapContent() {
                         'Deal <span style="color:grey; font-size: 11px;">#' + shortId + '</span></a></span>' +
                         '</h6>');
 
+                        var crops = [];
+                        var cropsstring = '<p style="font-size: 11px;">Crops: ';
+
                         $.each(tgs, function() {
                             var v;
-                            if (this.main_tag && this.main_tag.key && this.main_tag.key == 'Intention of Investment') {
+                            if (this.main_tag && this.main_tag.key && (this.main_tag.key == 'Intention of Investment' || this.main_tag.key == 'Crop')) {
                                 v = this.main_tag.value;
-                                if ($.isNumeric(v))
-                                    v = addCommas(v);
-                                header.append('<p style="font-size: 11px;"><span>' + this.main_tag.key + ': </span>' + v + '</p>');
+                                if (this.main_tag.key == 'Crop') {
+                                    crops.push(this.main_tag.value);
+                                }
+                                else {
+                                    if ($.isNumeric(v))
+                                        v = addCommas(v);
+                                    header.append('<p style="font-size: 11px;"><span>' + this.main_tag.key + ': </span>' + v + '</p>');
+                                }
                             }
                         });
+                        if (crops.length > 0) {
+                            for (var i = 0; i < crops.length; i++) {
+                                if (i == (crops.length-1)) {
+                                    cropsstring = cropsstring + crops[i];
+                                }
+                                else {
+                                    cropsstring = cropsstring + crops[i]+ ', ';
+                                }
+                            }
+                            cropsstring = cropsstring + '</span></p>';
+                            header.append(cropsstring);
+                        }
 
 
                         //get the investor/s name
@@ -498,6 +544,7 @@ function initializeMapContent() {
                             '</h6>');
 
                         var crops = [];
+                        var cropsstring = '<p style="font-size: 11px;">Crops: ';
 
                         $.each(tgs, function () {
                             var v;
@@ -514,11 +561,16 @@ function initializeMapContent() {
                             }
                         });
                         if (crops.length > 0) {
-                            header.append('<p style="font-size: 11px;"><span>Crops: </span>');
                             for (var i = 0; i < crops.length; i++) {
-                                header.append(crops[i] + ', ');
+                                if (i == (crops.length-1)) {
+                                    cropsstring = cropsstring + crops[i];
+                                }
+                                else {
+                                    cropsstring = cropsstring + crops[i]+ ', ';
+                                }
                             }
-                            header.append('</p>');
+                            cropsstring = cropsstring + '</span></p>';
+                            header.append(cropsstring);
                         }
 
 
