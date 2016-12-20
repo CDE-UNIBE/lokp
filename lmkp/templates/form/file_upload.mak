@@ -1,7 +1,7 @@
 ${field.start_mapping()}
 
-<div class="row-fluid">
-    <div class="span4">
+<div class="row" style="margin-top: 15px;">
+    <div class="col s12">
         <label for="${field.oid}">
             % if field.title:
                 ${field.title}
@@ -15,13 +15,21 @@ ${field.start_mapping()}
             % endif
         </label>
     </div>
-    <div class="span8">
+    <div class="col s12">
         % if cstruct.get('uid'):
         <input type="hidden" name="uid" value="${cstruct['uid']}" id="${field.oid}-uid" />
         <span id="${oid}-filename">${cstruct['filename']}</span>
         % endif
 
-        <input type="file" class="input-style fileInput" name="upload" id="${field.oid}"/>
+        <div class="file-field input-field">
+          <div class="btn">
+            <span>File</span>
+            <input type="file" class="input-style fileInput" name="upload" id="${field.oid}"/>
+          </div>
+          <div class="file-path-wrapper">
+            <input class="file-path validate" type="text">
+          </div>
+        </div>
     </div>
 </div>
 
