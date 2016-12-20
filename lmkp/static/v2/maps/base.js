@@ -494,18 +494,32 @@ function initializeMapContent() {
                         var invs = a.hasOwnProperty('involvements') ? a.involvements : [];
 
                         header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/" + activityId + '">' +
-                        'Deal <span style="color:grey; font-size: 11px;">#' + shortId + '</span></a></span>' +
-                        '</h6>');
+                            'Deal <span style="color:grey; font-size: 11px;">#' + shortId + '</span></a></span>' +
+                            '</h6>');
 
-                        $.each(tgs, function() {
+                        var crops = [];
+
+                        $.each(tgs, function () {
                             var v;
-                            if (this.main_tag && this.main_tag.key && this.main_tag.key == 'Intention of Investment') {
+                            if (this.main_tag && this.main_tag.key && (this.main_tag.key == 'Intention of Investment' || this.main_tag.key == 'Crop')) {
                                 v = this.main_tag.value;
-                                if ($.isNumeric(v))
-                                    v = addCommas(v);
-                                header.append('<p style="font-size: 11px;"><span>' + this.main_tag.key + ': </span>' + v + '</p>');
+                                if (this.main_tag.key == 'Crop') {
+                                    crops.push(this.main_tag.value);
+                                }
+                                else {
+                                    if ($.isNumeric(v))
+                                        v = addCommas(v);
+                                    header.append('<p style="font-size: 11px;"><span>' + this.main_tag.key + ': </span>' + v + '</p>');
+                                }
                             }
                         });
+                        if (crops.length > 0) {
+                            header.append('<p style="font-size: 11px;"><span>Crops: </span>');
+                            for (var i = 0; i < crops.length; i++) {
+                                header.append(crops[i] + ', ');
+                            }
+                            header.append('</p>');
+                        }
 
 
                         //get the investor/s name
