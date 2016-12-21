@@ -1,4 +1,4 @@
-Land Observatory Knowledge Platform
+Myanmar land reporting Knowledge Platform
 ===========
 
 Current version: v0.9.8b

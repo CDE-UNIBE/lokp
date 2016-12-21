@@ -15,7 +15,7 @@ msgstr ""
 
 #: lmkp/templates/ext_administration.mak:21 lmkp/templates/ext_base.mak:55
 #: lmkp/templates/ext_base.mak:58
-msgid "Land Observatory"
+msgid "Myanmar land reporting"
 msgstr "Observatoires des transactions foncières "
 
 #: lmkp/templates/ext_administration.mak:21
@@ -34,7 +34,7 @@ msgstr "Chargement ..."
 
 #: lmkp/templates/ext_base.mak:64
 msgid ""
-"The Land Observatory will make information on large-scale land "
+"The Myanmar land reporting will make information on large-scale land "
 "acquisition transparent and accessible through an interactive, map-based "
 "platform. We are piloting the project in five countries, with partners "
 "and governments who will work to open government data, crowdsource and "

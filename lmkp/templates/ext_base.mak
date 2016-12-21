@@ -52,16 +52,16 @@ if 'lmkp.mode' in request.registry.settings:
     <body>
         <div id="header-div">
             <div id="logo-div">
-                <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" height="100" width="100" alt="${_('Land Observatory')}"/>
+                <img src="${request.static_url('lmkp:static/img/lo-logo.png')}" height="100" width="100" alt="${_('Myanmar land reporting')}"/>
             </div>
             <h1>
-                ${_("Land Observatory")}
+                ${_("Myanmar land reporting")}
                 % if mode == 'demo':
                     ${_("[Demo]")}
                 % endif
             </h1>
             <p>
-                ${_("The Land Observatory will make information on large-scale land acquisition transparent and accessible through an interactive, map-based platform. We are piloting the project in five countries, with partners and governments who will work to open government data, crowdsource and help customize local observatories. Updated information on land will benefit citizens, but also governments and companies interested in sustainability.")}
+                ${_("The Myanmar land reporting will make information on large-scale land acquisition transparent and accessible through an interactive, map-based platform. We are piloting the project in five countries, with partners and governments who will work to open government data, crowdsource and help customize local observatories. Updated information on land will benefit citizens, but also governments and companies interested in sustainability.")}
             </p>
             <p>
                 ${_("The pilot project is coordinated by the")}
