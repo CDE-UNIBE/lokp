@@ -169,10 +169,9 @@
 
         var alert = [
             '<div class="alert alert-error">',
-            '<button type="button" class="close" data-dismiss="alert">&times;</button>',
             '<p><strong>' + tForWarning + '</strong>: ' + tForSureToDelete + '</p>',
-            '<button type="button" class="confirmButtons btn btn-danger btn-small" onclick="javascript:return deleteFileDo(\'' + identifier + '\', this);">' + tForYes + '</button>',
-            '<button type="button" class="confirmButtons btn btn-small" data-dismiss="alert">' + tForNo + '</button>',
+            '<button type="button" class="confirmButtons btn btn-danger btn-small red" onclick="javascript:return deleteFileDo(\'' + identifier + '\', this);">' + tForYes + '</button>',
+            '<button type="button" class="confirmButtons btn btn-small grey" data-dismiss="alert">' + tForNo + '</button>',
             '</div>'
         ].join('');
         fileContainer.append(alert);
