@@ -11,7 +11,7 @@ mainly two purposes:
 
 Currently, the following customizations are known:
 
-* `LO`_: The customization used for the `Land Observatory`_.
+* `LO`_: The customization used for the `Myanmar land reporting`_.
 * `SPM`_: The customization used for the `Stakeholder Platform Madagascar`_.
 
 .. _LO: https://github.com/CDE-UNIBE/lokp_custom_lo

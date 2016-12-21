@@ -18,7 +18,7 @@ if 'lmkp.mode' in request.registry.settings:
         mode = 'demo'
 %>
 <title>
-    ${_("Land Observatory")} - ${_("Administration")}
+    ${_("Myanmar land reporting")} - ${_("Administration")}
     % if mode == 'demo':
         ${_("[Demo]")}
     % endif

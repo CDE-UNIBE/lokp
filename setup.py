@@ -42,7 +42,7 @@ requires = [
 
 setup(name='LMKP',
       version='0.9.8b',
-      description='The Land Observatory',
+      description='The Myanmar land reporting',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
           "Programming Language :: Python",

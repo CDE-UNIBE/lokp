@@ -323,7 +323,7 @@ class UserView(BaseView):
         # Send the email
         self._send_email(
             email_addresses,
-            "The Land Observatory: User %s requests approval" % user.username,
+            "The Myanmar land reporting: User %s requests approval" % user.username,
             email_text)
 
         return render_to_response(
@@ -370,7 +370,7 @@ class UserView(BaseView):
         # Send the email
         self._send_email(
             [user.email],
-            "The Land Observatory: Account confirmation on %s" % "http://%s"
+            "The Myanmar land reporting: Account confirmation on %s" % "http://%s"
             % self.request.environ['HTTP_HOST'],
             email_text)
 
