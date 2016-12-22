@@ -113,7 +113,7 @@ function selectKey(keyTranslated, keyName, keyType, itemType) {
     }
     _addOperators(operators);
 
-    var myVar = setInterval(myTimer ,1000);
+    var myVar = setTimeout(myTimer ,1000);
     function myTimer() {
         initializeDropdown();
     }
