@@ -19,7 +19,7 @@
             name="${field.name}"
             value="${cstruct}"
             id="${field.oid}"/>
-        <span class="truncate ttip col s3 truncate-input" data-toggle="tooltip" title="${helptext}">
+        <span class="tooltipped" data-position="right" data-delay="50" data-tooltip="${helptext}">
             ${helptext}
         </span>
 
