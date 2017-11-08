@@ -336,7 +336,8 @@ class MainView(BaseView):
     @view_config(route_name='simple_proxy', renderer='string')
     def simple_proxy(self):
 
-        allowedHosts = ['^http://cdetux2.unibe.ch']
+        allowedHosts = [
+            '^https://sdi.cde.unibe.ch', '^https://gis2.onemapmyanmar.info']
 
         if "url" not in self.request.params:
             raise HTTPNotFound()

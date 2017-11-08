@@ -7,7 +7,7 @@ var aKeyNames, shKeyNames;
 
 // Define the geographic and spherical mercator globally
 var geographicProjection = new OpenLayers.Projection("EPSG:4326");
-var sphericalMercatorProjection = new OpenLayers.Projection("EPSG:900913");
+var sphericalMercatorProjection = new OpenLayers.Projection("EPSG:3857");
 
 var pointsCluster, mapInteractive, pointsVisible, contextLegendInformation,
         polygonLoadOnStart;
@@ -652,7 +652,14 @@ function initializeMapContent() {
 function initializeContextLayers() {
     // Loop the context layers and append it to the context layers menu
     for (var c in contextLayers) {
-        var layerName = contextLayers[c].name;
+        var layer = contextLayers[c];
+        // Quite ugly: Remove abstract from PARAMS (would otherwise be sent in
+        // WMS request and crash). Instead, put it on directly on the layer
+        // object.
+        var abstract = layer.params.ABSTRACT;
+        delete layer.params.ABSTRACT;
+        var layerName = layer.name;
+        layer.abstract = abstract;
         var t = [
             '<p style="padding-top: 0; padding-bottom: 0;">',
             '<input class="input-top context-layer-checkbox" type="checkbox" value="' + layerName + '" id="checkbox' + layerName + '">',
