@@ -726,8 +726,13 @@ function initializePolygonLayers() {
  * Return the base layers of the map.
  */
 function getBaseLayers() {
-    var layers = [new OpenLayers.Layer.OSM("streetMap", null, {
-            attribution: "<p>Tiles Courtesy of <a href=\"http://www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"http://developer.mapquest.com/content/osm/mq_logo.png\"></p>",
+    var layers = [new OpenLayers.Layer.OSM("streetMap",
+        [
+            '//a.tile.openstreetmap.org/${z}/${x}/${y}.png',
+            '//b.tile.openstreetmap.org/${z}/${x}/${y}.png',
+            '//c.tile.openstreetmap.org/${z}/${x}/${y}.png'
+        ], {
+            attribution: "<p>Tiles Courtesy of <a href=\"//www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"//developer.mapquest.com/content/osm/mq_logo.png\"></p>",
             isBaseLayer: true,
             sphericalMercator: true,
             projection: sphericalMercatorProjection,
@@ -747,12 +752,12 @@ function getBaseLayers() {
         // is no internet connection.
     } catch (error) {
         layers.push(new OpenLayers.Layer.OSM("satelliteMap", [
-            "http://oatile1.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
-            "http://oatile2.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
-            "http://oatile3.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
-            "http://oatile4.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg"
+            "//oatile1.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
+            "//oatile2.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
+            "//oatile3.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
+            "//oatile4.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg"
         ], {
-            attribution: "<p>Tiles Courtesy of <a href=\"http://www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"http://developer.mapquest.com/content/osm/mq_logo.png\"></p>",
+            attribution: "<p>Tiles Courtesy of <a href=\//www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"//developer.mapquest.com/content/osm/mq_logo.png\"></p>",
             isBaseLayer: true,
             sphericalMercator: true,
             projection: new OpenLayers.Projection("EPSG:900913")
