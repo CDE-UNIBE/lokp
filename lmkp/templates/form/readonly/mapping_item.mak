@@ -26,7 +26,7 @@
         % else:
             <div class="row-fluid thmg-title">
                 <div class="grid-area">
-                    <h5 class="green">${field.title}</h5>
+                    <h5>${field.title}</h5>
                 </div>
                 ${field.serialize(cstruct, readonly=True)}
             </div>

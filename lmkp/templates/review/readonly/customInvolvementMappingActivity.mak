@@ -9,7 +9,7 @@
         %>
         % if child.name == 'role_name':
             <div class="span12">
-                <h5 class="green">
+                <h5>
                     ${child.cstruct}
                 </h5>
             </div>

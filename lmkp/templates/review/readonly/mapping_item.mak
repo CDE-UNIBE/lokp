@@ -34,7 +34,7 @@
                 <div class="col s6">
                     <div class="customheaderleft">
                     % if change:
-                        <i class="icon-exclamation-sign ttip pointer" data-toggle="tooltip" data-original-title="${_('There are changes in this section')}"></i>
+                        <i class="icon-exclamation-sign ttip pointer" data-toggle="tooltip" data-tooltip="${_('There are changes in this section')}"></i>
                     % endif
                     % if not hasOnlyNullValues:
                     <a class="accordion-toggle text-accent-color" data-toggle="collapse" href="#collapse-${field.name}">
