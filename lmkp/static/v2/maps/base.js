@@ -22,44 +22,23 @@ function initializeMapSearch() {
     var markers = new OpenLayers.Layer.Markers("Markers");
     map.addLayer(markers);
     var rows = new Array();
-    $("#search").typeahead({
-        items: 5,
-        minLength: 3,
-        source: function(query, process) {
-            $.get("/search", {
-                q: query,
-                epsg: 900913
-            },
-            function(response) {
-                rows = new Array();
-                if (response.success) {
-                    for (var i = 0; i < response.data.length; i++) {
-                        var row = response.data[i];
-                        rows.push(row);
-                    }
-                }
+    var searchField = $('#js-map-search');
+    var mapSearch = new google.maps.places.SearchBox(searchField[0]);
 
-                var results = $.map(rows, function(row) {
-                    return row.name;
-                });
+    var setMarker = searchField.data('set-marker');
 
-                process(results);
-            });
-        },
-        updater: function(item) {
-            var loc = new Array();
-            $.each(rows, function(row) {
-                if (rows[row].name === item) {
-                    loc.push(rows[row]);
-                }
-            });
+    mapSearch.addListener('places_changed', function() {
+        var places = this.getPlaces();
+        if (places.length !== 1) {
+          return;
+        }
+        var loc = places[0].geometry.location.toJSON();
+        var pos = new OpenLayers.LonLat(loc.lng, loc.lat).transform(
+            'EPSG:4326', 'EPSG:900913');
+        map.setCenter(pos, 14);
 
-            var selectedLocation = loc[0];
-            var pos = new OpenLayers.LonLat(selectedLocation.geometry.coordinates[0], selectedLocation.geometry.coordinates[1]);
-
+        if (setMarker) {
             markers.clearMarkers();
-            map.setCenter(pos, 14);
-
             var size = new OpenLayers.Size(27, 27);
             var offset = new OpenLayers.Pixel(-(size.w / 2), -(size.h / 2));
             var icon = new OpenLayers.Icon('/static/img/glyphicons_185_screenshot.png', size, offset);
@@ -68,11 +47,7 @@ function initializeMapSearch() {
                 markers.removeMarker(m);
             });
             markers.addMarker(m);
-
-            return loc[0].name;
         }
-    }).click(function() {
-        $(this).select();
     });
 }
 
@@ -363,7 +338,7 @@ function initializeMapContent() {
             f = feature.cluster[0];
         }
         if (f) {
-            $(".deal-data").empty().append('<h5 class="deal-headline">Deal <span id="deal-shortid-span" class="underline" style="color:grey; font-size: 13px;">#</span></h5><ul id="taggroups-ul" class="text-primary-color"></ul>');
+            $(".deal-data").empty().append('<h5 class="deal-headline">Deal <span id="deal-shortid-span" class="underline" style="color:grey; font-size: 16px;">#</span></h5><ul id="taggroups-ul" class="text-primary-color"></ul>');
             $(".deal-data-footer").empty();
             var activityId = f.data.activity_identifier;
             var shortId = activityId.split("-")[0];

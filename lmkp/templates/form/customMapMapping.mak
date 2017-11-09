@@ -130,7 +130,7 @@
                 <a class="pointer btn tooltipped" onClick="javascript:triggerCoordinatesDiv();" data-position="top" data-delay="50" data-tooltip="${_('If you have GPS coordinates you can enter them to set the location even more accurately.')}">${_('Enter coordinates')}<i class="material-icons tooltipped right">my_location</i></a>
             </div>
             <div class="col s6" style="margin: 0; padding: 0;">
-                <input id="search" name="q" type="text" placeholder="${_('Search location')}" style="line-height: 30px; height: 30px;">
+                <input id="js-map-search" data-set-marker="true" name="q" type="text" placeholder="${_('Search location')}" style="line-height: 30px; height: 30px;">
                 <button value="Search" id="search-submit" class="btn tooltipped" style="line-height: 30px; height: 30px;" name="action" data-position="top" data-delay="50" data-tooltip="${_('Start to search for a location by typing in the search field.')}"><i class="material-icons">search</i></button>
             </div>
         </div>
