@@ -1152,6 +1152,8 @@ function addLayersToSelectControl(map, layers) {
         map.addControl(selectControl);
         selectControl.activate();
     }
+    var scaleline = new OpenLayers.Control.ScaleLine();
+    map.addControl(scaleline);
 }
 
 /**
