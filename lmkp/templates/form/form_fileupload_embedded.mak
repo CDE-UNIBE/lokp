@@ -100,7 +100,7 @@
 
         // JS translation
         var tForSuccess = "${_('Success')}";
-        var tForError = "${_('Error')}"
+        var tForError = "${_('Error')}";
 
         // Hide the loading indicator if it is still there (form re-rendered
         // with errors)

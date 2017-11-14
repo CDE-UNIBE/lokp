@@ -132,6 +132,7 @@ function customAddSequenceItem(protonode, before) {
     var old_len = parseInt(before.attr('now_len')||'0', 10);
     before.attr('now_len', old_len + 1);
     //deform.maybeScrollIntoView('#' + anchorid);
+   $('select').material_select();
 }
 
 function toggleConfirmDelete() {

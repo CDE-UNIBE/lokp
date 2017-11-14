@@ -294,8 +294,7 @@ def renderForm(request, itemType, **kwargs):
 
                 if posted_formid not in ['activityform', 'stakeholderform']:
                     # TODO: Is this the correct way to return an error message?
-                    feedbackMessage = '<h3 class="text-error">%s</h3>: Unknown'
-                    ' form' % errorTitle
+                    feedbackMessage = '<span class="text-error">{}</span>: Unknown form'.format(errorTitle)
                     return {
                         'form': feedbackMessage,
                         'css_links': [],
