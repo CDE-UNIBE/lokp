@@ -718,18 +718,7 @@ function initializePolygonLayers() {
  * Return the base layers of the map.
  */
 function getBaseLayers() {
-    var layers = [new OpenLayers.Layer.OSM("streetMap",
-        [
-            '//a.tile.openstreetmap.org/${z}/${x}/${y}.png',
-            '//b.tile.openstreetmap.org/${z}/${x}/${y}.png',
-            '//c.tile.openstreetmap.org/${z}/${x}/${y}.png'
-        ], {
-            attribution: "<p>Tiles Courtesy of <a href=\"//www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"//developer.mapquest.com/content/osm/mq_logo.png\"></p>",
-            isBaseLayer: true,
-            sphericalMercator: true,
-            projection: sphericalMercatorProjection,
-            transitionEffect: "resize"
-        })];
+    var layers = [];
     // Try to get the Google Satellite layer
     try {
         layers.push(new OpenLayers.Layer.Google("satelliteMap", {
@@ -755,6 +744,35 @@ function getBaseLayers() {
             projection: new OpenLayers.Projection("EPSG:900913")
         }));
     }
+    layers.push(
+        new OpenLayers.Layer.XYZ(
+            'esriSatellite',
+            'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}',
+            {
+                sphericalMercator: true,
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            }
+        ));
+    layers.push(
+        new OpenLayers.Layer.Bing({
+            name: 'bingSatellite',
+            key: 'AhwtJ4yaHoZgWKtJMM4F3VjXWPzWAR0m--zWAIIKqosEXOZvHfRM_UwmGNm2Ss3J',
+            type: 'Aerial'
+        }));
+    layers.push(
+            new OpenLayers.Layer.OSM("streetMap",
+            [
+                '//a.tile.openstreetmap.org/${z}/${x}/${y}.png',
+                '//b.tile.openstreetmap.org/${z}/${x}/${y}.png',
+                '//c.tile.openstreetmap.org/${z}/${x}/${y}.png'
+            ], {
+                attribution: "© OpenStreetMap contributors",
+                isBaseLayer: true,
+                sphericalMercator: true,
+                projection: sphericalMercatorProjection,
+                transitionEffect: "resize"
+            }
+        ));
     return layers;
 }
 
