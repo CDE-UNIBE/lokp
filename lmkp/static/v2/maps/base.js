@@ -747,7 +747,7 @@ function getBaseLayers() {
     layers.push(
         new OpenLayers.Layer.XYZ(
             'esriSatellite',
-            'http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}',
+            '//server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}',
             {
                 sphericalMercator: true,
                 attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
@@ -757,7 +757,8 @@ function getBaseLayers() {
         new OpenLayers.Layer.Bing({
             name: 'bingSatellite',
             key: 'AhwtJ4yaHoZgWKtJMM4F3VjXWPzWAR0m--zWAIIKqosEXOZvHfRM_UwmGNm2Ss3J',
-            type: 'Aerial'
+            type: 'Aerial',
+            protocol: 'https'
         }));
     layers.push(
             new OpenLayers.Layer.OSM("streetMap",
