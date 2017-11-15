@@ -628,6 +628,8 @@ function initializeContextLayers() {
     // Loop the context layers and append it to the context layers menu
     for (var c in contextLayers) {
         var layer = contextLayers[c];
+        // Initial opacity
+        layer.setOpacity(0.6);
         // Quite ugly: Remove abstract from PARAMS (would otherwise be sent in
         // WMS request and crash). Instead, put it on directly on the layer
         // object.
@@ -656,6 +658,14 @@ function initializeContextLayers() {
     }
     // Add the context layers to the map
     map.addLayers(contextLayers);
+
+    // Listener for layer transparency slider
+    $('#layer-transparency-slider').on('input', function() {
+        var val = this.value / 100;
+        contextLayers.map(function(layer) {
+            layer.setOpacity(val);
+        });
+    });
 }
 
 /**

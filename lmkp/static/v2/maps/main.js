@@ -186,6 +186,7 @@ function showContextLegend(layerName) {
         '</div>' +
         '<div id="contextLegendContent" class="hide">' +
             '<h6 class="legend-modal-title">' + tForLegendforcontextlayer + ' ' + layerName + '</h6>' +
+            '<div id="contextLegendAbstract"></div>' +
             '<img id="contextLegendImg" src="' + imgUrl + '">' +
         '</div>');
 
@@ -229,7 +230,7 @@ function showContextLegend(layerName) {
 }
 
 function setContextLegendContent(content) {
-    $("<p>" + content + "</p>").insertAfter('#contextLegendContent > .legend-modal-title');
+    $('#contextLegendAbstract').html(content);
     // Assuming to load and parse the GetCapabilites documents takes
     // longer than the image, the "Loading ..." text is hidden and the
     // #contextLegendContent div is shown as soon as the Ajax request
