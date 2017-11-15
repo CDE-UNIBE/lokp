@@ -758,7 +758,7 @@ function getBaseLayers() {
             name: 'bingSatellite',
             key: 'AhwtJ4yaHoZgWKtJMM4F3VjXWPzWAR0m--zWAIIKqosEXOZvHfRM_UwmGNm2Ss3J',
             type: 'Aerial',
-            protocol: 'https'
+            protocol: 'https:'
         }));
     layers.push(
             new OpenLayers.Layer.OSM("streetMap",
