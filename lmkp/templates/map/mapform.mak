@@ -1,6 +1,6 @@
 <%page args="readonly=False, compare=False, identifier=None, version=None" />
 
-<script src="${request.static_url('lmkp:static/lib/OpenLayers-2.12/OpenLayers.js')}" type="text/javascript"></script>
+<script src="${request.static_url('lmkp:static/lib/OpenLayers-2.13.1/OpenLayers.js')}" type="text/javascript"></script>
 <script type="text/javascript" src="//maps.googleapis.com/maps/api/js?v=3&key=${str(request.registry.settings.get('lmkp.google_maps_api_key'))}&libraries=places"></script>
 <script type="text/javascript" src="${request.route_url('context_layers')}"></script>
 % if compare is True:
