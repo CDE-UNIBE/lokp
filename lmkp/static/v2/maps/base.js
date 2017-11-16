@@ -753,13 +753,13 @@ function getBaseLayers() {
                 attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
             }
         ));
-    layers.push(
-        new OpenLayers.Layer.Bing({
-            name: 'bingSatellite',
-            key: 'AhwtJ4yaHoZgWKtJMM4F3VjXWPzWAR0m--zWAIIKqosEXOZvHfRM_UwmGNm2Ss3J',
-            type: 'Aerial',
-            protocol: 'https:'
-        }));
+    // layers.push(
+    //     new OpenLayers.Layer.Bing({
+    //         name: 'bingSatellite',
+    //         key: 'AhwtJ4yaHoZgWKtJMM4F3VjXWPzWAR0m--zWAIIKqosEXOZvHfRM_UwmGNm2Ss3J',
+    //         type: 'Aerial',
+    //         protocol: 'https:'
+    //     }));
     layers.push(
             new OpenLayers.Layer.OSM("streetMap",
             [
