@@ -556,19 +556,7 @@ function initializePolygonLayers() {
  * Return the base layers of the map.
  */
 function getBaseLayers() {
-    var layers = [new OpenLayers.Layer.OSM("streetMap", [
-            "http://otile1.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
-            "http://otile2.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
-            "http://otile3.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
-            "http://otile4.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg"
-        ], {
-            attribution: "<p>Tiles Courtesy of <a href=\"http://www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"http://developer.mapquest.com/content/osm/mq_logo.png\"></p>",
-            isBaseLayer: true,
-            sphericalMercator: true,
-            projection: sphericalMercatorProjection,
-            transitionEffect: "resize"
-        })];
-    // Try to get the Google Satellite layer
+    var layers = [];
     try {
         layers.push(new OpenLayers.Layer.Google("satelliteMap", {
             type: google.maps.MapTypeId.HYBRID,
