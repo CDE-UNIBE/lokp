@@ -9,42 +9,33 @@
 
 # Ignore Netbeans project folder
 /nbproject/
-
-# Ignore Pyramid log folder
-/logs/
-
-# Ignore packages
-*.egg
-*.egg-info
-
-# Ignore JavaScript libraries, execpt d3
-lmkp/static/lib/*
-!lmkp/static/lib/d3/
-lmkp/static/lib.tar.gz
-.pydevproject
-.project
-
-# Ignore configuration files
-*.ini
-
-# Ignore all customization folders except the sample folder
-lmkp/customization/*
-!lmkp/customization/sample/
-
-# Ignore generate JSON files
-activities.json
-stakeholders.json
-# Ignore LMKP egg
-LMKP.egg-info/
-
-# Ignore documentation builds
-/docs/_build/*
+.idea/*
 
 # Ignore sublime project files
 *.sublime-project
 *.sublime-workspace
 
-.idea/*
+# Ignore Pyramid log folder
+/logs/
+
+# Ignore mail folder used for local debugging
+/mail
+
+# Ignore packages
+*.egg
+*.egg-info
+
+# Ignore node modules
+/node_modules
+
+# Ignore configuration files
+*.ini
+
+# Ignore LMKP egg
+LMKP.egg-info/
+
+# Ignore documentation builds
+/docs/_build/*
 
 # Ignore session data and locks
 data/sessions/
