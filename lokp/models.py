@@ -771,7 +771,7 @@ class Profile(Base):
     __table_args__ = {'schema': 'data'}
     id = Column(Integer, primary_key=True)
     code = Column(String(255), nullable=False, unique=True)
-    geometry = Column(Geometry(
+    geometry = Column('polygon', Geometry(
         geometry_type='POLYGON', dimension=2, srid=4326, spatial_index=True))
 
     activities = relationship('Activity', backref='profile')
