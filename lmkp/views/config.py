@@ -122,7 +122,7 @@ def get_mandatory_keys(request, item, translated=False):
         configList = getCategoryList(request, 'activities')
     elif item == 'sh':
         configList = getCategoryList(request, 'stakeholders')
-    return configList.getDesiredKeyNames(translated=translated)
+    return configList.getDesiredKeyNames(translated=translated, strict=True)
 
 
 def getGridColumnKeys(request, itemType):

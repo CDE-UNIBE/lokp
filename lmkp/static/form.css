@@ -34,7 +34,6 @@ div#create-new-stakeholder {
 .taggroup {
     padding-top: 20px;
     margin-top: 10px;
-    border-top: 1px solid lightgrey;
 }
 
 div#new-stakeholder-buttons {
@@ -155,4 +154,15 @@ span.ui-spinner input {
 .ui-spinner .ui-icon-triangle-1-s {
 	/* need to fix icons sprite */
 	background-position:-65px -16px;
+}
+
+/* Messages in Deal Form */
+.text-success {
+	color: green;
+}
+.text-error {
+	color: red;
+}
+.text-success-large {
+	color: teal;
 }

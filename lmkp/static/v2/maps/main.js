@@ -169,27 +169,42 @@ function showContextLegend(layerName) {
         request: 'GetLegendGraphic',
         service: layer.params.SERVICE,
         version: layer.params.VERSION,
-        layer: layer.params.LAYERS,
+        layer: encodeURI(layer.params.LAYERS),
         style: layer.params.STYLES,
         format: 'image/png',
         width: 25,
         height: 25,
         legend_options: 'forceLabels:1;fontAntiAliasing:1;fontName:Nimbus Sans L Regular;'
     };
-    var imgUrl = layer.url + '?' + $.param(imgParams);
+    var imgUrl = layer.url + '?' + decodeURI($.param(imgParams));
 
     // Set the content: Image is hidden first while loading indicator is shown
-    $('#mapModalHeader').html(tForLegend);
-    $('#mapModalBody').html('<div id="contextLegendImgLoading" style="text-align: center;"><img src="/static/img/ajax-loader-green.gif" alt="' + tForLoading + '" height="55" width="54"></div><div id="contextLegendContent" class="hide"><p>' + tForLegendforcontextlayer + ' <strong>' + layerName + '</strong>:</p><img id="contextLegendImg" src="' + imgUrl + '"></div>');
+    //$('#mapModalHeader').html(tForLegend);
+    $('#mapModalBody').html(
+        '<div id="contextLegendImgLoading" style="text-align: center;">' +
+            '<img src="/static/img/ajax-loader-green.gif" alt="' + tForLoading + '" height="55" width="54">' +
+        '</div>' +
+        '<div id="contextLegendContent" class="hide">' +
+            '<h6 class="legend-modal-title">' + tForLegendforcontextlayer + ' ' + layerName + '</h6>' +
+            '<div id="contextLegendAbstract"></div>' +
+            '<img id="contextLegendImg" src="' + imgUrl + '">' +
+        '</div>');
 
     // Show the model window
-    $('#mapModal').modal();
+    $('#mapModal').openModal();
 
     // Once the image is loaded, hide the loading indicator and show the image
     /*$('#contextLegendImg').load(function() {
         $('#contextLegendContent').removeClass('hide');
         $('#contextLegendImgLoading').hide();
     });*/
+
+    var abstract = layer.abstract;
+    if (abstract !== undefined) {
+        // Abstract was defined in YML, use this one
+        setContextLegendContent(abstract);
+        return false;
+    }
 
     var getCapabilitiesRequest = layer.url + '?' + $.param({
         request: 'GetCapabilities',
@@ -206,16 +221,20 @@ function showContextLegend(layerName) {
             if($layer.find("Name").first().text() === layer.params.LAYERS
                 || $layer.find("Name").first().text() === layer.params.LAYERS.split(":")[1]){
                 var layerAbstract = $layer.find("Abstract").first().text();
-                $("<p>" + layerAbstract + "</p>").insertAfter('#contextLegendContent > p');
-                // Assuming to load and parse the GetCapabilites documents takes
-                // longer than the image, the "Loading ..." text is hidden and the
-                // #contextLegendContent div is shown as soon as the Ajax request
-                // has successfully finished.
-                $('#contextLegendContent').removeClass('hide');
-                $('#contextLegendImgLoading').hide();
+                setContextLegendContent(layerAbstract);
                 return false;
             }
         });
     });
     return false;
+}
+
+function setContextLegendContent(content) {
+    $('#contextLegendAbstract').html(content);
+    // Assuming to load and parse the GetCapabilites documents takes
+    // longer than the image, the "Loading ..." text is hidden and the
+    // #contextLegendContent div is shown as soon as the Ajax request
+    // has successfully finished.
+    $('#contextLegendContent').removeClass('hide');
+    $('#contextLegendImgLoading').hide();
 }

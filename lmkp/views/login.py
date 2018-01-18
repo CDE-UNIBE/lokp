@@ -69,6 +69,30 @@ class LoginView(BaseView):
 
         return HTTPFound(location=came_from, headers=headers)
 
+    @view_config(route_name='login_json', renderer='json')
+    def login_json(self):
+        """
+        Login controller
+        """
+        # Prevent an empty header if /login is directly requested (should
+        # actually never happen)
+        headers = []
+        body = self.request.json_body
+        login = body.get('login')
+        password = body.get('password')
+
+        if User.check_password(login, password):
+            log.debug('Login succeed')
+            headers = remember(
+                self.request, login,
+                max_age=timedelta(days=30).total_seconds())
+            self.request.response.headerlist.extend(headers)
+            return {'login': 'true'}
+        else:
+            log.debug('Login failed')
+            headers = forget(self.request)
+            return {'login': 'false'}
+
     @view_config(route_name='login_form')
     def login_form(self):
         """

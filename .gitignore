@@ -43,3 +43,8 @@ LMKP.egg-info/
 # Ignore sublime project files
 *.sublime-project
 *.sublime-workspace
+
+.idea/*
+
+# Ignore session data and locks
+data/sessions/

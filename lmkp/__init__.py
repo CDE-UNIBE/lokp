@@ -28,6 +28,7 @@ def main(global_config, ** settings):
     """ This function returns a Pyramid WSGI application.
     """
 
+
     # Used when called through Tests
     if 'settings' in settings:
         settings = settings['settings']
@@ -67,6 +68,9 @@ def main(global_config, ** settings):
     config.set_authorization_policy(authzPolicy)
 
     config.include('pyramid_beaker')
+
+    config.include('pyramid_mako')
+    config.include('pyramid_chameleon')
 
     # Add the directories that include the translations, also include the
     # translation directory for the customization
@@ -120,6 +124,7 @@ def main(global_config, ** settings):
 
     # Login / Logout
     config.add_route('login', '/login', request_method='POST')
+    config.add_route('login_json', '/login/json', request_method='POST')
     config.add_route('login_form', '/login', request_method='GET')
     config.add_route('reset', '/reset', request_method='POST')
     config.add_route('reset_form', '/reset', request_method='GET')
@@ -141,6 +146,7 @@ def main(global_config, ** settings):
     config.add_route('profile_laos', '/laos')
     config.add_route('profile_peru', '/peru')
     config.add_route('profile_madagascar', '/madagascar')
+    config.add_route('profile_myanmar', '/myanmar')
     config.add_route('profile_global', '/global')
 
     # Evaluation
@@ -259,6 +265,8 @@ def main(global_config, ** settings):
     """
     # Embedded form to upload a file
     config.add_route('file_upload_form_embedded', '/files/form')
+    config.add_route(
+        'file_upload_json_response', '/files/form/json', request_method='POST')
     # Show or download a file
     config.add_route('file_view', '/files/{action}/{identifier}')
 

@@ -36,9 +36,10 @@
         ></span>
 
         <div class="form-add-more-icon">
-            <span
+             <a class="btn-floating btn-large waves-effect waves-light" id="${field.oid}-seqAdd" onClick="javascript:customAppendSequenceItem(this);"><i class="material-icons">add</i></a>
+            <!--<span
                 class="green pointer" id="${field.oid}-seqAdd" onClick="javascript:customAppendSequenceItem(this);">
-                <i class="icon-plus"></i>
+                <i class="icon-plus"></i>-->
             </span>
         </div>
     </ul>

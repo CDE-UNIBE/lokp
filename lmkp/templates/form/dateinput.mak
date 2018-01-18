@@ -1,5 +1,5 @@
-<div class="row-fluid">
-    <div class="span4">
+<div class="row">
+    <div class="col s12">
         <label for="${field.oid}">
             % if field.title:
                 ${field.title}
@@ -13,9 +13,10 @@
             % endif
         </label>
     </div>
-    <div class="span8">
-        <input type="text"
-               class="input-style span12"
+
+    <div class="col s9">
+        <input type="date"
+               class="datepicker"
                name="${field.name}"
                value="${cstruct}"
                id="${field.oid}"
@@ -28,10 +29,10 @@
 </div>
 
 <script type="text/javascript">
-    deform.addCallback(
+    /*deform.addCallback(
         '${field.oid}',
         function(oid) {
             $('#' + oid).datepicker(${options});
         }
-    );
+    );*/
 </script>

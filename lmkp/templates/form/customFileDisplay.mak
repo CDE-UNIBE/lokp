@@ -28,11 +28,14 @@
 
         <div class="fileList"><!-- Placeholder --></div>
 
-        <button
+        <!--<button
             id="add-file-${field.oid}"
             class="btn btn-small uploadButton"
             onclick="return uploadFile(this);"
-            >${_('Upload a file')}</button>
+            ></button>-->
+
+        <a id="add-file-${field.oid}" class="modal-trigger waves-effect waves-light btn" href="#formModal" onclick="return uploadFile(event, this);" style="margin-bottom: 15px;">${_('Upload a file')}</a>
+
     </div>
 </div>
 
@@ -66,10 +69,11 @@
      * Function to upload a new file.
      * Opens a modal window with the form to do the upload.
      */
-    function uploadFile(btn) {
+    function uploadFile(event, btn) {
+        event.preventDefault();
 
         // Set a loading indicator and show the modal window.
-        $('#formModal .modal-body').html('<p>' + tForLoading + '</p>');
+        $('#formModal .modal-content').html('<p>' + tForLoading + '</p>');
         $('#formModal').modal({
             backdrop: 'static'
         });
@@ -84,7 +88,12 @@
         $.ajax({
             url: '${request.route_url("file_upload_form_embedded")}'
         }).done(function(data) {
-            $('#formModal .modal-body').html(data);
+            $('#formModal .modal-content').html(data);
+            deform.load();
+            if (!$('#formModal').hasClass('open')) {
+                // Open modal
+                $('#formModal').openModal();
+            }
         });
 
         // Do not submit anything.

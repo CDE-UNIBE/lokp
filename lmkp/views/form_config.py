@@ -157,7 +157,7 @@ class ConfigCategoryList(object):
                         keys.append(t.getKey().getName())
         return keys
 
-    def getDesiredKeyNames(self, translated=False):
+    def getDesiredKeyNames(self, translated=False, strict=False):
         """
         Return a list with the names (translated or not) of all desired and
         mandatory (!) keys in all categories.
@@ -167,6 +167,8 @@ class ConfigCategoryList(object):
             for thg in cat.getThematicgroups():
                 for tg in thg.getTaggroups():
                     for t in tg.getTags():
+                        if t.getMandatory() is False and strict is True:
+                            continue
                         if t.getDesired() is True or t.getMandatory() is True:
                             if translated is True:
                                 desiredkeys.append(

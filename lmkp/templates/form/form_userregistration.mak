@@ -50,6 +50,7 @@
                     value="${button.value}"
                 >
                     <span>${button.title}</span>
+                    <i class="material-icons right">send</i>
                 </button>
             % endfor
         </li>

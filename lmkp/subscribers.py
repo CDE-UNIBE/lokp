@@ -11,7 +11,6 @@ from pyramid.i18n import (
 )
 from pyramid.security import (
     authenticated_userid,
-    effective_principals,
 )
 
 from lmkp.custom import get_customization_name
@@ -104,12 +103,7 @@ def _get_user(request):
         return user
 
 
-def _get_principals(request):
-    return effective_principals(request)
-
-
 @subscriber(NewRequest)
 def add_user(event):
     request = event.request
-    request.set_property(_get_principals, 'effective_principals', reify=True)
     request.set_property(_get_user, 'user', reify=True)

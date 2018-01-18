@@ -24,7 +24,7 @@ function createSearch(inputId, tForUnknown, tForToomanyresults, tForNothingfound
     var nameKey = getKeyNames(keys)[0];
     // Not translated key name used to query the involvements
     var rawNameKey = getKeyNames(rawKeys)[0];
-    var fieldset = inputField.parents().eq(6);
+    var fieldset = inputField.closest('.add-involvement').parent().parent();
 
     // If there is an initial involvement, hide the "select"-button
     var emptyInvolvement = true;
@@ -37,7 +37,10 @@ function createSearch(inputId, tForUnknown, tForToomanyresults, tForNothingfound
         toggleInvolvementButtons(fieldset, true);
     }
 
-    inputField.autocomplete({
+    if (typeof jQuery.fn.autocompleteJQuery !== "function") {
+        jQuery.fn.autocompleteJQuery = jQuery.fn.autocomplete;
+    }
+    inputField.autocompleteJQuery({
         minLength: 4,
         // Use an ajax query as a search (by name). Query 11 results so the last
         // item can be replaced with a message to narrow down the search.
@@ -107,7 +110,7 @@ function createSearch(inputId, tForUnknown, tForToomanyresults, tForNothingfound
                 $('#formModalClose').trigger('click');
             }
         }
-    }).data('autocomplete')._renderItem = function(ul, item) {
+    }).data('ui-autocomplete')._renderItem = function(ul, item) {
         if (item.id && item.version) {
             // Always use name as first display value
             var val1 = (nameKey in item) ? item[nameKey] : tForUnknown;
@@ -121,7 +124,7 @@ function createSearch(inputId, tForUnknown, tForToomanyresults, tForNothingfound
                 }
             }
             return $('<li>')
-                .data("item.autocomplete", item)
+                .data("ui-autocomplete-item", item)
                 .append('<a>' + val1
                     + '<br/><span class="shautocompletedescription">'
                     + val2.join(' - ') + '</span></a>')
@@ -140,7 +143,7 @@ function createSearch(inputId, tForUnknown, tForToomanyresults, tForNothingfound
 }
 
 function setInvolvementContent(inputField, involvementdata) {
-    var fieldset = inputField.parents().eq(6);
+    var fieldset = inputField.closest('.add-involvement').parent().parent();
     for (var d in involvementdata) {
         fieldset.find('input[name="' + d + '"]').val(involvementdata[d]);
     }

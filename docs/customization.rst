@@ -13,11 +13,14 @@ Currently, the following customizations are known:
 
 * `LO`_: The customization used for the `Land Observatory`_.
 * `SPM`_: The customization used for the `Stakeholder Platform Madagascar`_.
+* `OMM`_: The customization used for the `Myanmar Land Reporting`_.
 
 .. _LO: https://github.com/CDE-UNIBE/lokp_custom_lo
 .. _Land Observatory: http://www.landobservatory.org
 .. _SPM: https://github.com/CDE-UNIBE/lokp_custom_spm
 .. _Stakeholder Platform Madagascar: http://spm.esapp.info
+.. _OMM: https://github.com/CDE-UNIBE/lokp_custom_omm
+.. _Myanmar Land Reporting: https://www.mmlandreporting.info
 
 Each customization needs to have a predefined structure and should contain at
 least the following directories:

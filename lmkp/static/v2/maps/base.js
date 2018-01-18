@@ -7,7 +7,7 @@ var aKeyNames, shKeyNames;
 
 // Define the geographic and spherical mercator globally
 var geographicProjection = new OpenLayers.Projection("EPSG:4326");
-var sphericalMercatorProjection = new OpenLayers.Projection("EPSG:900913");
+var sphericalMercatorProjection = new OpenLayers.Projection("EPSG:3857");
 
 var pointsCluster, mapInteractive, pointsVisible, contextLegendInformation,
         polygonLoadOnStart;
@@ -22,44 +22,23 @@ function initializeMapSearch() {
     var markers = new OpenLayers.Layer.Markers("Markers");
     map.addLayer(markers);
     var rows = new Array();
-    $("#search").typeahead({
-        items: 5,
-        minLength: 3,
-        source: function(query, process) {
-            $.get("/search", {
-                q: query,
-                epsg: 900913
-            },
-            function(response) {
-                rows = new Array();
-                if (response.success) {
-                    for (var i = 0; i < response.data.length; i++) {
-                        var row = response.data[i];
-                        rows.push(row);
-                    }
-                }
+    var searchField = $('#js-map-search');
+    var mapSearch = new google.maps.places.SearchBox(searchField[0]);
 
-                var results = $.map(rows, function(row) {
-                    return row.name;
-                });
+    var setMarker = searchField.data('set-marker');
 
-                process(results);
-            });
-        },
-        updater: function(item) {
-            var loc = new Array();
-            $.each(rows, function(row) {
-                if (rows[row].name === item) {
-                    loc.push(rows[row]);
-                }
-            });
+    mapSearch.addListener('places_changed', function() {
+        var places = this.getPlaces();
+        if (places.length !== 1) {
+          return;
+        }
+        var loc = places[0].geometry.location.toJSON();
+        var pos = new OpenLayers.LonLat(loc.lng, loc.lat).transform(
+            'EPSG:4326', 'EPSG:900913');
+        map.setCenter(pos, 14);
 
-            var selectedLocation = loc[0];
-            var pos = new OpenLayers.LonLat(selectedLocation.geometry.coordinates[0], selectedLocation.geometry.coordinates[1]);
-
+        if (setMarker) {
             markers.clearMarkers();
-            map.setCenter(pos, 14);
-
             var size = new OpenLayers.Size(27, 27);
             var offset = new OpenLayers.Pixel(-(size.w / 2), -(size.h / 2));
             var icon = new OpenLayers.Icon('/static/img/glyphicons_185_screenshot.png', size, offset);
@@ -68,11 +47,7 @@ function initializeMapSearch() {
                 markers.removeMarker(m);
             });
             markers.addMarker(m);
-
-            return loc[0].name;
         }
-    }).click(function() {
-        $(this).select();
     });
 }
 
@@ -143,7 +118,7 @@ function updateMapCriteria(translatedName, internalName) {
  * - tForNodealselected
  * HTML elements:
  * - <div id="map-point-list">
- * - <div class="basic-data">
+ * - <div class="deal-data">
  * - <h6 class="deal-headline"></h6>
  * - <ul id="taggroups-ul">
  * - <div id="map-deals-symbolization">
@@ -213,13 +188,14 @@ function initializeMapContent() {
                 // Add the symbolization dropdown and its content
                 var s = [];
                 s.push(
-                        '<a class="dropdown-toggle blacktemp map-point-symbol-dropdown" href="#" data-toggle="dropdown">',
+                        '<a class="dropdown-button" href="#" data-activates="map-symbolization-dropdown" style="margin: 0; padding: 0; line-height: 22px; height: 22px;">',
                         '<span id="map-symbolization-name">',
                         mapCriteria[0],
                         '</span>',
-                        '&nbsp;<b class="caret"></b>',
+                        '<i class="material-icons right" style="line-height: 22px;">arrow_drop_down</i>',
                         '</a>',
-                        '<ul class="dropdown-menu map-point-symbol-drodpown-menu">'
+                        '</span>',
+                        '<ul id="map-symbolization-dropdown" class="dropdown-content" style="width: 500px;">'
                         );
                 $.each(allMapCriteria, function() {
                     s.push(
@@ -230,6 +206,7 @@ function initializeMapContent() {
                 });
                 s.push('</ul>');
                 $('#map-deals-symbolization').html(s.join(''));
+                initializeDropdown();
 
                 // Empty the legend and show it again in case it was hidden
                 $("#map-points-list").empty().css('visibility', 'visible');
@@ -298,7 +275,7 @@ function initializeMapContent() {
 
                     // Write a legend entry for the group
                     var legendTemplate = [
-                        '<li class="legendEntry">',
+                        '<li style="line-height: 15px;">',
                         '<div class="vectorLegendSymbol" style="background-color: ' + getColor(colorIndex) + ';">',
                         '</div>',
                         l,
@@ -348,8 +325,10 @@ function initializeMapContent() {
         // For Activities, only use the first two keys of overview
         aKeyNames = getKeyNames(aKeys).slice(0, 2);
         // For Stakeholders, only use the first key of overview
-        shKeyNames = getKeyNames(shKeys).slice(0, 1);
+        shKeyNames = getKeyNames(shKeys);
         var shReprString = shKeyNames[0];
+        var shReprString2 = shKeyNames[1];
+
 
         var feature = e.feature;
         var f;
@@ -359,42 +338,72 @@ function initializeMapContent() {
             f = feature.cluster[0];
         }
         if (f) {
+            $(".deal-data").empty().append('<h5 class="deal-headline">Deal <span id="deal-shortid-span" class="underline" style="color:grey; font-size: 16px;">#</span></h5><ul id="taggroups-ul" class="text-primary-color"></ul>');
+            $(".deal-data-footer").empty();
             var activityId = f.data.activity_identifier;
             var shortId = activityId.split("-")[0];
-            $("#deal-shortid-span").html('<a href="/activities/html/' + activityId + '"># ' + shortId + '</a>');
+            $("#deal-shortid-span").html(
+                '<a href="/activities/html/' + activityId + '">' +
+                    '# ' + shortId +
+                '</a>');
             $("#taggroups-ul").empty().append('<li><p>' + tForLoadingdetails + '</p></li>');
             $.get("/activities/json/" + activityId, function(r) {
                 var a = r.data[0];
                 var tgs = a.hasOwnProperty('taggroups') ? a.taggroups : [];
                 var invs = a.hasOwnProperty('involvements') ? a.involvements : [];
 
+                var crops = [];
+                var cropsstring = '<p><span class=\"bolder\">Crops: </span>';
+
                 $("#taggroups-ul").empty();
                 $.each(tgs, function() {
                     var v;
-                    if (this.main_tag && this.main_tag.key && $.inArray(this.main_tag.key, aKeyNames) > -1) {
+                    if (this.main_tag && this.main_tag.key && (this.main_tag.key == 'Intention of Investment' || this.main_tag.key == 'Crop' || this.main_tag.key == 'Intended area (ha)')) {
                         v = this.main_tag.value;
-                        if ($.isNumeric(v))
-                            v = addCommas(v);
-                        $("#taggroups-ul").append("<li><p><span class=\"bolder\">" + this.main_tag.key + ": </span>" + v + "</p></li>");
+                        if (this.main_tag.key == 'Crop') {
+                            crops.push(this.main_tag.value);
+                        }
+                        else {
+                            if ($.isNumeric(v))
+                                v = addCommas(v);
+                            $("#taggroups-ul").append("<li><p><span class=\"bolder\">" + this.main_tag.key + ": </span>" + v + "</p></li>");
+                        }
                     }
                 });
+
+                if (crops.length > 0) {
+                    for (var i = 0; i < crops.length; i++) {
+                        if (i == (crops.length-1)) {
+                            cropsstring = cropsstring + crops[i];
+                        }
+                        else {
+                            cropsstring = cropsstring + crops[i]+ ', ';
+                        }
+                    }
+                    cropsstring = cropsstring + '</span></p>';
+                    $("#taggroups-ul").append(cropsstring);
+                }
 
                 var involvements = [];
                 $.each(invs, function() {
                     var sh = this.data;
                     var sh_tgs = sh.hasOwnProperty('taggroups') ? sh.taggroups : [];
 
-                    if (shReprString !== null) {
+
+                    if (shReprString !== null && shReprString2 !== null) {
                         var s = shReprString;
+                        var s2 = shReprString2;
                         $.each(sh_tgs, function() {
-                            if (this.main_tag && this.main_tag.key && $.inArray(this.main_tag.key, shKeyNames) > -1) {
+                            if (this.main_tag && this.main_tag.key) {
                                 s = s.replace(this.main_tag.key, this.main_tag.value);
+                                s2 = s2.replace(this.main_tag.key, this.main_tag.value);
                             }
                         });
                         involvements.push(s);
+                        involvements.push(s2);
                     } else {
                         $.each(sh_tgs, function() {
-                            if (this.main_tag && this.main_tag.key && $.inArray(this.main_tag.key, shKeyNames) > -1) {
+                            if (this.main_tag && this.main_tag.key && (this.main_tag.key == 'Intention of Investment' || this.main_tag.key == 'Crop' || this.main_tag.key == 'Intended area (ha)')) {
                                 $('.inv').append('<div><span class="bolder">' + this.main_tag.key + ': </span>' + this.main_tag.value + '</div>');
                             }
                         });
@@ -405,20 +414,93 @@ function initializeMapContent() {
                     $('#taggroups-ul').append('<li class="inv"><p><span class="bolder">' + label + ': </span>' + involvements.join(', ') + '</p></li>');
                 }
             });
+            jQuery('html,body').animate({scrollTop: jQuery('#window_right').offset().top}, 1000);
         } else {
-            $(".basic-data").empty();
+            $(".deal-data").empty();
+            $(".deal-data-footer").empty();
             // Create a list of selected deals, when selecting several deals
-            var header = $(".basic-data").append("<h6 class=\"deal-headline\">" + tForSelecteddeals + "</h6>");
+            var header = $(".deal-data").append("<h5 class=\"deal-headline text-primary-color\">" + tForSelecteddeals + "</h5>");
+            var footer = $(".deal-data-footer").append("");
 
             // Show at maximum ten deals to prevent a too long basic data box
-            var maxFeatures = 10;
+            var maxFeatures = 3;
             if (feature.cluster.length <= maxFeatures) {
                 for (var i = 0; i < feature.cluster.length; i++) {
                     var f = feature.cluster[i];
                     var activityId = f.data.activity_identifier;
                     var shortId = activityId.split("-")[0];
 
-                    header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/" + activityId + '"># ' + shortId + '</a></span></h6>');
+
+                    $.get("/activities/json/" + activityId, function(r) {
+                        var a = r.data[0];
+                        var tgs = a.hasOwnProperty('taggroups') ? a.taggroups : [];
+                        var invs = a.hasOwnProperty('involvements') ? a.involvements : [];
+
+                        header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/" + activityId + '">' +
+                        'Deal <span style="color:grey; font-size: 11px;">#' + shortId + '</span></a></span>' +
+                        '</h6>');
+
+                        var crops = [];
+                        var cropsstring = '<p style="font-size: 11px;">Crops: ';
+
+                        $.each(tgs, function() {
+                            var v;
+                            if (this.main_tag && this.main_tag.key && (this.main_tag.key == 'Intention of Investment' || this.main_tag.key == 'Crop')) {
+                                v = this.main_tag.value;
+                                if (this.main_tag.key == 'Crop') {
+                                    crops.push(this.main_tag.value);
+                                }
+                                else {
+                                    if ($.isNumeric(v))
+                                        v = addCommas(v);
+                                    header.append('<p style="font-size: 11px;"><span>' + this.main_tag.key + ': </span>' + v + '</p>');
+                                }
+                            }
+                        });
+                        if (crops.length > 0) {
+                            for (var i = 0; i < crops.length; i++) {
+                                if (i == (crops.length-1)) {
+                                    cropsstring = cropsstring + crops[i];
+                                }
+                                else {
+                                    cropsstring = cropsstring + crops[i]+ ', ';
+                                }
+                            }
+                            cropsstring = cropsstring + '</span></p>';
+                            header.append(cropsstring);
+                        }
+
+
+                        //get the investor/s name
+                        var involvements = [];
+                        $.each(invs, function() {
+                            var sh = this.data;
+                            var sh_tgs = sh.hasOwnProperty('taggroups') ? sh.taggroups : [];
+
+                            if (shReprString !== null && shReprString2 !== null) {
+                                var s = shReprString;
+                                var s2 = shReprString2;
+                                $.each(sh_tgs, function() {
+                                    if (this.main_tag && this.main_tag.key) {
+                                        s = s.replace(this.main_tag.key, this.main_tag.value);
+                                        s2 = s2.replace(this.main_tag.key, this.main_tag.value);
+                                    }
+                                });
+                                involvements.push(s);
+                                involvements.push(s2);
+                            } else {
+                                $.each(sh_tgs, function() {
+                                    if (this.main_tag && this.main_tag.key && $.inArray(this.main_tag.key, shKeyNames) > -1) {
+                                        $('.inv').append('<div><span class="bolder">' + this.main_tag.key + ': </span>' + this.main_tag.value + '</div>');
+                                    }
+                                });
+                            }
+                        });
+                        if (involvements.length > 0) {
+                            var label = (involvements.length === 1) ? tForInvestor : tForInvestors;
+                            header.append('<p style="font-size: 11px;"><span>' + label + ': </span>' + involvements.join(', ') + '</p>');
+                        }
+                    });
                 }
             } else {
                 for (var i = 0; i < maxFeatures; i++) {
@@ -426,9 +508,78 @@ function initializeMapContent() {
                     var activityId = f.data.activity_identifier;
                     var shortId = activityId.split("-")[0];
 
-                    header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/" + activityId + '"># ' + shortId + '</a></span></h6>');
+                    $.get("/activities/json/" + activityId, function(r) {
+                        var a = r.data[0];
+                        var tgs = a.hasOwnProperty('taggroups') ? a.taggroups : [];
+                        var invs = a.hasOwnProperty('involvements') ? a.involvements : [];
+
+                        header.append("<h6><span id=\"deal-shortid-span\" class=\"underline\"><a href=\"/activities/html/" + activityId + '">' +
+                            'Deal <span style="color:grey; font-size: 11px;">#' + shortId + '</span></a></span>' +
+                            '</h6>');
+
+                        var crops = [];
+                        var cropsstring = '<p style="font-size: 11px;">Crops: ';
+
+                        $.each(tgs, function () {
+                            var v;
+                            if (this.main_tag && this.main_tag.key && (this.main_tag.key == 'Intention of Investment' || this.main_tag.key == 'Crop')) {
+                                v = this.main_tag.value;
+                                if (this.main_tag.key == 'Crop') {
+                                    crops.push(this.main_tag.value);
+                                }
+                                else {
+                                    if ($.isNumeric(v))
+                                        v = addCommas(v);
+                                    header.append('<p style="font-size: 11px;"><span>' + this.main_tag.key + ': </span>' + v + '</p>');
+                                }
+                            }
+                        });
+                        if (crops.length > 0) {
+                            for (var i = 0; i < crops.length; i++) {
+                                if (i == (crops.length-1)) {
+                                    cropsstring = cropsstring + crops[i];
+                                }
+                                else {
+                                    cropsstring = cropsstring + crops[i]+ ', ';
+                                }
+                            }
+                            cropsstring = cropsstring + '</span></p>';
+                            header.append(cropsstring);
+                        }
+
+
+                        //get the investor/s name
+                        var involvements = [];
+                        $.each(invs, function() {
+                            var sh = this.data;
+                            var sh_tgs = sh.hasOwnProperty('taggroups') ? sh.taggroups : [];
+
+                            if (shReprString !== null && shReprString2 !== null) {
+                                var s = shReprString;
+                                var s2 = shReprString2;
+                                $.each(sh_tgs, function() {
+                                    if (this.main_tag && this.main_tag.key) {
+                                        s = s.replace(this.main_tag.key, this.main_tag.value);
+                                        s2 = s2.replace(this.main_tag.key, this.main_tag.value);
+                                    }
+                                });
+                                involvements.push(s);
+                                involvements.push(s2);
+                            } else {
+                                $.each(sh_tgs, function() {
+                                    if (this.main_tag && this.main_tag.key && $.inArray(this.main_tag.key, shKeyNames) > -1) {
+                                        $('.inv').append('<div><span class="bolder">' + this.main_tag.key + ': </span>' + this.main_tag.value + '</div>');
+                                    }
+                                });
+                            }
+                        });
+                        if (involvements.length > 0) {
+                            var label = (involvements.length === 1) ? tForInvestor : tForInvestors;
+                            header.append('<p style="font-size: 11px;"><span>' + label + ': </span>' + involvements.join(', ') + '</p>');
+                        }
+                    });
                 }
-                header.append("<span>and " + (feature.cluster.length - maxFeatures) + tForMoredeals + "</span>");
+                footer.append("<span>and " + (feature.cluster.length - maxFeatures) + tForMoredeals + "</span>");
             }
         }
     };
@@ -476,31 +627,45 @@ function initializeMapContent() {
 function initializeContextLayers() {
     // Loop the context layers and append it to the context layers menu
     for (var c in contextLayers) {
-        var layerName = contextLayers[c].name;
+        var layer = contextLayers[c];
+        // Initial opacity
+        layer.setOpacity(0.6);
+        // Quite ugly: Remove abstract from PARAMS (would otherwise be sent in
+        // WMS request and crash). Instead, put it on directly on the layer
+        // object.
+        var abstract = layer.params.ABSTRACT;
+        delete layer.params.ABSTRACT;
+        var layerName = layer.name;
+        layer.abstract = abstract;
         var t = [
-            '<li>',
-            '<div class="checkbox-modified-small">',
+            '<p style="padding-top: 0; padding-bottom: 0;">',
             '<input class="input-top context-layer-checkbox" type="checkbox" value="' + layerName + '" id="checkbox' + layerName + '">',
-            '<label for="checkbox' + layerName + '"></label>',
-            '</div>',
-            '<p class="context-layers-description">',
-            layerName
+            '<label class="text-primary-color" for="checkbox' + layerName + '">',
+            layerName,
+            '</label>'
         ];
         if (contextLegendInformation === true) {
             t.push(
                     '&nbsp;',
-                    '<i class="icon-exclamation-sign pointer" onClick="javascript:showContextLegend(\'' + layerName + '\');">',
+                    '<i class="icon-exclamation-sign pointer text-accent-color" onClick="javascript:showContextLegend(\'' + layerName + '\');">',
                     '</i>'
                     );
         }
         t.push(
-                '</p>',
-                '</li>'
+                '</p>'
                 );
         $("#context-layers-list").append(t.join(''));
     }
     // Add the context layers to the map
     map.addLayers(contextLayers);
+
+    // Listener for layer transparency slider
+    $('#layer-transparency-slider').on('input', function() {
+        var val = this.value / 100;
+        contextLayers.map(function(layer) {
+            layer.setOpacity(val);
+        });
+    });
 }
 
 /**
@@ -522,18 +687,15 @@ function initializePolygonLayers() {
             n = n[0];
         }
         var t = [
-            '<li>',
-            '<div class="checkbox-modified-small">',
-            '<input class="input-top area-layer-checkbox" type="checkbox" value="' + v + '" id="checkbox' + v + '"'
+            '<p style="padding-top: 0; padding-bottom: 0;">',
+            '<input class="input-top area-layer-checkbox" type="checkbox" value="' + v + '" id="checkbox' + v + '"',
         ];
         if (polygonLoadOnStart === true) {
             t.push(' checked="checked"');
         }
         t.push(
                 '>',
-                '<label for="checkbox' + v + '"></label>',
-                '</div>',
-                '<p class="context-layers-description">',
+                '<label class="text-primary-color" for="checkbox' + v + '">',
                 '<span class="vectorLegendSymbolSmall" style="',
                 'border: 2px solid ' + getColor(a) + ';',
                 '"><span class="vectorLegendSymbolSmallInside" style="',
@@ -542,9 +704,9 @@ function initializePolygonLayers() {
                 'filter: alpha(opacity=50)',
                 '"></span></span>',
                 n,
-                '</p>',
-                '</li>'
-                );
+                '</label>',
+                '</p>'
+        );
         $('#map-areas-list').append(t.join(''));
         if (polygonLoadOnStart === true) {
             setPolygonLayerByName(map, v, true);
@@ -556,18 +718,7 @@ function initializePolygonLayers() {
  * Return the base layers of the map.
  */
 function getBaseLayers() {
-    var layers = [new OpenLayers.Layer.OSM("streetMap", [
-            "http://otile1.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
-            "http://otile2.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
-            "http://otile3.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg",
-            "http://otile4.mqcdn.com/tiles/1.0.0/osm/${z}/${x}/${y}.jpg"
-        ], {
-            attribution: "<p>Tiles Courtesy of <a href=\"http://www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"http://developer.mapquest.com/content/osm/mq_logo.png\"></p>",
-            isBaseLayer: true,
-            sphericalMercator: true,
-            projection: sphericalMercatorProjection,
-            transitionEffect: "resize"
-        })];
+    var layers = [];
     // Try to get the Google Satellite layer
     try {
         layers.push(new OpenLayers.Layer.Google("satelliteMap", {
@@ -582,19 +733,51 @@ function getBaseLayers() {
         // is no internet connection.
     } catch (error) {
         layers.push(new OpenLayers.Layer.OSM("satelliteMap", [
-            "http://oatile1.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
-            "http://oatile2.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
-            "http://oatile3.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
-            "http://oatile4.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg"
+            "//oatile1.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
+            "//oatile2.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
+            "//oatile3.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg",
+            "//oatile4.mqcdn.com/tiles/1.0.0/sat/${z}/${x}/${y}.jpg"
         ], {
-            attribution: "<p>Tiles Courtesy of <a href=\"http://www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"http://developer.mapquest.com/content/osm/mq_logo.png\"></p>",
+            attribution: "<p>Tiles Courtesy of <a href=\//www.mapquest.com/\" target=\"_blank\">MapQuest</a> <img src=\"//developer.mapquest.com/content/osm/mq_logo.png\"></p>",
             isBaseLayer: true,
             sphericalMercator: true,
             projection: new OpenLayers.Projection("EPSG:900913")
         }));
     }
+    layers.push(
+        new OpenLayers.Layer.XYZ(
+            'esriSatellite',
+            '//server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}',
+            {
+                sphericalMercator: true,
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            }
+        ));
+    // layers.push(
+    //     new OpenLayers.Layer.Bing({
+    //         name: 'bingSatellite',
+    //         key: 'AhwtJ4yaHoZgWKtJMM4F3VjXWPzWAR0m--zWAIIKqosEXOZvHfRM_UwmGNm2Ss3J',
+    //         type: 'Aerial',
+    //         protocol: 'https:'
+    //     }));
+    layers.push(
+            new OpenLayers.Layer.OSM("streetMap",
+            [
+                '//a.tile.openstreetmap.org/${z}/${x}/${y}.png',
+                '//b.tile.openstreetmap.org/${z}/${x}/${y}.png',
+                '//c.tile.openstreetmap.org/${z}/${x}/${y}.png'
+            ], {
+                attribution: "© OpenStreetMap contributors",
+                isBaseLayer: true,
+                sphericalMercator: true,
+                projection: sphericalMercatorProjection,
+                transitionEffect: "resize"
+            }
+        ));
     return layers;
 }
+
+
 
 /**
  * Initialize the functionality to switch the base layer of the map.
@@ -998,6 +1181,8 @@ function addLayersToSelectControl(map, layers) {
         map.addControl(selectControl);
         selectControl.activate();
     }
+    var scaleline = new OpenLayers.Control.ScaleLine();
+    map.addControl(scaleline);
 }
 
 /**
@@ -1005,8 +1190,9 @@ function addLayersToSelectControl(map, layers) {
  */
 function clearDetails() {
     $("#taggroups-ul").empty();
-    $(".basic-data").empty()
-            .append("<h6 class=\"deal-headline\">" + tForDeals + " <span id=\"deal-shortid-span\" class=\"underline\">#</span></h6>")
+    $(".deal-data-footer").empty();
+    $(".deal-data").empty()
+            .append("<h5 class=\"deal-headline text-primary-color\">" + tForDeals + " <span id=\"deal-shortid-span\" class=\"underline\">#</span></h5>")
             .append('<ul id="taggroups-ul"><li><p>' + tForNodealselected + '</p></li></ul>');
 }
 

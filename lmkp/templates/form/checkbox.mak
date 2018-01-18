@@ -1,7 +1,7 @@
 ${field.start_sequence()}
 
-<div class="row-fluid">
-  <div class="span4">
+<div class="row">
+  <div class="col s3">
     <label for="${field.oid}">
       % if field.title:
         ${field.title}
@@ -15,10 +15,20 @@ ${field.start_sequence()}
       <span class="desired-form-field"></span>
     % endif
   </div>
-  <div class="span8">
+  <div class="col s9">
     % for index, choice in enumerate(values):
       <div class="row-fluid">
-        <ul class="select-list">
+          <input id="${field.oid}-${index}"
+                     class="input-top"
+                     type="checkbox"
+                     name="checkbox"
+                     value="${choice[0]}"
+                     % if choice[0] in cstruct:
+                      checked
+                     % endif
+                     />
+              <label for="${field.oid}-${index}">${choice[1]}</label>
+        <!--<ul class="select-list">
           <li class="select-only">
             <div class="checkbox-modified">
               <input id="${field.oid}-${index}"
@@ -36,7 +46,7 @@ ${field.start_sequence()}
           <li class="select-list-label">
             <p>${choice[1]}</p>
           </li>
-        </ul>
+        </ul>-->
       </div>
     % endfor
   </div>
