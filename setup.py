@@ -32,9 +32,11 @@ requires = [
 ]
 
 tests_require = [
-    'WebTest >= 1.3.1',  # py3 compat
-    'pytest',
-    'pytest-cov',
+    'pytest==3.3.2',
+    'pytest-cov==2.5.1',
+    'PyVirtualDisplay==0.2.1',
+    'selenium==3.8.1',
+    'WebTest==2.0.29',
 ]
 
 setup(

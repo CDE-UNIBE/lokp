@@ -39,3 +39,6 @@ LMKP.egg-info/
 
 # Ignore session data and locks
 data/sessions/
+
+# Ignore test results
+.cache
