@@ -30,6 +30,7 @@
 
 # Ignore configuration files
 *.ini
+!pytest.ini
 
 # Ignore LMKP egg
 LMKP.egg-info/

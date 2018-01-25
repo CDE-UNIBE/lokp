@@ -1,4 +1,9 @@
-0.0
+1.0
 ---
 
-- Initial version.
+25.01.2018
+
+- Move to Python 3
+- Upgrade all requirements
+- Moving stuff around, not much refactoring yet
+- First tests

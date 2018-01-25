@@ -1,3 +1,6 @@
+.. note::
+    This section is not up to date anymore after release 1.0.
+
 Translation
 ===========
 
@@ -123,20 +126,20 @@ Use the following command to extract all the strings marked for translation::
 
     (env) $ python setup.py extract_messages
 
-This will create or update the ``lmkp/locale/lmkp.pot`` file which serves as a 
+This will create or update the ``lokp/locale/lokp.pot`` file which serves as a
 template for all the ``.po`` files in the various languages.
 
 To update all language files (the ``.po`` files), run::
 
     (env) $ python setup.py update_catalog
 
-After that, the ``lmkp.po`` files for all languages are updated. You can now
+After that, the ``lokp.po`` files for all languages are updated. You can now
 send these files to the respective translators for translation.
 
 
 .. rubric:: After translation
 
-Once the ``lmkp.po`` files are translated, you need to compile them for the
+Once the ``lokp.po`` files are translated, you need to compile them for the
 translation to become active. You achieve this by running::
 
     (env) $ python setup.py compile_catalog
@@ -161,43 +164,43 @@ into Spanish (``es``).
 
 .. warning::
    Using the unchanged ``setup_custom.py`` will extract the messages of **all
-   customization folders** situated in ``lmkp/customization/``. If you have 
+   customization folders** situated in ``lokp/customization/``. If you have
    other customized folders there, adapt your ``setup_custom.py`` to include 
    only the folder you want to translate.
 
 Extract all the strings marked for translation of the customization and create
 the template ``.pot`` file::
 
-    (env) $ python setup_custom.py extract_messages -o lmkp/customization/[CUSTOM]/locale/[CUSTOM].pot
+    (env) $ python setup_custom.py extract_messages -o lokp/customization/[CUSTOM]/locale/[CUSTOM].pot
 
 .. pull-quote::
 
    Example: Extract all strings of the LO customization::
    
-       (env) $ python setup_custom.py extract_messages -o lmkp/customization/lo/locale/lo.pot
+       (env) $ python setup_custom.py extract_messages -o lokp/customization/lo/locale/lo.pot
 
 Update the language file for a language based on the translation template file::
 
-    (env) $ python setup_custom.py update_catalog -l [LOCALE] --domain [CUSTOM] -i lmkp/customization/[CUSTOM]/locale/[CUSTOM].pot -d lmkp/customization/[CUSTOM]/locale
+    (env) $ python setup_custom.py update_catalog -l [LOCALE] --domain [CUSTOM] -i lokp/customization/[CUSTOM]/locale/[CUSTOM].pot -d lokp/customization/[CUSTOM]/locale
 
 .. pull-quote::
 
    Example: Update the language file of the LO customization for Spanish::
    
-       (env) $ python setup_custom.py update_catalog -l es --domain lo -i lmkp/customization/lo/locale/lo.pot -d lmkp/customization/lo/locale
+       (env) $ python setup_custom.py update_catalog -l es --domain lo -i lokp/customization/lo/locale/lo.pot -d lokp/customization/lo/locale
 
 
 .. rubric:: After translation
 
 Compile the translated language files::
 
-    (env) $ python setup_custom.py compile_catalog -l [LOCALE] --domain [CUSTOM] -d lmkp/customization/[CUSTOM]/locale
+    (env) $ python setup_custom.py compile_catalog -l [LOCALE] --domain [CUSTOM] -d lokp/customization/[CUSTOM]/locale
 
 .. pull-quote::
 
    Example: Compile the language catalog of the LO customization for Spanish::
    
-       (env) $ python setup_custom.py compile_catalog -l es --domain lo -d lmkp/customization/lo/locale
+       (env) $ python setup_custom.py compile_catalog -l es --domain lo -d lokp/customization/lo/locale
 
 
 Translate the Attributes
@@ -272,7 +275,7 @@ Also, add a header in the following form:
 where Db_Item is one of ``A_Key``, ``A_Value``, ``SH_Key``, ``SH_Value``, 
 ``Category``.
 
-Copy the file to ``lmkp/documents/translation`` and open the administration 
+Copy the file to ``lokp/documents/translation`` and open the administration
 interface to insert the batch translation.
 
 
@@ -297,12 +300,12 @@ Create the initial catalog for a language::
 
 Create the initial catalog for a language::
 
-    (env) $ python setup_custom.py init_catalog -l [LOCALE] --domain [CUSTOM] -i lmkp/customization/[CUSTOM]/locale/[CUSTOM].pot -d lmkp/customization/[CUSTOM]/locale
+    (env) $ python setup_custom.py init_catalog -l [LOCALE] --domain [CUSTOM] -i lokp/customization/[CUSTOM]/locale/[CUSTOM].pot -d lokp/customization/[CUSTOM]/locale
 
 .. pull-quote::
 
    Example: Create the initial catalog of the LO customization for Spanish::
    
-       (env) $ python setup_custom.py init_catalog -l es --domain lo -i lmkp/customization/lo/locale/lo.pot -d lmkp/customization/lo/locale
+       (env) $ python setup_custom.py init_catalog -l es --domain lo -i lokp/customization/lo/locale/lo.pot -d lokp/customization/lo/locale
 
 
