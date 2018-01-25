@@ -85,7 +85,7 @@ class BaseView(object):
                     # bbox = DBSession.scalar(geofunctions.ST_Envelope(profile_db.geometry))
                     bbox = DBSession.scalar(geofunctions.ST_Envelope(
                         geofunctions.ST_Transform(
-                            profile_db.geometry, '900913')))
+                            profile_db.geometry, 900913)))
 
                     gjson = geojson.loads(
                         DBSession.scalar(geofunctions.ST_AsGeoJSON(bbox)))
