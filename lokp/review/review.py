@@ -491,8 +491,11 @@ class BaseReview(BaseView):
                 profiles = DBSession.query(Profile).filter(
                     Profile.users.any(username=self.request.user.username))
                 for p in profiles.all():
+                    # Apply a buffer around the profile geometry to be a bit
+                    # more tolerant
                     profile_filters.append(
-                        mappedClass.point.ST_Intersects(p.geometry))
+                        mappedClass.point.ST_Intersects(
+                            p.geometry.ST_Buffer(1)))
 
                 # Check if current Activity is within the moderator's profile
                 count = DBSession.query(mappedClass).filter(
