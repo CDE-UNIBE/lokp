@@ -1,0 +1,22 @@
+{
+  "name": "mmlokp",
+  "version": "1.0.0",
+  "scripts": {
+    "copy": "npm run copy-colorbrewer && npm run copy-d3 && npm run copy-jquery-cookie && npm run copy-jquery-ui && npm run copy-openlayers && npm run copy-topojson",
+    "copy-colorbrewer": "mkdir -p lokp/static/lib/colorbrewer && cp node_modules/colorbrewer/index.js lokp/static/lib/colorbrewer/ && mv lokp/static/lib/colorbrewer/index.js lokp/static/lib/colorbrewer/colorbrewer.js && uglifyjs -o lokp/static/lib/colorbrewer/colorbrewer.min.js lokp/static/lib/colorbrewer/colorbrewer.js",
+    "copy-d3": "mkdir -p lokp/static/lib/d3 && cp node_modules/d3/d3.js lokp/static/lib/d3/ && uglifyjs -o lokp/static/lib/d3/d3.min.js lokp/static/lib/d3/d3.js",
+    "copy-jquery-cookie": "mkdir -p lokp/static/lib/jquery.cookie && cp node_modules/jquery.cookie/jquery.cookie.js lokp/static/lib/jquery.cookie/ && uglifyjs -o lokp/static/lib/jquery.cookie/jquery.cookie.min.js lokp/static/lib/jquery.cookie/jquery.cookie.js",
+    "copy-jquery-ui": "mkdir -p lokp/static/lib/jquery-ui && cp node_modules/jquery-ui-dist/jquery-ui.min.js lokp/static/lib/jquery-ui/ && cp node_modules/jquery-ui-dist/jquery-ui.min.css lokp/static/lib/jquery-ui/",
+    "copy-openlayers": "mkdir -p lokp/static/lib/OpenLayers/theme/default && cp node_modules/@visallo/openlayers2/build/OpenLayers.js lokp/static/lib/OpenLayers/ && cp -R node_modules/@visallo/openlayers2/img/ lokp/static/lib/OpenLayers/img/ && cp node_modules/@visallo/openlayers2/theme/default/style.css lokp/static/lib/OpenLayers/theme/default/style.css",
+    "copy-topojson": "mkdir -p lokp/static/lib/topojson && cp node_modules/topojson/dist/topojson.js lokp/static/lib/topojson/ && uglifyjs -o lokp/static/lib/topojson/topojson.min.js lokp/static/lib/topojson/topojson.js"
+  },
+  "dependencies": {
+    "@visallo/openlayers2": "2.13.1",
+    "colorbrewer": "1.1.0",
+    "d3": "3.4.13",
+    "jquery-ui-dist": "^1.12.1",
+    "jquery.cookie": "^1.4.1",
+    "topojson": "3.0.2",
+    "uglify-js": "^3.3.7"
+  }
+}

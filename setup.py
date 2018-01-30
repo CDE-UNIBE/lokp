@@ -1,76 +1,73 @@
 import os
-from setuptools import find_packages
-from setuptools import setup
+
+from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
-README = open(os.path.join(here, 'README.md')).read()
-CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
+with open(os.path.join(here, 'README.txt')) as f:
+    README = f.read()
+with open(os.path.join(here, 'CHANGES.txt')) as f:
+    CHANGES = f.read()
 
 requires = [
-    'pyramid_mako',
-    'pyramid_chameleon',
-    'pyramid==1.7',
-    'pyramid_handlers==0.5',
-    'pyramid_mailer==0.10',
-    'SQLAlchemy==0.7.6',
-    'GeoAlchemy==0.7.1',
-    'transaction==1.2.0',
-    'pyramid_tm==0.4',
-    'pyramid_debugtoolbar==3.0.4',
-    'zope.sqlalchemy==0.7',
-    'waitress==0.8.1',
-    'papyrus==0.8.1',
-    'Mako==0.8',
-    'WebTest==1.3.4',
-    'cryptacular',
-    'Babel==0.9.6',
-    'lingua==1.3',
-    'PasteScript==1.7.5',
-    'psycopg2==2.4.5',
-    'PyYAML==3.10',
-    'Chameleon==2.8.5',
-    'recaptcha-client==1.0.6',
-    'requests==1.1.0',
-    'deform==0.9.7',
-    'simplejson',
-    'pyramid_beaker==0.7',
-    'sphinx==1.2',
-    'pytest==2.5.2',
-    'selenium==2.42.1',
-    'mock==1.0.1',
+    'babel==2.5.3',
+    'cryptacular==1.4.1',
+    'deform==2.0.4',
+    'geoalchemy2==0.4.2',
+    'geojson==2.3.0',
+    'lingua==4.13',
+    'plaster_pastedeploy==0.4.2',
+    'psycopg2==2.7.3.2',
+    'pyramid==1.9.1',
+    'pyramid_beaker==0.8',
+    'pyramid_debugtoolbar==4.3',
+    'pyramid_mailer==0.15.1',
+    'pyramid_mako==1.0.2',
+    'pyramid_tm==2.2',
+    'pyyaml==3.12',
+    'shapely==1.6.3',
+    'sqlalchemy==1.2.1',
+    'transaction==2.1.2',
+    'waitress==1.1.0',
+    'zope.sqlalchemy==0.7.7',
 ]
 
-setup(name='LMKP',
-      version='0.9.8b',
-      description='The Land Observatory',
-      long_description=README + '\n\n' + CHANGES,
-      classifiers=[
-          "Programming Language :: Python",
-          "Framework :: Pylons",
-          "Topic :: Internet :: WWW/HTTP",
-          "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
-      ],
-      author='Centre for Development and Environment, University of Bern',
-      author_email='',
-      url='http://www.cde.unibe.ch',
-      keywords='web wsgi bfg pylons pyramid',
-      packages=find_packages(),
-      include_package_data=True,
-      zip_safe=False,
-      test_suite='lmkp',
-      install_requires=requires,
-      message_extractors={'lmkp': [
-          ('customization/**', 'ignore', None),
-          ('static/**', 'ignore', None),
-          ('scripts/**', 'ignore', None),
-          ('**.py', 'lingua_python', None),
-          ('**.pt', 'lingua_xml', None),
-          ('**.mak', 'mako', None),
-      ]},
-      entry_points="""\
-      [paste.app_factory]
-      main = lmkp:main
-      [console_scripts]
-      populate_lmkp = lmkp.scripts.populate:main
-      """
-      )
+tests_require = [
+    'pytest==3.3.2',
+    'pytest-cov==2.5.1',
+    'PyVirtualDisplay==0.2.1',
+    'requests==2.18.4',
+    'selenium==3.8.1',
+    'WebTest==2.0.29',
+]
+
+setup(
+    name='lokp',
+    version='1.0',
+    description='The Land Observatory',
+    long_description=README + '\n\n' + CHANGES,
+    classifiers=[
+        'Programming Language :: Python',
+        'Framework :: Pyramid',
+        'Topic :: Internet :: WWW/HTTP',
+        'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
+    ],
+    author='Centre for Development and Environment, University of Bern',
+    author_email='',
+    url='https://github.com/CDE-UNIBE/lokp',
+    keywords='web pyramid pylons',
+    packages=find_packages(),
+    include_package_data=True,
+    zip_safe=False,
+    extras_require={
+        'testing': tests_require,
+    },
+    install_requires=requires,
+    entry_points={
+        'paste.app_factory': [
+            'main = lokp:main',
+        ],
+        'console_scripts': [
+            'initialize_lokp_db = lokp.scripts.initialize_db:main'
+        ]
+    },
+)

@@ -1,0 +1,215 @@
+#
+# Translations template for lokp.
+# This file is distributed under the same license as the lokp package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE 1.0\n"
+"POT-Creation-Date: 2018-01-18 11:40+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Lingua 4.13\n"
+
+#: ./lokp/views/user.py:88 ./lokp/views/user.py:385
+msgid "Username"
+msgstr ""
+
+#: ./lokp/views/user.py:92 ./lokp/views/user.py:389
+msgid "Password"
+msgstr ""
+
+#: ./lokp/views/user.py:94 ./lokp/views/user.py:391
+msgid "First Name"
+msgstr ""
+
+#: ./lokp/views/user.py:96 ./lokp/views/user.py:393
+msgid "Last Name"
+msgstr ""
+
+#: ./lokp/views/user.py:98 ./lokp/views/user.py:399
+msgid "Valid Email"
+msgstr ""
+
+#: ./lokp/views/user.py:103 ./lokp/views/form.py:876
+msgid "Submit"
+msgstr ""
+
+#: ./lokp/views/user.py:156
+msgid "Activate your Account"
+msgstr ""
+
+#: ./lokp/views/user.py:404
+msgid "Update"
+msgstr ""
+
+#: ./lokp/views/user.py:430
+msgid "Your user settings were updated."
+msgstr ""
+
+#: ./lokp/views/files.py:160
+msgid "Not all necessary values were provided."
+msgstr ""
+
+#: ./lokp/views/files.py:169
+msgid "Upload directory not specified or not found."
+msgstr ""
+
+#: ./lokp/views/files.py:175
+msgid "File type is not valid."
+msgstr ""
+
+#: ./lokp/views/files.py:181
+msgid "File is too big."
+msgstr ""
+
+#: ./lokp/views/files.py:239
+msgid "File was successfully uploaded"
+msgstr ""
+
+#: ./lokp/views/translation.py:21
+msgid "pending"
+msgstr ""
+
+#: ./lokp/views/translation.py:22
+msgid "active"
+msgstr ""
+
+#: ./lokp/views/translation.py:23
+msgid "inactive"
+msgstr ""
+
+#: ./lokp/views/translation.py:24
+msgid "deleted"
+msgstr ""
+
+#: ./lokp/views/translation.py:25 ./lokp/views/translation.py:32
+msgid "rejected"
+msgstr ""
+
+#: ./lokp/views/translation.py:26
+msgid "edited"
+msgstr ""
+
+#: ./lokp/views/translation.py:31
+msgid "approved"
+msgstr ""
+
+#: ./lokp/views/translation.py:37
+msgid "Editors"
+msgstr ""
+
+#: ./lokp/views/translation.py:38
+msgid "Moderators"
+msgstr ""
+
+#: ./lokp/views/translation.py:39
+msgid "Administrators"
+msgstr ""
+
+#: ./lokp/views/translation.py:40
+msgid "Translators"
+msgstr ""
+
+#: ./lokp/views/translation.py:48
+msgid "Investor"
+msgstr ""
+
+#: ./lokp/views/translation.py:60
+msgid "Status"
+msgstr ""
+
+#: ./lokp/views/translation.py:210
+msgid "Translation not successful"
+msgstr ""
+
+#: ./lokp/views/translation.py:237 ./lokp/views/translation.py:268
+msgid "Updated translation"
+msgstr ""
+
+#: ./lokp/views/translation.py:245 ./lokp/views/translation.py:276
+msgid "Added translation"
+msgstr ""
+
+#: ./lokp/views/form.py:51
+msgid "Empty Form"
+msgstr ""
+
+#: ./lokp/views/form.py:52
+msgid "You submitted an empty form or did not make any changes."
+msgstr ""
+
+#: ./lokp/views/form.py:53
+msgid "Error"
+msgstr ""
+
+#: ./lokp/views/form.py:521
+msgid "Unknown Item"
+msgstr ""
+
+#: ./lokp/views/form.py:723 ./lokp/views/form.py:740
+msgid ""
+"At least one of the involvements prevents automatic revision. Please review "
+"these involvements separately."
+msgstr ""
+
+#: ./lokp/views/form.py:727
+msgid ""
+"This version contains changed involvements which prevent automatic revision. "
+"Please review these involvements."
+msgstr ""
+
+#: ./lokp/views/form.py:900
+msgid "The Item could not be created or updated."
+msgstr ""
+
+#: ./lokp/views/form.py:912
+msgid "The Item was created but not found."
+msgstr ""
+
+#: ./lokp/views/form.py:914
+msgid "Unknown"
+msgstr ""
+
+#: ./lokp/views/login.py:52
+msgid "Login failed! Please try again."
+msgstr ""
+
+#: ./lokp/views/login.py:136
+msgid "No registered user found with this email address."
+msgstr ""
+
+#: ./lokp/views/login.py:156
+msgid "Password reset"
+msgstr ""
+
+#: ./lokp/config/form.py:1119
+msgid "Select"
+msgstr ""
+
+#: ./lokp/protocols/protocol.py:639
+msgid "Unknown object to review."
+msgstr ""
+
+#: ./lokp/protocols/protocol.py:1052
+msgid ""
+"No active version was found to base the review upon. Try to review an earlier"
+" version first."
+msgstr ""
+
+#: ./lokp/protocols/protocol.py:1079
+msgid "The diff seems to be incorrect (identifier not found)"
+msgstr ""
+
+#: ./lokp/protocols/protocol.py:1174
+msgid "Unknown review decision"
+msgstr ""
+
+#: ./lokp/protocols/protocol.py:1186
+msgid "Review successful."
+msgstr ""

@@ -10,17 +10,17 @@ be made in the main configuration file (``development.ini`` or
 
 .. rubric:: Customization
 
-``lmkp.customization``
+``lokp.customization``
 
 The name of the customization directory. This directory needs to be located in 
-``lmkp/customization``
+``lokp/customization``
 
 
 .. _configuration-profiles:
 
 .. rubric:: Profiles
 
-``lmkp.profiles_dir``
+``lokp.profiles_dir``
 
 The subdirectory within the customization directory (see 
 (ref:`configuration-customization`) which contains the profile configurations.
@@ -35,7 +35,7 @@ profile for the development version and for the productive version.
 
 .. rubric:: WMS
 
-``lmkp.base_wms``
+``lokp.base_wms``
 
 The base URL of the WMS to be used for the context layers.
 
@@ -44,7 +44,7 @@ The base URL of the WMS to be used for the context layers.
 
 .. rubric:: Administration Password
 
-``lmkp.admin_password``
+``lokp.admin_password``
 
 The password of the administration account (username: ``admin``).
 
@@ -53,7 +53,7 @@ The password of the administration account (username: ``admin``).
 
 .. rubric:: Administration Email
 
-``lmkp.admin_email``
+``lokp.admin_email``
 
 The E-Mail address of the administrator. Some of the notifications or error 
 messages will be sent to this address so make sure it is valid and checked 
@@ -64,7 +64,7 @@ regularly.
 
 .. rubric:: Comments
 
-``lmkp.comments_url``
+``lokp.comments_url``
 
 The URL of the commenting system to be used.
 
@@ -73,11 +73,11 @@ The URL of the commenting system to be used.
 
 .. rubric:: Files
 
-``lmkp.file_upload_dir``
+``lokp.file_upload_dir``
 
-``lmkp.file_upload_max_size``
+``lokp.file_upload_max_size``
 
-``lmkp.file_mime_extensions``
+``lokp.file_mime_extensions``
 
 The settings for the file upload functionality.
 
@@ -86,7 +86,7 @@ The settings for the file upload functionality.
 
 .. rubric:: Use JS Builds
 
-``lmkp.use_js_builds``
+``lokp.use_js_builds``
 
 *deprecated*: This parameter is or will become deprecated as ExtJS is not used
 anymore.
