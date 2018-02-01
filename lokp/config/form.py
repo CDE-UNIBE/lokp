@@ -533,6 +533,9 @@ class ConfigCategory(object):
         else self.getName())
         cat_form = colander.SchemaNode(
             colander.Mapping(),
+            widget=deform.widget.MappingWidget(
+                item_template='mapping/mapping_thematicgroup'
+            ),
             name=str(self.getId()),
             title=title
         )
@@ -692,6 +695,9 @@ class ConfigThematicgroup(object):
             title = ''
         thg_form = colander.SchemaNode(
             colander.Mapping(),
+            widget=deform.widget.MappingWidget(
+                item_template='mapping/mapping_taggroup'
+            ),
             title=title
         )
 
@@ -918,7 +924,9 @@ class ConfigTaggroup(object):
         Prepare the form node for this taggroup, append the forms of its  tags
         and return it.
         """
-        tg_form = colander.SchemaNode(colander.Mapping(), name='tg')
+        tg_form = colander.SchemaNode(
+            colander.Mapping(),
+            name='tg')
         maintag = self.getMaintag()
         # First add the maintag
         if maintag is not None:
