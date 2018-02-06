@@ -1,8 +1,11 @@
+import json
+
 import yaml
 from pyramid.view import view_config
 
 from lokp.config.customization import local_profile_directory_path
 from lokp.config.form import getCategoryList
+from views.filter import getFilterValuesForKey
 
 
 def getMapSymbolKeys(request):
@@ -26,6 +29,26 @@ def getMapSymbolKeys(request):
                 m[2] = 0
 
     return sorted(mapSymbolKeys, key=lambda k: k[2])
+
+
+@view_config(route_name='map_variables', renderer='javascript')
+def get_map_variables(request):
+    """
+    Dump map variables such as available keys for symbolization of points etc.
+    as a JS variable to be used when creating maps.
+    """
+    map_symbols = getMapSymbolKeys(request)
+    map_criteria = map_symbols[0]
+    map_symbol_values = [
+        v[0] for v in sorted(getFilterValuesForKey(
+            request, predefinedType='a', predefinedKey=map_criteria[1]),
+            key=lambda value: value[1])]
+
+    return 'var mapVariables = ' + json.dumps({
+        'map_symbol_values': map_symbol_values,
+        'map_criteria': map_criteria,
+        'map_criteria_all': map_symbols,
+    })
 
 
 @view_config(route_name='context_layers', renderer='javascript')
