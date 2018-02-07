@@ -422,6 +422,19 @@ class ConfigCategoryList(object):
                             ])
         return keyNames
 
+    def get_map_detail_keys(self):
+        """
+        Return a list with the names of the keys which are used for details
+        display on the map (marked with "mapdetail: true" in the configuration
+        YAML.
+        """
+        for cat in self.getCategories():
+            for thmg in cat.getThematicgroups():
+                for tg in thmg.getTaggroups():
+                    for t in tg.getTags():
+                        if t.map_detail is True:
+                            yield t.getKey().getName()
+
     def getMapSymbolKeyNames(self):
         """
         Return the names of the keys which have a value set for mapSymbol in
@@ -985,6 +998,7 @@ class ConfigTag(object):
         self.values = []
         self.mandatory = False
         self.desired = False
+        self.map_detail = False
         self.involvementOverview = None
         self.gridColumn = None
         self.mapSymbol = None
@@ -2008,6 +2022,9 @@ def getCategoryList(request, itemType, **kwargs):
 
                             if 'gridcolumn' in key_config:
                                 tag.setGridColumn(key_config['gridcolumn'])
+
+                            if 'mapdetail' in key_config:
+                                tag.map_detail = True
 
                             if 'mapsymbol' in key_config:
                                 tag.setMapSymbol(key_config['mapsymbol'])
