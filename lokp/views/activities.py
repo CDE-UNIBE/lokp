@@ -10,7 +10,7 @@ from pyramid.response import Response
 from pyramid.security import has_permission, ACLAllowed
 from pyramid.view import view_config
 
-from config.form import getCategoryList
+from lokp.config.form import getCategoryList
 from lokp.models import DBSession, Activity, Language, A_Key, A_Tag, A_Tag_Group
 from lokp.authentication import get_user_privileges
 from lokp.config.customization import get_customized_template_path, \

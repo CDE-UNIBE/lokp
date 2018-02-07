@@ -5,7 +5,7 @@ from pyramid.view import view_config
 
 from lokp.config.customization import local_profile_directory_path
 from lokp.config.form import getCategoryList
-from views.filter import getFilterValuesForKey
+from lokp.views.filter import getFilterValuesForKey
 
 
 def getMapSymbolKeys(request):
