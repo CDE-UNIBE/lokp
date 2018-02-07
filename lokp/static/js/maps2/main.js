@@ -44,6 +44,7 @@ function createMainMap(mapId, options) {
     window.lokp_maps[mapId] = {
         map: map,
         baseLayers: baseLayers,
+        contextLayers: getContextLayers(window.mapVariables.context_layers),
         // Keep track of the currently active base layer so it can be changed
         // programmatically
         activeBaseLayer: activeBaseLayer,
@@ -55,8 +56,8 @@ function createMainMap(mapId, options) {
     initBaseLayerControl();
     initMapContent(map);
 
+    initContextLayerControl();
     // TODO
-    // initContextLayers(); + control
     // initPolygonLayers(); + control
     // initMapSearch();
 }

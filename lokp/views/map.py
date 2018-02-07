@@ -44,51 +44,20 @@ def get_map_variables(request):
             request, predefinedType='a', predefinedKey=map_criteria[1]),
             key=lambda value: value[1])]
 
-    return 'var mapVariables = ' + json.dumps({
-        'map_symbol_values': map_symbol_values,
-        'map_criteria': map_criteria,
-        'map_criteria_all': map_symbols,
-    })
-
-
-@view_config(route_name='context_layers', renderer='javascript')
-def get_context_layers(request):
-
-    res = "var contextLayers = ["
-
     # Read the global configuration file
     try:
         global_stream = open("%s/%s" % (
             local_profile_directory_path(request), 'application.yml'), 'r')
         config = yaml.load(global_stream)
     except IOError:
-        return
+        config = {}
 
-    if 'layers' in config['application']:
-        layers = config['application']['layers']
-
-        for layer in layers:
-            res += "new OpenLayers.Layer.WMS(\""
-            res += layer['name']
-            res += "\",\""
-            res += layer['url']
-            res += "\",{\n"
-
-            for o in layer['wms_options']:
-                for config, value in o.items():
-                    res += "%s: %s,\n" % (config, _cast_type(config, value))
-
-            res += "},{\n"
-            for o in layer['ol_options']:
-                for config, value in o.items():
-                    res += "%s: %s,\n" % (config, _cast_type(config, value))
-
-            res += "}"
-            res += "),\n"
-
-    res += "]\n"
-
-    return res
+    return 'var mapVariables = ' + json.dumps({
+        'map_symbol_values': map_symbol_values,
+        'map_criteria': map_criteria,
+        'map_criteria_all': map_symbols,
+        'context_layers': config.get('application', {}).get('layers', []),
+    })
 
 
 def _cast_type(config, value):

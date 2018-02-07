@@ -134,7 +134,6 @@ def main(global_config, **settings):
     """
     Map
     """
-    config.add_route('context_layers', '/app/view/layers.js')
     config.add_route('map_variables', '/app/view/map_variables.js')
 
     """

@@ -21,6 +21,42 @@ function getBaseLayers() {
 
 
 /**
+ * Return an object containing base layers. The key is used as identifier of the
+ * layer.
+ */
+function getContextLayers(layerConfigs) {
+    var defaultConfig = {
+        format: 'image/png',
+        transparent: true,
+        visible: false,
+        opacity: 0.6
+    };
+    var layerHtml = '';
+    var layers = {};
+    layerConfigs.forEach(function(layerConfig) {
+        layerHtml += '<p class="context-layer-checkbox-entry">' +
+            '<input class="input-top context-layer-checkbox" type="checkbox" value="' + layerConfig.name + '" id="checkbox-' + layerConfig.name + '">' +
+            '<label class="text-primary-color" for="checkbox-' + layerConfig.name + '">' +
+            layerConfig.name +
+            '</label>' +
+            '&nbsp; <i class="icon-exclamation-sign pointer text-accent-color context-layer-info" data-layer="' + layerConfig.name + '"></i>' +
+            '</p>';
+        var config = $.extend({}, defaultConfig, {
+            epsg: layerConfig.epsg,
+            format: layerConfig.format,
+            layers: layerConfig.layers
+        });
+        var layer = L.tileLayer.wms(layerConfig.url, config);
+        layer.url = layerConfig.url;
+        layer.abstract = layerConfig.abstract;
+        layers[layerConfig.name] = layer;
+    });
+    $('#context-layers-list').html(layerHtml);
+    return layers;
+}
+
+
+/**
  * Initialize the radio buttons used to switch base layers.
  */
 function initBaseLayerControl() {
@@ -40,6 +76,79 @@ function initBaseLayerControl() {
         // Keep track of new active base layer
         mapOptions.activeBaseLayer = layer;
     });
+}
+
+
+/**
+ * Initialize the checkboxes used to switch context layers, show modal with
+ * legend information and transparency slider for context layers.
+ */
+function initContextLayerControl() {
+    $('.context-layer-checkbox').change(function(e) {
+        var mapOptions = window.lokp_maps[getMapIdFromElement(e.target)];
+        var layer = mapOptions.contextLayers[e.target.value];
+        if (this.checked) {
+            mapOptions.map.addLayer(layer);
+        } else {
+            mapOptions.map.removeLayer(layer);
+        }
+    });
+    $('.context-layer-info').click(function(e) {
+        var mapOptions = window.lokp_maps[getMapIdFromElement(e.target)];
+        var layerName = $(this).data('layer');
+        var layer = mapOptions.contextLayers[layerName];
+        showContextLegendModal(layerName, layer);
+    });
+    $('#layer-transparency-slider').on('input', function(e) {
+        var mapOptions = window.lokp_maps[$(this).data('map-id')];
+        for (var layerName in mapOptions.contextLayers) {
+            if (mapOptions.contextLayers.hasOwnProperty(layerName)) {
+                mapOptions.contextLayers[layerName].setOpacity(this.value / 100);
+            }
+        }
+    });
+}
+
+
+/**
+ * Get the legend graphic and show it in a modal, along with the abstract
+ * defined in the configuration yaml.
+ */
+function showContextLegendModal(name, layer) {
+    // Prepare URL of legend image
+    var imgParams = {
+        request: 'GetLegendGraphic',
+        service: layer.wmsParams.service,
+        version: layer.wmsParams.version,
+        layer: encodeURI(layer.wmsParams.layers),
+        style: layer.wmsParams.styles,
+        format: layer.wmsParams.format,
+        width: 25,
+        height: 25,
+        legend_options: 'forceLabels:1;fontAntiAliasing:1;fontName:Nimbus Sans L Regular;'
+    };
+    var imgUrl = layer.url + '?' + decodeURI($.param(imgParams));
+
+    $('#mapModalBody').html(
+        '<div id="contextLegendImgLoading" style="text-align: center;">' +
+        '<img src="/custom/img/ajax-loader.gif" alt="' + tForLoading + '" height="55" width="54">' +
+        '</div>' +
+        '<div id="contextLegendContent" class="hide">' +
+        '<h6 class="legend-modal-title">' + tForLegendforcontextlayer + ' ' + name + '</h6>' +
+        '<div id="contextLegendAbstract"></div>' +
+        '<img id="contextLegendImg" src="' + imgUrl + '">' +
+        '</div>');
+
+    // Show the model window
+    $('#mapModal').openModal();
+
+    // If an abstract is set in the YAML, use this one
+    if (typeof layer.abstract !== 'undefined') {
+        $('#contextLegendAbstract').html(layer.abstract);
+    }
+
+    $('#contextLegendContent').removeClass('hide');
+    $('#contextLegendImgLoading').hide();
 }
 
 
@@ -280,7 +389,7 @@ function updateMapCriteria(mapId, translatedName, internalName) {
  * @param el
  */
 function getMapIdFromElement(el) {
-    return $(el).closest('form').data('map-id');
+    return $(el).closest('ul').data('map-id');
 }
 
 
