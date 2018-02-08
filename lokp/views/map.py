@@ -6,6 +6,7 @@ from pyramid.view import view_config
 from lokp.config.customization import local_profile_directory_path
 from lokp.config.form import getCategoryList
 from lokp.views.filter import getFilterValuesForKey
+from lokp.views.form import form_geomtaggroups
 
 
 def getMapSymbolKeys(request):
@@ -57,6 +58,7 @@ def get_map_variables(request):
         'map_criteria': map_criteria,
         'map_criteria_all': map_symbols,
         'context_layers': config.get('application', {}).get('layers', []),
+        'polygon_keys': form_geomtaggroups(request).get('mainkeys', []),
     })
 
 

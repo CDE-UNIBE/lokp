@@ -57,6 +57,74 @@ function getContextLayers(layerConfigs) {
 
 
 /**
+ * Initialize polygon layer controls.
+ */
+function initPolygonLayers(mapId, polygonKeys) {
+    var html = '';
+    polygonKeys.forEach(function(keyPair, i) {
+        var name = keyPair[0];
+        var key = keyPair[1];
+        var color = getColors(i)[0];
+        html += '<p style="padding-top: 0; padding-bottom: 0;">' +
+            '<input class="input-top area-layer-checkbox" type="checkbox" data-layer="' + key + '" id="map-' + mapId + '-poly-' + key + '">' +
+            '<label class="text-primary-color" for="map-' + mapId + '-poly-' + key + '">' +
+            '<span class="vectorLegendSymbolSmall" style="border: 2px solid ' + color + '">' +
+            '<span class="vectorLegendSymbolSmallInside" style="background-color: ' + color + '; opacity: 0.5; filter: alpha(opacity=50);"></span>' +
+            '</span>' +
+            name +
+            '</label>' +
+            '</p>';
+    });
+    $('#map-polygons-list-' + mapId).html(html);
+    $('.area-layer-checkbox').change(function(e) {
+        var layerId = $(e.target).data('layer');
+        if (e.target.checked) {
+            // Show layer
+            setPolygonLayer(getMapIdFromElement(e.target), layerId)
+        } else {
+            // Hide layer
+            var mapOptions = getMapOptionsById(mapId);
+            var layer = mapOptions.polygonLayers[layerId];
+            if (typeof layer !== 'undefined') {
+                mapOptions.map.removeLayer(layer);
+            }
+        }
+    });
+}
+
+
+function setPolygonLayer(mapId, layerId) {
+    var mapOptions = getMapOptionsById(mapId);
+    if (typeof mapOptions.polygonLayers[layerId] === 'undefined') {
+        // Create new layer
+        $.ajax({
+            url: '/activities/geojson',
+            cache: false,
+            data: {
+                attrs: layerId,
+                tggeom: 'true'
+            },
+            success: function(data) {
+                var mapKeys = mapOptions.mapVariables.polygon_keys.map(function(k) { return k[1]; });
+                var color = getColors(mapKeys.indexOf(layerId))[0];
+                var layer = L.geoJSON(data, {
+                    style: function(feature) {
+                        return {color: color}
+                    }
+                });
+                layer.on('click', showSingleFeatureDetails);
+                layer.addTo(mapOptions.map);
+                mapOptions.polygonLayers[layerId] = layer;
+            }
+        })
+    } else {
+        // Layer exists already, just display it
+        mapOptions.polygonLayers[layerId].addTo(mapOptions.map);
+    }
+}
+
+
+/**
  * Initialize the radio buttons used to switch base layers.
  */
 function initBaseLayerControl() {
@@ -105,6 +173,45 @@ function initContextLayerControl() {
             if (mapOptions.contextLayers.hasOwnProperty(layerName)) {
                 mapOptions.contextLayers[layerName].setOpacity(this.value / 100);
             }
+        }
+    });
+}
+
+
+/**
+ * Initialize field to search for places with Google.
+ */
+function initMapSearch(mapId) {
+    var searchField = $('#js-map-search-' + mapId);
+    if (searchField.length === 0) return;
+
+    var mapSearch = new google.maps.places.SearchBox(searchField[0]);
+    mapSearch.addListener('places_changed', function() {
+        var places = this.getPlaces();
+        if (places.length !== 1) {
+            return;
+        }
+        var loc = places[0].geometry.location.toJSON();
+        var mapOptions = getMapOptionsById(mapId);
+        var map = mapOptions.map;
+
+        // Zoom to location
+        var latLng = L.latLng(loc.lat, loc.lng);
+        map.setView(latLng, 14);
+
+        // Set marker if wanted.
+        if (searchField.data('set-marker')) {
+            if (mapOptions.activeMapMarker !== null) {
+                map.removeLayer(mapOptions.activeMapMarker);
+            }
+            var marker = L.marker(latLng);
+            marker.addTo(map);
+            mapOptions.activeMapMarker = marker;
+            // Remove marker on click.
+            marker.on('click', function() {
+                map.removeLayer(this);
+                mapOptions.activeMapMarker = null;
+            });
         }
     });
 }
@@ -393,12 +500,17 @@ function getMapIdFromElement(el) {
 }
 
 
+function getMapOptionsById(id) {
+    return window.lokp_maps[id];
+}
+
+
 /**
  * Helper to get the map options from a map.
  * @param map
  */
 function getMapOptionsFromMap(map) {
-    return window.lokp_maps[map.getContainer().id];
+    return getMapOptionsById(map.getContainer().id);
 }
 
 

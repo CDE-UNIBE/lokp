@@ -3,9 +3,9 @@
  */
 
 $(document).ready(function() {
-    // Only one map is displayed (in #googleMapFull), but using this as a PoC
+    // Only one map is displayed (in #main-map), but using this as a PoC
     // which would allow creating multiple maps on same page.
-    ['googleMapFull'].forEach(function(mapId) {
+    ['main-map'].forEach(function(mapId) {
         createMainMap(mapId, {
             pointsVisible: true,
             pointsCluster: true
@@ -45,9 +45,11 @@ function createMainMap(mapId, options) {
         map: map,
         baseLayers: baseLayers,
         contextLayers: getContextLayers(window.mapVariables.context_layers),
+        polygonLayers: {},
         // Keep track of the currently active base layer so it can be changed
         // programmatically
         activeBaseLayer: activeBaseLayer,
+        activeMapMarker: null,
         // Initial map variables
         mapVariables: window.mapVariables,
         options: options
@@ -55,9 +57,7 @@ function createMainMap(mapId, options) {
 
     initBaseLayerControl();
     initMapContent(map);
-
+    initPolygonLayers(mapId, window.mapVariables.polygon_keys);
     initContextLayerControl();
-    // TODO
-    // initPolygonLayers(); + control
-    // initMapSearch();
+    initMapSearch(mapId);
 }
