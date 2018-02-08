@@ -80,7 +80,7 @@ def renderForm(request, itemType, **kwargs):
         formSubmit = True
         for p in request.POST:
             if p == 'category':
-                oldCategory = request.POST[p]
+                oldCategory = request.POST[p]       # select category directly?
                 break
 
     # Get the configuration of the categories (as defined in the config yaml)
@@ -100,7 +100,7 @@ def renderForm(request, itemType, **kwargs):
         newCategory = configCategoryList.getFirstCategoryId()
 
     # Collect a list with id and names of all available categories which will
-    # be used to create the buttons
+    # be used to create the buttons based cat
     categoryListButtons = []
     for cat in sorted(
             configCategoryList.getCategories(), key=lambda cat: cat.order):
@@ -152,7 +152,7 @@ def renderForm(request, itemType, **kwargs):
             buttons = getFormButtons(
                 request, categoryListButtons, oldCategory,
                 showSessionCategories=showSessionCategories)
-
+        # creates form?
         form = deform.Form(oldschema, buttons=buttons, formid=formid)
 
         if p == 'delete':
@@ -297,7 +297,7 @@ def renderForm(request, itemType, **kwargs):
                     log.debug(
                         'The complete formdata as in the session: %s'
                         % formdata)
-
+                    # check
                     diff = formdataToDiff(request, formdata, itemType)
 
                 log.debug('The diff to create/update the activity: %s' % diff)
@@ -318,7 +318,7 @@ def renderForm(request, itemType, **kwargs):
 
                 if success is True:
 
-                    # Clear the session
+                    # Clear the session (what is a session?)
                     doClearFormSessionData(request, itemType, 'form')
 
                     if (otherItemType in session
@@ -401,7 +401,7 @@ def renderForm(request, itemType, **kwargs):
                     'js': feedbackData,
                     'success': success
                 }
-
+    # END Post-request
     if formHasErrors is False:
         # If nothing was submitted or the captured form data was stored
         # correctly, create a form with the (new) current category.
@@ -409,7 +409,7 @@ def renderForm(request, itemType, **kwargs):
             colander.SchemaNode(colander.Mapping()), itemType)
         newCat = configCategoryList.findCategoryById(newCategory)
         if newCat is not None:
-            newschema.add(newCat.getForm(request))
+            newschema.add(newCat.getForm(request))  # send get request to config/form.py
         showSessionCategories = None
         if (itemJson is None or (itemType in session
                                  and 'id' in session[itemType]

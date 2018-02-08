@@ -560,6 +560,7 @@ class ConfigCategory(object):
                 default=colander.null,
                 widget=deform.widget.HiddenWidget()
             ))
+        # iterates over all thematic groups, creates a form for them and adds it to cat_form
         for thg in sorted(
                 self.getThematicgroups(), key=lambda thmg: thmg.getOrder()):
             # Get the Form for each Thematicgroup
@@ -692,6 +693,7 @@ class ConfigThematicgroup(object):
         """
         return self.showInDetails
 
+    # Why the same function twice??
     def getForm(self, request, readonly=False, compare=''):
         """
         Prepare the form node for this thematic group, append the forms of its
@@ -699,13 +701,17 @@ class ConfigThematicgroup(object):
         If the form is to be rendered for comparison, a hidden field 'change'
         is added and each taggroup is added twice (once as 'ref_[ID]' and once
         as 'new_[ID]'.
+
+        Returns thg_form (colander SchemaNode)
         """
-        title = (self.getTranslation() if self.getTranslation() is not None
+        title = (self.getTranslation() if self.getTranslation() is not None # self: thematic group (like location)
         else self.getName())
         # For the details (readonly=True), add the title of the thematic group
         # only if specified in the configuration.
         if readonly is True and self.getShowInDetails() is False:
             title = ''
+
+        # initialises an empty form node for this thematic group
         thg_form = colander.SchemaNode(
             colander.Mapping(),
             widget=deform.widget.MappingWidget(
@@ -723,12 +729,15 @@ class ConfigThematicgroup(object):
                 widget=deform.widget.HiddenWidget()
             ))
 
+
+        # get map widget
         if self.getMap() is not None:
             # If there is some map data in this thematic group, get the widget
             # and add it to the form.
             mapWidget = getMapWidget(self)
             thg_form.add(mapWidget)
 
+        # Iterates over each taggroup in this thematic group and creates a form (tg_form) for each taggroup
         for tg in sorted(self.getTaggroups(), key=lambda tg: tg.getOrder()):
             # Get the Form for each Taggroup
             tg_form = tg.getForm(request)
@@ -854,6 +863,20 @@ class ConfigTaggroup(object):
         self.repeatable = False
         self.geometry = False
         self.order = 9999
+        self.map = None
+
+    def setMap(self, map):
+        """
+        Set the map of this thematic group.
+        """
+        if isinstance(map, ConfigMap):
+            self.map = map
+
+    def getMap(self):
+        """
+        Return the map of this thematic group.
+        """
+        return self.map
 
     def getId(self):
         """
@@ -962,6 +985,13 @@ class ConfigTaggroup(object):
             missing=colander.null
         ))
         tg_form.validator = self.maintag_validator
+
+        if self.getMap() is not None:
+            # If there is some map data in this thematic group, get the widget
+            # and add it to the form.
+            mapWidget = getMapWidget(self)
+            tg_form.add(mapWidget)
+
         return tg_form
 
     def maintag_validator(self, form, value):
@@ -1931,10 +1961,11 @@ def getCategoryList(request, itemType, **kwargs):
             )
 
             # Loop the taggroups of the thematic group
+            # whose ids can be order/map defined in .yml
             for (tgroup_id, tags) in taggroups.items():
 
                 if tgroup_id == 'order':
-                    thematicgroup.setOrder(tags)
+                    thematicgroup.setOrder(tags)  # ??
                     continue
 
                 if tgroup_id == 'showindetails':
@@ -1969,7 +2000,7 @@ def getCategoryList(request, itemType, **kwargs):
                     thematicgroup.setMap(map)
                     continue
 
-                # Create a taggroup out of it
+                # Create a taggroup out of it (only if all above conditions are false)
                 taggroup = ConfigTaggroup(tgroup_id)
 
                 # Loop the keys of the taggroup
@@ -2054,7 +2085,10 @@ def getCategoryList(request, itemType, **kwargs):
                             taggroup.setRepeatable(True)
 
                         if key_id == 'geometry' and key_config is True:
-                            taggroup.setGeometry(True)
+                            taggroup.setGeometry(True)  # defines whether the tag group can have geometry
+                            map = ConfigMap('map'+ str(taggroup.getId()))
+                            map.setMode('singlepoint')
+                            taggroup.setMap(map)
 
                         if key_id == 'order' and key_config is not None:
                             taggroup.setOrder(key_config)
@@ -2235,7 +2269,7 @@ def getMapWidget(thematicgroup):
 
     mapWidget = colander.SchemaNode(
         colander.Mapping(),
-        widget=deform.widget.MappingWidget(
+        widget=CustomMapWidget(
             template='customMapMapping'
         ),
         name=thematicgroup.getMap().getName(),
@@ -2257,7 +2291,19 @@ def getMapWidget(thematicgroup):
         default=thematicgroup.getMap().getMode()
     ))
 
+
+    # all methods within the loader .js can be accessed within the widget
+    deform.widget.default_resource_registry.set_js_resources(
+        'mapwidget', None,
+        'lokp:static/lib/leaflet/leaflet.js',
+        'lokp:static/lib/leaflet/leaflet.markercluster.js',
+        'lokp:static/lib/leaflet/Leaflet.GoogleMutant.js',
+        '/app/view/map_variables.js',
+        'lokp:static/lib/chroma/chroma.min.js'
+    )
+
     return mapWidget
+
 
 
 def getInvolvementWidget(request, configInvolvement, compare=''):
@@ -2270,7 +2316,7 @@ def getInvolvementWidget(request, configInvolvement, compare=''):
 
     template = 'customInvolvementMapping'
     if configInvolvement.getItemType() == 'stakeholders':
-        readonlyTemplate = 'readonly/customInvolvementMappingStakeholder'
+        readonlyTemplate = 'readonly/customInvolvementMappingStakeholder' # why read only template?
     else:
         readonlyTemplate = 'readonly/customInvolvementMappingActivity'
 
@@ -2278,6 +2324,7 @@ def getInvolvementWidget(request, configInvolvement, compare=''):
         'involvementwidget', None, 'lokp:static/js/form/involvement.js',
         'lokp:static/lib/jquery-ui/jquery-ui.min.js'
     )
+
     deform.widget.default_resource_registry.set_css_resources(
         'involvementwidget', None, 'lokp:static/lib/jquery-ui/jquery-ui.min.css')
     invForm = colander.SchemaNode(
@@ -2601,3 +2648,6 @@ class CustomInvolvementWidget(deform.widget.MappingWidget):
     Custom widget only used to specify additional requirements.
     """
     requirements = (('involvementwidget', None),)
+
+class CustomMapWidget(deform.widget.MappingWidget):
+    requirements = (('mapwidget', None),)

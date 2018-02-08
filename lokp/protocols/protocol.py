@@ -2005,6 +2005,7 @@ class TagGroup(object):
         # List to store the tags
         self._tags = []
         self._diffFlag = None
+        # Geometry (boolean) only states whether the taggroup has a geometry, it is not the geometry itself
         # Geometry (only used for Activity TagGroups)
         self._geometry = None
         self._main_tag = None
@@ -2052,7 +2053,6 @@ class TagGroup(object):
 
     def getDiffFlag(self):
         return self._diffFlag
-
     def set_geometry(self, geometry):
         self._geometry = geometry
 

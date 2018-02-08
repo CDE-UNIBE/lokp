@@ -93,6 +93,7 @@ class ActivityView(BaseView):
     @view_config(route_name='activities_read_many')
     def read_many(self, public=False):
         """
+        Handels both creation of form and reading form parameters
         Return many :term:`Activities`.
 
         .. seealso::
@@ -203,7 +204,7 @@ class ActivityView(BaseView):
                 raise HTTPForbidden()
 
             new_involvement = self.request.params.get('inv', None)
-            template_values = renderForm(
+            template_values = renderForm(  # render form renders form AND handels parameters passed with post request
                 self.request, 'activities', inv=new_involvement)
 
             if isinstance(template_values, Response):

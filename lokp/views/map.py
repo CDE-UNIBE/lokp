@@ -5,6 +5,7 @@ from pyramid.view import view_config
 
 from lokp.config.customization import local_profile_directory_path
 from lokp.config.form import getCategoryList
+from lokp.config.profile import get_current_profile_extent
 from lokp.views.filter import getFilterValuesForKey
 
 
@@ -48,6 +49,7 @@ def get_map_variables(request):
         'map_symbol_values': map_symbol_values,
         'map_criteria': map_criteria,
         'map_criteria_all': map_symbols,
+        'map_profile_poly': get_current_profile_extent(request)
     })
 
 

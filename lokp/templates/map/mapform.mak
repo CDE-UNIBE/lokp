@@ -2,7 +2,6 @@
 
 <script src="${request.static_url('lokp:static/lib/OpenLayers/OpenLayers.js')}" type="text/javascript"></script>
 <script type="text/javascript" src="//maps.googleapis.com/maps/api/js?v=3&key=${str(request.registry.settings.get('lokp.google_maps_api_key'))}&libraries=places"></script>
-<script type="text/javascript" src="${request.route_url('context_layers')}"></script>
 % if compare is True:
     <script src="${request.static_url('lokp:static/js/maps/compare.js')}" type="text/javascript"></script>
 % else:
@@ -10,6 +9,8 @@
 % endif
 <script src="${request.static_url('lokp:static/js/maps/base.js')}" type="text/javascript"></script>
 <script src="${request.static_url('lokp:static/lib/jquery.cookie/jquery.cookie.min.js')}" type="text/javascript"></script>
+
+
 
 <script type="text/javascript">
 
