@@ -13,10 +13,10 @@
     _ = request.translate
 %>
 
-    % if field.title:
+    % if field.title:   ## Field stands for for deform.field which refers a schema node, such as mapWidget
         <legend>${field.title}</legend>
     % endif
-    <div id="googleMapNotFull">
+    <div id="${field.title}">   ## variable title is passed by config/form.py/getMapWidget  field?
 
         <div class="map-form-controls">
 
@@ -171,8 +171,17 @@
 
     ${field.start_mapping()}
 
-    % for child in field.children:
+    % for child in field.children:  ## renders childeren of form.
         ${child.render_template(field.widget.item_template)}
     % endfor
 
     ${field.end_mapping()}
+
+<script>
+  deform.addCallback(
+      '${field.title}',
+      function(oid) {
+          createFormMap(oid, {pointsVisible: true, pointsCluster: true});
+      }
+  );
+</script>

@@ -693,7 +693,6 @@ class ConfigThematicgroup(object):
         """
         return self.showInDetails
 
-    # Why the same function twice??
     def getForm(self, request, readonly=False, compare=''):
         """
         Prepare the form node for this thematic group, append the forms of its
@@ -2273,9 +2272,10 @@ def getMapWidget(thematicgroup):
             template='customMapMapping'
         ),
         name=thematicgroup.getMap().getName(),
-        title=''
+        title='map'+ str(thematicgroup.id)    # add unique title for the map widget (title serves as id in customMapMapping)
     )
 
+    # elements added below are children of mapWidget
     mapWidget.add(colander.SchemaNode(
         colander.String(),
         widget=deform.widget.TextInputWidget(template='hidden'),

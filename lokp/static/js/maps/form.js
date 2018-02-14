@@ -3,20 +3,20 @@
  */
 
 
-
+/*
 $(document).ready(function() {
     // Only one map is displayed (in #googleMapFull), but using this as a PoC
     // which would allow creating multiple maps on same page.
-    ['googleMapNotFull'].forEach(function(mapId) {
-        createMainMap(mapId, {
+    ['map1'].forEach(function(mapId) {
+        createFormMap(mapId, {
             pointsVisible: true,
             pointsCluster: true
         });
     });
 });
+*/
 
-
-function createMainMap(mapId, options) {
+function createFormMap(mapId, options) {
     var baseLayers = getBaseLayers();
     var activeBaseLayer = Object.values(baseLayers)[0];
     var mapForm = L.map(mapId, {
@@ -62,3 +62,5 @@ function createMainMap(mapId, options) {
     // initPolygonLayers(); + control
     // initMapSearch();
 }
+
+
