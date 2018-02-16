@@ -16,7 +16,7 @@
     % if field.title:   ## Field stands for for deform.field which refers a schema node, such as mapWidget
         <legend>${field.title}</legend>
     % endif
-    <div id="${field.title}">   ## variable title is passed by config/form.py/getMapWidget  field?
+    <div id="${field.title}" style="height: 400px;">   ## variable title is passed by config/form.py/getMapWidget  field?
 
         <div class="map-form-controls">
 

@@ -17,12 +17,18 @@ $(document).ready(function() {
 */
 
 function createFormMap(mapId, options) {
+    // TODO: Try adding basic leaflet map , merge?
+
     var baseLayers = getBaseLayers();
+    console.log(mapId);
+
+
     var activeBaseLayer = Object.values(baseLayers)[0];
-    var mapForm = L.map(mapId, {
+    var mapForm = L.map(mapId, {    // initialize map in the div mapId
         layers: activeBaseLayer  // Initially only add first layer
     });
-    mapForm.on('moveend', function(e) {
+
+    mapForm.on('moveend', function(e) { // event triggers when user stopes dragging map
         $.cookie('_LOCATION_', mapForm.getBounds().toBBoxString(), {expires: 7});
     });
 
@@ -40,6 +46,7 @@ function createFormMap(mapId, options) {
     }
     mapForm.fitBounds(initialExtent);
 
+
     if (typeof window.lokp_maps === 'undefined') {
         window.lokp_maps = {};
     }
@@ -53,6 +60,8 @@ function createFormMap(mapId, options) {
         mapVariables: window.mapVariables,
         options: options
     };
+
+
 
     initBaseLayerControl();
     initMapContent(mapForm);
