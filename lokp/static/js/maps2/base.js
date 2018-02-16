@@ -24,7 +24,7 @@ function getBaseLayers() {
  * Return an object containing base layers. The key is used as identifier of the
  * layer.
  */
-function getContextLayers(layerConfigs) {
+function getContextLayers(mapId, layerConfigs) {
     var defaultConfig = {
         format: 'image/png',
         transparent: true,
@@ -35,8 +35,8 @@ function getContextLayers(layerConfigs) {
     var layers = {};
     layerConfigs.forEach(function(layerConfig) {
         layerHtml += '<p class="context-layer-checkbox-entry">' +
-            '<input class="input-top context-layer-checkbox" type="checkbox" value="' + layerConfig.name + '" id="checkbox-' + layerConfig.name + '">' +
-            '<label class="text-primary-color" for="checkbox-' + layerConfig.name + '">' +
+            '<input class="input-top context-layer-checkbox" type="checkbox" value="' + layerConfig.name + '" id="checkbox-' + mapId + '-' + layerConfig.name + '">' +
+            '<label class="text-primary-color" for="checkbox-' + mapId + '-' + layerConfig.name + '">' +
             layerConfig.name +
             '</label>' +
             '&nbsp; <i class="icon-exclamation-sign pointer text-accent-color context-layer-info" data-layer="' + layerConfig.name + '"></i>' +
@@ -51,7 +51,7 @@ function getContextLayers(layerConfigs) {
         layer.abstract = layerConfig.abstract;
         layers[layerConfig.name] = layer;
     });
-    $('#context-layers-list').html(layerHtml);
+    $('#context-layers-list-' + mapId).html(layerHtml);
     return layers;
 }
 
@@ -65,7 +65,7 @@ function initPolygonLayers(mapId, polygonKeys) {
         var name = keyPair[0];
         var key = keyPair[1];
         var color = getColors(i)[0];
-        html += '<p style="padding-top: 0; padding-bottom: 0;">' +
+        html += '<p class="map-polygon-entry">' +
             '<input class="input-top area-layer-checkbox" type="checkbox" data-layer="' + key + '" id="map-' + mapId + '-poly-' + key + '">' +
             '<label class="text-primary-color" for="map-' + mapId + '-poly-' + key + '">' +
             '<span class="vectorLegendSymbolSmall" style="border: 2px solid ' + color + '">' +
@@ -112,7 +112,9 @@ function setPolygonLayer(mapId, layerId) {
                         return {color: color}
                     }
                 });
-                layer.on('click', showSingleFeatureDetails);
+                layer.on('click', function(a) {
+                    showSingleFeatureDetails(a, mapOptions);
+                });
                 layer.addTo(mapOptions.map);
                 mapOptions.polygonLayers[layerId] = layer;
             }
@@ -129,13 +131,13 @@ function setPolygonLayer(mapId, layerId) {
  */
 function initBaseLayerControl() {
     // Change the currently visible base map
-    $('.baseMapOptions').change(function(e) {
+    $('.js-base-map-layers').change(function(e) {
         if (!e.target.value) return;
 
         // Get current map and layers
         var mapOptions = window.lokp_maps[getMapIdFromElement(e.target)];
         var layer = mapOptions.baseLayers[e.target.value];
-        if (typeof layer === 'undefined') return;
+        if (typeof layer === 'undefined' || mapOptions.activeBaseLayer === layer) return;
 
         // Change layers
         mapOptions.map.removeLayer(mapOptions.activeBaseLayer);
@@ -162,12 +164,13 @@ function initContextLayerControl() {
         }
     });
     $('.context-layer-info').click(function(e) {
-        var mapOptions = window.lokp_maps[getMapIdFromElement(e.target)];
+        var mapId = getMapIdFromElement(e.target);
+        var mapOptions = window.lokp_maps[mapId];
         var layerName = $(this).data('layer');
         var layer = mapOptions.contextLayers[layerName];
-        showContextLegendModal(layerName, layer);
+        showContextLegendModal(mapId, layerName, layer);
     });
-    $('#layer-transparency-slider').on('input', function(e) {
+    $('.layer-transparency-slider').on('input', function(e) {
         var mapOptions = window.lokp_maps[$(this).data('map-id')];
         for (var layerName in mapOptions.contextLayers) {
             if (mapOptions.contextLayers.hasOwnProperty(layerName)) {
@@ -188,9 +191,7 @@ function initMapSearch(mapId) {
     var mapSearch = new google.maps.places.SearchBox(searchField[0]);
     mapSearch.addListener('places_changed', function() {
         var places = this.getPlaces();
-        if (places.length !== 1) {
-            return;
-        }
+        if (places.length !== 1) return;
         var loc = places[0].geometry.location.toJSON();
         var mapOptions = getMapOptionsById(mapId);
         var map = mapOptions.map;
@@ -221,7 +222,7 @@ function initMapSearch(mapId) {
  * Get the legend graphic and show it in a modal, along with the abstract
  * defined in the configuration yaml.
  */
-function showContextLegendModal(name, layer) {
+function showContextLegendModal(mapId, name, layer) {
     // Prepare URL of legend image
     var imgParams = {
         request: 'GetLegendGraphic',
@@ -236,26 +237,26 @@ function showContextLegendModal(name, layer) {
     };
     var imgUrl = layer.url + '?' + decodeURI($.param(imgParams));
 
-    $('#mapModalBody').html(
-        '<div id="contextLegendImgLoading" style="text-align: center;">' +
+    $('#map-modal-body-' + mapId).html(
+        '<div id="map-modal-loading-' + mapId + '" style="text-align: center;">' +
         '<img src="/custom/img/ajax-loader.gif" alt="' + tForLoading + '" height="55" width="54">' +
         '</div>' +
-        '<div id="contextLegendContent" class="hide">' +
+        '<div id="map-modal-legend-content-' + mapId + '" class="hide">' +
         '<h6 class="legend-modal-title">' + tForLegendforcontextlayer + ' ' + name + '</h6>' +
-        '<div id="contextLegendAbstract"></div>' +
-        '<img id="contextLegendImg" src="' + imgUrl + '">' +
+        '<div id="legend-modal-legend-abstract-' + mapId + '"></div>' +
+        '<img class="map-modal-legend-image" src="' + imgUrl + '">' +
         '</div>');
 
     // Show the model window
-    $('#mapModal').openModal();
+    $('#map-modal-' + mapId).openModal();
 
     // If an abstract is set in the YAML, use this one
     if (typeof layer.abstract !== 'undefined') {
-        $('#contextLegendAbstract').html(layer.abstract);
+        $('#legend-modal-legend-abstract-' + mapId).html(layer.abstract);
     }
 
-    $('#contextLegendContent').removeClass('hide');
-    $('#contextLegendImgLoading').hide();
+    $('#map-modal-legend-content-' + mapId).removeClass('hide');
+    $('#map-modal-loading-' + mapId).hide();
 }
 
 
@@ -271,12 +272,17 @@ function initMapContent(map) {
     var mapCriteria = mapOptions.mapVariables.map_criteria;
     var mapValues = mapOptions.mapVariables.map_symbol_values;
     var allMapCriteria = mapOptions.mapVariables.map_criteria_all;
-
-    if (mapOptions.options.pointsVisible === false) {
-        $('#map-deals-symbolization').html('Points are not visible on this map.');
-        return;
-    }
     var pointsCluster = mapOptions.options.pointsCluster;
+
+    $('.js-activity-layer-toggle').on('change', function() {
+        var mapOpts = getMapOptionsFromElement(this);
+        if (typeof mapOpts.dealLayer === 'undefined') return;
+        if (this.checked) {
+            mapOpts.map.addLayer(mapOpts.dealLayer);
+        } else {
+            mapOpts.map.removeLayer(mapOpts.dealLayer);
+        }
+    });
 
     var queryParams = $.merge(
         ['attrs=' + mapCriteria[1]], getActiveFilters()).join('&');
@@ -349,8 +355,12 @@ function initMapContent(map) {
                         geojsonLayer = L.geoJson(geojson);
                         marker.addLayer(geojsonLayer);
 
-                        marker.on('click', showSingleFeatureDetails);
-                        marker.on('clusterclick', showClusterFeatureDetails);
+                        marker.on('click', function(a) {
+                            showSingleFeatureDetails(a, mapOptions);
+                        });
+                        marker.on('clusterclick', function(a) {
+                            showClusterFeatureDetails(a, mapOptions);
+                        });
 
                         dealLayer.addLayer(marker);
                     } else {
@@ -378,32 +388,38 @@ function initMapContent(map) {
                 }
             }
 
-            map.addLayer(dealLayer);
             var mapOptions = getMapOptionsFromMap(map);
+            if (mapOptions.options.pointsVisible === true) {
+                map.addLayer(dealLayer);
+            }
             mapOptions['dealLayer'] = dealLayer;
 
             // Map symbolization dropdown
             var symbolsHtml = [];
             symbolsHtml.push(
-                '<a class="dropdown-button" href="#" data-activates="map-symbolization-dropdown" style="margin: 0; padding: 0; line-height: 22px; height: 22px;">',
-                    '<span id="map-symbolization-name">',
-                        mapCriteria[0],
-                    '</span>',
+                '<a class="dropdown-button" href="#" data-activates="map-symbolization-dropdown-' + map.getContainer().id + '" style="margin: 0; padding: 0; line-height: 22px; height: 22px;">',
+                    mapCriteria[0],
                     '<i class="material-icons right" style="line-height: 22px;">arrow_drop_down</i>',
                 '</a>',
-                '<ul id="map-symbolization-dropdown" class="dropdown-content" style="width: 500px;">'
+                '<ul id="map-symbolization-dropdown-' + map.getContainer().id + '" class="dropdown-content" style="width: 500px;">'
             );
             allMapCriteria.forEach(function(c) {
                 symbolsHtml.push(
                     '<li>',
-                        '<a href="#" onclick="javascript:return updateMapCriteria(\'' + map.getContainer().id + '\', \'' + c[0].replace("'", "\\'") + '\', \'' + c[1].replace("'", "\\'") + '\');">' + c[0] + '</a>',
+                        '<a href="#" class="js-change-map-symbolization" data-map-id="' + map.getContainer().id + '" data-translated-name="' + c[0].replace("'", "\\'") + '" data-internal-name="' + c[1].replace("'", "\\'") + '">' + c[0] + '</a>',
                     '</li>'
                 )
             });
             symbolsHtml.push('</ul>');
-            $('#map-deals-symbolization').html(symbolsHtml.join(''));
+            $('#map-deals-symbolization-' + map.getContainer().id).html(symbolsHtml.join(''));
             initializeDropdown();
-            
+
+            $('.js-change-map-symbolization').on('click', function(e) {
+                e.preventDefault();
+                var $t = $(this);
+                updateMapCriteria($t.data('map-id'), $t.data('translated-name'), $t.data('internal-name'));
+            });
+
             // Legend
             var legendHtml = mapValues.map(function(v, i) {
                 return [
@@ -414,7 +430,7 @@ function initMapContent(map) {
                     '</li>'
                 ].join('');
             });
-            $('#map-points-list').html(legendHtml.join(''));
+            $('#map-points-list-' + map.getContainer().id).html(legendHtml.join(''));
         }
     });
 }
@@ -422,11 +438,10 @@ function initMapContent(map) {
 
 /**
  * When selecting a single feature, show its details.
- *
- * @param a
  */
-function showSingleFeatureDetails(a) {
-    var detailContainer = $('#tab1');
+function showSingleFeatureDetails(a, mapOptions) {
+    if (typeof mapOptions.options.detailPanelId === 'undefined') return;
+    var detailContainer = $('#' + mapOptions.options.detailPanelId);
     detailContainer.html(tForLoading);
     var feature = a.layer.feature;
     $.get('/activities/map_selection/' + feature.properties.activity_identifier, function(data) {
@@ -438,11 +453,10 @@ function showSingleFeatureDetails(a) {
 /**
  * When selecting a cluster of features, show their details (limit will be set
  * by backend)
- *
- * @param a
  */
-function showClusterFeatureDetails(a) {
-    var detailContainer = $('#tab1');
+function showClusterFeatureDetails(a, mapOptions) {
+    if (typeof mapOptions.options.detailPanelId === 'undefined') return;
+    var detailContainer = $('#' + mapOptions.options.detailPanelId);
     detailContainer.html(tForLoading);
     var identifiers = a.layer.getAllChildMarkers().map(function(m) {
         return m.feature.properties.activity_identifier;
@@ -479,8 +493,7 @@ function updateMapCriteria(mapId, translatedName, internalName) {
             key: internalName
         },
         success: function(data) {
-            if (data['error'])
-                return;
+            if (data['error']) return;
             mapOptions.mapVariables.map_symbol_values = data.map(function(d) {
                 return d[0];
             });
@@ -497,6 +510,11 @@ function updateMapCriteria(mapId, translatedName, internalName) {
  */
 function getMapIdFromElement(el) {
     return $(el).closest('ul').data('map-id');
+}
+
+
+function getMapOptionsFromElement(el) {
+    return getMapOptionsById(getMapIdFromElement(el));
 }
 
 
