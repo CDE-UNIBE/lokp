@@ -5,6 +5,7 @@ from pyramid.view import view_config
 
 from lokp.config.customization import local_profile_directory_path
 from lokp.config.form import getCategoryList
+from lokp.config.profile import get_current_profile_extent
 from lokp.views.filter import getFilterValuesForKey
 from lokp.views.form import form_geomtaggroups
 
@@ -38,6 +39,7 @@ def get_map_variables(request):
     Dump map variables such as available keys for symbolization of points etc.
     as a JS variable to be used when creating maps.
     """
+    _ = request.translate
     map_symbols = getMapSymbolKeys(request)
     map_criteria = map_symbols[0]
     map_symbol_values = [
@@ -59,6 +61,10 @@ def get_map_variables(request):
         'map_criteria_all': map_symbols,
         'context_layers': config.get('application', {}).get('layers', []),
         'polygon_keys': form_geomtaggroups(request).get('mainkeys', []),
+        'profile_polygon': get_current_profile_extent(request),
+        'translations': {
+            'loading': _('Loading ...'),
+        }
     })
 
 

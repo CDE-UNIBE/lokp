@@ -239,10 +239,10 @@ function showContextLegendModal(mapId, name, layer) {
 
     $('#map-modal-body-' + mapId).html(
         '<div id="map-modal-loading-' + mapId + '" style="text-align: center;">' +
-        '<img src="/custom/img/ajax-loader.gif" alt="' + tForLoading + '" height="55" width="54">' +
+        '<img src="/custom/img/ajax-loader.gif" height="55" width="54">' +
         '</div>' +
         '<div id="map-modal-legend-content-' + mapId + '" class="hide">' +
-        '<h6 class="legend-modal-title">' + tForLegendforcontextlayer + ' ' + name + '</h6>' +
+        '<h6 class="legend-modal-title">' + name + '</h6>' +
         '<div id="legend-modal-legend-abstract-' + mapId + '"></div>' +
         '<img class="map-modal-legend-image" src="' + imgUrl + '">' +
         '</div>');
@@ -442,7 +442,7 @@ function initMapContent(map) {
 function showSingleFeatureDetails(a, mapOptions) {
     if (typeof mapOptions.options.detailPanelId === 'undefined') return;
     var detailContainer = $('#' + mapOptions.options.detailPanelId);
-    detailContainer.html(tForLoading);
+    detailContainer.html(mapOptions.mapVariables.translations.loading);
     var feature = a.layer.feature;
     $.get('/activities/map_selection/' + feature.properties.activity_identifier, function(data) {
         detailContainer.html(data);
@@ -457,7 +457,7 @@ function showSingleFeatureDetails(a, mapOptions) {
 function showClusterFeatureDetails(a, mapOptions) {
     if (typeof mapOptions.options.detailPanelId === 'undefined') return;
     var detailContainer = $('#' + mapOptions.options.detailPanelId);
-    detailContainer.html(tForLoading);
+    detailContainer.html(mapOptions.mapVariables.translations.loading);
     var identifiers = a.layer.getAllChildMarkers().map(function(m) {
         return m.feature.properties.activity_identifier;
     });

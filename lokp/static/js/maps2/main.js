@@ -25,7 +25,7 @@ function createMainMap(mapId, options) {
     });
     
     // Initial map extent
-    var initialExtent = L.geoJSON(profilePolygon).getBounds();
+    var initialExtent = L.geoJSON(window.mapVariables.profile_polygon).getBounds();
     var locationCookie = $.cookie('_LOCATION_');
     if (locationCookie) {
         // If a valid cookie is set, use this as extent
