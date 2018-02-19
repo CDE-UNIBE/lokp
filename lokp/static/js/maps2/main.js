@@ -3,13 +3,13 @@
  */
 
 $(document).ready(function() {
-    // Only one map is displayed (in #googleMapFull), but using this as a PoC
-    // which would allow creating multiple maps on same page.
-    ['googleMapFull'].forEach(function(mapId) {
-        createMainMap(mapId, {
-            pointsVisible: true,
-            pointsCluster: true
-        });
+    createMainMap('main-map-id', {
+        // Whether points are initially visible or not
+        pointsVisible: true,
+        // Whether points are clustered or not
+        pointsCluster: true,
+        // ID of div to show details in. If not specified, no details will be shown.
+        detailPanelId: 'tab1'
     });
 });
 
@@ -25,7 +25,7 @@ function createMainMap(mapId, options) {
     });
     
     // Initial map extent
-    var initialExtent = L.geoJSON(window.mapVariables.map_profile_poly).getBounds();   // mapVariables defined in map.py (get_map_variables returns js)
+    var initialExtent = L.geoJSON(window.mapVariables.profile_polygon).getBounds();
     var locationCookie = $.cookie('_LOCATION_');
     if (locationCookie) {
         // If a valid cookie is set, use this as extent
@@ -38,15 +38,32 @@ function createMainMap(mapId, options) {
     }
     map.fitBounds(initialExtent);
 
+    // Disable dragging of the map for the floating buttons
+    var ctrl = L.DomUtil.get('map-floating-buttons-' + mapId);
+    if (ctrl) {
+        ctrl.addEventListener('mouseover', function() {
+            map.dragging.disable();
+        });
+        ctrl.addEventListener('mouseout', function() {
+            map.dragging.enable();
+        });
+    }
+
+    // Hide loading overlay
+    $('.map-loader[data-map-id="' + mapId + '"]').hide();
+
     if (typeof window.lokp_maps === 'undefined') {
         window.lokp_maps = {};
     }
     window.lokp_maps[mapId] = {
         map: map,
         baseLayers: baseLayers,
+        contextLayers: getContextLayers(mapId, window.mapVariables.context_layers),
+        polygonLayers: {},
         // Keep track of the currently active base layer so it can be changed
         // programmatically
         activeBaseLayer: activeBaseLayer,
+        activeMapMarker: null,
         // Initial map variables
         mapVariables: window.mapVariables,
         options: options
@@ -54,9 +71,7 @@ function createMainMap(mapId, options) {
 
     initBaseLayerControl();
     initMapContent(map);
-
-    // TODO
-    // initContextLayers(); + control
-    // initPolygonLayers(); + control
-    // initMapSearch();
+    initPolygonLayers(mapId, window.mapVariables.polygon_keys);
+    initContextLayerControl();
+    initMapSearch(mapId);
 }
