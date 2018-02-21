@@ -396,14 +396,14 @@ def file_view(request):
     # If the file is not in the temporary folder, find its Activity versions by
     # searching for its A_Value (filename|UID).
     if temporaryFile is False:
-        a_value = '%s|%s' % (db_file.name, db_file.identifier)
+        a_value = '|%s' % db_file.identifier
         a_db_query = DBSession.query(Activity). \
             join(A_Tag_Group, A_Tag_Group.fk_activity == Activity.id). \
             join(A_Tag, A_Tag.fk_tag_group == A_Tag_Group.id). \
             join(A_Key, A_Tag.fk_key == A_Key.id). \
             join(A_Value, A_Tag.fk_value == A_Value.id). \
             filter(A_Key.type.ilike('File')). \
-            filter(A_Value.value.ilike(a_value))
+            filter(A_Value.value.contains(a_value))
 
         # Files for Activities are always visible if there is an active version
         # having the file attached.
