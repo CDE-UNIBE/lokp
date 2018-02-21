@@ -82,6 +82,59 @@ def file_upload_form_embedded(request):
     }
 
 
+@view_config(
+    route_name='file_upload_json_response', permission='edit', renderer='json')
+def file_upload_json_response(request):
+    """
+    A file upload through direct POST of the form data. Returns a JSON response.
+
+    Args:
+        request:
+
+    Returns:
+        JSON
+    """
+    class MemoryTmpStore(dict):
+        def preview_url(self, uid):
+            return None
+
+    tmpStore = MemoryTmpStore()
+
+    class Schema(colander.Schema):
+        file = colander.SchemaNode(
+            deform.FileData(),
+            widget=deform.widget.FileUploadWidget(tmpStore),
+            name='file',
+            title='File'
+        )
+
+    formid = 'fileupload'
+
+    schema = Schema()
+    deform.Form.set_default_renderer(file_upload_renderer)
+    form = deform.Form(
+        schema, buttons=('submit',), formid=formid)
+
+    if 'submit' in request.POST:
+        try:
+            controls = request.POST.items()
+            captured = form.validate(controls)
+            return handle_upload(request, captured['file'])
+
+        except deform.ValidationFailure as e:
+            # the submitted values could not be validated
+            return {
+                'msg': e.render(),
+                'success': False,
+            }
+
+    else:
+        return {
+            'msg': 'No file submitted',
+            'success': False
+        }
+
+
 def _get_rendered_form(
         request, form, appstruct=colander.null, submitted='submit',
         success=None, readonly=False):
