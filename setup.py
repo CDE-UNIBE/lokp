@@ -40,6 +40,10 @@ tests_require = [
     'WebTest==2.0.29',
 ]
 
+deploy_require = [
+    'pyramid_crow==0.4.2',
+]
+
 setup(
     name='lokp',
     version='1.0',
@@ -60,6 +64,7 @@ setup(
     zip_safe=False,
     extras_require={
         'testing': tests_require,
+        'deploy': deploy_require,
     },
     install_requires=requires,
     entry_points={

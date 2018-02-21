@@ -12,6 +12,8 @@ pyramid.debug_notfound = false
 pyramid.debug_routematch = false
 pyramid.default_locale_name = en
 pyramid.includes =
+    pyramid_crow
+    pyramid_mailer
     pyramid_tm
 
 sqlalchemy.url = postgresql://user:password@localhost:5432/database
@@ -29,6 +31,11 @@ lokp.file_mime_extensions = image/jpeg .jpg
                             image/gif .gif
                             application/pdf .pdf
 lokp.base_wps = CHANGEME
+
+mail.host = localhost
+mail.default_sender = CHANGEME
+
+raven.dsn = CHANGEME
 
 ###
 # wsgi server configuration
