@@ -1,0 +1,82 @@
+###
+# app configuration
+# https://docs.pylonsproject.org/projects/pyramid/en/latest/narr/environment.html
+###
+
+[app:main]
+use = egg:lokp
+
+pyramid.reload_templates = true
+pyramid.debug_authorization = false
+pyramid.debug_notfound = false
+pyramid.debug_routematch = false
+pyramid.default_locale_name = en
+pyramid.includes =
+    pyramid_mailer.debug
+    pyramid_debugtoolbar
+    pyramid_tm
+
+# By default, the toolbar only appears for clients from IP addresses
+# '127.0.0.1' and '::1'.
+# debugtoolbar.hosts = 127.0.0.1 ::1
+
+sqlalchemy.url = postgresql://user:password@localhost:5432/database
+
+lokp.admin_password = CHANGEME
+lokp.admin_email = CHANGEME
+lokp.customization = omm
+lokp.profiles_dir = production
+lokp.google_maps_api_key = CHANGEME
+lokp.secret = CHANGEME
+lokp.file_upload_dir = /path/to/CHANGEME
+lokp.file_upload_max_size = 5120 ; in kilobytes, default is 5120 (5 MB)
+lokp.file_mime_extensions = image/jpeg .jpg
+                            image/png .png
+                            image/gif .gif
+                            application/pdf .pdf
+lokp.base_wps = CHANGEME
+
+###
+# wsgi server configuration
+###
+
+[server:main]
+use = egg:waitress#main
+listen = localhost:6543
+
+###
+# logging configuration
+# https://docs.pylonsproject.org/projects/pyramid/en/latest/narr/logging.html
+###
+
+[loggers]
+keys = root, lokp, sqlalchemy.engine.base.Engine
+
+[handlers]
+keys = console
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = INFO
+handlers = console
+
+[logger_lokp]
+level = DEBUG
+handlers =
+qualname = lokp
+
+[logger_sqlalchemy.engine.base.Engine]
+level = INFO
+handlers =
+qualname = sqlalchemy.engine.base.Engine
+
+[handler_console]
+class = StreamHandler
+args = (sys.stderr,)
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s %(levelname)-5.5s [%(name)s:%(lineno)s][%(threadName)s] %(message)s

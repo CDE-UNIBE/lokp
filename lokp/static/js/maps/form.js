@@ -17,23 +17,22 @@ $(document).ready(function() {
 */
 
 function createFormMap(mapId, options) {
-    // TODO: Try adding basic leaflet map , merge?
-
     var baseLayers = getBaseLayers();
-    console.log(mapId);
-
-
     var activeBaseLayer = Object.values(baseLayers)[0];
-    var mapForm = L.map(mapId, {    // initialize map in the div mapId
+    var map = L.map(mapId, {
         layers: activeBaseLayer  // Initially only add first layer
     });
+    map.on('moveend', function(e) {
+        $.cookie('_LOCATION_', map.getBounds().toBBoxString(), {expires: 7});
+    });
 
-    mapForm.on('moveend', function(e) { // event triggers when user stopes dragging map
-        $.cookie('_LOCATION_', mapForm.getBounds().toBBoxString(), {expires: 7});
+    map.on('click', function(e){
+        var $geometry = $(this.getContainer()).closest('div.taggroup').find('input[name = "geometry"]').val(1);
+        console.log($geometry);
     });
 
     // Initial map extent
-    var initialExtent = L.geoJSON(window.mapVariables.map_profile_poly).getBounds();
+    var initialExtent = L.geoJSON(window.mapVariables.profile_polygon).getBounds();
     var locationCookie = $.cookie('_LOCATION_');
     if (locationCookie) {
         // If a valid cookie is set, use this as extent
@@ -44,32 +43,44 @@ function createFormMap(mapId, options) {
                 L.latLng(parts[3], parts[2]));
         }
     }
-    mapForm.fitBounds(initialExtent);
+    map.fitBounds(initialExtent);
 
+    // Disable dragging of the map for the floating buttons
+    var ctrl = L.DomUtil.get('map-floating-buttons-' + mapId);
+    if (ctrl) {
+        ctrl.addEventListener('mouseover', function() {
+            map.dragging.disable();
+        });
+        ctrl.addEventListener('mouseout', function() {
+            map.dragging.enable();
+        });
+    }
+
+    // Hide loading overlay
+    $('.map-loader[data-map-id="' + mapId + '"]').hide();
 
     if (typeof window.lokp_maps === 'undefined') {
         window.lokp_maps = {};
     }
     window.lokp_maps[mapId] = {
-        map: mapForm,
+        map: map,
         baseLayers: baseLayers,
+        contextLayers: getContextLayers(mapId, window.mapVariables.context_layers),
+        polygonLayers: {},
         // Keep track of the currently active base layer so it can be changed
         // programmatically
         activeBaseLayer: activeBaseLayer,
+        activeMapMarker: null,
         // Initial map variables
         mapVariables: window.mapVariables,
         options: options
     };
 
-
-
     initBaseLayerControl();
-    initMapContent(mapForm);
-
-    // TODO
-    // initContextLayers(); + control
-    // initPolygonLayers(); + control
-    // initMapSearch();
+    initMapContent(map);
+    initPolygonLayers(mapId, window.mapVariables.polygon_keys);
+    initContextLayerControl();
+    initMapSearch(mapId);
 }
 
 

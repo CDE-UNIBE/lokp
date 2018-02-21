@@ -986,7 +986,7 @@ class ConfigTaggroup(object):
         tg_form.validator = self.maintag_validator
 
         if self.getMap() is not None:
-            # If there is some map data in this thematic group, get the widget
+            # If there is some map data in this tag group, get the widget
             # and add it to the form.
             mapWidget = getMapWidget(self)
             tg_form.add(mapWidget)
@@ -2296,7 +2296,7 @@ def getMapWidget(thematicgroup):
     deform.widget.default_resource_registry.set_js_resources(
         'mapwidget', None,
         'lokp:static/lib/leaflet/leaflet.js',
-        #'lokp:static/lib/leaflet/leaflet.markercluster.js',
+        'lokp:static/lib/leaflet/leaflet.markercluster.js',
         'lokp:static/lib/leaflet/Leaflet.GoogleMutant.js',
         '/app/view/map_variables.js',
         'lokp:static/lib/chroma/chroma.min.js',
