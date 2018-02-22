@@ -17,14 +17,18 @@ $(document).ready(function() {
 */
 
 function createFormMap(mapId, options) {
+
     var baseLayers = getBaseLayers();
     var activeBaseLayer = Object.values(baseLayers)[0];
     var map = L.map(mapId, {
-        layers: activeBaseLayer  // Initially only add first layer
+        layers: activeBaseLayer,  // Initially only add first layer
+        drawControl: true           // enables display of draw toolbar
     });
     map.on('moveend', function(e) {
         $.cookie('_LOCATION_', map.getBounds().toBBoxString(), {expires: 7});
     });
+
+
 
     map.on('click', function(e){
         var $geometry = $(this.getContainer()).closest('div.taggroup').find('input[name = "geometry"]').val(1);
@@ -81,6 +85,7 @@ function createFormMap(mapId, options) {
     initPolygonLayers(mapId, window.mapVariables.polygon_keys);
     initContextLayerControl();
     initMapSearch(mapId);
+    initDrawPolygonControl(map);
 }
 
 

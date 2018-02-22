@@ -2298,14 +2298,17 @@ def getMapWidget(thematicgroup):
         'lokp:static/lib/leaflet/leaflet.js',
         'lokp:static/lib/leaflet/leaflet.markercluster.js',
         'lokp:static/lib/leaflet/Leaflet.GoogleMutant.js',
+        'lokp:static/lib/leaflet/leaflet.draw.js',
         '/app/view/map_variables.js',
         'lokp:static/lib/chroma/chroma.min.js',
         'lokp:static/js/maps2/base.js',
-        'lokp:static/js/maps/form.js'
+        'lokp:static/js/maps/form.js',
+        'lokp:static/js/maps/drawPolygonFeature.js'
     )
-
     deform.widget.default_resource_registry.set_css_resources(
-        'mapwidget', None, 'lokp:static/css/leaflet.css')
+        'mapwidget', None,
+        'lokp:static/css/leaflet.css',
+        'lokp:static/css/leaflet.draw.css')
 
     return mapWidget
 
