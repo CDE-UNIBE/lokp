@@ -29,6 +29,7 @@ requires = [
     'transaction==2.1.2',
     'waitress==1.1.0',
     'zope.sqlalchemy==0.7.7',
+    'fabric3==1.14.post1',
 ]
 
 tests_require = [
