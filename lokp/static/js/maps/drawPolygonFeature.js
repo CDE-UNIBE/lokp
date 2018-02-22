@@ -1,10 +1,3 @@
-
-var writeCooridnatesInForm = function(editableLayers){
-    print('helloWorld')
-};
-
-
-
 /**
  * Adds buttons for creating and editing polygons to the map
  *
@@ -25,6 +18,7 @@ var initDrawPolygonControl = function (map) {
         }
     });
 
+    // configure options of draw control
     var options = {
         position: 'topright',
         draw: {
@@ -56,7 +50,7 @@ var initDrawPolygonControl = function (map) {
         },
         edit: {
             featureGroup: editableLayers, //REQUIRED!!
-            remove: false
+            remove: true
         }
     };
 
@@ -74,9 +68,17 @@ var initDrawPolygonControl = function (map) {
         editableLayers.addLayer(layer);
     });
 
-    // add listener which writes coordinates to form
-    map.on('overlayadd', function(e){
-        console.log('helloWorld2');
+    // add listener which writes the layer's coordinates to the form once the layer is created
+    map.on('draw:created', function (e) {
+        var layerJSON = e.layer.toGeoJSON();
+        var coordinatesJSON = layerJSON.geometry.coordinates;
+
+        // get geometry field
+        var $geometry = $(this.getContainer()).closest('div.taggroup').find('input[name = "geometry"]')
+
+        // write json to geometry field
+        $geometry.val(coordinatesJSON);
+
     });
     //editableLayers
 

@@ -29,12 +29,12 @@ function createFormMap(mapId, options) {
     });
 
 
-
+/*
     map.on('click', function(e){
         var $geometry = $(this.getContainer()).closest('div.taggroup').find('input[name = "geometry"]').val(1);
         console.log($geometry);
     });
-
+*/
     // Initial map extent
     var initialExtent = L.geoJSON(window.mapVariables.profile_polygon).getBounds();
     var locationCookie = $.cookie('_LOCATION_');
