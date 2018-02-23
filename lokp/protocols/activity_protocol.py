@@ -1104,6 +1104,11 @@ class ActivityProtocol(Protocol):
             lang, A_Key, A_Value
         )
 
+        # All object instances need to be removed from the current session in
+        # order to continue. Otherwise results in DetachedInstanceError error
+        # (http://sqlalche.me/e/bhk3)
+        self.Session.expunge_all()
+
         # Count
         if return_count:
             count = relevant_activities.count()
