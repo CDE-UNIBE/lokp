@@ -4,6 +4,8 @@ import logging
 import datetime
 import uuid
 
+import colander
+import copy
 from geoalchemy2 import functions as geofunctions, WKTElement
 import geojson
 from geoalchemy2.shape import from_shape
@@ -190,21 +192,41 @@ class ActivityProtocol(Protocol):
         activity_diffs = []
         for activity in diff['activities']:
 
-            a, ret_diff = self._handle_activity(request, activity, changeset)
+            # activity here is a dict of all taggroups submitted by the form.
+            # Taggroups with polygon geometry are also included in this list,
+            # even if they are empty (e.g. 'map1': {"geometry": colander.null})
+            # which creates problems when saving taggroups and saving the
+            # changeset (as colander.null cannot be dumped to JSON).
+            # Remove these taggroups before continuing.
+            category_list = getCategoryList(request, 'activities')
+
+            cleaned_activity = copy.deepcopy(activity)
+            cleaned_activity['taggroups'] = []
+            for taggroup in activity.get('taggroups', []):
+                main_tag_key = taggroup.get('main_tag', {}).get('key')
+                _, _, config_taggroup = category_list.findCategoryThematicgroupTaggroupByMainkey(main_tag_key)
+                if config_taggroup.getMap() is not None and len(taggroup['tags']) == 1 and taggroup['tags'][0].get(
+                    'geometry', colander.null) == colander.null:
+                    continue
+                cleaned_activity['taggroups'].append(taggroup)
+
+            log.debug('The diff to create/update the activity after removing empty geometry taggroups: %s' % diff)
+
+            a, ret_diff = self._handle_activity(request, cleaned_activity, changeset)
 
             if a is not None:
                 if ret_diff is not None:
                     # If a new diff came back, use this to replace the old one
-                    activity = ret_diff
+                    cleaned_activity = ret_diff
 
                 # Add the newly created identifier to the diff (this is
                 # important if the item had no identifier before
-                activity[str('id')] = str(a.activity_identifier)
+                    cleaned_activity[str('id')] = str(a.activity_identifier)
 
                 ids.append(a)
 
                 # Append the diffs
-                activity_diffs.append(activity)
+                activity_diffs.append(cleaned_activity)
 
         if len(ids) > 0:
             # At least one Activity was created
@@ -1831,11 +1853,13 @@ class ActivityProtocol(Protocol):
         # Try to get the geometry
         if ('geometry' in activity_dict and activity_dict['geometry']
                 is not None):
-            geom = geojson.loads(
+            feature = geojson.loads(
                 json.dumps(activity_dict['geometry']),
                 object_hook=geojson.GeoJSON.to_instance)
 
-            # The geometry
+            geom = feature['geometry']
+
+            # The geometry (shapely deals with geometries, not with features or feature collections)
             shape = asShape(geom)
 
             try:
@@ -1843,7 +1867,7 @@ class ActivityProtocol(Protocol):
             except:
                 raise HTTPBadRequest(detail="Invalid geometry type.")
 
-            if geometrytype == 'MultiPoint':
+            if geometrytype == 'Polygon':
                 g = shape.wkt
             else:
                 g = shape.representative_point().wkt
@@ -1889,12 +1913,8 @@ class ActivityProtocol(Protocol):
         # Populate the Tag Groups
         for i, taggroup in enumerate(activity_dict['taggroups']):
 
-            db_tg = A_Tag_Group(i + 1)
-            new_activity.tag_groups.append(db_tg)
-
             # Main Tag: First reset it. Then try to get it (its key and value)
             # from the dict.
-
             # The Main is indeed mandatory.
             try:
                 main_tag = taggroup['main_tag']
@@ -1904,6 +1924,15 @@ class ActivityProtocol(Protocol):
                 raise HTTPBadRequest(
                     detail="No Main Tag provided. Taggroup %s has no taggroup."
                            % taggroup)
+
+            # # Taggroups with polygon geometry are also included in this list, even if they are empty
+            # # (e.g. 'map1': {"geometry": colander.null}). Remove them before creating a database Taggroup.
+            # _, _, config_taggroup = category_list.findCategoryThematicgroupTaggroupByMainkey(main_tag_key)
+            # if config_taggroup.getMap() is not None and len(taggroup['tags']) == 1 and taggroup['tags'][0].get('geometry', colander.null) == colander.null:
+            #     continue
+
+            db_tg = A_Tag_Group(i + 1)
+            new_activity.tag_groups.append(db_tg)
 
             # Loop all tags within a tag group
             for tag in taggroup['tags']:
@@ -1917,6 +1946,15 @@ class ActivityProtocol(Protocol):
                 # Get the key and the value of the current tag
                 key = tag['key']
                 value = tag['value']
+
+                if key.startswith('map'):
+                    if config_taggroup.getMap() is not None:
+                        # Add geometry to taggroup and not create tag
+                        geometry = value.get('geometry')
+
+                        db_tg.geometry = None  # TODO
+                        continue
+
 
                 # Create the new tag
                 a_tag = self._create_tag(

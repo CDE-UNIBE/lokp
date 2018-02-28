@@ -9,9 +9,7 @@
     activitiesResolver = lmkpAssetResolver.resolve(get_customized_template_path(request, 'parts/items/activities.mak'))
     activitiesTemplate = Template(filename=activitiesResolver.abspath())
     geometry = None if cstruct['geometry'] == colander.null else cstruct['geometry']
-    editmode = None if cstruct['editmode'] == colander.null else cstruct['editmode']
     _ = request.translate
-    # inherit file="lokp:customization/omm/templates/base.mak"
 
     from lokp.views.filter import getFilterKeys
     from lokp.views.filter import getActiveFilters
@@ -23,6 +21,10 @@
     from mako.lookup import TemplateLookup
 %>
 
+
+asdf
+${geometry_type}
+asdf
 
 
 % if field.title:   ## Field stands for for deform.field which refers a schema node, such as mapWidget

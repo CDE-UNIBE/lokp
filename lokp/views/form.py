@@ -300,7 +300,7 @@ def renderForm(request, itemType, **kwargs):
                     # check
                     diff = formdataToDiff(request, formdata, itemType)
 
-                log.debug('The diff to create/update the activity: %s' % diff)
+                log.debug('The uncleaned diff to create/update the activity: %s' % diff)
 
                 if diff is None:
                     # TODO: Is this the correct way to return an error message?

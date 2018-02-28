@@ -339,6 +339,9 @@ class ConfigCategoryList(object):
         key_is_valid = False
         value_is_valid = False
 
+        if key.startswith('map') and value == {'geometry': colander.null}:
+            return True
+
         for k in self.getAllKeys():
             if key == k.getName():
                 # The current key is valid.
@@ -733,7 +736,7 @@ class ConfigThematicgroup(object):
         if self.getMap() is not None:
             # If there is some map data in this thematic group, get the widget
             # and add it to the form.
-            mapWidget = getMapWidget(self)
+            mapWidget = getMapWidget(self, geometry_type='point')
             thg_form.add(mapWidget)
 
         # Iterates over each taggroup in this thematic group and creates a form (tg_form) for each taggroup
@@ -988,7 +991,7 @@ class ConfigTaggroup(object):
         if self.getMap() is not None:
             # If there is some map data in this tag group, get the widget
             # and add it to the form.
-            mapWidget = getMapWidget(self)
+            mapWidget = getMapWidget(self, geometry_type='polygon')
             tg_form.add(mapWidget)
 
         return tg_form
@@ -1006,7 +1009,7 @@ class ConfigTaggroup(object):
             # ... check if one of the other values is set
             hasOtherValuesSet = False
             for (k, v) in value.items():
-                if k != mainkey and v != colander.null and k != 'tg_id':
+                if k != mainkey and v != colander.null and k != 'tg_id' and v != {'geometry': colander.null}:  # allow validation when geometry is empty
                     hasOtherValuesSet = True
             if hasOtherValuesSet:
                 # TODO: Translation
@@ -2258,7 +2261,7 @@ def getCategoryList(request, itemType, **kwargs):
     return categorylist
 
 
-def getMapWidget(thematicgroup):
+def getMapWidget(thematicgroup, geometry_type):
     """
     Return a widget to be used to display the map in the form.
     The map widget (resp. its hidden lon/lat fields) is mandatory, only one
@@ -2269,7 +2272,9 @@ def getMapWidget(thematicgroup):
     mapWidget = colander.SchemaNode(
         colander.Mapping(),
         widget=CustomMapWidget(
-            template='customMapMapping'
+            template='customMapMapping',
+            geometry_type=geometry_type,
+            edit_mode=thematicgroup.getMap().getMode()
         ),
         name=thematicgroup.getMap().getName(),
         title='map'+ str(thematicgroup.id)    # add unique title for the map widget (title serves as id in customMapMapping)
@@ -2280,17 +2285,9 @@ def getMapWidget(thematicgroup):
         colander.String(),
         widget=deform.widget.TextInputWidget(),
         name='geometry',
-        title='geometry'
+        title='geometry',
+        missing = colander.null
     ))
-
-    mapWidget.add(colander.SchemaNode(
-        colander.String(),
-        widget=deform.widget.TextInputWidget(template='hidden'),
-        name='editmode',
-        title='editmode',
-        default=thematicgroup.getMap().getMode()
-    ))
-
 
     # all methods within the loader .js can be accessed within the widget
     deform.widget.default_resource_registry.set_js_resources(
@@ -2657,5 +2654,13 @@ class CustomInvolvementWidget(deform.widget.MappingWidget):
     """
     requirements = (('involvementwidget', None),)
 
+
 class CustomMapWidget(deform.widget.MappingWidget):
     requirements = (('mapwidget', None),)
+
+    def get_template_values(self, field, cstruct, kw):
+        kw.update({
+            'geometry_type': self.geometry_type,
+            'editmode': self.edit_mode,
+        })
+        return super().get_template_values(field, cstruct, kw)

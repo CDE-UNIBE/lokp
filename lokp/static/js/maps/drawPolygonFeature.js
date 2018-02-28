@@ -77,7 +77,7 @@ var initDrawPolygonControl = function (map) {
         var $geometry = $(this.getContainer()).closest('div.taggroup').find('input[name = "geometry"]')
 
         // write json to geometry field
-        $geometry.val(coordinatesJSON);
+        $geometry.val(JSON.stringify(layerJSON));
 
     });
     //editableLayers
