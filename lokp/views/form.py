@@ -80,7 +80,7 @@ def renderForm(request, itemType, **kwargs):
         formSubmit = True
         for p in request.POST:
             if p == 'category':
-                oldCategory = request.POST[p]       # select category directly?
+                oldCategory = request.POST[p]
                 break
 
     # Get the configuration of the categories (as defined in the config yaml)
@@ -160,22 +160,23 @@ def renderForm(request, itemType, **kwargs):
         else:
             try:
                 # Try to validate the form
-                captured = form.validate(request.POST.items())
+                captured = form.validate(request.POST.items())  # captured contains input values
 
             except deform.ValidationFailure as e:
                 # The submitted values contains errors. Render the same form
                 # again with error messages. It will be returned later.
                 html = e.render()
                 formHasErrors = True
-
+        ## TODO Write geometry to session
+        ## TODO Create polygon from session
         if formHasErrors is False:
             # The form is valid, store the captured data in the session.
 
             log.debug('Data captured by the form: %s' % captured)
 
+            # If there is already some data in the session.
             if itemType in session and 'form' in session[itemType]:
-                # There is already some data in the session.
-                sessionItem = session[itemType]['form']
+                sessionItem = session[itemType]['form'] # sessionItem contains values saved in session
                 if (captured.get('id') == sessionItem.get('id')
                         and captured.get('version') == sessionItem.get('version')
                         and oldCategory in captured):
@@ -203,7 +204,7 @@ def renderForm(request, itemType, **kwargs):
                     del(captured['category'])
                 if itemType not in session:
                     session[itemType] = {}
-                session[itemType]['form'] = captured
+                session[itemType]['form'] = captured  # write session data to form of itemType (can be activity etc.)
 
                 log.debug('Added session item')
 
@@ -213,7 +214,7 @@ def renderForm(request, itemType, **kwargs):
                 c = p.split('_')
                 newCategory = c[1]
 
-            if createInvolvement is not False:
+            if createInvolvement is True:
                 # A new form is opened to create an Involvement. Store the
                 # current form information in the session (camefrom).
                 if itemType in session and 'camefrom' in session[itemType]:
@@ -318,7 +319,7 @@ def renderForm(request, itemType, **kwargs):
 
                 if success is True:
 
-                    # Clear the session (what is a session?)
+                    # Clear the session
                     doClearFormSessionData(request, itemType, 'form')
 
                     if (otherItemType in session

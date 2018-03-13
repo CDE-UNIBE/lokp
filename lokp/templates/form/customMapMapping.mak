@@ -22,10 +22,6 @@
 %>
 
 
-asdf
-${geometry_type}
-asdf
-
 
 % if field.title:   ## Field stands for for deform.field which refers a schema node, such as mapWidget
 
@@ -203,7 +199,7 @@ asdf
 
 
 
-
+## Renders mapform.mak?
 ${template.render(request=request, geometry=geometry, editmode=editmode, _=_)}
 
 % if field.errormsg:
@@ -289,7 +285,7 @@ ${template.render(request=request, geometry=geometry, editmode=editmode, _=_)}
 
 ${field.start_mapping()}
 
-% for child in field.children:  ## renders childeren of form.
+% for child in field.children:  ## renders childeren of form. Renders all fields defined in widget
         ${child.render_template(field.widget.item_template)}
 % endfor
 

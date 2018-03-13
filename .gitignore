@@ -10,6 +10,9 @@
 # Ignore Netbeans project folder
 /nbproject/
 .idea/*
+lokp/.idea/*
+
+venv
 
 # Ignore sublime project files
 *.sublime-project

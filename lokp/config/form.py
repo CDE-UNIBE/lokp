@@ -2283,7 +2283,7 @@ def getMapWidget(thematicgroup, geometry_type):
     # elements added below are children of mapWidget
     mapWidget.add(colander.SchemaNode(
         colander.String(),
-        widget=deform.widget.TextInputWidget(),
+        widget=deform.widget.TextInputWidget(template='hidden'),
         name='geometry',
         title='geometry',
         missing = colander.null

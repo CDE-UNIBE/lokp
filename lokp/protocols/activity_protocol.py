@@ -1853,13 +1853,13 @@ class ActivityProtocol(Protocol):
         # Try to get the geometry
         if ('geometry' in activity_dict and activity_dict['geometry']
                 is not None):
-            feature = geojson.loads(
+
+            geom = geojson.loads(
                 json.dumps(activity_dict['geometry']),
                 object_hook=geojson.GeoJSON.to_instance)
 
-            geom = feature['geometry']
-
             # The geometry (shapely deals with geometries, not with features or feature collections)
+
             shape = asShape(geom)
 
             try:
@@ -1925,14 +1925,12 @@ class ActivityProtocol(Protocol):
                     detail="No Main Tag provided. Taggroup %s has no taggroup."
                            % taggroup)
 
-            # # Taggroups with polygon geometry are also included in this list, even if they are empty
-            # # (e.g. 'map1': {"geometry": colander.null}). Remove them before creating a database Taggroup.
-            # _, _, config_taggroup = category_list.findCategoryThematicgroupTaggroupByMainkey(main_tag_key)
-            # if config_taggroup.getMap() is not None and len(taggroup['tags']) == 1 and taggroup['tags'][0].get('geometry', colander.null) == colander.null:
-            #     continue
-
             db_tg = A_Tag_Group(i + 1)
             new_activity.tag_groups.append(db_tg)
+
+            # get config_taggroup
+            category_list = getCategoryList(request, 'activities')
+            _, _, config_taggroup = category_list.findCategoryThematicgroupTaggroupByMainkey(main_tag_key)
 
             # Loop all tags within a tag group
             for tag in taggroup['tags']:
@@ -1951,8 +1949,8 @@ class ActivityProtocol(Protocol):
                     if config_taggroup.getMap() is not None:
                         # Add geometry to taggroup and not create tag
                         geometry = value.get('geometry')
-
-                        db_tg.geometry = None  # TODO
+                        taggroup['geometry'] = geometry
+                        taggroup
                         continue
 
 
@@ -1980,10 +1978,9 @@ class ActivityProtocol(Protocol):
 
             # If available, try to handle the geometry of a taggroup
             try:
+
                 tg_geom_diff = taggroup['geometry']
-                tg_geom = geojson.loads(
-                    json.dumps(tg_geom_diff),
-                    object_hook=geojson.GeoJSON.to_instance)
+                tg_geom = geojson.loads(tg_geom_diff)
                 # The geometry
                 try:
                     tg_shape = asShape(tg_geom)
@@ -1993,7 +1990,9 @@ class ActivityProtocol(Protocol):
                         detail="Invalid geometry type of taggroup")
                 # Store the geometry only if it is a polygon or multipolygon
                 if geometrytype == 'Polygon' or geometrytype == 'MultiPolygon':
-                    db_tg.geometry = tg_shape.wkt
+                    # define right projection
+                    db_tg.geometry = WKTElement(tg_shape.wkt, srid=4326)
+
                 else:
                     raise HTTPBadRequest(
                         detail="Invalid geometry type of taggroup: Only "
