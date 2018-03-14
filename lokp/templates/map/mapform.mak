@@ -1,4 +1,3 @@
-
 <%page args="readonly=False, compare=False, identifier=None, version=None" />
 
 <script type="text/javascript"
@@ -6,17 +5,25 @@
 % if compare is True:
     <script src="${request.static_url('lokp:static/js/maps/compare.js')}" type="text/javascript"></script>
 % else:
-    <script src="${request.static_url('lokp:static/js/maps/form.js')}" type="text/javascript"></script>
+    <script src="${request.static_url('lokp:static/js/maps/form.js')}" type="text/javascript">
+    </script>
 
 % endif
+## Scripts are only loaded when readonly is true to avoid conflict with dependencies provided by mapWidget (defined in config/form.py)
+% if readonly:
+    <script src="${request.static_url('lokp:static/lib/leaflet/leaflet.js')}" type="text/javascript"></script>
+    <script src="${request.static_url('lokp:static/lib/leaflet/leaflet.markercluster.js')}"
+            type="text/javascript"></script>
+    <script src="${request.static_url('lokp:static/lib/leaflet/Leaflet.GoogleMutant.js')}"
+            type="text/javascript"></script>
+    <script src="/app/view/map_variables.js" type="text/javascript"></script>
+    <script src="${request.static_url('lokp:static/lib/chroma/chroma.min.js')}" type="text/javascript"></script>
+    <script src="${request.static_url('lokp:static/js/maps2/base.js')}" type="text/javascript"></script>
+% endif
+
+
 <script src="${request.static_url('lokp:static/lib/jquery.cookie/jquery.cookie.min.js')}"
         type="text/javascript"></script>
-<script src="${request.static_url('lokp:static/lib/leaflet/leaflet.js')}" type="text/javascript"></script>
-<script src="${request.static_url('lokp:static/lib/leaflet/leaflet.markercluster.js')}" type="text/javascript"></script>
-<script src="${request.static_url('lokp:static/lib/leaflet/Leaflet.GoogleMutant.js')}" type="text/javascript"></script>
-<script src="/app/view/map_variables.js" type="text/javascript"></script>
-<script src="${request.static_url('lokp:static/lib/chroma/chroma.min.js')}" type="text/javascript"></script>
-<script src="${request.static_url('lokp:static/js/maps2/base.js')}" type="text/javascript"></script>
 
 
 <script type="text/javascript">
@@ -40,20 +47,20 @@
     var bbox = null;
     var coordsSet = false;
 
-        % if geometry:
-            coordsSet = true;
-            var geometry = ${geometry | n};
-            var zoomlevel = 13;
-            ##     % elif '_LOCATION_' in request.cookies:
-            ##         ## Try to get the coordinates from the _LOCATION_ cookie
-            ##         var location_cookie = $.cookie('_LOCATION_');
-            ##         if (location_cookie) {
-            ##             var bbox_arr = location_cookie.split(',');
-            ##             if (bbox_arr.length == 4) {
-            ##                 var bbox = new OpenLayers.Bounds(bbox_arr);
-            ##             }
-            ##         }
-    % endif
+                % if geometry:
+                    coordsSet = true;
+                    var geometry = ${geometry | n};
+                    var zoomlevel = 13;
+                    ##     % elif '_LOCATION_' in request.cookies:
+                    ##         ## Try to get the coordinates from the _LOCATION_ cookie
+                    ##         var location_cookie = $.cookie('_LOCATION_');
+                    ##         if (location_cookie) {
+                    ##             var bbox_arr = location_cookie.split(',');
+                    ##             if (bbox_arr.length == 4) {
+                    ##                 var bbox = new OpenLayers.Bounds(bbox_arr);
+                    ##             }
+                    ##         }
+            % endif
 
         % if readonly:
             var readonly = true;

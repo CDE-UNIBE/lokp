@@ -214,7 +214,7 @@ def renderForm(request, itemType, **kwargs):
                 c = p.split('_')
                 newCategory = c[1]
 
-            if createInvolvement is True:
+            if createInvolvement is not False:
                 # A new form is opened to create an Involvement. Store the
                 # current form information in the session (camefrom).
                 if itemType in session and 'camefrom' in session[itemType]:
@@ -670,9 +670,14 @@ def renderReadonlyForm(request, itemType, itemJson):
     geometry = json.dumps(
         itemJson['geometry']) if 'geometry' in itemJson else None
 
+    # extract deal areas as polygons
+    dealAreas = None;
+
     return {
         'form': html,
-        'geometry': geometry
+        'geometry': geometry,
+        'dealAreas': dealAreas
+        # Readonly param?
         # TODO dictionary with polygon geometries
     }
 
