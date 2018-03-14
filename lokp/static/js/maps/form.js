@@ -1,23 +1,11 @@
 /**
- * Functions for the main map.
+ * Creates a map, adds controlls to it and inserts it to a div with the same id as mapId?
  */
 
 
-/*
-$(document).ready(function() {
-    // Only one map is displayed (in #googleMapFull), but using this as a PoC
-    // which would allow creating multiple maps on same page.
-    ['map1'].forEach(function(mapId) {
-        createFormMap(mapId, {
-            pointsVisible: true,
-            pointsCluster: true
-        });
-    });
-});
-*/
 
 function createFormMap(mapId, options) {
-
+    console.log('call createFormMap function ' + mapId);
     var baseLayers = getBaseLayers();
     var activeBaseLayer = Object.values(baseLayers)[0];
     var map = L.map(mapId, {
@@ -85,7 +73,32 @@ function createFormMap(mapId, options) {
     initPolygonLayers(mapId, window.mapVariables.polygon_keys);
     initContextLayerControl();
     initMapSearch(mapId);
-    initDrawPolygonControl(map);
+
+    if (options.readonly !== true){
+        initDrawPolygonControl(map);
+
+        // adds the location point of the deal shown in details page to the detail's page map
+        addLocationOfDeal(map, geometry); // geometry is defined in mapform.mak
+        zoomToDealLocation(map, geometry);
+    }
+
 }
 
 
+/*****************************************************
+ * Helper Methods
+ ****************************************************/
+
+/**
+ *
+ * @param map           Map created by createMapForm
+ * @param geometry      Polygon or Point which is added to map
+ */
+function addLocationOfDeal(map, geometry){
+    // TODO
+}
+
+
+function zoomToDealLocation(map, geometry){
+    // TODO
+}

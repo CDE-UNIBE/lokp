@@ -292,6 +292,7 @@ ${field.start_mapping()}
 ${field.end_mapping()}
 
 <script>
+    console.log(deform);
     deform.addCallback(
             '${field.title}',
             function (oid) {

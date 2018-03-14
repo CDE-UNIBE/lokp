@@ -2268,7 +2268,7 @@ def getMapWidget(thematicgroup, geometry_type):
     field is marked as mandatory (lon) in order to prevent double error
     messages if it is missing.
     """
-
+    print('create mapWidget')
     mapWidget = colander.SchemaNode(
         colander.Mapping(),
         widget=CustomMapWidget(

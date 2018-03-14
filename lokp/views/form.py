@@ -673,6 +673,7 @@ def renderReadonlyForm(request, itemType, itemJson):
     return {
         'form': html,
         'geometry': geometry
+        # TODO dictionary with polygon geometries
     }
 
 
