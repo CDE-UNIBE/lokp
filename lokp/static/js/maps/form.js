@@ -16,7 +16,8 @@ function createFormMap(mapId, options) {
         $.cookie('_LOCATION_', map.getBounds().toBBoxString(), {expires: 7});
     });
 
-
+    console.log('geometry', geometry);
+    // console.log('dealAreas', dealAreas);
     /*
         map.on('click', function(e){
             var $geometry = $(this.getContainer()).closest('div.taggroup').find('input[name = "geometry"]').val(1);
@@ -83,6 +84,18 @@ function createFormMap(mapId, options) {
         zoomToDealLocation(map, geometry);
         addDealAreas(map, dealAreas);
     }
+// TODO: create geometry from coordinates withing hidden geometry field and add it to map.
+
+    // get geometry field
+    var $geometry = $(map.getContainer()).closest('div.taggroup').find('input[name = "geometry"]')
+
+    if ($geometry !== null){
+        var coordinates = $geometry.val
+        console.log('createGeometryLayer from coords', coordinates);
+    }
+
+    // $geometry.val(JSON.stringify(layerJSON.geometry));
+
 
 }
 
@@ -111,6 +124,6 @@ function zoomToDealLocation(map, geometry) {
  * @param map
  * @param dealAreas     Dictionary containing polygons for areas intended area, contract area current area
  */
-function addDealAreas(map, dealAreas){
+function addDealAreas(map, dealAreas) {
 
 }

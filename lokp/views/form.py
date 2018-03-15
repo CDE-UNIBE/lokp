@@ -176,7 +176,7 @@ def renderForm(request, itemType, **kwargs):
 
             # If there is already some data in the session.
             if itemType in session and 'form' in session[itemType]:
-                sessionItem = session[itemType]['form'] # sessionItem contains values saved in session
+                sessionItem = session[itemType]['form']  # sessionItem contains values saved in session
                 if (captured.get('id') == sessionItem.get('id')
                         and captured.get('version') == sessionItem.get('version')
                         and oldCategory in captured):
@@ -192,7 +192,7 @@ def renderForm(request, itemType, **kwargs):
                     # A different item is already in the session. It will be
                     # overwriten.
                     if 'category' in captured:
-                        del(captured['category'])
+                        del (captured['category'])
                     session[itemType]['form'] = captured
 
                     log.debug('Replaced session item')
@@ -201,7 +201,7 @@ def renderForm(request, itemType, **kwargs):
                 # No data is in the session yet. Store the captured data
                 # there.
                 if 'category' in captured:
-                    del(captured['category'])
+                    del (captured['category'])
                 if itemType not in session:
                     session[itemType] = {}
                 session[itemType]['form'] = captured  # write session data to form of itemType (can be activity etc.)
@@ -670,15 +670,13 @@ def renderReadonlyForm(request, itemType, itemJson):
     geometry = json.dumps(
         itemJson['geometry']) if 'geometry' in itemJson else None
 
-    # extract deal areas as polygons
-    dealAreas = None;
+    # extract deal areas (from itemJson) as polygons
+    dealAreas = getTaggroupGeometries(itemJson)
 
     return {
         'form': html,
         'geometry': geometry,
         'dealAreas': dealAreas
-        # Readonly param?
-        # TODO dictionary with polygon geometries
     }
 
 
@@ -996,3 +994,12 @@ def mako_renderer_compare(tmpl_name, **kw):
     kw['_'] = _
 
     return template.render(**kw)
+
+# get polygons (geometries) from itemJson
+def getTaggroupGeometries(itemJson):
+    taggroups = itemJson['taggroups']
+    dealAreas = [];
+    for taggroup in taggroups:
+        if 'geometry' in taggroup:
+            dealAreas.append(taggroup.get('geometry'))
+    return dealAreas

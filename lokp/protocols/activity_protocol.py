@@ -345,6 +345,7 @@ class ActivityProtocol(Protocol):
 
         return self._query_to_taggroup_geojson(query, translate=translate)
 
+    ## TODO: this should return
     def read_one(self, request, uid, public=True, **kwargs):
 
         translate = kwargs.get('translate', True)
@@ -369,10 +370,9 @@ class ActivityProtocol(Protocol):
         # Order the Activity by version
         query = query.order_by(desc(Activity.version))
 
-        # Taggroup geometry
-        full_geometry = request.params.get('geometry', False)
-        if full_geometry is not False:
-            full_geometry = full_geometry.lower() == 'full'
+        # Taggroup geometry ## TODO - insert geometry here? Queried activities don't contain geometry from database
+        full_geometry = request.params.get('geometry', 'full')
+        full_geometry = full_geometry.lower() == 'full'
 
         activities = self._query_to_activities(
             request, query, involvements=inv_details, public_query=public,
