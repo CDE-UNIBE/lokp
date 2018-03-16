@@ -16,8 +16,6 @@ function createFormMap(mapId, options) {
         $.cookie('_LOCATION_', map.getBounds().toBBoxString(), {expires: 7});
     });
 
-    console.log('geometry', geometry);
-    console.log('dealAreas', dealAreas);
     /*
         map.on('click', function(e){
             var $geometry = $(this.getContainer()).closest('div.taggroup').find('input[name = "geometry"]').val(1);
@@ -77,29 +75,14 @@ function createFormMap(mapId, options) {
 
     if (options.readonly !== true) {
         initDrawPolygonControl(map);
+        // if the form already contains a geometry, insert it to the form
     }
     else {
         // adds the location point of the deal shown in details page to the detail's page map
-        addDealLocation(map, geometry); // geometry is defined in mapform.mak
+        addDealLocation(map, geometry); // geometry and dealAreas are defined in mapform.mak!!
         zoomToDealLocation(map, geometry);
         addDealAreas(map, dealAreas);
     }
-// TODO: create geometry from coordinates withing hidden geometry field and add it to map.
-
-    // // get geometry field
-    // var $geometry = $(map.getContainer()).closest('div.taggroup').find('input[name = "geometry"]')
-    //
-    // if ($geometry !== null){
-    //
-    //
-    //
-    //     var coordinates = $geometry.val
-    //     console.log('createGeometryLayer from coords', coordinates);
-    // }
-    //
-    // // $geometry.val(JSON.stringify(layerJSON.geometry));
-
-
 }
 
 
@@ -136,6 +119,8 @@ function zoomToDealLocation(map, geometry) {
 /**
  * @param map
  * @param dealAreas     Dictionary containing polygons for areas intended area, contract area current area
+        // TODO: DICTIONARY INSTEAD OF LIST?
+        // draw polygon when reloading page
  */
 function addDealAreas(map, dealAreas) {
 
@@ -153,7 +138,11 @@ function addDealAreas(map, dealAreas) {
     });
 }
 
-
+/**
+ *
+ * @param polyCoords An array containing arrays with a long/lat coordinate pair (for each vertex of the polygon)
+ * @returns {Array} An array containing arrays with a lat/long coordinate pair
+ */
 function changeToLatLon(polyCoords) {
     var polyCoordsLatLon = [];
     for (var i = 0; i < polyCoords.length; i++) {

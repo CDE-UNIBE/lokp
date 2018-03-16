@@ -42,16 +42,12 @@
             predefinedType='a', predefinedKey=mapCriteria[1]),
             key=lambda value: value[1])]
             geomTaggroups = form_geomtaggroups(request)
-
-            print('geometry from mako', geometry)
-            print('dealAreas from mako', dealAreas)
-
         %>
 
     var bbox = null;
     var coordsSet = false;
                 ##  passing variables to javascript
-                % if geometry:
+                % if geometry and readonly:
                     coordsSet = true;
                     ##  doesn't work with different name!! - but why does it work with dealArea?
                     var geometry = ${geometry | n};
