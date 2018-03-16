@@ -1,9 +1,6 @@
 /**
- * Creates a map, adds controlls to it and inserts it to a div with the same id as mapId?
+ * Creates a map, adds controlls to it and inserts it to a div with the same id as mapId
  */
-
-
-
 function createFormMap(mapId, options) {
     console.log('call createFormMap function ' + mapId);
     var baseLayers = getBaseLayers();
@@ -16,12 +13,6 @@ function createFormMap(mapId, options) {
         $.cookie('_LOCATION_', map.getBounds().toBBoxString(), {expires: 7});
     });
 
-    /*
-        map.on('click', function(e){
-            var $geometry = $(this.getContainer()).closest('div.taggroup').find('input[name = "geometry"]').val(1);
-            console.log($geometry);
-        });
-    */
     // Initial map extent
     var initialExtent = L.geoJSON(window.mapVariables.profile_polygon).getBounds();
     var locationCookie = $.cookie('_LOCATION_');
@@ -75,7 +66,9 @@ function createFormMap(mapId, options) {
 
     if (options.readonly !== true) {
         initDrawPolygonControl(map);
-        // if the form already contains a geometry, insert it to the form
+
+
+        // TODO: make this work for edit as well (geometries are not passed to edit mode)
     }
     else {
         // adds the location point of the deal shown in details page to the detail's page map
@@ -106,7 +99,7 @@ function addDealLocation(map, geometry) {
         // change coordinates to lat/long
         var coordLatLong = geometry.coordinates.reverse();
 
-        L.marker(geometry.coordinates).addTo(map); // custom item can be set here
+        L.marker(coordLatLong).addTo(map); // custom item can be set here
     }
 }
 
@@ -119,8 +112,8 @@ function zoomToDealLocation(map, geometry) {
 /**
  * @param map
  * @param dealAreas     Dictionary containing polygons for areas intended area, contract area current area
-        // TODO: DICTIONARY INSTEAD OF LIST?
-        // draw polygon when reloading page
+ // TODO: DICTIONARY INSTEAD OF LIST?
+ // draw polygon when reloading page
  */
 function addDealAreas(map, dealAreas) {
 

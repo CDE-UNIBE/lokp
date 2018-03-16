@@ -2,18 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="95faa834-846c-497b-a060-b09219218849" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/templates/map/mapform.mak" afterPath="$PROJECT_DIR$/templates/map/mapform.mak" />
+      <change beforePath="$PROJECT_DIR$/config/form.py" afterPath="$PROJECT_DIR$/config/form.py" />
+      <change beforePath="$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js" afterPath="$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js" />
+      <change beforePath="$PROJECT_DIR$/static/js/maps/form.js" afterPath="$PROJECT_DIR$/static/js/maps/form.js" />
+      <change beforePath="$PROJECT_DIR$/templates/form/hidden.mak" afterPath="$PROJECT_DIR$/templates/form/hidden.mak" />
     </list>
     <list id="e4a6555f-c9e9-4096-91ac-ff466dba6394" name="recent changes" comment="">
       <change beforePath="$PROJECT_DIR$/customization/omm/templates/activities/details.mak" afterPath="$PROJECT_DIR$/customization/omm/templates/activities/details.mak" />
       <change beforePath="$PROJECT_DIR$/customization/omm/templates/form/readonly/form.mak" afterPath="$PROJECT_DIR$/customization/omm/templates/form/readonly/form.mak" />
-      <change beforePath="$PROJECT_DIR$/static/js/maps/form.js" afterPath="$PROJECT_DIR$/static/js/maps/form.js" />
     </list>
     <ignored path="$PROJECT_DIR$/.idea/shelf/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <file path="$PROJECT_DIR$/customization/omm/templates/form/readonly/form.mak" ignored="false" />
-    <file path="$PROJECT_DIR$/static/js/maps/form.js" ignored="false" />
     <file path="$PROJECT_DIR$/customization/omm/templates/activities/details.mak" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -43,38 +43,48 @@
       <file leaf-file-name="form.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/views/form.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="259">
+            <state relative-caret-position="563">
               <caret line="998" column="4" lean-forward="false" selection-start-line="998" selection-start-column="4" selection-end-line="998" selection-end-column="4" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mapform.mak" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/templates/map/mapform.mak">
+      <file leaf-file-name="form.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/config/form.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="216">
-              <caret line="54" column="20" lean-forward="false" selection-start-line="54" selection-start-column="20" selection-end-line="54" selection-end-column="20" />
+            <state relative-caret-position="431">
+              <caret line="2285" column="60" lean-forward="false" selection-start-line="2285" selection-start-column="60" selection-end-line="2285" selection-end-column="60" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="form.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="form.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/js/maps/form.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="234">
-              <caret line="49" column="27" lean-forward="true" selection-start-line="49" selection-start-column="27" selection-end-line="49" selection-end-column="27" />
+            <state relative-caret-position="108">
+              <caret line="69" column="0" lean-forward="false" selection-start-line="69" selection-start-column="0" selection-end-line="69" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="form.mak" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/customization/omm/templates/form/readonly/form.mak">
+      <file leaf-file-name="drawPolygonFeature.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="468">
-              <caret line="26" column="0" lean-forward="false" selection-start-line="26" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
+            <state relative-caret-position="592">
+              <caret line="107" column="50" lean-forward="false" selection-start-line="107" selection-start-column="50" selection-end-line="107" selection-end-column="50" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="hidden.mak" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/templates/form/hidden.mak">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="180">
+              <caret line="10" column="13" lean-forward="true" selection-start-line="10" selection-start-column="13" selection-end-line="10" selection-end-column="13" />
               <folding />
             </state>
           </provider>
@@ -95,7 +105,6 @@
       <find>geometry =</find>
       <find>coordsSet</find>
       <find>base.js</find>
-      <find>getMapWidget</find>
       <find>renderreadonlyfor</find>
       <find>if</find>
       <find>false</find>
@@ -122,6 +131,7 @@
       <find>dealarea</find>
       <find>addDealLocation</find>
       <find>zoomToDealLocation</find>
+      <find>getMapWidget</find>
     </findStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$/templates/form/readonly</dir>
@@ -137,9 +147,7 @@
         <option value="$PROJECT_DIR$/static/js/maps/drawPolygon.js" />
         <option value="$PROJECT_DIR$/static/lib/leaflet/Leaflet.draw.js" />
         <option value="$PROJECT_DIR$/static/js/maps/package.json" />
-        <option value="$PROJECT_DIR$/templates/form/hidden.mak" />
         <option value="$PROJECT_DIR$/../development.ini" />
-        <option value="$PROJECT_DIR$/config/form.py" />
         <option value="$PROJECT_DIR$/templates/form/customMapMapping.mak" />
         <option value="$PROJECT_DIR$/customization/omm/templates/activities/details.mak" />
         <option value="$PROJECT_DIR$/customization/omm/templates/form/readonly/form.mak" />
@@ -147,9 +155,11 @@
         <option value="$PROJECT_DIR$/protocols/activity_protocol.py" />
         <option value="$PROJECT_DIR$/protocols/protocol.py" />
         <option value="$PROJECT_DIR$/views/form.py" />
-        <option value="$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js" />
         <option value="$PROJECT_DIR$/templates/map/mapform.mak" />
         <option value="$PROJECT_DIR$/static/js/maps/form.js" />
+        <option value="$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js" />
+        <option value="$PROJECT_DIR$/templates/form/hidden.mak" />
+        <option value="$PROJECT_DIR$/config/form.py" />
       </list>
     </option>
   </component>
@@ -301,7 +311,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/.." />
     <property name="settings.editor.selected.configurable" value="editing.templates" />
-    <property name="SearchEverywhereHistoryKey" value="mapfor&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;form&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/views/form.py&#10;form.py&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/config/form.py&#10;form.js&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/js/maps/form.js&#10;act&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/protocols/activity_protocol.py&#10;draw&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/js/maps/drawPolygonFeature.js&#10;custommapmapping&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;mapfo&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;details.m&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/details.mak&#10;deta&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/details.mak&#10;map.mak&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/map_view.mak&#10;FORM&#9;null&#9;null&#10;mapform&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;form.&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/config/form.py&#10;custommap&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;mapform.ma&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;activit&#9;null&#9;null&#10;marker.p&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/lib/OpenLayers/img/marker.png&#10;leaflet&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/css/leaflet.css" />
+    <property name="SearchEverywhereHistoryKey" value="form.py&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/config/form.py&#10;hidde&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/hidden.mak&#10;mapform&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;mapfor&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;form&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/views/form.py&#10;form.js&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/js/maps/form.js&#10;act&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/protocols/activity_protocol.py&#10;draw&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/js/maps/drawPolygonFeature.js&#10;custommapmapping&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;mapfo&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;details.m&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/details.mak&#10;deta&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/details.mak&#10;map.mak&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/map_view.mak&#10;FORM&#9;null&#9;null&#10;form.&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/config/form.py&#10;custommap&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;mapform.ma&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;activit&#9;null&#9;null&#10;marker.p&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/lib/OpenLayers/img/marker.png&#10;leaflet&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/css/leaflet.css" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -390,8 +400,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1024" y="24" width="1857" height="1212" extended-state="6" />
-    <editor active="true" />
+    <frame x="65" y="-4" width="1855" height="1204" extended-state="6" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3283721" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -405,9 +414,9 @@
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32946378" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="SciView" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32946378" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.28634605" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20121615" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.46139535" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21767442" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -659,13 +668,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/templates/form/hidden.mak">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="72">
-          <caret line="4" column="20" lean-forward="false" selection-start-line="4" selection-start-column="20" selection-end-line="4" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/config/files.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -774,34 +776,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/config/form.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="212">
-          <caret line="957" column="20" lean-forward="true" selection-start-line="957" selection-start-column="20" selection-end-line="957" selection-end-column="20" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/customization/omm/templates/activities/details.mak">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="434">
           <caret line="58" column="13" lean-forward="false" selection-start-line="58" selection-start-column="13" selection-end-line="58" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/views/form.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="259">
-          <caret line="998" column="4" lean-forward="false" selection-start-line="998" selection-start-column="4" selection-end-line="998" selection-end-column="4" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-718">
-          <caret line="18" column="7" lean-forward="true" selection-start-line="11" selection-start-column="4" selection-end-line="18" selection-end-column="7" />
           <folding />
         </state>
       </provider>
@@ -816,16 +794,48 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/templates/map/mapform.mak">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="54" column="20" lean-forward="false" selection-start-line="54" selection-start-column="20" selection-end-line="54" selection-end-column="20" />
+        <state relative-caret-position="108">
+          <caret line="48" column="51" lean-forward="true" selection-start-line="48" selection-start-column="51" selection-end-line="48" selection-end-column="51" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/js/maps/form.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="234">
-          <caret line="49" column="27" lean-forward="true" selection-start-line="49" selection-start-column="27" selection-end-line="49" selection-end-column="27" />
+        <state relative-caret-position="108">
+          <caret line="69" column="0" lean-forward="false" selection-start-line="69" selection-start-column="0" selection-end-line="69" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="592">
+          <caret line="107" column="50" lean-forward="false" selection-start-line="107" selection-start-column="50" selection-end-line="107" selection-end-column="50" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/form/hidden.mak">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="10" column="13" lean-forward="true" selection-start-line="10" selection-start-column="13" selection-end-line="10" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/views/form.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="563">
+          <caret line="998" column="4" lean-forward="false" selection-start-line="998" selection-start-column="4" selection-end-line="998" selection-end-column="4" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config/form.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="431">
+          <caret line="2285" column="60" lean-forward="false" selection-start-line="2285" selection-start-column="60" selection-end-line="2285" selection-end-column="60" />
           <folding />
         </state>
       </provider>

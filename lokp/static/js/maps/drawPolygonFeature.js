@@ -6,6 +6,9 @@
 
 var initDrawPolygonControl = function (map) {
 
+
+
+
     var editableLayers = new L.FeatureGroup();
     map.addLayer(editableLayers);
 
@@ -79,4 +82,31 @@ var initDrawPolygonControl = function (map) {
         $geometry.val(JSON.stringify(layerJSON.geometry));
 
     });
+
+    // TODO: if the layer is edited, the coordinates in the geometry field have to be adjusted!!
+    // TODO: old geometry layer has to be deleted
+
+    addExistingGeometries(map, editableLayers)
+
+}
+
+function addExistingGeometries(map, editableLayers){
+    var $geometryField = $(map.getContainer()).closest('div.taggroup').find('input[name = "geometry"]')
+    var geometryVal = $geometryField.val(); // string
+
+    if (geometryVal !== "" && geometryVal !== null) {   // check for empty geometries
+        // remove " in string for JSON.parse to work
+        var geometryJSON = JSON.parse(geometryVal);
+
+        if (geometryJSON.type == "Point") {
+            var coord = geometryJSON.coordinates;
+            var coordLatLon = coord.reverse();
+            editableLayers.addLayer(L.marker(coordLatLon));
+        }
+        if (geometryJSON.type == "Polygon") {
+            var geoJsonLayer = L.geoJSON(geometryJSON)
+            editableLayers.addLayer(geoJsonLayer);
+        }
+
+    }
 }
