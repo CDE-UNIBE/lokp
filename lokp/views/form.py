@@ -676,7 +676,7 @@ def renderReadonlyForm(request, itemType, itemJson):
     return {
         'form': html,
         'geometry': geometry,
-        'dealAreas': dealAreas
+        'dealAreas': json.dumps(dealAreas)
     }
 
 

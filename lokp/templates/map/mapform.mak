@@ -45,6 +45,7 @@
 
             print('geometry from mako', geometry)
             print('dealAreas from mako', dealAreas)
+
         %>
 
     var bbox = null;
@@ -54,8 +55,8 @@
                     coordsSet = true;
                     ##  doesn't work with different name!! - but why does it work with dealArea?
                     var geometry = ${geometry | n};
-
-                    ##  var dealAreas = ${dealAreas | n};
+                        ## | applies escape filter, see http://docs.makotemplates.org/en/latest/filtering.html
+                    var dealAreas = ${dealAreas | n};
                     var zoomlevel = 13;
                     ##     % elif '_LOCATION_' in request.cookies:
                     ##         ## Try to get the coordinates from the _LOCATION_ cookie

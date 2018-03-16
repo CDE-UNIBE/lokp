@@ -17,7 +17,7 @@ function createFormMap(mapId, options) {
     });
 
     console.log('geometry', geometry);
-    // console.log('dealAreas', dealAreas);
+    console.log('dealAreas', dealAreas);
     /*
         map.on('click', function(e){
             var $geometry = $(this.getContainer()).closest('div.taggroup').find('input[name = "geometry"]').val(1);
@@ -86,15 +86,18 @@ function createFormMap(mapId, options) {
     }
 // TODO: create geometry from coordinates withing hidden geometry field and add it to map.
 
-    // get geometry field
-    var $geometry = $(map.getContainer()).closest('div.taggroup').find('input[name = "geometry"]')
-
-    if ($geometry !== null){
-        var coordinates = $geometry.val
-        console.log('createGeometryLayer from coords', coordinates);
-    }
-
-    // $geometry.val(JSON.stringify(layerJSON.geometry));
+    // // get geometry field
+    // var $geometry = $(map.getContainer()).closest('div.taggroup').find('input[name = "geometry"]')
+    //
+    // if ($geometry !== null){
+    //
+    //
+    //
+    //     var coordinates = $geometry.val
+    //     console.log('createGeometryLayer from coords', coordinates);
+    // }
+    //
+    // // $geometry.val(JSON.stringify(layerJSON.geometry));
 
 
 }
@@ -110,14 +113,24 @@ function createFormMap(mapId, options) {
  * @param geometry      Polygon or Point which is added to map
  */
 function addDealLocation(map, geometry) {
-    console.log('addDealLocation');
-    L.marker([geometry.coordinates]).addTo(map); // custom item can be set here
-    // TODO: create marker with coordinates
+
+    // get geometry field
+    var $geometry = $(map.getContainer()).closest('div.taggroup').find('input[name = "geometry"]')
+
+    if ($geometry !== null) {
+        console.log('addDealLocation');
+
+        // change coordinates to lat/long
+        var coordLatLong = geometry.coordinates.reverse();
+
+        L.marker(geometry.coordinates).addTo(map); // custom item can be set here
+    }
 }
 
-
 function zoomToDealLocation(map, geometry) {
-    // TODO
+    var coordLatLong = geometry.coordinates.reverse();
+    //L.panTo(coordLatLong);
+    //L.setZoom(5);
 }
 
 /**
@@ -126,4 +139,27 @@ function zoomToDealLocation(map, geometry) {
  */
 function addDealAreas(map, dealAreas) {
 
+    dealAreas.forEach(function (polygon) {
+        // convert to leaflet polygon
+        var polyCoords = polygon.coordinates;
+        polyCoords = polyCoords[0]; // remove unnecessary array depth
+
+        // change each long lat coordinate within polyCoords to lat long
+        polyCoordsLatLon = changeToLatLon(polyCoords);
+
+        console.log('polyCoordsLatLon', polyCoordsLatLon);
+        console.log('polyCoords', polyCoords);
+        var polygonL = L.polygon(polyCoordsLatLon, {color: 'red'}).addTo(map);
+    });
+}
+
+
+function changeToLatLon(polyCoords) {
+    var polyCoordsLatLon = [];
+    for (var i = 0; i < polyCoords.length; i++) {
+        var coordLongLat = polyCoords[i];
+        var coordLatLong = coordLongLat.reverse();
+        polyCoordsLatLon.push(coordLatLong);
+    }
+    return polyCoordsLatLon;
 }

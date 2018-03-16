@@ -14,7 +14,7 @@ var initDrawPolygonControl = function (map) {
             shadowUrl: null,
             iconAnchor: new L.Point(12, 12),
             iconSize: new L.Point(24, 24),
-            iconUrl: 'static/css/images/marker-icon-2x.png' // activity is part of url but shouldn't be
+            iconUrl: 'static/css/images/marker-icon-2x.png'
         }
     });
 
