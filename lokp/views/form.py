@@ -670,7 +670,7 @@ def renderReadonlyForm(request, itemType, itemJson):
     geometry = json.dumps(
         itemJson['geometry']) if 'geometry' in itemJson else None
 
-    # extract deal areas (from itemJson) as polygons
+    # extract deal areas as polygons, contained in dictionary
     dealAreas = getTaggroupGeometries(itemJson)
 
     return {
@@ -998,8 +998,9 @@ def mako_renderer_compare(tmpl_name, **kw):
 # get polygons (geometries) from itemJson
 def getTaggroupGeometries(itemJson):
     taggroups = itemJson['taggroups']
-    dealAreas = [];
+    dealAreas = dict();
     for taggroup in taggroups:
         if 'geometry' in taggroup:
-            dealAreas.append(taggroup.get('geometry'))
+            key = taggroup.get('main_tag').get('key')
+            dealAreas[key] = (taggroup.get('geometry'))
     return dealAreas

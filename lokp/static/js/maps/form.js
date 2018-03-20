@@ -7,7 +7,7 @@ function createFormMap(mapId, options) {
     var activeBaseLayer = Object.values(baseLayers)[0];
     var map = L.map(mapId, {
         layers: activeBaseLayer,  // Initially only add first layer
-        drawControl: true           // enables display of draw toolbar
+        //drawControl: true           // enables display of draw toolbar
     });
     map.on('moveend', function (e) {
         $.cookie('_LOCATION_', map.getBounds().toBBoxString(), {expires: 7});
@@ -71,7 +71,7 @@ function createFormMap(mapId, options) {
         // TODO: make this work for edit as well (geometries are not passed to edit mode)
     }
     else {
-        // adds the location point of the deal shown in details page to the detail's page map
+        // Readonly! Add point and polygon areas to details page
         addDealLocation(map, geometry); // geometry and dealAreas are defined in mapform.mak!!
         zoomToDealLocation(map, geometry);
         addDealAreas(map, dealAreas);
@@ -112,12 +112,15 @@ function zoomToDealLocation(map, geometry) {
 /**
  * @param map
  * @param dealAreas     Dictionary containing polygons for areas intended area, contract area current area
- // TODO: DICTIONARY INSTEAD OF LIST?
+
  // draw polygon when reloading page
  */
 function addDealAreas(map, dealAreas) {
+    // iterate over dictionary
 
-    dealAreas.forEach(function (polygon) {
+    var layerDictionary = [];
+    $.each(dealAreas, function (key, polygon) {  // method doku: http://api.jquery.com/jquery.each/
+        console.log(key + ": " + polygon)
         // convert to leaflet polygon
         var polyCoords = polygon.coordinates;
         polyCoords = polyCoords[0]; // remove unnecessary array depth
@@ -125,10 +128,15 @@ function addDealAreas(map, dealAreas) {
         // change each long lat coordinate within polyCoords to lat long
         polyCoordsLatLon = changeToLatLon(polyCoords);
 
-        console.log('polyCoordsLatLon', polyCoordsLatLon);
-        console.log('polyCoords', polyCoords);
-        var polygonL = L.polygon(polyCoordsLatLon, {color: 'red'}).addTo(map);
+        var polygonL = L.polygon(polyCoordsLatLon, {color: 'blue'});
+        layerDictionary[key] = polygonL;
+
+        // TODO: add checkbox (html code can be passed with key) http://leafletjs.com/reference-1.3.0.html#control-layers
     });
+
+    // add Layers to layer control
+    L.control.layers([], layerDictionary).addTo(map);
+
 }
 
 /**

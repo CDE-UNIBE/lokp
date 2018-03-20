@@ -29,7 +29,7 @@
 % endif
 ## container containing map
 
-<div id="${field.title}" style="height: 400px;"> ## variable title is passed by config/form.py/getMapWidget field?
+<div id="${field.title}" style="height: 400px;"> ## variable title is passed by config/form.py/getMapWidget
     ## Loading indicator
 
     <div class="preloader-wrapper big active map-loader" data-map-id="${field.title}">
@@ -199,7 +199,6 @@
 
 
 
-## Renders mapform.mak?
 ${template.render(request=request, geometry=geometry, editmode=editmode, _=_)}
 
 % if field.errormsg:

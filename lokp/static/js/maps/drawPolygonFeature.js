@@ -6,9 +6,6 @@
 
 var initDrawPolygonControl = function (map) {
 
-
-
-
     var editableLayers = new L.FeatureGroup();
     map.addLayer(editableLayers);
 
@@ -17,7 +14,7 @@ var initDrawPolygonControl = function (map) {
             shadowUrl: null,
             iconAnchor: new L.Point(12, 12),
             iconSize: new L.Point(24, 24),
-            iconUrl: 'static/css/images/marker-icon-2x.png'
+            iconUrl: 'static/css/images/marker-icon-2x.png'  // todo: find a way to remove activities in url
         }
     });
 
@@ -95,7 +92,6 @@ function addExistingGeometries(map, editableLayers){
     var geometryVal = $geometryField.val(); // string
 
     if (geometryVal !== "" && geometryVal !== null) {   // check for empty geometries
-        // remove " in string for JSON.parse to work
         var geometryJSON = JSON.parse(geometryVal);
 
         if (geometryJSON.type == "Point") {
