@@ -157,10 +157,6 @@ def getActiveFilters(request):
                 displayKey = tag.getKey().getTranslatedName()
 
             for v in queryparams[q]:
-                v = v
-                q = q
-                if type(displayKey) != str:
-                    displayKey = displayKey
                 # Use translated value for display
                 displayValue = v
                 if tag is not None:

@@ -29,6 +29,7 @@ requires = [
     'transaction==2.1.2',
     'waitress==1.1.0',
     'zope.sqlalchemy==0.7.7',
+    'fabric3==1.14.post1',
 ]
 
 tests_require = [
@@ -38,6 +39,10 @@ tests_require = [
     'requests==2.18.4',
     'selenium==3.8.1',
     'WebTest==2.0.29',
+]
+
+deploy_require = [
+    'pyramid_crow==0.4.2',
 ]
 
 setup(
@@ -60,6 +65,7 @@ setup(
     zip_safe=False,
     extras_require={
         'testing': tests_require,
+        'deploy': deploy_require,
     },
     install_requires=requires,
     entry_points={

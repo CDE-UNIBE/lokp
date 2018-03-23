@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
+    <list id="e4a6555f-c9e9-4096-91ac-ff466dba6394" name="recent changes" comment="" />
     <list default="true" id="95faa834-846c-497b-a060-b09219218849" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/config/form.py" afterPath="$PROJECT_DIR$/config/form.py" />
-      <change beforePath="$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js" afterPath="$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js" />
-      <change beforePath="$PROJECT_DIR$/static/js/maps/form.js" afterPath="$PROJECT_DIR$/static/js/maps/form.js" />
-      <change beforePath="$PROJECT_DIR$/templates/form/hidden.mak" afterPath="$PROJECT_DIR$/templates/form/hidden.mak" />
-    </list>
-    <list id="e4a6555f-c9e9-4096-91ac-ff466dba6394" name="recent changes" comment="">
-      <change beforePath="$PROJECT_DIR$/customization/omm/templates/activities/details.mak" afterPath="$PROJECT_DIR$/customization/omm/templates/activities/details.mak" />
-      <change beforePath="$PROJECT_DIR$/customization/omm/templates/form/readonly/form.mak" afterPath="$PROJECT_DIR$/customization/omm/templates/form/readonly/form.mak" />
+      <change beforePath="$PROJECT_DIR$/../docs/installation.rst" afterPath="$PROJECT_DIR$/../docs/installation.rst" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/protocols/activity_protocol.py" afterPath="$PROJECT_DIR$/protocols/activity_protocol.py" />
+      <change beforePath="$PROJECT_DIR$/protocols/stakeholder_protocol.py" afterPath="$PROJECT_DIR$/protocols/stakeholder_protocol.py" />
+      <change beforePath="$PROJECT_DIR$/utils/form.py" afterPath="$PROJECT_DIR$/utils/form.py" />
+      <change beforePath="$PROJECT_DIR$/views/charts.py" afterPath="$PROJECT_DIR$/views/charts.py" />
+      <change beforePath="$PROJECT_DIR$/views/files.py" afterPath="$PROJECT_DIR$/views/files.py" />
+      <change beforePath="$PROJECT_DIR$/views/filter.py" afterPath="$PROJECT_DIR$/views/filter.py" />
+      <change beforePath="$PROJECT_DIR$/../production.ini.sample" afterPath="$PROJECT_DIR$/../production.ini.sample" />
+      <change beforePath="$PROJECT_DIR$/../setup.py" afterPath="$PROJECT_DIR$/../setup.py" />
     </list>
     <ignored path="$PROJECT_DIR$/.idea/shelf/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
-    <file path="$PROJECT_DIR$/customization/omm/templates/form/readonly/form.mak" ignored="false" />
-    <file path="$PROJECT_DIR$/customization/omm/templates/activities/details.mak" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,7 +23,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/lokp$development.coverage" NAME="development Coverage Results" MODIFIED="1521203727567" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/lokp$development.coverage" NAME="development Coverage Results" MODIFIED="1521803907458" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
   <component name="DatabaseView">
     <option name="SHOW_INTERMEDIATE" value="true" />
@@ -40,22 +41,26 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="form.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/views/form.py">
+      <file leaf-file-name="form.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/utils/form.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="563">
-              <caret line="998" column="4" lean-forward="false" selection-start-line="998" selection-start-column="4" selection-end-line="998" selection-end-column="4" />
-              <folding />
+            <state relative-caret-position="251">
+              <caret line="947" column="126" lean-forward="false" selection-start-line="947" selection-start-column="126" selection-end-line="947" selection-end-column="126" />
+              <folding>
+                <element signature="e#0#11#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="form.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/config/form.py">
+      <file leaf-file-name="filter.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/views/filter.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="431">
-              <caret line="2285" column="60" lean-forward="false" selection-start-line="2285" selection-start-column="60" selection-end-line="2285" selection-end-column="60" />
-              <folding />
+            <state relative-caret-position="2142">
+              <caret line="119" column="46" lean-forward="true" selection-start-line="119" selection-start-column="46" selection-end-line="119" selection-end-column="46" />
+              <folding>
+                <element signature="e#0#19#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -63,7 +68,7 @@
       <file leaf-file-name="form.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/js/maps/form.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="108">
+            <state relative-caret-position="1242">
               <caret line="69" column="0" lean-forward="false" selection-start-line="69" selection-start-column="0" selection-end-line="69" selection-end-column="0" />
               <folding />
             </state>
@@ -73,8 +78,8 @@
       <file leaf-file-name="drawPolygonFeature.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="592">
-              <caret line="107" column="50" lean-forward="false" selection-start-line="107" selection-start-column="50" selection-end-line="107" selection-end-column="50" />
+            <state relative-caret-position="1926">
+              <caret line="107" column="1" lean-forward="false" selection-start-line="107" selection-start-column="1" selection-end-line="107" selection-end-column="1" />
               <folding />
             </state>
           </provider>
@@ -84,7 +89,7 @@
         <entry file="file://$PROJECT_DIR$/templates/form/hidden.mak">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="180">
-              <caret line="10" column="13" lean-forward="true" selection-start-line="10" selection-start-column="13" selection-end-line="10" selection-end-column="13" />
+              <caret line="10" column="13" lean-forward="false" selection-start-line="10" selection-start-column="13" selection-end-line="10" selection-end-column="13" />
               <folding />
             </state>
           </provider>
@@ -102,7 +107,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>geometry =</find>
       <find>coordsSet</find>
       <find>base.js</find>
       <find>renderreadonlyfor</find>
@@ -132,6 +136,7 @@
       <find>addDealLocation</find>
       <find>zoomToDealLocation</find>
       <find>getMapWidget</find>
+      <find>tagsdata</find>
     </findStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$/templates/form/readonly</dir>
@@ -154,12 +159,13 @@
         <option value="$PROJECT_DIR$/views/activities.py" />
         <option value="$PROJECT_DIR$/protocols/activity_protocol.py" />
         <option value="$PROJECT_DIR$/protocols/protocol.py" />
-        <option value="$PROJECT_DIR$/views/form.py" />
         <option value="$PROJECT_DIR$/templates/map/mapform.mak" />
         <option value="$PROJECT_DIR$/static/js/maps/form.js" />
         <option value="$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js" />
         <option value="$PROJECT_DIR$/templates/form/hidden.mak" />
         <option value="$PROJECT_DIR$/config/form.py" />
+        <option value="$PROJECT_DIR$/views/form.py" />
+        <option value="$PROJECT_DIR$/utils/form.py" />
       </list>
     </option>
   </component>
@@ -190,8 +196,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="Scratches" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -311,7 +317,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/.." />
     <property name="settings.editor.selected.configurable" value="editing.templates" />
-    <property name="SearchEverywhereHistoryKey" value="form.py&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/config/form.py&#10;hidde&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/hidden.mak&#10;mapform&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;mapfor&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;form&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/views/form.py&#10;form.js&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/js/maps/form.js&#10;act&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/protocols/activity_protocol.py&#10;draw&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/js/maps/drawPolygonFeature.js&#10;custommapmapping&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;mapfo&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;details.m&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/details.mak&#10;deta&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/details.mak&#10;map.mak&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/map_view.mak&#10;FORM&#9;null&#9;null&#10;form.&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/config/form.py&#10;custommap&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;mapform.ma&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;activit&#9;null&#9;null&#10;marker.p&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/lib/OpenLayers/img/marker.png&#10;leaflet&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/css/leaflet.css" />
+    <property name="SearchEverywhereHistoryKey" value="form.p&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/utils/form.py&#10;form.py&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/config/form.py&#10;hidde&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/hidden.mak&#10;mapform&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;mapfor&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;form&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/views/form.py&#10;form.js&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/js/maps/form.js&#10;act&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/protocols/activity_protocol.py&#10;draw&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/js/maps/drawPolygonFeature.js&#10;custommapmapping&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;mapfo&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;details.m&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/details.mak&#10;deta&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/details.mak&#10;map.mak&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/map_view.mak&#10;FORM&#9;null&#9;null&#10;form.&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/config/form.py&#10;custommap&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;mapform.ma&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;activit&#9;null&#9;null&#10;marker.p&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/lib/OpenLayers/img/marker.png&#10;leaflet&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/css/leaflet.css" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -400,28 +406,29 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="-4" width="1855" height="1204" extended-state="6" />
+    <frame x="1024" y="24" width="1855" height="1204" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3283721" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32744187" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32744187" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3293023" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32744187" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3293023" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19292426" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19513543" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32946378" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="SciView" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32946378" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20121615" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21767442" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
@@ -492,12 +499,12 @@
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/protocols/activity_protocol.py</url>
-          <line>1547</line>
+          <line>1552</line>
           <option name="timeStamp" value="36" />
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/protocols/activity_protocol.py</url>
-          <line>1583</line>
+          <line>1588</line>
           <option name="timeStamp" value="39" />
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
@@ -514,20 +521,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/static/lib/chroma/chroma.min.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="576">
-          <caret line="31" column="1498" lean-forward="false" selection-start-line="31" selection-start-column="1498" selection-end-line="31" selection-end-column="1498" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/lib/chroma/chroma.min.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="234">
-          <caret line="31" column="1673" lean-forward="false" selection-start-line="31" selection-start-column="1673" selection-end-line="31" selection-end-column="1673" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/static/lib/d3/d3.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -780,7 +773,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="434">
           <caret line="58" column="13" lean-forward="false" selection-start-line="58" selection-start-column="13" selection-end-line="58" selection-end-column="13" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -788,7 +780,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="468">
           <caret line="26" column="0" lean-forward="false" selection-start-line="26" selection-start-column="0" selection-end-line="26" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -802,7 +793,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/static/js/maps/form.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="108">
+        <state relative-caret-position="1242">
           <caret line="69" column="0" lean-forward="false" selection-start-line="69" selection-start-column="0" selection-end-line="69" selection-end-column="0" />
           <folding />
         </state>
@@ -810,8 +801,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="592">
-          <caret line="107" column="50" lean-forward="false" selection-start-line="107" selection-start-column="50" selection-end-line="107" selection-end-column="50" />
+        <state relative-caret-position="1926">
+          <caret line="107" column="1" lean-forward="false" selection-start-line="107" selection-start-column="1" selection-end-line="107" selection-end-column="1" />
           <folding />
         </state>
       </provider>
@@ -819,15 +810,25 @@
     <entry file="file://$PROJECT_DIR$/templates/form/hidden.mak">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="180">
-          <caret line="10" column="13" lean-forward="true" selection-start-line="10" selection-start-column="13" selection-end-line="10" selection-end-column="13" />
+          <caret line="10" column="13" lean-forward="false" selection-start-line="10" selection-start-column="13" selection-end-line="10" selection-end-column="13" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/views/filter.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2142">
+          <caret line="119" column="46" lean-forward="true" selection-start-line="119" selection-start-column="46" selection-end-line="119" selection-end-column="46" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/views/form.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="563">
-          <caret line="998" column="4" lean-forward="false" selection-start-line="998" selection-start-column="4" selection-end-line="998" selection-end-column="4" />
+        <state relative-caret-position="251">
+          <caret line="278" column="30" lean-forward="false" selection-start-line="278" selection-start-column="30" selection-end-line="278" selection-end-column="30" />
           <folding />
         </state>
       </provider>
@@ -835,8 +836,18 @@
     <entry file="file://$PROJECT_DIR$/config/form.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="431">
-          <caret line="2285" column="60" lean-forward="false" selection-start-line="2285" selection-start-column="60" selection-end-line="2285" selection-end-column="60" />
+          <caret line="2342" column="5" lean-forward="true" selection-start-line="2342" selection-start-column="5" selection-end-line="2342" selection-end-column="5" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/form.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="251">
+          <caret line="947" column="126" lean-forward="false" selection-start-line="947" selection-start-column="126" selection-end-line="947" selection-end-column="126" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

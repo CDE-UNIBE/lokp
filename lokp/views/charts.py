@@ -1,8 +1,10 @@
 from geoalchemy2 import functions as geofunctions
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.renderers import render_to_response
+from pyramid.testing import DummyRequest
 from pyramid.view import view_config
 from sqlalchemy import cast, Float, func, distinct, select
+from webob.multidict import MultiDict
 
 from lokp.config.customization import get_customized_template_path
 from lokp.models import Stakeholder, SH_Tag_Group, SH_Tag, SH_Key, SH_Value, \
@@ -115,29 +117,29 @@ class EvaluationView(BaseView):
             ret['msg'] = "Parameter 'translate[\'keys\']' needs to be an "
             "array."
             return ret
-            for k in translate_keys:
-                if not isinstance(k, list):
-                    ret['msg'] = "Value of 'translate[\'keys\']' needs to be "
-                    "an array of arrays."
-                    return ret
+            # for k in translate_keys:
+            #     if not isinstance(k, list):
+            #         ret['msg'] = "Value of 'translate[\'keys\']' needs to be "
+            #         "an array of arrays."
+            #         return ret
         a_ids = json_data.get('a_ids', [])
         if not isinstance(a_ids, list):
             ret['msg'] = "Parameter 'a_ids' needs to be an array."
             return ret
-            for i in a_ids:
-                if not isinstance(i, str):
-                    ret['msg'] = "Entries of parameter 'a_ids' need to be "
-                    "strings (the UUIDs of Activities)"
-                    return ret
+            # for i in a_ids:
+            #     if not isinstance(i, str):
+            #         ret['msg'] = "Entries of parameter 'a_ids' need to be "
+            #         "strings (the UUIDs of Activities)"
+            #         return ret
         sh_ids = json_data.get('sh_ids', [])
         if not isinstance(sh_ids, list):
             ret['msg'] = "Parameter 'sh_ids' needs to be an array."
             return ret
-            for i in sh_ids:
-                if not isinstance(i, str):
-                    ret['msg'] = "Entries of parameter 'sh_ids' need to be "
-                    "strings (the UUIDs of Stakeholders)"
-                    return ret
+            # for i in sh_ids:
+            #     if not isinstance(i, str):
+            #         ret['msg'] = "Entries of parameter 'sh_ids' need to be "
+            #         "strings (the UUIDs of Stakeholders)"
+            #         return ret
         if self.db_item == Activity:
             this_id_filter = a_ids
             other_id_filter = sh_ids

@@ -102,7 +102,7 @@ virtualenv with administrative privileges::
 
 You can then create a new virtual environment::
 
-    $ virtualenv env
+    $ virtualenv --python=/usr/bin/python3.6 env
     
 This will create a new folder named ``env`` which contains the virtual 
 environment.
@@ -137,6 +137,9 @@ your command line.
 You can now install the dependencies of the project::
 
     (env) $ pip install -e .
+
+.. NOTE::
+    If you are deploying the application, use `(env) $ pip install -e .[deploy]`
     
 This may take a while as all of the libraries on which LOKP depends are being 
 installed. If all went well, you should see a message similar to:
