@@ -6,6 +6,9 @@
 
 var initDrawPolygonControl = function (map, geometry_type) {
 
+    // get geometry field in which drawn coordinates are written
+    var $geometry = $(map.getContainer()).closest('div.taggroup').find('input[name = "geometry"]')
+
     var editableLayers = new L.FeatureGroup();
     map.addLayer(editableLayers);
 
@@ -18,27 +21,39 @@ var initDrawPolygonControl = function (map, geometry_type) {
         var type = e.layerType,
             layer = e.layer;
 
-        if (type === 'marker') {
-            layer.bindPopup('A popup!');
-        }
-
+        clearDrawnElements(map, editableLayers);
         editableLayers.addLayer(layer);
+
     });
 
     // add listener which writes the layer's coordinates to the form once the layer is created
     map.on('draw:created', function (e) {
         var layerJSON = e.layer.toGeoJSON();
 
-        // get geometry field
-        var $geometry = $(this.getContainer()).closest('div.taggroup').find('input[name = "geometry"]')
-
         // write json to geometry field
         $geometry.val(JSON.stringify(layerJSON.geometry));
 
     });
 
+    map.on('draw:deleted', function (e) {
+        $geometry.val("");
+
+    });
+
+    map.on('draw:edited', function (e, editableLayers) { // Why is editable layers not visible here?
+        var layers = e.layers._layers; // layers is a dictionary of edited layers
+        var layer;
+        // get layer from dictionary (layers should only have one key)
+        for (var key in layers){
+            layer = layers[key];
+        }
+
+        var layerJSON = layer.toGeoJSON();
+        $geometry.val(JSON.stringify(layerJSON.geometry));
+    });
+
+
     // TODO: if the layer is edited, the coordinates in the geometry field have to be adjusted!!
-    // TODO: old geometry layer has to be deleted
 
     addExistingGeometries(map, editableLayers)
 
@@ -135,3 +150,11 @@ function defineDrawOptions(geometry_type, editableLayers) {
 
     return drawOptions;
 }
+
+// removes all layers within map
+function clearDrawnElements(map, editableLayers) {
+    for (var key in editableLayers._layers) { // iterate over each layer
+        var layer = editableLayers._layers[key];
+        editableLayers.removeLayer(layer);
+    }
+};
