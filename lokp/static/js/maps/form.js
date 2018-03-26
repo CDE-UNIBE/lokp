@@ -65,7 +65,8 @@ function createFormMap(mapId, options) {
     initMapSearch(mapId);
 
     if (options.readonly !== true) {
-        initDrawPolygonControl(map);
+        var geometry_type = options.geometry_type['geometry_type']
+        initDrawPolygonControl(map, geometry_type);
 
 
         // TODO: make this work for edit as well (geometries are not passed to edit mode)

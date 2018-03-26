@@ -295,7 +295,7 @@ ${field.end_mapping()}
     deform.addCallback(
             '${field.title}',
             function (oid) {
-                createFormMap(oid, {pointsVisible: true, pointsCluster: true});
+                createFormMap(oid, {pointsVisible: true, pointsCluster: true, geometry_type: ${geometry_type}}); // get geometry_type variable from python
             }
     );
 </script>

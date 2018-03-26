@@ -736,7 +736,7 @@ class ConfigThematicgroup(object):
         if self.getMap() is not None:
             # If there is some map data in this thematic group, get the widget
             # and add it to the form.
-            mapWidget = getMapWidget(self, geometry_type='point')
+            mapWidget = getMapWidget(self, geometry_type={'geometry_type': 'point'})
             thg_form.add(mapWidget)
 
         # Iterates over each taggroup in this thematic group and creates a form (tg_form) for each taggroup
@@ -991,7 +991,7 @@ class ConfigTaggroup(object):
         if self.getMap() is not None:
             # If there is some map data in this tag group, get the widget
             # and add it to the form.
-            mapWidget = getMapWidget(self, geometry_type='polygon')
+            mapWidget = getMapWidget(self, {'geometry_type': 'polygon'})
             tg_form.add(mapWidget)
 
         return tg_form
