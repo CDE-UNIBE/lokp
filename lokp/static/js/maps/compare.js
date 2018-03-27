@@ -7,275 +7,162 @@
  *
  * tForChangesInThisSection
  */
+function createReviewMap(mapId) {
+    console.log('CREATE REVIEW MAP');
 
-var geographicProjection = new OpenLayers.Projection("EPSG:4326");
-var sphericalMercatorProjection = new OpenLayers.Projection("EPSG:900913");
-var geojsonFormat = new OpenLayers.Format.GeoJSON({
-    'internalProjection': sphericalMercatorProjection,
-    'externalProjection': geographicProjection
-});
-var refGeometryLayer,
-    newGeometryLayer;
-
-$(document).ready(function() {
-
-    /** Settings **/
-    pointsCluster = false;
-    pointsVisible = false;
-    mapInteractive = false;
-    contextLegendInformation = false;
-    polygonLoadOnStart = false;
-
-    /**
-     * Map and layers
-     */
-    var layers = getBaseLayers();
-
-    var refMarkerStyle = new OpenLayers.StyleMap({
-        'default': OpenLayers.Util.applyDefaults({
-            externalGraphic: '/static/img/pin_blue.png',
-            graphicHeight: 25,
-            graphicOpacity: 0.8,
-            graphicYOffset: -25
-        }, OpenLayers.Feature.Vector.style["default"])
+    var baseLayers = getBaseLayers();
+    var activeBaseLayer = Object.values(baseLayers)[0];
+    var map = L.map(mapId, {
+        layers: activeBaseLayer,  // Initially only add first layer
+        //drawControl: true           // enables display of draw toolbar
     });
-    refGeometryLayer = new OpenLayers.Layer.Vector('RefGeometry', {
-        styleMap: refMarkerStyle
-    });
-    layers.push(refGeometryLayer);
+    map.setView([0, 0], 0);
 
-    var newMarkerStyle = new OpenLayers.StyleMap({
-        'default': OpenLayers.Util.applyDefaults({
-            externalGraphic: '/static/img/pin_yellow.png',
-            graphicHeight: 25,
-            graphicOpacity: 0.8,
-            graphicYOffset: -25
-        }, OpenLayers.Feature.Vector.style["default"])
-    });
-    newGeometryLayer = new OpenLayers.Layer.Vector('NewGeometry', {
-        styleMap: newMarkerStyle
-    });
-    layers.push(newGeometryLayer);
-
-    map = new OpenLayers.Map('googleMapNotFull', {
-        displayProjection: geographicProjection,
-        projection: sphericalMercatorProjection,
-        controls: [
-            new OpenLayers.Control.Attribution(),
-            new OpenLayers.Control.Navigation({
-                dragPanOptions: {
-                    enableKinetic: true
-                }
-            }),
-            new OpenLayers.Control.Zoom({
-                zoomInId: 'btn-zoom-in',
-                zoomOutId: 'btn-zoom-out'
-            })
-        ],
-        layers: layers
-    });
-    setBaseLayerByName(map, 'satelliteMap');
-    initializeThisPolygonContent();
-    initializeMapContent();
-    initializeContextLayers();
-    initializePolygonLayers();
-
-    /**
-     * Map Events
-     */
-     initializeBaseLayerControl();
-     initializeContextLayerControl();
-     initializePolygonLayerControl();
-
-    $('.form-map-menu-toggle').click(function() {
-        $('#form-map-menu-content').toggle();
-        var m = $('.form-map-compare-menu');
-        m.toggleClass('active');
-        if (m.hasClass('active')) {
-            $(this).button('close');
-        } else {
-            $(this).button('reset');
-        }
-        return false;
-    });
-
-    if (coordsSet === true) {
-
-        var refGeometry = geometry.ref;
-        var newGeometry = geometry.new;
-
-        if (refGeometry.geometry) {
-            refGeometryLayer.addFeatures(geojsonFormat.read(refGeometry.geometry));
-            var zoomExtent = refGeometryLayer.getDataExtent();
-        }
-        if (newGeometry.geometry) {
-            newGeometryLayer.addFeatures(geojsonFormat.read(newGeometry.geometry));
-            if (!refGeometry.geometry) {
-                var zoomExtent = newGeometryLayer.getDataExtent();
-            } else {
-                zoomExtent.extend(newGeometryLayer.getDataExtent());
-            }
-        }
-
-        // Zoom to the feature
-        map.zoomToExtent(zoomExtent);
-        // Adjust zoom level
-        map.zoomTo(Math.min(zoomlevel, map.getZoom()-1));
-    } else {
-        if (bbox) {
-            map.zoomToExtent(bbox, true);
-        } else {
-            map.zoomToMaxExtent();
-        }
-    }
-
-    $('.ttip').tooltip({
-        container: 'body'
-    });
-
-    $('.ttip-bottom').tooltip({
-        container: 'body',
-        placement: 'bottom'
-    });
-
-    $('#activityLayerToggle').change(function(e) {
-        if (e.target.value) {
-            toggleContentLayers(e.target.checked);
-        }
-    });
-
-    $('#newLayerToggle').change(function(e) {
-        newGeometryLayer.display(e.target.checked);
-    });
-    $('#refLayerToggle').change(function(e) {
-        refGeometryLayer.display(e.target.checked);
-    });
-});
+    // TODO: add both geometries to the map
 
 
-function initializeThisPolygonContent() {
-
-    if (refVersion === null || newVersion === null || identifier === null) return;
-
-    var handlePolygonContent = function(f, n, a, refOrNew) {
-        // Add the legend
-        var t = [];
-        var c = '#00CCFF';
-        if (refOrNew === 'new') {
-            c = '#FFCC00';
-        }
-        t.push(
-            '<li>',
-            '<div class="checkbox-modified-small">',
-            '<input class="input-top ' + refOrNew + '-area-layer-checkbox" type="checkbox" value="' + n + '" id="checkbox' + refOrNew + n + '" checked="checked">',
-            '<label for="checkbox' + refOrNew + n + '"></label>',
-            '</div>',
-            '<p class="context-layers-description">',
-            '<span class="vectorLegendSymbolSmall" style="',
-                'border: 2px solid ' + c + ';',
-            '"><span class="vectorLegendSymbolSmallInside" style="',
-                'background-color: ' + getColor(a) + ';',
-                'opacity: 0.5;',
-                'filter: alpha(opacity=50)',
-            '"></span></span>',
-            n,
-            '</p>',
-            '</li>'
-        );
-        $('#'+refOrNew+'MapLegend').append(t.join(''));
-
-        // Add the layer
-        var styleMap = new OpenLayers.StyleMap({
-            'default': getPolygonStyle(a, c)
-        });
-        var l = new OpenLayers.Layer.Vector(refOrNew+n, {
-            styleMap: styleMap
-        });
-        l.addFeatures([f]);
-        map.addLayer(l);
-        return l;
-    };
-
-    $.when(
-        $.ajax({
-            url: '/activities/geojson/' + identifier,
-            data: {
-                v: newVersion
-            },
-            cache: false
-        }),
-        $.ajax({
-            url: '/activities/geojson/' + identifier,
-            data: {
-                v: refVersion
-            },
-            cache: false
-        })
-    ).done(function(a1, a2) {
-        var allLayers = [];
-
-        var refFeatures = geojsonFormat.read(a1[0]);
-        // Add the polygon layers in the same order as the areaNames
-        for (var a in areaNames) {
-            $.each(refFeatures, function() {
-                // The name is the first (and only) attribute
-                for (var n in this.attributes) break;
-                var an = areaNames[a];
-                if ($.isArray(areaNames[a])) {
-                    an = areaNames[a][0];
-                }
-                if (n !== an) {
-                    if ("custom_area_names" in window) {
-                        n = custom_area_names[a];
-                    } else {
-                        return;
-                    }
-                }
-                allLayers.push(handlePolygonContent(this, n, a, 'new'));
-            });
-        }
-        $('.new-area-layer-checkbox').click(function(e) {
-            if (e.target.value) {
-                setPolygonLayerByName(map, 'new'+e.target.value, e.target.checked);
-            }
-        });
-
-        var newFeatures = geojsonFormat.read(a2[0]);
-        // Add the polygon layers in the same order as the areaNames
-        for (var a in areaNames) {
-            $.each(newFeatures, function() {
-                // The name is the first (and only) attribute
-                for (var n in this.attributes) break;
-                var an = areaNames[a];
-                if ($.isArray(areaNames[a])) {
-                    an = areaNames[a][0];
-                }
-                if (n !== an) {
-                    if ("custom_area_names" in window) {
-                        n = custom_area_names[a];
-                    } else {
-                        return;
-                    }
-                }
-                allLayers.push(handlePolygonContent(this, n, a, 'ref'));
-            });
-        }
-
-        $('.ref-area-layer-checkbox').click(function(e) {
-            if (e.target.value) {
-                setPolygonLayerByName(map, 'ref'+e.target.value, e.target.checked);
-            }
-        });
-
-        // Zoom
-        var bbox = new OpenLayers.Bounds();
-        bbox.extend(refGeometryLayer.getDataExtent());
-        bbox.extend(newGeometryLayer.getDataExtent());
-        $.each(allLayers, function() {
-            bbox.extend(this.getDataExtent());
-        });
-        map.zoomToExtent(bbox, true);
-        // Adjust zoom level so points are not zoomed in too much
-        map.zoomTo(Math.min(zoomlevel, map.getZoom()-1));
-    });
+//     map.on('moveend', function (e) {
+//         $.cookie('_LOCATION_', map.getBounds().toBBoxString(), {expires: 7});
+//     });
+//
+//     // Initial map extent
+//     var initialExtent = L.geoJSON(window.mapVariables.profile_polygon).getBounds();
+//     var locationCookie = $.cookie('_LOCATION_');
+//     if (locationCookie) {
+//         // If a valid cookie is set, use this as extent
+//         var parts = locationCookie.split(',');
+//         if (parts.length === 4) {
+//             initialExtent = L.latLngBounds(
+//                 L.latLng(parts[1], parts[0]),
+//                 L.latLng(parts[3], parts[2]));
+//         }
+//     }
+//     map.fitBounds(initialExtent);
+//
+//     // Disable dragging of the map for the floating buttons
+//     var ctrl = L.DomUtil.get('map-floating-buttons-' + mapId);
+//     if (ctrl) {
+//         ctrl.addEventListener('mouseover', function () {
+//             map.dragging.disable();
+//         });
+//         ctrl.addEventListener('mouseout', function () {
+//             map.dragging.enable();
+//         });
+//     }
+//
+//     // Hide loading overlay
+//     $('.map-loader[data-map-id="' + mapId + '"]').hide();
+//
+//     if (typeof window.lokp_maps === 'undefined') {
+//         window.lokp_maps = {};
+//     }
+//     window.lokp_maps[mapId] = {
+//         map: map,
+//         baseLayers: baseLayers,
+//         contextLayers: getContextLayers(mapId, window.mapVariables.context_layers),
+//         polygonLayers: {},
+//         // Keep track of the currently active base layer so it can be changed
+//         // programmatically
+//         activeBaseLayer: activeBaseLayer,
+//         activeMapMarker: null,
+//         // Initial map variables
+//         mapVariables: window.mapVariables,
+//         options: options
+//     };
+//
+//     initBaseLayerControl();
+//     initMapContent(map);
+//     initPolygonLayers(mapId, window.mapVariables.polygon_keys);
+//     initContextLayerControl();
+//     initMapSearch(mapId);
+//
+//     if (options.readonly !== true) {
+//         var geometry_type = options.geometry_type['geometry_type']
+//         initDrawPolygonControl(map, geometry_type);
+//
+//
+//         // TODO: make this work for edit as well (geometries are not passed to edit mode)
+//     }
+//     else {
+//         // Readonly! Add point and polygon areas to details page
+//         addDealLocation(map, geometry); // geometry and dealAreas are defined in mapform.mak!!
+//         zoomToDealLocation(map, geometry);
+//         addDealAreas(map, dealAreas);
+//     }
+// }
+//
+//
+// /*****************************************************
+//  * Helper Methods
+//  ****************************************************/
+//
+// /**
+//  *
+//  * @param map           Map created by createMapForm
+//  * @param geometry      Polygon or Point which is added to map
+//  */
+// function addDealLocation(map, geometry) {
+//
+//     // get geometry field
+//     var $geometry = $(map.getContainer()).closest('div.taggroup').find('input[name = "geometry"]')
+//
+//     if ($geometry !== null) {
+//         console.log('addDealLocation');
+//
+//         // change coordinates to lat/long
+//         var coordLatLong = geometry.coordinates.reverse();
+//
+//         L.marker(coordLatLong).addTo(map); // custom item can be set here
+//     }
+// }
+//
+// function zoomToDealLocation(map, geometry) {
+//     var coordLatLong = geometry.coordinates.reverse();
+//     //L.panTo(coordLatLong);
+//     //L.setZoom(5);
+// }
+//
+// /**
+//  * @param map
+//  * @param dealAreas     Dictionary containing polygons for areas intended area, contract area current area
+//
+//  // draw polygon when reloading page
+//  */
+// function addDealAreas(map, dealAreas) {
+//     // iterate over dictionary
+//
+//     var layerDictionary = [];
+//     $.each(dealAreas, function (key, polygon) {  // method doku: http://api.jquery.com/jquery.each/
+//         console.log(key + ": " + polygon)
+//         // convert to leaflet polygon
+//         var polyCoords = polygon.coordinates;
+//         polyCoords = polyCoords[0]; // remove unnecessary array depth
+//
+//         // change each long lat coordinate within polyCoords to lat long
+//         polyCoordsLatLon = changeToLatLon(polyCoords);
+//
+//         var polygonL = L.polygon(polyCoordsLatLon, {color: 'blue'});
+//         layerDictionary[key] = polygonL;
+//
+//         // TODO: add checkbox (html code can be passed with key) http://leafletjs.com/reference-1.3.0.html#control-layers
+//     });
+//
+//     // add Layers to layer control
+//     L.control.layers([], layerDictionary).addTo(map);
+//
+// }
+//
+// /**
+//  *
+//  * @param polyCoords An array containing arrays with a long/lat coordinate pair (for each vertex of the polygon)
+//  * @returns {Array} An array containing arrays with a lat/long coordinate pair
+//  */
+// function changeToLatLon(polyCoords) {
+//     var polyCoordsLatLon = [];
+//     for (var i = 0; i < polyCoords.length; i++) {
+//         var coordLongLat = polyCoords[i];
+//         var coordLatLong = coordLongLat.reverse();
+//         polyCoordsLatLon.push(coordLatLong);
+//     }
+//     return polyCoordsLatLon;
 }

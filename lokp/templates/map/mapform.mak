@@ -63,6 +63,9 @@
                     ##                 var bbox = new OpenLayers.Bounds(bbox_arr);
                     ##             }
                     ##         }
+
+                    // TODO: pass geometries for compare here
+
             % endif
 
         % if readonly:

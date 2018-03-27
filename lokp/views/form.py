@@ -778,19 +778,26 @@ def renderReadonlyCompareForm(
         refGeometry = refFeature.get_geometry() if refFeature is not None \
             else None
 
+        # get polygeon geometries from taggroups
+        newDealAreas = getTaggroupGeometriesCompare(newData)
+        refDealAreas = getTaggroupGeometriesCompare(refData)
+
         geometry = json.dumps({
             'ref': {
-                'geometry': refGeometry
+                'geometry': refGeometry,
+                'dealAreas': json.dumps(refDealAreas)
             },
             'new': {
-                'geometry': newGeometry
+                'geometry': newGeometry,
+                'dealAreas': json.dumps(newDealAreas)
             },
         })
 
     return {
         'form': html,
         'geometry': geometry,
-        'reviewableMessage': reviewableMessage
+        'reviewableMessage': reviewableMessage,
+        #'dealAreas': json.dumps(dealAreas)
     }
 
 
@@ -1004,3 +1011,9 @@ def getTaggroupGeometries(itemJson):
             key = taggroup.get('main_tag').get('key')
             dealAreas[key] = (taggroup.get('geometry'))
     return dealAreas
+
+# get polygon geometries from data
+def getTaggroupGeometriesCompare(data):
+    # geometry = data['1']['12']
+    # geometry
+    return None
