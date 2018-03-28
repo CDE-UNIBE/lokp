@@ -46,15 +46,14 @@
 
     var bbox = null;
     var coordsSet = false;
-                ##  passing variables to javascript
+        ##  passing variables to javascript
                 % if geometry and readonly:
-                    coordsSet = true;
-                    ##  doesn't work with different name!! - but why does it work with dealArea?
+                            coordsSet = true;
                     var geometry = ${geometry | n};
-                        ## | applies escape filter, see http://docs.makotemplates.org/en/latest/filtering.html
+                            ## | applies escape filter, see http://docs.makotemplates.org/en/latest/filtering.html
                     var dealAreas = ${dealAreas | n};
-                    var zoomlevel = 13;
-                    ##     % elif '_LOCATION_' in request.cookies:
+                            var zoomlevel = 13;
+                            ##     % elif '_LOCATION_' in request.cookies:
                     ##         ## Try to get the coordinates from the _LOCATION_ cookie
                     ##         var location_cookie = $.cookie('_LOCATION_');
                     ##         if (location_cookie) {
@@ -64,9 +63,9 @@
                     ##             }
                     ##         }
 
-                    // TODO: pass geometries for compare here
+                            // TODO: pass geometries for compare here
 
-            % endif
+    % endif
 
         % if readonly:
             var readonly = true;
@@ -91,7 +90,10 @@
     }
 
         % if compare is True:
+            ##  TODO: remove this codeblock (is not called in compare)
+
             var tForChangesInThisSection = '${_("There are changes in this section")}';
+            ##  var geometry = ${geometry | n};
         % endif
 
 </script>

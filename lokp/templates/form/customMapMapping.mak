@@ -3,6 +3,7 @@
     from pyramid.path import AssetResolver
     from lokp.config.customization import get_customized_template_path
     import colander
+
     lmkpAssetResolver = AssetResolver('lokp')
     resolver = lmkpAssetResolver.resolve('templates/map/mapform.mak')
     template = Template(filename=resolver.abspath())
@@ -96,6 +97,78 @@
         </div></%doc>
 </div>
 
+##----------------------------
+## Shapefile upload
+
+
+<a id="test-shapefile-uploader-${field.title}" class="modal-trigger waves-effect waves-light btn" href="#formModal"
+   onclick="return uploadFile(event, this);" style="margin-bottom: 15px;">${_('Upload a file')}</a>
+
+## duplicated from customFileDisplay.mak
+<script>
+    function uploadFile(event, btn) {
+        event.preventDefault();
+
+        // Set a loading indicator and show the modal window.
+        $('#formModal').modal({
+            backdrop: 'static'
+        });
+
+        // Remove old indicator and add a new one. This is used to know for
+        // which field we are currently uploading a File.
+        $('span#currentlyuploadingfile').remove();
+        var tagContainer = $(btn).parent('div');
+        tagContainer.append('<span id="currentlyuploadingfile"></span>');
+
+        // Query and set the content of the modal window.
+        $.ajax({
+            url: '${request.route_url("file_upload_form_embedded")}'  // rout calls fileupload_embedded.mak
+        }).done(function (data) {
+            $('#formModal .modal-content').html(data);
+            deform.load();
+            if (!$('#formModal').hasClass('open')) {
+                // Open modal
+                $('#formModal').openModal();
+            }
+        });
+
+        // Do not submit anything.
+        return false;
+    }
+
+    /**
+     * Function to add a newly uploaded file to the list.
+     * Adds the values to the internal file information and triggers an update
+     * of the visible list with filenames.
+     */
+    function addUploadedFile(filename, identifier) {
+
+        // Get the textfield with file informations based on the indicator set.
+        var hiddenField = $('#currentlyuploadingfile')
+            .parent('div')
+            .find('input.fileinformations');
+
+        // Add and set the new values.
+        var oldValue = hiddenField.val();
+        var newValue = filename + '|' + identifier;
+        if (oldValue != '') {
+            newValue = [oldValue, newValue].join(',');
+        }
+        hiddenField.val(newValue);
+
+        // Call function to do an update of the list with filenames.
+
+        //updateExistingFiles(hiddenField);
+    }
+
+</script>
+
+
+
+
+
+
+
 ## Map Menu
 
 <div id="slide-out-map-options-${field.title}" class="side-nav map-side-menu">
@@ -182,6 +255,7 @@
 </div>
 
 ## Map modal (used for legend of context layers)
+
 <div id="map-modal-${field.title}" class="modal">
     <div id="map-modal-body-${field.title}" class="modal-content">
         ## Placeholder for map modal

@@ -797,7 +797,6 @@ def renderReadonlyCompareForm(
         'form': html,
         'geometry': geometry,
         'reviewableMessage': reviewableMessage,
-        #'dealAreas': json.dumps(dealAreas)
     }
 
 
@@ -1013,7 +1012,29 @@ def getTaggroupGeometries(itemJson):
     return dealAreas
 
 # get polygon geometries from data
+## TODO: remove hardcoding!
 def getTaggroupGeometriesCompare(data):
-    # geometry = data['1']['12']
-    # geometry
-    return None
+    dealAreas = dict();
+    if bool(data): # returns false if dictionary is empty
+
+        taggroups = data.get('1') # flatten dict
+        tag_keys = taggroups.keys()
+        for key in tag_keys: # keys are numbers 11, 12 ,13 ..
+            taggroup = taggroups.get(key)
+            taggroup_keys = taggroup.keys()
+
+
+            if '1' not in taggroup_keys:
+                continue
+
+            geometry = taggroup.get('1').get('map1')
+            taggroup_keys = taggroup.get('1').keys()
+
+            if 'Intended area (ha)' in taggroup_keys:
+                dealAreas['Intended area (ha)'] = geometry
+            if 'Contract area (ha)' in taggroup_keys:
+                dealAreas['Contract area (ha)'] = geometry
+            if 'Current area in operation (ha)' in taggroup_keys:
+                dealAreas['Current area in operation (ha)'] = geometry
+
+    return dealAreas

@@ -49,7 +49,11 @@ var initDrawPolygonControl = function (map, geometry_type) {
         }
 
         var layerJSON = layer.toGeoJSON();
+
+        // set polygon value
         $geometry.val(JSON.stringify(layerJSON.geometry));
+
+        // TODO: why does this not affect geometry field in html???
     });
 
 
