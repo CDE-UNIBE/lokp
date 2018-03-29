@@ -81,7 +81,7 @@
                     var options = {
                         target: target,
                         replaceTarget: true,
-                        url: '/files/form',
+                        url: '/shp/form',
                         success: function() {
                             deform.processCallbacks();
                             deform.focusFirstInput(target);

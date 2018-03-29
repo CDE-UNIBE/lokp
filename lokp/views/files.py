@@ -27,6 +27,64 @@ log = logging.getLogger(__name__)
 _ = TranslationStringFactory('lokp')
 
 
+
+
+## TODO create .mak files for shape file upload and change back requests in .mak files.
+@view_config(
+    route_name='shp_upload_form_embedded', permission='edit',
+    renderer='lokp:templates/form/fileupload_embedded.mak')
+def shp_upload_form_embedded(request):
+
+    class MemoryTmpStore(dict):
+        def preview_url(self, uid):
+            return None
+    tmpStore = MemoryTmpStore()
+
+    class Schema(colander.Schema):
+        file = colander.SchemaNode(
+            deform.FileData(),
+            widget=deform.widget.FileUploadWidget(tmpStore),
+            name='file',
+            title='File'
+        )
+
+    formid = 'fileupload'
+
+    schema = Schema()
+    deform.Form.set_default_renderer(file_upload_renderer)
+    form = deform.Form(
+        schema, buttons=('submit',), formid=formid, use_ajax=True)
+
+    def succeed(uploadResponse):
+        """
+        Function called after file upload was handled.
+        """
+
+        if uploadResponse['success'] is True:
+            # Success
+            filename = uploadResponse['filename']
+            identifier = uploadResponse['fileidentifier']
+            message = uploadResponse['msg']
+
+            return '<script type="text/javascript">handleSuccess("%s", "%s", "\
+                %s");</script>' % (filename, identifier, message)
+
+        else:
+            # Failure
+            message = uploadResponse['msg']
+
+            return '<script type="text/javascript">handleFailure("\
+                %s");</script>' % message
+
+    reqts = form.get_widget_resources()
+
+    return {
+        'form': _get_rendered_shp_form(request, form, success=succeed), ## saves uploaded form in upload folder
+        'js_links': reqts['js'],
+        'css_links': reqts['css']
+    }
+
+
 @view_config(
     route_name='file_upload_form_embedded', permission='edit',
     renderer='lokp:templates/form/fileupload_embedded.mak')
@@ -76,7 +134,7 @@ def file_upload_form_embedded(request):
     reqts = form.get_widget_resources()
 
     return {
-        'form': _get_rendered_form(request, form, success=succeed),
+        'form': _get_rendered_form(request, form, success=succeed), ## saves uploaded form in upload folder
         'js_links': reqts['js'],
         'css_links': reqts['css']
     }
@@ -133,7 +191,38 @@ def file_upload_json_response(request):
             'msg': 'No file submitted',
             'success': False
         }
+def _get_rendered_shp_form(
+        request, form, appstruct=colander.null, submitted='submit',
+        success=None, readonly=False):
+    """
+    Based on method copied from
+    http://deformdemo.repoze.org/allcode?start=70&end=114#line-70
+    """
+    captured = None
 
+    if submitted in request.POST:
+        # the request represents a form submission
+        try:
+            # try to validate the submitted values
+            controls = request.POST.items()
+            captured = form.validate(controls)
+
+            uploadResponse = handle_upload(request, captured['file'])
+
+            if success:
+                response = success(uploadResponse)
+                if response is not None:
+                    return response
+            html = form.render(captured)
+        except deform.ValidationFailure as e:
+            # the submitted values could not be validated
+            html = e.render()
+
+    else:
+        # the request requires a simple form rendering
+        html = form.render(appstruct, readonly=readonly)
+
+    return html
 
 def _get_rendered_form(
         request, form, appstruct=colander.null, submitted='submit',
@@ -188,7 +277,7 @@ def file_upload_renderer(tmpl_name, **kw):
 
     return template.render(**kw)
 
-
+# TODO: pass boolean parameter for file upload
 def handle_upload(request, filedict):
     """
     Handle the upload of a new file.

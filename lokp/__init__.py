@@ -141,6 +141,7 @@ def main(global_config, **settings):
     """
     # Embedded form to upload a file
     config.add_route('file_upload_form_embedded', '/files/form')
+    config.add_route('shp_upload_form_embedded', '/shp/form')
     config.add_route(
         'file_upload_json_response', '/files/form/json', request_method='POST')
     # Show or download a file

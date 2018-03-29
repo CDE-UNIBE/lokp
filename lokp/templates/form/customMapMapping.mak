@@ -122,7 +122,7 @@
 
         // Query and set the content of the modal window.
         $.ajax({
-            url: '${request.route_url("file_upload_form_embedded")}'  // rout calls fileupload_embedded.mak
+            url: '${request.route_url("shp_upload_form_embedded")}'  // rout calls fileupload_embedded.mak - add new request for shp upload?
         }).done(function (data) {
             $('#formModal .modal-content').html(data);
             deform.load();
@@ -155,6 +155,9 @@
             newValue = [oldValue, newValue].join(',');
         }
         hiddenField.val(newValue);
+
+        console.log('hiddenField', hiddenField);
+        console.log('fileName', filename);
 
         // Call function to do an update of the list with filenames.
 
