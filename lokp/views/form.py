@@ -769,7 +769,8 @@ def renderReadonlyCompareForm(
         }
 
     data = mergeFormdata(refData, newData)
-    html = form.render(data, readonly=True)
+
+
 
     geometry = None
     if itemType == 'activities':
@@ -792,6 +793,10 @@ def renderReadonlyCompareForm(
                 'dealAreas': json.dumps(newDealAreas)
             },
         })
+
+    # renders form; passes variables (readonly and geometry) to template
+    ## TODO: in custom map mapping: pass params like this
+    html = form.render(data, readonly=True, geometry=geometry)
 
     return {
         'form': html,

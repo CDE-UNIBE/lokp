@@ -7,9 +7,7 @@
  *
  * tForChangesInThisSection
  */
-function createReviewMap(mapId) {
-    console.log('CREATE REVIEW MAP');
-    console.log('geometry variable', geometry);
+function createReviewMap(mapId, geometry) {
 
     var baseLayers = getBaseLayers();
     var activeBaseLayer = Object.values(baseLayers)[0];
