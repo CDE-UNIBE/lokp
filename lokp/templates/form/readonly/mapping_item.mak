@@ -40,7 +40,7 @@
             </div>
         </div>
 
-    % elif field.name not in ['tg_id', 'id', 'category', 'version', 'itemType', 'statusId', 'taggroup_count']:
+    % elif field.name not in ['tg_id', 'id', 'category', 'version', 'itemType', 'statusId', 'taggroup_count', 'geometry']:
         ## Single tag
         <div class="row-fluid">
             <div class="span5">

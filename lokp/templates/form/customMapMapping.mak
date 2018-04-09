@@ -24,11 +24,6 @@
 %>
 
 
-
-% if field.title:   ## Field stands for for deform.field which refers a schema node, such as mapWidget
-
-    <legend>${field.title}</legend>
-% endif
 ## container containing map
 
 <div id="${field.title}" style="height: 400px;"> ## variable title is passed by config/form.py/getMapWidget
@@ -58,10 +53,10 @@
            data-tooltip="${_('Map Options')}" data-activates="slide-out-map-options-${field.title}">
             <i class="material-icons">map</i>
         </a>
-        <a class="btn-floating tooltipped btn-large button-collapse" data-position="top"
-           data-tooltip="${_('Add a Filter')}" data-activates="slide-out-filter-${field.title}">
-            <i class="material-icons" style="margin-right: 15px;" data-position="top">filter_list</i>
-        </a>
+##         <a class="btn-floating tooltipped btn-large button-collapse" data-position="top"
+##            data-tooltip="${_('Add a Filter')}" data-activates="slide-out-filter-${field.title}">
+##             <i class="material-icons" style="margin-right: 15px;" data-position="top">filter_list</i>
+##         </a>
         % if len(activeFilters) == 1:
             <span class="badge"
                   style="color: white; background-color: #323232; position: relative; top: -25px; left: -40px; z-index: 1; border-radius: 5px;">${len(activeFilters)}

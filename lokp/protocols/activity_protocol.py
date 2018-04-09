@@ -202,12 +202,17 @@ class ActivityProtocol(Protocol):
 
             cleaned_activity = copy.deepcopy(activity)
             cleaned_activity['taggroups'] = []
+
             for taggroup in activity.get('taggroups', []):
-                main_tag_key = taggroup.get('main_tag', {}).get('key')
-                _, _, config_taggroup = category_list.findCategoryThematicgroupTaggroupByMainkey(main_tag_key)
-                if config_taggroup.getMap() is not None and len(taggroup['tags']) == 1 and taggroup['tags'][0].get(
-                    'geometry', colander.null) == colander.null:
-                    continue
+                try:
+                    main_tag_key = taggroup.get('main_tag', {}).get('key')
+                    _, _, config_taggroup = category_list.findCategoryThematicgroupTaggroupByMainkey(main_tag_key)
+                    if config_taggroup.getMap() is not None and len(taggroup['tags']) == 1 and taggroup['tags'][0].get(
+                        'geometry', colander.null) == colander.null:
+                        continue
+                except AttributeError:
+                    print("attribute error")
+
                 cleaned_activity['taggroups'].append(taggroup)
 
             log.debug('The diff to create/update the activity after removing empty geometry taggroups: %s' % diff)

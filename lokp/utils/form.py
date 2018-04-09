@@ -295,7 +295,7 @@ def formdataToDiff(request, newform, itemType):
         except AttributeError:
             continue
 
-        # Loop the thematic groups of the category
+        # Loop the thematic groups of the category   // TODO: iterate over taggroup 12
         for (thmgrp, tgroups) in thmgrpsitems:
 
             if (thmgrp in categorylist.getInvolvementThematicgroupIds()

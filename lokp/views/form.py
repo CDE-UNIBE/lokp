@@ -1023,17 +1023,20 @@ def getTaggroupGeometriesCompare(data):
     if bool(data): # returns false if dictionary is empty
 
         taggroups = data.get('1') # flatten dict
-        tag_keys = taggroups.keys()
-        for key in tag_keys: # keys are numbers 11, 12 ,13 ..
-            taggroup = taggroups.get(key)
-            taggroup_keys = taggroup.keys()
+        taggroup_landarea = taggroups.get('12') # 12 is id for taggroup landarea
 
+        taggroup_keys = taggroup_landarea.keys()
 
-            if '1' not in taggroup_keys:
-                continue
+        for key in taggroup_keys:
+            tag = taggroup_landarea.get(key)
 
-            geometry = taggroup.get('1').get('map1')
-            taggroup_keys = taggroup.get('1').keys()
+            # if tag is a list, remove list
+            if type(tag) is list:
+                tag = tag[0]
+
+            geometry = tag.get('map'+key)
+
+            taggroup_keys = tag.keys()
 
             if 'Intended area (ha)' in taggroup_keys:
                 dealAreas['Intended area (ha)'] = geometry

@@ -11,8 +11,11 @@ var initDrawPolygonControl = function (map, geometry_type) {
 
     var editableLayers = new L.FeatureGroup();
     map.addLayer(editableLayers);
+    addExistingGeometries(map, editableLayers);
 
     var drawOptions = defineDrawOptions(geometry_type, editableLayers);
+
+    // try omnivore.wkt.parse()
 
     var drawControl = new L.Control.Draw(drawOptions);
     map.addControl(drawControl);
@@ -40,7 +43,7 @@ var initDrawPolygonControl = function (map, geometry_type) {
 
     });
 
-    map.on('draw:edited', function (e, editableLayers) { // Why is editable layers not visible here?
+    map.on('draw:edited', function (e) { // Why is editable layers not defined here?
         var layers = e.layers._layers; // layers is a dictionary of edited layers
         var layer;
         // get layer from dictionary (layers should only have one key)
@@ -58,11 +61,12 @@ var initDrawPolygonControl = function (map, geometry_type) {
 
 
     // TODO: if the layer is edited, the coordinates in the geometry field have to be adjusted!!
-
-    addExistingGeometries(map, editableLayers)
-
 }
 
+/**
+ *  Create layer form coordinates saved in the geometry field.
+ *  https://github.com/Leaflet/Leaflet.draw/issues/398
+ */
 function addExistingGeometries(map, editableLayers) {
     var $geometryField = $(map.getContainer()).closest('div.taggroup').find('input[name = "geometry"]')
     var geometryVal = $geometryField.val(); // string
@@ -74,12 +78,14 @@ function addExistingGeometries(map, editableLayers) {
             var coord = geometryJSON.coordinates;
             var coordLatLon = coord.reverse();
             editableLayers.addLayer(L.marker(coordLatLon));
+            zoomToDealLocation(map, coordLatLon);
         }
         if (geometryJSON.type == "Polygon") {
-            var geoJsonLayer = L.geoJSON(geometryJSON)
-            editableLayers.addLayer(geoJsonLayer);
+            var coordinatesLongLat = geometryJSON.coordinates[0];
+            var coordinatesLatLong = changeToLatLon(coordinatesLongLat);
+            var polygonLayer = L.polygon(coordinatesLatLong);      // this must't be a layer of type L.geoJSON
+            editableLayers.addLayer(polygonLayer);
         }
-
     }
 }
 
@@ -99,9 +105,8 @@ function defineDrawOptions(geometry_type, editableLayers) {
         var MyCustomMarker = L.Icon.extend({
             options: {
                 shadowUrl: null,
-                iconAnchor: new L.Point(12, 12),
-                iconSize: new L.Point(24, 24),
-                iconUrl: 'static/css/images/marker-icon-2x.png'  // todo: find a way to remove activities in url
+                iconSize: new L.Point(24, 40),
+                iconUrl: '/static/css/images/marker-icon-2x.png'  // todo: find a way to remove activities in url
             }
         });
 
@@ -162,3 +167,25 @@ function clearDrawnElements(map, editableLayers) {
         editableLayers.removeLayer(layer);
     }
 };
+
+/**
+ *
+ * @param polyCoords An array containing arrays with a long/lat coordinate pair (for each vertex of the polygon)
+ * @returns {Array} An array containing arrays with a lat/long coordinate pair
+ */
+function changeToLatLon(polyCoords) {
+    var polyCoordsLatLon = [];
+    for (var i = 0; i < polyCoords.length; i++) {
+        var coordLongLat = polyCoords[i];
+        var coordLatLong = coordLongLat.reverse();
+        polyCoordsLatLon.push(coordLatLong);
+    }
+    return polyCoordsLatLon;
+}
+
+// TODO: move this to base.js
+function zoomToDealLocation(map, coordLatLong) {
+    var lat = coordLatLong[0];
+    var long = coordLatLong[1];
+    map.setView([lat, long], 8);
+}

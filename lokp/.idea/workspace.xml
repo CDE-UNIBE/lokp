@@ -1,13 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list id="e4a6555f-c9e9-4096-91ac-ff466dba6394" name="recent changes" comment="" />
     <list default="true" id="95faa834-846c-497b-a060-b09219218849" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/customization/omm/templates/review/readonly/form.mak" afterPath="$PROJECT_DIR$/customization/omm/templates/review/readonly/form.mak" />
-      <change beforePath="$PROJECT_DIR$/static/js/maps/compare.js" afterPath="$PROJECT_DIR$/static/js/maps/compare.js" />
-      <change beforePath="$PROJECT_DIR$/templates/form/customMapMapping.mak" afterPath="$PROJECT_DIR$/templates/form/customMapMapping.mak" />
-      <change beforePath="$PROJECT_DIR$/views/form.py" afterPath="$PROJECT_DIR$/views/form.py" />
+      <change afterPath="$PROJECT_DIR$/customization/omm/fabfile.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/customization/omm/tests/fixtures/stakeholders.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/customization/omm/tests/pages/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/customization/omm/tests/pages/api.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/customization/omm/tests/pages/base.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/customization/omm/tests/test_api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customization/omm/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/customization/omm/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customization/omm/profiles/production/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/customization/omm/profiles/production/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customization/omm/shippable.yml" beforeDir="false" afterPath="$PROJECT_DIR$/customization/omm/shippable.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customization/omm/templates/activities/compare.mak" beforeDir="false" afterPath="$PROJECT_DIR$/customization/omm/templates/activities/compare.mak" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customization/omm/templates/activities/details.mak" beforeDir="false" afterPath="$PROJECT_DIR$/customization/omm/templates/activities/details.mak" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customization/omm/templates/form/readonly/form.mak" beforeDir="false" afterPath="$PROJECT_DIR$/customization/omm/templates/form/readonly/form.mak" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customization/omm/templates/review/readonly/form.mak" beforeDir="false" afterPath="$PROJECT_DIR$/customization/omm/templates/review/readonly/form.mak" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customization/omm/tests/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/customization/omm/tests/base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customization/omm/tests/conftest.py" beforeDir="false" afterPath="$PROJECT_DIR$/customization/omm/tests/conftest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customization/omm/tests/fixtures/activities.py" beforeDir="false" afterPath="$PROJECT_DIR$/customization/omm/tests/fixtures/activities.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customization/omm/tests/pages.py" beforeDir="false" afterPath="$PROJECT_DIR$/customization/omm/tests/pages/pages.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/customization/omm/tests/test_views.py" beforeDir="false" afterPath="$PROJECT_DIR$/customization/omm/tests/test_views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/protocols/activity_protocol.py" beforeDir="false" afterPath="$PROJECT_DIR$/protocols/activity_protocol.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/maps/base.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/maps/base.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/maps/compare.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/maps/compare.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/maps/form.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/maps/form.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/form/customMapMapping.mak" beforeDir="false" afterPath="$PROJECT_DIR$/templates/form/customMapMapping.mak" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/form/readonly/mapping_item.mak" beforeDir="false" afterPath="$PROJECT_DIR$/templates/form/readonly/mapping_item.mak" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/form.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/form.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/form.py" beforeDir="false" afterPath="$PROJECT_DIR$/views/form.py" afterDir="false" />
     </list>
+    <list id="e4a6555f-c9e9-4096-91ac-ff466dba6394" name="recent changes" comment="" />
     <ignored path="$PROJECT_DIR$/.idea/shelf/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -17,7 +41,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/lokp$development.coverage" NAME="development Coverage Results" MODIFIED="1522322996319" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/lokp$development.coverage" NAME="development Coverage Results" MODIFIED="1523264984363" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
   <component name="DatabaseView">
     <option name="SHOW_INTERMEDIATE" value="true" />
@@ -35,82 +59,37 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="form.mak" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/customization/omm/templates/review/readonly/form.mak">
+      <file leaf-file-name="base.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/static/js/maps/base.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="441">
-              <caret line="139" column="14" lean-forward="false" selection-start-line="139" selection-start-column="14" selection-end-line="139" selection-end-column="14" />
-              <folding />
+            <state relative-caret-position="383">
+              <caret line="344" column="38" selection-start-line="340" selection-start-column="43" selection-end-line="344" selection-end-column="38" />
+              <folding>
+                <element signature="e#188#194#0" expanded="true" />
+                <element signature="n#style#0;n#span#0;n#label#0;n#p#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#span#0;n#span#0;n#label#0;n#p#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#0;n#div#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#0;n#div#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#0;n#div#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#a#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#i#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#ul#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#li#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="compare.js" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/static/js/maps/compare.js">
+      <file leaf-file-name="drawPolygonFeature.js" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="144">
-              <caret line="8" column="3" lean-forward="true" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="form.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/static/js/maps/form.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="54">
-              <caret line="3" column="20" lean-forward="false" selection-start-line="3" selection-start-column="20" selection-end-line="3" selection-end-column="20" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="form.mak" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/customization/omm/templates/form/readonly/form.mak">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="492">
-              <caret line="327" column="8" lean-forward="false" selection-start-line="327" selection-start-column="8" selection-end-line="327" selection-end-column="8" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="form.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/views/form.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="390">
-              <caret line="797" column="57" lean-forward="false" selection-start-line="797" selection-start-column="57" selection-end-line="797" selection-end-column="57" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="field.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../../.virtualenvs/landobservatory/local/lib/python3.6/site-packages/deform/field.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="166">
-              <caret line="517" column="38" lean-forward="false" selection-start-line="517" selection-start-column="31" selection-end-line="517" selection-end-column="38" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="activities.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/views/activities.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="210">
-              <caret line="630" column="0" lean-forward="false" selection-start-line="630" selection-start-column="0" selection-end-line="630" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="viewderivers.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../../.virtualenvs/landobservatory/local/lib/python3.6/site-packages/pyramid/viewderivers.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="256">
-              <caret line="124" column="0" lean-forward="false" selection-start-line="124" selection-start-column="0" selection-end-line="124" selection-end-column="0" />
-              <folding />
+            <state relative-caret-position="-438">
+              <caret line="107" column="46" lean-forward="true" selection-start-line="107" selection-start-column="46" selection-end-line="107" selection-end-column="46" />
             </state>
           </provider>
         </entry>
@@ -118,19 +97,17 @@
       <file leaf-file-name="customMapMapping.mak" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/templates/form/customMapMapping.mak">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="90">
-              <caret line="5" column="0" lean-forward="false" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
-              <folding />
+            <state relative-caret-position="174">
+              <caret line="45" lean-forward="true" selection-start-line="45" selection-end-line="45" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mapform.mak" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/templates/map/mapform.mak">
+      <file leaf-file-name="mapping_item.mak" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/templates/form/readonly/mapping_item.mak">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="864">
-              <caret line="48" column="43" lean-forward="true" selection-start-line="48" selection-start-column="43" selection-end-line="48" selection-end-column="43" />
-              <folding />
+            <state relative-caret-position="634">
+              <caret line="42" column="119" selection-start-line="42" selection-start-column="119" selection-end-line="42" selection-end-column="119" />
             </state>
           </provider>
         </entry>
@@ -147,21 +124,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>upload</find>
-      <find>file typ</find>
-      <find>registry</find>
-      <find>google</find>
-      <find>get_rendered_for</find>
-      <find>shp_upload_form_embedded</find>
-      <find>lokp.file_upload_max_size</find>
-      <find>request</find>
-      <find>handle_up</find>
-      <find>shp</find>
-      <find>handle_shp_upload</find>
-      <find>googlemapno</find>
-      <find>form.mak</find>
-      <find>readonly/form.mak</find>
-      <find>renderreadonlyc</find>
       <find>activitie</find>
       <find>dealareas</find>
       <find>dealAreas</find>
@@ -177,6 +139,21 @@
       <find>form.render</find>
       <find>createfor</find>
       <find>googlema</find>
+      <find>create</find>
+      <find>_create</find>
+      <find>try</find>
+      <find>try:</find>
+      <find>main_tag_key = taggroup.get('main_tag', {}).get('key')</find>
+      <find>leaflet.css</find>
+      <find>&lt;link rel=&quot;stylesheet&quot; href=&quot;/custom/css/font-awesome/css/font-awesome.min.css&quot;&gt;</find>
+      <find>lokp:static/css/leaflet.css</find>
+      <find>main.js</find>
+      <find>leaflet-marker-icon</find>
+      <find>map-single-icon</find>
+      <find>zoom</find>
+      <find>l.icon</find>
+      <find>dealview_item_attribute</find>
+      <find>filter</find>
     </findStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$/templates/form/readonly</dir>
@@ -203,17 +180,20 @@
         <option value="$PROJECT_DIR$/static/js/maps/form.js" />
         <option value="$PROJECT_DIR$/templates/map/mapform.mak" />
         <option value="$PROJECT_DIR$/views/activities.py" />
-        <option value="$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js" />
         <option value="$PROJECT_DIR$/__init__.py" />
         <option value="$PROJECT_DIR$/templates/form/form_fileupload_embedded.mak" />
         <option value="$PROJECT_DIR$/templates/form/customFileDisplay.mak" />
         <option value="$PROJECT_DIR$/config/files.py" />
         <option value="$PROJECT_DIR$/../development.ini" />
         <option value="$PROJECT_DIR$/views/files.py" />
-        <option value="$PROJECT_DIR$/templates/form/customMapMapping.mak" />
         <option value="$PROJECT_DIR$/views/form.py" />
-        <option value="$PROJECT_DIR$/customization/omm/templates/review/readonly/form.mak" />
         <option value="$PROJECT_DIR$/static/js/maps/compare.js" />
+        <option value="$PROJECT_DIR$/customization/omm/templates/review/readonly/form.mak" />
+        <option value="$PROJECT_DIR$/customization/omm/templates/base.mak" />
+        <option value="$PROJECT_DIR$/static/js/maps/base.js" />
+        <option value="$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js" />
+        <option value="$PROJECT_DIR$/templates/form/customMapMapping.mak" />
+        <option value="$PROJECT_DIR$/templates/form/readonly/mapping_item.mak" />
       </list>
     </option>
   </component>
@@ -230,22 +210,10 @@
     <option name="height" value="1176" />
   </component>
   <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="" version="1">
-      <flattenPackages />
-      <showMembers />
-      <showModules />
-      <showLibraryContents />
-      <hideEmptyPackages />
-      <abbreviatePackageNames />
-      <autoscrollToSource />
-      <autoscrollFromSource />
-      <sortByType />
-      <manualOrder />
+    <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -262,41 +230,37 @@
               <item name="lokp" type="b2602c69:ProjectViewProjectNode" />
               <item name="landObservatory" type="462c0819:PsiDirectoryNode" />
               <item name="lokp" type="462c0819:PsiDirectoryNode" />
-              <item name="customization" type="462c0819:PsiDirectoryNode" />
+              <item name="static" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="lokp" type="b2602c69:ProjectViewProjectNode" />
               <item name="landObservatory" type="462c0819:PsiDirectoryNode" />
               <item name="lokp" type="462c0819:PsiDirectoryNode" />
-              <item name="customization" type="462c0819:PsiDirectoryNode" />
-              <item name="omm" type="462c0819:PsiDirectoryNode" />
+              <item name="static" type="462c0819:PsiDirectoryNode" />
+              <item name="css" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="lokp" type="b2602c69:ProjectViewProjectNode" />
               <item name="landObservatory" type="462c0819:PsiDirectoryNode" />
               <item name="lokp" type="462c0819:PsiDirectoryNode" />
-              <item name="customization" type="462c0819:PsiDirectoryNode" />
-              <item name="omm" type="462c0819:PsiDirectoryNode" />
-              <item name="templates" type="462c0819:PsiDirectoryNode" />
+              <item name="static" type="462c0819:PsiDirectoryNode" />
+              <item name="js" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="lokp" type="b2602c69:ProjectViewProjectNode" />
               <item name="landObservatory" type="462c0819:PsiDirectoryNode" />
               <item name="lokp" type="462c0819:PsiDirectoryNode" />
-              <item name="customization" type="462c0819:PsiDirectoryNode" />
-              <item name="omm" type="462c0819:PsiDirectoryNode" />
-              <item name="templates" type="462c0819:PsiDirectoryNode" />
-              <item name="review" type="462c0819:PsiDirectoryNode" />
+              <item name="static" type="462c0819:PsiDirectoryNode" />
+              <item name="js" type="462c0819:PsiDirectoryNode" />
+              <item name="maps" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="lokp" type="b2602c69:ProjectViewProjectNode" />
               <item name="landObservatory" type="462c0819:PsiDirectoryNode" />
               <item name="lokp" type="462c0819:PsiDirectoryNode" />
-              <item name="customization" type="462c0819:PsiDirectoryNode" />
-              <item name="omm" type="462c0819:PsiDirectoryNode" />
-              <item name="templates" type="462c0819:PsiDirectoryNode" />
-              <item name="review" type="462c0819:PsiDirectoryNode" />
-              <item name="readonly" type="462c0819:PsiDirectoryNode" />
+              <item name="static" type="462c0819:PsiDirectoryNode" />
+              <item name="js" type="462c0819:PsiDirectoryNode" />
+              <item name="maps2" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="lokp" type="b2602c69:ProjectViewProjectNode" />
@@ -323,14 +287,15 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="SearchEverywhereHistoryKey" value="custommap&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;dra&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/js/maps/drawPolygonFeature.js&#10;form.mak&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/review/readonly/form.mak&#10;base.ma&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/base.mak&#10;detail&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/details.mak&#10;activit&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/protocols/activity_protocol.py&#10;customm&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;__&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/__init__.py&#10;form.py&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/views/form.py&#10;comp&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/compare.mak&#10;details.ma&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/details.mak&#10;readonl&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/readonly&#10;custom&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;draw&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/js/maps/drawPolygonFeature.js&#10;form.p&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/config/form.py&#10;customma&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;googlemap&#9;null&#9;null&#10;mapform.&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;form&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/views/form.py&#10;config.form&#9;null&#9;null&#10;mapfor&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;form.ma&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/review/readonly/form.mak&#10;form.js&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/js/maps/form.js&#10;mapform.mak&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;compare.mak&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/compare.mak&#10;mapform&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;fo&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/js/maps/form.js&#10;base.mak&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/base.mak&#10;compare&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/js/maps/compare.js&#10;hidde&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/hidden.mak&#10;act&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/protocols/activity_protocol.py&#10;custommapmapping&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;mapfo&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;details.m&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/details.mak&#10;deta&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/details.mak&#10;map.mak&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/map_view.mak&#10;FORM&#9;null&#9;null&#10;form.&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/config/form.py&#10;mapform.ma&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;marker.p&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/lib/OpenLayers/img/marker.png&#10;leaflet&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/css/leaflet.css" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/.." />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="settings.editor.selected.configurable" value="editing.templates" />
-    <property name="SearchEverywhereHistoryKey" value="customm&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;__&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/__init__.py&#10;form.py&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/views/form.py&#10;comp&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/compare.mak&#10;details.ma&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/details.mak&#10;readonl&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/readonly&#10;custom&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;draw&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/js/maps/drawPolygonFeature.js&#10;form.p&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/config/form.py&#10;customma&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;googlemap&#9;null&#9;null&#10;mapform.&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;form&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/views/form.py&#10;config.form&#9;null&#9;null&#10;mapfor&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;custommap&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;form.ma&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/review/readonly/form.mak&#10;form.js&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/js/maps/form.js&#10;mapform.mak&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;compare.mak&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/compare.mak&#10;mapform&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;fo&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/js/maps/form.js&#10;base.mak&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/base.mak&#10;compare&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/js/maps/compare.js&#10;hidde&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/hidden.mak&#10;act&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/protocols/activity_protocol.py&#10;custommapmapping&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/form/customMapMapping.mak&#10;mapfo&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;details.m&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/details.mak&#10;deta&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/activities/details.mak&#10;map.mak&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/customization/omm/templates/map_view.mak&#10;FORM&#9;null&#9;null&#10;form.&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/config/form.py&#10;mapform.ma&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/templates/map/mapform.mak&#10;activit&#9;null&#9;null&#10;marker.p&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/lib/OpenLayers/img/marker.png&#10;leaflet&#9;FILE&#9;file:///home/lwuersch/code/landObservatory/lokp/static/css/leaflet.css" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -359,6 +324,7 @@
   </component>
   <component name="RunManager">
     <configuration name="development" type="Python.PyramidServer" factoryName="Pyramid server">
+      <module name="lokp" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -369,16 +335,12 @@
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="lokp" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="launchJavascriptDebuger" value="false" />
       <option name="additionalOptions" value="--reload" />
       <option name="browserUrl" value="" />
       <option name="CONFIGURATION_FILE" value="$PROJECT_DIR$/../development.ini" />
     </configuration>
-  </component>
-  <component name="ShelveChangesManager" show_recycled="false">
-    <option name="remove_strategy" value="false" />
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -420,29 +382,29 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="24" width="1855" height="1176" extended-state="4" />
-    <editor active="true" />
     <layout>
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3283721" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32744187" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3293023" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32744187" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3293023" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.13875069" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32946378" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="SciView" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32946378" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32946378" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.31614137" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.3283721" />
+      <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
+      <window_info anchor="bottom" id="Database Changes" show_stripe_button="false" />
+      <window_info active="true" anchor="bottom" id="Version Control" order="7" visible="true" weight="0.3272727" />
+      <window_info anchor="bottom" id="Python Console" order="7" weight="0.3293023" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32744187" />
+      <window_info anchor="bottom" id="Terminal" order="7" weight="0.3293023" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.17689331" />
+      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="right" id="Database" order="4" weight="0.32946378" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="right" id="SciView" order="5" weight="0.32946378" />
+      <window_info anchor="right" id="Structure" order="3" side_tool="true" visible="true" weight="0.23935877" />
+      <window_info id="Favorites" order="1" side_tool="true" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.31578946" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="bottom" id="Messages" order="7" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -459,6 +421,17 @@
               </option>
               <option name="RECENTLY_FILTERED_BRANCH_GROUPS">
                 <collection />
+              </option>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="master" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
               </option>
               <option name="COLUMN_ORDER">
                 <list>
@@ -512,12 +485,12 @@
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/protocols/activity_protocol.py</url>
-          <line>1552</line>
+          <line>1557</line>
           <option name="timeStamp" value="36" />
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/protocols/activity_protocol.py</url>
-          <line>1588</line>
+          <line>1593</line>
           <option name="timeStamp" value="39" />
         </line-breakpoint>
         <line-breakpoint suspend="THREAD" type="python-line">
@@ -564,113 +537,60 @@
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="82" />
+      <option name="time" value="83" />
     </breakpoint-manager>
-    <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/static/css/images/spritesheet.svg">
-      <provider selected="true" editor-type-id="images">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/css/images/spritesheet-2x.png">
-      <provider selected="true" editor-type-id="images">
-        <state />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/static/css/form.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/static/css/leaflet.css">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="324">
-          <caret line="18" column="5" lean-forward="false" selection-start-line="18" selection-start-column="5" selection-end-line="18" selection-end-column="5" />
+          <caret line="18" column="5" selection-start-line="18" selection-start-column="5" selection-end-line="18" selection-end-column="5" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/css/leaflet.draw.css">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="162">
-          <caret line="9" column="27" lean-forward="false" selection-start-line="9" selection-start-column="27" selection-end-line="9" selection-end-column="27" />
+          <caret line="9" column="27" selection-start-line="9" selection-start-column="27" selection-end-line="9" selection-end-column="27" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/css/images/marker-icon.png">
-      <provider selected="true" editor-type-id="images">
-        <state />
-      </provider>
+      <provider selected="true" editor-type-id="images" />
     </entry>
     <entry file="file://$PROJECT_DIR$/static/css/images/marker-icon-2x.png">
-      <provider selected="true" editor-type-id="images">
-        <state />
-      </provider>
+      <provider selected="true" editor-type-id="images" />
     </entry>
     <entry file="file://$PROJECT_DIR$/../../.virtualenvs/landobservatory/local/lib/python3.6/site-packages/webob/request.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="133">
-          <caret line="757" column="0" lean-forward="false" selection-start-line="757" selection-start-column="0" selection-end-line="757" selection-end-column="0" />
+          <caret line="757" selection-start-line="757" selection-end-line="757" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/templates/form/readonly/textinput.mak">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/templates/form/readonly/mapping.mak">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/templates/form/readonly/mapping_item.mak">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="126">
-          <caret line="7" column="55" lean-forward="true" selection-start-line="7" selection-start-column="55" selection-end-line="7" selection-end-column="55" />
-        </state>
-      </provider>
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/static/js/form.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/customization/omm/templates/map_view.mak">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="371">
-          <caret line="218" column="4" lean-forward="false" selection-start-line="218" selection-start-column="4" selection-end-line="218" selection-end-column="104" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/js/maps2/base.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1062">
-          <caret line="59" column="7" lean-forward="false" selection-start-line="59" selection-start-column="3" selection-end-line="59" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/protocols/activity_protocol.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="164">
-          <caret line="350" column="0" lean-forward="false" selection-start-line="350" selection-start-column="0" selection-end-line="350" selection-end-column="0" />
-          <folding />
+          <caret line="218" column="4" selection-start-line="218" selection-start-column="4" selection-end-line="218" selection-end-column="104" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/protocols/protocol.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="336">
-          <caret line="2058" column="29" lean-forward="false" selection-start-line="2058" selection-start-column="29" selection-end-line="2058" selection-end-column="29" />
+          <caret line="2058" column="29" selection-start-line="2058" selection-start-column="29" selection-end-line="2058" selection-end-column="29" />
         </state>
       </provider>
     </entry>
@@ -691,43 +611,24 @@
     <entry file="file://$PROJECT_DIR$/templates/form/hidden.mak">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="180">
-          <caret line="10" column="13" lean-forward="false" selection-start-line="10" selection-start-column="13" selection-end-line="10" selection-end-column="13" />
+          <caret line="10" column="13" selection-start-line="10" selection-start-column="13" selection-end-line="10" selection-end-column="13" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/customization/omm/templates/form/readonly/customInvolvementMappingActivity.mak">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/customization/omm/templates/base.mak">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="20" column="27" lean-forward="true" selection-start-line="20" selection-start-column="27" selection-end-line="20" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/js/maps/base.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="396">
-          <caret line="22" column="4" lean-forward="false" selection-start-line="22" selection-start-column="3" selection-end-line="22" selection-end-column="4" />
-        </state>
-      </provider>
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file:///usr/lib/python3.6/asyncore.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="228">
-          <caret line="328" column="0" lean-forward="false" selection-start-line="328" selection-start-column="0" selection-end-line="328" selection-end-column="0" />
+          <caret line="328" selection-start-line="328" selection-end-line="328" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/customization/omm/static/css/custom.css">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="24156">
-          <caret line="1342" column="1" lean-forward="false" selection-start-line="1342" selection-start-column="1" selection-end-line="1342" selection-end-column="1" />
-          <folding />
+          <caret line="1342" column="1" selection-start-line="1342" selection-start-column="1" selection-end-line="1342" selection-end-column="1" />
         </state>
       </provider>
     </entry>
@@ -735,45 +636,34 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-2678">
           <caret line="2297" column="40" lean-forward="true" selection-start-line="2297" selection-start-column="40" selection-end-line="2297" selection-end-column="40" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/config/customization.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="454">
-          <caret line="168" column="58" lean-forward="false" selection-start-line="168" selection-start-column="27" selection-end-line="168" selection-end-column="58" />
-          <folding />
+          <caret line="168" column="58" selection-start-line="168" selection-start-column="27" selection-end-line="168" selection-end-column="58" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/venv/lib/python3.6/site-packages/pip/_vendor/distro.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="94">
-          <caret line="22" column="69" lean-forward="false" selection-start-line="22" selection-start-column="69" selection-end-line="22" selection-end-column="69" />
+          <caret line="22" column="69" selection-start-line="22" selection-start-column="69" selection-end-line="22" selection-end-column="69" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../lokp.egg-info/SOURCES.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="273">
-          <caret line="279" column="20" lean-forward="false" selection-start-line="279" selection-start-column="20" selection-end-line="279" selection-end-column="20" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="165">
-          <caret line="57" column="0" lean-forward="true" selection-start-line="57" selection-start-column="0" selection-end-line="57" selection-end-column="0" />
-          <folding />
+          <caret line="279" column="20" selection-start-line="279" selection-start-column="20" selection-end-line="279" selection-end-column="20" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/templates/form/fileupload_embedded.mak">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="36">
-          <caret line="2" column="0" lean-forward="true" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+          <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
         </state>
       </provider>
     </entry>
@@ -781,41 +671,27 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="306">
           <caret line="17" column="25" lean-forward="true" selection-start-line="17" selection-start-column="25" selection-end-line="17" selection-end-column="25" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/templates/form/form_fileupload_embedded.mak">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-18">
-          <caret line="83" column="34" lean-forward="false" selection-start-line="83" selection-start-column="34" selection-end-line="83" selection-end-column="34" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/customization/omm/templates/activities/details.mak">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="126">
-          <caret line="7" column="7" lean-forward="true" selection-start-line="7" selection-start-column="7" selection-end-line="7" selection-end-column="7" />
-          <folding />
+          <caret line="83" column="34" selection-start-line="83" selection-start-column="34" selection-end-line="83" selection-end-column="34" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/templates/form/customFileDisplay.mak">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="238">
-          <caret line="88" column="43" lean-forward="false" selection-start-line="88" selection-start-column="43" selection-end-line="88" selection-end-column="43" />
-          <folding>
-            <marker date="1522322920706" expanded="true" signature="6188:6195" ph="×" />
-          </folding>
+          <caret line="88" column="43" selection-start-line="88" selection-start-column="43" selection-end-line="88" selection-end-column="43" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../development.ini">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="328">
-          <caret line="36" column="33" lean-forward="false" selection-start-line="36" selection-start-column="33" selection-end-line="36" selection-end-column="33" />
-          <folding />
+          <caret line="36" column="33" selection-start-line="36" selection-start-column="33" selection-end-line="36" selection-end-column="33" />
         </state>
       </provider>
     </entry>
@@ -823,23 +699,20 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="126">
           <caret line="10" column="7" lean-forward="true" selection-start-line="10" selection-start-column="7" selection-end-line="10" selection-end-column="7" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/config/files.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="229">
-          <caret line="32" column="0" lean-forward="false" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
-          <folding />
+          <caret line="32" selection-start-line="32" selection-end-line="32" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/views/files.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="219">
-          <caret line="37" column="0" lean-forward="false" selection-start-line="37" selection-start-column="0" selection-end-line="37" selection-end-column="0" />
-          <folding />
+          <caret line="37" selection-start-line="37" selection-end-line="37" />
         </state>
       </provider>
     </entry>
@@ -847,103 +720,189 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="378">
           <caret line="21" column="20" lean-forward="true" selection-start-line="21" selection-start-column="20" selection-end-line="21" selection-end-column="20" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="165">
-          <caret line="190" column="0" lean-forward="true" selection-start-line="190" selection-start-column="0" selection-end-line="190" selection-end-column="0" />
-          <folding />
+          <caret line="190" lean-forward="true" selection-start-line="190" selection-end-line="190" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../.virtualenvs/landobservatory/local/lib/python3.6/site-packages/pyramid/renderers.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="486">
-          <caret line="147" column="0" lean-forward="false" selection-start-line="147" selection-start-column="0" selection-end-line="147" selection-end-column="0" />
-          <folding />
+          <caret line="147" selection-start-line="147" selection-end-line="147" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../.virtualenvs/landobservatory/local/lib/python3.6/site-packages/pyramid/viewderivers.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="256">
-          <caret line="124" column="0" lean-forward="false" selection-start-line="124" selection-start-column="0" selection-end-line="124" selection-end-column="0" />
-          <folding />
+        <state relative-caret-position="1494">
+          <caret line="124" selection-start-line="124" selection-end-line="124" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/templates/map/mapform.mak">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="864">
-          <caret line="48" column="43" lean-forward="true" selection-start-line="48" selection-start-column="43" selection-end-line="48" selection-end-column="43" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/templates/form/customMapMapping.mak">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="5" column="0" lean-forward="false" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
-          <folding />
+          <caret line="48" column="43" selection-start-line="48" selection-start-column="43" selection-end-line="48" selection-end-column="43" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../.virtualenvs/landobservatory/local/lib/python3.6/site-packages/deform/field.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="166">
-          <caret line="517" column="38" lean-forward="false" selection-start-line="517" selection-start-column="31" selection-end-line="517" selection-end-column="38" />
-          <folding />
+        <state relative-caret-position="9018">
+          <caret line="517" column="38" selection-start-line="517" selection-start-column="31" selection-end-line="517" selection-end-column="38" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/views/activities.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="630" column="0" lean-forward="false" selection-start-line="630" selection-start-column="0" selection-end-line="630" selection-end-column="0" />
-          <folding />
+        <state relative-caret-position="10872">
+          <caret line="630" selection-start-line="630" selection-end-line="630" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/views/form.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="797" column="57" lean-forward="false" selection-start-line="797" selection-start-column="57" selection-end-line="797" selection-end-column="57" />
-          <folding />
+        <state relative-caret-position="13950">
+          <caret line="797" column="57" selection-start-line="797" selection-start-column="57" selection-end-line="797" selection-end-column="57" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/customization/omm/templates/form/readonly/form.mak">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="492">
-          <caret line="327" column="8" lean-forward="false" selection-start-line="327" selection-start-column="8" selection-end-line="327" selection-end-column="8" />
-          <folding />
+        <state relative-caret-position="3546">
+          <caret line="331" selection-start-line="331" selection-end-line="331" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/js/maps/form.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="54">
-          <caret line="3" column="20" lean-forward="false" selection-start-line="3" selection-start-column="20" selection-end-line="3" selection-end-column="20" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/customization/omm/templates/review/readonly/form.mak">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="441">
-          <caret line="139" column="14" lean-forward="false" selection-start-line="139" selection-start-column="14" selection-end-line="139" selection-end-column="14" />
-          <folding />
+          <caret line="3" column="20" selection-start-line="3" selection-start-column="20" selection-end-line="3" selection-end-column="20" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/static/js/maps/compare.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="8" column="3" lean-forward="true" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
-          <folding />
+        <state relative-caret-position="162">
+          <caret line="9" column="3" lean-forward="true" selection-start-line="9" selection-start-column="3" selection-end-line="9" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/protocols/activity_protocol.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1530">
+          <caret line="207" column="74" selection-start-line="207" selection-start-column="20" selection-end-line="207" selection-end-column="74" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/customization/omm/templates/base.mak">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="234">
+          <caret line="49" column="59" selection-start-line="49" selection-start-column="59" selection-end-line="49" selection-end-column="59" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/customization/omm/templates/activities/details.mak">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="26" column="21" lean-forward="true" selection-start-line="26" selection-start-column="21" selection-end-line="26" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/customization/omm/templates/review/readonly/form.mak">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="504">
+          <caret line="28" lean-forward="true" selection-start-line="28" selection-end-line="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/maps/main.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-486">
+          <folding>
+            <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/maps2/main.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="444">
+          <caret line="71" column="21" selection-start-line="71" selection-start-column="21" selection-end-line="71" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/maps2/base.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="268">
+          <caret line="563" column="31" lean-forward="true" selection-end-line="578" />
+          <folding>
+            <element signature="e#188#194#0" expanded="true" />
+            <element signature="n#style#0;n#span#0;n#label#0;n#p#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#span#0;n#span#0;n#label#0;n#p#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#a#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#i#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#ul#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#li#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/maps/base.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="383">
+          <caret line="344" column="38" selection-start-line="340" selection-start-column="43" selection-end-line="344" selection-end-column="38" />
+          <folding>
+            <element signature="e#188#194#0" expanded="true" />
+            <element signature="n#style#0;n#span#0;n#label#0;n#p#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#span#0;n#span#0;n#label#0;n#p#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#a#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#i#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#ul#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#li#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/form/customMapMapping.mak">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="174">
+          <caret line="45" lean-forward="true" selection-start-line="45" selection-end-line="45" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/form/readonly/mapping_item.mak">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="634">
+          <caret line="42" column="119" selection-start-line="42" selection-start-column="119" selection-end-line="42" selection-end-column="119" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/js/maps/drawPolygonFeature.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-438">
+          <caret line="107" column="46" lean-forward="true" selection-start-line="107" selection-start-column="46" selection-end-line="107" selection-end-column="46" />
         </state>
       </provider>
     </entry>

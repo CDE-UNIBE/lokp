@@ -2,6 +2,8 @@
  * Creates a map, adds controlls to it and inserts it to a div with the same id as mapId
  */
 function createFormMap(mapId, options) {
+
+
     console.log('call createFormMap function ' + mapId);
     var baseLayers = getBaseLayers();
     var activeBaseLayer = Object.values(baseLayers)[0];
@@ -74,7 +76,8 @@ function createFormMap(mapId, options) {
     else {
         // Readonly! Add point and polygon areas to details page
         addDealLocation(map, geometry); // geometry and dealAreas are defined in mapform.mak!!
-        zoomToDealLocation(map, geometry);
+        var coordinatesLatLong = geometry.coordinates;
+        zoomToDealLocation(map, coordinatesLatLong);
         addDealAreas(map, dealAreas);
     }
 }
@@ -104,11 +107,6 @@ function addDealLocation(map, geometry) {
     }
 }
 
-function zoomToDealLocation(map, geometry) {
-    var coordLatLong = geometry.coordinates.reverse();
-    //L.panTo(coordLatLong);
-    //L.setZoom(5);
-}
 
 /**
  * @param map
@@ -130,12 +128,15 @@ function addDealAreas(map, dealAreas) {
         polyCoordsLatLon = changeToLatLon(polyCoords);
 
         var polygonL = L.polygon(polyCoordsLatLon, {color: 'blue'});
+        map.addLayer(polygonL); // polygons are initially added to the map
         layerDictionary[key] = polygonL;
 
         // TODO: add checkbox (html code can be passed with key) http://leafletjs.com/reference-1.3.0.html#control-layers
     });
 
     // add Layers to layer control
+    // try: https://gis.stackexchange.com/questions/178945/leaflet-customizing-the-layerswitcher
+    // http://embed.plnkr.co/Je7c0m/
     L.control.layers([], layerDictionary).addTo(map);
 
 }
@@ -153,4 +154,10 @@ function changeToLatLon(polyCoords) {
         polyCoordsLatLon.push(coordLatLong);
     }
     return polyCoordsLatLon;
+}
+
+function zoomToDealLocation(map, coordLatLong) {
+    var lat = coordLatLong[0];
+    var long = coordLatLong[1];
+    map.setView([lat, long], 8);
 }
