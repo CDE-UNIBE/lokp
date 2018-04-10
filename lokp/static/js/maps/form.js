@@ -78,7 +78,7 @@ function createFormMap(mapId, options) {
         addDealLocation(map, geometry); // geometry and dealAreas are defined in mapform.mak!!
         var coordinatesLatLong = geometry.coordinates;
         zoomToDealLocation(map, coordinatesLatLong);
-        addDealAreas(map, dealAreas);
+        addDealAreasReadonly(map, dealAreas);
     }
 }
 
@@ -114,7 +114,7 @@ function addDealLocation(map, geometry) {
 
  // draw polygon when reloading page
  */
-function addDealAreas(map, dealAreas) {
+function addDealAreasReadonly(map, dealAreas) {
     // iterate over dictionary
 
     var layerDictionary = [];
@@ -138,8 +138,9 @@ function addDealAreas(map, dealAreas) {
     // add Layers to layer control
     // try: https://gis.stackexchange.com/questions/178945/leaflet-customizing-the-layerswitcher
     // http://embed.plnkr.co/Je7c0m/
-    L.control.layers([], layerDictionary).addTo(map);
-
+    if (! jQuery.isEmptyObject(layerDictionary)){  // only add layer control if layers aren't empty
+        L.control.layers([], layerDictionary).addTo(map);
+    }
 }
 
 /**

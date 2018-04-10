@@ -69,36 +69,6 @@ function zoomToDealLocation(map, coordLatLong) {
 }
 
 /**
- * @param map
- * @param dealAreas     Dictionary containing polygons for areas intended area, contract area current area
-
- // draw polygon when reloading page
- */
-function addDealAreas(map, dealAreas) {
-    // iterate over dictionary
-
-    var layerDictionary = [];
-    $.each(dealAreas, function (key, polygon) {  // method doku: http://api.jquery.com/jquery.each/
-        console.log(key + ": " + polygon)
-        // convert to leaflet polygon
-        var polyCoords = polygon.coordinates;
-        polyCoords = polyCoords[0]; // remove unnecessary array depth
-
-        // change each long lat coordinate within polyCoords to lat long
-        polyCoordsLatLon = changeToLatLon(polyCoords);
-
-        var polygonL = L.polygon(polyCoordsLatLon, {color: 'blue'});
-        layerDictionary[key] = polygonL;
-
-        // TODO: add checkbox (html code can be passed with key) http://leafletjs.com/reference-1.3.0.html#control-layers
-    });
-
-    // add Layers to layer control
-    L.control.layers([], layerDictionary).addTo(map);
-
-}
-
-/**
  *
  * @param polyCoords An array containing arrays with a long/lat coordinate pair (for each vertex of the polygon)
  * @returns {Array} An array containing arrays with a lat/long coordinate pair
@@ -128,8 +98,10 @@ function addDealAreaLayers(dealAreasNew, dealAreasRef, map) {
     // combine dictionaries
     var dictLayers = Object.assign({}, layerDictionaryNew, layerDictionaryRef);
 
-    // add to layer control
-    L.control.layers([], dictLayers).addTo(map);
+    // add to layer control if there are layers in dictLayers
+    if (! jQuery.isEmptyObject(dictLayers)){  // only add layer control if layers aren't empty
+        L.control.layers([], dictLayers).addTo(map);
+    }
 }
 
 /**
@@ -171,7 +143,6 @@ function getDictWithGeometries(dealAreas, map, isReferenceData) {
         // cut last 5 characters and add new suffix to label
         layerLabel = layerLabel.slice(0, -5);
         layerLabel = isReferenceData ? layerLabel + "_Ref" : layerLabel + "_New";
-
 
         map.addLayer(layer); // makes polygons appear when map is first loaded
         layerDictionary[layerLabel] = layer;
