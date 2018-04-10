@@ -119,15 +119,16 @@ function addDealAreas(map, dealAreas) {
 
     var layerDictionary = [];
     $.each(dealAreas, function (key, polygon) {  // method doku: http://api.jquery.com/jquery.each/
-        console.log(key + ": " + polygon)
         // convert to leaflet polygon
         var polyCoords = polygon.coordinates;
         polyCoords = polyCoords[0]; // remove unnecessary array depth
 
         // change each long lat coordinate within polyCoords to lat long
-        polyCoordsLatLon = changeToLatLon(polyCoords);
+        var polyCoordsLatLon = changeToLatLon(polyCoords);
 
-        var polygonL = L.polygon(polyCoordsLatLon, {color: 'blue'});
+        var layerColor = getLayerColor(key);
+
+        var polygonL = L.polygon(polyCoordsLatLon, {color: layerColor});
         map.addLayer(polygonL); // polygons are initially added to the map
         layerDictionary[key] = polygonL;
 
@@ -160,4 +161,19 @@ function zoomToDealLocation(map, coordLatLong) {
     var lat = coordLatLong[0];
     var long = coordLatLong[1];
     map.setView([lat, long], 8);
+}
+
+// TODO: move to base
+function getLayerColor(layerLabel) {
+    var layerColor;
+    if (layerLabel == 'Intended area (ha)') {  // TODO: get string config
+        layerColor = 'lightgreen';
+    }
+    if (layerLabel == 'Contract area (ha)') {
+        layerColor = 'green';
+    }
+    if (layerLabel == 'Current area in operation (ha)') {
+        layerColor = 'blue';
+    }
+    return layerColor
 }

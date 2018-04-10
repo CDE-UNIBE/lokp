@@ -8,7 +8,7 @@
  * tForChangesInThisSection
  *
  */
-function createReviewMap(mapId, geometry) {
+function createReviewMap(mapId, options, geometry) {
 
     console.log('geometryCompare', geometry)
     var baseLayers = getBaseLayers();
@@ -36,85 +36,11 @@ function createReviewMap(mapId, geometry) {
 
     addDealAreaLayers(dealAreasNew, dealAreasRef, map);
 
-    // addDealAreaLayers(dealAreasRef, map);
-
-
-    // Object.keys(dealAreasNew);
-    // TODO list of dictionaries
-
-
-    // JSON.parse(geometry.new.dealAreas)[key]
-
-    // TODO: add both geometries to the map
-
-
-//     map.on('moveend', function (e) {
-//         $.cookie('_LOCATION_', map.getBounds().toBBoxString(), {expires: 7});
-//     });
-//
-//     // Initial map extent
-//     var initialExtent = L.geoJSON(window.mapVariables.profile_polygon).getBounds();
-//     var locationCookie = $.cookie('_LOCATION_');
-//     if (locationCookie) {
-//         // If a valid cookie is set, use this as extent
-//         var parts = locationCookie.split(',');
-//         if (parts.length === 4) {
-//             initialExtent = L.latLngBounds(
-//                 L.latLng(parts[1], parts[0]),
-//                 L.latLng(parts[3], parts[2]));
-//         }
-//     }
-//     map.fitBounds(initialExtent);
-//
-//     // Disable dragging of the map for the floating buttons
-//     var ctrl = L.DomUtil.get('map-floating-buttons-' + mapId);
-//     if (ctrl) {
-//         ctrl.addEventListener('mouseover', function () {
-//             map.dragging.disable();
-//         });
-//         ctrl.addEventListener('mouseout', function () {
-//             map.dragging.enable();
-//         });
-//     }
-//
-//     // Hide loading overlay
-//     $('.map-loader[data-map-id="' + mapId + '"]').hide();
-//
-//     if (typeof window.lokp_maps === 'undefined') {
-//         window.lokp_maps = {};
-//     }
-//     window.lokp_maps[mapId] = {
-//         map: map,
-//         baseLayers: baseLayers,
-//         contextLayers: getContextLayers(mapId, window.mapVariables.context_layers),
-//         polygonLayers: {},
-//         // Keep track of the currently active base layer so it can be changed
-//         // programmatically
-//         activeBaseLayer: activeBaseLayer,
-//         activeMapMarker: null,
-//         // Initial map variables
-//         mapVariables: window.mapVariables,
-//         options: options
-//     };
-//
     initBaseLayerControl();
-    // initMapContent(map);
+    // initMapContent(map, options);
     initPolygonLayers(mapId, window.mapVariables.polygon_keys);
     initContextLayerControl();
     initMapSearch(mapId);
-
-    // if (options.readonly !== true) {
-    //     var geometry_type = options.geometry_type['geometry_type']
-    //     initDrawPolygonControl(map, geometry_type);
-    //
-    //     // TODO: make this work for edit as well (geometries are not passed to edit mode)
-    // }
-    // else {
-    //     // Readonly! Add point and polygon areas to details page
-    //     addDealLocation(map, geometry); // geometry and dealAreas are defined in mapform.mak!!
-    //     zoomToDealLocation(map, geometry);
-    //     addDealAreas(map, dealAreas);
-    // }
 }
 
 

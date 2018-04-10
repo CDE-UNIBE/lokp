@@ -1,7 +1,5 @@
 <%page args="readonly=False, compare=False, identifier=None, version=None" />
 
-<script type="text/javascript"
-        src="//maps.googleapis.com/maps/api/js?v=3&key=${str(request.registry.settings.get('lokp.google_maps_api_key'))}&libraries=places"></script>
 % if compare is True:
     <script src="${request.static_url('lokp:static/js/maps/compare.js')}" type="text/javascript"></script>
 % else:

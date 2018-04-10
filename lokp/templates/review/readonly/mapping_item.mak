@@ -121,7 +121,7 @@
         </div>
         % endif
 
-    % elif field.name not in ['tg_id', 'id', 'category', 'version', 'itemType', 'change'] and not hasOnlyNullValues:
+    % elif field.name not in ['tg_id', 'id', 'category', 'version', 'itemType', 'change', 'geometry'] and not hasOnlyNullValues:
         ## Single tag
         <div class="row compareitem">
             <div class="col s5 versioncomparetitle text-accent-color">

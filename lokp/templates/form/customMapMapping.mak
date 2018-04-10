@@ -57,15 +57,15 @@
 ##            data-tooltip="${_('Add a Filter')}" data-activates="slide-out-filter-${field.title}">
 ##             <i class="material-icons" style="margin-right: 15px;" data-position="top">filter_list</i>
 ##         </a>
-        % if len(activeFilters) == 1:
-            <span class="badge"
-                  style="color: white; background-color: #323232; position: relative; top: -25px; left: -40px; z-index: 1; border-radius: 5px;">${len(activeFilters)}
-                active filter</span>
-        % else:
-            <span class="badge"
-                  style="color: white; background-color: #323232; position: relative; top: -25px; left: -40px; z-index: 1; border-radius: 5px;">${len(activeFilters)}
-                active filters</span>
-        % endif
+##         % if len(activeFilters) == 1:
+##             <span class="badge"
+##                   style="color: white; background-color: #323232; position: relative; top: -25px; left: -40px; z-index: 1; border-radius: 5px;">${len(activeFilters)}
+##                 active filter</span>
+##         % else:
+##             <span class="badge"
+##                   style="color: white; background-color: #323232; position: relative; top: -25px; left: -40px; z-index: 1; border-radius: 5px;">${len(activeFilters)}
+##                 active filters</span>
+##         % endif
     </div>
 
     ## Manages green layer button
