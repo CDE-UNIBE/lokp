@@ -8,15 +8,20 @@
     from lokp.utils.form import structHasOnlyNullValues
     hasOnlyNullValues, depth = structHasOnlyNullValues(cstruct)
     import colander
+##     if depth is 3:
+    print('CSTRUCT', cstruct)
+    print('depth', depth)
+    print('FIELD', field.title)
+##     print('cstruct', field.serialize(cstruct, readonly=True))
 %>
 
     % if field.name == 'map':
         ## The map container was already rendered by the initial form item so it
         ## appears right on top.
-    
-    % elif depth == 3:
+
+    % elif depth == 3 or field.title == 'Spatial Data':  ## required that spatial data is also considered as category (doesnt have depth 3!)
         ## Category
-        
+
         <%
             change = 'change' in cstruct and cstruct['change'] != colander.null
             cls = 'collapsible-header category row'
@@ -27,7 +32,7 @@
                 clsBody += ' in'
                 chevronClass = 'expand_less'
         %>
-        
+
         <ul class="row accordion comparedetailcontainer collapsible" data-collapsible="accordion">
             <li>
             <div class="${cls}">
@@ -72,14 +77,14 @@
 
     % elif depth == 2 and not hasOnlyNullValues:
         ## Thematic Group
-        
+
         <%
             change = 'change' in cstruct and cstruct['change'] != colander.null
             cls = 'span6 grid-area'
             if change:
                 cls += ' change'
         %>
-        
+
         <div class="row accordion-group">
             <div class="row">
                 <div class="col s6 trennstrich">
@@ -98,7 +103,7 @@
 
     % elif depth == 1 and not hasOnlyNullValues:
         ## Taggroup
-    
+
         <%
             change = 'change' in cstruct and cstruct['change'] != colander.null
             if isinstance(cstruct, list):
@@ -108,7 +113,7 @@
             if change:
                 cls += ' change'
         %>
-    
+
         % if field.name.startswith('ref_'):
         <div class="row deal-moderate-col-wrap">
             <div class="${cls}">

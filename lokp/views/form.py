@@ -1019,30 +1019,34 @@ def getTaggroupGeometries(itemJson):
 # get polygon geometries from data
 ## TODO: remove hardcoding!
 def getTaggroupGeometriesCompare(data):
-    dealAreas = dict();
+
+    dealAreas = dict()
     if bool(data): # returns false if dictionary is empty
+        try:
+            taggroups = data.get('1') # flatten dict
+            taggroup_landarea = taggroups.get('12') # 12 is id for taggroup landarea
 
-        taggroups = data.get('1') # flatten dict
-        taggroup_landarea = taggroups.get('12') # 12 is id for taggroup landarea
+            taggroup_keys = taggroup_landarea.keys()
 
-        taggroup_keys = taggroup_landarea.keys()
+            for key in taggroup_keys:
+                tag = taggroup_landarea.get(key)
 
-        for key in taggroup_keys:
-            tag = taggroup_landarea.get(key)
+                # if tag is a list, remove list
+                if type(tag) is list:
+                    tag = tag[0]
 
-            # if tag is a list, remove list
-            if type(tag) is list:
-                tag = tag[0]
+                geometry = tag.get('map'+key)
 
-            geometry = tag.get('map'+key)
+                taggroup_keys = tag.keys()
 
-            taggroup_keys = tag.keys()
+                if 'Intended area (ha)' in taggroup_keys:
+                    dealAreas['Intended area (ha)'] = geometry
+                if 'Contract area (ha)' in taggroup_keys:
+                    dealAreas['Contract area (ha)'] = geometry
+                if 'Current area in operation (ha)' in taggroup_keys:
+                    dealAreas['Current area in operation (ha)'] = geometry
+            return dealAreas
 
-            if 'Intended area (ha)' in taggroup_keys:
-                dealAreas['Intended area (ha)'] = geometry
-            if 'Contract area (ha)' in taggroup_keys:
-                dealAreas['Contract area (ha)'] = geometry
-            if 'Current area in operation (ha)' in taggroup_keys:
-                dealAreas['Current area in operation (ha)'] = geometry
-
+        except AttributeError:
+            return dealAreas ## returns empty dict
     return dealAreas

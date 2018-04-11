@@ -61,7 +61,7 @@ function createFormMap(mapId, options) {
     };
 
     initBaseLayerControl();
-    initMapContent(map);
+    // initMapContent(map);
     initPolygonLayers(mapId, window.mapVariables.polygon_keys);
     initContextLayerControl();
     initMapSearch(mapId);
