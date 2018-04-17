@@ -26,7 +26,7 @@
 
 ## container containing map
 
-<div id="${field.title}" style="height: 400px;"> ## variable title is passed by config/form.py/getMapWidget
+<div id="${field.title}" style="height: 400px;">
     ## Loading indicator
 
     <div class="preloader-wrapper big active map-loader" data-map-id="${field.title}">
@@ -97,8 +97,8 @@
 ## Shapefile upload
 
 
-<a id="test-shapefile-uploader-${field.title}" class="modal-trigger waves-effect waves-light btn" href="#formModal"
-   onclick="return uploadFile(event, this);" style="margin-bottom: 15px;">${_('Upload a file')}</a>
+## <a id="test-shapefile-uploader-${field.title}" class="modal-trigger waves-effect waves-light btn" href="#formModal"
+##    onclick="return uploadFile(event, this);" style="margin-bottom: 15px;">${_('Upload a file')}</a>
 
 ## duplicated from customFileDisplay.mak
 <script>
@@ -298,27 +298,31 @@ ${template.render(request=request, geometry=geometry, editmode=editmode, _=_)}
         % endif
         ${_('Set the location')}&nbsp;<span class="helpTooltip icon-question-sign tooltipped" data-position="top"
                                             data-delay="50"
-                                            data-tooltip="${_('Click on the map to set the location. Please zoom in to set the point as accurately as possible.')}"></span>
-        <p style="margin-top: 10px;">${_('Please use the QGIS plugin to add or edit polygons.')} <a
-                href="http://lokp.readthedocs.org/en/latest/qgis.html" target="_blank"
-                class="text-accent-color">${_('Read more.')}</a></p>
+                                            data-tooltip="${_('Use the toolbar to the right to draw the location. Please zoom in to set the geometry as accurately as possible.')}"></span>
+##         <p style="margin-top: 10px;">${_('Please use the QGIS plugin to add or edit polygons.')} <a
+##                 href="http://lokp.readthedocs.org/en/latest/qgis.html" target="_blank"
+##                 class="text-accent-color">${_('Read more.')}</a></p>
     </div>
-    <div class="input-field col s12" action="">
-        <div class="col s6" style="margin: 0; padding: 0;">
-            <a class="pointer btn tooltipped" onClick="javascript:triggerCoordinatesDiv();" data-position="top"
-               data-delay="50"
-               data-tooltip="${_('If you have GPS coordinates you can enter them to set the location even more accurately.')}">${_('Enter coordinates')}
-                <i class="material-icons tooltipped right">my_location</i></a>
+
+    % if field.title == "map11":
+        <div class="input-field col s12" action="">
+            <div class="col s6" style="margin: 0; padding: 0;">
+                <a class="pointer btn tooltipped" onClick="javascript:triggerCoordinatesDiv();" data-position="top"
+                   data-delay="50"
+                   data-tooltip="${_('If you have GPS coordinates you can enter them to set the location even more accurately.')}">${_('Enter coordinates')}
+                    <i class="material-icons tooltipped right">my_location</i></a>
+            </div>
+            <div class="col s6" style="margin: 0; padding: 0;">
+                <input id="js-map-search" data-set-marker="true" name="q" type="text" placeholder="${_('Search location')}"
+                       style="line-height: 30px; height: 30px;">
+                <button value="Search" id="search-submit" class="btn tooltipped" style="line-height: 30px; height: 30px;"
+                        name="action" data-position="top" data-delay="50"
+                        data-tooltip="${_('Start to search for a location by typing in the search field.')}"><i
+                        class="material-icons">search</i></button>
+            </div>
         </div>
-        <div class="col s6" style="margin: 0; padding: 0;">
-            <input id="js-map-search" data-set-marker="true" name="q" type="text" placeholder="${_('Search location')}"
-                   style="line-height: 30px; height: 30px;">
-            <button value="Search" id="search-submit" class="btn tooltipped" style="line-height: 30px; height: 30px;"
-                    name="action" data-position="top" data-delay="50"
-                    data-tooltip="${_('Start to search for a location by typing in the search field.')}"><i
-                    class="material-icons">search</i></button>
-        </div>
-    </div>
+    % endif
+
 </div>
 
 <script type="text/javascript">
