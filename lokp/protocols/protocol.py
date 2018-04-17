@@ -4,6 +4,7 @@ import json
 import logging
 
 import geojson
+from geoalchemy2 import functions as geofunctions, WKTElement
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.i18n import get_localizer
 from pyramid.renderers import render
@@ -1405,6 +1406,12 @@ class Protocol(object):
                             if ('id' not in tag_dict
                                     and tag_dict['op'] == 'add'):
                                 if db is True:
+                                    if tag_dict.get('key').startswith('map'):
+                                        if tag_dict.get('value') is not None:
+                                            # Add geometry to taggroup and not create tag
+                                            geometry = tag_dict['value'].get('geometry')
+                                            # new_taggroup['geometry'] = geometry
+                                            continue
                                     new_tag = self._create_tag(
                                         request, new_taggroup.tags,
                                         tag_dict['key'], tag_dict['value'],
@@ -1530,6 +1537,35 @@ class Protocol(object):
                         if 'id' not in tag_dict and tag_dict['op'] == 'add':
 
                             if db is True:
+                                if tag_dict.get('key').startswith('map'):
+                                    if tag_dict.get('value') is not None:
+                                        # Add geometry to taggroup and not create tag
+                                        geometry = tag_dict['value'].get('geometry')
+                                        ## TODO: refactor this
+
+                                        try:
+                                            tg_geom = geojson.loads(geometry)
+                                            # The geometry
+                                            try:
+                                                tg_shape = asShape(tg_geom)
+                                                geometrytype = tg_shape.geom_type
+                                            except:
+                                                raise HTTPBadRequest(
+                                                    detail="Invalid geometry type of taggroup")
+                                            # Store the geometry only if it is a polygon or multipolygon
+                                            if geometrytype == 'Polygon' or geometrytype == 'MultiPolygon':
+                                                new_taggroup
+                                                # define right projection
+                                                new_taggroup.geometry = WKTElement(tg_shape.wkt, srid=4326)
+                                                item.tag_groups.append(new_taggroup) ## add taggroup to activity
+                                            else:
+                                                raise HTTPBadRequest(
+                                                    detail="Invalid geometry type of taggroup: Only "
+                                                           "Polygon or MultiPolygon is supported.")
+                                        except KeyError:
+                                            pass
+                                        continue
+
                                 new_tag = self._create_tag(
                                     request, new_taggroup.tags,
                                     tag_dict['key'], tag_dict['value'],

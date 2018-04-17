@@ -2131,7 +2131,6 @@ class ActivityProtocol(Protocol):
             new_activity,
             db=True
         )
-
         return a, return_diff
 
     def _handle_involvements(self, request, old_version, new_version,

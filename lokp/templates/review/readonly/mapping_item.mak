@@ -9,9 +9,14 @@
     hasOnlyNullValues, depth = structHasOnlyNullValues(cstruct)
     import colander
 ##     if depth is 3:
-    print('CSTRUCT', cstruct)
-    print('depth', depth)
-    print('FIELD', field.title)
+
+##     if depth == 2:
+##         print('CSTRUCT', cstruct)
+
+
+##
+##     print('depth', depth)
+##     print('FIELD', field.title)
 ##     print('cstruct', field.serialize(cstruct, readonly=True))
 %>
 
@@ -80,6 +85,8 @@
 
         <%
             change = 'change' in cstruct and cstruct['change'] != colander.null
+            print('CSTRUCT SER', field.serialize(cstruct, readonly=True))
+            print(change)
             cls = 'span6 grid-area'
             if change:
                 cls += ' change'
