@@ -304,6 +304,7 @@ ${template.render(request=request, geometry=geometry, editmode=editmode, _=_)}
 ##                 class="text-accent-color">${_('Read more.')}</a></p>
     </div>
 
+    ## only display enter coordinates and search location options for the main map with title map11
     % if field.title == "map11":
         <div class="input-field col s12" action="">
             <div class="col s6" style="margin: 0; padding: 0;">
@@ -329,35 +330,39 @@ ${template.render(request=request, geometry=geometry, editmode=editmode, _=_)}
     var tForSuccess = "${_('Success!')}";
     var tForInvalidFormat = "${_('Not in a valid format!')}";
 </script>
+
+
+
+## coordinates div appears when triggerCoordinatesDiv is clicked
 <div id="coordinates-div" style="display: none;">
-    <div class="row">
-        <div class="col s8">
-            <label for="map-coords-field">${_('Coordinates')}</label>
-            <input id="map-coords-field" class="input-style" type="text"/>
+        <div class="row">
+            <div class="col s8">
+                <label for="map-coords-field">${_('Coordinates')}</label>
+                <input id="map-coords-field" class="input-style" type="text" />
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="input-field col s8">
-            <select id="map-coords-format">
-                <option value="1">46&deg; 57.1578 N 7&deg; 26.1102 E</option>
-                <option value="2">46&deg 57' 9.468" N 7&deg 26' 6.612" E</option>
-                <option value="3">N 46&deg 57.1578 E 7&deg 26.1102</option>
-                <option value="4">N 46&deg 57' 9.468" E 7&deg 26' 6.612"</option>
-                <option value="5" selected>46.95263, 7.43517</option>
-            </select>
-            <label>Select Format</label>
+        <div class="row">
+            <div class="input-field col s8">
+                <select id="map-coords-format">
+                    <option value="1">46&deg; 57.1578 N 7&deg; 26.1102 E</option>
+                    <option value="2">46&deg 57' 9.468" N 7&deg 26' 6.612" E</option>
+                    <option value="3">N 46&deg 57.1578 E 7&deg 26.1102</option>
+                    <option value="4">N 46&deg 57' 9.468" E 7&deg 26' 6.612"</option>
+                    <option value="5" selected>46.95263, 7.43517</option>
+                </select>
+                <label>Select Format</label>
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col s12">
-            <button id="map-coords-button" class="btn btn-small"
-                    onClick="javascript:return parseCoordinates();">${_('Parse')}</button>
+        <div class="row">
+            <div class="col s12">
+                <button id="map-coords-button" class="btn btn-small" onClick="javascript:return parseCoordinates('${field.title}');">${_('Parse')}</button>
+            </div>
+            <div id="map-coords-message" class="col s8">
+                <!-- Placeholder -->
+            </div>
         </div>
-        <div id="map-coords-message" class="col s8">
-            <!-- Placeholder -->
-        </div>
-    </div>
 </div>
+
 
 ${field.start_mapping()}
 

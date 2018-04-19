@@ -1,6 +1,9 @@
 /**
  * Creates a map, adds controlls to it and inserts it to a div with the same id as mapId
  */
+
+// var editableLayers = new L.FeatureGroup();
+
 function createFormMap(mapId, options) {
 
 
@@ -61,21 +64,20 @@ function createFormMap(mapId, options) {
     };
 
     initBaseLayerControl();
-    // initMapContent(map);
+    initMapContent(map);
     initPolygonLayers(mapId, window.mapVariables.polygon_keys);
     initContextLayerControl();
-    initMapSearch(mapId);
+    initMapSearch(mapId); // TODO only initialize for main map
 
     if (options.readonly !== true) {
         var geometry_type = options.geometry_type['geometry_type']
-        initDrawPolygonControl(map, geometry_type);
+        initDrawPolygonControl(map, geometry_type, mapId);
 
 
-        // TODO: make this work for edit as well (geometries are not passed to edit mode)
     }
     else {
         // Readonly! Add point and polygon areas to details page
-        addDealLocation(map, geometry); // geometry and dealAreas are defined in mapform.mak!!
+        addDealLocationReadOnly(map, geometry); // geometry and dealAreas are defined in mapform.mak!!
         var coordinatesLatLong = geometry.coordinates;
         zoomToDealLocation(map, coordinatesLatLong);
         addDealAreasReadonly(map, dealAreas);
@@ -92,13 +94,13 @@ function createFormMap(mapId, options) {
  * @param map           Map created by createMapForm
  * @param geometry      Polygon or Point which is added to map
  */
-function addDealLocation(map, geometry) {
+function addDealLocationReadOnly(map, geometry) {
 
     // get geometry field
     var $geometry = $(map.getContainer()).closest('div.taggroup').find('input[name = "geometry"]')
 
     if ($geometry !== null) {
-        console.log('addDealLocation');
+        console.log('addDealLocationReadOnly');
 
         // change coordinates to lat/long
         var coordLatLong = geometry.coordinates.reverse();
@@ -138,7 +140,7 @@ function addDealAreasReadonly(map, dealAreas) {
     // add Layers to layer control
     // try: https://gis.stackexchange.com/questions/178945/leaflet-customizing-the-layerswitcher
     // http://embed.plnkr.co/Je7c0m/
-    if (! jQuery.isEmptyObject(layerDictionary)){  // only add layer control if layers aren't empty
+    if (!jQuery.isEmptyObject(layerDictionary)) {  // only add layer control if layers aren't empty
         L.control.layers([], layerDictionary).addTo(map);
     }
 }
@@ -158,11 +160,6 @@ function changeToLatLon(polyCoords) {
     return polyCoordsLatLon;
 }
 
-function zoomToDealLocation(map, coordLatLong) {
-    var lat = coordLatLong[0];
-    var long = coordLatLong[1];
-    map.setView([lat, long], 8);
-}
 
 // TODO: move to base
 function getLayerColor(layerLabel) {
@@ -178,3 +175,147 @@ function getLayerColor(layerLabel) {
     }
     return layerColor
 }
+
+/**
+ * Parse coordinates entered in the textfield and writes it as input for the coordinates field
+ */
+function parseCoordinates(mapTitle) {
+    if (mapTitle == 'map11') {
+
+
+        var coordsField = $('#map-coords-field').val(); // read values from mak
+        var coordsFormat = $('#map-coords-format').val();
+
+        // Regex inspiration by: http://www.nearby.org.uk/tests/geotools2.js
+
+        // It seems to be necessary to escape the values. Otherwise, the degree
+        // symbol (°) is not recognized.
+        var str = escape(coordsField);
+        // However, we do need to replace the spaces again do prevent regex error.
+        str = str.replace(/%20/g, ' ');
+
+        var pattern, matches;
+        var latsign, longsign, d1, m1, s1, d2, m2, s2;
+        var latitude, longitude, latlong;
+
+        if (coordsFormat == 1) {
+            // 46° 57.1578 N 7° 26.1102 E
+            pattern = /(\d+)[%B0\s]+(\d+\.\d+)\s*([NS])[%2C\s]+(\d+)[%B0\s]+(\d+\.\d+)\s*([WE])/i;
+            matches = str.match(pattern);
+            if (matches) {
+                latsign = (matches[3] === 'S') ? -1 : 1;
+                longsign = (matches[6] === 'W') ? -1 : 1;
+                d1 = parseFloat(matches[1]);
+                m1 = parseFloat(matches[2]);
+                d2 = parseFloat(matches[4]);
+                m2 = parseFloat(matches[5]);
+                latitude = latsign * (d1 + (m1 / 60.0));
+                longitude = longsign * (d2 + (m2 / 60.0));
+                latlong = [latitude, longitude];
+            }
+        } else if (coordsFormat == 2) {
+            // 46° 57' 9.468" N 7° 26' 6.612" E
+            pattern = /(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([NS])[%2C\s]+(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([WE])/i;
+            matches = str.match(pattern);
+            if (matches) {
+                latsign = (matches[4] === 'S') ? -1 : 1;
+                longsign = (matches[8] === 'W') ? -1 : 1;
+                d1 = parseFloat(matches[1]);
+                m1 = parseFloat(matches[2]);
+                s1 = parseFloat(matches[3]);
+                d2 = parseFloat(matches[5]);
+                m2 = parseFloat(matches[6]);
+                s2 = parseFloat(matches[7]);
+                latitude = latsign * (d1 + (m1 / 60.0) + (s1 / (60.0 * 60.0)));
+                longitude = longsign * (d2 + (m2 / 60.0) + (s2 / (60.0 * 60.0)));
+                latlong = [latitude, longitude];
+            }
+        } else if (coordsFormat == 3) {
+            // N 46° 57.1578 E 7° 26.1102
+            pattern = /([NS])\s*(\d+)[%B0\s]+(\d+\.\d+)[%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+\.\d+)/i;
+            matches = str.match(pattern);
+            if (matches) {
+                latsign = (matches[1] === 'S') ? -1 : 1;
+                longsign = (matches[4] === 'W') ? -1 : 1;
+                d1 = parseFloat(matches[2]);
+                m1 = parseFloat(matches[3]);
+                d2 = parseFloat(matches[5]);
+                m2 = parseFloat(matches[6]);
+                latitude = latsign * (d1 + (m1 / 60.0));
+                longitude = longsign * (d2 + (m2 / 60.0));
+                latlong = [latitude, longitude];
+            }
+        } else if (coordsFormat == 4) {
+            // N 46° 57' 9.468" E 7° 26' 6.612"
+            pattern = /([NS])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)/i;
+            matches = str.match(pattern);
+            if (matches) {
+                latsign = (matches[1] === 'S') ? -1 : 1;
+                longsign = (matches[5] === 'W') ? -1 : 1;
+                d1 = parseFloat(matches[2]);
+                m1 = parseFloat(matches[3]);
+                s1 = parseFloat(matches[4]);
+                d2 = parseFloat(matches[6]);
+                m2 = parseFloat(matches[7]);
+                s2 = parseFloat(matches[8]);
+                latitude = latsign * (d1 + (m1 / 60.0) + (s1 / (60.0 * 60.0)));
+                longitude = longsign * (d2 + (m2 / 60.0) + (s2 / (60.0 * 60.0)));
+                latlong = [latitude, longitude];
+            }
+        } else if (coordsFormat == 5) {
+            // 46.95263, 7.43517
+            pattern = /(\d+\.\d+)[%2C\s]+(\d+\.\d+)/i;
+            matches = str.match(pattern);
+            if (matches) {
+                latlong = [matches[1], matches[2]];
+            }
+        }
+
+        if (latlong != null) {
+            // TODO use jquery instead?
+            // Create the event. This way of event handling should be compatible with IE
+            var event = new CustomEvent('sendCoordinates', {detail: latlong}); // create event and add coordinates
+
+            // Define that the event name is 'build'.
+            event.initEvent('sendCoordinates', true, true);
+
+
+            // target can be any Element or other EventTarget.
+            window.dispatchEvent(event);
+
+        } else {
+            showParseFeedback(tForInvalidFormat, 'error');
+        }
+    }
+    return false;
+}
+
+/**
+ * Function to show or hide the div to parse coordinates.
+ */
+function triggerCoordinatesDiv() {
+    var coordinatesDiv = $('#coordinates-div');
+    if (coordinatesDiv.is(':hidden')) {
+        coordinatesDiv.show();
+    } else {
+        coordinatesDiv.hide();
+    }
+}
+
+/**
+ * Show a feedback after parsing the entered coordinates.
+ * @param {String} msg
+ * @param {String} textStyle
+ */
+function showParseFeedback(msg, textStyle) {
+    var msgField = $('#map-coords-message');
+
+    msgField.html([
+        '<span class="text-',
+        textStyle,
+        '"></br>',
+        msg,
+        '</span>'
+    ].join(''));
+}
+
