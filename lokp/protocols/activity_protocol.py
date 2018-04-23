@@ -2129,6 +2129,7 @@ class ActivityProtocol(Protocol):
             previous_version,
             activity_dict,
             new_activity,
+            old_activity.version,
             db=True
         )
         return a, return_diff
