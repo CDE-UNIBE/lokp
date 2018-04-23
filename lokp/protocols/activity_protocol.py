@@ -226,7 +226,11 @@ class ActivityProtocol(Protocol):
 
                 # Add the newly created identifier to the diff (this is
                 # important if the item had no identifier before
-                    cleaned_activity[str('id')] = str(a.activity_identifier)
+                    try:
+                        cleaned_activity[str('id')] = str(a.activity_identifier)
+                    except(AttributeError):
+                        cleaned_activity[str('id')] = str(a.fk_activity)  # TODO:
+
 
                 ids.append(a)
 
