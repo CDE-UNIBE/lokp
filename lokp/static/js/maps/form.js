@@ -67,10 +67,10 @@ function createFormMap(mapId, options) {
     initMapContent(map);
     initPolygonLayers(mapId, window.mapVariables.polygon_keys);
     initContextLayerControl();
-    initMapSearch(mapId); // TODO only initialize for main map
+    initMapSearch(mapId);
 
     if (options.readonly !== true) {
-        var geometry_type = options.geometry_type['geometry_type']
+        var geometry_type = options.geometry_type['geometry_type'];
         initDrawPolygonControl(map, geometry_type, mapId);
 
 

@@ -303,27 +303,6 @@ ${template.render(request=request, geometry=geometry, editmode=editmode, _=_)}
 ##                 href="http://lokp.readthedocs.org/en/latest/qgis.html" target="_blank"
 ##                 class="text-accent-color">${_('Read more.')}</a></p>
     </div>
-
-    ## only display enter coordinates and search location options for the main map with title map11
-    % if field.title == "map11":
-        <div class="input-field col s12" action="">
-            <div class="col s6" style="margin: 0; padding: 0;">
-                <a class="pointer btn tooltipped" onClick="javascript:triggerCoordinatesDiv();" data-position="top"
-                   data-delay="50"
-                   data-tooltip="${_('If you have GPS coordinates you can enter them to set the location even more accurately.')}">${_('Enter coordinates')}
-                    <i class="material-icons tooltipped right">my_location</i></a>
-            </div>
-            <div class="col s6" style="margin: 0; padding: 0;">
-                <input id="js-map-search" data-set-marker="true" name="q" type="text" placeholder="${_('Search location')}"
-                       style="line-height: 30px; height: 30px;">
-                <button value="Search" id="search-submit" class="btn tooltipped" style="line-height: 30px; height: 30px;"
-                        name="action" data-position="top" data-delay="50"
-                        data-tooltip="${_('Start to search for a location by typing in the search field.')}"><i
-                        class="material-icons">search</i></button>
-            </div>
-        </div>
-    % endif
-
 </div>
 
 <script type="text/javascript">
@@ -373,7 +352,6 @@ ${field.start_mapping()}
 ${field.end_mapping()}
 
 <script>
-    console.log(deform);
     deform.addCallback(
             '${field.title}',
             function (oid) {

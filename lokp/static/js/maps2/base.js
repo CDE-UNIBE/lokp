@@ -185,19 +185,11 @@ function initContextLayerControl() {
  * Initialize field to search for places with Google.
  */
 function initMapSearch(mapId) {
-    var searchField = $('#js-map-search-' + mapId)[0];  //
+    var searchField = $('#js-map-search-' + mapId);  //
 
-    // var searchField = document.getElementById('js-map-search-' + 'map11');
     if (searchField.length === 0) return;
 
-
-    // var autoComplete = new google.maps.places.Autocomplete(searchField);
-    //
-    // autoComplete.addListener('place_changed', function() {
-    //     console.log('place_changed');
-    // });
-
-    var mapSearch = new google.maps.places.SearchBox(searchField);
+    var mapSearch = new google.maps.places.SearchBox(searchField[0]);
     mapSearch.addListener('places_changed', function() {
         var places = this.getPlaces();
         if (places.length !== 1) return;
