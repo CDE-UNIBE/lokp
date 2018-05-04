@@ -8,23 +8,13 @@
     from lokp.utils.form import structHasOnlyNullValues
     hasOnlyNullValues, depth = structHasOnlyNullValues(cstruct)
     import colander
-##     if depth is 3:
-
-##     if depth == 2:
-##         print('CSTRUCT', cstruct)
-
-
-##
-##     print('depth', depth)
-##     print('FIELD', field.title)
-##     print('cstruct', field.serialize(cstruct, readonly=True))
 %>
 
     % if field.name == 'map':
         ## The map container was already rendered by the initial form item so it
         ## appears right on top.
 
-    % elif depth == 3 or field.title == 'Spatial Data':  ## required that spatial data is also considered as category (doesnt have depth 3!)
+    % elif depth == 3:
         ## Category
 
         <%
@@ -85,8 +75,6 @@
 
         <%
             change = 'change' in cstruct and cstruct['change'] != colander.null
-            print('CSTRUCT SER', field.serialize(cstruct, readonly=True))
-            print(change)
             cls = 'span6 grid-area'
             if change:
                 cls += ' change'

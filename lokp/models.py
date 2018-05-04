@@ -687,8 +687,6 @@ class User(Base):
         # Set it
         self._set_password(new_password)
 
-        print(new_password)
-
         # Return the new password uncrypted
         return new_password
 

@@ -742,7 +742,7 @@ class ConfigThematicgroup(object):
         # Iterates over each taggroup in this thematic group and creates a form (tg_form) for each taggroup
         for tg in sorted(self.getTaggroups(), key=lambda tg: tg.getOrder()):
             # Get the Form for each Taggroup
-            tg_form = tg.getForm(request)
+            tg_form = tg.getForm(request, compare=compare)
             name = str(tg.getId())
             if compare is not '':
                 tg_form.add(colander.SchemaNode(
@@ -773,7 +773,7 @@ class ConfigThematicgroup(object):
                 ))
 
             if compare is not '':
-                tg_form = tg.getForm(request)
+                tg_form = tg.getForm(request, compare=compare)
                 tg_form.add(colander.SchemaNode(
                     colander.String(),
                     name='change',
@@ -957,7 +957,7 @@ class ConfigTaggroup(object):
                 return True
         return False
 
-    def getForm(self, request):
+    def getForm(self, request, compare=''):
         """
         Prepare the form node for this taggroup, append the forms of its  tags
         and return it.
@@ -988,7 +988,11 @@ class ConfigTaggroup(object):
         ))
         tg_form.validator = self.maintag_validator
 
-        if self.getMap() is not None:
+        # Only add map widget in normal form view. In compare and review mode,
+        # do not add map widget as polygons are shown all on the same map
+        # (rendered separately) and adding the map widget only screws up the
+        # hierarchy of cstruct data.
+        if self.getMap() is not None and compare == '':
             # If there is some map data in this tag group, get the widget
             # and add it to the form.
             mapWidget = getMapWidget(self, {'geometry_type': 'polygon'})
@@ -2268,7 +2272,6 @@ def getMapWidget(thematicgroup, geometry_type):
     field is marked as mandatory (lon) in order to prevent double error
     messages if it is missing.
     """
-    print('create mapWidget')
     mapWidget = colander.SchemaNode(
         colander.Mapping(),
         widget=CustomMapWidget(

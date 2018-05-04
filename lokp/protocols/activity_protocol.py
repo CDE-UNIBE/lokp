@@ -204,14 +204,18 @@ class ActivityProtocol(Protocol):
             cleaned_activity['taggroups'] = []
 
             for taggroup in activity.get('taggroups', []):
-                try:
-                    main_tag_key = taggroup.get('main_tag', {}).get('key')
-                    _, _, config_taggroup = category_list.findCategoryThematicgroupTaggroupByMainkey(main_tag_key)
-                    if config_taggroup.getMap() is not None and len(taggroup['tags']) == 1 and taggroup['tags'][0].get(
-                        'geometry', colander.null) == colander.null:
-                        continue
-                except AttributeError:
-                    print("attribute error")
+                main_tag_key = taggroup.get('main_tag', {}).get('key')
+                _, _, config_taggroup = category_list.findCategoryThematicgroupTaggroupByMainkey(main_tag_key)
+                if config_taggroup is not None and config_taggroup.getMap() is not None and len(taggroup['tags']) == 1 and taggroup['tags'][0].get(
+                    'geometry', colander.null) == colander.null:
+                    continue
+
+                # Remove tags with empty geometry. Prevents errors when saving
+                # taggroups having a main tag (e.g. intended area) but no
+                # polygon was drawn.
+                taggroup['tags'] = [
+                    t for t in taggroup.get('tags', [])
+                    if t.get('value') != {'geometry': colander.null}]
 
                 cleaned_activity['taggroups'].append(taggroup)
 
@@ -230,7 +234,6 @@ class ActivityProtocol(Protocol):
                         cleaned_activity[str('id')] = str(a.activity_identifier)
                     except(AttributeError):
                         cleaned_activity[str('id')] = str(a.fk_activity)  # TODO:
-
 
                 ids.append(a)
 

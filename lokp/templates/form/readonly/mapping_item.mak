@@ -15,11 +15,11 @@
         ## The map container was already rendered by the initial form item so
         ## it appears right on top.
 
-    % elif depth == 3:
+    % elif depth >= 3:
         ## Category
         ${field.serialize(cstruct, readonly=True)}
 
-    % elif depth == 2:
+    % elif depth == 2 and field.title not in ['Tg']:
         ## Thematic Group
         % if field.title == '':
             ${field.serialize(cstruct, readonly=True)}
@@ -43,9 +43,11 @@
     % elif field.name not in ['tg_id', 'id', 'category', 'version', 'itemType', 'statusId', 'taggroup_count', 'geometry']:
         ## Single tag
         <div class="row-fluid">
-            <div class="span5">
-                <h5 class="dealview_item_titel text-accent-color">${field.title}</h5>
-            </div>
+            % if field.title != 'Tg':
+              <div class="span5">
+                  <h5 class="dealview_item_titel text-accent-color">${field.title}</h5>
+              </div>
+            % endif
             <div class="dealview_item_attribute">
                 ${field.serialize(cstruct, readonly=True)}
             </div>

@@ -1528,6 +1528,7 @@ class StakeholderProtocol(Protocol):
             previous_version,
             stakeholder_dict_recalc,
             new_stakeholder,
+            old_stakeholder.version,
             db=True
         )
 

@@ -1243,16 +1243,16 @@ class Protocol(object):
 
         #
         if version is None:
-            version_querry = initial_version
+            version_query = initial_version
         else:
-            version_querry = version
+            version_query = version
 
         db_taggroup_query = self.Session.query(
             Db_Tag_Group
         ). \
             join(mappedClass). \
             filter(mappedClass.identifier == uid). \
-            filter(mappedClass.version == version_querry). \
+            filter(mappedClass.version == version_query). \
             all()
 
         # Collect all tg_ids while we are at it

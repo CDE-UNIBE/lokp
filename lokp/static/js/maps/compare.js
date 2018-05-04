@@ -179,7 +179,9 @@ function getDictWithGeometries(dealAreas, map, isReferenceData) {
     var keys = Object.keys(dealAreas); // keys are Intended Area, Current area in operation
     var layerDictionary = {};
     for (var i = 0; i < keys.length; i++) {
-        var coordinates = dealAreas[keys[i]].geometry.coordinates;
+        var poly = dealAreas[keys[i]];
+        if (poly === null) break;
+        var coordinates = poly.geometry.coordinates;
         coordinates = coordinates[0]; // flatten list
         var coordinatesLatLong = changeToLatLon(coordinates);
 
